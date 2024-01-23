@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-v1.x docs-doc-page docs-doc-id-typedoc/core/classes/Poll" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.1.0">
+<title data-rh="true">Poll | MACI</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://maci.pse.dev/img/maci-card.png"><meta data-rh="true" name="twitter:image" content="https://maci.pse.dev/img/maci-card.png"><meta data-rh="true" property="og:url" content="https://maci.pse.dev/docs/typedoc/core/classes/Poll"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="v1.x"><meta data-rh="true" name="docusaurus_tag" content="docs-default-v1.x"><meta data-rh="true" name="docsearch:version" content="v1.x"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-v1.x"><meta data-rh="true" property="og:title" content="Poll | MACI"><meta data-rh="true" name="description" content="A representation of the Poll contract."><meta data-rh="true" property="og:description" content="A representation of the Poll contract."><link data-rh="true" rel="icon" href="/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://maci.pse.dev/docs/typedoc/core/classes/Poll"><link data-rh="true" rel="alternate" href="https://maci.pse.dev/docs/typedoc/core/classes/Poll" hreflang="en"><link data-rh="true" rel="alternate" href="https://maci.pse.dev/docs/typedoc/core/classes/Poll" hreflang="x-default"><link rel="alternate" type="application/rss+xml" href="/blog/rss.xml" title="MACI RSS Feed">
+<link rel="alternate" type="application/atom+xml" href="/blog/atom.xml" title="MACI Atom Feed">
+
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/katex.min.css" integrity="sha384-odtC+0UGzzFL/6PNoE8rX/SPcQDXBJ+uRepguP4QkPCm2LBxH3FA3y+fKSiJ+AmM" crossorigin="anonymous"><link rel="stylesheet" href="/assets/css/styles.5a012d88.css">
+<script src="/assets/js/runtime~main.1c1ae4d5.js" defer="defer"></script>
+<script src="/assets/js/main.9ef3dc64.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<script>!function(){function t(t){document.documentElement.setAttribute("data-theme",t)}var e=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return localStorage.getItem("theme")}catch(t){}}();t(null!==e?e:"light")}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Skip to main content"><a class="skipToContent_x64h" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="navbar navbar--fixed-top"><div class="navbar__inner"><div class="navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/"><b class="navbar__title text--truncate">MACI</b></a><a class="navbar__item navbar__link" href="/docs/introduction">Documentation</a><a class="navbar__item navbar__link" href="/blog">Blog</a><a class="navbar__item navbar__link" href="/roadmap">Roadmap</a></div><div class="navbar__items navbar__items--right"><div class="navbar__item dropdown dropdown--hoverable dropdown--right"><a class="navbar__link" aria-haspopup="true" aria-expanded="false" role="button" href="/docs/introduction">v1.x</a><ul class="dropdown__menu"><li><a aria-current="page" class="dropdown__link dropdown__link--active" href="/docs/typedoc/core/classes/Poll">v1.x</a></li><li><a class="dropdown__link" href="/docs/v0.x/introduction">v0.x</a></li></ul></div><div class="navbarSearchContainer_E9iI"><div class="navbar__search searchBarContainer_Wj3L"><input placeholder="Search" aria-label="Search" class="navbar__search-input"><div class="loadingRing_xuKQ searchBarLoadingRing_c5ZJ"><div></div><div></div><div></div><div></div></div></div></div><a href="https://github.com/privacy-scaling-explorations/maci" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link">GitHub<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_KS24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a><div class="toggle_DNR2 colorModeToggle_jG71"><button class="clean-btn toggleButton_zXyI toggleButtonDisabled_wXeO" type="button" disabled="" title="Switch between dark and light mode (currently light mode)" aria-label="Switch between dark and light mode (currently light mode)" aria-live="polite"><svg viewBox="0 0 24 24" width="24" height="24" class="lightToggleIcon_n0tO"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" class="darkToggleIcon_iaxG"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg></button></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="main-wrapper mainWrapper_AUMF"><div class="docsWrapper_yLY_"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_k6NZ" type="button"></button><div class="docRoot_r57B"><aside class="theme-doc-sidebar-container docSidebarContainer_nv9G"><div class="sidebarViewport_HZUY"><div class="sidebar_JFR9"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_gxl9"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/docs/introduction">Introduction</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/docs/overview">Overview</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/docs/installation">Installation</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/docs/primitives">Primitives</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/docs/cli">Command-line interface</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/docs/contracts">Smart Contracts</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/docs/circuits">Circuits</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/docs/trusted-setup">Trusted Setup</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/docs/testing">Testing</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/docs/testing-in-detail">Testing in detail</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/docs/integrating">Integrating</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/docs/audit">Security Assessments</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/docs/ci-pipeline">CI</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/docs/coordinator-processing">Coordinator local processing</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/docs/spec">Specification</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/docs/key-change">Key change</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/docs/troubleshooting">Troubleshooting</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/docs/versioning">MACI versioning</a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" aria-expanded="false" href="/docs/contributing/">Contributing</a><button aria-label="Expand sidebar category &#x27;Contributing&#x27;" type="button" class="clean-btn menu__caret"></button></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" aria-expanded="false" href="/docs/solidity-docs/">Solidity Docs</a><button aria-label="Expand sidebar category &#x27;Solidity Docs&#x27;" type="button" class="clean-btn menu__caret"></button></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--active" aria-expanded="true" href="/docs/typedoc/">Typedoc</a><button aria-label="Collapse sidebar category &#x27;Typedoc&#x27;" type="button" class="clean-btn menu__caret"></button></div><ul style="display:block;overflow:visible;height:auto" class="menu__list"><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" aria-expanded="false" tabindex="0" href="/docs/typedoc/cli/">Cli</a><button aria-label="Expand sidebar category &#x27;Cli&#x27;" type="button" class="clean-btn menu__caret"></button></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--active" aria-expanded="true" tabindex="0" href="/docs/typedoc/core/">Core</a><button aria-label="Collapse sidebar category &#x27;Core&#x27;" type="button" class="clean-btn menu__caret"></button></div><ul style="display:block;overflow:visible;height:auto" class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/typedoc/core/modules">module</a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-3 menu__list-item"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" aria-expanded="true" tabindex="0" href="/docs/typedoc/core/classes/MaciState">classes</a></div><ul style="display:block;overflow:visible;height:auto" class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-4 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/typedoc/core/classes/MaciState">MaciState</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-4 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" tabindex="0" href="/docs/typedoc/core/classes/Poll">Poll</a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-3 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--sublist-caret" aria-expanded="false" tabindex="0" href="/docs/typedoc/core/interfaces/BatchSizes">interfaces</a></div></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" aria-expanded="false" tabindex="0" href="/docs/typedoc/crypto/">Crypto</a><button aria-label="Expand sidebar category &#x27;Crypto&#x27;" type="button" class="clean-btn menu__caret"></button></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" aria-expanded="false" tabindex="0" href="/docs/typedoc/domainobjs/">Domainobjs</a><button aria-label="Expand sidebar category &#x27;Domainobjs&#x27;" type="button" class="clean-btn menu__caret"></button></div></li></ul></li></ul></nav></div></div></aside><main class="docMainContainer_MlYW"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_xMnN"><div class="docItemContainer_Et2F"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_RGyr" aria-label="Breadcrumbs"><ul class="breadcrumbs" itemscope="" itemtype="https://schema.org/BreadcrumbList"><li class="breadcrumbs__item"><a aria-label="Home page" class="breadcrumbs__link" href="/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_Geaz"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li itemscope="" itemprop="itemListElement" itemtype="https://schema.org/ListItem" class="breadcrumbs__item"><a class="breadcrumbs__link" itemprop="item" href="/docs/typedoc/"><span itemprop="name">Typedoc</span></a><meta itemprop="position" content="1"></li><li itemscope="" itemprop="itemListElement" itemtype="https://schema.org/ListItem" class="breadcrumbs__item"><a class="breadcrumbs__link" itemprop="item" href="/docs/typedoc/core/"><span itemprop="name">Core</span></a><meta itemprop="position" content="2"></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">classes</span><meta itemprop="position" content="3"></li><li itemscope="" itemprop="itemListElement" itemtype="https://schema.org/ListItem" class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link" itemprop="name">Poll</span><meta itemprop="position" content="4"></li></ul></nav><span class="theme-doc-version-badge badge badge--secondary">Version: v1.x</span><div class="tocCollapsible_J3My theme-doc-toc-mobile tocMobile_oSVX"><button type="button" class="clean-btn tocCollapsibleButton_yKF_">On this page</button></div><div class="theme-doc-markdown markdown"><header><h1>Poll</h1></header><p>A representation of the Poll contract.</p>
+<h2 class="anchor anchorWithStickyNavbar_m7eB" id="implements">Implements<a href="#implements" class="hash-link" aria-label="Direct link to Implements" title="Direct link to Implements">​</a></h2>
+<ul>
+<li><code>IPoll</code></li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_m7eB" id="table-of-contents">Table of contents<a href="#table-of-contents" class="hash-link" aria-label="Direct link to Table of contents" title="Direct link to Table of contents">​</a></h2>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="constructors">Constructors<a href="#constructors" class="hash-link" aria-label="Direct link to Constructors" title="Direct link to Constructors">​</a></h3>
+<ul>
+<li><a href="/docs/typedoc/core/classes/Poll#constructor">constructor</a></li>
+</ul>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="properties">Properties<a href="#properties" class="hash-link" aria-label="Direct link to Properties" title="Direct link to Properties">​</a></h3>
+<ul>
+<li><a href="/docs/typedoc/core/classes/Poll#mm">MM</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#ww">WW</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#ballottree">ballotTree</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#ballots">ballots</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#batchsizes">batchSizes</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#cbi">cbi</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#commands">commands</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#coordinatorkeypair">coordinatorKeypair</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#currentmessagebatchindex">currentMessageBatchIndex</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#emptyballot">emptyBallot</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#emptyballothash">emptyBallotHash</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#encpubkeys">encPubKeys</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#macistateref">maciStateRef</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#maxvalues">maxValues</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#messagetree">messageTree</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#messages">messages</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#numbatchesprocessed">numBatchesProcessed</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#numbatchestallied">numBatchesTallied</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#pervospentvoicecredits">perVOSpentVoiceCredits</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#pollendtimestamp">pollEndTimestamp</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#pollid">pollId</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#prevospentvoicecreditsrootsalts">preVOSpentVoiceCreditsRootSalts</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#rbi">rbi</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#resultrootsalts">resultRootSalts</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#sbsalts">sbSalts</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#spentvoicecreditsubtotalsalts">spentVoiceCreditSubtotalSalts</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#statecopied">stateCopied</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#stateleaves">stateLeaves</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#statetree">stateTree</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#statetreedepth">stateTreeDepth</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#subsidy">subsidy</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#subsidysalts">subsidySalts</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#tallyresult">tallyResult</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#totalspentvoicecredits">totalSpentVoiceCredits</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#treedepths">treeDepths</a></li>
+</ul>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="methods">Methods<a href="#methods" class="hash-link" aria-label="Direct link to Methods" title="Direct link to Methods">​</a></h3>
+<ul>
+<li><a href="/docs/typedoc/core/classes/Poll#coefficientcalculation">coefficientCalculation</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#copy">copy</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#copystatefrommaci">copyStateFromMaci</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#equals">equals</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#genpervospentvoicecreditscommitment">genPerVOSpentVoiceCreditsCommitment</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#genprocessmessagescircuitinputspartial">genProcessMessagesCircuitInputsPartial</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#genspentvoicecreditsubtotalcommitment">genSpentVoiceCreditSubtotalCommitment</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#hasunfinishedsubsidycalculation">hasUnfinishedSubsidyCalculation</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#hasunprocessedmessages">hasUnprocessedMessages</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#hasuntalliedballots">hasUntalliedBallots</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#increasesubsidyindex">increaseSubsidyIndex</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#previoussubsidyindextostring">previousSubsidyIndexToString</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#processallmessages">processAllMessages</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#processmessage">processMessage</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#processmessages">processMessages</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#publishmessage">publishMessage</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#setcoordinatorkeypair">setCoordinatorKeypair</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#subsidycalculation">subsidyCalculation</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#subsidyperbatch">subsidyPerBatch</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#tallyvotes">tallyVotes</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#tojson">toJSON</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#topupmessage">topupMessage</a></li>
+<li><a href="/docs/typedoc/core/classes/Poll#fromjson">fromJSON</a></li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_m7eB" id="constructors-1">Constructors<a href="#constructors-1" class="hash-link" aria-label="Direct link to Constructors" title="Direct link to Constructors">​</a></h2>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="constructor">constructor<a href="#constructor" class="hash-link" aria-label="Direct link to constructor" title="Direct link to constructor">​</a></h3>
+<p>• <strong>new Poll</strong>(<code>pollEndTimestamp</code>, <code>coordinatorKeypair</code>, <code>treeDepths</code>, <code>batchSizes</code>, <code>maxValues</code>, <code>maciStateRef</code>): <a href="/docs/typedoc/core/classes/Poll"><code>Poll</code></a></p>
+<p>Constructs a new Poll object.</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="parameters">Parameters<a href="#parameters" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<table><thead><tr><th style="text-align:left">Name</th><th style="text-align:left">Type</th><th style="text-align:left">Description</th></tr></thead><tbody><tr><td style="text-align:left"><code>pollEndTimestamp</code></td><td style="text-align:left"><code>bigint</code></td><td style="text-align:left">The Unix timestamp at which the poll ends.</td></tr><tr><td style="text-align:left"><code>coordinatorKeypair</code></td><td style="text-align:left"><code>Keypair</code></td><td style="text-align:left">The keypair of the coordinator.</td></tr><tr><td style="text-align:left"><code>treeDepths</code></td><td style="text-align:left"><a href="/docs/typedoc/core/interfaces/TreeDepths"><code>TreeDepths</code></a></td><td style="text-align:left">The depths of the trees used in the poll.</td></tr><tr><td style="text-align:left"><code>batchSizes</code></td><td style="text-align:left"><a href="/docs/typedoc/core/interfaces/BatchSizes"><code>BatchSizes</code></a></td><td style="text-align:left">The sizes of the batches used in the poll.</td></tr><tr><td style="text-align:left"><code>maxValues</code></td><td style="text-align:left"><a href="/docs/typedoc/core/interfaces/MaxValues"><code>MaxValues</code></a></td><td style="text-align:left">The maximum values the MACI circuits can accept.</td></tr><tr><td style="text-align:left"><code>maciStateRef</code></td><td style="text-align:left"><a href="/docs/typedoc/core/classes/MaciState"><code>MaciState</code></a></td><td style="text-align:left">The reference to the MACI state.</td></tr></tbody></table>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="returns">Returns<a href="#returns" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><a href="/docs/typedoc/core/classes/Poll"><code>Poll</code></a></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in">Defined in<a href="#defined-in" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L142" target="_blank" rel="noopener noreferrer">Poll.ts:142</a></p>
+<h2 class="anchor anchorWithStickyNavbar_m7eB" id="properties-1">Properties<a href="#properties-1" class="hash-link" aria-label="Direct link to Properties" title="Direct link to Properties">​</a></h2>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="mm">MM<a href="#mm" class="hash-link" aria-label="Direct link to MM" title="Direct link to MM">​</a></h3>
+<p>• <strong>MM</strong>: <code>number</code> = <code>50</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-1">Defined in<a href="#defined-in-1" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L123" target="_blank" rel="noopener noreferrer">Poll.ts:123</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="ww">WW<a href="#ww" class="hash-link" aria-label="Direct link to WW" title="Direct link to WW">​</a></h3>
+<p>• <strong>WW</strong>: <code>number</code> = <code>4</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-2">Defined in<a href="#defined-in-2" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L125" target="_blank" rel="noopener noreferrer">Poll.ts:125</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="ballottree">ballotTree<a href="#ballottree" class="hash-link" aria-label="Direct link to ballotTree" title="Direct link to ballotTree">​</a></h3>
+<p>• <code>Optional</code> <strong>ballotTree</strong>: <code>IncrementalQuinTree</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-3">Defined in<a href="#defined-in-3" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L72" target="_blank" rel="noopener noreferrer">Poll.ts:72</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="ballots">ballots<a href="#ballots" class="hash-link" aria-label="Direct link to ballots" title="Direct link to ballots">​</a></h3>
+<p>• <strong>ballots</strong>: <code>Ballot</code>[] = <code>[]</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-4">Defined in<a href="#defined-in-4" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L70" target="_blank" rel="noopener noreferrer">Poll.ts:70</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="batchsizes">batchSizes<a href="#batchsizes" class="hash-link" aria-label="Direct link to batchSizes" title="Direct link to batchSizes">​</a></h3>
+<p>• <strong>batchSizes</strong>: <a href="/docs/typedoc/core/interfaces/BatchSizes"><code>BatchSizes</code></a></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-5">Defined in<a href="#defined-in-5" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L61" target="_blank" rel="noopener noreferrer">Poll.ts:61</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="cbi">cbi<a href="#cbi" class="hash-link" aria-label="Direct link to cbi" title="Direct link to cbi">​</a></h3>
+<p>• <strong>cbi</strong>: <code>number</code> = <code>0</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-6">Defined in<a href="#defined-in-6" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L121" target="_blank" rel="noopener noreferrer">Poll.ts:121</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="commands">commands<a href="#commands" class="hash-link" aria-label="Direct link to commands" title="Direct link to commands">​</a></h3>
+<p>• <strong>commands</strong>: <code>ICommand</code>[] = <code>[]</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-7">Defined in<a href="#defined-in-7" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L78" target="_blank" rel="noopener noreferrer">Poll.ts:78</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="coordinatorkeypair">coordinatorKeypair<a href="#coordinatorkeypair" class="hash-link" aria-label="Direct link to coordinatorKeypair" title="Direct link to coordinatorKeypair">​</a></h3>
+<p>• <strong>coordinatorKeypair</strong>: <code>Keypair</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-8">Defined in<a href="#defined-in-8" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L57" target="_blank" rel="noopener noreferrer">Poll.ts:57</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="currentmessagebatchindex">currentMessageBatchIndex<a href="#currentmessagebatchindex" class="hash-link" aria-label="Direct link to currentMessageBatchIndex" title="Direct link to currentMessageBatchIndex">​</a></h3>
+<p>• <code>Optional</code> <strong>currentMessageBatchIndex</strong>: <code>number</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-9">Defined in<a href="#defined-in-9" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L91" target="_blank" rel="noopener noreferrer">Poll.ts:91</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="emptyballot">emptyBallot<a href="#emptyballot" class="hash-link" aria-label="Direct link to emptyBallot" title="Direct link to emptyBallot">​</a></h3>
+<p>• <strong>emptyBallot</strong>: <code>Ballot</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-10">Defined in<a href="#defined-in-10" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L129" target="_blank" rel="noopener noreferrer">Poll.ts:129</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="emptyballothash">emptyBallotHash<a href="#emptyballothash" class="hash-link" aria-label="Direct link to emptyBallotHash" title="Direct link to emptyBallotHash">​</a></h3>
+<p>• <code>Optional</code> <strong>emptyBallotHash</strong>: <code>bigint</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-11">Defined in<a href="#defined-in-11" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L131" target="_blank" rel="noopener noreferrer">Poll.ts:131</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="encpubkeys">encPubKeys<a href="#encpubkeys" class="hash-link" aria-label="Direct link to encPubKeys" title="Direct link to encPubKeys">​</a></h3>
+<p>• <strong>encPubKeys</strong>: <code>PubKey</code>[] = <code>[]</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-12">Defined in<a href="#defined-in-12" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L80" target="_blank" rel="noopener noreferrer">Poll.ts:80</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="macistateref">maciStateRef<a href="#macistateref" class="hash-link" aria-label="Direct link to maciStateRef" title="Direct link to maciStateRef">​</a></h3>
+<p>• <strong>maciStateRef</strong>: <a href="/docs/typedoc/core/classes/MaciState"><code>MaciState</code></a></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-13">Defined in<a href="#defined-in-13" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L93" target="_blank" rel="noopener noreferrer">Poll.ts:93</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="maxvalues">maxValues<a href="#maxvalues" class="hash-link" aria-label="Direct link to maxValues" title="Direct link to maxValues">​</a></h3>
+<p>• <strong>maxValues</strong>: <a href="/docs/typedoc/core/interfaces/MaxValues"><code>MaxValues</code></a></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-14">Defined in<a href="#defined-in-14" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L63" target="_blank" rel="noopener noreferrer">Poll.ts:63</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="messagetree">messageTree<a href="#messagetree" class="hash-link" aria-label="Direct link to messageTree" title="Direct link to messageTree">​</a></h3>
+<p>• <strong>messageTree</strong>: <code>IncrementalQuinTree</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-15">Defined in<a href="#defined-in-15" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L76" target="_blank" rel="noopener noreferrer">Poll.ts:76</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="messages">messages<a href="#messages" class="hash-link" aria-label="Direct link to messages" title="Direct link to messages">​</a></h3>
+<p>• <strong>messages</strong>: <code>Message</code>[] = <code>[]</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-16">Defined in<a href="#defined-in-16" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L74" target="_blank" rel="noopener noreferrer">Poll.ts:74</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="numbatchesprocessed">numBatchesProcessed<a href="#numbatchesprocessed" class="hash-link" aria-label="Direct link to numBatchesProcessed" title="Direct link to numBatchesProcessed">​</a></h3>
+<p>• <strong>numBatchesProcessed</strong>: <code>number</code> = <code>0</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-17">Defined in<a href="#defined-in-17" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L89" target="_blank" rel="noopener noreferrer">Poll.ts:89</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="numbatchestallied">numBatchesTallied<a href="#numbatchestallied" class="hash-link" aria-label="Direct link to numBatchesTallied" title="Direct link to numBatchesTallied">​</a></h3>
+<p>• <strong>numBatchesTallied</strong>: <code>number</code> = <code>0</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-18">Defined in<a href="#defined-in-18" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L110" target="_blank" rel="noopener noreferrer">Poll.ts:110</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="pervospentvoicecredits">perVOSpentVoiceCredits<a href="#pervospentvoicecredits" class="hash-link" aria-label="Direct link to perVOSpentVoiceCredits" title="Direct link to perVOSpentVoiceCredits">​</a></h3>
+<p>• <strong>perVOSpentVoiceCredits</strong>: <code>bigint</code>[] = <code>[]</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-19">Defined in<a href="#defined-in-19" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L108" target="_blank" rel="noopener noreferrer">Poll.ts:108</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="pollendtimestamp">pollEndTimestamp<a href="#pollendtimestamp" class="hash-link" aria-label="Direct link to pollEndTimestamp" title="Direct link to pollEndTimestamp">​</a></h3>
+<p>• <strong>pollEndTimestamp</strong>: <code>bigint</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-20">Defined in<a href="#defined-in-20" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L68" target="_blank" rel="noopener noreferrer">Poll.ts:68</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="pollid">pollId<a href="#pollid" class="hash-link" aria-label="Direct link to pollId" title="Direct link to pollId">​</a></h3>
+<p>• <strong>pollId</strong>: <code>bigint</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-21">Defined in<a href="#defined-in-21" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L95" target="_blank" rel="noopener noreferrer">Poll.ts:95</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="prevospentvoicecreditsrootsalts">preVOSpentVoiceCreditsRootSalts<a href="#prevospentvoicecreditsrootsalts" class="hash-link" aria-label="Direct link to preVOSpentVoiceCreditsRootSalts" title="Direct link to preVOSpentVoiceCreditsRootSalts">​</a></h3>
+<p>• <strong>preVOSpentVoiceCreditsRootSalts</strong>: <code>Record</code>&lt;<code>string</code> | <code>number</code>, <code>bigint</code>&gt; = <code>{}</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-22">Defined in<a href="#defined-in-22" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L101" target="_blank" rel="noopener noreferrer">Poll.ts:101</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="rbi">rbi<a href="#rbi" class="hash-link" aria-label="Direct link to rbi" title="Direct link to rbi">​</a></h3>
+<p>• <strong>rbi</strong>: <code>number</code> = <code>0</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-23">Defined in<a href="#defined-in-23" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L119" target="_blank" rel="noopener noreferrer">Poll.ts:119</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="resultrootsalts">resultRootSalts<a href="#resultrootsalts" class="hash-link" aria-label="Direct link to resultRootSalts" title="Direct link to resultRootSalts">​</a></h3>
+<p>• <strong>resultRootSalts</strong>: <code>Record</code>&lt;<code>string</code> | <code>number</code>, <code>bigint</code>&gt; = <code>{}</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-24">Defined in<a href="#defined-in-24" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L99" target="_blank" rel="noopener noreferrer">Poll.ts:99</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="sbsalts">sbSalts<a href="#sbsalts" class="hash-link" aria-label="Direct link to sbSalts" title="Direct link to sbSalts">​</a></h3>
+<p>• <strong>sbSalts</strong>: <code>Record</code>&lt;<code>string</code> | <code>number</code>, <code>bigint</code>&gt; = <code>{}</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-25">Defined in<a href="#defined-in-25" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L97" target="_blank" rel="noopener noreferrer">Poll.ts:97</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="spentvoicecreditsubtotalsalts">spentVoiceCreditSubtotalSalts<a href="#spentvoicecreditsubtotalsalts" class="hash-link" aria-label="Direct link to spentVoiceCreditSubtotalSalts" title="Direct link to spentVoiceCreditSubtotalSalts">​</a></h3>
+<p>• <strong>spentVoiceCreditSubtotalSalts</strong>: <code>Record</code>&lt;<code>string</code> | <code>number</code>, <code>bigint</code>&gt; = <code>{}</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-26">Defined in<a href="#defined-in-26" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L103" target="_blank" rel="noopener noreferrer">Poll.ts:103</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="statecopied">stateCopied<a href="#statecopied" class="hash-link" aria-label="Direct link to stateCopied" title="Direct link to stateCopied">​</a></h3>
+<p>• <strong>stateCopied</strong>: <code>boolean</code> = <code>false</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-27">Defined in<a href="#defined-in-27" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L82" target="_blank" rel="noopener noreferrer">Poll.ts:82</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="stateleaves">stateLeaves<a href="#stateleaves" class="hash-link" aria-label="Direct link to stateLeaves" title="Direct link to stateLeaves">​</a></h3>
+<p>• <strong>stateLeaves</strong>: <code>StateLeaf</code>[]</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-28">Defined in<a href="#defined-in-28" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L84" target="_blank" rel="noopener noreferrer">Poll.ts:84</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="statetree">stateTree<a href="#statetree" class="hash-link" aria-label="Direct link to stateTree" title="Direct link to stateTree">​</a></h3>
+<p>• <code>Optional</code> <strong>stateTree</strong>: <code>IncrementalQuinTree</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-29">Defined in<a href="#defined-in-29" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L86" target="_blank" rel="noopener noreferrer">Poll.ts:86</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="statetreedepth">stateTreeDepth<a href="#statetreedepth" class="hash-link" aria-label="Direct link to stateTreeDepth" title="Direct link to stateTreeDepth">​</a></h3>
+<p>• <strong>stateTreeDepth</strong>: <code>number</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-30">Defined in<a href="#defined-in-30" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L66" target="_blank" rel="noopener noreferrer">Poll.ts:66</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="subsidy">subsidy<a href="#subsidy" class="hash-link" aria-label="Direct link to subsidy" title="Direct link to subsidy">​</a></h3>
+<p>• <strong>subsidy</strong>: <code>bigint</code>[] = <code>[]</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-31">Defined in<a href="#defined-in-31" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L115" target="_blank" rel="noopener noreferrer">Poll.ts:115</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="subsidysalts">subsidySalts<a href="#subsidysalts" class="hash-link" aria-label="Direct link to subsidySalts" title="Direct link to subsidySalts">​</a></h3>
+<p>• <strong>subsidySalts</strong>: <code>Record</code>&lt;<code>string</code> | <code>number</code>, <code>bigint</code>&gt; = <code>{}</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-32">Defined in<a href="#defined-in-32" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L117" target="_blank" rel="noopener noreferrer">Poll.ts:117</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="tallyresult">tallyResult<a href="#tallyresult" class="hash-link" aria-label="Direct link to tallyResult" title="Direct link to tallyResult">​</a></h3>
+<p>• <strong>tallyResult</strong>: <code>bigint</code>[] = <code>[]</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-33">Defined in<a href="#defined-in-33" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L106" target="_blank" rel="noopener noreferrer">Poll.ts:106</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="totalspentvoicecredits">totalSpentVoiceCredits<a href="#totalspentvoicecredits" class="hash-link" aria-label="Direct link to totalSpentVoiceCredits" title="Direct link to totalSpentVoiceCredits">​</a></h3>
+<p>• <strong>totalSpentVoiceCredits</strong>: <code>bigint</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-34">Defined in<a href="#defined-in-34" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L112" target="_blank" rel="noopener noreferrer">Poll.ts:112</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="treedepths">treeDepths<a href="#treedepths" class="hash-link" aria-label="Direct link to treeDepths" title="Direct link to treeDepths">​</a></h3>
+<p>• <strong>treeDepths</strong>: <a href="/docs/typedoc/core/interfaces/TreeDepths"><code>TreeDepths</code></a></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-35">Defined in<a href="#defined-in-35" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L59" target="_blank" rel="noopener noreferrer">Poll.ts:59</a></p>
+<h2 class="anchor anchorWithStickyNavbar_m7eB" id="methods-1">Methods<a href="#methods-1" class="hash-link" aria-label="Direct link to Methods" title="Direct link to Methods">​</a></h2>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="coefficientcalculation">coefficientCalculation<a href="#coefficientcalculation" class="hash-link" aria-label="Direct link to coefficientCalculation" title="Direct link to coefficientCalculation">​</a></h3>
+<p>▸ <strong>coefficientCalculation</strong>(<code>rowBallot</code>, <code>colBallot</code>): <code>bigint</code></p>
+<p>This method calculates the coefficient for a pair of ballots.</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="parameters-1">Parameters<a href="#parameters-1" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<table><thead><tr><th style="text-align:left">Name</th><th style="text-align:left">Type</th><th style="text-align:left">Description</th></tr></thead><tbody><tr><td style="text-align:left"><code>rowBallot</code></td><td style="text-align:left"><code>Ballot</code></td><td style="text-align:left">The ballot in the row.</td></tr><tr><td style="text-align:left"><code>colBallot</code></td><td style="text-align:left"><code>Ballot</code></td><td style="text-align:left">The ballot in the column.</td></tr></tbody></table>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="returns-1">Returns<a href="#returns-1" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>bigint</code></p>
+<p>Returns the calculated coefficient.</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-36">Defined in<a href="#defined-in-36" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L897" target="_blank" rel="noopener noreferrer">Poll.ts:897</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="copy">copy<a href="#copy" class="hash-link" aria-label="Direct link to copy" title="Direct link to copy">​</a></h3>
+<p>▸ <strong>copy</strong>(): <a href="/docs/typedoc/core/classes/Poll"><code>Poll</code></a></p>
+<p>Create a deep copy of the Poll object.</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="returns-2">Returns<a href="#returns-2" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><a href="/docs/typedoc/core/classes/Poll"><code>Poll</code></a></p>
+<p>A new instance of the Poll object with the same properties.</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="implementation-of">Implementation of<a href="#implementation-of" class="hash-link" aria-label="Direct link to Implementation of" title="Direct link to Implementation of">​</a></h4>
+<p>IPoll.copy</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-37">Defined in<a href="#defined-in-37" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L1171" target="_blank" rel="noopener noreferrer">Poll.ts:1171</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="copystatefrommaci">copyStateFromMaci<a href="#copystatefrommaci" class="hash-link" aria-label="Direct link to copyStateFromMaci" title="Direct link to copyStateFromMaci">​</a></h3>
+<p>▸ <strong>copyStateFromMaci</strong>(): <code>void</code></p>
+<p>Copy the state from the MaciState instance.</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="returns-3">Returns<a href="#returns-3" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>void</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-38">Defined in<a href="#defined-in-38" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L178" target="_blank" rel="noopener noreferrer">Poll.ts:178</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="equals">equals<a href="#equals" class="hash-link" aria-label="Direct link to equals" title="Direct link to equals">​</a></h3>
+<p>▸ <strong>equals</strong>(<code>p</code>): <code>boolean</code></p>
+<p>Check if the Poll object is equal to another Poll object.</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="parameters-2">Parameters<a href="#parameters-2" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<table><thead><tr><th style="text-align:left">Name</th><th style="text-align:left">Type</th><th style="text-align:left">Description</th></tr></thead><tbody><tr><td style="text-align:left"><code>p</code></td><td style="text-align:left"><a href="/docs/typedoc/core/classes/Poll"><code>Poll</code></a></td><td style="text-align:left">The Poll object to compare.</td></tr></tbody></table>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="returns-4">Returns<a href="#returns-4" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>boolean</code></p>
+<p>True if the two Poll objects are equal, false otherwise.</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="implementation-of-1">Implementation of<a href="#implementation-of-1" class="hash-link" aria-label="Direct link to Implementation of" title="Direct link to Implementation of">​</a></h4>
+<p>IPoll.equals</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-39">Defined in<a href="#defined-in-39" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L1254" target="_blank" rel="noopener noreferrer">Poll.ts:1254</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="genpervospentvoicecreditscommitment">genPerVOSpentVoiceCreditsCommitment<a href="#genpervospentvoicecreditscommitment" class="hash-link" aria-label="Direct link to genPerVOSpentVoiceCreditsCommitment" title="Direct link to genPerVOSpentVoiceCreditsCommitment">​</a></h3>
+<p>▸ <strong>genPerVOSpentVoiceCreditsCommitment</strong>(<code>salt</code>, <code>numBallotsToCount</code>): <code>bigint</code></p>
+<p>This method generates a commitment to the spent voice credits per vote option.</p>
+<p>This is the hash of the Merkle root of the spent voice credits per vote option and a salt, computed as Poseidon([root, _salt]).</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="parameters-3">Parameters<a href="#parameters-3" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<table><thead><tr><th style="text-align:left">Name</th><th style="text-align:left">Type</th><th style="text-align:left">Description</th></tr></thead><tbody><tr><td style="text-align:left"><code>salt</code></td><td style="text-align:left"><code>bigint</code></td><td style="text-align:left">The salt used in the hash function.</td></tr><tr><td style="text-align:left"><code>numBallotsToCount</code></td><td style="text-align:left"><code>number</code></td><td style="text-align:left">The number of ballots to count for the calculation.</td></tr></tbody></table>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="returns-5">Returns<a href="#returns-5" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>bigint</code></p>
+<p>Returns the hash of the Merkle root of the spent voice credits per vote option and a salt, computed as Poseidon([root, _salt]).</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-40">Defined in<a href="#defined-in-40" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L1149" target="_blank" rel="noopener noreferrer">Poll.ts:1149</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="genprocessmessagescircuitinputspartial">genProcessMessagesCircuitInputsPartial<a href="#genprocessmessagescircuitinputspartial" class="hash-link" aria-label="Direct link to genProcessMessagesCircuitInputsPartial" title="Direct link to genProcessMessagesCircuitInputsPartial">​</a></h3>
+<p>▸ <strong>genProcessMessagesCircuitInputsPartial</strong>(<code>index</code>): <a href="/docs/typedoc/core/modules#circuitinputs"><code>CircuitInputs</code></a></p>
+<p>Generates partial circuit inputs for processing a batch of messages</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="parameters-4">Parameters<a href="#parameters-4" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<table><thead><tr><th style="text-align:left">Name</th><th style="text-align:left">Type</th><th style="text-align:left">Description</th></tr></thead><tbody><tr><td style="text-align:left"><code>index</code></td><td style="text-align:left"><code>number</code></td><td style="text-align:left">The index of the partial batch.</td></tr></tbody></table>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="returns-6">Returns<a href="#returns-6" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><a href="/docs/typedoc/core/modules#circuitinputs"><code>CircuitInputs</code></a></p>
+<p>stringified partial circuit inputs</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-41">Defined in<a href="#defined-in-41" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L663" target="_blank" rel="noopener noreferrer">Poll.ts:663</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="genspentvoicecreditsubtotalcommitment">genSpentVoiceCreditSubtotalCommitment<a href="#genspentvoicecreditsubtotalcommitment" class="hash-link" aria-label="Direct link to genSpentVoiceCreditSubtotalCommitment" title="Direct link to genSpentVoiceCreditSubtotalCommitment">​</a></h3>
+<p>▸ <strong>genSpentVoiceCreditSubtotalCommitment</strong>(<code>salt</code>, <code>numBallotsToCount</code>): <code>bigint</code></p>
+<p>This method generates a commitment to the total spent voice credits.</p>
+<p>This is the hash of the total spent voice credits and a salt, computed as Poseidon([totalCredits, _salt]).</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="parameters-5">Parameters<a href="#parameters-5" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<table><thead><tr><th style="text-align:left">Name</th><th style="text-align:left">Type</th><th style="text-align:left">Description</th></tr></thead><tbody><tr><td style="text-align:left"><code>salt</code></td><td style="text-align:left"><code>bigint</code></td><td style="text-align:left">The salt used in the hash function.</td></tr><tr><td style="text-align:left"><code>numBallotsToCount</code></td><td style="text-align:left"><code>number</code></td><td style="text-align:left">The number of ballots to count for the calculation.</td></tr></tbody></table>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="returns-7">Returns<a href="#returns-7" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>bigint</code></p>
+<p>Returns the hash of the total spent voice credits and a salt, computed as Poseidon([totalCredits, _salt]).</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-42">Defined in<a href="#defined-in-42" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L1125" target="_blank" rel="noopener noreferrer">Poll.ts:1125</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="hasunfinishedsubsidycalculation">hasUnfinishedSubsidyCalculation<a href="#hasunfinishedsubsidycalculation" class="hash-link" aria-label="Direct link to hasUnfinishedSubsidyCalculation" title="Direct link to hasUnfinishedSubsidyCalculation">​</a></h3>
+<p>▸ <strong>hasUnfinishedSubsidyCalculation</strong>(): <code>boolean</code></p>
+<p>This method checks if there are any unfinished subsidy calculations.</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="returns-8">Returns<a href="#returns-8" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>boolean</code></p>
+<p>Returns true if the product of the row batch index (rbi) and batch size or
+the product of column batch index (cbi) and batch size is less than the length
+of the ballots array, indicating that there are still ballots left to be processed.
+Otherwise, it returns false.</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="implementation-of-2">Implementation of<a href="#implementation-of-2" class="hash-link" aria-label="Direct link to Implementation of" title="Direct link to Implementation of">​</a></h4>
+<p>IPoll.hasUnfinishedSubsidyCalculation</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-43">Defined in<a href="#defined-in-43" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L778" target="_blank" rel="noopener noreferrer">Poll.ts:778</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="hasunprocessedmessages">hasUnprocessedMessages<a href="#hasunprocessedmessages" class="hash-link" aria-label="Direct link to hasUnprocessedMessages" title="Direct link to hasUnprocessedMessages">​</a></h3>
+<p>▸ <strong>hasUnprocessedMessages</strong>(): <code>boolean</code></p>
+<p>This method checks if there are any unprocessed messages in the Poll instance.</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="returns-9">Returns<a href="#returns-9" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>boolean</code></p>
+<p>Returns true if the number of processed batches is
+less than the total number of batches, false otherwise.</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="implementation-of-3">Implementation of<a href="#implementation-of-3" class="hash-link" aria-label="Direct link to Implementation of" title="Direct link to Implementation of">​</a></h4>
+<p>IPoll.hasUnprocessedMessages</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-44">Defined in<a href="#defined-in-44" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L386" target="_blank" rel="noopener noreferrer">Poll.ts:386</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="hasuntalliedballots">hasUntalliedBallots<a href="#hasuntalliedballots" class="hash-link" aria-label="Direct link to hasUntalliedBallots" title="Direct link to hasUntalliedBallots">​</a></h3>
+<p>▸ <strong>hasUntalliedBallots</strong>(): <code>boolean</code></p>
+<p>Checks whether there are any untallied ballots.</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="returns-10">Returns<a href="#returns-10" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>boolean</code></p>
+<p>Whether there are any untallied ballots</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="implementation-of-4">Implementation of<a href="#implementation-of-4" class="hash-link" aria-label="Direct link to Implementation of" title="Direct link to Implementation of">​</a></h4>
+<p>IPoll.hasUntalliedBallots</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-45">Defined in<a href="#defined-in-45" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L769" target="_blank" rel="noopener noreferrer">Poll.ts:769</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="increasesubsidyindex">increaseSubsidyIndex<a href="#increasesubsidyindex" class="hash-link" aria-label="Direct link to increaseSubsidyIndex" title="Direct link to increaseSubsidyIndex">​</a></h3>
+<p>▸ <strong>increaseSubsidyIndex</strong>(): <code>void</code></p>
+<p>It increases the index for the subsidy calculation.</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="returns-11">Returns<a href="#returns-11" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>void</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-46">Defined in<a href="#defined-in-46" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L852" target="_blank" rel="noopener noreferrer">Poll.ts:852</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="previoussubsidyindextostring">previousSubsidyIndexToString<a href="#previoussubsidyindextostring" class="hash-link" aria-label="Direct link to previousSubsidyIndexToString" title="Direct link to previousSubsidyIndexToString">​</a></h3>
+<p>▸ <strong>previousSubsidyIndexToString</strong>(): <code>string</code></p>
+<p>This method converts the previous subsidy index to a string.</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="returns-12">Returns<a href="#returns-12" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>string</code></p>
+<p>Returns a string representation of the previous subsidy index.
+The string is in the format &quot;rbi-cbi&quot;, where rbi and cbi are
+the previous row batch index and column batch index respectively.</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-47">Defined in<a href="#defined-in-47" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L869" target="_blank" rel="noopener noreferrer">Poll.ts:869</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="processallmessages">processAllMessages<a href="#processallmessages" class="hash-link" aria-label="Direct link to processAllMessages" title="Direct link to processAllMessages">​</a></h3>
+<p>▸ <strong>processAllMessages</strong>(): <code>Object</code></p>
+<p>Process all messages. This function does not update the ballots or state
+leaves; rather, it copies and then updates them. This makes it possible
+to test the result of multiple processMessage() invocations.</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="returns-13">Returns<a href="#returns-13" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>Object</code></p>
+<p>The state leaves and ballots of the poll</p>
+<table><thead><tr><th style="text-align:left">Name</th><th style="text-align:left">Type</th></tr></thead><tbody><tr><td style="text-align:left"><code>ballots</code></td><td style="text-align:left"><code>Ballot</code>[]</td></tr><tr><td style="text-align:left"><code>stateLeaves</code></td><td style="text-align:left"><code>StateLeaf</code>[]</td></tr></tbody></table>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="implementation-of-5">Implementation of<a href="#implementation-of-5" class="hash-link" aria-label="Direct link to Implementation of" title="Direct link to Implementation of">​</a></h4>
+<p>IPoll.processAllMessages</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-48">Defined in<a href="#defined-in-48" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L753" target="_blank" rel="noopener noreferrer">Poll.ts:753</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="processmessage">processMessage<a href="#processmessage" class="hash-link" aria-label="Direct link to processMessage" title="Direct link to processMessage">​</a></h3>
+<p>▸ <strong>processMessage</strong>(<code>message</code>, <code>encPubKey</code>): <code>IProcessMessagesOutput</code></p>
+<p>Process one message.</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="parameters-6">Parameters<a href="#parameters-6" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<table><thead><tr><th style="text-align:left">Name</th><th style="text-align:left">Type</th><th style="text-align:left">Description</th></tr></thead><tbody><tr><td style="text-align:left"><code>message</code></td><td style="text-align:left"><code>Message</code></td><td style="text-align:left">The message to process.</td></tr><tr><td style="text-align:left"><code>encPubKey</code></td><td style="text-align:left"><code>PubKey</code></td><td style="text-align:left">The public key associated with the encryption private key.</td></tr></tbody></table>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="returns-14">Returns<a href="#returns-14" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>IProcessMessagesOutput</code></p>
+<p>A number of variables which will be used in the zk-SNARK circuit.</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-49">Defined in<a href="#defined-in-49" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L203" target="_blank" rel="noopener noreferrer">Poll.ts:203</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="processmessages">processMessages<a href="#processmessages" class="hash-link" aria-label="Direct link to processMessages" title="Direct link to processMessages">​</a></h3>
+<p>▸ <strong>processMessages</strong>(<code>pollId</code>): <a href="/docs/typedoc/core/interfaces/IProcessMessagesCircuitInputs"><code>IProcessMessagesCircuitInputs</code></a></p>
+<p>Process _batchSize messages starting from the saved index. This
+function will process messages even if the number of messages is not an
+exact multiple of _batchSize. e.g. if there are 10 messages, index is
+8, and _batchSize is 4, this function will only process the last two
+messages in this.messages, and finally update the zeroth state leaf.
+Note that this function will only process as many state leaves as there
+are ballots to prevent accidental inclusion of a new user after this
+poll has concluded.</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="parameters-7">Parameters<a href="#parameters-7" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<table><thead><tr><th style="text-align:left">Name</th><th style="text-align:left">Type</th><th style="text-align:left">Description</th></tr></thead><tbody><tr><td style="text-align:left"><code>pollId</code></td><td style="text-align:left"><code>bigint</code></td><td style="text-align:left">The ID of the poll associated with the messages to process</td></tr></tbody></table>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="returns-15">Returns<a href="#returns-15" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><a href="/docs/typedoc/core/interfaces/IProcessMessagesCircuitInputs"><code>IProcessMessagesCircuitInputs</code></a></p>
+<p>stringified circuit inputs</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="implementation-of-6">Implementation of<a href="#implementation-of-6" class="hash-link" aria-label="Direct link to Implementation of" title="Direct link to Implementation of">​</a></h4>
+<p>IPoll.processMessages</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-50">Defined in<a href="#defined-in-50" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L411" target="_blank" rel="noopener noreferrer">Poll.ts:411</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="publishmessage">publishMessage<a href="#publishmessage" class="hash-link" aria-label="Direct link to publishMessage" title="Direct link to publishMessage">​</a></h3>
+<p>▸ <strong>publishMessage</strong>(<code>message</code>, <code>encPubKey</code>): <code>void</code></p>
+<p>Inserts a Message and the corresponding public key used to generate the
+ECDH shared key which was used to encrypt said message.</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="parameters-8">Parameters<a href="#parameters-8" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<table><thead><tr><th style="text-align:left">Name</th><th style="text-align:left">Type</th><th style="text-align:left">Description</th></tr></thead><tbody><tr><td style="text-align:left"><code>message</code></td><td style="text-align:left"><code>Message</code></td><td style="text-align:left">The message to insert</td></tr><tr><td style="text-align:left"><code>encPubKey</code></td><td style="text-align:left"><code>PubKey</code></td><td style="text-align:left">The public key used to encrypt the message</td></tr></tbody></table>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="returns-16">Returns<a href="#returns-16" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>void</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="implementation-of-7">Implementation of<a href="#implementation-of-7" class="hash-link" aria-label="Direct link to Implementation of" title="Direct link to Implementation of">​</a></h4>
+<p>IPoll.publishMessage</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-51">Defined in<a href="#defined-in-51" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L347" target="_blank" rel="noopener noreferrer">Poll.ts:347</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="setcoordinatorkeypair">setCoordinatorKeypair<a href="#setcoordinatorkeypair" class="hash-link" aria-label="Direct link to setCoordinatorKeypair" title="Direct link to setCoordinatorKeypair">​</a></h3>
+<p>▸ <strong>setCoordinatorKeypair</strong>(<code>serializedPrivateKey</code>): <code>void</code></p>
+<p>Set the coordinator&#x27;s keypair</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="parameters-9">Parameters<a href="#parameters-9" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<table><thead><tr><th style="text-align:left">Name</th><th style="text-align:left">Type</th><th style="text-align:left">Description</th></tr></thead><tbody><tr><td style="text-align:left"><code>serializedPrivateKey</code></td><td style="text-align:left"><code>string</code></td><td style="text-align:left">the serialized private key</td></tr></tbody></table>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="returns-17">Returns<a href="#returns-17" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>void</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="implementation-of-8">Implementation of<a href="#implementation-of-8" class="hash-link" aria-label="Direct link to Implementation of" title="Direct link to Implementation of">​</a></h4>
+<p>IPoll.setCoordinatorKeypair</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-52">Defined in<a href="#defined-in-52" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L1361" target="_blank" rel="noopener noreferrer">Poll.ts:1361</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="subsidycalculation">subsidyCalculation<a href="#subsidycalculation" class="hash-link" aria-label="Direct link to subsidyCalculation" title="Direct link to subsidyCalculation">​</a></h3>
+<p>▸ <strong>subsidyCalculation</strong>(<code>rowStartIndex</code>, <code>colStartIndex</code>): <code>Ballot</code>[][]</p>
+<p>This method calculates the subsidy for a batch of ballots.</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="parameters-10">Parameters<a href="#parameters-10" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<table><thead><tr><th style="text-align:left">Name</th><th style="text-align:left">Type</th><th style="text-align:left">Description</th></tr></thead><tbody><tr><td style="text-align:left"><code>rowStartIndex</code></td><td style="text-align:left"><code>number</code></td><td style="text-align:left">The starting index for the row ballots.</td></tr><tr><td style="text-align:left"><code>colStartIndex</code></td><td style="text-align:left"><code>number</code></td><td style="text-align:left">The starting index for the column ballots.</td></tr></tbody></table>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="returns-18">Returns<a href="#returns-18" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>Ballot</code>[][]</p>
+<p>Returns a 2D array of ballots. The first array contains the row ballots and the second array contains the column ballots.</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-53">Defined in<a href="#defined-in-53" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L912" target="_blank" rel="noopener noreferrer">Poll.ts:912</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="subsidyperbatch">subsidyPerBatch<a href="#subsidyperbatch" class="hash-link" aria-label="Direct link to subsidyPerBatch" title="Direct link to subsidyPerBatch">​</a></h3>
+<p>▸ <strong>subsidyPerBatch</strong>(): <a href="/docs/typedoc/core/interfaces/ISubsidyCircuitInputs"><code>ISubsidyCircuitInputs</code></a></p>
+<p>This method calculates the subsidy per batch.</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="returns-19">Returns<a href="#returns-19" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><a href="/docs/typedoc/core/interfaces/ISubsidyCircuitInputs"><code>ISubsidyCircuitInputs</code></a></p>
+<p>Returns an array of big integers which represent the circuit inputs for the subsidy calculation.</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="implementation-of-9">Implementation of<a href="#implementation-of-9" class="hash-link" aria-label="Direct link to Implementation of" title="Direct link to Implementation of">​</a></h4>
+<p>IPoll.subsidyPerBatch</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-54">Defined in<a href="#defined-in-54" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L787" target="_blank" rel="noopener noreferrer">Poll.ts:787</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="tallyvotes">tallyVotes<a href="#tallyvotes" class="hash-link" aria-label="Direct link to tallyVotes" title="Direct link to tallyVotes">​</a></h3>
+<p>▸ <strong>tallyVotes</strong>(): <a href="/docs/typedoc/core/interfaces/ITallyCircuitInputs"><code>ITallyCircuitInputs</code></a></p>
+<p>This method tallies a ballots and updates the tally results.</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="returns-20">Returns<a href="#returns-20" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><a href="/docs/typedoc/core/interfaces/ITallyCircuitInputs"><code>ITallyCircuitInputs</code></a></p>
+<p>the circuit inputs for the TallyVotes circuit.</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="implementation-of-10">Implementation of<a href="#implementation-of-10" class="hash-link" aria-label="Direct link to Implementation of" title="Direct link to Implementation of">​</a></h4>
+<p>IPoll.tallyVotes</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-55">Defined in<a href="#defined-in-55" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L951" target="_blank" rel="noopener noreferrer">Poll.ts:951</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="tojson">toJSON<a href="#tojson" class="hash-link" aria-label="Direct link to toJSON" title="Direct link to toJSON">​</a></h3>
+<p>▸ <strong>toJSON</strong>(): <code>IJsonPoll</code></p>
+<p>Serialize the Poll object to a JSON object</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="returns-21">Returns<a href="#returns-21" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>IJsonPoll</code></p>
+<p>a JSON object</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="implementation-of-11">Implementation of<a href="#implementation-of-11" class="hash-link" aria-label="Direct link to Implementation of" title="Direct link to Implementation of">​</a></h4>
+<p>IPoll.toJSON</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-56">Defined in<a href="#defined-in-56" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L1289" target="_blank" rel="noopener noreferrer">Poll.ts:1289</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="topupmessage">topupMessage<a href="#topupmessage" class="hash-link" aria-label="Direct link to topupMessage" title="Direct link to topupMessage">​</a></h3>
+<p>▸ <strong>topupMessage</strong>(<code>message</code>): <code>void</code></p>
+<p>Top up the voice credit balance of a user.</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="parameters-11">Parameters<a href="#parameters-11" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<table><thead><tr><th style="text-align:left">Name</th><th style="text-align:left">Type</th><th style="text-align:left">Description</th></tr></thead><tbody><tr><td style="text-align:left"><code>message</code></td><td style="text-align:left"><code>Message</code></td><td style="text-align:left">The message to top up the voice credit balance</td></tr></tbody></table>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="returns-22">Returns<a href="#returns-22" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><code>void</code></p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="implementation-of-12">Implementation of<a href="#implementation-of-12" class="hash-link" aria-label="Direct link to Implementation of" title="Direct link to Implementation of">​</a></h4>
+<p>IPoll.topupMessage</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-57">Defined in<a href="#defined-in-57" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L317" target="_blank" rel="noopener noreferrer">Poll.ts:317</a></p>
+<hr>
+<h3 class="anchor anchorWithStickyNavbar_m7eB" id="fromjson">fromJSON<a href="#fromjson" class="hash-link" aria-label="Direct link to fromJSON" title="Direct link to fromJSON">​</a></h3>
+<p>▸ <strong>fromJSON</strong>(<code>json</code>, <code>maciState</code>): <a href="/docs/typedoc/core/classes/Poll"><code>Poll</code></a></p>
+<p>Deserialize a json object into a Poll instance</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="parameters-12">Parameters<a href="#parameters-12" class="hash-link" aria-label="Direct link to Parameters" title="Direct link to Parameters">​</a></h4>
+<table><thead><tr><th style="text-align:left">Name</th><th style="text-align:left">Type</th><th style="text-align:left">Description</th></tr></thead><tbody><tr><td style="text-align:left"><code>json</code></td><td style="text-align:left"><code>IJsonPoll</code></td><td style="text-align:left">the json object to deserialize</td></tr><tr><td style="text-align:left"><code>maciState</code></td><td style="text-align:left"><a href="/docs/typedoc/core/classes/MaciState"><code>MaciState</code></a></td><td style="text-align:left">the reference to the MaciState Class</td></tr></tbody></table>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="returns-23">Returns<a href="#returns-23" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns">​</a></h4>
+<p><a href="/docs/typedoc/core/classes/Poll"><code>Poll</code></a></p>
+<p>a new Poll instance</p>
+<h4 class="anchor anchorWithStickyNavbar_m7eB" id="defined-in-58">Defined in<a href="#defined-in-58" class="hash-link" aria-label="Direct link to Defined in" title="Direct link to Defined in">​</a></h4>
+<p><a href="https://github.com/privacy-scaling-explorations/maci/blob/e5f36d0/core/ts/Poll.ts#L1312" target="_blank" rel="noopener noreferrer">Poll.ts:1312</a></p></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="theme-doc-footer-edit-meta-row row"><div class="col"><a href="https://github.com/privacy-scaling-explorations/maci/edit/dev/website/versioned_docs/version-v1.x/typedoc/core/classes/Poll.md" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_jyjV" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_OBOf"></div></div></footer></article><nav class="pagination-nav docusaurus-mt-lg" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/docs/typedoc/core/classes/MaciState"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">MaciState</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/docs/typedoc/core/interfaces/BatchSizes"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">BatchSizes</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_u5CZ thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#implements" class="table-of-contents__link toc-highlight">Implements</a></li><li><a href="#table-of-contents" class="table-of-contents__link toc-highlight">Table of contents</a><ul><li><a href="#constructors" class="table-of-contents__link toc-highlight">Constructors</a></li><li><a href="#properties" class="table-of-contents__link toc-highlight">Properties</a></li><li><a href="#methods" class="table-of-contents__link toc-highlight">Methods</a></li></ul></li><li><a href="#constructors-1" class="table-of-contents__link toc-highlight">Constructors</a><ul><li><a href="#constructor" class="table-of-contents__link toc-highlight">constructor</a></li></ul></li><li><a href="#properties-1" class="table-of-contents__link toc-highlight">Properties</a><ul><li><a href="#mm" class="table-of-contents__link toc-highlight">MM</a></li><li><a href="#ww" class="table-of-contents__link toc-highlight">WW</a></li><li><a href="#ballottree" class="table-of-contents__link toc-highlight">ballotTree</a></li><li><a href="#ballots" class="table-of-contents__link toc-highlight">ballots</a></li><li><a href="#batchsizes" class="table-of-contents__link toc-highlight">batchSizes</a></li><li><a href="#cbi" class="table-of-contents__link toc-highlight">cbi</a></li><li><a href="#commands" class="table-of-contents__link toc-highlight">commands</a></li><li><a href="#coordinatorkeypair" class="table-of-contents__link toc-highlight">coordinatorKeypair</a></li><li><a href="#currentmessagebatchindex" class="table-of-contents__link toc-highlight">currentMessageBatchIndex</a></li><li><a href="#emptyballot" class="table-of-contents__link toc-highlight">emptyBallot</a></li><li><a href="#emptyballothash" class="table-of-contents__link toc-highlight">emptyBallotHash</a></li><li><a href="#encpubkeys" class="table-of-contents__link toc-highlight">encPubKeys</a></li><li><a href="#macistateref" class="table-of-contents__link toc-highlight">maciStateRef</a></li><li><a href="#maxvalues" class="table-of-contents__link toc-highlight">maxValues</a></li><li><a href="#messagetree" class="table-of-contents__link toc-highlight">messageTree</a></li><li><a href="#messages" class="table-of-contents__link toc-highlight">messages</a></li><li><a href="#numbatchesprocessed" class="table-of-contents__link toc-highlight">numBatchesProcessed</a></li><li><a href="#numbatchestallied" class="table-of-contents__link toc-highlight">numBatchesTallied</a></li><li><a href="#pervospentvoicecredits" class="table-of-contents__link toc-highlight">perVOSpentVoiceCredits</a></li><li><a href="#pollendtimestamp" class="table-of-contents__link toc-highlight">pollEndTimestamp</a></li><li><a href="#pollid" class="table-of-contents__link toc-highlight">pollId</a></li><li><a href="#prevospentvoicecreditsrootsalts" class="table-of-contents__link toc-highlight">preVOSpentVoiceCreditsRootSalts</a></li><li><a href="#rbi" class="table-of-contents__link toc-highlight">rbi</a></li><li><a href="#resultrootsalts" class="table-of-contents__link toc-highlight">resultRootSalts</a></li><li><a href="#sbsalts" class="table-of-contents__link toc-highlight">sbSalts</a></li><li><a href="#spentvoicecreditsubtotalsalts" class="table-of-contents__link toc-highlight">spentVoiceCreditSubtotalSalts</a></li><li><a href="#statecopied" class="table-of-contents__link toc-highlight">stateCopied</a></li><li><a href="#stateleaves" class="table-of-contents__link toc-highlight">stateLeaves</a></li><li><a href="#statetree" class="table-of-contents__link toc-highlight">stateTree</a></li><li><a href="#statetreedepth" class="table-of-contents__link toc-highlight">stateTreeDepth</a></li><li><a href="#subsidy" class="table-of-contents__link toc-highlight">subsidy</a></li><li><a href="#subsidysalts" class="table-of-contents__link toc-highlight">subsidySalts</a></li><li><a href="#tallyresult" class="table-of-contents__link toc-highlight">tallyResult</a></li><li><a href="#totalspentvoicecredits" class="table-of-contents__link toc-highlight">totalSpentVoiceCredits</a></li><li><a href="#treedepths" class="table-of-contents__link toc-highlight">treeDepths</a></li></ul></li><li><a href="#methods-1" class="table-of-contents__link toc-highlight">Methods</a><ul><li><a href="#coefficientcalculation" class="table-of-contents__link toc-highlight">coefficientCalculation</a></li><li><a href="#copy" class="table-of-contents__link toc-highlight">copy</a></li><li><a href="#copystatefrommaci" class="table-of-contents__link toc-highlight">copyStateFromMaci</a></li><li><a href="#equals" class="table-of-contents__link toc-highlight">equals</a></li><li><a href="#genpervospentvoicecreditscommitment" class="table-of-contents__link toc-highlight">genPerVOSpentVoiceCreditsCommitment</a></li><li><a href="#genprocessmessagescircuitinputspartial" class="table-of-contents__link toc-highlight">genProcessMessagesCircuitInputsPartial</a></li><li><a href="#genspentvoicecreditsubtotalcommitment" class="table-of-contents__link toc-highlight">genSpentVoiceCreditSubtotalCommitment</a></li><li><a href="#hasunfinishedsubsidycalculation" class="table-of-contents__link toc-highlight">hasUnfinishedSubsidyCalculation</a></li><li><a href="#hasunprocessedmessages" class="table-of-contents__link toc-highlight">hasUnprocessedMessages</a></li><li><a href="#hasuntalliedballots" class="table-of-contents__link toc-highlight">hasUntalliedBallots</a></li><li><a href="#increasesubsidyindex" class="table-of-contents__link toc-highlight">increaseSubsidyIndex</a></li><li><a href="#previoussubsidyindextostring" class="table-of-contents__link toc-highlight">previousSubsidyIndexToString</a></li><li><a href="#processallmessages" class="table-of-contents__link toc-highlight">processAllMessages</a></li><li><a href="#processmessage" class="table-of-contents__link toc-highlight">processMessage</a></li><li><a href="#processmessages" class="table-of-contents__link toc-highlight">processMessages</a></li><li><a href="#publishmessage" class="table-of-contents__link toc-highlight">publishMessage</a></li><li><a href="#setcoordinatorkeypair" class="table-of-contents__link toc-highlight">setCoordinatorKeypair</a></li><li><a href="#subsidycalculation" class="table-of-contents__link toc-highlight">subsidyCalculation</a></li><li><a href="#subsidyperbatch" class="table-of-contents__link toc-highlight">subsidyPerBatch</a></li><li><a href="#tallyvotes" class="table-of-contents__link toc-highlight">tallyVotes</a></li><li><a href="#tojson" class="table-of-contents__link toc-highlight">toJSON</a></li><li><a href="#topupmessage" class="table-of-contents__link toc-highlight">topupMessage</a></li><li><a href="#fromjson" class="table-of-contents__link toc-highlight">fromJSON</a></li></ul></li></ul></div></div></div></div></main></div></div></div><footer class="footer"><div class="container container-fluid"><div class="row footer__links"><div class="col footer__col"><div class="footer__title">Docs</div><ul class="footer__items clean-list"><li class="footer__item"><a class="footer__link-item" href="/docs/introduction">Documentation</a></li><li class="footer__item"><a href="https://github.com/privacy-scaling-explorations/maci" target="_blank" rel="noopener noreferrer" class="footer__link-item">GitHub<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_KS24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li></ul></div><div class="col footer__col"><div class="footer__title">Community</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://discord.com/invite/sF5CT5rzrR" target="_blank" rel="noopener noreferrer" class="footer__link-item">Discord<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_KS24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li><li class="footer__item"><a href="https://twitter.com/zkMACI" target="_blank" rel="noopener noreferrer" class="footer__link-item">Twitter<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_KS24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li></ul></div><div class="col footer__col"><div class="footer__title">More</div><ul class="footer__items clean-list"><li class="footer__item"><a class="footer__link-item" href="/blog">Blog</a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2024 Privacy and Scaling Explorations</div></div></div></footer></div>
+</body>
+</html>
