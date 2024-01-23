@@ -116,6 +116,9 @@ describe("Subsidy", () => {
 
     poll.publishMessage(message, padKey);
 
+    // update the poll state
+    poll.updatePoll(BigInt(maciState.stateLeaves.length));
+
     // process messages locally
     generatedInputs = poll.processMessages(pollId);
 

@@ -81,6 +81,7 @@ describe("TallyVotes circuit", function test() {
       );
 
       poll = maciState.polls.get(pollId)!;
+      poll.updatePoll(stateIndex);
 
       // First command (valid)
       const command = new PCommand(
@@ -161,6 +162,7 @@ describe("TallyVotes circuit", function test() {
       );
 
       const poll = maciState.polls.get(pollId)!;
+      poll.updatePoll(BigInt(maciState.stateLeaves.length));
 
       const numMessages = messageBatchSize * NUM_BATCHES;
       for (let i = 0; i < numMessages; i += 1) {

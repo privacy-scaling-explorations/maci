@@ -91,6 +91,7 @@ describe("ProcessMessage circuit", function test() {
       );
 
       poll = maciState.polls.get(pollId)!;
+      poll.updatePoll(BigInt(maciState.stateLeaves.length));
 
       // First command (valid)
       const command = new PCommand(
@@ -157,7 +158,7 @@ describe("ProcessMessage circuit", function test() {
         ballotTree.insert(emptyBallotHash);
       });
 
-      const currentStateRoot = maciState.stateTree.root;
+      const currentStateRoot = poll.stateTree?.root;
       const currentBallotRoot = ballotTree.root;
 
       const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
@@ -171,7 +172,7 @@ describe("ProcessMessage circuit", function test() {
       const newStateRoot = poll.stateTree?.root;
       const newBallotRoot = poll.ballotTree?.root;
 
-      expect(newStateRoot?.toString()).not.to.be.eq(currentStateRoot.toString());
+      expect(newStateRoot?.toString()).not.to.be.eq(currentStateRoot?.toString());
       expect(newBallotRoot?.toString()).not.to.be.eq(currentBallotRoot.toString());
 
       const packedVals = packProcessMessageSmallVals(
@@ -231,6 +232,8 @@ describe("ProcessMessage circuit", function test() {
 
       poll = maciState.polls.get(pollId)!;
 
+      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+
       const command = new PCommand(
         BigInt(1),
         userKeypair.pubKey,
@@ -277,7 +280,7 @@ describe("ProcessMessage circuit", function test() {
         ballotTree.insert(emptyBallotHash);
       });
 
-      const currentStateRoot = maciState.stateTree.root;
+      const currentStateRoot = poll.stateTree?.root;
       const currentBallotRoot = ballotTree.root;
 
       const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
@@ -290,7 +293,7 @@ describe("ProcessMessage circuit", function test() {
       const newStateRoot = poll.stateTree?.root;
       const newBallotRoot = poll.ballotTree?.root;
 
-      expect(newStateRoot?.toString()).not.to.be.eq(currentStateRoot.toString());
+      expect(newStateRoot?.toString()).not.to.be.eq(currentStateRoot?.toString());
       expect(newBallotRoot?.toString()).not.to.be.eq(currentBallotRoot.toString());
     });
   });
@@ -326,6 +329,8 @@ describe("ProcessMessage circuit", function test() {
       );
 
       poll = maciState.polls.get(pollId)!;
+
+      poll.updatePoll(BigInt(maciState.stateLeaves.length));
 
       // Vote for option 0
       const command = new PCommand(
@@ -417,6 +422,8 @@ describe("ProcessMessage circuit", function test() {
 
         const selectedPoll = state.polls.get(id);
 
+        selectedPoll?.updatePoll(BigInt(state.stateLeaves.length));
+
         // Second batch is not a full batch
         const numMessages = messageBatchSize * NUM_BATCHES - 1;
         for (let i = 0; i < numMessages; i += 1) {
@@ -471,6 +478,7 @@ describe("ProcessMessage circuit", function test() {
       );
 
       poll = maciState.polls.get(pollId)!;
+      poll.updatePoll(BigInt(maciState.stateLeaves.length));
     });
 
     it("should work when publishing 2 vote messages and a topup (the second vote uses more than initial voice credit balance)", async () => {

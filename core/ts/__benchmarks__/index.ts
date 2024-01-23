@@ -42,6 +42,8 @@ export default function runCore(): void {
       );
       const poll = maciState.polls.get(pollId)!;
 
+      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+
       // 24 valid votes
       for (let i = 0; i < MESSAGE_BATCH_SIZE - 1; i += 1) {
         const userKeypair = users[i];

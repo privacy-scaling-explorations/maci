@@ -38,7 +38,7 @@ describe("Poll", function test() {
     );
 
     // copy the state from the MaciState ref
-    poll.copyStateFromMaci();
+    poll.updatePoll(BigInt(maciState.stateLeaves.length));
 
     it("should throw if a message has an invalid state index", () => {
       const command = new PCommand(
@@ -204,6 +204,7 @@ describe("Poll", function test() {
     );
 
     const poll = maciState.polls.get(pollId)!;
+    poll.updatePoll(BigInt(maciState.stateLeaves.length));
 
     const user1Keypair = new Keypair();
     // signup the user
@@ -233,6 +234,19 @@ describe("Poll", function test() {
       poll.currentMessageBatchIndex = undefined;
     });
 
+    it("shuold throw if the state has not been copied prior to calling processMessages", () => {
+      const tmpPoll = maciState.deployPoll(
+        BigInt(Math.floor(Date.now() / 1000) + duration),
+        maxValues,
+        treeDepths,
+        messageBatchSize,
+        coordinatorKeypair,
+      );
+      expect(() => maciState.polls.get(tmpPoll)?.processMessages(pollId)).to.throw(
+        "You must update the poll with the correct data first",
+      );
+    });
+
     it("should succeed even if send an invalid message", () => {
       const command = new PCommand(
         // we only signed up one user so the state index is invalid
@@ -253,7 +267,8 @@ describe("Poll", function test() {
 
       poll.publishMessage(message, ecdhKeypair.pubKey);
       poll.publishMessage(message, ecdhKeypair.pubKey);
-      poll.copyStateFromMaci();
+      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+
       expect(() => {
         poll.processMessage(message, ecdhKeypair.pubKey);
       }).to.throw("invalid state leaf index");
@@ -269,6 +284,7 @@ describe("Poll", function test() {
       poll.topupMessage(topupMessage);
 
       const balanceBefore = poll.stateLeaves[user1StateIndex].voiceCreditBalance;
+
       poll.processMessages(pollId);
 
       // check balance
@@ -299,6 +315,8 @@ describe("Poll", function test() {
       voiceCreditBalance,
       BigInt(Math.floor(Date.now() / 1000)),
     );
+
+    poll.updatePoll(BigInt(maciState.stateLeaves.length));
 
     it("it should succeed even if send an invalid message", () => {
       const command = new PCommand(
@@ -386,6 +404,8 @@ describe("Poll", function test() {
       BigInt(Math.floor(Date.now() / 1000)),
     );
 
+    poll.updatePoll(BigInt(maciState.stateLeaves.length));
+
     const voteWeight = 5n;
     const voteOption = 0n;
 
@@ -407,7 +427,7 @@ describe("Poll", function test() {
     poll.publishMessage(message, ecdhKeypair.pubKey);
 
     it("should throw if called before all messages have been processed", () => {
-      expect(() => poll.tallyVotes()).to.throw("Cannot read properties of undefined (reading 'root')");
+      expect(() => poll.tallyVotes()).to.throw("You must process the messages first");
     });
 
     it("should generate the correct results", () => {
@@ -463,9 +483,13 @@ describe("Poll", function test() {
     const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
 
     const message = command.encrypt(signature, sharedKey);
-    poll.publishMessage(message, ecdhKeypair.pubKey);
-    poll.processAllMessages();
-    poll.tallyVotes();
+
+    before(() => {
+      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+      poll.publishMessage(message, ecdhKeypair.pubKey);
+      poll.processAllMessages();
+      poll.tallyVotes();
+    });
 
     it("should calculate the subsidy", () => {
       const { rbi, cbi } = poll;
@@ -496,6 +520,32 @@ describe("Poll", function test() {
       poll.setCoordinatorKeypair(newCoordinatorKeypair.privKey.serialize());
       expect(poll.coordinatorKeypair.privKey.serialize()).to.deep.eq(newCoordinatorKeypair.privKey.serialize());
       expect(poll.coordinatorKeypair.pubKey.serialize()).to.deep.eq(newCoordinatorKeypair.pubKey.serialize());
+    });
+  });
+
+  describe("setNumSignups", () => {
+    it("should update the number of signups", () => {
+      const maciState = new MaciState(STATE_TREE_DEPTH);
+      const pollId = maciState.deployPoll(
+        BigInt(Math.floor(Date.now() / 1000) + duration),
+        maxValues,
+        treeDepths,
+        messageBatchSize,
+        coordinatorKeypair,
+      );
+
+      maciState.signUp(new Keypair().pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+
+      const poll = maciState.polls.get(pollId)!;
+
+      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+
+      expect(poll.getNumSignups()).to.eq(2n);
+
+      // update it again
+      poll.setNumSignups(3n);
+
+      expect(poll.getNumSignups()).to.eq(3n);
     });
   });
 

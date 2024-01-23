@@ -136,6 +136,52 @@ describe("e2e tests", function test() {
     });
   });
 
+  describe("2 signups (1 after stateAq is merged and logs are fetched), 1 message", () => {
+    after(() => {
+      cleanVanilla();
+    });
+
+    const user = new Keypair();
+
+    before(async () => {
+      // deploy the smart contracts
+      maciAddresses = await deploy(deployArgs);
+      // deploy a poll contract
+      pollAddresses = await deployPoll(deployPollArgs);
+    });
+
+    it("should signup one user", async () => {
+      await signup({ maciPubKey: user.pubKey.serialize() });
+    });
+
+    it("should publish one message", async () => {
+      await publish({
+        pubkey: user.pubKey.serialize(),
+        stateIndex: 1n,
+        voteOptionIndex: 0n,
+        nonce: 1n,
+        pollId: 0n,
+        newVoteWeight: 9n,
+        maciContractAddress: maciAddresses.maciAddress,
+        salt: genRandomSalt(),
+        privateKey: user.privKey.serialize(),
+      });
+    });
+
+    it("should generate zk-SNARK proofs and verify them", async () => {
+      await timeTravel(pollDuration);
+      await mergeMessages(mergeMessagesArgs);
+      await mergeSignups(mergeSignupsArgs);
+      const tallyFileData = await genProofs(genProofsArgs);
+      await signup({ maciPubKey: user.pubKey.serialize() });
+      await proveOnChain(proveOnChainArgs);
+      await verify({
+        ...verifyArgs,
+        tallyData: tallyFileData,
+      });
+    });
+  });
+
   describe("4 signups, 4 messages", () => {
     after(() => {
       cleanVanilla();

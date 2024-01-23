@@ -346,11 +346,13 @@ export const genMaciStateFromContract = async (
 
   const poll = maciState.polls.get(pollId);
 
+  // ensure all messages were recorded
   assert(Number(numSignUpsAndMessages[1]) === poll?.messages.length);
-  assert(Number(numSignUpsAndMessages[0]) === maciState.numSignUps);
+  // set the number of signups
+  poll.updatePoll(numSignUpsAndMessages[0]);
 
   // we need to ensure that the stateRoot is correct
-  assert(maciState.stateTree.root.toString() === (await maciContract.getStateAqRoot()).toString());
+  assert(poll.stateTree?.root.toString() === (await pollContract.mergedStateRoot()).toString());
 
   maciState.polls.set(pollId, poll);
 

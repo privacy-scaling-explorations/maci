@@ -116,6 +116,9 @@ describe("Ceremony param tests", () => {
 
         poll = maciState.polls.get(pollId)!;
 
+        // update the state
+        poll.updatePoll(BigInt(maciState.stateLeaves.length));
+
         // First command (valid)
         const command = new PCommand(
           stateIndex, // BigInt(1),
@@ -181,7 +184,7 @@ describe("Ceremony param tests", () => {
           ballotTree.insert(emptyBallotHash);
         });
 
-        const currentStateRoot = maciState.stateTree.root;
+        const currentStateRoot = poll.stateTree?.root;
         const currentBallotRoot = ballotTree.root;
 
         const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
@@ -195,7 +198,7 @@ describe("Ceremony param tests", () => {
         const newStateRoot = poll.stateTree?.root;
         const newBallotRoot = poll.ballotTree?.root;
 
-        expect(newStateRoot?.toString()).not.to.be.eq(currentStateRoot.toString());
+        expect(newStateRoot?.toString()).not.to.be.eq(currentStateRoot?.toString());
         expect(newBallotRoot?.toString()).not.to.be.eq(currentBallotRoot.toString());
 
         const packedVals = packProcessMessageSmallVals(
@@ -285,6 +288,9 @@ describe("Ceremony param tests", () => {
           );
 
           poll = maciState.polls.get(pollId)!;
+
+          // update the state
+          poll.updatePoll(BigInt(maciState.stateLeaves.length));
 
           // First command (valid)
           const command = new PCommand(

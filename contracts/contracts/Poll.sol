@@ -18,14 +18,16 @@ import { Utilities } from "./utilities/Utilities.sol";
 contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPoll {
   using SafeERC20 for ERC20;
 
+  /// @notice Whether the Poll has been initialized
   bool internal isInit;
 
-  // The coordinator's public key
+  /// @notice The coordinator's public key
   PubKey public coordinatorPubKey;
 
   /// @notice Hash of the coordinator's public key
   uint256 public immutable coordinatorPubKeyHash;
 
+  /// @notice the state root of the state merkle tree
   uint256 public mergedStateRoot;
 
   // The timestamp of the block at which the Poll was deployed
@@ -46,7 +48,12 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
   /// the case that none of the messages are valid.
   uint256 public currentSbCommitment;
 
+  /// @notice The number of messages that have been published
   uint256 public numMessages;
+
+  /// @notice The number of signups that have been processed
+  /// before the Poll ended (stateAq merged)
+  uint256 public numSignups;
 
   /// @notice Max values for the poll
   MaxValues public maxValues;
@@ -68,7 +75,7 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
   event PublishMessage(Message _message, PubKey _encPubKey);
   event TopupMessage(Message _message);
   event MergeMaciStateAqSubRoots(uint256 _numSrQueueOps);
-  event MergeMaciStateAq(uint256 _stateRoot);
+  event MergeMaciStateAq(uint256 _stateRoot, uint256 _numSignups);
   event MergeMessageAqSubRoots(uint256 _numSrQueueOps);
   event MergeMessageAq(uint256 _messageRoot);
 
@@ -210,7 +217,9 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
     sb[2] = uint256(0);
 
     currentSbCommitment = hash3(sb);
-    emit MergeMaciStateAq(mergedStateRoot);
+
+    numSignups = extContracts.maci.numSignUps();
+    emit MergeMaciStateAq(mergedStateRoot, numSignups);
   }
 
   /// @inheritdoc IPoll
@@ -226,14 +235,14 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
   }
 
   /// @inheritdoc IPoll
-  function getDeployTimeAndDuration() public view returns (uint256 _deployTime, uint256 _duration) {
-    _deployTime = deployTime;
-    _duration = duration;
+  function getDeployTimeAndDuration() public view returns (uint256 pollDeployTime, uint256 pollDuration) {
+    pollDeployTime = deployTime;
+    pollDuration = duration;
   }
 
   /// @inheritdoc IPoll
-  function numSignUpsAndMessages() public view returns (uint256 numSignups, uint256 numMsgs) {
-    numSignups = extContracts.maci.numSignUps();
+  function numSignUpsAndMessages() public view returns (uint256 numSUps, uint256 numMsgs) {
+    numSUps = numSignups;
     numMsgs = numMessages;
   }
 }
