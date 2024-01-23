@@ -240,7 +240,7 @@ export const testInsertSubTrees = async (
 ): Promise<void> => {
   const leaves: bigint[] = [];
   for (let i = 0; i < NUM_SUBTREES; i += 1) {
-    const subTree = new IncrementalQuinTree(aq.subDepth, aq.zeros[0], aq.hashLength, aq.hashFunc);
+    const subTree = new IncrementalQuinTree(aq.getSubDepth(), aq.getZeros()[0], aq.getHashLength(), aq.hashFunc);
     const leaf = BigInt(i);
     subTree.insert(leaf);
     leaves.push(leaf);
@@ -253,12 +253,12 @@ export const testInsertSubTrees = async (
 
   let correctRoot: string;
   if (NUM_SUBTREES === 1) {
-    correctRoot = aq.subRoots[0].toString();
+    correctRoot = aq.getSubRoots()[0].toString();
   } else {
-    const depth = calcDepthFromNumLeaves(aq.hashLength, aq.subRoots.length);
-    const tree = new IncrementalQuinTree(depth, aq.zeros[aq.subDepth], aq.hashLength, aq.hashFunc);
+    const depth = calcDepthFromNumLeaves(aq.getHashLength(), aq.getSubRoots().length);
+    const tree = new IncrementalQuinTree(depth, aq.getZeros()[aq.getSubDepth()], aq.getHashLength(), aq.hashFunc);
 
-    aq.subRoots.forEach((subRoot) => {
+    aq.getSubRoots().forEach((subRoot) => {
       tree.insert(subRoot);
     });
 
@@ -269,7 +269,7 @@ export const testInsertSubTrees = async (
   aq.mergeSubRoots(0);
   await aqContract.mergeSubRoots(0, { gasLimit: 8000000 }).then((tx) => tx.wait());
 
-  const expectedSmallSRTroot = aq.smallSRTroot.toString();
+  const expectedSmallSRTroot = aq.getSmallSRTroot().toString();
 
   expect(correctRoot).to.eq(expectedSmallSRTroot);
 
@@ -280,7 +280,7 @@ export const testInsertSubTrees = async (
   aq.merge(MAIN_DEPTH);
   await aqContract.merge(MAIN_DEPTH, { gasLimit: 8000000 }).then((tx) => tx.wait());
 
-  const expectedMainRoot = aq.mainRoots[MAIN_DEPTH];
+  const expectedMainRoot = aq.getMainRoots()[MAIN_DEPTH];
   const contractMainRoot = await aqContract.getMainRoot(MAIN_DEPTH);
 
   expect(expectedMainRoot.toString()).to.eq(contractMainRoot.toString());
@@ -292,22 +292,22 @@ export const testInsertSubTrees = async (
  * @param aqContract - the AccQueue contract
  */
 export const testEnqueueAndInsertSubTree = async (aq: AccQueue, aqContract: AccQueueContract): Promise<void> => {
-  const z = aq.zeros[0];
+  const [z] = aq.getZeros();
   const n = BigInt(1);
 
   const leaves: bigint[] = [];
 
-  const subTree = new IncrementalQuinTree(aq.subDepth, z, aq.hashLength, aq.hashFunc);
+  const subTree = new IncrementalQuinTree(aq.getSubDepth(), z, aq.getHashLength(), aq.hashFunc);
 
-  for (let i = 0; i < aq.hashLength ** aq.subDepth; i += 1) {
+  for (let i = 0; i < aq.getHashLength() ** aq.getSubDepth(); i += 1) {
     leaves.push(z);
   }
 
   leaves.push(n);
   // leaves is now [z, z, z, z..., n]
 
-  const depth = calcDepthFromNumLeaves(aq.hashLength, leaves.length);
-  const tree = new IncrementalQuinTree(depth, z, aq.hashLength, aq.hashFunc);
+  const depth = calcDepthFromNumLeaves(aq.getHashLength(), leaves.length);
+  const tree = new IncrementalQuinTree(depth, z, aq.getHashLength(), aq.hashFunc);
 
   leaves.forEach((leaf) => {
     tree.insert(leaf);
@@ -327,7 +327,7 @@ export const testEnqueueAndInsertSubTree = async (aq: AccQueue, aqContract: AccQ
   aq.mergeSubRoots(0);
   await aqContract.mergeSubRoots(0, { gasLimit: 8000000 }).then((tx) => tx.wait());
 
-  expect(expectedRoot).to.eq(aq.smallSRTroot.toString());
+  expect(expectedRoot).to.eq(aq.getSmallSRTroot().toString());
 
   const contractSmallSRTroot = await aqContract.getSmallSRTroot();
   expect(expectedRoot).to.eq(contractSmallSRTroot.toString());
@@ -358,13 +358,13 @@ export const testMerge = async (
 
     leaves.push(leaf);
 
-    for (let j = 1; j < aq.hashLength ** aq.subDepth; j += 1) {
-      leaves.push(aq.zeros[0]);
+    for (let j = 1; j < aq.getHashLength() ** aq.getSubDepth(); j += 1) {
+      leaves.push(aq.getZeros()[0]);
     }
   }
 
   // Insert leaves into a main tree
-  const tree = new IncrementalQuinTree(MAIN_DEPTH, aq.zeros[0], aq.hashLength, aq.hashFunc);
+  const tree = new IncrementalQuinTree(MAIN_DEPTH, aq.getZeros()[0], aq.getHashLength(), aq.hashFunc);
 
   leaves.forEach((leaf) => {
     tree.insert(leaf);
@@ -372,26 +372,31 @@ export const testMerge = async (
 
   // minHeight should be the small SRT height
   const minHeight = await aqContract.calcMinHeight();
-  const c = calcDepthFromNumLeaves(aq.hashLength, NUM_SUBTREES);
+  const c = calcDepthFromNumLeaves(aq.getHashLength(), NUM_SUBTREES);
   expect(minHeight.toString()).to.eq(c.toString());
 
   // Check whether mergeSubRoots() works
   aq.mergeSubRoots(0);
   await (await aqContract.mergeSubRoots(0, { gasLimit: 8000000 })).wait();
 
-  const expectedSmallSRTroot = aq.smallSRTroot.toString();
+  const expectedSmallSRTroot = aq.getSmallSRTroot().toString();
   const contractSmallSRTroot = (await aqContract.getSmallSRTroot()).toString();
 
   expect(expectedSmallSRTroot).to.eq(contractSmallSRTroot);
 
   if (NUM_SUBTREES === 1) {
-    expect(expectedSmallSRTroot).to.eq(aq.subRoots[0].toString());
+    expect(expectedSmallSRTroot).to.eq(aq.getSubRoots()[0].toString());
   } else {
     // Check whether the small SRT root is correct
-    const srtHeight = calcDepthFromNumLeaves(aq.hashLength, NUM_SUBTREES);
-    const smallTree = new IncrementalQuinTree(srtHeight, aq.zeros[aq.subDepth], aq.hashLength, aq.hashFunc);
+    const srtHeight = calcDepthFromNumLeaves(aq.getHashLength(), NUM_SUBTREES);
+    const smallTree = new IncrementalQuinTree(
+      srtHeight,
+      aq.getZeros()[aq.getSubDepth()],
+      aq.getHashLength(),
+      aq.hashFunc,
+    );
 
-    aq.subRoots.forEach((subRoot) => {
+    aq.getSubRoots().forEach((subRoot) => {
       smallTree.insert(subRoot);
     });
 
@@ -402,13 +407,13 @@ export const testMerge = async (
   const aq2 = aq.copy();
 
   aq2.mergeDirect(MAIN_DEPTH);
-  const directlyMergedRoot = aq2.mainRoots[MAIN_DEPTH].toString();
+  const directlyMergedRoot = aq2.getMainRoots()[MAIN_DEPTH].toString();
   expect(directlyMergedRoot.toString()).to.eq(tree.root.toString());
 
   // Check whether off-chain merge() works
   aq.merge(MAIN_DEPTH);
 
-  const expectedMainRoot = aq.mainRoots[MAIN_DEPTH].toString();
+  const expectedMainRoot = aq.getMainRoots()[MAIN_DEPTH].toString();
 
   expect(expectedMainRoot).to.eq(directlyMergedRoot);
 
@@ -424,7 +429,7 @@ export const testMerge = async (
  * @param aqContract - the AccQueue contract
  */
 export const testMergeAgain = async (aq: AccQueue, aqContract: AccQueueContract, MAIN_DEPTH: number): Promise<void> => {
-  const tree = new IncrementalQuinTree(MAIN_DEPTH, aq.zeros[0], aq.hashLength, aq.hashFunc);
+  const tree = new IncrementalQuinTree(MAIN_DEPTH, aq.getZeros()[0], aq.getHashLength(), aq.hashFunc);
   const leaf = BigInt(123);
 
   // Enqueue
@@ -437,12 +442,12 @@ export const testMergeAgain = async (aq: AccQueue, aqContract: AccQueueContract,
   await aqContract.mergeSubRoots(0, { gasLimit: 8000000 }).then((tx) => tx.wait());
   await aqContract.merge(MAIN_DEPTH, { gasLimit: 8000000 }).then((tx) => tx.wait());
 
-  for (let i = 1; i < aq.hashLength ** aq.subDepth; i += 1) {
-    tree.insert(aq.zeros[0]);
+  for (let i = 1; i < aq.getHashLength() ** aq.getSubDepth(); i += 1) {
+    tree.insert(aq.getZeros()[0]);
   }
 
   const mainRoot = (await aqContract.getMainRoot(MAIN_DEPTH)).toString();
-  const expectedMainRoot = aq.mainRoots[MAIN_DEPTH].toString();
+  const expectedMainRoot = aq.getMainRoots()[MAIN_DEPTH].toString();
   expect(expectedMainRoot).to.eq(mainRoot);
   expect(expectedMainRoot).to.eq(tree.root.toString());
 
@@ -458,12 +463,12 @@ export const testMergeAgain = async (aq: AccQueue, aqContract: AccQueueContract,
   await aqContract.mergeSubRoots(0, { gasLimit: 8000000 }).then((tx) => tx.wait());
   await aqContract.merge(MAIN_DEPTH, { gasLimit: 8000000 }).then((tx) => tx.wait());
 
-  for (let i = 1; i < aq.hashLength ** aq.subDepth; i += 1) {
-    tree.insert(aq.zeros[0]);
+  for (let i = 1; i < aq.getHashLength() ** aq.getSubDepth(); i += 1) {
+    tree.insert(aq.getZeros()[0]);
   }
 
   const mainRoot2 = (await aqContract.getMainRoot(MAIN_DEPTH)).toString();
-  const expectedMainRoot2 = aq.mainRoots[MAIN_DEPTH].toString();
+  const expectedMainRoot2 = aq.getMainRoots()[MAIN_DEPTH].toString();
   expect(expectedMainRoot2).to.eq(tree.root.toString());
 
   expect(expectedMainRoot2).not.to.eq(expectedMainRoot);

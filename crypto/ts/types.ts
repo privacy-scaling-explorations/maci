@@ -27,7 +27,7 @@ export type PathElements = bigint[][];
  * A acc queue
  */
 export interface Queue {
-  levels: bigint[][];
+  levels: Map<number, Map<number, bigint>>;
   indices: number[];
 }
 
