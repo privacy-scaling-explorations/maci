@@ -69,7 +69,7 @@ export const signup = async ({
   let stateIndex = "";
   try {
     // sign up to the MACI contract
-    const tx = await maciContract.signUp(userMaciPubKey.asContractParam(), sgData, ivcpData, { gasLimit: 1000000 });
+    const tx = await maciContract.signUp(userMaciPubKey.asContractParam(), sgData, ivcpData);
     const receipt = await tx.wait();
 
     logYellow(quiet, info(`Transaction hash: ${tx.hash}`));
