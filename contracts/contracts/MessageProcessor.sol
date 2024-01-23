@@ -94,11 +94,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
       (, uint256 numMessages) = poll.numSignUpsAndMessages();
       uint256 r = numMessages % messageBatchSize;
 
-      if (r == 0) {
-        currentMessageBatchIndex = (numMessages / messageBatchSize) * messageBatchSize;
-      } else {
-        currentMessageBatchIndex = numMessages;
-      }
+      currentMessageBatchIndex = numMessages;
 
       if (currentMessageBatchIndex > 0) {
         if (r == 0) {
