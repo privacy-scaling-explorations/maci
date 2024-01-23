@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { type Provider, type Log, Interface, BaseContract } from "ethers";
-import { MaciState } from "maci-core";
+import { MaciState, STATE_TREE_ARITY } from "maci-core";
 import { type Keypair, PubKey, Message } from "maci-domainobjs";
 
 import assert from "assert";
@@ -154,7 +154,6 @@ export const genMaciStateFromContract = async (
   const duration = Number(dd[1]);
   const onChainMaxValues = await pollContract.maxValues();
   const onChainTreeDepths = await pollContract.treeDepths();
-  const onChainBatchSizes = await pollContract.batchSizes();
 
   const maxValues = {
     maxMessages: Number(onChainMaxValues.maxMessages),
@@ -167,9 +166,9 @@ export const genMaciStateFromContract = async (
     voteOptionTreeDepth: Number(onChainTreeDepths.voteOptionTreeDepth),
   };
   const batchSizes = {
-    tallyBatchSize: Number(onChainBatchSizes.tallyBatchSize),
-    subsidyBatchSize: Number(onChainBatchSizes.subsidyBatchSize),
-    messageBatchSize: Number(onChainBatchSizes.messageBatchSize),
+    tallyBatchSize: STATE_TREE_ARITY ** Number(onChainTreeDepths.intStateTreeDepth),
+    subsidyBatchSize: STATE_TREE_ARITY ** Number(onChainTreeDepths.intStateTreeDepth),
+    messageBatchSize: STATE_TREE_ARITY ** Number(onChainTreeDepths.messageTreeSubDepth),
   };
 
   // fetch poll contract logs

@@ -17,7 +17,6 @@ import {
   initialVoiceCreditBalance,
   maxValues,
   messageBatchSize,
-  tallyBatchSize,
   treeDepths,
 } from "./constants";
 import { timeTravel, deployTestContracts } from "./utils";
@@ -49,7 +48,6 @@ describe("Poll", () => {
       // deploy on chain poll
       const tx = await maciContract.deployPoll(
         duration,
-        maxValues,
         treeDepths,
         coordinator.pubKey.asContractParam(),
         verifierContract,
@@ -127,12 +125,6 @@ describe("Poll", () => {
       expect(td[1].toString()).to.eq(treeDepths.messageTreeSubDepth.toString());
       expect(td[2].toString()).to.eq(treeDepths.messageTreeDepth.toString());
       expect(td[3].toString()).to.eq(treeDepths.voteOptionTreeDepth.toString());
-    });
-
-    it("should have the correct batch values set", async () => {
-      const batchSizes = await pollContract.batchSizes();
-      expect(batchSizes[0].toString()).to.eq(messageBatchSize.toString());
-      expect(batchSizes[1].toString()).to.eq(tallyBatchSize.toString());
     });
 
     it("should have numMessages set to 1 (blank message)", async () => {

@@ -4,11 +4,11 @@ import { VerifyingKey } from "maci-domainobjs";
 
 export const duration = 20;
 
-export const messageBatchSize = 25;
 export const STATE_TREE_DEPTH = 10;
 export const STATE_TREE_ARITY = 5;
-export const MESSAGE_TREE_DEPTH = 4;
-export const MESSAGE_TREE_SUBDEPTH = 2;
+export const MESSAGE_TREE_DEPTH = 2;
+export const MESSAGE_TREE_SUBDEPTH = 1;
+export const messageBatchSize = STATE_TREE_ARITY ** MESSAGE_TREE_SUBDEPTH;
 
 export const testProcessVk = new VerifyingKey(
   new G1Point(BigInt(0), BigInt(1)),
@@ -28,7 +28,7 @@ export const testTallyVk = new VerifyingKey(
 
 export const initialVoiceCreditBalance = 100;
 export const maxValues: MaxValues = {
-  maxMessages: 25,
+  maxMessages: STATE_TREE_ARITY ** MESSAGE_TREE_DEPTH,
   maxVoteOptions: 25,
 };
 

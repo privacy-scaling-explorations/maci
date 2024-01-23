@@ -68,12 +68,6 @@ interface IPoll {
     view
     returns (uint8 intStateTreeDepth, uint8 messageTreeSubDepth, uint8 messageTreeDepth, uint8 voteOptionTreeDepth);
 
-  /// @notice Get the batch sizes for processing
-  /// @return messageBatchSize The batch size for message processing
-  /// @return tallyBatchSize The batch size for tally processing
-  /// @return subsidyBatchSize The batch size for subsidy processing
-  function batchSizes() external view returns (uint24 messageBatchSize, uint24 tallyBatchSize, uint24 subsidyBatchSize);
-
   /// @notice Get the max values for the poll
   /// @return maxMessages The maximum number of messages
   /// @return maxVoteOptions The maximum number of vote options

@@ -54,8 +54,6 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
   /// @notice Depths of the merkle trees
   TreeDepths public treeDepths;
 
-  /// @notice Batch sizes for processing
-  BatchSizes public batchSizes;
   /// @notice The contracts used by the Poll
   ExtContracts public extContracts;
 
@@ -79,14 +77,12 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
   /// @param _duration The duration of the voting period, in seconds
   /// @param _maxValues The maximum number of messages and vote options
   /// @param _treeDepths The depths of the merkle trees
-  /// @param _batchSizes The batch sizes for processing
   /// @param _coordinatorPubKey The coordinator's public key
   /// @param _extContracts The external contracts
   constructor(
     uint256 _duration,
     MaxValues memory _maxValues,
     TreeDepths memory _treeDepths,
-    BatchSizes memory _batchSizes,
     PubKey memory _coordinatorPubKey,
     ExtContracts memory _extContracts
   ) payable {
@@ -96,7 +92,6 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
     coordinatorPubKeyHash = hashLeftRight(_coordinatorPubKey.x, _coordinatorPubKey.y);
     duration = _duration;
     maxValues = _maxValues;
-    batchSizes = _batchSizes;
     treeDepths = _treeDepths;
     // Record the current timestamp
     deployTime = block.timestamp;

@@ -15,6 +15,7 @@ import {
   parseArtifact,
   getDefaultNetwork,
 } from "maci-contracts";
+import { STATE_TREE_ARITY } from "maci-core";
 import { G1Point, G2Point, hashLeftRight } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
 
@@ -188,13 +189,13 @@ export const proveOnChain = async ({
   });
 
   // retrieve the values we need from the smart contracts
+  const treeDepths = await pollContract.treeDepths();
   const numSignUpsAndMessages = await pollContract.numSignUpsAndMessages();
   const numSignUps = Number(numSignUpsAndMessages[0]);
   const numMessages = Number(numSignUpsAndMessages[1]);
-  const batchSizes = await pollContract.batchSizes();
-  const messageBatchSize = Number(batchSizes.messageBatchSize);
-  const tallyBatchSize = Number(batchSizes.tallyBatchSize);
-  const subsidyBatchSize = Number(batchSizes.subsidyBatchSize);
+  const messageBatchSize = STATE_TREE_ARITY ** Number(treeDepths.messageTreeSubDepth);
+  const tallyBatchSize = STATE_TREE_ARITY ** Number(treeDepths.intStateTreeDepth);
+  const subsidyBatchSize = STATE_TREE_ARITY ** Number(treeDepths.intStateTreeDepth);
   let totalMessageBatches = numMessages <= messageBatchSize ? 1 : Math.floor(numMessages / messageBatchSize);
 
   if (numMessages > messageBatchSize && numMessages % messageBatchSize > 0) {
@@ -212,7 +213,6 @@ export const proveOnChain = async ({
     );
   }
 
-  const treeDepths = await pollContract.treeDepths();
   let numberBatchesProcessed = Number(await mpContract.numBatchesProcessed());
   const messageRootOnChain = await messageAqContract.getMainRoot(Number(treeDepths.messageTreeDepth));
 
@@ -286,7 +286,13 @@ export const proveOnChain = async ({
     }
 
     const packedValsOnChain = BigInt(
-      await mpContract.genProcessMessagesPackedVals(currentMessageBatchIndex, numSignUps),
+      await mpContract.genProcessMessagesPackedVals(
+        currentMessageBatchIndex,
+        numSignUps,
+        numMessages,
+        treeDepths.messageTreeSubDepth,
+        treeDepths.voteOptionTreeDepth,
+      ),
     ).toString();
 
     if (circuitInputs.packedVals !== packedValsOnChain) {
@@ -300,8 +306,11 @@ export const proveOnChain = async ({
         currentMessageBatchIndex,
         messageRootOnChain.toString(),
         numSignUps,
+        numMessages,
         circuitInputs.currentSbCommitment as BigNumberish,
         circuitInputs.newSbCommitment as BigNumberish,
+        treeDepths.messageTreeSubDepth,
+        treeDepths.voteOptionTreeDepth,
       ),
     );
 

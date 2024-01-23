@@ -286,16 +286,6 @@ export interface DeployPollArgs {
   pollDuration: number;
 
   /**
-   * The maximum number of messages that can be submitted
-   */
-  maxMessages: number;
-
-  /**
-   * The maximum number of vote options
-   */
-  maxVoteOptions: number;
-
-  /**
    * The depth of the intermediate state tree
    */
   intStateTreeDepth: number;

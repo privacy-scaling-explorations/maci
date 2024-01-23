@@ -178,8 +178,6 @@ program
   .description("deploy a new poll")
   .option("-vk, --vkRegistryAddress <vkRegistryAddress>", "the vk registry contract address")
   .requiredOption("-t, --duration <pollDuration>", "the poll duration", parseInt)
-  .requiredOption("-g, --max-messages <maxMessages>", "the max messages", parseInt)
-  .requiredOption("-mv, --max-vote-options <maxVoteOptions>", "the max vote options", parseInt)
   .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the int state tree depth", parseInt)
   .requiredOption("-b, --msg-batch-depth <messageTreeSubDepth>", "the message tree sub depth", parseInt)
   .requiredOption("-m, --msg-tree-depth <messageTreeDepth>", "the message tree depth", parseInt)
@@ -198,8 +196,6 @@ program
     try {
       await deployPoll({
         pollDuration: cmdObj.duration,
-        maxMessages: cmdObj.maxMessages,
-        maxVoteOptions: cmdObj.maxVoteOptions,
         intStateTreeDepth: cmdObj.intStateTreeDepth,
         messageTreeSubDepth: cmdObj.msgBatchDepth,
         messageTreeDepth: cmdObj.msgTreeDepth,
