@@ -47,13 +47,6 @@ export const genLocalState = async ({
     logError("MACI contract does not exist");
   }
 
-  if (!readContractAddress(`Poll-${pollId}`)) {
-    logError(`There is no poll with id ${pollId}`);
-  }
-  if (!(await contractExists(signer.provider!, readContractAddress(`Poll-${pollId}`)))) {
-    logError(`Poll-${pollId} contract's is not deployed on this network`);
-  }
-
   // if no private key is passed we ask it securely
   const coordPrivKey = coordinatorPrivateKey || (await promptSensitiveValue("Insert your MACI private key"));
   if (!PrivKey.isValidSerializedPrivKey(coordPrivKey)) {
