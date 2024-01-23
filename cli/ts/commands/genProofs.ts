@@ -6,6 +6,7 @@ import {
   type Poll,
   genMaciStateFromContract,
   getDefaultSigner,
+  getDefaultNetwork,
   parseArtifact,
 } from "maci-contracts";
 import { type CircuitInputs, type IJsonMaciState, MaciState } from "maci-core";
@@ -182,11 +183,13 @@ export const genProofs = async ({
   const coordinatorKeypair = new Keypair(maciPrivKey);
 
   const signer = await getDefaultSigner();
+  const network = await getDefaultNetwork();
+
   // contracts
-  if (!readContractAddress("MACI") && !maciAddress) {
+  if (!readContractAddress("MACI", network?.name) && !maciAddress) {
     logError("MACI contract address is empty");
   }
-  const maciContractAddress = maciAddress || readContractAddress("MACI");
+  const maciContractAddress = maciAddress || readContractAddress("MACI", network?.name);
 
   if (!(await contractExists(signer.provider!, maciContractAddress))) {
     logError("MACI contract does not exist");

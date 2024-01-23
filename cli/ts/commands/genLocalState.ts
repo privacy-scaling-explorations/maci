@@ -1,5 +1,5 @@
 import { JsonRpcProvider } from "ethers";
-import { getDefaultSigner, genMaciStateFromContract } from "maci-contracts";
+import { getDefaultSigner, getDefaultNetwork, genMaciStateFromContract } from "maci-contracts";
 import { Keypair, PrivKey } from "maci-domainobjs";
 
 import fs from "fs";
@@ -35,14 +35,17 @@ export const genLocalState = async ({
   quiet = true,
 }: GenLocalStateArgs): Promise<void> => {
   banner(quiet);
+
+  const signer = await getDefaultSigner();
+  const network = await getDefaultNetwork();
+
   // validation of the maci contract address
-  if (!readContractAddress("MACI") && !maciContractAddress) {
+  if (!readContractAddress("MACI", network?.name) && !maciContractAddress) {
     logError("MACI contract address is empty");
   }
 
-  const maciAddress = maciContractAddress || readContractAddress("MACI");
+  const maciAddress = maciContractAddress || readContractAddress("MACI", network?.name);
 
-  const signer = await getDefaultSigner();
   if (!(await contractExists(signer.provider!, maciAddress))) {
     logError("MACI contract does not exist");
   }

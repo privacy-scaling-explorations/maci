@@ -50,7 +50,7 @@ abstract contract AccQueueQuinary is AccQueue {
   /// @notice An internal function which fills a subtree
   /// @param _level The level at which to fill the subtree
   function _fill(uint256 _level) internal override {
-    while (_level < SUB_DEPTH) {
+    while (_level < subDepth) {
       uint256 n = leafQueue.indices[_level];
 
       if (n != 0) {
@@ -64,7 +64,7 @@ abstract contract AccQueueQuinary is AccQueue {
           inputs[i] = leafQueue.levels[_level][i];
         }
 
-        for (; i < HASH_LENGTH; i++) {
+        for (; i < hashLength; i++) {
           inputs[i] = z;
         }
         hashed = hash5(inputs);

@@ -3,11 +3,16 @@ import { type ContractFactory, type Signer, BaseContract } from "ethers";
 // @ts-ignore typedoc doesn't want to get types from toolbox
 import { ethers } from "hardhat";
 
-import type { IDeployedMaci, IDeployedPoseidonContracts } from "./types";
-import type {
+import type { IDeployMaciArgs, IDeployedMaci, IDeployedPoseidonContracts } from "./types";
+
+import {
   AccQueueQuinaryMaci,
   ConstantInitialVoiceCreditProxy,
   FreeForAllGatekeeper,
+  PoseidonT3__factory as PoseidonT3Factory,
+  PoseidonT4__factory as PoseidonT4Factory,
+  PoseidonT5__factory as PoseidonT5Factory,
+  PoseidonT6__factory as PoseidonT6Factory,
   MACI,
   MockVerifier,
   PollFactory,
@@ -173,11 +178,17 @@ export const deployFreeForAllSignUpGatekeeper = async (signer?: Signer, quiet = 
  * @param quiet - whether to suppress console output
  * @returns the deployed Poseidon contracts
  */
-export const deployPoseidonContracts = async (signer?: Signer, quiet = false): Promise<IDeployedPoseidonContracts> => {
-  const PoseidonT3Contract = await deployContract<PoseidonT3>("PoseidonT3", signer, quiet);
-  const PoseidonT4Contract = await deployContract<PoseidonT4>("PoseidonT4", signer, quiet);
-  const PoseidonT5Contract = await deployContract<PoseidonT5>("PoseidonT5", signer, quiet);
-  const PoseidonT6Contract = await deployContract<PoseidonT6>("PoseidonT6", signer, quiet);
+export const deployPoseidonContracts = async (
+  signer?: Signer,
+  { poseidonT3, poseidonT4, poseidonT5, poseidonT6 }: IDeployMaciArgs["poseidonAddresses"] = {},
+  quiet = false,
+): Promise<IDeployedPoseidonContracts> => {
+  const [PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract] = await Promise.all([
+    !poseidonT3 ? await deployContract<PoseidonT3>("PoseidonT3", signer, quiet) : PoseidonT3Factory.connect(poseidonT3),
+    !poseidonT4 ? await deployContract<PoseidonT4>("PoseidonT4", signer, quiet) : PoseidonT4Factory.connect(poseidonT4),
+    !poseidonT5 ? await deployContract<PoseidonT5>("PoseidonT5", signer, quiet) : PoseidonT5Factory.connect(poseidonT5),
+    !poseidonT6 ? await deployContract<PoseidonT6>("PoseidonT6", signer, quiet) : PoseidonT6Factory.connect(poseidonT6),
+  ]);
 
   return {
     PoseidonT3Contract,
@@ -217,7 +228,7 @@ export const deployContractWithLinkedLibraries = async <T extends BaseContract>(
  * @returns the deployed Poll Factory contract
  */
 export const deployPollFactory = async (signer: Signer, quiet = false): Promise<PollFactory> => {
-  const poseidonContracts = await deployPoseidonContracts(signer, quiet);
+  const poseidonContracts = await deployPoseidonContracts(signer, {}, quiet);
   const [poseidonT3Contract, poseidonT4Contract, poseidonT5Contract, poseidonT6Contract] = await Promise.all([
     poseidonContracts.PoseidonT3Contract.getAddress(),
     poseidonContracts.PoseidonT4Contract.getAddress(),
@@ -238,31 +249,32 @@ export const deployPollFactory = async (signer: Signer, quiet = false): Promise<
 
 /**
  * Deploy a MACI contract
- * @param signUpTokenGatekeeperContractAddress - the address of the SignUpTokenGatekeeper contract
- * @param initialVoiceCreditBalanceAddress - the address of the ConstantInitialVoiceCreditProxy contract
- * @param topupCreditContractAddress - the address of the TopupCredit contract
- * @param signer - the signer to use to deploy the contract
- * @param stateTreeDepth - the depth of the state tree
- * @param quiet - whether to suppress console output
- * @returns the deployed MACI contract
+ * @param {IDeployMaciArgs} args - deploy arguments
+ * @returns {IDeployedMaci} the deployed MACI contract
  */
-export const deployMaci = async (
-  signUpTokenGatekeeperContractAddress: string,
-  initialVoiceCreditBalanceAddress: string,
-  topupCreditContractAddress: string,
-  signer?: Signer,
+export const deployMaci = async ({
+  signUpTokenGatekeeperContractAddress,
+  initialVoiceCreditBalanceAddress,
+  topupCreditContractAddress,
+  signer,
+  poseidonAddresses,
   stateTreeDepth = 10,
   quiet = false,
-): Promise<IDeployedMaci> => {
+}: IDeployMaciArgs): Promise<IDeployedMaci> => {
   const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } =
-    await deployPoseidonContracts(signer, quiet);
+    await deployPoseidonContracts(signer, poseidonAddresses, quiet);
 
   const poseidonAddrs = await Promise.all([
     PoseidonT3Contract.getAddress(),
     PoseidonT4Contract.getAddress(),
     PoseidonT5Contract.getAddress(),
     PoseidonT6Contract.getAddress(),
-  ]);
+  ]).then(([poseidonT3, poseidonT4, poseidonT5, poseidonT6]) => ({
+    poseidonT3,
+    poseidonT4,
+    poseidonT5,
+    poseidonT6,
+  }));
 
   const contractsToLink = ["MACI", "PollFactory", "MessageProcessorFactory", "TallyFactory", "SubsidyFactory"];
 
@@ -271,10 +283,10 @@ export const deployMaci = async (
     contractsToLink.map(async (contractName: string) =>
       linkPoseidonLibraries(
         contractName,
-        poseidonAddrs[0],
-        poseidonAddrs[1],
-        poseidonAddrs[2],
-        poseidonAddrs[3],
+        poseidonAddrs.poseidonT3,
+        poseidonAddrs.poseidonT4,
+        poseidonAddrs.poseidonT5,
+        poseidonAddrs.poseidonT6,
         signer,
         quiet,
       ),

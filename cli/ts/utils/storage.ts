@@ -8,12 +8,12 @@ import { logError } from "./theme";
  * @param path - the path of the file
  * @returns the JSON object
  */
-export const readJSONFile = (path: string): Record<string, string> => {
+export const readJSONFile = (path: string): Record<string, Record<string, string> | undefined> => {
   if (!fs.existsSync(path)) {
     logError(`File ${path} does not exist`);
   }
 
-  return JSON.parse(fs.readFileSync(path).toString()) as Record<string, string>;
+  return JSON.parse(fs.readFileSync(path).toString()) as Record<string, Record<string, string> | undefined>;
 };
 
 /**
@@ -21,14 +21,19 @@ export const readJSONFile = (path: string): Record<string, string> => {
  * @param contractName - the name of the contract
  * @param address - the address of the contract
  */
-export const storeContractAddress = (contractName: string, address: string): void => {
+export const storeContractAddress = (contractName: string, address: string, network = "default"): void => {
   // if it does not exist yet, then create it
   if (!fs.existsSync(contractAddressesStore)) {
     fs.writeFileSync(contractAddressesStore, "{}");
   }
 
   const contractAddrs = readJSONFile(contractAddressesStore);
-  contractAddrs[contractName] = address;
+
+  if (!contractAddrs[network]) {
+    contractAddrs[network] = {};
+  }
+
+  contractAddrs[network]![contractName] = address;
   fs.writeFileSync(contractAddressesStore, JSON.stringify(contractAddrs, null, 4));
 };
 
@@ -37,9 +42,9 @@ export const storeContractAddress = (contractName: string, address: string): voi
  * @param contractName - the name of the contract
  * @returns the contract address or a undefined it it does not exist
  */
-export const readContractAddress = (contractName: string): string => {
+export const readContractAddress = (contractName: string, network = "default"): string => {
   try {
-    return readJSONFile(contractAddressesStore)[contractName] || "";
+    return readJSONFile(contractAddressesStore)[network]?.[contractName] || "";
   } catch (error) {
     return "";
   }

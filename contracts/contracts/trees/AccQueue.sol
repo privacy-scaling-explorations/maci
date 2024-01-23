@@ -26,16 +26,16 @@ abstract contract AccQueue is Ownable, Hasher {
   }
 
   // The depth of each subtree
-  uint256 internal immutable SUB_DEPTH;
+  uint256 internal immutable subDepth;
 
   // The number of elements per hash operation. Should be either 2 (for
   // binary trees) or 5 (quinary trees). The limit is 5 because that is the
   // maximum supported number of inputs for the EVM implementation of the
   // Poseidon hash function
-  uint256 internal immutable HASH_LENGTH;
+  uint256 internal immutable hashLength;
 
   // hashLength ** subDepth
-  uint256 internal immutable SUB_TREE_CAPACITY;
+  uint256 internal immutable subTreeCapacity;
 
   // True hashLength == 2, false if hashLength == 5
   bool internal isBinary;
@@ -95,9 +95,9 @@ abstract contract AccQueue is Ownable, Hasher {
     if (_hashLength != 2 && _hashLength != 5) revert InvalidHashLength();
 
     isBinary = _hashLength == 2;
-    SUB_DEPTH = _subDepth;
-    HASH_LENGTH = _hashLength;
-    SUB_TREE_CAPACITY = _hashLength ** _subDepth;
+    subDepth = _subDepth;
+    hashLength = _hashLength;
+    subTreeCapacity = _hashLength ** _subDepth;
   }
 
   /// @notice Hash the contents of the specified level and the specified leaf.
@@ -149,15 +149,15 @@ abstract contract AccQueue is Ownable, Hasher {
     subTreesMerged = false;
 
     // If a subtree is full
-    if (numLeaves % SUB_TREE_CAPACITY == 0) {
+    if (numLeaves % subTreeCapacity == 0) {
       // Store the subroot
-      subRoots[currentSubtreeIndex] = leafQueue.levels[SUB_DEPTH][0];
+      subRoots[currentSubtreeIndex] = leafQueue.levels[subDepth][0];
 
       // Increment the index
       currentSubtreeIndex++;
 
       // Delete ancillary data
-      delete leafQueue.levels[SUB_DEPTH][0];
+      delete leafQueue.levels[subDepth][0];
       delete leafQueue.indices;
     }
   }
@@ -167,18 +167,18 @@ abstract contract AccQueue is Ownable, Hasher {
   /// @param _leaf The leaf to add.
   /// @param _level The level at which to queue the leaf.
   function _enqueue(uint256 _leaf, uint256 _level) internal {
-    if (_level > SUB_DEPTH) {
+    if (_level > subDepth) {
       revert InvalidLevel();
     }
 
     while (true) {
       uint256 n = leafQueue.indices[_level];
 
-      if (n != HASH_LENGTH - 1) {
+      if (n != hashLength - 1) {
         // Just store the leaf
         leafQueue.levels[_level][n] = _leaf;
 
-        if (_level != SUB_DEPTH) {
+        if (_level != subDepth) {
           // Update the index
           leafQueue.indices[_level]++;
         }
@@ -200,16 +200,16 @@ abstract contract AccQueue is Ownable, Hasher {
   /// @notice Fill any empty leaves of the current subtree with zeros and store the
   /// resulting subroot.
   function fill() public onlyOwner {
-    if (numLeaves % SUB_TREE_CAPACITY == 0) {
+    if (numLeaves % subTreeCapacity == 0) {
       // If the subtree is completely empty, then the subroot is a
       // precalculated zero value
-      subRoots[currentSubtreeIndex] = getZero(SUB_DEPTH);
+      subRoots[currentSubtreeIndex] = getZero(subDepth);
     } else {
       // Otherwise, fill the rest of the subtree with zeros
       _fill(0);
 
       // Store the subroot
-      subRoots[currentSubtreeIndex] = leafQueue.levels[SUB_DEPTH][0];
+      subRoots[currentSubtreeIndex] = leafQueue.levels[subDepth][0];
 
       // Reset the subtree data
       delete leafQueue.levels;
@@ -223,7 +223,7 @@ abstract contract AccQueue is Ownable, Hasher {
     currentSubtreeIndex = curr;
 
     // Update the number of leaves
-    numLeaves = curr * SUB_TREE_CAPACITY;
+    numLeaves = curr * subTreeCapacity;
 
     // Reset the subroot tree root now that it is obsolete
     delete smallSRTroot;
@@ -245,7 +245,7 @@ abstract contract AccQueue is Ownable, Hasher {
     currentSubtreeIndex++;
 
     // Update the number of leaves
-    numLeaves += SUB_TREE_CAPACITY;
+    numLeaves += subTreeCapacity;
 
     // Reset the subroot tree root now that it is obsolete
     delete smallSRTroot;
@@ -259,7 +259,7 @@ abstract contract AccQueue is Ownable, Hasher {
   function calcMinHeight() public view returns (uint256 depth) {
     depth = 1;
     while (true) {
-      if (HASH_LENGTH ** depth >= currentSubtreeIndex) {
+      if (hashLength ** depth >= currentSubtreeIndex) {
         break;
       }
       depth++;
@@ -287,7 +287,7 @@ abstract contract AccQueue is Ownable, Hasher {
 
     // Fill any empty leaves in the current subtree with zeros ony if the
     // current subtree is not full
-    if (numLeaves % SUB_TREE_CAPACITY != 0) {
+    if (numLeaves % subTreeCapacity != 0) {
       fill();
     }
 
@@ -318,11 +318,11 @@ abstract contract AccQueue is Ownable, Hasher {
     }
 
     // The height of the tree of subroots
-    uint256 m = HASH_LENGTH ** depth;
+    uint256 m = hashLength ** depth;
 
     // Queue zeroes to fill out the SRT
     if (nextSubRootIndex == currentSubtreeIndex) {
-      uint256 z = getZero(SUB_DEPTH);
+      uint256 z = getZero(subDepth);
       for (uint256 i = currentSubtreeIndex; i < m; i++) {
         queueSubRoot(z, 0, depth);
       }
@@ -344,7 +344,7 @@ abstract contract AccQueue is Ownable, Hasher {
 
     uint256 n = subRootQueue.indices[_level];
 
-    if (n != HASH_LENGTH - 1) {
+    if (n != hashLength - 1) {
       // Just store the leaf
       subRootQueue.levels[_level][n] = _leaf;
       subRootQueue.indices[_level]++;
@@ -387,9 +387,9 @@ abstract contract AccQueue is Ownable, Hasher {
     if (_depth > MAX_DEPTH) revert DepthTooLarge(_depth, MAX_DEPTH);
 
     // Calculate the SRT depth
-    uint256 srtDepth = SUB_DEPTH;
+    uint256 srtDepth = subDepth;
     while (true) {
-      if (HASH_LENGTH ** srtDepth >= numLeaves) {
+      if (hashLength ** srtDepth >= numLeaves) {
         break;
       }
       srtDepth++;
@@ -454,7 +454,7 @@ abstract contract AccQueue is Ownable, Hasher {
   ///               using mergeSubRoots() and merge().
   /// @return mainRoot The root of the main tree.
   function getMainRoot(uint256 _depth) public view returns (uint256 mainRoot) {
-    if (HASH_LENGTH ** _depth < numLeaves) revert DepthTooSmall(_depth, numLeaves);
+    if (hashLength ** _depth < numLeaves) revert DepthTooSmall(_depth, numLeaves);
 
     mainRoot = mainRoots[_depth];
   }

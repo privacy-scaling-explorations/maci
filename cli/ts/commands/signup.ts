@@ -1,5 +1,5 @@
 import { BaseContract } from "ethers";
-import { type MACI, getDefaultSigner, parseArtifact } from "maci-contracts";
+import { type MACI, getDefaultSigner, getDefaultNetwork, parseArtifact } from "maci-contracts";
 import { PubKey } from "maci-domainobjs";
 
 import {
@@ -31,6 +31,7 @@ export const signup = async ({
   banner(quiet);
 
   const signer = await getDefaultSigner();
+  const network = await getDefaultNetwork();
   // validate user key
   if (!PubKey.isValidSerializedPubKey(maciPubKey)) {
     logError("Invalid MACI public key");
@@ -39,11 +40,11 @@ export const signup = async ({
   const userMaciPubKey = PubKey.deserialize(maciPubKey);
 
   // ensure we have the contract addresses
-  if (!readContractAddress("MACI") && !maciAddress) {
+  if (!readContractAddress("MACI", network?.name) && !maciAddress) {
     logError("Invalid MACI contract address");
   }
 
-  const maciContractAddress = maciAddress || readContractAddress("MACI");
+  const maciContractAddress = maciAddress || readContractAddress("MACI", network?.name);
 
   if (!(await contractExists(signer.provider!, maciContractAddress))) {
     logError("There is no contract deployed at the specified address");

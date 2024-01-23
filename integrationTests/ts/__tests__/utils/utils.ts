@@ -212,14 +212,14 @@ export const deployTestContracts = async (
       topupCreditContract.getAddress(),
     ]);
 
-  const { maciContract } = await deployMaci(
-    gatekeeperContractAddress,
-    constantIntialVoiceCreditProxyContractAddress,
+  const { maciContract } = await deployMaci({
+    signUpTokenGatekeeperContractAddress: gatekeeperContractAddress,
+    initialVoiceCreditBalanceAddress: constantIntialVoiceCreditProxyContractAddress,
     topupCreditContractAddress,
     signer,
     stateTreeDepth,
     quiet,
-  );
+  });
 
   return { maci: maciContract, verifier: mockVerifierContract as Verifier, vkRegistry: vkRegistryContract };
 };

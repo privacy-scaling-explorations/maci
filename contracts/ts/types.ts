@@ -12,7 +12,7 @@ import type {
   TopupCredit,
   VkRegistry,
 } from "../typechain-types";
-import type { BigNumberish, Fragment, JsonFragment } from "ethers";
+import type { BigNumberish, Fragment, JsonFragment, Signer } from "ethers";
 import type { Message, PubKey } from "maci-domainobjs";
 
 // a type representing the ABI of a contract
@@ -112,11 +112,61 @@ export interface IDeployedPoseidonContracts {
 }
 
 /**
+ * An interface that represents the arguments for MACI contracts deployment.
+ */
+export interface IDeployMaciArgs {
+  /**
+   * The address of the SignUpTokenGatekeeper contract
+   */
+  signUpTokenGatekeeperContractAddress: string;
+
+  /**
+   * The address of the ConstantInitialVoiceCreditProxy contract
+   */
+  initialVoiceCreditBalanceAddress: string;
+
+  /**
+   * The address of the TopupCredit contract
+   */
+  topupCreditContractAddress: string;
+
+  /**
+   * The signer to use to deploy the contract
+   */
+  signer?: Signer;
+
+  /**
+   * Poseidon contract addresses (if not provided, they will be deployed automatically)
+   */
+  poseidonAddresses?: Partial<{
+    poseidonT3: string;
+    poseidonT4: string;
+    poseidonT5: string;
+    poseidonT6: string;
+  }>;
+
+  /**
+   * The depth of the state tree
+   */
+  stateTreeDepth?: number;
+
+  /**
+   * Whether to suppress console output
+   */
+  quiet?: boolean;
+}
+
+/**
  * An interface that represents the deployed MACI contracts.
  */
 export interface IDeployedMaci {
   maciContract: MACI;
   stateAqContract: AccQueueQuinaryMaci;
   pollFactoryContract: PollFactory;
-  poseidonAddrs: string[];
+  poseidonAddrs: {
+    poseidonT3: string;
+    poseidonT4: string;
+    poseidonT5: string;
+    poseidonT6: string;
+  };
 }

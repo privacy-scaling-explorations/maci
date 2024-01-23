@@ -15,7 +15,7 @@ export {
 } from "./deploy";
 export { genJsonRpcDeployer } from "./deployer";
 export { genMaciStateFromContract } from "./genMaciState";
-export { formatProofForVerifierContract, getDefaultSigner, getSigners } from "./utils";
+export { formatProofForVerifierContract, getDefaultSigner, getDefaultNetwork, getSigners } from "./utils";
 export { abiDir, solDir } from "./constants";
 export { parseArtifact } from "./abi";
 

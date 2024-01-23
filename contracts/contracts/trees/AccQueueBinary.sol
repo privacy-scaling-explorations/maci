@@ -33,7 +33,7 @@ abstract contract AccQueueBinary is AccQueue {
   /// @notice An internal function which fills a subtree.
   /// @param _level The level at which to fill the subtree.
   function _fill(uint256 _level) internal override {
-    while (_level < SUB_DEPTH) {
+    while (_level < subDepth) {
       uint256 n = leafQueue.indices[_level];
 
       if (n != 0) {

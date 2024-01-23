@@ -1,5 +1,12 @@
 import { BaseContract } from "ethers";
-import { type AccQueue, type MACI, type Poll, getDefaultSigner, parseArtifact } from "maci-contracts";
+import {
+  type AccQueue,
+  type MACI,
+  type Poll,
+  getDefaultSigner,
+  getDefaultNetwork,
+  parseArtifact,
+} from "maci-contracts";
 
 import {
   DEFAULT_SR_QUEUE_OPS,
@@ -27,13 +34,14 @@ export const mergeSignups = async ({
 }: MergeSignupsArgs): Promise<void> => {
   banner(quiet);
   const signer = await getDefaultSigner();
+  const network = await getDefaultNetwork();
 
   // maci contract validation
-  if (!readContractAddress("MACI") && !maciContractAddress) {
+  if (!readContractAddress("MACI", network?.name) && !maciContractAddress) {
     logError("Could not read contracts");
   }
 
-  const maciAddress = maciContractAddress || readContractAddress("MACI");
+  const maciAddress = maciContractAddress || readContractAddress("MACI", network?.name);
 
   if (!(await contractExists(signer.provider!, maciAddress))) {
     logError("MACI contract does not exist");

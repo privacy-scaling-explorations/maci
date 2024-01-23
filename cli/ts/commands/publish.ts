@@ -1,5 +1,5 @@
 import { BaseContract } from "ethers";
-import { type MACI, type Poll, getDefaultSigner, parseArtifact } from "maci-contracts";
+import { type MACI, type Poll, getDefaultSigner, getDefaultNetwork, parseArtifact } from "maci-contracts";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair, PCommand, PrivKey, PubKey } from "maci-domainobjs";
 
@@ -35,6 +35,9 @@ export const publish = async ({
 }: PublishArgs): Promise<string> => {
   banner(quiet);
 
+  const signer = await getDefaultSigner();
+  const network = await getDefaultNetwork();
+
   // validate that the pub key of the user is valid
   if (!PubKey.isValidSerializedPubKey(pubkey)) {
     logError("invalid MACI public key");
@@ -43,13 +46,11 @@ export const publish = async ({
   const userMaciPubKey = PubKey.deserialize(pubkey);
 
   // validation of the maci contract address
-  if (!readContractAddress("MACI") && !maciContractAddress) {
+  if (!readContractAddress("MACI", network?.name) && !maciContractAddress) {
     logError("MACI contract address is empty");
   }
 
-  const maciAddress = maciContractAddress || readContractAddress("MACI");
-
-  const signer = await getDefaultSigner();
+  const maciAddress = maciContractAddress || readContractAddress("MACI", network?.name);
 
   if (!(await contractExists(signer.provider!, maciAddress))) {
     logError("MACI contract does not exist");

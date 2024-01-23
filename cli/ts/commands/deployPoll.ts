@@ -1,5 +1,5 @@
 import { BaseContract } from "ethers";
-import { type MACI, getDefaultSigner, parseArtifact } from "maci-contracts";
+import { type MACI, getDefaultSigner, getDefaultNetwork, parseArtifact } from "maci-contracts";
 import { PubKey } from "maci-domainobjs";
 
 import {
@@ -35,15 +35,18 @@ export const deployPoll = async ({
 }: DeployPollArgs): Promise<PollContracts> => {
   banner(quiet);
 
+  const signer = await getDefaultSigner();
+  const network = await getDefaultNetwork();
+
   // check if we have a vkRegistry already deployed or passed as arg
-  const vkRegistryContractAddress = readContractAddress("VkRegistry");
+  const vkRegistryContractAddress = readContractAddress("VkRegistry", network?.name);
   if (!vkRegistryContractAddress && !vkRegistryAddress) {
     logError("Please provide a VkRegistry contract address");
   }
 
   const vkRegistry = vkRegistryAddress || vkRegistryContractAddress;
 
-  const maciContractAddress = readContractAddress("MACI");
+  const maciContractAddress = readContractAddress("MACI", network?.name);
   if (!maciContractAddress && !maciAddress) {
     logError("Please provide a MACI contract address");
   }
@@ -80,8 +83,6 @@ export const deployPoll = async ({
     logError("Vote option tree depth cannot be <= 0");
   }
 
-  const signer = await getDefaultSigner();
-
   // we check that the contract is deployed
   if (!(await contractExists(signer.provider!, maci))) {
     logError("MACI contract does not exist");
@@ -95,7 +96,7 @@ export const deployPoll = async ({
   const unserializedKey = PubKey.deserialize(coordinatorPubkey);
 
   // get the verifier contract
-  const verifierContractAddress = readContractAddress("Verifier");
+  const verifierContractAddress = readContractAddress("Verifier", network?.name);
 
   const maciAbi = parseArtifact("MACI")[0];
   const maciContract = new BaseContract(maci, maciAbi, signer) as MACI;
@@ -169,12 +170,12 @@ export const deployPoll = async ({
     logGreen(quiet, info(`Tally contract: ${tallyContractAddress}`));
     if (subsidyEnabled && subsidyContractAddress) {
       logGreen(quiet, info(`Subsidy contract: ${subsidyContractAddress}`));
-      storeContractAddress(`Subsidy-${pollId.toString()}`, subsidyContractAddress);
+      storeContractAddress(`Subsidy-${pollId.toString()}`, subsidyContractAddress, network?.name);
     }
     // store the addresss
-    storeContractAddress(`MessageProcessor-${pollId.toString()}`, messageProcessorContractAddress);
-    storeContractAddress(`Tally-${pollId.toString()}`, tallyContractAddress);
-    storeContractAddress(`Poll-${pollId.toString()}`, pollAddr);
+    storeContractAddress(`MessageProcessor-${pollId.toString()}`, messageProcessorContractAddress, network?.name);
+    storeContractAddress(`Tally-${pollId.toString()}`, tallyContractAddress, network?.name);
+    storeContractAddress(`Poll-${pollId.toString()}`, pollAddr, network?.name);
   } catch (error) {
     logError((error as Error).message);
   }

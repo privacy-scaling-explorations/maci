@@ -6,6 +6,7 @@
     "max-line-length": ["warn", 120],
     "quotes": ["error", "double"],
     "func-visibility": ["error", { "ignoreConstructors": true }],
-    "state-visibility": "error"
+    "state-visibility": "error",
+    "immutable-vars-naming": ["warn", { "immutablesAsConstants": false }]
   }
 }
