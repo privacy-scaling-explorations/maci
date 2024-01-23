@@ -166,7 +166,7 @@ describe("Ceremony param tests", () => {
         accumulatorQueue.merge(params.messageTreeDepth);
 
         expect(poll.messageTree.root.toString()).to.be.eq(
-          accumulatorQueue.mainRoots[params.messageTreeDepth].toString(),
+          accumulatorQueue.getMainRoots()[params.messageTreeDepth].toString(),
         );
       });
 
@@ -316,7 +316,7 @@ describe("Ceremony param tests", () => {
           accumulatorQueue.merge(params.messageTreeDepth);
 
           expect(poll.messageTree.root.toString()).to.be.eq(
-            accumulatorQueue.mainRoots[params.messageTreeDepth].toString(),
+            accumulatorQueue.getMainRoots()[params.messageTreeDepth].toString(),
           );
           // Process messages
           poll.processMessages(pollId);

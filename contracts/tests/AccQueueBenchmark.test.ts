@@ -77,7 +77,7 @@ const testMerge = async (
     }
   }
 
-  const expectedSmallSRTroot = aq.smallSRTroot;
+  const expectedSmallSRTroot = aq.getSmallSRTroot();
 
   const contractSmallSRTroot = await contract.getSmallSRTroot();
 
@@ -90,7 +90,7 @@ const testMerge = async (
   expect(receipt?.gasUsed.toString()).to.not.eq("");
   expect(receipt?.gasUsed.toString()).to.not.eq("0");
 
-  const expectedMainRoot = aq.mainRoots[MAIN_DEPTH];
+  const expectedMainRoot = aq.getMainRoots()[MAIN_DEPTH];
   const contractMainRoot = await contract.getMainRoot(MAIN_DEPTH);
 
   expect(expectedMainRoot.toString()).to.eq(contractMainRoot.toString());

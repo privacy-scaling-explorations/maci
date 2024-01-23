@@ -373,7 +373,7 @@ describe("AccQueues", () => {
       }
 
       aq.mergeSubRoots(0);
-      const expectedSmallSRTroot = aq.smallSRTroot;
+      const expectedSmallSRTroot = aq.getSmallSRTroot();
 
       await expect(aqContract.getSmallSRTroot()).to.be.revertedWithCustomError(aqContract, "SubTreesNotMerged");
 
@@ -387,7 +387,7 @@ describe("AccQueues", () => {
       aq.merge(MAIN_DEPTH);
       await (await aqContract.merge(MAIN_DEPTH)).wait();
 
-      const expectedMainRoot = aq.mainRoots[MAIN_DEPTH];
+      const expectedMainRoot = aq.getMainRoots()[MAIN_DEPTH];
       const contractMainRoot = await aqContract.getMainRoot(MAIN_DEPTH);
 
       expect(expectedMainRoot.toString()).to.eq(contractMainRoot.toString());
@@ -422,7 +422,7 @@ describe("AccQueues", () => {
       }
 
       aq.mergeSubRoots(0);
-      const expectedSmallSRTroot = aq.smallSRTroot;
+      const expectedSmallSRTroot = aq.getSmallSRTroot();
 
       await expect(aqContract.getSmallSRTroot()).to.be.revertedWithCustomError(aqContract, "SubTreesNotMerged");
 
@@ -436,7 +436,7 @@ describe("AccQueues", () => {
       aq.merge(MAIN_DEPTH);
       await (await aqContract.merge(MAIN_DEPTH)).wait();
 
-      const expectedMainRoot = aq.mainRoots[MAIN_DEPTH];
+      const expectedMainRoot = aq.getMainRoots()[MAIN_DEPTH];
       const contractMainRoot = await aqContract.getMainRoot(MAIN_DEPTH);
 
       expect(expectedMainRoot.toString()).to.eq(contractMainRoot.toString());

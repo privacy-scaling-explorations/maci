@@ -112,7 +112,7 @@ describe("TallyVotes circuit", function test() {
       accumulatorQueue.merge(treeDepths.messageTreeDepth);
 
       expect(poll.messageTree.root.toString()).to.be.eq(
-        accumulatorQueue.mainRoots[treeDepths.messageTreeDepth].toString(),
+        accumulatorQueue.getMainRoots()[treeDepths.messageTreeDepth].toString(),
       );
       // Process messages
       poll.processMessages(pollId);

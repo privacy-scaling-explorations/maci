@@ -75,14 +75,14 @@ export const testMergeShortest = (SUB_DEPTH: number, HASH_LENGTH: number, ZERO: 
 
   // Merge all but one subroot in aq2
   aq2.mergeSubRoots(2);
-  expect(aq.smallSRTroot.toString()).not.to.eq(aq2.smallSRTroot.toString());
+  expect(aq.getSmallSRTroot().toString()).not.to.eq(aq2.getSmallSRTroot().toString());
   aq2.mergeSubRoots(2);
-  expect(aq.smallSRTroot.toString()).not.to.eq(aq2.smallSRTroot.toString());
+  expect(aq.getSmallSRTroot().toString()).not.to.eq(aq2.getSmallSRTroot().toString());
 
   // Merge the last subroot in aq2
   aq2.mergeSubRoots(1);
 
-  expect(aq.smallSRTroot.toString()).to.eq(aq2.smallSRTroot.toString());
+  expect(aq.getSmallSRTroot().toString()).to.eq(aq2.getSmallSRTroot().toString());
 };
 
 /**
@@ -98,7 +98,7 @@ export const testMergeShortestOne = (SUB_DEPTH: number, HASH_LENGTH: number, ZER
 
   aq.mergeSubRoots(0);
 
-  expect(aq.smallSRTroot.toString()).to.eq(smallTree.root.toString());
+  expect(aq.getSmallSRTroot().toString()).to.eq(smallTree.root.toString());
   expect(aq.getSubRoot(0).toString()).to.eq(smallTree.root.toString());
 };
 
@@ -121,12 +121,12 @@ export const testMergeExhaustive = (SUB_DEPTH: number, HASH_LENGTH: number, ZERO
     aq.mergeSubRoots(0);
 
     const depth = calcDepthFromNumLeaves(HASH_LENGTH, numSubtrees);
-    const smallTree = new IncrementalQuinTree(depth, aq.zeros[aq.subDepth], HASH_LENGTH, aq.hashFunc);
+    const smallTree = new IncrementalQuinTree(depth, aq.getZeros()[aq.getSubDepth()], HASH_LENGTH, aq.hashFunc);
 
-    aq.subRoots.forEach((subRoot) => {
+    aq.getSubRoots().forEach((subRoot) => {
       smallTree.insert(subRoot);
     });
 
-    expect(aq.smallSRTroot.toString()).to.eq(smallTree.root.toString());
+    expect(aq.getSmallSRTroot().toString()).to.eq(smallTree.root.toString());
   }
 };

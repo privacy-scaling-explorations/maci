@@ -17,55 +17,55 @@ export class AccQueue {
   private MAX_DEPTH = 32;
 
   // The depth per subtree
-  subDepth: number;
+  private subDepth: number;
 
   // The number of inputs per hash function
-  hashLength: number;
+  private hashLength: number;
 
   // The default value for empty leaves
-  zeroValue: bigint;
+  private zeroValue: bigint;
 
   // The current subtree index. e.g. the first subtree has index 0, the
   // second has 1, and so on
-  currentSubtreeIndex = 0;
-
-  // The hash function to use for the subtrees
-  subHashFunc: (leaves: Leaf[]) => bigint;
-
-  // The hash function to use for rest of the tree (above the subroots)
-  hashFunc: (leaves: Leaf[]) => bigint;
+  private currentSubtreeIndex = 0;
 
   // The number of leaves across all subtrees
-  numLeaves = 0;
+  private numLeaves = 0;
 
   // The current subtree
-  leafQueue: Queue = {
-    levels: [],
+  private leafQueue: Queue = {
+    levels: new Map(),
     indices: [],
   };
 
   // For merging subtrees into the smallest tree
-  nextSRindexToQueue = 0;
+  private nextSRindexToQueue = 0;
 
-  smallSRTroot = BigInt(0);
+  private smallSRTroot = 0n;
 
-  subRootQueue: Queue = {
-    levels: [],
+  private subRootQueue: Queue = {
+    levels: new Map(),
     indices: [],
   };
 
   // The root of each complete subtree
-  subRoots: bigint[] = [];
+  private subRoots: Leaf[] = [];
 
   // The root of merged subtrees
-  mainRoots: bigint[] = [];
+  private mainRoots: Leaf[] = [];
 
   // The zero value per level. i.e. zeros[0] is zeroValue,
   // zeros[1] is the hash of leavesPerNode zeros, and so on.
-  zeros: bigint[] = [];
+  private zeros: bigint[] = [];
 
   // Whether the subtrees have been merged
-  subTreesMerged = false;
+  private subTreesMerged = false;
+
+  // The hash function to use for the subtrees
+  readonly subHashFunc: (leaves: Leaf[]) => bigint;
+
+  // The hash function to use for rest of the tree (above the subroots)
+  readonly hashFunc: (leaves: Leaf[]) => bigint;
 
   /**
    * Create a new instance of AccQueue
@@ -102,17 +102,61 @@ export class AccQueue {
 
       let e: bigint[] = [];
       if (this.hashLength === 2) {
-        e = [0].map(BigInt);
+        e = [0n];
         hashed = this.hashFunc([hashed, hashed]);
       } else {
-        e = [0, 0, 0, 0].map(BigInt);
+        e = [0n, 0n, 0n, 0n];
         hashed = this.hashFunc([hashed, hashed, hashed, hashed, hashed]);
       }
-      this.leafQueue.levels.push(e);
+
+      const levels = new Map(Object.entries(e).map(([key, value]) => [Number(key), value]));
+
+      this.leafQueue.levels.set(this.leafQueue.levels.size, levels);
       this.leafQueue.indices[i] = 0;
-      this.subRootQueue.levels.push(e);
+      this.subRootQueue.levels.set(this.subRootQueue.levels.size, levels);
       this.subRootQueue.indices[i] = 0;
     }
+  }
+
+  /**
+   * Get the small SRT root
+   * @returns small SRT root
+   */
+  getSmallSRTroot(): bigint {
+    return this.smallSRTroot;
+  }
+
+  /**
+   * Get the subroots
+   * @returns subroots
+   */
+  getSubRoots(): Leaf[] {
+    return this.subRoots;
+  }
+
+  /**
+   * Get the subdepth
+   * @returns subdepth
+   */
+  getSubDepth(): number {
+    return this.subDepth;
+  }
+
+  /**
+   * Get the root of merged subtrees
+   * @returns the root of merged subtrees
+   */
+  getMainRoots(): Leaf[] {
+    return this.mainRoots;
+  }
+
+  /**
+   * Get the zero values per level. i.e. zeros[0] is zeroValue,
+   * zeros[1] is the hash of leavesPerNode zeros, and so on.
+   * @returns zeros
+   */
+  getZeros(): bigint[] {
+    return this.zeros;
   }
 
   /**
@@ -120,8 +164,17 @@ export class AccQueue {
    * @param index - The index of the subroot
    * @returns the subroot
    */
-  getSubRoot(index: number): bigint {
+  getSubRoot(index: number): Leaf {
     return this.subRoots[index];
+  }
+
+  /**
+   * Get the number of inputs per hash function
+   *
+   * @returns the number of inputs
+   */
+  getHashLength(): number {
+    return this.hashLength;
   }
 
   /**
@@ -143,18 +196,20 @@ export class AccQueue {
     // we set merged false because there are new leaves
     this.subTreesMerged = false;
     // reset the smallSRTroot because it is obsolete
-    this.smallSRTroot = BigInt(0);
+    this.smallSRTroot = 0n;
 
     // @todo this can be moved in the constructor rather than computing every time
     const subTreeCapacity = this.hashLength ** this.subDepth;
     // If the current subtree is full
     if (this.numLeaves % subTreeCapacity === 0) {
       // store the subroot
-      const [subRoot] = this.leafQueue.levels[this.subDepth];
+      const subRoot = this.leafQueue.levels.get(this.subDepth)?.get(0) ?? 0n;
+
       this.subRoots[this.currentSubtreeIndex] = subRoot;
       this.currentSubtreeIndex += 1;
       // reset the current subtree
-      this.leafQueue.levels[this.subDepth][0] = BigInt(0);
+      this.leafQueue.levels.get(this.subDepth)?.set(0, 0n);
+
       for (let i = 0; i < this.MAX_DEPTH; i += 1) {
         this.leafQueue.indices[i] = 0;
       }
@@ -180,18 +235,21 @@ export class AccQueue {
     // we check that the index is not the last one (1 or 4 depending on the hash length)
     if (n !== this.hashLength - 1) {
       // Just store the leaf
-      this.leafQueue.levels[level][n] = leaf;
+      this.leafQueue.levels.get(level)?.set(n, leaf);
       this.leafQueue.indices[level] += 1;
     } else {
       // if not we compute the root
       let hashed: bigint;
       if (this.hashLength === 2) {
-        hashed = this.hashFunc([this.leafQueue.levels[level][0], leaf]);
-        this.leafQueue.levels[level][0] = BigInt(0);
+        const subRoot = this.leafQueue.levels.get(level)?.get(0) ?? 0n;
+        hashed = this.hashFunc([subRoot, leaf]);
+        this.leafQueue.levels.get(level)?.set(0, 0n);
       } else {
-        hashed = this.hashFunc([...this.leafQueue.levels[level], leaf]);
+        const levelSlice = this.leafQueue.levels.get(level) ?? new Map<number, bigint>();
+        hashed = this.hashFunc(Array.from(levelSlice.values()).concat(leaf));
+
         for (let i = 0; i < 4; i += 1) {
-          this.leafQueue.levels[level][i] = BigInt(0);
+          this.leafQueue.levels.get(level)?.set(i, 0n);
         }
       }
 
@@ -218,15 +276,16 @@ export class AccQueue {
       this.fillOp(0);
 
       // Store the subroot
-      const [subRoot] = this.leafQueue.levels[this.subDepth];
+      const subRoot = this.leafQueue.levels.get(this.subDepth)?.get(0) ?? 0n;
       this.subRoots[this.currentSubtreeIndex] = subRoot;
 
       // Blank out the subtree data
       for (let i = 0; i < this.subDepth + 1; i += 1) {
         if (this.hashLength === 2) {
-          this.leafQueue.levels[i][0] = BigInt(0);
+          this.leafQueue.levels.get(i)?.set(0, 0n);
         } else {
-          this.leafQueue.levels[i] = [0, 0, 0, 0].map(BigInt);
+          const levels = new Map(Object.entries([0n, 0n, 0n, 0n]).map(([key, value]) => [Number(key), value]));
+          this.leafQueue.levels.set(i, levels);
         }
       }
     }
@@ -238,7 +297,7 @@ export class AccQueue {
     this.numLeaves = this.currentSubtreeIndex * subTreeCapacity;
 
     this.subTreesMerged = false;
-    this.smallSRTroot = BigInt(0);
+    this.smallSRTroot = 0n;
   }
 
   /**
@@ -256,12 +315,14 @@ export class AccQueue {
       // Fill the subtree level and hash it
       let hashed: bigint;
       if (this.hashLength === 2) {
-        hashed = this.hashFunc([this.leafQueue.levels[level][0], this.zeros[level]]);
+        hashed = this.hashFunc([this.leafQueue.levels.get(level)?.get(0) ?? 0n, this.zeros[level]]);
       } else {
         for (let i = n; i < this.hashLength; i += 1) {
-          this.leafQueue.levels[level][i] = this.zeros[level];
+          this.leafQueue.levels.get(level)?.set(i, this.zeros[level]);
         }
-        hashed = this.hashFunc(this.leafQueue.levels[level]);
+
+        const levelSlice = this.leafQueue.levels.get(level) ?? new Map<number, bigint>();
+        hashed = this.hashFunc(Array.from(levelSlice.values()));
       }
 
       // Update the subtree from the next level onwards with the new leaf
@@ -308,7 +369,7 @@ export class AccQueue {
     this.numLeaves += subTreeCapacity;
 
     // Reset the subroot tree root now that it is obsolete
-    this.smallSRTroot = BigInt(0);
+    this.smallSRTroot = 0n;
 
     this.subTreesMerged = false;
   }
@@ -448,7 +509,7 @@ export class AccQueue {
     }
 
     // Store the root
-    const [subRoot] = this.subRootQueue.levels[depth];
+    const subRoot = this.subRootQueue.levels.get(depth)?.get(0) ?? 0n;
     this.smallSRTroot = subRoot;
     this.subTreesMerged = true;
   }
@@ -468,13 +529,13 @@ export class AccQueue {
 
     if (n !== this.hashLength - 1) {
       // Just store the leaf
-      this.subRootQueue.levels[level][n] = leaf;
+      this.subRootQueue.levels.get(level)?.set(n, leaf);
       this.subRootQueue.indices[level] += 1;
     } else {
       // Hash the elements in this level and queue it in the next level
       const inputs: bigint[] = [];
       for (let i = 0; i < this.hashLength - 1; i += 1) {
-        inputs.push(this.subRootQueue.levels[level][i]);
+        inputs.push(this.subRootQueue.levels.get(level)?.get(i) ?? 0n);
       }
       inputs.push(leaf);
       const hashed = this.hashFunc(inputs);
@@ -512,9 +573,11 @@ export class AccQueue {
     const newAccQueue = new AccQueue(this.subDepth, this.hashLength, this.zeroValue);
     newAccQueue.currentSubtreeIndex = JSON.parse(JSON.stringify(this.currentSubtreeIndex)) as number;
     newAccQueue.numLeaves = JSON.parse(JSON.stringify(this.numLeaves)) as number;
-    newAccQueue.leafQueue.levels = unstringifyBigInts(
-      JSON.parse(JSON.stringify(stringifyBigInts(this.leafQueue.levels))) as StringifiedBigInts,
+
+    const arrayLeafLevels = unstringifyBigInts(
+      JSON.parse(JSON.stringify(stringifyBigInts(this.mapToArray(this.leafQueue.levels)))) as StringifiedBigInts,
     ) as bigint[][];
+    newAccQueue.leafQueue.levels = this.arrayToMap(arrayLeafLevels);
     newAccQueue.leafQueue.indices = JSON.parse(JSON.stringify(this.leafQueue.indices)) as number[];
     newAccQueue.subRoots = deepCopyBigIntArray(this.subRoots);
     newAccQueue.mainRoots = deepCopyBigIntArray(this.mainRoots);
@@ -523,11 +586,33 @@ export class AccQueue {
     newAccQueue.nextSRindexToQueue = Number(this.nextSRindexToQueue.toString());
     newAccQueue.smallSRTroot = BigInt(this.smallSRTroot.toString());
     newAccQueue.subRootQueue.indices = JSON.parse(JSON.stringify(this.subRootQueue.indices)) as number[];
-    newAccQueue.subRootQueue.levels = unstringifyBigInts(
-      JSON.parse(JSON.stringify(stringifyBigInts(this.subRootQueue.levels))) as StringifiedBigInts,
+
+    const arraySubRootLevels = unstringifyBigInts(
+      JSON.parse(JSON.stringify(stringifyBigInts(this.mapToArray(this.subRootQueue.levels)))) as StringifiedBigInts,
     ) as bigint[][];
+    newAccQueue.subRootQueue.levels = this.arrayToMap(arraySubRootLevels);
 
     return newAccQueue;
+  }
+
+  /**
+   * Convert map to 2D array
+   *
+   * @param map - map representation of 2D array
+   * @returns 2D array
+   */
+  private mapToArray(map: Map<number, Map<number, bigint>>): bigint[][] {
+    return Array.from(map.values()).map((v) => Array.from(v.values()));
+  }
+
+  /**
+   * Convert 2D array to its map representation
+   *
+   * @param array - 2D array
+   * @returns map representation of 2D array
+   */
+  private arrayToMap(array: bigint[][]): Map<number, Map<number, bigint>> {
+    return new Map(array.map((level, i) => [i, new Map(level.map((leaf, j) => [j, leaf]))]));
   }
 
   /**
