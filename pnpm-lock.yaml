@@ -96,8 +96,8 @@ importers:
         specifier: ^0.3.0
         version: 0.3.0
       circomkit:
-        specifier: ^0.0.20
-        version: 0.0.20
+        specifier: ^0.0.21
+        version: 0.0.21
       circomlib:
         specifier: ^2.0.5
         version: 2.0.5
@@ -6908,7 +6908,7 @@ packages:
     dependencies:
       chai: 4.4.0
       child_process: 1.0.2
-      ffjavascript: 0.2.62
+      ffjavascript: 0.2.63
       fnv-plus: 1.3.1
       r1csfile: 0.0.41
       snarkjs: 0.5.0
@@ -6916,8 +6916,8 @@ packages:
       util: 0.12.5
     dev: false
 
-  /circomkit@0.0.20:
-    resolution: {integrity: sha512-rzCJFV1WNshAhOrlSW1rnz3tTRoVjsQ3gkO4T0sNcrYa3mNRQxc02O4d7pUS7mKhAGDFgo2VpIkz3zfPcoLhrA==}
+  /circomkit@0.0.21:
+    resolution: {integrity: sha512-DlMifIquyKOf4mSOjW6TostDwiXsuQp+Fox+3hR+cvARfthPR7LZq42I5PaT8B5Hr970LGnK6qTEFQvI1IfmgQ==}
     engines: {node: '>=12.0.0'}
     hasBin: true
     dependencies:
