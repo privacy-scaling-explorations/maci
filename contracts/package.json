@@ -34,6 +34,7 @@
     "test:vkRegistry": "hardhat test ./tests/VkRegistry.test.ts",
     "test:pollFactory": "hardhat test ./tests/PollFactory.test.ts",
     "test:subsidy": "hardhat test ./tests/Subsidy.test.ts",
+    "test:eas_gatekeeper": "hardhat test ./tests/EASGatekeeper.test.ts",
     "deploy": "hardhat deploy-full",
     "deploy:hardhat": "pnpm run deploy",
     "deploy:sepolia": "pnpm run deploy --network sepolia"

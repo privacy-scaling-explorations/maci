@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import { MACI } from "../MACI.sol";
 import { SignUpGatekeeper } from "./SignUpGatekeeper.sol";
 
 /// @title FreeForAllGatekeeper
@@ -14,7 +13,7 @@ contract FreeForAllGatekeeper is SignUpGatekeeper {
   /// @notice setMaciInstance does nothing in this gatekeeper
   /// @param _maci The MACI contract
   // solhint-disable-next-line no-empty-blocks
-  function setMaciInstance(MACI _maci) public override {}
+  function setMaciInstance(address _maci) public override {}
 
   /// @notice Registers the user without any restrictions.
   /// @param _address The address of the user
