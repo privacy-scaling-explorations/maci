@@ -28,6 +28,9 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
   error CurrentMessageBatchIndexTooLarge();
   error BatchEndIndexTooLarge();
 
+  // the number of children per node in the merkle trees
+  uint256 private constant TREE_ARITY = 5;
+
   /// @inheritdoc IMessageProcessor
   bool public processingComplete;
 
@@ -61,6 +64,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
   ///                         after all messages are processed
   /// @param _proof The zk-SNARK proof
   function processMessages(uint256 _newSbCommitment, uint256[8] memory _proof) external onlyOwner {
+    // ensure the voting period is over
     _votingPeriodOver(poll);
 
     // There must be unprocessed messages
@@ -74,11 +78,11 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
     }
 
     // Retrieve stored vals
-    (, , uint8 messageTreeDepth, ) = poll.treeDepths();
-    (uint256 messageBatchSize, , ) = poll.batchSizes();
+    (, uint8 messageTreeSubDepth, uint8 messageTreeDepth, uint8 voteOptionTreeDepth) = poll.treeDepths();
+    // calculate the message batch size from the message tree subdepth
+    uint256 messageBatchSize = TREE_ARITY ** messageTreeSubDepth;
 
-    AccQueue messageAq;
-    (, messageAq, ) = poll.extContracts();
+    (, AccQueue messageAq, ) = poll.extContracts();
 
     // Require that the message queue has been merged
     uint256 messageRoot = messageAq.getMainRoot(messageTreeDepth);
@@ -105,8 +109,18 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
       }
     }
 
-    bool isValid = verifyProcessProof(currentMessageBatchIndex, messageRoot, sbCommitment, _newSbCommitment, _proof);
-    if (!isValid) {
+    if (
+      !verifyProcessProof(
+        currentMessageBatchIndex,
+        messageRoot,
+        sbCommitment,
+        _newSbCommitment,
+        messageTreeSubDepth,
+        messageTreeDepth,
+        voteOptionTreeDepth,
+        _proof
+      )
+    ) {
       revert InvalidProcessMessageProof();
     }
 
@@ -132,6 +146,9 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
   /// @param _messageRoot The message tree root
   /// @param _currentSbCommitment The current sbCommitment (state and ballot)
   /// @param _newSbCommitment The new sbCommitment after we update this message batch
+  /// @param _messageTreeSubDepth The message tree subdepth
+  /// @param _messageTreeDepth The message tree depth
+  /// @param _voteOptionTreeDepth The vote option tree depth
   /// @param _proof The zk-SNARK proof
   /// @return isValid Whether the proof is valid
   function verifyProcessProof(
@@ -139,11 +156,15 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
     uint256 _messageRoot,
     uint256 _currentSbCommitment,
     uint256 _newSbCommitment,
+    uint8 _messageTreeSubDepth,
+    uint8 _messageTreeDepth,
+    uint8 _voteOptionTreeDepth,
     uint256[8] memory _proof
   ) internal view returns (bool isValid) {
-    (, , uint8 messageTreeDepth, uint8 voteOptionTreeDepth) = poll.treeDepths();
-    (uint256 messageBatchSize, , ) = poll.batchSizes();
-    (uint256 numSignUps, ) = poll.numSignUpsAndMessages();
+    // get the tree depths
+    // get the message batch size from the message tree subdepth
+    // get the number of signups
+    (uint256 numSignUps, uint256 numMessages) = poll.numSignUpsAndMessages();
     (IMACI maci, , ) = poll.extContracts();
 
     // Calculate the public input hash (a SHA256 hash of several values)
@@ -151,16 +172,19 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
       _currentMessageBatchIndex,
       _messageRoot,
       numSignUps,
+      numMessages,
       _currentSbCommitment,
-      _newSbCommitment
+      _newSbCommitment,
+      _messageTreeSubDepth,
+      _voteOptionTreeDepth
     );
 
     // Get the verifying key from the VkRegistry
     VerifyingKey memory vk = vkRegistry.getProcessVk(
       maci.stateTreeDepth(),
-      messageTreeDepth,
-      voteOptionTreeDepth,
-      messageBatchSize
+      _messageTreeDepth,
+      _voteOptionTreeDepth,
+      TREE_ARITY ** _messageTreeSubDepth
     );
 
     isValid = verifier.verify(_proof, vk, publicInputHash);
@@ -175,22 +199,35 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
   /// higher and proving time will be longer.
   /// @param _currentMessageBatchIndex The batch index of current message batch
   /// @param _numSignUps The number of users that signup
+  /// @param _numMessages The number of messages
   /// @param _currentSbCommitment The current sbCommitment (state and ballot root)
   /// @param _newSbCommitment The new sbCommitment after we update this message batch
+  /// @param _messageTreeSubDepth The message tree subdepth
   /// @return inputHash Returns the SHA256 hash of the packed values
   function genProcessMessagesPublicInputHash(
     uint256 _currentMessageBatchIndex,
     uint256 _messageRoot,
     uint256 _numSignUps,
+    uint256 _numMessages,
     uint256 _currentSbCommitment,
-    uint256 _newSbCommitment
+    uint256 _newSbCommitment,
+    uint8 _messageTreeSubDepth,
+    uint8 _voteOptionTreeDepth
   ) public view returns (uint256 inputHash) {
     uint256 coordinatorPubKeyHash = poll.coordinatorPubKeyHash();
 
-    uint256 packedVals = genProcessMessagesPackedVals(_currentMessageBatchIndex, _numSignUps);
+    // pack the values
+    uint256 packedVals = genProcessMessagesPackedVals(
+      _currentMessageBatchIndex,
+      _numSignUps,
+      _numMessages,
+      _messageTreeSubDepth,
+      _voteOptionTreeDepth
+    );
 
     (uint256 deployTime, uint256 duration) = poll.getDeployTimeAndDuration();
 
+    // generate the circuit only public input
     uint256[] memory input = new uint256[](6);
     input[0] = packedVals;
     input[1] = coordinatorPubKeyHash;
@@ -208,19 +245,24 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
   /// the current batch.
   /// @param _currentMessageBatchIndex batch index of current message batch
   /// @param _numSignUps number of users that signup
+  /// @param _numMessages number of messages
+  /// @param _messageTreeSubDepth message tree subdepth
+  /// @param _voteOptionTreeDepth vote option tree depth
   /// @return result The packed value
   function genProcessMessagesPackedVals(
     uint256 _currentMessageBatchIndex,
-    uint256 _numSignUps
-  ) public view returns (uint256 result) {
-    (, uint256 maxVoteOptions) = poll.maxValues();
-    (, uint256 numMessages) = poll.numSignUpsAndMessages();
-    (uint24 mbs, , ) = poll.batchSizes();
-    uint256 messageBatchSize = uint256(mbs);
+    uint256 _numSignUps,
+    uint256 _numMessages,
+    uint8 _messageTreeSubDepth,
+    uint8 _voteOptionTreeDepth
+  ) public pure returns (uint256 result) {
+    uint256 maxVoteOptions = TREE_ARITY ** _voteOptionTreeDepth;
 
+    // calculate the message batch size from the message tree subdepth
+    uint256 messageBatchSize = TREE_ARITY ** _messageTreeSubDepth;
     uint256 batchEndIndex = _currentMessageBatchIndex + messageBatchSize;
-    if (batchEndIndex > numMessages) {
-      batchEndIndex = numMessages;
+    if (batchEndIndex > _numMessages) {
+      batchEndIndex = _numMessages;
     }
 
     if (maxVoteOptions >= 2 ** 50) revert MaxVoteOptionsTooLarge();

@@ -63,7 +63,6 @@ describe("TallyVotes", () => {
     // deploy on chain poll
     const tx = await maciContract.deployPoll(
       duration,
-      maxValues,
       treeDepths,
       coordinator.pubKey.asContractParam(),
       verifierContract,

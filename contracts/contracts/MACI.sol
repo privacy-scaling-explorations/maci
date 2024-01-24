@@ -187,7 +187,6 @@ contract MACI is IMACI, Params, Utilities, Ownable {
 
   /// @notice Deploy a new Poll contract.
   /// @param _duration How long should the Poll last for
-  /// @param _maxValues The maximum number of vote options, and messages
   /// @param _treeDepths The depth of the Merkle trees
   /// @param _coordinatorPubKey The coordinator's public key
   /// @param _verifier The Verifier Contract
@@ -196,7 +195,6 @@ contract MACI is IMACI, Params, Utilities, Ownable {
   /// @return pollAddr a new Poll contract address
   function deployPoll(
     uint256 _duration,
-    MaxValues memory _maxValues,
     TreeDepths memory _treeDepths,
     PubKey memory _coordinatorPubKey,
     address _verifier,
@@ -216,25 +214,14 @@ contract MACI is IMACI, Params, Utilities, Ownable {
       if (!stateAq.treeMerged()) revert PreviousPollNotCompleted(pollId);
     }
 
-    // The message batch size and the tally batch size
-    BatchSizes memory batchSizes = BatchSizes(
-      uint24(TREE_ARITY) ** _treeDepths.messageTreeSubDepth,
-      uint24(TREE_ARITY) ** _treeDepths.intStateTreeDepth,
-      uint24(TREE_ARITY) ** _treeDepths.intStateTreeDepth
-    );
+    MaxValues memory maxValues = MaxValues({
+      maxMessages: uint256(TREE_ARITY) ** _treeDepths.messageTreeDepth,
+      maxVoteOptions: uint256(TREE_ARITY) ** _treeDepths.voteOptionTreeDepth
+    });
 
     address _owner = owner();
 
-    address p = pollFactory.deploy(
-      _duration,
-      _maxValues,
-      _treeDepths,
-      batchSizes,
-      _coordinatorPubKey,
-      this,
-      topupCredit,
-      _owner
-    );
+    address p = pollFactory.deploy(_duration, maxValues, _treeDepths, _coordinatorPubKey, this, topupCredit, _owner);
 
     address mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p, _owner);
     address tally = tallyFactory.deploy(_verifier, _vkRegistry, p, mp, _owner);

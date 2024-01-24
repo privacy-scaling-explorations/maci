@@ -21,8 +21,6 @@ import {
  */
 export const deployPoll = async ({
   pollDuration,
-  maxMessages,
-  maxVoteOptions,
   intStateTreeDepth,
   messageTreeSubDepth,
   messageTreeDepth,
@@ -56,14 +54,6 @@ export const deployPoll = async ({
   // required arg -> poll duration
   if (pollDuration <= 0) {
     logError("Duration cannot be <= 0");
-  }
-  // require arg -> max messages
-  if (maxMessages <= 0) {
-    logError("Max messages cannot be <= 0");
-  }
-  // required arg -> max vote options
-  if (maxVoteOptions <= 0) {
-    logError("Max vote options cannot be <= 0");
   }
 
   // required arg -> int state tree depth
@@ -111,7 +101,6 @@ export const deployPoll = async ({
     // deploy the poll contract via the maci contract
     const tx = await maciContract.deployPoll(
       pollDuration,
-      { maxMessages, maxVoteOptions },
       {
         intStateTreeDepth,
         messageTreeSubDepth,

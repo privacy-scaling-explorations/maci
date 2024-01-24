@@ -29,7 +29,6 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
     uint256 _duration,
     MaxValues calldata _maxValues,
     TreeDepths calldata _treeDepths,
-    BatchSizes calldata _batchSizes,
     PubKey calldata _coordinatorPubKey,
     IMACI _maci,
     TopupCredit _topupCredit,
@@ -39,13 +38,7 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
     /// maxVoteOptions must be less than 2 ** 50 due to circuit limitations;
     /// it will be packed as a 50-bit value along with other values as one
     /// of the inputs (aka packedVal)
-    if (
-      _maxValues.maxMessages > TREE_ARITY ** uint256(_treeDepths.messageTreeDepth) ||
-      _maxValues.maxMessages < _batchSizes.messageBatchSize ||
-      _maxValues.maxMessages % _batchSizes.messageBatchSize != 0 ||
-      _maxValues.maxVoteOptions > TREE_ARITY ** uint256(_treeDepths.voteOptionTreeDepth) ||
-      _maxValues.maxVoteOptions >= (2 ** 50)
-    ) {
+    if (_maxValues.maxVoteOptions >= (2 ** 50)) {
       revert InvalidMaxValues();
     }
 
@@ -56,7 +49,7 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
     ExtContracts memory extContracts = ExtContracts({ maci: _maci, messageAq: messageAq, topupCredit: _topupCredit });
 
     // deploy the poll
-    Poll poll = new Poll(_duration, _maxValues, _treeDepths, _batchSizes, _coordinatorPubKey, extContracts);
+    Poll poll = new Poll(_duration, _maxValues, _treeDepths, _coordinatorPubKey, extContracts);
 
     // Make the Poll contract own the messageAq contract, so only it can
     // run enqueue/merge

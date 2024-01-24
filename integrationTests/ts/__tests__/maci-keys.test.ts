@@ -10,8 +10,6 @@ import {
   VOTE_OPTION_TREE_DEPTH,
   duration,
   initialVoiceCredits,
-  maxMessages,
-  maxVoteOptions,
   messageBatchDepth,
   messageTreeDepth,
 } from "./utils/constants";
@@ -84,10 +82,6 @@ describe("integration tests private/public/keypair", () => {
       // deploy a poll
       await maci.deployPoll(
         BigInt(duration),
-        {
-          maxMessages,
-          maxVoteOptions,
-        },
         {
           intStateTreeDepth: INT_STATE_TREE_DEPTH,
           messageTreeDepth,

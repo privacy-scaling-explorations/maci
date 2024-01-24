@@ -19,13 +19,6 @@ contract Params {
     uint8 voteOptionTreeDepth;
   }
 
-  /// @notice A struct holding the batch sizes for processing
-  struct BatchSizes {
-    uint24 messageBatchSize;
-    uint24 tallyBatchSize;
-    uint24 subsidyBatchSize;
-  }
-
   /// @notice A struct holding the max values for the poll
   struct MaxValues {
     uint256 maxMessages;

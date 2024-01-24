@@ -160,7 +160,6 @@ describe("MACI", () => {
       // Create the poll and get the poll ID from the tx event logs
       const tx = await maciContract.deployPoll(
         duration,
-        maxValues,
         treeDepths,
         coordinator.pubKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
         verifierContract,
@@ -207,7 +206,6 @@ describe("MACI", () => {
       await expect(
         maciContract.deployPoll(
           duration,
-          maxValues,
           treeDepths,
           coordinator.pubKey.asContractParam(),
           verifierContract,

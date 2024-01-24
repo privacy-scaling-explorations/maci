@@ -25,7 +25,7 @@ contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
   uint256 public sbCommitment;
   uint256 public subsidyCommitment;
 
-  uint8 internal constant TREE_ARITY = 5;
+  uint256 private constant TREE_ARITY = 5;
 
   IVerifier public immutable verifier;
   IVkRegistry public immutable vkRegistry;
@@ -103,7 +103,7 @@ contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
 
     (uint8 intStateTreeDepth, , , ) = poll.treeDepths();
 
-    uint256 subsidyBatchSize = uint256(TREE_ARITY) ** intStateTreeDepth;
+    uint256 subsidyBatchSize = TREE_ARITY ** intStateTreeDepth;
 
     (uint256 numSignUps, ) = poll.numSignUpsAndMessages();
 

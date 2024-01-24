@@ -15,7 +15,7 @@ import { CommonUtilities } from "./utilities/CommonUtilities.sol";
 /// @notice The Tally contract is used during votes tallying
 /// and by users to verify the tally results.
 contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
-  uint8 private constant TREE_ARITY = 5;
+  uint256 private constant TREE_ARITY = 5;
 
   /// @notice The commitment to the tally results. Its initial value is 0, but after
   /// the tally of each batch is proven on-chain via a zk-SNARK, it should be
@@ -127,8 +127,11 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
       tallyBatchNum++;
     }
 
-    (, uint256 tallyBatchSize, ) = poll.batchSizes();
+    // get the batch size and start index
+    (uint8 intStateTreeDepth, , , ) = poll.treeDepths();
+    uint256 tallyBatchSize = TREE_ARITY ** intStateTreeDepth;
     uint256 batchStartIndex = cachedBatchNum * tallyBatchSize;
+
     (uint256 numSignUps, ) = poll.numSignUpsAndMessages();
 
     // Require that there are untalied ballots left

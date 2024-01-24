@@ -97,8 +97,6 @@ export const deployArgs: DeployArgs = {
 
 export const deployPollArgs: DeployPollArgs = {
   pollDuration,
-  maxMessages,
-  maxVoteOptions,
   intStateTreeDepth: INT_STATE_TREE_DEPTH,
   messageTreeSubDepth: MSG_BATCH_DEPTH,
   messageTreeDepth: MSG_TREE_DEPTH,

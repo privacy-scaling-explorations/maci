@@ -58,7 +58,6 @@ describe("MessageProcessor", () => {
     // deploy on chain poll
     const tx = await maciContract.deployPoll(
       duration,
-      maxValues,
       treeDepths,
       coordinator.pubKey.asContractParam(),
       verifierContract,
@@ -159,7 +158,15 @@ describe("MessageProcessor", () => {
         0,
         poll.messages.length,
       );
-      const onChainPackedVals = BigInt(await mpContract.genProcessMessagesPackedVals(0, users.length));
+      const onChainPackedVals = BigInt(
+        await mpContract.genProcessMessagesPackedVals(
+          0,
+          users.length,
+          poll.messages.length,
+          treeDepths.messageTreeSubDepth,
+          treeDepths.voteOptionTreeDepth,
+        ),
+      );
       expect(packedVals.toString()).to.eq(onChainPackedVals.toString());
     });
 
