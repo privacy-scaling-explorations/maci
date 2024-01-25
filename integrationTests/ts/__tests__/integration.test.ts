@@ -106,7 +106,6 @@ describe("Integration tests", function test() {
     // 4. create a poll
     pollContracts = await deployPoll({
       pollDuration: duration,
-
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       messageTreeSubDepth: MSG_BATCH_DEPTH,
       messageTreeDepth: MSG_TREE_DEPTH,
