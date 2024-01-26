@@ -116,6 +116,7 @@ export interface IJsonPoll {
   stateLeaves: IJsonStateLeaf[];
   results: string[];
   numBatchesProcessed: number;
+  numSignups: string;
 }
 
 /**

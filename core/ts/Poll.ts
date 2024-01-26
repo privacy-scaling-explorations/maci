@@ -25,6 +25,7 @@ import {
   type IJsonCommand,
   type IJsonPCommand,
   type IJsonTCommand,
+  blankStateLeafHash,
 } from "maci-domainobjs";
 
 import assert from "assert";
@@ -130,6 +131,9 @@ export class Poll implements IPoll {
 
   emptyBallotHash?: bigint;
 
+  // how many users signed up
+  private numSignups = 0n;
+
   /**
    * Constructs a new Poll object.
    * @param pollEndTimestamp - The Unix timestamp at which the poll ends.
@@ -173,12 +177,30 @@ export class Poll implements IPoll {
   }
 
   /**
-   * Copy the state from the MaciState instance.
+   * Update a Poll with data from MaciState.
+   * This is the step where we copy the state from the MaciState instance,
+   * and set the number of signups we have so far.
    */
-  copyStateFromMaci = (): void => {
+  updatePoll = (numSignups: bigint): void => {
+    // there might be occasions where we fetch logs after new signups have been made
+    // logs are fetched (and MaciState/Poll created locally) after stateAq have been
+    // merged in. If someone signs up after that and we fetch that record
+    // then we won't be able to verify the processing on chain as the data will
+    // not match. For this, we must only copy up to the number of signups
+
     // Copy the state tree, ballot tree, state leaves, and ballot leaves
-    this.stateLeaves = this.maciStateRef.stateLeaves.map((x) => x.copy());
-    this.stateTree = this.maciStateRef.stateTree.copy();
+
+    // start by setting the number of signups
+    this.setNumSignups(numSignups);
+    // copy up to numSignups state leaves
+    this.stateLeaves = this.maciStateRef.stateLeaves.slice(0, Number(this.numSignups)).map((x) => x.copy());
+
+    // create a new state tree
+    this.stateTree = new IncrementalQuinTree(this.stateTreeDepth, blankStateLeafHash, STATE_TREE_ARITY, hash5);
+    // add all leaves
+    this.stateLeaves.forEach((stateLeaf) => {
+      this.stateTree?.insert(stateLeaf.hash());
+    });
 
     // Create as many ballots as state leaves
     this.emptyBallotHash = this.emptyBallot.hash();
@@ -457,7 +479,7 @@ export class Poll implements IPoll {
     // ensure we copy the state from MACI when we start processing the
     // first batch
     if (!this.stateCopied) {
-      this.copyStateFromMaci();
+      throw new Error("You must update the poll with the correct data first");
     }
 
     // Generate circuit inputs
@@ -509,8 +531,10 @@ export class Poll implements IPoll {
 
               // update the state leaves with the new state leaf (result of processing the message)
               this.stateLeaves[index] = r.newStateLeaf!.copy();
+
               // we also update the state tree with the hash of the new state leaf
               this.stateTree?.update(index, r.newStateLeaf!.hash());
+
               // store the new ballot
               this.ballots[index] = r.newBallot!;
               // update the ballot tree
@@ -723,7 +747,7 @@ export class Poll implements IPoll {
     /* eslint-disable no-bitwise */
     const packedVals =
       BigInt(this.maxValues.maxVoteOptions) +
-      (BigInt(this.maciStateRef.numSignUps) << 50n) +
+      (BigInt(this.numSignups) << 50n) +
       (BigInt(index) << 100n) +
       (BigInt(batchEndIndex) << 150n);
     /* eslint-enable no-bitwise */
@@ -818,7 +842,7 @@ export class Poll implements IPoll {
     this.subsidySalts[saltIndex] = newSubsidySalt;
     const newSubsidyCommitment = genTreeCommitment(this.subsidy, newSubsidySalt, this.treeDepths.voteOptionTreeDepth);
 
-    const packedVals = packSubsidySmallVals(this.rbi, this.cbi, this.maciStateRef.numSignUps);
+    const packedVals = packSubsidySmallVals(this.rbi, this.cbi, Number(this.numSignups));
 
     const inputHash = sha256Hash([packedVals, sbCommitment, currentSubsidyCommitment, newSubsidyCommitment]);
 
@@ -949,6 +973,11 @@ export class Poll implements IPoll {
    * @returns the circuit inputs for the TallyVotes circuit.
    */
   tallyVotes = (): ITallyCircuitInputs => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (this.sbSalts[this.currentMessageBatchIndex!] === undefined) {
+      throw new Error("You must process the messages first");
+    }
+
     const batchSize = this.batchSizes.tallyBatchSize;
 
     assert(this.hasUntalliedBallots(), "No more ballots to tally");
@@ -1079,7 +1108,7 @@ export class Poll implements IPoll {
     const sbSalt = this.sbSalts[this.currentMessageBatchIndex!];
     const sbCommitment = hash3([stateRoot, ballotRoot, sbSalt]);
 
-    const packedVals = packTallyVotesSmallVals(batchStartIndex, batchSize, this.maciStateRef.numSignUps);
+    const packedVals = packTallyVotesSmallVals(batchStartIndex, batchSize, Number(this.numSignups));
     const inputHash = sha256Hash([packedVals, sbCommitment, currentTallyCommitment, newTallyCommitment]);
 
     const ballotSubrootProof = this.ballotTree?.genSubrootProof(batchStartIndex, batchStartIndex + batchSize);
@@ -1243,6 +1272,9 @@ export class Poll implements IPoll {
       copied.subsidySalts[k] = BigInt(this.subsidySalts[k].toString());
     });
 
+    // update the number of signups
+    copied.setNumSignups(this.numSignups);
+
     return copied;
   };
 
@@ -1263,7 +1295,8 @@ export class Poll implements IPoll {
       this.maxValues.maxMessages === p.maxValues.maxMessages &&
       this.maxValues.maxVoteOptions === p.maxValues.maxVoteOptions &&
       this.messages.length === p.messages.length &&
-      this.encPubKeys.length === p.encPubKeys.length;
+      this.encPubKeys.length === p.encPubKeys.length &&
+      this.numSignups === p.numSignups;
 
     if (!result) {
       return false;
@@ -1300,6 +1333,7 @@ export class Poll implements IPoll {
       stateLeaves: this.stateLeaves.map((leaf) => leaf.toJSON()),
       results: this.tallyResult.map((result) => result.toString()),
       numBatchesProcessed: this.numBatchesProcessed,
+      numSignups: this.numSignups.toString(),
     };
   }
 
@@ -1349,7 +1383,7 @@ export class Poll implements IPoll {
     }
 
     // copy maci state
-    poll.copyStateFromMaci();
+    poll.updatePoll(BigInt(json.numSignups));
 
     return poll;
   }
@@ -1361,4 +1395,18 @@ export class Poll implements IPoll {
   setCoordinatorKeypair = (serializedPrivateKey: string): void => {
     this.coordinatorKeypair = new Keypair(PrivKey.deserialize(serializedPrivateKey));
   };
+
+  /**
+   * Set the number of signups to match the ones from the contract
+   * @param numSignups - the number of signups
+   */
+  setNumSignups = (numSignups: bigint): void => {
+    this.numSignups = numSignups;
+  };
+
+  /**
+   * Get the number of signups
+   * @returns The number of signups
+   */
+  getNumSignups = (): bigint => this.numSignups;
 }

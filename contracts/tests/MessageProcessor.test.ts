@@ -112,6 +112,9 @@ describe("MessageProcessor", () => {
 
     poll.publishMessage(message, padKey);
 
+    // update the poll state
+    poll.updatePoll(BigInt(maciState.stateLeaves.length));
+
     generatedInputs = poll.processMessages(pollId);
 
     // set the verification keys on the vk smart contract

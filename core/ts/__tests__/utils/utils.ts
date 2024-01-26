@@ -140,6 +140,7 @@ export class TestHarness {
    * This should be called after all votes have been cast.
    */
   finalizePoll = (): void => {
+    this.poll.updatePoll(BigInt(this.maciState.stateLeaves.length));
     this.poll.processMessages(this.pollId);
     this.poll.tallyVotes();
   };

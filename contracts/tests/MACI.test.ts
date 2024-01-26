@@ -265,14 +265,15 @@ describe("MACI", () => {
 
     it("should have the correct state root on chain after merging the acc queue", async () => {
       const onChainStateRoot = await stateAqContract.getMainRoot(STATE_TREE_DEPTH);
-      expect(onChainStateRoot.toString()).to.eq(maciState.stateTree.root.toString());
+      maciState.polls.get(pollId)?.updatePoll(await pollContract.numSignups());
+      expect(onChainStateRoot.toString()).to.eq(maciState.polls.get(pollId)?.stateTree?.root.toString());
     });
   });
 
   describe("getStateAqRoot", () => {
     it("should return the correct state root", async () => {
       const onChainStateRoot = await maciContract.getStateAqRoot();
-      expect(onChainStateRoot.toString()).to.eq(maciState.stateTree.root.toString());
+      expect(onChainStateRoot.toString()).to.eq(maciState.polls.get(pollId)?.stateTree?.root.toString());
     });
   });
 

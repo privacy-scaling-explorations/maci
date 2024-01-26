@@ -1,5 +1,4 @@
-import { IncrementalQuinTree, hash5 } from "maci-crypto";
-import { type PubKey, type Keypair, StateLeaf, blankStateLeaf, blankStateLeafHash } from "maci-domainobjs";
+import { type PubKey, type Keypair, StateLeaf, blankStateLeaf } from "maci-domainobjs";
 
 import type { IJsonMaciState, IJsonPoll, IMaciState, MaxValues, TreeDepths } from "./utils/types";
 
@@ -12,9 +11,6 @@ import { STATE_TREE_ARITY } from "./utils/constants";
 export class MaciState implements IMaciState {
   // a MaciState can hold multiple polls
   polls: Map<bigint, Poll> = new Map<bigint, Poll>();
-
-  // in this quinary tree we hold all signups (hash of a state leaf)
-  stateTree: IncrementalQuinTree;
 
   // the leaves of the state tree
   stateLeaves: StateLeaf[] = [];
@@ -35,11 +31,9 @@ export class MaciState implements IMaciState {
    */
   constructor(stateTreeDepth: number) {
     this.stateTreeDepth = stateTreeDepth;
-    this.stateTree = new IncrementalQuinTree(this.stateTreeDepth, blankStateLeafHash, STATE_TREE_ARITY, hash5);
 
     // we put a blank state leaf to prevent a DoS attack
     this.stateLeaves.push(blankStateLeaf);
-    this.stateTree.insert(blankStateLeafHash);
     // we need to increase the number of signups by one given
     // that we already added the blank leaf
     this.numSignUps += 1;
@@ -55,8 +49,6 @@ export class MaciState implements IMaciState {
   signUp(pubKey: PubKey, initialVoiceCreditBalance: bigint, timestamp: bigint): number {
     this.numSignUps += 1;
     const stateLeaf = new StateLeaf(pubKey, initialVoiceCreditBalance, timestamp);
-    const hash = stateLeaf.hash();
-    this.stateTree.insert(hash);
 
     return this.stateLeaves.push(stateLeaf.copy()) - 1;
   }
@@ -172,13 +164,6 @@ export class MaciState implements IMaciState {
     maciState.pollBeingProcessed = json.pollBeingProcessed;
     maciState.currentPollBeingProcessed = BigInt(json.currentPollBeingProcessed);
     maciState.numSignUps = json.numSignUps;
-
-    // re create the state tree (start from index 1 as in the constructor we already add the blank leaf)
-    for (let i = 1; i < json.stateLeaves.length; i += 1) {
-      const leaf = StateLeaf.fromJSON(json.stateLeaves[i]);
-      const leafHash = leaf.hash();
-      maciState.stateTree.insert(leafHash);
-    }
 
     // re-generate the polls and set the maci state reference
     maciState.polls = new Map(
