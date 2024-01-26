@@ -3,6 +3,6 @@
   "compilerOptions": {
     "outDir": "./build"
   },
-  "include": ["./ts", "./typechain-types"],
+  "include": ["./ts", "./typechain-types", "./tasks"],
   "files": ["./hardhat.config.ts"]
 }
