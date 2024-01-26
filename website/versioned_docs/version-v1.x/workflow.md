@@ -1,11 +1,19 @@
---
+---
 title: MACI Workflow
 description: Overview of the workflow/lifecycle of MACI
 sidebar_label: Workflow
-sidebar_position: ?
---
+sidebar_position: 3
+---
 
 <!-- TODO: Better name for this than "Workflow"? Lifecycle? -->
+<!-- "Overview" - change overview.md to codebase.md or "architecture"??? -->
+
+<!-- Overview should be an overview of the system... it's a state machine for voting (polls) -->
+<!-- TODO: explain state machine. Deploy Polls. "Voting" period. "Closed" period. "Finalized" period. -->
+<!-- Ultimately it's just the lifecycle of a Poll... -->
+<!-- MACI contract just maintains  -->
+
+<!-- "roles" as an independent page? Or "workflow" may be fine -->
 
 <!-- https://medium.com/privacy-scaling-explorations/a-technical-introduction-to-maci-1-0-db95c3a9439a -->
 <!-- TODO: create flowcharts, similar to to Kyle's (but make light/dark mode compatible) -->
@@ -17,6 +25,30 @@ This document borrows heavily from Kyle's great article:
 https://medium.com/privacy-scaling-explorations/a-technical-introduction-to-maci-1-0-db95c3a9439a
 
 Thanks Kyle!
+
+## Poll lifecycle
+
+The key component of MACI is a Poll.
+Operators can use MACI to deploy polls and add vote options to polls, which users can then vote on.
+Each instance of MACI can deploy multiple Polls, although only one Poll can be active at a time.
+
+Each Poll deployed by MACI has 3 potential stages:
+
+1. Open
+2. Closed
+3. Finalized
+
+### 1) Open
+
+When a Poll is deployed, its voting period starts immediately. As part of deployment, the `duration` of the Poll is set, which determines how long the Poll is open for voting.
+
+### 2) Closed
+
+A Poll is "closed", when the voting period ends. At this point, no users may submit any more votes. The Poll remaines closed until the coordinator tallies the final results.
+
+### 3) Finalized
+
+In order to finalize a Poll, the coordinator must process all the messages, tally the results, and publish the on-chain proofs.
 
 # System overview
 
