@@ -33,7 +33,10 @@
     "test:hasherBenchmarks": "hardhat test ./tests/HasherBenchmarks.test.ts",
     "test:vkRegistry": "hardhat test ./tests/VkRegistry.test.ts",
     "test:pollFactory": "hardhat test ./tests/PollFactory.test.ts",
-    "test:subsidy": "hardhat test ./tests/Subsidy.test.ts"
+    "test:subsidy": "hardhat test ./tests/Subsidy.test.ts",
+    "deploy": "hardhat deploy-full",
+    "deploy:hardhat": "pnpm run deploy",
+    "deploy:sepolia": "pnpm run deploy --network sepolia"
   },
   "dependencies": {
     "@nomicfoundation/hardhat-ethers": "^3.0.5",
@@ -51,12 +54,15 @@
   "devDependencies": {
     "@types/chai": "^4.3.11",
     "@types/circomlibjs": "^0.1.6",
+    "@types/lowdb": "^1.0.15",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.11.5",
     "@types/snarkjs": "^0.7.8",
     "chai": "^4.3.10",
+    "dotenv": "^16.3.2",
     "hardhat-artifactor": "^0.2.0",
     "hardhat-contract-sizer": "^2.10.0",
+    "lowdb": "^1.0.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.3.3"
   }

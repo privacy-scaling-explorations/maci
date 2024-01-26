@@ -1,7 +1,3 @@
-// eslint-disable-next-line
-// @ts-ignore typedoc doesn't want to get types from toolbox
-import { ethers } from "hardhat";
-
 import type { Action, SnarkProof, Groth16Proof } from "./types";
 import type { Ownable } from "../typechain-types";
 import type { FeeData, Network, Signer } from "ethers";
@@ -81,6 +77,8 @@ export const log = (msg: string, quiet: boolean): void => {
  * @returns the default signer
  */
 export const getDefaultSigner = async (): Promise<Signer> => {
+  const { ethers } = await import("hardhat");
+
   const [signer] = await ethers.getSigners();
 
   return signer;
@@ -101,7 +99,11 @@ export const getDefaultNetwork = async (): Promise<Network | undefined> => {
  * @dev to be used while testing
  * @returns the signers
  */
-export const getSigners = async (): Promise<Signer[]> => ethers.getSigners();
+export const getSigners = async (): Promise<Signer[]> => {
+  const { ethers } = await import("hardhat");
+
+  return ethers.getSigners();
+};
 
 /**
  * Get the current fee data from the blockchain node.

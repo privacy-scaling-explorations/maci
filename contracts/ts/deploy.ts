@@ -1,7 +1,4 @@
 import { type ContractFactory, type Signer, BaseContract } from "ethers";
-// eslint-disable-next-line
-// @ts-ignore typedoc doesn't want to get types from toolbox
-import { ethers } from "hardhat";
 
 import type { IDeployMaciArgs, IDeployedMaci, IDeployedPoseidonContracts } from "./types";
 
@@ -54,6 +51,8 @@ export const linkPoseidonLibraries = async (
   quiet = false,
 ): Promise<ContractFactory> => {
   log(`Linking Poseidon libraries to ${solFileToLink}`, quiet);
+  const { ethers } = await import("hardhat");
+
   const contractFactory = await ethers.getContractFactory(solFileToLink, {
     signer: signer || (await getDefaultSigner()),
     libraries: {
@@ -81,9 +80,13 @@ export const deployContract = async <T extends BaseContract>(
   ...args: unknown[]
 ): Promise<T> => {
   log(`Deploying ${contractName}`, quiet);
+  const { ethers } = await import("hardhat");
+
   const contractFactory = await ethers.getContractFactory(contractName, signer || (await getDefaultSigner()));
+  const feeData = await getFeeData();
   const contract = await contractFactory.deploy(...args, {
-    maxFeePerGas: await getFeeData().then((res) => res?.maxFeePerGas),
+    maxFeePerGas: feeData?.maxFeePerGas,
+    maxPriorityFeePerGas: feeData?.maxPriorityFeePerGas,
   });
   await contract.deploymentTransaction()!.wait();
 
@@ -213,8 +216,10 @@ export const deployContractWithLinkedLibraries = async <T extends BaseContract>(
   ...args: unknown[]
 ): Promise<T> => {
   log(`Deploying ${name}`, quiet);
+  const feeData = await getFeeData();
   const contract = await contractFactory.deploy(...args, {
-    maxFeePerGas: await getFeeData().then((res) => res?.maxFeePerGas),
+    maxFeePerGas: feeData?.maxFeePerGas,
+    maxPriorityFeePerGas: feeData?.maxPriorityFeePerGas,
   });
   await contract.deploymentTransaction()!.wait();
 
