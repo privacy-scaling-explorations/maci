@@ -15,6 +15,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: dev
+
       - uses: pnpm/action-setup@v2
         with:
           version: latest
@@ -58,7 +59,7 @@ jobs:
         run: ./.github/scripts/download-ceremony-artifacts.sh
 
       - name: Run e2e tests
-        run: ./.github/scripts/ceremony-param-tests-c-witness.sh
+        run: pnpm test:cli-ceremony
 
       - name: Stop Hardhat
         if: always()

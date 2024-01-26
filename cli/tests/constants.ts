@@ -46,6 +46,18 @@ export const testTallyVotesWasmPath =
 export const testSubsidyWasmPath =
   "./zkeys/SubsidyPerBatch_10-1-2_test/SubsidyPerBatch_10-1-2_test_js/SubsidyPerBatch_10-1-2_test.wasm";
 export const testRapidsnarkPath = `${homedir()}/rapidsnark/build/prover`;
+export const ceremonyProcessMessageZkeyPath = "./zkeys/processMessages_6-8-2-3/processMessages_6-8-2-3.zkey";
+export const ceremonyTallyVotesZkeyPath = "./zkeys/tallyVotes_6-2-3/tallyVotes_6-2-3.zkey";
+export const cermeonyProcessMessagesWitnessPath =
+  "./zkeys/processMessages_6-8-2-3/processMessages_6-8-2-3_cpp/processMessages_6-8-2-3";
+export const ceremonyProcessMessagesDatPath =
+  "./zkeys/processMessages_6-8-2-3/processMessages_6-8-2-3_cpp/processMessages_6-8-2-3.dat";
+export const ceremonyTallyVotesWitnessPath = "./zkeys/tallyVotes_6-2-3/tallyVotes_6-2-3_cpp/tallyVotes_6-2-3";
+export const ceremonyTallyVotesDatPath = "./zkeys/tallyVotes_6-2-3/tallyVotes_6-2-3_cpp/tallyVotes_6-2-3.dat";
+export const ceremonyProcessMessagesWasmPath =
+  "./zkeys/processMessages_6-8-2-3/processMessages_6-8-2-3_js/processMessages_6-8-2-3.wasm";
+export const ceremonyTallyVotesWasmPath = "./zkeys/tallyVotes_6-2-3/tallyVotes_6-2-3_js/tallyVotes_6-2-3.wasm";
+
 export const pollDuration = 90;
 export const maxMessages = 25;
 export const maxVoteOptions = 25;
