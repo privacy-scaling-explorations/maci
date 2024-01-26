@@ -53,6 +53,9 @@ export const compileCircuits = async (cWitness?: boolean, outputPath?: string): 
   // eslint-disable-next-line @typescript-eslint/prefer-for-of
   for (let i = 0; i < circuitsConfigs.length; i += 1) {
     const circuit = circuitsConfigs[i];
+    // eslint-disable-next-line no-console
+    console.log(`Compiling ${circuit.name}...`);
+
     // eslint-disable-next-line no-await-in-loop
     const outPath = await circomkitInstance.compile(circuit.name, circuit);
 

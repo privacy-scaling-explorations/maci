@@ -45,9 +45,12 @@ export const generateZkeys = async (outputPath?: string): Promise<void> => {
   for (let i = 0; i < circuitsConfigs.length; i += 1) {
     const circuit = circuitsConfigs[i];
 
+    // eslint-disable-next-line no-console
+    console.log(`Generating zKey for ${circuit.name}...`);
+
     // eslint-disable-next-line no-await-in-loop
     const { proverKeyPath } = await circomkitInstance.setup(circuit.name);
-    // rename to zkey as circomkit changes to pkey
+    // rename the zkey
     const zkeyPath = path.resolve(circomKitConfig.dirBuild, circuit.name, `${circuit.name}.0.zkey`);
     fs.renameSync(proverKeyPath, zkeyPath);
   }
