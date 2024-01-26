@@ -76,6 +76,7 @@ const config: Config = {
         blogRouteBasePath: "/blog",
       },
     ],
+    "docusaurus-plugin-image-zoom",
   ],
   stylesheets: [
     {
@@ -172,6 +173,7 @@ const config: Config = {
       ],
       copyright: `Copyright © ${new Date().getFullYear()} Privacy and Scaling Explorations`,
     },
+    zoom: {},
   } satisfies Preset.ThemeConfig,
 };
 
