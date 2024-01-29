@@ -26,7 +26,7 @@
     "test": "lerna run test --ignore maci-integrationtests --ignore maci-cli",
     "types": "lerna run types",
     "typedoc": "lerna run typedoc",
-    "prepare": "is-ci || husky install"
+    "prepare": "is-ci || husky"
   },
   "author": "PSE",
   "devDependencies": {
@@ -47,7 +47,7 @@
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-unused-imports": "^3.0.0",
-    "husky": "^8.0.0",
+    "husky": "^9.0.7",
     "is-ci": "^3.0.1",
     "lerna": "^8.0.2",
     "lint-staged": "^15.1.0",
