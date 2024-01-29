@@ -6,8 +6,6 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { SignUpGatekeeper } from "./SignUpGatekeeper.sol";
 import { SignUpToken } from "../SignUpToken.sol";
 
-import { MACI } from "../MACI.sol";
-
 /// @title SignUpTokenGatekeeper
 /// @notice This contract allows to gatekeep MACI signups
 /// by requiring new voters to own a certain ERC721 token
@@ -15,7 +13,7 @@ contract SignUpTokenGatekeeper is SignUpGatekeeper, Ownable {
   /// @notice the reference to the SignUpToken contract
   SignUpToken public token;
   /// @notice the reference to the MACI contract
-  MACI public maci;
+  address public maci;
 
   /// @notice a mapping of tokenIds to whether they have been used to sign up
   mapping(uint256 => bool) public registeredTokenIds;
@@ -33,7 +31,7 @@ contract SignUpTokenGatekeeper is SignUpGatekeeper, Ownable {
 
   /// @notice Adds an uninitialised MACI instance to allow for token signups
   /// @param _maci The MACI contract interface to be stored
-  function setMaciInstance(MACI _maci) public override onlyOwner {
+  function setMaciInstance(address _maci) public override onlyOwner {
     maci = _maci;
   }
 
@@ -43,7 +41,7 @@ contract SignUpTokenGatekeeper is SignUpGatekeeper, Ownable {
   /// @param _user The user's Ethereum address.
   /// @param _data The ABI-encoded tokenId as a uint256.
   function register(address _user, bytes memory _data) public override {
-    if (address(maci) != msg.sender) revert OnlyMACI();
+    if (maci != msg.sender) revert OnlyMACI();
     // Decode the given _data bytes into a uint256 which is the token ID
     uint256 tokenId = abi.decode(_data, (uint256));
 
