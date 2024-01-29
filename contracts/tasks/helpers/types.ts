@@ -1,5 +1,5 @@
 import type { BaseContract } from "ethers";
-import type { TaskArguments } from "hardhat/types";
+import type { Libraries, TaskArguments } from "hardhat/types";
 
 /**
  * Interface that represents deploy params
@@ -161,4 +161,40 @@ export enum EContracts {
   PoseidonT4 = "PoseidonT4",
   PoseidonT5 = "PoseidonT5",
   PoseidonT6 = "PoseidonT6",
+}
+
+/**
+ * Interface that represents verify arguments
+ */
+export interface IVerifyFullArgs {
+  /**
+   * Ignore verified status
+   */
+  force?: boolean;
+}
+
+/**
+ * Interface that represents verification subtaks arguments
+ * This is extracted from hardhat etherscan plugin
+ */
+export interface IVerificationSubtaskArgs {
+  /**
+   * Contract address
+   */
+  address: string;
+
+  /**
+   * Constructor arguments
+   */
+  constructorArguments: unknown[];
+
+  /**
+   * Fully qualified name of the contract
+   */
+  contract?: string;
+
+  /**
+   * Libraries
+   */
+  libraries?: Libraries;
 }

@@ -113,8 +113,8 @@ task("deploy-full", "Deploy environment")
 
     console.log("\nDeployment has finished");
 
-    // if (verify) {
-    //   console.log("Verify all contracts");
-    //   await hre.run("verify:verify-all-contracts");
-    // }
+    if (verify) {
+      console.log("Verify all contracts");
+      await hre.run("verify-full");
+    }
   });

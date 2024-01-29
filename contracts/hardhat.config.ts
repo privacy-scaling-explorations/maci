@@ -10,6 +10,7 @@ import type { HardhatUserConfig } from "hardhat/config";
 import "./tasks/deploy";
 import { EChainId, ESupportedChains, NETWORKS_DEFAULT_GAS, getNetworkRpcUrls } from "./tasks/helpers/constants";
 import "./tasks/runner/deployFull";
+import "./tasks/runner/verifyFull";
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ const getCommonNetworkConfig = (networkName: ESupportedChains, chainId: number, 
   blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
   gasMultiplier: DEFAULT_GAS_MUL,
   gasPrice: NETWORKS_DEFAULT_GAS[networkName],
+  saveDeployments: true,
   chainId,
   accounts: {
     mnemonic: mnemonic || process.env.MNEMONIC || TEST_MNEMONIC,
