@@ -51,7 +51,8 @@ export const deploy = async ({
   const poseidonT6 = poseidonT6Address || readContractAddress("PoseidonT6", network?.name);
 
   // if we did not deploy it before, then deploy it now
-  let initialVoiceCreditProxyContractAddress: string | undefined;
+  let initialVoiceCreditProxyContractAddress: string | undefined =
+    initialVoiceCreditsProxyAddress || readContractAddress("InitialVoiceCreditProxy", network?.name);
 
   if (!initialVoiceCreditsProxyAddress) {
     const contract = await deployConstantInitialVoiceCreditProxy(
@@ -64,8 +65,9 @@ export const deploy = async ({
   }
 
   // check if we have a signupGatekeeper already deployed or passed as arg
-  let signupGatekeeperContractAddress = readContractAddress("SignUpGatekeeper", network?.name);
-  if (!signupGatekeeperContractAddress && !signupGatekeeperAddress) {
+  let signupGatekeeperContractAddress =
+    signupGatekeeperAddress || readContractAddress("SignUpGatekeeper", network?.name);
+  if (!signupGatekeeperContractAddress) {
     const contract = await deployFreeForAllSignUpGatekeeper(signer, true);
     signupGatekeeperContractAddress = await contract.getAddress();
   }
@@ -84,7 +86,7 @@ export const deploy = async ({
   // deploy MACI, stateAq, PollFactory and poseidon
   const { maciContract, stateAqContract, pollFactoryContract, poseidonAddrs } = await deployMaci({
     signUpTokenGatekeeperContractAddress: signupGatekeeperContractAddress,
-    initialVoiceCreditBalanceAddress: initialVoiceCreditProxyContractAddress!,
+    initialVoiceCreditBalanceAddress: initialVoiceCreditProxyContractAddress,
     topupCreditContractAddress: topUpCreditAddress,
     poseidonAddresses: {
       poseidonT3,
@@ -104,7 +106,7 @@ export const deploy = async ({
   ]);
 
   // save to the JSON File
-  storeContractAddress("InitialVoiceCreditProxy", initialVoiceCreditProxyContractAddress!, network?.name);
+  storeContractAddress("InitialVoiceCreditProxy", initialVoiceCreditProxyContractAddress, network?.name);
   storeContractAddress("SignUpGatekeeper", signupGatekeeperContractAddress, network?.name);
   storeContractAddress("Verifier", verifierContractAddress, network?.name);
   storeContractAddress("MACI", maciContractAddress, network?.name);
@@ -130,6 +132,6 @@ export const deploy = async ({
     poseidonT5Address: poseidonAddrs.poseidonT5,
     poseidonT6Address: poseidonAddrs.poseidonT6,
     signUpGatekeeperAddress: signupGatekeeperContractAddress,
-    initialVoiceCreditProxyAddress: initialVoiceCreditProxyContractAddress!,
+    initialVoiceCreditProxyAddress: initialVoiceCreditProxyContractAddress,
   };
 };
