@@ -26,7 +26,7 @@
     "test": "lerna run test --ignore maci-integrationtests --ignore maci-cli",
     "types": "lerna run types",
     "typedoc": "lerna run typedoc",
-    "prepare": "is-ci || husky install"
+    "prepare": "is-ci || husky"
   },
   "author": "PSE",
   "devDependencies": {
