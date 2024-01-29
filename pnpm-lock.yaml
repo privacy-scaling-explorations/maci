@@ -157,8 +157,8 @@ importers:
         specifier: ^11.1.0
         version: 11.1.0
       dotenv:
-        specifier: ^16.3.2
-        version: 16.3.2
+        specifier: ^16.4.1
+        version: 16.4.1
       ethers:
         specifier: ^6.10.0
         version: 6.10.0
@@ -279,8 +279,8 @@ importers:
         specifier: ^4.3.10
         version: 4.4.0
       dotenv:
-        specifier: ^16.3.2
-        version: 16.3.2
+        specifier: ^16.4.1
+        version: 16.4.1
       hardhat-artifactor:
         specifier: ^0.2.0
         version: 0.2.0(hardhat@2.19.4)
@@ -8225,6 +8225,11 @@ packages:
 
   /dotenv@16.3.2:
     resolution: {integrity: sha512-HTlk5nmhkm8F6JcdXvHIzaorzCoziNQT9mGxLPVXW8wJF1TiGSL60ZGB4gHWabHOaMmWmhvk2/lPHfnBiT78AQ==}
+    engines: {node: '>=12'}
+    dev: true
+
+  /dotenv@16.4.1:
+    resolution: {integrity: sha512-CjA3y+Dr3FyFDOAMnxZEGtnW9KBR2M0JvvUtXNW+dYJL5ROWxP9DUHCwgFqpMk0OXCc0ljhaNTr2w/kutYIcHQ==}
     engines: {node: '>=12'}
 
   /duplexer@0.1.2:

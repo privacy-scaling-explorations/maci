@@ -34,7 +34,7 @@
     "@commander-js/extra-typings": "^11.1.0",
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
     "commander": "^11.1.0",
-    "dotenv": "^16.3.2",
+    "dotenv": "^16.4.1",
     "ethers": "^6.10.0",
     "hardhat": "^2.19.2",
     "maci-circuits": "^1.1.2",
