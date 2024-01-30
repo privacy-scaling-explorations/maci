@@ -5,6 +5,9 @@ import { EContracts, IDeployParams } from "../../helpers/types";
 const deployment = Deployment.getInstance();
 const storage = ContractStorage.getInstance();
 
+/**
+ * Deploy step registration and task itself
+ */
 deployment
   .deployTask("full:deploy-message-processor-factory", "Deploy message processor factory")
   .setAction(async ({ incremental }: IDeployParams, hre) => {

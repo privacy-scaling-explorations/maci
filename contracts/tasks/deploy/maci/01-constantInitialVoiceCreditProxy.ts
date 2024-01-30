@@ -7,6 +7,9 @@ const DEFAULT_INITIAL_VOICE_CREDITS = 99;
 const deployment = Deployment.getInstance();
 const storage = ContractStorage.getInstance();
 
+/**
+ * Deploy step registration and task itself
+ */
 deployment
   .deployTask("full:deploy-constant-initial-voice-credit-proxy", "Deploy constant initial voice credit proxy")
   .setAction(

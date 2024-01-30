@@ -8,6 +8,10 @@ import type { IDeployParams } from "../helpers/types";
 import { ContractStorage } from "../helpers/ContractStorage";
 import { Deployment } from "../helpers/Deployment";
 
+/**
+ * Main deployment task which runs deploy steps in the same order that `Deployment#deployTask` is called.
+ * Note: you probably need to use indicies for deployment step files to support the correct order.
+ */
 task("deploy-full", "Deploy environment")
   .addFlag("incremental", "Incremental deployment")
   .addFlag("strict", "Fail on warnings")

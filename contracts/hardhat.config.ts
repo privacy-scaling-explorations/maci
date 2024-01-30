@@ -7,6 +7,7 @@ import "solidity-docgen";
 
 import type { HardhatUserConfig } from "hardhat/config";
 
+// Don't forget to import new tasks here
 import "./tasks/deploy";
 import { EChainId, ESupportedChains, NETWORKS_DEFAULT_GAS, getNetworkRpcUrls } from "./tasks/helpers/constants";
 import "./tasks/runner/deployFull";

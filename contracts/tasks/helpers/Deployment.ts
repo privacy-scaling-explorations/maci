@@ -5,18 +5,38 @@ import type { EContracts, IDeployParams, IDeployStep, IDeployStepCatalog } from 
 import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import type { ConfigurableTaskDefinition, HardhatRuntimeEnvironment, TaskArguments } from "hardhat/types";
 
+/**
+ * @notice Deployment helper class to run sequential deploy using steps and deploy contracts.
+ */
 export class Deployment {
+  /**
+   * Singleton instance for class
+   */
   private static INSTANCE?: Deployment;
 
+  /**
+   * Hardhat runtime environment
+   */
   private hre?: HardhatRuntimeEnvironment;
 
+  /**
+   * Step catalog to create sequential tasks
+   */
   private stepCatalog: Map<string, IDeployStepCatalog[]>;
 
+  /**
+   * Initialize class properties only once
+   */
   private constructor(hre?: HardhatRuntimeEnvironment) {
     this.stepCatalog = new Map([["full", []]]);
     this.hre = hre;
   }
 
+  /**
+   * Get singleton object
+   *
+   * @returns {ContractStorage} singleton object
+   */
   static getInstance(hre?: HardhatRuntimeEnvironment): Deployment {
     if (!Deployment.INSTANCE) {
       Deployment.INSTANCE = new Deployment(hre);
@@ -25,6 +45,11 @@ export class Deployment {
     return Deployment.INSTANCE;
   }
 
+  /**
+   * Get deployer (first signer) from hardhat runtime environment
+   *
+   * @returns {Promise<HardhatEthersSigner>} - signer
+   */
   async getDeployer(): Promise<HardhatEthersSigner> {
     this.checkHre();
 
@@ -33,16 +58,34 @@ export class Deployment {
     return deployer;
   }
 
+  /**
+   * Set hardhat runtime environment
+   *
+   * @param hre - hardhat runtime environment
+   */
   setHre(hre: HardhatRuntimeEnvironment): void {
     this.hre = hre;
   }
 
+  /**
+   * Check if hardhat runtime environment is set
+   *
+   * @throws {Error} error if there is no hardhat runtime environment set
+   */
   private checkHre(): void {
     if (!this.hre) {
       throw new Error("Hardhat Runtime Environment is not set");
     }
   }
 
+  /**
+   * Register deploy task by updating step catalog and return task definition
+   *
+   * @param taskName - unique task name
+   * @param stepName - task description
+   * @param paramsFn - optional function to override default task arguments
+   * @returns {ConfigurableTaskDefinition} hardhat task definition
+   */
   deployTask(
     taskName: string,
     stepName: string,
@@ -54,6 +97,12 @@ export class Deployment {
     return task(taskName, stepName);
   }
 
+  /**
+   * Register deployment step
+   *
+   * @param deployType - deploy type
+   * @param {IDeployStepCatalog} - deploy step catalog name, description and param mapper
+   */
   private addStep(deployType: string, { name, taskName, paramsFn }: IDeployStepCatalog): void {
     const steps = this.stepCatalog.get(deployType);
 
@@ -64,9 +113,22 @@ export class Deployment {
     steps.push({ name, taskName, paramsFn });
   }
 
+  /**
+   * Get default params from hardhat task
+   *
+   * @param {IDeployParams} params - hardhat task arguments
+   * @returns {Promise<TaskArguments>} params for deploy workflow
+   */
   private getDefaultParams = ({ verify, incremental, amount, stateTreeDepth }: IDeployParams): Promise<TaskArguments> =>
     Promise.resolve({ verify, incremental, amount, stateTreeDepth });
 
+  /**
+   * Get deploy step sequence
+   *
+   * @param deployType - deploy type
+   * @param {IDeployParams} params - deploy params
+   * @returns {Promise<IDeployStep[]>} deploy steps
+   */
   getDeploySteps = async (deployType: string, params: IDeployParams): Promise<IDeployStep[]> => {
     const stepList = this.stepCatalog.get(deployType);
 
@@ -84,6 +146,14 @@ export class Deployment {
     );
   };
 
+  /**
+   * Deploy contract and return it
+   *
+   * @param contractName - contract name
+   * @param signer - signer
+   * @param args - constructor arguments
+   * @returns deployed contract
+   */
   async deployContract<T extends BaseContract>(
     contractName: EContracts,
     signer?: Signer,
@@ -104,6 +174,13 @@ export class Deployment {
     return contract as unknown as T;
   }
 
+  /**
+   * Deploy contract with linked libraries using contract factory
+   *
+   * @param contractFactory - ethers contract factory
+   * @param args - constructor arguments
+   * @returns deployed contract
+   */
   async deployContractWithLinkedLibraries<T extends BaseContract>(
     contractFactory: ContractFactory,
     ...args: unknown[]
@@ -120,6 +197,17 @@ export class Deployment {
     return contract as T;
   }
 
+  /**
+   *  Link poseidon libraries with contract factory and return it
+   *
+   * @param name - contract name
+   * @param poseidonT3Address - PoseidonT3 contract address
+   * @param poseidonT4Address - PoseidonT4 contract address
+   * @param poseidonT5Address - PoseidonT5 contract address
+   * @param poseidonT6Address - PoseidonT6 contract address
+   * @param signer - signer
+   * @returns contract factory with linked libraries
+   */
   async linkPoseidonLibraries(
     name: EContracts,
     poseidonT3Address: string,

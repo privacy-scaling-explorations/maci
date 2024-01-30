@@ -1,10 +1,15 @@
-/* eslint-disable import/no-extraneous-dependencies */
-/* eslint-disable no-console */
+/* eslint-disable import/no-extraneous-dependencies, no-console */
 import low from "lowdb";
 import FileSync from "lowdb/adapters/FileSync";
 
 import type { EContracts, IRegisterContract, IStorageInstanceEntry, IStorageNamedEntry } from "./types";
 
+/**
+ * Internal storage structure type.
+ * named: contracts can be queried by name
+ * instance: contract can be queried by address
+ * verified: mark contracts which are already verified
+ */
 type TStorage = Record<
   string,
   Partial<{
@@ -14,15 +19,33 @@ type TStorage = Record<
   }>
 >;
 
+/**
+ * @notice Contract storage keeps all deployed contracts with addresses, arguments in the json file.
+ * This class is using for incremental deployment and verification.
+ */
 export class ContractStorage {
+  /**
+   * Singleton instance for class
+   */
   private static INSTANCE?: ContractStorage;
 
+  /**
+   * Json file database instance
+   */
   private db: low.LowdbSync<TStorage>;
 
+  /**
+   * Initialize class properties only once
+   */
   private constructor() {
     this.db = low(new FileSync<TStorage>("./deployed-contracts.json"));
   }
 
+  /**
+   * Get singleton object
+   *
+   * @returns {ContractStorage} singleton object
+   */
   static getInstance(): ContractStorage {
     if (!ContractStorage.INSTANCE) {
       ContractStorage.INSTANCE = new ContractStorage();
@@ -31,6 +54,11 @@ export class ContractStorage {
     return ContractStorage.INSTANCE;
   }
 
+  /**
+   * Register contract and save contract address, constructor args in the json file
+   *
+   * @param {IRegisterContract} args - register arguments
+   */
   async register({ id, contract, network, args }: IRegisterContract): Promise<void> {
     const contractAddress = await contract.getAddress();
 
@@ -72,6 +100,12 @@ export class ContractStorage {
       .write();
   }
 
+  /**
+   * Get contract instances from the json file
+   *
+   * @param network - selected network
+   * @returns {[string, IStorageInstanceEntry][]} storage instance entries
+   */
   getInstances(network: string): [string, IStorageInstanceEntry][] {
     const collection = this.db.get(`${network}.instance`);
     const value = collection.value() as IStorageInstanceEntry[] | undefined;
@@ -79,14 +113,35 @@ export class ContractStorage {
     return Object.entries<IStorageInstanceEntry>(value || []);
   }
 
+  /**
+   * Check if contract is verified or not locally
+   *
+   * @param address - contract address
+   * @param network - selected network
+   * @returns contract verified or not
+   */
   getVerified(address: string, network: string): boolean {
     return this.db.get(`${network}.verified.${address}`).value() as unknown as boolean;
   }
 
+  /**
+   * Set contract verification in the json file
+   *
+   * @param address - contract address
+   * @param network - selected network
+   * @param verified - verified or not
+   */
   setVerified = (address: string, network: string, verified: boolean): void => {
     this.db.set(`${network}.verified.${address}`, verified).write();
   };
 
+  /**
+   * Get contract address by name from the json file
+   *
+   * @param id - contract name
+   * @param network - selected network
+   * @returns contract address
+   */
   getAddress(id: EContracts, network: string): string | undefined {
     const collection = this.db.get(`${network}.named.${id}`);
     const namedEntry = collection.value() as IStorageNamedEntry | undefined;
@@ -94,6 +149,14 @@ export class ContractStorage {
     return namedEntry?.address;
   }
 
+  /**
+   * Get contract address by name from the json file
+   *
+   * @param id - contract name
+   * @param network - selected network
+   * @throws {Error} if there is no address the error will be thrown
+   * @returns contract address
+   */
   mustGetAddress(id: EContracts, network: string): string {
     const address = this.getAddress(id, network);
 
@@ -104,6 +167,13 @@ export class ContractStorage {
     return address;
   }
 
+  /**
+   * Get contract from the json file with sizes and multi count
+   *
+   * @param deployer - deployer address
+   * @param network - selected network
+   * @returns {[entries: Map<string, string>, length: number, multiCount: number]}
+   */
   printContracts(deployer: string, network: string): [Map<string, string>, number, number] {
     console.log("Contracts deployed at", network, "by", deployer);
     console.log("---------------------------------");
@@ -135,6 +205,11 @@ export class ContractStorage {
     return [entryMap, instanceEntries.length, multiCount];
   }
 
+  /**
+   * Clean json file for selected network
+   *
+   * @param network - selected network
+   */
   cleanup(network: string): void {
     this.db.set(network, {}).write();
   }
