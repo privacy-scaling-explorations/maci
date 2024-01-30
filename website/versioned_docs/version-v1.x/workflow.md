@@ -83,7 +83,7 @@ To explain the MACI workflow, let's give a quick overview of the key smart contr
 
 ### MACI
 
-The MACI contract is responsible for keeping track of user signups by recording the initial public key for each user. To conduct a voting round, the coordinator can deploy a Poll via MACI (with the `deployPoll` function).
+The MACI contract is responsible for keeping track of user signups by recording the initial public key for each user. To conduct a voting round, the coordinator can deploy a Poll via MACI (with the [`deployPoll` function](/docs/solidity-docs/MACI#deploypoll)).
 
 ### Poll
 
