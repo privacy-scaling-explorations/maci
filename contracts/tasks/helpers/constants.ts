@@ -1,3 +1,6 @@
+/**
+ * Supported networks for deployment and task running
+ */
 export enum ESupportedChains {
   Sepolia = "sepolia",
   Goerli = "goerli",
@@ -9,6 +12,9 @@ export enum ESupportedChains {
   Optimism = "optimism",
 }
 
+/**
+ * Supported network chain ids for deployment and task running
+ */
 export enum EChainId {
   Hardhat = 31337,
   Goerli = 5,
@@ -22,8 +28,17 @@ export enum EChainId {
 
 const GWEI = 1e9;
 
+/**
+ * Convert gas price from gwei to wei
+ *
+ * @param value - gas price in gwei
+ * @returns gas price in wei
+ */
 const gasPrice = (value: number) => value * GWEI;
 
+/**
+ * Gas price settings for supported network
+ */
 export const NETWORKS_DEFAULT_GAS: Record<ESupportedChains, number | "auto"> = {
   [ESupportedChains.Sepolia]: gasPrice(2),
   [ESupportedChains.Goerli]: gasPrice(2),
@@ -35,6 +50,11 @@ export const NETWORKS_DEFAULT_GAS: Record<ESupportedChains, number | "auto"> = {
   [ESupportedChains.Optimism]: "auto",
 };
 
+/**
+ * Get network rpc urls object
+ *
+ * @returns {Record<ESupportedChains, string>} rpc urls for supported networks
+ */
 export const getNetworkRpcUrls = (): Record<ESupportedChains, string> => {
   const INFURA_KEY = process.env.INFURA_KEY ?? "";
 

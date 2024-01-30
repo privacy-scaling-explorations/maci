@@ -5,6 +5,9 @@ import { EContracts, IDeployParams } from "../../helpers/types";
 const deployment = Deployment.getInstance();
 const storage = ContractStorage.getInstance();
 
+/**
+ * Deploy step registration and task itself
+ */
 deployment
   .deployTask("full:deploy-topup-credit", "Deploy topup credit")
   .setAction(async ({ incremental }: IDeployParams, hre) => {

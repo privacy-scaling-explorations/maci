@@ -6,6 +6,9 @@ import type { IStorageInstanceEntry, IVerifyFullArgs } from "../helpers/types";
 import { ContractStorage } from "../helpers/ContractStorage";
 import { ContractVerifier } from "../helpers/ContractVerifier";
 
+/**
+ * Main verification task which runs hardhat-etherscan task for all the deployed contract.
+ */
 task("verify-full", "Verify contracts listed in storage")
   .addFlag("force", "Ignore verified status")
   .setAction(async ({ force = false }: IVerifyFullArgs, hre) => {
