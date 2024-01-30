@@ -98,7 +98,7 @@ describe("stress tests", function test() {
   // before all tests we deploy the vk registry contract and set the verifying keys
   before(async () => {
     // we deploy the vk registry contract
-    await deployVkRegistryContract(true);
+    await deployVkRegistryContract({});
     // we set the verifying keys
     await setVerifyingKeys(verifyingKeysArgs);
   });
@@ -142,7 +142,7 @@ describe("stress tests", function test() {
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(pollDuration);
+      await timeTravel({ seconds: pollDuration });
       await mergeMessages(mergeMessagesArgs);
       await mergeSignups(mergeSignupsArgs);
       await genProofs(genProofsCeremonyArgs);

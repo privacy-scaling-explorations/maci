@@ -7,9 +7,16 @@ import { type TopupArgs, logError, readContractAddress, contractExists, banner }
  * Publish a topup message
  * @param TopupArgs - The arguments for the topup command
  */
-export const topup = async ({ amount, stateIndex, pollId, maciAddress, quiet = true }: TopupArgs): Promise<void> => {
+export const topup = async ({
+  amount,
+  stateIndex,
+  pollId,
+  maciAddress,
+  signer,
+  quiet = true,
+}: TopupArgs): Promise<void> => {
   banner(quiet);
-  const signer = await getDefaultSigner();
+  const ethSigner = signer || (await getDefaultSigner());
   const network = await getDefaultNetwork();
 
   // ensure we have a valid MACI contract address
@@ -20,7 +27,7 @@ export const topup = async ({ amount, stateIndex, pollId, maciAddress, quiet = t
 
   const maciContractAddress = maciAddress || readContractAddress(maciAddress!, network?.name);
 
-  if (!(await contractExists(signer.provider!, maciContractAddress))) {
+  if (!(await contractExists(ethSigner.provider!, maciContractAddress))) {
     logError("There is no contract deployed at the specified address");
   }
 
@@ -38,15 +45,15 @@ export const topup = async ({ amount, stateIndex, pollId, maciAddress, quiet = t
   }
 
   const maciContractAbi = parseArtifact("MACI")[0];
-  const maciContract = new BaseContract(maciContractAddress, maciContractAbi, signer) as MACI;
+  const maciContract = new BaseContract(maciContractAddress, maciContractAbi, ethSigner) as MACI;
   const pollContractAbi = parseArtifact("Poll")[0];
   const pollAddr = await maciContract.getPoll(pollId);
 
-  if (!(await contractExists(signer.provider!, pollAddr))) {
+  if (!(await contractExists(ethSigner.provider!, pollAddr))) {
     logError("There is no Poll contract with this poll ID linked to the specified MACI contract.");
   }
 
-  const pollContract = new BaseContract(pollAddr, pollContractAbi, signer) as Poll;
+  const pollContract = new BaseContract(pollAddr, pollContractAbi, ethSigner) as Poll;
 
   try {
     // submit the topup message on chain

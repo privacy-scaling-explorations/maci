@@ -19,7 +19,6 @@ import {
 import { DeployedContracts, GenProofsArgs, PollContracts } from "../../ts/utils";
 import {
   coordinatorPrivKey,
-  pollDuration,
   verifyArgs,
   proveOnChainArgs,
   processMessageTestZkeyPath,
@@ -44,6 +43,7 @@ import {
   setVerifyingKeysArgs,
   deployArgs,
   deployPollArgs,
+  timeTravelArgs,
 } from "../constants";
 import { cleanSubsidy, isArm } from "../utils";
 
@@ -82,7 +82,7 @@ describe("e2e with Subsidy tests", function test() {
 
   before(async () => {
     // we deploy the vk registry contract
-    vkRegistryContractAddress = await deployVkRegistryContract(true);
+    vkRegistryContractAddress = await deployVkRegistryContract({});
     // we set the verifying keys
     await setVerifyingKeys({ ...setVerifyingKeysArgs, subsidyZkeyPath: subsidyTestZkeyPath });
   });
@@ -178,7 +178,7 @@ describe("e2e with Subsidy tests", function test() {
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(pollDuration, true);
+      await timeTravel(timeTravelArgs);
       await mergeMessages(mergeMessagesArgs);
       await mergeSignups(mergeSignupsArgs);
       await genProofs(genProofsArgs);
@@ -234,7 +234,7 @@ describe("e2e with Subsidy tests", function test() {
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(pollDuration, true);
+      await timeTravel(timeTravelArgs);
       await mergeMessages(mergeMessagesArgs);
       await mergeSignups(mergeSignupsArgs);
       const tallyData = await genProofs(genProofsArgs);
@@ -282,7 +282,7 @@ describe("e2e with Subsidy tests", function test() {
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(pollDuration, true);
+      await timeTravel(timeTravelArgs);
       await mergeMessages(mergeMessagesArgs);
       await mergeSignups(mergeSignupsArgs);
       const tallyData = await genProofs(genProofsArgs);
@@ -335,7 +335,7 @@ describe("e2e with Subsidy tests", function test() {
         privateKey: users[0].privKey.serialize(),
       });
       // time travel
-      await timeTravel(pollDuration, true);
+      await timeTravel(timeTravelArgs);
       // generate proofs
       await mergeMessages(mergeMessagesArgs);
       await mergeSignups(mergeSignupsArgs);
@@ -428,7 +428,7 @@ describe("e2e with Subsidy tests", function test() {
     });
 
     it("should complete the second poll", async () => {
-      await timeTravel(pollDuration, true);
+      await timeTravel(timeTravelArgs);
       await mergeMessages({ pollId: 1n });
       await mergeSignups({ pollId: 1n });
       const tallyData = await genProofs({

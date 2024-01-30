@@ -40,11 +40,12 @@ export const setVerifyingKeys = async ({
   tallyVotesZkeyPath,
   vkRegistry,
   subsidyZkeyPath,
+  signer,
   quiet = true,
 }: SetVerifyingKeysArgs): Promise<void> => {
   banner(quiet);
 
-  const signer = await getDefaultSigner();
+  const ethSigner = signer || (await getDefaultSigner());
   const network = await getDefaultNetwork();
 
   // we must either have the contract as param or stored to file
@@ -123,13 +124,13 @@ export const setVerifyingKeys = async ({
   }
 
   // ensure we have a contract deployed at the provided address
-  if (!(await contractExists(signer.provider!, vkRegistryAddress))) {
+  if (!(await contractExists(ethSigner.provider!, vkRegistryAddress))) {
     logError(`A VkRegistry contract is not deployed at ${vkRegistryAddress}`);
   }
 
   // connect to VkRegistry contract
   const vkRegistryAbi = parseArtifact("VkRegistry")[0];
-  const vkRegistryContract = new BaseContract(vkRegistryAddress, vkRegistryAbi, signer) as VkRegistry;
+  const vkRegistryContract = new BaseContract(vkRegistryAddress, vkRegistryAbi, ethSigner) as VkRegistry;
 
   const messageBatchSize = 5 ** messageBatchDepth;
 

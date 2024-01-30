@@ -10,6 +10,7 @@ import {
   MergeSignupsArgs,
   ProveOnChainArgs,
   SetVerifyingKeysArgs,
+  TimeTravelArgs,
   VerifyArgs,
 } from "../ts/utils";
 
@@ -81,6 +82,10 @@ export const checkVerifyingKeysArgs: CheckVerifyingKeysArgs = {
   messageBatchDepth: MSG_BATCH_DEPTH,
   processMessagesZkeyPath: processMessageTestZkeyPath,
   tallyVotesZkeyPath: tallyVotesTestZkeyPath,
+};
+
+export const timeTravelArgs: TimeTravelArgs = {
+  seconds: pollDuration,
 };
 
 export const mergeMessagesArgs: MergeMessagesArgs = {

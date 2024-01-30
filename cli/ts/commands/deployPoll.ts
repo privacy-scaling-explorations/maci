@@ -29,11 +29,12 @@ export const deployPoll = async ({
   subsidyEnabled,
   maciAddress,
   vkRegistryAddress,
+  signer,
   quiet = true,
 }: DeployPollArgs): Promise<PollContracts> => {
   banner(quiet);
 
-  const signer = await getDefaultSigner();
+  const ethSigner = signer || (await getDefaultSigner());
   const network = await getDefaultNetwork();
 
   // check if we have a vkRegistry already deployed or passed as arg
@@ -74,7 +75,7 @@ export const deployPoll = async ({
   }
 
   // we check that the contract is deployed
-  if (!(await contractExists(signer.provider!, maci))) {
+  if (!(await contractExists(ethSigner.provider!, maci))) {
     logError("MACI contract does not exist");
   }
 
@@ -89,7 +90,7 @@ export const deployPoll = async ({
   const verifierContractAddress = readContractAddress("Verifier", network?.name);
 
   const maciAbi = parseArtifact("MACI")[0];
-  const maciContract = new BaseContract(maci, maciAbi, signer) as MACI;
+  const maciContract = new BaseContract(maci, maciAbi, ethSigner) as MACI;
 
   // deploy the poll
   let pollAddr = "";

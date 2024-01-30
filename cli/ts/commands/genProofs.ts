@@ -67,6 +67,7 @@ export const genProofs = async ({
   startBlock,
   blocksPerBatch,
   endBlock,
+  signer,
   quiet = true,
 }: GenProofsArgs): Promise<TallyData> => {
   banner(quiet);
@@ -182,7 +183,7 @@ export const genProofs = async ({
   const maciPrivKey = PrivKey.deserialize(privateKey);
   const coordinatorKeypair = new Keypair(maciPrivKey);
 
-  const signer = await getDefaultSigner();
+  const ethSigner = signer || (await getDefaultSigner());
   const network = await getDefaultNetwork();
 
   // contracts
@@ -191,7 +192,7 @@ export const genProofs = async ({
   }
   const maciContractAddress = maciAddress || readContractAddress("MACI", network?.name);
 
-  if (!(await contractExists(signer.provider!, maciContractAddress))) {
+  if (!(await contractExists(ethSigner.provider!, maciContractAddress))) {
     logError("MACI contract does not exist");
   }
 
@@ -199,17 +200,21 @@ export const genProofs = async ({
     logError("Invalid poll id");
   }
 
-  const maciContract = new BaseContract(maciContractAddress, parseArtifact("MACI")[0], signer) as MACI;
+  const maciContract = new BaseContract(maciContractAddress, parseArtifact("MACI")[0], ethSigner) as MACI;
 
   const pollAddr = await maciContract.polls(pollId);
-  if (!(await contractExists(signer.provider!, pollAddr))) {
+  if (!(await contractExists(ethSigner.provider!, pollAddr))) {
     logError("Poll contract does not exist");
   }
-  const pollContract = new BaseContract(pollAddr, parseArtifact("Poll")[0], signer) as Poll;
+  const pollContract = new BaseContract(pollAddr, parseArtifact("Poll")[0], ethSigner) as Poll;
 
   const extContracts = await pollContract.extContracts();
   const messageAqContractAddr = extContracts.messageAq;
-  const messageAqContract = new BaseContract(messageAqContractAddr, parseArtifact("AccQueue")[0], signer) as AccQueue;
+  const messageAqContract = new BaseContract(
+    messageAqContractAddr,
+    parseArtifact("AccQueue")[0],
+    ethSigner,
+  ) as AccQueue;
 
   // Check that the state and message trees have been merged for at least the first poll
   if (!(await pollContract.stateAqMerged()) && pollId.toString() === "0") {
@@ -242,13 +247,13 @@ export const genProofs = async ({
     // build an off-chain representation of the MACI contract using data in the contract storage
     let fromBlock = startBlock ? Number(startBlock) : 0;
     if (transactionHash) {
-      const tx = await signer.provider!.getTransaction(transactionHash);
+      const tx = await ethSigner.provider!.getTransaction(transactionHash);
       fromBlock = tx?.blockNumber ?? 0;
     }
 
     logYellow(quiet, info(`starting to fetch logs from block ${fromBlock}`));
     maciState = await genMaciStateFromContract(
-      signer.provider!,
+      ethSigner.provider!,
       await maciContract.getAddress(),
       coordinatorKeypair,
       pollId,

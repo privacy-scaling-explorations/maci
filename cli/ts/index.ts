@@ -156,7 +156,7 @@ program
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
-      await deployVkRegistryContract(cmdObj.quiet);
+      await deployVkRegistryContract({ quiet: cmdObj.quiet });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -334,7 +334,7 @@ program
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
-      await timeTravel(cmdObj.seconds, cmdObj.quiet);
+      await timeTravel({ seconds: cmdObj.seconds, quiet: cmdObj.quiet });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -392,7 +392,7 @@ program
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
-      await fundWallet(cmdObj.amount, cmdObj.address, cmdObj.quiet);
+      await fundWallet({ amount: cmdObj.amount, address: cmdObj.address, quiet: cmdObj.quiet });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
