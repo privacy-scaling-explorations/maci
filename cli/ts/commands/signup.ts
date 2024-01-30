@@ -26,11 +26,12 @@ export const signup = async ({
   maciAddress,
   sgDataArg,
   ivcpDataArg,
+  signer,
   quiet = true,
 }: SignupArgs): Promise<string> => {
   banner(quiet);
 
-  const signer = await getDefaultSigner();
+  const ethSigner = signer || (await getDefaultSigner());
   const network = await getDefaultNetwork();
   // validate user key
   if (!PubKey.isValidSerializedPubKey(maciPubKey)) {
@@ -46,7 +47,7 @@ export const signup = async ({
 
   const maciContractAddress = maciAddress || readContractAddress("MACI", network?.name);
 
-  if (!(await contractExists(signer.provider!, maciContractAddress))) {
+  if (!(await contractExists(ethSigner.provider!, maciContractAddress))) {
     logError("There is no contract deployed at the specified address");
   }
 
@@ -65,7 +66,7 @@ export const signup = async ({
   }
 
   const maciContractAbi = parseArtifact("MACI")[0];
-  const maciContract = new BaseContract(maciContractAddress, maciContractAbi, signer) as MACI;
+  const maciContract = new BaseContract(maciContractAddress, maciContractAbi, ethSigner) as MACI;
 
   let stateIndex = "";
   try {

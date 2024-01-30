@@ -31,11 +31,12 @@ export const publish = async ({
   maciContractAddress,
   salt,
   privateKey,
+  signer,
   quiet = true,
 }: PublishArgs): Promise<string> => {
   banner(quiet);
 
-  const signer = await getDefaultSigner();
+  const ethSigner = signer || (await getDefaultSigner());
   const network = await getDefaultNetwork();
 
   // validate that the pub key of the user is valid
@@ -52,7 +53,7 @@ export const publish = async ({
 
   const maciAddress = maciContractAddress || readContractAddress("MACI", network?.name);
 
-  if (!(await contractExists(signer.provider!, maciAddress))) {
+  if (!(await contractExists(ethSigner.provider!, maciAddress))) {
     logError("MACI contract does not exist");
   }
 
@@ -92,15 +93,15 @@ export const publish = async ({
   const maciContractAbi = parseArtifact("MACI")[0];
   const pollContractAbi = parseArtifact("Poll")[0];
 
-  const maciContract = new BaseContract(maciAddress, maciContractAbi, signer) as MACI;
+  const maciContract = new BaseContract(maciAddress, maciContractAbi, ethSigner) as MACI;
 
   const pollAddress = await maciContract.getPoll(pollId);
 
-  if (!(await contractExists(signer.provider!, pollAddress))) {
+  if (!(await contractExists(ethSigner.provider!, pollAddress))) {
     logError("Poll contract does not exist");
   }
 
-  const pollContract = new BaseContract(pollAddress, pollContractAbi, signer) as Poll;
+  const pollContract = new BaseContract(pollAddress, pollContractAbi, ethSigner) as Poll;
 
   const maxValues = await pollContract.maxValues();
   const coordinatorPubKeyResult = await pollContract.coordinatorPubKey();

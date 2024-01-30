@@ -1,3 +1,5 @@
+import { Signer } from "ethers";
+import { getDefaultSigner } from "maci-contracts";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
 
@@ -44,6 +46,7 @@ import {
   testTallyVotesWitnessDatPath,
   testTallyVotesWitnessPath,
   deployArgs,
+  timeTravelArgs,
 } from "../constants";
 import { cleanVanilla, isArm } from "../utils";
 
@@ -86,12 +89,14 @@ describe("e2e tests", function test() {
   // before all tests we deploy the vk registry contract and set the verifying keys
   before(async () => {
     // we deploy the vk registry contract
-    await deployVkRegistryContract(true);
+    await deployVkRegistryContract({});
     // we set the verifying keys
     await setVerifyingKeys(setVerifyingKeysArgs);
   });
 
-  describe("1 signup, 1 message", () => {
+  describe("1 signup, 1 message (with signer as argument)", () => {
+    let signer: Signer;
+
     after(() => {
       cleanVanilla();
     });
@@ -99,14 +104,15 @@ describe("e2e tests", function test() {
     const user = new Keypair();
 
     before(async () => {
+      signer = await getDefaultSigner();
       // deploy the smart contracts
-      maciAddresses = await deploy(deployArgs);
+      maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
-      pollAddresses = await deployPoll(deployPollArgs);
+      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
     });
 
     it("should signup one user", async () => {
-      await signup({ maciPubKey: user.pubKey.serialize() });
+      await signup({ maciPubKey: user.pubKey.serialize(), signer });
     });
 
     it("should publish one message", async () => {
@@ -120,18 +126,20 @@ describe("e2e tests", function test() {
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: user.privKey.serialize(),
+        signer,
       });
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(pollDuration);
-      await mergeMessages(mergeMessagesArgs);
-      await mergeSignups(mergeSignupsArgs);
-      const tallyFileData = await genProofs(genProofsArgs);
-      await proveOnChain(proveOnChainArgs);
+      await timeTravel({ seconds: pollDuration, signer });
+      await mergeMessages({ ...mergeMessagesArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, signer });
+      const tallyFileData = await genProofs({ ...genProofsArgs, signer });
+      await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({
         ...verifyArgs,
         tallyData: tallyFileData,
+        signer,
       });
     });
   });
@@ -169,7 +177,7 @@ describe("e2e tests", function test() {
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(pollDuration);
+      await timeTravel(timeTravelArgs);
       await mergeMessages(mergeMessagesArgs);
       await mergeSignups(mergeSignupsArgs);
       const tallyFileData = await genProofs(genProofsArgs);
@@ -251,7 +259,7 @@ describe("e2e tests", function test() {
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(pollDuration);
+      await timeTravel(timeTravelArgs);
       await mergeMessages(mergeMessagesArgs);
       await mergeSignups(mergeSignupsArgs);
       const tallyFileData = await genProofs(genProofsArgs);
@@ -352,7 +360,7 @@ describe("e2e tests", function test() {
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(pollDuration);
+      await timeTravel(timeTravelArgs);
       await mergeMessages(mergeMessagesArgs);
       await mergeSignups(mergeSignupsArgs);
       await genProofs(genProofsArgs);
@@ -408,7 +416,7 @@ describe("e2e tests", function test() {
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(pollDuration);
+      await timeTravel(timeTravelArgs);
       await mergeMessages(mergeMessagesArgs);
       await mergeSignups(mergeSignupsArgs);
       const tallyFileData = await genProofs(genProofsArgs);
@@ -456,7 +464,7 @@ describe("e2e tests", function test() {
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(pollDuration);
+      await timeTravel(timeTravelArgs);
       await mergeMessages(mergeMessagesArgs);
       await mergeSignups(mergeSignupsArgs);
       await genProofs(genProofsArgs);
@@ -502,7 +510,7 @@ describe("e2e tests", function test() {
         privateKey: user.privKey.serialize(),
       });
       // time travel
-      await timeTravel(pollDuration, true);
+      await timeTravel(timeTravelArgs);
       // generate proofs
       await mergeMessages(mergeMessagesArgs);
       await mergeSignups(mergeSignupsArgs);
@@ -531,7 +539,7 @@ describe("e2e tests", function test() {
     });
 
     it("should generate proofs and verify them", async () => {
-      await timeTravel(pollDuration, true);
+      await timeTravel(timeTravelArgs);
       await mergeMessages({ pollId: 1n });
       await mergeSignups({ pollId: 1n });
       await genProofs({ ...genProofsArgs, pollId: 1n });
@@ -587,7 +595,7 @@ describe("e2e tests", function test() {
       });
 
       // time travel
-      await timeTravel(pollDuration, true);
+      await timeTravel(timeTravelArgs);
       // generate proofs
       await mergeMessages(mergeMessagesArgs);
       await mergeSignups(mergeSignupsArgs);
@@ -680,7 +688,7 @@ describe("e2e tests", function test() {
     });
 
     it("should complete the second poll", async () => {
-      await timeTravel(pollDuration, true);
+      await timeTravel(timeTravelArgs);
       await mergeMessages({ pollId: 1n });
       await mergeSignups({ pollId: 1n });
       const tallyData = await genProofs({ ...genProofsArgs, pollId: 1n });
@@ -761,7 +769,7 @@ describe("e2e tests", function test() {
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(pollDuration, true);
+      await timeTravel(timeTravelArgs);
       await mergeMessages(mergeMessagesArgs);
       await mergeSignups(mergeSignupsArgs);
       await genLocalState({
@@ -833,7 +841,7 @@ describe("e2e tests", function test() {
     });
 
     it("should generate proofs and verify them", async () => {
-      await timeTravel(pollDuration, true);
+      await timeTravel(timeTravelArgs);
       await mergeMessages(mergeMessagesArgs);
       await mergeSignups(mergeSignupsArgs);
       await genProofs(genProofsArgs);

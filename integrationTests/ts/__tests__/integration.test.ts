@@ -66,7 +66,7 @@ describe("Integration tests", function test() {
   // the code that we run before all tests
   before(async () => {
     // 1. deploy Vk Registry
-    const vkRegistryAddress = await deployVkRegistryContract(true);
+    const vkRegistryAddress = await deployVkRegistryContract({});
     // 2. set verifying keys
     await setVerifyingKeys({
       stateTreeDepth: STATE_TREE_DEPTH,
@@ -239,7 +239,7 @@ describe("Integration tests", function test() {
         }
       }
 
-      await timeTravel(duration, true);
+      await timeTravel({ seconds: duration });
 
       // merge messages
       await expect(

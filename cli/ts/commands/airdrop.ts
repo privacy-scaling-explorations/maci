@@ -14,12 +14,13 @@ export const airdrop = async ({
   contractAddress,
   pollId,
   maciAddress,
+  signer,
   quiet = true,
 }: AirdropArgs): Promise<void> => {
   banner(quiet);
 
   // get the signer
-  const signer = await getDefaultSigner();
+  const ethSigner = signer || (await getDefaultSigner());
   const network = await getDefaultNetwork();
 
   // get the topup credit address from storage
@@ -34,14 +35,14 @@ export const airdrop = async ({
   const ERC20Address = contractAddress || topupCredit;
 
   // check if the contract exists
-  if (!(await contractExists(signer.provider!, ERC20Address))) {
+  if (!(await contractExists(ethSigner.provider!, ERC20Address))) {
     logError("Invalid ERC20 contract address");
   }
 
   const tokenAbi = parseArtifact("TopupCredit")[0];
 
   // create the contract instance
-  const tokenContract = new BaseContract(ERC20Address, tokenAbi, signer) as TopupCredit;
+  const tokenContract = new BaseContract(ERC20Address, tokenAbi, ethSigner) as TopupCredit;
 
   if (amount < 0) {
     logError("Invalid amount");
@@ -54,7 +55,7 @@ export const airdrop = async ({
     });
     await tx.wait();
 
-    logGreen(quiet, success(`Airdropped ${amount} credits to ${await signer.getAddress()}`));
+    logGreen(quiet, success(`Airdropped ${amount} credits to ${await ethSigner.getAddress()}`));
   } catch (error) {
     logError((error as Error).message);
   }
@@ -71,7 +72,7 @@ export const airdrop = async ({
     }
 
     const maciAbi = parseArtifact("MACI")[0];
-    const maciContract = new BaseContract(maciContractAddress!, maciAbi, signer) as MACI;
+    const maciContract = new BaseContract(maciContractAddress!, maciAbi, ethSigner) as MACI;
 
     const pollAddr = await maciContract.getPoll(pollId);
     try {

@@ -1,3 +1,5 @@
+import { Signer } from "ethers";
+
 import type { SnarkProof } from "maci-contracts";
 import type { CircuitInputs } from "maci-core";
 import type { Groth16Proof, PublicSignals } from "snarkjs";
@@ -169,6 +171,11 @@ export interface AirdropArgs {
    * Whether to log the output
    */
   quiet?: boolean;
+
+  /**
+   * A signer object
+   */
+  signer?: Signer;
 }
 
 /**
@@ -224,6 +231,11 @@ export interface CheckVerifyingKeysArgs {
    * Whether to log the output
    */
   quiet?: boolean;
+
+  /**
+   * A signer object
+   */
+  signer?: Signer;
 }
 
 /**
@@ -274,6 +286,11 @@ export interface DeployArgs {
    * Whether to log the output
    */
   quiet?: boolean;
+
+  /**
+   * A signer object
+   */
+  signer?: Signer;
 }
 
 /**
@@ -329,6 +346,11 @@ export interface DeployPollArgs {
    * Whether to log the output to the console
    */
   quiet?: boolean;
+
+  /**
+   * A signer object
+   */
+  signer?: Signer;
 }
 
 /**
@@ -390,6 +412,11 @@ export interface GenLocalStateArgs {
    * Whether to log the output
    */
   quiet?: boolean;
+
+  /**
+   * A signer object
+   */
+  signer?: Signer;
 }
 
 /**
@@ -525,6 +552,11 @@ export interface GenProofsArgs {
    * Whether to log the output
    */
   quiet?: boolean;
+
+  /**
+   * A signer object
+   */
+  signer?: Signer;
 }
 
 /**
@@ -550,6 +582,11 @@ export interface MergeMessagesArgs {
    * The number of queue operations to merge
    */
   numQueueOps?: string;
+
+  /**
+   * A signer object
+   */
+  signer?: Signer;
 }
 
 /**
@@ -575,6 +612,11 @@ export interface MergeSignupsArgs {
    * Whether to log the output
    */
   quiet?: boolean;
+
+  /**
+   * A signer object
+   */
+  signer?: Signer;
 }
 
 /**
@@ -620,6 +662,11 @@ export interface ProveOnChainArgs {
    * Whether to log the output
    */
   quiet?: boolean;
+
+  /**
+   * A signer object
+   */
+  signer?: Signer;
 }
 
 /**
@@ -675,6 +722,11 @@ export interface PublishArgs {
    * Whether to log the output
    */
   quiet?: boolean;
+
+  /**
+   * A signer object
+   */
+  signer?: Signer;
 }
 
 /**
@@ -730,6 +782,11 @@ export interface SetVerifyingKeysArgs {
    * Whether to log the output
    */
   quiet?: boolean;
+
+  /**
+   * A signer object
+   */
+  signer?: Signer;
 }
 
 /**
@@ -760,6 +817,11 @@ export interface SignupArgs {
    * Whether to log the output
    */
   quiet?: boolean;
+
+  /**
+   * A signer object
+   */
+  signer?: Signer;
 }
 
 /**
@@ -790,6 +852,11 @@ export interface TopupArgs {
    * Whether to log the output
    */
   quiet?: boolean;
+
+  /**
+   * A signer object
+   */
+  signer?: Signer;
 }
 
 /**
@@ -840,4 +907,69 @@ export interface VerifyArgs {
    * Whether to log the output
    */
   quiet?: boolean;
+
+  /**
+   * A signer object
+   */
+  signer?: Signer;
+}
+
+/**
+ * Interface for the arguments to the FundWallet command
+ */
+export interface FundWalletArgs {
+  /**
+   * The amount to fund
+   */
+  amount: number;
+
+  /**
+   * The address of the wallet to fund
+   */
+  address: string;
+
+  /**
+   * Whether to log the output
+   */
+  quiet?: boolean;
+
+  /**
+   * A signer object
+   */
+  signer?: Signer;
+}
+
+/**
+ * Interface for the arguments to the TimeTravel command
+ */
+export interface TimeTravelArgs {
+  /**
+   * The number of seconds to time travel
+   */
+  seconds: number;
+
+  /**
+   * Whether to log the output
+   */
+  quiet?: boolean;
+
+  /**
+   * A signer object
+   */
+  signer?: Signer;
+}
+
+/**
+ * Interface for the arguments to the DeployVkRegistry command
+ */
+export interface DeployVkRegistryArgs {
+  /**
+   * Whether to log the output
+   */
+  quiet?: boolean;
+
+  /**
+   * A signer object
+   */
+  signer?: Signer;
 }

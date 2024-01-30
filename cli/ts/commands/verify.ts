@@ -41,10 +41,11 @@ export const verify = async ({
   tallyAddress,
   subsidyAddress,
   subsidyFile,
+  signer,
   quiet = true,
 }: VerifyArgs): Promise<void> => {
   banner(quiet);
-  const signer = await getDefaultSigner();
+  const ethSigner = signer || (await getDefaultSigner());
   const network = await getDefaultNetwork();
 
   // check existence of MACI, Tally and Subsidy contract addresses
@@ -69,27 +70,27 @@ export const verify = async ({
     subsidyContractAddress = subsidyAddress || readContractAddress(`Subsidy-${pollId}`, network?.name);
   }
 
-  if (!(await contractExists(signer.provider!, maciContractAddress))) {
+  if (!(await contractExists(ethSigner.provider!, maciContractAddress))) {
     logError(`Error: there is no contract deployed at ${maciContractAddress}.`);
   }
 
-  if (!(await contractExists(signer.provider!, tallyContractAddress))) {
+  if (!(await contractExists(ethSigner.provider!, tallyContractAddress))) {
     logError(`Error: there is no contract deployed at ${tallyContractAddress}.`);
   }
 
-  if (subsidyEnabled && !(await contractExists(signer.provider!, subsidyContractAddress))) {
+  if (subsidyEnabled && !(await contractExists(ethSigner.provider!, subsidyContractAddress))) {
     logError(`Error: there is no contract deployed at ${subsidyContractAddress}.`);
   }
 
-  const maciContract = new BaseContract(maciContractAddress, parseArtifact("MACI")[0], signer) as MACI;
+  const maciContract = new BaseContract(maciContractAddress, parseArtifact("MACI")[0], ethSigner) as MACI;
   const pollAddr = await maciContract.polls(pollId);
 
-  const pollContract = new BaseContract(pollAddr, parseArtifact("Poll")[0], signer) as Poll;
+  const pollContract = new BaseContract(pollAddr, parseArtifact("Poll")[0], ethSigner) as Poll;
 
-  const tallyContract = new BaseContract(tallyContractAddress, parseArtifact("Tally")[0], signer) as Tally;
+  const tallyContract = new BaseContract(tallyContractAddress, parseArtifact("Tally")[0], ethSigner) as Tally;
 
   const subsidyContract = subsidyEnabled
-    ? (new BaseContract(subsidyContractAddress, parseArtifact("Subsidy")[0], signer) as Subsidy)
+    ? (new BaseContract(subsidyContractAddress, parseArtifact("Subsidy")[0], ethSigner) as Subsidy)
     : undefined;
 
   // verification

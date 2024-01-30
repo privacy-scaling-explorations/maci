@@ -36,11 +36,12 @@ export const checkVerifyingKeys = async ({
   tallyVotesZkeyPath,
   vkRegistry,
   subsidyZkeyPath,
+  signer,
   quiet = true,
 }: CheckVerifyingKeysArgs): Promise<boolean> => {
   banner(quiet);
   // get the signer
-  const signer = await getDefaultSigner();
+  const ethSigner = signer || (await getDefaultSigner());
   const network = await getDefaultNetwork();
 
   // ensure we have the contract addresses that we need
@@ -50,14 +51,14 @@ export const checkVerifyingKeys = async ({
 
   const vkContractAddress = vkRegistry || readContractAddress("VkRegistry", network?.name);
 
-  if (!(await contractExists(signer.provider!, vkContractAddress))) {
+  if (!(await contractExists(ethSigner.provider!, vkContractAddress))) {
     logError("The VkRegistry contract does not exist");
   }
 
   const vkRegistryContractInstance = new BaseContract(
     vkContractAddress,
     parseArtifact("VkRegistry")[0],
-    signer,
+    ethSigner,
   ) as VkRegistry;
 
   // we need to ensure that the zkey files exist

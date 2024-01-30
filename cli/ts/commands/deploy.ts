@@ -34,6 +34,7 @@ export const deploy = async ({
   poseidonT4Address,
   poseidonT5Address,
   poseidonT6Address,
+  signer,
   quiet = true,
 }: DeployArgs): Promise<DeployedContracts> => {
   banner(quiet);
@@ -42,7 +43,7 @@ export const deploy = async ({
     logError("Please provide either an initialVoiceCreditProxyAddress or initialVoiceCredits, not both");
   }
 
-  const signer = await getDefaultSigner();
+  const ethSigner = signer || (await getDefaultSigner());
   const network = await getDefaultNetwork();
 
   const poseidonT3 = poseidonT3Address || readContractAddress("PoseidonT3", network?.name);
@@ -57,7 +58,7 @@ export const deploy = async ({
   if (!initialVoiceCreditsProxyAddress) {
     const contract = await deployConstantInitialVoiceCreditProxy(
       initialVoiceCredits || DEFAULT_INITIAL_VOICE_CREDITS,
-      signer,
+      ethSigner,
       true,
     );
 
@@ -68,15 +69,15 @@ export const deploy = async ({
   let signupGatekeeperContractAddress =
     signupGatekeeperAddress || readContractAddress("SignUpGatekeeper", network?.name);
   if (!signupGatekeeperContractAddress) {
-    const contract = await deployFreeForAllSignUpGatekeeper(signer, true);
+    const contract = await deployFreeForAllSignUpGatekeeper(ethSigner, true);
     signupGatekeeperContractAddress = await contract.getAddress();
   }
 
   // deploy a verifier contract
-  const verifierContract = await deployVerifier(signer, true);
+  const verifierContract = await deployVerifier(ethSigner, true);
 
   // topup credit
-  const topUpCredit = await deployTopupCredit(signer, true);
+  const topUpCredit = await deployTopupCredit(ethSigner, true);
 
   const [verifierContractAddress, topUpCreditAddress] = await Promise.all([
     verifierContract.getAddress(),
@@ -94,7 +95,7 @@ export const deploy = async ({
       poseidonT5,
       poseidonT6,
     },
-    signer,
+    signer: ethSigner,
     stateTreeDepth,
     quiet: true,
   });

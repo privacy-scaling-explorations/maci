@@ -30,10 +30,11 @@ export const mergeSignups = async ({
   pollId,
   maciContractAddress,
   numQueueOps,
+  signer,
   quiet = true,
 }: MergeSignupsArgs): Promise<void> => {
   banner(quiet);
-  const signer = await getDefaultSigner();
+  const ethSigner = signer || (await getDefaultSigner());
   const network = await getDefaultNetwork();
 
   // maci contract validation
@@ -43,7 +44,7 @@ export const mergeSignups = async ({
 
   const maciAddress = maciContractAddress || readContractAddress("MACI", network?.name);
 
-  if (!(await contractExists(signer.provider!, maciAddress))) {
+  if (!(await contractExists(ethSigner.provider!, maciAddress))) {
     logError("MACI contract does not exist");
   }
 
@@ -55,22 +56,22 @@ export const mergeSignups = async ({
   const [pollContractAbi] = parseArtifact("Poll");
   const [accQueueContractAbi] = parseArtifact("AccQueue");
 
-  const maciContract = new BaseContract(maciAddress, maciContractAbi, signer) as MACI;
+  const maciContract = new BaseContract(maciAddress, maciContractAbi, ethSigner) as MACI;
 
   const pollAddress = await maciContract.polls(pollId);
 
-  if (!(await contractExists(signer.provider!, pollAddress))) {
+  if (!(await contractExists(ethSigner.provider!, pollAddress))) {
     logError("Poll contract does not exist");
   }
 
-  const pollContract = new BaseContract(pollAddress, pollContractAbi, signer) as Poll;
+  const pollContract = new BaseContract(pollAddress, pollContractAbi, ethSigner) as Poll;
 
-  const accQueueContract = new BaseContract(await maciContract.stateAq(), accQueueContractAbi, signer) as AccQueue;
+  const accQueueContract = new BaseContract(await maciContract.stateAq(), accQueueContractAbi, ethSigner) as AccQueue;
 
   // check if it's time to merge the message AQ
   const dd = await pollContract.getDeployTimeAndDuration();
   const deadline = Number(dd[0]) + Number(dd[1]);
-  const now = await currentBlockTimestamp(signer.provider!);
+  const now = await currentBlockTimestamp(ethSigner.provider!);
 
   if (now < deadline) {
     logError("Voting period is not over");

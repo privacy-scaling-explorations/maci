@@ -9,7 +9,7 @@ describe("fundWallet", () => {
     const signer = await getDefaultSigner();
 
     const balanceBefore = await signer.provider?.getBalance(ZeroAddress);
-    await fundWallet(1000000000, ZeroAddress);
+    await fundWallet({ amount: 1000000000, address: ZeroAddress });
     const balanceAfter = await signer.provider?.getBalance(ZeroAddress);
     expect(balanceAfter).to.be.gt(balanceBefore!);
   });

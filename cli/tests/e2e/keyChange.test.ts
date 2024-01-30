@@ -40,6 +40,7 @@ import {
   testTallyVotesWitnessPath,
   proveOnChainArgs,
   verifyArgs,
+  timeTravelArgs,
 } from "../constants";
 import { cleanVanilla, isArm } from "../utils";
 
@@ -71,7 +72,7 @@ describe("keyChange tests", function test() {
   // before all tests we deploy the vk registry contract and set the verifying keys
   before(async () => {
     // we deploy the vk registry contract
-    await deployVkRegistryContract(true);
+    await deployVkRegistryContract({});
     // we set the verifying keys
     await setVerifyingKeys(setVerifyingKeysArgs);
   });
@@ -125,7 +126,7 @@ describe("keyChange tests", function test() {
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(90, true);
+      await timeTravel(timeTravelArgs);
       await mergeMessages(mergeMessagesArgs);
       await mergeSignups(mergeSignupsArgs);
       await genProofs(genProofsArgs);
@@ -189,7 +190,7 @@ describe("keyChange tests", function test() {
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(90, true);
+      await timeTravel(timeTravelArgs);
       await mergeMessages(mergeMessagesArgs);
       await mergeSignups(mergeSignupsArgs);
       await genProofs(genProofsArgs);
@@ -253,7 +254,7 @@ describe("keyChange tests", function test() {
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(90, true);
+      await timeTravel(timeTravelArgs);
       await mergeMessages(mergeMessagesArgs);
       await mergeSignups(mergeSignupsArgs);
       await genProofs(genProofsArgs);
