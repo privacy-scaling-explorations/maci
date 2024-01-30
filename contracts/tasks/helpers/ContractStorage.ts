@@ -7,7 +7,11 @@ import type { EContracts, IRegisterContract, IStorageInstanceEntry, IStorageName
 
 type TStorage = Record<
   string,
-  Partial<{ named: Record<string, IStorageNamedEntry>; instance: Record<string, IStorageInstanceEntry> }>
+  Partial<{
+    named: Record<string, IStorageNamedEntry>;
+    instance: Record<string, IStorageInstanceEntry>;
+    verified: Record<string, boolean>;
+  }>
 >;
 
 export class ContractStorage {
@@ -67,6 +71,21 @@ export class ContractStorage {
       })
       .write();
   }
+
+  getInstances(network: string): [string, IStorageInstanceEntry][] {
+    const collection = this.db.get(`${network}.instance`);
+    const value = collection.value() as IStorageInstanceEntry[] | undefined;
+
+    return Object.entries<IStorageInstanceEntry>(value || []);
+  }
+
+  getVerified(address: string, network: string): boolean {
+    return this.db.get(`${network}.verified.${address}`).value() as unknown as boolean;
+  }
+
+  setVerified = (address: string, network: string, verified: boolean): void => {
+    this.db.set(`${network}.verified.${address}`, verified).write();
+  };
 
   getAddress(id: EContracts, network: string): string | undefined {
     const collection = this.db.get(`${network}.named.${id}`);

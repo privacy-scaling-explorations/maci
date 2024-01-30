@@ -36,8 +36,10 @@
     "test:subsidy": "hardhat test ./tests/Subsidy.test.ts",
     "test:eas_gatekeeper": "hardhat test ./tests/EASGatekeeper.test.ts",
     "deploy": "hardhat deploy-full",
+    "verify": "hardhat verify-full",
     "deploy:hardhat": "pnpm run deploy",
-    "deploy:sepolia": "pnpm run deploy --network sepolia"
+    "deploy:sepolia": "pnpm run deploy --network sepolia",
+    "verify:sepolia": "pnpm run verify --network sepolia"
   },
   "dependencies": {
     "@nomicfoundation/hardhat-ethers": "^3.0.5",

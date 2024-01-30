@@ -26,12 +26,10 @@ deployment
       return;
     }
 
-    const [PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract] = await Promise.all([
-      deployment.deployContract(EContracts.PoseidonT3, deployer),
-      deployment.deployContract(EContracts.PoseidonT4, deployer),
-      deployment.deployContract(EContracts.PoseidonT5, deployer),
-      deployment.deployContract(EContracts.PoseidonT6, deployer),
-    ]);
+    const PoseidonT3Contract = await deployment.deployContract(EContracts.PoseidonT3, deployer);
+    const PoseidonT4Contract = await deployment.deployContract(EContracts.PoseidonT4, deployer);
+    const PoseidonT5Contract = await deployment.deployContract(EContracts.PoseidonT5, deployer);
+    const PoseidonT6Contract = await deployment.deployContract(EContracts.PoseidonT6, deployer);
 
     await Promise.all([
       storage.register({
