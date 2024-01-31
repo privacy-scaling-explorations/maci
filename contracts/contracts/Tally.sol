@@ -135,7 +135,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
     (uint256 numSignUps, ) = poll.numSignUpsAndMessages();
 
     // Require that there are untalied ballots left
-    if (batchStartIndex > numSignUps) {
+    if (batchStartIndex >= numSignUps) {
       revert AllBallotsTallied();
     }
 
@@ -148,7 +148,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
     // Update the tally commitment and the tally batch num
     tallyCommitment = _newTallyCommitment;
 
-    if ((cachedBatchNum + 1) * tallyBatchSize > numSignUps) {
+    if ((cachedBatchNum + 1) * tallyBatchSize >= numSignUps) {
       emit BallotsTallied(address(poll));
     }
   }
