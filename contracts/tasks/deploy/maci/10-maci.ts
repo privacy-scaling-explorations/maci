@@ -5,12 +5,14 @@ import { EContracts, IDeployParams } from "../../helpers/types";
 const deployment = Deployment.getInstance();
 const storage = ContractStorage.getInstance();
 
+const DEFAULT_STATE_TREE_DEPTH = 10;
+
 /**
  * Deploy step registration and task itself
  */
 deployment
   .deployTask("full:deploy-maci", "Deploy MACI contract")
-  .setAction(async ({ incremental, stateTreeDepth }: IDeployParams, hre) => {
+  .setAction(async ({ incremental }: IDeployParams, hre) => {
     deployment.setHre(hre);
     const deployer = await deployment.getDeployer();
 
@@ -38,10 +40,10 @@ deployment
       EContracts.ConstantInitialVoiceCreditProxy,
       hre.network.name,
     );
-    const freeForAllGatekeeperContractAddress = storage.mustGetAddress(
-      EContracts.FreeForAllGatekeeper,
-      hre.network.name,
-    );
+    const gatekeeper =
+      deployment.getDeployConfigField<EContracts | null>(EContracts.MACI, "gatekeeper") ||
+      EContracts.FreeForAllGatekeeper;
+    const gatekeeperContractAddress = storage.mustGetAddress(gatekeeper, hre.network.name);
     const topupCreditContractAddress = storage.mustGetAddress(EContracts.TopupCredit, hre.network.name);
     const pollFactoryContractAddress = storage.mustGetAddress(EContracts.PollFactory, hre.network.name);
     const messageProcessorFactoryContractAddress = storage.mustGetAddress(
@@ -50,6 +52,8 @@ deployment
     );
     const tallyFactoryContractAddress = storage.mustGetAddress(EContracts.TallyFactory, hre.network.name);
     const subsidyFactoryContractAddress = storage.mustGetAddress(EContracts.SubsidyFactory, hre.network.name);
+    const stateTreeDepth =
+      deployment.getDeployConfigField<number | null>(EContracts.MACI, "stateTreeDepth") ?? DEFAULT_STATE_TREE_DEPTH;
 
     const maciContract = await deployment.deployContractWithLinkedLibraries(
       maciContractFactory,
@@ -57,7 +61,7 @@ deployment
       messageProcessorFactoryContractAddress,
       tallyFactoryContractAddress,
       subsidyFactoryContractAddress,
-      freeForAllGatekeeperContractAddress,
+      gatekeeperContractAddress,
       constantInitialVoiceCreditProxyContractAddress,
       topupCreditContractAddress,
       stateTreeDepth,
@@ -71,7 +75,7 @@ deployment
         messageProcessorFactoryContractAddress,
         tallyFactoryContractAddress,
         subsidyFactoryContractAddress,
-        freeForAllGatekeeperContractAddress,
+        gatekeeperContractAddress,
         constantInitialVoiceCreditProxyContractAddress,
         topupCreditContractAddress,
         stateTreeDepth,

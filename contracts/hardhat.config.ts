@@ -46,12 +46,7 @@ const config: HardhatUserConfig = {
     },
   },
   networks: {
-    goerli: getCommonNetworkConfig(ESupportedChains.Goerli, EChainId.Goerli),
     sepolia: getCommonNetworkConfig(ESupportedChains.Sepolia, EChainId.Sepolia),
-    mainnet: getCommonNetworkConfig(ESupportedChains.Mainnet, EChainId.Mainnet),
-    optimism_goerli: getCommonNetworkConfig(ESupportedChains.OptimismGoerli, EChainId.OptimismGoerli),
-    optimism_sepolia: getCommonNetworkConfig(ESupportedChains.OptimismSepolia, EChainId.OptimismSepolia),
-    optimism: getCommonNetworkConfig(ESupportedChains.Optimism, EChainId.Optimism),
     coverage: getCommonNetworkConfig(ESupportedChains.Coverage, EChainId.Coverage, TEST_MNEMONIC),
     hardhat: {
       blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,

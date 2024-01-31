@@ -11,6 +11,7 @@ import { Deployment } from "../helpers/Deployment";
 /**
  * Main deployment task which runs deploy steps in the same order that `Deployment#deployTask` is called.
  * Note: you probably need to use indicies for deployment step files to support the correct order.
+ * Make sure you have deploy-config.json (see deploy-config-example.json).
  */
 task("deploy-full", "Deploy environment")
   .addFlag("incremental", "Incremental deployment")
@@ -19,7 +20,7 @@ task("deploy-full", "Deploy environment")
   .addOptionalParam("skip", "Skip steps with less or equal index", 0, types.int)
   .addOptionalParam("amount", "The amount of initial voice credit to give to each user", undefined, types.int)
   .addOptionalParam("stateTreeDepth", "The depth of the state tree", 10, types.int)
-  .setAction(async ({ incremental, strict, verify, amount, skip = 0, stateTreeDepth = 10 }: IDeployParams, hre) => {
+  .setAction(async ({ incremental, strict, verify, skip = 0 }: IDeployParams, hre) => {
     const deployment = Deployment.getInstance(hre);
     const storage = ContractStorage.getInstance();
 
@@ -50,8 +51,6 @@ task("deploy-full", "Deploy environment")
       const steps = await deployment.getDeploySteps("full", {
         incremental,
         verify,
-        amount,
-        stateTreeDepth,
       });
 
       // eslint-disable-next-line no-restricted-syntax

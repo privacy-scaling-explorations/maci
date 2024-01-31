@@ -1,0 +1,21 @@
+{
+  "sepolia": {
+    "ConstantInitialVoiceCreditProxy": {
+      "deploy": true,
+      "amount": 99
+    },
+    "FreeForAllGatekeeper": {
+      "deploy": false
+    },
+    "EASGatekeeper": {
+      "deploy": true,
+      "easAddress": "0xC2679fBD37d54388Ce493F1DB75320D236e1815e",
+      "schema": "0xfdcfdad2dbe7489e0ce56b260348b7f14e8365a8a325aef9834818c00d46b31b",
+      "attester": "attester-address"
+    },
+    "MACI": {
+      "stateTreeDepth": 10,
+      "gatekeeper": "EASGatekeeper"
+    }
+  }
+}

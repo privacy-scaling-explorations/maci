@@ -16,11 +16,6 @@ export interface IDeployParams {
   incremental: boolean;
 
   /**
-   * The depth of the state tree
-   */
-  stateTreeDepth?: number;
-
-  /**
    * Consider warning as errors
    */
   strict?: boolean;
@@ -29,11 +24,6 @@ export interface IDeployParams {
    * Skip steps with less or equal index
    */
   skip?: number;
-
-  /**
-   * The amount of initial voice credit to give to each user
-   */
-  amount?: number;
 }
 
 /**
@@ -149,6 +139,7 @@ export interface IRegisterContract {
 export enum EContracts {
   ConstantInitialVoiceCreditProxy = "ConstantInitialVoiceCreditProxy",
   FreeForAllGatekeeper = "FreeForAllGatekeeper",
+  EASGatekeeper = "EASGatekeeper",
   Verifier = "Verifier",
   TopupCredit = "TopupCredit",
   MACI = "MACI",
