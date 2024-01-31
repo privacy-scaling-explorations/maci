@@ -430,7 +430,7 @@ export class Poll implements IPoll {
    *        process
    * @returns stringified circuit inputs
    */
-  processMessages = (pollId: bigint): IProcessMessagesCircuitInputs => {
+  processMessages = (pollId: bigint, quiet = true): IProcessMessagesCircuitInputs => {
     assert(this.hasUnprocessedMessages(), "No more messages to process");
 
     const batchSize = this.batchSizes.messageBatchSize;
@@ -544,6 +544,12 @@ export class Poll implements IPoll {
               // otherwise we continue processing but add the default blank data instead of
               // this invalid message
               if (e instanceof ProcessMessageError) {
+                // if logging is enabled, print the error
+                if (!quiet) {
+                  // eslint-disable-next-line no-console
+                  console.log(`Error at message index ${idx} - ${e.message}`);
+                }
+
                 // Since the command is invalid, use a blank state leaf
                 currentStateLeaves.unshift(this.stateLeaves[0].copy());
                 currentStateLeavesPathElements.unshift(this.stateTree!.genProof(0).pathElements);
@@ -599,8 +605,10 @@ export class Poll implements IPoll {
               // add to the first position the path elements of the vote weight tree
               currentVoteWeightsPathElements.unshift(vt.genProof(0).pathElements);
             } catch (e) {
-              // eslint-disable-next-line no-console
-              console.log("Error processing topup message: ", (e as Error).message);
+              if (!quiet) {
+                // eslint-disable-next-line no-console
+                console.log("Error processing topup message: ", (e as Error).message);
+              }
               throw e;
             }
             break;

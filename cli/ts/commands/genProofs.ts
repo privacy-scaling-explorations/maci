@@ -283,7 +283,7 @@ export const genProofs = async ({
   // while we have unprocessed messages, process them
   while (poll.hasUnprocessedMessages()) {
     // process messages in batches
-    const circuitInputs = poll.processMessages(pollId) as unknown as CircuitInputs;
+    const circuitInputs = poll.processMessages(pollId, quiet) as unknown as CircuitInputs;
     try {
       // generate the proof for this batch
       // eslint-disable-next-line no-await-in-loop
