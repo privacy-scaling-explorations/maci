@@ -1,9 +1,17 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import { BaseContract, ContractFactory, Signer } from "ethers";
 import { task } from "hardhat/config";
+import low from "lowdb";
+import FileSync from "lowdb/adapters/FileSync";
 
 import type { EContracts, IDeployParams, IDeployStep, IDeployStepCatalog } from "./types";
 import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import type { ConfigurableTaskDefinition, HardhatRuntimeEnvironment, TaskArguments } from "hardhat/types";
+
+/**
+ * Internal deploy config structure type.
+ */
+type TConfig = Record<string, Record<string, string | number | boolean>>;
 
 /**
  * @notice Deployment helper class to run sequential deploy using steps and deploy contracts.
@@ -25,11 +33,17 @@ export class Deployment {
   private stepCatalog: Map<string, IDeployStepCatalog[]>;
 
   /**
+   * Json file database instance
+   */
+  private config: low.LowdbSync<TConfig>;
+
+  /**
    * Initialize class properties only once
    */
   private constructor(hre?: HardhatRuntimeEnvironment) {
     this.stepCatalog = new Map([["full", []]]);
     this.hre = hre;
+    this.config = low(new FileSync<TConfig>("./deploy-config.json"));
   }
 
   /**
@@ -119,8 +133,8 @@ export class Deployment {
    * @param {IDeployParams} params - hardhat task arguments
    * @returns {Promise<TaskArguments>} params for deploy workflow
    */
-  private getDefaultParams = ({ verify, incremental, amount, stateTreeDepth }: IDeployParams): Promise<TaskArguments> =>
-    Promise.resolve({ verify, incremental, amount, stateTreeDepth });
+  private getDefaultParams = ({ verify, incremental }: IDeployParams): Promise<TaskArguments> =>
+    Promise.resolve({ verify, incremental });
 
   /**
    * Get deploy step sequence
@@ -229,5 +243,24 @@ export class Deployment {
     });
 
     return contractFactory;
+  }
+
+  /**
+   * Get deploy config field (see deploy-config.json)
+   *
+   * @param id - contract name
+   * @param field - config field key
+   * @returns config field value or null
+   */
+  getDeployConfigField<T = string | number | boolean>(id: EContracts, field: string, mustGet = false): T {
+    this.checkHre();
+
+    const value = this.config.get(`${this.hre!.network.name}.${id}.${field}`).value() as T;
+
+    if (mustGet && (value === null || value === undefined)) {
+      throw new Error(`Can't find ${this.hre!.network.name}.${id}.${field}`);
+    }
+
+    return value;
   }
 }

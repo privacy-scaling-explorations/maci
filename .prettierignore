@@ -14,3 +14,4 @@ circuits/ts/verifier_groth16.sol
 website/.docusaurus/
 website/src/pages/solidity-docs/index.md
 **/deployed-contracts.json
+**/deploy-config.json
