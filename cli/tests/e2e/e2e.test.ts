@@ -190,84 +190,6 @@ describe("e2e tests", function test() {
     });
   });
 
-  describe("4 signups, 4 messages", () => {
-    after(() => {
-      cleanVanilla();
-    });
-
-    const users = [new Keypair(), new Keypair(), new Keypair(), new Keypair()];
-
-    before(async () => {
-      // deploy the smart contracts
-      maciAddresses = await deploy(deployArgs);
-      // deploy a poll contract
-      pollAddresses = await deployPoll(deployPollArgs);
-    });
-
-    it("should signup four users", async () => {
-      // eslint-disable-next-line @typescript-eslint/prefer-for-of
-      for (let i = 0; i < users.length; i += 1) {
-        // eslint-disable-next-line no-await-in-loop
-        await signup({ maciPubKey: users[i].pubKey.serialize() });
-      }
-    });
-
-    it("should publish four messages", async () => {
-      await publish({
-        pubkey: users[0].pubKey.serialize(),
-        stateIndex: 1n,
-        voteOptionIndex: 0n,
-        nonce: 1n,
-        pollId: 0n,
-        newVoteWeight: 9n,
-        salt: genRandomSalt(),
-        privateKey: users[0].privKey.serialize(),
-      });
-
-      await publish({
-        pubkey: users[1].pubKey.serialize(),
-        stateIndex: 2n,
-        voteOptionIndex: 1n,
-        nonce: 1n,
-        pollId: 0n,
-        newVoteWeight: 9n,
-        salt: genRandomSalt(),
-        privateKey: users[1].privKey.serialize(),
-      });
-
-      await publish({
-        pubkey: users[2].pubKey.serialize(),
-        stateIndex: 3n,
-        voteOptionIndex: 2n,
-        nonce: 1n,
-        pollId: 0n,
-        newVoteWeight: 9n,
-        salt: genRandomSalt(),
-        privateKey: users[2].privKey.serialize(),
-      });
-
-      await publish({
-        pubkey: users[3].pubKey.serialize(),
-        stateIndex: 4n,
-        voteOptionIndex: 3n,
-        nonce: 1n,
-        pollId: 0n,
-        newVoteWeight: 9n,
-        salt: genRandomSalt(),
-        privateKey: users[3].privKey.serialize(),
-      });
-    });
-
-    it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(timeTravelArgs);
-      await mergeMessages(mergeMessagesArgs);
-      await mergeSignups(mergeSignupsArgs);
-      const tallyFileData = await genProofs(genProofsArgs);
-      await proveOnChain(proveOnChainArgs);
-      await verify({ ...verifyArgs, tallyData: tallyFileData });
-    });
-  });
-
   describe("4 signups, 6 messages", () => {
     after(() => {
       cleanVanilla();
@@ -470,6 +392,85 @@ describe("e2e tests", function test() {
       await genProofs(genProofsArgs);
       await proveOnChain(proveOnChainArgs);
       await verify(verifyArgs);
+    });
+  });
+
+  describe("30 signups (31 ballots), 4 messages", () => {
+    after(() => {
+      cleanVanilla();
+    });
+
+    const users = Array.from({ length: 30 }, () => new Keypair());
+
+    before(async () => {
+      // deploy the smart contracts
+      maciAddresses = await deploy(deployArgs);
+      // deploy a poll contract
+      pollAddresses = await deployPoll(deployPollArgs);
+    });
+
+    it("should signup thirty users", async () => {
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < users.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await signup({ maciPubKey: users[i].pubKey.serialize() });
+      }
+    });
+
+    it("should publish 4 messages", async () => {
+      // publish four different messages
+      await publish({
+        pubkey: users[0].pubKey.serialize(),
+        stateIndex: 1n,
+        voteOptionIndex: 0n,
+        nonce: 1n,
+        pollId: 0n,
+        newVoteWeight: 9n,
+        salt: genRandomSalt(),
+        privateKey: users[0].privKey.serialize(),
+      });
+
+      await publish({
+        pubkey: users[1].pubKey.serialize(),
+        stateIndex: 2n,
+        voteOptionIndex: 1n,
+        nonce: 1n,
+        pollId: 0n,
+        newVoteWeight: 9n,
+        salt: genRandomSalt(),
+        privateKey: users[1].privKey.serialize(),
+      });
+
+      await publish({
+        pubkey: users[2].pubKey.serialize(),
+        stateIndex: 3n,
+        voteOptionIndex: 2n,
+        nonce: 1n,
+        pollId: 0n,
+        newVoteWeight: 9n,
+        salt: genRandomSalt(),
+        privateKey: users[2].privKey.serialize(),
+      });
+
+      await publish({
+        pubkey: users[3].pubKey.serialize(),
+        stateIndex: 4n,
+        voteOptionIndex: 3n,
+        nonce: 1n,
+        pollId: 0n,
+        newVoteWeight: 9n,
+        salt: genRandomSalt(),
+        privateKey: users[3].privKey.serialize(),
+      });
+    });
+
+    it("should generate zk-SNARK proofs and verify them", async () => {
+      await timeTravel(timeTravelArgs);
+      await mergeMessages(mergeMessagesArgs);
+      await mergeSignups(mergeSignupsArgs);
+      const tallyFileData = await genProofs(genProofsArgs);
+      await proveOnChain(proveOnChainArgs);
+      await verify({ ...verifyArgs, tallyData: tallyFileData });
     });
   });
 
