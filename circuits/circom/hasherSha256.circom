@@ -23,7 +23,7 @@ template Sha256Hasher3() {
     signal output hash;
 
     component hasher = Sha256Hasher(length);
-    for (var i = 0; i < length; i ++) {
+    for (var i = 0; i < length; i++) {
         hasher.in[i] <== in[i];
     }
     hash <== hasher.hash;
@@ -37,7 +37,7 @@ template Sha256Hasher4() {
     signal output hash;
 
     component hasher = Sha256Hasher(length);
-    for (var i = 0; i < length; i ++) {
+    for (var i = 0; i < length; i++) {
         hasher.in[i] <== in[i];
     }
     hash <== hasher.hash;
@@ -51,7 +51,7 @@ template Sha256Hasher5() {
     signal output hash;
 
     component hasher = Sha256Hasher(length);
-    for (var i = 0; i < length; i ++) {
+    for (var i = 0; i < length; i++) {
         hasher.in[i] <== in[i];
     }
     hash <== hasher.hash;
@@ -65,7 +65,7 @@ template Sha256Hasher6() {
     signal output hash;
 
     component hasher = Sha256Hasher(length);
-    for (var i = 0; i < length; i ++) {
+    for (var i = 0; i < length; i++) {
         hasher.in[i] <== in[i];
     }
     hash <== hasher.hash;
@@ -79,7 +79,7 @@ template Sha256Hasher10() {
     signal output hash;
 
     component hasher = Sha256Hasher(length);
-    for (var i = 0; i < length; i ++) {
+    for (var i = 0; i < length; i++) {
         hasher.in[i] <== in[i];
     }
     hash <== hasher.hash;
@@ -98,8 +98,8 @@ template Sha256Hasher(length) {
     }
 
     component sha = Sha256(inBits);
-    for (var i = 0; i < length; i ++) {
-        for (var j = 0; j < 256; j ++) {
+    for (var i = 0; i < length; i++) {
+        for (var j = 0; j < 256; j++) {
             sha.in[(i * 256) + 255 - j] <== n2b[i].out[j];
         }
     }

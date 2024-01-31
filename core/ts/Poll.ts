@@ -222,14 +222,14 @@ export class Poll implements IPoll {
    * @param encPubKey - The public key associated with the encryption private key.
    * @returns A number of variables which will be used in the zk-SNARK circuit.
    */
-  processMessage = (message: Message, encPubKey: PubKey): IProcessMessagesOutput => {
+  processMessage = (message: Message, encPubKey: PubKey, qv = true): IProcessMessagesOutput => {
     try {
       // Decrypt the message
       const sharedKey = Keypair.genEcdhSharedKey(this.coordinatorKeypair.privKey, encPubKey);
 
       const { command, signature } = PCommand.decrypt(message, sharedKey);
 
-      const stateLeafIndex = BigInt(`${command.stateIndex}`);
+      const stateLeafIndex = command.stateIndex;
 
       // If the state tree index in the command is invalid, do nothing
       if (
@@ -252,7 +252,7 @@ export class Poll implements IPoll {
       }
 
       // If the nonce is invalid, do nothing
-      if (command.nonce !== BigInt(`${ballot.nonce}`) + 1n) {
+      if (command.nonce !== ballot.nonce + 1n) {
         throw new ProcessMessageError(ProcessMessageErrors.InvalidNonce);
       }
 
@@ -271,10 +271,13 @@ export class Poll implements IPoll {
       // basically we are replacing the previous vote weight for this
       // particular vote option with the new one
       // but we need to ensure that we are not going >= balance
-      const voiceCreditsLeft =
-        BigInt(stateLeaf.voiceCreditBalance) +
-        BigInt(originalVoteWeight) * BigInt(originalVoteWeight) -
-        BigInt(command.newVoteWeight) * BigInt(command.newVoteWeight);
+      // @note that above comment is valid for quadratic voting
+      // for non quadratic voting, we simply remove the exponentiation
+      const voiceCreditsLeft = qv
+        ? stateLeaf.voiceCreditBalance +
+          originalVoteWeight * originalVoteWeight -
+          command.newVoteWeight * command.newVoteWeight
+        : stateLeaf.voiceCreditBalance + originalVoteWeight - command.newVoteWeight;
 
       // If the remaining voice credits is insufficient, do nothing
       if (voiceCreditsLeft < 0n) {
@@ -290,7 +293,7 @@ export class Poll implements IPoll {
       // Deep-copy the ballot and update its attributes
       const newBallot = ballot.copy();
       // increase the nonce
-      newBallot.nonce = BigInt(`${newBallot.nonce}`) + 1n;
+      newBallot.nonce += 1n;
       // we change the vote for this exact vote option
       newBallot.votes[voteOptionIndex] = command.newVoteWeight;
 
@@ -428,9 +431,10 @@ export class Poll implements IPoll {
    * poll has concluded.
    * @param pollId The ID of the poll associated with the messages to
    *        process
+   * @param quiet - Whether to log errors or not
    * @returns stringified circuit inputs
    */
-  processMessages = (pollId: bigint, quiet = true): IProcessMessagesCircuitInputs => {
+  processMessages = (pollId: bigint, qv = true, quiet = true): IProcessMessagesCircuitInputs => {
     assert(this.hasUnprocessedMessages(), "No more messages to process");
 
     const batchSize = this.batchSizes.messageBatchSize;
@@ -518,7 +522,7 @@ export class Poll implements IPoll {
           case 1n:
             try {
               // check if the command is valid
-              const r = this.processMessage(message, encPubKey);
+              const r = this.processMessage(message, encPubKey, qv);
               const index = r.stateLeafIndex!;
 
               // we add at position 0 the original data
@@ -978,9 +982,10 @@ export class Poll implements IPoll {
 
   /**
    * This method tallies a ballots and updates the tally results.
+   * @param useQuadraticVoting - Whether to use quadratic voting or not. Default is true.
    * @returns the circuit inputs for the TallyVotes circuit.
    */
-  tallyVotes = (): ITallyCircuitInputs => {
+  tallyVotes = (useQuadraticVoting = true): ITallyCircuitInputs => {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (this.sbSalts[this.currentMessageBatchIndex!] === undefined) {
       throw new Error("You must process the messages first");
@@ -1013,12 +1018,14 @@ export class Poll implements IPoll {
     const currentPerVOSpentVoiceCreditsCommitment = this.genPerVOSpentVoiceCreditsCommitment(
       currentPerVOSpentVoiceCreditsRootSalt,
       batchStartIndex,
+      useQuadraticVoting,
     );
 
     // generate a commitment to the current spent voice credits
     const currentSpentVoiceCreditsCommitment = this.genSpentVoiceCreditSubtotalCommitment(
       currentSpentVoiceCreditSubtotalSalt,
       batchStartIndex,
+      useQuadraticVoting,
     );
 
     // the current commitment for the first batch will be 0
@@ -1060,10 +1067,10 @@ export class Poll implements IPoll {
         this.tallyResult[j] += v;
 
         // the per vote option spent voice credits will be the sum of the squares of the votes
-        this.perVOSpentVoiceCredits[j] += v * v;
+        this.perVOSpentVoiceCredits[j] += useQuadraticVoting ? v * v : v;
 
         // the total spent voice credits will be the sum of the squares of the votes
-        this.totalSpentVoiceCredits += v * v;
+        this.totalSpentVoiceCredits += useQuadraticVoting ? v * v : v;
       }
     }
 
@@ -1095,12 +1102,14 @@ export class Poll implements IPoll {
     const newSpentVoiceCreditsCommitment = this.genSpentVoiceCreditSubtotalCommitment(
       newSpentVoiceCreditSubtotalSalt,
       batchStartIndex + batchSize,
+      useQuadraticVoting,
     );
 
     // generate the new per VO spent voice credits commitment with the new salts and data
     const newPerVOSpentVoiceCreditsCommitment = this.genPerVOSpentVoiceCreditsCommitment(
       newPerVOSpentVoiceCreditsRootSalt,
       batchStartIndex + batchSize,
+      useQuadraticVoting,
     );
 
     // generate the new tally commitment
@@ -1157,9 +1166,14 @@ export class Poll implements IPoll {
    * This is the hash of the total spent voice credits and a salt, computed as Poseidon([totalCredits, _salt]).
    * @param salt - The salt used in the hash function.
    * @param numBallotsToCount - The number of ballots to count for the calculation.
+   * @param useQuadraticVoting - Whether to use quadratic voting or not. Default is true.
    * @returns Returns the hash of the total spent voice credits and a salt, computed as Poseidon([totalCredits, _salt]).
    */
-  private genSpentVoiceCreditSubtotalCommitment = (salt: bigint, numBallotsToCount: number): bigint => {
+  private genSpentVoiceCreditSubtotalCommitment = (
+    salt: bigint,
+    numBallotsToCount: number,
+    useQuadraticVoting = true,
+  ): bigint => {
     let subtotal = 0n;
     for (let i = 0; i < numBallotsToCount; i += 1) {
       if (this.ballots.length <= i) {
@@ -1168,7 +1182,7 @@ export class Poll implements IPoll {
 
       for (let j = 0; j < this.tallyResult.length; j += 1) {
         const v = BigInt(`${this.ballots[i].votes[j]}`);
-        subtotal = BigInt(subtotal) + v * v;
+        subtotal += useQuadraticVoting ? v * v : v;
       }
     }
     return hashLeftRight(subtotal, salt);
@@ -1180,10 +1194,14 @@ export class Poll implements IPoll {
    * This is the hash of the Merkle root of the spent voice credits per vote option and a salt, computed as Poseidon([root, _salt]).
    * @param salt - The salt used in the hash function.
    * @param numBallotsToCount - The number of ballots to count for the calculation.
-   *
+   * @param useQuadraticVoting - Whether to use quadratic voting or not. Default is true.
    * @returns Returns the hash of the Merkle root of the spent voice credits per vote option and a salt, computed as Poseidon([root, _salt]).
    */
-  private genPerVOSpentVoiceCreditsCommitment = (salt: bigint, numBallotsToCount: number): bigint => {
+  private genPerVOSpentVoiceCreditsCommitment = (
+    salt: bigint,
+    numBallotsToCount: number,
+    useQuadraticVoting = true,
+  ): bigint => {
     const leaves: bigint[] = Array<bigint>(this.tallyResult.length).fill(0n);
 
     for (let i = 0; i < numBallotsToCount; i += 1) {
@@ -1194,7 +1212,7 @@ export class Poll implements IPoll {
 
       for (let j = 0; j < this.tallyResult.length; j += 1) {
         const v = this.ballots[i].votes[j];
-        leaves[j] += v * v;
+        leaves[j] += useQuadraticVoting ? v * v : v;
       }
     }
 

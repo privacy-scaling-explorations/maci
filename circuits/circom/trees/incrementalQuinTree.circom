@@ -45,7 +45,7 @@ template QuinSelector(choices) {
     component eqs[choices];
 
     // For each item, check whether its index equals the input index.
-    for (var i = 0; i < choices; i ++) {
+    for (var i = 0; i < choices; i++) {
         eqs[i] = IsEqual();
         eqs[i].in[0] <== i;
         eqs[i].in[1] <== index;
@@ -110,7 +110,7 @@ template Splicer(numItems) {
         The output signal from the QuinSelector is <item from in> and gets
         wired to Mux1 (as above).
     */
-    for (i = 0; i < numItems + 1; i ++) {
+    for (i = 0; i < numItems + 1; i++) {
         // greaterThen[i].out will be 1 if the i is greater than the index
         greaterThan[i] = SafeGreaterThan(3);
         greaterThan[i].in[0] <== i;
@@ -123,7 +123,7 @@ template Splicer(numItems) {
         // but if index = 2 and i = 3, greaterThan[i].out = 1, so 3 - 1 = 2
         quinSelectors[i].index <== i - greaterThan[i].out;
 
-        for (j = 0; j < numItems; j ++) {
+        for (j = 0; j < numItems; j++) {
             quinSelectors[i].in[j] <== in[j];
         }
         quinSelectors[i].in[numItems] <== 0;
@@ -178,12 +178,12 @@ template QuinTreeInclusionProof(levels) {
         splicers[i] = Splicer(LEAVES_PER_PATH_LEVEL);
         splicers[i].index <== path_index[i];
         splicers[i].leaf <== hashers[i - 1].hash;
-        for (j = 0; j < LEAVES_PER_PATH_LEVEL; j ++) {
+        for (j = 0; j < LEAVES_PER_PATH_LEVEL; j++) {
             splicers[i].in[j] <== path_elements[i][j];
         }
 
         hashers[i] = Hasher5();
-        for (j = 0; j < LEAVES_PER_NODE; j ++) {
+        for (j = 0; j < LEAVES_PER_NODE; j++) {
             hashers[i].in[j] <== splicers[i].out[j];
         }
     }
@@ -207,9 +207,9 @@ template QuinLeafExists(levels){
     // Verify the Merkle path
     component verifier = QuinTreeInclusionProof(levels);
     verifier.leaf <== leaf;
-    for (i = 0; i < levels; i ++) {
+    for (i = 0; i < levels; i++) {
         verifier.path_index[i] <== path_index[i];
-        for (j = 0; j < LEAVES_PER_PATH_LEVEL; j ++) {
+        for (j = 0; j < LEAVES_PER_PATH_LEVEL; j++) {
             verifier.path_elements[i][j] <== path_elements[i][j];
         }
     }
@@ -239,7 +239,7 @@ template QuinBatchLeavesExists(levels, batchLevels) {
 
     // Compute the subroot
     component qcr = QuinCheckRoot(batchLevels);
-    for (var i = 0; i < LEAVES_PER_BATCH; i ++) {
+    for (var i = 0; i < LEAVES_PER_BATCH; i++) {
         qcr.leaves[i] <== leaves[i];
     }
 
@@ -249,9 +249,9 @@ template QuinBatchLeavesExists(levels, batchLevels) {
     // The subroot is the leaf
     qle.leaf <== qcr.root;
     qle.root <== root;
-    for (var i = 0; i < levels - batchLevels; i ++) {
+    for (var i = 0; i < levels - batchLevels; i++) {
         qle.path_index[i] <== path_index[i];
-        for (var j = 0; j < LEAVES_PER_PATH_LEVEL; j ++) {
+        for (var j = 0; j < LEAVES_PER_PATH_LEVEL; j++) {
             qle.path_elements[i][j] <== path_elements[i][j];
         }
     }
@@ -268,7 +268,7 @@ template QuinGeneratePathIndices(levels) {
 
     var m = in;
     signal n[levels + 1];
-    for (var i = 0; i < levels; i ++) {
+    for (var i = 0; i < levels; i++) {
         // circom's best practices state that we should avoid using <-- unless
         // we know what we are doing. But this is the only way to perform the
         // modulo operation.
@@ -284,7 +284,7 @@ template QuinGeneratePathIndices(levels) {
 
     component leq[levels];
     component sum = CalculateTotal(levels);
-    for (var i = 0; i < levels; i ++) {
+    for (var i = 0; i < levels; i++) {
         // Check that each output element is less than the base
         leq[i] = SafeLessThan(3);
         leq[i].in[0] <== out[i];

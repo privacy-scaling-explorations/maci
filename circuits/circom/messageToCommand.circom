@@ -55,7 +55,7 @@ template MessageToCommand() {
 
     // save the decrypted message into a packed command signal
     signal packedCommand[PACKED_CMD_LENGTH];
-    for (var i = 0; i < PACKED_CMD_LENGTH; i ++) {
+    for (var i = 0; i < PACKED_CMD_LENGTH; i++) {
         packedCommand[i] <== decryptor.decrypted[i];
     }
 
@@ -80,7 +80,7 @@ template MessageToCommand() {
 
     // this could be removed and instead
     // use packedCommand as output
-    for (var i = 0; i < PACKED_CMD_LENGTH; i ++) {
+    for (var i = 0; i < PACKED_CMD_LENGTH; i++) {
         packedCommandOut[i] <== packedCommand[i];
     }
 }

@@ -105,7 +105,7 @@ template SubsidyPerBatch (
     // Verify both batches belong to the ballot tree
     component ballotTreeVerifier1 = BatchMerkleTreeVerifier(stateTreeDepth, intStateTreeDepth, TREE_ARITY); 
     component ballotHashers1[batchSize];
-    for (var i = 0; i < batchSize; i ++) {
+    for (var i = 0; i < batchSize; i++) {
         ballotHashers1[i] = HashLeftRight();
         ballotHashers1[i].left <== ballots1[i][BALLOT_NONCE_IDX];
         ballotHashers1[i].right <== ballots1[i][BALLOT_VO_ROOT_IDX];
@@ -113,15 +113,15 @@ template SubsidyPerBatch (
     }
     ballotTreeVerifier1.index <== inputHasher.rbi;
     ballotTreeVerifier1.root <== ballotRoot;
-    for (var i = 0; i < k; i ++) {
-        for (var j = 0; j < TREE_ARITY - 1; j ++) {
+    for (var i = 0; i < k; i++) {
+        for (var j = 0; j < TREE_ARITY - 1; j++) {
             ballotTreeVerifier1.pathElements[i][j] <== ballotPathElements1[i][j];
         }
     }
 
     component ballotTreeVerifier2 = BatchMerkleTreeVerifier(stateTreeDepth, intStateTreeDepth, TREE_ARITY); 
     component ballotHashers2[batchSize];
-    for (var i = 0; i < batchSize; i ++) {
+    for (var i = 0; i < batchSize; i++) {
         ballotHashers2[i] = HashLeftRight();
         ballotHashers2[i].left <== ballots2[i][BALLOT_NONCE_IDX];
         ballotHashers2[i].right <== ballots2[i][BALLOT_VO_ROOT_IDX];
@@ -129,8 +129,8 @@ template SubsidyPerBatch (
     }
     ballotTreeVerifier2.index <== inputHasher.cbi;
     ballotTreeVerifier2.root <== ballotRoot;
-    for (var i = 0; i < k; i ++) {
-        for (var j = 0; j < TREE_ARITY - 1; j ++) {
+    for (var i = 0; i < k; i++) {
+        for (var j = 0; j < TREE_ARITY - 1; j++) {
             ballotTreeVerifier2.pathElements[i][j] <== ballotPathElements2[i][j];
         }
     }
@@ -139,17 +139,17 @@ template SubsidyPerBatch (
     //  ----------------------------------------------------------------------- 
     // Verify the vote option roots
     component voteTree1[batchSize];
-    for (var i = 0; i < batchSize; i ++) {
+    for (var i = 0; i < batchSize; i++) {
         voteTree1[i] = QuinCheckRoot(voteOptionTreeDepth);
-        for (var j = 0; j < TREE_ARITY ** voteOptionTreeDepth; j ++) {
+        for (var j = 0; j < TREE_ARITY ** voteOptionTreeDepth; j++) {
             voteTree1[i].leaves[j] <== votes1[i][j];
         }
         voteTree1[i].root === ballots1[i][BALLOT_VO_ROOT_IDX];
     }
     component voteTree2[batchSize];
-    for (var i = 0; i < batchSize; i ++) {
+    for (var i = 0; i < batchSize; i++) {
         voteTree2[i] = QuinCheckRoot(voteOptionTreeDepth);
-        for (var j = 0; j < TREE_ARITY ** voteOptionTreeDepth; j ++) {
+        for (var j = 0; j < TREE_ARITY ** voteOptionTreeDepth; j++) {
             voteTree2[i].leaves[j] <== votes2[i][j];
         }
         voteTree2[i].root === ballots2[i][BALLOT_VO_ROOT_IDX];
@@ -162,8 +162,8 @@ template SubsidyPerBatch (
     component tmp[batchSize*batchSize];
     component kij[batchSize*batchSize];
     var idx = 0;
-    for (var i = 0; i < batchSize; i ++) {
-        for (var j = 0; j < batchSize; j ++) {
+    for (var i = 0; i < batchSize; i++) {
+        for (var j = 0; j < batchSize; j++) {
             tmp[idx] = CalculateTotal(numVoteOptions);
             kij[idx] = DivisionFromNormal(WW,NN);
             for (var p = 0; p < numVoteOptions; p++) {
@@ -189,7 +189,7 @@ template SubsidyPerBatch (
     component subsidy1[numVoteOptions];
     component subsidy2[numVoteOptions];
 
-    for (var p = 0; p < numVoteOptions; p ++) {
+    for (var p = 0; p < numVoteOptions; p++) {
         subsidy1[p] = CalculateTotal(batchSize * (batchSize-1)/2 + 1);
         subsidy2[p] = CalculateTotal(batchSize * (batchSize+1)/2);
 
@@ -197,7 +197,7 @@ template SubsidyPerBatch (
         var cnt1 = 0;
         subsidy1[p].nums[batchSize * (batchSize-1)/2] <== currentSubsidy[p] * iz.out;
         for (var i = 0; i < batchSize; i++) {
-            for (var j = i+1; j < batchSize; j ++) {
+            for (var j = i+1; j < batchSize; j++) {
                 var idx = i * batchSize + j;
                 subsidy1[p].nums[cnt1] <== 2 * kij[idx].c * vsquares[idx][p];
                 cnt1++;
@@ -224,7 +224,7 @@ template SubsidyPerBatch (
     rcv.currentSubsidySalt <== currentSubsidySalt;
     rcv.newSubsidySalt <== newSubsidySalt;
 
-    for (var i = 0; i < numVoteOptions; i ++) {
+    for (var i = 0; i < numVoteOptions; i++) {
         rcv.currentSubsidy[i] <== currentSubsidy[i];
         rcv.newSubsidy[i] <== subsidy1[i].sum + subsidy2[i].sum; 
     }
@@ -259,7 +259,7 @@ template SubsidyCommitmentVerifier(voteOptionTreeDepth) {
 
     // Compute the commitment to the current results
     component currentResultsRoot = QuinCheckRoot(voteOptionTreeDepth);
-    for (var i = 0; i < numVoteOptions; i ++) {
+    for (var i = 0; i < numVoteOptions; i++) {
         currentResultsRoot.leaves[i] <== currentSubsidy[i];
     }
 
@@ -284,7 +284,7 @@ template SubsidyCommitmentVerifier(voteOptionTreeDepth) {
 
     // Compute the root of the new results
     component newResultsRoot = QuinCheckRoot(voteOptionTreeDepth);
-    for (var i = 0; i < numVoteOptions; i ++) {
+    for (var i = 0; i < numVoteOptions; i++) {
         newResultsRoot.leaves[i] <== newSubsidy[i];
     }
 
@@ -331,7 +331,7 @@ template BatchMerkleTreeVerifier(coeffTreeDepth, intCoeffTreeDepth, TREE_ARITY) 
     signal input root;
     signal input index;
     component ballotSubroot = QuinCheckRoot(intCoeffTreeDepth);
-    for (var i = 0; i < batchSize; i ++) {
+    for (var i = 0; i < batchSize; i++) {
         ballotSubroot.leaves[i] <== leaves[i];
     }
 
@@ -340,9 +340,9 @@ template BatchMerkleTreeVerifier(coeffTreeDepth, intCoeffTreeDepth, TREE_ARITY) 
     upperTreePathIndices.in <== index; 
     ballotQle.leaf <== ballotSubroot.root;
     ballotQle.root <== root;
-    for (var i = 0; i < k; i ++) {
+    for (var i = 0; i < k; i++) {
         ballotQle.path_index[i] <== upperTreePathIndices.out[i];
-        for (var j = 0; j < TREE_ARITY - 1; j ++) {
+        for (var j = 0; j < TREE_ARITY - 1; j++) {
             ballotQle.path_elements[i][j] <== pathElements[i][j];
         }
     }

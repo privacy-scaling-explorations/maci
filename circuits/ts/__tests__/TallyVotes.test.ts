@@ -21,35 +21,43 @@ describe("TallyVotes circuit", function test() {
 
   const coordinatorKeypair = new Keypair();
 
-  let circuit: WitnessTester<
-    [
-      "stateRoot",
-      "ballotRoot",
-      "sbSalt",
-      "packedVals",
-      "sbCommitment",
-      "currentTallyCommitment",
-      "newTallyCommitment",
-      "inputHash",
-      "ballots",
-      "ballotPathElements",
-      "votes",
-      "currentResults",
-      "currentResultsRootSalt",
-      "currentSpentVoiceCreditSubtotal",
-      "currentSpentVoiceCreditSubtotalSalt",
-      "currentPerVOSpentVoiceCredits",
-      "currentPerVOSpentVoiceCreditsRootSalt",
-      "newResultsRootSalt",
-      "newPerVOSpentVoiceCreditsRootSalt",
-      "newSpentVoiceCreditSubtotalSalt",
-    ]
-  >;
+  type TallyVotesCircuitInputs = [
+    "stateRoot",
+    "ballotRoot",
+    "sbSalt",
+    "packedVals",
+    "sbCommitment",
+    "currentTallyCommitment",
+    "newTallyCommitment",
+    "inputHash",
+    "ballots",
+    "ballotPathElements",
+    "votes",
+    "currentResults",
+    "currentResultsRootSalt",
+    "currentSpentVoiceCreditSubtotal",
+    "currentSpentVoiceCreditSubtotalSalt",
+    "currentPerVOSpentVoiceCredits",
+    "currentPerVOSpentVoiceCreditsRootSalt",
+    "newResultsRootSalt",
+    "newPerVOSpentVoiceCreditsRootSalt",
+    "newSpentVoiceCreditSubtotalSalt",
+  ];
+
+  let circuit: WitnessTester<TallyVotesCircuitInputs>;
+
+  let circuitNonQv: WitnessTester<TallyVotesCircuitInputs>;
 
   before(async () => {
     circuit = await circomkitInstance.WitnessTester("tallyVotes", {
       file: "tallyVotes",
       template: "TallyVotes",
+      params: [10, 1, 2],
+    });
+
+    circuitNonQv = await circomkitInstance.WitnessTester("tallyVotesNonQv", {
+      file: "tallyVotesNonQv",
+      template: "TallyVotesNonQv",
       params: [10, 1, 2],
     });
   });
@@ -137,6 +145,92 @@ describe("TallyVotes circuit", function test() {
       generatedInputs.currentResults[randIdx] = 1n;
       const witness = await circuit.calculateWitness(generatedInputs);
       await circuit.expectConstraintPass(witness);
+    });
+  });
+
+  describe("1 user, 2 messages (non qv)", () => {
+    let stateIndex: bigint;
+    let pollId: bigint;
+    let poll: Poll;
+    let maciState: MaciState;
+    const voteWeight = BigInt(9);
+    const voteOptionIndex = BigInt(0);
+
+    beforeEach(() => {
+      maciState = new MaciState(STATE_TREE_DEPTH);
+      const messages: Message[] = [];
+      const commands: PCommand[] = [];
+      // Sign up and publish
+      const userKeypair = new Keypair();
+      stateIndex = BigInt(
+        maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000))),
+      );
+
+      pollId = maciState.deployPoll(
+        BigInt(Math.floor(Date.now() / 1000) + duration),
+        maxValues,
+        treeDepths,
+        messageBatchSize,
+        coordinatorKeypair,
+      );
+
+      poll = maciState.polls.get(pollId)!;
+      poll.updatePoll(stateIndex);
+
+      // First command (valid)
+      const command = new PCommand(
+        stateIndex,
+        userKeypair.pubKey,
+        voteOptionIndex, // voteOptionIndex,
+        voteWeight, // vote weight
+        BigInt(1), // nonce
+        BigInt(pollId),
+      );
+
+      const signature = command.sign(userKeypair.privKey);
+
+      const ecdhKeypair = new Keypair();
+      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+      const message = command.encrypt(signature, sharedKey);
+      messages.push(message);
+      commands.push(command);
+
+      poll.publishMessage(message, ecdhKeypair.pubKey);
+      // Use the accumulator queue to compare the root of the message tree
+      const accumulatorQueue: AccQueue = new AccQueue(
+        treeDepths.messageTreeSubDepth,
+        STATE_TREE_ARITY,
+        NOTHING_UP_MY_SLEEVE,
+      );
+      accumulatorQueue.enqueue(message.hash(ecdhKeypair.pubKey));
+      accumulatorQueue.mergeSubRoots(0);
+      accumulatorQueue.merge(treeDepths.messageTreeDepth);
+
+      expect(poll.messageTree.root.toString()).to.be.eq(
+        accumulatorQueue.getMainRoots()[treeDepths.messageTreeDepth].toString(),
+      );
+      // Process messages
+      poll.processMessages(pollId, false);
+    });
+
+    it("should produce the correct result commitments", async () => {
+      const generatedInputs = poll.tallyVotes() as unknown as ITallyVotesInputs;
+      const witness = await circuit.calculateWitness(generatedInputs);
+      await circuit.expectConstraintPass(witness);
+    });
+
+    it("should produce the correct result if the inital tally is not zero", async () => {
+      const generatedInputs = poll.tallyVotes(false) as unknown as ITallyVotesInputs;
+
+      // Start the tally from non-zero value
+      let randIdx = generateRandomIndex(Object.keys(generatedInputs).length);
+      while (randIdx === 0) {
+        randIdx = generateRandomIndex(Object.keys(generatedInputs).length);
+      }
+
+      generatedInputs.currentResults[randIdx] = 1n;
+      const witness = await circuitNonQv.calculateWitness(generatedInputs);
+      await circuitNonQv.expectConstraintPass(witness);
     });
   });
 

@@ -16,9 +16,9 @@ template UnpackElement(n) {
     inputBits.in <== in;
 
     component outputElements[n];
-    for (var i = 0; i < n; i ++) {
+    for (var i = 0; i < n; i++) {
         outputElements[i] = Bits2Num(50);
-        for (var j = 0; j < 50; j ++) {
+        for (var j = 0; j < 50; j++) {
             outputElements[i].in[j] <== inputBits.out[((n - i - 1) * 50) + j];
         }
         out[i] <== outputElements[i].out;

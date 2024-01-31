@@ -16,7 +16,7 @@ template MessageHasher() {
     component hasher = Hasher13();
 
     // we add all parts of the msg
-    for (var i = 0; i < 11; i ++) {
+    for (var i = 0; i < 11; i++) {
         hasher.in[i] <== in[i];
     }
     hasher.in[11] <== encPubKey[0];

@@ -5,8 +5,9 @@ include "./verifySignature.circom";
 include "./utils.circom";
 
 // template that validates whether a message
-// is valid or not
-template MessageValidator() {
+// is valid or not 
+// @note it does not do quadratic voting
+template MessageValidatorNonQv() {
     // a) Whether the state leaf index is valid
     signal input stateTreeIndex;
     // how many signups we have in the state tree
@@ -64,24 +65,16 @@ template MessageValidator() {
     signal input currentVotesForOption;
     signal input voteWeight;
 
-    // Check that voteWeight is < sqrt(field size), so voteWeight ^ 2 will not
-    // overflow
-    component validVoteWeight = SafeLessEqThan(252);
-    validVoteWeight.in[0] <== voteWeight;
-    validVoteWeight.in[1] <== 147946756881789319005730692170996259609;
-
-    // Check that currentVoiceCreditBalance + (currentVotesForOption ** 2) >= (voteWeight ** 2)
-    // @note what is the difference between voteWeight and currentVotesForOption?
+    // Check that currentVoiceCreditBalance + (currentVotesForOption) >= (voteWeight)
     component sufficientVoiceCredits = SafeGreaterEqThan(252);
-    sufficientVoiceCredits.in[0] <== (currentVotesForOption * currentVotesForOption) + currentVoiceCreditBalance;
-    sufficientVoiceCredits.in[1] <== voteWeight * voteWeight;
+    sufficientVoiceCredits.in[0] <== currentVotesForOption + currentVoiceCreditBalance;
+    sufficientVoiceCredits.in[1] <== voteWeight;
 
-    // if all 7 checks are correct then is IsValid = 1
+    // if all 6 checks are correct then is IsValid = 1
     component validUpdate = IsEqual();
-    validUpdate.in[0] <== 7;
+    validUpdate.in[0] <== 6;
     validUpdate.in[1] <== validSignature.valid + 
                           sufficientVoiceCredits.out +
-                          validVoteWeight.out +
                           validNonce.out +
                           validStateLeafIndex.out +
                           validTimestamp.out +
