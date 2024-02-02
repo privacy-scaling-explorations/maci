@@ -68,6 +68,7 @@ export const genProofs = async ({
   blocksPerBatch,
   endBlock,
   signer,
+  tallyAddress,
   useQuadraticVoting = true,
   quiet = true,
 }: GenProofsArgs): Promise<TallyData> => {
@@ -487,10 +488,16 @@ export const genProofs = async ({
     newPerVOSpentVoiceCreditsCommitment,
   ]);
 
+  // get the tally contract address
+  const tallyContractAddress = tallyAddress || readContractAddress(`Tally-${pollId}`, network?.name);
+
   // create the tally file data to store for verification later
   const tallyFileData: TallyData = {
-    maci: maciAddress!,
+    maci: maciContractAddress,
     pollId: pollId.toString(),
+    network: network?.name,
+    chainId: network?.chainId.toString(),
+    tallyAddress: tallyContractAddress,
     newTallyCommitment: asHex(tallyCircuitInputs!.newTallyCommitment as BigNumberish),
     results: {
       tally: poll.tallyResult.map((x) => x.toString()),

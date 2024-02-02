@@ -443,6 +443,7 @@ program
     "-t, --tally-file <tallyFile>",
     "the tally file with results, per vote option spent credits, spent voice credits total",
   )
+  .option("-ta, --tally-address <tallyAddress>", "the tally contract address")
   .option("-s, --subsidy-file <subsidyFile>", "the subsidy file")
   .option("-r, --rapidsnark <rapidsnark>", "the path to the rapidsnark binary")
   .option("-wp, --process-witnessgen <processWitnessgen>", "the path to the process witness generation binary")
@@ -495,6 +496,7 @@ program
         startBlock: cmdObj.startBlock,
         endBlock: cmdObj.endBlock,
         blocksPerBatch: cmdObj.blocksPerBatch,
+        tallyAddress: cmdObj.tallyAddress,
         useQuadraticVoting: cmdObj.useQuadraticVoting,
         quiet: cmdObj.quiet,
       });

@@ -48,56 +48,6 @@ export const verify = async ({
   const ethSigner = signer || (await getDefaultSigner());
   const network = await getDefaultNetwork();
 
-  // check existence of MACI, Tally and Subsidy contract addresses
-  if (!readContractAddress("MACI", network?.name) && !maciAddress) {
-    logError("MACI contract address is empty");
-  }
-
-  if (!readContractAddress(`Tally-${pollId}`, network?.name) && !tallyAddress) {
-    logError("Tally contract address is empty");
-  }
-
-  if (subsidyEnabled && !readContractAddress(`Subsidy-${pollId}`, network?.name) && !subsidyAddress) {
-    logError("Subsidy contract address is empty");
-  }
-
-  const maciContractAddress = maciAddress || readContractAddress("MACI", network?.name);
-  const tallyContractAddress = tallyAddress || readContractAddress(`Tally-${pollId}`, network?.name);
-
-  let subsidyContractAddress = "";
-
-  if (subsidyEnabled) {
-    subsidyContractAddress = subsidyAddress || readContractAddress(`Subsidy-${pollId}`, network?.name);
-  }
-
-  if (!(await contractExists(ethSigner.provider!, maciContractAddress))) {
-    logError(`Error: there is no contract deployed at ${maciContractAddress}.`);
-  }
-
-  if (!(await contractExists(ethSigner.provider!, tallyContractAddress))) {
-    logError(`Error: there is no contract deployed at ${tallyContractAddress}.`);
-  }
-
-  if (subsidyEnabled && !(await contractExists(ethSigner.provider!, subsidyContractAddress))) {
-    logError(`Error: there is no contract deployed at ${subsidyContractAddress}.`);
-  }
-
-  const maciContract = new BaseContract(maciContractAddress, parseArtifact("MACI")[0], ethSigner) as MACI;
-  const pollAddr = await maciContract.polls(pollId);
-
-  const pollContract = new BaseContract(pollAddr, parseArtifact("Poll")[0], ethSigner) as Poll;
-
-  const tallyContract = new BaseContract(tallyContractAddress, parseArtifact("Tally")[0], ethSigner) as Tally;
-
-  const subsidyContract = subsidyEnabled
-    ? (new BaseContract(subsidyContractAddress, parseArtifact("Subsidy")[0], ethSigner) as Subsidy)
-    : undefined;
-
-  // verification
-  const onChainTallyCommitment = BigInt(await tallyContract.tallyCommitment());
-
-  logYellow(quiet, info(`on-chain tally commitment: ${onChainTallyCommitment.toString(16)}`));
-
   // ensure we have either tally data or tally file
   if (!(tallyData || tallyFile)) {
     logError("No tally data or tally file provided.");
@@ -115,6 +65,62 @@ export const verify = async ({
 
     tallyResults = JSON.parse(fs.readFileSync(tallyFile!, { encoding: "utf8" })) as TallyData;
   }
+
+  // we prioritize the tally file data
+  const tallyContractAddress =
+    tallyResults.tallyAddress || tallyAddress || readContractAddress(`Tally-${pollId}`, network?.name);
+
+  if (!tallyContractAddress) {
+    logError("Tally contract address is empty");
+  }
+
+  if (!(await contractExists(ethSigner.provider!, tallyContractAddress))) {
+    logError(`Error: there is no Tally contract deployed at ${tallyContractAddress}.`);
+  }
+
+  // prioritize the tally file data
+  const maciContractAddress = tallyResults.maci || maciAddress || readContractAddress("MACI", network?.name);
+
+  // check existence of MACI, Tally and Subsidy contract addresses
+  if (!maciContractAddress) {
+    logError("MACI contract address is empty");
+  }
+
+  if (!(await contractExists(ethSigner.provider!, maciContractAddress))) {
+    logError(`Error: there is no MACI contract deployed at ${maciContractAddress}.`);
+  }
+
+  let subsidyContractAddress = "";
+
+  // subsidy validation
+  if (subsidyEnabled) {
+    subsidyContractAddress = subsidyAddress || readContractAddress(`Subsidy-${pollId}`, network?.name);
+
+    if (!subsidyContractAddress) {
+      logError("Subsidy contract address is empty");
+    }
+
+    if (!(await contractExists(ethSigner.provider!, subsidyContractAddress))) {
+      logError(`Error: there is no Subsidy contract deployed at ${subsidyContractAddress}.`);
+    }
+  }
+
+  // get the contract objects
+  const maciContract = new BaseContract(maciContractAddress, parseArtifact("MACI")[0], ethSigner) as MACI;
+  const pollAddr = await maciContract.polls(pollId);
+
+  const pollContract = new BaseContract(pollAddr, parseArtifact("Poll")[0], ethSigner) as Poll;
+
+  const tallyContract = new BaseContract(tallyContractAddress, parseArtifact("Tally")[0], ethSigner) as Tally;
+
+  const subsidyContract = subsidyEnabled
+    ? (new BaseContract(subsidyContractAddress, parseArtifact("Subsidy")[0], ethSigner) as Subsidy)
+    : undefined;
+
+  // verification
+  const onChainTallyCommitment = BigInt(await tallyContract.tallyCommitment());
+
+  logYellow(quiet, info(`on-chain tally commitment: ${onChainTallyCommitment.toString(16)}`));
 
   // check the results commitment
   const validResultsCommitment = tallyResults.newTallyCommitment.match(/0x[a-fA-F0-9]+/);
