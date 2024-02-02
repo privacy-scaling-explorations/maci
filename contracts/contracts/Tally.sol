@@ -49,9 +49,6 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
   error BatchStartIndexTooLarge();
   error TallyBatchSizeTooLarge();
 
-  /// @notice events
-  event BallotsTallied(address poll);
-
   /// @notice Create a new Tally contract
   /// @param _verifier The Verifier contract
   /// @param _vkRegistry The VkRegistry contract
@@ -79,6 +76,16 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
     if (_tallyBatchSize >= 2 ** 50) revert TallyBatchSizeTooLarge();
 
     result = (_batchStartIndex / _tallyBatchSize) + (_numSignUps << uint256(50));
+  }
+
+  /// @notice Check if all ballots are tallied
+  /// @return tallied whether all ballots are tallied
+  function isTallied() external view returns (bool tallied) {
+    (uint8 intStateTreeDepth, , , ) = poll.treeDepths();
+    (uint256 numSignUps, ) = poll.numSignUpsAndMessages();
+
+    // Require that there are untallied ballots left
+    tallied = tallyBatchNum * (TREE_ARITY ** intStateTreeDepth) >= numSignUps;
   }
 
   /// @notice generate hash of public inputs for tally circuit
@@ -121,20 +128,19 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
     _votingPeriodOver(poll);
     updateSbCommitment();
 
-    uint256 cachedBatchNum = tallyBatchNum;
+    // get the batch size and start index
+    (uint8 intStateTreeDepth, , , ) = poll.treeDepths();
+    uint256 tallyBatchSize = TREE_ARITY ** intStateTreeDepth;
+    uint256 batchStartIndex = tallyBatchNum * tallyBatchSize;
+
     // save some gas because we won't overflow uint256
     unchecked {
       tallyBatchNum++;
     }
 
-    // get the batch size and start index
-    (uint8 intStateTreeDepth, , , ) = poll.treeDepths();
-    uint256 tallyBatchSize = TREE_ARITY ** intStateTreeDepth;
-    uint256 batchStartIndex = cachedBatchNum * tallyBatchSize;
-
     (uint256 numSignUps, ) = poll.numSignUpsAndMessages();
 
-    // Require that there are untalied ballots left
+    // Require that there are untallied ballots left
     if (batchStartIndex >= numSignUps) {
       revert AllBallotsTallied();
     }
@@ -147,10 +153,6 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
 
     // Update the tally commitment and the tally batch num
     tallyCommitment = _newTallyCommitment;
-
-    if ((cachedBatchNum + 1) * tallyBatchSize >= numSignUps) {
-      emit BallotsTallied(address(poll));
-    }
   }
 
   /// @notice Verify the tally proof using the verifying key
