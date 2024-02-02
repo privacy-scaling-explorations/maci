@@ -27,31 +27,31 @@ template QuinCheckRoot(levels) {
 
     // The total number of hashers
     var numHashers = 0;
-    for (i = 0; i < levels; i ++) {
+    for (i = 0; i < levels; i++) {
         numHashers += LEAVES_PER_NODE ** i;
     }
 
     component hashers[numHashers];
 
     // Instantiate all hashers
-    for (i = 0; i < numHashers; i ++) {
+    for (i = 0; i < numHashers; i++) {
         hashers[i] = Hasher5();
     }
 
     // Wire the leaf values into the leaf hashers
-    for (i = 0; i < numLeafHashers; i ++){
-        for (j = 0; j < LEAVES_PER_NODE; j ++){
+    for (i = 0; i < numLeafHashers; i++){
+        for (j = 0; j < LEAVES_PER_NODE; j++){
             hashers[i].in[j] <== leaves[i * LEAVES_PER_NODE + j];
         }
     }
 
     // Wire the outputs of the leaf hashers to the intermediate hasher inputs
     var k = 0;
-    for (i = numLeafHashers; i < numHashers; i ++) {
-        for (j = 0; j < LEAVES_PER_NODE; j ++){
+    for (i = numLeafHashers; i < numHashers; i++) {
+        for (j = 0; j < LEAVES_PER_NODE; j++){
             hashers[i].in[j] <== hashers[k * LEAVES_PER_NODE + j].hash;
         }
-        k ++;
+        k++;
     }
 
     // Wire the output of the final hash to this circuit's output

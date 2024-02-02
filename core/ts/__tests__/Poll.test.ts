@@ -191,6 +191,50 @@ describe("Poll", function test() {
         poll.processMessage(message, user1Keypair.pubKey);
       }).to.throw("failed decryption due to either wrong encryption public key or corrupted ciphertext");
     });
+
+    it("should throw when going over the voice credit limit (non qv)", () => {
+      const command = new PCommand(
+        // invalid state index as it is one more than the number of state leaves
+        BigInt(user1StateIndex),
+        user1Keypair.pubKey,
+        0n,
+        voiceCreditBalance + 1n,
+        1n,
+        BigInt(pollId),
+      );
+
+      const signature = command.sign(user1Keypair.privKey);
+
+      const ecdhKeypair = new Keypair();
+      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+
+      const message = command.encrypt(signature, sharedKey);
+      poll.publishMessage(message, ecdhKeypair.pubKey);
+      expect(() => {
+        poll.processMessage(message, ecdhKeypair.pubKey, false);
+      }).to.throw("insufficient voice credits");
+    });
+
+    it("should work when submitting a valid message (voteWeight === voiceCreditBalance and non qv)", () => {
+      const command = new PCommand(
+        // invalid state index as it is one more than the number of state leaves
+        BigInt(user1StateIndex),
+        user1Keypair.pubKey,
+        0n,
+        voiceCreditBalance,
+        1n,
+        BigInt(pollId),
+      );
+
+      const signature = command.sign(user1Keypair.privKey);
+
+      const ecdhKeypair = new Keypair();
+      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+
+      const message = command.encrypt(signature, sharedKey);
+      poll.publishMessage(message, ecdhKeypair.pubKey);
+      poll.processMessage(message, ecdhKeypair.pubKey, false);
+    });
   });
 
   describe("processMessages", () => {
@@ -247,7 +291,7 @@ describe("Poll", function test() {
       );
     });
 
-    it("should succeed even if send an invalid message", () => {
+    it("should succeed even if we send an invalid message", () => {
       const command = new PCommand(
         // we only signed up one user so the state index is invalid
         BigInt(user1StateIndex + 1),
@@ -397,9 +441,17 @@ describe("Poll", function test() {
     const poll = maciState.polls.get(pollId)!;
 
     const user1Keypair = new Keypair();
+    const user2Keypair = new Keypair();
+
     // signup the user
     const user1StateIndex = maciState.signUp(
       user1Keypair.pubKey,
+      voiceCreditBalance,
+      BigInt(Math.floor(Date.now() / 1000)),
+    );
+
+    const user2StateIndex = maciState.signUp(
+      user2Keypair.pubKey,
       voiceCreditBalance,
       BigInt(Math.floor(Date.now() / 1000)),
     );
@@ -438,6 +490,54 @@ describe("Poll", function test() {
       const results = poll.tallyResult;
       expect(spentVoiceCredits).to.eq(voteWeight * voteWeight);
       expect(results[Number.parseInt(voteOption.toString(), 10)]).to.eq(voteWeight);
+      expect(poll.perVOSpentVoiceCredits[Number.parseInt(voteOption.toString(), 10)]).to.eq(voteWeight * voteWeight);
+    });
+
+    it("should generate the correct results (non-qv)", () => {
+      // deploy a second poll
+      const secondPollId = maciState.deployPoll(
+        BigInt(Math.floor(Date.now() / 1000) + duration),
+        maxValues,
+        treeDepths,
+        messageBatchSize,
+        coordinatorKeypair,
+      );
+
+      const secondPoll = maciState.polls.get(secondPollId)!;
+      secondPoll.updatePoll(BigInt(maciState.stateLeaves.length));
+
+      const secondVoteWeight = 10n;
+      const secondVoteOption = 1n;
+
+      const secondCommand = new PCommand(
+        BigInt(user2StateIndex),
+        user2Keypair.pubKey,
+        secondVoteOption,
+        secondVoteWeight,
+        1n,
+        secondPollId,
+      );
+
+      const secondSignature = secondCommand.sign(user2Keypair.privKey);
+
+      const secondEcdhKeypair = new Keypair();
+      const secondSharedKey = Keypair.genEcdhSharedKey(secondEcdhKeypair.privKey, coordinatorKeypair.pubKey);
+
+      const secondMessage = secondCommand.encrypt(secondSignature, secondSharedKey);
+      secondPoll.publishMessage(secondMessage, secondEcdhKeypair.pubKey);
+
+      secondPoll.processAllMessages();
+      secondPoll.tallyVotes(false);
+
+      const spentVoiceCredits = secondPoll.totalSpentVoiceCredits;
+      const results = secondPoll.tallyResult;
+      // spent voice credit is not vote weight * vote weight
+      expect(spentVoiceCredits).to.eq(secondVoteWeight);
+      expect(results[Number.parseInt(secondVoteOption.toString(), 10)]).to.eq(secondVoteWeight);
+      // per VO spent voice credit is not vote weight * vote weight
+      expect(secondPoll.perVOSpentVoiceCredits[Number.parseInt(secondVoteOption.toString(), 10)]).to.eq(
+        secondVoteWeight,
+      );
     });
 
     it("should throw when there are no more ballots to tally", () => {

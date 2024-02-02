@@ -8,7 +8,7 @@ template PoseidonHashT4() {
     signal output out;
 
     component hasher = Poseidon_OLD(nInputs);
-    for (var i = 0; i < nInputs; i ++) {
+    for (var i = 0; i < nInputs; i++) {
         hasher.inputs[i] <== inputs[i];
     }
     out <== hasher.out;

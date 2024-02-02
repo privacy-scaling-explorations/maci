@@ -5,9 +5,21 @@
     "params": [10, 2, 1, 2],
     "pubs": ["inputHash"]
   },
+  "ProcessMessagesNonQv_10-2-1-2_test": {
+    "file": "processMessagesNonQv",
+    "template": "ProcessMessagesNonQv",
+    "params": [10, 2, 1, 2],
+    "pubs": ["inputHash"]
+  },
   "TallyVotes_10-1-2_test": {
     "file": "tallyVotes",
     "template": "TallyVotes",
+    "params": [10, 1, 2],
+    "pubs": ["inputHash"]
+  },
+  "TallyVotesNonQv_10-1-2_test": {
+    "file": "tallyVotesNonQv",
+    "template": "TallyVotesNonQv",
     "params": [10, 1, 2],
     "pubs": ["inputHash"]
   },

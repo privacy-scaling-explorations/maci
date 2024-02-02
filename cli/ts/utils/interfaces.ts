@@ -557,6 +557,11 @@ export interface GenProofsArgs {
    * A signer object
    */
   signer?: Signer;
+
+  /**
+   * Whether to use quadratic voting or not
+   */
+  useQuadraticVoting?: boolean;
 }
 
 /**

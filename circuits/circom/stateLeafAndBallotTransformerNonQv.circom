@@ -4,10 +4,10 @@ pragma circom 2.0.0;
 include "./mux1.circom";
 
 // local import
-include "./messageValidator.circom";
+include "./messageValidatorNonQv.circom";
 
 // Apply a command to a state leaf and ballot.
-template StateLeafAndBallotTransformer() {
+template StateLeafAndBallotTransformerNonQv() {
     var PACKED_CMD_LENGTH = 4;
 
     // For the MessageValidator
@@ -63,7 +63,7 @@ template StateLeafAndBallotTransformer() {
     signal output isValid;
 
     // Check if the command / message is valid
-    component messageValidator = MessageValidator();
+    component messageValidator = MessageValidatorNonQv();
     messageValidator.stateTreeIndex <== cmdStateIndex;
     messageValidator.numSignUps <== numSignUps;
     messageValidator.voteOptionIndex <== cmdVoteOptionIndex;

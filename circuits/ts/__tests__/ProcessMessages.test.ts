@@ -21,31 +21,33 @@ describe("ProcessMessage circuit", function test() {
 
   const coordinatorKeypair = new Keypair();
 
-  let circuit: WitnessTester<
-    [
-      "inputHash",
-      "packedVals",
-      "pollEndTimestamp",
-      "msgRoot",
-      "msgs",
-      "msgSubrootPathElements",
-      "coordPrivKey",
-      "coordPubKey",
-      "encPubKeys",
-      "currentStateRoot",
-      "currentStateLeaves",
-      "currentStateLeavesPathElements",
-      "currentSbCommitment",
-      "currentSbSalt",
-      "newSbCommitment",
-      "newSbSalt",
-      "currentBallotRoot",
-      "currentBallots",
-      "currentBallotsPathElements",
-      "currentVoteWeights",
-      "currentVoteWeightsPathElements",
-    ]
-  >;
+  type ProcessMessageCircuitInputs = [
+    "inputHash",
+    "packedVals",
+    "pollEndTimestamp",
+    "msgRoot",
+    "msgs",
+    "msgSubrootPathElements",
+    "coordPrivKey",
+    "coordPubKey",
+    "encPubKeys",
+    "currentStateRoot",
+    "currentStateLeaves",
+    "currentStateLeavesPathElements",
+    "currentSbCommitment",
+    "currentSbSalt",
+    "newSbCommitment",
+    "newSbSalt",
+    "currentBallotRoot",
+    "currentBallots",
+    "currentBallotsPathElements",
+    "currentVoteWeights",
+    "currentVoteWeightsPathElements",
+  ];
+
+  let circuit: WitnessTester<ProcessMessageCircuitInputs>;
+
+  let circuitNonQv: WitnessTester<ProcessMessageCircuitInputs>;
 
   let hasherCircuit: WitnessTester<
     ["packedVals", "coordPubKey", "msgRoot", "currentSbCommitment", "newSbCommitment", "pollEndTimestamp"],
@@ -56,6 +58,12 @@ describe("ProcessMessage circuit", function test() {
     circuit = await circomkitInstance.WitnessTester("processMessages", {
       file: "processMessages",
       template: "ProcessMessages",
+      params: [10, 2, 1, 2],
+    });
+
+    circuitNonQv = await circomkitInstance.WitnessTester("processMessagesNonQv", {
+      file: "processMessagesNonQv",
+      template: "ProcessMessagesNonQv",
       params: [10, 2, 1, 2],
     });
 
@@ -166,6 +174,126 @@ describe("ProcessMessage circuit", function test() {
       // Calculate the witness
       const witness = await circuit.calculateWitness(inputs);
       await circuit.expectConstraintPass(witness);
+
+      // The new roots, which should differ, since at least one of the
+      // messages modified a Ballot or State Leaf
+      const newStateRoot = poll.stateTree?.root;
+      const newBallotRoot = poll.ballotTree?.root;
+
+      expect(newStateRoot?.toString()).not.to.be.eq(currentStateRoot?.toString());
+      expect(newBallotRoot?.toString()).not.to.be.eq(currentBallotRoot.toString());
+
+      const packedVals = packProcessMessageSmallVals(
+        BigInt(maxValues.maxVoteOptions),
+        BigInt(poll.maciStateRef.numSignUps),
+        0,
+        2,
+      );
+
+      // Test the ProcessMessagesInputHasher circuit
+      const hasherCircuitInputs = {
+        packedVals,
+        coordPubKey: inputs.coordPubKey,
+        msgRoot: inputs.msgRoot,
+        currentSbCommitment: inputs.currentSbCommitment,
+        newSbCommitment: inputs.newSbCommitment,
+        pollEndTimestamp: inputs.pollEndTimestamp,
+      };
+
+      const hasherWitness = await hasherCircuit.calculateWitness(hasherCircuitInputs);
+      await hasherCircuit.expectConstraintPass(hasherWitness);
+      const hash = await getSignal(hasherCircuit, hasherWitness, "hash");
+      expect(hash.toString()).to.be.eq(inputs.inputHash.toString());
+    });
+  });
+
+  describe("1 user, 2 messages (non-quadratic voting)", () => {
+    const maciState = new MaciState(STATE_TREE_DEPTH);
+    const voteWeight = BigInt(9);
+    const voteOptionIndex = BigInt(0);
+    let stateIndex: bigint;
+    let pollId: bigint;
+    let poll: Poll;
+    const messages: Message[] = [];
+    const commands: PCommand[] = [];
+
+    before(() => {
+      // Sign up and publish
+      const userKeypair = new Keypair(new PrivKey(BigInt(1)));
+      stateIndex = BigInt(
+        maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000))),
+      );
+
+      pollId = maciState.deployPoll(
+        BigInt(Math.floor(Date.now() / 1000) + duration),
+        maxValues,
+        treeDepths,
+        messageBatchSize,
+        coordinatorKeypair,
+      );
+
+      poll = maciState.polls.get(pollId)!;
+      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+
+      // First command (valid)
+      const command = new PCommand(
+        stateIndex, // BigInt(1),
+        userKeypair.pubKey,
+        voteOptionIndex, // voteOptionIndex,
+        voteWeight, // vote weight
+        BigInt(2), // nonce
+        BigInt(pollId),
+      );
+
+      const signature = command.sign(userKeypair.privKey);
+
+      const ecdhKeypair = new Keypair();
+      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+      const message = command.encrypt(signature, sharedKey);
+      messages.push(message);
+      commands.push(command);
+
+      poll.publishMessage(message, ecdhKeypair.pubKey);
+
+      // Second command (valid)
+      const command2 = new PCommand(
+        stateIndex,
+        userKeypair.pubKey,
+        voteOptionIndex, // voteOptionIndex,
+        BigInt(1), // vote weight
+        BigInt(1), // nonce
+        BigInt(pollId),
+      );
+      const signature2 = command2.sign(userKeypair.privKey);
+
+      const ecdhKeypair2 = new Keypair();
+      const sharedKey2 = Keypair.genEcdhSharedKey(ecdhKeypair2.privKey, coordinatorKeypair.pubKey);
+      const message2 = command2.encrypt(signature2, sharedKey2);
+      messages.push(message2);
+      commands.push(command2);
+      poll.publishMessage(message2, ecdhKeypair2.pubKey);
+    });
+
+    it("should produce the correct state root and ballot root", async () => {
+      // The current roots
+      const emptyBallot = new Ballot(poll.maxValues.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
+      const emptyBallotHash = emptyBallot.hash();
+      const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash5);
+
+      ballotTree.insert(emptyBallot.hash());
+
+      poll.stateLeaves.forEach(() => {
+        ballotTree.insert(emptyBallotHash);
+      });
+
+      const currentStateRoot = poll.stateTree?.root;
+      const currentBallotRoot = ballotTree.root;
+
+      const inputs = poll.processMessages(pollId, false) as unknown as IProcessMessagesInputs;
+
+      // Calculate the witness
+      const witness = await circuitNonQv.calculateWitness(inputs);
+      await circuitNonQv.expectConstraintPass(witness);
 
       // The new roots, which should differ, since at least one of the
       // messages modified a Ballot or State Leaf
