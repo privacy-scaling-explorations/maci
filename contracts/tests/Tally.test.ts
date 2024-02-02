@@ -184,16 +184,24 @@ describe("TallyVotes", () => {
       tallyGeneratedInputs = poll.tallyVotes();
     });
 
+    it("isTallied should return false", async () => {
+      const isTallied = await tallyContract.isTallied();
+      expect(isTallied).to.eq(false);
+    });
+
     it("tallyVotes() should update the tally commitment", async () => {
       // do the processing on the message processor contract
       await mpContract.processMessages(generatedInputs.newSbCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);
 
-      await expect(tallyContract.tallyVotes(tallyGeneratedInputs.newTallyCommitment, [0, 0, 0, 0, 0, 0, 0, 0]))
-        .to.emit(tallyContract, "BallotsTallied")
-        .withArgs(await pollContract.getAddress());
+      await tallyContract.tallyVotes(tallyGeneratedInputs.newTallyCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);
 
       const onChainNewTallyCommitment = await tallyContract.tallyCommitment();
       expect(tallyGeneratedInputs.newTallyCommitment).to.eq(onChainNewTallyCommitment.toString());
+    });
+
+    it("isTallied should return true", async () => {
+      const isTallied = await tallyContract.isTallied();
+      expect(isTallied).to.eq(true);
     });
 
     it("tallyVotes() should revert when votes have already been tallied", async () => {
@@ -334,9 +342,7 @@ describe("TallyVotes", () => {
 
     it("should tally votes correctly", async () => {
       const tallyGeneratedInputs = poll.tallyVotes();
-      await expect(tallyContract.tallyVotes(tallyGeneratedInputs.newTallyCommitment, [0, 0, 0, 0, 0, 0, 0, 0]))
-        .to.emit(tallyContract, "BallotsTallied")
-        .withArgs(await pollContract.getAddress());
+      await tallyContract.tallyVotes(tallyGeneratedInputs.newTallyCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);
 
       const onChainNewTallyCommitment = await tallyContract.tallyCommitment();
       expect(tallyGeneratedInputs.newTallyCommitment).to.eq(onChainNewTallyCommitment.toString());
@@ -488,9 +494,7 @@ describe("TallyVotes", () => {
       // tally second batch
       tallyGeneratedInputs = poll.tallyVotes();
 
-      await expect(tallyContract.tallyVotes(tallyGeneratedInputs.newTallyCommitment, [0, 0, 0, 0, 0, 0, 0, 0]))
-        .to.emit(tallyContract, "BallotsTallied")
-        .withArgs(await pollContract.getAddress());
+      await tallyContract.tallyVotes(tallyGeneratedInputs.newTallyCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);
 
       // check that it fails to tally again
       await expect(
