@@ -131,6 +131,12 @@ export class Poll implements IPoll {
 
   emptyBallotHash?: bigint;
 
+  stateTreeZeroIndexPathElements?: PathElements;
+
+  ballotTreeZeroIndexPathElements?: PathElements;
+
+  voteWeightTreeEmptyBallotPathElements?: PathElements;
+
   // how many users signed up
   private numSignups = 0n;
 
@@ -212,6 +218,17 @@ export class Poll implements IPoll {
       this.ballotTree.insert(this.emptyBallotHash);
       this.ballots.push(this.emptyBallot);
     }
+
+    // store the state tree zero index path elements
+    this.stateTreeZeroIndexPathElements = this.stateTree.genProof(0).pathElements;
+
+    // store the ballot tree zero index path elements
+    this.ballotTreeZeroIndexPathElements = this.ballotTree.genProof(0).pathElements;
+
+    // store the vote weight tree empty ballot path elements
+    const vt = new IncrementalQuinTree(this.treeDepths.voteOptionTreeDepth, 0n, STATE_TREE_ARITY, hash5);
+    vt.insert(this.emptyBallot.votes[0]);
+    this.voteWeightTreeEmptyBallotPathElements = vt.genProof(0).pathElements;
 
     this.stateCopied = true;
   };
@@ -513,6 +530,7 @@ export class Poll implements IPoll {
       assert(idx >= 0, "The message index must be >= 0");
       let message: Message;
       let encPubKey: PubKey;
+
       if (idx < this.messages.length) {
         message = this.messages[idx];
         encPubKey = this.encPubKeys[idx];
@@ -548,27 +566,24 @@ export class Poll implements IPoll {
               // otherwise we continue processing but add the default blank data instead of
               // this invalid message
               if (e instanceof ProcessMessageError) {
-                // if logging is enabled, print the error
-                if (!quiet) {
+                // if logging is enabled, print the error (do not print for first message)
+                if (!quiet && idx !== 0) {
                   // eslint-disable-next-line no-console
                   console.log(`Error at message index ${idx} - ${e.message}`);
                 }
 
-                // Since the command is invalid, use a blank state leaf
+                // use a blank state leaf
                 currentStateLeaves.unshift(this.stateLeaves[0].copy());
-                currentStateLeavesPathElements.unshift(this.stateTree!.genProof(0).pathElements);
-                // since the command is invliad we use the blank ballot
+                currentStateLeavesPathElements.unshift(this.stateTreeZeroIndexPathElements!);
+                // use the blank ballot
                 currentBallots.unshift(this.ballots[0].copy());
-                currentBallotsPathElements.unshift(this.ballotTree!.genProof(0).pathElements);
+                currentBallotsPathElements.unshift(this.ballotTreeZeroIndexPathElements!);
 
-                // Since the command is invalid, we use a zero vote weight
+                // use a zero vote weight
                 currentVoteWeights.unshift(this.ballots[0].votes[0]);
 
-                // create a new quinary tree and add an empty vote
-                const vt = new IncrementalQuinTree(this.treeDepths.voteOptionTreeDepth, 0n, STATE_TREE_ARITY, hash5);
-                vt.insert(this.ballots[0].votes[0]);
                 // get the path elements for this empty vote weight leaf
-                currentVoteWeightsPathElements.unshift(vt.genProof(0).pathElements);
+                currentVoteWeightsPathElements.unshift(this.voteWeightTreeEmptyBallotPathElements!);
               } else {
                 throw e;
               }
@@ -620,22 +635,18 @@ export class Poll implements IPoll {
             break;
         }
       } else {
-        // Since we don't have a command at that position, use a blank state leaf
+        // use a blank state leaf
         currentStateLeaves.unshift(this.stateLeaves[0].copy());
-        currentStateLeavesPathElements.unshift(this.stateTree!.genProof(0).pathElements);
-        // since the command is invliad we use the blank ballot
+        currentStateLeavesPathElements.unshift(this.stateTreeZeroIndexPathElements!);
+        // use the blank ballot
         currentBallots.unshift(this.ballots[0].copy());
-        currentBallotsPathElements.unshift(this.ballotTree!.genProof(0).pathElements);
+        currentBallotsPathElements.unshift(this.ballotTreeZeroIndexPathElements!);
 
-        // Since the command is invalid, we use a zero vote weight
+        // use a zero vote weight
         currentVoteWeights.unshift(this.ballots[0].votes[0]);
 
-        // create a new quinary tree and add an empty vote
-        const vt = new IncrementalQuinTree(this.treeDepths.voteOptionTreeDepth, 0n, STATE_TREE_ARITY, hash5);
-        vt.insert(this.ballots[0].votes[0]);
-
         // get the path elements for this empty vote weight leaf
-        currentVoteWeightsPathElements.unshift(vt.genProof(0).pathElements);
+        currentVoteWeightsPathElements.unshift(this.voteWeightTreeEmptyBallotPathElements!);
       }
     }
 
