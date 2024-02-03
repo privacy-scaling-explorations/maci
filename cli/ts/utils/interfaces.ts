@@ -40,6 +40,22 @@ export interface TallyData {
   pollId: string;
 
   /**
+   * The name of the network for which these proofs
+   * are valid for
+   */
+  network?: string;
+
+  /**
+   * The chain ID for which these proofs are valid for
+   */
+  chainId?: string;
+
+  /**
+   * The address of the Tally contract.
+   */
+  tallyAddress: string;
+
+  /**
    * The new tally commitment.
    */
   newTallyCommitment: string;
@@ -562,6 +578,11 @@ export interface GenProofsArgs {
    * Whether to use quadratic voting or not
    */
   useQuadraticVoting?: boolean;
+
+  /**
+   * The address of the Tally contract
+   */
+  tallyAddress?: string;
 }
 
 /**
