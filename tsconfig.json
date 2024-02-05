@@ -27,8 +27,8 @@
     "composite": true,
     "incremental": true,
     "declarationMap": true,
-    "stripInternal": true,
+    "stripInternal": true
   },
   "exclude": ["node_modules"],
-  "include": ["./**/ts", "./**/typechain-types"],
+  "include": ["./**/ts", "./**/typechain-types"]
 }
