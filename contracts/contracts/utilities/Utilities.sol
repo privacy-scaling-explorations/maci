@@ -36,15 +36,9 @@ contract Utilities is SnarkConstants, DomainObjs, Hasher {
     uint256[2] memory dataToPad,
     uint256 msgType
   ) public pure returns (Message memory message, PubKey memory padKey, uint256 msgHash) {
-    uint256[10] memory dat;
-    dat[0] = dataToPad[0];
-    dat[1] = dataToPad[1];
-    for (uint256 i = 2; i < 10; ) {
-      dat[i] = 0;
-      unchecked {
-        ++i;
-      }
-    }
+    // add data and pad it
+    uint256[10] memory dat = [dataToPad[0], dataToPad[1], 0, 0, 0, 0, 0, 0, 0, 0];
+
     padKey = PubKey(PAD_PUBKEY_X, PAD_PUBKEY_Y);
     message = Message({ msgType: msgType, data: dat });
     msgHash = hashMessageAndEncPubKey(message, padKey);
