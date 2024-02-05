@@ -25,7 +25,7 @@ interface IPoll {
   /// @param _encPubKey An epheremal public key which can be combined with the
   /// coordinator's private key to generate an ECDH shared key with which
   /// to encrypt the message.
-  function publishMessage(DomainObjs.Message memory _message, DomainObjs.PubKey memory _encPubKey) external;
+  function publishMessage(DomainObjs.Message calldata _message, DomainObjs.PubKey calldata _encPubKey) external;
 
   /// @notice The first step of merging the MACI state AccQueue. This allows the
   /// ProcessMessages circuit to access the latest state tree and ballots via

@@ -154,6 +154,7 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
 
     /// @notice topupCredit is a trusted token contract which reverts if the transfer fails
     extContracts.topupCredit.transferFrom(msg.sender, address(this), amount);
+
     uint256[2] memory dat;
     dat[0] = stateIndex;
     dat[1] = amount;
@@ -164,7 +165,7 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
   }
 
   /// @inheritdoc IPoll
-  function publishMessage(Message memory _message, PubKey calldata _encPubKey) public isWithinVotingDeadline {
+  function publishMessage(Message calldata _message, PubKey calldata _encPubKey) public isWithinVotingDeadline {
     // we check that we do not exceed the max number of messages
     if (numMessages == maxValues.maxMessages) revert TooManyMessages();
 
@@ -178,8 +179,6 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
       numMessages++;
     }
 
-    // force the message to have type 1 just to be safe
-    _message.msgType = 1;
     uint256 messageLeaf = hashMessageAndEncPubKey(_message, _encPubKey);
     extContracts.messageAq.enqueue(messageLeaf);
 
