@@ -5,6 +5,7 @@ import assert from "assert";
 import type { IJsonPublicKey, IG1ContractParams } from "./types";
 
 export const SERIALIZED_PUB_KEY_PREFIX = "macipk.";
+
 /**
  * @notice A class representing a public key
  * This is a MACI public key, which is not to be
