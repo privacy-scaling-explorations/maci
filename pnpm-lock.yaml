@@ -148,8 +148,8 @@ importers:
   cli:
     dependencies:
       '@commander-js/extra-typings':
-        specifier: ^11.1.0
-        version: 11.1.0(commander@12.0.0)
+        specifier: ^12.0.0
+        version: 12.0.0(commander@12.0.0)
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^4.0.0
         version: 4.0.0(@nomicfoundation/hardhat-chai-matchers@2.0.3)(@nomicfoundation/hardhat-ethers@3.0.5)(@nomicfoundation/hardhat-network-helpers@1.0.10)(@nomicfoundation/hardhat-verify@2.0.3)(@typechain/ethers-v6@0.5.1)(@typechain/hardhat@9.1.0)(@types/chai@4.3.11)(@types/mocha@10.0.6)(@types/node@20.11.16)(chai@4.4.0)(ethers@6.10.0)(hardhat-gas-reporter@1.0.9)(hardhat@2.19.4)(solidity-coverage@0.8.5)(ts-node@10.9.2)(typechain@8.3.2)(typescript@5.3.3)
@@ -2030,10 +2030,10 @@ packages:
     engines: {node: '>=0.1.90'}
     requiresBuild: true
 
-  /@commander-js/extra-typings@11.1.0(commander@12.0.0):
-    resolution: {integrity: sha512-GuvZ38d23H+7Tz2C9DhzCepivsOsky03s5NI+KCy7ke1FNUvsJ2oO47scQ9YaGGhgjgNW5OYYNSADmbjcSoIhw==}
+  /@commander-js/extra-typings@12.0.0(commander@12.0.0):
+    resolution: {integrity: sha512-7zGCwtRKOJ978LCuEZbQ9ZmLdrRkNNASphEO5i9MZb6HfOk7KfsA3f4oXqYDhko4tNrU3GmZTlHqQ/nRlYtYSw==}
     peerDependencies:
-      commander: 11.1.x
+      commander: ~12.0.0
     dependencies:
       commander: 12.0.0
     dev: false
