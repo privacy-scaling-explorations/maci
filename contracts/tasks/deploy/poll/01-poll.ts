@@ -1,44 +1,14 @@
 /* eslint-disable no-console */
-import { BaseContract, BaseContractMethod, BigNumberish, TransactionResponse } from "ethers";
-import { IG1ContractParams, PubKey } from "maci-domainobjs";
+import { BaseContract } from "ethers";
+import { PubKey } from "maci-domainobjs";
 
 import { parseArtifact } from "../../../ts/abi";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
-import { EContracts } from "../../helpers/types";
+import { EContracts, type MACI, type Poll, type StateAq, type TDeployPollParams } from "../../helpers/types";
 
 const deployment = Deployment.getInstance();
 const storage = ContractStorage.getInstance();
-
-// Add type manually because typechain is not available during compilation
-type TDeployPollParams = [
-  BigNumberish,
-  {
-    intStateTreeDepth: BigNumberish;
-    messageTreeSubDepth: BigNumberish;
-    messageTreeDepth: BigNumberish;
-    voteOptionTreeDepth: BigNumberish;
-  },
-  IG1ContractParams,
-  string,
-  string,
-  boolean,
-];
-
-interface MACI extends BaseContract {
-  nextPollId: () => Promise<bigint>;
-  stateAq: () => Promise<string>;
-  deployPoll: BaseContractMethod<TDeployPollParams, TransactionResponse & [string]>;
-}
-
-interface StateAq extends BaseContract {
-  treeMerged: () => Promise<boolean>;
-}
-
-interface Poll extends BaseContract {
-  maxValues: () => Promise<[BigNumberish, BigNumberish]>;
-  extContracts: () => Promise<[string, string, string]>;
-}
 
 /**
  * Deploy step registration and task itself

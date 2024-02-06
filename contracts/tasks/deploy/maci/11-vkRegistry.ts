@@ -2,23 +2,10 @@ import { extractVk } from "maci-circuits";
 import { VerifyingKey } from "maci-domainobjs";
 
 import type { IVerifyingKeyStruct } from "../../../ts";
-import type { BaseContract, BaseContractMethod, BigNumberish, TransactionResponse } from "ethers";
 
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
-import { EContracts, IDeployParams } from "../../helpers/types";
-
-// Add type manually because typechain is not available during compilation
-interface VkRegistry extends BaseContract {
-  setVerifyingKeys: BaseContractMethod<
-    [BigNumberish, BigNumberish, BigNumberish, BigNumberish, BigNumberish, IVerifyingKeyStruct, IVerifyingKeyStruct],
-    TransactionResponse
-  >;
-  setSubsidyKeys: BaseContractMethod<
-    [BigNumberish, BigNumberish, BigNumberish, IVerifyingKeyStruct],
-    TransactionResponse
-  >;
-}
+import { EContracts, type IDeployParams, type VkRegistry } from "../../helpers/types";
 
 const deployment = Deployment.getInstance();
 const storage = ContractStorage.getInstance();
