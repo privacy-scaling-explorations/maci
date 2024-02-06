@@ -11,6 +11,7 @@ import type { HardhatUserConfig } from "hardhat/config";
 import "./tasks/deploy";
 import { EChainId, ESupportedChains, NETWORKS_DEFAULT_GAS, getNetworkRpcUrls } from "./tasks/helpers/constants";
 import "./tasks/runner/deployFull";
+import "./tasks/runner/deployPoll";
 import "./tasks/runner/verifyFull";
 
 dotenv.config();
@@ -24,7 +25,7 @@ const getCommonNetworkConfig = (networkName: ESupportedChains, chainId: number, 
   url: NETWORKS_RPC_URL[networkName],
   blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
   gasMultiplier: DEFAULT_GAS_MUL,
-  gasPrice: NETWORKS_DEFAULT_GAS[networkName],
+  gasPrice: process.env.GAS_PRICE ? Number(process.env.GAS_PRICE) : NETWORKS_DEFAULT_GAS[networkName],
   saveDeployments: true,
   chainId,
   accounts: {
@@ -45,9 +46,14 @@ const config: HardhatUserConfig = {
       },
     },
   },
+  defaultNetwork: "localhost",
   networks: {
     sepolia: getCommonNetworkConfig(ESupportedChains.Sepolia, EChainId.Sepolia),
     coverage: getCommonNetworkConfig(ESupportedChains.Coverage, EChainId.Coverage, TEST_MNEMONIC),
+    localhost: {
+      url: "http://localhost:8545",
+      loggingEnabled: false,
+    },
     hardhat: {
       blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
       gasMultiplier: DEFAULT_GAS_MUL,

@@ -1,12 +1,17 @@
+/* eslint-disable no-console */
 /* eslint-disable import/no-extraneous-dependencies */
 import { BaseContract, ContractFactory, Signer } from "ethers";
 import { task } from "hardhat/config";
 import low from "lowdb";
 import FileSync from "lowdb/adapters/FileSync";
 
+import { exit } from "process";
+
 import type { EContracts, IDeployParams, IDeployStep, IDeployStepCatalog } from "./types";
 import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import type { ConfigurableTaskDefinition, HardhatRuntimeEnvironment, TaskArguments } from "hardhat/types";
+
+import { ContractStorage } from "./ContractStorage";
 
 /**
  * Internal deploy config structure type.
@@ -38,12 +43,21 @@ export class Deployment {
   private config: low.LowdbSync<TConfig>;
 
   /**
+   * Contract storage
+   */
+  private storage: ContractStorage;
+
+  /**
    * Initialize class properties only once
    */
   private constructor(hre?: HardhatRuntimeEnvironment) {
-    this.stepCatalog = new Map([["full", []]]);
+    this.stepCatalog = new Map([
+      ["full", []],
+      ["poll", []],
+    ]);
     this.hre = hre;
     this.config = low(new FileSync<TConfig>("./deploy-config.json"));
+    this.storage = ContractStorage.getInstance();
   }
 
   /**
@@ -57,6 +71,125 @@ export class Deployment {
     }
 
     return Deployment.INSTANCE;
+  }
+
+  /**
+   * Start deploy with console log information
+   *
+   * @param catalog - deploy steps catalog
+   * @param {IDeployParams} params - deploy params
+   * @returns deploy steps for selected catalog
+   */
+  async start(catolog: string, { incremental, verify }: IDeployParams): Promise<IDeployStep[]> {
+    const deployer = await this.getDeployer();
+    const deployerAddress = await deployer.getAddress();
+    const startBalance = await deployer.provider.getBalance(deployer);
+
+    console.log("Deployer address:", deployerAddress);
+    console.log("Deployer start balance: ", Number(startBalance / 10n ** 12n) / 1e6);
+
+    if (incremental) {
+      console.log("======================================================================");
+      console.log("======================================================================");
+      console.log("====================    ATTENTION! INCREMENTAL MODE    ===============");
+      console.log("======================================================================");
+      console.log("=========== Delete 'deployed-contracts.json' to start a new ==========");
+      console.log("======================================================================");
+      console.log("======================================================================");
+    } else {
+      this.storage.cleanup(this.hre!.network.name);
+    }
+
+    console.log("Deployment started\n");
+
+    return this.getDeploySteps(catolog, {
+      incremental,
+      verify,
+    });
+  }
+
+  /**
+   * Run deploy steps
+   *
+   * @param steps - deploy steps
+   * @param skip - skip steps with less or equal index
+   */
+  async runSteps(steps: IDeployStep[], skip: number): Promise<void> {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const step of steps) {
+      const stepId = `0${step.id}`;
+      console.log("\n======================================================================");
+      console.log(stepId.slice(stepId.length - 2), step.name);
+      console.log("======================================================================\n");
+
+      if (step.id <= skip) {
+        console.log(`STEP ${step.id} WAS SKIPPED`);
+      } else {
+        // eslint-disable-next-line no-await-in-loop
+        await this.hre!.run(step.taskName, step.args);
+      }
+    }
+  }
+
+  /**
+   * Print deployment results and check warnings
+   *
+   * @param strict - fail on warnings is enabled
+   * @throws error if strict is enabled and warning is found
+   */
+  async checkResults(strict?: boolean): Promise<void> {
+    const deployer = await this.getDeployer();
+    const deployerAddress = await deployer.getAddress();
+    const [entryMap, instanceCount, multiCount] = this.storage.printContracts(deployerAddress, this.hre!.network.name);
+    let hasWarn = false;
+
+    if (multiCount > 0) {
+      console.warn("WARNING: multi-deployed contract(s) detected");
+      hasWarn = true;
+    } else if (entryMap.size !== instanceCount) {
+      console.warn("WARNING: unknown contract(s) detected");
+      hasWarn = true;
+    }
+
+    entryMap.forEach((_, key) => {
+      if (key.startsWith("Mock")) {
+        console.warn("WARNING: mock contract detected:", key);
+        hasWarn = true;
+      }
+    });
+
+    if (hasWarn && strict) {
+      throw new Error("Warnings are present");
+    }
+  }
+
+  /**
+   * Finish deployment with console log information
+   *
+   * @param startBalance - start deployer balance
+   * @param success - success or not
+   */
+  async finish(startBalance: bigint, success: boolean): Promise<void> {
+    const deployer = await this.getDeployer();
+    const { gasPrice } = this.hre!.network.config;
+    const endBalance = await deployer.provider.getBalance(deployer);
+
+    console.log("======================================================================");
+    console.log("Deployer end balance: ", Number(endBalance / 10n ** 12n) / 1e6);
+    console.log("Deploy expenses: ", Number((startBalance - endBalance) / 10n ** 12n) / 1e6);
+
+    if (gasPrice !== "auto") {
+      console.log("Deploy gas: ", Number(startBalance - endBalance) / gasPrice, "@", gasPrice / 1e9, " gwei");
+    }
+
+    console.log("======================================================================");
+
+    if (!success) {
+      console.log("\nDeployment has failed");
+      exit(1);
+    }
+
+    console.log("\nDeployment has finished");
   }
 
   /**
@@ -143,7 +276,7 @@ export class Deployment {
    * @param {IDeployParams} params - deploy params
    * @returns {Promise<IDeployStep[]>} deploy steps
    */
-  getDeploySteps = async (deployType: string, params: IDeployParams): Promise<IDeployStep[]> => {
+  private async getDeploySteps(deployType: string, params: IDeployParams): Promise<IDeployStep[]> {
     const stepList = this.stepCatalog.get(deployType);
 
     if (!stepList) {
@@ -158,7 +291,7 @@ export class Deployment {
         args: args as unknown,
       })),
     );
-  };
+  }
 
   /**
    * Deploy contract and return it

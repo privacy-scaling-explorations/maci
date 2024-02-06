@@ -12,11 +12,8 @@ import type {
   TopupCredit,
   VkRegistry,
 } from "../typechain-types";
-import type { BigNumberish, Fragment, JsonFragment, Signer } from "ethers";
+import type { BigNumberish, Signer } from "ethers";
 import type { Message, PubKey } from "maci-domainobjs";
-
-// a type representing the ABI of a contract
-export type TAbi = string | readonly (string | Fragment | JsonFragment)[];
 
 /**
  * The data structure of the verifying key of the SNARK circuit.
