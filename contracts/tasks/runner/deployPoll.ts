@@ -6,16 +6,16 @@ import type { IDeployParams } from "../helpers/types";
 import { Deployment } from "../helpers/Deployment";
 
 /**
- * Main deployment task which runs deploy steps in the same order that `Deployment#deployTask` is called.
+ * Poll deployment task which runs deploy steps in the same order that `Deployment#deployTask` is called.
  * Note: you probably need to use indices for deployment step files to support the correct order.
- * Make sure you have deploy-config.json (see deploy-config-example.json).
+ * Make sure you run `deploy-full` task before running `deploy-poll` and have deploy-config.json (see deploy-config-example.json).
  */
-task("deploy-full", "Deploy environment")
+task("deploy-poll", "Deploy poll")
   .addFlag("incremental", "Incremental deployment")
   .addFlag("strict", "Fail on warnings")
   .addFlag("verify", "Verify contracts at Etherscan")
   .addOptionalParam("skip", "Skip steps with less or equal index", 0, types.int)
-  .setAction(async ({ incremental, strict, verify, skip = 0 }: IDeployParams, hre) => {
+  .setAction(async ({ strict, verify, skip = 0 }: IDeployParams, hre) => {
     const deployment = Deployment.getInstance(hre);
 
     deployment.setHre(hre);
@@ -25,7 +25,7 @@ task("deploy-full", "Deploy environment")
     let success = false;
 
     try {
-      const steps = await deployment.start("full", { incremental, verify });
+      const steps = await deployment.start("poll", { incremental: true, verify });
 
       await deployment.runSteps(steps, skip);
 

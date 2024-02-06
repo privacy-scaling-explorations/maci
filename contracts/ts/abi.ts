@@ -1,9 +1,12 @@
 import fs from "fs";
 import path from "path";
 
-import type { TAbi } from "./types";
+import type { Fragment, JsonFragment } from "ethers";
 
 import { abiDir } from "./constants";
+
+// a type representing the ABI of a contract
+export type TAbi = string | readonly (string | Fragment | JsonFragment)[];
 
 /**
  * Parse a contract artifact and return its ABI and bytecode.

@@ -1,6 +1,6 @@
 import { type Contract, type Signer, ContractFactory, Interface, JsonRpcProvider, Wallet } from "ethers";
 
-import type { TAbi } from "./types";
+import type { TAbi } from "./abi";
 
 /**
  * A class that can deploy smart contracts using a JSON-RPC provider.

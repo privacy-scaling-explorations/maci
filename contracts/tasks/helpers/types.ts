@@ -1,4 +1,4 @@
-import type { BaseContract } from "ethers";
+import type { BaseContract, BigNumberish } from "ethers";
 import type { Libraries, TaskArguments } from "hardhat/types";
 
 /**
@@ -131,6 +131,11 @@ export interface IRegisterContract {
    * Contract deployment arguments
    */
   args?: unknown[];
+
+  /**
+   * Group key for same contracts
+   */
+  key?: BigNumberish;
 }
 
 /**
@@ -152,6 +157,8 @@ export enum EContracts {
   PoseidonT4 = "PoseidonT4",
   PoseidonT5 = "PoseidonT5",
   PoseidonT6 = "PoseidonT6",
+  VkRegistry = "VkRegistry",
+  Poll = "Poll",
 }
 
 /**

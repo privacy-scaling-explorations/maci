@@ -13,7 +13,7 @@ import type { EContracts, IRegisterContract, IStorageInstanceEntry, IStorageName
 type TStorage = Record<
   string,
   Partial<{
-    named: Record<string, IStorageNamedEntry>;
+    named: Record<string, IStorageNamedEntry | Record<string, IStorageNamedEntry>>;
     instance: Record<string, IStorageInstanceEntry>;
     verified: Record<string, boolean>;
   }>
@@ -59,7 +59,7 @@ export class ContractStorage {
    *
    * @param {IRegisterContract} args - register arguments
    */
-  async register({ id, contract, network, args }: IRegisterContract): Promise<void> {
+  async register({ id, key, contract, network, args }: IRegisterContract): Promise<void> {
     const contractAddress = await contract.getAddress();
 
     const deploymentTx = contract.deploymentTransaction();
@@ -90,10 +90,12 @@ export class ContractStorage {
 
     this.db.set(`${network}.instance.${contractAddress}`, logEntry).write();
 
-    const namedEntry = this.db.get(`${network}.named.${id}`).value() as IStorageNamedEntry | undefined;
+    const namedEntry = this.db.get(`${network}.named.${id}${key !== undefined ? `.poll-${key}` : ""}`).value() as
+      | IStorageNamedEntry
+      | undefined;
     const count = namedEntry?.count ?? 0;
     this.db
-      .set(`${network}.named.${id}`, {
+      .set(`${network}.named.${id}${key !== undefined ? `.poll-${key}` : ""}`, {
         address: contractAddress,
         count: count + 1,
       })
@@ -142,8 +144,8 @@ export class ContractStorage {
    * @param network - selected network
    * @returns contract address
    */
-  getAddress(id: EContracts, network: string): string | undefined {
-    const collection = this.db.get(`${network}.named.${id}`);
+  getAddress(id: EContracts, network: string, key?: string): string | undefined {
+    const collection = this.db.get(`${network}.named.${id}${key !== undefined ? `.poll-${key}` : ""}`);
     const namedEntry = collection.value() as IStorageNamedEntry | undefined;
 
     return namedEntry?.address;
@@ -180,7 +182,7 @@ export class ContractStorage {
 
     const entryMap = new Map<string, string>();
     const { named, instance } = this.db.get(network).value();
-    const namedEntries = Object.entries<IStorageNamedEntry>(named || {});
+    const namedEntries = Object.entries<IStorageNamedEntry | Record<string, IStorageNamedEntry>>(named || {});
     const instanceEntries = Object.entries<IStorageInstanceEntry>(instance || {});
 
     let multiCount = 0;
@@ -190,12 +192,26 @@ export class ContractStorage {
         return;
       }
 
-      if (value.count > 1) {
-        console.log(`\t${key}: N=${value.count}`);
-        multiCount += 1;
+      if (typeof value.count === "number" && typeof value.address === "string") {
+        if (value.count > 1) {
+          console.log(`\t${key}: N=${value.count}`);
+          multiCount += 1;
+        } else {
+          console.log(`\t${key}: ${value.address}`);
+          entryMap.set(key, value.address);
+        }
       } else {
-        console.log(`\t${key}: ${value.address}`);
-        entryMap.set(key, value.address);
+        const entries = Object.entries<IStorageNamedEntry>(value as Record<string, IStorageNamedEntry>);
+
+        entries.forEach(([id, nested]) => {
+          if (nested.count > 1) {
+            console.log(`\t${key}-${id}: N=${nested.count}`);
+            multiCount += 1;
+          } else {
+            console.log(`\t${key}-${id}: ${nested.address}`);
+            entryMap.set(id, nested.address);
+          }
+        });
       }
     });
 

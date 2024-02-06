@@ -12,7 +12,7 @@ const storage = ContractStorage.getInstance();
  */
 deployment
   .deployTask("full:deploy-constant-initial-voice-credit-proxy", "Deploy constant initial voice credit proxy")
-  .setAction(async ({ incremental }: IDeployParams & { amount: number }, hre) => {
+  .setAction(async ({ incremental }: IDeployParams, hre) => {
     deployment.setHre(hre);
     const deployer = await deployment.getDeployer();
 
