@@ -12,6 +12,7 @@ import "./tasks/deploy";
 import { EChainId, ESupportedChains, NETWORKS_DEFAULT_GAS, getNetworkRpcUrls } from "./tasks/helpers/constants";
 import "./tasks/runner/deployFull";
 import "./tasks/runner/deployPoll";
+import "./tasks/runner/merge";
 import "./tasks/runner/verifyFull";
 
 dotenv.config();
