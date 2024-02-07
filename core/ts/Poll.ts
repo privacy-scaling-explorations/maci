@@ -557,7 +557,7 @@ export class Poll implements IPoll {
                 // Since the command is invalid, use a blank state leaf
                 currentStateLeaves.unshift(this.stateLeaves[0].copy());
                 currentStateLeavesPathElements.unshift(this.stateTree!.genProof(0).pathElements);
-                // since the command is invliad we use the blank ballot
+                // since the command is invalid we use the blank ballot
                 currentBallots.unshift(this.ballots[0].copy());
                 currentBallotsPathElements.unshift(this.ballotTree!.genProof(0).pathElements);
 
@@ -710,14 +710,6 @@ export class Poll implements IPoll {
     }
     // we only take the messages we need for this batch
     msgs = msgs.slice(index, index + messageBatchSize);
-
-    // fill the commands array with a copy of the commands we have
-    let commands = this.commands.map((x) => x.copy());
-    while (commands.length % messageBatchSize > 0) {
-      commands.push(commands[commands.length - 1]);
-    }
-    // we only take the commands we need for this batch
-    commands = commands.slice(index, index + messageBatchSize);
 
     while (this.messageTree.nextIndex < index + messageBatchSize) {
       this.messageTree.insert(this.messageTree.zeroValue);
