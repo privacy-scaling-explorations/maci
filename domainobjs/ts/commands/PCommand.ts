@@ -9,6 +9,7 @@ import {
   type Ciphertext,
   type EcdhSharedKey,
   type Point,
+  poseidonDecryptWithoutCheck,
 } from "maci-crypto";
 
 import assert from "assert";
@@ -172,11 +173,16 @@ export class PCommand implements ICommand {
 
   /**
    * Decrypts a Message to produce a Command.
+   * @dev You can force decrypt the message by setting `force` to true.
+   * This is useful in case you don't want an invalid message to throw an error.
    * @param {Message} message - the message to decrypt
    * @param {EcdhSharedKey} sharedKey - the shared key to use for decryption
+   * @param {boolean} force - whether to force decryption or not
    */
-  static decrypt = (message: Message, sharedKey: EcdhSharedKey): IDecryptMessage => {
-    const decrypted = poseidonDecrypt(message.data, sharedKey, BigInt(0), 7);
+  static decrypt = (message: Message, sharedKey: EcdhSharedKey, force = false): IDecryptMessage => {
+    const decrypted = force
+      ? poseidonDecryptWithoutCheck(message.data, sharedKey, BigInt(0), 7)
+      : poseidonDecrypt(message.data, sharedKey, BigInt(0), 7);
 
     const p = BigInt(decrypted[0].toString());
 

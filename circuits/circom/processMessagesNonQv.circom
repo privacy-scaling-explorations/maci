@@ -49,6 +49,8 @@ template ProcessMessagesNonQv(
     var STATE_LEAF_PUB_Y_IDX = 1;
     var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
     var STATE_LEAF_TIMESTAMP_IDX = 3;
+
+    var N_BITS = 252;
     
     // Note that we sha256 hash some values from the contract, pass in the hash
     // as a public input, and pass in said values as private inputs. This saves
@@ -389,6 +391,8 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
     var STATE_LEAF_TIMESTAMP_IDX = 3;
 
+    var N_BITS = 252;
+
     signal input msgType;
     signal input numSignUps;
     signal input maxVoteOptions;
@@ -461,13 +465,25 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     tmpIndex2 <== topupStateIndex * (msgType - 1);
     indexByType <== tmpIndex1 + tmpIndex2;
 
-    component stateIndexMux = Mux1();
-    stateIndexMux.s <== transformer.isValid + msgType - 1;
-    stateIndexMux.c[0] <== 0;
-    stateIndexMux.c[1] <== indexByType;
+    // we can validate if the state index is within the numSignups
+    // if not, we use 0
+    // this is because decryption of an invalid message 
+    // might result in random packed vals
+    component validStateLeafIndex = SafeLessThan(N_BITS);
+    validStateLeafIndex.in[0] <== indexByType;
+    validStateLeafIndex.in[1] <== numSignUps;
 
+    // use a mux to pick the correct index
+    component indexMux = Mux1();
+    indexMux.s <== validStateLeafIndex.out;
+    indexMux.c[0] <== 0;
+    indexMux.c[1] <== indexByType;
+
+    // @note that we expect a coordinator to send the state leaf corresponding to a message
+    // which specifies a valid state index. If this is not the case, the 
+    // proof will fail to generate. 
     component stateLeafPathIndices = QuinGeneratePathIndices(stateTreeDepth);
-    stateLeafPathIndices.in <== stateIndexMux.out;
+    stateLeafPathIndices.in <== indexMux.out;
 
     //  ----------------------------------------------------------------------- 
     // 3. Verify that the original state leaf exists in the given state root
@@ -510,7 +526,7 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     b <== currentVoteWeight;
     c <== cmdNewVoteWeight;
 
-    component enoughVoiceCredits = SafeGreaterEqThan(252);
+    component enoughVoiceCredits = SafeGreaterEqThan(N_BITS);
     enoughVoiceCredits.in[0] <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + b;
     enoughVoiceCredits.in[1] <== c;
 

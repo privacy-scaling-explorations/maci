@@ -86,7 +86,7 @@ template StateLeafAndBallotTransformer() {
     messageValidator.voteWeight <== cmdNewVoteWeight;
 
     // if the message is valid then we swap out the public key
-    // we have to do this in two Mux one for pucKey[0]
+    // we have to do this in two Mux one for pubKey[0]
     // and one for pubKey[1]
     component newSlPubKey0Mux = Mux1();
     newSlPubKey0Mux.s <== messageValidator.isValid;

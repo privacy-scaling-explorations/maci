@@ -54,7 +54,7 @@ import { cleanVanilla, isArm } from "../utils";
 /**
  Test scenarios:
     1 signup, 1 message
-    4 signups, 6 messages
+    4 signups, 8 messages
     5 signups, 1 message
     8 signups, 10 messages
     4 signups, 4 messages
@@ -195,7 +195,7 @@ describe("e2e tests", function test() {
     });
   });
 
-  describe("4 signups, 6 messages", () => {
+  describe("4 signups, 8 messages", () => {
     after(() => {
       cleanVanilla();
     });
@@ -217,7 +217,31 @@ describe("e2e tests", function test() {
       }
     });
 
-    it("should publish six messages", async () => {
+    it("should publish eight messages", async () => {
+      await publish({
+        pubkey: users[0].pubKey.serialize(),
+        stateIndex: 1n,
+        voteOptionIndex: 0n,
+        nonce: 2n,
+        pollId: 0n,
+        newVoteWeight: 4n,
+        maciContractAddress: maciAddresses.maciAddress,
+        salt: genRandomSalt(),
+        privateKey: users[0].privKey.serialize(),
+        signer,
+      });
+      await publish({
+        pubkey: users[0].pubKey.serialize(),
+        stateIndex: 1n,
+        voteOptionIndex: 0n,
+        nonce: 2n,
+        pollId: 0n,
+        newVoteWeight: 3n,
+        maciContractAddress: maciAddresses.maciAddress,
+        salt: genRandomSalt(),
+        privateKey: users[0].privKey.serialize(),
+        signer,
+      });
       await publish({
         pubkey: users[0].pubKey.serialize(),
         stateIndex: 1n,
@@ -233,7 +257,7 @@ describe("e2e tests", function test() {
       await publish({
         pubkey: users[1].pubKey.serialize(),
         stateIndex: 2n,
-        voteOptionIndex: 0n,
+        voteOptionIndex: 2n,
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
@@ -245,7 +269,7 @@ describe("e2e tests", function test() {
       await publish({
         pubkey: users[2].pubKey.serialize(),
         stateIndex: 3n,
-        voteOptionIndex: 0n,
+        voteOptionIndex: 2n,
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
@@ -257,10 +281,10 @@ describe("e2e tests", function test() {
       await publish({
         pubkey: users[3].pubKey.serialize(),
         stateIndex: 4n,
-        voteOptionIndex: 0n,
-        nonce: 1n,
+        voteOptionIndex: 2n,
+        nonce: 3n,
         pollId: 0n,
-        newVoteWeight: 9n,
+        newVoteWeight: 3n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[3].privKey.serialize(),
@@ -269,10 +293,10 @@ describe("e2e tests", function test() {
       await publish({
         pubkey: users[3].pubKey.serialize(),
         stateIndex: 4n,
-        voteOptionIndex: 0n,
-        nonce: 1n,
+        voteOptionIndex: 2n,
+        nonce: 2n,
         pollId: 0n,
-        newVoteWeight: 9n,
+        newVoteWeight: 2n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[3].privKey.serialize(),
@@ -281,7 +305,7 @@ describe("e2e tests", function test() {
       await publish({
         pubkey: users[3].pubKey.serialize(),
         stateIndex: 4n,
-        voteOptionIndex: 0n,
+        voteOptionIndex: 1n,
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,

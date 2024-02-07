@@ -554,21 +554,62 @@ export class Poll implements IPoll {
                   console.log(`Error at message index ${idx} - ${e.message}`);
                 }
 
-                // Since the command is invalid, use a blank state leaf
-                currentStateLeaves.unshift(this.stateLeaves[0].copy());
-                currentStateLeavesPathElements.unshift(this.stateTree!.genProof(0).pathElements);
-                // since the command is invalid we use the blank ballot
-                currentBallots.unshift(this.ballots[0].copy());
-                currentBallotsPathElements.unshift(this.ballotTree!.genProof(0).pathElements);
+                // @note we want to send the correct state leaf to the circuit
+                // even if a message is invalid
+                // this way if a message is invalid we can still generate a proof of processing
+                // we also want to prevent a DoS attack by a voter
+                // which sends a message that when force decrypted on the circuit
+                // results in a valid state index thus forcing the circuit to look
+                // for a valid state leaf, and failing to generate a proof
 
-                // Since the command is invalid, we use a zero vote weight
-                currentVoteWeights.unshift(this.ballots[0].votes[0]);
+                // gen shared key
+                const sharedKey = Keypair.genEcdhSharedKey(this.coordinatorKeypair.privKey, encPubKey);
 
-                // create a new quinary tree and add an empty vote
-                const vt = new IncrementalQuinTree(this.treeDepths.voteOptionTreeDepth, 0n, STATE_TREE_ARITY, hash5);
-                vt.insert(this.ballots[0].votes[0]);
-                // get the path elements for this empty vote weight leaf
-                currentVoteWeightsPathElements.unshift(vt.genProof(0).pathElements);
+                // force decrypt it
+                const { command } = PCommand.decrypt(message, sharedKey, true);
+
+                // cache state leaf index
+                const stateLeafIndex = command.stateIndex;
+
+                // if the state leaf index is valid then use it
+                if (stateLeafIndex < this.stateLeaves.length) {
+                  currentStateLeaves.unshift(this.stateLeaves[Number(stateLeafIndex)].copy());
+                  currentStateLeavesPathElements.unshift(this.stateTree!.genProof(Number(stateLeafIndex)).pathElements);
+
+                  // copy the ballot
+                  const ballot = this.ballots[Number(stateLeafIndex)].copy();
+                  currentBallots.unshift(ballot);
+                  currentBallotsPathElements.unshift(this.ballotTree!.genProof(Number(stateLeafIndex)).pathElements);
+
+                  // add the first vote of this ballot
+                  currentVoteWeights.unshift(ballot.votes[0]);
+
+                  // create a new quinary tree and add all votes we have so far
+                  const vt = new IncrementalQuinTree(this.treeDepths.voteOptionTreeDepth, 0n, STATE_TREE_ARITY, hash5);
+
+                  // fill the vote option tree with the votes we have so far
+                  for (let j = 0; j < this.ballots[0].votes.length; j += 1) {
+                    vt.insert(ballot.votes[j]);
+                  }
+
+                  // get the path elements for the first vote leaf
+                  currentVoteWeightsPathElements.unshift(vt.genProof(0).pathElements);
+                } else {
+                  // just use state leaf index 0
+                  currentStateLeaves.unshift(this.stateLeaves[0].copy());
+                  currentStateLeavesPathElements.unshift(this.stateTree!.genProof(0).pathElements);
+                  currentBallots.unshift(this.ballots[0].copy());
+                  currentBallotsPathElements.unshift(this.ballotTree!.genProof(0).pathElements);
+
+                  // Since the command is invalid, we use a zero vote weight
+                  currentVoteWeights.unshift(this.ballots[0].votes[0]);
+
+                  // create a new quinary tree and add an empty vote
+                  const vt = new IncrementalQuinTree(this.treeDepths.voteOptionTreeDepth, 0n, STATE_TREE_ARITY, hash5);
+                  vt.insert(this.ballots[0].votes[0]);
+                  // get the path elements for this empty vote weight leaf
+                  currentVoteWeightsPathElements.unshift(vt.genProof(0).pathElements);
+                }
               } else {
                 throw e;
               }
@@ -704,13 +745,33 @@ export class Poll implements IPoll {
 
     // fill the msgs array with a copy of the messages we have
     // plus empty messages to fill the batch
+
+    // @note create a message with state index 0 to add as padding
+    // this way the message will look for state leaf 0
+    // and no effect will take place
+
+    // create a random key
+    const key = new Keypair();
+    // gen ecdh key
+    const ecdh = Keypair.genEcdhSharedKey(key.privKey, this.coordinatorKeypair.pubKey);
+    // create an empty command with state index 0n
+    const emptyCommand = new PCommand(0n, key.pubKey, 0n, 0n, 0n, 0n, 0n);
+
+    // encrypt it
+    const msg = emptyCommand.encrypt(emptyCommand.sign(key.privKey), ecdh);
+
+    // copy the messages to a new array
     let msgs = this.messages.map((x) => x.asCircuitInputs());
+
+    // pad with our state index 0 message
     while (msgs.length % messageBatchSize > 0) {
-      msgs.push(msgs[msgs.length - 1]);
+      msgs.push(msg.asCircuitInputs());
     }
+
     // we only take the messages we need for this batch
     msgs = msgs.slice(index, index + messageBatchSize);
 
+    // insert zero value in the message tree as padding
     while (this.messageTree.nextIndex < index + messageBatchSize) {
       this.messageTree.insert(this.messageTree.zeroValue);
     }
@@ -718,6 +779,7 @@ export class Poll implements IPoll {
     // generate the path to the subroot of the message tree for this batch
     const messageSubrootPath = this.messageTree.genSubrootProof(index, index + messageBatchSize);
 
+    // verify it
     assert(this.messageTree.verifyProof(messageSubrootPath), "The message subroot path is invalid");
 
     // validate that the batch index is correct, if not fix it
@@ -730,11 +792,13 @@ export class Poll implements IPoll {
     // copy the public keys, pad the array with the last keys if needed
     let encPubKeys = this.encPubKeys.map((x) => x.copy());
     while (encPubKeys.length % messageBatchSize > 0) {
-      encPubKeys.push(encPubKeys[encPubKeys.length - 1]);
+      // pad with the public key used to encrypt the message with state index 0 (padding)
+      encPubKeys.push(key.pubKey.copy());
     }
     // then take the ones part of this batch
     encPubKeys = encPubKeys.slice(index, index + messageBatchSize);
 
+    // cache tree roots
     const msgRoot = this.messageTree.root;
     const currentStateRoot = this.stateTree!.root;
     const currentBallotRoot = this.ballotTree!.root;

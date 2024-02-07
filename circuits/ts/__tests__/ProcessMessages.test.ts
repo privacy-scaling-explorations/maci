@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
 import { MaciState, Poll, packProcessMessageSmallVals, STATE_TREE_ARITY } from "maci-core";
 import { hash5, IncrementalQuinTree, NOTHING_UP_MY_SLEEVE, AccQueue } from "maci-crypto";
-import { PrivKey, Keypair, PCommand, Message, Ballot } from "maci-domainobjs";
+import { PrivKey, Keypair, PCommand, Message, Ballot, PubKey } from "maci-domainobjs";
 
 import { IProcessMessagesInputs } from "../types";
 
@@ -76,7 +76,7 @@ describe("ProcessMessage circuit", function test() {
   describe("1 user, 2 messages", () => {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     const voteWeight = BigInt(9);
-    const voteOptionIndex = BigInt(0);
+    const voteOptionIndex = BigInt(1);
     let stateIndex: bigint;
     let pollId: bigint;
     let poll: Poll;
@@ -100,6 +100,26 @@ describe("ProcessMessage circuit", function test() {
 
       poll = maciState.polls.get(pollId)!;
       poll.updatePoll(BigInt(maciState.stateLeaves.length));
+
+      const nothing = new Message(1n, [
+        8370432830353022751713833565135785980866757267633941821328460903436894336785n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+      ]);
+
+      const encP = new PubKey([
+        10457101036533406547632367118273992217979173478358440826365724437999023779287n,
+        19824078218392094440610104313265183977899662750282163392862422243483260492317n,
+      ]);
+
+      poll.publishMessage(nothing, encP);
 
       // First command (valid)
       const command = new PCommand(
@@ -144,6 +164,7 @@ describe("ProcessMessage circuit", function test() {
         STATE_TREE_ARITY,
         NOTHING_UP_MY_SLEEVE,
       );
+      accumulatorQueue.enqueue(nothing.hash(encP));
       accumulatorQueue.enqueue(message.hash(ecdhKeypair.pubKey));
       accumulatorQueue.enqueue(message2.hash(ecdhKeypair2.pubKey));
       accumulatorQueue.mergeSubRoots(0);
@@ -187,7 +208,7 @@ describe("ProcessMessage circuit", function test() {
         BigInt(maxValues.maxVoteOptions),
         BigInt(poll.maciStateRef.numSignUps),
         0,
-        2,
+        3,
       );
 
       // Test the ProcessMessagesInputHasher circuit
@@ -554,7 +575,7 @@ describe("ProcessMessage circuit", function test() {
 
         // Second batch is not a full batch
         const numMessages = messageBatchSize * NUM_BATCHES - 1;
-        for (let i = 0; i < numMessages; i += 1) {
+        for (let i = 0; i < 6; i += 1) {
           const command = new PCommand(
             BigInt(index),
             userKeypair.pubKey,
@@ -572,7 +593,7 @@ describe("ProcessMessage circuit", function test() {
           selectedPoll?.publishMessage(message, ecdhKeypair.pubKey);
         }
 
-        for (let i = 0; i < NUM_BATCHES; i += 1) {
+        for (let i = 0; i < 2; i += 1) {
           const inputs = selectedPoll?.processMessages(id) as unknown as IProcessMessagesInputs;
           // eslint-disable-next-line no-await-in-loop
           const witness = await circuit.calculateWitness(inputs);

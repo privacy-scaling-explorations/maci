@@ -48,6 +48,8 @@ template ProcessMessages(
     var STATE_LEAF_PUB_Y_IDX = 1;
     var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
     var STATE_LEAF_TIMESTAMP_IDX = 3;
+
+    var N_BITS = 252;
     
     // Note that we sha256 hash some values from the contract, pass in the hash
     // as a public input, and pass in said values as private inputs. This saves
@@ -277,6 +279,7 @@ template ProcessMessages(
     component processors[batchSize]; 
     // topup type processor
     component processors2[batchSize]; 
+
     for (var i = batchSize - 1; i >= 0; i --) {
         // process it as vote type message
         processors[i] = ProcessOne(stateTreeDepth, voteOptionTreeDepth);
@@ -349,6 +352,7 @@ template ProcessMessages(
                     <== currentStateLeavesPathElements[i][j][k];
             }
         }
+
         // pick the correct result by msg type
         tmpStateRoot1[i] <== processors[i].newStateRoot * (2 - msgs[i][0]); 
         tmpStateRoot2[i] <== processors2[i].newStateRoot * (msgs[i][0] - 1);
@@ -378,6 +382,8 @@ template ProcessTopup(stateTreeDepth) {
     var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
     var STATE_LEAF_TIMESTAMP_IDX = 3;
 
+    var N_BITS = 252;
+
     signal input msgType;
     signal input stateTreeIndex;
     signal input amount;
@@ -395,9 +401,9 @@ template ProcessTopup(stateTreeDepth) {
     // msgType of topup command is 2
     amt <== amount * (msgType - 1); 
     index <== stateTreeIndex * (msgType - 1);
-    component validCreditBalance = LessEqThan(252);
+    component validCreditBalance = LessEqThan(N_BITS);
     // check stateIndex, if invalid index, set index and amount to zero
-    component validStateLeafIndex = LessEqThan(252);
+    component validStateLeafIndex = LessEqThan(N_BITS);
     validStateLeafIndex.in[0] <== index;
     validStateLeafIndex.in[1] <== numSignUps;
 
@@ -461,6 +467,8 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     var STATE_LEAF_PUB_Y_IDX = 1;
     var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
     var STATE_LEAF_TIMESTAMP_IDX = 3;
+
+    var N_BITS = 252;
 
     signal input msgType;
     signal input numSignUps;
@@ -526,7 +534,7 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
 
     //  ----------------------------------------------------------------------- 
     // 2. If msgType = 0 and isValid is 0, generate indices for leaf 0
-    //  Otherwise, generate indices for commmand.stateIndex or topupStateIndex depending on msgType
+    // Otherwise, generate indices for commmand.stateIndex or topupStateIndex depending on msgType
     signal indexByType;
     signal tmpIndex1;
     signal tmpIndex2;
@@ -534,14 +542,26 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     tmpIndex2 <== topupStateIndex * (msgType - 1);
     indexByType <== tmpIndex1 + tmpIndex2;
 
-    component stateIndexMux = Mux1();
-    stateIndexMux.s <== transformer.isValid + msgType - 1;
-    stateIndexMux.c[0] <== 0;
-    stateIndexMux.c[1] <== indexByType;
+    // we can validate if the state index is within the numSignups
+    // if not, we use 0
+    // this is because decryption of an invalid message 
+    // might result in random packed vals
+    component validStateLeafIndex = SafeLessThan(N_BITS);
+    validStateLeafIndex.in[0] <== indexByType;
+    validStateLeafIndex.in[1] <== numSignUps;
 
+    // use a mux to pick the correct index
+    component indexMux = Mux1();
+    indexMux.s <== validStateLeafIndex.out;
+    indexMux.c[0] <== 0;
+    indexMux.c[1] <== indexByType;
+
+    // @note that we expect a coordinator to send the state leaf corresponding to a message
+    // which specifies a valid state index. If this is not the case, the 
+    // proof will fail to generate. 
     component stateLeafPathIndices = QuinGeneratePathIndices(stateTreeDepth);
-    stateLeafPathIndices.in <== stateIndexMux.out;
-
+    stateLeafPathIndices.in <== indexMux.out;
+    
     //  ----------------------------------------------------------------------- 
     // 3. Verify that the original state leaf exists in the given state root
     component stateLeafQip = QuinTreeInclusionProof(stateTreeDepth);
@@ -572,6 +592,7 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
             ballotQip.path_elements[i][j] <== ballotPathElements[i][j];
         }
     }
+
     ballotQip.root === currentBallotRoot;
 
     //  ----------------------------------------------------------------------- 
@@ -583,7 +604,7 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     b <== currentVoteWeight * currentVoteWeight;
     c <== cmdNewVoteWeight * cmdNewVoteWeight;
 
-    component enoughVoiceCredits = SafeGreaterEqThan(252);
+    component enoughVoiceCredits = SafeGreaterEqThan(N_BITS);
     enoughVoiceCredits.in[0] <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + b;
     enoughVoiceCredits.in[1] <== c;
 
