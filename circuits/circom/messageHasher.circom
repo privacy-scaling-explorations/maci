@@ -23,21 +23,21 @@ template MessageHasher() {
 
     var hasher5_1;
     hasher5_1 = PoseidonHash(5)([
-            in[1],
-            in[2],
-            in[3],
-            in[4],
-            in[5]
-        ]);
+        in[1],
+        in[2],
+        in[3],
+        in[4],
+        in[5]
+    ]);
 
     var hasher5_2;
     hasher5_2 = PoseidonHash(5)([
-            in[6],        
-            in[7],
-            in[8],
-            in[9],
-            in[10]
-        ]);
+        in[6],        
+        in[7],
+        in[8],
+        in[9],
+        in[10]
+    ]);
 
     hash <== PoseidonHash(5)([
         in[0],

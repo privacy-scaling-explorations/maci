@@ -246,8 +246,6 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
         currentPerVOSpentVoiceCreditsCommitmentHash
     ]);
 
-    // currentTallyCommitmentHash === currentTallyCommitment;
-
     // Check if the current tally commitment is correct only if this is not the first batch
     component iz = IsZero();
     iz.in <== isFirstBatch;
