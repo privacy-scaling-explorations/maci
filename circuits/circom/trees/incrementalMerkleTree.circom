@@ -6,7 +6,7 @@ pragma circom 2.0.0;
 include "./mux1.circom";
 
 // local import
-include "../hasherPoseidon.circom";
+include "../poseidonHash.circom";
 
 // recompute a merkle root from a leaf and a path
 template MerkleTreeInclusionProof(n_levels) {
@@ -25,7 +25,6 @@ template MerkleTreeInclusionProof(n_levels) {
         // Should be 0 or 1
         path_index[i] * (1 - path_index[i]) === 0;
 
-        hashers[i] = HashLeftRight();
         mux[i] = MultiMux1(2);
 
         mux[i].c[0][0] <== levelHashes[i];
@@ -35,8 +34,7 @@ template MerkleTreeInclusionProof(n_levels) {
         mux[i].c[1][1] <== levelHashes[i];
 
         mux[i].s <== path_index[i];
-        hashers[i].left <== mux[i].out[0];
-        hashers[i].right <== mux[i].out[1];
+        hashers[i] = PoseidonHash(2)([mux[i].out[0],mux[i].out[1]]);
 
         levelHashes[i + 1] <== hashers[i].hash;
     }
@@ -99,28 +97,26 @@ template CheckRoot(levels) {
 
     // The total number of hashers
     var numHashers = totalLeaves - 1;
-    component hashers[numHashers];
+    var hashers[numHashers];
 
     // Instantiate all hashers
     var i;
     for (i=0; i < numHashers; i++) {
-        hashers[i] = HashLeftRight();
+        hashers[i] = PoseidonHash(2);
     }
 
     // Wire the leaf values into the leaf hashers
     for (i=0; i < numLeafHashers; i++){
-        hashers[i].left <== leaves[i*2];
-        hashers[i].right <== leaves[i*2+1];
+        hasher[i] = PoseidonHash(2)([leaves[i*2], leaves[i*2+1]])
     }
 
     // Wire the outputs of the leaf hashers to the intermediate hasher inputs
     var k = 0;
     for (i=numLeafHashers; i<numLeafHashers + numIntermediateHashers; i++) {
-        hashers[i].left <== hashers[k*2].hash;
-        hashers[i].right <== hashers[k*2+1].hash;
+        hasher[i] = PoseidonHash(2)([hashers[k*2], hashers[k*2+1]])
         k++;
     }
 
     // Wire the output of the final hash to this circuit's output
-    root <== hashers[numHashers-1].hash;
+    root <== hashers[numHashers-1];
 }

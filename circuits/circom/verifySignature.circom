@@ -9,8 +9,7 @@ include "./escalarmulany.circom";
 include "./escalarmulfix.circom";
 
 // local imports
-include "./hasherPoseidon.circom";
-include "./poseidon/poseidonHashT6.circom";
+include "./poseidonHash.circom";
 
 template EdDSAPoseidonVerifier_patched() {
     signal input Ax;
@@ -36,15 +35,8 @@ template EdDSAPoseidonVerifier_patched() {
     compConstant.in[253] <== 0;
 
     // Calculate the h = H(R,A, msg)
-    component hash = PoseidonHashT6();
-    hash.inputs[0] <== R8x;
-    hash.inputs[1] <== R8y;
-    hash.inputs[2] <== Ax;
-    hash.inputs[3] <== Ay;
-    hash.inputs[4] <== M;
-
     component h2bits = Num2Bits_strict();
-    h2bits.in <==  hash.out;
+    h2bits.in <== PoseidonHash(5)([R8x, R8y, Ax, Ay, M]);
 
     // Calculate second part of the right side:  right2 = h*8*A
 
@@ -133,10 +125,7 @@ template VerifySignature() {
 
     signal output valid;
 
-    component M = Hasher4();
-    for (var i = 0; i < k; i++){
-        M.in[i] <== preimage[i];
-    }
+    var M = PoseidonHash(4)(preimage);
 
     component verifier = EdDSAPoseidonVerifier_patched();
 
@@ -145,7 +134,7 @@ template VerifySignature() {
     verifier.S <== S;
     verifier.R8x <== R8[0];
     verifier.R8y <== R8[1];
-    verifier.M <== M.hash;
+    verifier.M <== M;
 
     valid <== verifier.valid;
 }

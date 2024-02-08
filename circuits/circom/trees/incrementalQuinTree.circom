@@ -7,8 +7,8 @@ include "./mux1.circom";
 // local imports
 include "./calculateTotal.circom";
 include "./checkRoot.circom";
-include "../hasherPoseidon.circom";
 include "../utils.circom";
+include "../poseidonHash.circom";
 
 // This file contains circuits for quintary Merkle tree verification.
 // It assumes that each node contains 5 leaves, as we use the PoseidonT6
@@ -156,39 +156,55 @@ template QuinTreeInclusionProof(levels) {
     var i;
     var j;
 
-    component hashers[levels];
+    var hashers[levels];
     component splicers[levels];
 
     // Hash the first level of path_elements
     splicers[0] = Splicer(LEAVES_PER_PATH_LEVEL);
-    hashers[0] = Hasher5();
+
+    
     splicers[0].index <== path_index[0];
     splicers[0].leaf <== leaf;
+
     for (i = 0; i < LEAVES_PER_PATH_LEVEL; i++) {
         splicers[0].in[i] <== path_elements[0][i];
     }
 
-    for (i = 0; i < LEAVES_PER_NODE; i++) {
-        hashers[0].in[i] <== splicers[0].out[i];
-    }
+
+    hashers[0] = PoseidonHash(5)([
+        splicers[0].out[0],
+        splicers[0].out[1],
+        splicers[0].out[2],
+        splicers[0].out[3],
+        splicers[0].out[4]
+    ]);
+
+    // for (i = 0; i < LEAVES_PER_NODE; i++) {
+    //     hashers[0].in[i] <== splicers[0].out[i];
+    // }
 
     // Hash each level of path_elements
 
     for (i = 1; i < levels; i++) {
         splicers[i] = Splicer(LEAVES_PER_PATH_LEVEL);
         splicers[i].index <== path_index[i];
-        splicers[i].leaf <== hashers[i - 1].hash;
+
+        splicers[i].leaf <== hashers[i - 1];
+        
         for (j = 0; j < LEAVES_PER_PATH_LEVEL; j++) {
             splicers[i].in[j] <== path_elements[i][j];
         }
 
-        hashers[i] = Hasher5();
-        for (j = 0; j < LEAVES_PER_NODE; j++) {
-            hashers[i].in[j] <== splicers[i].out[j];
-        }
+        hashers[i] = PoseidonHash(5)([
+            splicers[i].out[0],
+            splicers[i].out[1],
+            splicers[i].out[2],
+            splicers[i].out[3],
+            splicers[i].out[4]
+        ]);
     }
     
-    root <== hashers[levels - 1].hash;
+    root <== hashers[levels - 1];
 }
 
 // Ensures that a leaf exists within a quintree with given `root`

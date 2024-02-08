@@ -1,7 +1,7 @@
 pragma circom 2.0.0;
 
 // local import
-include "../hasherPoseidon.circom";
+include "../poseidonHash.circom";
 
 // Given a list of leaves, compute the root of the merkle tree
 // by inserting all the leaves into the tree in the given
@@ -31,30 +31,33 @@ template QuinCheckRoot(levels) {
         numHashers += LEAVES_PER_NODE ** i;
     }
 
-    component hashers[numHashers];
-
-    // Instantiate all hashers
-    for (i = 0; i < numHashers; i++) {
-        hashers[i] = Hasher5();
-    }
+    var hashers[numHashers];
 
     // Wire the leaf values into the leaf hashers
     for (i = 0; i < numLeafHashers; i++){
-        for (j = 0; j < LEAVES_PER_NODE; j++){
-            hashers[i].in[j] <== leaves[i * LEAVES_PER_NODE + j];
-        }
+        hashers[i] = PoseidonHash(5)([
+            leaves[i*LEAVES_PER_NODE+0],
+            leaves[i*LEAVES_PER_NODE+1],
+            leaves[i*LEAVES_PER_NODE+2],
+            leaves[i*LEAVES_PER_NODE+3],
+            leaves[i*LEAVES_PER_NODE+4]            
+        ]);
     }
 
     // Wire the outputs of the leaf hashers to the intermediate hasher inputs
     var k = 0;
     for (i = numLeafHashers; i < numHashers; i++) {
-        for (j = 0; j < LEAVES_PER_NODE; j++){
-            hashers[i].in[j] <== hashers[k * LEAVES_PER_NODE + j].hash;
-        }
+        hashers[i] = PoseidonHash(5)([
+            hashers[k*LEAVES_PER_NODE+0],
+            hashers[k*LEAVES_PER_NODE+1],
+            hashers[k*LEAVES_PER_NODE+2],
+            hashers[k*LEAVES_PER_NODE+3],
+            hashers[k*LEAVES_PER_NODE+4]            
+        ]);
         k++;
     }
 
     // Wire the output of the final hash to this circuit's output
-    root <== hashers[numHashers-1].hash;
+    root <== hashers[numHashers-1];
 }
 
