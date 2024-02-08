@@ -160,16 +160,13 @@ template QuinTreeInclusionProof(levels) {
     component splicers[levels];
 
     // Hash the first level of path_elements
-    splicers[0] = Splicer(LEAVES_PER_PATH_LEVEL);
-
-    
+    splicers[0] = Splicer(LEAVES_PER_PATH_LEVEL);    
     splicers[0].index <== path_index[0];
     splicers[0].leaf <== leaf;
 
     for (i = 0; i < LEAVES_PER_PATH_LEVEL; i++) {
         splicers[0].in[i] <== path_elements[0][i];
     }
-
 
     hashers[0] = PoseidonHash(5)([
         splicers[0].out[0],
@@ -179,12 +176,7 @@ template QuinTreeInclusionProof(levels) {
         splicers[0].out[4]
     ]);
 
-    // for (i = 0; i < LEAVES_PER_NODE; i++) {
-    //     hashers[0].in[i] <== splicers[0].out[i];
-    // }
-
     // Hash each level of path_elements
-
     for (i = 1; i < levels; i++) {
         splicers[i] = Splicer(LEAVES_PER_PATH_LEVEL);
         splicers[i].index <== path_index[i];
