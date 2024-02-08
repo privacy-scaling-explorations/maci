@@ -8,7 +8,7 @@ include "./trees/incrementalQuinTree.circom";
 include "./trees/calculateTotal.circom";
 include "./trees/checkRoot.circom";
 include "./hasherSha256.circom";
-include "./hasherPoseidon.circom";
+include "./poseidonHash.circom";
 include "./unpackElement.circom";
 include "./float.circom";
 
@@ -65,11 +65,8 @@ template SubsidyPerBatch (
 
     //  ----------------------------------------------------------------------- 
     // Verify sbCommitment
-    component sbCommitmentHasher = Hasher3();
-    sbCommitmentHasher.in[0] <== stateRoot;
-    sbCommitmentHasher.in[1] <== ballotRoot;
-    sbCommitmentHasher.in[2] <== sbSalt;
-    sbCommitmentHasher.hash === sbCommitment;
+    var sbCommitmentHash = PoseidonHash(3)([stateRoot, ballotRoot, sbSalt]);
+    sbCommitmentHash === sbCommitment;
 
     //  ----------------------------------------------------------------------- 
     // Verify inputHash
@@ -104,12 +101,10 @@ template SubsidyPerBatch (
     //  ----------------------------------------------------------------------- 
     // Verify both batches belong to the ballot tree
     component ballotTreeVerifier1 = BatchMerkleTreeVerifier(stateTreeDepth, intStateTreeDepth, TREE_ARITY); 
-    component ballotHashers1[batchSize];
+    var ballotHashers1[batchSize];
     for (var i = 0; i < batchSize; i++) {
-        ballotHashers1[i] = HashLeftRight();
-        ballotHashers1[i].left <== ballots1[i][BALLOT_NONCE_IDX];
-        ballotHashers1[i].right <== ballots1[i][BALLOT_VO_ROOT_IDX];
-        ballotTreeVerifier1.leaves[i] <== ballotHashers1[i].hash;
+        ballotHashers1[i] = PoseidonHash(2)([ballots1[i][BALLOT_NONCE_IDX], ballots1[i][BALLOT_VO_ROOT_IDX]]);
+        ballotTreeVerifier1.leaves[i] <== ballotHashers1[i];
     }
     ballotTreeVerifier1.index <== inputHasher.rbi;
     ballotTreeVerifier1.root <== ballotRoot;
@@ -120,12 +115,10 @@ template SubsidyPerBatch (
     }
 
     component ballotTreeVerifier2 = BatchMerkleTreeVerifier(stateTreeDepth, intStateTreeDepth, TREE_ARITY); 
-    component ballotHashers2[batchSize];
+    var ballotHashers2[batchSize];
     for (var i = 0; i < batchSize; i++) {
-        ballotHashers2[i] = HashLeftRight();
-        ballotHashers2[i].left <== ballots2[i][BALLOT_NONCE_IDX];
-        ballotHashers2[i].right <== ballots2[i][BALLOT_VO_ROOT_IDX];
-        ballotTreeVerifier2.leaves[i] <== ballotHashers2[i].hash;
+        ballotHashers2[i] = PoseidonHash(2)([ballots2[i][BALLOT_NONCE_IDX], ballots2[i][BALLOT_VO_ROOT_IDX]]);
+        ballotTreeVerifier2.leaves[i] <== ballotHashers2[i];
     }
     ballotTreeVerifier2.index <== inputHasher.cbi;
     ballotTreeVerifier2.root <== ballotRoot;
@@ -263,9 +256,7 @@ template SubsidyCommitmentVerifier(voteOptionTreeDepth) {
         currentResultsRoot.leaves[i] <== currentSubsidy[i];
     }
 
-    component currentResultsCommitment = HashLeftRight();
-    currentResultsCommitment.left <== currentResultsRoot.root;
-    currentResultsCommitment.right <== currentSubsidySalt;
+    var currentResultsCommitmentHash = PoseidonHash(2)([currentResultsRoot.root, currentSubsidySalt]);
 
     // Check if the current tally commitment is correct only if this is not the first batch
     component iz = IsZero();
@@ -279,7 +270,7 @@ template SubsidyCommitmentVerifier(voteOptionTreeDepth) {
     // hz is 1 if this is not the first batch
     // currentTallyCommitment should not be 0 if this is the first batch
     signal hz;
-    hz <== iz.out * currentResultsCommitment.hash;
+    hz <== iz.out * currentResultsCommitmentHash;
     hz === currentSubsidyCommitment;
 
     // Compute the root of the new results
@@ -288,13 +279,9 @@ template SubsidyCommitmentVerifier(voteOptionTreeDepth) {
         newResultsRoot.leaves[i] <== newSubsidy[i];
     }
 
-    component newResultsCommitment = HashLeftRight();
-    newResultsCommitment.left <== newResultsRoot.root;
-    newResultsCommitment.right <== newSubsidySalt;
-    newResultsCommitment.hash === newSubsidyCommitment;
+    var newResultsCommitmentHash = PoseidonHash(2)([newResultsRoot.root, newSubsidySalt]);
+    newResultsCommitmentHash === newSubsidyCommitment;
 }
-
-
 
 template SubsidyInputHasher() {
     signal input packedVals;

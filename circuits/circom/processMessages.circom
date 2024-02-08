@@ -132,11 +132,8 @@ template ProcessMessages(
 
     // Verify currentSbCommitment
     // currentSbCommitment === hash3(currentStateRoot, currentBallotRoot, currentSbSalt)
-    component currentSbCommitmentHasher = Hasher3(); 
-    currentSbCommitmentHasher.in[0] <== currentStateRoot;
-    currentSbCommitmentHasher.in[1] <== currentBallotRoot;
-    currentSbCommitmentHasher.in[2] <== currentSbSalt;
-    currentSbCommitmentHasher.hash === currentSbCommitment;
+    var currentSbCommitmentHash = PoseidonHash(3)([currentStateRoot, currentBallotRoot, currentSbSalt]);
+    currentSbCommitmentHash === currentSbCommitment;
 
     // Verify "public" inputs and assign unpacked values
     component inputHasher = ProcessMessagesInputHasher();
@@ -358,12 +355,8 @@ template ProcessMessages(
         ballotRoots[i] <== tmpBallotRoot1[i] + tmpBallotRoot2[i];
     }
 
-    component sbCommitmentHasher = Hasher3();
-    sbCommitmentHasher.in[0] <== stateRoots[0];
-    sbCommitmentHasher.in[1] <== ballotRoots[0];
-    sbCommitmentHasher.in[2] <== newSbSalt;
-
-    sbCommitmentHasher.hash === newSbCommitment;
+    var sbCommitmentHash = PoseidonHash(3)([stateRoots[0], ballotRoots[0], newSbSalt]);
+    sbCommitmentHash === newSbCommitment;
 }
 
 // process a topup message
@@ -420,17 +413,18 @@ template ProcessTopup(stateTreeDepth) {
     validCreditBalance.in[1] <== newCreditBalance;
 
     // update credit voice balance
-    component newStateLeafHasher = Hasher4();
-    newStateLeafHasher.in[STATE_LEAF_PUB_X_IDX] <== stateLeaf[STATE_LEAF_PUB_X_IDX];
-    newStateLeafHasher.in[STATE_LEAF_PUB_Y_IDX] <== stateLeaf[STATE_LEAF_PUB_Y_IDX];
-    newStateLeafHasher.in[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] <== newCreditBalance;
-    newStateLeafHasher.in[STATE_LEAF_TIMESTAMP_IDX] <== stateLeaf[STATE_LEAF_TIMESTAMP_IDX];
+    var newStateLeafHash = PoseidonHash(4)([
+        stateLeaf[STATE_LEAF_PUB_X_IDX],
+        stateLeaf[STATE_LEAF_PUB_Y_IDX],
+        newCreditBalance,
+        stateLeaf[STATE_LEAF_TIMESTAMP_IDX]
+    ]);
 
     component stateLeafPathIndices = QuinGeneratePathIndices(stateTreeDepth);
     stateLeafPathIndices.in <== indexMux.out;
 
     component newStateLeafQip = QuinTreeInclusionProof(stateTreeDepth);
-    newStateLeafQip.leaf <== newStateLeafHasher.hash;
+    newStateLeafQip.leaf <== newStateLeafHash;
     for (var i = 0; i < stateTreeDepth; i++) {
         newStateLeafQip.path_index[i] <== stateLeafPathIndices.out[i];
         for (var j = 0; j < TREE_ARITY - 1; j++) {
@@ -545,11 +539,10 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     //  ----------------------------------------------------------------------- 
     // 3. Verify that the original state leaf exists in the given state root
     component stateLeafQip = QuinTreeInclusionProof(stateTreeDepth);
-    component stateLeafHasher = Hasher4();
-    for (var i = 0; i < STATE_LEAF_LENGTH; i++) {
-        stateLeafHasher.in[i] <== stateLeaf[i];
-    }
-    stateLeafQip.leaf <== stateLeafHasher.hash;
+
+    var stateLeafHash = PoseidonHash(4)(stateLeaf);
+    stateLeafQip.leaf <== stateLeafHash;
+
     for (var i = 0; i < stateTreeDepth; i++) {
         stateLeafQip.path_index[i] <== stateLeafPathIndices.out[i];
         for (var j = 0; j < TREE_ARITY - 1; j++) {
@@ -560,12 +553,10 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
 
     //  ----------------------------------------------------------------------- 
     // 4. Verify that the original ballot exists in the given ballot root
-    component ballotHasher = HashLeftRight();
-    ballotHasher.left <== ballot[BALLOT_NONCE_IDX];
-    ballotHasher.right <== ballot[BALLOT_VO_ROOT_IDX];
+    var ballotHash = PoseidonHash(2)([ballot[BALLOT_NONCE_IDX], ballot[BALLOT_VO_ROOT_IDX]]);
 
     component ballotQip = QuinTreeInclusionProof(stateTreeDepth);
-    ballotQip.leaf <== ballotHasher.hash;
+    ballotQip.leaf <== ballotHash;
     for (var i = 0; i < stateTreeDepth; i++) {
         ballotQip.path_index[i] <== stateLeafPathIndices.out[i];
         for (var j = 0; j < TREE_ARITY - 1; j++) {
@@ -647,14 +638,15 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
 
     //  ----------------------------------------------------------------------- 
     // 6. Generate a new state root
-    component newStateLeafHasher = Hasher4();
-    newStateLeafHasher.in[STATE_LEAF_PUB_X_IDX] <== transformer.newSlPubKey[STATE_LEAF_PUB_X_IDX];
-    newStateLeafHasher.in[STATE_LEAF_PUB_Y_IDX] <== transformer.newSlPubKey[STATE_LEAF_PUB_Y_IDX];
-    newStateLeafHasher.in[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] <== voiceCreditBalanceMux.out;
-    newStateLeafHasher.in[STATE_LEAF_TIMESTAMP_IDX] <== stateLeaf[STATE_LEAF_TIMESTAMP_IDX];
+    var newStateLeafhash = PoseidonHash(4)([
+        transformer.newSlPubKey[STATE_LEAF_PUB_X_IDX],
+        transformer.newSlPubKey[STATE_LEAF_PUB_Y_IDX],
+        voiceCreditBalanceMux.out,
+        stateLeaf[STATE_LEAF_TIMESTAMP_IDX]
+    ]);
 
     component newStateLeafQip = QuinTreeInclusionProof(stateTreeDepth);
-    newStateLeafQip.leaf <== newStateLeafHasher.hash;
+    newStateLeafQip.leaf <== newStateLeafhash;
     for (var i = 0; i < stateTreeDepth; i++) {
         newStateLeafQip.path_index[i] <== stateLeafPathIndices.out[i];
         for (var j = 0; j < TREE_ARITY - 1; j++) {
@@ -671,12 +663,10 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     newBallotNonceMux.c[0] <== ballot[BALLOT_NONCE_IDX];
     newBallotNonceMux.c[1] <== transformer.newBallotNonce;
 
-    component newBallotHasher = HashLeftRight();
-    newBallotHasher.left <== newBallotNonceMux.out;
-    newBallotHasher.right <== newBallotVoRoot;
+    var newBallotHash = PoseidonHash(2)([newBallotNonceMux.out, newBallotVoRoot]);
 
     component newBallotQip = QuinTreeInclusionProof(stateTreeDepth);
-    newBallotQip.leaf <== newBallotHasher.hash;
+    newBallotQip.leaf <== newBallotHash;
     for (var i = 0; i < stateTreeDepth; i++) {
         newBallotQip.path_index[i] <== stateLeafPathIndices.out[i];
         for (var j = 0; j < TREE_ARITY - 1; j++) {
@@ -730,14 +720,12 @@ template ProcessMessagesInputHasher() {
     batchEndIndex <== unpack.out[0];
 
     // 2. Hash coordPubKey
-    component pubKeyHasher = HashLeftRight();
-    pubKeyHasher.left <== coordPubKey[0];
-    pubKeyHasher.right <== coordPubKey[1];
+    var pubKeyHash = PoseidonHash(2)(coordPubKey);
 
     // 3. Hash the 6 inputs with SHA256
     component hasher = Sha256Hasher6();
     hasher.in[0] <== packedVals;
-    hasher.in[1] <== pubKeyHasher.hash;
+    hasher.in[1] <== pubKeyHash;
     hasher.in[2] <== msgRoot;
     hasher.in[3] <== currentSbCommitment;
     hasher.in[4] <== newSbCommitment;

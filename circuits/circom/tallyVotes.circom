@@ -8,7 +8,7 @@ include "./trees/incrementalQuinTree.circom";
 include "./trees/calculateTotal.circom";
 include "./trees/checkRoot.circom";
 include "./hasherSha256.circom";
-include "./hasherPoseidon.circom";
+include "./poseidonHash.circom";
 include "./unpackElement.circom";
 
 // Tally votes in the ballots, batch by batch.
@@ -69,11 +69,8 @@ template TallyVotes(
 
     //  ----------------------------------------------------------------------- 
     // Verify sbCommitment
-    component sbCommitmentHasher = Hasher3();
-    sbCommitmentHasher.in[0] <== stateRoot;
-    sbCommitmentHasher.in[1] <== ballotRoot;
-    sbCommitmentHasher.in[2] <== sbSalt;
-    sbCommitmentHasher.hash === sbCommitment;
+    var sbCommitmentHash = PoseidonHash(3)([stateRoot, ballotRoot, sbSalt]);
+    sbCommitmentHash === sbCommitment;
 
     //  ----------------------------------------------------------------------- 
     // Verify inputHash
@@ -103,13 +100,10 @@ template TallyVotes(
 
     // Hash each ballot and generate the subroot of the ballots
     component ballotSubroot = QuinCheckRoot(intStateTreeDepth);
-    component ballotHashers[batchSize];
+    var ballotHashers[batchSize];
     for (var i = 0; i < batchSize; i++) {
-        ballotHashers[i] = HashLeftRight();
-        ballotHashers[i].left <== ballots[i][BALLOT_NONCE_IDX];
-        ballotHashers[i].right <== ballots[i][BALLOT_VO_ROOT_IDX];
-
-        ballotSubroot.leaves[i] <== ballotHashers[i].hash;
+        ballotHashers[i] = PoseidonHash(2)([ballots[i][BALLOT_NONCE_IDX], ballots[i][BALLOT_VO_ROOT_IDX]]);
+        ballotSubroot.leaves[i] <== ballotHashers[i];
     }
 
     component ballotQle = QuinLeafExists(k);
@@ -232,14 +226,10 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
         currentResultsRoot.leaves[i] <== currentResults[i];
     }
 
-    component currentResultsCommitment = HashLeftRight();
-    currentResultsCommitment.left <== currentResultsRoot.root;
-    currentResultsCommitment.right <== currentResultsRootSalt;
+    var currentResultsCommitmentHash = PoseidonHash(2)([currentResultsRoot.root, currentResultsRootSalt]);
 
     // Compute the commitment to the current spent voice credits
-    component currentSpentVoiceCreditsCommitment = HashLeftRight();
-    currentSpentVoiceCreditsCommitment.left <== currentSpentVoiceCreditSubtotal;
-    currentSpentVoiceCreditsCommitment.right <== currentSpentVoiceCreditSubtotalSalt;
+    var currentSpentVoiceCreditsCommitmentHash = PoseidonHash(2)([currentSpentVoiceCreditSubtotal, currentSpentVoiceCreditSubtotalSalt]);
 
     // Compute the root of the spent voice credits per vote option
     component currentPerVOSpentVoiceCreditsRoot = QuinCheckRoot(voteOptionTreeDepth);
@@ -247,17 +237,17 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
         currentPerVOSpentVoiceCreditsRoot.leaves[i] <== currentPerVOSpentVoiceCredits[i];
     }
 
-    component currentPerVOSpentVoiceCreditsCommitment = HashLeftRight();
-    currentPerVOSpentVoiceCreditsCommitment.left <== currentPerVOSpentVoiceCreditsRoot.root;
-    currentPerVOSpentVoiceCreditsCommitment.right <== currentPerVOSpentVoiceCreditsRootSalt;
+    var currentPerVOSpentVoiceCreditsCommitmentHash = PoseidonHash(2)([currentPerVOSpentVoiceCreditsRoot.root, currentPerVOSpentVoiceCreditsRootSalt]);
 
     // Commit to the current tally
-    component currentTallyCommitmentHasher = Hasher3();
-    currentTallyCommitmentHasher.in[0] <== currentResultsCommitment.hash;
-    currentTallyCommitmentHasher.in[1] <== currentSpentVoiceCreditsCommitment.hash;
-    currentTallyCommitmentHasher.in[2] <== currentPerVOSpentVoiceCreditsCommitment.hash;
+    var currentTallyCommitmentHash = PoseidonHash(3)([
+        currentResultsCommitmentHash, 
+        currentSpentVoiceCreditsCommitmentHash, 
+        currentPerVOSpentVoiceCreditsCommitmentHash
+    ]);
 
-    // currentTallyCommitmentHasher.hash === currentTallyCommitment
+    // currentTallyCommitmentHash === currentTallyCommitment;
+
     // Check if the current tally commitment is correct only if this is not the first batch
     component iz = IsZero();
     iz.in <== isFirstBatch;
@@ -270,7 +260,7 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     // hz is 1 if this is not the first batch
     // currentTallyCommitment should not be 0 if this is the first batch
     signal hz;
-    hz <== iz.out * currentTallyCommitmentHasher.hash;
+    hz <== iz.out * currentTallyCommitmentHash;
 
     hz === currentTallyCommitment;
 
@@ -280,14 +270,10 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
         newResultsRoot.leaves[i] <== newResults[i];
     }
 
-    component newResultsCommitment = HashLeftRight();
-    newResultsCommitment.left <== newResultsRoot.root;
-    newResultsCommitment.right <== newResultsRootSalt;
+    var newResultsCommitmentHash = PoseidonHash(2)([newResultsRoot.root, newResultsRootSalt]);
 
     // Compute the commitment to the new spent voice credits value
-    component newSpentVoiceCreditsCommitment = HashLeftRight();
-    newSpentVoiceCreditsCommitment.left <== newSpentVoiceCreditSubtotal;
-    newSpentVoiceCreditsCommitment.right <== newSpentVoiceCreditSubtotalSalt;
+    var newSpentVoiceCreditsCommitmentHash = PoseidonHash(2)([newSpentVoiceCreditSubtotal, newSpentVoiceCreditSubtotalSalt]);
 
     // Compute the root of the spent voice credits per vote option
     component newPerVOSpentVoiceCreditsRoot = QuinCheckRoot(voteOptionTreeDepth);
@@ -295,17 +281,16 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
         newPerVOSpentVoiceCreditsRoot.leaves[i] <== newPerVOSpentVoiceCredits[i];
     }
 
-    component newPerVOSpentVoiceCreditsCommitment = HashLeftRight();
-    newPerVOSpentVoiceCreditsCommitment.left <== newPerVOSpentVoiceCreditsRoot.root;
-    newPerVOSpentVoiceCreditsCommitment.right <== newPerVOSpentVoiceCreditsRootSalt;
+    var newPerVOSpentVoiceCreditsCommitmentHash = PoseidonHash(2)([newPerVOSpentVoiceCreditsRoot.root, newPerVOSpentVoiceCreditsRootSalt]);
 
     // Commit to the new tally
-    component newTallyCommitmentHasher = Hasher3();
-    newTallyCommitmentHasher.in[0] <== newResultsCommitment.hash;
-    newTallyCommitmentHasher.in[1] <== newSpentVoiceCreditsCommitment.hash;
-    newTallyCommitmentHasher.in[2] <== newPerVOSpentVoiceCreditsCommitment.hash;
-
-    newTallyCommitmentHasher.hash === newTallyCommitment;
+    var newTallyCommitmentHash = PoseidonHash(3)([
+        newResultsCommitmentHash,
+        newSpentVoiceCreditsCommitmentHash,
+        newPerVOSpentVoiceCreditsCommitmentHash
+    ]);
+    
+    newTallyCommitmentHash === newTallyCommitment;
 }
 
 // template that generates a sha256 hash of the provided tally inputs
