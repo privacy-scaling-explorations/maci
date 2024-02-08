@@ -34,7 +34,7 @@ template MerkleTreeInclusionProof(n_levels) {
         mux[i].c[1][1] <== levelHashes[i];
 
         mux[i].s <== path_index[i];
-        hashers[i] = PoseidonHash(2)([mux[i].out[0],mux[i].out[1]]);
+        hashers[i] = PoseidonHash(2)([mux[i].out[0], mux[i].out[1]]);
 
         levelHashes[i + 1] <== hashers[i].hash;
     }
@@ -107,13 +107,13 @@ template CheckRoot(levels) {
 
     // Wire the leaf values into the leaf hashers
     for (i=0; i < numLeafHashers; i++){
-        hasher[i] = PoseidonHash(2)([leaves[i*2], leaves[i*2+1]])
+        hasher[i] = PoseidonHash(2)([leaves[i * 2], leaves[i * 2 + 1]])
     }
 
     // Wire the outputs of the leaf hashers to the intermediate hasher inputs
     var k = 0;
     for (i=numLeafHashers; i<numLeafHashers + numIntermediateHashers; i++) {
-        hasher[i] = PoseidonHash(2)([hashers[k*2], hashers[k*2+1]])
+        hasher[i] = PoseidonHash(2)([hashers[k * 2], hashers[k * 2 + 1]]);
         k++;
     }
 
