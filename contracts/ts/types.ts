@@ -13,7 +13,9 @@ import type {
   VkRegistry,
 } from "../typechain-types";
 import type { BigNumberish, Signer } from "ethers";
+import type { CircuitInputs } from "maci-core";
 import type { Message, PubKey } from "maci-domainobjs";
+import type { PublicSignals } from "snarkjs";
 
 /**
  * The data structure of the verifying key of the SNARK circuit.
@@ -59,6 +61,15 @@ export interface Groth16Proof {
   pi_c: string[];
   protocol: string;
   curve: string;
+}
+
+/**
+ * The data structure representing a proof output
+ */
+export interface Proof {
+  proof: SnarkProof | Groth16Proof;
+  circuitInputs: CircuitInputs;
+  publicInputs: PublicSignals;
 }
 
 /**

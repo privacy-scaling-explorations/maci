@@ -1,6 +1,6 @@
 import type { Action, SnarkProof, Groth16Proof } from "./types";
 import type { Ownable } from "../typechain-types";
-import type { FeeData, Network, Signer } from "ethers";
+import type { BigNumberish, FeeData, Network, Signer } from "ethers";
 
 /**
  * Format a SnarkProof type to an array of strings
@@ -133,3 +133,13 @@ export const transferOwnership = async <T extends Ownable>(
 
   await tx.wait();
 };
+
+/**
+ * Convert bignumberish to hex
+ *
+ * @param value - bignumberish string
+ * @returns hex representation of it
+ */
+export function asHex(value: BigNumberish): string {
+  return `0x${BigInt(value).toString(16)}`;
+}

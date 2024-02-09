@@ -1,5 +1,6 @@
 import type { CircuitConfig } from "circomkit";
 import type { CircuitInputs } from "maci-core";
+import type { ISnarkJSVerificationKey } from "snarkjs";
 
 /**
  * Parameters for the genProof function
@@ -73,3 +74,5 @@ export interface ITallyVotesInputs {
 export interface CircuitConfigWithName extends CircuitConfig {
   name: string;
 }
+
+export type { ISnarkJSVerificationKey };

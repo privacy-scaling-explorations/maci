@@ -7,9 +7,11 @@ import FileSync from "lowdb/adapters/FileSync";
 
 import { exit } from "process";
 
-import type { EContracts, IDeployParams, IDeployStep, IDeployStepCatalog } from "./types";
+import type { EContracts, IDeployParams, IDeployStep, IDeployStepCatalog, IGetContractParams } from "./types";
 import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import type { ConfigurableTaskDefinition, HardhatRuntimeEnvironment, TaskArguments } from "hardhat/types";
+
+import { parseArtifact } from "../../ts/abi";
 
 import { ContractStorage } from "./ContractStorage";
 
@@ -395,5 +397,20 @@ export class Deployment {
     }
 
     return value;
+  }
+
+  /**
+   * Get contract by name and group key
+   *
+   * @param {IGetContractParams} params - params
+   * @returns contract wrapper
+   */
+  async getContract<T extends BaseContract>({ name, key, address, signer }: IGetContractParams): Promise<T> {
+    const deployer = signer || (await this.getDeployer());
+    const contractAddress = address || this.storage.mustGetAddress(name, this.hre!.network.name, key);
+
+    const [abi] = parseArtifact(name.toString());
+
+    return new BaseContract(contractAddress, abi, deployer) as T;
   }
 }

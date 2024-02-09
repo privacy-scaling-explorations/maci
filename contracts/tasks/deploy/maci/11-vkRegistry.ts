@@ -1,11 +1,12 @@
 import { extractVk } from "maci-circuits";
 import { VerifyingKey } from "maci-domainobjs";
 
-import type { IVerifyingKeyStruct } from "../../../ts";
+import type { IVerifyingKeyStruct } from "../../../ts/types";
+import type { VkRegistry } from "../../../typechain-types";
 
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
-import { EContracts, type IDeployParams, type VkRegistry } from "../../helpers/types";
+import { EContracts, type IDeployParams } from "../../helpers/types";
 
 const deployment = Deployment.getInstance();
 const storage = ContractStorage.getInstance();

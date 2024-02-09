@@ -1,7 +1,8 @@
 /* eslint-disable no-console */
 import { type BigNumberish } from "ethers";
 
-import type { ITreeMergeParams, MACI, Poll, StateAq } from "./types";
+import type { ITreeMergeParams } from "./types";
+import type { AccQueue, MACI, Poll } from "../../typechain-types";
 import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 
 /**
@@ -17,12 +18,12 @@ export class TreeMerger {
   /**
    * User signups AccQueue contract
    */
-  private signupAccQueueContract: StateAq;
+  private signupAccQueueContract: AccQueue;
 
   /**
    * User messages AccQueue contract
    */
-  private messageAccQueueContract: StateAq;
+  private messageAccQueueContract: AccQueue;
 
   /**
    * Poll contract
