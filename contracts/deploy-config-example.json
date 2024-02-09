@@ -29,7 +29,8 @@
     "Poll": {
       "pollDuration": 30,
       "coordinatorPubkey": "macipk.ea638a3366ed91f2e955110888573861f7c0fc0bb5fb8b8dca9cd7a08d7d6b93",
-      "subsidyEnabled": false
+      "subsidyEnabled": false,
+      "useQuadraticVoting": true
     }
   }
 }

@@ -488,7 +488,8 @@ export const deployTestContracts = async (
   initialVoiceCreditBalance: number,
   stateTreeDepth: number,
   signer?: Signer,
-  quiet = false,
+  useQv = true,
+  quiet = true,
   gatekeeper: FreeForAllGatekeeper | undefined = undefined,
 ): Promise<IDeployedTestContracts> => {
   const mockVerifierContract = await deployMockVerifier(signer, true);
@@ -520,6 +521,7 @@ export const deployTestContracts = async (
     topupCreditContractAddress,
     signer,
     stateTreeDepth,
+    useQv,
     quiet,
   });
 

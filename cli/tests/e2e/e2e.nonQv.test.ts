@@ -47,7 +47,7 @@ import { cleanVanilla, isArm } from "../utils";
  Test scenarios:
     1 signup, 1 message with quadratic voting disabled
  */
-describe("e2e tests", function test() {
+describe("e2e tests with non quadratic voting", function test() {
   const useWasm = isArm();
   this.timeout(900000);
 
@@ -69,6 +69,7 @@ describe("e2e tests", function test() {
     processWasm: testProcessMessagesNonQvWasmPath,
     tallyWasm: testTallyVotesNonQvWasmPath,
     useWasm,
+    useQuadraticVoting: false,
   };
 
   // before all tests we deploy the vk registry contract and set the verifying keys
@@ -90,7 +91,7 @@ describe("e2e tests", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy({ ...deployArgs, signer });
+      maciAddresses = await deploy({ ...deployArgs, signer, useQv: false });
       // deploy a poll contract
       await deployPoll({ ...deployPollArgs, signer });
     });

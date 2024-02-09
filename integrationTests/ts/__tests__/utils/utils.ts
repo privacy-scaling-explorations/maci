@@ -136,7 +136,7 @@ export const expectTally = (
   });
 
   expect(tallyFile.results.tally).to.deep.equal(genTally);
-  expect(tallyFile.perVOSpentVoiceCredits.tally).to.deep.equal(genPerVOSpentVoiceCredits);
+  expect(tallyFile.perVOSpentVoiceCredits?.tally).to.deep.equal(genPerVOSpentVoiceCredits);
   expect(tallyFile.totalSpentVoiceCredits.spent).to.eq(expectedTotalSpentVoiceCredits.toString());
 };
 

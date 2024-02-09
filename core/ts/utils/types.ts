@@ -193,10 +193,10 @@ export interface ITallyCircuitInputs {
   currentResultsRootSalt: string;
   currentSpentVoiceCreditSubtotal: string;
   currentSpentVoiceCreditSubtotalSalt: string;
-  currentPerVOSpentVoiceCredits: string[];
-  currentPerVOSpentVoiceCreditsRootSalt: string;
+  currentPerVOSpentVoiceCredits?: string[];
+  currentPerVOSpentVoiceCreditsRootSalt?: string;
   newResultsRootSalt: string;
-  newPerVOSpentVoiceCreditsRootSalt: string;
+  newPerVOSpentVoiceCreditsRootSalt?: string;
   newSpentVoiceCreditSubtotalSalt: string;
 }
 

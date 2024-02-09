@@ -54,6 +54,8 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").setAction(async (_, hre
   const messageTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageTreeDepth");
   const voteOptionTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "voteOptionTreeDepth");
   const subsidyEnabled = deployment.getDeployConfigField<boolean | null>(EContracts.Poll, "subsidyEnabled") ?? false;
+  const useQuadraticVoting =
+    deployment.getDeployConfigField<boolean | null>(EContracts.Poll, "useQuadraticVoting") ?? false;
   const unserializedKey = PubKey.deserialize(coordinatorPubkey);
 
   const [pollContractAddress, messageProcessorContractAddress, tallyContractAddress, subsidyContractAddress] =
@@ -100,7 +102,7 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").setAction(async (_, hre
   });
 
   const tallyContract = await deployment.getContract({
-    name: EContracts.Tally,
+    name: useQuadraticVoting ? EContracts.Tally : EContracts.TallyNonQv,
     address: tallyContractAddress,
   });
 
@@ -133,7 +135,7 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").setAction(async (_, hre
     }),
 
     storage.register({
-      id: EContracts.Tally,
+      id: useQuadraticVoting ? EContracts.Tally : EContracts.TallyNonQv,
       key: `poll-${pollId}`,
       contract: tallyContract,
       args: [verifierContractAddress, vkRegistryContractAddress, pollContractAddress, messageProcessorContractAddress],

@@ -1,10 +1,13 @@
 import {
   Tally__factory as TallyFactory,
+  TallyNonQv__factory as TallyNonQvFactory,
   MACI__factory as MACIFactory,
   Subsidy__factory as SubsidyFactory,
   Poll__factory as PollFactory,
+  Tally,
+  TallyNonQv,
 } from "maci-contracts/typechain-types";
-import { hash2, hash3, genTreeCommitment } from "maci-crypto";
+import { hash2, hash3, genTreeCommitment, hashLeftRight } from "maci-crypto";
 
 import type { VerifyArgs } from "../utils/interfaces";
 
@@ -31,6 +34,7 @@ export const verify = async ({
   banner(quiet);
 
   const tallyResults = tallyData;
+  const useQv = tallyResults.isQuadratic;
 
   // we prioritize the tally file data
   const tallyContractAddress = tallyResults.tallyAddress || tallyAddress;
@@ -75,9 +79,11 @@ export const verify = async ({
   const pollAddr = await maciContract.polls(pollId);
 
   const pollContract = PollFactory.connect(pollAddr, signer);
-  const tallyContract = TallyFactory.connect(tallyContractAddress, signer);
 
   const subsidyContract = subsidyEnabled ? SubsidyFactory.connect(subsidyContractAddress, signer) : undefined;
+  const tallyContract = useQv
+    ? TallyFactory.connect(tallyContractAddress, signer)
+    : TallyNonQvFactory.connect(tallyContractAddress, signer);
 
   // verification
   const onChainTallyCommitment = BigInt(await tallyContract.tallyCommitment());
@@ -99,13 +105,6 @@ export const verify = async ({
     logError("Wrong number of vote options.");
   }
 
-  if (tallyResults.perVOSpentVoiceCredits.tally.length !== numVoteOptions) {
-    logError("Wrong number of vote options.");
-  }
-
-  // verify that the results commitment matches the output of genTreeCommitment()
-
-  // verify the results
   // compute newResultsCommitment
   const newResultsCommitment = genTreeCommitment(
     tallyResults.results.tally.map((x) => BigInt(x)),
@@ -119,75 +118,124 @@ export const verify = async ({
     BigInt(tallyResults.totalSpentVoiceCredits.salt),
   ]);
 
-  // compute newPerVOSpentVoiceCreditsCommitment
-  const newPerVOSpentVoiceCreditsCommitment = genTreeCommitment(
-    tallyResults.perVOSpentVoiceCredits.tally.map((x) => BigInt(x)),
-    BigInt(tallyResults.perVOSpentVoiceCredits.salt),
-    voteOptionTreeDepth,
-  );
+  if (useQv) {
+    if (tallyResults.perVOSpentVoiceCredits?.tally.length !== numVoteOptions) {
+      logError("Wrong number of vote options.");
+    }
 
-  // compute newTallyCommitment
-  const newTallyCommitment = hash3([
-    newResultsCommitment,
-    newSpentVoiceCreditsCommitment,
-    newPerVOSpentVoiceCreditsCommitment,
-  ]);
+    // verify that the results commitment matches the output of genTreeCommitment()
 
-  if (onChainTallyCommitment !== newTallyCommitment) {
-    logError("The on-chain tally commitment does not match.");
-  }
-  logGreen(quiet, success("The on-chain tally commitment matches."));
-
-  // verify total spent voice credits on-chain
-  const isValid = await tallyContract.verifySpentVoiceCredits(
-    tallyResults.totalSpentVoiceCredits.spent,
-    tallyResults.totalSpentVoiceCredits.salt,
-    newResultsCommitment,
-    newPerVOSpentVoiceCreditsCommitment,
-  );
-
-  if (isValid) {
-    logGreen(quiet, success("The on-chain verification of total spent voice credits passed."));
-  } else {
-    logError("The on-chain verification of total spent voice credits failed.");
-  }
-
-  // verify per vote option voice credits on-chain
-  const failedSpentCredits = await verifyPerVOSpentVoiceCredits(
-    tallyContract,
-    tallyResults,
-    voteOptionTreeDepth,
-    newSpentVoiceCreditsCommitment,
-    newResultsCommitment,
-  );
-
-  if (failedSpentCredits.length === 0) {
-    logGreen(quiet, success("The on-chain verification of per vote option spent voice credits passed"));
-  } else {
-    logError(
-      `At least one tally result failed the on-chain verification. Please check your Tally data at these indexes: ${failedSpentCredits.join(
-        ", ",
-      )}`,
+    // compute newPerVOSpentVoiceCreditsCommitment
+    const newPerVOSpentVoiceCreditsCommitment = genTreeCommitment(
+      tallyResults.perVOSpentVoiceCredits!.tally.map((x) => BigInt(x)),
+      BigInt(tallyResults.perVOSpentVoiceCredits!.salt),
+      voteOptionTreeDepth,
     );
-  }
 
-  // verify tally result on-chain for each vote option
-  const failedPerVOSpentCredits = await verifyTallyResults(
-    tallyContract,
-    tallyResults,
-    voteOptionTreeDepth,
-    newSpentVoiceCreditsCommitment,
-    newPerVOSpentVoiceCreditsCommitment,
-  );
+    // compute newTallyCommitment
+    const newTallyCommitment = hash3([
+      newResultsCommitment,
+      newSpentVoiceCreditsCommitment,
+      newPerVOSpentVoiceCreditsCommitment,
+    ]);
 
-  if (failedPerVOSpentCredits.length === 0) {
-    logGreen(quiet, success("The on-chain verification of tally results passed"));
-  } else {
-    logError(
-      `At least one spent voice credits entry in the tally results failed the on-chain verification. Please check your tally results at these indexes: ${failedPerVOSpentCredits.join(
-        ", ",
-      )}`,
+    if (onChainTallyCommitment !== newTallyCommitment) {
+      logError("The on-chain tally commitment does not match.");
+    }
+    logGreen(quiet, success("The on-chain tally commitment matches."));
+
+    // verify total spent voice credits on-chain
+    const isValid = await (tallyContract as Tally).verifySpentVoiceCredits(
+      tallyResults.totalSpentVoiceCredits.spent,
+      tallyResults.totalSpentVoiceCredits.salt,
+      newResultsCommitment,
+      newPerVOSpentVoiceCreditsCommitment,
     );
+
+    if (isValid) {
+      logGreen(quiet, success("The on-chain verification of total spent voice credits passed."));
+    } else {
+      logError("The on-chain verification of total spent voice credits failed.");
+    }
+
+    // verify per vote option voice credits on-chain
+    const failedSpentCredits = await verifyPerVOSpentVoiceCredits(
+      tallyContract as Tally,
+      tallyResults,
+      voteOptionTreeDepth,
+      newSpentVoiceCreditsCommitment,
+      newResultsCommitment,
+    );
+
+    if (failedSpentCredits.length === 0) {
+      logGreen(quiet, success("The on-chain verification of per vote option spent voice credits passed"));
+    } else {
+      logError(
+        `At least one tally result failed the on-chain verification. Please check your Tally data at these indexes: ${failedSpentCredits.join(
+          ", ",
+        )}`,
+      );
+    }
+
+    // verify tally result on-chain for each vote option
+    const failedPerVOSpentCredits = await verifyTallyResults(
+      tallyContract,
+      tallyResults,
+      voteOptionTreeDepth,
+      newSpentVoiceCreditsCommitment,
+      newPerVOSpentVoiceCreditsCommitment,
+    );
+
+    if (failedPerVOSpentCredits.length === 0) {
+      logGreen(quiet, success("The on-chain verification of tally results passed"));
+    } else {
+      logError(
+        `At least one spent voice credits entry in the tally results failed the on-chain verification. Please check your tally results at these indexes: ${failedPerVOSpentCredits.join(
+          ", ",
+        )}`,
+      );
+    }
+  } else {
+    // verify that the results commitment matches the output of genTreeCommitment()
+
+    // compute newTallyCommitment
+    const newTallyCommitment = hashLeftRight(newResultsCommitment, newSpentVoiceCreditsCommitment);
+
+    if (onChainTallyCommitment !== newTallyCommitment) {
+      logError("The on-chain tally commitment does not match.");
+    }
+    logGreen(quiet, success("The on-chain tally commitment matches."));
+
+    // verify total spent voice credits on-chain
+    const isValid = await (tallyContract as TallyNonQv).verifySpentVoiceCredits(
+      tallyResults.totalSpentVoiceCredits.spent,
+      tallyResults.totalSpentVoiceCredits.salt,
+      newResultsCommitment,
+    );
+
+    if (isValid) {
+      logGreen(quiet, success("The on-chain verification of total spent voice credits passed."));
+    } else {
+      logError("The on-chain verification of total spent voice credits failed.");
+    }
+
+    // verify tally result on-chain for each vote option
+    const failedResult = await verifyTallyResults(
+      tallyContract,
+      tallyResults,
+      voteOptionTreeDepth,
+      newSpentVoiceCreditsCommitment,
+    );
+
+    if (failedResult.length === 0) {
+      logGreen(quiet, success("The on-chain verification of tally results passed"));
+    } else {
+      logError(
+        `At least one result entry in the tally results failed the on-chain verification. Please check your tally results at these indexes: ${failedResult.join(
+          ", ",
+        )}`,
+      );
+    }
   }
 
   // verify subsidy result if subsidy file is provided

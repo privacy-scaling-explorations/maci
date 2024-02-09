@@ -51,6 +51,11 @@ export interface TallyData {
   chainId?: string;
 
   /**
+   * Whether the poll is using quadratic voting or not.
+   */
+  isQuadratic: boolean;
+
+  /**
    * The address of the Tally contract.
    */
   tallyAddress: string;
@@ -103,7 +108,7 @@ export interface TallyData {
   /**
    * The per VO spent voice credits.
    */
-  perVOSpentVoiceCredits: {
+  perVOSpentVoiceCredits?: {
     /**
      * The tally of the per VO spent voice credits.
      */
@@ -307,6 +312,11 @@ export interface DeployArgs {
    * Whether to log the output
    */
   quiet?: boolean;
+
+  /**
+   * Whether to use quadratic voting or not
+   */
+  useQv?: boolean;
 }
 
 /**

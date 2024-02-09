@@ -974,10 +974,9 @@ export class Poll implements IPoll {
 
   /**
    * This method tallies a ballots and updates the tally results.
-   * @param useQuadraticVoting - Whether to use quadratic voting or not. Default is true.
    * @returns the circuit inputs for the TallyVotes circuit.
    */
-  tallyVotes = (useQuadraticVoting = true): ITallyCircuitInputs => {
+  tallyVotes = (): ITallyCircuitInputs => {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (this.sbSalts[this.currentMessageBatchIndex!] === undefined) {
       throw new Error("You must process the messages first");
@@ -1010,14 +1009,14 @@ export class Poll implements IPoll {
     const currentPerVOSpentVoiceCreditsCommitment = this.genPerVOSpentVoiceCreditsCommitment(
       currentPerVOSpentVoiceCreditsRootSalt,
       batchStartIndex,
-      useQuadraticVoting,
+      true,
     );
 
     // generate a commitment to the current spent voice credits
     const currentSpentVoiceCreditsCommitment = this.genSpentVoiceCreditSubtotalCommitment(
       currentSpentVoiceCreditSubtotalSalt,
       batchStartIndex,
-      useQuadraticVoting,
+      true,
     );
 
     // the current commitment for the first batch will be 0
@@ -1059,10 +1058,10 @@ export class Poll implements IPoll {
         this.tallyResult[j] += v;
 
         // the per vote option spent voice credits will be the sum of the squares of the votes
-        this.perVOSpentVoiceCredits[j] += useQuadraticVoting ? v * v : v;
+        this.perVOSpentVoiceCredits[j] += v * v;
 
         // the total spent voice credits will be the sum of the squares of the votes
-        this.totalSpentVoiceCredits += useQuadraticVoting ? v * v : v;
+        this.totalSpentVoiceCredits += v * v;
       }
     }
 
@@ -1094,14 +1093,14 @@ export class Poll implements IPoll {
     const newSpentVoiceCreditsCommitment = this.genSpentVoiceCreditSubtotalCommitment(
       newSpentVoiceCreditSubtotalSalt,
       batchStartIndex + batchSize,
-      useQuadraticVoting,
+      true,
     );
 
     // generate the new per VO spent voice credits commitment with the new salts and data
     const newPerVOSpentVoiceCreditsCommitment = this.genPerVOSpentVoiceCreditsCommitment(
       newPerVOSpentVoiceCreditsRootSalt,
       batchStartIndex + batchSize,
-      useQuadraticVoting,
+      true,
     );
 
     // generate the new tally commitment
@@ -1144,6 +1143,143 @@ export class Poll implements IPoll {
       currentPerVOSpentVoiceCreditsRootSalt,
       newResultsRootSalt,
       newPerVOSpentVoiceCreditsRootSalt,
+      newSpentVoiceCreditSubtotalSalt,
+    }) as unknown as ITallyCircuitInputs;
+
+    this.numBatchesTallied += 1;
+
+    return circuitInputs;
+  };
+
+  tallyVotesNonQv = (): ITallyCircuitInputs => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (this.sbSalts[this.currentMessageBatchIndex!] === undefined) {
+      throw new Error("You must process the messages first");
+    }
+
+    const batchSize = this.batchSizes.tallyBatchSize;
+
+    assert(this.hasUntalliedBallots(), "No more ballots to tally");
+
+    // calculate where we start tallying next
+    const batchStartIndex = this.numBatchesTallied * batchSize;
+
+    // get the salts needed for the commitments
+    const currentResultsRootSalt = batchStartIndex === 0 ? 0n : this.resultRootSalts[batchStartIndex - batchSize];
+
+    const currentSpentVoiceCreditSubtotalSalt =
+      batchStartIndex === 0 ? 0n : this.spentVoiceCreditSubtotalSalts[batchStartIndex - batchSize];
+
+    // generate a commitment to the current results
+    const currentResultsCommitment = genTreeCommitment(
+      this.tallyResult,
+      currentResultsRootSalt,
+      this.treeDepths.voteOptionTreeDepth,
+    );
+
+    // generate a commitment to the current spent voice credits
+    const currentSpentVoiceCreditsCommitment = this.genSpentVoiceCreditSubtotalCommitment(
+      currentSpentVoiceCreditSubtotalSalt,
+      batchStartIndex,
+      false,
+    );
+
+    // the current commitment for the first batch will be 0
+    // otherwise calculate as
+    // hash([
+    //  currentResultsCommitment,
+    //  currentSpentVoiceCreditsCommitment,
+    // ])
+    const currentTallyCommitment =
+      batchStartIndex === 0 ? 0n : hashLeftRight(currentResultsCommitment, currentSpentVoiceCreditsCommitment);
+
+    const ballots: Ballot[] = [];
+    const currentResults = this.tallyResult.map((x) => BigInt(x.toString()));
+    const currentSpentVoiceCreditSubtotal = BigInt(this.totalSpentVoiceCredits.toString());
+
+    // loop in normal order to tally the ballots one by one
+    for (let i = this.numBatchesTallied * batchSize; i < this.numBatchesTallied * batchSize + batchSize; i += 1) {
+      // we stop if we have no more ballots to tally
+      if (i >= this.ballots.length) {
+        break;
+      }
+
+      // save to the local ballot array
+      ballots.push(this.ballots[i]);
+
+      // for each possible vote option we loop and calculate
+      for (let j = 0; j < this.maxValues.maxVoteOptions; j += 1) {
+        const v = this.ballots[i].votes[j];
+
+        this.tallyResult[j] += v;
+
+        // the total spent voice credits will be the sum of the the votes
+        this.totalSpentVoiceCredits += v;
+      }
+    }
+
+    const emptyBallot = new Ballot(this.maxValues.maxVoteOptions, this.treeDepths.voteOptionTreeDepth);
+
+    // pad the ballots array
+    while (ballots.length < batchSize) {
+      ballots.push(emptyBallot);
+    }
+
+    // generate the new salts
+    const newResultsRootSalt = genRandomSalt();
+    const newSpentVoiceCreditSubtotalSalt = genRandomSalt();
+
+    // and save them to be used in the next batch
+    this.resultRootSalts[batchStartIndex] = newResultsRootSalt;
+    this.spentVoiceCreditSubtotalSalts[batchStartIndex] = newSpentVoiceCreditSubtotalSalt;
+
+    // generate the new results commitment with the new salts and data
+    const newResultsCommitment = genTreeCommitment(
+      this.tallyResult,
+      newResultsRootSalt,
+      this.treeDepths.voteOptionTreeDepth,
+    );
+
+    // generate the new spent voice credits commitment with the new salts and data
+    const newSpentVoiceCreditsCommitment = this.genSpentVoiceCreditSubtotalCommitment(
+      newSpentVoiceCreditSubtotalSalt,
+      batchStartIndex + batchSize,
+      false,
+    );
+
+    // generate the new tally commitment
+    const newTallyCommitment = hashLeftRight(newResultsCommitment, newSpentVoiceCreditsCommitment);
+
+    // cache vars
+    const stateRoot = this.stateTree!.root;
+    const ballotRoot = this.ballotTree!.root;
+    const sbSalt = this.sbSalts[this.currentMessageBatchIndex!];
+    const sbCommitment = hash3([stateRoot, ballotRoot, sbSalt]);
+
+    const packedVals = packTallyVotesSmallVals(batchStartIndex, batchSize, Number(this.numSignups));
+    const inputHash = sha256Hash([packedVals, sbCommitment, currentTallyCommitment, newTallyCommitment]);
+
+    const ballotSubrootProof = this.ballotTree?.genSubrootProof(batchStartIndex, batchStartIndex + batchSize);
+
+    const votes = ballots.map((x) => x.votes);
+
+    const circuitInputs = stringifyBigInts({
+      stateRoot,
+      ballotRoot,
+      sbSalt,
+      sbCommitment,
+      currentTallyCommitment,
+      newTallyCommitment,
+      packedVals, // contains numSignUps and batchStartIndex
+      inputHash,
+      ballots: ballots.map((x) => x.asCircuitInputs()),
+      ballotPathElements: ballotSubrootProof!.pathElements,
+      votes,
+      currentResults,
+      currentResultsRootSalt,
+      currentSpentVoiceCreditSubtotal,
+      currentSpentVoiceCreditSubtotalSalt,
+      newResultsRootSalt,
       newSpentVoiceCreditSubtotalSalt,
     }) as unknown as ITallyCircuitInputs;
 

@@ -214,13 +214,14 @@ describe("TallyVotes circuit", function test() {
     });
 
     it("should produce the correct result commitments", async () => {
-      const generatedInputs = poll.tallyVotes() as unknown as ITallyVotesInputs;
-      const witness = await circuit.calculateWitness(generatedInputs);
-      await circuit.expectConstraintPass(witness);
+      const generatedInputs = poll.tallyVotesNonQv() as unknown as ITallyVotesInputs;
+
+      const witness = await circuitNonQv.calculateWitness(generatedInputs);
+      await circuitNonQv.expectConstraintPass(witness);
     });
 
     it("should produce the correct result if the inital tally is not zero", async () => {
-      const generatedInputs = poll.tallyVotes(false) as unknown as ITallyVotesInputs;
+      const generatedInputs = poll.tallyVotesNonQv() as unknown as ITallyVotesInputs;
 
       // Start the tally from non-zero value
       let randIdx = generateRandomIndex(Object.keys(generatedInputs).length);

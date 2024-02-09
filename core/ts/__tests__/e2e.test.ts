@@ -674,13 +674,10 @@ describe("MaciState/Poll e2e", function test() {
 
       expect(poll.hasUntalliedBallots()).to.eq(true);
 
-      poll.tallyVotes(useQv);
+      poll.tallyVotesNonQv();
 
       const finalTotal = calculateTotal(poll.tallyResult);
       expect(finalTotal.toString()).to.eq(voteWeight.toString());
-
-      // check that the perVOSpentVoiceCredits is correct
-      expect(poll.perVOSpentVoiceCredits[0].toString()).to.eq(voteWeight.toString());
 
       // check that the totalSpentVoiceCredits is correct
       expect(poll.totalSpentVoiceCredits.toString()).to.eq(voteWeight.toString());

@@ -10,6 +10,7 @@ import type {
   Poll,
   Subsidy,
   Tally,
+  TallyNonQv,
   Verifier,
   VkRegistry,
 } from "../../typechain-types";
@@ -57,7 +58,7 @@ export class Prover {
   /**
    * Tally contract typechain wrapper
    */
-  private tallyContract: Tally;
+  private tallyContract: Tally | TallyNonQv;
 
   /**
    * Subsidy contract typechain wrapper

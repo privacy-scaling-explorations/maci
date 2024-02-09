@@ -16,6 +16,7 @@ import {
   type AccQueue,
   MessageProcessor,
   Tally,
+  TallyNonQv,
 } from "../../typechain-types";
 import { ContractStorage } from "../helpers/ContractStorage";
 import { Deployment } from "../helpers/Deployment";
@@ -150,10 +151,17 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
         name: EContracts.MessageProcessor,
         key: `poll-${poll.toString()}`,
       });
-      const tallyContract = await deployment.getContract<Tally>({
-        name: EContracts.Tally,
-        key: `poll-${poll.toString()}`,
-      });
+
+      // get the tally contract based on the useQuadraticVoting flag
+      const tallyContract = useQuadraticVoting
+        ? await deployment.getContract<Tally>({
+            name: EContracts.Tally,
+            key: `poll-${poll.toString()}`,
+          })
+        : await deployment.getContract<TallyNonQv>({
+            name: EContracts.TallyNonQv,
+            key: `poll-${poll.toString()}`,
+          });
       const tallyContractAddress = await tallyContract.getAddress();
 
       let subsidyContract: Subsidy | undefined;

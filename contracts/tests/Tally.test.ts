@@ -59,7 +59,7 @@ describe("TallyVotes", () => {
 
     signer = await getDefaultSigner();
 
-    const r = await deployTestContracts(100, STATE_TREE_DEPTH, signer, true);
+    const r = await deployTestContracts(100, STATE_TREE_DEPTH, signer, true, true);
     maciContract = r.maciContract;
     verifierContract = r.mockVerifierContract as Verifier;
     vkRegistryContract = r.vkRegistryContract;
@@ -221,7 +221,7 @@ describe("TallyVotes", () => {
 
       const intStateTreeDepth = 2;
 
-      const r = await deployTestContracts(100, STATE_TREE_DEPTH, signer, true);
+      const r = await deployTestContracts(100, STATE_TREE_DEPTH, signer, true, true);
       maciContract = r.maciContract;
       verifierContract = r.mockVerifierContract as Verifier;
       vkRegistryContract = r.vkRegistryContract;
@@ -362,7 +362,7 @@ describe("TallyVotes", () => {
 
       const intStateTreeDepth = 2;
 
-      const r = await deployTestContracts(100, STATE_TREE_DEPTH, signer, true);
+      const r = await deployTestContracts(100, STATE_TREE_DEPTH, signer, true, true);
       maciContract = r.maciContract;
       verifierContract = r.mockVerifierContract as Verifier;
       vkRegistryContract = r.vkRegistryContract;

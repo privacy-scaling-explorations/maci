@@ -527,17 +527,13 @@ describe("Poll", function test() {
       secondPoll.publishMessage(secondMessage, secondEcdhKeypair.pubKey);
 
       secondPoll.processAllMessages();
-      secondPoll.tallyVotes(false);
+      secondPoll.tallyVotesNonQv();
 
       const spentVoiceCredits = secondPoll.totalSpentVoiceCredits;
       const results = secondPoll.tallyResult;
       // spent voice credit is not vote weight * vote weight
       expect(spentVoiceCredits).to.eq(secondVoteWeight);
       expect(results[Number.parseInt(secondVoteOption.toString(), 10)]).to.eq(secondVoteWeight);
-      // per VO spent voice credit is not vote weight * vote weight
-      expect(secondPoll.perVOSpentVoiceCredits[Number.parseInt(secondVoteOption.toString(), 10)]).to.eq(
-        secondVoteWeight,
-      );
     });
 
     it("should throw when there are no more ballots to tally", () => {

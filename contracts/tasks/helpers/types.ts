@@ -5,6 +5,7 @@ import type {
   Poll,
   Subsidy,
   Tally,
+  TallyNonQv,
   Verifier,
   VkRegistry,
 } from "../../typechain-types";
@@ -346,7 +347,7 @@ export interface IProverParams {
   /**
    * Tally contract typechain wrapper
    */
-  tallyContract: Tally;
+  tallyContract: Tally | TallyNonQv;
 
   /**
    * Subsidy contract typechain wrapper
@@ -505,6 +506,7 @@ export enum EContracts {
   PollFactory = "PollFactory",
   MessageProcessorFactory = "MessageProcessorFactory",
   TallyFactory = "TallyFactory",
+  TallyNonQvFactory = "TallyNonQvFactory",
   SubsidyFactory = "SubsidyFactory",
   PoseidonT3 = "PoseidonT3",
   PoseidonT4 = "PoseidonT4",
@@ -513,6 +515,7 @@ export enum EContracts {
   VkRegistry = "VkRegistry",
   Poll = "Poll",
   Tally = "Tally",
+  TallyNonQv = "TallyNonQv",
   MessageProcessor = "MessageProcessor",
   Subsidy = "Subsidy",
   AccQueue = "AccQueue",
@@ -579,4 +582,105 @@ export interface ITreeMergeParams {
    * Message AccQueue contract
    */
   messageAccQueueContract: AccQueue;
+}
+
+/**
+ * Interface for the tally file data.
+ */
+export interface TallyData {
+  /**
+   * The MACI address.
+   */
+  maci: string;
+
+  /**
+   * The ID of the poll.
+   */
+  pollId: string;
+
+  /**
+   * The name of the network for which these proofs
+   * are valid for
+   */
+  network?: string;
+
+  /**
+   * The chain ID for which these proofs are valid for
+   */
+  chainId?: string;
+
+  /**
+   * Whether the poll is using quadratic voting or not.
+   */
+  isQuadratic: boolean;
+
+  /**
+   * The address of the Tally contract.
+   */
+  tallyAddress: string;
+
+  /**
+   * The new tally commitment.
+   */
+  newTallyCommitment: string;
+
+  /**
+   * The results of the poll.
+   */
+  results: {
+    /**
+     * The tally of the results.
+     */
+    tally: string[];
+
+    /**
+     * The salt of the results.
+     */
+    salt: string;
+
+    /**
+     * The commitment of the results.
+     */
+    commitment: string;
+  };
+
+  /**
+   * The total spent voice credits.
+   */
+  totalSpentVoiceCredits: {
+    /**
+     * The spent voice credits.
+     */
+    spent: string;
+
+    /**
+     * The salt of the spent voice credits.
+     */
+    salt: string;
+
+    /**
+     * The commitment of the spent voice credits.
+     */
+    commitment: string;
+  };
+
+  /**
+   * The per VO spent voice credits.
+   */
+  perVOSpentVoiceCredits?: {
+    /**
+     * The tally of the per VO spent voice credits.
+     */
+    tally: string[];
+
+    /**
+     * The salt of the per VO spent voice credits.
+     */
+    salt: string;
+
+    /**
+     * The commitment of the per VO spent voice credits.
+     */
+    commitment: string;
+  };
 }
