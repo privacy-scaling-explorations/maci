@@ -8,7 +8,7 @@ import { IEAS } from "../interfaces/IEAS.sol";
 
 /// @title EASGatekeeper
 /// @notice A gatekeeper contract which allows users to sign up to MACI
-/// only if they own an attestation from a valid schema and trusted attester.
+/// only if they've received an attestation of a specific schema from a trusted attester
 contract EASGatekeeper is SignUpGatekeeper, Ownable {
   // the reference to the EAS contract
   IEAS private immutable eas;
