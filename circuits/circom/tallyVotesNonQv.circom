@@ -8,7 +8,7 @@ include "./trees/incrementalQuinTree.circom";
 include "./trees/calculateTotal.circom";
 include "./trees/checkRoot.circom";
 include "./hasherSha256.circom";
-include "./hasherPoseidon.circom";
+include "./poseidonHash.circom";
 include "./unpackElement.circom";
 include "./tallyVotes.circom";
 
@@ -70,11 +70,8 @@ template TallyVotesNonQv(
 
     //  ----------------------------------------------------------------------- 
     // Verify sbCommitment
-    component sbCommitmentHasher = Hasher3();
-    sbCommitmentHasher.in[0] <== stateRoot;
-    sbCommitmentHasher.in[1] <== ballotRoot;
-    sbCommitmentHasher.in[2] <== sbSalt;
-    sbCommitmentHasher.hash === sbCommitment;
+    var sbCommitmentHash = PoseidonHash(3)([stateRoot, ballotRoot, sbSalt]);
+    sbCommitmentHash === sbCommitment;
 
     //  ----------------------------------------------------------------------- 
     // Verify inputHash
@@ -104,13 +101,11 @@ template TallyVotesNonQv(
 
     // Hash each ballot and generate the subroot of the ballots
     component ballotSubroot = QuinCheckRoot(intStateTreeDepth);
-    component ballotHashers[batchSize];
+    var ballotHashers[batchSize];
     for (var i = 0; i < batchSize; i++) {
-        ballotHashers[i] = HashLeftRight();
-        ballotHashers[i].left <== ballots[i][BALLOT_NONCE_IDX];
-        ballotHashers[i].right <== ballots[i][BALLOT_VO_ROOT_IDX];
+        ballotHashers[i] = PoseidonHash(2)([ballots[i][BALLOT_NONCE_IDX], ballots[i][BALLOT_VO_ROOT_IDX]]);
 
-        ballotSubroot.leaves[i] <== ballotHashers[i].hash;
+        ballotSubroot.leaves[i] <== ballotHashers[i];
     }
 
     component ballotQle = QuinLeafExists(k);
