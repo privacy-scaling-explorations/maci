@@ -23,7 +23,7 @@
     "@docusaurus/theme-classic": "^3.1.1",
     "@docusaurus/theme-common": "^3.1.1",
     "@easyops-cn/docusaurus-search-local": "^0.40.1",
-    "@mdx-js/react": "^3.0.0",
+    "@mdx-js/react": "^3.0.1",
     "clsx": "^2.1.0",
     "docusaurus-plugin-image-zoom": "^2.0.0",
     "prism-react-renderer": "^2.1.0",
