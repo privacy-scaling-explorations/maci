@@ -759,13 +759,12 @@ template ProcessMessagesInputHasher() {
     var pubKeyHash = PoseidonHash(2)(coordPubKey);
 
     // 3. Hash the 6 inputs with SHA256
-    component hasher = Sha256Hasher6();
-    hasher.in[0] <== packedVals;
-    hasher.in[1] <== pubKeyHash;
-    hasher.in[2] <== msgRoot;
-    hasher.in[3] <== currentSbCommitment;
-    hasher.in[4] <== newSbCommitment;
-    hasher.in[5] <== pollEndTimestamp;
-
-    hash <== hasher.hash;
+    hash <== Sha256Hasher(6)([
+        packedVals,
+        pubKeyHash,
+        msgRoot,
+        currentSbCommitment,
+        newSbCommitment,
+        pollEndTimestamp
+    ]);
 }
