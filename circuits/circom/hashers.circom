@@ -33,7 +33,7 @@ template Sha256Hasher(length) {
 
 // Template for computing the Poseidon hash of an array of 'n' inputs 
 // with a default zero state (not included in the 'n' inputs).
-template PoseidonHash(n) {
+template PoseidonHasher(n) {
     signal input inputs[n];
     signal output out;
 
@@ -70,7 +70,7 @@ template MessageHasher() {
     // )
 
     var hasher5_1;
-    hasher5_1 = PoseidonHash(5)([
+    hasher5_1 = PoseidonHasher(5)([
         in[1],
         in[2],
         in[3],
@@ -79,7 +79,7 @@ template MessageHasher() {
     ]);
 
     var hasher5_2;
-    hasher5_2 = PoseidonHash(5)([
+    hasher5_2 = PoseidonHasher(5)([
         in[6],        
         in[7],
         in[8],
@@ -87,7 +87,7 @@ template MessageHasher() {
         in[10]
     ]);
 
-    hash <== PoseidonHash(5)([
+    hash <== PoseidonHasher(5)([
         in[0],
         hasher5_1,
         hasher5_2,

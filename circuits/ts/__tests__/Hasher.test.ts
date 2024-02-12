@@ -177,15 +177,15 @@ describe("Poseidon hash circuits", function test() {
   });
 
   describe("Poseidon", () => {
-    describe("PoseidonHash", () => {
+    describe("PoseidonHasher", () => {
       let circuit: WitnessTester<["inputs"], ["out"]>;
 
       it("correctly hashes 2 random values in order", async () => {
         const n = 2;
 
-        circuit = await circomkitInstance.WitnessTester("poseidonHash", {
+        circuit = await circomkitInstance.WitnessTester("poseidonHasher", {
           file: "hashers",
-          template: "PoseidonHash",
+          template: "PoseidonHasher",
           params: [n],
         });
 
@@ -210,9 +210,9 @@ describe("Poseidon hash circuits", function test() {
       it("correctly hashes 3 random values", async () => {
         const n = 3;
 
-        circuit = await circomkitInstance.WitnessTester("poseidonHash", {
+        circuit = await circomkitInstance.WitnessTester("poseidonHasher", {
           file: "hashers",
-          template: "PoseidonHash",
+          template: "PoseidonHasher",
           params: [n],
         });
 
@@ -237,9 +237,9 @@ describe("Poseidon hash circuits", function test() {
       it("correctly hashes 4 random values", async () => {
         const n = 4;
 
-        circuit = await circomkitInstance.WitnessTester("poseidonHash", {
+        circuit = await circomkitInstance.WitnessTester("poseidonHasher", {
           file: "hashers",
-          template: "PoseidonHash",
+          template: "PoseidonHasher",
           params: [n],
         });
 
@@ -264,9 +264,9 @@ describe("Poseidon hash circuits", function test() {
       it("correctly hashes 5 random values", async () => {
         const n = 5;
 
-        circuit = await circomkitInstance.WitnessTester("poseidonHash", {
+        circuit = await circomkitInstance.WitnessTester("poseidonHasher", {
           file: "hashers",
-          template: "PoseidonHash",
+          template: "PoseidonHasher",
           params: [n],
         });
 

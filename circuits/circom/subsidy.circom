@@ -64,7 +64,7 @@ template SubsidyPerBatch (
 
     //  ----------------------------------------------------------------------- 
     // Verify sbCommitment
-    var sbCommitmentHash = PoseidonHash(3)([stateRoot, ballotRoot, sbSalt]);
+    var sbCommitmentHash = PoseidonHasher(3)([stateRoot, ballotRoot, sbSalt]);
     sbCommitmentHash === sbCommitment;
 
     //  ----------------------------------------------------------------------- 
@@ -102,7 +102,7 @@ template SubsidyPerBatch (
     component ballotTreeVerifier1 = BatchMerkleTreeVerifier(stateTreeDepth, intStateTreeDepth, TREE_ARITY); 
     var ballotHashers1[batchSize];
     for (var i = 0; i < batchSize; i++) {
-        ballotHashers1[i] = PoseidonHash(2)([ballots1[i][BALLOT_NONCE_IDX], ballots1[i][BALLOT_VO_ROOT_IDX]]);
+        ballotHashers1[i] = PoseidonHasher(2)([ballots1[i][BALLOT_NONCE_IDX], ballots1[i][BALLOT_VO_ROOT_IDX]]);
         ballotTreeVerifier1.leaves[i] <== ballotHashers1[i];
     }
     ballotTreeVerifier1.index <== inputHasher.rbi;
@@ -116,7 +116,7 @@ template SubsidyPerBatch (
     component ballotTreeVerifier2 = BatchMerkleTreeVerifier(stateTreeDepth, intStateTreeDepth, TREE_ARITY); 
     var ballotHashers2[batchSize];
     for (var i = 0; i < batchSize; i++) {
-        ballotHashers2[i] = PoseidonHash(2)([ballots2[i][BALLOT_NONCE_IDX], ballots2[i][BALLOT_VO_ROOT_IDX]]);
+        ballotHashers2[i] = PoseidonHasher(2)([ballots2[i][BALLOT_NONCE_IDX], ballots2[i][BALLOT_VO_ROOT_IDX]]);
         ballotTreeVerifier2.leaves[i] <== ballotHashers2[i];
     }
     ballotTreeVerifier2.index <== inputHasher.cbi;
@@ -255,7 +255,7 @@ template SubsidyCommitmentVerifier(voteOptionTreeDepth) {
         currentResultsRoot.leaves[i] <== currentSubsidy[i];
     }
 
-    var currentResultsCommitmentHash = PoseidonHash(2)([currentResultsRoot.root, currentSubsidySalt]);
+    var currentResultsCommitmentHash = PoseidonHasher(2)([currentResultsRoot.root, currentSubsidySalt]);
 
     // Check if the current tally commitment is correct only if this is not the first batch
     component iz = IsZero();
@@ -278,7 +278,7 @@ template SubsidyCommitmentVerifier(voteOptionTreeDepth) {
         newResultsRoot.leaves[i] <== newSubsidy[i];
     }
 
-    var newResultsCommitmentHash = PoseidonHash(2)([newResultsRoot.root, newSubsidySalt]);
+    var newResultsCommitmentHash = PoseidonHasher(2)([newResultsRoot.root, newSubsidySalt]);
     newResultsCommitmentHash === newSubsidyCommitment;
 }
 

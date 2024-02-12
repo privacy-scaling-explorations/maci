@@ -68,7 +68,7 @@ template TallyVotes(
 
     //  ----------------------------------------------------------------------- 
     // Verify sbCommitment
-    var sbCommitmentHash = PoseidonHash(3)([stateRoot, ballotRoot, sbSalt]);
+    var sbCommitmentHash = PoseidonHasher(3)([stateRoot, ballotRoot, sbSalt]);
     sbCommitmentHash === sbCommitment;
 
     //  ----------------------------------------------------------------------- 
@@ -101,7 +101,7 @@ template TallyVotes(
     component ballotSubroot = QuinCheckRoot(intStateTreeDepth);
     var ballotHashers[batchSize];
     for (var i = 0; i < batchSize; i++) {
-        ballotHashers[i] = PoseidonHash(2)([ballots[i][BALLOT_NONCE_IDX], ballots[i][BALLOT_VO_ROOT_IDX]]);
+        ballotHashers[i] = PoseidonHasher(2)([ballots[i][BALLOT_NONCE_IDX], ballots[i][BALLOT_VO_ROOT_IDX]]);
         ballotSubroot.leaves[i] <== ballotHashers[i];
     }
 
@@ -225,10 +225,10 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
         currentResultsRoot.leaves[i] <== currentResults[i];
     }
 
-    var currentResultsCommitmentHash = PoseidonHash(2)([currentResultsRoot.root, currentResultsRootSalt]);
+    var currentResultsCommitmentHash = PoseidonHasher(2)([currentResultsRoot.root, currentResultsRootSalt]);
 
     // Compute the commitment to the current spent voice credits
-    var currentSpentVoiceCreditsCommitmentHash = PoseidonHash(2)([currentSpentVoiceCreditSubtotal, currentSpentVoiceCreditSubtotalSalt]);
+    var currentSpentVoiceCreditsCommitmentHash = PoseidonHasher(2)([currentSpentVoiceCreditSubtotal, currentSpentVoiceCreditSubtotalSalt]);
 
     // Compute the root of the spent voice credits per vote option
     component currentPerVOSpentVoiceCreditsRoot = QuinCheckRoot(voteOptionTreeDepth);
@@ -236,10 +236,10 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
         currentPerVOSpentVoiceCreditsRoot.leaves[i] <== currentPerVOSpentVoiceCredits[i];
     }
 
-    var currentPerVOSpentVoiceCreditsCommitmentHash = PoseidonHash(2)([currentPerVOSpentVoiceCreditsRoot.root, currentPerVOSpentVoiceCreditsRootSalt]);
+    var currentPerVOSpentVoiceCreditsCommitmentHash = PoseidonHasher(2)([currentPerVOSpentVoiceCreditsRoot.root, currentPerVOSpentVoiceCreditsRootSalt]);
 
     // Commit to the current tally
-    var currentTallyCommitmentHash = PoseidonHash(3)([
+    var currentTallyCommitmentHash = PoseidonHasher(3)([
         currentResultsCommitmentHash, 
         currentSpentVoiceCreditsCommitmentHash, 
         currentPerVOSpentVoiceCreditsCommitmentHash
@@ -267,10 +267,10 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
         newResultsRoot.leaves[i] <== newResults[i];
     }
 
-    var newResultsCommitmentHash = PoseidonHash(2)([newResultsRoot.root, newResultsRootSalt]);
+    var newResultsCommitmentHash = PoseidonHasher(2)([newResultsRoot.root, newResultsRootSalt]);
 
     // Compute the commitment to the new spent voice credits value
-    var newSpentVoiceCreditsCommitmentHash = PoseidonHash(2)([newSpentVoiceCreditSubtotal, newSpentVoiceCreditSubtotalSalt]);
+    var newSpentVoiceCreditsCommitmentHash = PoseidonHasher(2)([newSpentVoiceCreditSubtotal, newSpentVoiceCreditSubtotalSalt]);
 
     // Compute the root of the spent voice credits per vote option
     component newPerVOSpentVoiceCreditsRoot = QuinCheckRoot(voteOptionTreeDepth);
@@ -278,10 +278,10 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
         newPerVOSpentVoiceCreditsRoot.leaves[i] <== newPerVOSpentVoiceCredits[i];
     }
 
-    var newPerVOSpentVoiceCreditsCommitmentHash = PoseidonHash(2)([newPerVOSpentVoiceCreditsRoot.root, newPerVOSpentVoiceCreditsRootSalt]);
+    var newPerVOSpentVoiceCreditsCommitmentHash = PoseidonHasher(2)([newPerVOSpentVoiceCreditsRoot.root, newPerVOSpentVoiceCreditsRootSalt]);
 
     // Commit to the new tally
-    var newTallyCommitmentHash = PoseidonHash(3)([
+    var newTallyCommitmentHash = PoseidonHasher(3)([
         newResultsCommitmentHash,
         newSpentVoiceCreditsCommitmentHash,
         newPerVOSpentVoiceCreditsCommitmentHash

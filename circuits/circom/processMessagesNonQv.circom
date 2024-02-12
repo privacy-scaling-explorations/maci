@@ -132,7 +132,7 @@ template ProcessMessagesNonQv(
 
     // Verify currentSbCommitment
     // currentSbCommitment === hash3(currentStateRoot, currentBallotRoot, currentSbSalt)
-    var currentSbCommitmentHash = PoseidonHash(3)([currentStateRoot, currentBallotRoot, currentSbSalt]);
+    var currentSbCommitmentHash = PoseidonHasher(3)([currentStateRoot, currentBallotRoot, currentSbSalt]);
     currentSbCommitmentHash === currentSbCommitment;
 
     // Verify "public" inputs and assign unpacked values
@@ -355,7 +355,7 @@ template ProcessMessagesNonQv(
         ballotRoots[i] <== tmpBallotRoot1[i] + tmpBallotRoot2[i];
     }
 
-    var sbCommitmentHash = PoseidonHash(3)([stateRoots[0], ballotRoots[0], newSbSalt]);
+    var sbCommitmentHash = PoseidonHasher(3)([stateRoots[0], ballotRoots[0], newSbSalt]);
     sbCommitmentHash === newSbCommitment;
 }
 
@@ -465,7 +465,7 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     // 3. Verify that the original state leaf exists in the given state root
     component stateLeafQip = QuinTreeInclusionProof(stateTreeDepth);
 
-    var stateLeafHash = PoseidonHash(4)(stateLeaf);
+    var stateLeafHash = PoseidonHasher(4)(stateLeaf);
     stateLeafQip.leaf <== stateLeafHash;
 
     for (var i = 0; i < stateTreeDepth; i++) {
@@ -478,7 +478,7 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
 
     //  ----------------------------------------------------------------------- 
     // 4. Verify that the original ballot exists in the given ballot root
-    var ballotHash = PoseidonHash(2)([ballot[BALLOT_NONCE_IDX], ballot[BALLOT_VO_ROOT_IDX]]);
+    var ballotHash = PoseidonHasher(2)([ballot[BALLOT_NONCE_IDX], ballot[BALLOT_VO_ROOT_IDX]]);
 
     component ballotQip = QuinTreeInclusionProof(stateTreeDepth);
     ballotQip.leaf <== ballotHash;
@@ -563,7 +563,7 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
 
     //  ----------------------------------------------------------------------- 
     // 6. Generate a new state root
-    var newStateLeafHash = PoseidonHash(4)([
+    var newStateLeafHash = PoseidonHasher(4)([
         transformer.newSlPubKey[STATE_LEAF_PUB_X_IDX],
         transformer.newSlPubKey[STATE_LEAF_PUB_Y_IDX],
         voiceCreditBalanceMux.out,
@@ -588,7 +588,7 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     newBallotNonceMux.c[0] <== ballot[BALLOT_NONCE_IDX];
     newBallotNonceMux.c[1] <== transformer.newBallotNonce;
 
-    var newBallotHash = PoseidonHash(2)([newBallotNonceMux.out, newBallotVoRoot]);
+    var newBallotHash = PoseidonHasher(2)([newBallotNonceMux.out, newBallotVoRoot]);
 
     component newBallotQip = QuinTreeInclusionProof(stateTreeDepth);
     newBallotQip.leaf <== newBallotHash;

@@ -69,7 +69,7 @@ template TallyVotesNonQv(
 
     //  ----------------------------------------------------------------------- 
     // Verify sbCommitment
-    var sbCommitmentHash = PoseidonHash(3)([stateRoot, ballotRoot, sbSalt]);
+    var sbCommitmentHash = PoseidonHasher(3)([stateRoot, ballotRoot, sbSalt]);
     sbCommitmentHash === sbCommitment;
 
     //  ----------------------------------------------------------------------- 
@@ -102,7 +102,7 @@ template TallyVotesNonQv(
     component ballotSubroot = QuinCheckRoot(intStateTreeDepth);
     var ballotHashers[batchSize];
     for (var i = 0; i < batchSize; i++) {
-        ballotHashers[i] = PoseidonHash(2)([ballots[i][BALLOT_NONCE_IDX], ballots[i][BALLOT_VO_ROOT_IDX]]);
+        ballotHashers[i] = PoseidonHasher(2)([ballots[i][BALLOT_NONCE_IDX], ballots[i][BALLOT_VO_ROOT_IDX]]);
 
         ballotSubroot.leaves[i] <== ballotHashers[i];
     }
