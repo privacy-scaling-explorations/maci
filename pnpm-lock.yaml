@@ -343,8 +343,8 @@ importers:
         specifier: ^0.5.1
         version: 0.5.1
       '@zk-kit/poseidon-cipher':
-        specifier: ^0.1.1
-        version: 0.1.1
+        specifier: ^0.2.1
+        version: 0.2.1
       ethers:
         specifier: ^6.11.0
         version: 6.11.0
@@ -6083,12 +6083,6 @@ packages:
       tslib: 2.6.2
     dev: true
 
-  /@zk-kit/baby-jubjub@0.1.0:
-    resolution: {integrity: sha512-oeTAT3gtam1qICNqb7aqCqZiFA9FP8zhFzwB51nhCfufIZvGGKDKWofRseZEpD8+fKoLTwU59aBNmAPTnvSdyg==}
-    dependencies:
-      '@zk-kit/utils': 0.1.0
-    dev: false
-
   /@zk-kit/baby-jubjub@0.1.1:
     resolution: {integrity: sha512-eWpUSpKKpllGZXE6mdS1IVuegRjY2Yu+3Qccyfg0+gMI8+p0ruioMM/MCK3tg2lRIUJTVd+16UghVcK0145yWg==}
     dependencies:
@@ -6108,10 +6102,11 @@ packages:
       '@zk-kit/utils': 0.1.0
     dev: false
 
-  /@zk-kit/poseidon-cipher@0.1.1:
-    resolution: {integrity: sha512-EPAuUrOCWBqSDPdUihaQ6bvFLulHsLDe4ViSHmnhLf1Ydyd7hQie8NDEdvNewpuv0ub9aLB+r1+Ev8Afv94RtA==}
+  /@zk-kit/poseidon-cipher@0.2.1:
+    resolution: {integrity: sha512-/k7lUzYPuzFmdjBCvl8yTE4aDCnqxoVC46Txa9Z0i7rb+ilXHp2EEwfig/G7moTukSiOB3hywF3im/QGs3cYHg==}
     dependencies:
-      '@zk-kit/baby-jubjub': 0.1.0
+      '@zk-kit/baby-jubjub': 0.1.1
+      '@zk-kit/utils': 0.1.0
     dev: false
 
   /@zk-kit/utils@0.1.0:
