@@ -4,8 +4,7 @@ pragma circom 2.0.0;
 include "./mux1.circom";
 
 // local imports
-include "./hasherSha256.circom";
-include "./messageHasher.circom";
+include "./hashers.circom";
 include "./messageToCommand.circom";
 include "./privToPubKey.circom";
 include "./stateLeafAndBallotTransformer.circom";

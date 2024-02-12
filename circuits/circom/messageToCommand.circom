@@ -3,7 +3,7 @@ pragma circom 2.0.0;
 // circomlib import
 include "./bitify.circom";
 // @zk-kit import
-include "./poseidon-cipher.circom";
+include "./hashers.circom";
 
 // local imports
 include "./ecdh.circom";

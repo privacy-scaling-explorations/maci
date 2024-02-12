@@ -9,7 +9,7 @@ include "./escalarmulany.circom";
 include "./escalarmulfix.circom";
 
 // local imports
-include "./poseidonHash.circom";
+include "./hashers.circom";
 
 template EdDSAPoseidonVerifier_patched() {
     signal input Ax;
