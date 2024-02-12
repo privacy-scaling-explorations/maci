@@ -6,7 +6,7 @@ pragma circom 2.0.0;
 include "./mux1.circom";
 
 // local import
-include "../poseidonHash.circom";
+include "../hashers.circom";
 
 // recompute a merkle root from a leaf and a path
 template MerkleTreeInclusionProof(n_levels) {

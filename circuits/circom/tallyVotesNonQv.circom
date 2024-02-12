@@ -7,8 +7,7 @@ include "./comparators.circom";
 include "./trees/incrementalQuinTree.circom";
 include "./trees/calculateTotal.circom";
 include "./trees/checkRoot.circom";
-include "./hasherSha256.circom";
-include "./poseidonHash.circom";
+include "./hashers.circom";
 include "./unpackElement.circom";
 include "./tallyVotes.circom";
 
