@@ -24,7 +24,7 @@
     "@zk-kit/baby-jubjub": "^0.1.1",
     "@zk-kit/eddsa-poseidon": "^0.5.1",
     "@zk-kit/poseidon-cipher": "^0.1.1",
-    "ethers": "^6.9.2"
+    "ethers": "^6.11.0"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
