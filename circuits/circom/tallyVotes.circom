@@ -306,11 +306,10 @@ template TallyVotesInputHasher() {
     batchNum <== unpack.out[1];
     numSignUps <== unpack.out[0];
 
-    component hasher = Sha256Hasher4();
-    hasher.in[0] <== packedVals;
-    hasher.in[1] <== sbCommitment;
-    hasher.in[2] <== currentTallyCommitment;
-    hasher.in[3] <== newTallyCommitment;
-
-    hash <== hasher.hash;
+    hash <== Sha256Hasher(4)([
+        packedVals,
+        sbCommitment,
+        currentTallyCommitment,
+        newTallyCommitment
+    ]);
 }

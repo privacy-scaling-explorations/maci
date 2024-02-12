@@ -299,13 +299,12 @@ template SubsidyInputHasher() {
     rbi <== unpack.out[1];
     cbi <== unpack.out[2];
 
-    component hasher = Sha256Hasher4();
-    hasher.in[0] <== packedVals;
-    hasher.in[1] <== sbCommitment;
-    hasher.in[2] <== currentSubsidyCommitment;
-    hasher.in[3] <== newSubsidyCommitment;
-
-    hash <== hasher.hash;
+    hash <== Sha256Hasher(4)([
+        packedVals,
+        sbCommitment,
+        currentSubsidyCommitment,
+        newSubsidyCommitment
+    ]);
 }
 
 template BatchMerkleTreeVerifier(coeffTreeDepth, intCoeffTreeDepth, TREE_ARITY) {
