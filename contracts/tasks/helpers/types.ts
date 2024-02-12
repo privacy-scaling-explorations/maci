@@ -1,9 +1,18 @@
-import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-
-import type { IVerifyingKeyStruct } from "../../ts/types";
-import type { BaseContract, BaseContractMethod, BigNumberish, TransactionResponse } from "ethers";
+import type {
+  AccQueue,
+  MACI,
+  MessageProcessor,
+  Poll,
+  Subsidy,
+  Tally,
+  Verifier,
+  VkRegistry,
+} from "../../typechain-types";
+import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import type { BaseContract, BigNumberish, Signer } from "ethers";
 import type { Libraries, TaskArguments } from "hardhat/types";
-import type { IG1ContractParams } from "maci-domainobjs";
+import type { Poll as PollWrapper } from "maci-core";
+import type { Keypair, PrivKey } from "maci-domainobjs";
 
 /**
  * Interface that represents deploy params
@@ -51,6 +60,301 @@ export interface IMergeParams {
 }
 
 /**
+ * Interface that represents task prove params
+ */
+export interface IProveParams {
+  /**
+   * The poll id
+   */
+  poll: BigNumberish;
+
+  /**
+   * Coordinator's private key
+   */
+  coordinatorPrivateKey: string;
+
+  /**
+   * The path to the rapidsnark binary
+   */
+  rapidsnark?: string;
+
+  /**
+   * The directory to store the proofs
+   */
+  outputDir: string;
+
+  /**
+   * The path to the process zkey file
+   */
+  processZkey: string;
+
+  /**
+   * The path to the process witnessgen binary
+   */
+  processWitgen?: string;
+
+  /**
+   * The path to the process wasm file
+   */
+  processWasm?: string;
+
+  /**
+   * The file to store the tally proof
+   */
+  tallyFile: string;
+
+  /**
+   * The path to the tally zkey file
+   */
+  tallyZkey: string;
+
+  /**
+   * The path to the tally witnessgen binary
+   */
+  tallyWitgen?: string;
+
+  /**
+   * The path to the tally wasm file
+   */
+  tallyWasm?: string;
+
+  /**
+   * The file to store the subsidy proof
+   */
+  subsidyFile?: string;
+
+  /**
+   * The path to the subsidy zkey file
+   */
+  subsidyZkey?: string;
+
+  /**
+   * The path to the subsidy witnessgen binary
+   */
+  subsidyWitgen?: string;
+
+  /**
+   * The path to the subsidy wasm file
+   */
+  subsidyWasm?: string;
+
+  /**
+   * Whether to use quadratic voting or not
+   */
+  useQuadraticVoting?: boolean;
+
+  /**
+   * The file with the serialized maci state
+   */
+  stateFile?: string;
+
+  /**
+   * The block number to start fetching logs from
+   */
+  startBlock?: number;
+
+  /**
+   * The number of blocks to fetch logs from
+   */
+  blocksPerBatch?: number;
+
+  /**
+   * The block number to stop fetching logs from
+   */
+  endBlock?: number;
+
+  /**
+   * The transaction hash of the first transaction
+   */
+  transactionHash?: string;
+}
+
+/**
+ * Interface that represents prove generator params
+ */
+export interface IProofGeneratorParams {
+  /**
+   * Poll class (see maci-core)
+   */
+  poll: PollWrapper;
+
+  /**
+   * MACI contract address
+   */
+  maciContractAddress: string;
+
+  /**
+   * Tally contract address
+   */
+  tallyContractAddress: string;
+
+  /**
+   * Directory to store the proofs
+   */
+  outputDir: string;
+
+  /**
+   * File to store the tally proof
+   */
+  tallyOutputFile: string;
+
+  /**
+   * File to store the subsidy proof
+   */
+  subsidyOutputFile?: string;
+
+  /**
+   * Message processing circuit files
+   */
+  mp: ICircuitFiles;
+
+  /**
+   * Tally circuit files
+   */
+  tally: ICircuitFiles;
+
+  /**
+   * Subsidy circuit files
+   */
+  subsidy?: ICircuitFiles;
+
+  /**
+   * Path to the rapidsnark binary
+   */
+  rapidsnark?: string;
+
+  /**
+   * Whether to use quadratic voting or not
+   */
+  useQuadraticVoting?: boolean;
+}
+
+/**
+ * Interface that groups files for circuits (zkey, witgen, wasm)
+ */
+export interface ICircuitFiles {
+  /**
+   * The path to the zkey file
+   */
+  zkey: string;
+
+  /**
+   * The path to the witnessgen binary
+   */
+  witgen?: string;
+
+  /**
+   * The path to the wasm file
+   */
+  wasm?: string;
+}
+
+/**
+ * Interface that represents prepare maci state params
+ */
+export interface IPrepareStateParams {
+  /**
+   * MACI contract address
+   */
+  maciContractAddress: string;
+
+  /**
+   * Poll id
+   */
+  pollId: BigNumberish;
+
+  /**
+   * MACI private key
+   */
+  maciPrivateKey: PrivKey;
+
+  /**
+   * Coordinator keypair
+   */
+  coordinatorKeypair: Keypair;
+
+  /**
+   * Eth signer
+   */
+  signer: Signer;
+
+  /**
+   * Options for state (on-chain fetching or local file)
+   */
+  options: Partial<{
+    /**
+     * The file with the serialized maci state
+     */
+    stateFile: string;
+
+    /**
+     * The block number to start fetching logs from
+     */
+    startBlock: number;
+
+    /**
+     * The number of blocks to fetch logs from
+     */
+    blocksPerBatch: number;
+
+    /**
+     * The block number to stop fetching logs from
+     */
+    endBlock: number;
+
+    /**
+     * The transaction hash of the first transaction
+     */
+    transactionHash: string;
+  }>;
+}
+
+/**
+ * Interface that represents prover params
+ */
+export interface IProverParams {
+  /**
+   * Poll contract typechain wrapper
+   */
+  pollContract: Poll;
+
+  /**
+   * MessageProcessor contract typechain wrapper
+   */
+  mpContract: MessageProcessor;
+
+  /**
+   * AccQueue contract typechain wrapper (messages)
+   */
+  messageAqContract: AccQueue;
+
+  /**
+   * MACI contract typechain wrapper
+   */
+  maciContract: MACI;
+
+  /**
+   * VkRegistry contract typechain wrapper
+   */
+  vkRegsitryContract: VkRegistry;
+
+  /**
+   * Verifier contract typechain wrapper
+   */
+  verifierContract: Verifier;
+
+  /**
+   * Tally contract typechain wrapper
+   */
+  tallyContract: Tally;
+
+  /**
+   * Subsidy contract typechain wrapper
+   */
+  subsidyContract?: Subsidy;
+}
+
+/**
  * Interface that represents deploy step catalog
  */
 export interface IDeployStepCatalog {
@@ -71,6 +375,31 @@ export interface IDeployStepCatalog {
    * @returns task arguments
    */
   paramsFn: (params: IDeployParams) => Promise<TaskArguments>;
+}
+
+/**
+ * Interface that represents `Deployment#getContract` params
+ */
+export interface IGetContractParams {
+  /**
+   * Contract name
+   */
+  name: EContracts;
+
+  /**
+   * Group key
+   */
+  key?: string;
+
+  /**
+   * Contract address
+   */
+  address?: string;
+
+  /**
+   * Eth signer
+   */
+  signer?: Signer;
 }
 
 /**
@@ -183,6 +512,10 @@ export enum EContracts {
   PoseidonT6 = "PoseidonT6",
   VkRegistry = "VkRegistry",
   Poll = "Poll",
+  Tally = "Tally",
+  MessageProcessor = "MessageProcessor",
+  Subsidy = "Subsidy",
+  AccQueue = "AccQueue",
 }
 
 /**
@@ -230,7 +563,7 @@ export interface ITreeMergeParams {
   /**
    * AccQueue contract
    */
-  signupAccQueueContract: StateAq;
+  signupAccQueueContract: AccQueue;
 
   /**
    * Poll contract
@@ -245,177 +578,5 @@ export interface ITreeMergeParams {
   /**
    * Message AccQueue contract
    */
-  messageAccQueueContract: StateAq;
-}
-
-// Add types manually because typechain is not available during compilation
-
-/**
- * Poll deploy params
- */
-export type TDeployPollParams = [
-  BigNumberish,
-  {
-    intStateTreeDepth: BigNumberish;
-    messageTreeSubDepth: BigNumberish;
-    messageTreeDepth: BigNumberish;
-    voteOptionTreeDepth: BigNumberish;
-  },
-  IG1ContractParams,
-  string,
-  string,
-  boolean,
-];
-
-/**
- * MACI contract wrapper
- */
-export interface MACI extends BaseContract {
-  /**
-   * Get next poll id
-   *
-   * @returns next poll id
-   */
-  nextPollId: () => Promise<bigint>;
-
-  /**
-   * Get AccQueue contract address
-   *
-   * @returns address
-   */
-  stateAq: () => Promise<string>;
-
-  /**
-   * Get state tree depth
-   *
-   * @returns state tree depth
-   */
-  stateTreeDepth: () => Promise<bigint>;
-
-  /**
-   * Get the poll contract address with poll id
-   *
-   * @param pollId - poll id
-   * @returns poll contract address
-   */
-  polls: (pollId: BigNumberish) => Promise<string>;
-
-  /**
-   * Deploy a new Poll contract.
-   */
-  deployPoll: BaseContractMethod<TDeployPollParams, TransactionResponse & [string]>;
-}
-
-/**
- * StateAq contract wrapper
- */
-export interface StateAq extends BaseContract {
-  /**
-   * Check if tree is merged
-   *
-   * @returns tree merged or not
-   */
-  treeMerged: () => Promise<boolean>;
-
-  /**
-   * Check if subtrees are merged
-   *
-   * @returns subtrees merged or not
-   */
-  subTreesMerged: () => Promise<boolean>;
-
-  /**
-   * Get the next subroot index and the current subtree index.
-   *
-   * @returns indices
-   */
-  getSrIndices: () => Promise<[bigint, bigint]>;
-
-  /**
-   * Get the merged Merkle root of all the leaves at a desired depth.
-   *
-   * @returns root
-   */
-  getMainRoot: (depth: BigNumberish) => Promise<bigint>;
-}
-
-/**
- * VkRegistry contract wrapper
- */
-export interface VkRegistry extends BaseContract {
-  /**
-   * Set verifying keys
-   */
-  setVerifyingKeys: BaseContractMethod<
-    [BigNumberish, BigNumberish, BigNumberish, BigNumberish, BigNumberish, IVerifyingKeyStruct, IVerifyingKeyStruct],
-    TransactionResponse
-  >;
-
-  /**
-   * Set subsidy keys
-   */
-  setSubsidyKeys: BaseContractMethod<
-    [BigNumberish, BigNumberish, BigNumberish, IVerifyingKeyStruct],
-    TransactionResponse
-  >;
-}
-
-/**
- * Poll contract wrapper
- */
-export interface Poll extends BaseContract {
-  /**
-   * Get the maximum number of messages and vote options
-   *
-   * @returns number of messages and vote options
-   */
-  maxValues: () => Promise<[BigNumberish, BigNumberish]>;
-
-  /**
-   * Get the external contracts for poll
-   *
-   * @returns external contracts addresses
-   */
-  extContracts: () => Promise<[string, string, string]>;
-
-  /**
-   * Get deploy time and duration of the poll
-   *
-   * @returns deploy time and duration
-   */
-  getDeployTimeAndDuration: () => Promise<[BigNumberish, BigNumberish]>;
-
-  /**
-   * Get the poll owner
-   *
-   * @returns poll owner
-   */
-  owner: () => Promise<string>;
-
-  /**
-   * Get the depths of the merkle trees
-   *
-   * @returns depths
-   */
-  treeDepths: () => Promise<[BigNumberish, BigNumberish, BigNumberish, BigNumberish]>;
-
-  /**
-   * The first step of merging the MACI state AccQueue.
-   */
-  mergeMaciStateAqSubRoots: BaseContractMethod<[number, BigNumberish], TransactionResponse>;
-
-  /**
-   * The second step of merging the MACI state AccQueue
-   */
-  mergeMaciStateAq: BaseContractMethod<[BigNumberish], TransactionResponse>;
-
-  /**
-   * The first step in merging the message AccQueue
-   */
-  mergeMessageAqSubRoots: BaseContractMethod<[BigNumberish], TransactionResponse>;
-
-  /**
-   * The second step in merging the message AccQueue
-   */
-  mergeMessageAq: BaseContractMethod<[], TransactionResponse>;
+  messageAccQueueContract: AccQueue;
 }

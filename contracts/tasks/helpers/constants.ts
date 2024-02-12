@@ -18,6 +18,8 @@ export enum EChainId {
 
 const GWEI = 1e9;
 
+export const STATE_TREE_ARITY = 5;
+
 /**
  * Convert gas price from gwei to wei
  *

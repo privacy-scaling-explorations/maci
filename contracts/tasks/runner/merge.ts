@@ -1,12 +1,12 @@
 /* eslint-disable no-console */
-import { BaseContract, ZeroAddress } from "ethers";
+import { ZeroAddress } from "ethers";
 import { task, types } from "hardhat/config";
 
-import { parseArtifact } from "../../ts/abi";
-import { ContractStorage } from "../helpers/ContractStorage";
+import type { AccQueue, MACI, Poll } from "../../typechain-types";
+
 import { Deployment } from "../helpers/Deployment";
 import { TreeMerger } from "../helpers/TreeMerger";
-import { EContracts, type MACI, type IMergeParams, type Poll, type StateAq } from "../helpers/types";
+import { EContracts, type IMergeParams } from "../helpers/types";
 
 const DEFAULT_SR_QUEUE_OPS = 4;
 
@@ -19,36 +19,27 @@ task("merge", "Merge signups and messages")
   .addOptionalParam("prove", "Run prove command after merging", false, types.boolean)
   .setAction(async ({ poll, prove, queueOps = DEFAULT_SR_QUEUE_OPS }: IMergeParams, hre) => {
     const deployment = Deployment.getInstance(hre);
-    const storage = ContractStorage.getInstance();
 
     deployment.setHre(hre);
 
     const deployer = await deployment.getDeployer();
-    const { network } = hre;
 
-    const maciContractAddress = storage.mustGetAddress(EContracts.MACI, network.name);
-    const [maciContractAbi] = parseArtifact("MACI");
-    const [accQueueContractAbi] = parseArtifact("AccQueue");
-    const [pollContractAbi] = parseArtifact("Poll");
-
-    const maciContract = new BaseContract(maciContractAddress, maciContractAbi, deployer) as MACI;
+    const maciContract = await deployment.getContract<MACI>({ name: EContracts.MACI });
     const signupAccQueueContractAddress = await maciContract.stateAq();
 
     const pollContractAddress = await maciContract.polls(poll);
-    const pollContract = new BaseContract(pollContractAddress, pollContractAbi, deployer) as Poll;
+    const pollContract = await deployment.getContract<Poll>({ name: EContracts.Poll, address: pollContractAddress });
     const [, messageAccQueueContractAddress] = await pollContract.extContracts();
 
-    const signupAccQueueContract = new BaseContract(
-      signupAccQueueContractAddress,
-      accQueueContractAbi,
-      deployer,
-    ) as StateAq;
+    const signupAccQueueContract = await deployment.getContract<AccQueue>({
+      name: EContracts.AccQueue,
+      address: signupAccQueueContractAddress,
+    });
 
-    const messageAccQueueContract = new BaseContract(
-      messageAccQueueContractAddress,
-      accQueueContractAbi,
-      deployer,
-    ) as StateAq;
+    const messageAccQueueContract = await deployment.getContract<AccQueue>({
+      name: EContracts.AccQueue,
+      address: messageAccQueueContractAddress,
+    });
 
     if (!pollContractAddress || pollContractAddress === ZeroAddress) {
       throw new Error(`No poll ${poll} found`);

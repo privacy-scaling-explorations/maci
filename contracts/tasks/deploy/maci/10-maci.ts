@@ -1,3 +1,5 @@
+import type { EASGatekeeper } from "../../../typechain-types";
+
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
 import { EContracts, IDeployParams } from "../../helpers/types";
@@ -66,6 +68,16 @@ deployment
       topupCreditContractAddress,
       stateTreeDepth,
     );
+
+    if (gatekeeper === EContracts.EASGatekeeper) {
+      const gatekeeperContract = await deployment.getContract<EASGatekeeper>({
+        name: EContracts.EASGatekeeper,
+        address: gatekeeperContractAddress,
+      });
+      const maciInstanceAddress = await maciContract.getAddress();
+
+      await gatekeeperContract.setMaciInstance(maciInstanceAddress).then((tx) => tx.wait());
+    }
 
     await storage.register({
       id: EContracts.MACI,

@@ -90,12 +90,12 @@ export class ContractStorage {
 
     this.db.set(`${network}.instance.${contractAddress}`, logEntry).write();
 
-    const namedEntry = this.db.get(`${network}.named.${id}${key !== undefined ? `.poll-${key}` : ""}`).value() as
+    const namedEntry = this.db.get(`${network}.named.${id}${key !== undefined ? `.${key}` : ""}`).value() as
       | IStorageNamedEntry
       | undefined;
     const count = namedEntry?.count ?? 0;
     this.db
-      .set(`${network}.named.${id}${key !== undefined ? `.poll-${key}` : ""}`, {
+      .set(`${network}.named.${id}${key !== undefined ? `.${key}` : ""}`, {
         address: contractAddress,
         count: count + 1,
       })
@@ -145,7 +145,7 @@ export class ContractStorage {
    * @returns contract address
    */
   getAddress(id: EContracts, network: string, key?: string): string | undefined {
-    const collection = this.db.get(`${network}.named.${id}${key !== undefined ? `.poll-${key}` : ""}`);
+    const collection = this.db.get(`${network}.named.${id}${key !== undefined ? `.${key}` : ""}`);
     const namedEntry = collection.value() as IStorageNamedEntry | undefined;
 
     return namedEntry?.address;
@@ -159,8 +159,8 @@ export class ContractStorage {
    * @throws {Error} if there is no address the error will be thrown
    * @returns contract address
    */
-  mustGetAddress(id: EContracts, network: string): string {
-    const address = this.getAddress(id, network);
+  mustGetAddress(id: EContracts, network: string, key?: string): string {
+    const address = this.getAddress(id, network, key);
 
     if (!address) {
       throw new Error(`Contract ${id} is not saved`);
@@ -209,7 +209,7 @@ export class ContractStorage {
             multiCount += 1;
           } else {
             console.log(`\t${key}-${id}: ${nested.address}`);
-            entryMap.set(id, nested.address);
+            entryMap.set(key, nested.address);
           }
         });
       }
