@@ -1,5 +1,5 @@
 import { JsonRpcProvider } from "ethers";
-import { getDefaultSigner, getDefaultNetwork, genMaciStateFromContract } from "maci-contracts";
+import { genMaciStateFromContract } from "maci-contracts";
 import { Keypair, PrivKey } from "maci-domainobjs";
 
 import fs from "fs";
@@ -37,8 +37,7 @@ export const genLocalState = async ({
 }: GenLocalStateArgs): Promise<void> => {
   banner(quiet);
 
-  const ethSigner = signer || (await getDefaultSigner());
-  const network = await getDefaultNetwork();
+  const network = await signer.provider?.getNetwork();
 
   // validation of the maci contract address
   if (!readContractAddress("MACI", network?.name) && !maciContractAddress) {
@@ -47,7 +46,7 @@ export const genLocalState = async ({
 
   const maciAddress = maciContractAddress || readContractAddress("MACI", network?.name);
 
-  if (!(await contractExists(ethSigner.provider!, maciAddress))) {
+  if (!(await contractExists(signer.provider!, maciAddress))) {
     logError("MACI contract does not exist");
   }
 
@@ -61,15 +60,15 @@ export const genLocalState = async ({
   const coordinatorKeypair = new Keypair(coordinatorMaciPrivKey);
 
   // calculate the end block number
-  const endBlockNumber = endBlock || (await ethSigner.provider!.getBlockNumber());
+  const endBlockNumber = endBlock || (await signer.provider!.getBlockNumber());
 
   let fromBlock = startBlock || 0;
   if (transactionHash) {
-    const tx = await ethSigner.provider!.getTransaction(transactionHash);
+    const tx = await signer.provider!.getTransaction(transactionHash);
     fromBlock = tx?.blockNumber ?? 0;
   }
 
-  const provider = ethereumProvider ? new JsonRpcProvider(ethereumProvider) : ethSigner.provider;
+  const provider = ethereumProvider ? new JsonRpcProvider(ethereumProvider) : signer.provider;
 
   logYellow(
     quiet,

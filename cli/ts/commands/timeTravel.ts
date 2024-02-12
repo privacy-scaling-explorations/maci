@@ -1,5 +1,3 @@
-import { getDefaultSigner } from "maci-contracts";
-
 import type { JsonRpcProvider } from "ethers";
 
 import { banner, logError, logGreen, success, type TimeTravelArgs } from "../utils";
@@ -11,12 +9,11 @@ import { banner, logError, logGreen, success, type TimeTravelArgs } from "../uti
  */
 export const timeTravel = async ({ seconds, signer, quiet = true }: TimeTravelArgs): Promise<void> => {
   banner(quiet);
-  const ethSigner = signer || (await getDefaultSigner());
 
   try {
     // send the instructions to the provider
-    await (ethSigner.provider as JsonRpcProvider).send("evm_increaseTime", [Number(seconds)]);
-    await (ethSigner.provider as JsonRpcProvider).send("evm_mine", []);
+    await (signer.provider as JsonRpcProvider).send("evm_increaseTime", [Number(seconds)]);
+    await (signer.provider as JsonRpcProvider).send("evm_mine", []);
 
     logGreen(quiet, success(`Fast-forwarded ${seconds} seconds`));
   } catch (error) {

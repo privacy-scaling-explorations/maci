@@ -1,4 +1,4 @@
-import { deployVkRegistry, getDefaultSigner, getDefaultNetwork } from "maci-contracts";
+import { deployVkRegistry } from "maci-contracts";
 
 import fs from "fs";
 
@@ -25,10 +25,9 @@ export const deployVkRegistryContract = async ({ signer, quiet = true }: DeployV
     resetContractAddresses();
   }
 
-  const ethSigner = signer || (await getDefaultSigner());
-  const network = await getDefaultNetwork();
+  const network = await signer.provider?.getNetwork();
   // deploy and store the address
-  const vkRegistry = await deployVkRegistry(ethSigner, true);
+  const vkRegistry = await deployVkRegistry(signer, true);
   const vkRegistryAddress = await vkRegistry.getAddress();
   storeContractAddress("VkRegistry", vkRegistryAddress, network?.name);
 

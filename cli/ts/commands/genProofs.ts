@@ -1,13 +1,9 @@
-import { BaseContract, type BigNumberish } from "ethers";
 import { extractVk, genProof, verifyProof } from "maci-circuits";
 import {
-  type MACI,
-  type AccQueue,
-  type Poll,
+  MACI__factory as MACIFactory,
+  AccQueue__factory as AccQueueFactory,
+  Poll__factory as PollFactory,
   genMaciStateFromContract,
-  getDefaultSigner,
-  getDefaultNetwork,
-  parseArtifact,
 } from "maci-contracts";
 import { type CircuitInputs, type IJsonMaciState, MaciState } from "maci-core";
 import { hash3, hashLeftRight, genTreeCommitment } from "maci-crypto";
@@ -15,6 +11,8 @@ import { Keypair, PrivKey } from "maci-domainobjs";
 
 import fs from "fs";
 import path from "path";
+
+import type { BigNumberish } from "ethers";
 
 import {
   DEFAULT_ETH_PROVIDER,
@@ -185,8 +183,7 @@ export const genProofs = async ({
   const maciPrivKey = PrivKey.deserialize(privateKey);
   const coordinatorKeypair = new Keypair(maciPrivKey);
 
-  const ethSigner = signer || (await getDefaultSigner());
-  const network = await getDefaultNetwork();
+  const network = await signer.provider?.getNetwork();
 
   // contracts
   if (!readContractAddress("MACI", network?.name) && !maciAddress) {
@@ -194,7 +191,7 @@ export const genProofs = async ({
   }
   const maciContractAddress = maciAddress || readContractAddress("MACI", network?.name);
 
-  if (!(await contractExists(ethSigner.provider!, maciContractAddress))) {
+  if (!(await contractExists(signer.provider!, maciContractAddress))) {
     logError("MACI contract does not exist");
   }
 
@@ -202,21 +199,17 @@ export const genProofs = async ({
     logError("Invalid poll id");
   }
 
-  const maciContract = new BaseContract(maciContractAddress, parseArtifact("MACI")[0], ethSigner) as MACI;
-
+  const maciContract = MACIFactory.connect(maciContractAddress, signer);
   const pollAddr = await maciContract.polls(pollId);
-  if (!(await contractExists(ethSigner.provider!, pollAddr))) {
+
+  if (!(await contractExists(signer.provider!, pollAddr))) {
     logError("Poll contract does not exist");
   }
-  const pollContract = new BaseContract(pollAddr, parseArtifact("Poll")[0], ethSigner) as Poll;
+  const pollContract = PollFactory.connect(pollAddr, signer);
 
   const extContracts = await pollContract.extContracts();
   const messageAqContractAddr = extContracts.messageAq;
-  const messageAqContract = new BaseContract(
-    messageAqContractAddr,
-    parseArtifact("AccQueue")[0],
-    ethSigner,
-  ) as AccQueue;
+  const messageAqContract = AccQueueFactory.connect(messageAqContractAddr, signer);
 
   // Check that the state and message trees have been merged for at least the first poll
   if (!(await pollContract.stateAqMerged()) && pollId.toString() === "0") {
@@ -249,13 +242,13 @@ export const genProofs = async ({
     // build an off-chain representation of the MACI contract using data in the contract storage
     let fromBlock = startBlock ? Number(startBlock) : 0;
     if (transactionHash) {
-      const tx = await ethSigner.provider!.getTransaction(transactionHash);
+      const tx = await signer.provider!.getTransaction(transactionHash);
       fromBlock = tx?.blockNumber ?? 0;
     }
 
     logYellow(quiet, info(`starting to fetch logs from block ${fromBlock}`));
     maciState = await genMaciStateFromContract(
-      ethSigner.provider!,
+      signer.provider!,
       await maciContract.getAddress(),
       coordinatorKeypair,
       pollId,

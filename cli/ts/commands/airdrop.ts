@@ -1,5 +1,4 @@
-import { BaseContract } from "ethers";
-import { type MACI, type TopupCredit, getDefaultSigner, getDefaultNetwork, parseArtifact } from "maci-contracts";
+import { MACI__factory as MACIFactory, TopupCredit__factory as TopupCreditFactory } from "maci-contracts";
 
 import { type AirdropArgs, logError, logGreen, success, readContractAddress, contractExists, banner } from "../utils";
 
@@ -18,10 +17,7 @@ export const airdrop = async ({
   quiet = true,
 }: AirdropArgs): Promise<void> => {
   banner(quiet);
-
-  // get the signer
-  const ethSigner = signer || (await getDefaultSigner());
-  const network = await getDefaultNetwork();
+  const network = await signer.provider?.getNetwork();
 
   // get the topup credit address from storage
   const topupCredit = readContractAddress("TopupCredit", network?.name);
@@ -35,14 +31,12 @@ export const airdrop = async ({
   const ERC20Address = contractAddress || topupCredit;
 
   // check if the contract exists
-  if (!(await contractExists(ethSigner.provider!, ERC20Address))) {
+  if (!(await contractExists(signer.provider!, ERC20Address))) {
     logError("Invalid ERC20 contract address");
   }
 
-  const tokenAbi = parseArtifact("TopupCredit")[0];
-
   // create the contract instance
-  const tokenContract = new BaseContract(ERC20Address, tokenAbi, ethSigner) as TopupCredit;
+  const tokenContract = TopupCreditFactory.connect(ERC20Address, signer);
 
   if (amount < 0) {
     logError("Invalid amount");
@@ -55,7 +49,7 @@ export const airdrop = async ({
     });
     await tx.wait();
 
-    logGreen(quiet, success(`Airdropped ${amount} credits to ${await ethSigner.getAddress()}`));
+    logGreen(quiet, success(`Airdropped ${amount} credits to ${await signer.getAddress()}`));
   } catch (error) {
     logError((error as Error).message);
   }
@@ -71,8 +65,7 @@ export const airdrop = async ({
       logError("Please provide a MACI contract address");
     }
 
-    const maciAbi = parseArtifact("MACI")[0];
-    const maciContract = new BaseContract(maciContractAddress!, maciAbi, ethSigner) as MACI;
+    const maciContract = MACIFactory.connect(maciContractAddress!, signer);
 
     const pollAddr = await maciContract.getPoll(pollId);
     try {

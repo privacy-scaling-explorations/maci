@@ -1,8 +1,11 @@
 import { expect } from "chai";
+import { getDefaultSigner } from "maci-contracts";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
 
 import fs from "fs";
+
+import type { Signer } from "ethers";
 
 import { DeployedContracts, TallyData } from "../../ts";
 import {
@@ -49,10 +52,11 @@ describe("keyChange tests", function test() {
   this.timeout(900000);
 
   let maciAddresses: DeployedContracts;
+  let signer: Signer;
 
   deployPollArgs.pollDuration = 90;
 
-  const genProofsArgs: GenProofsArgs = {
+  const genProofsArgs: Omit<GenProofsArgs, "signer"> = {
     outputDir: testProofsDirPath,
     tallyFile: testTallyFilePath,
     tallyZkey: tallyVotesTestZkeyPath,
@@ -71,10 +75,12 @@ describe("keyChange tests", function test() {
 
   // before all tests we deploy the vk registry contract and set the verifying keys
   before(async () => {
+    signer = await getDefaultSigner();
+
     // we deploy the vk registry contract
-    await deployVkRegistryContract({});
+    await deployVkRegistryContract({ signer });
     // we set the verifying keys
-    await setVerifyingKeys(setVerifyingKeysArgs);
+    await setVerifyingKeys({ ...setVerifyingKeysArgs, signer });
   });
 
   describe("keyChange and new vote (new vote has same nonce)", () => {
@@ -94,10 +100,10 @@ describe("keyChange tests", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy(deployArgs);
+      maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
-      await deployPoll(deployPollArgs);
-      stateIndex = BigInt(await signup({ maciPubKey: keypair1.pubKey.serialize() }));
+      await deployPoll({ ...deployPollArgs, signer });
+      stateIndex = BigInt(await signup({ maciPubKey: keypair1.pubKey.serialize(), signer }));
       await publish({
         pubkey: keypair1.pubKey.serialize(),
         stateIndex,
@@ -108,6 +114,7 @@ describe("keyChange tests", function test() {
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: keypair1.privKey.serialize(),
+        signer,
       });
     });
 
@@ -122,16 +129,17 @@ describe("keyChange tests", function test() {
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: keypair1.privKey.serialize(),
+        signer,
       });
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(timeTravelArgs);
-      await mergeMessages(mergeMessagesArgs);
-      await mergeSignups(mergeSignupsArgs);
-      await genProofs(genProofsArgs);
-      await proveOnChain(proveOnChainArgs);
-      await verify(verifyArgs);
+      await timeTravel({ ...timeTravelArgs, signer });
+      await mergeMessages({ ...mergeMessagesArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, signer });
+      await genProofs({ ...genProofsArgs, signer });
+      await proveOnChain({ ...proveOnChainArgs, signer });
+      await verify({ ...verifyArgs, signer });
     });
 
     it("should confirm the tally is correct", () => {
@@ -158,10 +166,10 @@ describe("keyChange tests", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy(deployArgs);
+      maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
-      await deployPoll(deployPollArgs);
-      stateIndex = BigInt(await signup({ maciPubKey: keypair1.pubKey.serialize() }));
+      await deployPoll({ ...deployPollArgs, signer });
+      stateIndex = BigInt(await signup({ maciPubKey: keypair1.pubKey.serialize(), signer }));
       await publish({
         pubkey: keypair1.pubKey.serialize(),
         stateIndex,
@@ -172,6 +180,7 @@ describe("keyChange tests", function test() {
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: keypair1.privKey.serialize(),
+        signer,
       });
     });
 
@@ -186,16 +195,17 @@ describe("keyChange tests", function test() {
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: keypair1.privKey.serialize(),
+        signer,
       });
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(timeTravelArgs);
-      await mergeMessages(mergeMessagesArgs);
-      await mergeSignups(mergeSignupsArgs);
-      await genProofs(genProofsArgs);
-      await proveOnChain(proveOnChainArgs);
-      await verify(verifyArgs);
+      await timeTravel({ ...timeTravelArgs, signer });
+      await mergeMessages({ ...mergeMessagesArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, signer });
+      await genProofs({ ...genProofsArgs, signer });
+      await proveOnChain({ ...proveOnChainArgs, signer });
+      await verify({ ...verifyArgs, signer });
     });
 
     it("should confirm the tally is correct", () => {
@@ -222,10 +232,10 @@ describe("keyChange tests", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy(deployArgs);
+      maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
-      await deployPoll(deployPollArgs);
-      stateIndex = BigInt(await signup({ maciPubKey: keypair1.pubKey.serialize() }));
+      await deployPoll({ ...deployPollArgs, signer });
+      stateIndex = BigInt(await signup({ maciPubKey: keypair1.pubKey.serialize(), signer }));
       await publish({
         pubkey: keypair1.pubKey.serialize(),
         stateIndex,
@@ -236,6 +246,7 @@ describe("keyChange tests", function test() {
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: keypair1.privKey.serialize(),
+        signer,
       });
     });
 
@@ -250,16 +261,17 @@ describe("keyChange tests", function test() {
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: keypair1.privKey.serialize(),
+        signer,
       });
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(timeTravelArgs);
-      await mergeMessages(mergeMessagesArgs);
-      await mergeSignups(mergeSignupsArgs);
-      await genProofs(genProofsArgs);
-      await proveOnChain(proveOnChainArgs);
-      await verify(verifyArgs);
+      await timeTravel({ ...timeTravelArgs, signer });
+      await mergeMessages({ ...mergeMessagesArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, signer });
+      await genProofs({ ...genProofsArgs, signer });
+      await proveOnChain({ ...proveOnChainArgs, signer });
+      await verify({ ...verifyArgs, signer });
     });
 
     it("should confirm the tally is correct", () => {

@@ -3,6 +3,16 @@
   "version": "1.1.2",
   "description": "CLI utilities for MACI",
   "main": "build/ts/index.js",
+  "exports": {
+    ".": {
+      "types": "./build/ts/index.d.ts",
+      "default": "./build/ts/index.js"
+    },
+    "./sdk": {
+      "types": "./build/ts/sdk/index.d.ts",
+      "default": "./build/ts/sdk/index.js"
+    }
+  },
   "bin": {
     "maci-cli": "./build/ts/index.js"
   },

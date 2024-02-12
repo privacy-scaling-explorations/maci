@@ -1,5 +1,4 @@
-import { BaseContract } from "ethers";
-import { type MACI, getDefaultSigner, getDefaultNetwork, parseArtifact } from "maci-contracts";
+import { MACI__factory as MACIFactory } from "maci-contracts";
 import { PubKey } from "maci-domainobjs";
 
 import {
@@ -34,8 +33,7 @@ export const deployPoll = async ({
 }: DeployPollArgs): Promise<PollContracts> => {
   banner(quiet);
 
-  const ethSigner = signer || (await getDefaultSigner());
-  const network = await getDefaultNetwork();
+  const network = await signer.provider?.getNetwork();
 
   // check if we have a vkRegistry already deployed or passed as arg
   const vkRegistryContractAddress = readContractAddress("VkRegistry", network?.name);
@@ -75,7 +73,7 @@ export const deployPoll = async ({
   }
 
   // we check that the contract is deployed
-  if (!(await contractExists(ethSigner.provider!, maci))) {
+  if (!(await contractExists(signer.provider!, maci))) {
     logError("MACI contract does not exist");
   }
 
@@ -89,8 +87,7 @@ export const deployPoll = async ({
   // get the verifier contract
   const verifierContractAddress = readContractAddress("Verifier", network?.name);
 
-  const maciAbi = parseArtifact("MACI")[0];
-  const maciContract = new BaseContract(maci, maciAbi, ethSigner) as MACI;
+  const maciContract = MACIFactory.connect(maci, signer);
 
   // deploy the poll
   let pollAddr = "";

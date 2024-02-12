@@ -1,6 +1,7 @@
 /* eslint-disable no-await-in-loop */
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
+import { Signer } from "ethers";
 import {
   deploy,
   deployPoll,
@@ -17,6 +18,7 @@ import {
   DeployedContracts,
   PollContracts,
 } from "maci-cli";
+import { getDefaultSigner } from "maci-contracts";
 import { MaciState, MaxValues, TreeDepths } from "maci-core";
 import { genPubKey, genRandomSalt } from "maci-crypto";
 import { Keypair, PCommand, PrivKey, PubKey } from "maci-domainobjs";
@@ -61,12 +63,14 @@ describe("Integration tests", function test() {
   let contracts: DeployedContracts;
   let pollContracts: PollContracts;
   let pollId: bigint;
+  let signer: Signer;
   const coordinatorKeypair = new Keypair();
 
   // the code that we run before all tests
   before(async () => {
+    signer = await getDefaultSigner();
     // 1. deploy Vk Registry
-    const vkRegistryAddress = await deployVkRegistryContract({});
+    const vkRegistryAddress = await deployVkRegistryContract({ signer });
     // 2. set verifying keys
     await setVerifyingKeys({
       stateTreeDepth: STATE_TREE_DEPTH,
@@ -87,6 +91,7 @@ describe("Integration tests", function test() {
         __dirname,
         "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test/SubsidyPerBatch_10-1-2_test.0.zkey",
       ),
+      signer,
     });
   });
 
@@ -96,7 +101,7 @@ describe("Integration tests", function test() {
     maciState = new MaciState(STATE_TREE_DEPTH);
 
     // 3. deploy maci
-    contracts = await deploy({ stateTreeDepth: STATE_TREE_DEPTH, initialVoiceCredits });
+    contracts = await deploy({ stateTreeDepth: STATE_TREE_DEPTH, initialVoiceCredits, signer });
 
     const maxValues: MaxValues = {
       maxMessages: 25,
@@ -113,6 +118,7 @@ describe("Integration tests", function test() {
       coordinatorPubkey: coordinatorKeypair.pubKey.serialize(),
       subsidyEnabled: true,
       maciAddress: contracts.maciAddress,
+      signer,
     });
 
     const treeDepths: TreeDepths = {
@@ -183,6 +189,7 @@ describe("Integration tests", function test() {
             maciAddress: contracts.maciAddress,
             sgDataArg: SG_DATA,
             ivcpDataArg: ivcpData,
+            signer,
           }),
         );
 
@@ -218,6 +225,7 @@ describe("Integration tests", function test() {
             salt,
             // if it's a key change command, then we pass the old private key otherwise just pass the current
             privateKey: isKeyChange ? oldKeypair.privKey.serialize() : user.keypair.privKey.serialize(),
+            signer,
           });
 
           const encPrivKey = PrivKey.deserialize(encryptionKey);
@@ -239,16 +247,16 @@ describe("Integration tests", function test() {
         }
       }
 
-      await timeTravel({ seconds: duration });
+      await timeTravel({ seconds: duration, signer });
 
       // merge messages
       await expect(
-        mergeMessages({ pollId, maciContractAddress: contracts.maciAddress }),
+        mergeMessages({ pollId, maciContractAddress: contracts.maciAddress, signer }),
       ).to.eventually.not.be.rejectedWith();
 
       // merge signups
       await expect(
-        mergeSignups({ pollId, maciContractAddress: contracts.maciAddress }),
+        mergeSignups({ pollId, maciContractAddress: contracts.maciAddress, signer }),
       ).to.eventually.not.be.rejectedWith();
 
       // generate proofs
@@ -306,6 +314,7 @@ describe("Integration tests", function test() {
           "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test/SubsidyPerBatch_10-1-2_test_js/SubsidyPerBatch_10-1-2_test.wasm",
         ),
         useWasm,
+        signer,
       });
       expect(tallyData).to.not.eq(undefined);
 
@@ -335,6 +344,7 @@ describe("Integration tests", function test() {
           messageProcessorAddress: pollContracts.messageProcessor,
           tallyAddress: pollContracts.tally,
           subsidyAddress: pollContracts.subsidy,
+          signer,
         }),
       ).to.eventually.not.rejectedWith();
 
@@ -348,6 +358,7 @@ describe("Integration tests", function test() {
           tallyAddress: pollContracts.tally,
           subsidyAddress: pollContracts.subsidy,
           subsidyFile: subsidyEnabled ? path.resolve(__dirname, "../../../cli/subsidy.json") : undefined,
+          signer,
         }),
       ).to.eventually.not.rejectedWith();
     });

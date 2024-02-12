@@ -169,6 +169,11 @@ export interface AirdropArgs {
   amount: number;
 
   /**
+   * A signer object
+   */
+  signer: Signer;
+
+  /**
    * The address of the ERC20 contract
    */
   contractAddress?: string;
@@ -187,11 +192,6 @@ export interface AirdropArgs {
    * Whether to log the output
    */
   quiet?: boolean;
-
-  /**
-   * A signer object
-   */
-  signer?: Signer;
 }
 
 /**
@@ -234,6 +234,11 @@ export interface CheckVerifyingKeysArgs {
   tallyVotesZkeyPath: string;
 
   /**
+   * A signer object
+   */
+  signer: Signer;
+
+  /**
    * The address of the VkRegistry contract
    */
   vkRegistry?: string;
@@ -247,11 +252,6 @@ export interface CheckVerifyingKeysArgs {
    * Whether to log the output
    */
   quiet?: boolean;
-
-  /**
-   * A signer object
-   */
-  signer?: Signer;
 }
 
 /**
@@ -262,6 +262,11 @@ export interface DeployArgs {
    * The depth of the state tree
    */
   stateTreeDepth: number;
+
+  /**
+   * A signer object
+   */
+  signer: Signer;
 
   /**
    * The initial voice credits to be minted
@@ -302,11 +307,6 @@ export interface DeployArgs {
    * Whether to log the output
    */
   quiet?: boolean;
-
-  /**
-   * A signer object
-   */
-  signer?: Signer;
 }
 
 /**
@@ -349,6 +349,11 @@ export interface DeployPollArgs {
   subsidyEnabled: boolean;
 
   /**
+   * A signer object
+   */
+  signer: Signer;
+
+  /**
    * The MACI contract address
    */
   maciAddress?: string;
@@ -362,11 +367,6 @@ export interface DeployPollArgs {
    * Whether to log the output to the console
    */
   quiet?: boolean;
-
-  /**
-   * A signer object
-   */
-  signer?: Signer;
 }
 
 /**
@@ -383,6 +383,11 @@ export interface GenLocalStateArgs {
    * The id of the poll
    */
   pollId: bigint;
+
+  /**
+   * A signer object
+   */
+  signer: Signer;
 
   /**
    * The address of the MACI contract
@@ -428,11 +433,6 @@ export interface GenLocalStateArgs {
    * Whether to log the output
    */
   quiet?: boolean;
-
-  /**
-   * A signer object
-   */
-  signer?: Signer;
 }
 
 /**
@@ -463,6 +463,11 @@ export interface GenProofsArgs {
    * The id of the poll
    */
   pollId: bigint;
+
+  /**
+   * A signer object
+   */
+  signer: Signer;
 
   /**
    * The file to store the subsidy proof
@@ -570,11 +575,6 @@ export interface GenProofsArgs {
   quiet?: boolean;
 
   /**
-   * A signer object
-   */
-  signer?: Signer;
-
-  /**
    * Whether to use quadratic voting or not
    */
   useQuadraticVoting?: boolean;
@@ -595,6 +595,11 @@ export interface MergeMessagesArgs {
   pollId: bigint;
 
   /**
+   * A signer object
+   */
+  signer: Signer;
+
+  /**
    * Whether to log the output
    */
   quiet?: boolean;
@@ -608,11 +613,6 @@ export interface MergeMessagesArgs {
    * The number of queue operations to merge
    */
   numQueueOps?: string;
-
-  /**
-   * A signer object
-   */
-  signer?: Signer;
 }
 
 /**
@@ -623,6 +623,11 @@ export interface MergeSignupsArgs {
    * The id of the poll
    */
   pollId: bigint;
+
+  /**
+   * A signer object
+   */
+  signer: Signer;
 
   /**
    * The address of the MACI contract
@@ -638,11 +643,6 @@ export interface MergeSignupsArgs {
    * Whether to log the output
    */
   quiet?: boolean;
-
-  /**
-   * A signer object
-   */
-  signer?: Signer;
 }
 
 /**
@@ -663,6 +663,11 @@ export interface ProveOnChainArgs {
    * Whether to deploy subsidy contract
    */
   subsidyEnabled: boolean;
+
+  /**
+   * A signer object
+   */
+  signer: Signer;
 
   /**
    * The address of the MACI contract
@@ -688,11 +693,6 @@ export interface ProveOnChainArgs {
    * Whether to log the output
    */
   quiet?: boolean;
-
-  /**
-   * A signer object
-   */
-  signer?: Signer;
 }
 
 /**
@@ -730,6 +730,11 @@ export interface PublishArgs {
   newVoteWeight: bigint;
 
   /**
+   * A signer object
+   */
+  signer: Signer;
+
+  /**
    * The address of the MACI contract
    */
   maciContractAddress?: string;
@@ -748,11 +753,6 @@ export interface PublishArgs {
    * Whether to log the output
    */
   quiet?: boolean;
-
-  /**
-   * A signer object
-   */
-  signer?: Signer;
 }
 
 /**
@@ -795,6 +795,11 @@ export interface SetVerifyingKeysArgs {
   tallyVotesZkeyPath: string;
 
   /**
+   * A signer object
+   */
+  signer: Signer;
+
+  /**
    * The address of the vkRegistry contract
    */
   vkRegistry?: string;
@@ -808,11 +813,6 @@ export interface SetVerifyingKeysArgs {
    * Whether to log the output
    */
   quiet?: boolean;
-
-  /**
-   * A signer object
-   */
-  signer?: Signer;
 }
 
 /**
@@ -823,6 +823,11 @@ export interface SignupArgs {
    * The public key of the user
    */
   maciPubKey: string;
+
+  /**
+   * A signer object
+   */
+  signer: Signer;
 
   /**
    * The address of the MACI contract
@@ -843,11 +848,6 @@ export interface SignupArgs {
    * Whether to log the output
    */
   quiet?: boolean;
-
-  /**
-   * A signer object
-   */
-  signer?: Signer;
 }
 
 /**
@@ -875,14 +875,14 @@ export interface TopupArgs {
   maciAddress?: string;
 
   /**
+   * A signer object
+   */
+  signer: Signer;
+
+  /**
    * Whether to log the output
    */
   quiet?: boolean;
-
-  /**
-   * A signer object
-   */
-  signer?: Signer;
 }
 
 /**
@@ -898,6 +898,11 @@ export interface VerifyArgs {
    * Whether to deploy subsidy contract
    */
   subsidyEnabled: boolean;
+
+  /**
+   * A signer object
+   */
+  signer: Signer;
 
   /**
    * The path to the tally file with results, per vote option spent credits, spent voice credits total
@@ -933,11 +938,6 @@ export interface VerifyArgs {
    * Whether to log the output
    */
   quiet?: boolean;
-
-  /**
-   * A signer object
-   */
-  signer?: Signer;
 }
 
 /**
@@ -955,14 +955,14 @@ export interface FundWalletArgs {
   address: string;
 
   /**
+   * A signer object
+   */
+  signer: Signer;
+
+  /**
    * Whether to log the output
    */
   quiet?: boolean;
-
-  /**
-   * A signer object
-   */
-  signer?: Signer;
 }
 
 /**
@@ -975,14 +975,14 @@ export interface TimeTravelArgs {
   seconds: number;
 
   /**
+   * A signer object
+   */
+  signer: Signer;
+
+  /**
    * Whether to log the output
    */
   quiet?: boolean;
-
-  /**
-   * A signer object
-   */
-  signer?: Signer;
 }
 
 /**
@@ -990,12 +990,12 @@ export interface TimeTravelArgs {
  */
 export interface DeployVkRegistryArgs {
   /**
+   * A signer object
+   */
+  signer: Signer;
+
+  /**
    * Whether to log the output
    */
   quiet?: boolean;
-
-  /**
-   * A signer object
-   */
-  signer?: Signer;
 }
