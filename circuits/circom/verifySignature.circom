@@ -36,7 +36,7 @@ template EdDSAPoseidonVerifier_patched() {
 
     // Calculate the h = H(R,A, msg)
     component h2bits = Num2Bits_strict();
-    h2bits.in <== PoseidonHash(5)([R8x, R8y, Ax, Ay, M]);
+    h2bits.in <== PoseidonHasher(5)([R8x, R8y, Ax, Ay, M]);
 
     // Calculate second part of the right side:  right2 = h*8*A
 
@@ -125,7 +125,7 @@ template VerifySignature() {
 
     signal output valid;
 
-    var M = PoseidonHash(4)(preimage);
+    var M = PoseidonHasher(4)(preimage);
 
     component verifier = EdDSAPoseidonVerifier_patched();
 

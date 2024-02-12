@@ -168,7 +168,7 @@ template QuinTreeInclusionProof(levels) {
         splicers[0].in[i] <== path_elements[0][i];
     }
 
-    hashers[0] = PoseidonHash(5)([
+    hashers[0] = PoseidonHasher(5)([
         splicers[0].out[0],
         splicers[0].out[1],
         splicers[0].out[2],
@@ -187,7 +187,7 @@ template QuinTreeInclusionProof(levels) {
             splicers[i].in[j] <== path_elements[i][j];
         }
 
-        hashers[i] = PoseidonHash(5)([
+        hashers[i] = PoseidonHasher(5)([
             splicers[i].out[0],
             splicers[i].out[1],
             splicers[i].out[2],
