@@ -61,8 +61,35 @@ private keys to this CLI. We use `maci-domainobj`'s `PrivKey.serialize` and
 Examples of serialized public and private keys:
 
 ```
-Private key: macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e
-Public key:  macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330
+Public key: macipk.1e03ee6ec5ee1d0dd9bcc5c91c10df8f2e37e134d9737a0239b361cd2809ae9e
+Private key: macisk.a87fbc475cf8e42231a6dd487b41ccc935e7d2de08565f1ba6ecd7464694b85e
+```
+
+### Generate MACI keys
+
+You can generate MACI keys using the following cli utility.
+
+```bash
+node build/ts/index.js genMaciKeyPair
+```
+
+Example output:
+
+```bash
+[✓] Public key: macipk.1e03ee6ec5ee1d0dd9bcc5c91c10df8f2e37e134d9737a0239b361cd2809ae9e
+[✓] Private key: macisk.a87fbc475cf8e42231a6dd487b41ccc935e7d2de08565f1ba6ecd7464694b85e
+```
+
+If you already have a MACI private key in serialized form, you can generate its corresponding public key using the following command:
+
+```bash
+node build/ts/index.js genMaciPubKey -sk macisk.a87fbc475cf8e42231a6dd487b41ccc935e7d2de08565f1ba6ecd7464694b85e
+```
+
+Example output:
+
+```
+[✓] Public key: macipk.1e03ee6ec5ee1d0dd9bcc5c91c10df8f2e37e134d9737a0239b361cd2809ae9e
 ```
 
 ### Coordinator: Deploy VkRegistry
@@ -128,9 +155,9 @@ Example output:
 Example usage:
 
 ```bash
-node ./build/index.js deployPoll \
+node ./build/ts/index.js deployPoll \
     -pk macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330 \
-    -t 30 -g 25 -mv 25 -i 1 -m 2 -b 1 -v 2
+    -t 300 -i 1 -m 2 -b 1 -v 2
 ```
 
 Example output:
@@ -148,7 +175,7 @@ Example output:
 Example usage:
 
 ```bash
-node ./build/index.js signup \
+node ./build/ts/index.js signup \
     -p macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330
 ```
 
@@ -177,18 +204,18 @@ Example output:
 [i] Ephemeral private key: macisk.2631d585e46f059e4909ab35172451542ed7723a1ace120fcf49d68e27f935b0
 ```
 
-### (Testing only) Coordinator: Time travel
+### Coordinator: Time travel (Testing only)
 
 Example usage:
 
 ```bash
-node build/ts/index.js timeTravel -s 1000
+node build/ts/index.js timeTravel -s 300
 ```
 
 Example output:
 
 ```
-[✓] Fast-forwarded 1000 seconds
+[✓] Fast-forwarded 300 seconds
 ```
 
 ### Coordinator: merge state tree
@@ -480,7 +507,7 @@ Output:
 ```bash
 node ./build/index.js deployPoll \
     -pk macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330 \
-    -t 1000 -g 25 -mv 25 -i 1 -m 2 -b 1 -v 2
+    -t 1000 -i 1 -m 2 -b 1 -v 2
 ```
 
 Output:
@@ -496,7 +523,7 @@ Output:
 ### Alice: sign up
 
 ```bash
-node ./build/index.js signup \
+node ./build/ts/index.js signup \
     --pubkey macipk.3e7bb2d7f0a1b7e980f1b6f363d1e3b7a12b9ae354c2cd60a9cfa9fd12917391
 ```
 
