@@ -10,8 +10,10 @@ import {
   MergeSignupsArgs,
   ProveOnChainArgs,
   SetVerifyingKeysArgs,
+  TallyData,
   TimeTravelArgs,
   VerifyArgs,
+  readJSONFile,
 } from "../ts/utils";
 
 export const STATE_TREE_DEPTH = 10;
@@ -128,10 +130,16 @@ export const proveOnChainArgs: Omit<ProveOnChainArgs, "signer"> = {
   subsidyEnabled: false,
 };
 
-export const verifyArgs: Omit<VerifyArgs, "signer"> = {
-  pollId: 0n,
-  subsidyEnabled: false,
-  tallyFile: testTallyFilePath,
+export const verifyArgs = (): Omit<VerifyArgs, "signer"> => {
+  const tallyData = readJSONFile(testTallyFilePath) as unknown as TallyData;
+
+  return {
+    pollId: 0n,
+    subsidyEnabled: false,
+    tallyData,
+    maciAddress: tallyData.maci,
+    tallyAddress: tallyData.tallyAddress,
+  };
 };
 
 export const deployArgs: Omit<DeployArgs, "signer"> = {

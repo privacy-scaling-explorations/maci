@@ -111,12 +111,13 @@ describe("e2e with Subsidy tests", function test() {
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < users.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
-        await signup({ maciPubKey: users[i].pubKey.serialize(), signer });
+        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[i].pubKey.serialize(), signer });
       }
     });
 
     it("should publish six messages", async () => {
       await publish({
+        maciContractAddress: maciAddresses.maciAddress,
         pubkey: users[0].pubKey.serialize(),
         stateIndex: 1n,
         voteOptionIndex: 0n,
@@ -129,6 +130,7 @@ describe("e2e with Subsidy tests", function test() {
       });
 
       await publish({
+        maciContractAddress: maciAddresses.maciAddress,
         pubkey: users[1].pubKey.serialize(),
         stateIndex: 2n,
         voteOptionIndex: 1n,
@@ -141,6 +143,7 @@ describe("e2e with Subsidy tests", function test() {
       });
 
       await publish({
+        maciContractAddress: maciAddresses.maciAddress,
         pubkey: users[2].pubKey.serialize(),
         stateIndex: 3n,
         voteOptionIndex: 2n,
@@ -153,6 +156,7 @@ describe("e2e with Subsidy tests", function test() {
       });
 
       await publish({
+        maciContractAddress: maciAddresses.maciAddress,
         pubkey: users[3].pubKey.serialize(),
         stateIndex: 4n,
         voteOptionIndex: 3n,
@@ -165,6 +169,7 @@ describe("e2e with Subsidy tests", function test() {
       });
 
       await publish({
+        maciContractAddress: maciAddresses.maciAddress,
         pubkey: users[3].pubKey.serialize(),
         stateIndex: 4n,
         voteOptionIndex: 3n,
@@ -177,6 +182,7 @@ describe("e2e with Subsidy tests", function test() {
       });
 
       await publish({
+        maciContractAddress: maciAddresses.maciAddress,
         pubkey: users[3].pubKey.serialize(),
         stateIndex: 4n,
         voteOptionIndex: 3n,
@@ -195,7 +201,7 @@ describe("e2e with Subsidy tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, signer });
       await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...verifyArgs, signer });
+      await verify({ ...verifyArgs(), signer });
     });
   });
 
@@ -227,7 +233,7 @@ describe("e2e with Subsidy tests", function test() {
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < users.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
-        await signup({ maciPubKey: users[i].pubKey.serialize(), signer });
+        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[i].pubKey.serialize(), signer });
       }
     });
 
@@ -252,7 +258,7 @@ describe("e2e with Subsidy tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, signer });
       const tallyData = await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...verifyArgs, tallyData, signer });
+      await verify({ ...verifyArgs(), tallyData, signer });
     });
   });
 
@@ -273,7 +279,7 @@ describe("e2e with Subsidy tests", function test() {
     it("should signup eight users (same pub key)", async () => {
       for (let i = 0; i < 8; i += 1) {
         // eslint-disable-next-line no-await-in-loop
-        await signup({ maciPubKey: user.pubKey.serialize(), signer });
+        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer });
       }
     });
 
@@ -301,7 +307,7 @@ describe("e2e with Subsidy tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, signer });
       const tallyData = await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...verifyArgs, tallyData, signer });
+      await verify({ ...verifyArgs(), tallyData, signer });
     });
   });
 
@@ -334,7 +340,7 @@ describe("e2e with Subsidy tests", function test() {
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < users.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
-        await signup({ maciPubKey: users[i].pubKey.serialize(), signer });
+        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[i].pubKey.serialize(), signer });
       }
       // publish
       await publish({
@@ -356,7 +362,7 @@ describe("e2e with Subsidy tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, signer });
       await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...verifyArgs, signer });
+      await verify({ ...verifyArgs(), signer });
       cleanSubsidy();
     });
 
@@ -463,7 +469,7 @@ describe("e2e with Subsidy tests", function test() {
         signer,
       });
       await verify({
-        ...verifyArgs,
+        ...verifyArgs(),
         pollId: 1n,
         tallyData,
         tallyAddress: pollAddresses.tally,
@@ -486,7 +492,7 @@ describe("e2e with Subsidy tests", function test() {
         signer,
       });
       await verify({
-        ...verifyArgs,
+        ...verifyArgs(),
         pollId: 2n,
         tallyData,
         tallyAddress: secondPollAddresses.tally,

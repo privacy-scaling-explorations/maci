@@ -124,7 +124,7 @@ describe("stress tests", function test() {
     });
 
     it("should signup 1 user", async () => {
-      await signup({ maciPubKey: users[0].pubKey.serialize(), signer });
+      await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[0].pubKey.serialize(), signer });
     });
 
     it("should publish 2 messages", async () => {
@@ -154,7 +154,7 @@ describe("stress tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, signer });
       await genProofs({ ...genProofsCeremonyArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...verifyArgs, signer });
+      await verify({ ...verifyArgs(), signer });
     });
   });
 });

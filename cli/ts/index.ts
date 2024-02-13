@@ -30,6 +30,7 @@ import {
   checkVerifyingKeys,
   genLocalState,
 } from "./commands";
+import { SubsidyData, TallyData, logError, promptSensitiveValue, readContractAddress } from "./utils";
 
 // set the description version and name of the cli tool
 const { description, version, name } = JSON.parse(
@@ -293,6 +294,10 @@ program
   .action(async (cmdObj) => {
     try {
       const signer = await getSigner();
+      const network = await signer.provider?.getNetwork();
+
+      const maciContractAddress = cmdObj.contract || readContractAddress("MACI", network?.name);
+      const privateKey = cmdObj.privkey || (await promptSensitiveValue("Insert your MACI private key"));
 
       await publish({
         pubkey: cmdObj.pubkey,
@@ -301,9 +306,9 @@ program
         nonce: cmdObj.nonce,
         pollId: cmdObj.pollId,
         newVoteWeight: cmdObj.newVoteWeight,
-        maciContractAddress: cmdObj.contract,
+        maciContractAddress,
         salt: cmdObj.salt,
-        privateKey: cmdObj.privkey,
+        privateKey,
         quiet: cmdObj.quiet,
         signer,
       });
@@ -384,10 +389,13 @@ program
   .action(async (cmdObj) => {
     try {
       const signer = await getSigner();
+      const network = await signer.provider?.getNetwork();
+
+      const maciContractAddress = cmdObj.maciAddress || readContractAddress("MACI", network?.name);
 
       await signup({
         maciPubKey: cmdObj.pubkey,
-        maciAddress: cmdObj.maciAddress,
+        maciAddress: maciContractAddress,
         sgDataArg: cmdObj.sgData,
         ivcpDataArg: cmdObj.ivcpData,
         quiet: cmdObj.quiet,
@@ -461,15 +469,37 @@ program
   .action(async (cmdObj) => {
     try {
       const signer = await getSigner();
+      const network = await signer.provider?.getNetwork();
+
+      // read the tally file
+      if (!cmdObj.tallyFile || !fs.existsSync(cmdObj.tallyFile)) {
+        logError(`Unable to open ${cmdObj.tallyFile}`);
+      }
+
+      const tallyData = JSON.parse(fs.readFileSync(cmdObj.tallyFile, { encoding: "utf8" })) as TallyData;
+
+      const maciAddress = tallyData.maci || cmdObj.contract || readContractAddress("MACI", network?.name);
+      const subsidyAddress = cmdObj.subsidyContract || readContractAddress(`Subsidy-${cmdObj.pollId}`, network?.name);
+      const tallyAddress =
+        tallyData.tallyAddress || cmdObj.tallyContract || readContractAddress(`Tally-${cmdObj.pollId}`, network?.name);
+
+      // read the subsidy file
+      if (cmdObj.subsidyEnabled && (!cmdObj.subsidyFile || !fs.existsSync(cmdObj.subsidyFile))) {
+        logError(`There is no such file: ${cmdObj.subsidyFile}`);
+      }
+
+      const subsidyData = cmdObj.subsidyEnabled
+        ? (JSON.parse(fs.readFileSync(cmdObj.subsidyFile!, { encoding: "utf8" })) as SubsidyData)
+        : undefined;
 
       await verify({
+        tallyData,
         pollId: cmdObj.pollId,
         subsidyEnabled: cmdObj.subsidyEnabled,
-        tallyFile: cmdObj.tallyFile,
-        maciAddress: cmdObj.contract,
-        tallyAddress: cmdObj.tallyContract,
-        subsidyAddress: cmdObj.subsidyContract,
-        subsidyFile: cmdObj.subsidyFile,
+        maciAddress,
+        tallyAddress,
+        subsidyAddress,
+        subsidyData,
         quiet: cmdObj.quiet,
         signer,
       });
@@ -667,4 +697,5 @@ export type {
   VerifyArgs,
   ProveOnChainArgs,
   DeployArgs,
+  SubsidyData,
 } from "./utils";

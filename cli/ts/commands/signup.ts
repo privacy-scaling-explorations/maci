@@ -1,19 +1,12 @@
-import { MACI__factory as MACIFactory } from "maci-contracts";
+import { MACI__factory as MACIFactory } from "maci-contracts/typechain-types";
 import { PubKey } from "maci-domainobjs";
 
-import {
-  type SignupArgs,
-  banner,
-  contractExists,
-  DEFAULT_IVCP_DATA,
-  DEFAULT_SG_DATA,
-  readContractAddress,
-  info,
-  logError,
-  logGreen,
-  logYellow,
-  success,
-} from "../utils";
+import type { SignupArgs } from "../utils/interfaces";
+
+import { banner } from "../utils/banner";
+import { contractExists } from "../utils/contracts";
+import { DEFAULT_IVCP_DATA, DEFAULT_SG_DATA } from "../utils/defaults";
+import { info, logError, logGreen, logYellow, success } from "../utils/theme";
 
 /**
  * Signup a user to the MACI contract
@@ -30,7 +23,6 @@ export const signup = async ({
 }: SignupArgs): Promise<string> => {
   banner(quiet);
 
-  const network = await signer.provider?.getNetwork();
   // validate user key
   if (!PubKey.isValidSerializedPubKey(maciPubKey)) {
     logError("Invalid MACI public key");
@@ -38,14 +30,7 @@ export const signup = async ({
 
   const userMaciPubKey = PubKey.deserialize(maciPubKey);
 
-  // ensure we have the contract addresses
-  if (!readContractAddress("MACI", network?.name) && !maciAddress) {
-    logError("Invalid MACI contract address");
-  }
-
-  const maciContractAddress = maciAddress || readContractAddress("MACI", network?.name);
-
-  if (!(await contractExists(signer.provider!, maciContractAddress))) {
+  if (!(await contractExists(signer.provider!, maciAddress))) {
     logError("There is no contract deployed at the specified address");
   }
 
@@ -63,7 +48,7 @@ export const signup = async ({
     logError("invalid initial voice credit proxy data");
   }
 
-  const maciContract = MACIFactory.connect(maciContractAddress, signer);
+  const maciContract = MACIFactory.connect(maciAddress, signer);
 
   let stateIndex = "";
   try {

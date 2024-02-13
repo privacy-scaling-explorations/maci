@@ -1,6 +1,7 @@
 import { Keypair } from "maci-domainobjs";
 
-import { logGreen, success, banner } from "../utils";
+import { banner } from "../utils/banner";
+import { logGreen, success } from "../utils/theme";
 
 /**
  * Generate a new Maci Key Pair

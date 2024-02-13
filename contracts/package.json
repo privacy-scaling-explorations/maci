@@ -3,6 +3,19 @@
   "version": "1.1.2",
   "description": "Solidity Smart Contracts for MACI (Minimal Anti-Collusion Infrastructure)",
   "main": "build/ts/index.js",
+  "exports": {
+    ".": {
+      "types": "./build/ts/index.d.ts",
+      "default": "./build/ts/index.js"
+    },
+    "./typechain-types": {
+      "types": "./build/typechain-types/index.d.ts",
+      "default": "./build/typechain-types/index.js"
+    }
+  },
+  "bin": {
+    "maci-contracts": "./build/ts/index.js"
+  },
   "files": [
     "build",
     "contracts",
