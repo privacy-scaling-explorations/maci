@@ -1,7 +1,8 @@
-import { Signer } from "ethers";
 import { getDefaultSigner } from "maci-contracts";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
+
+import type { Signer } from "ethers";
 
 import {
   deploy,
@@ -51,8 +52,9 @@ describe("e2e tests", function test() {
   this.timeout(900000);
 
   let maciAddresses: DeployedContracts;
+  let signer: Signer;
 
-  const genProofsArgs: GenProofsArgs = {
+  const genProofsArgs: Omit<GenProofsArgs, "signer"> = {
     outputDir: testProofsDirPath,
     tallyFile: testTallyFilePath,
     tallyZkey: tallyVotesTestNonQvZkeyPath,
@@ -71,15 +73,15 @@ describe("e2e tests", function test() {
 
   // before all tests we deploy the vk registry contract and set the verifying keys
   before(async () => {
+    signer = await getDefaultSigner();
+
     // we deploy the vk registry contract
-    await deployVkRegistryContract({});
+    await deployVkRegistryContract({ signer });
     // we set the verifying keys
-    await setVerifyingKeys(setVerifyingKeysNonQvArgs);
+    await setVerifyingKeys({ ...setVerifyingKeysNonQvArgs, signer });
   });
 
   describe("1 signup, 1 message (with signer as argument)", () => {
-    let signer: Signer;
-
     after(() => {
       cleanVanilla();
     });
@@ -87,7 +89,6 @@ describe("e2e tests", function test() {
     const user = new Keypair();
 
     before(async () => {
-      signer = await getDefaultSigner();
       // deploy the smart contracts
       maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract

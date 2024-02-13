@@ -1,11 +1,7 @@
-import { BaseContract } from "ethers";
 import {
-  type AccQueue,
-  type MACI,
-  type Poll,
-  getDefaultSigner,
-  getDefaultNetwork,
-  parseArtifact,
+  AccQueue__factory as AccQueueFactory,
+  MACI__factory as MACIFactory,
+  Poll__factory as PollFactory,
 } from "maci-contracts";
 
 import {
@@ -34,8 +30,7 @@ export const mergeSignups = async ({
   quiet = true,
 }: MergeSignupsArgs): Promise<void> => {
   banner(quiet);
-  const ethSigner = signer || (await getDefaultSigner());
-  const network = await getDefaultNetwork();
+  const network = await signer.provider?.getNetwork();
 
   // maci contract validation
   if (!readContractAddress("MACI", network?.name) && !maciContractAddress) {
@@ -44,7 +39,7 @@ export const mergeSignups = async ({
 
   const maciAddress = maciContractAddress || readContractAddress("MACI", network?.name);
 
-  if (!(await contractExists(ethSigner.provider!, maciAddress))) {
+  if (!(await contractExists(signer.provider!, maciAddress))) {
     logError("MACI contract does not exist");
   }
 
@@ -52,26 +47,20 @@ export const mergeSignups = async ({
     logError("Invalid poll id");
   }
 
-  const [maciContractAbi] = parseArtifact("MACI");
-  const [pollContractAbi] = parseArtifact("Poll");
-  const [accQueueContractAbi] = parseArtifact("AccQueue");
-
-  const maciContract = new BaseContract(maciAddress, maciContractAbi, ethSigner) as MACI;
-
+  const maciContract = MACIFactory.connect(maciAddress, signer);
   const pollAddress = await maciContract.polls(pollId);
 
-  if (!(await contractExists(ethSigner.provider!, pollAddress))) {
+  if (!(await contractExists(signer.provider!, pollAddress))) {
     logError("Poll contract does not exist");
   }
 
-  const pollContract = new BaseContract(pollAddress, pollContractAbi, ethSigner) as Poll;
-
-  const accQueueContract = new BaseContract(await maciContract.stateAq(), accQueueContractAbi, ethSigner) as AccQueue;
+  const pollContract = PollFactory.connect(pollAddress, signer);
+  const accQueueContract = AccQueueFactory.connect(await maciContract.stateAq(), signer);
 
   // check if it's time to merge the message AQ
   const dd = await pollContract.getDeployTimeAndDuration();
   const deadline = Number(dd[0]) + Number(dd[1]);
-  const now = await currentBlockTimestamp(ethSigner.provider!);
+  const now = await currentBlockTimestamp(signer.provider!);
 
   if (now < deadline) {
     logError("Voting period is not over");

@@ -1,11 +1,7 @@
-import { BaseContract } from "ethers";
 import {
-  type MACI,
-  type Poll,
-  type AccQueue,
-  getDefaultSigner,
-  getDefaultNetwork,
-  parseArtifact,
+  MACI__factory as MACIFactory,
+  Poll__factory as PollFactory,
+  AccQueue__factory as AccQueueFactory,
 } from "maci-contracts";
 
 import {
@@ -34,15 +30,14 @@ export const mergeMessages = async ({
   signer,
 }: MergeMessagesArgs): Promise<void> => {
   banner(quiet);
-  const ethSigner = signer || (await getDefaultSigner());
-  const network = await getDefaultNetwork();
+  const network = await signer.provider?.getNetwork();
 
   // maci contract validation
   if (!readContractAddress("MACI", network?.name) && !maciContractAddress) {
     logError("Could not read contracts");
   }
   const maciAddress = maciContractAddress || readContractAddress("MACI", network?.name);
-  if (!(await contractExists(ethSigner.provider!, maciAddress))) {
+  if (!(await contractExists(signer.provider!, maciAddress))) {
     logError("MACI contract does not exist");
   }
 
@@ -50,27 +45,23 @@ export const mergeMessages = async ({
     logError("Invalid poll id");
   }
 
-  const maciContractAbi = parseArtifact("MACI")[0];
-  const pollContractAbi = parseArtifact("Poll")[0];
-  const accQueueContractAbi = parseArtifact("AccQueue")[0];
-
-  const maciContract = new BaseContract(maciAddress, maciContractAbi, ethSigner) as MACI;
-
+  const maciContract = MACIFactory.connect(maciAddress, signer);
   const pollAddress = await maciContract.polls(pollId);
-  if (!(await contractExists(ethSigner.provider!, pollAddress))) {
+
+  if (!(await contractExists(signer.provider!, pollAddress))) {
     logError("Poll contract does not exist");
   }
 
-  const pollContract = new BaseContract(pollAddress, pollContractAbi, ethSigner) as Poll;
+  const pollContract = PollFactory.connect(pollAddress, signer);
   const extContracts = await pollContract.extContracts();
   const messageAqContractAddr = extContracts.messageAq;
 
-  const accQueueContract = new BaseContract(messageAqContractAddr, accQueueContractAbi, ethSigner) as AccQueue;
+  const accQueueContract = AccQueueFactory.connect(messageAqContractAddr, signer);
 
   // we need to ensure that the signer is the owner of the poll contract
   // this is because only the owner can merge the message AQ
   const pollOwner = await pollContract.owner();
-  const signerAddress = await ethSigner.getAddress();
+  const signerAddress = await signer.getAddress();
   if (pollOwner.toLowerCase() !== signerAddress.toLowerCase()) {
     logError("The signer is not the owner of this Poll contract");
   }
@@ -78,7 +69,7 @@ export const mergeMessages = async ({
   // check if it's time to merge the message AQ
   const dd = await pollContract.getDeployTimeAndDuration();
   const deadline = Number(dd[0]) + Number(dd[1]);
-  const now = await currentBlockTimestamp(ethSigner.provider!);
+  const now = await currentBlockTimestamp(signer.provider!);
 
   if (now < deadline) {
     logError("The voting period is not over yet");

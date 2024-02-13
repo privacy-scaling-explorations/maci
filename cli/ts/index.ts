@@ -5,6 +5,8 @@ import { Command } from "@commander-js/extra-typings";
 import fs from "fs";
 import path from "path";
 
+import type { Signer } from "ethers";
+
 import "./cliInit";
 import {
   genKeyPair,
@@ -35,6 +37,9 @@ const { description, version, name } = JSON.parse(
 ) as { description: string; version: string; name: string };
 const program = new Command();
 program.name(name).description(description).version(version);
+
+const getSigner = async (): Promise<Signer> => import("maci-contracts").then((m) => m.getDefaultSigner());
+
 // add the commands
 program
   .command("create")
@@ -54,6 +59,8 @@ program
   .requiredOption("-s, --stateTreeDepth <stateTreeDepth>", "the state tree depth", parseInt)
   .action(async (cmdOptions) => {
     try {
+      const signer = await getSigner();
+
       await deploy({
         stateTreeDepth: cmdOptions.stateTreeDepth,
         initialVoiceCredits: cmdOptions.initialVoiceCredits,
@@ -64,6 +71,7 @@ program
         poseidonT5Address: cmdOptions.poseidonT5Address,
         poseidonT6Address: cmdOptions.poseidonT6Address,
         quiet: cmdOptions.quiet,
+        signer,
       });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
@@ -94,6 +102,8 @@ program
   )
   .action(async (cmdOptions) => {
     try {
+      const signer = await getSigner();
+
       await checkVerifyingKeys({
         stateTreeDepth: cmdOptions.stateTreeDepth,
         intStateTreeDepth: cmdOptions.intStateTreeDepth,
@@ -105,6 +115,7 @@ program
         vkRegistry: cmdOptions.vkContract,
         subsidyZkeyPath: cmdOptions.subsidyZkey,
         quiet: cmdOptions.quiet,
+        signer,
       });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
@@ -138,12 +149,15 @@ program
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
+      const signer = await getSigner();
+
       await airdrop({
         amount: cmdObj.amount,
         maciAddress: cmdObj.contract,
         pollId: cmdObj.pollId,
         contractAddress: cmdObj.tokenAddress,
         quiet: cmdObj.quiet,
+        signer,
       });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
@@ -156,7 +170,9 @@ program
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
-      await deployVkRegistryContract({ quiet: cmdObj.quiet });
+      const signer = await getSigner();
+
+      await deployVkRegistryContract({ quiet: cmdObj.quiet, signer });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -194,6 +210,8 @@ program
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
+      const signer = await getSigner();
+
       await deployPoll({
         pollDuration: cmdObj.duration,
         intStateTreeDepth: cmdObj.intStateTreeDepth,
@@ -205,6 +223,7 @@ program
         maciAddress: cmdObj.maciAddress,
         vkRegistryAddress: cmdObj.vkRegistryAddress,
         quiet: cmdObj.quiet,
+        signer,
       });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
@@ -235,6 +254,8 @@ program
   )
   .action(async (cmdObj) => {
     try {
+      const signer = await getSigner();
+
       await setVerifyingKeys({
         stateTreeDepth: cmdObj.stateTreeDepth,
         intStateTreeDepth: cmdObj.intStateTreeDepth,
@@ -246,6 +267,7 @@ program
         vkRegistry: cmdObj.vkRegistry,
         subsidyZkeyPath: cmdObj.subsidyZkey,
         quiet: cmdObj.quiet,
+        signer,
       });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
@@ -270,6 +292,8 @@ program
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
+      const signer = await getSigner();
+
       await publish({
         pubkey: cmdObj.pubkey,
         stateIndex: cmdObj.stateIndex,
@@ -281,6 +305,7 @@ program
         salt: cmdObj.salt,
         privateKey: cmdObj.privkey,
         quiet: cmdObj.quiet,
+        signer,
       });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
@@ -296,11 +321,14 @@ program
   .option("-n, --num-queue-ops <numQueueOps>", "the number of queue operations", parseInt)
   .action(async (cmdObj) => {
     try {
+      const signer = await getSigner();
+
       await mergeMessages({
         pollId: cmdObj.pollId,
         maciContractAddress: cmdObj.maciContractAddress,
         numQueueOps: cmdObj.numQueueOps?.toString(),
         quiet: cmdObj.quiet,
+        signer,
       });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
@@ -316,11 +344,14 @@ program
   .option("-n, --num-queue-ops <numQueueOps>", "the number of queue operations", parseInt)
   .action(async (cmdObj) => {
     try {
+      const signer = await getSigner();
+
       await mergeSignups({
         pollId: cmdObj.pollId,
         maciContractAddress: cmdObj.maciContractAddress,
         numQueueOps: cmdObj.numQueueOps?.toString(),
         quiet: cmdObj.quiet,
+        signer,
       });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
@@ -334,7 +365,9 @@ program
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
-      await timeTravel({ seconds: cmdObj.seconds, quiet: cmdObj.quiet });
+      const signer = await getSigner();
+
+      await timeTravel({ seconds: cmdObj.seconds, quiet: cmdObj.quiet, signer });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -350,12 +383,15 @@ program
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
+      const signer = await getSigner();
+
       await signup({
         maciPubKey: cmdObj.pubkey,
         maciAddress: cmdObj.maciAddress,
         sgDataArg: cmdObj.sgData,
         ivcpDataArg: cmdObj.ivcpData,
         quiet: cmdObj.quiet,
+        signer,
       });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
@@ -372,12 +408,15 @@ program
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
+      const signer = await getSigner();
+
       await topup({
         amount: cmdObj.amount,
         stateIndex: cmdObj.stateIndex,
         pollId: cmdObj.pollId,
         maciAddress: cmdObj.maciAddress,
         quiet: cmdObj.quiet,
+        signer,
       });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
@@ -392,7 +431,9 @@ program
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
-      await fundWallet({ amount: cmdObj.amount, address: cmdObj.address, quiet: cmdObj.quiet });
+      const signer = await getSigner();
+
+      await fundWallet({ amount: cmdObj.amount, address: cmdObj.address, quiet: cmdObj.quiet, signer });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -419,6 +460,8 @@ program
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
+      const signer = await getSigner();
+
       await verify({
         pollId: cmdObj.pollId,
         subsidyEnabled: cmdObj.subsidyEnabled,
@@ -428,6 +471,7 @@ program
         subsidyAddress: cmdObj.subsidyContract,
         subsidyFile: cmdObj.subsidyFile,
         quiet: cmdObj.quiet,
+        signer,
       });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
@@ -470,6 +514,8 @@ program
   .option("-uq, --use-quadratic-voting", "whether to use quadratic voting", (value) => value === "true", true)
   .action(async (cmdObj) => {
     try {
+      const signer = await getSigner();
+
       await genProofs({
         outputDir: cmdObj.output,
         tallyFile: cmdObj.tallyFile,
@@ -499,6 +545,7 @@ program
         tallyAddress: cmdObj.tallyAddress,
         useQuadraticVoting: cmdObj.useQuadraticVoting,
         quiet: cmdObj.quiet,
+        signer,
       });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
@@ -520,6 +567,8 @@ program
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
+      const signer = await getSigner();
+
       await genLocalState({
         outputPath: cmdObj.output.toString(),
         pollId: cmdObj.pollId,
@@ -532,6 +581,7 @@ program
         transactionHash: cmdObj.transactionHash,
         sleep: cmdObj.sleep,
         quiet: cmdObj.quiet,
+        signer,
       });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
@@ -556,6 +606,8 @@ program
   .requiredOption("-f, --proof-dir <proofDir>", "the proof output directory from the genProofs subcommand")
   .action(async (cmdObj) => {
     try {
+      const signer = await getSigner();
+
       await proveOnChain({
         pollId: cmdObj.pollId,
         proofDir: cmdObj.proofDir,
@@ -565,6 +617,7 @@ program
         tallyAddress: cmdObj.tallyContract,
         subsidyAddress: cmdObj.subsidyContract,
         quiet: cmdObj.quiet,
+        signer,
       });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });

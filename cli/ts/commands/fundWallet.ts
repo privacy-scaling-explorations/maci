@@ -1,5 +1,3 @@
-import { getDefaultSigner } from "maci-contracts";
-
 import { info, logError, logYellow, logGreen, success, banner, type FundWalletArgs } from "../utils";
 
 /**
@@ -10,11 +8,10 @@ import { info, logError, logYellow, logGreen, success, banner, type FundWalletAr
  */
 export const fundWallet = async ({ amount, address, signer, quiet = true }: FundWalletArgs): Promise<void> => {
   banner(quiet);
-  const ethSigner = signer || (await getDefaultSigner());
 
   // fund the wallet by sending Ether to it
   try {
-    const tx = await ethSigner.sendTransaction({
+    const tx = await signer.sendTransaction({
       to: address,
       value: amount.toString(),
     });

@@ -1,5 +1,4 @@
-import { BaseContract } from "ethers";
-import { type MACI, type Poll, getDefaultSigner, getDefaultNetwork, parseArtifact } from "maci-contracts";
+import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair, PCommand, PrivKey, PubKey } from "maci-domainobjs";
 
@@ -36,8 +35,7 @@ export const publish = async ({
 }: PublishArgs): Promise<string> => {
   banner(quiet);
 
-  const ethSigner = signer || (await getDefaultSigner());
-  const network = await getDefaultNetwork();
+  const network = await signer.provider?.getNetwork();
 
   // validate that the pub key of the user is valid
   if (!PubKey.isValidSerializedPubKey(pubkey)) {
@@ -53,7 +51,7 @@ export const publish = async ({
 
   const maciAddress = maciContractAddress || readContractAddress("MACI", network?.name);
 
-  if (!(await contractExists(ethSigner.provider!, maciAddress))) {
+  if (!(await contractExists(signer.provider!, maciAddress))) {
     logError("MACI contract does not exist");
   }
 
@@ -90,18 +88,14 @@ export const publish = async ({
     logError("Invalid poll id");
   }
 
-  const maciContractAbi = parseArtifact("MACI")[0];
-  const pollContractAbi = parseArtifact("Poll")[0];
-
-  const maciContract = new BaseContract(maciAddress, maciContractAbi, ethSigner) as MACI;
-
+  const maciContract = MACIFactory.connect(maciAddress, signer);
   const pollAddress = await maciContract.getPoll(pollId);
 
-  if (!(await contractExists(ethSigner.provider!, pollAddress))) {
+  if (!(await contractExists(signer.provider!, pollAddress))) {
     logError("Poll contract does not exist");
   }
 
-  const pollContract = new BaseContract(pollAddress, pollContractAbi, ethSigner) as Poll;
+  const pollContract = PollFactory.connect(pollAddress, signer);
 
   const maxValues = await pollContract.maxValues();
   const coordinatorPubKeyResult = await pollContract.coordinatorPubKey();

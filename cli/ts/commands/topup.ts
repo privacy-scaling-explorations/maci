@@ -1,5 +1,4 @@
-import { BaseContract } from "ethers";
-import { type MACI, type Poll, getDefaultSigner, getDefaultNetwork, parseArtifact } from "maci-contracts";
+import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts";
 
 import { type TopupArgs, logError, readContractAddress, contractExists, banner } from "../utils";
 
@@ -16,8 +15,7 @@ export const topup = async ({
   quiet = true,
 }: TopupArgs): Promise<void> => {
   banner(quiet);
-  const ethSigner = signer || (await getDefaultSigner());
-  const network = await getDefaultNetwork();
+  const network = await signer.provider?.getNetwork();
 
   // ensure we have a valid MACI contract address
   if (!maciAddress && !readContractAddress(maciAddress!, network?.name)) {
@@ -27,7 +25,7 @@ export const topup = async ({
 
   const maciContractAddress = maciAddress || readContractAddress(maciAddress!, network?.name);
 
-  if (!(await contractExists(ethSigner.provider!, maciContractAddress))) {
+  if (!(await contractExists(signer.provider!, maciContractAddress))) {
     logError("There is no contract deployed at the specified address");
   }
 
@@ -44,16 +42,14 @@ export const topup = async ({
     logError("Poll ID must be a positive integer");
   }
 
-  const maciContractAbi = parseArtifact("MACI")[0];
-  const maciContract = new BaseContract(maciContractAddress, maciContractAbi, ethSigner) as MACI;
-  const pollContractAbi = parseArtifact("Poll")[0];
+  const maciContract = MACIFactory.connect(maciContractAddress, signer);
   const pollAddr = await maciContract.getPoll(pollId);
 
-  if (!(await contractExists(ethSigner.provider!, pollAddr))) {
+  if (!(await contractExists(signer.provider!, pollAddr))) {
     logError("There is no Poll contract with this poll ID linked to the specified MACI contract.");
   }
 
-  const pollContract = new BaseContract(pollAddr, pollContractAbi, ethSigner) as Poll;
+  const pollContract = PollFactory.connect(pollAddr, signer);
 
   try {
     // submit the topup message on chain

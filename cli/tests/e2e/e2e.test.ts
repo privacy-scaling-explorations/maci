@@ -1,9 +1,10 @@
-import { Signer } from "ethers";
 import { getDefaultSigner } from "maci-contracts";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
 
 import fs from "fs";
+
+import type { Signer } from "ethers";
 
 import {
   airdrop,
@@ -68,8 +69,9 @@ describe("e2e tests", function test() {
 
   let maciAddresses: DeployedContracts;
   let pollAddresses: PollContracts;
+  let signer: Signer;
 
-  const genProofsArgs: GenProofsArgs = {
+  const genProofsArgs: Omit<GenProofsArgs, "signer"> = {
     outputDir: testProofsDirPath,
     tallyFile: testTallyFilePath,
     tallyZkey: tallyVotesTestZkeyPath,
@@ -88,15 +90,15 @@ describe("e2e tests", function test() {
 
   // before all tests we deploy the vk registry contract and set the verifying keys
   before(async () => {
+    signer = await getDefaultSigner();
+
     // we deploy the vk registry contract
-    await deployVkRegistryContract({});
+    await deployVkRegistryContract({ signer });
     // we set the verifying keys
-    await setVerifyingKeys(setVerifyingKeysArgs);
+    await setVerifyingKeys({ ...setVerifyingKeysArgs, signer });
   });
 
   describe("1 signup, 1 message (with signer as argument)", () => {
-    let signer: Signer;
-
     after(() => {
       cleanVanilla();
     });
@@ -104,7 +106,6 @@ describe("e2e tests", function test() {
     const user = new Keypair();
 
     before(async () => {
-      signer = await getDefaultSigner();
       // deploy the smart contracts
       maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
@@ -153,13 +154,13 @@ describe("e2e tests", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy(deployArgs);
+      maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
-      pollAddresses = await deployPoll(deployPollArgs);
+      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
     });
 
     it("should signup one user", async () => {
-      await signup({ maciPubKey: user.pubKey.serialize() });
+      await signup({ maciPubKey: user.pubKey.serialize(), signer });
     });
 
     it("should publish one message", async () => {
@@ -173,19 +174,21 @@ describe("e2e tests", function test() {
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: user.privKey.serialize(),
+        signer,
       });
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(timeTravelArgs);
-      await mergeMessages(mergeMessagesArgs);
-      await mergeSignups(mergeSignupsArgs);
-      const tallyFileData = await genProofs(genProofsArgs);
-      await signup({ maciPubKey: user.pubKey.serialize() });
-      await proveOnChain(proveOnChainArgs);
+      await timeTravel({ ...timeTravelArgs, signer });
+      await mergeMessages({ ...mergeMessagesArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, signer });
+      const tallyFileData = await genProofs({ ...genProofsArgs, signer });
+      await signup({ maciPubKey: user.pubKey.serialize(), signer });
+      await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({
         ...verifyArgs,
         tallyData: tallyFileData,
+        signer,
       });
     });
   });
@@ -199,16 +202,16 @@ describe("e2e tests", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy(deployArgs);
+      maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
-      pollAddresses = await deployPoll(deployPollArgs);
+      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
     });
 
     it("should signup four users", async () => {
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < users.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
-        await signup({ maciPubKey: users[i].pubKey.serialize() });
+        await signup({ maciPubKey: users[i].pubKey.serialize(), signer });
       }
     });
 
@@ -223,6 +226,7 @@ describe("e2e tests", function test() {
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[0].privKey.serialize(),
+        signer,
       });
       await publish({
         pubkey: users[1].pubKey.serialize(),
@@ -234,6 +238,7 @@ describe("e2e tests", function test() {
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[1].privKey.serialize(),
+        signer,
       });
       await publish({
         pubkey: users[2].pubKey.serialize(),
@@ -245,6 +250,7 @@ describe("e2e tests", function test() {
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[2].privKey.serialize(),
+        signer,
       });
       await publish({
         pubkey: users[3].pubKey.serialize(),
@@ -256,6 +262,7 @@ describe("e2e tests", function test() {
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[3].privKey.serialize(),
+        signer,
       });
       await publish({
         pubkey: users[3].pubKey.serialize(),
@@ -267,6 +274,7 @@ describe("e2e tests", function test() {
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[3].privKey.serialize(),
+        signer,
       });
       await publish({
         pubkey: users[3].pubKey.serialize(),
@@ -278,16 +286,17 @@ describe("e2e tests", function test() {
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[3].privKey.serialize(),
+        signer,
       });
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(timeTravelArgs);
-      await mergeMessages(mergeMessagesArgs);
-      await mergeSignups(mergeSignupsArgs);
-      await genProofs(genProofsArgs);
-      await proveOnChain(proveOnChainArgs);
-      await verify(verifyArgs);
+      await timeTravel({ ...timeTravelArgs, signer });
+      await mergeMessages({ ...mergeMessagesArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, signer });
+      await genProofs({ ...genProofsArgs, signer });
+      await proveOnChain({ ...proveOnChainArgs, signer });
+      await verify({ ...verifyArgs, signer });
     });
   });
 
@@ -310,16 +319,16 @@ describe("e2e tests", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy(deployArgs);
+      maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
-      pollAddresses = await deployPoll(deployPollArgs);
+      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
     });
 
     it("should signup nine users", async () => {
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < users.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
-        await signup({ maciPubKey: users[i].pubKey.serialize() });
+        await signup({ maciPubKey: users[i].pubKey.serialize(), signer });
       }
     });
 
@@ -334,16 +343,17 @@ describe("e2e tests", function test() {
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[0].privKey.serialize(),
+        signer,
       });
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(timeTravelArgs);
-      await mergeMessages(mergeMessagesArgs);
-      await mergeSignups(mergeSignupsArgs);
-      const tallyFileData = await genProofs(genProofsArgs);
-      await proveOnChain(proveOnChainArgs);
-      await verify({ ...verifyArgs, tallyData: tallyFileData });
+      await timeTravel({ ...timeTravelArgs, signer });
+      await mergeMessages({ ...mergeMessagesArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, signer });
+      const tallyFileData = await genProofs({ ...genProofsArgs, signer });
+      await proveOnChain({ ...proveOnChainArgs, signer });
+      await verify({ ...verifyArgs, tallyData: tallyFileData, signer });
     });
   });
 
@@ -356,15 +366,15 @@ describe("e2e tests", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy(deployArgs);
+      maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
-      pollAddresses = await deployPoll(deployPollArgs);
+      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
     });
 
     it("should signup eight users (same pub key)", async () => {
       for (let i = 0; i < 8; i += 1) {
         // eslint-disable-next-line no-await-in-loop
-        await signup({ maciPubKey: user.pubKey.serialize() });
+        await signup({ maciPubKey: user.pubKey.serialize(), signer });
       }
     });
 
@@ -381,17 +391,18 @@ describe("e2e tests", function test() {
           maciContractAddress: maciAddresses.maciAddress,
           salt: genRandomSalt(),
           privateKey: user.privKey.serialize(),
+          signer,
         });
       }
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(timeTravelArgs);
-      await mergeMessages(mergeMessagesArgs);
-      await mergeSignups(mergeSignupsArgs);
-      await genProofs(genProofsArgs);
-      await proveOnChain(proveOnChainArgs);
-      await verify(verifyArgs);
+      await timeTravel({ ...timeTravelArgs, signer });
+      await mergeMessages({ ...mergeMessagesArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, signer });
+      await genProofs({ ...genProofsArgs, signer });
+      await proveOnChain({ ...proveOnChainArgs, signer });
+      await verify({ ...verifyArgs, signer });
     });
   });
 
@@ -404,16 +415,16 @@ describe("e2e tests", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy(deployArgs);
+      maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
-      pollAddresses = await deployPoll(deployPollArgs);
+      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
     });
 
     it("should signup thirty users", async () => {
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < users.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
-        await signup({ maciPubKey: users[i].pubKey.serialize() });
+        await signup({ maciPubKey: users[i].pubKey.serialize(), signer });
       }
     });
 
@@ -428,6 +439,7 @@ describe("e2e tests", function test() {
         newVoteWeight: 9n,
         salt: genRandomSalt(),
         privateKey: users[0].privKey.serialize(),
+        signer,
       });
 
       await publish({
@@ -439,6 +451,7 @@ describe("e2e tests", function test() {
         newVoteWeight: 9n,
         salt: genRandomSalt(),
         privateKey: users[1].privKey.serialize(),
+        signer,
       });
 
       await publish({
@@ -450,6 +463,7 @@ describe("e2e tests", function test() {
         newVoteWeight: 9n,
         salt: genRandomSalt(),
         privateKey: users[2].privKey.serialize(),
+        signer,
       });
 
       await publish({
@@ -461,26 +475,27 @@ describe("e2e tests", function test() {
         newVoteWeight: 9n,
         salt: genRandomSalt(),
         privateKey: users[3].privKey.serialize(),
+        signer,
       });
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(timeTravelArgs);
-      await mergeMessages(mergeMessagesArgs);
-      await mergeSignups(mergeSignupsArgs);
-      const tallyFileData = await genProofs(genProofsArgs);
-      await proveOnChain(proveOnChainArgs);
-      await verify({ ...verifyArgs, tallyData: tallyFileData });
+      await timeTravel({ ...timeTravelArgs, signer });
+      await mergeMessages({ ...mergeMessagesArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, signer });
+      const tallyFileData = await genProofs({ ...genProofsArgs, signer });
+      await proveOnChain({ ...proveOnChainArgs, signer });
+      await verify({ ...verifyArgs, tallyData: tallyFileData, signer });
     });
   });
 
   describe("checkKeys", () => {
     before(async () => {
       // deploy maci as we need the address
-      await deploy(deployArgs);
+      await deploy({ ...deployArgs, signer });
     });
     it("should check if the verifying keys have been set correctly", async () => {
-      await checkVerifyingKeys(checkVerifyingKeysArgs);
+      await checkVerifyingKeys({ ...checkVerifyingKeysArgs, signer });
     });
   });
 
@@ -493,11 +508,11 @@ describe("e2e tests", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy(deployArgs);
+      maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
-      pollAddresses = await deployPoll(deployPollArgs);
+      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
       // signup
-      await signup({ maciPubKey: user.pubKey.serialize() });
+      await signup({ maciPubKey: user.pubKey.serialize(), signer });
       // publish
       await publish({
         pubkey: user.pubKey.serialize(),
@@ -509,20 +524,21 @@ describe("e2e tests", function test() {
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: user.privKey.serialize(),
+        signer,
       });
       // time travel
-      await timeTravel(timeTravelArgs);
+      await timeTravel({ ...timeTravelArgs, signer });
       // generate proofs
-      await mergeMessages(mergeMessagesArgs);
-      await mergeSignups(mergeSignupsArgs);
-      const tallyFileData = await genProofs(genProofsArgs);
-      await proveOnChain(proveOnChainArgs);
-      await verify({ ...verifyArgs, tallyData: tallyFileData });
+      await mergeMessages({ ...mergeMessagesArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, signer });
+      const tallyFileData = await genProofs({ ...genProofsArgs, signer });
+      await proveOnChain({ ...proveOnChainArgs, signer });
+      await verify({ ...verifyArgs, tallyData: tallyFileData, signer });
       cleanVanilla();
     });
 
     it("should deploy a new poll", async () => {
-      pollAddresses = await deployPoll(deployPollArgs);
+      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
     });
 
     it("should publish a new message", async () => {
@@ -536,16 +552,17 @@ describe("e2e tests", function test() {
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: user.privKey.serialize(),
+        signer,
       });
     });
 
     it("should generate proofs and verify them", async () => {
-      await timeTravel(timeTravelArgs);
-      await mergeMessages({ pollId: 1n });
-      await mergeSignups({ pollId: 1n });
-      await genProofs({ ...genProofsArgs, pollId: 1n });
-      await proveOnChain({ ...proveOnChainArgs, pollId: 1n });
-      await verify({ ...verifyArgs, pollId: 1n });
+      await timeTravel({ ...timeTravelArgs, signer });
+      await mergeMessages({ pollId: 1n, signer });
+      await mergeSignups({ pollId: 1n, signer });
+      await genProofs({ ...genProofsArgs, pollId: 1n, signer });
+      await proveOnChain({ ...proveOnChainArgs, pollId: 1n, signer });
+      await verify({ ...verifyArgs, pollId: 1n, signer });
     });
   });
 
@@ -568,18 +585,18 @@ describe("e2e tests", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy(deployArgs);
+      maciAddresses = await deploy({ ...deployArgs, signer });
     });
 
     it("should run the first poll", async () => {
       // deploy a poll contract
-      pollAddresses = await deployPoll(deployPollArgs);
+      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
 
       // signup
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < users.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
-        await signup({ maciPubKey: users[i].pubKey.serialize() });
+        await signup({ maciPubKey: users[i].pubKey.serialize(), signer });
       }
 
       // publish
@@ -593,23 +610,24 @@ describe("e2e tests", function test() {
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[0].privKey.serialize(),
+        signer,
       });
 
       // time travel
-      await timeTravel(timeTravelArgs);
+      await timeTravel({ ...timeTravelArgs, signer });
       // generate proofs
-      await mergeMessages(mergeMessagesArgs);
-      await mergeSignups(mergeSignupsArgs);
-      await genProofs(genProofsArgs);
-      await proveOnChain(proveOnChainArgs);
-      await verify(verifyArgs);
+      await mergeMessages({ ...mergeMessagesArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, signer });
+      await genProofs({ ...genProofsArgs, signer });
+      await proveOnChain({ ...proveOnChainArgs, signer });
+      await verify({ ...verifyArgs, signer });
       cleanVanilla();
     });
 
     it("should deploy two more polls", async () => {
       // deploy a poll contract
-      pollAddresses = await deployPoll(deployPollArgs);
-      secondPollAddresses = await deployPoll(deployPollArgs);
+      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
+      secondPollAddresses = await deployPoll({ ...deployPollArgs, signer });
     });
 
     it("should publish messages to the second poll", async () => {
@@ -623,6 +641,7 @@ describe("e2e tests", function test() {
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[0].privKey.serialize(),
+        signer,
       });
 
       await publish({
@@ -635,6 +654,7 @@ describe("e2e tests", function test() {
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[1].privKey.serialize(),
+        signer,
       });
 
       await publish({
@@ -647,6 +667,7 @@ describe("e2e tests", function test() {
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[2].privKey.serialize(),
+        signer,
       });
     });
 
@@ -661,6 +682,7 @@ describe("e2e tests", function test() {
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[3].privKey.serialize(),
+        signer,
       });
 
       await publish({
@@ -673,6 +695,7 @@ describe("e2e tests", function test() {
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[4].privKey.serialize(),
+        signer,
       });
 
       await publish({
@@ -685,20 +708,22 @@ describe("e2e tests", function test() {
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[5].privKey.serialize(),
+        signer,
       });
     });
 
     it("should complete the second poll", async () => {
-      await timeTravel(timeTravelArgs);
-      await mergeMessages({ pollId: 1n });
-      await mergeSignups({ pollId: 1n });
-      const tallyData = await genProofs({ ...genProofsArgs, pollId: 1n });
+      await timeTravel({ ...timeTravelArgs, signer });
+      await mergeMessages({ pollId: 1n, signer });
+      await mergeSignups({ pollId: 1n, signer });
+      const tallyData = await genProofs({ ...genProofsArgs, pollId: 1n, signer });
       await proveOnChain({
         ...proveOnChainArgs,
         pollId: 1n,
         maciAddress: maciAddresses.maciAddress,
         messageProcessorAddress: pollAddresses.messageProcessor,
         tallyAddress: pollAddresses.tally,
+        signer,
       });
       await verify({
         ...verifyArgs,
@@ -706,20 +731,22 @@ describe("e2e tests", function test() {
         tallyData,
         maciAddress: maciAddresses.maciAddress,
         tallyAddress: pollAddresses.tally,
+        signer,
       });
       cleanVanilla();
     });
 
     it("should complete the third poll", async () => {
-      await mergeMessages({ pollId: 2n });
-      await mergeSignups({ pollId: 2n });
-      const tallyData = await genProofs({ ...genProofsArgs, pollId: 2n });
+      await mergeMessages({ pollId: 2n, signer });
+      await mergeSignups({ pollId: 2n, signer });
+      const tallyData = await genProofs({ ...genProofsArgs, pollId: 2n, signer });
       await proveOnChain({
         ...proveOnChainArgs,
         pollId: 2n,
         maciAddress: maciAddresses.maciAddress,
         messageProcessorAddress: secondPollAddresses.messageProcessor,
         tallyAddress: secondPollAddresses.tally,
+        signer,
       });
       await verify({
         ...verifyArgs,
@@ -727,6 +754,7 @@ describe("e2e tests", function test() {
         tallyData,
         maciAddress: maciAddresses.maciAddress,
         tallyAddress: secondPollAddresses.tally,
+        signer,
       });
     });
   });
@@ -746,13 +774,13 @@ describe("e2e tests", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy(deployArgs);
+      maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
-      pollAddresses = await deployPoll(deployPollArgs);
+      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
     });
 
     it("should signup one user", async () => {
-      await signup({ maciPubKey: user.pubKey.serialize() });
+      await signup({ maciPubKey: user.pubKey.serialize(), signer });
     });
 
     it("should publish one message", async () => {
@@ -766,26 +794,29 @@ describe("e2e tests", function test() {
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: user.privKey.serialize(),
+        signer,
       });
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel(timeTravelArgs);
-      await mergeMessages(mergeMessagesArgs);
-      await mergeSignups(mergeSignupsArgs);
+      await timeTravel({ ...timeTravelArgs, signer });
+      await mergeMessages({ ...mergeMessagesArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, signer });
       await genLocalState({
         outputPath: stateOutPath,
         startBlock: 0,
         coordinatorPrivateKey: coordinatorPrivKey,
         blockPerBatch: 50,
         pollId: 0n,
+        signer,
       });
       await genProofs({
         ...genProofsArgs,
         stateFile: stateOutPath,
+        signer,
       });
-      await proveOnChain(proveOnChainArgs);
-      await verify(verifyArgs);
+      await proveOnChain({ ...proveOnChainArgs, signer });
+      await verify({ ...verifyArgs, signer });
     });
   });
 
@@ -800,13 +831,13 @@ describe("e2e tests", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy(deployArgs);
+      maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
-      pollAddresses = await deployPoll(deployPollArgs);
+      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
     });
 
     it("should signup one user", async () => {
-      stateIndex = BigInt(await signup({ maciPubKey: user.pubKey.serialize() }));
+      stateIndex = BigInt(await signup({ maciPubKey: user.pubKey.serialize(), signer }));
     });
 
     it("should airdrop topup tokens to the coordinator user", async () => {
@@ -815,6 +846,7 @@ describe("e2e tests", function test() {
         pollId: 0n,
         contractAddress: maciAddresses.topupCreditAddress,
         maciAddress: maciAddresses.maciAddress,
+        signer,
       });
     });
 
@@ -824,6 +856,7 @@ describe("e2e tests", function test() {
         stateIndex: Number(stateIndex!),
         pollId: 0n,
         maciAddress: maciAddresses.maciAddress,
+        signer,
       });
     });
 
@@ -838,16 +871,17 @@ describe("e2e tests", function test() {
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: user.privKey.serialize(),
+        signer,
       });
     });
 
     it("should generate proofs and verify them", async () => {
-      await timeTravel(timeTravelArgs);
-      await mergeMessages(mergeMessagesArgs);
-      await mergeSignups(mergeSignupsArgs);
-      await genProofs(genProofsArgs);
-      await proveOnChain(proveOnChainArgs);
-      await verify(verifyArgs);
+      await timeTravel({ ...timeTravelArgs, signer });
+      await mergeMessages({ ...mergeMessagesArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, signer });
+      await genProofs({ ...genProofsArgs, signer });
+      await proveOnChain({ ...proveOnChainArgs, signer });
+      await verify({ ...verifyArgs, signer });
     });
   });
 });

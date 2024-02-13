@@ -8,7 +8,7 @@ describe("timeTravel", () => {
     const signer = await getDefaultSigner();
     const blockNumber = await signer.provider?.getBlock("latest");
 
-    await expect(timeTravel({ seconds: 5 })).to.be.fulfilled;
+    await expect(timeTravel({ seconds: 5, signer })).to.be.fulfilled;
 
     const blockNumberAfter = await signer.provider?.getBlock("latest");
     expect(blockNumberAfter!.timestamp).to.be.gt(blockNumber!.timestamp);

@@ -1,6 +1,5 @@
-import { BaseContract } from "ethers";
 import { extractVk } from "maci-circuits";
-import { type VkRegistry, getDefaultSigner, getDefaultNetwork, parseArtifact } from "maci-contracts";
+import { VkRegistry__factory as VkRegistryFactory } from "maci-contracts";
 import { G1Point, G2Point } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
 
@@ -40,9 +39,7 @@ export const checkVerifyingKeys = async ({
   quiet = true,
 }: CheckVerifyingKeysArgs): Promise<boolean> => {
   banner(quiet);
-  // get the signer
-  const ethSigner = signer || (await getDefaultSigner());
-  const network = await getDefaultNetwork();
+  const network = await signer.provider?.getNetwork();
 
   // ensure we have the contract addresses that we need
   if (!readContractAddress("VkRegistry", network?.name) && !vkRegistry) {
@@ -51,15 +48,11 @@ export const checkVerifyingKeys = async ({
 
   const vkContractAddress = vkRegistry || readContractAddress("VkRegistry", network?.name);
 
-  if (!(await contractExists(ethSigner.provider!, vkContractAddress))) {
+  if (!(await contractExists(signer.provider!, vkContractAddress))) {
     logError("The VkRegistry contract does not exist");
   }
 
-  const vkRegistryContractInstance = new BaseContract(
-    vkContractAddress,
-    parseArtifact("VkRegistry")[0],
-    ethSigner,
-  ) as VkRegistry;
+  const vkRegistryContractInstance = VkRegistryFactory.connect(vkContractAddress, signer);
 
   // we need to ensure that the zkey files exist
   if (!fs.existsSync(processMessagesZkeyPath)) {

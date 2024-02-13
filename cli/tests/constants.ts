@@ -78,7 +78,7 @@ export const pollDuration = 90;
 export const maxMessages = 25;
 export const maxVoteOptions = 25;
 
-export const setVerifyingKeysArgs: SetVerifyingKeysArgs = {
+export const setVerifyingKeysArgs: Omit<SetVerifyingKeysArgs, "signer"> = {
   quiet: true,
   stateTreeDepth: STATE_TREE_DEPTH,
   intStateTreeDepth: INT_STATE_TREE_DEPTH,
@@ -89,7 +89,7 @@ export const setVerifyingKeysArgs: SetVerifyingKeysArgs = {
   tallyVotesZkeyPath: tallyVotesTestZkeyPath,
 };
 
-export const setVerifyingKeysNonQvArgs: SetVerifyingKeysArgs = {
+export const setVerifyingKeysNonQvArgs: Omit<SetVerifyingKeysArgs, "signer"> = {
   quiet: true,
   stateTreeDepth: STATE_TREE_DEPTH,
   intStateTreeDepth: INT_STATE_TREE_DEPTH,
@@ -100,7 +100,7 @@ export const setVerifyingKeysNonQvArgs: SetVerifyingKeysArgs = {
   tallyVotesZkeyPath: tallyVotesTestNonQvZkeyPath,
 };
 
-export const checkVerifyingKeysArgs: CheckVerifyingKeysArgs = {
+export const checkVerifyingKeysArgs: Omit<CheckVerifyingKeysArgs, "signer"> = {
   stateTreeDepth: STATE_TREE_DEPTH,
   intStateTreeDepth: INT_STATE_TREE_DEPTH,
   messageTreeDepth: MSG_TREE_DEPTH,
@@ -110,35 +110,35 @@ export const checkVerifyingKeysArgs: CheckVerifyingKeysArgs = {
   tallyVotesZkeyPath: tallyVotesTestZkeyPath,
 };
 
-export const timeTravelArgs: TimeTravelArgs = {
+export const timeTravelArgs: Omit<TimeTravelArgs, "signer"> = {
   seconds: pollDuration,
 };
 
-export const mergeMessagesArgs: MergeMessagesArgs = {
+export const mergeMessagesArgs: Omit<MergeMessagesArgs, "signer"> = {
   pollId: 0n,
 };
 
-export const mergeSignupsArgs: MergeSignupsArgs = {
+export const mergeSignupsArgs: Omit<MergeSignupsArgs, "signer"> = {
   pollId: 0n,
 };
 
-export const proveOnChainArgs: ProveOnChainArgs = {
+export const proveOnChainArgs: Omit<ProveOnChainArgs, "signer"> = {
   pollId: 0n,
   proofDir: testProofsDirPath,
   subsidyEnabled: false,
 };
 
-export const verifyArgs: VerifyArgs = {
+export const verifyArgs: Omit<VerifyArgs, "signer"> = {
   pollId: 0n,
   subsidyEnabled: false,
   tallyFile: testTallyFilePath,
 };
 
-export const deployArgs: DeployArgs = {
+export const deployArgs: Omit<DeployArgs, "signer"> = {
   stateTreeDepth: STATE_TREE_DEPTH,
 };
 
-export const deployPollArgs: DeployPollArgs = {
+export const deployPollArgs: Omit<DeployPollArgs, "signer"> = {
   pollDuration,
   intStateTreeDepth: INT_STATE_TREE_DEPTH,
   messageTreeSubDepth: MSG_BATCH_DEPTH,

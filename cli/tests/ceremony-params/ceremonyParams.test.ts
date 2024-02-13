@@ -1,5 +1,8 @@
+import { getDefaultSigner } from "maci-contracts";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
+
+import type { Signer } from "ethers";
 
 import {
   deploy,
@@ -52,8 +55,9 @@ describe("stress tests", function test() {
   this.timeout(90000000);
 
   let maciAddresses: DeployedContracts;
+  let signer: Signer;
 
-  const verifyingKeysArgs: SetVerifyingKeysArgs = {
+  const verifyingKeysArgs: Omit<SetVerifyingKeysArgs, "signer"> = {
     quiet: true,
     stateTreeDepth,
     intStateTreeDepth,
@@ -64,11 +68,11 @@ describe("stress tests", function test() {
     tallyVotesZkeyPath: ceremonyTallyVotesZkeyPath,
   };
 
-  const ceremonyDeployArgs: DeployArgs = {
+  const ceremonyDeployArgs: Omit<DeployArgs, "signer"> = {
     stateTreeDepth,
   };
 
-  const deployPollArgs: DeployPollArgs = {
+  const deployPollArgs: Omit<DeployPollArgs, "signer"> = {
     pollDuration,
     intStateTreeDepth,
     messageTreeSubDepth: messageBatchDepth,
@@ -78,7 +82,7 @@ describe("stress tests", function test() {
     subsidyEnabled,
   };
 
-  const genProofsCeremonyArgs: GenProofsArgs = {
+  const genProofsCeremonyArgs: Omit<GenProofsArgs, "signer"> = {
     outputDir: testProofsDirPath,
     tallyFile: testTallyFilePath,
     tallyZkey: ceremonyTallyVotesZkeyPath,
@@ -97,10 +101,12 @@ describe("stress tests", function test() {
 
   // before all tests we deploy the vk registry contract and set the verifying keys
   before(async () => {
+    signer = await getDefaultSigner();
+
     // we deploy the vk registry contract
-    await deployVkRegistryContract({});
+    await deployVkRegistryContract({ signer });
     // we set the verifying keys
-    await setVerifyingKeys(verifyingKeysArgs);
+    await setVerifyingKeys({ ...verifyingKeysArgs, signer });
   });
 
   const users = Array<Keypair>(2).fill(new Keypair());
@@ -112,13 +118,13 @@ describe("stress tests", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy(ceremonyDeployArgs);
+      maciAddresses = await deploy({ ...ceremonyDeployArgs, signer });
       // deploy a poll contract
-      await deployPoll(deployPollArgs);
+      await deployPoll({ ...deployPollArgs, signer });
     });
 
     it("should signup 1 user", async () => {
-      await signup({ maciPubKey: users[0].pubKey.serialize() });
+      await signup({ maciPubKey: users[0].pubKey.serialize(), signer });
     });
 
     it("should publish 2 messages", async () => {
@@ -137,17 +143,18 @@ describe("stress tests", function test() {
           salt: genRandomSalt(),
           privateKey: users[0].privKey.serialize(),
           pollId: 0n,
+          signer,
         });
       }
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
-      await timeTravel({ seconds: pollDuration });
-      await mergeMessages(mergeMessagesArgs);
-      await mergeSignups(mergeSignupsArgs);
-      await genProofs(genProofsCeremonyArgs);
-      await proveOnChain(proveOnChainArgs);
-      await verify(verifyArgs);
+      await timeTravel({ seconds: pollDuration, signer });
+      await mergeMessages({ ...mergeMessagesArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, signer });
+      await genProofs({ ...genProofsCeremonyArgs, signer });
+      await proveOnChain({ ...proveOnChainArgs, signer });
+      await verify({ ...verifyArgs, signer });
     });
   });
 });

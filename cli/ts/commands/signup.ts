@@ -1,5 +1,4 @@
-import { BaseContract } from "ethers";
-import { type MACI, getDefaultSigner, getDefaultNetwork, parseArtifact } from "maci-contracts";
+import { MACI__factory as MACIFactory } from "maci-contracts";
 import { PubKey } from "maci-domainobjs";
 
 import {
@@ -31,8 +30,7 @@ export const signup = async ({
 }: SignupArgs): Promise<string> => {
   banner(quiet);
 
-  const ethSigner = signer || (await getDefaultSigner());
-  const network = await getDefaultNetwork();
+  const network = await signer.provider?.getNetwork();
   // validate user key
   if (!PubKey.isValidSerializedPubKey(maciPubKey)) {
     logError("Invalid MACI public key");
@@ -47,7 +45,7 @@ export const signup = async ({
 
   const maciContractAddress = maciAddress || readContractAddress("MACI", network?.name);
 
-  if (!(await contractExists(ethSigner.provider!, maciContractAddress))) {
+  if (!(await contractExists(signer.provider!, maciContractAddress))) {
     logError("There is no contract deployed at the specified address");
   }
 
@@ -65,8 +63,7 @@ export const signup = async ({
     logError("invalid initial voice credit proxy data");
   }
 
-  const maciContractAbi = parseArtifact("MACI")[0];
-  const maciContract = new BaseContract(maciContractAddress, maciContractAbi, ethSigner) as MACI;
+  const maciContract = MACIFactory.connect(maciContractAddress, signer);
 
   let stateIndex = "";
   try {

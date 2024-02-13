@@ -1,19 +1,17 @@
 /* eslint-disable no-await-in-loop */
-import { BaseContract, type BigNumberish } from "ethers";
+import { type BigNumberish } from "ethers";
 import {
-  type MACI,
-  type AccQueue,
-  type Subsidy,
-  type Tally,
-  type MessageProcessor,
-  type Poll as PollContract,
-  type VkRegistry,
-  type Verifier,
-  type IVerifyingKeyStruct,
+  MACI__factory as MACIFactory,
+  AccQueue__factory as AccQueueFactory,
+  Subsidy__factory as SubsidyFactory,
+  Tally__factory as TallyFactory,
+  MessageProcessor__factory as MessageProcessorFactory,
+  Poll__factory as PollFactory,
+  VkRegistry__factory as VkRegistryFactory,
+  Verifier__factory as VerifierFactory,
   formatProofForVerifierContract,
-  getDefaultSigner,
-  parseArtifact,
-  getDefaultNetwork,
+  type IVerifyingKeyStruct,
+  type Subsidy,
 } from "maci-contracts";
 import { STATE_TREE_ARITY } from "maci-core";
 import { G1Point, G2Point, hashLeftRight } from "maci-crypto";
@@ -54,8 +52,7 @@ export const proveOnChain = async ({
   quiet = true,
 }: ProveOnChainArgs): Promise<void> => {
   banner(quiet);
-  const ethSigner = signer || (await getDefaultSigner());
-  const network = await getDefaultNetwork();
+  const network = await signer.provider?.getNetwork();
 
   // check existence of contract addresses
   if (!readContractAddress("MACI", network?.name) && !maciAddress) {
@@ -83,84 +80,60 @@ export const proveOnChain = async ({
   }
 
   // check contracts are deployed on chain
-  if (!(await contractExists(ethSigner.provider!, maciContractAddress))) {
+  if (!(await contractExists(signer.provider!, maciContractAddress))) {
     logError("MACI contract does not exist");
   }
 
-  if (!(await contractExists(ethSigner.provider!, messageProcessorContractAddress))) {
+  if (!(await contractExists(signer.provider!, messageProcessorContractAddress))) {
     logError("MessageProcessor contract does not exist");
   }
 
-  if (!(await contractExists(ethSigner.provider!, tallyContractAddress))) {
+  if (!(await contractExists(signer.provider!, tallyContractAddress))) {
     logError("Tally contract does not exist");
   }
 
-  if (
-    subsidyEnabled &&
-    subsidyContractAddress &&
-    !(await contractExists(ethSigner.provider!, subsidyContractAddress))
-  ) {
+  if (subsidyEnabled && subsidyContractAddress && !(await contractExists(signer.provider!, subsidyContractAddress))) {
     logError("Subsidy contract does not exist");
   }
 
-  const maciContract = new BaseContract(maciContractAddress, parseArtifact("MACI")[0], ethSigner) as MACI;
-
+  const maciContract = MACIFactory.connect(maciContractAddress, signer);
   const pollAddr = await maciContract.polls(pollId);
 
-  if (!(await contractExists(ethSigner.provider!, pollAddr))) {
+  if (!(await contractExists(signer.provider!, pollAddr))) {
     logError("There is no Poll contract with this poll ID linked to the specified MACI contract.");
   }
 
-  const pollContract = new BaseContract(pollAddr, parseArtifact("Poll")[0], ethSigner) as PollContract;
+  const pollContract = PollFactory.connect(pollAddr, signer);
 
-  const mpContract = new BaseContract(
-    messageProcessorContractAddress,
-    parseArtifact("MessageProcessor")[0],
-    ethSigner,
-  ) as MessageProcessor;
-
-  const tallyContract = new BaseContract(tallyContractAddress, parseArtifact("Tally")[0], ethSigner) as Tally;
+  const mpContract = MessageProcessorFactory.connect(messageProcessorContractAddress, signer);
+  const tallyContract = TallyFactory.connect(tallyContractAddress, signer);
 
   let subsidyContract: Subsidy | undefined;
   if (subsidyEnabled && subsidyContractAddress) {
-    subsidyContract = new BaseContract(subsidyContractAddress, parseArtifact("Subsidy")[0], ethSigner) as Subsidy;
+    subsidyContract = SubsidyFactory.connect(subsidyContractAddress, signer);
   }
 
   const messageAqContractAddress = (await pollContract.extContracts()).messageAq;
 
-  if (!(await contractExists(ethSigner.provider!, messageAqContractAddress))) {
+  if (!(await contractExists(signer.provider!, messageAqContractAddress))) {
     logError("There is no MessageAq contract linked to the specified MACI contract.");
   }
 
-  const messageAqContract = new BaseContract(
-    messageAqContractAddress,
-    parseArtifact("AccQueue")[0],
-    ethSigner,
-  ) as AccQueue;
-
+  const messageAqContract = AccQueueFactory.connect(messageAqContractAddress, signer);
   const vkRegistryContractAddress = await tallyContract.vkRegistry();
 
-  if (!(await contractExists(ethSigner.provider!, vkRegistryContractAddress))) {
+  if (!(await contractExists(signer.provider!, vkRegistryContractAddress))) {
     logError("There is no VkRegistry contract linked to the specified MACI contract.");
   }
 
-  const vkRegsitryContract = new BaseContract(
-    vkRegistryContractAddress,
-    parseArtifact("VkRegistry")[0],
-    ethSigner,
-  ) as VkRegistry;
-
+  const vkRegsitryContract = VkRegistryFactory.connect(vkRegistryContractAddress, signer);
   const verifierContractAddress = await mpContract.verifier();
 
-  if (!(await contractExists(ethSigner.provider!, verifierContractAddress))) {
+  if (!(await contractExists(signer.provider!, verifierContractAddress))) {
     logError("There is no Verifier contract linked to the specified MACI contract.");
   }
 
-  const verifierContract = new BaseContract(
-    verifierContractAddress,
-    parseArtifact("Verifier")[0],
-    ethSigner,
-  ) as Verifier;
+  const verifierContract = VerifierFactory.connect(verifierContractAddress, signer);
 
   const data = {
     processProofs: [] as Proof[],
