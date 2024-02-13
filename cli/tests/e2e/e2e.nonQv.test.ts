@@ -81,7 +81,7 @@ describe("e2e tests", function test() {
     await setVerifyingKeys({ ...setVerifyingKeysNonQvArgs, signer });
   });
 
-  describe("1 signup, 1 message (with signer as argument)", () => {
+  describe("1 signup, 1 message", () => {
     after(() => {
       cleanVanilla();
     });
@@ -96,7 +96,7 @@ describe("e2e tests", function test() {
     });
 
     it("should signup one user", async () => {
-      await signup({ maciPubKey: user.pubKey.serialize(), signer });
+      await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer });
     });
 
     it("should publish one message", async () => {
@@ -121,8 +121,10 @@ describe("e2e tests", function test() {
       const tallyFileData = await genProofs({ ...genProofsArgs, signer, useQuadraticVoting: false });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({
-        ...verifyArgs,
+        ...verifyArgs(),
         tallyData: tallyFileData,
+        maciAddress: tallyFileData.maci,
+        tallyAddress: tallyFileData.tallyAddress,
         signer,
       });
     });

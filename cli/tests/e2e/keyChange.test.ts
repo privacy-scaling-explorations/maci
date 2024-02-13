@@ -103,7 +103,9 @@ describe("keyChange tests", function test() {
       maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
       await deployPoll({ ...deployPollArgs, signer });
-      stateIndex = BigInt(await signup({ maciPubKey: keypair1.pubKey.serialize(), signer }));
+      stateIndex = BigInt(
+        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: keypair1.pubKey.serialize(), signer }),
+      );
       await publish({
         pubkey: keypair1.pubKey.serialize(),
         stateIndex,
@@ -139,7 +141,7 @@ describe("keyChange tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, signer });
       await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...verifyArgs, signer });
+      await verify({ ...verifyArgs(), signer });
     });
 
     it("should confirm the tally is correct", () => {
@@ -169,7 +171,9 @@ describe("keyChange tests", function test() {
       maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
       await deployPoll({ ...deployPollArgs, signer });
-      stateIndex = BigInt(await signup({ maciPubKey: keypair1.pubKey.serialize(), signer }));
+      stateIndex = BigInt(
+        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: keypair1.pubKey.serialize(), signer }),
+      );
       await publish({
         pubkey: keypair1.pubKey.serialize(),
         stateIndex,
@@ -205,7 +209,7 @@ describe("keyChange tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, signer });
       await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...verifyArgs, signer });
+      await verify({ ...verifyArgs(), signer });
     });
 
     it("should confirm the tally is correct", () => {
@@ -235,7 +239,9 @@ describe("keyChange tests", function test() {
       maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
       await deployPoll({ ...deployPollArgs, signer });
-      stateIndex = BigInt(await signup({ maciPubKey: keypair1.pubKey.serialize(), signer }));
+      stateIndex = BigInt(
+        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: keypair1.pubKey.serialize(), signer }),
+      );
       await publish({
         pubkey: keypair1.pubKey.serialize(),
         stateIndex,
@@ -271,7 +277,7 @@ describe("keyChange tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, signer });
       await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...verifyArgs, signer });
+      await verify({ ...verifyArgs(), signer });
     });
 
     it("should confirm the tally is correct", () => {

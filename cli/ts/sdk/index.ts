@@ -1,3 +1,17 @@
-export { genKeyPair, genMaciPubKey, publish, signup, verify } from "../commands";
+import { genKeyPair } from "../commands/genKeyPair";
+import { genMaciPubKey } from "../commands/genPubKey";
+import { publish } from "../commands/publish";
+import { signup } from "../commands/signup";
+import { verify } from "../commands/verify";
 
-export type { DeployedContracts, PollContracts, TallyData, PublishArgs, SignupArgs, VerifyArgs } from "../utils";
+export { genKeyPair, genMaciPubKey, publish, signup, verify };
+
+export type {
+  DeployedContracts,
+  PollContracts,
+  TallyData,
+  SubsidyData,
+  PublishArgs,
+  SignupArgs,
+  VerifyArgs,
+} from "../utils";

@@ -3,26 +3,15 @@ import {
   MACI__factory as MACIFactory,
   Subsidy__factory as SubsidyFactory,
   Poll__factory as PollFactory,
-} from "maci-contracts";
+} from "maci-contracts/typechain-types";
 import { hash2, hash3, genTreeCommitment } from "maci-crypto";
 
-import fs from "fs";
+import type { VerifyArgs } from "../utils/interfaces";
 
-import {
-  type SubsidyData,
-  type TallyData,
-  type VerifyArgs,
-  banner,
-  contractExists,
-  info,
-  logError,
-  logGreen,
-  logYellow,
-  verifyPerVOSpentVoiceCredits,
-  verifyTallyResults,
-  readContractAddress,
-  success,
-} from "../utils";
+import { banner } from "../utils/banner";
+import { contractExists } from "../utils/contracts";
+import { info, logError, logGreen, logYellow, success } from "../utils/theme";
+import { verifyPerVOSpentVoiceCredits, verifyTallyResults } from "../utils/verifiers";
 
 /**
  * Verify the results of a poll and optionally the subsidy results on-chain
@@ -31,39 +20,20 @@ import {
 export const verify = async ({
   pollId,
   subsidyEnabled,
-  tallyFile,
   tallyData,
   maciAddress,
   tallyAddress,
   subsidyAddress,
-  subsidyFile,
+  subsidyData,
   signer,
   quiet = true,
 }: VerifyArgs): Promise<void> => {
   banner(quiet);
-  const network = await signer.provider?.getNetwork();
 
-  // ensure we have either tally data or tally file
-  if (!(tallyData || tallyFile)) {
-    logError("No tally data or tally file provided.");
-  }
-  // if we have the data as param, then use that
-  let tallyResults: TallyData;
-
-  if (tallyData) {
-    tallyResults = tallyData;
-  } else {
-    // read the tally file
-    if (!tallyFile || !fs.existsSync(tallyFile)) {
-      logError(`Unable to open ${tallyFile}`);
-    }
-
-    tallyResults = JSON.parse(fs.readFileSync(tallyFile!, { encoding: "utf8" })) as TallyData;
-  }
+  const tallyResults = tallyData;
 
   // we prioritize the tally file data
-  const tallyContractAddress =
-    tallyResults.tallyAddress || tallyAddress || readContractAddress(`Tally-${pollId}`, network?.name);
+  const tallyContractAddress = tallyResults.tallyAddress || tallyAddress;
 
   if (!tallyContractAddress) {
     logError("Tally contract address is empty");
@@ -74,7 +44,7 @@ export const verify = async ({
   }
 
   // prioritize the tally file data
-  const maciContractAddress = tallyResults.maci || maciAddress || readContractAddress("MACI", network?.name);
+  const maciContractAddress = tallyResults.maci || maciAddress;
 
   // check existence of MACI, Tally and Subsidy contract addresses
   if (!maciContractAddress) {
@@ -89,7 +59,7 @@ export const verify = async ({
 
   // subsidy validation
   if (subsidyEnabled) {
-    subsidyContractAddress = subsidyAddress || readContractAddress(`Subsidy-${pollId}`, network?.name);
+    subsidyContractAddress = subsidyAddress!;
 
     if (!subsidyContractAddress) {
       logError("Subsidy contract address is empty");
@@ -221,17 +191,10 @@ export const verify = async ({
   }
 
   // verify subsidy result if subsidy file is provided
-  if (subsidyEnabled && subsidyFile && subsidyContract !== undefined) {
+  if (subsidyEnabled && subsidyData && subsidyContract !== undefined) {
     const onChainSubsidyCommitment = BigInt(await subsidyContract.subsidyCommitment());
 
     logYellow(quiet, info(`on-chain subsidy commitment: ${onChainSubsidyCommitment.toString(16)}`));
-
-    // read the subsidy file
-    if (!fs.existsSync(subsidyFile)) {
-      logError(`There is no such file: ${subsidyFile}`);
-    }
-
-    const subsidyData = JSON.parse(fs.readFileSync(subsidyFile, { encoding: "utf8" })) as SubsidyData;
 
     // check the results commitment
     const validResultsSubsidyCommitment = subsidyData.newSubsidyCommitment.match(/0x[a-fA-F0-9]+/);

@@ -17,6 +17,7 @@ import {
   verify,
   DeployedContracts,
   PollContracts,
+  SubsidyData,
 } from "maci-cli";
 import { getDefaultSigner } from "maci-contracts";
 import { MaciState, MaxValues, TreeDepths } from "maci-core";
@@ -357,7 +358,11 @@ describe("Integration tests", function test() {
           maciAddress: contracts.maciAddress,
           tallyAddress: pollContracts.tally,
           subsidyAddress: pollContracts.subsidy,
-          subsidyFile: subsidyEnabled ? path.resolve(__dirname, "../../../cli/subsidy.json") : undefined,
+          subsidyData: subsidyEnabled
+            ? (JSON.parse(
+                fs.readFileSync(path.resolve(__dirname, "../../../cli/subsidy.json")).toString(),
+              ) as SubsidyData)
+            : undefined,
           signer,
         }),
       ).to.eventually.not.rejectedWith();

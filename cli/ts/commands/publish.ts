@@ -1,19 +1,13 @@
-import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts";
+import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts/typechain-types";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair, PCommand, PrivKey, PubKey } from "maci-domainobjs";
 
-import {
-  type PublishArgs,
-  info,
-  logError,
-  logGreen,
-  logYellow,
-  readContractAddress,
-  validateSalt,
-  promptSensitiveValue,
-  contractExists,
-  banner,
-} from "../utils";
+import type { PublishArgs } from "../utils/interfaces";
+
+import { banner } from "../utils/banner";
+import { contractExists } from "../utils/contracts";
+import { validateSalt } from "../utils/salt";
+import { info, logError, logGreen, logYellow } from "../utils/theme";
 
 /**
  * Publish a new message to a MACI Poll contract
@@ -35,8 +29,6 @@ export const publish = async ({
 }: PublishArgs): Promise<string> => {
   banner(quiet);
 
-  const network = await signer.provider?.getNetwork();
-
   // validate that the pub key of the user is valid
   if (!PubKey.isValidSerializedPubKey(pubkey)) {
     logError("invalid MACI public key");
@@ -44,25 +36,15 @@ export const publish = async ({
   // deserialize
   const userMaciPubKey = PubKey.deserialize(pubkey);
 
-  // validation of the maci contract address
-  if (!readContractAddress("MACI", network?.name) && !maciContractAddress) {
-    logError("MACI contract address is empty");
-  }
-
-  const maciAddress = maciContractAddress || readContractAddress("MACI", network?.name);
-
-  if (!(await contractExists(signer.provider!, maciAddress))) {
+  if (!(await contractExists(signer.provider!, maciContractAddress))) {
     logError("MACI contract does not exist");
   }
 
-  // if no private key is passed we ask it securely
-  const userPrivKey = privateKey || (await promptSensitiveValue("Insert your MACI private key"));
-
-  if (!PrivKey.isValidSerializedPrivKey(userPrivKey)) {
+  if (!PrivKey.isValidSerializedPrivKey(privateKey)) {
     logError("Invalid MACI private key");
   }
 
-  const userMaciPrivKey = PrivKey.deserialize(userPrivKey);
+  const userMaciPrivKey = PrivKey.deserialize(privateKey);
 
   // validate args
   if (voteOptionIndex < 0) {
@@ -88,7 +70,7 @@ export const publish = async ({
     logError("Invalid poll id");
   }
 
-  const maciContract = MACIFactory.connect(maciAddress, signer);
+  const maciContract = MACIFactory.connect(maciContractAddress, signer);
   const pollAddress = await maciContract.getPoll(pollId);
 
   if (!(await contractExists(signer.provider!, pollAddress))) {

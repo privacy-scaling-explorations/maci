@@ -737,17 +737,17 @@ export interface PublishArgs {
   /**
    * The address of the MACI contract
    */
-  maciContractAddress?: string;
+  maciContractAddress: string;
+
+  /**
+   * The private key of the user
+   */
+  privateKey: string;
 
   /**
    * The salt of the message
    */
   salt?: bigint;
-
-  /**
-   * The private key of the user
-   */
-  privateKey?: string;
 
   /**
    * Whether to log the output
@@ -832,7 +832,7 @@ export interface SignupArgs {
   /**
    * The address of the MACI contract
    */
-  maciAddress?: string;
+  maciAddress: string;
 
   /**
    * The signup gateway data
@@ -905,24 +905,19 @@ export interface VerifyArgs {
   signer: Signer;
 
   /**
-   * The path to the tally file with results, per vote option spent credits, spent voice credits total
-   */
-  tallyFile?: string;
-
-  /**
    * The tally data
    */
-  tallyData?: TallyData;
+  tallyData: TallyData;
 
   /**
    * The address of the MACI contract
    */
-  maciAddress?: string;
+  maciAddress: string;
 
   /**
    * The address of the Tally contract
    */
-  tallyAddress?: string;
+  tallyAddress: string;
 
   /**
    * The address of the Subsidy contract
@@ -930,9 +925,9 @@ export interface VerifyArgs {
   subsidyAddress?: string;
 
   /**
-   * The path to the subsidy file
+   * The subsidy data
    */
-  subsidyFile?: string;
+  subsidyData?: SubsidyData;
 
   /**
    * Whether to log the output

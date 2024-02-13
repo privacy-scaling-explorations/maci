@@ -1,8 +1,9 @@
 import { expect } from "chai";
-import { BaseContract, Signer } from "ethers";
-import { Poll, getDefaultSigner, parseArtifact } from "maci-contracts";
+import { Poll__factory as PollFactory, type Poll, getDefaultSigner } from "maci-contracts";
 import { genPrivKey, genPubKey } from "maci-crypto";
 import { Keypair, PrivKey, PubKey } from "maci-domainobjs";
+
+import type { Signer } from "ethers";
 
 import {
   INT_STATE_TREE_DEPTH,
@@ -95,7 +96,7 @@ describe("integration tests private/public/keypair", () => {
       );
 
       // we know it's the first poll so id is 0
-      pollContract = new BaseContract(await maci.polls(0), parseArtifact("Poll")[0], signer) as Poll;
+      pollContract = PollFactory.connect(await maci.polls(0), signer);
     });
 
     it("should have the correct coordinator pub key set on chain", async () => {
