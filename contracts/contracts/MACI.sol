@@ -155,7 +155,7 @@ contract MACI is IMACI, Params, Utilities, Ownable {
     PubKey memory _pubKey,
     bytes memory _signUpGatekeeperData,
     bytes memory _initialVoiceCreditProxyData
-  ) public {
+  ) public virtual {
     // ensure we do not have more signups than what the circuits support
     if (numSignUps == uint256(TREE_ARITY) ** uint256(stateTreeDepth)) revert TooManySignups();
 
@@ -200,7 +200,7 @@ contract MACI is IMACI, Params, Utilities, Ownable {
     address _verifier,
     address _vkRegistry,
     bool useSubsidy
-  ) public onlyOwner returns (PollContracts memory pollAddr) {
+  ) public virtual onlyOwner returns (PollContracts memory pollAddr) {
     // cache the poll to a local variable so we can increment it
     uint256 pollId = nextPollId;
 
@@ -240,17 +240,17 @@ contract MACI is IMACI, Params, Utilities, Ownable {
   }
 
   /// @inheritdoc IMACI
-  function mergeStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId) public override onlyPoll(_pollId) {
+  function mergeStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId) public onlyPoll(_pollId) {
     stateAq.mergeSubRoots(_numSrQueueOps);
   }
 
   /// @inheritdoc IMACI
-  function mergeStateAq(uint256 _pollId) public override onlyPoll(_pollId) returns (uint256 root) {
+  function mergeStateAq(uint256 _pollId) public onlyPoll(_pollId) returns (uint256 root) {
     root = stateAq.merge(stateTreeDepth);
   }
 
   /// @inheritdoc IMACI
-  function getStateAqRoot() public view override returns (uint256 root) {
+  function getStateAqRoot() public view returns (uint256 root) {
     root = stateAq.getMainRoot(stateTreeDepth);
   }
 
