@@ -142,7 +142,7 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
   }
 
   /// @inheritdoc IPoll
-  function topup(uint256 stateIndex, uint256 amount) public isWithinVotingDeadline {
+  function topup(uint256 stateIndex, uint256 amount) public virtual isWithinVotingDeadline {
     // we check that we do not exceed the max number of messages
     if (numMessages == maxValues.maxMessages) revert TooManyMessages();
 
@@ -163,7 +163,7 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
   }
 
   /// @inheritdoc IPoll
-  function publishMessage(Message calldata _message, PubKey calldata _encPubKey) public isWithinVotingDeadline {
+  function publishMessage(Message calldata _message, PubKey calldata _encPubKey) public virtual isWithinVotingDeadline {
     // we check that we do not exceed the max number of messages
     if (numMessages == maxValues.maxMessages) revert TooManyMessages();
 
