@@ -85,7 +85,6 @@ describe("HatsProtocol Gatekeeper", () => {
     await mockHats.mintHat(thirdHatId, voterAddress);
 
     // deploy gatekeepers
-    // hatsGatekeeperSimple = await deployContract("HatsGatekeeperSimple", signer, true, hatsContractOP, hatId);
     hatsGatekeeperSingle = await deployContract("HatsGatekeeperSingle", signer, true, hatsContractOP, hatId);
     hatsGatekeeperMultiple = await deployContract("HatsGatekeeperMultiple", signer, true, hatsContractOP, [
       hatId,
@@ -159,6 +158,7 @@ describe("HatsProtocol Gatekeeper", () => {
             ),
         ).to.be.revertedWithCustomError(hatsGatekeeperSingle, "OnlyMACI");
       });
+
       it("should register a user if the register function is called with the valid data", async () => {
         await hatsGatekeeperSingle.setMaciInstance(await maciContract.getAddress());
 
@@ -253,6 +253,7 @@ describe("HatsProtocol Gatekeeper", () => {
             ),
         ).to.be.revertedWithCustomError(hatsGatekeeperMultiple, "OnlyMACI");
       });
+
       it("should register a user if the register function is called with the valid data", async () => {
         await hatsGatekeeperMultiple.connect(signer).setMaciInstance(await maciContract.getAddress());
 
