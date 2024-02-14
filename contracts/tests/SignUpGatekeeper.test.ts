@@ -46,6 +46,7 @@ describe("SignUpGatekeeper", () => {
         STATE_TREE_DEPTH,
         signer,
         true,
+        true,
         signUpTokenGatekeeperContract,
       );
 

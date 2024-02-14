@@ -61,11 +61,7 @@ template TallyVotesNonQv(
     signal input currentSpentVoiceCreditSubtotal;
     signal input currentSpentVoiceCreditSubtotalSalt;
 
-    signal input currentPerVOSpentVoiceCredits[numVoteOptions];
-    signal input currentPerVOSpentVoiceCreditsRootSalt;
-
     signal input newResultsRootSalt;
-    signal input newPerVOSpentVoiceCreditsRootSalt;
     signal input newSpentVoiceCreditSubtotalSalt;
 
     //  ----------------------------------------------------------------------- 
@@ -163,18 +159,8 @@ template TallyVotesNonQv(
         }
     }
 
-    // Tally the spent voice credits per vote option
-    component newPerVOSpentVoiceCredits[numVoteOptions];
-    for (var i = 0; i < numVoteOptions; i++) {
-        newPerVOSpentVoiceCredits[i] = CalculateTotal(batchSize + 1);
-        newPerVOSpentVoiceCredits[i].nums[batchSize] <== currentPerVOSpentVoiceCredits[i] * iz.out;
-        for (var j = 0; j < batchSize; j++) {
-            newPerVOSpentVoiceCredits[i].nums[j] <== votes[j][i];
-        }
-    }
-
     // Verify the current and new tally
-    component rcv = ResultCommitmentVerifier(voteOptionTreeDepth);
+    component rcv = ResultCommitmentNonQvVerifier(voteOptionTreeDepth);
     rcv.isFirstBatch <== isFirstBatch.out;
     rcv.currentTallyCommitment <== currentTallyCommitment;
     rcv.newTallyCommitment <== newTallyCommitment;
@@ -184,13 +170,95 @@ template TallyVotesNonQv(
     rcv.currentSpentVoiceCreditSubtotalSalt <== currentSpentVoiceCreditSubtotalSalt;
     rcv.newSpentVoiceCreditSubtotal <== newSpentVoiceCreditSubtotal.sum;
     rcv.newSpentVoiceCreditSubtotalSalt <== newSpentVoiceCreditSubtotalSalt;
-    rcv.currentPerVOSpentVoiceCreditsRootSalt <== currentPerVOSpentVoiceCreditsRootSalt;
-    rcv.newPerVOSpentVoiceCreditsRootSalt <== newPerVOSpentVoiceCreditsRootSalt;
 
     for (var i = 0; i < numVoteOptions; i++) {
         rcv.currentResults[i] <== currentResults[i];
         rcv.newResults[i] <== resultCalc[i].sum;
-        rcv.currentPerVOSpentVoiceCredits[i] <== currentPerVOSpentVoiceCredits[i];
-        rcv.newPerVOSpentVoiceCredits[i] <== newPerVOSpentVoiceCredits[i].sum;
     }
+}
+
+// Verifies the commitment to the current results. Also computes and outputs a
+// commitment to the new results. Works for non quadratic voting 
+// - so no need for perVOSpentCredits as they would just match 
+// the results.
+template ResultCommitmentNonQvVerifier(voteOptionTreeDepth) {
+    var TREE_ARITY = 5;
+    var numVoteOptions = TREE_ARITY ** voteOptionTreeDepth;
+
+    // 1 if this is the first batch, and 0 otherwise
+    signal input isFirstBatch;
+    signal input currentTallyCommitment;
+    signal input newTallyCommitment;
+
+    // Results
+    signal input currentResults[numVoteOptions];
+    signal input currentResultsRootSalt;
+
+    signal input newResults[numVoteOptions];
+    signal input newResultsRootSalt;
+
+    // Spent voice credits
+    signal input currentSpentVoiceCreditSubtotal;
+    signal input currentSpentVoiceCreditSubtotalSalt;
+
+    signal input newSpentVoiceCreditSubtotal;
+    signal input newSpentVoiceCreditSubtotalSalt;
+
+    // Compute the commitment to the current results
+    component currentResultsRoot = QuinCheckRoot(voteOptionTreeDepth);
+    for (var i = 0; i < numVoteOptions; i++) {
+        currentResultsRoot.leaves[i] <== currentResults[i];
+    }
+
+    component currentResultsCommitment = HashLeftRight();
+    currentResultsCommitment.left <== currentResultsRoot.root;
+    currentResultsCommitment.right <== currentResultsRootSalt;
+
+    // Compute the commitment to the current spent voice credits
+    component currentSpentVoiceCreditsCommitment = HashLeftRight();
+    currentSpentVoiceCreditsCommitment.left <== currentSpentVoiceCreditSubtotal;
+    currentSpentVoiceCreditsCommitment.right <== currentSpentVoiceCreditSubtotalSalt;
+
+    // Commit to the current tally
+    component currentTallyCommitmentHasher = HashLeftRight();
+    currentTallyCommitmentHasher.left <== currentResultsCommitment.hash;
+    currentTallyCommitmentHasher.right <== currentSpentVoiceCreditsCommitment.hash;
+
+    // Check if the current tally commitment is correct only if this is not the first batch
+    component iz = IsZero();
+    iz.in <== isFirstBatch;
+    // iz.out is 1 if this is not the first batch
+    // iz.out is 0 if this is the first batch
+
+    // hz is 0 if this is the first batch
+    // currentTallyCommitment should be 0 if this is the first batch
+
+    // hz is 1 if this is not the first batch
+    // currentTallyCommitment should not be 0 if this is the first batch
+    signal hz;
+    hz <== iz.out * currentTallyCommitmentHasher.hash;
+
+    hz === currentTallyCommitment;
+
+    // Compute the root of the new results
+    component newResultsRoot = QuinCheckRoot(voteOptionTreeDepth);
+    for (var i = 0; i < numVoteOptions; i++) {
+        newResultsRoot.leaves[i] <== newResults[i];
+    }
+
+    component newResultsCommitment = HashLeftRight();
+    newResultsCommitment.left <== newResultsRoot.root;
+    newResultsCommitment.right <== newResultsRootSalt;
+
+    // Compute the commitment to the new spent voice credits value
+    component newSpentVoiceCreditsCommitment = HashLeftRight();
+    newSpentVoiceCreditsCommitment.left <== newSpentVoiceCreditSubtotal;
+    newSpentVoiceCreditsCommitment.right <== newSpentVoiceCreditSubtotalSalt;
+
+    // Commit to the new tally
+    component newTallyCommitmentHasher = HashLeftRight();
+    newTallyCommitmentHasher.left <== newResultsCommitment.hash;
+    newTallyCommitmentHasher.right <== newSpentVoiceCreditsCommitment.hash;
+
+    newTallyCommitmentHasher.hash === newTallyCommitment;
 }

@@ -412,7 +412,9 @@ export const genProofs = async ({
   // tally all ballots for this poll
   while (poll.hasUntalliedBallots()) {
     // tally votes in batches
-    tallyCircuitInputs = poll.tallyVotes(useQuadraticVoting) as unknown as CircuitInputs;
+    tallyCircuitInputs = useQuadraticVoting
+      ? (poll.tallyVotes() as unknown as CircuitInputs)
+      : (poll.tallyVotesNonQv() as unknown as CircuitInputs);
 
     try {
       // generate the proof
@@ -467,22 +469,11 @@ export const genProofs = async ({
     BigInt(asHex(tallyCircuitInputs!.newSpentVoiceCreditSubtotalSalt as BigNumberish)),
   );
 
-  // Compute newPerVOSpentVoiceCreditsCommitment
-  const newPerVOSpentVoiceCreditsCommitment = genTreeCommitment(
-    poll.perVOSpentVoiceCredits,
-    BigInt(asHex(tallyCircuitInputs!.newPerVOSpentVoiceCreditsRootSalt as BigNumberish)),
-    poll.treeDepths.voteOptionTreeDepth,
-  );
-
-  // Compute newTallyCommitment
-  const newTallyCommitment = hash3([
-    newResultsCommitment,
-    newSpentVoiceCreditsCommitment,
-    newPerVOSpentVoiceCreditsCommitment,
-  ]);
-
   // get the tally contract address
   const tallyContractAddress = tallyAddress || readContractAddress(`Tally-${pollId}`, network?.name);
+
+  let newPerVOSpentVoiceCreditsCommitment: bigint | undefined;
+  let newTallyCommitment: bigint;
 
   // create the tally file data to store for verification later
   const tallyFileData: TallyData = {
@@ -490,6 +481,7 @@ export const genProofs = async ({
     pollId: pollId.toString(),
     network: network?.name,
     chainId: network?.chainId.toString(),
+    isQuadratic: useQuadraticVoting,
     tallyAddress: tallyContractAddress,
     newTallyCommitment: asHex(tallyCircuitInputs!.newTallyCommitment as BigNumberish),
     results: {
@@ -502,12 +494,32 @@ export const genProofs = async ({
       salt: asHex(tallyCircuitInputs!.newSpentVoiceCreditSubtotalSalt as BigNumberish),
       commitment: asHex(newSpentVoiceCreditsCommitment),
     },
-    perVOSpentVoiceCredits: {
+  };
+
+  if (useQuadraticVoting) {
+    // Compute newPerVOSpentVoiceCreditsCommitment
+    newPerVOSpentVoiceCreditsCommitment = genTreeCommitment(
+      poll.perVOSpentVoiceCredits,
+      BigInt(asHex(tallyCircuitInputs!.newPerVOSpentVoiceCreditsRootSalt as BigNumberish)),
+      poll.treeDepths.voteOptionTreeDepth,
+    );
+
+    // Compute newTallyCommitment
+    newTallyCommitment = hash3([
+      newResultsCommitment,
+      newSpentVoiceCreditsCommitment,
+      newPerVOSpentVoiceCreditsCommitment,
+    ]);
+
+    // update perVOSpentVoiceCredits in the tally file data
+    tallyFileData.perVOSpentVoiceCredits = {
       tally: poll.perVOSpentVoiceCredits.map((x) => x.toString()),
       salt: asHex(tallyCircuitInputs!.newPerVOSpentVoiceCreditsRootSalt as BigNumberish),
       commitment: asHex(newPerVOSpentVoiceCreditsCommitment),
-    },
-  };
+    };
+  } else {
+    newTallyCommitment = hashLeftRight(newResultsCommitment, newSpentVoiceCreditsCommitment);
+  }
 
   fs.writeFileSync(tallyFile, JSON.stringify(tallyFileData, null, 4));
 

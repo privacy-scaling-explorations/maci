@@ -25,6 +25,7 @@ import {
   TopupCredit,
   Verifier,
   VkRegistry,
+  TallyNonQvFactory,
 } from "../typechain-types";
 
 import { parseArtifact } from "./abi";
@@ -264,7 +265,8 @@ export const deployMaci = async ({
   signer,
   poseidonAddresses,
   stateTreeDepth = 10,
-  quiet = false,
+  useQv = true,
+  quiet = true,
 }: IDeployMaciArgs): Promise<IDeployedMaci> => {
   const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } =
     await deployPoseidonContracts(signer, poseidonAddresses, quiet);
@@ -281,7 +283,14 @@ export const deployMaci = async ({
     poseidonT6,
   }));
 
-  const contractsToLink = ["MACI", "PollFactory", "MessageProcessorFactory", "TallyFactory", "SubsidyFactory"];
+  const contractsToLink = [
+    "MACI",
+    "PollFactory",
+    "MessageProcessorFactory",
+    "TallyFactory",
+    "TallyNonQvFactory",
+    "SubsidyFactory",
+  ];
 
   // Link Poseidon contracts to MACI
   const linkedContractFactories = await Promise.all(
@@ -298,24 +307,33 @@ export const deployMaci = async ({
     ),
   );
 
-  const [maciContractFactory, pollFactoryContractFactory, messageProcessorFactory, tallyFactory, subsidyFactory] =
-    await Promise.all(linkedContractFactories);
+  const [
+    maciContractFactory,
+    pollFactoryContractFactory,
+    messageProcessorFactory,
+    tallyFactory,
+    tallyFactoryNonQv,
+    subsidyFactory,
+  ] = await Promise.all(linkedContractFactories);
 
   const pollFactoryContract = await deployContractWithLinkedLibraries<PollFactory>(
     pollFactoryContractFactory,
     "PollFactory",
     quiet,
   );
+
   const messageProcessorFactoryContract = await deployContractWithLinkedLibraries<MessageProcessorFactory>(
     messageProcessorFactory,
     "MessageProcessorFactory",
     quiet,
   );
-  const tallyFactoryContract = await deployContractWithLinkedLibraries<TallyFactory>(
-    tallyFactory,
-    "TallyFactory",
-    quiet,
-  );
+
+  // deploy either the qv or non qv tally factory - they both implement the same interface
+  // so as long as maci is concerned, they are interchangeable
+  const tallyFactoryContract = useQv
+    ? await deployContractWithLinkedLibraries<TallyFactory>(tallyFactory, "TallyFactory", quiet)
+    : await deployContractWithLinkedLibraries<TallyNonQvFactory>(tallyFactoryNonQv, "TallyNonQvFactory", quiet);
+
   const subsidyFactoryContract = await deployContractWithLinkedLibraries<SubsidyFactory>(
     subsidyFactory,
     "SubsidyFactory",

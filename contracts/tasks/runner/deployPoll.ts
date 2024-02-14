@@ -1,9 +1,8 @@
 /* eslint-disable no-console */
 import { task, types } from "hardhat/config";
 
-import type { IDeployParams } from "../helpers/types";
-
 import { Deployment } from "../helpers/Deployment";
+import { type IDeployParams } from "../helpers/types";
 
 /**
  * Poll deployment task which runs deploy steps in the same order that `Deployment#deployTask` is called.

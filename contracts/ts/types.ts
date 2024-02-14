@@ -162,6 +162,11 @@ export interface IDeployMaciArgs {
    * Whether to suppress console output
    */
   quiet?: boolean;
+
+  /**
+   * Whether to support QV or not
+   */
+  useQv?: boolean;
 }
 
 /**

@@ -37,6 +37,7 @@
     "test:poll": "pnpm run test ./tests/Poll.test.ts",
     "test:messageProcessor": "pnpm run test ./tests/MessageProcessor.test.ts",
     "test:tally": "pnpm run test ./tests/Tally.test.ts",
+    "test:tallyNonQv": "pnpm run test ./tests/TallyNonQv.test.ts",
     "test:hasher": "pnpm run test ./tests/Hasher.test.ts",
     "test:utilities": "pnpm run test ./tests/Utilities.test.ts",
     "test:signupGatekeeper": "pnpm run test ./tests/SignUpGatekeeper.test.ts",

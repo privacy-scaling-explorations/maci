@@ -1,7 +1,7 @@
 import { genTreeProof } from "maci-crypto";
 
 import type { TallyData } from "./interfaces";
-import type { Tally } from "maci-contracts";
+import type { Tally, TallyNonQv } from "maci-contracts";
 
 /**
  * Loop through each per vote option spent voice credits and verify it on-chain
@@ -22,19 +22,19 @@ export const verifyPerVOSpentVoiceCredits = async (
 ): Promise<number[]> => {
   const failedIndices: number[] = [];
 
-  for (let i = 0; i < tallyData.perVOSpentVoiceCredits.tally.length; i += 1) {
+  for (let i = 0; i < tallyData.perVOSpentVoiceCredits!.tally.length; i += 1) {
     const proof = genTreeProof(
       i,
-      tallyData.perVOSpentVoiceCredits.tally.map((x) => BigInt(x)),
+      tallyData.perVOSpentVoiceCredits!.tally.map((x) => BigInt(x)),
       voteOptionTreeDepth,
     );
 
     // eslint-disable-next-line no-await-in-loop
     const isValid = await tallyContract.verifyPerVOSpentVoiceCredits(
       i,
-      tallyData.perVOSpentVoiceCredits.tally[i],
+      tallyData.perVOSpentVoiceCredits!.tally[i],
       proof,
-      tallyData.perVOSpentVoiceCredits.salt,
+      tallyData.perVOSpentVoiceCredits!.salt,
       voteOptionTreeDepth,
       newSpentVoiceCreditsCommitment,
       newResultsCommitment,
@@ -57,11 +57,11 @@ export const verifyPerVOSpentVoiceCredits = async (
  * @returns list of the indexes of the tally result that failed on-chain verification
  */
 export const verifyTallyResults = async (
-  tallyContract: Tally,
+  tallyContract: Tally | TallyNonQv,
   tallyData: TallyData,
   voteOptionTreeDepth: number,
   newSpentVoiceCreditsCommitment: bigint,
-  newPerVOSpentVoiceCreditsCommitment: bigint,
+  newPerVOSpentVoiceCreditsCommitment?: bigint,
 ): Promise<number[]> => {
   const failedIndices: number[] = [];
 
@@ -72,16 +72,30 @@ export const verifyTallyResults = async (
       voteOptionTreeDepth,
     );
 
-    // eslint-disable-next-line no-await-in-loop
-    const isValid = await tallyContract.verifyTallyResult(
-      i,
-      tallyData.results.tally[i],
-      proof,
-      tallyData.results.salt,
-      voteOptionTreeDepth,
-      newSpentVoiceCreditsCommitment,
-      newPerVOSpentVoiceCreditsCommitment,
-    );
+    let isValid: boolean;
+
+    if (!newPerVOSpentVoiceCreditsCommitment) {
+      // eslint-disable-next-line no-await-in-loop
+      isValid = await (tallyContract as TallyNonQv).verifyTallyResult(
+        i,
+        tallyData.results.tally[i],
+        proof,
+        tallyData.results.salt,
+        voteOptionTreeDepth,
+        newSpentVoiceCreditsCommitment,
+      );
+    } else {
+      // eslint-disable-next-line no-await-in-loop
+      isValid = await (tallyContract as Tally).verifyTallyResult(
+        i,
+        tallyData.results.tally[i],
+        proof,
+        tallyData.results.salt,
+        voteOptionTreeDepth,
+        newSpentVoiceCreditsCommitment,
+        newPerVOSpentVoiceCreditsCommitment,
+      );
+    }
 
     if (!isValid) {
       failedIndices.push(i);

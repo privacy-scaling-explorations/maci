@@ -147,7 +147,7 @@ describe("keyChange tests", function test() {
     it("should confirm the tally is correct", () => {
       const tallyData = JSON.parse(fs.readFileSync(testTallyFilePath).toString()) as TallyData;
       expect(tallyData.results.tally[0]).to.equal(expectedTally.toString());
-      expect(tallyData.perVOSpentVoiceCredits.tally[0]).to.equal(expectedPerVoteOptionTally.toString());
+      expect(tallyData.perVOSpentVoiceCredits?.tally[0]).to.equal(expectedPerVoteOptionTally.toString());
     });
   });
 
@@ -215,7 +215,7 @@ describe("keyChange tests", function test() {
     it("should confirm the tally is correct", () => {
       const tallyData = JSON.parse(fs.readFileSync(testTallyFilePath).toString()) as TallyData;
       expect(tallyData.results.tally[0]).to.equal(expectedTally.toString());
-      expect(tallyData.perVOSpentVoiceCredits.tally[0]).to.equal(expectedPerVoteOptionTally.toString());
+      expect(tallyData.perVOSpentVoiceCredits?.tally[0]).to.equal(expectedPerVoteOptionTally.toString());
     });
   });
 
@@ -283,7 +283,7 @@ describe("keyChange tests", function test() {
     it("should confirm the tally is correct", () => {
       const tallyData = JSON.parse(fs.readFileSync(testTallyFilePath).toString()) as TallyData;
       expect(tallyData.results.tally[2]).to.equal(expectedTally.toString());
-      expect(tallyData.perVOSpentVoiceCredits.tally[2]).to.equal(expectedPerVoteOptionTally.toString());
+      expect(tallyData.perVOSpentVoiceCredits?.tally[2]).to.equal(expectedPerVoteOptionTally.toString());
     });
   });
 });
