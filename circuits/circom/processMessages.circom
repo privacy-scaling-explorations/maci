@@ -613,8 +613,16 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     isMessageValid.in[0] <== bothValid;
     isMessageValid.in[1] <== transformer.isValid + enoughVoiceCredits.out;
 
+    // check that the vote option index is < maxVoteOptions (0-indexed)
+    component validVoteOptionIndex = SafeLessThan(N_BITS);
+    validVoteOptionIndex.in[0] <== cmdVoteOptionIndex;
+    validVoteOptionIndex.in[1] <== maxVoteOptions;
+
+    // @note pick the correct vote option index based on whether the index is < max vote options 
+    // @todo can probably add one output to messageValidator and take from there
+    // or maybe we can remove altogther from messageValidator so we don't double check this
     component cmdVoteOptionIndexMux = Mux1();
-    cmdVoteOptionIndexMux.s <== isMessageValid.out;
+    cmdVoteOptionIndexMux.s <== validVoteOptionIndex.out;
     cmdVoteOptionIndexMux.c[0] <== 0;
     cmdVoteOptionIndexMux.c[1] <== cmdVoteOptionIndex;
 

@@ -581,19 +581,47 @@ export class Poll implements IPoll {
                   currentBallots.unshift(ballot);
                   currentBallotsPathElements.unshift(this.ballotTree!.genProof(Number(stateLeafIndex)).pathElements);
 
-                  // add the first vote of this ballot
-                  currentVoteWeights.unshift(ballot.votes[0]);
+                  // @note we check that command.voteOptionIndex is valid so < maxVoteOptions
+                  // this might be unnecessary but we do it to prevent a possible DoS attack
+                  // from voters who could potentially encrypt a message in such as way that
+                  // when decrypted it results in a valid state leaf index but an invalid vote option index
+                  if (command.voteOptionIndex < this.maxValues.maxVoteOptions) {
+                    currentVoteWeights.unshift(ballot.votes[Number(command.voteOptionIndex)]);
 
-                  // create a new quinary tree and add all votes we have so far
-                  const vt = new IncrementalQuinTree(this.treeDepths.voteOptionTreeDepth, 0n, STATE_TREE_ARITY, hash5);
+                    // create a new quinary tree and add all votes we have so far
+                    const vt = new IncrementalQuinTree(
+                      this.treeDepths.voteOptionTreeDepth,
+                      0n,
+                      STATE_TREE_ARITY,
+                      hash5,
+                    );
 
-                  // fill the vote option tree with the votes we have so far
-                  for (let j = 0; j < this.ballots[0].votes.length; j += 1) {
-                    vt.insert(ballot.votes[j]);
+                    // fill the vote option tree with the votes we have so far
+                    for (let j = 0; j < this.ballots[0].votes.length; j += 1) {
+                      vt.insert(ballot.votes[j]);
+                    }
+
+                    // get the path elements for the first vote leaf
+                    currentVoteWeightsPathElements.unshift(vt.genProof(Number(command.voteOptionIndex)).pathElements);
+                  } else {
+                    currentVoteWeights.unshift(ballot.votes[0]);
+
+                    // create a new quinary tree and add all votes we have so far
+                    const vt = new IncrementalQuinTree(
+                      this.treeDepths.voteOptionTreeDepth,
+                      0n,
+                      STATE_TREE_ARITY,
+                      hash5,
+                    );
+
+                    // fill the vote option tree with the votes we have so far
+                    for (let j = 0; j < this.ballots[0].votes.length; j += 1) {
+                      vt.insert(ballot.votes[j]);
+                    }
+
+                    // get the path elements for the first vote leaf
+                    currentVoteWeightsPathElements.unshift(vt.genProof(0).pathElements);
                   }
-
-                  // get the path elements for the first vote leaf
-                  currentVoteWeightsPathElements.unshift(vt.genProof(0).pathElements);
                 } else {
                   // just use state leaf index 0
                   currentStateLeaves.unshift(this.stateLeaves[0].copy());
