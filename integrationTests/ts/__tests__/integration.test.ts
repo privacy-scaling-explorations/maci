@@ -347,7 +347,7 @@ describe("Integration tests", function test() {
           subsidyAddress: pollContracts.subsidy,
           signer,
         }),
-      ).to.eventually.not.rejectedWith();
+      ).to.not.be.rejected;
 
       // verify the proofs
       await expect(
@@ -365,7 +365,7 @@ describe("Integration tests", function test() {
             : undefined,
           signer,
         }),
-      ).to.eventually.not.rejectedWith();
+      ).to.not.be.rejected;
     });
   });
 });
