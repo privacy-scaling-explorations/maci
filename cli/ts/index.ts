@@ -136,10 +136,11 @@ program
 program
   .command("genMaciKeyPair")
   .description("generate a new MACI key pair")
+  .option("-sp, --seed <seed>", "seed value for keypair", (value) => (value ? BigInt(value) : undefined), undefined)
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action((cmdObj) => {
-    genKeyPair(cmdObj.quiet);
+    genKeyPair({ seed: cmdObj.seed, quiet: cmdObj.quiet });
   });
 program
   .command("airdrop")

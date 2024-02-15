@@ -6,7 +6,7 @@ import { genKeyPair, genMaciPubKey } from "../../ts";
 
 describe("genMaciPubkey CLI subcommand", () => {
   it("should output a valid public key", () => {
-    const keypair = genKeyPair(true);
+    const keypair = genKeyPair({ quiet: true });
     const pubKey = genMaciPubKey(keypair.privateKey, true);
 
     expect(pubKey).to.eq(keypair.publicKey);
