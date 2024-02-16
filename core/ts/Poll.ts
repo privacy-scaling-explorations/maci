@@ -657,6 +657,14 @@ export class Poll implements IPoll {
               const newStateLeaf = this.stateLeaves[stateIndex].copy();
               // update the voice credit balance
               newStateLeaf.voiceCreditBalance += amount;
+
+              // we should not be in this state as it means we are dealing with very large numbers which will cause problems in the circuits
+              if (newStateLeaf.voiceCreditBalance > SNARK_FIELD_SIZE) {
+                throw new Error(
+                  "State leaf voice credit balance exceeds SNARK_FIELD_SIZE. This should not be a state MACI should find itself in, as it will cause complications in the circuits. Rounds should not accept topups with large values.",
+                );
+              }
+
               // save it
               this.stateLeaves[stateIndex] = newStateLeaf;
               // update the state tree
