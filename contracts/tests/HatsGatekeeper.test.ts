@@ -29,6 +29,7 @@ describe("HatsProtocol Gatekeeper", () => {
   const hatsContractOP = "0x3bc1A0Ad72417f2d411118085256fC53CBdDd137";
 
   const user = new Keypair();
+  const oneAddress = "0x0000000000000000000000000000000000000001";
 
   let topHat: bigint;
   let hatId: bigint;
@@ -138,6 +139,13 @@ describe("HatsProtocol Gatekeeper", () => {
         expect(await hatsGatekeeperSingle.maci()).to.eq(maciAddress);
       });
 
+      it("should fail to set MACI instance to the zero address", async () => {
+        await expect(hatsGatekeeperSingle.setMaciInstance(ZeroAddress)).to.be.revertedWithCustomError(
+          hatsGatekeeperSingle,
+          "ZeroAddress",
+        );
+      });
+
       it("should fail to set MACI instance when the caller is not the owner", async () => {
         await expect(hatsGatekeeperSingle.connect(voter).setMaciInstance(signerAddress)).to.be.revertedWith(
           "Ownable: caller is not the owner",
@@ -147,7 +155,7 @@ describe("HatsProtocol Gatekeeper", () => {
 
     describe("register", () => {
       it("should not allow to call from a non-registered MACI contract", async () => {
-        await hatsGatekeeperSingle.setMaciInstance(ZeroAddress);
+        await hatsGatekeeperSingle.setMaciInstance(oneAddress);
         await expect(
           maciContract
             .connect(signer)
@@ -233,6 +241,13 @@ describe("HatsProtocol Gatekeeper", () => {
         expect(await hatsGatekeeperMultiple.maci()).to.eq(maciAddress);
       });
 
+      it("should fail to set MACI instance to the zero address", async () => {
+        await expect(hatsGatekeeperMultiple.setMaciInstance(ZeroAddress)).to.be.revertedWithCustomError(
+          hatsGatekeeperMultiple,
+          "ZeroAddress",
+        );
+      });
+
       it("should fail to set MACI instance when the caller is not the owner", async () => {
         await expect(hatsGatekeeperMultiple.connect(voter).setMaciInstance(signerAddress)).to.be.revertedWith(
           "Ownable: caller is not the owner",
@@ -242,7 +257,7 @@ describe("HatsProtocol Gatekeeper", () => {
 
     describe("register", () => {
       it("should not allow to call from a non-registered MACI contract", async () => {
-        await hatsGatekeeperMultiple.connect(signer).setMaciInstance(ZeroAddress);
+        await hatsGatekeeperMultiple.connect(signer).setMaciInstance(oneAddress);
         await expect(
           maciContract
             .connect(signer)
