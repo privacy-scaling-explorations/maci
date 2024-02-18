@@ -5,3 +5,8 @@ build
 typechain-types
 .eslintrc.js
 commitlint.config.js
+
+# subgraph
+subgraph.template.yaml
+generated
+subgraph/scripts
