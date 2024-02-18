@@ -1,6 +1,6 @@
 #! /bin/bash
-# rm -r ./proofs
-# rm tally.json
+rm -r ./proofs
+rm tally.json
 node build/ts/index.js deployVkRegistry
 node build/ts/index.js setVerifyingKeys \
     --state-tree-depth 10 \
@@ -11,9 +11,18 @@ node build/ts/index.js setVerifyingKeys \
     --process-messages-zkey ./zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test.0.zkey \
     --tally-votes-zkey ./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey
 node build/ts/index.js create -s 10
+
+# swith to subgraph module
+cd ../subgraph 
+pnpm codegen:local
+pnpm create-local
+pnpm deploy-local -l v0.1.2
+
+# switch back to cli module
+cd ../cli
 node build/ts/index.js deployPoll \
     --pubkey macipk.ea638a3366ed91f2e955110888573861f7c0fc0bb5fb8b8dca9cd7a08d7d6b93 \
-    -t 30 -i 1 -m 2 -b 1 -v 2 -se false
+    -t 100 -i 1 -m 2 -b 1 -v 2 -se false
 node build/ts/index.js signup \
     --pubkey macipk.e743ffb5298ef0f5c1f63b6464a48fea19ea7ee5a885c67ae1b24a1d04f03f07 
 node build/ts/index.js publish \
