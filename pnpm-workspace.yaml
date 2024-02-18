@@ -7,3 +7,4 @@ packages:
   - "domainobjs"
   - "integrationTests"
   - "website"
+  - "subgraph"

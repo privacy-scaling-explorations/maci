@@ -1,0 +1,100 @@
+type MACI @entity {
+  id: ID!
+  owner: Bytes! # address
+  stateTreeDepth: Int! # uint8
+  updatedAt: BigInt!
+  blockNumber: BigInt!
+  txHash: Bytes!
+
+  "state"
+  numRegistrar: BigInt!
+  numPoll: BigInt!
+  numVotes: BigInt!
+}
+
+type User @entity(immutable: true) {
+  id: Bytes! # address
+  timestamp: BigInt! # uint256
+  blockNumber: BigInt!
+  txHash: Bytes!
+
+  "relations"
+  polls: [Poll!]! @derivedFrom(field: "owner")
+  accounts: [Account!]! @derivedFrom(field: "owner")
+}
+
+type Account @entity {
+  id: ID! # pubkey
+  timestamp: BigInt! # uint256
+  blockNumber: BigInt!
+  txHash: Bytes!
+
+  "relations"
+  owner: User
+  polls: [Poll!]! @derivedFrom(field: "coordinator")
+  stateLeafs: [StateLeaf!]! @derivedFrom(field: "account")
+}
+
+type StateLeaf @entity {
+  id: ID! # stateIndex
+  voiceCreditBalance: BigInt! # uint256
+  timestamp: BigInt! # uint256
+  blockNumber: BigInt!
+  txHash: Bytes!
+
+  "relations"
+  account: Account!
+  topupHistory: [TopupCredit!]! @derivedFrom(field: "stateLeaf")
+}
+
+type Poll @entity {
+  id: Bytes! # poll address
+  pollId: BigInt! # uint256
+  duration: BigInt! # uint256
+  treeDepth: Int! # uint8
+  maxVoteOptions: BigInt!
+  messageProcessor: Bytes! # address
+  tally: Bytes! # address
+  subsidy: Bytes! # address
+  "merge state after ended"
+  stateRoot: BigInt # uint256
+  numSignups: BigInt! # uint256
+  "merge message tree after ended"
+  numSrQueueOps: BigInt # uint256
+  messageRoot: BigInt
+  createdAt: BigInt! # startedAt
+  updatedAt: BigInt!
+  blockNumber: BigInt!
+  txHash: Bytes!
+
+  "relations"
+  coordinator: Account!
+  owner: User!
+  votes: [Vote!]! @derivedFrom(field: "poll")
+  topupHistory: [TopupCredit!]! @derivedFrom(field: "poll")
+}
+
+type Vote @entity(immutable: true) {
+  id: ID!
+  msgType: BigInt! # uint256
+  data: [BigInt!]! # uint256[10]
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  txHash: Bytes!
+
+  "relations"
+  poll: Poll!
+}
+
+type TopupCredit @entity(immutable: true) {
+  id: Bytes!
+  msgType: BigInt! # uint256
+  data: [BigInt!]! # uint256[10]
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  txHash: Bytes!
+
+  "relations"
+  poll: Poll!
+  stateLeaf: StateLeaf!
+}
