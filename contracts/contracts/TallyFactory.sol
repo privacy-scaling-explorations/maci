@@ -14,7 +14,7 @@ contract TallyFactory is ITallySubsidyFactory {
     address _poll,
     address _messageProcessor,
     address _owner
-  ) public returns (address tallyAddr) {
+  ) public virtual returns (address tallyAddr) {
     // deploy Tally for this Poll
     Tally tally = new Tally(_verifier, _vkRegistry, _poll, _messageProcessor);
     tally.transferOwnership(_owner);

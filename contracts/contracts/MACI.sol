@@ -218,7 +218,15 @@ contract MACI is IMACI, Params, Utilities, Ownable {
 
     address _owner = owner();
 
-    address p = pollFactory.deploy(_duration, maxValues, _treeDepths, _coordinatorPubKey, this, topupCredit, _owner);
+    address p = pollFactory.deploy(
+      _duration,
+      maxValues,
+      _treeDepths,
+      _coordinatorPubKey,
+      address(this),
+      topupCredit,
+      _owner
+    );
 
     address mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p, _owner);
     address tally = tallyFactory.deploy(_verifier, _vkRegistry, p, mp, _owner);

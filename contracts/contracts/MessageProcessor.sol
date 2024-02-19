@@ -29,7 +29,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
   error BatchEndIndexTooLarge();
 
   // the number of children per node in the merkle trees
-  uint256 private constant TREE_ARITY = 5;
+  uint256 internal constant TREE_ARITY = 5;
 
   /// @inheritdoc IMessageProcessor
   bool public processingComplete;

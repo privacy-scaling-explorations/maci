@@ -15,7 +15,7 @@ import { CommonUtilities } from "./utilities/CommonUtilities.sol";
 /// @notice The Tally contract is used during votes tallying
 /// and by users to verify the tally results.
 contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
-  uint256 private constant TREE_ARITY = 5;
+  uint256 internal constant TREE_ARITY = 5;
 
   /// @notice The commitment to the tally results. Its initial value is 0, but after
   /// the tally of each batch is proven on-chain via a zk-SNARK, it should be
