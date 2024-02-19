@@ -70,7 +70,7 @@
     "@openzeppelin/contracts": "^4.8.0",
     "circomlibjs": "^0.1.7",
     "ethers": "^6.11.1",
-    "hardhat": "^2.19.5",
+    "hardhat": "^2.20.1",
     "maci-circuits": "^1.1.2",
     "maci-core": "^1.1.2",
     "maci-crypto": "^1.1.2",
