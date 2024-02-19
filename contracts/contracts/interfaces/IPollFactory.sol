@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import { IMACI } from "./IMACI.sol";
 import { TopupCredit } from "../TopupCredit.sol";
 import { Params } from "../utilities/Params.sol";
 import { DomainObjs } from "../utilities/DomainObjs.sol";
@@ -23,7 +22,7 @@ interface IPollFactory {
     Params.MaxValues memory _maxValues,
     Params.TreeDepths memory _treeDepths,
     DomainObjs.PubKey memory _coordinatorPubKey,
-    IMACI _maci,
+    address _maci,
     TopupCredit _topupCredit,
     address _pollOwner
   ) external returns (address);
