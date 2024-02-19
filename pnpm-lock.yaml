@@ -157,8 +157,8 @@ importers:
         specifier: ^12.0.0
         version: 12.0.0
       dotenv:
-        specifier: ^16.4.2
-        version: 16.4.2
+        specifier: ^16.4.4
+        version: 16.4.4
       ethers:
         specifier: ^6.11.0
         version: 6.11.0
@@ -279,8 +279,8 @@ importers:
         specifier: ^4.3.10
         version: 4.4.0
       dotenv:
-        specifier: ^16.4.2
-        version: 16.4.2
+        specifier: ^16.4.4
+        version: 16.4.4
       hardhat-artifactor:
         specifier: ^0.2.0
         version: 0.2.0(hardhat@2.19.5)
@@ -8595,8 +8595,8 @@ packages:
     engines: {node: '>=12'}
     dev: true
 
-  /dotenv@16.4.2:
-    resolution: {integrity: sha512-rZSSFxke7d9nYQ5NeMIwp5PP+f8wXgKNljpOb7KtH6SKW1cEqcXAz9VSJYVLKe7Jhup/gUYOkaeSVyK8GJ+nBg==}
+  /dotenv@16.4.4:
+    resolution: {integrity: sha512-XvPXc8XAQThSjAbY6cQ/9PcBXmFoWuw1sQ3b8HqUCR6ziGXjkTi//kB9SWa2UwqlgdAIuRqAa/9hVljzPehbYg==}
     engines: {node: '>=12'}
 
   /duplexer@0.1.2:
@@ -9446,7 +9446,6 @@ packages:
     dependencies:
       is-hex-prefixed: 1.0.0
       strip-hex-prefix: 1.0.0
-    bundledDependencies: false
 
   /eval@0.1.8:
     resolution: {integrity: sha512-EzV94NYKoO09GLXGjXj9JIlXijVck4ONSr5wiCWDvhsvj5jxSrzTmRU/9C1DyB6uToszLs8aifA6NQ7lEQdvFw==}
