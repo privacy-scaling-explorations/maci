@@ -46,7 +46,7 @@
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
     "commander": "^12.0.0",
     "dotenv": "^16.4.4",
-    "ethers": "^6.11.0",
+    "ethers": "^6.11.1",
     "hardhat": "^2.19.5",
     "maci-circuits": "^1.1.2",
     "maci-contracts": "^1.1.2",
