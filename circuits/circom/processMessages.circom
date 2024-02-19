@@ -619,8 +619,6 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     validVoteOptionIndex.in[1] <== maxVoteOptions;
 
     // @note pick the correct vote option index based on whether the index is < max vote options 
-    // @todo can probably add one output to messageValidator and take from there
-    // or maybe we can remove altogther from messageValidator so we don't double check this
     component cmdVoteOptionIndexMux = Mux1();
     cmdVoteOptionIndexMux.s <== validVoteOptionIndex.out;
     cmdVoteOptionIndexMux.c[0] <== 0;
