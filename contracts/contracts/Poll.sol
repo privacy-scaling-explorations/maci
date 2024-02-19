@@ -163,7 +163,7 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
   }
 
   /// @inheritdoc IPoll
-  function publishMessage(Message calldata _message, PubKey calldata _encPubKey) public virtual isWithinVotingDeadline {
+  function publishMessage(Message memory _message, PubKey calldata _encPubKey) public virtual isWithinVotingDeadline {
     // we check that we do not exceed the max number of messages
     if (numMessages == maxValues.maxMessages) revert TooManyMessages();
 
@@ -176,6 +176,10 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
     unchecked {
       numMessages++;
     }
+
+    // we enforce that msgType here is 1 so we don't need checks
+    // at the circuit level
+    _message.msgType = 1;
 
     uint256 messageLeaf = hashMessageAndEncPubKey(_message, _encPubKey);
     extContracts.messageAq.enqueue(messageLeaf);
