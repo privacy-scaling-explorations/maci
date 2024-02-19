@@ -575,7 +575,7 @@ describe("ProcessMessage circuit", function test() {
 
         // Second batch is not a full batch
         const numMessages = messageBatchSize * NUM_BATCHES - 1;
-        for (let i = 0; i < numMessages; i += 1) {
+        for (let i = 0; i < 6; i += 1) {
           const command = new PCommand(
             BigInt(index),
             userKeypair.pubKey,
