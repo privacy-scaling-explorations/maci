@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
 import { MaciState, Poll, packProcessMessageSmallVals, STATE_TREE_ARITY } from "maci-core";
 import { hash5, IncrementalQuinTree, NOTHING_UP_MY_SLEEVE, AccQueue } from "maci-crypto";
-import { PrivKey, Keypair, PCommand, Message, Ballot } from "maci-domainobjs";
+import { PrivKey, Keypair, PCommand, Message, Ballot, PubKey } from "maci-domainobjs";
 
 import { IProcessMessagesInputs } from "../types";
 
@@ -76,7 +76,7 @@ describe("ProcessMessage circuit", function test() {
   describe("1 user, 2 messages", () => {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     const voteWeight = BigInt(9);
-    const voteOptionIndex = BigInt(0);
+    const voteOptionIndex = BigInt(1);
     let stateIndex: bigint;
     let pollId: bigint;
     let poll: Poll;
@@ -100,6 +100,26 @@ describe("ProcessMessage circuit", function test() {
 
       poll = maciState.polls.get(pollId)!;
       poll.updatePoll(BigInt(maciState.stateLeaves.length));
+
+      const nothing = new Message(1n, [
+        8370432830353022751713833565135785980866757267633941821328460903436894336785n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+      ]);
+
+      const encP = new PubKey([
+        10457101036533406547632367118273992217979173478358440826365724437999023779287n,
+        19824078218392094440610104313265183977899662750282163392862422243483260492317n,
+      ]);
+
+      poll.publishMessage(nothing, encP);
 
       // First command (valid)
       const command = new PCommand(
@@ -144,6 +164,7 @@ describe("ProcessMessage circuit", function test() {
         STATE_TREE_ARITY,
         NOTHING_UP_MY_SLEEVE,
       );
+      accumulatorQueue.enqueue(nothing.hash(encP));
       accumulatorQueue.enqueue(message.hash(ecdhKeypair.pubKey));
       accumulatorQueue.enqueue(message2.hash(ecdhKeypair2.pubKey));
       accumulatorQueue.mergeSubRoots(0);
@@ -187,7 +208,7 @@ describe("ProcessMessage circuit", function test() {
         BigInt(maxValues.maxVoteOptions),
         BigInt(poll.maciStateRef.numSignUps),
         0,
-        2,
+        3,
       );
 
       // Test the ProcessMessagesInputHasher circuit
@@ -572,7 +593,7 @@ describe("ProcessMessage circuit", function test() {
           selectedPoll?.publishMessage(message, ecdhKeypair.pubKey);
         }
 
-        for (let i = 0; i < NUM_BATCHES; i += 1) {
+        for (let i = 0; i < 2; i += 1) {
           const inputs = selectedPoll?.processMessages(id) as unknown as IProcessMessagesInputs;
           // eslint-disable-next-line no-await-in-loop
           const witness = await circuit.calculateWitness(inputs);
@@ -651,6 +672,392 @@ describe("ProcessMessage circuit", function test() {
       const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
       const witness = await circuit.calculateWitness(inputs);
       await circuit.expectConstraintPass(witness);
+    });
+  });
+
+  describe("1 user, 2 messages", () => {
+    const maciState = new MaciState(STATE_TREE_DEPTH);
+    const voteOptionIndex = 1n;
+    let stateIndex: bigint;
+    let pollId: bigint;
+    let poll: Poll;
+    const messages: Message[] = [];
+    const commands: PCommand[] = [];
+
+    before(() => {
+      // Sign up and publish
+      const userKeypair = new Keypair(new PrivKey(BigInt(1)));
+      stateIndex = BigInt(
+        maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000))),
+      );
+
+      pollId = maciState.deployPoll(
+        BigInt(Math.floor(Date.now() / 1000) + duration),
+        maxValues,
+        treeDepths,
+        messageBatchSize,
+        coordinatorKeypair,
+      );
+
+      poll = maciState.polls.get(pollId)!;
+      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+
+      const nothing = new Message(1n, [
+        8370432830353022751713833565135785980866757267633941821328460903436894336785n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+      ]);
+
+      const encP = new PubKey([
+        10457101036533406547632367118273992217979173478358440826365724437999023779287n,
+        19824078218392094440610104313265183977899662750282163392862422243483260492317n,
+      ]);
+
+      poll.publishMessage(nothing, encP);
+
+      // First command (valid)
+      const command = new PCommand(
+        stateIndex, // BigInt(1),
+        userKeypair.pubKey,
+        1n, // voteOptionIndex,
+        2n, // vote weight
+        2n, // nonce
+        pollId,
+      );
+
+      const signature = command.sign(userKeypair.privKey);
+
+      const ecdhKeypair = new Keypair();
+      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+      const message = command.encrypt(signature, sharedKey);
+      messages.push(message);
+      commands.push(command);
+
+      poll.publishMessage(message, ecdhKeypair.pubKey);
+
+      // Second command (valid)
+      const command2 = new PCommand(
+        stateIndex,
+        userKeypair.pubKey,
+        voteOptionIndex, // voteOptionIndex,
+        9n, // vote weight 9 ** 2 = 81
+        1n, // nonce
+        pollId,
+      );
+      const signature2 = command2.sign(userKeypair.privKey);
+
+      const ecdhKeypair2 = new Keypair();
+      const sharedKey2 = Keypair.genEcdhSharedKey(ecdhKeypair2.privKey, coordinatorKeypair.pubKey);
+      const message2 = command2.encrypt(signature2, sharedKey2);
+      messages.push(message2);
+      commands.push(command2);
+      poll.publishMessage(message2, ecdhKeypair2.pubKey);
+    });
+
+    it("should produce the correct state root and ballot root", async () => {
+      // The current roots
+      const emptyBallot = new Ballot(poll.maxValues.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
+      const emptyBallotHash = emptyBallot.hash();
+      const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash5);
+
+      ballotTree.insert(emptyBallot.hash());
+
+      poll.stateLeaves.forEach(() => {
+        ballotTree.insert(emptyBallotHash);
+      });
+
+      const currentStateRoot = poll.stateTree?.root;
+      const currentBallotRoot = ballotTree.root;
+
+      const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
+
+      // Calculate the witness
+      const witness = await circuit.calculateWitness(inputs);
+      await circuit.expectConstraintPass(witness);
+
+      // The new roots, which should differ, since at least one of the
+      // messages modified a Ballot or State Leaf
+      const newStateRoot = poll.stateTree?.root;
+      const newBallotRoot = poll.ballotTree?.root;
+
+      expect(newStateRoot?.toString()).not.to.be.eq(currentStateRoot?.toString());
+      expect(newBallotRoot?.toString()).not.to.be.eq(currentBallotRoot.toString());
+    });
+  });
+
+  describe("1 user, 2 messages in different batches", () => {
+    const maciState = new MaciState(STATE_TREE_DEPTH);
+    const voteOptionIndex = 1n;
+    let stateIndex: bigint;
+    let pollId: bigint;
+    let poll: Poll;
+    const messages: Message[] = [];
+    const commands: PCommand[] = [];
+
+    before(() => {
+      // Sign up and publish
+      const userKeypair = new Keypair(new PrivKey(BigInt(1)));
+      stateIndex = BigInt(
+        maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000))),
+      );
+
+      pollId = maciState.deployPoll(
+        BigInt(Math.floor(Date.now() / 1000) + duration),
+        maxValues,
+        treeDepths,
+        messageBatchSize,
+        coordinatorKeypair,
+      );
+
+      poll = maciState.polls.get(pollId)!;
+      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+
+      const nothing = new Message(1n, [
+        8370432830353022751713833565135785980866757267633941821328460903436894336785n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+      ]);
+
+      const encP = new PubKey([
+        10457101036533406547632367118273992217979173478358440826365724437999023779287n,
+        19824078218392094440610104313265183977899662750282163392862422243483260492317n,
+      ]);
+
+      poll.publishMessage(nothing, encP);
+
+      // First command (valid)
+      const command = new PCommand(
+        stateIndex, // BigInt(1),
+        userKeypair.pubKey,
+        1n, // voteOptionIndex,
+        2n, // vote weight
+        2n, // nonce
+        pollId,
+      );
+
+      const signature = command.sign(userKeypair.privKey);
+
+      const ecdhKeypair = new Keypair();
+      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+      const message = command.encrypt(signature, sharedKey);
+      messages.push(message);
+      commands.push(command);
+
+      poll.publishMessage(message, ecdhKeypair.pubKey);
+
+      // fill the batch with nothing messages
+      for (let i = 0; i < messageBatchSize - 1; i += 1) {
+        poll.publishMessage(nothing, encP);
+      }
+
+      // Second command (valid) in second batch (which is first due to reverse processing)
+      const command2 = new PCommand(
+        stateIndex,
+        userKeypair.pubKey,
+        voteOptionIndex, // voteOptionIndex,
+        9n, // vote weight 9 ** 2 = 81
+        1n, // nonce
+        pollId,
+      );
+      const signature2 = command2.sign(userKeypair.privKey);
+
+      const ecdhKeypair2 = new Keypair();
+      const sharedKey2 = Keypair.genEcdhSharedKey(ecdhKeypair2.privKey, coordinatorKeypair.pubKey);
+      const message2 = command2.encrypt(signature2, sharedKey2);
+      messages.push(message2);
+      commands.push(command2);
+      poll.publishMessage(message2, ecdhKeypair2.pubKey);
+    });
+
+    it("should produce the correct state root and ballot root", async () => {
+      // The current roots
+      const emptyBallot = new Ballot(poll.maxValues.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
+      const emptyBallotHash = emptyBallot.hash();
+      const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash5);
+
+      ballotTree.insert(emptyBallot.hash());
+
+      poll.stateLeaves.forEach(() => {
+        ballotTree.insert(emptyBallotHash);
+      });
+
+      while (poll.hasUnprocessedMessages()) {
+        const currentStateRoot = poll.stateTree?.root;
+        const currentBallotRoot = ballotTree.root;
+        const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
+
+        // Calculate the witness
+        // eslint-disable-next-line no-await-in-loop
+        const witness = await circuit.calculateWitness(inputs);
+        // eslint-disable-next-line no-await-in-loop
+        await circuit.expectConstraintPass(witness);
+
+        // The new roots, which should differ, since at least one of the
+        // messages modified a Ballot or State Leaf
+        const newStateRoot = poll.stateTree?.root;
+        const newBallotRoot = poll.ballotTree?.root;
+
+        expect(newStateRoot?.toString()).not.to.be.eq(currentStateRoot?.toString());
+        expect(newBallotRoot?.toString()).not.to.be.eq(currentBallotRoot.toString());
+      }
+    });
+  });
+
+  describe("1 user, 3 messages in different batches", () => {
+    const maciState = new MaciState(STATE_TREE_DEPTH);
+    const voteOptionIndex = 1n;
+    let stateIndex: bigint;
+    let pollId: bigint;
+    let poll: Poll;
+    const messages: Message[] = [];
+    const commands: PCommand[] = [];
+
+    before(() => {
+      // Sign up and publish
+      const userKeypair = new Keypair(new PrivKey(BigInt(1)));
+      stateIndex = BigInt(
+        maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000))),
+      );
+
+      pollId = maciState.deployPoll(
+        BigInt(Math.floor(Date.now() / 1000) + duration),
+        maxValues,
+        treeDepths,
+        messageBatchSize,
+        coordinatorKeypair,
+      );
+
+      poll = maciState.polls.get(pollId)!;
+      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+
+      const nothing = new Message(1n, [
+        8370432830353022751713833565135785980866757267633941821328460903436894336785n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+        0n,
+      ]);
+
+      const encP = new PubKey([
+        10457101036533406547632367118273992217979173478358440826365724437999023779287n,
+        19824078218392094440610104313265183977899662750282163392862422243483260492317n,
+      ]);
+
+      poll.publishMessage(nothing, encP);
+
+      const commandFinal = new PCommand(
+        stateIndex, // BigInt(1),
+        userKeypair.pubKey,
+        1n, // voteOptionIndex,
+        1n, // vote weight
+        3n, // nonce
+        pollId,
+      );
+
+      const signatureFinal = commandFinal.sign(userKeypair.privKey);
+
+      const ecdhKeypairFinal = new Keypair();
+      const sharedKeyFinal = Keypair.genEcdhSharedKey(ecdhKeypairFinal.privKey, coordinatorKeypair.pubKey);
+      const messageFinal = commandFinal.encrypt(signatureFinal, sharedKeyFinal);
+      messages.push(messageFinal);
+      commands.push(commandFinal);
+
+      poll.publishMessage(messageFinal, ecdhKeypairFinal.pubKey);
+
+      // First command (valid)
+      const command = new PCommand(
+        stateIndex, // BigInt(1),
+        userKeypair.pubKey,
+        1n, // voteOptionIndex,
+        2n, // vote weight
+        2n, // nonce
+        pollId,
+      );
+
+      const signature = command.sign(userKeypair.privKey);
+
+      const ecdhKeypair = new Keypair();
+      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+      const message = command.encrypt(signature, sharedKey);
+      messages.push(message);
+      commands.push(command);
+
+      poll.publishMessage(message, ecdhKeypair.pubKey);
+
+      // fill the batch with nothing messages
+      for (let i = 0; i < messageBatchSize - 1; i += 1) {
+        poll.publishMessage(nothing, encP);
+      }
+
+      // Second command (valid) in second batch (which is first due to reverse processing)
+      const command2 = new PCommand(
+        stateIndex,
+        userKeypair.pubKey,
+        voteOptionIndex, // voteOptionIndex,
+        9n, // vote weight 9 ** 2 = 81
+        1n, // nonce
+        pollId,
+      );
+      const signature2 = command2.sign(userKeypair.privKey);
+
+      const ecdhKeypair2 = new Keypair();
+      const sharedKey2 = Keypair.genEcdhSharedKey(ecdhKeypair2.privKey, coordinatorKeypair.pubKey);
+      const message2 = command2.encrypt(signature2, sharedKey2);
+      messages.push(message2);
+      commands.push(command2);
+      poll.publishMessage(message2, ecdhKeypair2.pubKey);
+    });
+
+    it("should produce the correct state root and ballot root", async () => {
+      // The current roots
+      const emptyBallot = new Ballot(poll.maxValues.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
+      const emptyBallotHash = emptyBallot.hash();
+      const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash5);
+
+      ballotTree.insert(emptyBallot.hash());
+
+      poll.stateLeaves.forEach(() => {
+        ballotTree.insert(emptyBallotHash);
+      });
+
+      while (poll.hasUnprocessedMessages()) {
+        const currentStateRoot = poll.stateTree?.root;
+        const currentBallotRoot = ballotTree.root;
+        const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
+
+        // Calculate the witness
+        // eslint-disable-next-line no-await-in-loop
+        const witness = await circuit.calculateWitness(inputs);
+        // eslint-disable-next-line no-await-in-loop
+        await circuit.expectConstraintPass(witness);
+
+        // The new roots, which should differ, since at least one of the
+        // messages modified a Ballot or State Leaf
+        const newStateRoot = poll.stateTree?.root;
+        const newBallotRoot = poll.ballotTree?.root;
+
+        expect(newStateRoot?.toString()).not.to.be.eq(currentStateRoot?.toString());
+        expect(newBallotRoot?.toString()).not.to.be.eq(currentBallotRoot.toString());
+      }
     });
   });
 });

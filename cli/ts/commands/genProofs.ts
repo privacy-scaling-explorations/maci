@@ -279,6 +279,7 @@ export const genProofs = async ({
   while (poll.hasUnprocessedMessages()) {
     // process messages in batches
     const circuitInputs = poll.processMessages(pollId, useQuadraticVoting, quiet) as unknown as CircuitInputs;
+
     try {
       // generate the proof for this batch
       // eslint-disable-next-line no-await-in-loop
@@ -290,11 +291,12 @@ export const genProofs = async ({
         witnessExePath: processWitgen,
         wasmPath: processWasm,
       });
+
       // verify it
       // eslint-disable-next-line no-await-in-loop
       const isValid = await verifyProof(r.publicSignals, r.proof, processVk);
       if (!isValid) {
-        logError("Error: generated an invalid proof");
+        throw new Error("Generated an invalid proof");
       }
 
       const thisProof = {

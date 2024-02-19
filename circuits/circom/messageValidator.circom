@@ -20,6 +20,7 @@ template MessageValidator() {
     validStateLeafIndex.in[0] <== stateTreeIndex;
     validStateLeafIndex.in[1] <== numSignUps;
 
+    // @todo check if we need this if we do the check inside processOne 
     // b) Whether the max vote option tree index is correct
     signal input voteOptionIndex;
     signal input maxVoteOptions;
