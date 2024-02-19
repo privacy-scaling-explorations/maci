@@ -41,9 +41,6 @@ contract MACI is IMACI, Params, Utilities, Ownable {
   /// @notice The number of signups
   uint256 public numSignUps;
 
-  /// @notice A mapping of block timestamps to the number of state leaves
-  mapping(uint256 => uint256) public numStateLeaves;
-
   /// @notice ERC20 contract that hold topup credits
   TopupCredit public immutable topupCredit;
 
@@ -157,7 +154,7 @@ contract MACI is IMACI, Params, Utilities, Ownable {
     bytes memory _initialVoiceCreditProxyData
   ) public virtual {
     // ensure we do not have more signups than what the circuits support
-    if (numSignUps == uint256(TREE_ARITY) ** uint256(stateTreeDepth)) revert TooManySignups();
+    if (numSignUps >= uint256(TREE_ARITY) ** uint256(stateTreeDepth)) revert TooManySignups();
 
     if (_pubKey.x >= SNARK_SCALAR_FIELD || _pubKey.y >= SNARK_SCALAR_FIELD) {
       revert MaciPubKeyLargerThanSnarkFieldSize();

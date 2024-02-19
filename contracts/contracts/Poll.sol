@@ -93,12 +93,22 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
     PubKey memory _coordinatorPubKey,
     ExtContracts memory _extContracts
   ) payable {
-    extContracts = _extContracts;
+    // check that the coordinator public key is valid
+    if (_coordinatorPubKey.x >= SNARK_SCALAR_FIELD || _coordinatorPubKey.y >= SNARK_SCALAR_FIELD) {
+      revert MaciPubKeyLargerThanSnarkFieldSize();
+    }
+
+    // store the pub key as object then calculate the hash
     coordinatorPubKey = _coordinatorPubKey;
-    // we hash it ourselves to ensure we record the correct value
+    // we hash it ourselves to ensure we store the correct value
     coordinatorPubKeyHash = hashLeftRight(_coordinatorPubKey.x, _coordinatorPubKey.y);
+    // store the external contracts to interact with
+    extContracts = _extContracts;
+    // store duration of the poll
     duration = _duration;
+    // store max values
     maxValues = _maxValues;
+    // store tree depth
     treeDepths = _treeDepths;
     // Record the current timestamp
     deployTime = block.timestamp;
@@ -144,7 +154,7 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
   /// @inheritdoc IPoll
   function topup(uint256 stateIndex, uint256 amount) public virtual isWithinVotingDeadline {
     // we check that we do not exceed the max number of messages
-    if (numMessages == maxValues.maxMessages) revert TooManyMessages();
+    if (numMessages >= maxValues.maxMessages) revert TooManyMessages();
 
     // cannot realistically overflow
     unchecked {
@@ -165,7 +175,7 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
   /// @inheritdoc IPoll
   function publishMessage(Message memory _message, PubKey calldata _encPubKey) public virtual isWithinVotingDeadline {
     // we check that we do not exceed the max number of messages
-    if (numMessages == maxValues.maxMessages) revert TooManyMessages();
+    if (numMessages >= maxValues.maxMessages) revert TooManyMessages();
 
     // validate that the public key is valid
     if (_encPubKey.x >= SNARK_SCALAR_FIELD || _encPubKey.y >= SNARK_SCALAR_FIELD) {
