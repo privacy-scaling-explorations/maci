@@ -1,7 +1,7 @@
 import { MACI__factory as MACIFactory } from "maci-contracts/typechain-types";
 import { PubKey } from "maci-domainobjs";
 
-import type { IRegisteredUserArgs, SignupArgs } from "../utils/interfaces";
+import type { IRegisteredUserArgs, ISignupData, SignupArgs } from "../utils/interfaces";
 import type { ContractTransactionReceipt } from "ethers";
 
 import { banner } from "../utils/banner";
@@ -11,8 +11,8 @@ import { info, logError, logGreen, logYellow, success } from "../utils/theme";
 
 /**
  * Signup a user to the MACI contract
- * @param SignupArgs - The arguments for the signup command
- * @returns The state index of the user and transaction hash
+ * @param {SignupArgs} args - The arguments for the signup command
+ * @returns {ISignupData} The state index of the user and transaction hash
  */
 export const signup = async ({
   maciPubKey,
@@ -21,7 +21,7 @@ export const signup = async ({
   ivcpDataArg,
   signer,
   quiet = true,
-}: SignupArgs): Promise<{ stateIndex: string; hash: string }> => {
+}: SignupArgs): Promise<ISignupData> => {
   banner(quiet);
 
   // validate user key

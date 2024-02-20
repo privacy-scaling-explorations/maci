@@ -861,6 +861,21 @@ export interface SignupArgs {
 }
 
 /**
+ * Interface for the return data to the signup command
+ */
+export interface ISignupData {
+  /**
+   * The state index of the user
+   */
+  stateIndex: string;
+
+  /**
+   * The signup transaction hash
+   */
+  hash: string;
+}
+
+/**
  * Interface for the arguments to the register check command
  */
 export interface IRegisteredUserArgs {
@@ -883,6 +898,66 @@ export interface IRegisteredUserArgs {
    * Whether to log the output
    */
   quiet?: boolean;
+}
+
+/**
+ * Interface for the arguments to the get poll command
+ */
+export interface IGetPollArgs {
+  /**
+   * A signer object
+   */
+  signer: Signer;
+
+  /**
+   * The address of the MACI contract
+   */
+  maciAddress: string;
+
+  /**
+   * The poll id. If not specified, latest poll id will be used
+   */
+  pollId?: BigNumberish;
+
+  /**
+   * Whether to log the output
+   */
+  quiet?: boolean;
+}
+
+/**
+ * Interface for the return data to the get poll command
+ */
+export interface IGetPollData {
+  /**
+   * The poll id
+   */
+  id: BigNumberish;
+
+  /**
+   * The poll address
+   */
+  address: string;
+
+  /**
+   * The poll deployment time
+   */
+  deployTime: BigNumberish;
+
+  /**
+   * The poll duration
+   */
+  duration: BigNumberish;
+
+  /**
+   * The poll number of signups
+   */
+  numSignups: BigNumberish;
+
+  /**
+   * Whether the MACI contract's stateAq has been merged by this contract
+   */
+  isStateAqMerged: boolean;
 }
 
 /**
