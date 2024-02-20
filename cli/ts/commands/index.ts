@@ -1,6 +1,7 @@
 export { airdrop } from "./airdrop";
 export { deploy } from "./deploy";
 export { deployPoll } from "./deployPoll";
+export { getPoll } from "./poll";
 export { deployVkRegistryContract } from "./deployVkRegistry";
 export { genKeyPair } from "./genKeyPair";
 export { genMaciPubKey } from "./genPubKey";

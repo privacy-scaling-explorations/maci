@@ -117,7 +117,8 @@ export const genMaciStateFromContract = async (
     const mutableLogs = { ...log, topics: [...log.topics] };
     const event = maciIface.parseLog(mutableLogs) as unknown as {
       args: {
-        _pubKey: string[];
+        _coordinatorPubKeyX: string;
+        _coordinatorPubKeyY: string;
         _pollId: bigint;
         pollAddr: {
           poll: string;
@@ -127,7 +128,7 @@ export const genMaciStateFromContract = async (
       };
     };
 
-    const pubKey = new PubKey(event.args._pubKey.map((x) => BigInt(x.toString())) as [bigint, bigint]);
+    const pubKey = new PubKey([BigInt(event.args._coordinatorPubKeyX), BigInt(event.args._coordinatorPubKeyY)]);
 
     const p = event.args._pollId;
     assert(p === index);

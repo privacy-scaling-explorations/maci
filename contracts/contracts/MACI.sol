@@ -87,7 +87,12 @@ contract MACI is IMACI, Params, Utilities, Ownable {
     uint256 _voiceCreditBalance,
     uint256 _timestamp
   );
-  event DeployPoll(uint256 _pollId, PubKey _pubKey, PollContracts pollAddr);
+  event DeployPoll(
+    uint256 _pollId,
+    uint256 indexed _coordinatorPubKeyX,
+    uint256 indexed _coordinatorPubKeyY,
+    PollContracts pollAddr
+  );
 
   /// @notice Only allow a Poll contract to call the modified function.
   modifier onlyPoll(uint256 _pollId) {
@@ -254,7 +259,7 @@ contract MACI is IMACI, Params, Utilities, Ownable {
     // store the addresses in a struct so they can be returned
     pollAddr = PollContracts({ poll: p, messageProcessor: mp, tally: tally, subsidy: subsidy });
 
-    emit DeployPoll(pollId, _coordinatorPubKey, pollAddr);
+    emit DeployPoll(pollId, _coordinatorPubKey.x, _coordinatorPubKey.y, pollAddr);
   }
 
   /// @inheritdoc IMACI

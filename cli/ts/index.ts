@@ -16,6 +16,7 @@ import {
   deploy,
   showContracts,
   deployPoll,
+  getPoll,
   mergeMessages,
   publish,
   setVerifyingKeys,
@@ -433,6 +434,29 @@ program
     }
   });
 program
+  .command("getPoll")
+  .description("Get deployed poll from MACI contract")
+  .option("-p, --poll <poll>", "the poll id")
+  .option("-x, --maci-address <maciAddress>", "the MACI contract address")
+  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
+  .action(async (cmdObj) => {
+    try {
+      const signer = await getSigner();
+      const network = await signer.provider?.getNetwork();
+
+      const maciContractAddress = cmdObj.maciAddress || readContractAddress("MACI", network?.name);
+
+      await getPoll({
+        pollId: cmdObj.poll,
+        maciAddress: maciContractAddress,
+        signer,
+        quiet: cmdObj.quiet,
+      });
+    } catch (error) {
+      program.error((error as Error).message, { exitCode: 1 });
+    }
+  });
+program
   .command("topup")
   .description("Top up an account with voice credits")
   .requiredOption("-a, --amount <amount>", "the amount of topup", parseInt)
@@ -691,6 +715,7 @@ export {
   checkVerifyingKeys,
   deploy,
   deployPoll,
+  getPoll,
   deployVkRegistryContract,
   fundWallet,
   genLocalState,
