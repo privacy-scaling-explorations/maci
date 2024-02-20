@@ -80,7 +80,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
 
   /// @notice Check if all ballots are tallied
   /// @return tallied whether all ballots are tallied
-  function isTallied() external view returns (bool tallied) {
+  function isTallied() public view returns (bool tallied) {
     (uint8 intStateTreeDepth, , , ) = poll.treeDepths();
     (uint256 numSignUps, ) = poll.numSignUpsAndMessages();
 
