@@ -1,4 +1,8 @@
 {
-  "extends": "@graphprotocol/graph-ts/types/tsconfig.base.json",
-  "include": ["./src", "./tests", "./scripts"]
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./build"
+  },
+  "include": ["./src", "./tests", "./generated"],
+  "files": [".eslintrc.js"]
 }

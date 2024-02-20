@@ -1,6 +1,6 @@
 #! /bin/bash
-rm -r ./proofs
-rm tally.json
+# rm -r ./proofs
+# rm tally.json
 node build/ts/index.js deployVkRegistry
 node build/ts/index.js setVerifyingKeys \
     --state-tree-depth 10 \
@@ -12,9 +12,9 @@ node build/ts/index.js setVerifyingKeys \
     --tally-votes-zkey ./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey
 node build/ts/index.js create -s 10
 
-# swith to subgraph module
+# switch to subgraph module
 cd ../subgraph 
-pnpm codegen:local
+pnpm codegen
 pnpm create-local
 pnpm deploy-local -l v0.1.2
 

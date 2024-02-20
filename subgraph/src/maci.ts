@@ -1,6 +1,4 @@
-/* eslint-disable no-underscore-dangle */
-// eslint-disable-next-line @typescript-eslint/no-shadow
-import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts";
+import { Address } from "@graphprotocol/graph-ts";
 
 import {
   DeployPoll as DeployPollEvent,
@@ -9,30 +7,33 @@ import {
 } from "../generated/MACI/MACI";
 import { Poll } from "../generated/schema";
 import { Poll as PollTemplate } from "../generated/templates";
+import { Poll as PollContract } from "../generated/templates/Poll/Poll";
 
-import { ONE_BIGINT } from "./utils/constants";
 import { createOrLoadMACI, createOrLoadUser, createOrLoadAccount, createOrLoadStateLeaf } from "./utils/helper";
 
 export function handleDeployPoll(event: DeployPollEvent): void {
-  const maci = createOrLoadMACI(event);
   const entity = new Poll(event.params.pollAddr.poll);
+  const contract = PollContract.bind(event.params.pollAddr.poll);
+  const maxValues = contract.maxValues();
+  const treeDepths = contract.treeDepths();
+  const durations = contract.getDeployTimeAndDuration();
+
   entity.pollId = event.params._pollId;
   entity.messageProcessor = event.params.pollAddr.messageProcessor;
   entity.tally = event.params.pollAddr.tally;
   entity.subsidy = event.params.pollAddr.subsidy;
+  entity.maxMessages = maxValues.value0;
+  entity.maxVoteOption = maxValues.value1;
 
-  // override data
-  entity.duration = BigInt.zero();
-  entity.maxVoteOptions = BigInt.zero();
-  entity.treeDepth = 0;
+  entity.treeDepth = treeDepths.value0;
+  entity.duration = durations.value1;
 
   entity.blockNumber = event.block.number;
   entity.createdAt = event.block.timestamp;
   entity.updatedAt = event.block.timestamp;
   entity.txHash = event.transaction.hash;
 
-  // dummy data
-  entity.numSignups = BigInt.zero();
+  entity.numSignups = 0n;
 
   const owner = createOrLoadUser(event.transaction.from, event);
   const coordinator = createOrLoadAccount(event.params._pubKey.x, event.params._pubKey.y, event, owner.id);
@@ -40,7 +41,8 @@ export function handleDeployPoll(event: DeployPollEvent): void {
   entity.owner = owner.id;
   entity.save();
 
-  maci.numPoll = maci.numPoll.plus(ONE_BIGINT);
+  const maci = createOrLoadMACI(event);
+  maci.numPoll += 1n;
   maci.save();
 
   // Start indexing the poll; `event.params.pollAddr.poll` is the
@@ -50,8 +52,7 @@ export function handleDeployPoll(event: DeployPollEvent): void {
 
 export function handleOwnershipTransferred(event: OwnershipTransferredEvent): void {
   const entity = createOrLoadMACI(event);
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-  entity.owner = changetype<Bytes>(event.params.newOwner);
+  entity.owner = event.params.newOwner;
   entity.blockNumber = event.block.number;
   entity.updatedAt = event.block.timestamp;
   entity.txHash = event.transaction.hash;
@@ -64,6 +65,6 @@ export function handleSignUp(event: SignUpEvent): void {
   createOrLoadStateLeaf(event.params._stateIndex, event, account.id, event.params._voiceCreditBalance);
 
   const maci = createOrLoadMACI(event);
-  maci.numRegistrar = maci.numRegistrar.plus(ONE_BIGINT);
+  maci.numSignUps += 1n;
   maci.save();
 }

@@ -1,6 +1,6 @@
 import fs from "fs";
 
-import { contractAddressesStore, oldSubgraphNetworkStore, subgraphNetworkStore } from "./constants";
+import { contractAddressesStore, subgraphNetworkStore } from "./constants";
 import { logError } from "./theme";
 
 /**
@@ -106,21 +106,10 @@ export const storeSubgraphNetworks = (
   }
 
   const networks = readNetworksJSONFile(subgraphNetworkStore);
-
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (!networks[network]) {
-    networks[network] = {};
-  }
-
   networks[network][contractName] = {
     address,
     startBlock,
   };
-  fs.writeFileSync(subgraphNetworkStore, JSON.stringify(networks, null, 2));
-};
 
-export const backupSubgraphNetworksFile = (): void => {
-  if (fs.existsSync(subgraphNetworkStore)) {
-    fs.copyFileSync(subgraphNetworkStore, oldSubgraphNetworkStore);
-  }
+  fs.writeFileSync(subgraphNetworkStore, JSON.stringify(networks, null, 2));
 };
