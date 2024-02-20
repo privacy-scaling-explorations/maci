@@ -214,6 +214,7 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
     // deadline
     if (stateAqMerged) revert StateAqAlreadyMerged();
 
+    // set merged to true so it cannot be called again
     stateAqMerged = true;
 
     // the subtrees must have been merged first
