@@ -24,15 +24,15 @@ user privacy and discourage collusion or bribery for public goods funding.
 
 MACI offers the following guarantees:
 
-| Property             | Description                                                                                                             |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Collusion Resistance | No one except a trusted coordinator should be certain of the validity of a vote, reducing the effectiveness of bribery. |
-| Receipt-freeness     | No one can prove (besides to the coordinator) which way they voted.                                                     |
-| Privacy              | No one except a trusted coordinator should be able to decrypt a vote.                                                   |
-| Uncensorability      | No one — not even the trusted coordinator, should be able to censor a vote.                                             |
-| Unforgeability       | Only the owner of a user's private key may cast a vote tied to its corresponding public key.                            |
-| Non-repudiation      | No one may modify or delete a vote after it is cast, although a user may cast another vote to nullify it.               |
-| Correct execution    | No one, not even the trusted coordinator, should be able to produce a false tally of votes.                             |
+| Property                 | Description                                                                                                             |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| **Collusion Resistance** | No one except a trusted coordinator should be certain of the validity of a vote, reducing the effectiveness of bribery. |
+| **Receipt-freeness**     | No one can prove (besides to the coordinator) which way they voted.                                                     |
+| **Privacy**              | No one except a trusted coordinator should be able to decrypt a vote.                                                   |
+| **Uncensorability**      | No one — not even the trusted coordinator, should be able to censor a vote.                                             |
+| **Unforgeability**       | Only the owner of a user's private key may cast a vote tied to its corresponding public key.                            |
+| **Non-repudiation**      | No one may modify or delete a vote after it is cast, although a user may cast another vote to nullify it.               |
+| **Correct execution**    | No one, not even the trusted coordinator, should be able to produce a false tally of votes.                             |
 
 Under the hood, MACI uses Ethereum smart contracts, ECDH encryption, and zero-knowledge proofs.
 It inherits security and uncensorability from the underlying Ethereum
@@ -43,6 +43,8 @@ The participants of a MACI voting process are: 1) the voters and 2) a trusted co
 
 Note that MACI presumes an identity system where each legitimate member
 controls a unique Ethereum private key.
+
+For information on MACI's latest features, please check out our [MACI v1.2.0 release post](/blog/maci-v1-2-0-release).
 
 ## Background
 
