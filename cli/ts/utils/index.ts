@@ -38,6 +38,8 @@ export type {
   TopupArgs,
   VerifyArgs,
   SubsidyData,
+  IRegisteredUserArgs,
+  IGenKeypairArgs,
 } from "./interfaces";
 export { compareVks } from "./vks";
 export { delay } from "./time";

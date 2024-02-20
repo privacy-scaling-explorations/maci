@@ -1,7 +1,8 @@
 import { MACI__factory as MACIFactory } from "maci-contracts/typechain-types";
 import { PubKey } from "maci-domainobjs";
 
-import type { SignupArgs } from "../utils/interfaces";
+import type { IRegisteredUserArgs, SignupArgs } from "../utils/interfaces";
+import type { ContractTransactionReceipt } from "ethers";
 
 import { banner } from "../utils/banner";
 import { contractExists } from "../utils/contracts";
@@ -11,7 +12,7 @@ import { info, logError, logGreen, logYellow, success } from "../utils/theme";
 /**
  * Signup a user to the MACI contract
  * @param SignupArgs - The arguments for the signup command
- * @returns The state index of the user
+ * @returns The state index of the user and transaction hash
  */
 export const signup = async ({
   maciPubKey,
@@ -20,7 +21,7 @@ export const signup = async ({
   ivcpDataArg,
   signer,
   quiet = true,
-}: SignupArgs): Promise<string> => {
+}: SignupArgs): Promise<{ stateIndex: string; hash: string }> => {
   banner(quiet);
 
   // validate user key
@@ -51,10 +52,12 @@ export const signup = async ({
   const maciContract = MACIFactory.connect(maciAddress, signer);
 
   let stateIndex = "";
+  let receipt: ContractTransactionReceipt | null = null;
+
   try {
     // sign up to the MACI contract
     const tx = await maciContract.signUp(userMaciPubKey.asContractParam(), sgData, ivcpData);
-    const receipt = await tx.wait();
+    receipt = await tx.wait();
 
     logYellow(quiet, info(`Transaction hash: ${tx.hash}`));
 
@@ -77,5 +80,35 @@ export const signup = async ({
     logError((error as Error).message);
   }
 
-  return stateIndex ? stateIndex.toString() : "";
+  return {
+    stateIndex: stateIndex ? stateIndex.toString() : "",
+    hash: receipt!.hash,
+  };
+};
+
+/**
+ * Checks if user is registered with public key
+ * @param IRegisteredArgs - The arguments for the register check command
+ * @returns user registered or not and state index
+ */
+export const isRegisteredUser = async ({
+  maciAddress,
+  maciPubKey,
+  signer,
+  quiet = true,
+}: IRegisteredUserArgs): Promise<{ isRegistered: boolean; stateIndex?: string }> => {
+  banner(quiet);
+
+  const maciContract = MACIFactory.connect(maciAddress, signer);
+  const publicKey = PubKey.deserialize(maciPubKey).asContractParam();
+
+  const events = await maciContract.queryFilter(maciContract.filters.SignUp(undefined, publicKey.x, publicKey.y));
+  const stateIndex = events[0]?.args.toString() as string | undefined;
+
+  logGreen(quiet, success(`State index: ${stateIndex?.toString()}, registered: ${stateIndex !== undefined}`));
+
+  return {
+    isRegistered: stateIndex !== undefined,
+    stateIndex,
+  };
 };

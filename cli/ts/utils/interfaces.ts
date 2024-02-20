@@ -861,6 +861,31 @@ export interface SignupArgs {
 }
 
 /**
+ * Interface for the arguments to the register check command
+ */
+export interface IRegisteredUserArgs {
+  /**
+   * A signer object
+   */
+  signer: Signer;
+
+  /**
+   * The public key of the user
+   */
+  maciPubKey: string;
+
+  /**
+   * The address of the MACI contract
+   */
+  maciAddress: string;
+
+  /**
+   * Whether to log the output
+   */
+  quiet?: boolean;
+}
+
+/**
  * Interface for the arguments to the topup command
  */
 export interface TopupArgs {

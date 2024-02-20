@@ -104,7 +104,9 @@ describe("keyChange tests", function test() {
       // deploy a poll contract
       await deployPoll({ ...deployPollArgs, signer });
       stateIndex = BigInt(
-        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: keypair1.pubKey.serialize(), signer }),
+        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: keypair1.pubKey.serialize(), signer }).then(
+          (result) => result.stateIndex,
+        ),
       );
       await publish({
         pubkey: keypair1.pubKey.serialize(),
@@ -172,7 +174,9 @@ describe("keyChange tests", function test() {
       // deploy a poll contract
       await deployPoll({ ...deployPollArgs, signer });
       stateIndex = BigInt(
-        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: keypair1.pubKey.serialize(), signer }),
+        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: keypair1.pubKey.serialize(), signer }).then(
+          (result) => result.stateIndex,
+        ),
       );
       await publish({
         pubkey: keypair1.pubKey.serialize(),
@@ -240,7 +244,9 @@ describe("keyChange tests", function test() {
       // deploy a poll contract
       await deployPoll({ ...deployPollArgs, signer });
       stateIndex = BigInt(
-        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: keypair1.pubKey.serialize(), signer }),
+        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: keypair1.pubKey.serialize(), signer }).then(
+          (result) => result.stateIndex,
+        ),
       );
       await publish({
         pubkey: keypair1.pubKey.serialize(),

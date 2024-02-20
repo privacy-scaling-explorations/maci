@@ -10,7 +10,7 @@ export { publish } from "./publish";
 export { setVerifyingKeys } from "./setVerifyingKeys";
 export { showContracts } from "./showContracts";
 export { timeTravel } from "./timeTravel";
-export { signup } from "./signup";
+export { signup, isRegisteredUser } from "./signup";
 export { topup } from "./topup";
 export { verify } from "./verify";
 export { genProofs } from "./genProofs";

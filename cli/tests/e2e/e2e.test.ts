@@ -1,3 +1,4 @@
+import { expect } from "chai";
 import { getDefaultSigner } from "maci-contracts";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
@@ -23,6 +24,7 @@ import {
   timeTravel,
   topup,
   verify,
+  isRegisteredUser,
 } from "../../ts/commands";
 import { DeployedContracts, GenProofsArgs, PollContracts } from "../../ts/utils";
 import {
@@ -618,7 +620,7 @@ describe("e2e tests", function test() {
       maciAddresses = await deploy({ ...deployArgs, signer });
     });
 
-    it("should run the first poll", async () => {
+    it.only("should run the first poll", async () => {
       // deploy a poll contract
       pollAddresses = await deployPoll({ ...deployPollArgs, signer });
 
@@ -627,6 +629,16 @@ describe("e2e tests", function test() {
       for (let i = 0; i < users.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[i].pubKey.serialize(), signer });
+
+        // eslint-disable-next-line no-await-in-loop
+        const { isRegistered, stateIndex } = await isRegisteredUser({
+          maciAddress: maciAddresses.maciAddress,
+          maciPubKey: users[i].pubKey.serialize(),
+          signer,
+        });
+
+        expect(isRegistered).to.eq(true);
+        expect(stateIndex).to.not.eq(undefined);
       }
 
       // publish
@@ -868,7 +880,9 @@ describe("e2e tests", function test() {
 
     it("should signup one user", async () => {
       stateIndex = BigInt(
-        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer }),
+        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer }).then(
+          (result) => result.stateIndex,
+        ),
       );
     });
 

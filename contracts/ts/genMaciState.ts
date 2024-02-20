@@ -86,7 +86,13 @@ export const genMaciStateFromContract = async (
     assert(!!log);
     const mutableLog = { ...log, topics: [...log.topics] };
     const event = maciIface.parseLog(mutableLog) as unknown as {
-      args: { _stateIndex: number; _userPubKey: string[]; _voiceCreditBalance: number; _timestamp: number };
+      args: {
+        _stateIndex: number;
+        _userPubKeyX: string;
+        _userPubKeyY: string;
+        _voiceCreditBalance: number;
+        _timestamp: number;
+      };
     };
 
     actions.push({
@@ -95,7 +101,7 @@ export const genMaciStateFromContract = async (
       transactionIndex: log.transactionIndex,
       data: {
         stateIndex: Number(event.args._stateIndex),
-        pubKey: new PubKey(event.args._userPubKey.map((x) => BigInt(x)) as [bigint, bigint]),
+        pubKey: new PubKey([BigInt(event.args._userPubKeyX), BigInt(event.args._userPubKeyY)]),
         voiceCreditBalance: Number(event.args._voiceCreditBalance),
         timestamp: Number(event.args._timestamp),
       },

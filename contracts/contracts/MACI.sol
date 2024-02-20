@@ -80,7 +80,13 @@ contract MACI is IMACI, Params, Utilities, Ownable {
   }
 
   // Events
-  event SignUp(uint256 _stateIndex, PubKey _userPubKey, uint256 _voiceCreditBalance, uint256 _timestamp);
+  event SignUp(
+    uint256 _stateIndex,
+    uint256 indexed _userPubKeyX,
+    uint256 indexed _userPubKeyY,
+    uint256 _voiceCreditBalance,
+    uint256 _timestamp
+  );
   event DeployPoll(uint256 _pollId, PubKey _pubKey, PollContracts pollAddr);
 
   /// @notice Only allow a Poll contract to call the modified function.
@@ -186,7 +192,7 @@ contract MACI is IMACI, Params, Utilities, Ownable {
     uint256 stateLeaf = hashStateLeaf(StateLeaf(_pubKey, voiceCreditBalance, timestamp));
     uint256 stateIndex = stateAq.enqueue(stateLeaf);
 
-    emit SignUp(stateIndex, _pubKey, voiceCreditBalance, timestamp);
+    emit SignUp(stateIndex, _pubKey.x, _pubKey.y, voiceCreditBalance, timestamp);
   }
 
   /// @notice Deploy a new Poll contract.
