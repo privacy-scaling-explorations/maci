@@ -38,6 +38,9 @@ contract MACI is IMACI, Params, Utilities, Ownable {
   /// @notice A mapping of poll IDs to Poll contracts.
   mapping(uint256 => address) public polls;
 
+  /// @notice Whether the subtrees have been merged (can merge root before new signup)
+  bool public subtreesMerged;
+
   /// @notice The number of signups
   uint256 public numSignUps;
 
@@ -93,6 +96,7 @@ contract MACI is IMACI, Params, Utilities, Ownable {
   error MaciPubKeyLargerThanSnarkFieldSize();
   error PreviousPollNotCompleted(uint256 pollId);
   error PollDoesNotExist(uint256 pollId);
+  error SignupTemporaryBlocked();
 
   /// @notice Create a new instance of the MACI contract.
   /// @param _pollFactory The PollFactory contract
@@ -153,6 +157,9 @@ contract MACI is IMACI, Params, Utilities, Ownable {
     bytes memory _signUpGatekeeperData,
     bytes memory _initialVoiceCreditProxyData
   ) public virtual {
+    // prevent new signups until we merge the roots (possible DoS)
+    if (subtreesMerged) revert SignupTemporaryBlocked();
+
     // ensure we do not have more signups than what the circuits support
     if (numSignUps >= uint256(TREE_ARITY) ** uint256(stateTreeDepth)) revert TooManySignups();
 
@@ -247,10 +254,18 @@ contract MACI is IMACI, Params, Utilities, Ownable {
   /// @inheritdoc IMACI
   function mergeStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId) public onlyPoll(_pollId) {
     stateAq.mergeSubRoots(_numSrQueueOps);
+
+    // if we have merged all subtrees then put a block
+    if (stateAq.subTreesMerged()) {
+      subtreesMerged = true;
+    }
   }
 
   /// @inheritdoc IMACI
   function mergeStateAq(uint256 _pollId) public onlyPoll(_pollId) returns (uint256 root) {
+    // remove block
+    subtreesMerged = false;
+
     root = stateAq.merge(stateTreeDepth);
   }
 

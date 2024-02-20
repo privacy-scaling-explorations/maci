@@ -248,18 +248,30 @@ describe("MACI", () => {
       ).to.be.revertedWithCustomError(maciContract, "CallerMustBePoll");
     });
 
-    it("should allow a Poll contract to merge the signUp AccQueue", async () => {
+    it("should prevent a new user from signin up after the accQueue subtrees have been merged", async () => {
       await timeTravel(signer.provider as unknown as EthereumProvider, Number(duration) + 1);
-      let tx = await pollContract.mergeMaciStateAqSubRoots(0, pollId, {
+
+      const tx = await pollContract.mergeMaciStateAqSubRoots(0, pollId, {
         gasLimit: 3000000,
       });
-      let receipt = await tx.wait();
+      const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
 
-      tx = await pollContract.mergeMaciStateAq(pollId, {
+      await expect(
+        maciContract.signUp(
+          users[0].pubKey.asContractParam(),
+          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
+          AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
+          signUpTxOpts,
+        ),
+      ).to.be.revertedWithCustomError(maciContract, "SignupTemporaryBlocked");
+    });
+
+    it("should allow a Poll contract to merge the signUp AccQueue", async () => {
+      const tx = await pollContract.mergeMaciStateAq(pollId, {
         gasLimit: 3000000,
       });
-      receipt = await tx.wait();
+      const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
     });
 
@@ -268,12 +280,39 @@ describe("MACI", () => {
       maciState.polls.get(pollId)?.updatePoll(await pollContract.numSignups());
       expect(onChainStateRoot.toString()).to.eq(maciState.polls.get(pollId)?.stateTree?.root.toString());
     });
-  });
 
-  describe("getStateAqRoot", () => {
-    it("should return the correct state root", async () => {
+    it("should get the correct state root with getStateAqRoot", async () => {
       const onChainStateRoot = await maciContract.getStateAqRoot();
       expect(onChainStateRoot.toString()).to.eq(maciState.polls.get(pollId)?.stateTree?.root.toString());
+    });
+
+    it("should allow a user to signup after the signUp AccQueue was merged", async () => {
+      const tx = await maciContract.signUp(
+        users[0].pubKey.asContractParam(),
+        AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
+        AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
+        signUpTxOpts,
+      );
+      const receipt = await tx.wait();
+      expect(receipt?.status).to.eq(1);
+
+      const iface = maciContract.interface;
+
+      // Store the state index
+      const log = receipt!.logs[receipt!.logs.length - 1];
+      const event = iface.parseLog(log as unknown as { topics: string[]; data: string }) as unknown as {
+        args: {
+          _stateIndex: BigNumberish;
+          _voiceCreditBalance: BigNumberish;
+          _timestamp: BigNumberish;
+        };
+      };
+
+      maciState.signUp(
+        users[0].pubKey,
+        BigInt(event.args._voiceCreditBalance.toString()),
+        BigInt(event.args._timestamp.toString()),
+      );
     });
   });
 
