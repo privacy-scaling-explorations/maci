@@ -620,7 +620,7 @@ describe("e2e tests", function test() {
       maciAddresses = await deploy({ ...deployArgs, signer });
     });
 
-    it.only("should run the first poll", async () => {
+    it("should run the first poll", async () => {
       // deploy a poll contract
       pollAddresses = await deployPoll({ ...deployPollArgs, signer });
 
