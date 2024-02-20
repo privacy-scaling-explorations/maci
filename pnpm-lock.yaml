@@ -601,6 +601,9 @@ importers:
       '@graphprotocol/graph-ts':
         specifier: 0.32.0
         version: 0.32.0
+      maci-contracts:
+        specifier: workspace:^1.1.2
+        version: link:../contracts
     devDependencies:
       '@types/mustache':
         specifier: ^4.2.5

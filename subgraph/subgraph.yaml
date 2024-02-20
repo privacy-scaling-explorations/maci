@@ -8,11 +8,11 @@ schema:
 dataSources:
   - kind: ethereum
     name: MACI
-    network: { { network } }
+    network: localhost
     source:
-      address: "{{ address }}"
       abi: MACI
-      startBlock: { { startBlock } }
+      address: "0xeec918d74c746167564401103096D45BbD494B74"
+      startBlock: 376
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -25,7 +25,9 @@ dataSources:
         - Poll
       abis:
         - name: MACI
-          file: ./abis/MACI.json
+          file: ./node_modules/maci-contracts/build/artifacts/contracts/MACI.sol/MACI.json
+        - name: Poll
+          file: ./node_modules/maci-contracts/build/artifacts/contracts/Poll.sol/Poll.json
       eventHandlers:
         - event: DeployPoll(uint256,(uint256,uint256),(address,address,address,address))
           handler: handleDeployPoll
@@ -37,7 +39,7 @@ dataSources:
 templates:
   - kind: ethereum
     name: Poll
-    network: { { network } }
+    network: localhost
     source:
       abi: Poll
     mapping:
@@ -52,7 +54,7 @@ templates:
         - TopupCredit
       abis:
         - name: Poll
-          file: ./abis/Poll.json
+          file: ./node_modules/maci-contracts/build/artifacts/contracts/Poll.sol/Poll.json
       eventHandlers:
         - event: MergeMaciStateAq(uint256,uint256)
           handler: handleMergeMaciStateAq

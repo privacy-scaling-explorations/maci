@@ -16,7 +16,7 @@ import {
   type DeployedContracts,
   type DeployArgs,
 } from "../utils";
-import { backupSubgraphNetworksFile, storeSubgraphNetworks } from "../utils/storage";
+import { storeSubgraphNetworks } from "../utils/storage";
 
 /**
  * Deploy MACI and related contracts
@@ -106,9 +106,6 @@ export const deploy = async ({
   storeContractAddress("PoseidonT4", poseidonAddrs.poseidonT4, network?.name);
   storeContractAddress("PoseidonT5", poseidonAddrs.poseidonT5, network?.name);
   storeContractAddress("PoseidonT6", poseidonAddrs.poseidonT6, network?.name);
-
-  // backup previous deployment's contract addresses
-  backupSubgraphNetworksFile();
 
   // save to the subgraph networks.json file
   await maciContract.waitForDeployment();

@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import { Poll, Vote, TopupCredit } from "../generated/schema";
 import {
   MergeMaciStateAq as MergeMaciStateAqEvent,
@@ -10,8 +9,7 @@ import {
   TopupMessage as TopupMessageEvent,
 } from "../generated/templates/Poll/Poll";
 
-import { ONE_BIGINT } from "./utils/constants";
-import { createOrLoadMACI, packPubkey } from "./utils/helper";
+import { packPubkey } from "./utils/helper";
 
 export function handleMergeMaciStateAq(event: MergeMaciStateAqEvent): void {
   const entity = Poll.load(event.address);
@@ -89,23 +87,16 @@ export function handlePublishMessage(event: PublishMessageEvent): void {
   entity.timestamp = event.block.timestamp;
   entity.txHash = event.transaction.hash;
   entity.save();
-
-  const maci = createOrLoadMACI(event);
-  maci.numVotes = maci.numVotes.plus(ONE_BIGINT);
-  maci.save();
 }
 
 export function handleTopupMessage(event: TopupMessageEvent): void {
-  const poll = Poll.load(event.address);
-  if (poll) {
-    const entity = new TopupCredit(event.transaction.hash.concatI32(event.logIndex.toI32()));
-    entity.msgType = event.params._message.msgType;
-    entity.data = event.params._message.data;
-    entity.poll = poll.id;
+  const entity = new TopupCredit(event.transaction.hash.concatI32(event.logIndex.toI32()));
+  entity.msgType = event.params._message.msgType;
+  entity.data = event.params._message.data;
+  entity.poll = event.address;
 
-    entity.blockNumber = event.block.number;
-    entity.timestamp = event.block.timestamp;
-    entity.txHash = event.transaction.hash;
-    entity.save();
-  }
+  entity.blockNumber = event.block.number;
+  entity.timestamp = event.block.timestamp;
+  entity.txHash = event.transaction.hash;
+  entity.save();
 }

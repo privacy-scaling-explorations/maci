@@ -1,36 +1,24 @@
-/* eslint-disable @typescript-eslint/no-inferrable-types */
-/* eslint-disable no-underscore-dangle */
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable @typescript-eslint/no-shadow */
-import { BigInt, Bytes, ethereum } from "@graphprotocol/graph-ts";
+import { Bytes, ethereum } from "@graphprotocol/graph-ts";
 
 import { Account, MACI, StateLeaf, User } from "../../generated/schema";
 
 import { DEFAULT_MACI_ID } from "./constants";
 
-// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-export const packPubkey = (pubkeyX: BigInt, pubkeyY: BigInt): string => `${pubkeyX}-${pubkeyY}`;
+export const packPubkey = (pubkeyX: bigint, pubkeyY: bigint): string => `${pubkeyX}-${pubkeyY}`;
 
-export const createOrLoadMACI = (
-  event: ethereum.Event,
-  owner: Bytes | null = null,
-  stateTreeDepth: number = 10,
-): MACI => {
+export const createOrLoadMACI = (event: ethereum.Event, owner: Bytes | null = null, stateTreeDepth = 10): MACI => {
   let maci = MACI.load(DEFAULT_MACI_ID);
 
   if (!maci) {
     maci = new MACI(DEFAULT_MACI_ID);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-    maci.owner = owner !== null ? owner : changetype<Bytes>(event.transaction.from);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    maci.owner = owner !== null ? owner : (event.transaction.from as Bytes);
     maci.stateTreeDepth = stateTreeDepth as i32;
     maci.updatedAt = event.block.timestamp;
     maci.blockNumber = event.block.number;
     maci.txHash = event.transaction.hash;
 
-    maci.numPoll = BigInt.zero();
-    maci.numRegistrar = BigInt.zero();
-    maci.numVotes = BigInt.zero();
+    maci.numPoll = 0n;
+    maci.numSignUps = 0n;
     maci.save();
   }
 
@@ -52,8 +40,8 @@ export const createOrLoadUser = (address: Bytes, event: ethereum.Event): User =>
 };
 
 export const createOrLoadAccount = (
-  pubkeyX: BigInt,
-  pubkeyY: BigInt,
+  pubkeyX: bigint,
+  pubkeyY: bigint,
   event: ethereum.Event,
   owner: Bytes | null = null,
 ): Account => {
@@ -72,10 +60,10 @@ export const createOrLoadAccount = (
 };
 
 export const createOrLoadStateLeaf = (
-  stateIndex: BigInt,
+  stateIndex: bigint,
   event: ethereum.Event,
   account: string,
-  voiceCreditBalance: BigInt = BigInt.zero(),
+  voiceCreditBalance = 0n,
 ): StateLeaf => {
   const id = stateIndex.toString();
   let leaf = StateLeaf.load(id);
