@@ -17,8 +17,4 @@ module.exports = {
     },
     warnOnUnsupportedTypeScriptVersion: true,
   },
-  rules: {
-    "no-underscore-dangle": "off",
-    "@typescript-eslint/no-unsafe-assignment": "off",
-  },
 };
