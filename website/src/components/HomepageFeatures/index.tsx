@@ -25,8 +25,8 @@ const FeatureList: FeatureItem[] = [
     imgDark: boxDarkImage as string,
     description: (
       <>
-        MACI was designed to be a secure voting system. It is built using smart contracts on the Ethereum blockchain,
-        which ensures votes cannot be faked, censored, or tampered with.
+        Our Ethereum smart contracts enforce correct execution. Votes cannot be faked, censored, double-counted, or
+        tampered with.
       </>
     ),
   },
@@ -36,8 +36,8 @@ const FeatureList: FeatureItem[] = [
     imgDark: chainDarkImage as string,
     description: (
       <>
-        With MACI, votes are encrypted before submitting them on-chain to ensure that your privacy is preserved when
-        participating in a vote.
+        Votes are encrypted before submitting them on-chain to ensure individual privacy is preserved throughout the
+        voting process.
       </>
     ),
   },
@@ -47,8 +47,8 @@ const FeatureList: FeatureItem[] = [
     imgDark: chartDarkImage as string,
     description: (
       <>
-        MACI is powered by zk-SNARKs, a cutting edge cryptographic technology that ensures votes are counted correctly
-        without revealing the individual votes.
+        Vote tallying happens off-chain but ZK-proofs are submitted and verified on-chain, which guarantees votes are
+        counted correctly without revealing the individual votes.
       </>
     ),
   },
