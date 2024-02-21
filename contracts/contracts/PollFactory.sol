@@ -30,10 +30,10 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
     MaxValues calldata _maxValues,
     TreeDepths calldata _treeDepths,
     PubKey calldata _coordinatorPubKey,
-    IMACI _maci,
+    address _maci,
     TopupCredit _topupCredit,
     address _pollOwner
-  ) public returns (address pollAddr) {
+  ) public virtual returns (address pollAddr) {
     /// @notice Validate _maxValues
     /// maxVoteOptions must be less than 2 ** 50 due to circuit limitations;
     /// it will be packed as a 50-bit value along with other values as one
@@ -46,7 +46,11 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
     AccQueue messageAq = new AccQueueQuinaryMaci(_treeDepths.messageTreeSubDepth);
 
     /// @notice the smart contracts that a Poll would interact with
-    ExtContracts memory extContracts = ExtContracts({ maci: _maci, messageAq: messageAq, topupCredit: _topupCredit });
+    ExtContracts memory extContracts = ExtContracts({
+      maci: IMACI(_maci),
+      messageAq: messageAq,
+      topupCredit: _topupCredit
+    });
 
     // deploy the poll
     Poll poll = new Poll(_duration, _maxValues, _treeDepths, _coordinatorPubKey, extContracts);

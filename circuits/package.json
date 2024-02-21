@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "@zk-kit/circuits": "^0.3.0",
-    "circomkit": "^0.0.22",
+    "circomkit": "^0.0.24",
     "circomlib": "^2.0.5",
     "maci-core": "^1.1.2",
     "maci-crypto": "^1.1.2",
@@ -50,7 +50,7 @@
     "@types/chai": "^4.3.11",
     "@types/chai-as-promised": "^7.1.8",
     "@types/mocha": "^10.0.6",
-    "@types/node": "^20.11.17",
+    "@types/node": "^20.11.19",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
     "mocha": "^10.3.0",

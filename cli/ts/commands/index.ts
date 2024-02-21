@@ -1,6 +1,7 @@
 export { airdrop } from "./airdrop";
 export { deploy } from "./deploy";
 export { deployPoll } from "./deployPoll";
+export { getPoll } from "./poll";
 export { deployVkRegistryContract } from "./deployVkRegistry";
 export { genKeyPair } from "./genKeyPair";
 export { genMaciPubKey } from "./genPubKey";
@@ -10,7 +11,7 @@ export { publish } from "./publish";
 export { setVerifyingKeys } from "./setVerifyingKeys";
 export { showContracts } from "./showContracts";
 export { timeTravel } from "./timeTravel";
-export { signup } from "./signup";
+export { signup, isRegisteredUser } from "./signup";
 export { topup } from "./topup";
 export { verify } from "./verify";
 export { genProofs } from "./genProofs";

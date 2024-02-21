@@ -27,6 +27,7 @@ export type {
   FundWalletArgs,
   TimeTravelArgs,
   SignupArgs,
+  ISignupData,
   SetVerifyingKeysArgs,
   MergeMessagesArgs,
   MergeSignupsArgs,
@@ -38,6 +39,10 @@ export type {
   TopupArgs,
   VerifyArgs,
   SubsidyData,
+  IRegisteredUserArgs,
+  IGenKeypairArgs,
+  IGetPollArgs,
+  IGetPollData,
 } from "./interfaces";
 export { compareVks } from "./vks";
 export { delay } from "./time";

@@ -11,12 +11,11 @@ template MessageValidator() {
     signal input stateTreeIndex;
     // how many signups we have in the state tree
     signal input numSignUps;
-    // we check that the state tree index is <= than the number of signups
+    // we check that the state tree index is < than the number of signups
     // as first validation
-    // it is <= because the state tree index is 1-based
+    // it is < because the state tree index is 0-based
     // 0 is for blank state leaf then 1 for the first actual user
-    // which is where the numSignUps starts
-    component validStateLeafIndex = SafeLessEqThan(252);
+    component validStateLeafIndex = SafeLessThan(252);
     validStateLeafIndex.in[0] <== stateTreeIndex;
     validStateLeafIndex.in[1] <== numSignUps;
 

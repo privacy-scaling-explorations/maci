@@ -1,3 +1,4 @@
+import { expect } from "chai";
 import { getDefaultSigner } from "maci-contracts";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
@@ -23,6 +24,7 @@ import {
   timeTravel,
   topup,
   verify,
+  isRegisteredUser,
 } from "../../ts/commands";
 import { DeployedContracts, GenProofsArgs, PollContracts } from "../../ts/utils";
 import {
@@ -54,7 +56,7 @@ import { cleanVanilla, isArm } from "../utils";
 /**
  Test scenarios:
     1 signup, 1 message
-    4 signups, 6 messages
+    4 signups, 8 messages
     5 signups, 1 message
     8 signups, 10 messages
     4 signups, 4 messages
@@ -195,7 +197,7 @@ describe("e2e tests", function test() {
     });
   });
 
-  describe("4 signups, 6 messages", () => {
+  describe("4 signups, 8 messages", () => {
     after(() => {
       cleanVanilla();
     });
@@ -217,7 +219,31 @@ describe("e2e tests", function test() {
       }
     });
 
-    it("should publish six messages", async () => {
+    it("should publish eight messages", async () => {
+      await publish({
+        pubkey: users[0].pubKey.serialize(),
+        stateIndex: 1n,
+        voteOptionIndex: 0n,
+        nonce: 2n,
+        pollId: 0n,
+        newVoteWeight: 4n,
+        maciContractAddress: maciAddresses.maciAddress,
+        salt: genRandomSalt(),
+        privateKey: users[0].privKey.serialize(),
+        signer,
+      });
+      await publish({
+        pubkey: users[0].pubKey.serialize(),
+        stateIndex: 1n,
+        voteOptionIndex: 0n,
+        nonce: 2n,
+        pollId: 0n,
+        newVoteWeight: 3n,
+        maciContractAddress: maciAddresses.maciAddress,
+        salt: genRandomSalt(),
+        privateKey: users[0].privKey.serialize(),
+        signer,
+      });
       await publish({
         pubkey: users[0].pubKey.serialize(),
         stateIndex: 1n,
@@ -233,7 +259,7 @@ describe("e2e tests", function test() {
       await publish({
         pubkey: users[1].pubKey.serialize(),
         stateIndex: 2n,
-        voteOptionIndex: 0n,
+        voteOptionIndex: 2n,
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
@@ -245,7 +271,7 @@ describe("e2e tests", function test() {
       await publish({
         pubkey: users[2].pubKey.serialize(),
         stateIndex: 3n,
-        voteOptionIndex: 0n,
+        voteOptionIndex: 2n,
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
@@ -257,10 +283,10 @@ describe("e2e tests", function test() {
       await publish({
         pubkey: users[3].pubKey.serialize(),
         stateIndex: 4n,
-        voteOptionIndex: 0n,
-        nonce: 1n,
+        voteOptionIndex: 2n,
+        nonce: 3n,
         pollId: 0n,
-        newVoteWeight: 9n,
+        newVoteWeight: 3n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[3].privKey.serialize(),
@@ -269,10 +295,10 @@ describe("e2e tests", function test() {
       await publish({
         pubkey: users[3].pubKey.serialize(),
         stateIndex: 4n,
-        voteOptionIndex: 0n,
-        nonce: 1n,
+        voteOptionIndex: 2n,
+        nonce: 2n,
         pollId: 0n,
-        newVoteWeight: 9n,
+        newVoteWeight: 2n,
         maciContractAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[3].privKey.serialize(),
@@ -281,7 +307,7 @@ describe("e2e tests", function test() {
       await publish({
         pubkey: users[3].pubKey.serialize(),
         stateIndex: 4n,
-        voteOptionIndex: 0n,
+        voteOptionIndex: 1n,
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
@@ -603,6 +629,16 @@ describe("e2e tests", function test() {
       for (let i = 0; i < users.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[i].pubKey.serialize(), signer });
+
+        // eslint-disable-next-line no-await-in-loop
+        const { isRegistered, stateIndex } = await isRegisteredUser({
+          maciAddress: maciAddresses.maciAddress,
+          maciPubKey: users[i].pubKey.serialize(),
+          signer,
+        });
+
+        expect(isRegistered).to.eq(true);
+        expect(stateIndex).to.not.eq(undefined);
       }
 
       // publish
@@ -844,7 +880,9 @@ describe("e2e tests", function test() {
 
     it("should signup one user", async () => {
       stateIndex = BigInt(
-        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer }),
+        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer }).then(
+          (result) => result.stateIndex,
+        ),
       );
     });
 

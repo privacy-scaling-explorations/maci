@@ -191,7 +191,7 @@ describe("Integration tests", function test() {
             sgDataArg: SG_DATA,
             ivcpDataArg: ivcpData,
             signer,
-          }),
+          }).then((result) => result.stateIndex),
         );
 
         // signup on local maci state
