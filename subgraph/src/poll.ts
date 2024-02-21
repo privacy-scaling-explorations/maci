@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { Poll, Vote, TopupCredit } from "../generated/schema";
 import {
   MergeMaciStateAq as MergeMaciStateAqEvent,

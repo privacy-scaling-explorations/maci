@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { Bytes, ethereum } from "@graphprotocol/graph-ts";
 
 import { Account, MACI, StateLeaf, User } from "../../generated/schema";
@@ -12,7 +13,7 @@ export const createOrLoadMACI = (event: ethereum.Event, owner: Bytes | null = nu
   if (!maci) {
     maci = new MACI(DEFAULT_MACI_ID);
     maci.owner = owner !== null ? owner : (event.transaction.from as Bytes);
-    maci.stateTreeDepth = stateTreeDepth as i32;
+    maci.stateTreeDepth = stateTreeDepth;
     maci.updatedAt = event.block.timestamp;
     maci.blockNumber = event.block.number;
     maci.txHash = event.transaction.hash;

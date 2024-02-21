@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { Address } from "@graphprotocol/graph-ts";
 
 import {
@@ -25,7 +26,7 @@ export function handleDeployPoll(event: DeployPollEvent): void {
   entity.maxMessages = maxValues.value0;
   entity.maxVoteOption = maxValues.value1;
 
-  entity.treeDepth = treeDepths.value0;
+  entity.treeDepth = Number(treeDepths.value0);
   entity.duration = durations.value1;
 
   entity.blockNumber = event.block.number;
