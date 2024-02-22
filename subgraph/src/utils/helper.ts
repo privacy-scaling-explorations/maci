@@ -1,25 +1,30 @@
 /* eslint-disable no-underscore-dangle */
-import { Bytes, ethereum } from "@graphprotocol/graph-ts";
+import { BigInt as GraphBN, Bytes, ethereum, Int8 } from "@graphprotocol/graph-ts";
 
 import { Account, MACI, StateLeaf, User } from "../../generated/schema";
 
 import { DEFAULT_MACI_ID } from "./constants";
 
-export const packPubkey = (pubkeyX: bigint, pubkeyY: bigint): string => `${pubkeyX}-${pubkeyY}`;
+export const packPubkey = (pubkeyX: GraphBN, pubkeyY: GraphBN): string => `${pubkeyX.toString()}-${pubkeyY.toString()}`;
 
-export const createOrLoadMACI = (event: ethereum.Event, owner: Bytes | null = null, stateTreeDepth = 10): MACI => {
+export const createOrLoadMACI = (
+  event: ethereum.Event,
+  owner: Bytes | null = null,
+  stateTreeDepth: Int8 = 10,
+): MACI => {
   let maci = MACI.load(DEFAULT_MACI_ID);
 
   if (!maci) {
     maci = new MACI(DEFAULT_MACI_ID);
     maci.owner = owner !== null ? owner : (event.transaction.from as Bytes);
-    maci.stateTreeDepth = stateTreeDepth;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    maci.stateTreeDepth = stateTreeDepth as i32;
     maci.updatedAt = event.block.timestamp;
     maci.blockNumber = event.block.number;
     maci.txHash = event.transaction.hash;
 
-    maci.numPoll = 0n;
-    maci.numSignUps = 0n;
+    maci.numPoll = GraphBN.zero();
+    maci.numSignUps = GraphBN.zero();
     maci.save();
   }
 
@@ -41,8 +46,8 @@ export const createOrLoadUser = (address: Bytes, event: ethereum.Event): User =>
 };
 
 export const createOrLoadAccount = (
-  pubkeyX: bigint,
-  pubkeyY: bigint,
+  pubkeyX: GraphBN,
+  pubkeyY: GraphBN,
   event: ethereum.Event,
   owner: Bytes | null = null,
 ): Account => {
@@ -61,10 +66,10 @@ export const createOrLoadAccount = (
 };
 
 export const createOrLoadStateLeaf = (
-  stateIndex: bigint,
+  stateIndex: GraphBN,
   event: ethereum.Event,
   account: string,
-  voiceCreditBalance = 0n,
+  voiceCreditBalance: GraphBN = GraphBN.zero(),
 ): StateLeaf => {
   const id = stateIndex.toString();
   let leaf = StateLeaf.load(id);

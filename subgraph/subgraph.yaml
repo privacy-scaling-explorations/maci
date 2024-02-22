@@ -12,7 +12,7 @@ dataSources:
     source:
       abi: MACI
       address: "0xeec918d74c746167564401103096D45BbD494B74"
-      startBlock: 376
+      startBlock: 405
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -29,11 +29,12 @@ dataSources:
         - name: Poll
           file: ./node_modules/maci-contracts/build/artifacts/contracts/Poll.sol/Poll.json
       eventHandlers:
-        - event: DeployPoll(uint256,(uint256,uint256),(address,address,address,address))
+        - event: DeployPoll(uint256,indexed uint256,indexed
+            uint256,(address,address,address,address))
           handler: handleDeployPoll
         - event: OwnershipTransferred(indexed address,indexed address)
           handler: handleOwnershipTransferred
-        - event: SignUp(uint256,(uint256,uint256),uint256,uint256)
+        - event: SignUp(uint256,indexed uint256,indexed uint256,uint256,uint256)
           handler: handleSignUp
       file: ./src/maci.ts
 templates:
