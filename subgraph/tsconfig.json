@@ -1,7 +1,8 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "outDir": "./build"
+    "outDir": "./build",
+    "target": "esnext"
   },
   "include": ["./src", "./tests", "./generated"],
   "files": [".eslintrc.js"]

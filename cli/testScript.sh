@@ -22,7 +22,7 @@ pnpm deploy-local -l v0.1.2
 cd ../cli
 node build/ts/index.js deployPoll \
     --pubkey macipk.ea638a3366ed91f2e955110888573861f7c0fc0bb5fb8b8dca9cd7a08d7d6b93 \
-    -t 30 -i 1 -m 2 -b 1 -v 2 -se false
+    -t 100 -i 1 -m 2 -b 1 -v 2 -se false
 node build/ts/index.js getPoll \
     --quiet false
 node build/ts/index.js signup \
