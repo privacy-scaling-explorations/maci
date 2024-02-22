@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { SNARK_FIELD_SIZE, genRandomBabyJubValue } from "maci-crypto";
+import { SNARK_FIELD_SIZE, genPrivKey } from "maci-crypto";
 
 import { Keypair, PrivKey } from "..";
 
@@ -8,12 +8,12 @@ describe("privateKey", function test() {
 
   describe("constructor", () => {
     it("should create a private key", () => {
-      const priv = genRandomBabyJubValue();
+      const priv = genPrivKey();
       const k = new PrivKey(priv);
       expect(k).to.not.eq(null);
     });
     it("should create the same private key object for the same raw key", () => {
-      const priv = genRandomBabyJubValue();
+      const priv = genPrivKey();
       const k1 = new PrivKey(priv);
       const k2 = new PrivKey(priv);
       expect(k1.rawPrivKey.toString()).to.eq(k2.rawPrivKey.toString());
@@ -23,7 +23,7 @@ describe("privateKey", function test() {
   describe("serialization", () => {
     describe("serialize", () => {
       it("should serialize the private key", () => {
-        const priv = genRandomBabyJubValue();
+        const priv = genPrivKey();
         const k = new PrivKey(priv);
         const s = k.serialize();
         expect(s.startsWith("macisk.")).to.eq(true);
@@ -42,7 +42,7 @@ describe("privateKey", function test() {
 
     describe("deserialize", () => {
       it("should deserialize the private key", () => {
-        const priv = genRandomBabyJubValue();
+        const priv = genPrivKey();
         const k = new PrivKey(priv);
         const s = k.serialize();
         const k2 = PrivKey.deserialize(s);
@@ -52,7 +52,7 @@ describe("privateKey", function test() {
 
     describe("isValidSerializedPrivKey", () => {
       it("should return true for a valid serialized private key", () => {
-        const priv = genRandomBabyJubValue();
+        const priv = genPrivKey();
         const k = new PrivKey(priv);
         const s = k.serialize();
         expect(PrivKey.isValidSerializedPrivKey(s)).to.eq(true);
@@ -65,19 +65,19 @@ describe("privateKey", function test() {
 
     describe("toJSON", () => {
       it("should produce a JSON object", () => {
-        const priv = genRandomBabyJubValue();
+        const priv = genPrivKey();
         const k = new PrivKey(priv);
         const json = k.toJSON();
         expect(json).to.not.eq(null);
       });
       it("should produce a JSON object with the correct keys", () => {
-        const priv = genRandomBabyJubValue();
+        const priv = genPrivKey();
         const k = new PrivKey(priv);
         const json = k.toJSON();
         expect(Object.keys(json)).to.deep.eq(["privKey"]);
       });
       it("should preserve the data correctly", () => {
-        const priv = genRandomBabyJubValue();
+        const priv = genPrivKey();
         const k = new PrivKey(priv);
         const json = k.toJSON();
         expect(k.serialize()).to.eq(json.privKey);
@@ -86,7 +86,7 @@ describe("privateKey", function test() {
 
     describe("fromJSON", () => {
       it("should produce a PrivKey instance", () => {
-        const priv = genRandomBabyJubValue();
+        const priv = genPrivKey();
         const k = new PrivKey(priv);
         const json = k.toJSON();
         const k2 = PrivKey.fromJSON(json);

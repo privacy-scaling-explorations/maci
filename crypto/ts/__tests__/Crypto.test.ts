@@ -481,10 +481,6 @@ describe("Crypto", function test() {
       });
     });
     describe("genPrivKey", () => {
-      it("should generate a private key that is < SNARK_FIELD_SIZE", () => {
-        const sk = genPrivKey();
-        expect(sk < SNARK_FIELD_SIZE).to.eq(true);
-      });
       it("should generate a random private key", () => {
         const sk1 = genPrivKey();
         const sk2 = genPrivKey();
@@ -538,19 +534,12 @@ describe("Crypto", function test() {
         expect(pk[0] < SNARK_FIELD_SIZE).to.eq(true);
         expect(pk[1] < SNARK_FIELD_SIZE).to.eq(true);
       });
-      it("should throw when given a private key which is >= SNARK_FIELD_SIZE", () => {
-        expect(() => genPubKey(SNARK_FIELD_SIZE)).to.throw();
-      });
     });
     describe("genKeypair", () => {
       it("should produce a public key which is < SNARK_FIELD_SIZE", () => {
         const { pubKey } = genKeypair();
         expect(pubKey[0] < SNARK_FIELD_SIZE).to.eq(true);
         expect(pubKey[1] < SNARK_FIELD_SIZE).to.eq(true);
-      });
-      it("should produce a private key which is < SNARK_FIELD_SIZE", () => {
-        const { privKey } = genKeypair();
-        expect(BigInt(privKey) < SNARK_FIELD_SIZE).to.eq(true);
       });
     });
     describe("genEcdhSharedKey", () => {

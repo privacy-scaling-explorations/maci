@@ -1,17 +1,16 @@
 import { mulPointEscalar } from "@zk-kit/baby-jubjub";
 import { derivePublicKey, deriveSecretScalar, packPublicKey, unpackPublicKey } from "@zk-kit/eddsa-poseidon";
 
-import assert from "assert";
+import { randomBytes } from "crypto";
 
 import { genRandomBabyJubValue } from "./babyjub";
-import { SNARK_FIELD_SIZE } from "./constants";
 import { EcdhSharedKey, Keypair, Point, PrivKey, PubKey } from "./types";
 
 /**
  * Generate a private key
- * @returns A BabyJub-compatible private key.
+ * @returns A random seed for a private key.
  */
-export const genPrivKey = (): bigint => genRandomBabyJubValue();
+export const genPrivKey = (): bigint => BigInt(`0x${randomBytes(32).toString("hex")}`);
 
 /**
  * Generate a random value
@@ -50,9 +49,6 @@ export const unpackPubKey = (packed: bigint): PubKey => {
  * @returns A public key associated with the private key
  */
 export const genPubKey = (privKey: PrivKey): PubKey => {
-  // Check whether privKey is a field element
-  assert(BigInt(privKey) < SNARK_FIELD_SIZE);
-
   const key = derivePublicKey(privKey);
   return [BigInt(key[0]), BigInt(key[1])];
 };
