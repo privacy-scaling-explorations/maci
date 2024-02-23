@@ -1,6 +1,6 @@
 ---
 title: MACI Security Audits
-description: In the summer of 2022, MACI v1 was audited by HashCloak. The audit covered both the zk-SNARK circuits and the Solidity smart contracts.
+description: Overview of MACI audit history with references to audit reports.
 sidebar_label: Security Assessments
 sidebar_position: 12
 ---
@@ -9,6 +9,7 @@ sidebar_position: 12
 
 ## Links
 
+- Audit by PSE Audit 2024/02 [report](/audit_reports/20240223_PSE_Audit_audit_report.pdf)
 - Audit by HashCloak 2022/09 [report](/audit_reports/202220930_Hashcloak_audit_report.pdf)
 - Audit by HashCloak 2021/09 [report](/audit_reports/20210922_Hashcloak_audit_report.pdf)
 
@@ -18,7 +19,7 @@ In the summer of 2022, MACI v1 was audited by HashCloak. The audit covered both 
 
 This audit revealed a number of high severity issues which have been remediated by the MACI development team. We will be looking at those in details in the following sections.
 
-## Data is not fully verified during a state update
+### Data is not fully verified during a state update
 
 This issue could have allowed a malicious coordinator to change the MACI state arbitrarily, for instance by tampering with the voice credits and the voting public key of any user.
 
@@ -26,7 +27,7 @@ In more details, the `processMessages.circom` circuit, did not fully verify that
 
 This was rectified with commit [6df6a4054da926b07f35c5befab4f1f8af33dcc6](https://github.com/privacy-scaling-explorations/maci/pull/522/commits/6df6a4054da926b07f35c5befab4f1f8af33dcc6)
 
-## Token for top-up is a free resource
+### Token for top-up is a free resource
 
 The provided `TopupCredit.sol` contract implemented unprotected `airdrop` and `airdropTo` functions, which could have allowed anyone to receive unlimited voice credits. While this contract was provided as a template, the issue has been rectified by adding the `onlyOwner` modifier to these two functions.
 
@@ -42,13 +43,13 @@ function airdrop(uint256 amount) public onlyOwner {
 }
 ```
 
-## Integer overflow problem and improper bit length restriction
+### Integer overflow problem and improper bit length restriction
 
 This issue within the `float.circom` circuit could have resulted in an overflow on the `IntegerDivision` template. This stemmed from the lack of validation of input size, as well as not preventing a division by zero. Furthemore, it was pointed out that using assert in circuits did not contribute to constraints verification, and could have been bypassed by a malicious coordinator.
 
 The issue was rectified with commit [efd4617724e956d2566062c6fe882e1d45cba7c4](https://github.com/privacy-scaling-explorations/maci/pull/523/commits/efd4617724e956d2566062c6fe882e1d45cba7c4)
 
-## MessageQueue in PollFactory is uninitialized
+### MessageQueue in PollFactory is uninitialized
 
 MACI uses a message queue (a quinary merkle tree) to store all the messages to be processed for a single poll. When deploying a new poll, a corresponding message queue contract is deployed as well, however this was never initialized with a zero value.
 
@@ -69,7 +70,7 @@ dat[1] = 0;
 extContracts.messageAq.enqueue(placeholderLeaf);
 ```
 
-## Additional issues and improvements
+### Additional issues and improvements
 
 The rest of the issues were either low risk, informational or general optimizations.
 
