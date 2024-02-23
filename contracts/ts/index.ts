@@ -4,6 +4,7 @@ export {
   deployVkRegistry,
   deployMaci,
   deployContract,
+  deployContractWithLinkedLibraries,
   deploySignupToken,
   deploySignupTokenGatekeeper,
   deployConstantInitialVoiceCreditProxy,
