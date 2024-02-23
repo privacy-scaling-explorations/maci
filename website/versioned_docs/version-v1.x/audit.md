@@ -5,9 +5,9 @@ sidebar_label: Security audits
 sidebar_position: 12
 ---
 
-# Security Audits
+# MACI Security Audits
 
-## Links
+## Full reports
 
 - Audit by PSE Audit 2024/02 [report](/audit_reports/20240223_PSE_Audit_audit_report.pdf)
 - Audit by HashCloak 2022/09 [report](/audit_reports/202220930_Hashcloak_audit_report.pdf)
@@ -15,7 +15,7 @@ sidebar_position: 12
 
 ## PSE audit 2024
 
-In February 2024 the PSE Audit team audited the MACI codebase with a focus on the smart contracts, typescript core, and Circom circuits Three critical bugs were found, two within the Circom circuits and one in the smart contracts. All three of these have been fixed.
+In February 2024 the PSE Audit team audited the MACI codebase with a focus on the smart contracts, TypeScript core, and Circom circuits Three critical bugs were found: two within the Circom circuits and one in the smart contracts. All three of these have been fixed.
 
 Please see the [PSE Audit report](/audit_reports/20240223_PSE_Audit_audit_report.pdf) for details.
 
@@ -26,8 +26,6 @@ In March 2023, Veridise responsibly disclosed a number of issues to the MACI tea
 Out of five issues disclosed, only three were relevant and have been since fixed by the MACI team. The other two issues were disregarded as they were present in older version of code which is not in use anymore.
 
 We would like to thank you the Veridise team for their effort in keeping open source projects safe.
-
-> Please note that at this time the fixed code is only present in the dev branch. This will be merged to the main branch in the next minor update.
 
 ### Issue 1
 
@@ -157,6 +155,6 @@ The following packages were in scope:
 - Crypto
 - Domainobjs
 
-From August 18, 2021 to September 22, 2021, Hashcloak assisted the MACI team in resolving the issues brought up.
+From August 18, 2021 to September 22, 2021, Hashcloak assisted the MACI team in resolving the issues.
 
 Please see the [HashCloak report](/audit_reports/20210922_Hashcloak_audit_report.pdf) for details.
