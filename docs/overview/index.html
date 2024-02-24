@@ -11,7 +11,7 @@
 
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/katex.min.css" integrity="sha384-odtC+0UGzzFL/6PNoE8rX/SPcQDXBJ+uRepguP4QkPCm2LBxH3FA3y+fKSiJ+AmM" crossorigin="anonymous"><link rel="stylesheet" href="/assets/css/styles.08bb20a2.css">
-<script src="/assets/js/runtime~main.7a851ee4.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.a5be6d8a.js" defer="defer"></script>
 <script src="/assets/js/main.6a3cec93.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -23,18 +23,18 @@
 <li>TypeScript libraries</li>
 </ol>
 <h2 class="anchor anchorWithStickyNavbar_ZXgj" id="circuits">Circuits<a href="#circuits" class="hash-link" aria-label="Direct link to Circuits" title="Direct link to Circuits">​</a></h2>
-<p>MACI has multiple zk-SNARK circuits that ensure all off-chain computation is completed correctly. The circuits enforce that message processing and vote tallying were correctly executed by the coordinator.</p>
+<p>MACI has multiple circuits that ensure all off-chain computation is completed correctly. The circuits are used to generate zero-knowledge proofs (zk-SNARKs) that the votes were counted correctly. Specifically, they enforce that message processing and vote tallying were correctly executed by the coordinator. The proofs can then be verified through a verifier smart contract on-chain.</p>
 <p>The circuits for these zero-knowledge proofs are written
 in <a href="https://iden3.io/circom" target="_blank" rel="noopener noreferrer">Circom</a>.</p>
 <p>The MACI circuits are released through the <a href="https://www.npmjs.com/package/maci-circuits" target="_blank" rel="noopener noreferrer"><code>@maci-circuits</code></a> NPM package.</p>
 <p><a href="/docs/circuits">Learn more about MACI circuits</a></p>
 <h2 class="anchor anchorWithStickyNavbar_ZXgj" id="smart-contracts">Smart contracts<a href="#smart-contracts" class="hash-link" aria-label="Direct link to Smart contracts" title="Direct link to Smart contracts">​</a></h2>
-<p>The MACI smart contracts handle the management and on-chain voting aspects of the system. They provide the functionality to sign up voters, deploy polls, and they store on-chain data from transactions, such as the encrypted votes of a poll. They also verify proofs of the zk-SNARK circuits.</p>
+<p>The MACI smart contracts handle the on-chain aspects - both the functionality and the storage - of the voting system. They provide the functionality to deploy polls, register voters, and accept votes. They also store and manage the on-chain data from transactions, such as the encrypted votes of a poll. Finally, they verify proofs of the zk-SNARK circuits, so that everyone can validate the voting results.</p>
 <p>The MACI smart contracts are written in <a href="https://soliditylang.org/" target="_blank" rel="noopener noreferrer">Solidity</a>.</p>
 <p>Contracts are released through the <a href="https://www.npmjs.com/package/maci-contracts" target="_blank" rel="noopener noreferrer"><code>@maci-contracts</code></a> NPM package.</p>
 <p><a href="/docs/contracts">Learn more about MACI contracts</a></p>
 <h2 class="anchor anchorWithStickyNavbar_ZXgj" id="typescript-libraries">TypeScript libraries<a href="#typescript-libraries" class="hash-link" aria-label="Direct link to TypeScript libraries" title="Direct link to TypeScript libraries">​</a></h2>
-<p>The TypeScript libraries manage the business logic between the smart contracts and the circuit code. They provide a variety of functionality, such as encryption tools, utilities, and a CLI for interacting with MACI (such as vote tallying &amp; proof-generation).</p>
+<p>The TypeScript libraries manage the business logic between the smart contracts and the circuit code. They provide a variety of functionality, such as encryption tools, utilities, and a CLI for interacting with MACI (for actions like signing up, voting, tallying votes &amp; generating proofs).</p>
 <p>The MACI <a href="https://www.typescriptlang.org/" target="_blank" rel="noopener noreferrer">TypeScript</a> libraries are released through the following NPM packages:</p>
 <ul>
 <li><a href="https://www.npmjs.com/package/maci-cli" target="_blank" rel="noopener noreferrer"><code>@maci-cli</code></a></li>
