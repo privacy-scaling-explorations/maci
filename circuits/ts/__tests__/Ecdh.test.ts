@@ -40,7 +40,7 @@ describe("Public key derivation circuit", () => {
       pubKey: keypair2.pubKey.asCircuitInputs() as unknown as bigint[],
     };
 
-    // calculate first time witness and check contraints
+    // calculate first time witness and check constraints
     const witness = await circuit.calculateWitness(circuitInputs);
     await circuit.expectConstraintPass(witness);
 

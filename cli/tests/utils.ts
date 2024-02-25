@@ -20,7 +20,7 @@ export const cleanVanilla = (): void => {
 
 /**
  * Test utility to clean up the proofs directory
- * adn the subsidy.json file
+ * and the subsidy.json file
  */
 export const cleanSubsidy = (): void => {
   cleanVanilla();

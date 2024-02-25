@@ -86,7 +86,7 @@ describe("stateLeaf", () => {
     });
 
     describe("toJSON", () => {
-      it("should produce an object with the correct properities", () => {
+      it("should produce an object with the correct properties", () => {
         const stateLeaf = new StateLeaf(pubKey, BigInt(123), BigInt(1231267));
 
         const json = stateLeaf.toJSON();

@@ -59,7 +59,7 @@ export const poseidonT4 = (inputs: bigint[]): bigint => {
 /**
  * Hash up to 4 elements
  * @param inputs The elements to hash
- * @retuns the hash of the elements
+ * @returns the hash of the elements
  */
 export const poseidonT5 = (inputs: bigint[]): bigint => {
   assert(inputs.length === 4);

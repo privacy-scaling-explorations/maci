@@ -90,7 +90,7 @@ Let's look at the fields in detail:
 - `expectedTotalSpentVoiceCredits`: the expected total spent voice credits
 - `subsidy`: an object that contains the subsidy details. If you do not provide any subsidy details, the default will be used: `enabled = false`, `expectedSubsidy = []`. If you do provide subsidy details, you must provide both fields.
 
-As an example, let's try to implement a test given the following criterias:
+As an example, let's try to implement a test given the following criteria:
 
 1. We want 10 users to signup
 2. We want each user to publish a different vote
@@ -179,7 +179,7 @@ The core package contains a number of tests that are used to verify that the cor
 
 These tests interact with the crypto and dombinobjs packages, where mock data comes from. Their main goal is to ensure that the core functions work as expected, and that the state is as expected after a series of operations.
 
-Currently, there is a blend of e2e and unit tests, where e2e tests are used to verify that the entire MACI local processing works as expcted (users signup, publish votes, messages are processed and finally these votes are tallied). Unit tests on the other hand are used to verify that the core functions work as expected, such as `processMessage` and `tallyVotes`. You will find them in separate files, with e2e being [here](https://github.com/privacy-scaling-explorations/maci/blob/dev/core/ts/__tests__/e2e.test.ts) and unit tests in the other files.
+Currently, there is a blend of e2e and unit tests, where e2e tests are used to verify that the entire MACI local processing works as expected (users signup, publish votes, messages are processed and finally these votes are tallied). Unit tests on the other hand are used to verify that the core functions work as expected, such as `processMessage` and `tallyVotes`. You will find them in separate files, with e2e being [here](https://github.com/privacy-scaling-explorations/maci/blob/dev/core/ts/__tests__/e2e.test.ts) and unit tests in the other files.
 
 ### Domainobjs/Crypto tests
 

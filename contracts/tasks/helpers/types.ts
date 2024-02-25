@@ -532,7 +532,7 @@ export interface IVerifyFullArgs {
 }
 
 /**
- * Interface that represents verification subtaks arguments
+ * Interface that represents verification subtask arguments
  * This is extracted from hardhat etherscan plugin
  */
 export interface IVerificationSubtaskArgs {

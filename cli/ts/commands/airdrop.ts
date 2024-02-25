@@ -4,7 +4,7 @@ import { type AirdropArgs, logError, logGreen, success, readContractAddress, con
 
 /**
  * Utility that can be used to get
- * topup credits aidropped
+ * topup credits airdropped
  * to the coordinator
  * @param AirdropArgs - The arguments for the airdrop command
  */
@@ -23,7 +23,7 @@ export const airdrop = async ({
   const topupCredit = readContractAddress("TopupCredit", network?.name);
 
   // we want to ensure that we have either the address stored
-  // or that it was passed as a paramter
+  // or that it was passed as a parameter
   if (!topupCredit && !contractAddress) {
     logError("Please provide an ERC20 contract address");
   }

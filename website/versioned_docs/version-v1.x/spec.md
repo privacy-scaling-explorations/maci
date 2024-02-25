@@ -108,7 +108,7 @@ The algorithm to do so is as such:
 
 #### 1.4. Public key generation
 
-A public key is a point on the Baby Jubjub curve. It is determistically derived from a private key $s$, the procedure to do so is almost identical to [RFC8032](https://datatracker.ietf.org/doc/html/rfc8032#section-5.1.5).
+A public key is a point on the Baby Jubjub curve. It is deterministically derived from a private key $s$, the procedure to do so is almost identical to [RFC8032](https://datatracker.ietf.org/doc/html/rfc8032#section-5.1.5).
 
 1. Format the private key [1.3]
 2. Multiply $G$ by 8 and multiply the resulting point by the formatted private key to derive the public key $A$:
@@ -246,7 +246,7 @@ Effectively, four out of five times it is invoked, an enqueue operation _may or 
 
 ##### 1.10.2. Merging subroots
 
-Before computing the main Merkle root, it is necessary to compute the `smallSRTroot` (the smallest subroot tree root). This is the Merkle root of a tree which is small enough to fit all the subroots, it uses a similar mechanisim to enqueuing leaves [1.10.2].
+Before computing the main Merkle root, it is necessary to compute the `smallSRTroot` (the smallest subroot tree root). This is the Merkle root of a tree which is small enough to fit all the subroots, it uses a similar mechanism to enqueuing leaves [1.10.2].
 
 The `AccQueue.sol` contract provides the `mergeSubRoots(uint256 _numSrQueueOps)` function which allows the coordinator to specify the number of queue operations to execute. The entire tree may be merged in a single transaction, or it may not. Multiple calls to `mergeSubRoots` may be required due to the block gas limit.
 
@@ -274,7 +274,7 @@ A verifying key is used to validate a zk-SNARK proof. Each unique permutation of
 
 ### 2.2. Private key
 
-A private key $k$ represents a particpant's ability to broadcast or decrypt messages under an unique identity and generation of a shared key [1.9], it translates to a scalar point on the Baby Jubjub ellpitical curve. To avoid confusion with Ethereum's ECDSA encryption, MACI requires serialisation bound with the prefix `macisk.`
+A private key $k$ represents a participant's ability to broadcast or decrypt messages under an unique identity and generation of a shared key [1.9], it translates to a scalar point on the Baby Jubjub elliptical curve. To avoid confusion with Ethereum's ECDSA encryption, MACI requires serialisation bound with the prefix `macisk.`
 
 #### 2.2.1. Serialisation
 
@@ -298,7 +298,7 @@ A public key $p$ represents a users identity derived from $k$ and therefore is a
 
 #### 2.3.1. Serialisation
 
-To get a serialised public key from public key coordinates, the variable $u$ is defined as public key's y-cordinate, a 32 bit buffer $v$ is created and iterated over each uninitialised byte to:
+To get a serialised public key from public key coordinates, the variable $u$ is defined as public key's y-coordinate, a 32 bit buffer $v$ is created and iterated over each uninitialised byte to:
 
 1. assign the result of a bitwise [`AND (&)`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Bitwise_AND) operation between values $u$ and $255$ to byte $n$
 2. shift $u$ right by 8 bits ([`>>`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Right_shift))
@@ -312,7 +312,7 @@ To reverse the effects of serialisation and return the unpacked public key, we m
 1. shift $u$ left by the result of $8$ multiplied by $n$ bits ([`<<`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Left_shift))
 2. assign $y$ the result of addition between $y$ and $u$
 
-The result $y$ is the public key's y-cordinate, to then compute the x-cordinate we must look at the equation for the twisted Edwards elliptic curve (as defined in [`EIP-2494`](https://eips.ethereum.org/EIPS/eip-2494)):
+The result $y$ is the public key's y-coordinate, to then compute the x-coordinate we must look at the equation for the twisted Edwards elliptic curve (as defined in [`EIP-2494`](https://eips.ethereum.org/EIPS/eip-2494)):
 
 $ax^2 + y^2 = 1 + dx^2y^2$
 
@@ -328,16 +328,16 @@ A keypair is a private key and its corresponding public key.
 
 A command represents an action that a user may take. Such as casting a vote in a poll or changing their public key if bribed. It is made up of the following parameters:
 
-| Symbol       | Name                    | Size | Description                                                                                        |
-| ------------ | ----------------------- | ---- | -------------------------------------------------------------------------------------------------- |
-| $cm_i$       | State index             | 50   | State leaf index where the signing key is located                                                  |
-| $cm_{p_{x}}$ | Public key x-coordinate | 253  | If no change is necessary this parameter should reflect the current public key's x-coordinate      |
-| $cm_{p_{y}}$ | Public key y-coordinate | 253  | If no change is necessary this parameter should reflect the current public key's y-coordinate      |
-| $cm_{i_{v}}$ | Vote option index       | 50   | Option state leaf index of preference to assign the vote for                                       |
-| $cm_w$       | Voting weight           | 50   | Voice credit balance allocation, this is an arbitary value dependent on a user's available credits |
-| $cm_n$       | Nonce                   | 50   | State leaf's index of actions committed plus one                                                   |
-| $cm_{id}$    | Poll id                 | 50   | The poll's identifier to cast in regard to                                                         |
-| $cm_s$       | Salt                    | 253  | An entropy value to inhibit brute force attacks                                                    |
+| Symbol       | Name                    | Size | Description                                                                                         |
+| ------------ | ----------------------- | ---- | --------------------------------------------------------------------------------------------------- |
+| $cm_i$       | State index             | 50   | State leaf index where the signing key is located                                                   |
+| $cm_{p_{x}}$ | Public key x-coordinate | 253  | If no change is necessary this parameter should reflect the current public key's x-coordinate       |
+| $cm_{p_{y}}$ | Public key y-coordinate | 253  | If no change is necessary this parameter should reflect the current public key's y-coordinate       |
+| $cm_{i_{v}}$ | Vote option index       | 50   | Option state leaf index of preference to assign the vote for                                        |
+| $cm_w$       | Voting weight           | 50   | Voice credit balance allocation, this is an arbitrary value dependent on a user's available credits |
+| $cm_n$       | Nonce                   | 50   | State leaf's index of actions committed plus one                                                    |
+| $cm_{id}$    | Poll id                 | 50   | The poll's identifier to cast in regard to                                                          |
+| $cm_s$       | Salt                    | 253  | An entropy value to inhibit brute force attacks                                                     |
 
 The parameters; $cm_i$, $cm_{i_{v}}$, $cm_n$, $cm_w$ and $cm_{id}$ are packed into a singular 250 bit value $p$, defined as the sum of bitwise right shifts from 0 to 250, incrementing by 50 for each parameter. This reduces gas expenditures when generating a $\mathsf{poseidon_{4}}$ hash of a command $h_{cm}$, expressed as:
 
@@ -369,7 +369,7 @@ To decrypt a message using $k_s$ is expressed as
 
 $[p, R8[0], R8[1], cm_s]$ = $\mathsf{poseidonDecrypt}(M, k_s[0], k_s[1], cm_n, 7)$
 
-To unpack $p$ to it's original five parameters, it must be seperated into 50 bit values from the parent 250 bit value. To extract 50 bits at byte $n$, we:
+To unpack $p$ to it's original five parameters, it must be separated into 50 bit values from the parent 250 bit value. To extract 50 bits at byte $n$, we:
 
 1. initialise 50 bits
 2. shift left by $n$ bits
@@ -454,7 +454,7 @@ MACI provides collusion-resistance assuming that:
 
 That said, even if the coordinator is dishonest, they can neither tamper nor censor with its execution.
 
-In MACI, the contents of a vote can only be decrypted by the coordinator. Moreover, the validity of a vote cannot be proven, as participants can revoke past actions through key-changes. Therefore, inhibiting the adversary in validating the fufilliment of such agreements.
+In MACI, the contents of a vote can only be decrypted by the coordinator. Moreover, the validity of a vote cannot be proven, as participants can revoke past actions through key-changes. Therefore, inhibiting the adversary in validating the fulfillment of such agreements.
 
 To clarify how this works, consider the following situation between Alice and Eve involving a vote option A:
 
@@ -463,7 +463,7 @@ To clarify how this works, consider the following situation between Alice and Ev
 3. Alice casts a message for option A, in which she simultaneously:
    - Votes in opposition of A
    - Changes her keypair through submitting a new public key
-4. Eve is uncertain whether Alice has voted for her preference due to the secrecy of the message, regardless she assumes confirmation upon recieving the transaction hash
+4. Eve is uncertain whether Alice has voted for her preference due to the secrecy of the message, regardless she assumes confirmation upon receiving the transaction hash
 5. Alice broadcasts a message from the new keypair registered in step 3 and casts a vote in support of poll A in turn, voiding her initial vote in opposition
 
 Eve is doubtful whether her request was actually satisfied and is unaware to Alice casting a new vote to void the first, she decides not compensate Alice because of the uncertainty surrounding her compliance.
@@ -499,7 +499,7 @@ Each leaf within the ballot trees stores a participants vote within a poll, it s
 
 #### The message tree (per poll)
 
-Each leaf within the message tree correlates to a command cast from participants within a poll, it too like the state tree has a default nothing-up-my-sleeve value at leaf zero. Except it is a Keccak256 hash of the string `"Maci"` moduluo the SNARK field size $p$ [1.1].
+Each leaf within the message tree correlates to a command cast from participants within a poll, it too like the state tree has a default nothing-up-my-sleeve value at leaf zero. Except it is a Keccak256 hash of the string `"Maci"` modulo the SNARK field size $p$ [1.1].
 
 ### 3.7. System flow
 
@@ -509,7 +509,7 @@ Registration is initiated through fulfilling the requirements specified in the g
 
 #### When a user publishes a message
 
-Publishing messages requires users to encrypt a command using a shared key generated using ECDH [1.10] and submiting the ciphertext through the `publishMessage()` function. The message is then queued for processing by the co-ordinator once published.
+Publishing messages requires users to encrypt a command using a shared key generated using ECDH [1.10] and submitting the ciphertext through the `publishMessage()` function. The message is then queued for processing by the co-ordinator once published.
 
 #### When the coordinator merges the state queue
 
@@ -517,7 +517,7 @@ To subsidise gas costs for users, registration does not require the state root t
 
 Which first requires the merging of subroots [1.10.1], this creates the shortest possible tree that contains all the state leaves. Which may or may not require multiple transactions (in the form of batches) due to the restriction of the block gas limit. Once all the subroots have been computed they are merged [1.10.2] to compute the state root at its full depth.
 
-After merging, the state-ballot commitment hash `currentSbCommitment` is initialised, which is a $\mathsf{poseidon_{3}}$ represenation of the state's Merkle root, the ballot's Merkle root and a salt. At initialisation the Merkle roots are equal to the trees at full depth.
+After merging, the state-ballot commitment hash `currentSbCommitment` is initialised, which is a $\mathsf{poseidon_{3}}$ representation of the state's Merkle root, the ballot's Merkle root and a salt. At initialisation the Merkle roots are equal to the trees at full depth.
 
 #### When the coordinator merges the message queue
 
@@ -525,7 +525,7 @@ The process of merging queues are the same in both the message and state trees.
 
 #### When the coordinator processes the messages
 
-As large zk-SNARK circuits take up a lot of disk space and require a large amount of resources to compile, it is not feasible to prove the correctness of message processing for all messages in a single proof. Rather, we process messages in batches. With each batch of messages at a particular index, the coordinator proves, using a zk-SNARK proof, intermediate `currentSbCommitment` values for subroots at a relative depth. The authencity of this statement is confirmed using the registry's processing verifying key. The outcome of processing all batches, which must occur in consecutive order, is the same as if all the messages were processed in one go.
+As large zk-SNARK circuits take up a lot of disk space and require a large amount of resources to compile, it is not feasible to prove the correctness of message processing for all messages in a single proof. Rather, we process messages in batches. With each batch of messages at a particular index, the coordinator proves, using a zk-SNARK proof, intermediate `currentSbCommitment` values for subroots at a relative depth. The authenticity of this statement is confirmed using the registry's processing verifying key. The outcome of processing all batches, which must occur in consecutive order, is the same as if all the messages were processed in one go.
 
 #### When the coordinator tallies the votes
 
@@ -609,7 +609,7 @@ The integration tests and shell scripts in the `cli` directory provide examples 
 | `isTallyVkSet(uint256 _sig)`                                                                                                                                                                                               | Non-applicable   | Query whether a signature valid for tallying votes                                                                                   |
 | `genProcessVkSig(uint256 _stateTreeDepth, uint256 _messageTreeDepth, uint256 _voteOptionTreeDepth, uint256 _messageBatchSize)`                                                                                             | Non-applicable   | Generate a signature (used for verifying key mapping lookups) for message processing by compressing parameters into a singular value |
 | `genTallyVkSig(uint256 _stateTreeDepth, uint256 _intStateTreeDepth, uint256 _voteOptionTreeDepth)`                                                                                                                         | Non-appicable    | Generate a signature (used for verifying key mapping lookups) for vote tallying by compressing parameters into a singular value      |
-| `setVerifyingKeys( uint256 _stateTreeDepth, uint256 _intStateTreeDepth, uint256 _messageTreeDepth, uint256 _voteOptionTreeDepth, uint256 _messageBatchSize, VerifyingKey memory _processVk, VerifyingKey memory _tallyVk)` | Coordinator only | Intialise verifying keys for processing and tallying to the contract alongside specifying each tree depth                            |
+| `setVerifyingKeys( uint256 _stateTreeDepth, uint256 _intStateTreeDepth, uint256 _messageTreeDepth, uint256 _voteOptionTreeDepth, uint256 _messageBatchSize, VerifyingKey memory _processVk, VerifyingKey memory _tallyVk)` | Coordinator only | Initialise verifying keys for processing and tallying to the contract alongside specifying each tree depth                           |
 | `hasProcessVk(uint256 _stateTreeDepth, uint256 _messageTreeDepth, uint256 _voteOptionTreeDepth, uint256 _messageBatchSize)`                                                                                                | Non-applicable   | Query whether the signature of the parameters is valid for message processing                                                        |
 | `getProcessVkBySig(uint256 _sig)`                                                                                                                                                                                          | Non-applicable   | Query a processing verifying key by providing a valid signature                                                                      |
 | `getProcessVk(uint256 _stateTreeDepth, uint256 _messageTreeDepth, uint256 _voteOptionTreeDepth, uint256 _messageBatchSize)`                                                                                                | Non-applicable   | Query a processing verifying key by providing parameters to generate a valid signature                                               |
