@@ -725,6 +725,7 @@ export {
   mergeMessages,
   mergeSignups,
   publish,
+  publishBatch,
   proveOnChain,
   setVerifyingKeys,
   signup,
@@ -753,4 +754,10 @@ export type {
   SubsidyData,
   IRegisteredUserArgs,
   IGenKeypairArgs,
+  IGetPollArgs,
+  IGetPollData,
+  IPublishBatchArgs,
+  IPublishBatchData,
+  IPublishMessage,
+  ISignupData,
 } from "./utils";
