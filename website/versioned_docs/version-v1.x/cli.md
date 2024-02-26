@@ -77,20 +77,20 @@ node build/ts/index.js genMaciKeyPair
 Example output:
 
 ```bash
-[✓] Public key: macipk.1e03ee6ec5ee1d0dd9bcc5c91c10df8f2e37e134d9737a0239b361cd2809ae9e
-[✓] Private key: macisk.a87fbc475cf8e42231a6dd487b41ccc935e7d2de08565f1ba6ecd7464694b85e
+[✓] Public key: macipk.78e716652dfd1cc8f5fb0b45f656b493135edba5447cfc5e68c2f568d22e7193
+[✓] Private key: macisk.16b5a5b7fff5537f515a0b03e364cab43d7cce861cdba9fe5a1fff2b667f86d8
 ```
 
 If you already have a MACI private key in serialized form, you can generate its corresponding public key using the following command:
 
 ```bash
-node build/ts/index.js genMaciPubKey -sk macisk.a87fbc475cf8e42231a6dd487b41ccc935e7d2de08565f1ba6ecd7464694b85e
+node build/ts/index.js genMaciPubKey -sk macisk.16b5a5b7fff5537f515a0b03e364cab43d7cce861cdba9fe5a1fff2b667f86d8
 ```
 
 Example output:
 
 ```
-[✓] Public key: macipk.1e03ee6ec5ee1d0dd9bcc5c91c10df8f2e37e134d9737a0239b361cd2809ae9e
+[✓] Public key: macipk.78e716652dfd1cc8f5fb0b45f656b493135edba5447cfc5e68c2f568d22e7193
 ```
 
 ### Coordinator: Deploy VkRegistry
@@ -157,7 +157,7 @@ Example usage:
 
 ```bash
 node ./build/ts/index.js deployPoll \
-    -pk macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330 \
+    -pk macipk.78e716652dfd1cc8f5fb0b45f656b493135edba5447cfc5e68c2f568d22e7193 \
     -t 300 -i 1 -m 2 -b 1 -v 2
 ```
 
@@ -177,7 +177,7 @@ Example usage:
 
 ```bash
 node ./build/ts/index.js signup \
-    -p macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330
+    -p macisk.1a5103582662c0ada112bc5aac9202fbe51de84aa249989cbbbf9569eff19697
 ```
 
 Example output:
@@ -193,8 +193,8 @@ Example usage:
 
 ```bash
 node build/ts/index.js publish \
-    -p macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330 \
-    -sk macisk.2ae4f199bf3925a2407f7c775c9261f351ab861d8e9ecbb84622bdd3f6d41b08 \
+    -p macisk.1a5103582662c0ada112bc5aac9202fbe51de84aa249989cbbbf9569eff19697 \
+    -sk macipk.a3c6a51848e96cf7b635931f450f61de4f907fbdcaaaadeaa1ac6b8a0ae1481c \
     -i 1 -v 0 -w 9 -n 1 -o 0
 ```
 
@@ -268,7 +268,7 @@ Example usage to generate the state locally from the smart contracts events:
 node build/ts/index.js genLocalState \
     --poll-id 0 \
     --output localState.json \
-    --privkey macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
+    --privkey macisk.16b5a5b7fff5537f515a0b03e364cab43d7cce861cdba9fe5a1fff2b667f86d8 \
     --blocks-per-batch 50
 ```
 
@@ -287,7 +287,7 @@ Example usage:
 
 ```bash
 node build/ts/index.js genProofs -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D \
-    -sk macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
+    -sk macisk.16b5a5b7fff5537f515a0b03e364cab43d7cce861cdba9fe5a1fff2b667f86d8 \
     -o 0 \
     -t tally.json \
     -f proofs \
@@ -302,7 +302,7 @@ node build/ts/index.js genProofs -x 0x89962fa216d39fCcaaC11e1e462340d80ab6Cf4D \
 
 ```bash
 node build/ts/index.js genProofs \
-    -sk macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
+    -sk macisk.16b5a5b7fff5537f515a0b03e364cab43d7cce861cdba9fe5a1fff2b667f86d8 \
     -o 0 \
     -t tally.json \
     -f proofs \
@@ -317,7 +317,7 @@ node build/ts/index.js genProofs \
 
 ```bash
 node build/ts/index.js genProofs \
-    -sk macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
+    -sk macisk.16b5a5b7fff5537f515a0b03e364cab43d7cce861cdba9fe5a1fff2b667f86d8 \
     -o 0 \
     -t tally.json \
     -f proofs \
@@ -351,7 +351,7 @@ Example usage to generate the proofs locally from the local state file created w
 
 ```bash
 node build/ts/index.js genProofs \
-    --privkey macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
+    --privkey macisk.16b5a5b7fff5537f515a0b03e364cab43d7cce861cdba9fe5a1fff2b667f86d8 \
     --poll-id 0 \
     --rapidsnark ~/rapidsnark/build/prover \
     --process-witnessgen ./zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test_cpp/ProcessMessages_10-2-1-2_test \
@@ -367,7 +367,7 @@ node build/ts/index.js genProofs \
 
 ```bash
 node build/ts/index.js genProofs \
-    --privkey macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
+    --privkey macisk.16b5a5b7fff5537f515a0b03e364cab43d7cce861cdba9fe5a1fff2b667f86d8 \
     --poll-id 0 \
     --process-zkey ./zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test.0.zkey \
     --tally-zkey ./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey \
@@ -506,7 +506,7 @@ Output:
 ### Coordinator: Deploy poll
 
 ```bash
-node ./build/index.js deployPoll \
+node ./build/ts/index.js deployPoll \
     -pk macipk.c974f4f168b79727ac98bfd53a65ea0b4e45dc2552fe73df9f8b51ebb0930330 \
     -t 1000 -i 1 -m 2 -b 1 -v 2
 ```
