@@ -2,7 +2,7 @@
 title: MACI Workflow
 description: Overview of the MACI workflow
 sidebar_label: Workflow
-sidebar_position: 2
+sidebar_position: 3
 ---
 
 <!-- TODO: create flowcharts, similar to to Kyle's (but make light/dark mode compatible) -->

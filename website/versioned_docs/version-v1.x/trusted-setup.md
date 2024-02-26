@@ -2,7 +2,7 @@
 title: MACI Trusted Setup
 description: Introduction to the MACI multi-party trusted setup
 sidebar_label: Trusted Setup
-sidebar_position: 8
+sidebar_position: 10
 ---
 
 # Trusted setup

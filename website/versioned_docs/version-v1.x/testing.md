@@ -2,7 +2,7 @@
 title: Testing MACI
 description: An introduction on how to test MACI
 sidebar_label: Testing
-sidebar_position: 9
+sidebar_position: 11
 ---
 
 # Testing introduction

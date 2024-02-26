@@ -2,7 +2,7 @@
 title: MACI Security Audits
 description: Overview of MACI audit history with references to audit reports.
 sidebar_label: Security audits
-sidebar_position: 12
+sidebar_position: 14
 ---
 
 # MACI Security Audits

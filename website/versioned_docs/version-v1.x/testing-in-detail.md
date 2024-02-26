@@ -2,7 +2,7 @@
 title: MACI Testing in Detail
 description: How MACI tests work in detail
 sidebar_label: Testing in detail
-sidebar_position: 10
+sidebar_position: 12
 ---
 
 # Testing in detail

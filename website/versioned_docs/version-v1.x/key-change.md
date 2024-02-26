@@ -2,7 +2,7 @@
 title: MACI key change
 description: How key change messages work
 sidebar_label: Key change
-sidebar_position: 16
+sidebar_position: 18
 ---
 
 # MACI Key Change
