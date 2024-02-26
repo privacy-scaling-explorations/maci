@@ -2,7 +2,7 @@
 title: Installing MACI
 description: How to install MACI
 sidebar_label: Installation
-sidebar_position: 4
+sidebar_position: 5
 ---
 
 # Installation

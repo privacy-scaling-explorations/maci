@@ -2,7 +2,7 @@
 title: Coordinator local processing
 description: How does the coordinator process and tallies messages locally
 sidebar_label: Coordinator local processing
-sidebar_position: 14
+sidebar_position: 16
 ---
 
 # Coordinator local processing

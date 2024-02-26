@@ -2,7 +2,7 @@
 title: MACI Overview
 description: High-level overview of the MACI codebase
 sidebar_label: Overview
-sidebar_position: 3
+sidebar_position: 4
 ---
 
 # MACI Overview
