@@ -85,7 +85,7 @@ template ProcessMessagesNonQv(
 
     // The index of the last message leaf in the batch to process, exclusive.
     // This value may be less than batchStartIndex + batchSize if this batch is
-    // the last batch and the total number of mesages is not a multiple of the
+    // the last batch and the total number of messages is not a multiple of the
     // batch size.
     signal batchEndIndex;
 
@@ -457,7 +457,7 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
 
     //  ----------------------------------------------------------------------- 
     // 2. If msgType = 0 and isValid is 0, generate indices for leaf 0
-    //  Otherwise, generate indices for commmand.stateIndex or topupStateIndex depending on msgType
+    //  Otherwise, generate indices for command.stateIndex or topupStateIndex depending on msgType
     signal indexByType;
     signal tmpIndex1;
     signal tmpIndex2;

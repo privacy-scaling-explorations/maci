@@ -36,6 +36,8 @@ describe("Poll", () => {
 
   const maciState = new MaciState(STATE_TREE_DEPTH);
 
+  const keypair = new Keypair();
+
   describe("deployment", () => {
     before(async () => {
       signer = await getDefaultSigner();
@@ -175,8 +177,6 @@ describe("Poll", () => {
 
   describe("publishMessage", () => {
     it("should publish a message to the Poll contract", async () => {
-      const keypair = new Keypair();
-
       const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, 0n);
 
       const signature = command.sign(keypair.privKey);
@@ -190,8 +190,6 @@ describe("Poll", () => {
     });
 
     it("should emit an event when publishing a message", async () => {
-      const keypair = new Keypair();
-
       const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, 0n);
 
       const signature = command.sign(keypair.privKey);
@@ -204,11 +202,45 @@ describe("Poll", () => {
       maciState.polls.get(pollId)?.publishMessage(message, keypair.pubKey);
     });
 
-    it("shold not allow to publish a message after the voting period ends", async () => {
+    it("should allow to publish a message batch", async () => {
+      const messages: [Message, PubKey][] = [];
+      for (let i = 0; i < 2; i += 1) {
+        const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, BigInt(i));
+        const signature = command.sign(keypair.privKey);
+        const sharedKey = Keypair.genEcdhSharedKey(keypair.privKey, coordinator.pubKey);
+        const message = command.encrypt(signature, sharedKey);
+        messages.push([message, keypair.pubKey]);
+      }
+
+      const tx = await pollContract.publishMessageBatch(
+        messages.map(([m]) => m.asContractParam()),
+        messages.map(([, k]) => k.asContractParam()),
+      );
+      const receipt = await tx.wait();
+      expect(receipt?.status).to.eq(1);
+
+      messages.forEach(([message, key]) => {
+        maciState.polls.get(pollId)?.publishMessage(message, key);
+      });
+    });
+
+    it("should throw when the message batch has messages length != encPubKeys length", async () => {
+      const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, 0n);
+      const signature = command.sign(keypair.privKey);
+      const sharedKey = Keypair.genEcdhSharedKey(keypair.privKey, coordinator.pubKey);
+      const message = command.encrypt(signature, sharedKey);
+      await expect(
+        pollContract.publishMessageBatch(
+          [message.asContractParam(), message.asContractParam()],
+          [keypair.pubKey.asContractParam()],
+        ),
+      ).to.be.revertedWithCustomError(pollContract, "InvalidBatchLength");
+    });
+
+    it("should not allow to publish a message after the voting period ends", async () => {
       const dd = await pollContract.getDeployTimeAndDuration();
       await timeTravel(signer.provider as unknown as EthereumProvider, Number(dd[0]) + 1);
 
-      const keypair = new Keypair();
       const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, 0n);
 
       const signature = command.sign(keypair.privKey);
@@ -217,6 +249,18 @@ describe("Poll", () => {
 
       await expect(
         pollContract.publishMessage(message.asContractParam(), keypair.pubKey.asContractParam(), { gasLimit: 300000 }),
+      ).to.be.revertedWithCustomError(pollContract, "VotingPeriodOver");
+    });
+
+    it("should not allow to publish a message batch after the voting period ends", async () => {
+      const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, 0n);
+      const signature = command.sign(keypair.privKey);
+      const sharedKey = Keypair.genEcdhSharedKey(keypair.privKey, coordinator.pubKey);
+      const message = command.encrypt(signature, sharedKey);
+      await expect(
+        pollContract.publishMessageBatch([message.asContractParam()], [keypair.pubKey.asContractParam()], {
+          gasLimit: 300000,
+        }),
       ).to.be.revertedWithCustomError(pollContract, "VotingPeriodOver");
     });
   });

@@ -6,7 +6,7 @@ import { copyDirectory, fitFormat, generateSidebarString, insertIndexPage } from
 const TYPEDOC_DIR = path.resolve(__dirname, "../../typedoc");
 
 /**
- * A function that remove the auto-genrated navigator
+ * A function that remove the auto-generated navigator
  * and the title at the top of the page,
  * meanwhile adding sidebar configurations above the content.
  * @param file - the file being updated

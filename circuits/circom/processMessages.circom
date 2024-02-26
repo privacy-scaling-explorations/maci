@@ -84,7 +84,7 @@ template ProcessMessages(
 
     // The index of the last message leaf in the batch to process, exclusive.
     // This value may be less than batchStartIndex + batchSize if this batch is
-    // the last batch and the total number of mesages is not a multiple of the
+    // the last batch and the total number of messages is not a multiple of the
     // batch size.
     signal batchEndIndex;
 
@@ -401,8 +401,8 @@ template ProcessTopup(stateTreeDepth) {
     // msgType of topup command is 2
     amt <== amount * (msgType - 1); 
     index <== stateTreeIndex * (msgType - 1);
-    component validCreditBalance = LessEqThan(N_BITS);
-    // check stateIndex, if invalid index, set index and amount to zero
+
+    // check stateIndex, if invalid index, set index to zero
     component validStateLeafIndex = LessEqThan(N_BITS);
     validStateLeafIndex.in[0] <== index;
     validStateLeafIndex.in[1] <== numSignUps;
@@ -419,17 +419,27 @@ template ProcessTopup(stateTreeDepth) {
     amtMux.c[0] <== 0;
     amtMux.c[1] <== amt;
     
-    // check less than field size
+    // check new balance is valid
     signal newCreditBalance;
+    // add either 0 or the actual amount (if the state index is valid)
     newCreditBalance <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + amtMux.out;
+
+    // we need to ensure it did not overflow (so previous must be <= new)
+    component validCreditBalance = SafeLessEqThan(N_BITS);
     validCreditBalance.in[0] <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX];
     validCreditBalance.in[1] <== newCreditBalance;
+
+    // if the new one is <= the old one, then we have a valid topup
+    component creditBalanceMux = Mux1();
+    creditBalanceMux.s <== validCreditBalance.out;
+    creditBalanceMux.c[0] <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX];
+    creditBalanceMux.c[1] <== newCreditBalance;
 
     // update credit voice balance
     component newStateLeafHasher = Hasher4();
     newStateLeafHasher.in[STATE_LEAF_PUB_X_IDX] <== stateLeaf[STATE_LEAF_PUB_X_IDX];
     newStateLeafHasher.in[STATE_LEAF_PUB_Y_IDX] <== stateLeaf[STATE_LEAF_PUB_Y_IDX];
-    newStateLeafHasher.in[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] <== newCreditBalance;
+    newStateLeafHasher.in[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] <== creditBalanceMux.out;
     newStateLeafHasher.in[STATE_LEAF_TIMESTAMP_IDX] <== stateLeaf[STATE_LEAF_TIMESTAMP_IDX];
 
     component stateLeafPathIndices = QuinGeneratePathIndices(stateTreeDepth);
@@ -534,7 +544,7 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
 
     //  ----------------------------------------------------------------------- 
     // 2. If msgType = 0 and isValid is 0, generate indices for leaf 0
-    // Otherwise, generate indices for commmand.stateIndex or topupStateIndex depending on msgType
+    // Otherwise, generate indices for command.stateIndex or topupStateIndex depending on msgType
     signal indexByType;
     signal tmpIndex1;
     signal tmpIndex2;

@@ -71,6 +71,7 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
   error MaciPubKeyLargerThanSnarkFieldSize();
   error StateAqAlreadyMerged();
   error StateAqSubtreesNeedMerge();
+  error InvalidBatchLength();
 
   event PublishMessage(Message _message, PubKey _encPubKey);
   event TopupMessage(Message _message);
@@ -195,6 +196,26 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
     extContracts.messageAq.enqueue(messageLeaf);
 
     emit PublishMessage(_message, _encPubKey);
+  }
+
+  /// @notice submit a message batch
+  /// @dev Can only be submitted before the voting deadline
+  /// @param _messages the messages
+  /// @param _encPubKeys the encrypted public keys
+  function publishMessageBatch(Message[] calldata _messages, PubKey[] calldata _encPubKeys) external {
+    if (_messages.length != _encPubKeys.length) {
+      revert InvalidBatchLength();
+    }
+
+    uint256 len = _messages.length;
+    for (uint256 i = 0; i < len; ) {
+      // an event will be published by this function already
+      publishMessage(_messages[i], _encPubKeys[i]);
+
+      unchecked {
+        i++;
+      }
+    }
   }
 
   /// @inheritdoc IPoll

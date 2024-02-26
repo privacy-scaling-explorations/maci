@@ -9,11 +9,11 @@ sidebar_position: 16
 
 MACI's voters are identified by their MACI public key. Together with their private key, they can sign and submit messages to live Polls.
 
-As MACI's main property is to provide collusion resistence in digital voting applications, it is important to have a mechanism for a user to change their voting key, should this become compromised, or they wish to revoke past actions.
+As MACI's main property is to provide collusion resistance in digital voting applications, it is important to have a mechanism for a user to change their voting key, should this become compromised, or they wish to revoke past actions.
 
 ## How MACI messages are processed
 
-In order to understand how key changing currenctly works in MACI, we need to understand how messages are processed.
+In order to understand how key changing currently works in MACI, we need to understand how messages are processed.
 
 After a poll ends, the coordinator processes messages off chain in reverse order. To improve efficiency, messages are processed in batches, and correctness is proved for each batch using a zk-SNARK circuit.
 

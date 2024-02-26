@@ -243,7 +243,7 @@ describe("AccQueues", () => {
       );
     });
 
-    it("Merging without enqueing new data should not change the root", async () => {
+    it("Merging without enqueuing new data should not change the root", async () => {
       const MAIN_DEPTH = 5;
 
       const r = await deployTestAccQueues("AccQueueBinary0", SUB_DEPTH, HASH_LENGTH, ZERO);

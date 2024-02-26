@@ -41,12 +41,13 @@ const Home = (): JSX.Element => {
             <p>Minimal Anti-Collusion Infrastructure (MACI) is a private, on-chain, voting system.</p>
 
             <p>
-              MACI is a protocol designed to provide a highly secure e-voting solution. It enables organizations to
-              conduct on-chain voting processes with a significantly reduced risk of cheating, such as bribery or
-              collusion. MACI uses zero-knowledge proofs to implement a receipt-free voting scheme, making it
-              coordinator to verify how a specific user voted. This ensures the correct execution of votes and allows
-              anyone to verify the results. It is particularly beneficial for governance and funding events, where its
-              anti-collusion mechanisms help ensure fair and transparent outcomes.
+              MACI is our attempt to build the most secure e-voting solution available. It enables on-chain voting
+              processes with significantly reduced risk of cheating, like bribery or collusion, through the use of
+              Ethereum smart contracts, encryption, and zero-knowledge proofs. Together these technologies provide a set
+              of guarantees including censorship resistance, correct execution, privacy, and a receipt-free voting
+              scheme, which ensures results are transparent but makes it impossible for outsiders to verify how any
+              specific user voted. We believe MACI is most beneficial for governance and funding events, when the stakes
+              are high and anti-collusion mechanisms are critical to help ensure fair and transparent outcomes.
             </p>
           </div>
         </section>

@@ -15,7 +15,7 @@ The MACI codebase consists of three subsystems in different programming language
 
 ## Circuits
 
-MACI has multiple zk-SNARK circuits that ensure all off-chain computation is completed correctly. The circuits enforce that message processing and vote tallying were correctly executed by the coordinator.
+MACI has multiple circuits that ensure all off-chain computation is completed correctly. The circuits are used to generate zero-knowledge proofs (zk-SNARKs) that the votes were counted correctly. Specifically, they enforce that message processing and vote tallying were correctly executed by the coordinator. The proofs can then be verified through a verifier smart contract on-chain.
 
 The circuits for these zero-knowledge proofs are written
 in [Circom](https://iden3.io/circom).
@@ -26,7 +26,7 @@ The MACI circuits are released through the [`@maci-circuits`](https://www.npmjs.
 
 ## Smart contracts
 
-The MACI smart contracts handle the management and on-chain voting aspects of the system. They provide the functionality to sign up voters, deploy polls, and they store on-chain data from transactions, such as the encrypted votes of a poll. They also verify proofs of the zk-SNARK circuits.
+The MACI smart contracts handle the on-chain aspects - both the functionality and the storage - of the voting system. They provide the functionality to deploy polls, register voters, and accept votes. They also store and manage the on-chain data from transactions, such as the encrypted votes of a poll. Finally, they verify proofs of the zk-SNARK circuits, so that everyone can validate the voting results.
 
 The MACI smart contracts are written in [Solidity](https://soliditylang.org/).
 
@@ -36,7 +36,7 @@ Contracts are released through the [`@maci-contracts`](https://www.npmjs.com/pac
 
 ## TypeScript libraries
 
-The TypeScript libraries manage the business logic between the smart contracts and the circuit code. They provide a variety of functionality, such as encryption tools, utilities, and a CLI for interacting with MACI (such as vote tallying & proof-generation).
+The TypeScript libraries manage the business logic between the smart contracts and the circuit code. They provide a variety of functionality, such as encryption tools, utilities, and a CLI for interacting with MACI (for actions like signing up, voting, tallying votes & generating proofs).
 
 The MACI [TypeScript](https://www.typescriptlang.org/) libraries are released through the following NPM packages:
 

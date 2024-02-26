@@ -334,7 +334,7 @@ describe("Ceremony param tests", () => {
           await testCircuit.expectConstraintPass(witness);
         });
 
-        it("should produce the correct result if the inital tally is not zero", async () => {
+        it("should produce the correct result if the initial tally is not zero", async () => {
           const generatedInputs = poll.tallyVotes() as unknown as ITallyVotesInputs;
 
           // Start the tally from non-zero value

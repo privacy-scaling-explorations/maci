@@ -1,4 +1,4 @@
-import { SNARK_FIELD_SIZE, formatPrivKeyForBabyJub, type PrivKey as RawPrivKey } from "maci-crypto";
+import { formatPrivKeyForBabyJub, type PrivKey as RawPrivKey } from "maci-crypto";
 
 import type { IJsonPrivateKey } from "./types";
 
@@ -66,12 +66,7 @@ export class PrivKey {
     const correctPrefix = s.startsWith(SERIALIZED_PRIV_KEY_PREFIX);
     const x = s.slice(SERIALIZED_PRIV_KEY_PREFIX.length);
 
-    try {
-      const value = BigInt(`0x${x}`);
-      return correctPrefix && value < SNARK_FIELD_SIZE;
-    } catch {
-      return false;
-    }
+    return correctPrefix && x.length === 64;
   };
 
   /**

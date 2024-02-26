@@ -53,7 +53,7 @@ describe("IMT comparison", () => {
   });
 
   describe("genSubrootProof", () => {
-    it("should geneate a valid proof for a subtree", () => {
+    it("should generate a valid proof for a subtree", () => {
       const mt1 = new IncrementalQuinTree(5, 0n, 5, hash5);
 
       for (let i = 0; i < 100; i += 1) {
