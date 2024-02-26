@@ -216,7 +216,7 @@ export class IncrementalQuinTree {
   /**
    * Verify a proof
    * @param proof The proof to verify
-   * @returns Wether the proof is valid
+   * @returns Whether the proof is valid
    */
   verifyProof = (proof: IMerkleProof): boolean => {
     const { pathElements, leaf, root, pathIndices } = proof;

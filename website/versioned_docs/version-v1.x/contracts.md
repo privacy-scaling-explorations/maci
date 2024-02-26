@@ -338,7 +338,7 @@ struct MaxValues {
 }
 ```
 
-These are stored separately to avoid a stack overlow error during compilation of the contracts using them.
+These are stored separately to avoid a stack overflow error during compilation of the contracts using them.
 
 ## AccQueue
 

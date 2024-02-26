@@ -86,7 +86,7 @@ export interface IDeployedTestContracts {
 }
 
 /**
- * An interface that representes an action that should
+ * An interface that represents an action that should
  * be applied to a MaciState and its Polls within the
  * genMaciState function.
  */

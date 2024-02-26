@@ -159,7 +159,7 @@ export const deployPoll = async ({
       logGreen(quiet, info(`Subsidy contract: ${subsidyContractAddress}`));
       storeContractAddress(`Subsidy-${pollId.toString()}`, subsidyContractAddress, network?.name);
     }
-    // store the addresss
+    // store the address
     storeContractAddress(`MessageProcessor-${pollId.toString()}`, messageProcessorContractAddress, network?.name);
     storeContractAddress(`Tally-${pollId.toString()}`, tallyContractAddress, network?.name);
     storeContractAddress(`Poll-${pollId.toString()}`, pollAddr, network?.name);

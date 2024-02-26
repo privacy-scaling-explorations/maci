@@ -278,7 +278,7 @@ describe("Poll", function test() {
       poll.currentMessageBatchIndex = undefined;
     });
 
-    it("shuold throw if the state has not been copied prior to calling processMessages", () => {
+    it("should throw if the state has not been copied prior to calling processMessages", () => {
       const tmpPoll = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
         maxValues,

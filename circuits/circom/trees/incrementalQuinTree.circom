@@ -10,7 +10,7 @@ include "./checkRoot.circom";
 include "../hasherPoseidon.circom";
 include "../utils.circom";
 
-// This file contains circuits for quintary Merkle tree verifcation.
+// This file contains circuits for quintary Merkle tree verification.
 // It assumes that each node contains 5 leaves, as we use the PoseidonT6
 // circuit to hash leaves, which supports up to 5 input elements.
 

@@ -33,7 +33,7 @@ export const sleep = async (ms: number): Promise<void> => {
 };
 
 /**
- * The comparision function for Actions based on block number and transaction
+ * The comparison function for Actions based on block number and transaction
  * index.
  * @param actions - the array of actions to sort
  * @returns the sorted array of actions

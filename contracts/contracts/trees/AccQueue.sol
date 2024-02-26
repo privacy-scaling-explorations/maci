@@ -285,7 +285,7 @@ abstract contract AccQueue is Ownable, Hasher {
     // There must be subtrees to merge
     if (numLeaves == 0) revert NothingToMerge();
 
-    // Fill any empty leaves in the current subtree with zeros ony if the
+    // Fill any empty leaves in the current subtree with zeros only if the
     // current subtree is not full
     if (numLeaves % subTreeCapacity != 0) {
       fill();
