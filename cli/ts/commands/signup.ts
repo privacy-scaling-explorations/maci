@@ -103,7 +103,7 @@ export const isRegisteredUser = async ({
   const publicKey = PubKey.deserialize(maciPubKey).asContractParam();
 
   const events = await maciContract.queryFilter(maciContract.filters.SignUp(undefined, publicKey.x, publicKey.y));
-  const stateIndex = events[0]?.args.toString() as string | undefined;
+  const stateIndex = events[0]?.args[0].toString() as string | undefined;
 
   logGreen(quiet, success(`State index: ${stateIndex?.toString()}, registered: ${stateIndex !== undefined}`));
 
