@@ -2,11 +2,91 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://maci.pse.dev/blog</id>
     <title>MACI Blog</title>
-    <updated>2024-01-18T00:00:00.000Z</updated>
+    <updated>2024-02-28T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://maci.pse.dev/blog"/>
     <subtitle>MACI Blog</subtitle>
     <icon>https://maci.pse.dev/img/favicon.ico</icon>
+    <entry>
+        <title type="html"><![CDATA[MACI v1.2.0 Release]]></title>
+        <id>https://maci.pse.dev/blog/maci-v1-2-0-release</id>
+        <link href="https://maci.pse.dev/blog/maci-v1-2-0-release"/>
+        <updated>2024-02-28T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[We are pleased to announce the release of MACI v1.2.0!]]></summary>
+        <content type="html"><![CDATA[<p>We are pleased to announce the release of MACI <a href="https://github.com/privacy-scaling-explorations/maci/releases/tag/v1.2.0" target="_blank" rel="noopener noreferrer">v1.2.0</a>!</p>
+<p>This is our first release since <a href="https://maci.pse.dev/blog/maci-v1-1-1-release">MACI v1.1.1</a> just over one year ago. This new release focuses on improved developer experience, security, performance and clearer documentation for users looking to learn and use MACI.</p>
+<h2 class="anchor anchorWithStickyNavbar_I2WF" id="background">Background<a href="https://maci.pse.dev/blog/maci-v1-2-0-release#background" class="hash-link" aria-label="Direct link to Background" title="Direct link to Background">​</a></h2>
+<p>MACI - Minimal Anti-Collusion Infrastructure - is an Ethereum application that provides privacy and collusion resistance for on-chain voting. If you're new to MACI, we first recommend reading our <a href="https://maci.pse.dev/docs/introduction">documentation</a> for background information and and technical details.</p>
+<h2 class="anchor anchorWithStickyNavbar_I2WF" id="refactoring-work">Refactoring Work<a href="https://maci.pse.dev/blog/maci-v1-2-0-release#refactoring-work" class="hash-link" aria-label="Direct link to Refactoring Work" title="Direct link to Refactoring Work">​</a></h2>
+<p>We prioritized enhancing MACI's developer experience by refactoring its code, fixing bugs, and improving documentation.</p>
+<p>Key refactoring activities were:</p>
+<ol>
+<li>Upgrading libraries to their latest versions and substituting obsolete dependencies with up-to-date and actively maintained alternatives.</li>
+<li>Making the code standardized, modular, well-documented, and uniformly formatted.</li>
+<li>Fixing bugs and community-reported issues.</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_I2WF" id="library-updates">Library Updates<a href="https://maci.pse.dev/blog/maci-v1-2-0-release#library-updates" class="hash-link" aria-label="Direct link to Library Updates" title="Direct link to Library Updates">​</a></h3>
+<p>MACI has relied on custom code and dependencies since its initial implementation, notably from repositories by one of the original MACI developers, <a href="https://github.com/weijiekoh" target="_blank" rel="noopener noreferrer">Koh Wei Jie</a>. We felt that MACI could benefit from a dependency refresh, so we've shifted towards using actively maintained open-source libraries, such as <a href="https://github.com/erhant/circomkit" target="_blank" rel="noopener noreferrer">circomkit</a> and <a href="https://github.com/privacy-scaling-explorations/zk-kit" target="_blank" rel="noopener noreferrer">zk-kit</a>.</p>
+<p>Circomkit has become our go-to for circuit-related tasks, such as compiling circuits, generating test zkeys, and unit tests.</p>
+<p>We've moved reusable circuit logic, like our <a href="https://github.com/privacy-scaling-explorations/zk-kit/tree/main/packages/poseidon-cipher" target="_blank" rel="noopener noreferrer">Poseidon permutation</a>&nbsp;encryption and decryption code, into zk-kit. This not only benefits MACI through more circuit usage and testing but also supports wider community adoption.</p>
+<p>These efforts are part of a broader initiative at <a href="https://pse.dev/" target="_blank" rel="noopener noreferrer">Privacy and Scaling Explorations (PSE)</a> to foster open-source development and contribute to public goods. By aligning MACI with these values, we aim to enhance its utility and encourage collaborative growth. In the coming months, we're committed to extracting more of our circuit logic for broader use (<a href="https://github.com/privacy-scaling-explorations/zk-kit/issues/131" target="_blank" rel="noopener noreferrer">track progress here</a>) and contributing to projects that align with <a href="https://maci.pse.dev/roadmap#maci-mission--vision">our mission</a>.</p>
+<h3 class="anchor anchorWithStickyNavbar_I2WF" id="code-refactor">Code Refactor<a href="https://maci.pse.dev/blog/maci-v1-2-0-release#code-refactor" class="hash-link" aria-label="Direct link to Code Refactor" title="Direct link to Code Refactor">​</a></h3>
+<p>We've undergone extensive efforts to clean up MACI's code:</p>
+<ul>
+<li>Removed dead and redundant code.</li>
+<li>Split monolithic files into smaller, logically structured ones.</li>
+<li>Improved documentation with detailed code comments and tools like (<a href="https://typedoc.org/" target="_blank" rel="noopener noreferrer">TypeDoc</a>&nbsp;and&nbsp;<a href="https://github.com/OpenZeppelin/solidity-docgen" target="_blank" rel="noopener noreferrer">solidity-docgen</a>) for automatic doc generation.</li>
+<li>Enforced strong type safety on the TypeScript components.</li>
+<li>Optimized and modularized the smart contract code.</li>
+<li>Extended the test suites.</li>
+</ul>
+<p>These improvements aim to simplify the onboarding process for new developers, ensuring they can easily navigate and effectively utilize MACI.</p>
+<h2 class="anchor anchorWithStickyNavbar_I2WF" id="new-features">New Features<a href="https://maci.pse.dev/blog/maci-v1-2-0-release#new-features" class="hash-link" aria-label="Direct link to New Features" title="Direct link to New Features">​</a></h2>
+<h3 class="anchor anchorWithStickyNavbar_I2WF" id="flexible-voting-strategies">Flexible Voting Strategies<a href="https://maci.pse.dev/blog/maci-v1-2-0-release#flexible-voting-strategies" class="hash-link" aria-label="Direct link to Flexible Voting Strategies" title="Direct link to Flexible Voting Strategies">​</a></h3>
+<p>After years of built-in quadratic voting (QV) in MACI, we now support non-quadratic voting polls. This opens up the door to potential integrations with a wider variety of projects, such as DAO governance applications.</p>
+<p>The new version of the Tally circuit (specific for non-QV), has reduced constraints, enabling a quicker proof generation process for vote tallying.</p>
+<p>We invite projects interested in leveraging this secure, on-chain voting mechanism to reach out for potential integrations. We hope to continue to expand support for additional voting methodologies, so please let us know your project's needs!</p>
+<h3 class="anchor anchorWithStickyNavbar_I2WF" id="new-gatekeeper">New Gatekeeper<a href="https://maci.pse.dev/blog/maci-v1-2-0-release#new-gatekeeper" class="hash-link" aria-label="Direct link to New Gatekeeper" title="Direct link to New Gatekeeper">​</a></h3>
+<p>In our effort to fortify MACI against Sybil attacks, we've integrated an innovative gatekeeper mechanism: <a href="https://attest.sh/" target="_blank" rel="noopener noreferrer">EAS</a> - you can <a href="https://github.com/privacy-scaling-explorations/maci/blob/v1.2.0/contracts/contracts/gatekeepers/EASGatekeeper.sol" target="_blank" rel="noopener noreferrer">view the contract here</a>.</p>
+<p>As part of configuring a MACI deployment, the coordinator sets a user signup gatekeeper contract. This contract dictates the criteria a user must pass in order to participate in a poll. For example, user might need to prove ownership of a certain NFT, or prove that they have passed some sort of proof-of-personhood verification.</p>
+<p>With the addition of this new gatekeeper, EAS (and soon™ <a href="https://www.hatsprotocol.xyz/" target="_blank" rel="noopener noreferrer">Hats Protocol</a>, MACI instances could be configured to e.g. only allow Ethereum accounts with a trusted EAS attestation or those designated with a specific role by the Hats Protocol. These modules open up new avenues for access control strategies.</p>
+<p>We expect to continue to expand our <a href="https://github.com/privacy-scaling-explorations/maci/tree/dev/contracts/contracts/gatekeepers" target="_blank" rel="noopener noreferrer">gatekeeper capabilities</a> and welcome the community to come up with new and innovative ways to grant access to MACI's rounds, helping make MACI more customizable and sybil-resilient. The Hats Protocol gatekeeper is <a href="https://github.com/privacy-scaling-explorations/maci/pull/1191" target="_blank" rel="noopener noreferrer">currently in progress</a> and will be released soon™ (in v1.2.1).</p>
+<h3 class="anchor anchorWithStickyNavbar_I2WF" id="documentation-website">Documentation Website<a href="https://maci.pse.dev/blog/maci-v1-2-0-release#documentation-website" class="hash-link" aria-label="Direct link to Documentation Website" title="Direct link to Documentation Website">​</a></h3>
+<p>We're excited to announce that all MACI documentation has been unified on our new website, <a href="https://maci.pse.dev/">maci.pse.dev</a>!</p>
+<p>This platform will serve as the definitive resource for all information related to MACI, including <a href="https://maci.pse.dev/blog">blog</a> releases, <a href="https://maci.pse.dev/docs/introduction">documentation</a> updates, and <a href="https://maci.pse.dev/roadmap">roadmap</a> progress. Please report any inconsistencies you may find. As always, we welcome suggestions on how to make it better.</p>
+<h2 class="anchor anchorWithStickyNavbar_I2WF" id="security-audit">Security Audit<a href="https://maci.pse.dev/blog/maci-v1-2-0-release#security-audit" class="hash-link" aria-label="Direct link to Security Audit" title="Direct link to Security Audit">​</a></h2>
+<p>Thanks to thorough reviews by PSE's internal Audit team, clr.fund's developer, <a href="https://github.com/yuetloo" target="_blank" rel="noopener noreferrer">yuetloo</a>, and our core development team, we've identified and addressed several bugs during our recent refactoring efforts. Most notably, a critical bug in MACI v1.x discovered by <a href="https://github.com/kcharbo3" target="_blank" rel="noopener noreferrer">Kyle</a>, which could have allowed coordinators to censor votes, has been <a href="https://github.com/privacy-scaling-explorations/maci/pull/1170" target="_blank" rel="noopener noreferrer">fixed</a>.</p>
+<p>For more details on our recent audit, please <a href="https://maci.pse.dev/docs/audit#pse-audit-2024">refer to our audit docs</a> or <a href="https://maci.pse.dev/assets/files/20240223_PSE_Audit_audit_report-a181b98b05198c102be49113c354b5f2.pdf" target="_blank">view the full report</a>.</p>
+<p>After this audit and the resulting fixes, we feel more confident with MACI and its security.</p>
+<h2 class="anchor anchorWithStickyNavbar_I2WF" id="trusted-setup-ceremony">Trusted Setup Ceremony<a href="https://maci.pse.dev/blog/maci-v1-2-0-release#trusted-setup-ceremony" class="hash-link" aria-label="Direct link to Trusted Setup Ceremony" title="Direct link to Trusted Setup Ceremony">​</a></h2>
+<p>Following the successful completion of our <a href="https://ceremony.pse.dev/projects/Maci%20v1%20Trusted%20Setup%20Ceremony" target="_blank" rel="noopener noreferrer">MACI trusted setup ceremony</a>&nbsp;for <a href="https://maci.pse.dev/blog/maci-v1-1-1-release">MACI v1.1.1</a>, we are preparing for a new ceremony to cover the security enhancements added in our v1.2.0 circuits.</p>
+<p>To accomplish this, we'll leverage the tooling of <a href="https://github.com/privacy-scaling-explorations/p0tion" target="_blank" rel="noopener noreferrer">P0tion</a>, which helps to streamline and automate Groth16 phase2 ceremonies.</p>
+<p>We'll update this page after the ceremony completes to include the production-ready zkey artifacts. In the meantime, the artifacts for v.1.1.1 can be found on our&nbsp;<a href="https://maci.pse.dev/docs/trusted-setup">website</a>, and the&nbsp;<a href="https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/tallyVotes.circom" target="_blank" rel="noopener noreferrer"><code>tallyVotes</code></a>&nbsp;artifacts can still be used in production.</p>
+<h2 class="anchor anchorWithStickyNavbar_I2WF" id="get-involved">Get Involved<a href="https://maci.pse.dev/blog/maci-v1-2-0-release#get-involved" class="hash-link" aria-label="Direct link to Get Involved" title="Direct link to Get Involved">​</a></h2>
+<p>MACI is deeply committed to our community, through our open initiatives like <a href="https://github.com/privacy-scaling-explorations/maci/discussions/859" target="_blank" rel="noopener noreferrer">public roadmaps</a>, transparent <a href="https://github.com/privacy-scaling-explorations/maci/discussions/847" target="_blank" rel="noopener noreferrer">repository management</a>, and a <a href="https://discord.com/invite/sF5CT5rzrR" target="_blank" rel="noopener noreferrer">public Discord channel</a> for interaction with our team.</p>
+<p>With every issue, PR, feature and roadmap iteration, we welcome feedback to ensure that the continued development of MACI reflects your and the community's needs. Keep an eye out on our&nbsp;<a href="https://maci.pse.dev/">documentation</a>,&nbsp;<a href="https://github.com/privacy-scaling-explorations/maci/discussions" target="_blank" rel="noopener noreferrer">GitHub discussions</a>&nbsp;and our official&nbsp;<a href="https://twitter.com/zkMACI" target="_blank" rel="noopener noreferrer">Twitter/X account</a>&nbsp;for updates.</p>
+<p>For those looking to contribute directly, report bugs, or offer feedback, our <a href="https://github.com/privacy-scaling-explorations/maci" target="_blank" rel="noopener noreferrer">GitHub repository</a> is open for issues and discussions. We're eager to assist with your projects or contributions.</p>
+<p>For practical implementation insights, review our docs as well as the <a href="https://github.com/clrfund/monorepo/" target="_blank" rel="noopener noreferrer">clr.fund</a>&nbsp;and&nbsp;<a href="https://github.com/privacy-scaling-explorations/qf" target="_blank" rel="noopener noreferrer">QF</a>&nbsp;repositories as reference implementations. Both are quadratic funding implementations, a mechanism which otherwise is highly susceptible to collusion and bribery. Most notably,&nbsp;clr.fund&nbsp;is already working on integrating MACI v1.2.0, after having used v0.x until now. You can follow their development effort under this&nbsp;<a href="https://github.com/clrfund/monorepo/tree/feat/maci-v1" target="_blank" rel="noopener noreferrer">GitHub branch</a>.</p>
+<p>For any other questions or feedback, please reach out to us via <a href="https://discord.com/invite/sF5CT5rzrR" target="_blank" rel="noopener noreferrer">PSE's Discord</a>,&nbsp;in our&nbsp;<a href="https://https//discord.com/channels/943612659163602974/1164613809730748507" target="_blank" rel="noopener noreferrer"><code>#🗳️-maci</code> channel</a>. We're excited to connect and collaborate with you!</p>
+<h2 class="anchor anchorWithStickyNavbar_I2WF" id="references">References<a href="https://maci.pse.dev/blog/maci-v1-2-0-release#references" class="hash-link" aria-label="Direct link to References" title="Direct link to References">​</a></h2>
+<ul>
+<li><a href="https://github.com/privacy-scaling-explorations/maci" target="_blank" rel="noopener noreferrer">MACI GitHub repository</a></li>
+<li><a href="https://maci.pse.dev/docs/introduction">MACI documentation</a></li>
+<li><a href="https://maci.pse.dev/blog/maci-1-0-technical-introduction">A technical introduction to MACI 1.0 - Kyle Charbonnet</a></li>
+<li><a href="https://ethresear.ch/t/minimal-anti-collusion-infrastructure/5413" target="_blank" rel="noopener noreferrer">Minimal anti-collusion infrastructure - Vitalik</a></li>
+<li><a href="https://discord.com/invite/sF5CT5rzrR" target="_blank" rel="noopener noreferrer">PSE Discord server</a></li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_I2WF" id="release">Release<a href="https://maci.pse.dev/blog/maci-v1-2-0-release#release" class="hash-link" aria-label="Direct link to Release" title="Direct link to Release">​</a></h2>
+<p>Here's the link to the new release code in GitHub:&nbsp;<a href="https://github.com/privacy-scaling-explorations/maci/releases/tag/v1.2.0" target="_blank" rel="noopener noreferrer">v1.2.0 Release</a>.</p>]]></content>
+        <author>
+            <name>ctrlc03</name>
+            <uri>https://pse.dev</uri>
+        </author>
+        <category label="release" term="release"/>
+        <category label="audit" term="audit"/>
+        <category label="security" term="security"/>
+        <category label="documentation" term="documentation"/>
+    </entry>
     <entry>
         <title type="html"><![CDATA[New year, new MACI]]></title>
         <id>https://maci.pse.dev/blog/2024-team-roadmap</id>
@@ -82,7 +162,7 @@
         <category label="roadmap" term="roadmap"/>
     </entry>
     <entry>
-        <title type="html"><![CDATA[Maci v1.1.1 Release]]></title>
+        <title type="html"><![CDATA[MACI v1.1.1 Release]]></title>
         <id>https://maci.pse.dev/blog/maci-v1-1-1-release</id>
         <link href="https://maci.pse.dev/blog/maci-v1-1-1-release"/>
         <updated>2023-01-18T00:00:00.000Z</updated>
@@ -92,7 +172,7 @@
 <h2 class="anchor anchorWithStickyNavbar_I2WF" id="background">Background<a href="https://maci.pse.dev/blog/maci-v1-1-1-release#background" class="hash-link" aria-label="Direct link to Background" title="Direct link to Background">​</a></h2>
 <p>MACI is an application that provides collusion resistance for on-chain voting processes. It was originally created after Vitalik's <a href="https://ethresear.ch/t/minimal-anti-collusion-infrastructure/5413" target="_blank" rel="noopener noreferrer">post</a>, and has since been revisited and improved.</p>
 <p>MACI revolves around the need for a trusted coordinator. The coordinator is in charge of setting up the system, publishing its public key, and computing the tally of the votes. Below are the main properties of MACI:</p>
-<table><thead><tr><th>Property</th><th>Description</th></tr></thead><tbody><tr><td>Collusion Resistance</td><td>no-one except a trusted coordinator should be certain of the validity of a vote, reducing the effectiveness of bribery.</td></tr><tr><td>Receipt-freeness</td><td>no-one can prove (besides to the coordinator) which way they voted.</td></tr><tr><td>Privacy</td><td>no-one except a trusted coordinator should be able to decrypt a vote.</td></tr><tr><td>Uncensorability</td><td>no-one — not even the trusted coordinator, should be able to censor a vote.</td></tr><tr><td>Unforgeability</td><td>only the owner of a user's private key may cast a vote tied to its corresponding public key.</td></tr><tr><td>Non-repudiation</td><td>no-one may modify or delete a vote after it is cast, although a user may cast another vote to nullify it.</td></tr><tr><td>Correct execution</td><td>no-one, not even the trusted coordinator, should be able to produce a false tally of votes.</td></tr></tbody></table>
+<table><thead><tr><th>Property</th><th>Description</th></tr></thead><tbody><tr><td>Collusion Resistance</td><td>No one except a trusted coordinator should be certain of the validity of a vote, reducing the effectiveness of bribery.</td></tr><tr><td>Receipt-freeness</td><td>No one can prove (besides to the coordinator) which way they voted.</td></tr><tr><td>Privacy</td><td>No one except a trusted coordinator should be able to decrypt a vote.</td></tr><tr><td>Uncensorability</td><td>No one — not even the trusted coordinator, should be able to censor a vote.</td></tr><tr><td>Unforgeability</td><td>Only the owner of a user's private key may cast a vote tied to its corresponding public key.</td></tr><tr><td>Non-repudiation</td><td>No one may modify or delete a vote after it is cast, although a user may cast another vote to nullify it.</td></tr><tr><td>Correct execution</td><td>No one, not even the trusted coordinator, should be able to produce a false tally of votes.</td></tr></tbody></table>
 <p>Since its inception, MACI has been adopted by different projects, most notably <a href="https://github.com/clrfund" target="_blank" rel="noopener noreferrer">clr.fund</a> and <a href="https://github.com/quadratic-funding/qfi/tree/feat/code-freeze" target="_blank" rel="noopener noreferrer">QFI</a>. These projects prove how effective MACI can be, especially when integrated with applications that are otherwise prone to collusion, such as funding Public Goods.</p>
 <p>For a more detailed description of MACI, please refer to the <a href="https://medium.com/privacy-scaling-explorations/a-technical-introduction-to-maci-1-0-db95c3a9439a" target="_blank" rel="noopener noreferrer">v1 technical introduction article</a>.</p>
 <h2 class="anchor anchorWithStickyNavbar_I2WF" id="security-audit">Security Audit<a href="https://maci.pse.dev/blog/maci-v1-1-1-release#security-audit" class="hash-link" aria-label="Direct link to Security Audit" title="Direct link to Security Audit">​</a></h2>
