@@ -47,6 +47,11 @@ jobs:
 
       - name: Publish NPM
         run: |
+          # Prevent `git commit error`
+          # It will not be pushed to GitHub as it is ephemeral
+          git config --global user.email "you@example.com"
+          git config --global user.name "Your Name"
+
           # Depending on the STATE_TREE_DEPTH param, there 
           # might be changes in the EmptyBallotRoots.sol file
           git add contracts/contracts/trees/EmptyBallotRoots.sol
