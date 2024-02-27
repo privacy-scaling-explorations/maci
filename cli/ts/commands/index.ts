@@ -7,7 +7,7 @@ export { genKeyPair } from "./genKeyPair";
 export { genMaciPubKey } from "./genPubKey";
 export { mergeMessages } from "./mergeMessages";
 export { mergeSignups } from "./mergeSignups";
-export { publish } from "./publish";
+export { publish, publishBatch } from "./publish";
 export { setVerifyingKeys } from "./setVerifyingKeys";
 export { showContracts } from "./showContracts";
 export { timeTravel } from "./timeTravel";

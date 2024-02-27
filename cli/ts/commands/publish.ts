@@ -1,8 +1,15 @@
 import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts/typechain-types";
 import { genRandomSalt } from "maci-crypto";
-import { Keypair, PCommand, PrivKey, PubKey } from "maci-domainobjs";
+import {
+  type IG1ContractParams,
+  type IMessageContractParams,
+  Keypair,
+  PCommand,
+  PrivKey,
+  PubKey,
+} from "maci-domainobjs";
 
-import type { PublishArgs } from "../utils/interfaces";
+import type { IPublishBatchArgs, IPublishBatchData, PublishArgs } from "../utils/interfaces";
 
 import { banner } from "../utils/banner";
 import { contractExists } from "../utils/contracts";
@@ -128,4 +135,109 @@ export const publish = async ({
 
   // we want the user to have the ephemeral private key
   return encKeypair.privKey.serialize();
+};
+
+/**
+ * Batch publish new messages to a MACI Poll contract
+ * @param {IPublishBatchArgs} args - The arguments for the publish command
+ * @returns {IPublishBatchData} The ephemeral private key used to encrypt the message, transaction hash
+ */
+export const publishBatch = async ({
+  messages,
+  pollId,
+  maciContractAddress,
+  publicKey,
+  privateKey,
+  signer,
+  quiet = true,
+}: IPublishBatchArgs): Promise<IPublishBatchData> => {
+  banner(quiet);
+
+  if (!PubKey.isValidSerializedPubKey(publicKey)) {
+    throw new Error("invalid MACI public key");
+  }
+
+  if (!PrivKey.isValidSerializedPrivKey(privateKey)) {
+    throw new Error("invalid MACI private key");
+  }
+
+  if (pollId < 0n) {
+    throw new Error(`invalid poll id ${pollId}`);
+  }
+
+  const userMaciPubKey = PubKey.deserialize(publicKey);
+  const userMaciPrivKey = PrivKey.deserialize(privateKey);
+  const maciContract = MACIFactory.connect(maciContractAddress, signer);
+  const pollAddress = await maciContract.getPoll(pollId);
+
+  const pollContract = PollFactory.connect(pollAddress, signer);
+
+  const [maxValues, coordinatorPubKeyResult] = await Promise.all([
+    pollContract.maxValues(),
+    pollContract.coordinatorPubKey(),
+  ]);
+  const maxVoteOptions = Number(maxValues.maxVoteOptions);
+
+  // validate the vote options index against the max leaf index on-chain
+  messages.forEach(({ stateIndex, voteOptionIndex, salt, nonce }) => {
+    if (voteOptionIndex < 0 || maxVoteOptions < voteOptionIndex) {
+      throw new Error("invalid vote option index");
+    }
+
+    // check < 1 cause index zero is a blank state leaf
+    if (stateIndex < 1) {
+      throw new Error("invalid state index");
+    }
+
+    if (nonce < 0) {
+      throw new Error("invalid nonce");
+    }
+
+    if (salt && !validateSalt(salt)) {
+      throw new Error("invalid salt");
+    }
+  });
+
+  const coordinatorPubKey = new PubKey([
+    BigInt(coordinatorPubKeyResult.x.toString()),
+    BigInt(coordinatorPubKeyResult.y.toString()),
+  ]);
+
+  const encryptionKeypair = new Keypair();
+
+  const payload: [IMessageContractParams, IG1ContractParams][] = messages.map(
+    ({ salt, stateIndex, voteOptionIndex, newVoteWeight, nonce }) => {
+      const userSalt = salt ? BigInt(salt) : genRandomSalt();
+
+      // create the command object
+      const command = new PCommand(
+        stateIndex,
+        userMaciPubKey,
+        voteOptionIndex,
+        newVoteWeight,
+        nonce,
+        BigInt(pollId),
+        userSalt,
+      );
+
+      // sign the command with the user private key
+      const signature = command.sign(userMaciPrivKey);
+
+      const sharedKey = Keypair.genEcdhSharedKey(encryptionKeypair.privKey, coordinatorPubKey);
+      const message = command.encrypt(signature, sharedKey);
+
+      return [message.asContractParam(), encryptionKeypair.pubKey.asContractParam()];
+    },
+  );
+
+  const preparedMessages = payload.map(([message]) => message);
+  const preparedKeys = payload.map(([, key]) => key);
+
+  const receipt = await pollContract
+    .publishMessageBatch(preparedMessages.reverse(), preparedKeys.reverse())
+    .then((tx) => tx.wait());
+
+  return {
+    hash: receipt?.hash,
+  };
 };
