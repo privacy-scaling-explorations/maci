@@ -204,6 +204,7 @@ export const publishBatch = async ({
   ]);
 
   const encryptionKeypair = new Keypair();
+  const sharedKey = Keypair.genEcdhSharedKey(encryptionKeypair.privKey, coordinatorPubKey);
 
   const payload: [IMessageContractParams, IG1ContractParams][] = messages.map(
     ({ salt, stateIndex, voteOptionIndex, newVoteWeight, nonce }) => {
@@ -223,7 +224,6 @@ export const publishBatch = async ({
       // sign the command with the user private key
       const signature = command.sign(userMaciPrivKey);
 
-      const sharedKey = Keypair.genEcdhSharedKey(encryptionKeypair.privKey, coordinatorPubKey);
       const message = command.encrypt(signature, sharedKey);
 
       return [message.asContractParam(), encryptionKeypair.pubKey.asContractParam()];
