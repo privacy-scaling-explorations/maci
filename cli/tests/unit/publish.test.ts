@@ -75,13 +75,15 @@ describe("publish", () => {
       const pollContract = PollFactory.connect(pollAddresses.poll, signer);
       const initialNumMessages = await pollContract.numMessages();
 
-      const { hash } = await publishBatch(defaultArgs);
+      const { hash, encryptedMessages, privateKey } = await publishBatch(defaultArgs);
       const numMessages = await pollContract.numMessages();
 
       expect(initialNumMessages).to.eq(1n);
       expect(hash).to.not.eq(null);
       expect(hash).to.not.eq(undefined);
       expect(numMessages).to.eq(BigInt(messages.length + 1));
+      expect(privateKey).to.not.eq(undefined);
+      expect(encryptedMessages.length).to.eq(defaultArgs.messages.length);
     });
 
     it("should throw error if public key is invalid", async () => {
