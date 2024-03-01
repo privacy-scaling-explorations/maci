@@ -2,6 +2,7 @@ import { Signer } from "ethers";
 
 import type { SnarkProof } from "maci-contracts";
 import type { CircuitInputs } from "maci-core";
+import type { IMessageContractParams } from "maci-domainobjs";
 import type { Groth16Proof, PublicSignals } from "snarkjs";
 
 export interface DeployedContracts {
@@ -810,8 +811,24 @@ export interface IPublishMessage {
   salt?: bigint;
 }
 
+/**
+ * Interface that represents publish batch return data
+ */
 export interface IPublishBatchData {
+  /**
+   * Publish transaction hash
+   */
   hash?: string;
+
+  /**
+   * Encrypted publish messages
+   */
+  encryptedMessages: IMessageContractParams[];
+
+  /**
+   * Encryption private key
+   */
+  privateKey: string;
 }
 
 /**

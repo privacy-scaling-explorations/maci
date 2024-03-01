@@ -239,5 +239,7 @@ export const publishBatch = async ({
 
   return {
     hash: receipt?.hash,
+    encryptedMessages: preparedMessages,
+    privateKey: encryptionKeypair.privKey.serialize(),
   };
 };
