@@ -337,8 +337,8 @@ importers:
   crypto:
     dependencies:
       '@zk-kit/baby-jubjub':
-        specifier: ^0.1.1
-        version: 0.1.1
+        specifier: ^0.2.0
+        version: 0.2.0
       '@zk-kit/eddsa-poseidon':
         specifier: ^0.6.0
         version: 0.6.0
@@ -2040,6 +2040,7 @@ packages:
   /@commitlint/config-validator@19.0.3:
     resolution: {integrity: sha512-2D3r4PKjoo59zBc2auodrSCaUnCSALCx54yveOFwwP/i2kfEAQrygwOleFWswLqK0UL/F9r07MFi5ev2ohyM4Q==}
     engines: {node: '>=v18'}
+    requiresBuild: true
     dependencies:
       '@commitlint/types': 19.0.3
       ajv: 8.12.0
@@ -2060,6 +2061,7 @@ packages:
   /@commitlint/execute-rule@19.0.0:
     resolution: {integrity: sha512-mtsdpY1qyWgAO/iOK0L6gSGeR7GFcdW7tIjcNFxcWkfLDF5qVbPHKuGATFqRMsxcO8OUKNj0+3WOHB7EHm4Jdw==}
     engines: {node: '>=v18'}
+    requiresBuild: true
     dev: true
 
   /@commitlint/format@19.0.3:
@@ -2134,6 +2136,7 @@ packages:
   /@commitlint/resolve-extends@19.0.3:
     resolution: {integrity: sha512-18BKmta8OC8+Ub+Q3QGM9l27VjQaXobloVXOrMvu8CpEwJYv62vC/t7Ka5kJnsW0tU9q1eMqJFZ/nN9T/cOaIA==}
     engines: {node: '>=v18'}
+    requiresBuild: true
     dependencies:
       '@commitlint/config-validator': 19.0.3
       '@commitlint/types': 19.0.3
@@ -6129,12 +6132,6 @@ packages:
       tslib: 2.6.2
     dev: true
 
-  /@zk-kit/baby-jubjub@0.1.1:
-    resolution: {integrity: sha512-eWpUSpKKpllGZXE6mdS1IVuegRjY2Yu+3Qccyfg0+gMI8+p0ruioMM/MCK3tg2lRIUJTVd+16UghVcK0145yWg==}
-    dependencies:
-      '@zk-kit/utils': 0.1.0
-    dev: false
-
   /@zk-kit/baby-jubjub@0.2.0:
     resolution: {integrity: sha512-pqiPq621oKpwiIkf1KcVh5MdbFX0V67s9gCmiEkhLMeafZaIXEwVt5qmIu1d2HB4mjXgr4Ys8Jpn2Rw4KXxnFQ==}
     dependencies:
@@ -6159,10 +6156,6 @@ packages:
     dependencies:
       '@zk-kit/baby-jubjub': 0.2.0
       '@zk-kit/utils': 0.3.0
-    dev: false
-
-  /@zk-kit/utils@0.1.0:
-    resolution: {integrity: sha512-MZmuw2w2StB7XOSNg1TW4VwnBJ746UDmdXTvxwDO/U85UZfGfM3zb53gG35qz5sWpQo/DjfoKqaScmh6HUtQpA==}
     dev: false
 
   /@zk-kit/utils@0.3.0:
@@ -10334,6 +10327,7 @@ packages:
   /global-directory@4.0.1:
     resolution: {integrity: sha512-wHTUcDUoZ1H5/0iVqEudYW4/kAlN5cZ3j/bXn0Dpbizl9iaUVeWSHqiOjsgk6OW2bkLclbBjzewBz6weQ1zA2Q==}
     engines: {node: '>=18'}
+    requiresBuild: true
     dependencies:
       ini: 4.1.1
     dev: true
@@ -11234,6 +11228,7 @@ packages:
 
   /import-meta-resolve@4.0.0:
     resolution: {integrity: sha512-okYUR7ZQPH+efeuMJGlq4f8ubUgO50kByRPyt/Cy1Io4PSRsPjxME+YlVaCOx+NIToW7hCsZNFJyTPFFKepRSA==}
+    requiresBuild: true
     dev: true
 
   /imurmurhash@0.1.4:
@@ -11273,6 +11268,7 @@ packages:
   /ini@4.1.1:
     resolution: {integrity: sha512-QQnnxNyfvmHFIsj7gkPcYymR8Jdw/o7mp5ZFihxn6h8Ci6fh3Dx4E1gPjpQEpIuPo9XVNY/ZUwh4BPMjGyL01g==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
+    requiresBuild: true
     dev: true
 
   /init-package-json@5.0.0:
