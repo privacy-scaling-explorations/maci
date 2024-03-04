@@ -68,7 +68,7 @@ const config: HardhatUserConfig = {
         count: 20,
       },
       gas: DEFAULT_BLOCK_GAS_LIMIT,
-      loggingEnabled: false,
+      loggingEnabled: process.env.HARDHAT_LOGGING === "true",
       allowUnlimitedContractSize: true,
       throwOnTransactionFailures: true,
       throwOnCallFailures: true,
@@ -76,6 +76,12 @@ const config: HardhatUserConfig = {
         auto: true,
         interval: 100,
       },
+      forking: process.env.FORKING_URL
+        ? {
+            url: process.env.FORKING_URL,
+            blockNumber: process.env.FORKING_BLOCK_NUM ? parseInt(process.env.FORKING_BLOCK_NUM, 10) : 0,
+          }
+        : undefined,
     },
   },
   contractSizer: {

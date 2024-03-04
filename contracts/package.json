@@ -24,7 +24,7 @@
   ],
   "scripts": {
     "watch": "tsc --watch",
-    "hardhat": "hardhat node --hostname 0.0.0.0 --port 8545",
+    "hardhat": "hardhat node",
     "compileSol": "./scripts/compileSol.sh $1",
     "moveIntegrationArtifacts": "cp -r artifacts/ ../integrationTests/artifacts",
     "prebuild": "pnpm run compileSol",
