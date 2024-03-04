@@ -340,8 +340,8 @@ importers:
         specifier: ^0.1.1
         version: 0.1.1
       '@zk-kit/eddsa-poseidon':
-        specifier: ^0.5.1
-        version: 0.5.1
+        specifier: ^0.6.0
+        version: 0.6.0
       '@zk-kit/poseidon-cipher':
         specifier: ^0.3.0
         version: 0.3.0
@@ -6147,11 +6147,11 @@ packages:
       circomlib: 2.0.5
     dev: false
 
-  /@zk-kit/eddsa-poseidon@0.5.1:
-    resolution: {integrity: sha512-sPyoyjwg9EZ+tHLGxOG+FDj9XJK1knVjm27nTMV4ZSiQIf0427QWnLhOk7b6zMvFmEpBWTG9gneJ5pr3jzJ4zg==}
+  /@zk-kit/eddsa-poseidon@0.6.0:
+    resolution: {integrity: sha512-vsW8zt5f6QPz/dl+D7djKwcMgCRv09ajJHzOxgy0EfTAG6KLBUc6+qdhvLByQy+IEM9PvcRSHXmgMWInNqtFTw==}
     dependencies:
-      '@zk-kit/baby-jubjub': 0.1.1
-      '@zk-kit/utils': 0.1.0
+      '@zk-kit/baby-jubjub': 0.2.0
+      '@zk-kit/utils': 0.3.0
     dev: false
 
   /@zk-kit/poseidon-cipher@0.3.0:
