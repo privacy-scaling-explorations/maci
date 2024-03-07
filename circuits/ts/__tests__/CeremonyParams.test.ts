@@ -13,7 +13,7 @@ describe("Ceremony param tests", () => {
     // processMessages and Tally
     stateTreeDepth: 6,
     // processMessages
-    messageTreeDepth: 8,
+    messageTreeDepth: 9,
     // processMessages
     messageBatchTreeDepth: 2,
     // processMessages and Tally
@@ -80,7 +80,7 @@ describe("Ceremony param tests", () => {
       circuit = await circomkitInstance.WitnessTester("processMessages", {
         file: "processMessages",
         template: "ProcessMessages",
-        params: [6, 8, 2, 3],
+        params: [6, 9, 2, 3],
       });
 
       hasherCircuit = await circomkitInstance.WitnessTester("processMessageInputHasher", {
