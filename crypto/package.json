@@ -21,15 +21,15 @@
     "typedoc": "typedoc --plugin typedoc-plugin-markdown --options ./typedoc.json"
   },
   "dependencies": {
-    "@zk-kit/baby-jubjub": "^0.1.1",
-    "@zk-kit/eddsa-poseidon": "^0.5.1",
-    "@zk-kit/poseidon-cipher": "^0.2.1",
+    "@zk-kit/baby-jubjub": "^0.2.0",
+    "@zk-kit/eddsa-poseidon": "^0.6.0",
+    "@zk-kit/poseidon-cipher": "^0.3.0",
     "ethers": "^6.11.1"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
     "@types/mocha": "^10.0.6",
-    "@types/node": "^20.11.19",
+    "@types/node": "^20.11.24",
     "benny": "^3.7.1",
     "chai": "^4.3.10",
     "mocha": "^10.3.0",

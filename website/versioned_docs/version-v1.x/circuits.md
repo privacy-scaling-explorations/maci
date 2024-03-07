@@ -2,10 +2,14 @@
 title: MACI Circuits
 description: Introduction to the core zk-SNARK circuits of MACI
 sidebar_label: Circuits
-sidebar_position: 7
+sidebar_position: 9
 ---
 
-# Circuits
+# zk-SNARKS in MACI
+
+MACI uses zk-SNARKs to essentially hide how each person voted while still revealing the final vote result. This gives voters privacy and helps reduce bribery while still ensuring that the final results were tallied correctly off-chain.
+
+## MACI Circuits
 
 MACI has three main zk-SNARK [circuits](https://github.com/privacy-scaling-explorations/maci/tree/dev/circuits):
 

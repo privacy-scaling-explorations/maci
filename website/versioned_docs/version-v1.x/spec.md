@@ -2,7 +2,7 @@
 title: MACI v1.0 Specification
 description: A detailed specification meant to assist auditors in reviewing MACI version 1.0
 sidebar_label: Specification
-sidebar_position: 15
+sidebar_position: 17
 ---
 
 # MACI v1.0 Specification

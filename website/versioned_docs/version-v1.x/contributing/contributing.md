@@ -2,7 +2,7 @@
 title: Contributing to MACI
 description: Instructions on how to contribute to MACI
 sidebar_label: Contributing
-sidebar_position: 19
+sidebar_position: 21
 ---
 
 # Contributing

@@ -2,6 +2,7 @@ import { Signer } from "ethers";
 
 import type { SnarkProof } from "maci-contracts";
 import type { CircuitInputs } from "maci-core";
+import type { IMessageContractParams } from "maci-domainobjs";
 import type { Groth16Proof, PublicSignals } from "snarkjs";
 
 export interface DeployedContracts {
@@ -708,12 +709,82 @@ export interface ProveOnChainArgs {
 /**
  * Interface for the arguments to the publish command
  */
-export interface PublishArgs {
+export interface PublishArgs extends IPublishMessage {
   /**
    * The public key of the user
    */
   pubkey: string;
 
+  /**
+   * The private key of the user
+   */
+  privateKey: string;
+
+  /**
+   * The address of the MACI contract
+   */
+  maciContractAddress: string;
+
+  /**
+   * The id of the poll
+   */
+  pollId: bigint;
+
+  /**
+   * A signer object
+   */
+  signer: Signer;
+
+  /**
+   * Whether to log the output
+   */
+  quiet?: boolean;
+}
+
+/**
+ * Interface for the arguments to the batch publish command
+ */
+export interface IPublishBatchArgs {
+  /**
+   * User messages
+   */
+  messages: IPublishMessage[];
+
+  /**
+   * The id of the poll
+   */
+  pollId: bigint;
+
+  /**
+   * The address of the MACI contract
+   */
+  maciContractAddress: string;
+
+  /**
+   * The public key of the user
+   */
+  publicKey: string;
+
+  /**
+   * The private key of the user
+   */
+  privateKey: string;
+
+  /**
+   * A signer object
+   */
+  signer: Signer;
+
+  /**
+   * Whether to log the output
+   */
+  quiet?: boolean;
+}
+
+/**
+ * Interface that represents user publish message
+ */
+export interface IPublishMessage {
   /**
    * The index of the state leaf
    */
@@ -730,39 +801,34 @@ export interface PublishArgs {
   nonce: bigint;
 
   /**
-   * The id of the poll
-   */
-  pollId: bigint;
-
-  /**
    * The new vote weight
    */
   newVoteWeight: bigint;
 
   /**
-   * A signer object
-   */
-  signer: Signer;
-
-  /**
-   * The address of the MACI contract
-   */
-  maciContractAddress: string;
-
-  /**
-   * The private key of the user
-   */
-  privateKey: string;
-
-  /**
    * The salt of the message
    */
   salt?: bigint;
+}
+
+/**
+ * Interface that represents publish batch return data
+ */
+export interface IPublishBatchData {
+  /**
+   * Publish transaction hash
+   */
+  hash?: string;
 
   /**
-   * Whether to log the output
+   * Encrypted publish messages
    */
-  quiet?: boolean;
+  encryptedMessages: IMessageContractParams[];
+
+  /**
+   * Encryption private key
+   */
+  privateKey: string;
 }
 
 /**

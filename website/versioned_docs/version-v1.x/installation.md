@@ -2,7 +2,7 @@
 title: Installing MACI
 description: How to install MACI
 sidebar_label: Installation
-sidebar_position: 3
+sidebar_position: 5
 ---
 
 # Installation
@@ -24,25 +24,34 @@ You need the following to use MACI:
 First, install dependencies:
 
 ```bash
-sudo apt-get install build-essential libgmp-dev libsodium-dev nasm git
+sudo apt-get install build-essential cmake libgmp-dev libsodium-dev nasm curl m4
+```
+
+If you're running on **MacOS with an intel chip**, install dependencies by running the following command:
+
+```bash
+brew install cmake gmp libsodium nasm
 ```
 
 Next, clone `rapidsnark` and build it:
 
 ```bash
 git clone https://github.com/iden3/rapidsnark.git && \
-cd rapidsnark && \
-git checkout 1c13721de4a316b0b254c310ccec9341f5e2208e
+cd rapidsnark
 
 pnpm install && \
 git submodule init && \
 git submodule update && \
-pnpm exec task createFieldSources && \
-pnpm exec task buildProver
+./build_gmp.sh host && \
+mkdir build_prover && cd build_prover && \
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../package && \
+make -j4 && make install
 ```
 
 Note the location of the `rapidsnark` binary (e.g.
 `/home/user/rapidsnark/build/prover`).
+
+For more information, please check rapidsnark [github repo](https://github.com/iden3/rapidsnark)
 
 ### Install circom v2:
 
@@ -59,17 +68,23 @@ pnpm i && \
 pnpm run build
 ```
 
-#### On intel chips
+#### On Intel chips (no ARM64)
 
-Install dependencies to compile the c++ witness generator:
+Install dependencies:
 
 ```bash
 sudo apt-get install libgmp-dev nlohmann-json3-dev nasm g++
 ```
 
-> Note that on an ARM macbook you won't need the above. However, you will not be able to compile the c++ witness generator.
+:::info
+Remember that if on a ARM64 chip, you will not be able to compile the c++ witness generator and thus use rapidsnark. Please follow instructions for WASM artifacts, in case you decide to recompile artifacts.
+:::
 
-### Configure circomkit
+### Decide whether you need to compile new circuits or use the test ones
+
+If you are going to be making any changes to the circom circuits, then the following will apply to you. Otherwise, you can skip to the [Download `.zkey` files](#download-zkey-files-if-you-would-like-to-use-the-default-parameters-or-the-trusted-setup-artifacts) section.
+
+#### Configure circomkit
 
 Edit `circuits/circom/circuits` to include the circuits you would like to compile. This comes already configured with the three main circuits and with testing parameters:
 
@@ -81,9 +96,21 @@ Edit `circuits/circom/circuits` to include the circuits you would like to compil
     "params": [10, 2, 1, 2],
     "pubs": ["inputHash"]
   },
+  "ProcessMessagesNonQv_10-2-1-2_test": {
+    "file": "processMessagesNonQv",
+    "template": "ProcessMessagesNonQv",
+    "params": [10, 2, 1, 2],
+    "pubs": ["inputHash"]
+  },
   "TallyVotes_10-1-2_test": {
     "file": "tallyVotes",
     "template": "TallyVotes",
+    "params": [10, 1, 2],
+    "pubs": ["inputHash"]
+  },
+  "TallyVotesNonQv_10-1-2_test": {
+    "file": "tallyVotesNonQv",
+    "template": "TallyVotesNonQv",
     "params": [10, 1, 2],
     "pubs": ["inputHash"]
   },
@@ -94,29 +121,6 @@ Edit `circuits/circom/circuits` to include the circuits you would like to compil
     "pubs": ["inputHash"]
   }
 }
-```
-
-### Download `.zkey` files (if you would like to use the default parameters or the trusted setup artifacts)
-
-MACI has two main zk-SNARK circuits (plus an optional Subsidy circuit). Each circuit is parameterised. There should one
-`.zkey` file for each circuit and set of parameters.
-
-Unless you wish to generate a fresh set of `.zkey` files, you should obtain
-them from someone who has performed a multi-party trusted setup for said
-circuits. For more details on which artifacts have undergone a trusted setup, please refer to the [Trusted Setup](/docs/trusted-setup) page.
-
-Note the locations of the `.zkey` files as the CLI requires them as command-line flags.
-
-**Download test artifacts**
-
-```bash
-pnpm download:test-zkeys
-```
-
-**Download ceremony artifacts**
-
-```bash
-pnpm download:ceremony-zkeys
 ```
 
 ### Generate `.zkey` files
@@ -152,3 +156,26 @@ pnpm setup:zkeys
 >        ^~~~~~~~~~~~~~~~~~~
 > 1 error generated.
 > ```
+
+### Download `.zkey` files (if you would like to use the default parameters or the trusted setup artifacts)
+
+MACI has two main zk-SNARK circuits (plus an optional Subsidy circuit). Each circuit is parameterised. There should one
+`.zkey` file for each circuit and set of parameters.
+
+Unless you wish to generate a fresh set of `.zkey` files, you should obtain
+them from someone who has performed a multi-party trusted setup for said
+circuits. For more details on which artifacts have undergone a trusted setup, please refer to the [Trusted Setup](/docs/trusted-setup) page.
+
+Note the locations of the `.zkey` files as the CLI requires them as command-line flags.
+
+**Download test artifacts**
+
+```bash
+pnpm download:test-zkeys
+```
+
+**Download ceremony artifacts**
+
+```bash
+pnpm download:ceremony-zkeys
+```

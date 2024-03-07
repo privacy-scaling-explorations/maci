@@ -42,16 +42,20 @@ jobs:
           pnpm install --frozen-lockfile --prefer-offline
 
       - name: Build
-        run: |
-          pnpm run build
+        run: pnpm run build
 
       - name: Publish NPM
         run: |
-          # Depending on the STATE_TREE_DEPTH param, there 
+          # Prevent `git commit error`
+          # It will not be pushed to GitHub as it is ephemeral
+          git config --global user.email "you@example.com"
+          git config --global user.name "Your Name"
+
+          # Depending on the STATE_TREE_DEPTH param, there
           # might be changes in the EmptyBallotRoots.sol file
           git add contracts/contracts/trees/EmptyBallotRoots.sol
           git diff --staged --quiet || git commit -m "Commit changes before publishing"
 
-          pnpm exec lerna publish from-git --yes
+          pnpm exec lerna publish from-package --yes
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

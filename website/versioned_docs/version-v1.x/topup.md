@@ -2,7 +2,7 @@
 title: MACI Topup
 description: How the Topup feature works
 sidebar_label: Topup
-sidebar_position: 19
+sidebar_position: 22
 ---
 
 # Topup

@@ -43,6 +43,9 @@ export type {
   IGenKeypairArgs,
   IGetPollArgs,
   IGetPollData,
+  IPublishBatchArgs,
+  IPublishBatchData,
+  IPublishMessage,
 } from "./interfaces";
 export { compareVks } from "./vks";
 export { delay } from "./time";

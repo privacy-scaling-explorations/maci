@@ -2,7 +2,7 @@
 title: CI Pipeline
 description: Introduction to how MACI's CI works
 sidebar_label: CI
-sidebar_position: 13
+sidebar_position: 15
 ---
 
 # Continuous Integration (CI) Pipeline
