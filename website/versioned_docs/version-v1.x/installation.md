@@ -24,25 +24,34 @@ You need the following to use MACI:
 First, install dependencies:
 
 ```bash
-sudo apt-get install build-essential libgmp-dev libsodium-dev nasm git
+sudo apt-get install build-essential cmake libgmp-dev libsodium-dev nasm curl m4
+```
+
+If you're running on **MacOS with an intel chip**, install dependencies by running the following command:
+
+```bash
+brew install cmake gmp libsodium nasm
 ```
 
 Next, clone `rapidsnark` and build it:
 
 ```bash
 git clone https://github.com/iden3/rapidsnark.git && \
-cd rapidsnark && \
-git checkout 1c13721de4a316b0b254c310ccec9341f5e2208e
+cd rapidsnark
 
 pnpm install && \
 git submodule init && \
 git submodule update && \
-pnpm exec task createFieldSources && \
-pnpm exec task buildProver
+./build_gmp.sh host && \
+mkdir build_prover && cd build_prover && \
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../package && \
+make -j4 && make install
 ```
 
 Note the location of the `rapidsnark` binary (e.g.
 `/home/user/rapidsnark/build/prover`).
+
+For more information, please check rapidsnark [github repo](https://github.com/iden3/rapidsnark)
 
 ### Install circom v2:
 
