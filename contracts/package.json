@@ -61,7 +61,7 @@
     "merge:localhost": "pnpm run merge",
     "merge:sepolia": "pnpm run merge --network sepolia",
     "prove:localhost": "pnpm run prove",
-    "prove:sepolia": "pnpm run prove",
+    "prove:sepolia": "pnpm run prove --network sepolia",
     "verify:sepolia": "pnpm run verify --network sepolia"
   },
   "dependencies": {

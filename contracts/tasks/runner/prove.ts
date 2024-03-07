@@ -44,7 +44,7 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
   .addOptionalParam("subsidyWitgen", "Subsidy witgen binary path", undefined, types.string)
   .addOptionalParam("subsidyWasm", "Subsidy wasm file path", undefined, types.string)
   .addOptionalParam("stateFile", "The file with the serialized maci state", undefined, types.string)
-  .addOptionalParam("useQuadraticVoting", "Whether to use quadratic voting or not", undefined, types.boolean)
+  .addFlag("useQuadraticVoting", "Whether to use quadratic voting or not")
   .addOptionalParam("startBlock", "The block number to start fetching logs from", undefined, types.int)
   .addOptionalParam("blocksPerBatch", "The number of blocks to fetch logs from", undefined, types.int)
   .addOptionalParam("endBlock", "The block number to stop fetching logs from", undefined, types.int)
@@ -208,15 +208,6 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
         subsidyProofs: [] as Proof[],
       };
 
-      data.processProofs = await proofGenerator.generateMpProofs();
-
-      // subsidy calculations are not mandatory
-      if (subsidyFile) {
-        data.subsidyProofs = await proofGenerator.generateSubsidyProofs();
-      }
-
-      data.tallyProofs = await proofGenerator.generateTallyProofs(network);
-
       const prover = new Prover({
         maciContract,
         messageAqContract,
@@ -228,8 +219,16 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
         subsidyContract,
       });
 
+      data.processProofs = await proofGenerator.generateMpProofs();
       await prover.proveMessageProcessing(data.processProofs);
-      await prover.proveSubsidy(data.subsidyProofs);
+
+      // subsidy calculations are not mandatory
+      if (subsidyFile) {
+        data.subsidyProofs = await proofGenerator.generateSubsidyProofs();
+        await prover.proveSubsidy(data.subsidyProofs);
+      }
+
+      data.tallyProofs = await proofGenerator.generateTallyProofs(network);
       await prover.proveTally(data.tallyProofs);
 
       const endBalance = await signer.provider.getBalance(signer);

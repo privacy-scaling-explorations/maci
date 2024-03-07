@@ -301,7 +301,7 @@ export class ProofGenerator {
       pollId: this.poll.pollId.toString(),
       network: network.name,
       chainId: network.config.chainId?.toString(),
-      isQuadratic: this.useQuadraticVoting!,
+      isQuadratic: Boolean(this.useQuadraticVoting),
       tallyAddress: this.tallyContractAddress,
       newTallyCommitment: asHex(tallyCircuitInputs!.newTallyCommitment as BigNumberish),
       results: {

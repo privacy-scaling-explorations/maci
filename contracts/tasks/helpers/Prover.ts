@@ -289,7 +289,7 @@ export class Prover {
     // process all batches
     for (let i = subsidyBatchNum; i < totalBatchNum; i += 1) {
       if (i === 0) {
-        await this.subsidyContract.updateSbCommitment();
+        await this.subsidyContract.updateSbCommitment().then((tx) => tx.wait());
       }
 
       const { proof, circuitInputs, publicInputs } = proofs[i];
@@ -371,7 +371,7 @@ export class Prover {
 
     for (let i = tallyBatchNum; i < totalTallyBatches; i += 1) {
       if (i === 0) {
-        await this.tallyContract.updateSbCommitment();
+        await this.tallyContract.updateSbCommitment().then((tx) => tx.wait());
       }
 
       const batchStartIndex = i * tallyBatchSize;

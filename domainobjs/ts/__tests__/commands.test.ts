@@ -77,9 +77,15 @@ describe("Commands", () => {
         expect(decrypted.signature.R8[1].toString()).to.eq(signature.R8[1].toString());
         expect(decrypted.signature.S.toString()).to.eq(signature.S.toString());
       });
+
       it("should have a valid signature after decryption", () => {
+        const decryptedForce = PCommand.decrypt(message, ecdhSharedKey, true);
+
         const isValid = decrypted.command.verifySignature(decrypted.signature, pubKey);
         expect(isValid).to.eq(true);
+
+        const isValidForce = decryptedForce.command.verifySignature(decryptedForce.signature, pubKey);
+        expect(isValidForce).to.eq(true);
       });
     });
   });
