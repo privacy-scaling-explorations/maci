@@ -11,7 +11,7 @@
 
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/katex.min.css" integrity="sha384-odtC+0UGzzFL/6PNoE8rX/SPcQDXBJ+uRepguP4QkPCm2LBxH3FA3y+fKSiJ+AmM" crossorigin="anonymous"><link rel="stylesheet" href="/assets/css/styles.84b2d580.css">
-<script src="/assets/js/runtime~main.883ca8b8.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.9f29d654.js" defer="defer"></script>
 <script src="/assets/js/main.258b3c32.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -28,10 +28,10 @@
 <p>Next, we have the <code>signUp</code> function, which allows users to <code>signUp</code> using a <code>SignUpGatekeeper</code> contract. This contract can use any mean necessary to gatekeep access to MACI&#x27;s polls. For instance, only wallets with access to a specific ERC721 token can be allowed to sign up. Please note that this function can only be called after the contract is initialized (thanks to the <code>afterInit</code> modifier).</p>
 <p>This function does the following:</p>
 <ul>
-<li>checks that the maximum number of signups have not been reached. As of now, this will be <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>5</mn><mo>∗</mo><mo>∗</mo><mn>10</mn><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">5 ** 10 - 1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em"></span><span class="mord">5</span><span class="mspace" style="margin-right:0.2222em"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222em"></span></span><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em"></span><span class="mord">∗</span><span class="mord">10</span><span class="mspace" style="margin-right:0.2222em"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em"></span></span><span class="base"><span class="strut" style="height:0.6444em"></span><span class="mord">1</span></span></span></span> due to circuit limitations.</li>
+<li>checks that the maximum number of signups has not been reached. As of now, this will be <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>5</mn><mo>∗</mo><mo>∗</mo><mn>10</mn><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">5 ** 10 - 1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em"></span><span class="mord">5</span><span class="mspace" style="margin-right:0.2222em"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222em"></span></span><span class="base"><span class="strut" style="height:0.7278em;vertical-align:-0.0833em"></span><span class="mord">∗</span><span class="mord">10</span><span class="mspace" style="margin-right:0.2222em"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em"></span></span><span class="base"><span class="strut" style="height:0.6444em"></span><span class="mord">1</span></span></span></span> due to circuit limitations.</li>
 <li>checks that the provided public key is within the allowed boundaries</li>
 <li>increases the number of signups</li>
-<li>registers the user using the sign up gatekeeper contract. It is important that whichever gatekeeper is used, it reverts if an user tries to sign up twice.</li>
+<li>registers the user using the sign up gatekeeper contract. It is important that whichever gatekeeper is used, it reverts if a user tries to sign up twice.</li>
 <li>calls the voice credit proxy to retrieve the number of allocated voice credits for the calling account</li>
 <li>hashes the voice credits alongside the calling address and the current time</li>
 <li>enqueues this hashed data into the <code>stateAq</code> contract</li>
