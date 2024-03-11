@@ -19,7 +19,7 @@ MACI has three main zk-SNARK [circuits](https://github.com/privacy-scaling-explo
 
 The rest of the circuits are utilities templates that are required for the main circuits to work correctly. These include utilities such as float math, conversion of private keys, and Poseidon hashing/encryption.
 
-Each circuit is parameterised and it is important to set the right parameters that matches your use case. For example, if you want to support up to 3125 messages, the message tree depth parameter should be set to `5` (as $5^5 = 3125$).
+Each circuit is parameterised and it is important to set the right parameters that match your use case. For example, if you want to support up to 3125 messages, the message tree depth parameter should be set to `5` (as $5^5 = 3125$).
 
 ## Background
 
@@ -49,7 +49,7 @@ The circuits are used by the coordinator (the prover) to prove that they have co
 
 This circuit allows the coordinator to prove that they have correctly processed each message in reverse order, in a consecutive batch of 5 ^ msgBatchDepth messages to the respective state leaf within the state tree. Coordinators would use this circuit to prove correct execution at the end of each Poll.
 
-The `processMessages` circuit will try to decrypt the messages, and based on the content of the message, update within itself the trees, to generate a proof that the coordinator's off-chain processing was done correctly. In other words, the circuit takes a final state, an initial state, and the leaves (messages and user signups) - it process these messages via the different state transitions to finally check that the expected state is correct.
+The `processMessages` circuit will try to decrypt the messages, and based on the content of the message, update within itself the trees, to generate a proof that the coordinator's off-chain processing was done correctly. In other words, the circuit takes a final state, an initial state, and the leaves (messages and user signups) - it processes these messages via the different state transitions to finally check that the expected state is correct.
 The pre-requisites for this circuit are:
 
 - the related Poll has ended
@@ -297,7 +297,7 @@ The subsidy circuit is used to implement pairwise subsidy. This is a technique t
 
 #### Process Messages Input Hasher
 
-An utility circuit used by the main `processMessages` circuit to hash its inputs.
+A utility circuit used by the main `processMessages` circuit to hash its inputs.
 
 ![ProcessMessagesInputHasher](/img/circuits/processMessagesInputHasher.svg)
 
@@ -312,7 +312,7 @@ It outputs one field element, which is the SHA256 hash of the following inputs:
 
 #### Tally Votes Input Hasher
 
-An utility template that generates a sha256 hash of the provided tally inputs.
+A utility template that generates a sha256 hash of the provided tally inputs.
 
 ![TallyVotesInputHasher](/img/circuits/tallyInputHasher.svg)
 
@@ -325,7 +325,7 @@ It outputs one field element, which is the SHA256 hash of the following inputs:
 
 #### ResultsCommitmentVerifier
 
-An utility circuit used by the main `tallyVotes` circuit to verify that the results commitment is correct.
+A utility circuit used by the main `tallyVotes` circuit to verify that the results commitment is correct.
 
 ![ResultsCommitmentVerifier](/img/circuits/resultsCommitmentVerifier.svg)
 

@@ -46,7 +46,7 @@ Finally, the whole process of merging the state and message trees is performed, 
 
 #### How to implement a new test case
 
-To add a new test cases, it is quite simple. You can amend the `integrationTests/ts/__tests__/data/suites.json` file and add your test declaration in there.
+To add a new test case, it is quite simple. You can amend the `integrationTests/ts/__tests__/data/suites.json` file and add your test declaration in there.
 
 ```json
 {

@@ -29,7 +29,7 @@ The commit hashes relevant to this audit are the following:
 The scope of the audit with regards to the `circomlib` library covers:
 
 - all the JS files that MACI references, **excluding** those which are not referenced by MACI's TS files
-- all circuit files **excluding** whose which are not referenced by MACI's circuit files
+- all circuit files **excluding** those which are not referenced by MACI's circuit files
 
 ### Statements that we wish to challenge
 
@@ -75,7 +75,7 @@ The generator point of Baby Jubjub $G$ is:
 
 A private key is a random integer in the field $\mathbb{F}_p$.
 
-MACI uses the Node.js [`crypto.randomBytes(32)`](https://nodejs.org/api/crypto.html#crypto_crypto_randombytes_size_callback) function to generate a cryptographically strong pseudorandom 32-byte value, as well as an algorithm to prevent [modulo bias](https://research.kudelskisecurity.com/2020/07/28/the-definitive-guide-to). In pseduocode this is expressed as:
+MACI uses the Node.js [`crypto.randomBytes(32)`](https://nodejs.org/api/crypto.html#crypto_crypto_randombytes_size_callback) function to generate a cryptographically strong pseudorandom 32-byte value, as well as an algorithm to prevent [modulo bias](https://research.kudelskisecurity.com/2020/07/28/the-definitive-guide-to). In pseudocode this is expressed as:
 
 ```
 lim = 2 ** 256
@@ -274,7 +274,7 @@ A verifying key is used to validate a zk-SNARK proof. Each unique permutation of
 
 ### 2.2. Private key
 
-A private key $k$ represents a participant's ability to broadcast or decrypt messages under an unique identity and generation of a shared key [1.9], it translates to a scalar point on the Baby Jubjub elliptical curve. To avoid confusion with Ethereum's ECDSA encryption, MACI requires serialisation bound with the prefix `macisk.`
+A private key $k$ represents a participant's ability to broadcast or decrypt messages under a unique identity and generation of a shared key [1.9], it translates to a scalar point on the Baby Jubjub elliptical curve. To avoid confusion with Ethereum's ECDSA encryption, MACI requires serialisation bound with the prefix `macisk.`
 
 #### 2.2.1. Serialisation
 
@@ -369,7 +369,7 @@ To decrypt a message using $k_s$ is expressed as
 
 $[p, R8[0], R8[1], cm_s]$ = $\mathsf{poseidonDecrypt}(M, k_s[0], k_s[1], cm_n, 7)$
 
-To unpack $p$ to it's original five parameters, it must be separated into 50 bit values from the parent 250 bit value. To extract 50 bits at byte $n$, we:
+To unpack $p$ to its original five parameters, it must be separated into 50 bit values from the parent 250 bit value. To extract 50 bits at byte $n$, we:
 
 1. initialise 50 bits
 2. shift left by $n$ bits
@@ -462,15 +462,15 @@ To clarify how this works, consider the following situation between Alice and Ev
 2. The sign up period ends and the voting period begins, Eve bribes Alice to oppose option A
 3. Alice casts a message for option A, in which she simultaneously:
    - Votes in opposition of A
-   - Changes her keypair through submitting a new public key
+   - Changes her keypair by submitting a new public key
 4. Eve is uncertain whether Alice has voted for her preference due to the secrecy of the message, regardless she assumes confirmation upon receiving the transaction hash
 5. Alice broadcasts a message from the new keypair registered in step 3 and casts a vote in support of poll A in turn, voiding her initial vote in opposition
 
-Eve is doubtful whether her request was actually satisfied and is unaware to Alice casting a new vote to void the first, she decides not compensate Alice because of the uncertainty surrounding her compliance.
+Eve is doubtful whether her request was actually satisfied and is unaware of Alice casting a new vote to void the first, she decides not to compensate Alice because of the uncertainty surrounding her compliance.
 
 ### 3.3. Gatekeeper contract
 
-The gatekeeper contract is an abstraction of logic that any deployment of MACI can modify. It is a way to whitelist signups to the system. For example, a custom gatekeeper contract may only allow addresses which own a certain ERC721 token for registration.
+The gatekeeper contract is an abstraction of logic that any deployment of MACI can modify. It is a way to whitelist signups to the system. For example, a custom gatekeeper contract may only allow addresses that own a certain ERC721 token for registration.
 
 ### 3.4. Initial voice credit proxy
 
@@ -483,19 +483,19 @@ In MACI there are two zkSNARK circuits each ensuring:
 - the correct registration of messages to the state tree
 - the correct execution of the tallying of votes
 
-Each of these circuits involve ownership of an independent verifying key to validate each when successfully executed, these are generated during the trusted setup and are initialised to the registry for generating proofs.
+Each of these circuits involves ownership of an independent verifying key to validate each when successfully executed, these are generated during the trusted setup and are initialised to the registry for generating proofs.
 
 ### 3.6. State
 
 #### The state tree
 
-Each leaf the state tree encodes a participant's identity (public key) and the Unix timestamp at which they signed up. It has an arity of 5 and its depth is hardcoded to 10.
+Each leaf of the state tree encodes a participant's identity (public key) and the Unix timestamp at which they signed up. It has an arity of 5 and its depth is hardcoded to 10.
 
 The default leaf value is the hash of a blank state leaf [2.8.1], insertions begin at index 1. Leaf 0 is reserved to inhibit a denial-of-service attack as explained below in [6.1].
 
 #### The ballot tree (per poll)
 
-Each leaf within the ballot trees stores a participants vote within a poll, it shares the same arity and depth as the state tree. It also has index 0 reserved for a blank leaf following the same basis.
+Each leaf within the ballot trees stores a participant's vote within a poll, it shares the same arity and depth as the state tree. It also has index 0 reserved for a blank leaf following the same basis.
 
 #### The message tree (per poll)
 
@@ -505,7 +505,7 @@ Each leaf within the message tree correlates to a command cast from participants
 
 #### When a user signs up
 
-Registration is initiated through fulfilling the requirements specified in the gatekeeper contract and calling the `signUp()` method in the MACI contract. This enqueues adding a new leaf to the state tree for it to be merged by the coordinator once appropriate.
+Registration is initiated by fulfilling the requirements specified in the gatekeeper contract and calling the `signUp()` method in the MACI contract. This enqueues adding a new leaf to the state tree for it to be merged by the coordinator once appropriate.
 
 #### When a user publishes a message
 
@@ -513,7 +513,7 @@ Publishing messages requires users to encrypt a command using a shared key gener
 
 #### When the coordinator merges the state queue
 
-To subsidise gas costs for users, registration does not require the state root to be updated at its full depth, which would incur a gas cost linear to the depth. Rather, the use the Accumulator Queue system described in [1.10] enqueues leaves. As such, the coordinator must compute the state tree root after the voting period is over and before they process messages.
+To subsidise gas costs for users, registration does not require the state root to be updated at its full depth, which would incur a gas cost linear to the depth. Rather, the use of the Accumulator Queue system described in [1.10] enqueues leaves. As such, the coordinator must compute the state tree root after the voting period is over and before they process messages.
 
 Which first requires the merging of subroots [1.10.1], this creates the shortest possible tree that contains all the state leaves. Which may or may not require multiple transactions (in the form of batches) due to the restriction of the block gas limit. Once all the subroots have been computed they are merged [1.10.2] to compute the state root at its full depth.
 
@@ -608,28 +608,28 @@ The integration tests and shell scripts in the `cli` directory provide examples 
 | `isProcessVkSet(uint256 _sig)`                                                                                                                                                                                             | Non-applicable   | Query whether a signature is valid for message processing                                                                            |
 | `isTallyVkSet(uint256 _sig)`                                                                                                                                                                                               | Non-applicable   | Query whether a signature valid for tallying votes                                                                                   |
 | `genProcessVkSig(uint256 _stateTreeDepth, uint256 _messageTreeDepth, uint256 _voteOptionTreeDepth, uint256 _messageBatchSize)`                                                                                             | Non-applicable   | Generate a signature (used for verifying key mapping lookups) for message processing by compressing parameters into a singular value |
-| `genTallyVkSig(uint256 _stateTreeDepth, uint256 _intStateTreeDepth, uint256 _voteOptionTreeDepth)`                                                                                                                         | Non-appicable    | Generate a signature (used for verifying key mapping lookups) for vote tallying by compressing parameters into a singular value      |
+| `genTallyVkSig(uint256 _stateTreeDepth, uint256 _intStateTreeDepth, uint256 _voteOptionTreeDepth)`                                                                                                                         | Non-applicable   | Generate a signature (used for verifying key mapping lookups) for vote tallying by compressing parameters into a singular value      |
 | `setVerifyingKeys( uint256 _stateTreeDepth, uint256 _intStateTreeDepth, uint256 _messageTreeDepth, uint256 _voteOptionTreeDepth, uint256 _messageBatchSize, VerifyingKey memory _processVk, VerifyingKey memory _tallyVk)` | Coordinator only | Initialise verifying keys for processing and tallying to the contract alongside specifying each tree depth                           |
 | `hasProcessVk(uint256 _stateTreeDepth, uint256 _messageTreeDepth, uint256 _voteOptionTreeDepth, uint256 _messageBatchSize)`                                                                                                | Non-applicable   | Query whether the signature of the parameters is valid for message processing                                                        |
 | `getProcessVkBySig(uint256 _sig)`                                                                                                                                                                                          | Non-applicable   | Query a processing verifying key by providing a valid signature                                                                      |
 | `getProcessVk(uint256 _stateTreeDepth, uint256 _messageTreeDepth, uint256 _voteOptionTreeDepth, uint256 _messageBatchSize)`                                                                                                | Non-applicable   | Query a processing verifying key by providing parameters to generate a valid signature                                               |
-| `hasTallyVk(uint256 _stateTreeDepth, uint256 _intStateTreeDepth, uint256 _voteOptionTreeDepth)`                                                                                                                            | Non-appicable    | Query whether the signature of the parameters is valid for vote tallying                                                             |
+| `hasTallyVk(uint256 _stateTreeDepth, uint256 _intStateTreeDepth, uint256 _voteOptionTreeDepth)`                                                                                                                            | Non-applicable   | Query whether the signature of the parameters is valid for vote tallying                                                             |
 | `getTallyVkBySig(uint256 _sig)`                                                                                                                                                                                            | Non-applicable   | Query a tallying verifying key by providing a valid signature                                                                        |
-| `getTallyVk(uint256 _stateTreeDepth, uint256 _intStateTreeDepth, uint256 _voteOptionTreeDepth)`                                                                                                                            | Non-appicable    | Query a tallying verifying key by providing parameters to generate a valid signature                                                 |
+| `getTallyVk(uint256 _stateTreeDepth, uint256 _intStateTreeDepth, uint256 _voteOptionTreeDepth)`                                                                                                                            | Non-applicable   | Query a tallying verifying key by providing parameters to generate a valid signature                                                 |
 
 ### 5.5. PollProcessorAndTallyer
 
 | Function                                                                                                                                                                              | Permissions                                                    | Notes                                                                                                        |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `sha256Hash(uint256[] memory array)`                                                                                                                                                  | Non-appicable                                                  | Hash an array of values (using SHA256) moduluo the snark field size                                          |
+| `sha256Hash(uint256[] memory array)`                                                                                                                                                  | Non-applicable                                                 | Hash an array of values (using SHA256) moduluo the snark field size                                          |
 | `processMessages(Poll _poll, uint256 _newSbCommitment, uint256[8] memory _proof)`                                                                                                     | Executable only by the coordinator and after the voting period | Process state messages relative to a new state-ballot commitment given that the proof is valid               |
-| `verifyProcessProof(Poll _poll, uint256 _currentMessageBatchIndex, uint256 _messageRoot, uint256 _currentSbCommitment, uint256 _newSbCommitment, uint256[8] memory _proof)`           | Non-appicable                                                  | Query whether a message processing proof is valid                                                            |
-| `genProcessMessagesPublicInputHash(Poll _poll, uint256 _currentMessageBatchIndex, uint256 _messageRoot, uint256 _numSignUps, uint256 _currentSbCommitment, uint256 _newSbCommitment)` | Non-appicable                                                  | Hash of the coordinators public key, `packedVals`, current state-ballot commitment and message root          |
-| `genProcessMessagesPackedVals( Poll _poll, uint256 _currentMessageBatchIndex, uint256 _numSignUps)`                                                                                   | Non-appicable                                                  | Generate a packed 250-bit value `packedVals` for message processing                                          |
-| `genTallyVotesPackedVals( uint256 _numSignUps, uint256 _batchStartIndex, uint256 _tallyBatchSize)`                                                                                    | Non-appicable                                                  | Generate a packed 100-bit value `packedVals` for vote tallying                                               |
-| `genTallyVotesPublicInputHash( uint256 _numSignUps, uint256 _batchStartIndex, uint256 _tallyBatchSize, uint256 _newTallyCommitment )`                                                 | Non-appicable                                                  | Hash of the current tally commitment, the new tally commitment, `packedVals` and the state-ballot commitment |
+| `verifyProcessProof(Poll _poll, uint256 _currentMessageBatchIndex, uint256 _messageRoot, uint256 _currentSbCommitment, uint256 _newSbCommitment, uint256[8] memory _proof)`           | Non-applicable                                                 | Query whether a message processing proof is valid                                                            |
+| `genProcessMessagesPublicInputHash(Poll _poll, uint256 _currentMessageBatchIndex, uint256 _messageRoot, uint256 _numSignUps, uint256 _currentSbCommitment, uint256 _newSbCommitment)` | Non-applicable                                                 | Hash of the coordinators public key, `packedVals`, current state-ballot commitment and message root          |
+| `genProcessMessagesPackedVals( Poll _poll, uint256 _currentMessageBatchIndex, uint256 _numSignUps)`                                                                                   | Non-applicable                                                 | Generate a packed 250-bit value `packedVals` for message processing                                          |
+| `genTallyVotesPackedVals( uint256 _numSignUps, uint256 _batchStartIndex, uint256 _tallyBatchSize)`                                                                                    | Non-applicable                                                 | Generate a packed 100-bit value `packedVals` for vote tallying                                               |
+| `genTallyVotesPublicInputHash( uint256 _numSignUps, uint256 _batchStartIndex, uint256 _tallyBatchSize, uint256 _newTallyCommitment )`                                                 | Non-applicable                                                 | Hash of the current tally commitment, the new tally commitment, `packedVals` and the state-ballot commitment |
 | `tallyVotes(Poll _poll, uint256 _newTallyCommitment, uint256[8] memory _proof)`                                                                                                       | Executable only by the coordinator and after the voting period | Tally votes relative to a new tally commitment given that the proof is valid                                 |
-| `verifyTallyProof(Poll _poll, uint256[8] memory _proof, uint256 _numSignUps, uint256 _batchStartIndex, uint256 _tallyBatchSize, uint256 _newTallyCommitment)`                         | Non-appicable                                                  | Query whether a vote tallying proof is valid                                                                 |
+| `verifyTallyProof(Poll _poll, uint256[8] memory _proof, uint256 _numSignUps, uint256 _batchStartIndex, uint256 _tallyBatchSize, uint256 _newTallyCommitment)`                         | Non-applicable                                                 | Query whether a vote tallying proof is valid                                                                 |
 
 ## 6. zk-SNARKs
 
@@ -765,7 +765,7 @@ This method requires fewer circuit constraints than if we verified a Merkle proo
 
 #### How messages are decrypted and applied
 
-The circuit uses Poseidon decryption [1.9] to decrypt each message. The shared key is derived using ECDH [1.10] and the nonce is always equal to a value of`0`.
+The circuit uses Poseidon decryption [1.9] to decrypt each message. The shared key is derived using ECDH [1.10] and the nonce is always equal to a value of `0`.
 
 The procedure to apply a command to a state leaf and ballot leaf is as such:
 
@@ -797,7 +797,7 @@ If the command is invalid:
 1. Verify that the state leaf at index 0 is a member of the state root
 2. Verify that the ballot leaf at index 0 is a member of the ballot root
 
-The state leaf at index 0 is a _blank state leaf_, and the ballot leaf at index 0 is an _blank ballot leaf_. It should be impossible to update the 0th state leaf or 0th ballot leaf. The reason that these blank leaves exist at index 0 is to prevent an attack where a user sets $cm_i$ to the maximum possible value ($5^{10}$), which would force the coordinator to have to compute the Merkle path of leaf $5_{10} - 1$. Which is would take such a long time that it would constitute a denial-of-service attack on the coordinator that prevents them from generating proofs in a reasonable time.
+The state leaf at index 0 is a _blank state leaf_, and the ballot leaf at index 0 is a _blank ballot leaf_. It should be impossible to update the 0th state leaf or 0th ballot leaf. The reason that these blank leaves exist at index 0 is to prevent an attack where a user sets $cm_i$ to the maximum possible value ($5^{10}$), which would force the coordinator to have to compute the Merkle path of leaf $5_{10} - 1$. Which is would take such a long time that it would constitute a denial-of-service attack on the coordinator that prevents them from generating proofs in a reasonable time.
 
 ##### Order of message processing
 
@@ -914,7 +914,7 @@ The commitment to `stateRoot`, `ballotRoot`, and `sbSalt`:
 
 $\mathsf{poseidon_3}([\mathsf{stateRoot}, \mathsf{ballotRoot}, \mathsf{sbSalt}])$
 
-Proving preimage of `sbCommitment` is one out of the several steps required to prove that the votes were tallied correctly. By establishing that the coordinator knows `ballotRoot`, the coordinator can (using other parts of the circuit) prove that that they know the preimage of the ballot leaves in the batch being tallied.
+Proving preimage of `sbCommitment` is one out of the several steps required to prove that the votes were tallied correctly. By establishing that the coordinator knows `ballotRoot`, the coordinator can (using other parts of the circuit) prove that they know the preimage of the ballot leaves in the batch being tallied.
 
 ##### `currentTallyCommitment` and `newTallyCommitment`
 

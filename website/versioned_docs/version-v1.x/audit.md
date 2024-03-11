@@ -25,7 +25,7 @@ In March 2023, Veridise responsibly disclosed a number of issues to the MACI tea
 
 Out of five issues disclosed, only three were relevant and have been since fixed by the MACI team. The other two issues were disregarded as they were present in older version of code which is not in use anymore.
 
-We would like to thank you the Veridise team for their effort in keeping open source projects safe.
+We would like to thank the Veridise team for their effort in keeping open source projects safe.
 
 ### Issue 1
 
@@ -50,7 +50,7 @@ This was fixed by adding a new Template, `SafeLesThan` which uses `Num2Bits` as 
 
 ```javascript
 // the implicit assumption of LessThan is both inputs are at most n bits
-// so we need add range check for both inputs
+// so we need to add range check for both inputs
 template SafeLessThan(n) {
     assert(n <= 252);
     signal input in[2];
@@ -86,7 +86,7 @@ This issue is the same issue number 1, this time for the input signal index.
 As with issue number 1, a new template `SafeGreaterThan` was added:
 
 ```javascript
-// N is the number of bits the input  have.
+// N is the number of bits the input have.
 // The MSF is the sign bit.
 template SafeGreaterThan(n) {
     signal input in[2];
@@ -112,7 +112,7 @@ greaterThan[i].in[1] <== index;
 
 **Description**
 
-In the template `QuinGeneratePathIndices`, the constrains of the `signal n[levels + 1]` don't perform well for division and modulo counting.
+In the template `QuinGeneratePathIndices`, the constraints of the `signal n[levels + 1]` don't perform well for division and modulo counting.
 
 **Code Location**
 
