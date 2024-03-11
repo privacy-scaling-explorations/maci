@@ -93,8 +93,8 @@ importers:
   circuits:
     dependencies:
       '@zk-kit/circuits':
-        specifier: ^0.3.0
-        version: 0.3.0
+        specifier: ^0.4.0
+        version: 0.4.0
       circomkit:
         specifier: ^0.0.24
         version: 0.0.24
@@ -6144,8 +6144,8 @@ packages:
       '@zk-kit/utils': 0.3.0
     dev: false
 
-  /@zk-kit/circuits@0.3.0:
-    resolution: {integrity: sha512-v46KHC3sBRXUJbYi8d5PTAm3zCdBeArvWw3de+A2LcW/C9beYqBo8QJ/h6NWKZWOgpwqvCHzJa5HvyG6x3lIZQ==}
+  /@zk-kit/circuits@0.4.0:
+    resolution: {integrity: sha512-Di7mokhwBS3qxVeCfHxGeNIpDg1kTnr1JXmsWiQMZLkRTn3Hugh6Tl07J394rWD0pIWRwPQsinaMVL2sB4F8yQ==}
     dependencies:
       circomlib: 2.0.5
     dev: false

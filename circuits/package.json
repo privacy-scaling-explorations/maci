@@ -38,7 +38,7 @@
     "test:incrementalQuinTree": "ts-mocha --exit ts/__tests__/IncrementalQuinTree.test.ts"
   },
   "dependencies": {
-    "@zk-kit/circuits": "^0.3.0",
+    "@zk-kit/circuits": "^0.4.0",
     "circomkit": "^0.0.24",
     "circomlib": "^2.0.5",
     "maci-core": "^1.2.0",
