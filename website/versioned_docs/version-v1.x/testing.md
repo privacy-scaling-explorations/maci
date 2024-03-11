@@ -324,7 +324,7 @@ The following compiled circuits and zkeys are available to download:
 ### Prod Size Ceremony
 
 :::info
-These artifacts have undergong a trusted setup and can be used in production. Subsidy is not included.
+These artifacts have undergone a trusted setup and can be used in production. Subsidy is not included.
 :::
 
 - [maci-ceremony-artifacts-v1.2.0.tar.gz](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.2.0/maci-ceremony-artifacts-v1.2.0.tar.gz) (0.76 GB)

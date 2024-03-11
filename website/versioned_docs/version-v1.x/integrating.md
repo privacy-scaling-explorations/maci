@@ -25,7 +25,7 @@ Deployment order is:
 7. Deploy Topup credit
 8. Deploy MessageProcessorFactory, PollFactory, SubsidyFactory, TallyFactory
 9. Deploy MACI, AccQueueQuinaryMaci
-10. Deploy Poll, AccQueueQuinaryMaci, MessageProcessor, Tally and Susbsidy (optional)
+10. Deploy Poll, AccQueueQuinaryMaci, MessageProcessor, Tally and Subsidy (optional)
 
 Before running the deploy command make sure you have [zkey files](https://maci.pse.dev/docs/trusted-setup) from trusted setup and env variables `ETH_PROVIDER` (RPC endpoint) and `ETH_SK` (wallet private key) are set. For production environment make sure you don't use zkey files from our examples.
 

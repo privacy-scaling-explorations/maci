@@ -9,7 +9,7 @@ sidebar_position: 2
 
 To understand the promise of on-chain voting and the purpose of MACI, we highly recommend reading [Vitalik's post on blockchain voting](https://vitalik.eth.limo/general/2021/05/25/voting2.html). He provides an overview of the incredible potential of e-voting and why blockchains are an excellent technology to implement e-voting solutions on top of.
 
-Below we attempt to summarize some of the points layed out in that post:
+Below we attempt to summarize some of the points laid out in that post:
 
 ## Security requirements of a voting system
 

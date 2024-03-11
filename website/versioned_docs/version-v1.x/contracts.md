@@ -53,10 +53,10 @@ Next, we have the `signUp` function, which allows users to `signUp` using a `Sig
 
 This function does the following:
 
-- checks that the maximum number of signups have not been reached. As of now, this will be $5 ** 10 - 1$ due to circuit limitations.
+- checks that the maximum number of signups has not been reached. As of now, this will be $5 ** 10 - 1$ due to circuit limitations.
 - checks that the provided public key is within the allowed boundaries
 - increases the number of signups
-- registers the user using the sign up gatekeeper contract. It is important that whichever gatekeeper is used, it reverts if an user tries to sign up twice.
+- registers the user using the sign up gatekeeper contract. It is important that whichever gatekeeper is used, it reverts if a user tries to sign up twice.
 - calls the voice credit proxy to retrieve the number of allocated voice credits for the calling account
 - hashes the voice credits alongside the calling address and the current time
 - enqueues this hashed data into the `stateAq` contract

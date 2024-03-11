@@ -47,7 +47,7 @@ Once a voting poll has completed (i.e. the voting deadline has elapsed), the coo
 
 #### Trust assumptions
 
-We say the coordinator is a "trusted" coordinator, because there's areas where a corrupt (or inept) coordinator could disrupt the "happy path" of the MACI workflow.
+We say the coordinator is a "trusted" coordinator, because there are areas where a corrupt (or inept) coordinator could disrupt the "happy path" of the MACI workflow.
 
 For instance, a coordinator can:
 

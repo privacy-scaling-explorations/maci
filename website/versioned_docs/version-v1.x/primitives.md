@@ -7,7 +7,7 @@ sidebar_position: 6
 
 ## MACI primitives
 
-This section provides a short introduction of the main primitives used by MACI.
+This section provides a short introduction to the main primitives used by MACI.
 
 ### Elliptic Curves
 
@@ -213,4 +213,4 @@ The code to derive $A_{b_x}$ and $A_{b_y}$ is [here](https://github.com/iden3/ci
 3. Use the method to convert a buffer to a point on the BabyJub curve described in [2.3.2].
 4. Multiply the point by 8. The result is the point with x-value $A_{b_x}$ and y-value $A_{b_y}$
 
-Given the [elliptic curve discrete logarithm problem](https://wstein.org/edu/2007/spring/ent/ent-html/node89.html), we assume that no-one knows the private key $s \in {F}_p$ and by using the public key generation procedure in [1.4], we can derive $A_{b_x}$ and $A_{b_y}$. Furthermore, the string above (`PedersenGenerator...`) acts as a nothing-up-my-sleeve value.
+Given the [elliptic curve discrete logarithm problem](https://wstein.org/edu/2007/spring/ent/ent-html/node89.html), we assume that no one knows the private key $s \in {F}_p$ and by using the public key generation procedure in [1.4], we can derive $A_{b_x}$ and $A_{b_y}$. Furthermore, the string above (`PedersenGenerator...`) acts as a nothing-up-my-sleeve value.
