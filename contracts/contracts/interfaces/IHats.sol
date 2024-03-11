@@ -11,7 +11,7 @@ interface IHats {
   /// @param _details A description of the Hat [optional]. Should not be larger than 7000 bytes
   ///                 (enforced in changeHatDetails)
   /// @param _imageURI The image uri for this top hat and the fallback for its
-  ///                  downstream hats [optional]. Should not be large than 7000 bytes
+  ///                  downstream hats [optional]. Should not be larger than 7000 bytes
   ///                  (enforced in changeHatImageURI)
   /// @return topHatId The id of the newly created topHat
   function mintTopHat(address _target, string calldata _details, string calldata _imageURI) external returns (uint256);

@@ -59,7 +59,7 @@ describe("HatsProtocol Gatekeeper", () => {
     mockHats = await deployContract("MockHatsProtocol", signer, true, hatsContractOP);
     mockHatsAddress = await mockHats.getAddress();
 
-    // create a new top hat hat
+    // create a new topHat
     await mockHats.connect(signer).mintTopHat(mockHatsAddress, "MACITOPHAT", "");
     topHat = await mockHats.lastTopHat();
 
