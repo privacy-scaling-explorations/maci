@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.20;
 
 import { Params } from "./utilities/Params.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
@@ -15,7 +15,7 @@ import { Utilities } from "./utilities/Utilities.sol";
 /// which can be either votes, key change messages or topup messages.
 /// @dev Do not deploy this directly. Use PollFactory.deploy() which performs some
 /// checks on the Poll constructor arguments.
-contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPoll {
+contract Poll is Params, Utilities, SnarkCommon, Ownable(msg.sender), EmptyBallotRoots, IPoll {
   using SafeERC20 for ERC20;
 
   /// @notice Whether the Poll has been initialized

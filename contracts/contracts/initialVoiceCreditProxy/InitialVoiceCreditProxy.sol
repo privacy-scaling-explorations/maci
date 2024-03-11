@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.20;
 
 /// @title InitialVoiceCreditProxy
 /// @notice This contract is the base contract for

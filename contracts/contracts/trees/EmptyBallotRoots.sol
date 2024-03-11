@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.20;
 
 abstract contract EmptyBallotRoots {
   // emptyBallotRoots contains the roots of Ballot trees of five leaf

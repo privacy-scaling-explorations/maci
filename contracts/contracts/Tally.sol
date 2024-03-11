@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.20;
 
 import { IMACI } from "./interfaces/IMACI.sol";
 import { Hasher } from "./crypto/Hasher.sol";
@@ -15,7 +15,7 @@ import { DomainObjs } from "./utilities/DomainObjs.sol";
 /// @title Tally
 /// @notice The Tally contract is used during votes tallying
 /// and by users to verify the tally results.
-contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs {
+contract Tally is Ownable(msg.sender), SnarkCommon, CommonUtilities, Hasher, DomainObjs {
   uint256 internal constant TREE_ARITY = 5;
 
   /// @notice The commitment to the tally results. Its initial value is 0, but after

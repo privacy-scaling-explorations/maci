@@ -18,7 +18,7 @@
 
 // 2019 OKIMS
 
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.20;
 
 /// @title Pairing
 /// @notice A library implementing the alt_bn128 elliptic curve operations.
