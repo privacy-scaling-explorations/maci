@@ -337,14 +337,14 @@ importers:
   crypto:
     dependencies:
       '@zk-kit/baby-jubjub':
-        specifier: ^0.1.1
-        version: 0.1.1
+        specifier: ^0.2.0
+        version: 0.2.0
       '@zk-kit/eddsa-poseidon':
         specifier: ^0.5.1
         version: 0.5.1
       '@zk-kit/poseidon-cipher':
-        specifier: ^0.2.1
-        version: 0.2.1
+        specifier: ^0.3.0
+        version: 0.3.0
       ethers:
         specifier: ^6.11.1
         version: 6.11.1
@@ -6138,6 +6138,12 @@ packages:
       '@zk-kit/utils': 0.1.0
     dev: false
 
+  /@zk-kit/baby-jubjub@0.2.0:
+    resolution: {integrity: sha512-pqiPq621oKpwiIkf1KcVh5MdbFX0V67s9gCmiEkhLMeafZaIXEwVt5qmIu1d2HB4mjXgr4Ys8Jpn2Rw4KXxnFQ==}
+    dependencies:
+      '@zk-kit/utils': 0.3.0
+    dev: false
+
   /@zk-kit/circuits@0.3.0:
     resolution: {integrity: sha512-v46KHC3sBRXUJbYi8d5PTAm3zCdBeArvWw3de+A2LcW/C9beYqBo8QJ/h6NWKZWOgpwqvCHzJa5HvyG6x3lIZQ==}
     dependencies:
@@ -6151,15 +6157,19 @@ packages:
       '@zk-kit/utils': 0.1.0
     dev: false
 
-  /@zk-kit/poseidon-cipher@0.2.1:
-    resolution: {integrity: sha512-/k7lUzYPuzFmdjBCvl8yTE4aDCnqxoVC46Txa9Z0i7rb+ilXHp2EEwfig/G7moTukSiOB3hywF3im/QGs3cYHg==}
+  /@zk-kit/poseidon-cipher@0.3.0:
+    resolution: {integrity: sha512-Byszt7dxssgsR7hog2nf9AMaBKYr8LrgtlU/PPHPEe2OkJwIeQSshoxqquLlZsyfOn2c1ZmTJb4Mo4aHY11pCA==}
     dependencies:
-      '@zk-kit/baby-jubjub': 0.1.1
-      '@zk-kit/utils': 0.1.0
+      '@zk-kit/baby-jubjub': 0.2.0
+      '@zk-kit/utils': 0.3.0
     dev: false
 
   /@zk-kit/utils@0.1.0:
     resolution: {integrity: sha512-MZmuw2w2StB7XOSNg1TW4VwnBJ746UDmdXTvxwDO/U85UZfGfM3zb53gG35qz5sWpQo/DjfoKqaScmh6HUtQpA==}
+    dev: false
+
+  /@zk-kit/utils@0.3.0:
+    resolution: {integrity: sha512-yVBczOwOSV+evSgdsJ0tpPn3oQpbL7a7fRqANDogleaLLte1IFxKTFLz3WNcgd28Asq2guMGiU6SmiEc61uHAg==}
     dev: false
 
   /@zkochan/js-yaml@0.0.6:
