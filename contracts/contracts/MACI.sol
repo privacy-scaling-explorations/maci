@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.20;
 
 import { IPollFactory } from "./interfaces/IPollFactory.sol";
 import { IMessageProcessorFactory } from "./interfaces/IMPFactory.sol";
@@ -16,7 +16,7 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 /// @title MACI - Minimum Anti-Collusion Infrastructure Version 1
 /// @notice A contract which allows users to sign up, and deploy new polls
-contract MACI is IMACI, Params, Utilities, Ownable {
+contract MACI is IMACI, Params, Utilities, Ownable(msg.sender) {
   /// @notice The state tree depth is fixed. As such it should be as large as feasible
   /// so that there can be as many users as possible.  i.e. 5 ** 10 = 9765625
   /// this should also match the parameter of the circom circuits.

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.20;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -9,7 +9,7 @@ import { SignUpToken } from "../SignUpToken.sol";
 /// @title SignUpTokenGatekeeper
 /// @notice This contract allows to gatekeep MACI signups
 /// by requiring new voters to own a certain ERC721 token
-contract SignUpTokenGatekeeper is SignUpGatekeeper, Ownable {
+contract SignUpTokenGatekeeper is SignUpGatekeeper, Ownable(msg.sender) {
   /// @notice the reference to the SignUpToken contract
   SignUpToken public token;
   /// @notice the reference to the MACI contract
@@ -25,7 +25,7 @@ contract SignUpTokenGatekeeper is SignUpGatekeeper, Ownable {
 
   /// @notice creates a new SignUpTokenGatekeeper
   /// @param _token the address of the SignUpToken contract
-  constructor(SignUpToken _token) payable Ownable() {
+  constructor(SignUpToken _token) payable {
     token = _token;
   }
 
