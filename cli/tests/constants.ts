@@ -52,32 +52,32 @@ export const testTallyVotesWasmPath =
 export const testSubsidyWasmPath =
   "./zkeys/SubsidyPerBatch_10-1-2_test/SubsidyPerBatch_10-1-2_test_js/SubsidyPerBatch_10-1-2_test.wasm";
 export const testRapidsnarkPath = `${homedir()}/rapidsnark/build/prover`;
-export const ceremonyProcessMessagesZkeyPath = "./zkeys/ProcessMessages_6-9-2-3/processMessages_6-9-2-3.zkey";
+export const ceremonyProcessMessagesZkeyPath = "./zkeys/ProcessMessages_6-9-2-3/ProcessMessages_6-9-2-3.zkey";
 export const ceremonyProcessMessagesNonQvZkeyPath =
   "./zkeys/ProcessMessagesNonQv_6-9-2-3/processMessagesNonQv_6-9-2-3.zkey";
 export const ceremonyTallyVotesZkeyPath = "./zkeys/TallyVotes_6-2-3/tallyVotes_6-2-3.zkey";
 export const ceremonyTallyVotesNonQvZkeyPath = "./zkeys/TallyVotesNonQv_6-2-3/tallyVotesNonQv_6-2-3.zkey";
 export const ceremonyProcessMessagesWitnessPath =
-  "./zkeys/ProcessMessages_6-9-2-3/ProcessMessages_6-9-2-3_cpp/processMessages_6-9-2-3";
+  "./zkeys/ProcessMessages_6-9-2-3/ProcessMessages_6-9-2-3_cpp/ProcessMessages_6-9-2-3";
 export const ceremonyProcessMessagesNonQvWitnessPath =
   "./zkeys/ProcessMessagesNonQv_6-9-2-3/ProcessMessagesNonQv_6-9-2-3_cpp/ProcessMessagesNonQv_6-9-2-3";
 export const ceremonyProcessMessagesDatPath =
-  "./zkeys/ProcessMessages_6-9-2-3/ProcessMessages_6-9-2-3_cpp/processMessages_6-9-2-3.dat";
+  "./zkeys/ProcessMessages_6-9-2-3/ProcessMessages_6-9-2-3_cpp/ProcessMessages_6-9-2-3.dat";
 export const ceremonyProcessMessagesNonQvDatPath =
   "./zkeys/ProcessMessagesNonQv_6-9-2-3/ProcessMessagesNonQv_6-9-2-3_cpp/ProcessMessagesNonQv_6-9-2-3.dat";
-export const ceremonyTallyVotesWitnessPath = "./zkeys/TallyVotes_6-2-3/TallyVotes_6-2-3_cpp/tallyVotes_6-2-3";
+export const ceremonyTallyVotesWitnessPath = "./zkeys/TallyVotes_6-2-3/TallyVotes_6-2-3_cpp/TallyVotes_6-2-3";
 export const ceremonyTallyVotesNonQvWitnessPath =
-  "./zkeys/TallyVotesNonQv_6-2-3/TallyVotesNonQv_6-2-3_cpp/tallyVotesNonQv_6-2-3";
-export const ceremonyTallyVotesDatPath = "./zkeys/TallyVotes_6-2-3/TallyVotes_6-2-3_cpp/tallyVotes_6-2-3.dat";
+  "./zkeys/TallyVotesNonQv_6-2-3/TallyVotesNonQv_6-2-3_cpp/TallyVotesNonQv_6-2-3";
+export const ceremonyTallyVotesDatPath = "./zkeys/TallyVotes_6-2-3/TallyVotes_6-2-3_cpp/TallyVotes_6-2-3.dat";
 export const ceremonyTallyVotesNonQvDatPath =
   "./zkeys/TallyVotesNonQv_6-2-3/TallyVotesNonQv_6-2-3_cpp/tallyVotesNonQv_6-2-3.dat";
 export const ceremonyProcessMessagesWasmPath =
-  "./zkeys/ProcessMessages_6-9-2-3/ProcessMessages_6-9-2-3_js/processMessages_6-9-2-3.wasm";
+  "./zkeys/ProcessMessages_6-9-2-3/ProcessMessages_6-9-2-3_js/ProcessMessages_6-9-2-3.wasm";
 export const ceremonyProcessMessagesNonQvWasmPath =
   "./zkeys/ProcessMessagesNonQv_6-9-2-3/ProcessMessagesNonQv_6-9-2-3_js/ProcessMessagesNonQv_6-9-2-3.wasm";
-export const ceremonyTallyVotesWasmPath = "./zkeys/TallyVotes_6-2-3/TallyVotes_6-2-3_js/tallyVotes_6-2-3.wasm";
+export const ceremonyTallyVotesWasmPath = "./zkeys/TallyVotes_6-2-3/TallyVotes_6-2-3_js/TallyVotes_6-2-3.wasm";
 export const ceremonyTallyVotesNonQvWasmPath =
-  "./zkeys/TallyVotesNonQv_6-2-3/TallyVotesNonQv_6-2-3_js/tallyVotesNonQv_6-2-3.wasm";
+  "./zkeys/TallyVotesNonQv_6-2-3/TallyVotesNonQv_6-2-3_js/TallyVotesNonQv_6-2-3.wasm";
 export const testProcessMessagesNonQvWitnessPath =
   "./zkeys/ProcessMessagesNonQv_10-2-1-2_test/ProcessMessagesNonQv_10-2-1-2_test_cpp/ProcessMessagesNonQv_10-2-1-2_test";
 export const testProcessMessagesNonQvWitnessDatPath =
