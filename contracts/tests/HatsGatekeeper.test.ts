@@ -116,6 +116,7 @@ describe("HatsProtocol Gatekeeper", () => {
         STATE_TREE_DEPTH,
         signer,
         true,
+        true,
         hatsGatekeeperSingle,
       );
 
@@ -216,6 +217,7 @@ describe("HatsProtocol Gatekeeper", () => {
         initialVoiceCreditBalance,
         STATE_TREE_DEPTH,
         signer,
+        true,
         true,
         hatsGatekeeperMultiple,
       );
