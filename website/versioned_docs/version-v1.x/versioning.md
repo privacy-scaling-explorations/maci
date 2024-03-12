@@ -19,7 +19,7 @@ MACI follows the [Semantic Versioning Specification (SemVer)](https://semver.org
 
 All MACI packages are organized in our monorepo and follow a global release approach, meaning that all packages have the same version.
 
-Currently, MACI core team manually decides when to release and what the version should be. Packages are released [automatically via CI](https://github.com/privacy-scaling-explorations/maci/blob/dev/.github/workflows/release.yml) when a new tag is created in GitHub. [You can view our releases and tags in GitHub](https://github.com/privacy-scaling-explorations/maci/releases).
+Currently, MACI core team manually decides when to release and what the version should be. Packages are released [automatically via CI](.github/workflows/release.yml) when a new tag is created in GitHub. [You can view our releases and tags in GitHub](https://github.com/privacy-scaling-explorations/maci/releases).
 
 ## MACI Release Process
 

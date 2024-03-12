@@ -94,7 +94,7 @@ maci-cli verify \
     --tally-file tally.json # this file is generated in genProofs
 ```
 
-When poll finishes, [Tally contract](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/Tally.sol) emits the event with poll address so you can track the state changes.
+When poll finishes, [Tally contract](contracts/contracts/Tally.sol) emits the event with poll address so you can track the state changes.
 
 ```javascript
 event BallotsTallied(address poll);
@@ -140,7 +140,7 @@ function contribute(
 
 ## InitialVoiceCreditProxy
 
-If you'd like to extend the functionality of how votes are distributed among users, you need to extend [InitialVoiceCreditProxy](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/initialVoiceCreditProxy/InitialVoiceCreditProxy.sol) contract. You can see our [basic example](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/initialVoiceCreditProxy/ConstantInitialVoiceCreditProxy.sol) how it's implemented for constant distribution.
+If you'd like to extend the functionality of how votes are distributed among users, you need to extend [InitialVoiceCreditProxy](contracts/contracts/initialVoiceCreditProxy/InitialVoiceCreditProxy.sol) contract. You can see our [basic example](contracts/contracts/initialVoiceCreditProxy/ConstantInitialVoiceCreditProxy.sol) how it's implemented for constant distribution.
 
 ```javascript
 // SPDX-License-Identifier: MIT
