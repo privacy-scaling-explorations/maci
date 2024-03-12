@@ -52,7 +52,7 @@ export const testTallyVotesWasmPath =
 export const testSubsidyWasmPath =
   "./zkeys/SubsidyPerBatch_10-1-2_test/SubsidyPerBatch_10-1-2_test_js/SubsidyPerBatch_10-1-2_test.wasm";
 export const testRapidsnarkPath = `${homedir()}/rapidsnark/build/prover`;
-export const ceremonyProcessMessagesZkeyPath = "./zkeys/ProcessMessages_6-9-2-3/ProcessMessages_6-9-2-3.zkey";
+export const ceremonyProcessMessagesZkeyPath = "./zkeys/ProcessMessages_6-9-2-3/processMessages_6-9-2-3.zkey";
 export const ceremonyProcessMessagesNonQvZkeyPath =
   "./zkeys/ProcessMessagesNonQv_6-9-2-3/processMessagesNonQv_6-9-2-3.zkey";
 export const ceremonyTallyVotesZkeyPath = "./zkeys/TallyVotes_6-2-3/tallyVotes_6-2-3.zkey";
@@ -70,7 +70,7 @@ export const ceremonyTallyVotesNonQvWitnessPath =
   "./zkeys/TallyVotesNonQv_6-2-3/TallyVotesNonQv_6-2-3_cpp/TallyVotesNonQv_6-2-3";
 export const ceremonyTallyVotesDatPath = "./zkeys/TallyVotes_6-2-3/TallyVotes_6-2-3_cpp/TallyVotes_6-2-3.dat";
 export const ceremonyTallyVotesNonQvDatPath =
-  "./zkeys/TallyVotesNonQv_6-2-3/TallyVotesNonQv_6-2-3_cpp/tallyVotesNonQv_6-2-3.dat";
+  "./zkeys/TallyVotesNonQv_6-2-3/TallyVotesNonQv_6-2-3_cpp/TallyVotesNonQv_6-2-3.dat";
 export const ceremonyProcessMessagesWasmPath =
   "./zkeys/ProcessMessages_6-9-2-3/ProcessMessages_6-9-2-3_js/ProcessMessages_6-9-2-3.wasm";
 export const ceremonyProcessMessagesNonQvWasmPath =
