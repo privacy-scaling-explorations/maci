@@ -101,8 +101,7 @@ describe("EAS Gatekeeper", () => {
 
     it("sets MACI instance correctly", async () => {
       const maciAddress = await maciContract.getAddress();
-      const tx = await easGatekeeper.setMaciInstance(maciAddress);
-      await tx.wait();
+      await easGatekeeper.setMaciInstance(maciAddress).then((tx) => tx.wait());
 
       expect(await easGatekeeper.maci()).to.eq(maciAddress);
     });
@@ -122,7 +121,7 @@ describe("EAS Gatekeeper", () => {
     });
 
     it("should throw when the attestation is not owned by the caller (mocking maci.signUp call)", async () => {
-      await easGatekeeper.setMaciInstance(signerAddress);
+      await easGatekeeper.setMaciInstance(signerAddress).then((tx) => tx.wait());
 
       await expect(easGatekeeper.register(signerAddress, toBeArray(attestation))).to.be.revertedWithCustomError(
         easGatekeeper,
@@ -138,7 +137,7 @@ describe("EAS Gatekeeper", () => {
     });
 
     it("should throw when the attestation schema is not the one expected by the gatekeeper", async () => {
-      await easGatekeeper.setMaciInstance(signerAddress);
+      await easGatekeeper.setMaciInstance(signerAddress).then((tx) => tx.wait());
       await expect(easGatekeeper.register(signerAddress, toBeArray(wrongAttestation))).to.be.revertedWithCustomError(
         easGatekeeper,
         "InvalidSchema",
@@ -146,7 +145,7 @@ describe("EAS Gatekeeper", () => {
     });
 
     it("should throw when the attestation is not signed by the attestation owner", async () => {
-      await easGatekeeper.setMaciInstance(signerAddress);
+      await easGatekeeper.setMaciInstance(signerAddress).then((tx) => tx.wait());
       await expect(
         easGatekeeper.register(signerAddress, toBeArray(invalidAttesterAttestation)),
       ).to.be.revertedWithCustomError(easGatekeeper, "AttesterNotTrusted");
@@ -161,7 +160,7 @@ describe("EAS Gatekeeper", () => {
 
       const userSigner = await ethers.getSigner(attestationOwner);
 
-      await easGatekeeper.setMaciInstance(await maciContract.getAddress());
+      await easGatekeeper.setMaciInstance(await maciContract.getAddress()).then((tx) => tx.wait());
 
       // signup via MACI
       const tx = await maciContract
