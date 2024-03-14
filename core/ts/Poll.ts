@@ -1313,7 +1313,7 @@ export class Poll implements IPoll {
 
         this.tallyResult[j] += v;
 
-        // the total spent voice credits will be the sum of the the votes
+        // the total spent voice credits will be the sum of the votes
         this.totalSpentVoiceCredits += v;
       }
     }

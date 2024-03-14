@@ -5,7 +5,7 @@ sidebar_label: Workflow
 sidebar_position: 3
 ---
 
-<!-- TODO: create flowcharts, similar to to Kyle's (but make light/dark mode compatible) -->
+<!-- TODO: create flowcharts, similar to Kyle's (but make light/dark mode compatible) -->
 
 # MACI Workflow
 
