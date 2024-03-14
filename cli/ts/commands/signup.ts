@@ -89,14 +89,14 @@ export const signup = async ({
 /**
  * Checks if user is registered with public key
  * @param IRegisteredArgs - The arguments for the register check command
- * @returns user registered or not and state index
+ * @returns user registered or not and state index, voice credit balance
  */
 export const isRegisteredUser = async ({
   maciAddress,
   maciPubKey,
   signer,
   quiet = true,
-}: IRegisteredUserArgs): Promise<{ isRegistered: boolean; stateIndex?: string }> => {
+}: IRegisteredUserArgs): Promise<{ isRegistered: boolean; stateIndex?: string; voiceCredits?: string }> => {
   banner(quiet);
 
   const maciContract = MACIFactory.connect(maciAddress, signer);
@@ -104,11 +104,13 @@ export const isRegisteredUser = async ({
 
   const events = await maciContract.queryFilter(maciContract.filters.SignUp(undefined, publicKey.x, publicKey.y));
   const stateIndex = events[0]?.args[0].toString() as string | undefined;
+  const voiceCredits = events[0]?.args[3].toString() as string | undefined;
 
   logGreen(quiet, success(`State index: ${stateIndex?.toString()}, registered: ${stateIndex !== undefined}`));
 
   return {
     isRegistered: stateIndex !== undefined,
     stateIndex,
+    voiceCredits,
   };
 };
