@@ -548,8 +548,8 @@ export class Poll implements IPoll {
               // otherwise we continue processing but add the default blank data instead of
               // this invalid message
               if (e instanceof ProcessMessageError) {
-                // if logging is enabled, print the error
-                if (!quiet) {
+                // if logging is enabled, and it's not the first message, print the error
+                if (!quiet && idx !== 0) {
                   // eslint-disable-next-line no-console
                   console.log(`Error at message index ${idx} - ${e.message}`);
                 }
