@@ -39,12 +39,10 @@ maci-cli setVerifyingKeys \
     --msg-batch-depth 1 \
     --process-messages-zkey ./zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test.0.zkey \
     --tally-votes-zkey ./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey
-maci-cli create --stateTreeDepth 10
+maci-cli create --stateTreeDepth 10 --use-quadratic-voting true
 maci-cli deployPoll \
     --pubkey coordinator-public-key \
     --duration 30 \
-    --max-messages 25 \
-    --max-vote-options 25 \
     --int-state-tree-depth 1 \
     --msg-tree-depth 2 \
     --msg-batch-depth 1 \

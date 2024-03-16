@@ -73,9 +73,10 @@ Next, we have the `signUp` function, which allows users to `signUp`, as long as 
 This function does the following:
 
 - checks that the maximum number of signups has not been reached. As of now, this will be $5 ** 10 - 1$ due to circuit limitations.
+- ensure the subtrees have not been merged already, to prevent a DoS on the coordinator full tree merge
 - checks that the provided public key is a valid baby-jubjub point
 - increases signups counter
-- registers the user using the sign up gatekeeper contract. It is important that whichever gatekeeper is used, this reverts if a user tries to sign up twice or the conditions are not met (i.e returning false is not enoguh)
+- registers the user using the sign up gatekeeper contract. It is important that whichever gatekeeper is used, this reverts if a user tries to sign up twice or the conditions are not met (i.e returning false is not enough)
 - calls the voice credit proxy to retrieve the number of allocated voice credits allocated to this voter
 - hashes the voice credits alongside the user's MACI public key and the current time
 - enqueues this hashed data into the `stateAq` contract
@@ -318,7 +319,7 @@ It will process messages in batches, and after all batches have been processed, 
 
 ## Tally
 
-::info
+:::info
 The `Tally` contract is present also in a non quadratic voting fashion, and is slightly smaller due to not having the `verifyPerVOSpentVoiceCredits` function. This is not required because with normal (non quadratic) voting, each vote by a user is not the square root of the voice credits spent.  
 :::
 
@@ -332,7 +333,7 @@ Below are the functions which users can use to verify the results:
 
 ## Subsidy (optional)
 
-The subsidy contract can be used by the coordinator to post proofs of valid subsidy calcuations, as well as users to verify that the subsidy calculations were performed correctly.
+The subsidy contract can be used by the coordinator to post proofs of valid subsidy calculations, as well as users to verify that the subsidy calculations were performed correctly.
 
 ## SignUpToken (optional)
 
@@ -344,7 +345,7 @@ MACI requires a signup gatekeeper to ensure that only designed users register. I
 
 - `FreeForAllSignUpGatekeeper` - This allows anyone to signup on MACI.
 - `SignUpTokenGatekeeper` - This makes use of a ERC721 token to gatekeep the signup function.
-- `EASGatekeeper` - This allows to gatekeep signups to only users which have a specific EAS attestation.
+- `EASGatekeeper` - This allows gatekeeping signups to only users who have a specific EAS attestation.
 
 An abstract contract to inherit from is also provided, with two function signatures as shown below:
 
