@@ -11,6 +11,8 @@ MACI is composed of multiple smart contracts, which together with the zk-SNARK c
 
 The main contracts are presented and explained below.
 
+![contracts](/img/contracts.svg)
+
 ## MACI.sol
 
 `MACI.sol` is the core contract of the project, as it provides the base layer for user signups and Polls to be created.
