@@ -42,7 +42,6 @@ For installation and local development instructions, please see our [installatio
 This repository is organized as Lerna submodules. Each submodule contains its
 own unit tests.
 
-- `audit`: Documentation surrounding the audit performed on v1
 - `crypto`: low-level cryptographic operations.
 - `circuits`: zk-SNARK circuits.
 - `contracts`: Solidity contracts and deployment code.
@@ -59,13 +58,6 @@ own unit tests.
 ### Testing
 
 Please refer to the [testing documentation](https://maci.pse.dev/docs/testing) for more information.
-
-### Docker
-
-Run `docker build -t maci .` to build all stages.
-
-To run a specific build step `docker build --target circuits -t maci .`
-Note: a cached version of `builder` job must be on your system prior as it relies on existing artifacts
 
 ### CI pipeline
 
