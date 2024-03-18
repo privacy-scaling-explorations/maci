@@ -49,6 +49,7 @@
     "test:pollFactory": "pnpm run test ./tests/PollFactory.test.ts",
     "test:subsidy": "pnpm run test ./tests/Subsidy.test.ts",
     "test:eas_gatekeeper": "pnpm run test ./tests/EASGatekeeper.test.ts",
+    "test:hats_gatekeeper": "pnpm run test ./tests/HatsGatekeeper.test.ts",
     "deploy": "hardhat deploy-full",
     "deploy-poll": "hardhat deploy-poll",
     "verify": "hardhat verify-full",
