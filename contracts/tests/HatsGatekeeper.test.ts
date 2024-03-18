@@ -60,30 +60,33 @@ describe("HatsProtocol Gatekeeper", () => {
     mockHatsAddress = await mockHats.getAddress();
 
     // create a new topHat
-    await mockHats.connect(signer).mintTopHat(mockHatsAddress, "MACITOPHAT", "");
+    await mockHats
+      .connect(signer)
+      .mintTopHat(mockHatsAddress, "MACITOPHAT", "")
+      .then((tx) => tx.wait());
     topHat = await mockHats.lastTopHat();
 
     // create a new hat
-    await mockHats.createHat(topHat, "MACI HAT", 2, signerAddress, signerAddress, false, "");
+    await mockHats.createHat(topHat, "MACI HAT", 2, signerAddress, signerAddress, false, "").then((tx) => tx.wait());
     hatId = await mockHats.lastHat();
 
     // mint the hat
-    await mockHats.mintHat(hatId, signerAddress);
+    await mockHats.mintHat(hatId, signerAddress).then((tx) => tx.wait());
 
     // create a second hat
-    await mockHats.createHat(topHat, "MACI HAT 2", 2, signerAddress, signerAddress, true, "");
+    await mockHats.createHat(topHat, "MACI HAT 2", 2, signerAddress, signerAddress, true, "").then((tx) => tx.wait());
     secondHatId = await mockHats.lastHat();
 
     // mint the hat
-    await mockHats.mintHat(secondHatId, voterAddress);
+    await mockHats.mintHat(secondHatId, voterAddress).then((tx) => tx.wait());
 
     // create a third hat
-    await mockHats.createHat(topHat, "MACI HAT 3", 2, signerAddress, signerAddress, true, "");
+    await mockHats.createHat(topHat, "MACI HAT 3", 2, signerAddress, signerAddress, true, "").then((tx) => tx.wait());
     thirdHatId = await mockHats.lastHat();
 
     // mint the hat
-    await mockHats.mintHat(thirdHatId, signerAddress);
-    await mockHats.mintHat(thirdHatId, voterAddress);
+    await mockHats.mintHat(thirdHatId, signerAddress).then((tx) => tx.wait());
+    await mockHats.mintHat(thirdHatId, voterAddress).then((tx) => tx.wait());
 
     // deploy gatekeepers
     hatsGatekeeperSingle = await deployContract("HatsGatekeeperSingle", signer, true, hatsContractOP, hatId);
@@ -135,7 +138,7 @@ describe("HatsProtocol Gatekeeper", () => {
     describe("setMaci", () => {
       it("should set the MACI instance correctly", async () => {
         const maciAddress = await maciContract.getAddress();
-        await hatsGatekeeperSingle.setMaciInstance(maciAddress);
+        await hatsGatekeeperSingle.setMaciInstance(maciAddress).then((tx) => tx.wait());
 
         expect(await hatsGatekeeperSingle.maci()).to.eq(maciAddress);
       });
@@ -156,7 +159,7 @@ describe("HatsProtocol Gatekeeper", () => {
 
     describe("register", () => {
       it("should not allow to call from a non-registered MACI contract", async () => {
-        await hatsGatekeeperSingle.setMaciInstance(oneAddress);
+        await hatsGatekeeperSingle.setMaciInstance(oneAddress).then((tx) => tx.wait());
         await expect(
           maciContract
             .connect(signer)
@@ -169,7 +172,7 @@ describe("HatsProtocol Gatekeeper", () => {
       });
 
       it("should register a user if the register function is called with the valid data", async () => {
-        await hatsGatekeeperSingle.setMaciInstance(await maciContract.getAddress());
+        await hatsGatekeeperSingle.setMaciInstance(await maciContract.getAddress()).then((tx) => tx.wait());
 
         // signup via MACI
         const tx = await maciContract
@@ -238,7 +241,7 @@ describe("HatsProtocol Gatekeeper", () => {
     describe("setMaci", () => {
       it("should set the MACI instance correctly", async () => {
         const maciAddress = await maciContract.getAddress();
-        await hatsGatekeeperMultiple.setMaciInstance(maciAddress);
+        await hatsGatekeeperMultiple.setMaciInstance(maciAddress).then((tx) => tx.wait());
 
         expect(await hatsGatekeeperMultiple.maci()).to.eq(maciAddress);
       });
@@ -259,7 +262,10 @@ describe("HatsProtocol Gatekeeper", () => {
 
     describe("register", () => {
       it("should not allow to call from a non-registered MACI contract", async () => {
-        await hatsGatekeeperMultiple.connect(signer).setMaciInstance(oneAddress);
+        await hatsGatekeeperMultiple
+          .connect(signer)
+          .setMaciInstance(oneAddress)
+          .then((tx) => tx.wait());
         await expect(
           maciContract
             .connect(signer)
