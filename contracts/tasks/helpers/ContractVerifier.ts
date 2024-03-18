@@ -27,10 +27,16 @@ export class ContractVerifier {
    * @param libraries - stringified libraries which can't be detected automatically
    * @returns
    */
-  async verify(address: string, constructorArguments: string, libraries?: string): Promise<[boolean, string]> {
+  async verify(
+    address: string,
+    constructorArguments: string,
+    contract?: string,
+    libraries?: string,
+  ): Promise<[boolean, string]> {
     const params: IVerificationSubtaskArgs = {
       address,
       constructorArguments: JSON.parse(constructorArguments) as unknown[],
+      contract,
     };
 
     if (libraries) {

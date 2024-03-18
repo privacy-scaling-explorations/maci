@@ -60,7 +60,7 @@ task("verify-full", "Verify contracts listed in storage")
         console.log("Already verified");
       } else {
         // eslint-disable-next-line no-await-in-loop
-        const [ok, err] = await verifier.verify(address, params?.args ?? "");
+        const [ok, err] = await verifier.verify(address, params?.args ?? "", params?.name);
 
         if (ok) {
           storage.setVerified(address, hre.network.name, true);

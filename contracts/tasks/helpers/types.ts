@@ -457,6 +457,7 @@ export interface IStorageInstanceEntry {
    */
   verify?: {
     args?: string;
+    name?: string;
     impl?: string;
     subType?: string;
   };
@@ -490,6 +491,11 @@ export interface IRegisterContract {
    * Group key for same contracts
    */
   key?: BigNumberish;
+
+  /**
+   * Contract name with path specified
+   */
+  name?: string;
 }
 
 /**
@@ -519,6 +525,8 @@ export enum EContracts {
   MessageProcessor = "MessageProcessor",
   Subsidy = "Subsidy",
   AccQueue = "AccQueue",
+  AccQueueQuinaryBlankSl = "AccQueueQuinaryBlankSl",
+  AccQueueQuinaryMaci = "AccQueueQuinaryMaci",
 }
 
 /**
