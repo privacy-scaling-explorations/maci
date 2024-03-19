@@ -151,8 +151,9 @@ describe("HatsProtocol Gatekeeper", () => {
       });
 
       it("should fail to set MACI instance when the caller is not the owner", async () => {
-        await expect(hatsGatekeeperSingle.connect(voter).setMaciInstance(signerAddress)).to.be.revertedWith(
-          "Ownable: caller is not the owner",
+        await expect(hatsGatekeeperSingle.connect(voter).setMaciInstance(signerAddress)).to.be.revertedWithCustomError(
+          hatsGatekeeperSingle,
+          "OwnableUnauthorizedAccount",
         );
       });
     });
@@ -254,9 +255,9 @@ describe("HatsProtocol Gatekeeper", () => {
       });
 
       it("should fail to set MACI instance when the caller is not the owner", async () => {
-        await expect(hatsGatekeeperMultiple.connect(voter).setMaciInstance(signerAddress)).to.be.revertedWith(
-          "Ownable: caller is not the owner",
-        );
+        await expect(
+          hatsGatekeeperMultiple.connect(voter).setMaciInstance(signerAddress),
+        ).to.be.revertedWithCustomError(hatsGatekeeperMultiple, "OwnableUnauthorizedAccount");
       });
     });
 
