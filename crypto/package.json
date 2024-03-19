@@ -21,7 +21,7 @@
     "typedoc": "typedoc --plugin typedoc-plugin-markdown --options ./typedoc.json"
   },
   "dependencies": {
-    "@zk-kit/baby-jubjub": "^0.2.0",
+    "@zk-kit/baby-jubjub": "^0.3.0",
     "@zk-kit/eddsa-poseidon": "^0.5.1",
     "@zk-kit/poseidon-cipher": "^0.3.0",
     "ethers": "^6.11.1"
