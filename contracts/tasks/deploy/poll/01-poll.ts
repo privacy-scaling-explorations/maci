@@ -106,6 +106,11 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").setAction(async (_, hre
     address: tallyContractAddress,
   });
 
+  const messageAccQueueContract = await deployment.getContract({
+    name: EContracts.AccQueueQuinaryMaci,
+    address: extContracts[1],
+  });
+
   await Promise.all([
     storage.register({
       id: EContracts.Poll,
@@ -139,6 +144,15 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").setAction(async (_, hre
       key: `poll-${pollId}`,
       contract: tallyContract,
       args: [verifierContractAddress, vkRegistryContractAddress, pollContractAddress, messageProcessorContractAddress],
+      network: hre.network.name,
+    }),
+
+    storage.register({
+      id: EContracts.AccQueueQuinaryMaci,
+      key: `poll-${pollId}`,
+      name: "contracts/trees/AccQueueQuinaryMaci.sol:AccQueueQuinaryMaci",
+      contract: messageAccQueueContract,
+      args: [messageTreeSubDepth],
       network: hre.network.name,
     }),
   ]);
