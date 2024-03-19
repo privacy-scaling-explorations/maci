@@ -31,7 +31,7 @@
   "author": "PSE",
   "devDependencies": {
     "@commitlint/cli": "^19.0.3",
-    "@commitlint/config-conventional": "^19.0.3",
+    "@commitlint/config-conventional": "^19.1.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^6.21.0",
     "conventional-changelog-conventionalcommits": "^7.0.2",
@@ -53,10 +53,10 @@
     "lint-staged": "^15.2.2",
     "prettier": "^3.2.5",
     "prettier-plugin-solidity": "^1.3.1",
-    "solhint": "^4.1.1",
-    "typedoc": "^0.25.10",
+    "solhint": "^4.5.2",
+    "typedoc": "^0.25.12",
     "typedoc-plugin-markdown": "^3.17.1",
-    "typescript": "^5.3.3"
+    "typescript": "^5.4.2"
   },
   "config": {
     "commitizen": {

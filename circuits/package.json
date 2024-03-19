@@ -38,7 +38,7 @@
     "test:incrementalQuinTree": "ts-mocha --exit ts/__tests__/IncrementalQuinTree.test.ts"
   },
   "dependencies": {
-    "@zk-kit/circuits": "^0.3.0",
+    "@zk-kit/circuits": "^0.4.0",
     "circomkit": "^0.0.24",
     "circomlib": "^2.0.5",
     "maci-core": "^1.2.0",
@@ -50,12 +50,12 @@
     "@types/chai": "^4.3.11",
     "@types/chai-as-promised": "^7.1.8",
     "@types/mocha": "^10.0.6",
-    "@types/node": "^20.11.24",
+    "@types/node": "^20.11.28",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
     "mocha": "^10.3.0",
     "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.1",
-    "typescript": "^5.3.3"
+    "typescript": "^5.4.2"
   }
 }

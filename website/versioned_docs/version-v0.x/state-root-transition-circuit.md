@@ -129,7 +129,7 @@ var x = generateMerkleRoot(
 
 assert(x == currentStateRoot)
 
-// Prove that the the current vote option weight (leaf)
+// Prove that the current vote option weight (leaf)
 // input is correct by checking that it exists in the
 // tree at the given index
 var y = generateMerkleRoot(

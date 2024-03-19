@@ -159,7 +159,7 @@ pnpm setup:zkeys
 
 ### Download `.zkey` files (if you would like to use the default parameters or the trusted setup artifacts)
 
-MACI has two main zk-SNARK circuits (plus an optional Subsidy circuit). Each circuit is parameterised. There should one
+MACI has two main zk-SNARK circuits (plus an optional Subsidy circuit). Each circuit is parameterised. There should be one
 `.zkey` file for each circuit and set of parameters.
 
 Unless you wish to generate a fresh set of `.zkey` files, you should obtain

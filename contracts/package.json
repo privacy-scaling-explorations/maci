@@ -49,6 +49,7 @@
     "test:pollFactory": "pnpm run test ./tests/PollFactory.test.ts",
     "test:subsidy": "pnpm run test ./tests/Subsidy.test.ts",
     "test:eas_gatekeeper": "pnpm run test ./tests/EASGatekeeper.test.ts",
+    "test:hats_gatekeeper": "pnpm run test ./tests/HatsGatekeeper.test.ts",
     "deploy": "hardhat deploy-full",
     "deploy-poll": "hardhat deploy-poll",
     "verify": "hardhat verify-full",
@@ -56,13 +57,18 @@
     "prove": "hardhat prove",
     "deploy:localhost": "pnpm run deploy",
     "deploy:sepolia": "pnpm run deploy --network sepolia",
+    "deploy:optimism-sepolia": "pnpm run deploy --network optimism_sepolia",
     "deploy-poll:localhost": "pnpm run deploy-poll",
     "deploy-poll:sepolia": "pnpm run deploy-poll --network sepolia",
+    "deploy-poll:optimism-sepolia": "pnpm run deploy-poll --network optimism_sepolia",
     "merge:localhost": "pnpm run merge",
     "merge:sepolia": "pnpm run merge --network sepolia",
+    "merge:optimism-sepolia": "pnpm run merge --network optimism_sepolia",
     "prove:localhost": "pnpm run prove",
-    "prove:sepolia": "pnpm run prove",
-    "verify:sepolia": "pnpm run verify --network sepolia"
+    "prove:sepolia": "pnpm run prove --network sepolia",
+    "prove:optimism-sepolia": "pnpm run prove --network optimism_sepolia",
+    "verify:sepolia": "pnpm run verify --network sepolia",
+    "verify:optimism-sepolia": "pnpm run verify --network optimism_sepolia"
   },
   "dependencies": {
     "@nomicfoundation/hardhat-ethers": "^3.0.5",
@@ -70,7 +76,7 @@
     "@openzeppelin/contracts": "^4.8.0",
     "circomlibjs": "^0.1.7",
     "ethers": "^6.11.1",
-    "hardhat": "^2.20.1",
+    "hardhat": "^2.21.1",
     "maci-circuits": "^1.2.0",
     "maci-core": "^1.2.0",
     "maci-crypto": "^1.2.0",
@@ -82,7 +88,7 @@
     "@types/circomlibjs": "^0.1.6",
     "@types/lowdb": "^1.0.15",
     "@types/mocha": "^10.0.6",
-    "@types/node": "^20.11.24",
+    "@types/node": "^20.11.28",
     "@types/snarkjs": "^0.7.8",
     "chai": "^4.3.10",
     "dotenv": "^16.4.5",
@@ -90,6 +96,6 @@
     "hardhat-contract-sizer": "^2.10.0",
     "lowdb": "^1.0.0",
     "ts-node": "^10.9.1",
-    "typescript": "^5.3.3"
+    "typescript": "^5.4.2"
   }
 }

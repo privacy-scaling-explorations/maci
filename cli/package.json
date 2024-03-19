@@ -47,7 +47,7 @@
     "commander": "^12.0.0",
     "dotenv": "^16.4.5",
     "ethers": "^6.11.1",
-    "hardhat": "^2.20.1",
+    "hardhat": "^2.22.1",
     "maci-circuits": "^1.2.0",
     "maci-contracts": "^1.2.0",
     "maci-core": "^1.2.0",
@@ -59,7 +59,7 @@
     "@types/chai": "^4.3.9",
     "@types/chai-as-promised": "^7.1.8",
     "@types/mocha": "^10.0.6",
-    "@types/node": "^20.11.24",
+    "@types/node": "^20.11.28",
     "@types/prompt": "^1.1.8",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
@@ -67,7 +67,7 @@
     "nyc": "^15.1.0",
     "snarkjs": "^0.7.3",
     "ts-mocha": "^10.0.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.4.2"
   },
   "nyc": {
     "reporter": [

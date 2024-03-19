@@ -9,7 +9,13 @@ import type { HardhatUserConfig } from "hardhat/config";
 
 // Don't forget to import new tasks here
 import "./tasks/deploy";
-import { EChainId, ESupportedChains, NETWORKS_DEFAULT_GAS, getNetworkRpcUrls } from "./tasks/helpers/constants";
+import {
+  EChainId,
+  ESupportedChains,
+  NETWORKS_DEFAULT_GAS,
+  getEtherscanApiKeys,
+  getNetworkRpcUrls,
+} from "./tasks/helpers/constants";
 import "./tasks/runner/deployFull";
 import "./tasks/runner/deployPoll";
 import "./tasks/runner/merge";
@@ -22,6 +28,7 @@ const DEFAULT_BLOCK_GAS_LIMIT = 30_000_000;
 const DEFAULT_GAS_MUL = 2;
 const TEST_MNEMONIC = "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
 const NETWORKS_RPC_URL = getNetworkRpcUrls();
+const ETHERSCAN_API_KEYS = getEtherscanApiKeys();
 
 const getCommonNetworkConfig = (networkName: ESupportedChains, chainId: number, mnemonic?: string) => ({
   url: NETWORKS_RPC_URL[networkName],
@@ -51,6 +58,7 @@ const config: HardhatUserConfig = {
   defaultNetwork: "localhost",
   networks: {
     sepolia: getCommonNetworkConfig(ESupportedChains.Sepolia, EChainId.Sepolia),
+    optimism_sepolia: getCommonNetworkConfig(ESupportedChains.OptimismSepolia, EChainId.OptimismSepolia),
     coverage: getCommonNetworkConfig(ESupportedChains.Coverage, EChainId.Coverage, TEST_MNEMONIC),
     localhost: {
       url: "http://localhost:8545",
@@ -90,7 +98,20 @@ const config: HardhatUserConfig = {
     disambiguatePaths: false,
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY,
+    apiKey: {
+      [ESupportedChains.Sepolia]: ETHERSCAN_API_KEYS[ESupportedChains.Sepolia]!,
+      [ESupportedChains.OptimismSepolia]: ETHERSCAN_API_KEYS[ESupportedChains.OptimismSepolia]!,
+    },
+    customChains: [
+      {
+        network: ESupportedChains.OptimismSepolia,
+        chainId: EChainId.OptimismSepolia,
+        urls: {
+          apiURL: "https://api-sepolia-optimism.etherscan.io/api",
+          browserURL: "https://sepolia-optimism.etherscan.io",
+        },
+      },
+    ],
   },
   sourcify: {
     enabled: true,

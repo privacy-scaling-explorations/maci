@@ -2,7 +2,7 @@ import { MaxValues, TreeDepths } from "maci-core";
 import { G1Point, G2Point } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
 
-export const duration = 20;
+export const duration = 2_000;
 
 export const STATE_TREE_DEPTH = 10;
 export const STATE_TREE_ARITY = 5;
