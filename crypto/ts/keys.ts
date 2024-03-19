@@ -41,7 +41,7 @@ export const packPubKey = (pubKey: PubKey): bigint => BigInt(packPublicKey(pubKe
  */
 export const unpackPubKey = (packed: bigint): PubKey => {
   const pubKey = unpackPublicKey(packed);
-  return pubKey.map((x: string) => BigInt(x)) as PubKey;
+  return pubKey.map((x) => BigInt(x)) as PubKey;
 };
 
 /**
