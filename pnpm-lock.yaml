@@ -343,8 +343,8 @@ importers:
         specifier: ^0.2.0
         version: 0.2.0
       '@zk-kit/eddsa-poseidon':
-        specifier: ^0.5.1
-        version: 0.5.1
+        specifier: ^0.10.0
+        version: 0.10.0
       '@zk-kit/poseidon-cipher':
         specifier: ^0.3.0
         version: 0.3.0
@@ -6165,16 +6165,16 @@ packages:
       tslib: 2.6.2
     dev: true
 
-  /@zk-kit/baby-jubjub@0.1.1:
-    resolution: {integrity: sha512-eWpUSpKKpllGZXE6mdS1IVuegRjY2Yu+3Qccyfg0+gMI8+p0ruioMM/MCK3tg2lRIUJTVd+16UghVcK0145yWg==}
-    dependencies:
-      '@zk-kit/utils': 0.1.0
-    dev: false
-
   /@zk-kit/baby-jubjub@0.2.0:
     resolution: {integrity: sha512-pqiPq621oKpwiIkf1KcVh5MdbFX0V67s9gCmiEkhLMeafZaIXEwVt5qmIu1d2HB4mjXgr4Ys8Jpn2Rw4KXxnFQ==}
     dependencies:
       '@zk-kit/utils': 0.3.0
+    dev: false
+
+  /@zk-kit/baby-jubjub@0.3.0:
+    resolution: {integrity: sha512-mA3/M/+4C2vDtc0SpXf/q/nsvwBh+s42ou176sgDzqIBQD/u/N+LaLGorDh+X5AD3dVMHb8rheFpnnrJmjsqdA==}
+    dependencies:
+      '@zk-kit/utils': 0.6.0
     dev: false
 
   /@zk-kit/circuits@0.4.0:
@@ -6183,11 +6183,12 @@ packages:
       circomlib: 2.0.5
     dev: false
 
-  /@zk-kit/eddsa-poseidon@0.5.1:
-    resolution: {integrity: sha512-sPyoyjwg9EZ+tHLGxOG+FDj9XJK1knVjm27nTMV4ZSiQIf0427QWnLhOk7b6zMvFmEpBWTG9gneJ5pr3jzJ4zg==}
+  /@zk-kit/eddsa-poseidon@0.10.0:
+    resolution: {integrity: sha512-vfHupJeoj0YojulF+SUbeOD6MOamWV6uU/HVFwB7sJNA0N7gnzcjaN1aC5OYr0+5PHui/SYebzKA0LNCL+7M9g==}
     dependencies:
-      '@zk-kit/baby-jubjub': 0.1.1
-      '@zk-kit/utils': 0.1.0
+      '@zk-kit/baby-jubjub': 0.3.0
+      '@zk-kit/utils': 0.8.1
+      buffer: 6.0.3
     dev: false
 
   /@zk-kit/poseidon-cipher@0.3.0:
@@ -6197,12 +6198,20 @@ packages:
       '@zk-kit/utils': 0.3.0
     dev: false
 
-  /@zk-kit/utils@0.1.0:
-    resolution: {integrity: sha512-MZmuw2w2StB7XOSNg1TW4VwnBJ746UDmdXTvxwDO/U85UZfGfM3zb53gG35qz5sWpQo/DjfoKqaScmh6HUtQpA==}
-    dev: false
-
   /@zk-kit/utils@0.3.0:
     resolution: {integrity: sha512-yVBczOwOSV+evSgdsJ0tpPn3oQpbL7a7fRqANDogleaLLte1IFxKTFLz3WNcgd28Asq2guMGiU6SmiEc61uHAg==}
+    dev: false
+
+  /@zk-kit/utils@0.6.0:
+    resolution: {integrity: sha512-sUF1yVjlGmm7/NIN/+d+N8WOcI77bTzgV5+vZmp/S7lXcy4fmO+5TdHERRsDbs8Ep8K33EOC6V+U+JXzmjSe5A==}
+    dependencies:
+      buffer: 6.0.3
+    dev: false
+
+  /@zk-kit/utils@0.8.1:
+    resolution: {integrity: sha512-m5cvnYo5IBZQCO8H5X0Mw3rGRGEoSqlYXVVF1+4M9IT3olDWcJHLPRqtYGF9zNf+vXV/21srpZ0hX3X2Lzp1TQ==}
+    dependencies:
+      buffer: 6.0.3
     dev: false
 
   /@zkochan/js-yaml@0.0.6:
@@ -6856,7 +6865,6 @@ packages:
 
   /base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
-    dev: true
 
   /batch@0.6.1:
     resolution: {integrity: sha512-x+VAiMRL6UPkx+kudNvxTl6hB2XNNCG2r+7wixVfIYwu/2HKRXimwQyaumLjMveWvT2Hkd/cAJw+QBMfJ/EKVw==}
@@ -7096,6 +7104,13 @@ packages:
       base64-js: 1.5.1
       ieee754: 1.2.1
     dev: true
+
+  /buffer@6.0.3:
+    resolution: {integrity: sha512-FTiCpNxtwiZZHEZbcbTIcZjERVICn9yq/pDFkTl95/AxzD1naBctN7YO68riM/gLSDY7sdrMby8hofADYuuqOA==}
+    dependencies:
+      base64-js: 1.5.1
+      ieee754: 1.2.1
+    dev: false
 
   /builtins@1.0.3:
     resolution: {integrity: sha512-uYBjakWipfaO/bXI7E8rq6kpwHRZK5cNYrUv2OzZSI/FvmdMyXJ2tG9dKcjEC5YHmHpUAwsargWIZNWdxb/bnQ==}
@@ -11426,7 +11441,6 @@ packages:
 
   /ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
-    dev: true
 
   /ignore-walk@5.0.1:
     resolution: {integrity: sha512-yemi4pMf51WKT7khInJqAvsIGzoqYXblnsz0ql8tM+yi1EKYTY1evX4NAbJrLL/Aanr2HyZeluqU+Oi7MGHokw==}
