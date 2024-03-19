@@ -11,9 +11,11 @@ import { Poll as PollTemplate } from "../generated/templates";
 import { Poll as PollContract } from "../generated/templates/Poll/Poll";
 
 import { ONE_BIGINT } from "./utils/constants";
-import { createOrLoadMACI, createOrLoadUser, createOrLoadAccount, createOrLoadStateLeaf } from "./utils/helper";
+import { createOrLoadMACI, createOrLoadUser, createOrLoadAccount } from "./utils/helper";
 
 export function handleDeployPoll(event: DeployPollEvent): void {
+  const maci = createOrLoadMACI(event);
+
   const entity = new Poll(event.params.pollAddr.poll);
   const contract = PollContract.bind(event.params.pollAddr.poll);
   const maxValues = contract.maxValues();
@@ -34,22 +36,18 @@ export function handleDeployPoll(event: DeployPollEvent): void {
   entity.createdAt = event.block.timestamp;
   entity.updatedAt = event.block.timestamp;
   entity.txHash = event.transaction.hash;
+  entity.owner = event.transaction.from;
 
-  entity.numSignups = GraphBN.zero();
+  entity.numSignups = maci.numSignUps;
+  entity.numMessages = GraphBN.zero();
 
-  const owner = createOrLoadUser(event.transaction.from, event);
-  const coordinator = createOrLoadAccount(
-    event.params._coordinatorPubKeyX,
-    event.params._coordinatorPubKeyY,
-    event,
-    owner.id,
-  );
+  const coordinator = createOrLoadUser(event.params._coordinatorPubKeyX, event.params._coordinatorPubKeyY, event);
   entity.coordinator = coordinator.id;
-  entity.owner = owner.id;
   entity.save();
 
-  const maci = createOrLoadMACI(event);
   maci.numPoll = maci.numPoll.plus(ONE_BIGINT);
+  maci.latestPoll = entity.id;
+  maci.updatedAt = event.block.timestamp;
   maci.save();
 
   // Start indexing the poll; `event.params.pollAddr.poll` is the
@@ -67,11 +65,18 @@ export function handleOwnershipTransferred(event: OwnershipTransferredEvent): vo
 }
 
 export function handleSignUp(event: SignUpEvent): void {
-  const entity = createOrLoadUser(event.transaction.from, event);
-  const account = createOrLoadAccount(event.params._userPubKeyX, event.params._userPubKeyY, event, entity.id);
-  createOrLoadStateLeaf(event.params._stateIndex, event, account.id, event.params._voiceCreditBalance);
+  const user = createOrLoadUser(event.params._userPubKeyX, event.params._userPubKeyY, event);
+  createOrLoadAccount(event.params._stateIndex, event, user.id, event.params._voiceCreditBalance);
 
   const maci = createOrLoadMACI(event);
   maci.numSignUps = maci.numSignUps.plus(ONE_BIGINT);
+  maci.updatedAt = event.block.timestamp;
   maci.save();
+
+  const poll = Poll.load(maci.latestPoll);
+  if (poll) {
+    poll.numSignups = poll.numSignups.plus(ONE_BIGINT);
+    poll.updatedAt = event.block.timestamp;
+    poll.save();
+  }
 }
