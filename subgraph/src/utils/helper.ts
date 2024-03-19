@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { BigInt as GraphBN, Bytes, ethereum, Int8 } from "@graphprotocol/graph-ts";
 
-import { Account, MACI, StateLeaf, User } from "../../generated/schema";
+import { Account, MACI, User } from "../../generated/schema";
 
 import { DEFAULT_MACI_ID } from "./constants";
 
@@ -25,17 +25,19 @@ export const createOrLoadMACI = (
 
     maci.numPoll = GraphBN.zero();
     maci.numSignUps = GraphBN.zero();
+    maci.latestPoll = Bytes.empty();
     maci.save();
   }
 
   return maci;
 };
 
-export const createOrLoadUser = (address: Bytes, event: ethereum.Event): User => {
-  let user = User.load(address);
+export const createOrLoadUser = (pubkeyX: GraphBN, pubkeyY: GraphBN, event: ethereum.Event): User => {
+  const pubkey = packPubkey(pubkeyX, pubkeyY);
+  let user = User.load(pubkey);
 
   if (!user) {
-    user = new User(address);
+    user = new User(pubkey);
     user.timestamp = event.block.timestamp;
     user.blockNumber = event.block.number;
     user.txHash = event.transaction.hash;
@@ -46,16 +48,18 @@ export const createOrLoadUser = (address: Bytes, event: ethereum.Event): User =>
 };
 
 export const createOrLoadAccount = (
-  pubkeyX: GraphBN,
-  pubkeyY: GraphBN,
+  stateIndex: GraphBN,
   event: ethereum.Event,
-  owner: Bytes | null = null,
+  owner: string,
+  voiceCreditBalance: GraphBN = GraphBN.zero(),
 ): Account => {
-  let account = Account.load(packPubkey(pubkeyX, pubkeyY));
+  const id = stateIndex.toString();
+  let account = Account.load(id);
 
   if (!account) {
-    account = new Account(packPubkey(pubkeyX, pubkeyY));
+    account = new Account(id);
     account.owner = owner;
+    account.voiceCreditBalance = voiceCreditBalance;
     account.timestamp = event.block.timestamp;
     account.blockNumber = event.block.number;
     account.txHash = event.transaction.hash;
@@ -63,26 +67,4 @@ export const createOrLoadAccount = (
   }
 
   return account;
-};
-
-export const createOrLoadStateLeaf = (
-  stateIndex: GraphBN,
-  event: ethereum.Event,
-  account: string,
-  voiceCreditBalance: GraphBN = GraphBN.zero(),
-): StateLeaf => {
-  const id = stateIndex.toString();
-  let leaf = StateLeaf.load(id);
-
-  if (!leaf) {
-    leaf = new StateLeaf(id);
-    leaf.voiceCreditBalance = voiceCreditBalance;
-    leaf.timestamp = event.block.timestamp;
-    leaf.blockNumber = event.block.number;
-    leaf.txHash = event.transaction.hash;
-    leaf.account = account;
-    leaf.save();
-  }
-
-  return leaf;
 };

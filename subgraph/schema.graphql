@@ -9,32 +9,21 @@ type MACI @entity {
   "state"
   numSignUps: BigInt!
   numPoll: BigInt!
+  latestPoll: Bytes!
 }
 
 type User @entity(immutable: true) {
-  id: Bytes! # address
-  timestamp: BigInt! # uint256
-  blockNumber: BigInt!
-  txHash: Bytes!
-
-  "relations"
-  polls: [Poll!]! @derivedFrom(field: "owner")
-  accounts: [Account!]! @derivedFrom(field: "owner")
-}
-
-type Account @entity {
   id: ID! # pubkey
   timestamp: BigInt! # uint256
   blockNumber: BigInt!
   txHash: Bytes!
 
   "relations"
-  owner: User
   polls: [Poll!]! @derivedFrom(field: "coordinator")
-  stateLeafs: [StateLeaf!]! @derivedFrom(field: "account")
+  accounts: [Account!]! @derivedFrom(field: "owner")
 }
 
-type StateLeaf @entity {
+type Account @entity {
   id: ID! # stateIndex
   voiceCreditBalance: BigInt! # uint256
   timestamp: BigInt! # uint256
@@ -42,8 +31,8 @@ type StateLeaf @entity {
   txHash: Bytes!
 
   "relations"
-  account: Account!
-  topupHistory: [TopupCredit!]! @derivedFrom(field: "stateLeaf")
+  owner: User!
+  topupHistory: [TopupCredit!]! @derivedFrom(field: "account")
 }
 
 type Poll @entity {
@@ -59,6 +48,7 @@ type Poll @entity {
   "merge state after ended"
   stateRoot: BigInt # uint256
   numSignups: BigInt! # uint256
+  numMessages: BigInt! # uint256
   "merge message tree after ended"
   numSrQueueOps: BigInt # uint256
   messageRoot: BigInt
@@ -68,14 +58,14 @@ type Poll @entity {
   txHash: Bytes!
 
   "relations"
-  coordinator: Account
-  owner: User
+  coordinator: User!
+  owner: Bytes!
   votes: [Vote!]! @derivedFrom(field: "poll")
   topupHistory: [TopupCredit!]! @derivedFrom(field: "poll")
 }
 
 type Vote @entity(immutable: true) {
-  id: ID!
+  id: Bytes!
   msgType: BigInt! # uint256
   data: [BigInt!]! # uint256[10]
   timestamp: BigInt!
@@ -97,5 +87,5 @@ type TopupCredit @entity(immutable: true) {
 
   "relations"
   poll: Poll!
-  stateLeaf: StateLeaf
+  account: Account!
 }
