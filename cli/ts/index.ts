@@ -635,7 +635,7 @@ program
 program
   .command("genLocalState")
   .description("generate a local MACI state from the smart contracts events")
-  .requiredOption("-o, --output <outputPath>", "the path where to write the state", parseInt)
+  .requiredOption("-o, --output <outputPath>", "the path where to write the state")
   .requiredOption("-p, --poll-id <pollId>", "the id of the poll", BigInt)
   .option("-x, --contract <contract>", "the MACI contract address")
   .option("-sk, --privkey <privkey>", "your serialized MACI private key")
