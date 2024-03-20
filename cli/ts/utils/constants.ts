@@ -11,12 +11,4 @@ export const oldContractAddressesStore = path.resolve(__dirname, "..", "..", old
 // local file name in subgraph module where we are storing the MACI contract address and block number
 export const subgraphNetworkStoreName = "networks.json";
 // local file path in subgraph module where we are storing the MACI contract address and block number
-export const subgraphNetworkStore = path.resolve(
-  __dirname,
-  "..",
-  "..",
-  "..",
-  "..",
-  "subgraph",
-  subgraphNetworkStoreName,
-);
+export const subgraphNetworkStore = path.resolve(__dirname, "..", "..", "..", "subgraph", subgraphNetworkStoreName);
