@@ -1,5 +1,4 @@
-import { Signer } from "ethers";
-
+import type { Provider, Signer } from "ethers";
 import type { SnarkProof } from "maci-contracts";
 import type { CircuitInputs } from "maci-core";
 import type { IMessageContractParams } from "maci-domainobjs";
@@ -973,7 +972,12 @@ export interface IGetPollArgs {
   /**
    * A signer object
    */
-  signer: Signer;
+  signer?: Signer;
+
+  /**
+   * A provider fallback object
+   */
+  provider?: Provider;
 
   /**
    * The address of the MACI contract
