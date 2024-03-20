@@ -19,7 +19,7 @@
     "test:utils": "ts-mocha --exit ts/__tests__/utils.test.ts",
     "test:poll": "ts-mocha --exit ts/__tests__/Poll.test.ts",
     "test": "nyc ts-mocha --exit ts/__tests__/*.test.ts",
-    "typedoc": "typedoc --plugin typedoc-plugin-markdown --options ./typedoc.json"
+    "docs": "typedoc --plugin typedoc-plugin-markdown --options ./typedoc.json"
   },
   "dependencies": {
     "maci-crypto": "^1.2.0",

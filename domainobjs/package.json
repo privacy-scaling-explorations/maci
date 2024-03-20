@@ -13,7 +13,7 @@
     "build": "tsc -p tsconfig.build.json",
     "types": "tsc -p tsconfig.json --noEmit",
     "test": "nyc ts-mocha --exit ts/__tests__/**.test.ts",
-    "typedoc": "typedoc --plugin typedoc-plugin-markdown --options ./typedoc.json"
+    "docs": "typedoc --plugin typedoc-plugin-markdown --options ./typedoc.json"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",

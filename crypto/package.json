@@ -18,7 +18,7 @@
     "test:accQueue": "ts-mocha --exit ts/__tests__/AccQueue.test.ts",
     "test:utils": "ts-mocha --exit ts/__tests__/Utils.test.ts",
     "test:imt": "ts-mocha --exit ts/__tests__/IMT.test.ts",
-    "typedoc": "typedoc --plugin typedoc-plugin-markdown --options ./typedoc.json"
+    "docs": "typedoc --plugin typedoc-plugin-markdown --options ./typedoc.json"
   },
   "dependencies": {
     "@zk-kit/baby-jubjub": "^0.3.0",
