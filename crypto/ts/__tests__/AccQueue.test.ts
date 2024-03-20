@@ -279,4 +279,41 @@ describe("AccQueue", function test() {
       });
     });
   });
+
+  describe("Copy", () => {
+    const HASH_LENGTH = 2;
+    const SUB_DEPTH = 2;
+    const ZERO = BigInt(0);
+
+    it("should create a deep copy of the AccQueue", () => {
+      const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO);
+      aq.enqueue(ZERO);
+      const copy = aq.copy();
+
+      expect(copy).to.be.an.instanceof(AccQueue);
+      expect(copy.getSubRoots().length).to.eq(aq.getSubRoots().length);
+      expect(copy.getSubRoots()).to.eql(aq.getSubRoots());
+      expect(copy.getHashLength()).to.eq(aq.getHashLength());
+      expect(copy.getSubDepth()).to.eql(aq.getSubDepth());
+      expect(copy.getZeros()).to.eql(aq.getZeros());
+    });
+
+    it("should not be the same object as the original", () => {
+      const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO);
+      const copy = aq.copy();
+      expect(copy).not.eq(aq);
+    });
+
+    it("should not affect the original AccQueue when modifying the copy", () => {
+      const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO);
+
+      aq.enqueue(ZERO);
+      const copy = aq.copy();
+
+      copy.enqueue(ZERO);
+      copy.insertSubTree(ZERO);
+
+      expect(aq.getSubRoots().length).to.eq(0);
+    });
+  });
 });
