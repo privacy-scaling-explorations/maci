@@ -253,4 +253,30 @@ describe("AccQueue", function test() {
       });
     });
   });
+
+  describe("InertSubTtree", () => {
+    describe("Binary AccQueue", () => {
+      const HASH_LENGTH = 2;
+      const SUB_DEPTH = 2;
+      const ZERO = BigInt(0);
+
+      it("should insert a subtree root into the correct position", () => {
+        const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO);
+        const subRoot = BigInt(1);
+        expect(aq.getSubRoots().length).to.eq(0);
+        aq.insertSubTree(subRoot);
+        expect(aq.getSubRoots()[0].toString()).to.eq(subRoot.toString());
+      });
+
+      it("should insert a subtree root when multiple subtrees exist", () => {
+        const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO);
+        const subRoot1 = BigInt(1);
+        const subRoot2 = BigInt(2);
+        aq.insertSubTree(subRoot1);
+        aq.insertSubTree(subRoot2);
+        expect(aq.getSubRoots()[0].toString()).to.eq(subRoot1.toString());
+        expect(aq.getSubRoots()[1].toString()).to.eq(subRoot2.toString());
+      });
+    });
+  });
 });
