@@ -11,10 +11,20 @@ import { logError, logGreen, success } from "../utils/theme";
  * @param {IGetPollArgs} args - The arguments for the get poll command
  * @returns {IGetPollData} poll data
  */
-export const getPoll = async ({ maciAddress, signer, pollId, quiet = true }: IGetPollArgs): Promise<IGetPollData> => {
+export const getPoll = async ({
+  maciAddress,
+  signer,
+  provider,
+  pollId,
+  quiet = true,
+}: IGetPollArgs): Promise<IGetPollData> => {
   banner(quiet);
 
-  const maciContract = MACIFactory.connect(maciAddress, signer);
+  if (!signer && !provider) {
+    logError("No signer and provider are provided");
+  }
+
+  const maciContract = MACIFactory.connect(maciAddress, signer ?? provider);
   const id =
     pollId === undefined ? await maciContract.nextPollId().then((nextPollId) => nextPollId - 1n) : BigInt(pollId);
 
@@ -28,7 +38,7 @@ export const getPoll = async ({ maciAddress, signer, pollId, quiet = true }: IGe
     logError(`MACI contract doesn't have any deployed poll ${id}`);
   }
 
-  const pollContract = PollFactory.connect(pollAddress, signer);
+  const pollContract = PollFactory.connect(pollAddress, signer ?? provider);
 
   const [[deployTime, duration], isStateAqMerged] = await Promise.all([
     pollContract.getDeployTimeAndDuration(),
