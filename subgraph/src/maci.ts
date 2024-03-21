@@ -74,6 +74,7 @@ export function handleSignUp(event: SignUpEvent): void {
   maci.save();
 
   const poll = Poll.load(maci.latestPoll);
+
   if (poll) {
     poll.numSignups = poll.numSignups.plus(ONE_BIGINT);
     poll.updatedAt = event.block.timestamp;

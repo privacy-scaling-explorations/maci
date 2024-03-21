@@ -96,6 +96,7 @@ export function handlePublishMessage(event: PublishMessageEvent): void {
   entity.save();
 
   const poll = Poll.load(event.address);
+
   if (poll) {
     poll.numMessages = poll.numMessages.plus(ONE_BIGINT);
     poll.updatedAt = event.block.timestamp;
@@ -107,6 +108,7 @@ export function handleTopupMessage(event: TopupMessageEvent): void {
   const stateIndex = event.params._message.data[0].toString();
   const credits = event.params._message.data[1];
   const account = Account.load(stateIndex);
+
   if (account) {
     account.voiceCreditBalance = account.voiceCreditBalance.plus(credits);
     account.save();
@@ -124,6 +126,7 @@ export function handleTopupMessage(event: TopupMessageEvent): void {
   entity.save();
 
   const poll = Poll.load(event.address);
+
   if (poll) {
     poll.numMessages = poll.numMessages.plus(ONE_BIGINT);
     poll.updatedAt = event.block.timestamp;
