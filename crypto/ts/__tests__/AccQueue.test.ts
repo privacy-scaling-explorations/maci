@@ -254,7 +254,7 @@ describe("AccQueue", function test() {
     });
   });
 
-  describe("InertSubTtree", () => {
+  describe("InsertSubTree", () => {
     describe("Binary AccQueue", () => {
       const HASH_LENGTH = 2;
       const SUB_DEPTH = 2;
