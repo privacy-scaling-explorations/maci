@@ -14,7 +14,7 @@ import { CommonUtilities } from "./utilities/CommonUtilities.sol";
 /// @title TallyNonQv
 /// @notice The TallyNonQv contract is used during votes tallying
 /// and by users to verify the tally results.
-contract TallyNonQv is Ownable, SnarkCommon, CommonUtilities, Hasher {
+contract TallyNonQv is Ownable(msg.sender), SnarkCommon, CommonUtilities, Hasher {
   uint256 internal constant TREE_ARITY = 5;
 
   /// @notice The commitment to the tally results. Its initial value is 0, but after

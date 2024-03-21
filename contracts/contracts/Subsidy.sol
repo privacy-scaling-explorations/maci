@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.20;
 
 import { IMACI } from "./interfaces/IMACI.sol";
 import { IMessageProcessor } from "./interfaces/IMessageProcessor.sol";
@@ -15,7 +15,7 @@ import { IVkRegistry } from "./interfaces/IVkRegistry.sol";
 /// @notice This contract is used to verify that the subsidy calculations
 /// are correct. It is also used to update the subsidy commitment if the
 /// proof is valid.
-contract Subsidy is Ownable, CommonUtilities, Hasher, SnarkCommon {
+contract Subsidy is Ownable(msg.sender), CommonUtilities, Hasher, SnarkCommon {
   // row batch index
   uint256 public rbi;
   // column batch index

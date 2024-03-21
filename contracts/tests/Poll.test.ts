@@ -8,7 +8,15 @@ import { Keypair, Message, PCommand, PubKey } from "maci-domainobjs";
 
 import { parseArtifact } from "../ts/abi";
 import { getDefaultSigner, getSigners } from "../ts/utils";
-import { AccQueue, MACI, Poll as PollContract, TopupCredit, Verifier, VkRegistry } from "../typechain-types";
+import {
+  AccQueue,
+  IERC20Errors__factory as IERC20ErrorsFactory,
+  MACI,
+  Poll as PollContract,
+  TopupCredit,
+  Verifier,
+  VkRegistry,
+} from "../typechain-types";
 
 import {
   MESSAGE_TREE_DEPTH,
@@ -155,7 +163,12 @@ describe("Poll", () => {
     });
 
     it("should throw when the user does not have enough tokens", async () => {
-      await expect(pollContract.connect(signer).topup(1n, 50n)).to.be.revertedWith("ERC20: insufficient allowance");
+      const pollAddress = await pollContract.getAddress();
+
+      await expect(pollContract.connect(signer).topup(1n, 50n)).to.be.revertedWithCustomError(
+        IERC20ErrorsFactory.connect(pollAddress),
+        "ERC20InsufficientAllowance",
+      );
     });
 
     it("should emit an event when publishing a topup message", async () => {

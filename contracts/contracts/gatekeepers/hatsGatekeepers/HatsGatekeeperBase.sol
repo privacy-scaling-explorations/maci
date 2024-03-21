@@ -7,7 +7,7 @@ import { IHats } from "../../interfaces/IHats.sol";
 
 /// @title HatsGatekeeperBase
 /// @notice Abastract contract containing the base elements of a Hats Gatekeeper contract
-abstract contract HatsGatekeeperBase is SignUpGatekeeper, Ownable {
+abstract contract HatsGatekeeperBase is SignUpGatekeeper, Ownable(msg.sender) {
   /*//////////////////////////////////////////////////////////////
                               CUSTOM ERRORS
     //////////////////////////////////////////////////////////////*/
