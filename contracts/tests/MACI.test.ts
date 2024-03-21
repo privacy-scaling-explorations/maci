@@ -80,36 +80,38 @@ describe("MACI", () => {
     it("should sign up multiple users", async () => {
       const iface = maciContract.interface;
 
-      await Promise.all(
-        users.map(async (user, index) => {
-          const tx = await maciContract.signUp(
-            user.pubKey.asContractParam(),
-            AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-            AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
-            signUpTxOpts,
-          );
-          const receipt = await tx.wait();
-          expect(receipt?.status).to.eq(1);
+      for (let index = 0; index < users.length; index += 1) {
+        const user = users[index];
 
-          // Store the state index
-          const log = receipt!.logs[receipt!.logs.length - 1];
-          const event = iface.parseLog(log as unknown as { topics: string[]; data: string }) as unknown as {
-            args: {
-              _stateIndex: BigNumberish;
-              _voiceCreditBalance: BigNumberish;
-              _timestamp: BigNumberish;
-            };
+        // eslint-disable-next-line no-await-in-loop
+        const tx = await maciContract.signUp(
+          user.pubKey.asContractParam(),
+          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
+          AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
+          signUpTxOpts,
+        );
+        // eslint-disable-next-line no-await-in-loop
+        const receipt = await tx.wait();
+        expect(receipt?.status).to.eq(1);
+
+        // Store the state index
+        const log = receipt!.logs[receipt!.logs.length - 1];
+        const event = iface.parseLog(log as unknown as { topics: string[]; data: string }) as unknown as {
+          args: {
+            _stateIndex: BigNumberish;
+            _voiceCreditBalance: BigNumberish;
+            _timestamp: BigNumberish;
           };
+        };
 
-          expect(event.args._stateIndex.toString()).to.eq((index + 1).toString());
+        expect(event.args._stateIndex.toString()).to.eq((index + 1).toString());
 
-          maciState.signUp(
-            user.pubKey,
-            BigInt(event.args._voiceCreditBalance.toString()),
-            BigInt(event.args._timestamp.toString()),
-          );
-        }),
-      );
+        maciState.signUp(
+          user.pubKey,
+          BigInt(event.args._voiceCreditBalance.toString()),
+          BigInt(event.args._timestamp.toString()),
+        );
+      }
     });
 
     it("should fail when given an invalid pubkey", async () => {

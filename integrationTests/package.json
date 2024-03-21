@@ -21,7 +21,7 @@
     "@types/chai": "^4.3.11",
     "@types/chai-as-promised": "^7.1.8",
     "@types/mocha": "^10.0.6",
-    "@types/node": "^20.11.28",
+    "@types/node": "^20.11.30",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
     "hardhat": "^2.22.1",
@@ -31,7 +31,7 @@
     "ts-mocha": "^10.0.0"
   },
   "dependencies": {
-    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "ethers": "^6.11.1",
     "maci-circuits": "^1.2.0",
     "maci-cli": "^1.2.0",

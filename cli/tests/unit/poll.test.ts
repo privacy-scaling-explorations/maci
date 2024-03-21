@@ -53,7 +53,7 @@ describe("poll", () => {
     });
 
     it("should get finished poll properly", async () => {
-      const pollData = await getPoll({ maciAddress: maciAddresses.maciAddress, signer });
+      const pollData = await getPoll({ maciAddress: maciAddresses.maciAddress, provider: signer.provider! });
 
       await timeTravel({ seconds: Number(pollData.duration), signer });
       await mergeMessages({ pollId: BigInt(pollData.id), signer });
@@ -64,6 +64,12 @@ describe("poll", () => {
       expect(pollData.id).to.eq(finishedPollData.id);
       expect(pollData.address).to.eq(finishedPollData.address);
       expect(finishedPollData.isStateAqMerged).to.eq(true);
+    });
+
+    it("should throw error if there are no signer and provider", async () => {
+      await expect(getPoll({ maciAddress: maciAddresses.maciAddress, pollId: -1n })).eventually.rejectedWith(
+        "No signer and provider are provided",
+      );
     });
 
     it("should throw error if current poll id is invalid", async () => {

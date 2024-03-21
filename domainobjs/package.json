@@ -13,12 +13,12 @@
     "build": "tsc -p tsconfig.build.json",
     "types": "tsc -p tsconfig.json --noEmit",
     "test": "nyc ts-mocha --exit ts/__tests__/**.test.ts",
-    "typedoc": "typedoc --plugin typedoc-plugin-markdown --options ./typedoc.json"
+    "docs": "typedoc --plugin typedoc-plugin-markdown --options ./typedoc.json"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
     "@types/mocha": "^10.0.6",
-    "@types/node": "^20.11.28",
+    "@types/node": "^20.11.30",
     "chai": "^4.3.10",
     "mocha": "^10.3.0",
     "nyc": "^15.1.0",

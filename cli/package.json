@@ -39,11 +39,11 @@
     "test:timeTravel": "ts-mocha --exit tests/unit/timeTravel.test.ts",
     "test:fundWallet": "ts-mocha --exit tests/unit/fundWallet.test.ts",
     "test:utils": "ts-mocha --exit tests/unit/utils.test.ts",
-    "typedoc": "typedoc --plugin typedoc-plugin-markdown --options ./typedoc.json"
+    "docs": "typedoc --plugin typedoc-plugin-markdown --options ./typedoc.json"
   },
   "dependencies": {
     "@commander-js/extra-typings": "^12.0.1",
-    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "commander": "^12.0.0",
     "dotenv": "^16.4.5",
     "ethers": "^6.11.1",
@@ -59,7 +59,7 @@
     "@types/chai": "^4.3.9",
     "@types/chai-as-promised": "^7.1.8",
     "@types/mocha": "^10.0.6",
-    "@types/node": "^20.11.28",
+    "@types/node": "^20.11.30",
     "@types/prompt": "^1.1.8",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
