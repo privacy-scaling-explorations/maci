@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { BigInt as GraphBN, Bytes, ethereum, Int8 } from "@graphprotocol/graph-ts";
+import { BigInt as GraphBN, Bytes, ethereum } from "@graphprotocol/graph-ts";
 
 import { Account, MACI, User } from "../../generated/schema";
 
@@ -10,7 +10,7 @@ export const packPubkey = (pubkeyX: GraphBN, pubkeyY: GraphBN): string => `${pub
 export const createOrLoadMACI = (
   event: ethereum.Event,
   owner: Bytes | null = null,
-  stateTreeDepth: Int8 = 10,
+  stateTreeDepth: GraphBN = GraphBN.fromI32(10),
 ): MACI => {
   let maci = MACI.load(DEFAULT_MACI_ID);
 
@@ -18,7 +18,7 @@ export const createOrLoadMACI = (
     maci = new MACI(DEFAULT_MACI_ID);
     maci.owner = owner !== null ? owner : (event.transaction.from as Bytes);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    maci.stateTreeDepth = stateTreeDepth as i32;
+    maci.stateTreeDepth = stateTreeDepth.toI32();
     maci.updatedAt = event.block.timestamp;
     maci.blockNumber = event.block.number;
     maci.txHash = event.transaction.hash;
