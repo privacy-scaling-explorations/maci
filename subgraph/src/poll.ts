@@ -125,6 +125,7 @@ export function handleTopupMessage(event: TopupMessageEvent): void {
   entity.save();
 
   const poll = Poll.load(event.address);
+
   if (poll) {
     poll.numMessages = poll.numMessages.plus(ONE_BIGINT);
     poll.updatedAt = event.block.timestamp;
