@@ -6,7 +6,7 @@ import { SignUpGatekeeper } from "../SignUpGatekeeper.sol";
 import { IHats } from "../../interfaces/IHats.sol";
 
 /// @title HatsGatekeeperBase
-/// @notice Abastract contract containing the base elements of a Hats Gatekeeper contract
+/// @notice Abstract contract containing the base elements of a Hats Gatekeeper contract
 abstract contract HatsGatekeeperBase is SignUpGatekeeper, Ownable {
   /*//////////////////////////////////////////////////////////////
                               CUSTOM ERRORS
