@@ -29,7 +29,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 * add on-chain verification ([6427f37](https://github.com/privacy-scaling-explorations/maci/commit/6427f373d805805adb6205270f5074561d5c3a35))
 * **circuits:** enforce use of stateIndex from message ([510e6ee](https://github.com/privacy-scaling-explorations/maci/commit/510e6ee365958e8c7f72cfca6cea75d15a89d28b))
 * **cli:** add a check that the subsidy verifying key was set correctly on chain ([6bda14d](https://github.com/privacy-scaling-explorations/maci/commit/6bda14dd7021846a639ce8cffef3a863eda2b447)), closes [#446](https://github.com/privacy-scaling-explorations/maci/issues/446)
-* **cli:** add env initialization for hardhat conifg ([5442b8a](https://github.com/privacy-scaling-explorations/maci/commit/5442b8a88e3133f2cbdbcf68ed1710207d5f0988))
+* **cli:** add env initialization for hardhat config ([5442b8a](https://github.com/privacy-scaling-explorations/maci/commit/5442b8a88e3133f2cbdbcf68ed1710207d5f0988))
 * **cli:** export genLocalState ([0026669](https://github.com/privacy-scaling-explorations/maci/commit/0026669b31420ad31da1fa7eb716822217a3df30))
 * **cli:** give priority to gatekeeper and voice credit proxy args ([1597ee3](https://github.com/privacy-scaling-explorations/maci/commit/1597ee3a00c05fdf8ff46811804a78af450f066c))
 * **cli:** prioritize contract addresses params ([8ec36c4](https://github.com/privacy-scaling-explorations/maci/commit/8ec36c4d65329b40d7e232861c63208761d73b0a)), closes [#1039](https://github.com/privacy-scaling-explorations/maci/issues/1039)
