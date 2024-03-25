@@ -126,7 +126,7 @@ export const proveOnChain = async ({
     logError("There is no VkRegistry contract linked to the specified MACI contract.");
   }
 
-  const vkRegsitryContract = VkRegistryFactory.connect(vkRegistryContractAddress, signer);
+  const vkRegistryContract = VkRegistryFactory.connect(vkRegistryContractAddress, signer);
   const verifierContractAddress = await mpContract.verifier();
 
   if (!(await contractExists(signer.provider!, verifierContractAddress))) {
@@ -199,7 +199,7 @@ export const proveOnChain = async ({
   const messageRootOnChain = await messageAqContract.getMainRoot(Number(treeDepths.messageTreeDepth));
 
   const stateTreeDepth = Number(await maciContract.stateTreeDepth());
-  const onChainProcessVk = await vkRegsitryContract.getProcessVk(
+  const onChainProcessVk = await vkRegistryContract.getProcessVk(
     stateTreeDepth,
     treeDepths.messageTreeDepth,
     treeDepths.voteOptionTreeDepth,

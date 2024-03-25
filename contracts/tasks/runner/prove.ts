@@ -97,7 +97,7 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
 
       const maciContractAddress = storage.mustGetAddress(EContracts.MACI, network.name);
       const maciContract = await deployment.getContract<MACI>({ name: EContracts.MACI, address: maciContractAddress });
-      const vkRegsitryContract = await deployment.getContract<VkRegistry>({ name: EContracts.VkRegistry });
+      const vkRegistryContract = await deployment.getContract<VkRegistry>({ name: EContracts.VkRegistry });
       const verifierContract = await deployment.getContract<Verifier>({ name: EContracts.Verifier });
 
       const pollAddress = await maciContract.polls(poll);
@@ -213,7 +213,7 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
         messageAqContract,
         mpContract,
         pollContract,
-        vkRegsitryContract,
+        vkRegistryContract,
         verifierContract,
         tallyContract,
         subsidyContract,
