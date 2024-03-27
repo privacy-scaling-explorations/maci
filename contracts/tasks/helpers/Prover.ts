@@ -48,7 +48,7 @@ export class Prover {
   /**
    * VkRegistry contract typechain wrapper
    */
-  private vkRegsitryContract: VkRegistry;
+  private vkRegistryContract: VkRegistry;
 
   /**
    * Verifier contract typechain wrapper
@@ -75,7 +75,7 @@ export class Prover {
     mpContract,
     messageAqContract,
     maciContract,
-    vkRegsitryContract,
+    vkRegistryContract,
     verifierContract,
     subsidyContract,
     tallyContract,
@@ -84,7 +84,7 @@ export class Prover {
     this.mpContract = mpContract;
     this.messageAqContract = messageAqContract;
     this.maciContract = maciContract;
-    this.vkRegsitryContract = vkRegsitryContract;
+    this.vkRegistryContract = vkRegistryContract;
     this.verifierContract = verifierContract;
     this.subsidyContract = subsidyContract;
     this.tallyContract = tallyContract;
@@ -119,7 +119,7 @@ export class Prover {
 
     const [messageRootOnChain, onChainProcessVk] = await Promise.all([
       this.messageAqContract.getMainRoot(Number(treeDepths[2])),
-      this.vkRegsitryContract.getProcessVk(
+      this.vkRegistryContract.getProcessVk(
         stateTreeDepth,
         treeDepths.messageTreeDepth,
         treeDepths.voteOptionTreeDepth,

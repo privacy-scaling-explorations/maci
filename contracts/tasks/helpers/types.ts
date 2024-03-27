@@ -337,7 +337,7 @@ export interface IProverParams {
   /**
    * VkRegistry contract typechain wrapper
    */
-  vkRegsitryContract: VkRegistry;
+  vkRegistryContract: VkRegistry;
 
   /**
    * Verifier contract typechain wrapper

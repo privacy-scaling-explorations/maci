@@ -47,7 +47,7 @@
     "commander": "^12.0.0",
     "dotenv": "^16.4.5",
     "ethers": "^6.11.1",
-    "hardhat": "^2.22.1",
+    "hardhat": "^2.22.2",
     "maci-circuits": "^1.2.0",
     "maci-contracts": "^1.2.0",
     "maci-core": "^1.2.0",
@@ -67,7 +67,7 @@
     "nyc": "^15.1.0",
     "snarkjs": "^0.7.3",
     "ts-mocha": "^10.0.0",
-    "typescript": "^5.4.2"
+    "typescript": "^5.4.3"
   },
   "nyc": {
     "reporter": [

@@ -253,4 +253,67 @@ describe("AccQueue", function test() {
       });
     });
   });
+
+  describe("InsertSubTree", () => {
+    describe("Binary AccQueue", () => {
+      const HASH_LENGTH = 2;
+      const SUB_DEPTH = 2;
+      const ZERO = BigInt(0);
+
+      it("should insert a subtree root into the correct position", () => {
+        const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO);
+        const subRoot = BigInt(1);
+        expect(aq.getSubRoots().length).to.eq(0);
+        aq.insertSubTree(subRoot);
+        expect(aq.getSubRoots()[0].toString()).to.eq(subRoot.toString());
+      });
+
+      it("should insert a subtree root when multiple subtrees exist", () => {
+        const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO);
+        const subRoot1 = BigInt(1);
+        const subRoot2 = BigInt(2);
+        aq.insertSubTree(subRoot1);
+        aq.insertSubTree(subRoot2);
+        expect(aq.getSubRoots()[0].toString()).to.eq(subRoot1.toString());
+        expect(aq.getSubRoots()[1].toString()).to.eq(subRoot2.toString());
+      });
+    });
+  });
+
+  describe("Copy", () => {
+    const HASH_LENGTH = 2;
+    const SUB_DEPTH = 2;
+    const ZERO = BigInt(0);
+
+    it("should create a deep copy of the AccQueue", () => {
+      const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO);
+      aq.enqueue(ZERO);
+      const copy = aq.copy();
+
+      expect(copy).to.be.an.instanceof(AccQueue);
+      expect(copy.getSubRoots().length).to.eq(aq.getSubRoots().length);
+      expect(copy.getSubRoots()).to.eql(aq.getSubRoots());
+      expect(copy.getHashLength()).to.eq(aq.getHashLength());
+      expect(copy.getSubDepth()).to.eql(aq.getSubDepth());
+      expect(copy.getZeros()).to.eql(aq.getZeros());
+    });
+
+    it("should not be the same object as the original", () => {
+      const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO);
+      const copy = aq.copy();
+      expect(copy).not.eq(aq);
+    });
+
+    it("should not affect the original AccQueue when modifying the copy", () => {
+      const aq = new AccQueue(SUB_DEPTH, HASH_LENGTH, ZERO);
+
+      aq.enqueue(ZERO);
+      const copy = aq.copy();
+
+      copy.enqueue(ZERO);
+      copy.insertSubTree(ZERO);
+
+      expect(aq.getSubRoots().length).to.eq(0);
+    });
+  });
 });
