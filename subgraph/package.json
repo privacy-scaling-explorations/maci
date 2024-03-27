@@ -1,0 +1,28 @@
+{
+  "name": "maci-subgraph",
+  "description": "A subgraph to index data from MACI protocol to serve as data layer for frontend integration",
+  "license": "MIT",
+  "scripts": {
+    "codegen": "graph codegen",
+    "prebuild": "pnpm codegen",
+    "build": "graph build",
+    "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ maci-subgraph",
+    "create-local": "graph create --node http://localhost:8020/ maci-subgraph",
+    "remove-local": "graph remove --node http://localhost:8020/ maci-subgraph",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 maci-subgraph --network localhost",
+    "deploy:mainnet": "graph deploy --node https://api.studio.thegraph.com/deploy/ maci-subgraph --network mainnet",
+    "test": "graph test"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "0.67.4",
+    "@graphprotocol/graph-ts": "0.32.0",
+    "maci-contracts": "workspace:^1.1.2"
+  },
+  "devDependencies": {
+    "@types/mustache": "^4.2.5",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "matchstick-as": "0.5.0",
+    "mustache": "^4.2.0"
+  }
+}

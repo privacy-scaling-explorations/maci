@@ -1,6 +1,6 @@
 import fs from "fs";
 
-import { contractAddressesStore } from "./constants";
+import { contractAddressesStore, subgraphNetworkStore } from "./constants";
 import { logError } from "./theme";
 
 /**
@@ -68,4 +68,48 @@ export const doesPathExist = (paths: string[]): [boolean, string | null] => {
   const notFoundPath = paths.find((path) => !fs.existsSync(path));
 
   return notFoundPath ? [false, notFoundPath] : [true, null];
+};
+
+/**
+ * Read a networks.json file from disk
+ * @param path - the path of the file
+ * @returns the JSON object
+ */
+export const readNetworksJSONFile = (
+  path: string,
+): Record<string, Record<string, { address: string; startBlock: number } | undefined>> => {
+  if (!fs.existsSync(path)) {
+    logError(`File ${path} does not exist`);
+  }
+
+  return JSON.parse(fs.readFileSync(path).toString()) as Record<
+    string,
+    Record<string, { address: string; startBlock: number } | undefined>
+  >;
+};
+
+/**
+ * Store a contract address to the local address store file in subgraph module
+ * @param contractName - the name of the contract
+ * @param address - the address of the contract
+ * @param blockNumber - the block number of the deployment contract
+ */
+export const storeSubgraphNetworks = (
+  contractName: string,
+  address: string,
+  startBlock = 0,
+  network = "default",
+): void => {
+  // if it does not exist yet, then create it
+  if (!fs.existsSync(subgraphNetworkStore)) {
+    fs.writeFileSync(subgraphNetworkStore, "{}");
+  }
+
+  const networks = readNetworksJSONFile(subgraphNetworkStore);
+  networks[network][contractName] = {
+    address,
+    startBlock,
+  };
+
+  fs.writeFileSync(subgraphNetworkStore, JSON.stringify(networks, null, 2));
 };
