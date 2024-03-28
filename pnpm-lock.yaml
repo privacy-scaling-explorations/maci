@@ -471,6 +471,9 @@ importers:
       ts-mocha:
         specifier: ^10.0.0
         version: 10.0.0(mocha@10.3.0)
+      typescript:
+        specifier: ^5.4.3
+        version: 5.4.3
 
   website:
     dependencies:
