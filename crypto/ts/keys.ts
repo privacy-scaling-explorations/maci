@@ -25,7 +25,7 @@ export const genRandomSalt = (): bigint => genRandomBabyJubValue();
  * @param privKey A private key generated using genPrivKey()
  * @returns A BabyJub-compatible private key.
  */
-export const formatPrivKeyForBabyJub = (privKey: PrivKey): bigint => BigInt(deriveSecretScalar(privKey));
+export const formatPrivKeyForBabyJub = (privKey: PrivKey): bigint => BigInt(deriveSecretScalar(privKey.toString()));
 
 /**
  * Losslessly reduces the size of the representation of a public key
@@ -49,7 +49,7 @@ export const unpackPubKey = (packed: bigint): PubKey => {
  * @returns A public key associated with the private key
  */
 export const genPubKey = (privKey: PrivKey): PubKey => {
-  const key = derivePublicKey(privKey);
+  const key = derivePublicKey(privKey.toString());
   return [BigInt(key[0]), BigInt(key[1])];
 };
 
