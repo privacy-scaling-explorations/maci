@@ -343,8 +343,8 @@ importers:
         specifier: ^0.3.0
         version: 0.3.0
       '@zk-kit/eddsa-poseidon':
-        specifier: ^0.11.0
-        version: 0.11.0
+        specifier: ^0.5.1
+        version: 0.5.1
       '@zk-kit/poseidon-cipher':
         specifier: ^0.3.0
         version: 0.3.0
@@ -6168,6 +6168,12 @@ packages:
       tslib: 2.6.2
     dev: true
 
+  /@zk-kit/baby-jubjub@0.1.1:
+    resolution: {integrity: sha512-eWpUSpKKpllGZXE6mdS1IVuegRjY2Yu+3Qccyfg0+gMI8+p0ruioMM/MCK3tg2lRIUJTVd+16UghVcK0145yWg==}
+    dependencies:
+      '@zk-kit/utils': 0.1.0
+    dev: false
+
   /@zk-kit/baby-jubjub@0.2.0:
     resolution: {integrity: sha512-pqiPq621oKpwiIkf1KcVh5MdbFX0V67s9gCmiEkhLMeafZaIXEwVt5qmIu1d2HB4mjXgr4Ys8Jpn2Rw4KXxnFQ==}
     dependencies:
@@ -6186,12 +6192,11 @@ packages:
       circomlib: 2.0.5
     dev: false
 
-  /@zk-kit/eddsa-poseidon@0.11.0:
-    resolution: {integrity: sha512-8XgIVSD+nTnTEjvdrFVvju6lVQ5rxCfkBnf/nCFN/IteiIpYX7LnxrTOV7pIp3RrWL29WuTvNrT8TlBrHRrUFA==}
+  /@zk-kit/eddsa-poseidon@0.5.1:
+    resolution: {integrity: sha512-sPyoyjwg9EZ+tHLGxOG+FDj9XJK1knVjm27nTMV4ZSiQIf0427QWnLhOk7b6zMvFmEpBWTG9gneJ5pr3jzJ4zg==}
     dependencies:
-      '@zk-kit/baby-jubjub': 0.3.0
-      '@zk-kit/utils': 0.8.1
-      buffer: 6.0.3
+      '@zk-kit/baby-jubjub': 0.1.1
+      '@zk-kit/utils': 0.1.0
     dev: false
 
   /@zk-kit/poseidon-cipher@0.3.0:
@@ -6201,18 +6206,16 @@ packages:
       '@zk-kit/utils': 0.3.0
     dev: false
 
+  /@zk-kit/utils@0.1.0:
+    resolution: {integrity: sha512-MZmuw2w2StB7XOSNg1TW4VwnBJ746UDmdXTvxwDO/U85UZfGfM3zb53gG35qz5sWpQo/DjfoKqaScmh6HUtQpA==}
+    dev: false
+
   /@zk-kit/utils@0.3.0:
     resolution: {integrity: sha512-yVBczOwOSV+evSgdsJ0tpPn3oQpbL7a7fRqANDogleaLLte1IFxKTFLz3WNcgd28Asq2guMGiU6SmiEc61uHAg==}
     dev: false
 
   /@zk-kit/utils@0.6.0:
     resolution: {integrity: sha512-sUF1yVjlGmm7/NIN/+d+N8WOcI77bTzgV5+vZmp/S7lXcy4fmO+5TdHERRsDbs8Ep8K33EOC6V+U+JXzmjSe5A==}
-    dependencies:
-      buffer: 6.0.3
-    dev: false
-
-  /@zk-kit/utils@0.8.1:
-    resolution: {integrity: sha512-m5cvnYo5IBZQCO8H5X0Mw3rGRGEoSqlYXVVF1+4M9IT3olDWcJHLPRqtYGF9zNf+vXV/21srpZ0hX3X2Lzp1TQ==}
     dependencies:
       buffer: 6.0.3
     dev: false
