@@ -139,7 +139,7 @@ export class PCommand implements ICommand {
   /**
    * @notice Signs this command and returns a Signature.
    */
-  sign = (privKey: PrivKey): Signature => sign(privKey.rawPrivKey, this.hash());
+  sign = (privKey: PrivKey): Signature => sign(privKey.rawPrivKey.toString(), this.hash());
 
   /**
    * @notice Returns true if the given signature is a correct signature of this
