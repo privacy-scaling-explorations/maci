@@ -63,7 +63,7 @@
     "@types/prompt": "^1.1.8",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
-    "mocha": "^10.3.0",
+    "mocha": "^10.4.0",
     "nyc": "^15.1.0",
     "snarkjs": "^0.7.3",
     "ts-mocha": "^10.0.0",
