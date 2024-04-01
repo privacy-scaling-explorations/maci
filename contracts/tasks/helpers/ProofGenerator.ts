@@ -80,7 +80,9 @@ export class ProofGenerator {
    * @returns {MaciState} maci state
    */
   static async prepareState({
-    maciContractAddress,
+    maciContract,
+    pollContract,
+    messageAq,
     pollId,
     maciPrivateKey,
     coordinatorKeypair,
@@ -101,14 +103,35 @@ export class ProofGenerator {
     }
 
     // build an off-chain representation of the MACI contract using data in the contract storage
-    let fromBlock = startBlock ? Number(startBlock) : 0;
+    const [defaultStartBlockSignup, defaultStartBlockPoll, { messageTreeDepth }, stateRoot, numSignups] =
+      await Promise.all([
+        maciContract.queryFilter(maciContract.filters.SignUp()).then((events) => events[0]?.blockNumber ?? 0),
+        maciContract.queryFilter(maciContract.filters.DeployPoll()).then((events) => events[0]?.blockNumber ?? 0),
+        pollContract.treeDepths(),
+        maciContract.getStateAqRoot(),
+        maciContract.numSignUps(),
+      ]);
+    const defaultStartBlock = Math.min(defaultStartBlockPoll, defaultStartBlockSignup);
+    let fromBlock = startBlock ? Number(startBlock) : defaultStartBlock;
+
+    const messageRoot = await messageAq.getMainRoot(messageTreeDepth);
+    const defaultEndBlock = await Promise.all([
+      pollContract
+        .queryFilter(pollContract.filters.MergeMessageAq(messageRoot), fromBlock)
+        .then((events) => events[events.length - 1]?.blockNumber),
+      pollContract
+        .queryFilter(pollContract.filters.MergeMaciStateAq(stateRoot, numSignups), fromBlock)
+        .then((events) => events[events.length - 1]?.blockNumber),
+    ]).then((blocks) => Math.max(...blocks));
 
     if (transactionHash) {
       const tx = await signer.provider!.getTransaction(transactionHash);
-      fromBlock = tx?.blockNumber ?? 0;
+      fromBlock = tx?.blockNumber ?? defaultStartBlock;
     }
 
     console.log(`starting to fetch logs from block ${fromBlock}`);
+
+    const maciContractAddress = await maciContract.getAddress();
 
     return genMaciStateFromContract(
       signer.provider!,
@@ -117,7 +140,7 @@ export class ProofGenerator {
       BigInt(pollId),
       fromBlock,
       blocksPerBatch,
-      endBlock,
+      endBlock || defaultEndBlock,
     );
   }
 

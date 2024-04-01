@@ -255,9 +255,19 @@ export interface ICircuitFiles {
  */
 export interface IPrepareStateParams {
   /**
-   * MACI contract address
+   * MACI contract
    */
-  maciContractAddress: string;
+  maciContract: MACI;
+
+  /**
+   * Poll contract
+   */
+  pollContract: Poll;
+
+  /**
+   * MessageAq contract
+   */
+  messageAq: AccQueue;
 
   /**
    * Poll id

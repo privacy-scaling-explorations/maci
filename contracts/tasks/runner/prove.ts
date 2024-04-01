@@ -6,18 +6,18 @@ import { Keypair, PrivKey } from "maci-domainobjs";
 import fs from "fs";
 
 import type { Proof } from "../../ts/types";
-
-import {
-  type VkRegistry,
-  type Subsidy,
-  type Verifier,
-  type MACI,
-  type Poll,
-  type AccQueue,
+import type {
+  VkRegistry,
+  Subsidy,
+  Verifier,
+  MACI,
+  Poll,
+  AccQueue,
   MessageProcessor,
   Tally,
   TallyNonQv,
 } from "../../typechain-types";
+
 import { ContractStorage } from "../helpers/ContractStorage";
 import { Deployment } from "../helpers/Deployment";
 import { ProofGenerator } from "../helpers/ProofGenerator";
@@ -102,6 +102,11 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
 
       const pollAddress = await maciContract.polls(poll);
       const pollContract = await deployment.getContract<Poll>({ name: EContracts.Poll, address: pollAddress });
+      const messageAqAddress = await pollContract.extContracts().then((contracts) => contracts.messageAq);
+      const messageAq = await deployment.getContract<AccQueue>({
+        name: EContracts.AccQueue,
+        address: messageAqAddress,
+      });
 
       const [, messageAqContractAddress] = await pollContract.extContracts();
       const messageAqContract = await deployment.getContract<AccQueue>({
@@ -125,7 +130,9 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
       }
 
       const maciState = await ProofGenerator.prepareState({
-        maciContractAddress,
+        maciContract,
+        pollContract,
+        messageAq,
         maciPrivateKey,
         coordinatorKeypair,
         pollId: poll,

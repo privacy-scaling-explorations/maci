@@ -240,10 +240,28 @@ export const genProofs = async ({
     }
   } else {
     // build an off-chain representation of the MACI contract using data in the contract storage
-    let fromBlock = startBlock ? Number(startBlock) : 0;
+    const [defaultStartBlockSignup, defaultStartBlockPoll, stateRoot, numSignups, messageRoot] = await Promise.all([
+      maciContract.queryFilter(maciContract.filters.SignUp()).then((events) => events[0]?.blockNumber ?? 0),
+      maciContract.queryFilter(maciContract.filters.DeployPoll()).then((events) => events[0]?.blockNumber ?? 0),
+      maciContract.getStateAqRoot(),
+      maciContract.numSignUps(),
+      messageAqContract.getMainRoot(messageTreeDepth),
+    ]);
+    const defaultStartBlock = Math.min(defaultStartBlockPoll, defaultStartBlockSignup);
+    let fromBlock = startBlock ? Number(startBlock) : defaultStartBlock;
+
+    const defaultEndBlock = await Promise.all([
+      pollContract
+        .queryFilter(pollContract.filters.MergeMessageAq(messageRoot), fromBlock)
+        .then((events) => events[events.length - 1]?.blockNumber),
+      pollContract
+        .queryFilter(pollContract.filters.MergeMaciStateAq(stateRoot, numSignups), fromBlock)
+        .then((events) => events[events.length - 1]?.blockNumber),
+    ]).then((blocks) => Math.max(...blocks));
+
     if (transactionHash) {
       const tx = await signer.provider!.getTransaction(transactionHash);
-      fromBlock = tx?.blockNumber ?? 0;
+      fromBlock = tx?.blockNumber ?? defaultStartBlock;
     }
 
     logYellow(quiet, info(`starting to fetch logs from block ${fromBlock}`));
@@ -254,7 +272,7 @@ export const genProofs = async ({
       pollId,
       fromBlock,
       blocksPerBatch,
-      endBlock,
+      endBlock || defaultEndBlock,
     );
   }
 
