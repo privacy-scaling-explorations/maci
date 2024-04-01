@@ -27,7 +27,7 @@
     "hardhat": "^2.22.2",
     "hardhat-artifactor": "^0.2.0",
     "hardhat-contract-sizer": "^2.0.3",
-    "mocha": "^10.3.0",
+    "mocha": "^10.4.0",
     "ts-mocha": "^10.0.0",
     "typescript": "^5.4.3"
   },
