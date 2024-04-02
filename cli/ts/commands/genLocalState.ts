@@ -1,5 +1,10 @@
 import { JsonRpcProvider } from "ethers";
-import { genMaciStateFromContract } from "maci-contracts";
+import {
+  MACI__factory as MACIFactory,
+  AccQueue__factory as AccQueueFactory,
+  Poll__factory as PollFactory,
+  genMaciStateFromContract,
+} from "maci-contracts";
 import { Keypair, PrivKey } from "maci-domainobjs";
 
 import fs from "fs";
@@ -59,13 +64,50 @@ export const genLocalState = async ({
   const coordinatorMaciPrivKey = PrivKey.deserialize(coordPrivKey);
   const coordinatorKeypair = new Keypair(coordinatorMaciPrivKey);
 
-  // calculate the end block number
-  const endBlockNumber = endBlock || (await signer.provider!.getBlockNumber());
+  const maciContract = MACIFactory.connect(maciAddress, signer);
+  const pollAddr = await maciContract.polls(pollId);
 
-  let fromBlock = startBlock || 0;
+  if (!(await contractExists(signer.provider!, pollAddr))) {
+    logError("Poll contract does not exist");
+  }
+  const pollContract = PollFactory.connect(pollAddr, signer);
+
+  const [{ messageAq }, { messageTreeDepth }] = await Promise.all([
+    pollContract.extContracts(),
+    pollContract.treeDepths(),
+  ]);
+  const messageAqContract = AccQueueFactory.connect(messageAq, signer);
+
+  const [defaultStartBlockSignup, defaultStartBlockPoll, stateRoot, numSignups, messageRoot] = await Promise.all([
+    maciContract.queryFilter(maciContract.filters.SignUp()).then((events) => events[0]?.blockNumber ?? 0),
+    maciContract.queryFilter(maciContract.filters.DeployPoll()).then((events) => events[0]?.blockNumber ?? 0),
+    maciContract.getStateAqRoot(),
+    maciContract.numSignUps(),
+    messageAqContract.getMainRoot(messageTreeDepth),
+  ]);
+  const defaultStartBlock = Math.min(defaultStartBlockPoll, defaultStartBlockSignup);
+  let fromBlock = startBlock ? Number(startBlock) : defaultStartBlock;
+
+  const defaultEndBlock = await Promise.all([
+    pollContract
+      .queryFilter(pollContract.filters.MergeMessageAq(messageRoot), fromBlock)
+      .then((events) => events[events.length - 1]?.blockNumber),
+    pollContract
+      .queryFilter(pollContract.filters.MergeMaciStateAq(stateRoot, numSignups), fromBlock)
+      .then((events) => events[events.length - 1]?.blockNumber),
+  ]).then((blocks) => Math.max(...blocks));
+
   if (transactionHash) {
     const tx = await signer.provider!.getTransaction(transactionHash);
-    fromBlock = tx?.blockNumber ?? 0;
+    fromBlock = tx?.blockNumber ?? defaultStartBlock;
+  }
+
+  // calculate the end block number
+  const endBlockNumber = endBlock || defaultEndBlock;
+
+  if (transactionHash) {
+    const tx = await signer.provider!.getTransaction(transactionHash);
+    fromBlock = tx?.blockNumber ?? defaultStartBlock;
   }
 
   const provider = ethereumProvider ? new JsonRpcProvider(ethereumProvider) : signer.provider;
