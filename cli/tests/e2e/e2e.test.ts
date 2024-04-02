@@ -846,7 +846,6 @@ describe("e2e tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, signer });
       await genLocalState({
         outputPath: stateOutPath,
-        startBlock: 0,
         coordinatorPrivateKey: coordinatorPrivKey,
         blockPerBatch: 50,
         pollId: 0n,
