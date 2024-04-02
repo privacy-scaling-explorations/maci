@@ -4,11 +4,10 @@ pragma circom 2.0.0;
 include "./comparators.circom";
 
 // local imports
-include "./trees/incrementalQuinTree.circom";
-include "./trees/calculateTotal.circom";
-include "./trees/checkRoot.circom";
+include "./iqt.circom";
+include "./calculateTotal.circom";
 include "./hashers.circom";
-include "./unpackElement.circom";
+include "./unpack-element.circom";
 
 // Tally votes in the ballots, batch by batch.
 template TallyVotes(

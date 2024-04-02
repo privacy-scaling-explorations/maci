@@ -1,10 +1,17 @@
 pragma circom 2.0.0;
 
-// https://github.com/weijiekoh/circomlib/blob/feat/poseidon-encryption/circuits/poseidon.circom
+// from @zk-kit/circuits package.
 include "./poseidon-cipher.circom";
+// from circomlib.
 include "./sha256/sha256.circom"; 
 include "./bitify.circom";
 
+/**
+ * Computes the SHA-256 hash of an array of input signals. Each input is first
+ * converted to a 256-bit representation, then these are concatenated and passed
+ * to the SHA-256 hash function. The output is the 256 hash value of the inputs bits
+ * converted back to numbers.
+ */
 template Sha256Hasher(length) {
     var inBits = 256 * length;
 
@@ -28,16 +35,22 @@ template Sha256Hasher(length) {
     for (var i = 0; i < 256; i++) {
         shaOut.in[i] <== sha.out[255-i];
     }
+
     hash <== shaOut.out;
 }
 
-// Template for computing the Poseidon hash of an array of 'n' inputs 
-// with a default zero state (not included in the 'n' inputs).
+/**
+ * Computes the Poseidon hash for an array of n inputs, including a default initial state 
+ * of zero not counted in n. First, extends the inputs by prepending a zero, creating an array [0, inputs]. 
+ * Then, the Poseidon hash of the extended inputs is calculated, with the first element of the 
+ * result assigned as the output. 
+ */
 template PoseidonHasher(n) {
     signal input inputs[n];
     signal output out;
 
-    var extendedInputs[n + 1]; // [0, inputs].
+    // [0, inputs].
+    var extendedInputs[n + 1];
     extendedInputs[0] = 0;
 
     for (var i = 0; i < n; i++) {
@@ -51,14 +64,20 @@ template PoseidonHasher(n) {
     out <== perm[0];
 }
 
-// hash a MACI message together with the public key
-// used to encrypt the message
+/**
+ * Hashes a MACI message and the public key used for message encryption. 
+ * This template processes 11 message inputs and a 2-element public key
+ * combining them using the Poseidon hash function. The hashing process involves two stages: 
+ * 1. hashing message parts in groups of five and,
+ * 2. hashing the grouped results alongside the first message input and 
+ * the encryption public key to produce a final hash output. 
+ */
 template MessageHasher() {
-    // 11 inputs are the MACI message
+    // 11 inputs are the MACI message.
     signal input in[11];
-    // the public key used to encrypt the message
+    // the public key used to encrypt the message.
     signal input encPubKey[2];
-    // we output an hash 
+    // we output an hash.
     signal output hash;
 
     // Hasher5(

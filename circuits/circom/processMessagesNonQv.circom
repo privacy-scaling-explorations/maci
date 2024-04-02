@@ -8,8 +8,9 @@ include "./hashers.circom";
 include "./messageToCommand.circom";
 include "./privToPubKey.circom";
 include "./stateLeafAndBallotTransformerNonQv.circom";
-include "./trees/incrementalQuinTree.circom";
-include "./utils.circom";
+include "./iqt.circom";
+// zk-kit imports
+include "./safe-comparators.circom";
 include "./processMessages.circom";
 
 // Proves the correctness of processing a batch of messages.

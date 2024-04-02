@@ -7,7 +7,7 @@ describe("CalculateTotal circuit", () => {
 
   before(async () => {
     circuit = await circomkitInstance.WitnessTester("calculateTotal", {
-      file: "trees/calculateTotal",
+      file: "calculateTotal",
       template: "CalculateTotal",
       params: [6],
     });

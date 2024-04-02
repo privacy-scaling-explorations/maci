@@ -1,29 +1,34 @@
 pragma circom 2.0.0;
 
-// circomlib import
+// from @zk-kit/circuits package.
+include "./ecdh.circom";
+include "./unpack-element.circom";
+include "./poseidon-cipher.circom";
+// from circomlib.
 include "./bitify.circom";
-// @zk-kit import
+// local.
 include "./hashers.circom";
 
-// local imports
-include "./ecdh.circom";
-include "./unpackElement.circom";
-
-// template that converts a MACI message
-// to a command (decrypts it)
+/**
+ * Converts a MACI message to a command by decrypting it.
+ * Processes encrypted MACI messages into structured MACI commands 
+ * by decrypting using a shared key derived from ECDH. After decryption, 
+ * unpacks and assigns decrypted values to specific command components. 
+ */
 template MessageToCommand() {
     var MSG_LENGTH = 7;
     var PACKED_CMD_LENGTH = 4;
     var UNPACKED_CMD_LENGTH = 8;
+    var UNPACK_ELEM_LENGTH = 5;
+    var DECRYPTED_LENGTH = 9;
+    var MESSAGE_PARTS = 11;
 
-    // the message is an array of 11 parts
-    signal input message[11];
-    // we have the encryption private key
+    // The message is an array of 11 parts.
+    signal input message[MESSAGE_PARTS];
     signal input encPrivKey;
-    // and the encryption public key
     signal input encPubKey[2];
 
-    // we output all of the parts of the command
+    // Command parts.
     signal output stateIndex;
     signal output newPubKey[2];
     signal output voteOptionIndex;
@@ -33,54 +38,46 @@ template MessageToCommand() {
     signal output salt;
     signal output sigR8[2];
     signal output sigS;
-    // and also the packed command 
+    // Packed command. 
     signal output packedCommandOut[PACKED_CMD_LENGTH];
 
-    // generate the shared key so we can decrypt 
-    // the message with it
-    component ecdh = Ecdh();
-    ecdh.privKey <== encPrivKey;
-    ecdh.pubKey[0] <== encPubKey[0];
-    ecdh.pubKey[1] <== encPubKey[1];
+    // Generate the shared key for decrypting the message.
+    var ecdh[2] = Ecdh()(encPrivKey, encPubKey);
 
-    // decrypt the message using poseidon decryption 
-    component decryptor = PoseidonDecryptWithoutCheck(MSG_LENGTH);
-    decryptor.key[0] <== ecdh.sharedKey[0];
-    decryptor.key[1] <== ecdh.sharedKey[1];
-    decryptor.nonce <== 0;
-    for (var i = 1; i < 11; i++) { 
-        // the first one is msg type, skip
-        decryptor.ciphertext[i-1] <== message[i];
-    }
+    // Decrypt the message using Poseidon decryption.
+    var decryptor[DECRYPTED_LENGTH] = PoseidonDecryptWithoutCheck(MSG_LENGTH)(
+        [
+            // nb. the first one is the msg type => skip.
+            message[1], message[2], message[3], message[4],
+            message[5], message[6], message[7], message[8],
+            message[9], message[10]            
+        ],
+        0, 
+        ecdh
+    );
 
-    // save the decrypted message into a packed command signal
+    // Save the decrypted message into a packed command signal.
     signal packedCommand[PACKED_CMD_LENGTH];
     for (var i = 0; i < PACKED_CMD_LENGTH; i++) {
-        packedCommand[i] <== decryptor.decrypted[i];
+        packedCommand[i] <== decryptor[i];
     }
 
-    component unpack = UnpackElement(5);
-    unpack.in <== packedCommand[0];
+    var unpack[UNPACK_ELEM_LENGTH] = UnpackElement(UNPACK_ELEM_LENGTH)(packedCommand[0]);
 
-    // all of the below were packed
-    // into the first element
-    stateIndex <== unpack.out[4];
-    voteOptionIndex <== unpack.out[3];
-    newVoteWeight <== unpack.out[2];
-    nonce <== unpack.out[1];
-    pollId <== unpack.out[0];
+    // Everything below were packed into the first element.
+    stateIndex <== unpack[4];
+    voteOptionIndex <== unpack[3];
+    newVoteWeight <== unpack[2];
+    nonce <== unpack[1];
+    pollId <== unpack[0];
 
     newPubKey[0] <== packedCommand[1];
     newPubKey[1] <== packedCommand[2];
     salt <== packedCommand[3];
 
-    sigR8[0] <== decryptor.decrypted[4];
-    sigR8[1] <== decryptor.decrypted[5];
-    sigS <== decryptor.decrypted[6];
+    sigR8[0] <== decryptor[4];
+    sigR8[1] <== decryptor[5];
+    sigS <== decryptor[6];
 
-    // this could be removed and instead
-    // use packedCommand as output
-    for (var i = 0; i < PACKED_CMD_LENGTH; i++) {
-        packedCommandOut[i] <== packedCommand[i];
-    }
+    packedCommandOut <== packedCommand;
 }
