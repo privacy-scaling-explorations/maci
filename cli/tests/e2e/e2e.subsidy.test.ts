@@ -117,7 +117,7 @@ describe("e2e with Subsidy tests", function test() {
 
     it("should publish six messages", async () => {
       await publish({
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         pubkey: users[0].pubKey.serialize(),
         stateIndex: 1n,
         voteOptionIndex: 0n,
@@ -130,7 +130,7 @@ describe("e2e with Subsidy tests", function test() {
       });
 
       await publish({
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         pubkey: users[1].pubKey.serialize(),
         stateIndex: 2n,
         voteOptionIndex: 1n,
@@ -143,7 +143,7 @@ describe("e2e with Subsidy tests", function test() {
       });
 
       await publish({
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         pubkey: users[2].pubKey.serialize(),
         stateIndex: 3n,
         voteOptionIndex: 2n,
@@ -156,7 +156,7 @@ describe("e2e with Subsidy tests", function test() {
       });
 
       await publish({
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         pubkey: users[3].pubKey.serialize(),
         stateIndex: 4n,
         voteOptionIndex: 3n,
@@ -169,7 +169,7 @@ describe("e2e with Subsidy tests", function test() {
       });
 
       await publish({
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         pubkey: users[3].pubKey.serialize(),
         stateIndex: 4n,
         voteOptionIndex: 3n,
@@ -182,7 +182,7 @@ describe("e2e with Subsidy tests", function test() {
       });
 
       await publish({
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         pubkey: users[3].pubKey.serialize(),
         stateIndex: 4n,
         voteOptionIndex: 3n,
@@ -245,7 +245,7 @@ describe("e2e with Subsidy tests", function test() {
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[0].privKey.serialize(),
         signer,
@@ -293,7 +293,7 @@ describe("e2e with Subsidy tests", function test() {
           nonce: 1n,
           pollId: 0n,
           newVoteWeight: 9n,
-          maciContractAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciAddress,
           salt: genRandomSalt(),
           privateKey: user.privKey.serialize(),
           signer,
@@ -350,7 +350,7 @@ describe("e2e with Subsidy tests", function test() {
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[0].privKey.serialize(),
         signer,
@@ -380,7 +380,7 @@ describe("e2e with Subsidy tests", function test() {
         nonce: 1n,
         pollId: 1n,
         newVoteWeight: 9n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[0].privKey.serialize(),
         signer,
@@ -393,7 +393,7 @@ describe("e2e with Subsidy tests", function test() {
         nonce: 1n,
         pollId: 1n,
         newVoteWeight: 1n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[1].privKey.serialize(),
         signer,
@@ -406,7 +406,7 @@ describe("e2e with Subsidy tests", function test() {
         nonce: 1n,
         pollId: 1n,
         newVoteWeight: 3n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[2].privKey.serialize(),
         signer,
@@ -421,7 +421,7 @@ describe("e2e with Subsidy tests", function test() {
         nonce: 1n,
         pollId: 2n,
         newVoteWeight: 3n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[3].privKey.serialize(),
         signer,
@@ -434,7 +434,7 @@ describe("e2e with Subsidy tests", function test() {
         nonce: 1n,
         pollId: 2n,
         newVoteWeight: 2n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[4].privKey.serialize(),
         signer,
@@ -447,7 +447,7 @@ describe("e2e with Subsidy tests", function test() {
         nonce: 1n,
         pollId: 2n,
         newVoteWeight: 9n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[5].privKey.serialize(),
         signer,
