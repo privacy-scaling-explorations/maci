@@ -960,6 +960,11 @@ export interface IRegisteredUserArgs {
   maciAddress: string;
 
   /**
+   * Start block for event parsing
+   */
+  startBlock?: number;
+
+  /**
    * Whether to log the output
    */
   quiet?: boolean;

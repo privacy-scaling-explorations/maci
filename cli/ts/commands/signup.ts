@@ -95,6 +95,7 @@ export const isRegisteredUser = async ({
   maciAddress,
   maciPubKey,
   signer,
+  startBlock,
   quiet = true,
 }: IRegisteredUserArgs): Promise<{ isRegistered: boolean; stateIndex?: string; voiceCredits?: string }> => {
   banner(quiet);
@@ -102,7 +103,10 @@ export const isRegisteredUser = async ({
   const maciContract = MACIFactory.connect(maciAddress, signer);
   const publicKey = PubKey.deserialize(maciPubKey).asContractParam();
 
-  const events = await maciContract.queryFilter(maciContract.filters.SignUp(undefined, publicKey.x, publicKey.y));
+  const events = await maciContract.queryFilter(
+    maciContract.filters.SignUp(undefined, publicKey.x, publicKey.y),
+    startBlock,
+  );
   const stateIndex = events[0]?.args[0].toString() as string | undefined;
   const voiceCredits = events[0]?.args[3].toString() as string | undefined;
 
