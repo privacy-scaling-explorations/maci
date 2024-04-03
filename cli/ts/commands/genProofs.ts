@@ -241,8 +241,10 @@ export const genProofs = async ({
   } else {
     // build an off-chain representation of the MACI contract using data in the contract storage
     const [defaultStartBlockSignup, defaultStartBlockPoll, stateRoot, numSignups, messageRoot] = await Promise.all([
-      maciContract.queryFilter(maciContract.filters.SignUp()).then((events) => events[0]?.blockNumber ?? 0),
-      maciContract.queryFilter(maciContract.filters.DeployPoll()).then((events) => events[0]?.blockNumber ?? 0),
+      maciContract.queryFilter(maciContract.filters.SignUp(), startBlock).then((events) => events[0]?.blockNumber ?? 0),
+      maciContract
+        .queryFilter(maciContract.filters.DeployPoll(), startBlock)
+        .then((events) => events[0]?.blockNumber ?? 0),
       maciContract.getStateAqRoot(),
       maciContract.numSignUps(),
       messageAqContract.getMainRoot(messageTreeDepth),
