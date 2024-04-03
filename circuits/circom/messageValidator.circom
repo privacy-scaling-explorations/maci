@@ -1,6 +1,6 @@
 pragma circom 2.0.0;
 
-// from @zk-kit/circuits package.
+// zk-kit imports
 include "./safe-comparators.circom";
 // local.
 include "./verifySignature.circom";
@@ -10,24 +10,41 @@ include "./verifySignature.circom";
  * This template supports the Quadratic Voting (QV).
  */
 template MessageValidator() {
+    // Length of the packed command.
     var PACKED_CMD_LENGTH = 4;
 
+    // State index of the user.
     signal input stateTreeIndex;
-    // Number of signups in the state tree.
+    // Number of user sign-ups in the state tree.
     signal input numSignUps;
+    // Vote option index.
     signal input voteOptionIndex;
+    // Maximum number of vote options.
     signal input maxVoteOptions;
+    // Ballot nonce.
     signal input originalNonce;
+    // Command nonce.
     signal input nonce;
+    // Packed command.
     signal input cmd[PACKED_CMD_LENGTH];
+    // Public key of the state leaf (user).
     signal input pubKey[2];
+    // ECDSA signature of the command (R part).
     signal input sigR8[2];
+    // ECDSA signature of the command (S part).
     signal input sigS;
+    // State leaf signup timestamp.
     signal input slTimestamp;
+    // Timestamp indicating when the poll ends.
     signal input pollEndTimestamp;
+    // State leaf current voice credit balance.
     signal input currentVoiceCreditBalance;
+    // Current number of votes for specific option. 
     signal input currentVotesForOption;
+    // Vote weight.
     signal input voteWeight;
+
+    // True when the command is valid; otherwise false.
     signal output isValid;
 
     // Check (1) - The state leaf index must be valid.
@@ -55,7 +72,6 @@ template MessageValidator() {
 
     // Check (7) - Check the current voice credit balance.
     // The check ensure that currentVoiceCreditBalance + (currentVotesForOption ** 2) >= (voteWeight ** 2)
-    // @note what is the difference between voteWeight and currentVotesForOption?
     var sufficientVoiceCredits = SafeGreaterEqThan(252)(
         [
             (currentVotesForOption * currentVotesForOption) + currentVoiceCreditBalance,

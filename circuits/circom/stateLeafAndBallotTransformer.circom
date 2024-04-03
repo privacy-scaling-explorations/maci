@@ -6,106 +6,101 @@ include "./mux1.circom";
 // local import
 include "./messageValidator.circom";
 
-// Apply a command to a state leaf and ballot.
+/**
+ * Processes a command by verifying its validity and updates the state leaf and ballot accordingly. 
+ * If the message is correct, updates the public key in the state leaf and the nonce 
+ * in the ballot using multiplexer components.
+ * This template supports the Quadratic Voting (QV).
+ */
 template StateLeafAndBallotTransformer() {
+    // Length of the packed command.
     var PACKED_CMD_LENGTH = 4;
 
-    // For the MessageValidator
-    // how many users signed up
+    // Number of user sign-ups in the state tree.
     signal input numSignUps;
-    // what is the maximum number of vote options
+    // Maximum number of vote options.
     signal input maxVoteOptions;
 
-    // State leaf
-    // the public key of the signed up user
+    // The following signals represents a state leaf (signed up user).
+    // Public key.
     signal input slPubKey[2];
-    // the current voice credit balance of the signed up user
+    // Current voice credit balance.
     signal input slVoiceCreditBalance;
-    // the signup timestamp
+    // Signup timestmap.
     signal input slTimestamp;
-    // when the poll ends
+    // Timestamp indicating when the poll ends.
     signal input pollEndTimestamp;
 
-    // Ballot
-    // the nonce of the ballot
+    // The following signals represents a ballot.
+    // Nonce.
     signal input ballotNonce;
-    // the vote for this option 
+    // Current number of votes for specific option. 
     signal input ballotCurrentVotesForOption;
 
-    // Command
-    // state index of the user
+    // The following signals represents a command.
+    // State index of the user.
     signal input cmdStateIndex;
-    // the pub key 
+    // Public key of the user.
     signal input cmdNewPubKey[2];
-    // the vote option index
+    // Vote option index.
     signal input cmdVoteOptionIndex;
-    // the vote weight
+    // Vote weight.
     signal input cmdNewVoteWeight;
-    // the nonce of the command
+    // Nonce.
     signal input cmdNonce;
-    // the id of the poll for which this command is for
+    // Poll identifier.
     signal input cmdPollId;
-    // the salt of the command
+    // Salt.
     signal input cmdSalt;
-    // the ECDSA signature of the command
-    // r part 
+    // ECDSA signature of the command (R part).
     signal input cmdSigR8[2];
-    // s part 
+    // ECDSA signature of the command (S part).
     signal input cmdSigS;
-    // @note we assume that packedCommand is valid!
+    // Packed command. 
+    // nb. we are assuming that the packedCommand is always valid.
     signal input packedCommand[PACKED_CMD_LENGTH];
 
-    // New state leaf (if the command is valid)
+    // New state leaf (if the command is valid).
     signal output newSlPubKey[2];
-
-    // New ballot (if the command is valid)
+    // New ballot (if the command is valid).
     signal output newBallotNonce;
+    
+    // True when the command is valid; otherwise false.
     signal output isValid;
 
-    // Check if the command / message is valid
-    component messageValidator = MessageValidator();
-    messageValidator.stateTreeIndex <== cmdStateIndex;
-    messageValidator.numSignUps <== numSignUps;
-    messageValidator.voteOptionIndex <== cmdVoteOptionIndex;
-    messageValidator.maxVoteOptions <== maxVoteOptions;
-    messageValidator.originalNonce <== ballotNonce;
-    messageValidator.nonce <== cmdNonce;
-    for (var i = 0; i < PACKED_CMD_LENGTH; i++) {
-        messageValidator.cmd[i] <== packedCommand[i];
-    }
-    messageValidator.pubKey[0] <== slPubKey[0];
-    messageValidator.pubKey[1] <== slPubKey[1];
-    messageValidator.sigR8[0] <== cmdSigR8[0];
-    messageValidator.sigR8[1] <== cmdSigR8[1];
-    messageValidator.sigS <== cmdSigS;
+    // Check if the command / message is valid.
+    var messageValidator = MessageValidator()(
+        cmdStateIndex,
+        numSignUps,
+        cmdVoteOptionIndex,
+        maxVoteOptions,
+        ballotNonce,
+        cmdNonce,
+        packedCommand,
+        slPubKey,
+        cmdSigR8,
+        cmdSigS,
+        slTimestamp,
+        pollEndTimestamp,
+        slVoiceCreditBalance,
+        ballotCurrentVotesForOption,
+        cmdNewVoteWeight
+    );
 
-    messageValidator.currentVoiceCreditBalance <== slVoiceCreditBalance;
-    messageValidator.slTimestamp <== slTimestamp;
-    messageValidator.pollEndTimestamp <== pollEndTimestamp;
-    messageValidator.currentVotesForOption <== ballotCurrentVotesForOption;
-    messageValidator.voteWeight <== cmdNewVoteWeight;
+    // If the message is valid then we swap out the public key.
+    // This means using a Mux1() for pubKey[0] and another one
+    // for pubKey[1].
+    var newSlPubKey0Mux = Mux1()([slPubKey[0], cmdNewPubKey[0]], messageValidator);
+    var newSlPubKey1Mux = Mux1()([slPubKey[1], cmdNewPubKey[1]], messageValidator);
 
-    // if the message is valid then we swap out the public key
-    // we have to do this in two Mux one for pubKey[0]
-    // and one for pubKey[1]
-    component newSlPubKey0Mux = Mux1();
-    newSlPubKey0Mux.s <== messageValidator.isValid;
-    newSlPubKey0Mux.c[0] <== slPubKey[0];
-    newSlPubKey0Mux.c[1] <== cmdNewPubKey[0];
-    newSlPubKey[0] <== newSlPubKey0Mux.out;
+    newSlPubKey[0] <== newSlPubKey0Mux;
+    newSlPubKey[1] <== newSlPubKey1Mux;
 
-    component newSlPubKey1Mux = Mux1();
-    newSlPubKey1Mux.s <== messageValidator.isValid;
-    newSlPubKey1Mux.c[0] <== slPubKey[1];
-    newSlPubKey1Mux.c[1] <== cmdNewPubKey[1];
-    newSlPubKey[1] <== newSlPubKey1Mux.out;
+    // If the message is valid, then we swap out the ballot nonce
+    // using a Mux1().
+    var newBallotNonceMux = Mux1()([ballotNonce, cmdNonce], messageValidator);
 
-    // if the message is valid then we swap out the ballot nonce
-    component newBallotNonceMux = Mux1();
-    newBallotNonceMux.s <== messageValidator.isValid;
-    newBallotNonceMux.c[0] <== ballotNonce;
-    newBallotNonceMux.c[1] <== cmdNonce;
-    newBallotNonce <== newBallotNonceMux.out;
+    newBallotNonce <== newBallotNonceMux;
 
-    isValid <== messageValidator.isValid;
+    isValid <== messageValidator;
 }
