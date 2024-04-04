@@ -15,7 +15,7 @@ import { genMaciStateFromContract } from "../../ts/genMaciState";
 import { asHex } from "../../ts/utils";
 
 /**
- * Proof generator class for message processing, subsidy and tally.
+ * Proof generator class for message processing and tally.
  */
 export class ProofGenerator {
   /**
@@ -44,11 +44,6 @@ export class ProofGenerator {
   private tallyOutputFile: string;
 
   /**
-   * The file to store the subsidy proof
-   */
-  private subsidyOutputFile?: string;
-
-  /**
    * Message processing circuit files
    */
   private mp: ICircuitFiles;
@@ -57,11 +52,6 @@ export class ProofGenerator {
    * Tally circuit files
    */
   private tally: ICircuitFiles;
-
-  /**
-   * Subsidy circuit files
-   */
-  private subsidy?: ICircuitFiles;
 
   /**
    * Whether to use quadratic voting or not
@@ -162,8 +152,6 @@ export class ProofGenerator {
     tallyContractAddress,
     outputDir,
     tallyOutputFile,
-    subsidyOutputFile,
-    subsidy,
     useQuadraticVoting,
   }: IProofGeneratorParams) {
     this.poll = poll;
@@ -171,11 +159,9 @@ export class ProofGenerator {
     this.tallyContractAddress = tallyContractAddress;
     this.outputDir = outputDir;
     this.tallyOutputFile = tallyOutputFile;
-    this.subsidyOutputFile = subsidyOutputFile;
     this.mp = mp;
     this.tally = tally;
     this.rapidsnark = rapidsnark;
-    this.subsidy = subsidy;
     this.useQuadraticVoting = useQuadraticVoting;
   }
 
@@ -216,59 +202,6 @@ export class ProofGenerator {
 
     performance.mark("mp-proofs-end");
     performance.measure("Generate message processor proofs", "mp-proofs-start", "mp-proofs-end");
-
-    return proofs;
-  }
-
-  /**
-   * Generate subsidy proofs
-   *
-   * @throws error is there is no subsidy or subsidy output file properties
-   * @returns subsidy proofs
-   */
-  async generateSubsidyProofs(): Promise<Proof[]> {
-    if (!this.subsidy || !this.subsidyOutputFile) {
-      throw new Error("Subsidy args was not set");
-    }
-
-    performance.mark("subsidy-proofs-start");
-
-    const proofs: Proof[] = [];
-    const { subsidyBatchSize } = this.poll.batchSizes;
-    const numLeaves = this.poll.stateLeaves.length;
-    const totalSubsidyBatches = Math.ceil(numLeaves / subsidyBatchSize) ** 2;
-
-    let numBatchesCalulated = 0;
-    let subsidyCircuitInputs: CircuitInputs;
-
-    while (this.poll.hasUnfinishedSubsidyCalculation()) {
-      subsidyCircuitInputs = this.poll.subsidyPerBatch() as unknown as CircuitInputs;
-      // eslint-disable-next-line no-await-in-loop
-      await this.generateProofs(subsidyCircuitInputs, this.subsidy, `subsidy_${numBatchesCalulated}.json`).then(
-        (data) => proofs.push(...data),
-      );
-      numBatchesCalulated += 1;
-
-      console.log(`Progress: ${numBatchesCalulated} / ${totalSubsidyBatches}`);
-    }
-
-    const fileData = {
-      provider: process.env.ETH_PROVIDER,
-      maci: this.maciContractAddress,
-      pollId: this.poll.pollId.toString(),
-      newSubsidyCommitment: asHex(subsidyCircuitInputs!.newSubsidyCommitment as BigNumberish),
-      results: {
-        subsidy: this.poll.subsidy.map((x) => x.toString()),
-        salt: asHex(subsidyCircuitInputs!.newSubsidySalt as BigNumberish),
-      },
-    };
-
-    // store it
-    fs.writeFileSync(this.subsidyOutputFile, JSON.stringify(fileData, null, 4));
-    console.log(`Subsidy file:\n${JSON.stringify(fileData, null, 4)}\n`);
-
-    performance.mark("subsidy-proofs-end");
-    performance.measure("Generate subsidy proofs", "subsidy-proofs-start", "subsidy-proofs-end");
 
     return proofs;
   }

@@ -39,12 +39,10 @@ export interface TreeDepths {
  * This interface defines the batch sizes.
  * @property tallyBatchSize - The size of the tally batch.
  * @property messageBatchSize - The size of the message batch.
- * @property subsidyBatchSize - The size of the subsidy batch.
  */
 export interface BatchSizes {
   tallyBatchSize: number;
   messageBatchSize: number;
-  subsidyBatchSize: number;
 }
 
 /**
@@ -92,8 +90,6 @@ export interface IPoll {
   hasUnprocessedMessages(): boolean;
   processAllMessages(): { stateLeaves: StateLeaf[]; ballots: Ballot[] };
   hasUntalliedBallots(): boolean;
-  hasUnfinishedSubsidyCalculation(): boolean;
-  subsidyPerBatch(): ISubsidyCircuitInputs;
   copy(): Poll;
   equals(p: Poll): boolean;
   toJSON(): IJsonPoll;
@@ -198,27 +194,4 @@ export interface ITallyCircuitInputs {
   newResultsRootSalt: string;
   newPerVOSpentVoiceCreditsRootSalt?: string;
   newSpentVoiceCreditSubtotalSalt: string;
-}
-
-/**
- * An interface describing the circuit inputs to the Subsidy circuit
- */
-export interface ISubsidyCircuitInputs {
-  stateRoot: string;
-  ballotRoot: string;
-  sbSalt: string;
-  currentSubsidySalt: string;
-  newSubsidySalt: string;
-  sbCommitment: string;
-  currentSubsidyCommitment: string;
-  newSubsidyCommitment: string;
-  currentSubsidy: string[];
-  packedVals: string;
-  inputHash: string;
-  ballots1: string[];
-  ballots2: string[];
-  votes1: number[];
-  votes2: number[];
-  ballotPathElements1: string[];
-  ballotPathElements2: string[];
 }

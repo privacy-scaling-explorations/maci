@@ -22,7 +22,6 @@ export interface PollContracts {
   poll: string;
   messageProcessor: string;
   tally: string;
-  subsidy?: string;
 }
 
 /**
@@ -123,20 +122,6 @@ export interface TallyData {
      * The commitment of the per VO spent voice credits.
      */
     commitment: string;
-  };
-}
-
-/**
- * A util interface that represents a subsidy file
- */
-export interface SubsidyData {
-  provider: string;
-  maci: string;
-  pollId: bigint;
-  newSubsidyCommitment: string;
-  results: {
-    subsidy: string[];
-    salt: string;
   };
 }
 
@@ -249,11 +234,6 @@ export interface CheckVerifyingKeysArgs {
   vkRegistry?: string;
 
   /**
-   * The path to the subsidy zkey
-   */
-  subsidyZkeyPath?: string;
-
-  /**
    * Whether to log the output
    */
   quiet?: boolean;
@@ -352,11 +332,6 @@ export interface DeployPollArgs {
    * The coordinator's public key
    */
   coordinatorPubkey: string;
-
-  /**
-   * Whether to deploy subsidy contract
-   */
-  subsidyEnabled: boolean;
 
   /**
    * A signer object
@@ -480,16 +455,6 @@ export interface GenProofsArgs {
   signer: Signer;
 
   /**
-   * The file to store the subsidy proof
-   */
-  subsidyFile?: string;
-
-  /**
-   * The path to the subsidy zkey file
-   */
-  subsidyZkey?: string;
-
-  /**
    * The path to the rapidsnark binary
    */
   rapidsnark?: string;
@@ -515,16 +480,6 @@ export interface GenProofsArgs {
   tallyDatFile?: string;
 
   /**
-   * The path to the subsidy witnessgen binary
-   */
-  subsidyWitgen?: string;
-
-  /**
-   * The path to the subsidy dat file
-   */
-  subsidyDatFile?: string;
-
-  /**
    * The coordinator's private key
    */
   coordinatorPrivKey?: string;
@@ -548,11 +503,6 @@ export interface GenProofsArgs {
    * The path to the tally wasm file
    */
   tallyWasm?: string;
-
-  /**
-   * The path to the subsidy wasm file
-   */
-  subsidyWasm?: string;
 
   /**
    * Whether to use wasm or rapidsnark
@@ -670,11 +620,6 @@ export interface ProveOnChainArgs {
   proofDir: string;
 
   /**
-   * Whether to deploy subsidy contract
-   */
-  subsidyEnabled: boolean;
-
-  /**
    * A signer object
    */
   signer: Signer;
@@ -693,11 +638,6 @@ export interface ProveOnChainArgs {
    * The address of the Tally contract
    */
   tallyAddress?: string;
-
-  /**
-   * The address of the Subsidy contract
-   */
-  subsidyAddress?: string;
 
   /**
    * Whether to log the output
@@ -878,11 +818,6 @@ export interface SetVerifyingKeysArgs {
    * The address of the vkRegistry contract
    */
   vkRegistry?: string;
-
-  /**
-   * The path to the subsidy zkey
-   */
-  subsidyZkeyPath?: string;
 
   /**
    * Whether to log the output
@@ -1080,11 +1015,6 @@ export interface VerifyArgs {
   pollId: bigint;
 
   /**
-   * Whether to deploy subsidy contract
-   */
-  subsidyEnabled: boolean;
-
-  /**
    * A signer object
    */
   signer: Signer;
@@ -1103,16 +1033,6 @@ export interface VerifyArgs {
    * The address of the Tally contract
    */
   tallyAddress: string;
-
-  /**
-   * The address of the Subsidy contract
-   */
-  subsidyAddress?: string;
-
-  /**
-   * The subsidy data
-   */
-  subsidyData?: SubsidyData;
 
   /**
    * Whether to log the output

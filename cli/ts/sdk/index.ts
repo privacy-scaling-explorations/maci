@@ -11,7 +11,6 @@ export type { Signer } from "ethers";
 
 export type {
   TallyData,
-  SubsidyData,
   PublishArgs,
   SignupArgs,
   ISignupData,

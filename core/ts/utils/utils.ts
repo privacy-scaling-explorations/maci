@@ -39,22 +39,6 @@ export const genTallyVkSig = (
 ): bigint => (BigInt(_stateTreeDepth) << 128n) + (BigInt(_intStateTreeDepth) << 64n) + BigInt(_voteOptionTreeDepth);
 
 /**
- * This function generates the signature of a Subsidy Verifying Key(VK).
- * This can be used to check if a SubsidyCalculations' circuit VK is registered
- * in a smart contract that holds several VKs.
- * @param _stateTreeDepth - The depth of the state tree.
- * @param _intStateTreeDepth - The depth of the intermediate state tree.
- * @param _voteOptionTreeDepth - The depth of the vote option tree.
- * @returns Returns a signature for querying if a verifying key with
- * the given parameters is already registered in the contract.
- */
-export const genSubsidyVkSig = (
-  _stateTreeDepth: number,
-  _intStateTreeDepth: number,
-  _voteOptionTreeDepth: number,
-): bigint => (BigInt(_stateTreeDepth) << 128n) + (BigInt(_intStateTreeDepth) << 64n) + BigInt(_voteOptionTreeDepth);
-
-/**
  * This function packs it's parameters into a single bigint.
  * @param maxVoteOptions - The maximum number of vote options.
  * @param numUsers - The number of users.
@@ -138,18 +122,4 @@ export const unpackTallyVotesSmallVals = (packedVals: bigint): { numSignUps: big
   const batchStartIndex = BigInt(`0b${asBin.slice(50, 100)}`);
 
   return { numSignUps, batchStartIndex };
-};
-
-/**
- * This function packs it's parameters into a single bigint.
- * @param row - The row.
- * @param col - The column.
- * @param numSignUps - The number of signups.
- * @returns Returns a single bigint that contains the packed values.
- */
-export const packSubsidySmallVals = (row: number, col: number, numSignUps: number): bigint => {
-  // Note: the << operator has lower precedence than +
-  const packedVals = (BigInt(numSignUps) << 100n) + (BigInt(row) << 50n) + BigInt(col);
-
-  return packedVals;
 };

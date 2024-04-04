@@ -92,7 +92,6 @@ describe("integration tests private/public/keypair", () => {
         coordinatorKeypair.pubKey.asContractParam(),
         verifier,
         vkRegistry,
-        false,
       );
 
       // we know it's the first poll so id is 0

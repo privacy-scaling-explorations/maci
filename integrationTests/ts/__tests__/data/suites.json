@@ -108,8 +108,8 @@
       "expectedTotalSpentVoiceCredits": 8
     },
     {
-      "name": "Subsidy test",
-      "description": "has subsidy result",
+      "name": "4 users 1 vote each",
+      "description": "4 users 1 vote each",
       "numUsers": 4,
       "numVotesPerUser": 1,
       "votes": {
@@ -128,11 +128,7 @@
       },
       "expectedTally": [4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       "expectedSpentVoiceCredits": [4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      "expectedTotalSpentVoiceCredits": 4,
-      "subsidy": {
-        "enabled": true,
-        "expectedSubsidy": [117636, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-      }
+      "expectedTotalSpentVoiceCredits": 4
     }
   ]
 }

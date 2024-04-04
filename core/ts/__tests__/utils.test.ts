@@ -3,12 +3,10 @@ import { expect } from "chai";
 import {
   genProcessVkSig,
   genTallyVkSig,
-  genSubsidyVkSig,
   packProcessMessageSmallVals,
   unpackProcessMessageSmallVals,
   packTallyVotesSmallVals,
   unpackTallyVotesSmallVals,
-  packSubsidySmallVals,
 } from "../utils/utils";
 
 describe("Utils", () => {
@@ -19,11 +17,6 @@ describe("Utils", () => {
 
   it("genTallyVkSig should work", () => {
     const result = genTallyVkSig(1, 2, 3);
-    expect(result).to.equal(340282366920938463500268095579187314691n);
-  });
-
-  it("genSubsidyVkSig should work", () => {
-    const result = genSubsidyVkSig(1, 2, 3);
     expect(result).to.equal(340282366920938463500268095579187314691n);
   });
 
@@ -53,10 +46,5 @@ describe("Utils", () => {
       numSignUps: 3n,
       batchStartIndex: 0n,
     });
-  });
-
-  it("packSubsidySmallVals should work", () => {
-    const result = packSubsidySmallVals(1, 2, 3);
-    expect(result).to.equal(3802951800684689330390016458754n);
   });
 });

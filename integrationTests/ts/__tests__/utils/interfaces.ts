@@ -25,20 +25,6 @@ export interface IChangeUsersKeys {
 }
 
 /**
- * A util interface that represents a subsidy file
- */
-export interface Subsidy {
-  provider: string;
-  maci: string;
-  pollId: number;
-  newSubsidyCommitment: string;
-  results: {
-    subsidy: string[];
-    salt: string;
-  };
-}
-
-/**
  * A util interface that represents a test suite
  */
 export interface ITestSuite {
@@ -49,7 +35,6 @@ export interface ITestSuite {
   expectedTally: number[];
   expectedSpentVoiceCredits: number[];
   expectedTotalSpentVoiceCredits: number;
-  subsidy?: { enabled: boolean; expectedSubsidy: number[] };
   bribers?: IBriber[];
   votes?: IVote[][];
   changeUsersKeys?: IChangeUsersKeys[][];

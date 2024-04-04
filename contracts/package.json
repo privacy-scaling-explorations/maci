@@ -47,7 +47,6 @@
     "test:hasherBenchmarks": "pnpm run test ./tests/HasherBenchmarks.test.ts",
     "test:vkRegistry": "pnpm run test ./tests/VkRegistry.test.ts",
     "test:pollFactory": "pnpm run test ./tests/PollFactory.test.ts",
-    "test:subsidy": "pnpm run test ./tests/Subsidy.test.ts",
     "test:eas_gatekeeper": "pnpm run test ./tests/EASGatekeeper.test.ts",
     "test:hats_gatekeeper": "pnpm run test ./tests/HatsGatekeeper.test.ts",
     "deploy": "hardhat deploy-full",

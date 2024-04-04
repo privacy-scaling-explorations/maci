@@ -40,14 +40,13 @@ import type {
   IJsonPoll,
   IProcessMessagesOutput,
   ITallyCircuitInputs,
-  ISubsidyCircuitInputs,
   IProcessMessagesCircuitInputs,
 } from "./utils/types";
 import type { PathElements } from "maci-crypto";
 
 import { STATE_TREE_ARITY, MESSAGE_TREE_ARITY } from "./utils/constants";
 import { ProcessMessageErrors, ProcessMessageError } from "./utils/errors";
-import { packTallyVotesSmallVals, packSubsidySmallVals } from "./utils/utils";
+import { packTallyVotesSmallVals } from "./utils/utils";
 
 /**
  * A representation of the Poll contract.
@@ -112,19 +111,6 @@ export class Poll implements IPoll {
 
   totalSpentVoiceCredits = 0n;
 
-  // For coefficient and subsidy calculation
-  subsidy: bigint[] = []; // size: M, M is number of vote options
-
-  subsidySalts: Record<number | string, bigint> = {};
-
-  rbi = 0; // row batch index
-
-  cbi = 0; // column batch index
-
-  MM = 50; // adjustable parameter
-
-  WW = 4; // number of digits for float representation
-
   // an empty ballot and its hash to be used as zero value in the
   // ballot tree
   emptyBallot: Ballot;
@@ -169,7 +155,6 @@ export class Poll implements IPoll {
 
     this.tallyResult = new Array(this.maxValues.maxVoteOptions).fill(0n) as bigint[];
     this.perVOSpentVoiceCredits = new Array(this.maxValues.maxVoteOptions).fill(0n) as bigint[];
-    this.subsidy = new Array(this.maxValues.maxVoteOptions).fill(0n) as bigint[];
 
     // we put a blank state leaf to prevent a DoS attack
     this.emptyBallot = Ballot.genBlankBallot(this.maxValues.maxVoteOptions, treeDepths.voteOptionTreeDepth);
@@ -897,182 +882,6 @@ export class Poll implements IPoll {
   hasUntalliedBallots = (): boolean => this.numBatchesTallied * this.batchSizes.tallyBatchSize < this.ballots.length;
 
   /**
-   * This method checks if there are any unfinished subsidy calculations.
-   * @returns Returns true if the product of the row batch index (rbi) and batch size or
-   * the product of column batch index (cbi) and batch size is less than the length
-   * of the ballots array, indicating that there are still ballots left to be processed.
-   * Otherwise, it returns false.
-   */
-  hasUnfinishedSubsidyCalculation = (): boolean => {
-    const batchSize = this.batchSizes.subsidyBatchSize;
-    return this.rbi * batchSize < this.ballots.length && this.cbi * batchSize < this.ballots.length;
-  };
-
-  /**
-   * This method calculates the subsidy per batch.
-   * @returns Returns an array of big integers which represent the circuit inputs for the subsidy calculation.
-   */
-  subsidyPerBatch = (): ISubsidyCircuitInputs => {
-    const batchSize = this.batchSizes.subsidyBatchSize;
-
-    assert(this.hasUnfinishedSubsidyCalculation(), "No more subsidy batches to calculate");
-
-    const stateRoot = this.stateTree!.root;
-    const ballotRoot = this.ballotTree!.root;
-    const sbSalt = this.sbSalts[this.currentMessageBatchIndex!];
-    const sbCommitment = hash3([stateRoot, ballotRoot, sbSalt]);
-
-    const currentSubsidy = this.subsidy.map((x) => BigInt(x.toString()));
-    let currentSubsidyCommitment = 0n;
-    let currentSubsidySalt = 0n;
-    let saltIndex = this.previousSubsidyIndexToString();
-
-    if (this.rbi !== 0 || this.cbi !== 0) {
-      currentSubsidySalt = BigInt(this.subsidySalts[saltIndex]);
-      currentSubsidyCommitment = BigInt(
-        genTreeCommitment(this.subsidy, currentSubsidySalt, this.treeDepths.voteOptionTreeDepth).valueOf(),
-      );
-    }
-
-    const rowStartIndex = this.rbi * batchSize;
-    const colStartIndex = this.cbi * batchSize;
-    const [ballots1, ballots2] = this.subsidyCalculation(rowStartIndex, colStartIndex);
-
-    const ballotSubrootProof1 = this.ballotTree?.genSubrootProof(rowStartIndex, rowStartIndex + batchSize);
-    const ballotSubrootProof2 = this.ballotTree?.genSubrootProof(colStartIndex, colStartIndex + batchSize);
-
-    const newSubsidySalt = genRandomSalt();
-    saltIndex = `${this.rbi.toString()}-${this.cbi.toString()}`;
-    this.subsidySalts[saltIndex] = newSubsidySalt;
-    const newSubsidyCommitment = genTreeCommitment(this.subsidy, newSubsidySalt, this.treeDepths.voteOptionTreeDepth);
-
-    const packedVals = packSubsidySmallVals(this.rbi, this.cbi, Number(this.numSignups));
-
-    const inputHash = sha256Hash([packedVals, sbCommitment, currentSubsidyCommitment, newSubsidyCommitment]);
-
-    const circuitInputs = stringifyBigInts({
-      stateRoot,
-      ballotRoot,
-      sbSalt,
-      currentSubsidySalt,
-      newSubsidySalt,
-      sbCommitment,
-      currentSubsidyCommitment,
-      newSubsidyCommitment,
-      currentSubsidy,
-      packedVals,
-      inputHash,
-      ballots1: ballots1.map((x) => x.asCircuitInputs()),
-      ballots2: ballots2.map((x) => x.asCircuitInputs()),
-      votes1: ballots1.map((x) => x.votes),
-      votes2: ballots2.map((x) => x.votes),
-      ballotPathElements1: ballotSubrootProof1!.pathElements,
-      ballotPathElements2: ballotSubrootProof2!.pathElements,
-    }) as unknown as ISubsidyCircuitInputs;
-
-    this.increaseSubsidyIndex();
-    return circuitInputs;
-  };
-
-  /**
-   * It increases the index for the subsidy calculation.
-   */
-  private increaseSubsidyIndex = (): void => {
-    const batchSize = this.batchSizes.subsidyBatchSize;
-
-    if (this.cbi * batchSize + batchSize < this.ballots.length) {
-      this.cbi += 1;
-    } else {
-      this.rbi += 1;
-      this.cbi = this.rbi;
-    }
-  };
-
-  /**
-   * This method converts the previous subsidy index to a string.
-   * @returns Returns a string representation of the previous subsidy index.
-   * The string is in the format "rbi-cbi", where rbi and cbi are
-   * the previous row batch index and column batch index respectively.
-   */
-  private previousSubsidyIndexToString = (): string => {
-    const batchSize = this.batchSizes.subsidyBatchSize;
-    const numBatches = Math.ceil(this.ballots.length / batchSize);
-
-    let { cbi } = this;
-    let { rbi } = this;
-
-    if (this.cbi === 0 && this.rbi === 0) {
-      return "0-0";
-    }
-
-    if (this.cbi > this.rbi) {
-      cbi -= 1;
-    } else {
-      rbi -= 1;
-      cbi = numBatches - 1;
-    }
-
-    return `${rbi.toString()}-${cbi.toString()}`;
-  };
-
-  /**
-   * This method calculates the coefficient for a pair of ballots.
-   * @param rowBallot - The ballot in the row.
-   * @param colBallot - The ballot in the column.
-   *
-   * @returns Returns the calculated coefficient.
-   */
-  private coefficientCalculation = (rowBallot: Ballot, colBallot: Ballot): bigint => {
-    let sum = 0n;
-    for (let p = 0; p < this.maxValues.maxVoteOptions; p += 1) {
-      sum += BigInt(rowBallot.votes[p].valueOf()) * colBallot.votes[p];
-    }
-    const res = BigInt(this.MM * 10 ** this.WW) / (BigInt(this.MM) + BigInt(sum));
-    return res;
-  };
-
-  /**
-   * This method calculates the subsidy for a batch of ballots.
-   * @param rowStartIndex - The starting index for the row ballots.
-   * @param colStartIndex - The starting index for the column ballots.
-   * @returns Returns a 2D array of ballots. The first array contains the row ballots and the second array contains the column ballots.
-   */
-  private subsidyCalculation = (rowStartIndex: number, colStartIndex: number): Ballot[][] => {
-    const batchSize = this.batchSizes.subsidyBatchSize;
-    const ballots1: Ballot[] = [];
-    const ballots2: Ballot[] = [];
-    const emptyBallot = new Ballot(this.maxValues.maxVoteOptions, this.treeDepths.voteOptionTreeDepth);
-
-    for (let i = 0; i < batchSize; i += 1) {
-      const row = rowStartIndex + i;
-      const col = colStartIndex + i;
-      const rowBallot = row < this.ballots.length ? this.ballots[row] : emptyBallot;
-      const colBallot = col < this.ballots.length ? this.ballots[col] : emptyBallot;
-      ballots1.push(rowBallot);
-      ballots2.push(colBallot);
-    }
-    for (let i = 0; i < batchSize; i += 1) {
-      for (let j = 0; j < batchSize; j += 1) {
-        const row = rowStartIndex + i;
-        const col = colStartIndex + j;
-        const rowBallot = row < this.ballots.length ? this.ballots[row] : emptyBallot;
-        const colBallot = col < this.ballots.length ? this.ballots[col] : emptyBallot;
-
-        const kij = this.coefficientCalculation(rowBallot, colBallot);
-        for (let p = 0; p < this.maxValues.maxVoteOptions; p += 1) {
-          const vip = BigInt(rowBallot.votes[p].valueOf());
-          const vjp = BigInt(colBallot.votes[p].valueOf());
-          if (rowStartIndex !== colStartIndex || (rowStartIndex === colStartIndex && i < j)) {
-            this.subsidy[p] += 2n * kij * vip * vjp;
-          }
-        }
-      }
-    }
-
-    return [ballots1, ballots2];
-  };
-
-  /**
    * This method tallies a ballots and updates the tally results.
    * @returns the circuit inputs for the TallyVotes circuit.
    */
@@ -1463,7 +1272,6 @@ export class Poll implements IPoll {
       },
       {
         tallyBatchSize: Number(this.batchSizes.tallyBatchSize.toString()),
-        subsidyBatchSize: Number(this.batchSizes.subsidyBatchSize.toString()),
         messageBatchSize: Number(this.batchSizes.messageBatchSize.toString()),
       },
       {
@@ -1513,17 +1321,6 @@ export class Poll implements IPoll {
 
     Object.keys(this.spentVoiceCreditSubtotalSalts).forEach((k) => {
       copied.spentVoiceCreditSubtotalSalts[k] = BigInt(this.spentVoiceCreditSubtotalSalts[k].toString());
-    });
-
-    // subsidy related copy
-    copied.subsidy = this.subsidy.map((x: bigint) => BigInt(x.toString()));
-    copied.rbi = Number(this.rbi.toString());
-    copied.cbi = Number(this.cbi.toString());
-    copied.MM = Number(this.MM.toString());
-    copied.WW = Number(this.WW.toString());
-
-    Object.keys(this.subsidySalts).forEach((k) => {
-      copied.subsidySalts[k] = BigInt(this.subsidySalts[k].toString());
     });
 
     // update the number of signups

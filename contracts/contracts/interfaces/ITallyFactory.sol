@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-/// @title ITallySubsidyFactory
-/// @notice TallySubsidyFactory interface
-interface ITallySubsidyFactory {
-  /// @notice Deploy a new Tally or Subsidy contract and return the address.
+/// @title ITallyFactory
+/// @notice TallyFactory interface
+interface ITallyFactory {
+  /// @notice Deploy a new Tally contract and return the address.
   /// @param _verifier Verifier contract
   /// @param _vkRegistry VkRegistry contract
   /// @param _poll Poll contract

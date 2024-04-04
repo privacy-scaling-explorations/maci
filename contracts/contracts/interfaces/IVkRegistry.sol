@@ -29,15 +29,4 @@ interface IVkRegistry {
     uint256 _voteOptionTreeDepth,
     uint256 _messageBatchSize
   ) external view returns (SnarkCommon.VerifyingKey memory);
-
-  /// @notice Get the subsidy verifying key
-  /// @param _stateTreeDepth The state tree depth
-  /// @param _intStateTreeDepth The intermediate state tree depth
-  /// @param _voteOptionTreeDepth The vote option tree depth
-  /// @return The verifying key
-  function getSubsidyVk(
-    uint256 _stateTreeDepth,
-    uint256 _intStateTreeDepth,
-    uint256 _voteOptionTreeDepth
-  ) external view returns (SnarkCommon.VerifyingKey memory);
 }

@@ -46,7 +46,7 @@ import {
   ceremonyProcessMessagesNonQvWasmPath,
   ceremonyTallyVotesNonQvWasmPath,
 } from "../constants";
-import { cleanVanilla, isArm } from "../utils";
+import { clean, isArm } from "../utils";
 
 describe("Stress tests with ceremony params (6,9,2,3)", function test() {
   const messageTreeDepth = 9;
@@ -56,8 +56,6 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
   const intStateTreeDepth = 2;
 
   const pollDuration = 60000;
-
-  const subsidyEnabled = false;
 
   const useWasm = isArm();
   this.timeout(90000000);
@@ -98,7 +96,6 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
     messageTreeDepth,
     voteOptionTreeDepth,
     coordinatorPubkey: coordinatorPubKey,
-    subsidyEnabled,
   };
 
   const genProofsCeremonyArgs: Omit<GenProofsArgs, "signer"> = {
@@ -133,7 +130,7 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
 
     describe("1 user, 2 messages", () => {
       after(() => {
-        cleanVanilla();
+        clean();
       });
 
       before(async () => {
@@ -180,7 +177,7 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
 
     describe("25 signups, 100 messages", () => {
       after(() => {
-        cleanVanilla();
+        clean();
       });
 
       before(async () => {
@@ -261,7 +258,7 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
 
     describe("1 signup, 1 message", () => {
       after(() => {
-        cleanVanilla();
+        clean();
       });
 
       before(async () => {
@@ -308,7 +305,7 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
 
     describe("25 signups, 100 messages", () => {
       after(() => {
-        cleanVanilla();
+        clean();
       });
 
       before(async () => {

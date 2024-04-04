@@ -38,7 +38,6 @@ export type {
   TallyData,
   TopupArgs,
   VerifyArgs,
-  SubsidyData,
   IRegisteredUserArgs,
   IGenKeypairArgs,
   IGetPollArgs,

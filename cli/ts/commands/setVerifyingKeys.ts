@@ -1,6 +1,6 @@
 import { extractVk } from "maci-circuits";
 import { type IVerifyingKeyStruct, VkRegistry__factory as VkRegistryFactory } from "maci-contracts";
-import { genProcessVkSig, genSubsidyVkSig, genTallyVkSig } from "maci-core";
+import { genProcessVkSig, genTallyVkSig } from "maci-core";
 import { VerifyingKey } from "maci-domainobjs";
 
 import fs from "fs";
@@ -32,7 +32,6 @@ export const setVerifyingKeys = async ({
   processMessagesZkeyPath,
   tallyVotesZkeyPath,
   vkRegistry,
-  subsidyZkeyPath,
   signer,
   quiet = true,
 }: SetVerifyingKeysArgs): Promise<void> => {
@@ -54,10 +53,6 @@ export const setVerifyingKeys = async ({
 
   if (!fs.existsSync(tallyVotesZkeyPath)) {
     logError(`${tallyVotesZkeyPath} does not exist.`);
-  }
-
-  if (subsidyZkeyPath && !fs.existsSync(subsidyZkeyPath)) {
-    logError(`${subsidyZkeyPath} does not exist.`);
   }
 
   // extract the vks
@@ -139,34 +134,6 @@ export const setVerifyingKeys = async ({
     logError("This tally verifying key is already set in the contract");
   }
 
-  // do the same for the subsidy vk if any
-  if (subsidyZkeyPath) {
-    const ssMatch = subsidyZkeyPath.match(/.+_(\d+)-(\d+)-(\d+)/);
-
-    if (!ssMatch) {
-      logError(`${subsidyZkeyPath} has an invalid filename`);
-      return;
-    }
-
-    const ssStateTreeDepth = Number(ssMatch[1]);
-    const ssIntStateTreeDepth = Number(ssMatch[2]);
-    const ssVoteOptionTreeDepth = Number(ssMatch[3]);
-
-    if (
-      stateTreeDepth !== ssStateTreeDepth ||
-      intStateTreeDepth !== ssIntStateTreeDepth ||
-      voteOptionTreeDepth !== ssVoteOptionTreeDepth
-    ) {
-      logError("Incorrect .zkey file; please check the circuit params");
-    }
-
-    const subsidyVkSig = genSubsidyVkSig(stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth);
-
-    if (await vkRegistryContract.isSubsidyVkSet(subsidyVkSig)) {
-      info("This subsidy verifying key is already set in the contract");
-    }
-  }
-
   // actually set those values
   try {
     logYellow(quiet, info("Setting verifying keys..."));
@@ -205,35 +172,6 @@ export const setVerifyingKeys = async ({
 
     if (!compareVks(tallyVk, tallyVkOnChain)) {
       logError("tallyVk mismatch");
-    }
-
-    // set subsidy keys if any
-    if (subsidyZkeyPath) {
-      const subsidyVk = VerifyingKey.fromObj(await extractVk(subsidyZkeyPath));
-
-      const txReceipt = await vkRegistryContract
-        .setSubsidyKeys(
-          stateTreeDepth,
-          intStateTreeDepth,
-          voteOptionTreeDepth,
-          subsidyVk.asContractParam() as IVerifyingKeyStruct,
-        )
-        .then((transaction) => transaction.wait(2));
-
-      if (txReceipt?.status !== 1) {
-        logError("Set subsidy keys transaction failed");
-      }
-
-      logYellow(quiet, info(`Transaction hash: ${tx.hash}`));
-
-      const subsidyVkOnChain = await vkRegistryContract.getSubsidyVk(
-        stateTreeDepth,
-        intStateTreeDepth,
-        voteOptionTreeDepth,
-      );
-      if (!compareVks(subsidyVk, subsidyVkOnChain)) {
-        logError("subsidyVk mismatch");
-      }
     }
   } catch (error) {
     logError((error as Error).message);

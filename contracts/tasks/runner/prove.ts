@@ -8,7 +8,6 @@ import fs from "fs";
 import type { Proof } from "../../ts/types";
 import type {
   VkRegistry,
-  Subsidy,
   Verifier,
   MACI,
   Poll,
@@ -39,10 +38,6 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
   .addParam("tallyZkey", "Tally zkey file path", undefined, types.string)
   .addOptionalParam("tallyWitgen", "Tally witgen binary path", undefined, types.string)
   .addOptionalParam("tallyWasm", "Tally wasm file path", undefined, types.string)
-  .addOptionalParam("subsidyFile", "The file to store the subsidy proof", undefined, types.string)
-  .addOptionalParam("subsidyZkey", "Subsidy zkey file path", undefined, types.string)
-  .addOptionalParam("subsidyWitgen", "Subsidy witgen binary path", undefined, types.string)
-  .addOptionalParam("subsidyWasm", "Subsidy wasm file path", undefined, types.string)
   .addOptionalParam("stateFile", "The file with the serialized maci state", undefined, types.string)
   .addFlag("useQuadraticVoting", "Whether to use quadratic voting or not")
   .addOptionalParam("startBlock", "The block number to start fetching logs from", undefined, types.int)
@@ -64,10 +59,6 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
         tallyWitgen,
         tallyWasm,
         tallyFile,
-        subsidyFile,
-        subsidyZkey,
-        subsidyWitgen,
-        subsidyWasm,
         useQuadraticVoting,
         startBlock,
         blocksPerBatch,
@@ -152,8 +143,6 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
         throw new Error(`Poll ${poll} not found`);
       }
 
-      const subsidyContractAddress = storage.getAddress(EContracts.Subsidy, network.name, `poll-${poll.toString()}`);
-
       const mpContract = await deployment.getContract<MessageProcessor>({
         name: EContracts.MessageProcessor,
         key: `poll-${poll.toString()}`,
@@ -171,15 +160,6 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
           });
       const tallyContractAddress = await tallyContract.getAddress();
 
-      let subsidyContract: Subsidy | undefined;
-
-      if (subsidyContractAddress) {
-        subsidyContract = await deployment.getContract<Subsidy>({
-          name: EContracts.Subsidy,
-          key: `poll-${poll.toString()}`,
-        });
-      }
-
       const proofGenerator = new ProofGenerator({
         poll: foundPoll,
         maciContractAddress,
@@ -195,16 +175,7 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
           witgen: processWitgen,
           wasm: processWasm,
         },
-        subsidy:
-          subsidyZkey && subsidyWitgen
-            ? {
-                zkey: subsidyZkey,
-                witgen: subsidyWitgen,
-                wasm: subsidyWasm,
-              }
-            : undefined,
         outputDir,
-        subsidyOutputFile: subsidyFile,
         tallyOutputFile: tallyFile,
         useQuadraticVoting,
       });
@@ -212,7 +183,6 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
       const data = {
         processProofs: [] as Proof[],
         tallyProofs: [] as Proof[],
-        subsidyProofs: [] as Proof[],
       };
 
       const prover = new Prover({
@@ -223,17 +193,10 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
         vkRegistryContract,
         verifierContract,
         tallyContract,
-        subsidyContract,
       });
 
       data.processProofs = await proofGenerator.generateMpProofs();
       await prover.proveMessageProcessing(data.processProofs);
-
-      // subsidy calculations are not mandatory
-      if (subsidyFile) {
-        data.subsidyProofs = await proofGenerator.generateSubsidyProofs();
-        await prover.proveSubsidy(data.subsidyProofs);
-      }
 
       data.tallyProofs = await proofGenerator.generateTallyProofs(network);
       await prover.proveTally(data.tallyProofs);
