@@ -108,7 +108,7 @@ describe("e2e tests with non quadratic voting", function test() {
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: user.privKey.serialize(),
         signer,

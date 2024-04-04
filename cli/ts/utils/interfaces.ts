@@ -402,7 +402,7 @@ export interface GenLocalStateArgs {
   /**
    * The address of the MACI contract
    */
-  maciContractAddress?: string;
+  maciAddress?: string;
 
   /**
    * The private key of the MACI coordinator
@@ -617,7 +617,7 @@ export interface MergeMessagesArgs {
   /**
    * The address of the MACI contract
    */
-  maciContractAddress?: string;
+  maciAddress?: string;
 
   /**
    * The number of queue operations to merge
@@ -642,7 +642,7 @@ export interface MergeSignupsArgs {
   /**
    * The address of the MACI contract
    */
-  maciContractAddress?: string;
+  maciAddress?: string;
 
   /**
    * The number of queue operations to perform
@@ -722,7 +722,7 @@ export interface PublishArgs extends IPublishMessage {
   /**
    * The address of the MACI contract
    */
-  maciContractAddress: string;
+  maciAddress: string;
 
   /**
    * The id of the poll
@@ -757,7 +757,7 @@ export interface IPublishBatchArgs {
   /**
    * The address of the MACI contract
    */
-  maciContractAddress: string;
+  maciAddress: string;
 
   /**
    * The public key of the user

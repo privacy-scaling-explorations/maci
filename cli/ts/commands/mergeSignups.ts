@@ -24,7 +24,7 @@ import {
  */
 export const mergeSignups = async ({
   pollId,
-  maciContractAddress,
+  maciAddress,
   numQueueOps,
   signer,
   quiet = true,
@@ -33,13 +33,13 @@ export const mergeSignups = async ({
   const network = await signer.provider?.getNetwork();
 
   // maci contract validation
-  if (!readContractAddress("MACI", network?.name) && !maciContractAddress) {
+  if (!readContractAddress("MACI", network?.name) && !maciAddress) {
     logError("Could not read contracts");
   }
 
-  const maciAddress = maciContractAddress || readContractAddress("MACI", network?.name);
+  const maciContractAddress = maciAddress || readContractAddress("MACI", network?.name);
 
-  if (!(await contractExists(signer.provider!, maciAddress))) {
+  if (!(await contractExists(signer.provider!, maciContractAddress))) {
     logError("MACI contract does not exist");
   }
 
@@ -47,7 +47,7 @@ export const mergeSignups = async ({
     logError("Invalid poll id");
   }
 
-  const maciContract = MACIFactory.connect(maciAddress, signer);
+  const maciContract = MACIFactory.connect(maciContractAddress, signer);
   const pollAddress = await maciContract.polls(pollId);
 
   if (!(await contractExists(signer.provider!, pollAddress))) {

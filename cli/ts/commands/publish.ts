@@ -28,7 +28,7 @@ export const publish = async ({
   nonce,
   pollId,
   newVoteWeight,
-  maciContractAddress,
+  maciAddress,
   salt,
   privateKey,
   signer,
@@ -43,7 +43,7 @@ export const publish = async ({
   // deserialize
   const userMaciPubKey = PubKey.deserialize(pubkey);
 
-  if (!(await contractExists(signer.provider!, maciContractAddress))) {
+  if (!(await contractExists(signer.provider!, maciAddress))) {
     logError("MACI contract does not exist");
   }
 
@@ -77,7 +77,7 @@ export const publish = async ({
     logError("Invalid poll id");
   }
 
-  const maciContract = MACIFactory.connect(maciContractAddress, signer);
+  const maciContract = MACIFactory.connect(maciAddress, signer);
   const pollAddress = await maciContract.getPoll(pollId);
 
   if (!(await contractExists(signer.provider!, pollAddress))) {
@@ -145,7 +145,7 @@ export const publish = async ({
 export const publishBatch = async ({
   messages,
   pollId,
-  maciContractAddress,
+  maciAddress,
   publicKey,
   privateKey,
   signer,
@@ -167,7 +167,7 @@ export const publishBatch = async ({
 
   const userMaciPubKey = PubKey.deserialize(publicKey);
   const userMaciPrivKey = PrivKey.deserialize(privateKey);
-  const maciContract = MACIFactory.connect(maciContractAddress, signer);
+  const maciContract = MACIFactory.connect(maciAddress, signer);
   const pollAddress = await maciContract.getPoll(pollId);
 
   const pollContract = PollFactory.connect(pollAddress, signer);

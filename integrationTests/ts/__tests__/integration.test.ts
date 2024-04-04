@@ -222,7 +222,7 @@ describe("Integration tests", function test() {
             nonce,
             pollId,
             newVoteWeight: newVoteWeight!,
-            maciContractAddress: contracts.maciAddress,
+            maciAddress: contracts.maciAddress,
             salt,
             // if it's a key change command, then we pass the old private key otherwise just pass the current
             privateKey: isKeyChange ? oldKeypair.privKey.serialize() : user.keypair.privKey.serialize(),
@@ -252,12 +252,12 @@ describe("Integration tests", function test() {
 
       // merge messages
       await expect(
-        mergeMessages({ pollId, maciContractAddress: contracts.maciAddress, signer }),
+        mergeMessages({ pollId, maciAddress: contracts.maciAddress, signer }),
       ).to.eventually.not.be.rejectedWith();
 
       // merge signups
       await expect(
-        mergeSignups({ pollId, maciContractAddress: contracts.maciAddress, signer }),
+        mergeSignups({ pollId, maciAddress: contracts.maciAddress, signer }),
       ).to.eventually.not.be.rejectedWith();
 
       // generate proofs

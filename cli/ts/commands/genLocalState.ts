@@ -29,7 +29,7 @@ import {
 export const genLocalState = async ({
   outputPath,
   pollId,
-  maciContractAddress,
+  maciAddress,
   coordinatorPrivateKey,
   ethereumProvider,
   endBlock,
@@ -45,13 +45,13 @@ export const genLocalState = async ({
   const network = await signer.provider?.getNetwork();
 
   // validation of the maci contract address
-  if (!readContractAddress("MACI", network?.name) && !maciContractAddress) {
+  if (!readContractAddress("MACI", network?.name) && !maciAddress) {
     logError("MACI contract address is empty");
   }
 
-  const maciAddress = maciContractAddress || readContractAddress("MACI", network?.name);
+  const maciContractAddress = maciAddress || readContractAddress("MACI", network?.name);
 
-  if (!(await contractExists(signer.provider!, maciAddress))) {
+  if (!(await contractExists(signer.provider!, maciContractAddress))) {
     logError("MACI contract does not exist");
   }
 
@@ -64,7 +64,7 @@ export const genLocalState = async ({
   const coordinatorMaciPrivKey = PrivKey.deserialize(coordPrivKey);
   const coordinatorKeypair = new Keypair(coordinatorMaciPrivKey);
 
-  const maciContract = MACIFactory.connect(maciAddress, signer);
+  const maciContract = MACIFactory.connect(maciContractAddress, signer);
   const pollAddr = await maciContract.polls(pollId);
 
   if (!(await contractExists(signer.provider!, pollAddr))) {
@@ -121,7 +121,7 @@ export const genLocalState = async ({
 
   const maciState = await genMaciStateFromContract(
     provider!,
-    maciAddress,
+    maciContractAddress,
     coordinatorKeypair,
     pollId,
     fromBlock,
