@@ -53,9 +53,7 @@ node build/ts/index.js genProofs \
     -q false 
 node build/ts/index.js proveOnChain \
     --poll-id 0 \
-    --proof-dir proofs/ \
-    --subsidy-enabled false
+    --proof-dir proofs/ 
 node build/ts/index.js verify \
     --poll-id 0 \
-    --subsidy-enabled false \
     --tally-file tally.json

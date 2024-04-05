@@ -3,7 +3,6 @@ import type {
   MACI,
   MessageProcessor,
   Poll,
-  Subsidy,
   Tally,
   TallyNonQv,
   Verifier,
@@ -120,26 +119,6 @@ export interface IProveParams {
   tallyWasm?: string;
 
   /**
-   * The file to store the subsidy proof
-   */
-  subsidyFile?: string;
-
-  /**
-   * The path to the subsidy zkey file
-   */
-  subsidyZkey?: string;
-
-  /**
-   * The path to the subsidy witnessgen binary
-   */
-  subsidyWitgen?: string;
-
-  /**
-   * The path to the subsidy wasm file
-   */
-  subsidyWasm?: string;
-
-  /**
    * Whether to use quadratic voting or not
    */
   useQuadraticVoting?: boolean;
@@ -200,11 +179,6 @@ export interface IProofGeneratorParams {
   tallyOutputFile: string;
 
   /**
-   * File to store the subsidy proof
-   */
-  subsidyOutputFile?: string;
-
-  /**
    * Message processing circuit files
    */
   mp: ICircuitFiles;
@@ -213,11 +187,6 @@ export interface IProofGeneratorParams {
    * Tally circuit files
    */
   tally: ICircuitFiles;
-
-  /**
-   * Subsidy circuit files
-   */
-  subsidy?: ICircuitFiles;
 
   /**
    * Path to the rapidsnark binary
@@ -358,11 +327,6 @@ export interface IProverParams {
    * Tally contract typechain wrapper
    */
   tallyContract: Tally | TallyNonQv;
-
-  /**
-   * Subsidy contract typechain wrapper
-   */
-  subsidyContract?: Subsidy;
 }
 
 /**
@@ -523,7 +487,6 @@ export enum EContracts {
   MessageProcessorFactory = "MessageProcessorFactory",
   TallyFactory = "TallyFactory",
   TallyNonQvFactory = "TallyNonQvFactory",
-  SubsidyFactory = "SubsidyFactory",
   PoseidonT3 = "PoseidonT3",
   PoseidonT4 = "PoseidonT4",
   PoseidonT5 = "PoseidonT5",
@@ -533,7 +496,6 @@ export enum EContracts {
   Tally = "Tally",
   TallyNonQv = "TallyNonQv",
   MessageProcessor = "MessageProcessor",
-  Subsidy = "Subsidy",
   AccQueue = "AccQueue",
   AccQueueQuinaryBlankSl = "AccQueueQuinaryBlankSl",
   AccQueueQuinaryMaci = "AccQueueQuinaryMaci",

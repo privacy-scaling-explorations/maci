@@ -32,7 +32,7 @@ import {
   checkVerifyingKeys,
   genLocalState,
 } from "./commands";
-import { SubsidyData, TallyData, logError, promptSensitiveValue, readContractAddress } from "./utils";
+import { TallyData, logError, promptSensitiveValue, readContractAddress } from "./utils";
 
 // set the description version and name of the cli tool
 const { description, version, name } = JSON.parse(
@@ -101,10 +101,6 @@ program
     "-t, --tally-votes-zkey <tallyVotesZkeyPath>",
     "the tally votes zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
-  .option(
-    "-ss, --subsidy-zkey <subsidyZkeyPath>",
-    "the subsidy zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
-  )
   .action(async (cmdOptions) => {
     try {
       const signer = await getSigner();
@@ -118,7 +114,6 @@ program
         processMessagesZkeyPath: cmdOptions.processMessagesZkey,
         tallyVotesZkeyPath: cmdOptions.tallyVotesZkey,
         vkRegistry: cmdOptions.vkContract,
-        subsidyZkeyPath: cmdOptions.subsidyZkey,
         quiet: cmdOptions.quiet,
         signer,
       });
@@ -205,12 +200,6 @@ program
   .requiredOption("-m, --msg-tree-depth <messageTreeDepth>", "the message tree depth", parseInt)
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
   .requiredOption("-pk, --pubkey <coordinatorPubkey>", "the coordinator public key")
-  .requiredOption(
-    "-se, --subsidy-enabled <subsidyEnabled>",
-    "whether to deploy subsidy contract",
-    (value) => value === "true",
-    false,
-  )
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
@@ -225,7 +214,6 @@ program
         messageTreeDepth: cmdObj.msgTreeDepth,
         voteOptionTreeDepth: cmdObj.voteOptionTreeDepth,
         coordinatorPubkey: cmdObj.pubkey,
-        subsidyEnabled: cmdObj.subsidyEnabled,
         maciAddress: cmdObj.maciAddress,
         vkRegistryAddress: cmdObj.vkRegistryAddress,
         quiet: cmdObj.quiet,
@@ -254,10 +242,6 @@ program
   .option("-k, --vk-registry <vkRegistry>", "the vk registry contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .option(
-    "-ss, --subsidy-zkey <subsidyZkeyPath>",
-    "the subsidy zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
-  )
   .action(async (cmdObj) => {
     try {
       const signer = await getSigner();
@@ -271,7 +255,6 @@ program
         processMessagesZkeyPath: cmdObj.processMessagesZkey,
         tallyVotesZkeyPath: cmdObj.tallyVotesZkey,
         vkRegistry: cmdObj.vkRegistry,
-        subsidyZkeyPath: cmdObj.subsidyZkey,
         quiet: cmdObj.quiet,
         signer,
       });
@@ -499,22 +482,14 @@ program
   });
 program
   .command("verify")
-  .description("verify the results of a poll and optionally the subsidy results")
+  .description("verify the results of a poll")
   .requiredOption("-o, --poll-id <pollId>", "the poll id", BigInt)
   .requiredOption(
     "-t, --tally-file <tallyFile>",
     "the tally file with results, per vote option spent credits, spent voice credits total",
   )
-  .requiredOption(
-    "-se, --subsidy-enabled <subsidyEnabled>",
-    "whether to deploy subsidy contract",
-    (value) => value === "true",
-    false,
-  )
-  .option("-s, --subsidy-file <subsidyFile>", "the subsidy file")
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .option("-tc, --tally-contract <tallyContract>", "the tally contract address")
-  .option("-sc, --subsidy-contract <subsidyContract>", "the subsidy contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
@@ -530,27 +505,14 @@ program
       const tallyData = JSON.parse(fs.readFileSync(cmdObj.tallyFile, { encoding: "utf8" })) as TallyData;
 
       const maciAddress = tallyData.maci || cmdObj.maciAddress || readContractAddress("MACI", network?.name);
-      const subsidyAddress = cmdObj.subsidyContract || readContractAddress(`Subsidy-${cmdObj.pollId}`, network?.name);
       const tallyAddress =
         tallyData.tallyAddress || cmdObj.tallyContract || readContractAddress(`Tally-${cmdObj.pollId}`, network?.name);
-
-      // read the subsidy file
-      if (cmdObj.subsidyEnabled && (!cmdObj.subsidyFile || !fs.existsSync(cmdObj.subsidyFile))) {
-        logError(`There is no such file: ${cmdObj.subsidyFile}`);
-      }
-
-      const subsidyData = cmdObj.subsidyEnabled
-        ? (JSON.parse(fs.readFileSync(cmdObj.subsidyFile!, { encoding: "utf8" })) as SubsidyData)
-        : undefined;
 
       await verify({
         tallyData,
         pollId: cmdObj.pollId,
-        subsidyEnabled: cmdObj.subsidyEnabled,
         maciAddress,
         tallyAddress,
-        subsidyAddress,
-        subsidyData,
         quiet: cmdObj.quiet,
         signer,
       });
@@ -569,17 +531,13 @@ program
     "the tally file with results, per vote option spent credits, spent voice credits total",
   )
   .option("-ta, --tally-address <tallyAddress>", "the tally contract address")
-  .option("-s, --subsidy-file <subsidyFile>", "the subsidy file")
   .option("-r, --rapidsnark <rapidsnark>", "the path to the rapidsnark binary")
   .option("-wp, --process-witnessgen <processWitnessgen>", "the path to the process witness generation binary")
   .option("-pd, --process-witnessdat <processWitnessdat>", "the path to the process witness dat file")
   .option("-wt, --tally-witnessgen <tallyWitnessgen>", "the path to the tally witness generation binary")
   .option("-td, --tally-witnessdat <tallyWitnessdat>", "the path to the tally witness dat file")
-  .option("-ws, --subsidy-witnessgen <subsidyWitnessgen>", "the path to the subsidy witness generation binary")
-  .option("-sd, --subsidy-witnessdat <subsidyWitnessdat>", "the path to the subsidy witness dat file")
   .requiredOption("-zp, --process-zkey <processZkey>", "the path to the process zkey")
   .requiredOption("-zt, --tally-zkey <tallyZkey>", "the path to the tally zkey")
-  .option("-zs, --subsidy-zkey <subsidyZkey>", "the path to the subsidy zkey")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-p, --rpc-provider <provider>", "the rpc provider URL")
   .requiredOption("-f, --output <outputDir>", "the output directory for proofs")
@@ -587,7 +545,6 @@ program
   .option("-w, --wasm", "whether to use the wasm binaries")
   .option("-pw, --process-wasm <processWasm>", "the path to the process witness generation wasm binary")
   .option("-tw, --tally-wasm <tallyWasm>", "the path to the tally witness generation wasm binary")
-  .option("-sw, --subsidy-wasm <subsidyWasm>", "the path to the subsidy witness generation wasm binary")
   .option("-st, --state-file <stateFile>", "the path to the state file containing the serialized maci state")
   .option("-sb, --start-block <startBlock>", "the block number to start looking for events from", parseInt)
   .option("-eb, --end-block <endBlock>", "the block number to end looking for events from", parseInt)
@@ -603,21 +560,16 @@ program
         tallyZkey: cmdObj.tallyZkey,
         processZkey: cmdObj.processZkey,
         pollId: cmdObj.pollId,
-        subsidyFile: cmdObj.subsidyFile,
-        subsidyZkey: cmdObj.subsidyZkey,
         rapidsnark: cmdObj.rapidsnark,
         processWitgen: cmdObj.processWitnessgen,
         processDatFile: cmdObj.processWitnessdat,
         tallyWitgen: cmdObj.tallyWitnessgen,
         tallyDatFile: cmdObj.tallyWitnessdat,
-        subsidyWitgen: cmdObj.subsidyWitnessgen,
-        subsidyDatFile: cmdObj.subsidyWitnessdat,
         coordinatorPrivKey: cmdObj.privkey,
         maciAddress: cmdObj.maciAddress,
         transactionHash: cmdObj.transactionHash,
         processWasm: cmdObj.processWasm,
         tallyWasm: cmdObj.tallyWasm,
-        subsidyWasm: cmdObj.subsidyWasm,
         useWasm: cmdObj.wasm,
         stateFile: cmdObj.stateFile,
         startBlock: cmdObj.startBlock,
@@ -672,18 +624,11 @@ program
   .command("proveOnChain")
   .description("prove the results of a poll on chain")
   .requiredOption("-o, --poll-id <pollId>", "the poll id", BigInt)
-  .requiredOption(
-    "-se, --subsidy-enabled <subsidyEnabled>",
-    "whether to deploy subsidy contract",
-    (value) => value === "true",
-    false,
-  )
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .option("-p, --message-processor-address <messageProcessorAddress>", "the message processor contract address")
   .option("-t, --tally-contract <tallyContract>", "the tally contract address")
-  .option("-s, --subsidy-contract <subsidyContract>", "the subsidy contract address")
   .requiredOption("-f, --proof-dir <proofDir>", "the proof output directory from the genProofs subcommand")
   .action(async (cmdObj) => {
     try {
@@ -692,11 +637,9 @@ program
       await proveOnChain({
         pollId: cmdObj.pollId,
         proofDir: cmdObj.proofDir,
-        subsidyEnabled: cmdObj.subsidyEnabled,
         maciAddress: cmdObj.maciAddress,
         messageProcessorAddress: cmdObj.messageProcessorAddress,
         tallyAddress: cmdObj.tallyContract,
-        subsidyAddress: cmdObj.subsidyContract,
         quiet: cmdObj.quiet,
         signer,
       });
@@ -751,7 +694,6 @@ export type {
   VerifyArgs,
   ProveOnChainArgs,
   DeployArgs,
-  SubsidyData,
   IRegisteredUserArgs,
   IGenKeypairArgs,
   IGetPollArgs,

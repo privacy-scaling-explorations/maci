@@ -541,65 +541,6 @@ describe("Poll", function test() {
     });
   });
 
-  describe("subsidy", () => {
-    const maciState = new MaciState(STATE_TREE_DEPTH);
-    const pollId = maciState.deployPoll(
-      BigInt(Math.floor(Date.now() / 1000) + duration),
-      maxValues,
-      treeDepths,
-      messageBatchSize,
-      coordinatorKeypair,
-    );
-
-    const poll = maciState.polls.get(pollId)!;
-
-    const user1Keypair = new Keypair();
-    // signup the user
-    const user1StateIndex = maciState.signUp(
-      user1Keypair.pubKey,
-      voiceCreditBalance,
-      BigInt(Math.floor(Date.now() / 1000)),
-    );
-
-    const voteWeight = 5n;
-    const voteOption = 0n;
-
-    const command = new PCommand(
-      BigInt(user1StateIndex),
-      user1Keypair.pubKey,
-      voteOption,
-      voteWeight,
-      1n,
-      BigInt(pollId),
-    );
-
-    const signature = command.sign(user1Keypair.privKey);
-
-    const ecdhKeypair = new Keypair();
-    const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
-
-    const message = command.encrypt(signature, sharedKey);
-
-    before(() => {
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
-      poll.publishMessage(message, ecdhKeypair.pubKey);
-      poll.processAllMessages();
-      poll.tallyVotes();
-    });
-
-    it("should calculate the subsidy", () => {
-      const { rbi, cbi } = poll;
-      expect(() => poll.subsidyPerBatch()).to.not.throw();
-      const { rbi: newRbi, cbi: newCbi } = poll;
-      expect(newRbi).to.eq(rbi + 1);
-      expect(newCbi).to.eq(cbi + 1);
-    });
-
-    it("should throw when the subsidy was already calculated", () => {
-      expect(() => poll.subsidyPerBatch()).to.throw("No more subsidy batches to calculate");
-    });
-  });
-
   describe("setCoordinatorKeypair", () => {
     it("should update the coordinator's Keypair", () => {
       const maciState = new MaciState(STATE_TREE_DEPTH);

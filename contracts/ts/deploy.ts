@@ -14,7 +14,6 @@ import {
   MockVerifier,
   PollFactory,
   MessageProcessorFactory,
-  SubsidyFactory,
   TallyFactory,
   PoseidonT3,
   PoseidonT4,
@@ -283,14 +282,7 @@ export const deployMaci = async ({
     poseidonT6,
   }));
 
-  const contractsToLink = [
-    "MACI",
-    "PollFactory",
-    "MessageProcessorFactory",
-    "TallyFactory",
-    "TallyNonQvFactory",
-    "SubsidyFactory",
-  ];
+  const contractsToLink = ["MACI", "PollFactory", "MessageProcessorFactory", "TallyFactory", "TallyNonQvFactory"];
 
   // Link Poseidon contracts to MACI
   const linkedContractFactories = await Promise.all(
@@ -307,14 +299,8 @@ export const deployMaci = async ({
     ),
   );
 
-  const [
-    maciContractFactory,
-    pollFactoryContractFactory,
-    messageProcessorFactory,
-    tallyFactory,
-    tallyFactoryNonQv,
-    subsidyFactory,
-  ] = await Promise.all(linkedContractFactories);
+  const [maciContractFactory, pollFactoryContractFactory, messageProcessorFactory, tallyFactory, tallyFactoryNonQv] =
+    await Promise.all(linkedContractFactories);
 
   const pollFactoryContract = await deployContractWithLinkedLibraries<PollFactory>(
     pollFactoryContractFactory,
@@ -334,17 +320,10 @@ export const deployMaci = async ({
     ? await deployContractWithLinkedLibraries<TallyFactory>(tallyFactory, "TallyFactory", quiet)
     : await deployContractWithLinkedLibraries<TallyNonQvFactory>(tallyFactoryNonQv, "TallyNonQvFactory", quiet);
 
-  const subsidyFactoryContract = await deployContractWithLinkedLibraries<SubsidyFactory>(
-    subsidyFactory,
-    "SubsidyFactory",
-    quiet,
-  );
-
-  const [pollAddr, mpAddr, tallyAddr, subsidyAddr] = await Promise.all([
+  const [pollAddr, mpAddr, tallyAddr] = await Promise.all([
     pollFactoryContract.getAddress(),
     messageProcessorFactoryContract.getAddress(),
     tallyFactoryContract.getAddress(),
-    subsidyFactoryContract.getAddress(),
   ]);
 
   const maciContract = await deployContractWithLinkedLibraries<MACI>(
@@ -354,7 +333,6 @@ export const deployMaci = async ({
     pollAddr,
     mpAddr,
     tallyAddr,
-    subsidyAddr,
     signUpTokenGatekeeperContractAddress,
     initialVoiceCreditBalanceAddress,
     topupCreditContractAddress,

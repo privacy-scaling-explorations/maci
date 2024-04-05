@@ -54,7 +54,7 @@ deployment
       hre.network.name,
     );
     const tallyFactoryContractAddress = storage.mustGetAddress(EContracts.TallyFactory, hre.network.name);
-    const subsidyFactoryContractAddress = storage.mustGetAddress(EContracts.SubsidyFactory, hre.network.name);
+
     const stateTreeDepth =
       deployment.getDeployConfigField<number | null>(EContracts.MACI, "stateTreeDepth") ?? DEFAULT_STATE_TREE_DEPTH;
 
@@ -63,7 +63,6 @@ deployment
       pollFactoryContractAddress,
       messageProcessorFactoryContractAddress,
       tallyFactoryContractAddress,
-      subsidyFactoryContractAddress,
       gatekeeperContractAddress,
       constantInitialVoiceCreditProxyContractAddress,
       topupCreditContractAddress,
@@ -87,7 +86,6 @@ deployment
         pollFactoryContractAddress,
         messageProcessorFactoryContractAddress,
         tallyFactoryContractAddress,
-        subsidyFactoryContractAddress,
         gatekeeperContractAddress,
         constantInitialVoiceCreditProxyContractAddress,
         topupCreditContractAddress,

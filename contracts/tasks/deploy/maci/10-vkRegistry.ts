@@ -36,13 +36,11 @@ deployment
       "processMessagesZkey",
     );
     const tallyVotesZkeyPath = deployment.getDeployConfigField<string>(EContracts.VkRegistry, "tallyVotesZkey");
-    const subsidyZkeyPath = deployment.getDeployConfigField<string | null>(EContracts.VkRegistry, "subsidyZkey");
 
-    const [processVk, tallyVk, subsidyVk] = await Promise.all([
+    const [processVk, tallyVk] = await Promise.all([
       extractVk(processMessagesZkeyPath),
       extractVk(tallyVotesZkeyPath),
-      subsidyZkeyPath && extractVk(subsidyZkeyPath),
-    ]).then((vks) => vks.map((vk) => (vk ? VerifyingKey.fromObj(vk) : null)));
+    ]).then((vks) => vks.map((vk) => VerifyingKey.fromObj(vk)));
 
     const vkRegistryContract = await deployment.deployContract<VkRegistry>(EContracts.VkRegistry, deployer);
 
@@ -53,21 +51,10 @@ deployment
         messageTreeDepth,
         voteOptionTreeDepth,
         5 ** messageBatchDepth,
-        processVk!.asContractParam() as IVerifyingKeyStruct,
-        tallyVk!.asContractParam() as IVerifyingKeyStruct,
+        processVk.asContractParam() as IVerifyingKeyStruct,
+        tallyVk.asContractParam() as IVerifyingKeyStruct,
       )
       .then((tx) => tx.wait());
-
-    if (subsidyVk) {
-      await vkRegistryContract
-        .setSubsidyKeys(
-          stateTreeDepth,
-          intStateTreeDepth,
-          voteOptionTreeDepth,
-          subsidyVk.asContractParam() as IVerifyingKeyStruct,
-        )
-        .then((tx) => tx.wait());
-    }
 
     await storage.register({
       id: EContracts.VkRegistry,

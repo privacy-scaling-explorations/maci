@@ -2,12 +2,12 @@
 pragma solidity ^0.8.10;
 
 import { TallyNonQv } from "./TallyNonQv.sol";
-import { ITallySubsidyFactory } from "./interfaces/ITallySubsidyFactory.sol";
+import { ITallyFactory } from "./interfaces/ITallyFactory.sol";
 
 /// @title TallyNonQvFactory
 /// @notice A factory contract which deploys TallyNonQv contracts.
-contract TallyNonQvFactory is ITallySubsidyFactory {
-  /// @inheritdoc ITallySubsidyFactory
+contract TallyNonQvFactory is ITallyFactory {
+  /// @inheritdoc ITallyFactory
   function deploy(
     address _verifier,
     address _vkRegistry,

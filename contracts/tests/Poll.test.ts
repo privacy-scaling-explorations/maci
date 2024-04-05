@@ -54,7 +54,6 @@ describe("Poll", () => {
         coordinator.pubKey.asContractParam(),
         verifierContract,
         vkRegistryContract,
-        false,
         {
           gasLimit: 10000000,
         },

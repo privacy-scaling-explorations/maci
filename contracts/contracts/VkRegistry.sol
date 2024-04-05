@@ -16,16 +16,11 @@ contract VkRegistry is Ownable, SnarkCommon, IVkRegistry {
   mapping(uint256 => VerifyingKey) internal tallyVks;
   mapping(uint256 => bool) internal tallyVkSet;
 
-  mapping(uint256 => VerifyingKey) internal subsidyVks;
-  mapping(uint256 => bool) internal subsidyVkSet;
-
   event ProcessVkSet(uint256 _sig);
   event TallyVkSet(uint256 _sig);
-  event SubsidyVkSet(uint256 _sig);
 
   error ProcessVkAlreadySet();
   error TallyVkAlreadySet();
-  error SubsidyVkAlreadySet();
   error ProcessVkNotSet();
   error TallyVkNotSet();
   error SubsidyVkNotSet();
@@ -48,13 +43,6 @@ contract VkRegistry is Ownable, SnarkCommon, IVkRegistry {
     isSet = tallyVkSet[_sig];
   }
 
-  /// @notice Check if the subsidy verifying key is set
-  /// @param _sig The signature
-  /// @return isSet whether the verifying key is set
-  function isSubsidyVkSet(uint256 _sig) public view returns (bool isSet) {
-    isSet = subsidyVkSet[_sig];
-  }
-
   /// @notice generate the signature for the process verifying key
   /// @param _stateTreeDepth The state tree depth
   /// @param _messageTreeDepth The message tree depth
@@ -75,19 +63,6 @@ contract VkRegistry is Ownable, SnarkCommon, IVkRegistry {
   /// @param _voteOptionTreeDepth The vote option tree depth
   /// @return sig The signature
   function genTallyVkSig(
-    uint256 _stateTreeDepth,
-    uint256 _intStateTreeDepth,
-    uint256 _voteOptionTreeDepth
-  ) public pure returns (uint256 sig) {
-    sig = (_stateTreeDepth << 128) + (_intStateTreeDepth << 64) + _voteOptionTreeDepth;
-  }
-
-  /// @notice generate the signature for the subsidy verifying key
-  /// @param _stateTreeDepth The state tree depth
-  /// @param _intStateTreeDepth The intermediate state tree depth
-  /// @param _voteOptionTreeDepth The vote option tree depth
-  /// @return sig The signature
-  function genSubsidyVkSig(
     uint256 _stateTreeDepth,
     uint256 _intStateTreeDepth,
     uint256 _voteOptionTreeDepth
@@ -144,35 +119,6 @@ contract VkRegistry is Ownable, SnarkCommon, IVkRegistry {
 
     emit TallyVkSet(tallyVkSig);
     emit ProcessVkSet(processVkSig);
-  }
-
-  /// @notice Set the process verifying key for a certain combination
-  /// of parameters
-  /// @param _stateTreeDepth The state tree depth
-  /// @param _intStateTreeDepth The intermediate state tree depth
-  /// @param _voteOptionTreeDepth The vote option tree depth
-  /// @param _subsidyVk The verifying key
-  function setSubsidyKeys(
-    uint256 _stateTreeDepth,
-    uint256 _intStateTreeDepth,
-    uint256 _voteOptionTreeDepth,
-    VerifyingKey calldata _subsidyVk
-  ) public onlyOwner {
-    uint256 subsidyVkSig = genSubsidyVkSig(_stateTreeDepth, _intStateTreeDepth, _voteOptionTreeDepth);
-
-    if (subsidyVkSet[subsidyVkSig]) revert SubsidyVkAlreadySet();
-
-    VerifyingKey storage subsidyVk = subsidyVks[subsidyVkSig];
-    subsidyVk.alpha1 = _subsidyVk.alpha1;
-    subsidyVk.beta2 = _subsidyVk.beta2;
-    subsidyVk.gamma2 = _subsidyVk.gamma2;
-    subsidyVk.delta2 = _subsidyVk.delta2;
-    for (uint8 i = 0; i < _subsidyVk.ic.length; i++) {
-      subsidyVk.ic.push(_subsidyVk.ic[i]);
-    }
-    subsidyVkSet[subsidyVkSig] = true;
-
-    emit SubsidyVkSet(subsidyVkSig);
   }
 
   /// @notice Check if the process verifying key is set
@@ -245,40 +191,5 @@ contract VkRegistry is Ownable, SnarkCommon, IVkRegistry {
     uint256 sig = genTallyVkSig(_stateTreeDepth, _intStateTreeDepth, _voteOptionTreeDepth);
 
     vk = getTallyVkBySig(sig);
-  }
-
-  /// @notice Check if the subsidy verifying key is set
-  /// @param _stateTreeDepth The state tree depth
-  /// @param _intStateTreeDepth The intermediate state tree depth
-  /// @param _voteOptionTreeDepth The vote option tree depth
-  /// @return isSet whether the verifying key is set
-  function hasSubsidyVk(
-    uint256 _stateTreeDepth,
-    uint256 _intStateTreeDepth,
-    uint256 _voteOptionTreeDepth
-  ) public view returns (bool isSet) {
-    uint256 sig = genSubsidyVkSig(_stateTreeDepth, _intStateTreeDepth, _voteOptionTreeDepth);
-
-    isSet = subsidyVkSet[sig];
-  }
-
-  /// @notice Get the subsidy verifying key by signature
-  /// @param _sig The signature
-  /// @return vk The verifying key
-  function getSubsidyVkBySig(uint256 _sig) public view returns (VerifyingKey memory vk) {
-    if (!subsidyVkSet[_sig]) revert SubsidyVkNotSet();
-
-    vk = subsidyVks[_sig];
-  }
-
-  /// @inheritdoc IVkRegistry
-  function getSubsidyVk(
-    uint256 _stateTreeDepth,
-    uint256 _intStateTreeDepth,
-    uint256 _voteOptionTreeDepth
-  ) public view returns (VerifyingKey memory vk) {
-    uint256 sig = genSubsidyVkSig(_stateTreeDepth, _intStateTreeDepth, _voteOptionTreeDepth);
-
-    vk = getSubsidyVkBySig(sig);
   }
 }

@@ -67,18 +67,6 @@ describe("VkRegistry", () => {
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
     });
-
-    it("should allow to set the subsidy vks", async () => {
-      const tx = await vkRegistryContract.setSubsidyKeys(
-        stateTreeDepth,
-        treeDepths.intStateTreeDepth,
-        treeDepths.voteOptionTreeDepth,
-        testProcessVk.asContractParam() as IVerifyingKeyStruct,
-        { gasLimit: 1000000 },
-      );
-      const receipt = await tx.wait();
-      expect(receipt?.status).to.eq(1);
-    });
   });
 
   describe("hasVks", () => {
@@ -125,27 +113,6 @@ describe("VkRegistry", () => {
         ).to.eq(false);
       });
     });
-
-    describe("hasSubsidyVk", () => {
-      it("should return true for the subsidy vk", async () => {
-        expect(
-          await vkRegistryContract.hasSubsidyVk(
-            stateTreeDepth,
-            treeDepths.intStateTreeDepth,
-            treeDepths.voteOptionTreeDepth,
-          ),
-        ).to.eq(true);
-      });
-      it("should return false for a non-existing vk", async () => {
-        expect(
-          await vkRegistryContract.hasSubsidyVk(
-            stateTreeDepth + 2,
-            treeDepths.intStateTreeDepth,
-            treeDepths.voteOptionTreeDepth,
-          ),
-        ).to.eq(false);
-      });
-    });
   });
 
   describe("genSignatures", () => {
@@ -171,18 +138,6 @@ describe("VkRegistry", () => {
         );
         const vk = await vkRegistryContract.getTallyVkBySig(sig);
         compareVks(testTallyVk, vk);
-      });
-    });
-
-    describe("genSubsidyVkSig", () => {
-      it("should generate a valid signature", async () => {
-        const sig = await vkRegistryContract.genSubsidyVkSig(
-          stateTreeDepth,
-          treeDepths.intStateTreeDepth,
-          treeDepths.voteOptionTreeDepth,
-        );
-        const vk = await vkRegistryContract.getSubsidyVkBySig(sig);
-        compareVks(testProcessVk, vk);
       });
     });
   });

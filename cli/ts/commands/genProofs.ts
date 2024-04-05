@@ -15,7 +15,6 @@ import path from "path";
 import type { BigNumberish } from "ethers";
 
 import {
-  DEFAULT_ETH_PROVIDER,
   asHex,
   banner,
   contractExists,
@@ -30,11 +29,10 @@ import {
   type Proof,
   type TallyData,
   type GenProofsArgs,
-  type ISnarkJSVerificationKey,
 } from "../utils";
 
 /**
- * Generate proofs for the message processing, tally and subsidy calculations
+ * Generate proofs for the message processing and tally calculations
  * @note see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing
  * @param GenProofsArgs - The arguments for the genProofs command
  * @returns The tally data
@@ -45,21 +43,16 @@ export const genProofs = async ({
   tallyZkey,
   processZkey,
   pollId,
-  subsidyFile,
-  subsidyZkey,
   rapidsnark,
   processWitgen,
   processDatFile,
   tallyWitgen,
   tallyDatFile,
-  subsidyWitgen,
-  subsidyDatFile,
   coordinatorPrivKey,
   maciAddress,
   transactionHash,
   processWasm,
   tallyWasm,
-  subsidyWasm,
   useWasm,
   stateFile,
   startBlock,
@@ -120,55 +113,6 @@ export const genProofs = async ({
 
   if (!zkResult[0]) {
     logError(`Could not find ${zkResult[1]}.`);
-  }
-
-  // the vk for the subsidy contract (optional)
-  let subsidyVk: ISnarkJSVerificationKey;
-  if (subsidyFile) {
-    if (fs.existsSync(subsidyFile)) {
-      logError(`${subsidyFile} exists. Please specify a different filepath.`);
-    }
-
-    if (!subsidyZkey) {
-      logError("Please specify the subsidy zkey file location");
-    }
-
-    if (!subsidyWitgen) {
-      logError("Please specify the subsidy witnessgen file location");
-    }
-
-    // we need different artifacts if using wasm or rapidsnark
-    if (!useWasm) {
-      if (!subsidyWitgen) {
-        logError("Please specify the subsidy witnessgen file location");
-      }
-
-      const subsidyWitgenResult = doesPathExist([subsidyWitgen!, subsidyDatFile!]);
-
-      if (!subsidyWitgenResult[0]) {
-        logError(`Could not find ${subsidyWitgenResult[1]}.`);
-      }
-    } else {
-      // we expect to have the wasm file
-      if (!subsidyWasm) {
-        logError("Please specify the subsidy wasm file location");
-      }
-
-      const subsidyWasmResult = doesPathExist([subsidyWasm!]);
-
-      if (!subsidyWasmResult[0]) {
-        logError(`Could not find ${subsidyWasmResult[1]}.`);
-      }
-    }
-
-    // either way we check the subsidy zkey
-    const subsidyZkeyResult = doesPathExist([subsidyZkey!]);
-
-    if (!subsidyZkeyResult[0]) {
-      logError(`Could not find ${subsidyZkeyResult[1]}.`);
-    }
-
-    subsidyVk = await extractVk(subsidyZkey!);
   }
 
   // extract the rest of the verifying keys
@@ -282,7 +226,6 @@ export const genProofs = async ({
 
   const processProofs: Proof[] = [];
   const tallyProofs: Proof[] = [];
-  const subsidyProofs: Proof[] = [];
 
   // time how long it takes
   const startTime = Date.now();
@@ -340,84 +283,6 @@ export const genProofs = async ({
   const endTime = Date.now();
 
   logYellow(quiet, info(`gen processMessage proof took ${(endTime - startTime) / 1000} seconds\n`));
-
-  // subsidy calculations are not mandatory
-  if (subsidyFile) {
-    const subsidyStartTime = Date.now();
-
-    logYellow(quiet, info(`Generating proofs of subsidy calculation...`));
-
-    const { subsidyBatchSize } = poll.batchSizes;
-    const numLeaves = poll.stateLeaves.length;
-    const totalSubsidyBatches = Math.ceil(numLeaves / subsidyBatchSize) ** 2;
-
-    logYellow(
-      quiet,
-      info(`subsidyBatchSize=${subsidyBatchSize}, numLeaves=${numLeaves}, totalSubsidyBatch=${totalSubsidyBatches}`),
-    );
-
-    let numBatchesCalulated = 0;
-
-    let subsidyCircuitInputs: CircuitInputs;
-    // calculate the subsidy for each batch
-    while (poll.hasUnfinishedSubsidyCalculation()) {
-      // calculate subsidy in batches
-      subsidyCircuitInputs = poll.subsidyPerBatch() as unknown as CircuitInputs;
-      try {
-        // generate proof for this batch
-        // eslint-disable-next-line no-await-in-loop
-        const r = await genProof({
-          inputs: subsidyCircuitInputs,
-          zkeyPath: subsidyZkey!,
-          useWasm,
-          rapidsnarkExePath: rapidsnark,
-          witnessExePath: subsidyWitgen,
-          wasmPath: subsidyWasm,
-        });
-        // check validity of it
-        // eslint-disable-next-line no-await-in-loop
-        const isValid = await verifyProof(r.publicSignals, r.proof, subsidyVk!);
-        if (!isValid) {
-          logError("Error: generated an invalid subsidy calc proof");
-        }
-
-        const thisProof = {
-          circuitInputs: subsidyCircuitInputs,
-          proof: r.proof,
-          publicInputs: r.publicSignals,
-        };
-        subsidyProofs.push(thisProof);
-        fs.writeFileSync(
-          path.resolve(outputDir, `subsidy_${numBatchesCalulated}.json`),
-          JSON.stringify(thisProof, null, 4),
-        );
-        numBatchesCalulated += 1;
-
-        logYellow(quiet, info(`Progress: ${numBatchesCalulated} / ${totalSubsidyBatches}`));
-      } catch (error) {
-        logError((error as Error).message);
-      }
-    }
-
-    const subsidyFileData = {
-      provider: process.env.ETH_PROVIDER || DEFAULT_ETH_PROVIDER,
-      maci: maciAddress,
-      pollId: pollId.toString(),
-      newSubsidyCommitment: asHex(subsidyCircuitInputs!.newSubsidyCommitment as BigNumberish),
-      results: {
-        subsidy: poll.subsidy.map((x) => x.toString()),
-        salt: asHex(subsidyCircuitInputs!.newSubsidySalt as BigNumberish),
-      },
-    };
-
-    // store it
-    fs.writeFileSync(subsidyFile, JSON.stringify(subsidyFileData, null, 4));
-    logYellow(quiet, info(`Subsidy file:\n${JSON.stringify(subsidyFileData, null, 4)}\n`));
-
-    const susbsidyEndTime = Date.now();
-
-    logYellow(quiet, info(`gen subsidy proof took ${(susbsidyEndTime - subsidyStartTime) / 1000} seconds\n`));
-  }
 
   // tallying proofs
   logYellow(quiet, info(`Generating proofs of vote tallying...`));

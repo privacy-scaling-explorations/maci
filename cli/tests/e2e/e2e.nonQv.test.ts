@@ -41,7 +41,7 @@ import {
   processMessageTestNonQvZkeyPath,
   tallyVotesTestNonQvZkeyPath,
 } from "../constants";
-import { cleanVanilla, isArm } from "../utils";
+import { clean, isArm } from "../utils";
 
 /**
  Test scenarios:
@@ -84,7 +84,7 @@ describe("e2e tests with non quadratic voting", function test() {
 
   describe("1 signup, 1 message", () => {
     after(() => {
-      cleanVanilla();
+      clean();
     });
 
     const user = new Keypair();

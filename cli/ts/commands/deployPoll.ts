@@ -25,7 +25,6 @@ export const deployPoll = async ({
   messageTreeDepth,
   voteOptionTreeDepth,
   coordinatorPubkey,
-  subsidyEnabled,
   maciAddress,
   vkRegistryAddress,
   signer,
@@ -93,7 +92,6 @@ export const deployPoll = async ({
   let pollAddr = "";
   let messageProcessorContractAddress = "";
   let tallyContractAddress = "";
-  let subsidyContractAddress;
 
   try {
     // deploy the poll contract via the maci contract
@@ -108,7 +106,6 @@ export const deployPoll = async ({
       unserializedKey.asContractParam(),
       verifierContractAddress,
       vkRegistry,
-      subsidyEnabled,
       { gasLimit: 10000000 },
     );
 
@@ -129,7 +126,6 @@ export const deployPoll = async ({
           poll: string;
           messageProcessor: string;
           tally: string;
-          subsidy: string;
         };
       };
       name: string;
@@ -147,18 +143,11 @@ export const deployPoll = async ({
     messageProcessorContractAddress = log.args.pollAddr.messageProcessor;
     tallyContractAddress = log.args.pollAddr.tally;
 
-    if (subsidyEnabled) {
-      subsidyContractAddress = log.args.pollAddr.subsidy;
-    }
-
     logGreen(quiet, info(`Poll ID: ${pollId.toString()}`));
     logGreen(quiet, info(`Poll contract: ${pollAddr}`));
     logGreen(quiet, info(`Message Processor contract: ${messageProcessorContractAddress}`));
     logGreen(quiet, info(`Tally contract: ${tallyContractAddress}`));
-    if (subsidyEnabled && subsidyContractAddress) {
-      logGreen(quiet, info(`Subsidy contract: ${subsidyContractAddress}`));
-      storeContractAddress(`Subsidy-${pollId.toString()}`, subsidyContractAddress, network?.name);
-    }
+
     // store the address
     storeContractAddress(`MessageProcessor-${pollId.toString()}`, messageProcessorContractAddress, network?.name);
     storeContractAddress(`Tally-${pollId.toString()}`, tallyContractAddress, network?.name);
@@ -171,7 +160,6 @@ export const deployPoll = async ({
   return {
     messageProcessor: messageProcessorContractAddress,
     tally: tallyContractAddress,
-    subsidy: subsidyContractAddress,
     poll: pollAddr,
   };
 };

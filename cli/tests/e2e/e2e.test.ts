@@ -51,7 +51,7 @@ import {
   deployArgs,
   timeTravelArgs,
 } from "../constants";
-import { cleanVanilla, isArm } from "../utils";
+import { clean, isArm } from "../utils";
 
 /**
  Test scenarios:
@@ -102,7 +102,7 @@ describe("e2e tests", function test() {
 
   describe("1 signup, 1 message", () => {
     after(() => {
-      cleanVanilla();
+      clean();
     });
 
     const user = new Keypair();
@@ -149,7 +149,7 @@ describe("e2e tests", function test() {
 
   describe("2 signups (1 after stateAq is merged and logs are fetched), 1 message", () => {
     after(() => {
-      cleanVanilla();
+      clean();
     });
 
     const user = new Keypair();
@@ -199,7 +199,7 @@ describe("e2e tests", function test() {
 
   describe("4 signups, 8 messages", () => {
     after(() => {
-      cleanVanilla();
+      clean();
     });
 
     const users = [new Keypair(), new Keypair(), new Keypair(), new Keypair()];
@@ -330,7 +330,7 @@ describe("e2e tests", function test() {
 
   describe("5 signups, 1 message", () => {
     after(() => {
-      cleanVanilla();
+      clean();
     });
 
     const users = [
@@ -387,7 +387,7 @@ describe("e2e tests", function test() {
 
   describe("8 signups (same key), 12 messages (same message)", () => {
     after(() => {
-      cleanVanilla();
+      clean();
     });
 
     const user = new Keypair();
@@ -436,7 +436,7 @@ describe("e2e tests", function test() {
 
   describe("30 signups (31 ballots), 4 messages", () => {
     after(() => {
-      cleanVanilla();
+      clean();
     });
 
     const users = Array.from({ length: 30 }, () => new Keypair());
@@ -533,7 +533,7 @@ describe("e2e tests", function test() {
 
   describe("multiplePolls1", () => {
     after(() => {
-      cleanVanilla();
+      clean();
     });
 
     const user = new Keypair();
@@ -566,7 +566,7 @@ describe("e2e tests", function test() {
       const tallyFileData = await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...verifyArgs(), tallyData: tallyFileData, signer });
-      cleanVanilla();
+      clean();
     });
 
     it("should deploy a new poll", async () => {
@@ -612,7 +612,7 @@ describe("e2e tests", function test() {
     let secondPollAddresses: PollContracts;
 
     after(() => {
-      cleanVanilla();
+      clean();
     });
 
     before(async () => {
@@ -663,7 +663,7 @@ describe("e2e tests", function test() {
       await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...verifyArgs(), signer });
-      cleanVanilla();
+      clean();
     });
 
     it("should deploy two more polls", async () => {
@@ -775,7 +775,7 @@ describe("e2e tests", function test() {
         tallyAddress: pollAddresses.tally,
         signer,
       });
-      cleanVanilla();
+      clean();
     });
 
     it("should complete the third poll", async () => {
@@ -807,7 +807,7 @@ describe("e2e tests", function test() {
     const user = new Keypair();
 
     after(() => {
-      cleanVanilla();
+      clean();
 
       if (fs.existsSync(stateOutPath)) {
         fs.unlinkSync(stateOutPath);
@@ -867,7 +867,7 @@ describe("e2e tests", function test() {
     let stateIndex: bigint | undefined;
 
     after(() => {
-      cleanVanilla();
+      clean();
     });
 
     before(async () => {
