@@ -4,7 +4,7 @@ import path from "path";
 import { copyDirectory, insertIndexPage } from "./utils";
 
 // where to move the solidity doc files over
-const solidityDocDir = path.resolve(__dirname, "../../versioned_docs/version-v1.x/solidity-docs");
+const solidityDocDir = path.resolve(__dirname, "../../versioned_docs/version-v1.3_alpha/solidity-docs");
 // the origin folder (from the contracts package)
 const sourceDir = path.resolve(__dirname, "../../../contracts/docs");
 
