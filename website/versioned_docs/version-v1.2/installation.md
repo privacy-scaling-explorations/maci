@@ -113,12 +113,6 @@ Edit `circuits/circom/circuits` to include the circuits you would like to compil
     "template": "TallyVotesNonQv",
     "params": [10, 1, 2],
     "pubs": ["inputHash"]
-  },
-  "SubsidyPerBatch_10-1-2_test": {
-    "file": "subsidy",
-    "template": "SubsidyPerBatch",
-    "params": [10, 1, 2],
-    "pubs": ["inputHash"]
   }
 }
 ```

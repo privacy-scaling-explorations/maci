@@ -66,7 +66,7 @@ Public key: macipk.946c756cb8588f7169d37e23a98b92051359d64321cf7372a75757b5e9d55
 Private key: macisk.08a06aef74c7f6a6f73704e30677418731bc738500f4e6c63dbfe41af8d6719c
 ```
 
-### Generate MACI keys
+### Generate MACI keys
 
 You can generate MACI keys using the following cli utility.
 

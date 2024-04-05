@@ -9,7 +9,6 @@ The main circuits are:
 
 - `processMessages.circom`
 - `tallyVotes.circom`
-- (optional) `subsidy.circom`
 
 The rest of the circuits are utilities templates that are required for the main circuits to work correctly. These include utilities such as float math, conversion of private keys, and Poseidon hashing/encryption.
 
