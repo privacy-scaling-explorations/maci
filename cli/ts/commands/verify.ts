@@ -1,10 +1,7 @@
 import {
   Tally__factory as TallyFactory,
-  TallyNonQv__factory as TallyNonQvFactory,
   MACI__factory as MACIFactory,
   Poll__factory as PollFactory,
-  Tally,
-  TallyNonQv,
 } from "maci-contracts/typechain-types";
 import { hash2, hash3, genTreeCommitment, hashLeftRight } from "maci-crypto";
 
@@ -61,9 +58,7 @@ export const verify = async ({
 
   const pollContract = PollFactory.connect(pollAddr, signer);
 
-  const tallyContract = useQv
-    ? TallyFactory.connect(tallyContractAddress, signer)
-    : TallyNonQvFactory.connect(tallyContractAddress, signer);
+  const tallyContract = TallyFactory.connect(tallyContractAddress, signer);
 
   // verification
   const onChainTallyCommitment = BigInt(await tallyContract.tallyCommitment());
@@ -125,7 +120,7 @@ export const verify = async ({
     logGreen(quiet, success("The on-chain tally commitment matches."));
 
     // verify total spent voice credits on-chain
-    const isValid = await (tallyContract as Tally).verifySpentVoiceCredits(
+    const isValid = await tallyContract.verifySpentVoiceCredits(
       tallyResults.totalSpentVoiceCredits.spent,
       tallyResults.totalSpentVoiceCredits.salt,
       newResultsCommitment,
@@ -140,7 +135,7 @@ export const verify = async ({
 
     // verify per vote option voice credits on-chain
     const failedSpentCredits = await verifyPerVOSpentVoiceCredits(
-      tallyContract as Tally,
+      tallyContract,
       tallyResults,
       voteOptionTreeDepth,
       newSpentVoiceCreditsCommitment,
@@ -187,10 +182,11 @@ export const verify = async ({
     logGreen(quiet, success("The on-chain tally commitment matches."));
 
     // verify total spent voice credits on-chain
-    const isValid = await (tallyContract as TallyNonQv).verifySpentVoiceCredits(
+    const isValid = await tallyContract.verifySpentVoiceCredits(
       tallyResults.totalSpentVoiceCredits.spent,
       tallyResults.totalSpentVoiceCredits.salt,
       newResultsCommitment,
+      0n,
     );
 
     if (isValid) {

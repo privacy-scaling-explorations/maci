@@ -62,6 +62,7 @@ describe("MessageProcessor", () => {
       coordinator.pubKey.asContractParam(),
       verifierContract,
       vkRegistryContract,
+      true,
       {
         gasLimit: 10000000,
       },

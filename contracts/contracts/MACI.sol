@@ -199,13 +199,15 @@ contract MACI is IMACI, Params, Utilities, Ownable {
   /// @param _coordinatorPubKey The coordinator's public key
   /// @param _verifier The Verifier Contract
   /// @param _vkRegistry The VkRegistry Contract
+  /// @param _isQv Whether to support QV or not
   /// @return pollAddr a new Poll contract address
   function deployPoll(
     uint256 _duration,
     TreeDepths memory _treeDepths,
     PubKey memory _coordinatorPubKey,
     address _verifier,
-    address _vkRegistry
+    address _vkRegistry,
+    bool _isQv
   ) public virtual onlyOwner returns (PollContracts memory pollAddr) {
     // cache the poll to a local variable so we can increment it
     uint256 pollId = nextPollId;
@@ -238,7 +240,7 @@ contract MACI is IMACI, Params, Utilities, Ownable {
     );
 
     address mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p, _owner);
-    address tally = tallyFactory.deploy(_verifier, _vkRegistry, p, mp, _owner);
+    address tally = tallyFactory.deploy(_verifier, _vkRegistry, p, mp, _owner, _isQv);
 
     polls[pollId] = p;
 

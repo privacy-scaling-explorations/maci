@@ -13,10 +13,11 @@ contract TallyFactory is ITallyFactory {
     address _vkRegistry,
     address _poll,
     address _messageProcessor,
-    address _owner
+    address _owner,
+    bool _isQv
   ) public virtual returns (address tallyAddr) {
     // deploy Tally for this Poll
-    Tally tally = new Tally(_verifier, _vkRegistry, _poll, _messageProcessor);
+    Tally tally = new Tally(_verifier, _vkRegistry, _poll, _messageProcessor, _isQv);
     tally.transferOwnership(_owner);
     tallyAddr = address(tally);
   }

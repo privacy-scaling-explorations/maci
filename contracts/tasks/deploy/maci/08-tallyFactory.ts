@@ -25,10 +25,8 @@ deployment
     const poseidonT5ContractAddress = storage.mustGetAddress(EContracts.PoseidonT5, hre.network.name);
     const poseidonT6ContractAddress = storage.mustGetAddress(EContracts.PoseidonT6, hre.network.name);
 
-    const useQuadraticVoting = deployment.getDeployConfigField<boolean>(EContracts.Poll, "useQuadraticVoting");
-
     const linkedTallyFactoryContract = await deployment.linkPoseidonLibraries(
-      useQuadraticVoting ? EContracts.TallyFactory : EContracts.TallyNonQvFactory,
+      EContracts.TallyFactory,
       poseidonT3ContractAddress,
       poseidonT4ContractAddress,
       poseidonT5ContractAddress,

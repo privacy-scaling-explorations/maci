@@ -45,7 +45,7 @@ describe("TallyVotesNonQv", () => {
 
   const [pollAbi] = parseArtifact("Poll");
   const [mpAbi] = parseArtifact("MessageProcessor");
-  const [tallyAbi] = parseArtifact("TallyNonQv");
+  const [tallyAbi] = parseArtifact("Tally");
 
   let pollId: bigint;
   let poll: Poll;
@@ -59,7 +59,7 @@ describe("TallyVotesNonQv", () => {
 
     signer = await getDefaultSigner();
 
-    const r = await deployTestContracts(100, STATE_TREE_DEPTH, signer, false, true);
+    const r = await deployTestContracts(100, STATE_TREE_DEPTH, signer, false);
     maciContract = r.maciContract;
     verifierContract = r.mockVerifierContract as Verifier;
     vkRegistryContract = r.vkRegistryContract;
@@ -72,6 +72,7 @@ describe("TallyVotesNonQv", () => {
       coordinator.pubKey.asContractParam(),
       verifierContract,
       vkRegistryContract,
+      false,
       {
         gasLimit: 10000000,
       },
@@ -201,6 +202,13 @@ describe("TallyVotesNonQv", () => {
     it("isTallied should return true", async () => {
       const isTallied = await tallyContract.isTallied();
       expect(isTallied).to.eq(true);
+    });
+
+    it("should throw error if try to call verifyPerVOSpentVoiceCredits for non-qv", async () => {
+      await expect(tallyContract.verifyPerVOSpentVoiceCredits(0, 0, [], 0, 0, 0, 0)).to.be.revertedWithCustomError(
+        tallyContract,
+        "NotSupported",
+      );
     });
 
     it("tallyVotes() should revert when votes have already been tallied", async () => {

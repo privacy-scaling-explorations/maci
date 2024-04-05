@@ -59,7 +59,6 @@ program
   .option("-g, --signupGatekeeperAddress <signupGatekeeperAddress>", "the signup gatekeeper contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .option("-uq, --use-quadratic-voting", "whether to use quadratic voting", (value) => value === "true", true)
   .requiredOption("-s, --stateTreeDepth <stateTreeDepth>", "the state tree depth", parseInt)
   .action(async (cmdOptions) => {
     try {
@@ -74,7 +73,6 @@ program
         poseidonT4Address: cmdOptions.poseidonT4Address,
         poseidonT5Address: cmdOptions.poseidonT5Address,
         poseidonT6Address: cmdOptions.poseidonT6Address,
-        useQv: cmdOptions.useQuadraticVoting,
         quiet: cmdOptions.quiet,
         signer,
       });
@@ -200,6 +198,7 @@ program
   .requiredOption("-m, --msg-tree-depth <messageTreeDepth>", "the message tree depth", parseInt)
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
   .requiredOption("-pk, --pubkey <coordinatorPubkey>", "the coordinator public key")
+  .option("-uq, --use-quadratic-voting", "whether to use quadratic voting", (value) => value === "true", true)
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
@@ -217,6 +216,7 @@ program
         maciAddress: cmdObj.maciAddress,
         vkRegistryAddress: cmdObj.vkRegistryAddress,
         quiet: cmdObj.quiet,
+        useQuadraticVoting: cmdObj.useQuadraticVoting,
         signer,
       });
     } catch (error) {

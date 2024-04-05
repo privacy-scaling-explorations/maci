@@ -1,13 +1,4 @@
-import type {
-  AccQueue,
-  MACI,
-  MessageProcessor,
-  Poll,
-  Tally,
-  TallyNonQv,
-  Verifier,
-  VkRegistry,
-} from "../../typechain-types";
+import type { AccQueue, MACI, MessageProcessor, Poll, Tally, Verifier, VkRegistry } from "../../typechain-types";
 import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import type { BaseContract, BigNumberish, Signer } from "ethers";
 import type { Libraries, TaskArguments } from "hardhat/types";
@@ -326,7 +317,7 @@ export interface IProverParams {
   /**
    * Tally contract typechain wrapper
    */
-  tallyContract: Tally | TallyNonQv;
+  tallyContract: Tally;
 }
 
 /**
@@ -486,7 +477,6 @@ export enum EContracts {
   PollFactory = "PollFactory",
   MessageProcessorFactory = "MessageProcessorFactory",
   TallyFactory = "TallyFactory",
-  TallyNonQvFactory = "TallyNonQvFactory",
   PoseidonT3 = "PoseidonT3",
   PoseidonT4 = "PoseidonT4",
   PoseidonT5 = "PoseidonT5",
@@ -494,7 +484,6 @@ export enum EContracts {
   VkRegistry = "VkRegistry",
   Poll = "Poll",
   Tally = "Tally",
-  TallyNonQv = "TallyNonQv",
   MessageProcessor = "MessageProcessor",
   AccQueue = "AccQueue",
   AccQueueQuinaryBlankSl = "AccQueueQuinaryBlankSl",

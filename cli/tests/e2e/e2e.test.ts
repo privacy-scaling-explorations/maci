@@ -88,6 +88,7 @@ describe("e2e tests", function test() {
     processWasm: testProcessMessagesWasmPath,
     tallyWasm: testTallyVotesWasmPath,
     useWasm,
+    useQuadraticVoting: true,
   };
 
   // before all tests we deploy the vk registry contract and set the verifying keys
@@ -111,7 +112,7 @@ describe("e2e tests", function test() {
       // deploy the smart contracts
       maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
-      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
+      pollAddresses = await deployPoll({ ...deployPollArgs, signer, useQuadraticVoting: true });
     });
 
     it("should signup one user", async () => {

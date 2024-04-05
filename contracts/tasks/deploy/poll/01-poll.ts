@@ -69,6 +69,7 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").setAction(async (_, hre
       unserializedKey.asContractParam(),
       verifierContractAddress,
       vkRegistryContractAddress,
+      useQuadraticVoting,
     );
 
   const tx = await maciContract.deployPoll(
@@ -82,6 +83,7 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").setAction(async (_, hre
     unserializedKey.asContractParam(),
     verifierContractAddress,
     vkRegistryContractAddress,
+    useQuadraticVoting,
   );
 
   const receipt = await tx.wait();
@@ -99,7 +101,7 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").setAction(async (_, hre
   });
 
   const tallyContract = await deployment.getContract({
-    name: useQuadraticVoting ? EContracts.Tally : EContracts.TallyNonQv,
+    name: EContracts.Tally,
     address: tallyContractAddress,
   });
 
@@ -137,10 +139,16 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").setAction(async (_, hre
     }),
 
     storage.register({
-      id: useQuadraticVoting ? EContracts.Tally : EContracts.TallyNonQv,
+      id: EContracts.Tally,
       key: `poll-${pollId}`,
       contract: tallyContract,
-      args: [verifierContractAddress, vkRegistryContractAddress, pollContractAddress, messageProcessorContractAddress],
+      args: [
+        verifierContractAddress,
+        vkRegistryContractAddress,
+        pollContractAddress,
+        messageProcessorContractAddress,
+        useQuadraticVoting,
+      ],
       network: hre.network.name,
     }),
 

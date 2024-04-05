@@ -158,4 +158,5 @@ export const deployPollArgs: Omit<DeployPollArgs, "signer"> = {
   messageTreeDepth: MSG_TREE_DEPTH,
   voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
   coordinatorPubkey: coordinatorPubKey,
+  useQuadraticVoting: true,
 };
