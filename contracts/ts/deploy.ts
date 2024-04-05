@@ -24,7 +24,6 @@ import {
   TopupCredit,
   Verifier,
   VkRegistry,
-  TallyNonQvFactory,
 } from "../typechain-types";
 
 import { parseArtifact } from "./abi";
@@ -264,7 +263,6 @@ export const deployMaci = async ({
   signer,
   poseidonAddresses,
   stateTreeDepth = 10,
-  useQv = true,
   quiet = true,
 }: IDeployMaciArgs): Promise<IDeployedMaci> => {
   const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } =
@@ -282,7 +280,7 @@ export const deployMaci = async ({
     poseidonT6,
   }));
 
-  const contractsToLink = ["MACI", "PollFactory", "MessageProcessorFactory", "TallyFactory", "TallyNonQvFactory"];
+  const contractsToLink = ["MACI", "PollFactory", "MessageProcessorFactory", "TallyFactory"];
 
   // Link Poseidon contracts to MACI
   const linkedContractFactories = await Promise.all(
@@ -299,7 +297,7 @@ export const deployMaci = async ({
     ),
   );
 
-  const [maciContractFactory, pollFactoryContractFactory, messageProcessorFactory, tallyFactory, tallyFactoryNonQv] =
+  const [maciContractFactory, pollFactoryContractFactory, messageProcessorFactory, tallyFactory] =
     await Promise.all(linkedContractFactories);
 
   const pollFactoryContract = await deployContractWithLinkedLibraries<PollFactory>(
@@ -316,9 +314,11 @@ export const deployMaci = async ({
 
   // deploy either the qv or non qv tally factory - they both implement the same interface
   // so as long as maci is concerned, they are interchangeable
-  const tallyFactoryContract = useQv
-    ? await deployContractWithLinkedLibraries<TallyFactory>(tallyFactory, "TallyFactory", quiet)
-    : await deployContractWithLinkedLibraries<TallyNonQvFactory>(tallyFactoryNonQv, "TallyNonQvFactory", quiet);
+  const tallyFactoryContract = await deployContractWithLinkedLibraries<TallyFactory>(
+    tallyFactory,
+    "TallyFactory",
+    quiet,
+  );
 
   const [pollAddr, mpAddr, tallyAddr] = await Promise.all([
     pollFactoryContract.getAddress(),

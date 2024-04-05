@@ -21,10 +21,17 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
   /// the tally of each batch is proven on-chain via a zk-SNARK, it should be
   /// updated to:
   ///
+  /// QV:
   /// hash3(
   ///   hashLeftRight(merkle root of current results, salt0)
   ///   hashLeftRight(number of spent voice credits, salt1),
   ///   hashLeftRight(merkle root of the no. of spent voice credits per vote option, salt2)
+  /// )
+  ///
+  /// Non-QV:
+  /// hash2(
+  ///   hashLeftRight(merkle root of current results, salt0)
+  ///   hashLeftRight(number of spent voice credits, salt1),
   /// )
   ///
   /// Where each salt is unique and the merkle roots are of arrays of leaves
@@ -40,6 +47,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
   IVkRegistry public immutable vkRegistry;
   IPoll public immutable poll;
   IMessageProcessor public immutable messageProcessor;
+  bool public immutable isQv;
 
   /// @notice custom errors
   error ProcessingNotComplete();
@@ -48,17 +56,19 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
   error NumSignUpsTooLarge();
   error BatchStartIndexTooLarge();
   error TallyBatchSizeTooLarge();
+  error NotSupported();
 
   /// @notice Create a new Tally contract
   /// @param _verifier The Verifier contract
   /// @param _vkRegistry The VkRegistry contract
   /// @param _poll The Poll contract
   /// @param _mp The MessageProcessor contract
-  constructor(address _verifier, address _vkRegistry, address _poll, address _mp) payable {
+  constructor(address _verifier, address _vkRegistry, address _poll, address _mp, bool _isQv) payable {
     verifier = IVerifier(_verifier);
     vkRegistry = IVkRegistry(_vkRegistry);
     poll = IPoll(_poll);
     messageProcessor = IMessageProcessor(_mp);
+    isQv = _isQv;
   }
 
   /// @notice Pack the batch start index and number of signups into a 100-bit value.
@@ -231,7 +241,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
   /// @param _totalSpent spent field retrieved in the totalSpentVoiceCredits object
   /// @param _totalSpentSalt the corresponding salt in the totalSpentVoiceCredit object
   /// @param _resultCommitment hashLeftRight(merkle root of the results.tally, results.salt) in tally.json file
-  /// @param _perVOSpentVoiceCreditsHash hashLeftRight(merkle root of the no spent voice credits per vote option, salt)
+  /// @param _perVOSpentVoiceCreditsHash only for QV - hashLeftRight(merkle root of the no spent voice credits per vote option, salt)
   /// @return isValid Whether the provided values are valid
   function verifySpentVoiceCredits(
     uint256 _totalSpent,
@@ -244,7 +254,46 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
     tally[1] = hashLeftRight(_totalSpent, _totalSpentSalt);
     tally[2] = _perVOSpentVoiceCreditsHash;
 
+    isValid = isQv
+      ? verifyQvSpentVoiceCredits(_totalSpent, _totalSpentSalt, _resultCommitment, _perVOSpentVoiceCreditsHash)
+      : verifyNonQvSpentVoiceCredits(_totalSpent, _totalSpentSalt, _resultCommitment);
+  }
+
+  /// @notice Verify the number of spent voice credits for QV from the tally.json
+  /// @param _totalSpent spent field retrieved in the totalSpentVoiceCredits object
+  /// @param _totalSpentSalt the corresponding salt in the totalSpentVoiceCredit object
+  /// @param _resultCommitment hashLeftRight(merkle root of the results.tally, results.salt) in tally.json file
+  /// @param _perVOSpentVoiceCreditsHash hashLeftRight(merkle root of the no spent voice credits per vote option, salt)
+  /// @return isValid Whether the provided values are valid
+  function verifyQvSpentVoiceCredits(
+    uint256 _totalSpent,
+    uint256 _totalSpentSalt,
+    uint256 _resultCommitment,
+    uint256 _perVOSpentVoiceCreditsHash
+  ) internal view returns (bool isValid) {
+    uint256[3] memory tally;
+    tally[0] = _resultCommitment;
+    tally[1] = hashLeftRight(_totalSpent, _totalSpentSalt);
+    tally[2] = _perVOSpentVoiceCreditsHash;
+
     isValid = hash3(tally) == tallyCommitment;
+  }
+
+  /// @notice Verify the number of spent voice credits for Non-QV from the tally.json
+  /// @param _totalSpent spent field retrieved in the totalSpentVoiceCredits object
+  /// @param _totalSpentSalt the corresponding salt in the totalSpentVoiceCredit object
+  /// @param _resultCommitment hashLeftRight(merkle root of the results.tally, results.salt) in tally.json file
+  /// @return isValid Whether the provided values are valid
+  function verifyNonQvSpentVoiceCredits(
+    uint256 _totalSpent,
+    uint256 _totalSpentSalt,
+    uint256 _resultCommitment
+  ) internal view returns (bool isValid) {
+    uint256[2] memory tally;
+    tally[0] = _resultCommitment;
+    tally[1] = hashLeftRight(_totalSpent, _totalSpentSalt);
+
+    isValid = hash2(tally) == tallyCommitment;
   }
 
   /// @notice Verify the number of spent voice credits per vote option from the tally.json
@@ -266,6 +315,10 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
     uint256 _spentVoiceCreditsHash,
     uint256 _resultCommitment
   ) public view returns (bool isValid) {
+    if (!isQv) {
+      revert NotSupported();
+    }
+
     uint256 computedRoot = computeMerkleRootFromPath(_voteOptionTreeDepth, _voteOptionIndex, _spent, _spentProof);
 
     uint256[3] memory tally;
@@ -302,11 +355,18 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
       _tallyResultProof
     );
 
-    uint256[3] memory tally;
-    tally[0] = hashLeftRight(computedRoot, _tallyResultSalt);
-    tally[1] = _spentVoiceCreditsHash;
-    tally[2] = _perVOSpentVoiceCreditsHash;
+    if (isQv) {
+      uint256[3] memory tally = [
+        hashLeftRight(computedRoot, _tallyResultSalt),
+        _spentVoiceCreditsHash,
+        _perVOSpentVoiceCreditsHash
+      ];
 
-    isValid = hash3(tally) == tallyCommitment;
+      isValid = hash3(tally) == tallyCommitment;
+    } else {
+      uint256[2] memory tally = [hashLeftRight(computedRoot, _tallyResultSalt), _spentVoiceCreditsHash];
+
+      isValid = hash2(tally) == tallyCommitment;
+    }
   }
 }

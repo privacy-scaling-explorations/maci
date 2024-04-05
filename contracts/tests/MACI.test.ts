@@ -166,6 +166,7 @@ describe("MACI", () => {
         coordinator.pubKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
         verifierContract,
         vkRegistryContract,
+        true,
         { gasLimit: 10000000 },
       );
       const receipt = await tx.wait();
@@ -211,6 +212,7 @@ describe("MACI", () => {
           coordinator.pubKey.asContractParam(),
           verifierContract,
           vkRegistryContract,
+          true,
           {
             gasLimit: 10000000,
           },

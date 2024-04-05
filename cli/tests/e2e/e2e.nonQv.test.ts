@@ -91,9 +91,9 @@ describe("e2e tests with non quadratic voting", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy({ ...deployArgs, signer, useQv: false });
+      maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
-      await deployPoll({ ...deployPollArgs, signer });
+      await deployPoll({ ...deployPollArgs, signer, useQuadraticVoting: false });
     });
 
     it("should signup one user", async () => {

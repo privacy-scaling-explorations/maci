@@ -59,7 +59,7 @@ describe("TallyVotes", () => {
 
     signer = await getDefaultSigner();
 
-    const r = await deployTestContracts(100, STATE_TREE_DEPTH, signer, true, true);
+    const r = await deployTestContracts(100, STATE_TREE_DEPTH, signer, true);
     maciContract = r.maciContract;
     verifierContract = r.mockVerifierContract as Verifier;
     vkRegistryContract = r.vkRegistryContract;
@@ -72,6 +72,7 @@ describe("TallyVotes", () => {
       coordinator.pubKey.asContractParam(),
       verifierContract,
       vkRegistryContract,
+      true,
       {
         gasLimit: 10000000,
       },
@@ -220,7 +221,7 @@ describe("TallyVotes", () => {
 
       const intStateTreeDepth = 2;
 
-      const r = await deployTestContracts(100, STATE_TREE_DEPTH, signer, true, true);
+      const r = await deployTestContracts(100, STATE_TREE_DEPTH, signer, true);
       maciContract = r.maciContract;
       verifierContract = r.mockVerifierContract as Verifier;
       vkRegistryContract = r.vkRegistryContract;
@@ -252,6 +253,7 @@ describe("TallyVotes", () => {
         coordinator.pubKey.asContractParam(),
         verifierContract,
         vkRegistryContract,
+        true,
         {
           gasLimit: 10000000,
         },
@@ -360,7 +362,7 @@ describe("TallyVotes", () => {
 
       const intStateTreeDepth = 2;
 
-      const r = await deployTestContracts(100, STATE_TREE_DEPTH, signer, true, true);
+      const r = await deployTestContracts(100, STATE_TREE_DEPTH, signer, true);
       maciContract = r.maciContract;
       verifierContract = r.mockVerifierContract as Verifier;
       vkRegistryContract = r.vkRegistryContract;
@@ -392,6 +394,7 @@ describe("TallyVotes", () => {
         coordinator.pubKey.asContractParam(),
         verifierContract,
         vkRegistryContract,
+        true,
         {
           gasLimit: 10000000,
         },

@@ -488,7 +488,6 @@ export const deployTestContracts = async (
   initialVoiceCreditBalance: number,
   stateTreeDepth: number,
   signer?: Signer,
-  useQv = true,
   quiet = true,
   gatekeeper: FreeForAllGatekeeper | undefined = undefined,
 ): Promise<IDeployedTestContracts> => {
@@ -521,7 +520,6 @@ export const deployTestContracts = async (
     topupCreditContractAddress,
     signer,
     stateTreeDepth,
-    useQv,
     quiet,
   });
 

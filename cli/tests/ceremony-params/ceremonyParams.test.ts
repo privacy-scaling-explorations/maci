@@ -263,9 +263,9 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
 
       before(async () => {
         // deploy the smart contracts
-        maciAddresses = await deploy({ ...ceremonyDeployArgs, signer, useQv: false });
+        maciAddresses = await deploy({ ...ceremonyDeployArgs, signer });
         // deploy a poll contract
-        await deployPoll({ ...deployPollArgs, signer });
+        await deployPoll({ ...deployPollArgs, signer, useQuadraticVoting: false });
       });
 
       it("should signup one user", async () => {
@@ -310,9 +310,9 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
 
       before(async () => {
         // deploy the smart contracts
-        maciAddresses = await deploy({ ...ceremonyDeployArgs, signer, useQv: false });
+        maciAddresses = await deploy({ ...ceremonyDeployArgs, signer });
         // deploy a poll contract
-        await deployPoll({ ...deployPollArgs, signer });
+        await deployPoll({ ...deployPollArgs, signer, useQuadraticVoting: false });
       });
 
       it("should signup 25 users", async () => {

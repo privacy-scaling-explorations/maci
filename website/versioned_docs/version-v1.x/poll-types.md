@@ -43,7 +43,7 @@ If verifying without a tally file, but by passing a tally data object, please en
 
 The non quadratic voting option is a new feature that has been added to MACI with the v1.2 release. It allows to conduct polls without the quadratic voting mechanism. This means that the number of voice credits is not reduced by the square of the weight of the vote casted. This option is useful for polls where the quadratic voting mechanism is not necessary, and it is also slightly cheaper for coordinators to tally votes, as there are less checks required in the Tally smart contract.
 
-To run a poll with non quadratic voting, the coordinator must set the `useQuadraticVoting` parameter to `false` when creating the MACI instance. This will make the MACI instance use the `TallyNonQv` smart contract, which is a smaller version of the `Tally` smart contract, as it does not require the checks for the quadratic voting mechanism.
+To run a poll with non quadratic voting, the coordinator must set the `useQuadraticVoting` parameter to `false` when creating the Poll instance. This will make the Poll instance use the `NonQv` logic.
 
 Using MACI's cli, one can create a MACI instance with non quadratic voting by running the following command:
 

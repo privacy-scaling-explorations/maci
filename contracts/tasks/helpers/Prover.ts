@@ -3,16 +3,7 @@ import { G1Point, G2Point, hashLeftRight } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
 
 import type { IVerifyingKeyStruct, Proof } from "../../ts/types";
-import type {
-  AccQueue,
-  MACI,
-  MessageProcessor,
-  Poll,
-  Tally,
-  TallyNonQv,
-  Verifier,
-  VkRegistry,
-} from "../../typechain-types";
+import type { AccQueue, MACI, MessageProcessor, Poll, Tally, Verifier, VkRegistry } from "../../typechain-types";
 import type { BigNumberish } from "ethers";
 
 import { formatProofForVerifierContract, asHex } from "../../ts/utils";
@@ -57,7 +48,7 @@ export class Prover {
   /**
    * Tally contract typechain wrapper
    */
-  private tallyContract: Tally | TallyNonQv;
+  private tallyContract: Tally;
 
   /**
    * Initialize class properties

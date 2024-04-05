@@ -6,16 +6,7 @@ import { Keypair, PrivKey } from "maci-domainobjs";
 import fs from "fs";
 
 import type { Proof } from "../../ts/types";
-import type {
-  VkRegistry,
-  Verifier,
-  MACI,
-  Poll,
-  AccQueue,
-  MessageProcessor,
-  Tally,
-  TallyNonQv,
-} from "../../typechain-types";
+import type { VkRegistry, Verifier, MACI, Poll, AccQueue, MessageProcessor, Tally } from "../../typechain-types";
 
 import { ContractStorage } from "../helpers/ContractStorage";
 import { Deployment } from "../helpers/Deployment";
@@ -149,15 +140,10 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
       });
 
       // get the tally contract based on the useQuadraticVoting flag
-      const tallyContract = useQuadraticVoting
-        ? await deployment.getContract<Tally>({
-            name: EContracts.Tally,
-            key: `poll-${poll.toString()}`,
-          })
-        : await deployment.getContract<TallyNonQv>({
-            name: EContracts.TallyNonQv,
-            key: `poll-${poll.toString()}`,
-          });
+      const tallyContract = await deployment.getContract<Tally>({
+        name: EContracts.Tally,
+        key: `poll-${poll.toString()}`,
+      });
       const tallyContractAddress = await tallyContract.getAddress();
 
       const proofGenerator = new ProofGenerator({

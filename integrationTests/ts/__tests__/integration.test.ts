@@ -114,6 +114,7 @@ describe("Integration tests", function test() {
       coordinatorPubkey: coordinatorKeypair.pubKey.serialize(),
       maciAddress: contracts.maciAddress,
       signer,
+      useQuadraticVoting: true,
     });
 
     const treeDepths: TreeDepths = {
@@ -285,6 +286,7 @@ describe("Integration tests", function test() {
           "../../../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm",
         ),
         useWasm,
+        useQuadraticVoting: true,
         signer,
       });
       expect(tallyData).to.not.eq(undefined);

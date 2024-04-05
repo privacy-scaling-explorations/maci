@@ -29,6 +29,7 @@ export const deployPoll = async ({
   vkRegistryAddress,
   signer,
   quiet = true,
+  useQuadraticVoting = false,
 }: DeployPollArgs): Promise<PollContracts> => {
   banner(quiet);
 
@@ -106,6 +107,7 @@ export const deployPoll = async ({
       unserializedKey.asContractParam(),
       verifierContractAddress,
       vkRegistry,
+      useQuadraticVoting,
       { gasLimit: 10000000 },
     );
 

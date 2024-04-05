@@ -292,11 +292,6 @@ export interface DeployArgs {
    * Whether to log the output
    */
   quiet?: boolean;
-
-  /**
-   * Whether to use quadratic voting or not
-   */
-  useQv?: boolean;
 }
 
 /**
@@ -352,6 +347,11 @@ export interface DeployPollArgs {
    * Whether to log the output to the console
    */
   quiet?: boolean;
+
+  /**
+   * Whether to use quadratic voting or not
+   */
+  useQuadraticVoting?: boolean;
 }
 
 /**
