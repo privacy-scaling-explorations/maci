@@ -48,15 +48,18 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
   IPoll public immutable poll;
   IVerifier public immutable verifier;
   IVkRegistry public immutable vkRegistry;
+  bool public immutable isQv;
 
   /// @notice Create a new instance
   /// @param _verifier The Verifier contract address
   /// @param _vkRegistry The VkRegistry contract address
   /// @param _poll The Poll contract address
-  constructor(address _verifier, address _vkRegistry, address _poll) payable {
+  /// @param _isQv Whether to support QV or not
+  constructor(address _verifier, address _vkRegistry, address _poll, bool _isQv) payable {
     verifier = IVerifier(_verifier);
     vkRegistry = IVkRegistry(_vkRegistry);
     poll = IPoll(_poll);
+    isQv = _isQv;
   }
 
   /// @notice Update the Poll's currentSbCommitment if the proof is valid.
@@ -180,11 +183,13 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
     );
 
     // Get the verifying key from the VkRegistry
+    IVkRegistry.Mode mode = isQv ? IVkRegistry.Mode.QV : IVkRegistry.Mode.NON_QV;
     VerifyingKey memory vk = vkRegistry.getProcessVk(
       maci.stateTreeDepth(),
       _messageTreeDepth,
       _voteOptionTreeDepth,
-      TREE_ARITY ** _messageTreeSubDepth
+      TREE_ARITY ** _messageTreeSubDepth,
+      mode
     );
 
     isValid = verifier.verify(_proof, vk, publicInputHash);

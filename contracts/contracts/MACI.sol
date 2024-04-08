@@ -239,7 +239,7 @@ contract MACI is IMACI, Params, Utilities, Ownable {
       _owner
     );
 
-    address mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p, _owner);
+    address mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p, _owner, _isQv);
     address tally = tallyFactory.deploy(_verifier, _vkRegistry, p, mp, _owner, _isQv);
 
     polls[pollId] = p;

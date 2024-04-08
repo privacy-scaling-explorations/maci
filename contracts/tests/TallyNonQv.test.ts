@@ -15,6 +15,7 @@ import { Keypair, Message, PubKey } from "maci-domainobjs";
 import type { Tally, MACI, Poll as PollContract, MessageProcessor, Verifier, VkRegistry } from "../typechain-types";
 
 import { parseArtifact } from "../ts/abi";
+import { EMode } from "../ts/constants";
 import { IVerifyingKeyStruct } from "../ts/types";
 import { getDefaultSigner } from "../ts/utils";
 
@@ -137,6 +138,7 @@ describe("TallyVotesNonQv", () => {
       treeDepths.messageTreeDepth,
       treeDepths.voteOptionTreeDepth,
       messageBatchSize,
+      EMode.NON_QV,
       testProcessVk.asContractParam() as IVerifyingKeyStruct,
       testTallyVk.asContractParam() as IVerifyingKeyStruct,
       { gasLimit: 1000000 },

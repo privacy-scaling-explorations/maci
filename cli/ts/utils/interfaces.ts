@@ -237,6 +237,11 @@ export interface CheckVerifyingKeysArgs {
    * Whether to log the output
    */
   quiet?: boolean;
+
+  /**
+   * Whether to use quadratic voting or not
+   */
+  useQuadraticVoting?: boolean;
 }
 
 /**
@@ -823,6 +828,11 @@ export interface SetVerifyingKeysArgs {
    * Whether to log the output
    */
   quiet?: boolean;
+
+  /**
+   * Whether to use quadratic voting or not
+   */
+  useQuadraticVoting?: boolean;
 }
 
 /**

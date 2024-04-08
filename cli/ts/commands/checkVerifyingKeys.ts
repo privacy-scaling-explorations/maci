@@ -1,5 +1,5 @@
 import { extractVk } from "maci-circuits";
-import { VkRegistry__factory as VkRegistryFactory } from "maci-contracts";
+import { EMode, VkRegistry__factory as VkRegistryFactory } from "maci-contracts";
 import { VerifyingKey } from "maci-domainobjs";
 
 import fs from "fs";
@@ -34,6 +34,7 @@ export const checkVerifyingKeys = async ({
   tallyVotesZkeyPath,
   vkRegistry,
   signer,
+  useQuadraticVoting = true,
   quiet = true,
 }: CheckVerifyingKeysArgs): Promise<boolean> => {
   banner(quiet);
@@ -75,12 +76,14 @@ export const checkVerifyingKeys = async ({
       messageTreeDepth,
       voteOptionTreeDepth,
       messageBatchSize,
+      useQuadraticVoting ? EMode.QV : EMode.NON_QV,
     );
 
     const tallyVkOnChain = await vkRegistryContractInstance.getTallyVk(
       stateTreeDepth,
       intStateTreeDepth,
       voteOptionTreeDepth,
+      useQuadraticVoting ? EMode.QV : EMode.NON_QV,
     );
 
     // do the actual validation

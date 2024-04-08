@@ -4,6 +4,7 @@ import { VerifyingKey } from "maci-domainobjs";
 import type { IVerifyingKeyStruct } from "../../../ts/types";
 import type { VkRegistry } from "../../../typechain-types";
 
+import { EMode } from "../../../ts/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
 import { EContracts, type IDeployParams } from "../../helpers/types";
@@ -36,6 +37,8 @@ deployment
       "processMessagesZkey",
     );
     const tallyVotesZkeyPath = deployment.getDeployConfigField<string>(EContracts.VkRegistry, "tallyVotesZkey");
+    const useQuadraticVoting =
+      deployment.getDeployConfigField<boolean | null>(EContracts.Poll, "useQuadraticVoting") ?? false;
 
     const [processVk, tallyVk] = await Promise.all([
       extractVk(processMessagesZkeyPath),
@@ -51,6 +54,7 @@ deployment
         messageTreeDepth,
         voteOptionTreeDepth,
         5 ** messageBatchDepth,
+        useQuadraticVoting ? EMode.QV : EMode.NON_QV,
         processVk.asContractParam() as IVerifyingKeyStruct,
         tallyVk.asContractParam() as IVerifyingKeyStruct,
       )
