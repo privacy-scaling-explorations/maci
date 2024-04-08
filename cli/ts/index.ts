@@ -83,6 +83,7 @@ program
 program
   .command("checkVerifyingKeys")
   .description("check that the verifying keys in the contract match the local ones")
+  .option("-uq, --use-quadratic-voting", "whether to use quadratic voting", (value) => value === "true", true)
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .option("-vk, --vk-contract <vkContract>", "the VkRegistry contract address")
@@ -113,6 +114,7 @@ program
         tallyVotesZkeyPath: cmdOptions.tallyVotesZkey,
         vkRegistry: cmdOptions.vkContract,
         quiet: cmdOptions.quiet,
+        useQuadraticVoting: cmdOptions.useQuadraticVoting,
         signer,
       });
     } catch (error) {
@@ -239,6 +241,7 @@ program
     "-t, --tally-votes-zkey <tallyVotesZkeyPath>",
     "the tally votes zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
+  .option("-uq, --use-quadratic-voting", "whether to use quadratic voting", (value) => value === "true", true)
   .option("-k, --vk-registry <vkRegistry>", "the vk registry contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
@@ -256,6 +259,7 @@ program
         tallyVotesZkeyPath: cmdObj.tallyVotesZkey,
         vkRegistry: cmdObj.vkRegistry,
         quiet: cmdObj.quiet,
+        useQuadraticVoting: cmdObj.useQuadraticVoting,
         signer,
       });
     } catch (error) {

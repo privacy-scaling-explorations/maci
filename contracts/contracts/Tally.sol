@@ -184,7 +184,8 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
     (IMACI maci, , ) = poll.extContracts();
 
     // Get the verifying key
-    VerifyingKey memory vk = vkRegistry.getTallyVk(maci.stateTreeDepth(), intStateTreeDepth, voteOptionTreeDepth);
+    IVkRegistry.Mode mode = isQv ? IVkRegistry.Mode.QV : IVkRegistry.Mode.NON_QV;
+    VerifyingKey memory vk = vkRegistry.getTallyVk(maci.stateTreeDepth(), intStateTreeDepth, voteOptionTreeDepth, mode);
 
     // Get the public inputs
     uint256 publicInputHash = genTallyVotesPublicInputHash(

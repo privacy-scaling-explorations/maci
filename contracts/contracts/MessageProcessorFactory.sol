@@ -14,10 +14,11 @@ contract MessageProcessorFactory is Params, DomainObjs, IMessageProcessorFactory
     address _verifier,
     address _vkRegistry,
     address _poll,
-    address _owner
+    address _owner,
+    bool _isQv
   ) public returns (address messageProcessorAddr) {
     // deploy MessageProcessor for this Poll
-    MessageProcessor messageProcessor = new MessageProcessor(_verifier, _vkRegistry, _poll);
+    MessageProcessor messageProcessor = new MessageProcessor(_verifier, _vkRegistry, _poll, _isQv);
     messageProcessor.transferOwnership(_owner);
     messageProcessorAddr = address(messageProcessor);
   }

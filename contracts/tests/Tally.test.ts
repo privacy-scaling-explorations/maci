@@ -13,6 +13,7 @@ import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, Message, PubKey } from "maci-domainobjs";
 
 import { parseArtifact } from "../ts/abi";
+import { EMode } from "../ts/constants";
 import { IVerifyingKeyStruct } from "../ts/types";
 import { getDefaultSigner } from "../ts/utils";
 import { Tally, MACI, Poll as PollContract, MessageProcessor, Verifier, VkRegistry } from "../typechain-types";
@@ -137,6 +138,7 @@ describe("TallyVotes", () => {
       treeDepths.messageTreeDepth,
       treeDepths.voteOptionTreeDepth,
       messageBatchSize,
+      EMode.QV,
       testProcessVk.asContractParam() as IVerifyingKeyStruct,
       testTallyVk.asContractParam() as IVerifyingKeyStruct,
       { gasLimit: 1000000 },
@@ -324,6 +326,7 @@ describe("TallyVotes", () => {
         treeDepths.messageTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
+        EMode.QV,
         testProcessVk.asContractParam() as IVerifyingKeyStruct,
         testTallyVk.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 1000000 },
@@ -465,6 +468,7 @@ describe("TallyVotes", () => {
         treeDepths.messageTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
+        EMode.QV,
         testProcessVk.asContractParam() as IVerifyingKeyStruct,
         testTallyVk.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 1000000 },

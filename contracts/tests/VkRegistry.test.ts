@@ -2,6 +2,7 @@ import { expect } from "chai";
 import { Signer } from "ethers";
 
 import { IVerifyingKeyStruct, VkRegistry, deployVkRegistry, getDefaultSigner } from "../ts";
+import { EMode } from "../ts/constants";
 
 import { messageBatchSize, testProcessVk, testTallyVk, treeDepths } from "./constants";
 import { compareVks } from "./utils";
@@ -30,6 +31,7 @@ describe("VkRegistry", () => {
         treeDepths.messageTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
+        EMode.QV,
         testProcessVk.asContractParam() as IVerifyingKeyStruct,
         testTallyVk.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 1000000 },
@@ -46,6 +48,7 @@ describe("VkRegistry", () => {
           treeDepths.messageTreeDepth,
           treeDepths.voteOptionTreeDepth,
           messageBatchSize,
+          EMode.QV,
           testProcessVk.asContractParam() as IVerifyingKeyStruct,
           testTallyVk.asContractParam() as IVerifyingKeyStruct,
           { gasLimit: 1000000 },
@@ -60,6 +63,23 @@ describe("VkRegistry", () => {
         treeDepths.messageTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
+        EMode.QV,
+        testProcessVk.asContractParam() as IVerifyingKeyStruct,
+        testTallyVk.asContractParam() as IVerifyingKeyStruct,
+        { gasLimit: 1000000 },
+      );
+      const receipt = await tx.wait();
+      expect(receipt?.status).to.eq(1);
+    });
+
+    it("should allow to set vks for different modes", async () => {
+      const tx = await vkRegistryContract.setVerifyingKeys(
+        stateTreeDepth + 1,
+        treeDepths.intStateTreeDepth,
+        treeDepths.messageTreeDepth,
+        treeDepths.voteOptionTreeDepth,
+        messageBatchSize,
+        EMode.NON_QV,
         testProcessVk.asContractParam() as IVerifyingKeyStruct,
         testTallyVk.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 1000000 },
@@ -78,9 +98,11 @@ describe("VkRegistry", () => {
             treeDepths.messageTreeDepth,
             treeDepths.voteOptionTreeDepth,
             messageBatchSize,
+            EMode.QV,
           ),
         ).to.eq(true);
       });
+
       it("should return false for a non-existing vk", async () => {
         expect(
           await vkRegistryContract.hasProcessVk(
@@ -88,6 +110,7 @@ describe("VkRegistry", () => {
             treeDepths.messageTreeDepth,
             treeDepths.voteOptionTreeDepth,
             messageBatchSize,
+            EMode.QV,
           ),
         ).to.eq(false);
       });
@@ -100,15 +123,18 @@ describe("VkRegistry", () => {
             stateTreeDepth,
             treeDepths.intStateTreeDepth,
             treeDepths.voteOptionTreeDepth,
+            EMode.QV,
           ),
         ).to.eq(true);
       });
+
       it("should return false for a non-existing vk", async () => {
         expect(
           await vkRegistryContract.hasTallyVk(
             stateTreeDepth + 2,
             treeDepths.intStateTreeDepth,
             treeDepths.voteOptionTreeDepth,
+            EMode.QV,
           ),
         ).to.eq(false);
       });
@@ -124,7 +150,7 @@ describe("VkRegistry", () => {
           treeDepths.voteOptionTreeDepth,
           messageBatchSize,
         );
-        const vk = await vkRegistryContract.getProcessVkBySig(sig);
+        const vk = await vkRegistryContract.getProcessVkBySig(sig, EMode.QV);
         compareVks(testProcessVk, vk);
       });
     });
@@ -136,7 +162,7 @@ describe("VkRegistry", () => {
           treeDepths.intStateTreeDepth,
           treeDepths.voteOptionTreeDepth,
         );
-        const vk = await vkRegistryContract.getTallyVkBySig(sig);
+        const vk = await vkRegistryContract.getTallyVkBySig(sig, EMode.QV);
         compareVks(testTallyVk, vk);
       });
     });
