@@ -13,7 +13,7 @@ node build/ts/index.js setVerifyingKeys \
 node build/ts/index.js create -s 10
 node build/ts/index.js deployPoll \
     --pubkey macipk.281830024fb6d21a4c73a89a7139aff61fbbddad731ef2dc2db9516171fd390e \
-    -t 30 -i 1 -m 2 -b 1 -v 2 -se false
+    -t 80 -i 1 -m 2 -b 1 -v 2
 node build/ts/index.js getPoll \
     --quiet false
 node build/ts/index.js signup \
