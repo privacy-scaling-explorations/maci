@@ -56,7 +56,7 @@
     "solhint": "^4.5.2",
     "typedoc": "^0.25.13",
     "typedoc-plugin-markdown": "^3.17.1",
-    "typescript": "^5.4.3"
+    "typescript": "^5.4.4"
   },
   "config": {
     "commitizen": {
