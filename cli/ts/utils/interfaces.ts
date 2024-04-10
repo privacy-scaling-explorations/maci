@@ -805,14 +805,24 @@ export interface SetVerifyingKeysArgs {
   messageBatchDepth: number;
 
   /**
-   * The path to the process messages zkey
+   * The path to the process messages qv zkey
    */
-  processMessagesZkeyPath: string;
+  processMessagesZkeyPathQv?: string;
 
   /**
-   * The path to the tally votes zkey
+   * The path to the tally votes qv zkey
    */
-  tallyVotesZkeyPath: string;
+  tallyVotesZkeyPathQv?: string;
+
+  /**
+   * The path to the process messages non-qv zkey
+   */
+  processMessagesZkeyPathNonQv?: string;
+
+  /**
+   * The path to the tally votes non-qv zkey
+   */
+  tallyVotesZkeyPathNonQv?: string;
 
   /**
    * A signer object

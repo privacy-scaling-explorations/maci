@@ -4,7 +4,14 @@ import { Signer } from "ethers";
 import { IVerifyingKeyStruct, VkRegistry, deployVkRegistry, getDefaultSigner } from "../ts";
 import { EMode } from "../ts/constants";
 
-import { messageBatchSize, testProcessVk, testTallyVk, treeDepths } from "./constants";
+import {
+  messageBatchSize,
+  testProcessVk,
+  testProcessVkNonQv,
+  testTallyVk,
+  testTallyVkNonQv,
+  treeDepths,
+} from "./constants";
 import { compareVks } from "./utils";
 
 describe("VkRegistry", () => {
@@ -18,6 +25,7 @@ describe("VkRegistry", () => {
       signer = await getDefaultSigner();
       vkRegistryContract = await deployVkRegistry(signer, true);
     });
+
     it("should have set the correct owner", async () => {
       expect(await vkRegistryContract.owner()).to.eq(await signer.getAddress());
     });
@@ -86,6 +94,44 @@ describe("VkRegistry", () => {
       );
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
+    });
+  });
+
+  describe("setVerifyingKeysBatch", () => {
+    it("should set the process and tally vks", async () => {
+      const tx = await vkRegistryContract.setVerifyingKeysBatch(
+        stateTreeDepth,
+        treeDepths.intStateTreeDepth,
+        treeDepths.messageTreeDepth,
+        treeDepths.voteOptionTreeDepth,
+        messageBatchSize,
+        [EMode.NON_QV],
+        [testProcessVkNonQv.asContractParam() as IVerifyingKeyStruct],
+        [testTallyVkNonQv.asContractParam() as IVerifyingKeyStruct],
+        { gasLimit: 1000000 },
+      );
+
+      const receipt = await tx.wait();
+      expect(receipt?.status).to.eq(1);
+    });
+
+    it("should throw when zkeys doesn't have the same length", async () => {
+      await expect(
+        vkRegistryContract.setVerifyingKeysBatch(
+          stateTreeDepth,
+          treeDepths.intStateTreeDepth,
+          treeDepths.messageTreeDepth,
+          treeDepths.voteOptionTreeDepth,
+          messageBatchSize,
+          [EMode.QV],
+          [
+            testProcessVk.asContractParam() as IVerifyingKeyStruct,
+            testProcessVkNonQv.asContractParam() as IVerifyingKeyStruct,
+          ],
+          [testTallyVk.asContractParam() as IVerifyingKeyStruct],
+          { gasLimit: 1000000 },
+        ),
+      ).to.be.revertedWithCustomError(vkRegistryContract, "InvalidKeysParams");
     });
   });
 

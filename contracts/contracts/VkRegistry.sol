@@ -24,6 +24,7 @@ contract VkRegistry is Ownable, SnarkCommon, IVkRegistry {
   error ProcessVkNotSet();
   error TallyVkNotSet();
   error SubsidyVkNotSet();
+  error InvalidKeysParams();
 
   /// @notice Create a new instance of the VkRegistry contract
   // solhint-disable-next-line no-empty-blocks
@@ -70,6 +71,50 @@ contract VkRegistry is Ownable, SnarkCommon, IVkRegistry {
     uint256 _voteOptionTreeDepth
   ) public pure returns (uint256 sig) {
     sig = (_stateTreeDepth << 128) + (_intStateTreeDepth << 64) + _voteOptionTreeDepth;
+  }
+
+  /// @notice Set the process and tally verifying keys for a certain combination
+  /// of parameters and modes
+  /// @param _stateTreeDepth The state tree depth
+  /// @param _intStateTreeDepth The intermediate state tree depth
+  /// @param _messageTreeDepth The message tree depth
+  /// @param _voteOptionTreeDepth The vote option tree depth
+  /// @param _messageBatchSize The message batch size
+  /// @param _modes Array of QV or Non-QV modes (must have the same length as process and tally keys)
+  /// @param _processVks The process verifying keys (must have the same length as modes)
+  /// @param _tallyVks The tally verifying keys (must have the same length as modes)
+  function setVerifyingKeysBatch(
+    uint256 _stateTreeDepth,
+    uint256 _intStateTreeDepth,
+    uint256 _messageTreeDepth,
+    uint256 _voteOptionTreeDepth,
+    uint256 _messageBatchSize,
+    Mode[] calldata _modes,
+    VerifyingKey[] calldata _processVks,
+    VerifyingKey[] calldata _tallyVks
+  ) public onlyOwner {
+    if (_modes.length != _processVks.length || _modes.length != _tallyVks.length) {
+      revert InvalidKeysParams();
+    }
+
+    uint256 length = _modes.length;
+
+    for (uint256 index = 0; index < length; ) {
+      setVerifyingKeys(
+        _stateTreeDepth,
+        _intStateTreeDepth,
+        _messageTreeDepth,
+        _voteOptionTreeDepth,
+        _messageBatchSize,
+        _modes[index],
+        _processVks[index],
+        _tallyVks[index]
+      );
+
+      unchecked {
+        index++;
+      }
+    }
   }
 
   /// @notice Set the process and tally verifying keys for a certain combination

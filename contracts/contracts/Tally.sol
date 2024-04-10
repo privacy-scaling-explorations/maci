@@ -242,7 +242,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
   /// @param _totalSpent spent field retrieved in the totalSpentVoiceCredits object
   /// @param _totalSpentSalt the corresponding salt in the totalSpentVoiceCredit object
   /// @param _resultCommitment hashLeftRight(merkle root of the results.tally, results.salt) in tally.json file
-  /// @param _perVOSpentVoiceCreditsHash only for QV - hashLeftRight(merkle root of the no spent voice credits per vote option, salt)
+  /// @param _perVOSpentVoiceCreditsHash only for QV - hashLeftRight(merkle root of the no spent voice credits, salt)
   /// @return isValid Whether the provided values are valid
   function verifySpentVoiceCredits(
     uint256 _totalSpent,

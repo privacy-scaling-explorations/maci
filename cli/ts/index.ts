@@ -233,13 +233,21 @@ program
   .requiredOption("-m, --msg-tree-depth <messageTreeDepth>", "the message tree depth", parseInt)
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
   .requiredOption("-b, --msg-batch-depth <messageBatchDepth>", "the message batch depth", parseInt)
-  .requiredOption(
-    "-p, --process-messages-zkey <processMessagesZkeyPath>",
-    "the process messages zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+  .option(
+    "-pqv, --process-messages-zkey-qv <processMessagesZkeyPathQv>",
+    "the process messages qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
-  .requiredOption(
-    "-t, --tally-votes-zkey <tallyVotesZkeyPath>",
-    "the tally votes zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+  .option(
+    "-tqv, --tally-votes-zkey-qv <tallyVotesZkeyPathQv>",
+    "the tally votes qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+  )
+  .option(
+    "-pnqv, --process-messages-zkey-non-qv <processMessagesZkeyPathNonQv>",
+    "the process messages non-qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+  )
+  .option(
+    "-tnqv, --tally-votes-zkey-non-qv <tallyVotesZkeyPathNonQv>",
+    "the tally votes non-qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .option("-uq, --use-quadratic-voting", "whether to use quadratic voting", (value) => value === "true", true)
   .option("-k, --vk-registry <vkRegistry>", "the vk registry contract address")
@@ -255,8 +263,10 @@ program
         messageTreeDepth: cmdObj.msgTreeDepth,
         voteOptionTreeDepth: cmdObj.voteOptionTreeDepth,
         messageBatchDepth: cmdObj.msgBatchDepth,
-        processMessagesZkeyPath: cmdObj.processMessagesZkey,
-        tallyVotesZkeyPath: cmdObj.tallyVotesZkey,
+        processMessagesZkeyPathQv: cmdObj.processMessagesZkeyQv,
+        tallyVotesZkeyPathQv: cmdObj.tallyVotesZkeyQv,
+        processMessagesZkeyPathNonQv: cmdObj.processMessagesZkeyNonQv,
+        tallyVotesZkeyPathNonQv: cmdObj.tallyVotesZkeyNonQv,
         vkRegistry: cmdObj.vkRegistry,
         quiet: cmdObj.quiet,
         useQuadraticVoting: cmdObj.useQuadraticVoting,

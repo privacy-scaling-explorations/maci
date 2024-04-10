@@ -78,13 +78,21 @@ describe("Integration tests", function test() {
       messageTreeDepth: MSG_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       messageBatchDepth: MSG_BATCH_DEPTH,
-      processMessagesZkeyPath: path.resolve(
+      processMessagesZkeyPathQv: path.resolve(
         __dirname,
         "../../../cli/zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test.0.zkey",
       ),
-      tallyVotesZkeyPath: path.resolve(
+      tallyVotesZkeyPathQv: path.resolve(
         __dirname,
         "../../../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey",
+      ),
+      processMessagesZkeyPathNonQv: path.resolve(
+        __dirname,
+        "../../../cli/zkeys/ProcessMessagesNonQv_10-2-1-2_test/ProcessMessagesNonQv_10-2-1-2_test.0.zkey",
+      ),
+      tallyVotesZkeyPathNonQv: path.resolve(
+        __dirname,
+        "../../../cli/zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test.0.zkey",
       ),
       vkRegistry: vkRegistryAddress,
       signer,
