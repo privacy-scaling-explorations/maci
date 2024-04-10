@@ -10,11 +10,12 @@ import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { IVerifier } from "./interfaces/IVerifier.sol";
 import { IVkRegistry } from "./interfaces/IVkRegistry.sol";
 import { CommonUtilities } from "./utilities/CommonUtilities.sol";
+import { DomainObjs } from "./utilities/DomainObjs.sol";
 
 /// @title Tally
 /// @notice The Tally contract is used during votes tallying
 /// and by users to verify the tally results.
-contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
+contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs {
   uint256 internal constant TREE_ARITY = 5;
 
   /// @notice The commitment to the tally results. Its initial value is 0, but after
@@ -47,7 +48,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
   IVkRegistry public immutable vkRegistry;
   IPoll public immutable poll;
   IMessageProcessor public immutable messageProcessor;
-  bool public immutable isQv;
+  Mode public immutable mode;
 
   /// @notice custom errors
   error ProcessingNotComplete();
@@ -63,12 +64,12 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
   /// @param _vkRegistry The VkRegistry contract
   /// @param _poll The Poll contract
   /// @param _mp The MessageProcessor contract
-  constructor(address _verifier, address _vkRegistry, address _poll, address _mp, bool _isQv) payable {
+  constructor(address _verifier, address _vkRegistry, address _poll, address _mp, Mode _mode) payable {
     verifier = IVerifier(_verifier);
     vkRegistry = IVkRegistry(_vkRegistry);
     poll = IPoll(_poll);
     messageProcessor = IMessageProcessor(_mp);
-    isQv = _isQv;
+    mode = _mode;
   }
 
   /// @notice Pack the batch start index and number of signups into a 100-bit value.
@@ -184,7 +185,6 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
     (IMACI maci, , ) = poll.extContracts();
 
     // Get the verifying key
-    IVkRegistry.Mode mode = isQv ? IVkRegistry.Mode.QV : IVkRegistry.Mode.NON_QV;
     VerifyingKey memory vk = vkRegistry.getTallyVk(maci.stateTreeDepth(), intStateTreeDepth, voteOptionTreeDepth, mode);
 
     // Get the public inputs
@@ -255,9 +255,11 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
     tally[1] = hashLeftRight(_totalSpent, _totalSpentSalt);
     tally[2] = _perVOSpentVoiceCreditsHash;
 
-    isValid = isQv
-      ? verifyQvSpentVoiceCredits(_totalSpent, _totalSpentSalt, _resultCommitment, _perVOSpentVoiceCreditsHash)
-      : verifyNonQvSpentVoiceCredits(_totalSpent, _totalSpentSalt, _resultCommitment);
+    if (mode == Mode.QV) {
+      isValid = verifyQvSpentVoiceCredits(_totalSpent, _totalSpentSalt, _resultCommitment, _perVOSpentVoiceCreditsHash);
+    } else if (mode == Mode.NON_QV) {
+      isValid = verifyNonQvSpentVoiceCredits(_totalSpent, _totalSpentSalt, _resultCommitment);
+    }
   }
 
   /// @notice Verify the number of spent voice credits for QV from the tally.json
@@ -316,7 +318,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
     uint256 _spentVoiceCreditsHash,
     uint256 _resultCommitment
   ) public view returns (bool isValid) {
-    if (!isQv) {
+    if (mode != Mode.QV) {
       revert NotSupported();
     }
 
@@ -356,7 +358,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
       _tallyResultProof
     );
 
-    if (isQv) {
+    if (mode == Mode.QV) {
       uint256[3] memory tally = [
         hashLeftRight(computedRoot, _tallyResultSalt),
         _spentVoiceCreditsHash,
@@ -364,7 +366,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher {
       ];
 
       isValid = hash3(tally) == tallyCommitment;
-    } else {
+    } else if (mode == Mode.NON_QV) {
       uint256[2] memory tally = [hashLeftRight(computedRoot, _tallyResultSalt), _spentVoiceCreditsHash];
 
       isValid = hash2(tally) == tallyCommitment;

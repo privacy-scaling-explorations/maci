@@ -8,6 +8,12 @@ contract DomainObjs {
   /// @notice the length of a MACI message
   uint8 public constant MESSAGE_DATA_LENGTH = 10;
 
+  /// @notice voting modes
+  enum Mode {
+    QV,
+    NON_QV
+  }
+
   /// @title Message
   /// @notice this struct represents a MACI message
   /// @dev msgType: 1 for vote message, 2 for topup message (size 2)

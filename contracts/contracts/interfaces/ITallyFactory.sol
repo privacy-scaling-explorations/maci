@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
+import { DomainObjs } from "../utilities/DomainObjs.sol";
+
 /// @title ITallyFactory
 /// @notice TallyFactory interface
 interface ITallyFactory {
@@ -10,7 +12,7 @@ interface ITallyFactory {
   /// @param _poll Poll contract
   /// @param _messageProcessor MessageProcessor contract
   /// @param _owner Owner of the contract
-  /// @param _isQv Whether to support QV or not
+  /// @param _mode Voting mode
   /// @return The deployed contract
   function deploy(
     address _verifier,
@@ -18,6 +20,6 @@ interface ITallyFactory {
     address _poll,
     address _messageProcessor,
     address _owner,
-    bool _isQv
+    DomainObjs.Mode _mode
   ) external returns (address);
 }

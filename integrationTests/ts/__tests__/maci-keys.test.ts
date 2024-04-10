@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { Poll__factory as PollFactory, type Poll, getDefaultSigner } from "maci-contracts";
+import { Poll__factory as PollFactory, type Poll, getDefaultSigner, EMode } from "maci-contracts";
 import { genPrivKey, genPubKey } from "maci-crypto";
 import { Keypair, PrivKey, PubKey } from "maci-domainobjs";
 
@@ -92,7 +92,7 @@ describe("integration tests private/public/keypair", () => {
         coordinatorKeypair.pubKey.asContractParam(),
         verifier,
         vkRegistry,
-        false,
+        EMode.NON_QV,
       );
 
       // we know it's the first poll so id is 0

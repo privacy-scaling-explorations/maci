@@ -1,7 +1,9 @@
 /* eslint-disable no-console */
 import { PubKey } from "maci-domainobjs";
 
-import { AccQueueBinary, MACI, Poll } from "../../../typechain-types";
+import type { AccQueueBinary, MACI, Poll } from "../../../typechain-types";
+
+import { EMode } from "../../../ts/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
 import { EContracts } from "../../helpers/types";
@@ -56,6 +58,7 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").setAction(async (_, hre
   const useQuadraticVoting =
     deployment.getDeployConfigField<boolean | null>(EContracts.Poll, "useQuadraticVoting") ?? false;
   const unserializedKey = PubKey.deserialize(coordinatorPubkey);
+  const mode = useQuadraticVoting ? EMode.QV : EMode.NON_QV;
 
   const [pollContractAddress, messageProcessorContractAddress, tallyContractAddress] =
     await maciContract.deployPoll.staticCall(
@@ -69,7 +72,7 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").setAction(async (_, hre
       unserializedKey.asContractParam(),
       verifierContractAddress,
       vkRegistryContractAddress,
-      useQuadraticVoting,
+      mode,
     );
 
   const tx = await maciContract.deployPoll(
@@ -83,7 +86,7 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").setAction(async (_, hre
     unserializedKey.asContractParam(),
     verifierContractAddress,
     vkRegistryContractAddress,
-    useQuadraticVoting,
+    mode,
   );
 
   const receipt = await tx.wait();
@@ -134,7 +137,7 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").setAction(async (_, hre
       id: EContracts.MessageProcessor,
       key: `poll-${pollId}`,
       contract: messageProcessorContract,
-      args: [verifierContractAddress, vkRegistryContractAddress, pollContractAddress],
+      args: [verifierContractAddress, vkRegistryContractAddress, pollContractAddress, mode],
       network: hre.network.name,
     }),
 
@@ -147,7 +150,7 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").setAction(async (_, hre
         vkRegistryContractAddress,
         pollContractAddress,
         messageProcessorContractAddress,
-        useQuadraticVoting,
+        mode,
       ],
       network: hre.network.name,
     }),

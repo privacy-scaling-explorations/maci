@@ -1,4 +1,4 @@
-import { MACI__factory as MACIFactory } from "maci-contracts";
+import { MACI__factory as MACIFactory, EMode } from "maci-contracts";
 import { PubKey } from "maci-domainobjs";
 
 import {
@@ -107,7 +107,7 @@ export const deployPoll = async ({
       unserializedKey.asContractParam(),
       verifierContractAddress,
       vkRegistry,
-      useQuadraticVoting,
+      useQuadraticVoting ? EMode.QV : EMode.NON_QV,
       { gasLimit: 10000000 },
     );
 

@@ -7,6 +7,7 @@ import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, Message, PCommand, PubKey } from "maci-domainobjs";
 
 import { parseArtifact } from "../ts/abi";
+import { EMode } from "../ts/constants";
 import { getDefaultSigner, getSigners } from "../ts/utils";
 import { AccQueue, MACI, Poll as PollContract, TopupCredit, Verifier, VkRegistry } from "../typechain-types";
 
@@ -54,7 +55,7 @@ describe("Poll", () => {
         coordinator.pubKey.asContractParam(),
         verifierContract,
         vkRegistryContract,
-        true,
+        EMode.QV,
         {
           gasLimit: 10000000,
         },

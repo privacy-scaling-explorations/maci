@@ -63,7 +63,7 @@ describe("MessageProcessor", () => {
       coordinator.pubKey.asContractParam(),
       verifierContract,
       vkRegistryContract,
-      true,
+      EMode.QV,
       {
         gasLimit: 10000000,
       },

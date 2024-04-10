@@ -11,12 +11,13 @@ import { IVerifier } from "./interfaces/IVerifier.sol";
 import { IVkRegistry } from "./interfaces/IVkRegistry.sol";
 import { IMessageProcessor } from "./interfaces/IMessageProcessor.sol";
 import { CommonUtilities } from "./utilities/CommonUtilities.sol";
+import { DomainObjs } from "./utilities/DomainObjs.sol";
 
 /// @title MessageProcessor
 /// @dev MessageProcessor is used to process messages published by signup users.
 /// It will process message by batch due to large size of messages.
 /// After it finishes processing, the sbCommitment will be used for Tally and Subsidy contracts.
-contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMessageProcessor {
+contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMessageProcessor, DomainObjs {
   /// @notice custom errors
   error NoMoreMessages();
   error StateAqNotMerged();
@@ -48,18 +49,18 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
   IPoll public immutable poll;
   IVerifier public immutable verifier;
   IVkRegistry public immutable vkRegistry;
-  bool public immutable isQv;
+  Mode public immutable mode;
 
   /// @notice Create a new instance
   /// @param _verifier The Verifier contract address
   /// @param _vkRegistry The VkRegistry contract address
   /// @param _poll The Poll contract address
-  /// @param _isQv Whether to support QV or not
-  constructor(address _verifier, address _vkRegistry, address _poll, bool _isQv) payable {
+  /// @param _mode Voting mode
+  constructor(address _verifier, address _vkRegistry, address _poll, Mode _mode) payable {
     verifier = IVerifier(_verifier);
     vkRegistry = IVkRegistry(_vkRegistry);
     poll = IPoll(_poll);
-    isQv = _isQv;
+    mode = _mode;
   }
 
   /// @notice Update the Poll's currentSbCommitment if the proof is valid.
@@ -183,7 +184,6 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
     );
 
     // Get the verifying key from the VkRegistry
-    IVkRegistry.Mode mode = isQv ? IVkRegistry.Mode.QV : IVkRegistry.Mode.NON_QV;
     VerifyingKey memory vk = vkRegistry.getProcessVk(
       maci.stateTreeDepth(),
       _messageTreeDepth,
