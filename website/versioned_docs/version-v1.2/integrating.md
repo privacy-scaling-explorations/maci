@@ -27,7 +27,7 @@ Deployment order is:
 9. Deploy MACI, AccQueueQuinaryMaci
 10. Deploy Poll, AccQueueQuinaryMaci, MessageProcessor, Tally and Subsidy (optional)
 
-Before running the deploy command make sure you have [zkey files](https://maci.pse.dev/docs/trusted-setup) from trusted setup and env variables `ETH_PROVIDER` (RPC endpoint) and `ETH_SK` (wallet private key) are set. For production environment make sure you don't use zkey files from our examples.
+Before running the deploy command make sure you have [zkey files](/docs/v1.2/trusted-setup) from trusted setup and env variables `ETH_PROVIDER` (RPC endpoint) and `ETH_SK` (wallet private key) are set. For production environment make sure you don't use zkey files from our examples.
 
 ```bash
 maci-cli deployVkRegistry
@@ -102,7 +102,7 @@ event BallotsTallied(address poll);
 
 ## MACI Contract
 
-The MACI contract is the core of the protocol. Contracts can inherit from MACI and thus expose the signup and topup functions. As with standalone MACI, one would need to deploy a [sign up gatekeeper](./contracts#signupgatekeeper) as well as the [voice credit proxy](./contracts#voicecreditproxy).
+The MACI contract is the core of the protocol. Contracts can inherit from MACI and thus expose the signup and topup functions. As with standalone MACI, one would need to deploy a [sign up gatekeeper](/docs/v1.2/contracts#signupgatekeeper) as well as the [voice credit proxy](/docs/v1.2/contracts#voicecreditproxy).
 
 As an example, within the quadratic funding infrastructure project, the QFI contract inherits from MACI and allows sign up via the contribute function.
 

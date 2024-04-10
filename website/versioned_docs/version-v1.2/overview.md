@@ -22,7 +22,7 @@ in [Circom](https://iden3.io/circom).
 
 The MACI circuits are released through the [`@maci-circuits`](https://www.npmjs.com/package/maci-circuits) NPM package.
 
-[Learn more about MACI circuits](/docs/circuits)
+[Learn more about MACI circuits](/docs/v1.2/circuits)
 
 ## Smart contracts
 
@@ -32,7 +32,7 @@ The MACI smart contracts are written in [Solidity](https://soliditylang.org/).
 
 Contracts are released through the [`@maci-contracts`](https://www.npmjs.com/package/maci-contracts) NPM package.
 
-[Learn more about MACI contracts](/docs/contracts)
+[Learn more about MACI contracts](/docs/v1.2/contracts)
 
 ## TypeScript libraries
 
