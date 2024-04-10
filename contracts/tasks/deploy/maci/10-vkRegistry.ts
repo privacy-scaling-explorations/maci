@@ -32,31 +32,64 @@ deployment
     const messageTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageTreeDepth");
     const messageBatchDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageBatchDepth");
     const voteOptionTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "voteOptionTreeDepth");
-    const processMessagesZkeyPath = deployment.getDeployConfigField<string>(
+    const processMessagesZkeyPathQv = deployment.getDeployConfigField<string>(
       EContracts.VkRegistry,
-      "processMessagesZkey",
+      "zkeys.qv.processMessagesZkey",
     );
-    const tallyVotesZkeyPath = deployment.getDeployConfigField<string>(EContracts.VkRegistry, "tallyVotesZkey");
+    const processMessagesZkeyPathNonQv = deployment.getDeployConfigField<string>(
+      EContracts.VkRegistry,
+      "zkeys.nonQv.processMessagesZkey",
+    );
+    const tallyVotesZkeyPathQv = deployment.getDeployConfigField<string>(
+      EContracts.VkRegistry,
+      "zkeys.qv.tallyVotesZkey",
+    );
+    const tallyVotesZkeyPathNonQv = deployment.getDeployConfigField<string>(
+      EContracts.VkRegistry,
+      "zkeys.nonQv.tallyVotesZkey",
+    );
     const useQuadraticVoting =
       deployment.getDeployConfigField<boolean | null>(EContracts.Poll, "useQuadraticVoting") ?? false;
 
-    const [processVk, tallyVk] = await Promise.all([
-      extractVk(processMessagesZkeyPath),
-      extractVk(tallyVotesZkeyPath),
-    ]).then((vks) => vks.map((vk) => VerifyingKey.fromObj(vk)));
+    if (useQuadraticVoting && (!tallyVotesZkeyPathQv || !processMessagesZkeyPathQv)) {
+      throw new Error("QV zkeys are not set");
+    }
+
+    if (!useQuadraticVoting && (!tallyVotesZkeyPathNonQv || !processMessagesZkeyPathNonQv)) {
+      throw new Error("Non-QV zkeys are not set");
+    }
+
+    const [qvProcessVk, qvTallyVk, nonQvProcessVk, nonQvTallyQv] = await Promise.all([
+      processMessagesZkeyPathQv && extractVk(processMessagesZkeyPathQv),
+      tallyVotesZkeyPathQv && extractVk(tallyVotesZkeyPathQv),
+      processMessagesZkeyPathNonQv && extractVk(processMessagesZkeyPathNonQv),
+      tallyVotesZkeyPathNonQv && extractVk(tallyVotesZkeyPathNonQv),
+    ]).then((vks) => vks.map((vk) => vk && (VerifyingKey.fromObj(vk).asContractParam() as IVerifyingKeyStruct)));
 
     const vkRegistryContract = await deployment.deployContract<VkRegistry>(EContracts.VkRegistry, deployer);
 
+    const processZkeys = [qvProcessVk, nonQvProcessVk].filter(Boolean) as IVerifyingKeyStruct[];
+    const tallyZkeys = [qvTallyVk, nonQvTallyQv].filter(Boolean) as IVerifyingKeyStruct[];
+    const modes: EMode[] = [];
+
+    if (qvProcessVk && qvTallyVk) {
+      modes.push(EMode.QV);
+    }
+
+    if (nonQvProcessVk && nonQvTallyQv) {
+      modes.push(EMode.NON_QV);
+    }
+
     await vkRegistryContract
-      .setVerifyingKeys(
+      .setVerifyingKeysBatch(
         stateTreeDepth,
         intStateTreeDepth,
         messageTreeDepth,
         voteOptionTreeDepth,
         5 ** messageBatchDepth,
-        useQuadraticVoting ? EMode.QV : EMode.NON_QV,
-        processVk.asContractParam() as IVerifyingKeyStruct,
-        tallyVk.asContractParam() as IVerifyingKeyStruct,
+        modes,
+        processZkeys,
+        tallyZkeys,
       )
       .then((tx) => tx.wait());
 

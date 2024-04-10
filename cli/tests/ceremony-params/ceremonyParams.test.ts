@@ -70,8 +70,8 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
     messageTreeDepth,
     voteOptionTreeDepth,
     messageBatchDepth,
-    processMessagesZkeyPath: ceremonyProcessMessagesZkeyPath,
-    tallyVotesZkeyPath: ceremonyTallyVotesZkeyPath,
+    processMessagesZkeyPathQv: ceremonyProcessMessagesZkeyPath,
+    tallyVotesZkeyPathQv: ceremonyTallyVotesZkeyPath,
   };
 
   const verifyingKeysNonQvArgs: Omit<SetVerifyingKeysArgs, "signer"> = {
@@ -81,8 +81,8 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
     messageTreeDepth,
     voteOptionTreeDepth,
     messageBatchDepth,
-    processMessagesZkeyPath: ceremonyProcessMessagesNonQvZkeyPath,
-    tallyVotesZkeyPath: ceremonyTallyVotesNonQvZkeyPath,
+    processMessagesZkeyPathNonQv: ceremonyProcessMessagesNonQvZkeyPath,
+    tallyVotesZkeyPathNonQv: ceremonyTallyVotesNonQvZkeyPath,
   };
 
   const ceremonyDeployArgs: Omit<DeployArgs, "signer"> = {

@@ -8,8 +8,8 @@ node build/ts/index.js setVerifyingKeys \
     --msg-tree-depth 2 \
     --vote-option-tree-depth 2 \
     --msg-batch-depth 1 \
-    --process-messages-zkey ./zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test.0.zkey \
-    --tally-votes-zkey ./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey
+    --process-messages-zkey-qv ./zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test.0.zkey \
+    --tally-votes-zkey-qv ./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey
 node build/ts/index.js create -s 10
 node build/ts/index.js deployPoll \
     --pubkey macipk.281830024fb6d21a4c73a89a7139aff61fbbddad731ef2dc2db9516171fd390e \

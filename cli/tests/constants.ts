@@ -94,8 +94,8 @@ export const setVerifyingKeysArgs: Omit<SetVerifyingKeysArgs, "signer"> = {
   messageTreeDepth: MSG_TREE_DEPTH,
   voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
   messageBatchDepth: MSG_BATCH_DEPTH,
-  processMessagesZkeyPath: processMessageTestZkeyPath,
-  tallyVotesZkeyPath: tallyVotesTestZkeyPath,
+  processMessagesZkeyPathQv: processMessageTestZkeyPath,
+  tallyVotesZkeyPathQv: tallyVotesTestZkeyPath,
 };
 
 export const setVerifyingKeysNonQvArgs: Omit<SetVerifyingKeysArgs, "signer"> = {
@@ -105,8 +105,8 @@ export const setVerifyingKeysNonQvArgs: Omit<SetVerifyingKeysArgs, "signer"> = {
   messageTreeDepth: MSG_TREE_DEPTH,
   voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
   messageBatchDepth: MSG_BATCH_DEPTH,
-  processMessagesZkeyPath: processMessageTestNonQvZkeyPath,
-  tallyVotesZkeyPath: tallyVotesTestNonQvZkeyPath,
+  processMessagesZkeyPathNonQv: processMessageTestNonQvZkeyPath,
+  tallyVotesZkeyPathNonQv: tallyVotesTestNonQvZkeyPath,
 };
 
 export const checkVerifyingKeysArgs: Omit<CheckVerifyingKeysArgs, "signer"> = {

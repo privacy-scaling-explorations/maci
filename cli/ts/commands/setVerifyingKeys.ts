@@ -29,8 +29,10 @@ export const setVerifyingKeys = async ({
   messageTreeDepth,
   voteOptionTreeDepth,
   messageBatchDepth,
-  processMessagesZkeyPath,
-  tallyVotesZkeyPath,
+  processMessagesZkeyPathQv,
+  tallyVotesZkeyPathQv,
+  processMessagesZkeyPathNonQv,
+  tallyVotesZkeyPathNonQv,
   vkRegistry,
   signer,
   useQuadraticVoting = true,
@@ -48,17 +50,28 @@ export const setVerifyingKeys = async ({
   const vkRegistryAddress = vkRegistry || readContractAddress("VkRegistry", network?.name);
 
   // check if zKey files exist
-  if (!fs.existsSync(processMessagesZkeyPath)) {
-    logError(`${processMessagesZkeyPath} does not exist.`);
+  if (useQuadraticVoting && processMessagesZkeyPathQv && !fs.existsSync(processMessagesZkeyPathQv)) {
+    logError(`${processMessagesZkeyPathQv} does not exist.`);
   }
 
-  if (!fs.existsSync(tallyVotesZkeyPath)) {
-    logError(`${tallyVotesZkeyPath} does not exist.`);
+  if (useQuadraticVoting && tallyVotesZkeyPathQv && !fs.existsSync(tallyVotesZkeyPathQv)) {
+    logError(`${tallyVotesZkeyPathQv} does not exist.`);
+  }
+
+  if (!useQuadraticVoting && processMessagesZkeyPathNonQv && !fs.existsSync(processMessagesZkeyPathNonQv)) {
+    logError(`${processMessagesZkeyPathNonQv} does not exist.`);
+  }
+
+  if (!useQuadraticVoting && tallyVotesZkeyPathNonQv && !fs.existsSync(tallyVotesZkeyPathNonQv)) {
+    logError(`${tallyVotesZkeyPathNonQv} does not exist.`);
   }
 
   // extract the vks
-  const processVk = VerifyingKey.fromObj(await extractVk(processMessagesZkeyPath));
-  const tallyVk = VerifyingKey.fromObj(await extractVk(tallyVotesZkeyPath));
+  const processVkQv = processMessagesZkeyPathQv && VerifyingKey.fromObj(await extractVk(processMessagesZkeyPathQv));
+  const tallyVkQv = tallyVotesZkeyPathQv && VerifyingKey.fromObj(await extractVk(tallyVotesZkeyPathQv));
+  const processVkNonQv =
+    processMessagesZkeyPathNonQv && VerifyingKey.fromObj(await extractVk(processMessagesZkeyPathNonQv));
+  const tallyVkNonQv = tallyVotesZkeyPathNonQv && VerifyingKey.fromObj(await extractVk(tallyVotesZkeyPathNonQv));
 
   // validate args
   if (
@@ -73,6 +86,176 @@ export const setVerifyingKeys = async ({
 
   if (stateTreeDepth < intStateTreeDepth) {
     logError("Invalid state tree depth or intermediate state tree depth");
+  }
+
+  checkZkeyFilepaths({
+    processMessagesZkeyPath: processMessagesZkeyPathQv!,
+    tallyVotesZkeyPath: tallyVotesZkeyPathQv!,
+    stateTreeDepth,
+    messageTreeDepth,
+    messageBatchDepth,
+    voteOptionTreeDepth,
+    intStateTreeDepth,
+  });
+
+  checkZkeyFilepaths({
+    processMessagesZkeyPath: processMessagesZkeyPathNonQv!,
+    tallyVotesZkeyPath: tallyVotesZkeyPathNonQv!,
+    stateTreeDepth,
+    messageTreeDepth,
+    messageBatchDepth,
+    voteOptionTreeDepth,
+    intStateTreeDepth,
+  });
+
+  // ensure we have a contract deployed at the provided address
+  if (!(await contractExists(signer.provider!, vkRegistryAddress))) {
+    logError(`A VkRegistry contract is not deployed at ${vkRegistryAddress}`);
+  }
+
+  // connect to VkRegistry contract
+  const vkRegistryContract = VkRegistryFactory.connect(vkRegistryAddress, signer);
+
+  const messageBatchSize = 5 ** messageBatchDepth;
+
+  // check if the process messages vk was already set
+  const processVkSig = genProcessVkSig(stateTreeDepth, messageTreeDepth, voteOptionTreeDepth, messageBatchSize);
+
+  if (useQuadraticVoting && (await vkRegistryContract.isProcessVkSet(processVkSig, EMode.QV))) {
+    logError("This process verifying key is already set in the contract");
+  }
+
+  if (!useQuadraticVoting && (await vkRegistryContract.isProcessVkSet(processVkSig, EMode.NON_QV))) {
+    logError("This process verifying key is already set in the contract");
+  }
+
+  // do the same for the tally votes vk
+  const tallyVkSig = genTallyVkSig(stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth);
+
+  if (useQuadraticVoting && (await vkRegistryContract.isTallyVkSet(tallyVkSig, EMode.QV))) {
+    logError("This tally verifying key is already set in the contract");
+  }
+
+  if (!useQuadraticVoting && (await vkRegistryContract.isTallyVkSet(tallyVkSig, EMode.NON_QV))) {
+    logError("This tally verifying key is already set in the contract");
+  }
+
+  // actually set those values
+  try {
+    logYellow(quiet, info("Setting verifying keys..."));
+
+    const processZkeys = [processVkQv, processVkNonQv]
+      .filter(Boolean)
+      .map((vk) => (vk as VerifyingKey).asContractParam() as IVerifyingKeyStruct);
+    const tallyZkeys = [tallyVkQv, tallyVkNonQv]
+      .filter(Boolean)
+      .map((vk) => (vk as VerifyingKey).asContractParam() as IVerifyingKeyStruct);
+    const modes: EMode[] = [];
+
+    if (processVkQv && tallyVkQv) {
+      modes.push(EMode.QV);
+    }
+
+    if (processVkNonQv && tallyVkNonQv) {
+      modes.push(EMode.NON_QV);
+    }
+
+    // set them onchain
+    const tx = await vkRegistryContract.setVerifyingKeysBatch(
+      stateTreeDepth,
+      intStateTreeDepth,
+      messageTreeDepth,
+      voteOptionTreeDepth,
+      messageBatchSize,
+      modes,
+      processZkeys,
+      tallyZkeys,
+    );
+
+    const receipt = await tx.wait();
+
+    if (receipt?.status !== 1) {
+      logError("Set verifying keys transaction failed");
+    }
+
+    logYellow(quiet, info(`Transaction hash: ${receipt!.hash}`));
+
+    // confirm that they were actually set correctly
+    if (useQuadraticVoting) {
+      const processVkOnChain = await vkRegistryContract.getProcessVk(
+        stateTreeDepth,
+        messageTreeDepth,
+        voteOptionTreeDepth,
+        messageBatchSize,
+        EMode.QV,
+      );
+
+      const tallyVkOnChain = await vkRegistryContract.getTallyVk(
+        stateTreeDepth,
+        intStateTreeDepth,
+        voteOptionTreeDepth,
+        EMode.QV,
+      );
+
+      if (!compareVks(processVkQv as VerifyingKey, processVkOnChain)) {
+        logError("processVk mismatch");
+      }
+
+      if (!compareVks(tallyVkQv as VerifyingKey, tallyVkOnChain)) {
+        logError("tallyVk mismatch");
+      }
+    } else {
+      const processVkOnChain = await vkRegistryContract.getProcessVk(
+        stateTreeDepth,
+        messageTreeDepth,
+        voteOptionTreeDepth,
+        messageBatchSize,
+        EMode.NON_QV,
+      );
+
+      const tallyVkOnChain = await vkRegistryContract.getTallyVk(
+        stateTreeDepth,
+        intStateTreeDepth,
+        voteOptionTreeDepth,
+        EMode.NON_QV,
+      );
+
+      if (!compareVks(processVkNonQv as VerifyingKey, processVkOnChain)) {
+        logError("processVk mismatch");
+      }
+
+      if (!compareVks(tallyVkNonQv as VerifyingKey, tallyVkOnChain)) {
+        logError("tallyVk mismatch");
+      }
+    }
+  } catch (error) {
+    logError((error as Error).message);
+  }
+
+  logGreen(quiet, success("Verifying keys set successfully"));
+};
+
+interface ICheckZkeyFilepathsArgs {
+  stateTreeDepth: number;
+  messageTreeDepth: number;
+  messageBatchDepth: number;
+  voteOptionTreeDepth: number;
+  intStateTreeDepth: number;
+  processMessagesZkeyPath?: string;
+  tallyVotesZkeyPath?: string;
+}
+
+function checkZkeyFilepaths({
+  processMessagesZkeyPath,
+  tallyVotesZkeyPath,
+  stateTreeDepth,
+  messageTreeDepth,
+  messageBatchDepth,
+  voteOptionTreeDepth,
+  intStateTreeDepth,
+}: ICheckZkeyFilepathsArgs): void {
+  if (!processMessagesZkeyPath || !tallyVotesZkeyPath) {
+    return;
   }
 
   // Check the pm zkey filename against specified params
@@ -110,81 +293,4 @@ export const setVerifyingKeys = async ({
   ) {
     logError("Incorrect .zkey file; please check the circuit params");
   }
-
-  // ensure we have a contract deployed at the provided address
-  if (!(await contractExists(signer.provider!, vkRegistryAddress))) {
-    logError(`A VkRegistry contract is not deployed at ${vkRegistryAddress}`);
-  }
-
-  // connect to VkRegistry contract
-  const vkRegistryContract = VkRegistryFactory.connect(vkRegistryAddress, signer);
-
-  const messageBatchSize = 5 ** messageBatchDepth;
-
-  // check if the process messages vk was already set
-  const mode = useQuadraticVoting ? EMode.QV : EMode.NON_QV;
-  const processVkSig = genProcessVkSig(stateTreeDepth, messageTreeDepth, voteOptionTreeDepth, messageBatchSize);
-
-  if (await vkRegistryContract.isProcessVkSet(processVkSig, mode)) {
-    logError("This process verifying key is already set in the contract");
-  }
-
-  // do the same for the tally votes vk
-  const tallyVkSig = genTallyVkSig(stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth);
-
-  if (await vkRegistryContract.isTallyVkSet(tallyVkSig, mode)) {
-    logError("This tally verifying key is already set in the contract");
-  }
-
-  // actually set those values
-  try {
-    logYellow(quiet, info("Setting verifying keys..."));
-    // set them onchain
-    const tx = await vkRegistryContract.setVerifyingKeys(
-      stateTreeDepth,
-      intStateTreeDepth,
-      messageTreeDepth,
-      voteOptionTreeDepth,
-      messageBatchSize,
-      mode,
-      processVk.asContractParam() as IVerifyingKeyStruct,
-      tallyVk.asContractParam() as IVerifyingKeyStruct,
-    );
-
-    const receipt = await tx.wait();
-
-    if (receipt?.status !== 1) {
-      logError("Set verifying keys transaction failed");
-    }
-
-    logYellow(quiet, info(`Transaction hash: ${receipt!.hash}`));
-
-    // confirm that they were actually set correctly
-    const processVkOnChain = await vkRegistryContract.getProcessVk(
-      stateTreeDepth,
-      messageTreeDepth,
-      voteOptionTreeDepth,
-      messageBatchSize,
-      mode,
-    );
-
-    const tallyVkOnChain = await vkRegistryContract.getTallyVk(
-      stateTreeDepth,
-      intStateTreeDepth,
-      voteOptionTreeDepth,
-      mode,
-    );
-
-    if (!compareVks(processVk, processVkOnChain)) {
-      logError("processVk mismatch");
-    }
-
-    if (!compareVks(tallyVk, tallyVkOnChain)) {
-      logError("tallyVk mismatch");
-    }
-  } catch (error) {
-    logError((error as Error).message);
-  }
-
-  logGreen(quiet, success("Verifying keys set successfully"));
-};
+}
