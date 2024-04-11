@@ -3,10 +3,11 @@ pragma solidity ^0.8.10;
 
 import { Tally } from "./Tally.sol";
 import { ITallyFactory } from "./interfaces/ITallyFactory.sol";
+import { DomainObjs } from "./utilities/DomainObjs.sol";
 
 /// @title TallyFactory
 /// @notice A factory contract which deploys Tally contracts.
-contract TallyFactory is ITallyFactory {
+contract TallyFactory is ITallyFactory, DomainObjs {
   /// @inheritdoc ITallyFactory
   function deploy(
     address _verifier,
@@ -14,10 +15,10 @@ contract TallyFactory is ITallyFactory {
     address _poll,
     address _messageProcessor,
     address _owner,
-    bool _isQv
+    Mode _mode
   ) public virtual returns (address tallyAddr) {
     // deploy Tally for this Poll
-    Tally tally = new Tally(_verifier, _vkRegistry, _poll, _messageProcessor, _isQv);
+    Tally tally = new Tally(_verifier, _vkRegistry, _poll, _messageProcessor, _mode);
     tally.transferOwnership(_owner);
     tallyAddr = address(tally);
   }

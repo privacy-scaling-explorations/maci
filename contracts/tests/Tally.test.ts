@@ -73,7 +73,7 @@ describe("TallyVotes", () => {
       coordinator.pubKey.asContractParam(),
       verifierContract,
       vkRegistryContract,
-      true,
+      EMode.QV,
       {
         gasLimit: 10000000,
       },
@@ -255,7 +255,7 @@ describe("TallyVotes", () => {
         coordinator.pubKey.asContractParam(),
         verifierContract,
         vkRegistryContract,
-        true,
+        EMode.QV,
         {
           gasLimit: 10000000,
         },
@@ -397,7 +397,7 @@ describe("TallyVotes", () => {
         coordinator.pubKey.asContractParam(),
         verifierContract,
         vkRegistryContract,
-        true,
+        EMode.QV,
         {
           gasLimit: 10000000,
         },

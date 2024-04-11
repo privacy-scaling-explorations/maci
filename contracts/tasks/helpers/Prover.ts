@@ -6,7 +6,6 @@ import type { IVerifyingKeyStruct, Proof } from "../../ts/types";
 import type { AccQueue, MACI, MessageProcessor, Poll, Tally, Verifier, VkRegistry } from "../../typechain-types";
 import type { BigNumberish } from "ethers";
 
-import { EMode } from "../../ts/constants";
 import { formatProofForVerifierContract, asHex } from "../../ts/utils";
 
 import { STATE_TREE_ARITY } from "./constants";
@@ -81,7 +80,7 @@ export class Prover {
    */
   async proveMessageProcessing(proofs: Proof[]): Promise<void> {
     // retrieve the values we need from the smart contracts
-    const [treeDepths, numSignUpsAndMessages, numBatchesProcessed, stateTreeDepth, dd, coordinatorPubKeyHash, isQv] =
+    const [treeDepths, numSignUpsAndMessages, numBatchesProcessed, stateTreeDepth, dd, coordinatorPubKeyHash, mode] =
       await Promise.all([
         this.pollContract.treeDepths(),
         this.pollContract.numSignUpsAndMessages(),
@@ -89,7 +88,7 @@ export class Prover {
         this.maciContract.stateTreeDepth().then(Number),
         this.pollContract.getDeployTimeAndDuration(),
         this.pollContract.coordinatorPubKeyHash(),
-        this.mpContract.isQv(),
+        this.mpContract.mode(),
       ]);
 
     const numSignUps = Number(numSignUpsAndMessages[0]);
@@ -109,7 +108,7 @@ export class Prover {
         treeDepths.messageTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
-        isQv ? EMode.QV : EMode.NON_QV,
+        mode,
       ),
     ]);
 

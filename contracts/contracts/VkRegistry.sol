@@ -4,20 +4,21 @@ pragma solidity ^0.8.10;
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { IVkRegistry } from "./interfaces/IVkRegistry.sol";
+import { DomainObjs } from "./utilities/DomainObjs.sol";
 
 /// @title VkRegistry
 /// @notice Stores verifying keys for the circuits.
 /// Each circuit has a signature which is its compile-time constants represented
 /// as a uint256.
-contract VkRegistry is Ownable, SnarkCommon, IVkRegistry {
+contract VkRegistry is Ownable, DomainObjs, SnarkCommon, IVkRegistry {
   mapping(Mode => mapping(uint256 => VerifyingKey)) internal processVks;
   mapping(Mode => mapping(uint256 => bool)) internal processVkSet;
 
   mapping(Mode => mapping(uint256 => VerifyingKey)) internal tallyVks;
   mapping(Mode => mapping(uint256 => bool)) internal tallyVkSet;
 
-  event ProcessVkSet(uint256 _sig, Mode mode);
-  event TallyVkSet(uint256 _sig, Mode mode);
+  event ProcessVkSet(uint256 _sig, Mode _mode);
+  event TallyVkSet(uint256 _sig, Mode _mode);
 
   error ProcessVkAlreadySet();
   error TallyVkAlreadySet();

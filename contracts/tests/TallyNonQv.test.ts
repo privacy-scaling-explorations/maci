@@ -73,7 +73,7 @@ describe("TallyVotesNonQv", () => {
       coordinator.pubKey.asContractParam(),
       verifierContract,
       vkRegistryContract,
-      false,
+      EMode.NON_QV,
       {
         gasLimit: 10000000,
       },

@@ -7,6 +7,7 @@ import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, PubKey, Message } from "maci-domainobjs";
 
 import { parseArtifact } from "../ts/abi";
+import { EMode } from "../ts/constants";
 import { getDefaultSigner, getSigners } from "../ts/utils";
 import { AccQueueQuinaryMaci, MACI, Poll as PollContract, Verifier, VkRegistry } from "../typechain-types";
 
@@ -166,7 +167,7 @@ describe("MACI", () => {
         coordinator.pubKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
         verifierContract,
         vkRegistryContract,
-        true,
+        EMode.QV,
         { gasLimit: 10000000 },
       );
       const receipt = await tx.wait();
@@ -212,7 +213,7 @@ describe("MACI", () => {
           coordinator.pubKey.asContractParam(),
           verifierContract,
           vkRegistryContract,
-          true,
+          EMode.QV,
           {
             gasLimit: 10000000,
           },

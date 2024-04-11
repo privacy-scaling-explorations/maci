@@ -10,7 +10,6 @@ import {
   Verifier__factory as VerifierFactory,
   formatProofForVerifierContract,
   type IVerifyingKeyStruct,
-  EMode,
 } from "maci-contracts";
 import { STATE_TREE_ARITY } from "maci-core";
 import { G1Point, G2Point, hashLeftRight } from "maci-crypto";
@@ -166,8 +165,8 @@ export const proveOnChain = async ({
   }
 
   let numberBatchesProcessed = Number(await mpContract.numBatchesProcessed());
-  const tallyMode = await tallyContract.isQv().then((isQv) => (isQv ? EMode.QV : EMode.NON_QV));
-  const mpMode = await mpContract.isQv().then((isQv) => (isQv ? EMode.QV : EMode.NON_QV));
+  const tallyMode = await tallyContract.mode();
+  const mpMode = await mpContract.mode();
 
   if (tallyMode !== mpMode) {
     logError("Tally and MessageProcessor modes are not compatible");

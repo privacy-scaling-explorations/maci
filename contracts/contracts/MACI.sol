@@ -12,11 +12,12 @@ import { IMACI } from "./interfaces/IMACI.sol";
 import { Params } from "./utilities/Params.sol";
 import { TopupCredit } from "./TopupCredit.sol";
 import { Utilities } from "./utilities/Utilities.sol";
+import { DomainObjs } from "./utilities/DomainObjs.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 /// @title MACI - Minimum Anti-Collusion Infrastructure Version 1
 /// @notice A contract which allows users to sign up, and deploy new polls
-contract MACI is IMACI, Params, Utilities, Ownable {
+contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable {
   /// @notice The state tree depth is fixed. As such it should be as large as feasible
   /// so that there can be as many users as possible.  i.e. 5 ** 10 = 9765625
   /// this should also match the parameter of the circom circuits.
@@ -199,7 +200,7 @@ contract MACI is IMACI, Params, Utilities, Ownable {
   /// @param _coordinatorPubKey The coordinator's public key
   /// @param _verifier The Verifier Contract
   /// @param _vkRegistry The VkRegistry Contract
-  /// @param _isQv Whether to support QV or not
+  /// @param _mode Voting mode
   /// @return pollAddr a new Poll contract address
   function deployPoll(
     uint256 _duration,
@@ -207,7 +208,7 @@ contract MACI is IMACI, Params, Utilities, Ownable {
     PubKey memory _coordinatorPubKey,
     address _verifier,
     address _vkRegistry,
-    bool _isQv
+    Mode _mode
   ) public virtual onlyOwner returns (PollContracts memory pollAddr) {
     // cache the poll to a local variable so we can increment it
     uint256 pollId = nextPollId;
@@ -239,8 +240,8 @@ contract MACI is IMACI, Params, Utilities, Ownable {
       _owner
     );
 
-    address mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p, _owner, _isQv);
-    address tally = tallyFactory.deploy(_verifier, _vkRegistry, p, mp, _owner, _isQv);
+    address mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p, _owner, _mode);
+    address tally = tallyFactory.deploy(_verifier, _vkRegistry, p, mp, _owner, _mode);
 
     polls[pollId] = p;
 
