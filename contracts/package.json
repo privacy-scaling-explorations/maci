@@ -25,7 +25,7 @@
   "scripts": {
     "watch": "tsc --watch",
     "hardhat": "hardhat node",
-    "compileSol": "./scripts/compileSol.sh $1",
+    "compileSol": "TS_NODE_TRANSPILE_ONLY=1 ts-node ./scripts/compileSol.ts",
     "moveIntegrationArtifacts": "cp -r artifacts/ ../integrationTests/artifacts",
     "prebuild": "pnpm run compileSol",
     "build": "tsc -p tsconfig.build.json",

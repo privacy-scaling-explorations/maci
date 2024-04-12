@@ -4,15 +4,25 @@ import assert from "assert";
 import fs from "fs";
 import path from "path";
 
-const genZerosContract = (
-  contractName: string,
-  zeroVal: bigint,
-  hashLength: number,
-  numZeros: number,
-  comment: string,
-  useSha256: boolean,
-  subDepth: number,
-): string => {
+interface IGetZerosContractArgs {
+  name: string;
+  zeroVal: bigint;
+  hashLength: number;
+  numZeros: number;
+  comment: string;
+  useSha256: boolean;
+  subDepth: number;
+}
+
+export const genZerosContract = ({
+  name,
+  zeroVal,
+  hashLength,
+  numZeros,
+  comment,
+  useSha256,
+  subDepth,
+}: IGetZerosContractArgs): string => {
   assert(hashLength === 2 || hashLength === 5);
 
   const template = fs.readFileSync(path.resolve(__dirname, "..", "templates", "MerkleZeros.sol.template")).toString();
@@ -43,26 +53,10 @@ const genZerosContract = (
   }
 
   const generated = template
-    .replace("<% CONTRACT_NAME %>", contractName)
+    .replace("<% CONTRACT_NAME %>", name)
     .replace("<% NUM_ZEROS %>", numZeros.toString())
     .replace("<% ZEROS %>", `    ${z.trim()}`)
     .replace("<% COMMENT %>", comment.trim());
 
   return generated.trim();
 };
-
-if (require.main === module) {
-  const contractName = process.argv[2];
-  const zero = BigInt(process.argv[3]);
-  const hashLength = Number(process.argv[4]);
-  const numZeros = Number(process.argv[5]);
-  const comment = process.argv[6];
-  const useSha256 = process.argv[7] === "1";
-  const subDepth = Number(process.argv[8]);
-
-  const generated = genZerosContract(contractName, zero, hashLength, numZeros, comment, useSha256, subDepth);
-  // eslint-disable-next-line no-console
-  console.log(generated);
-}
-
-export { genZerosContract };
