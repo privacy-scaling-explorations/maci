@@ -152,8 +152,13 @@ contract VkRegistry is Ownable, DomainObjs, SnarkCommon, IVkRegistry {
     processVk.gamma2 = _processVk.gamma2;
     processVk.delta2 = _processVk.delta2;
 
-    for (uint8 i = 0; i < _processVk.ic.length; i++) {
+    uint256 processIcLength = _processVk.ic.length;
+    for (uint256 i = 0; i < processIcLength; ) {
       processVk.ic.push(_processVk.ic[i]);
+
+      unchecked {
+        i++;
+      }
     }
 
     processVkSet[_mode][processVkSig] = true;
@@ -164,8 +169,13 @@ contract VkRegistry is Ownable, DomainObjs, SnarkCommon, IVkRegistry {
     tallyVk.gamma2 = _tallyVk.gamma2;
     tallyVk.delta2 = _tallyVk.delta2;
 
-    for (uint8 i = 0; i < _tallyVk.ic.length; i++) {
+    uint256 tallyIcLength = _tallyVk.ic.length;
+    for (uint256 i = 0; i < tallyIcLength; ) {
       tallyVk.ic.push(_tallyVk.ic[i]);
+
+      unchecked {
+        i++;
+      }
     }
 
     tallyVkSet[_mode][tallyVkSig] = true;

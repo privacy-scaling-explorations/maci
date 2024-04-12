@@ -113,20 +113,33 @@ library Pairing {
     G1Point memory d1,
     G2Point memory d2
   ) internal view returns (bool isValid) {
-    G1Point[4] memory p1 = [a1, b1, c1, d1];
-    G2Point[4] memory p2 = [a2, b2, c2, d2];
+    G1Point[4] memory p1;
+    p1[0] = a1;
+    p1[1] = b1;
+    p1[2] = c1;
+    p1[3] = d1;
+
+    G2Point[4] memory p2;
+    p2[0] = a2;
+    p2[1] = b2;
+    p2[2] = c2;
+    p2[3] = d2;
 
     uint256 inputSize = 24;
     uint256[] memory input = new uint256[](inputSize);
 
-    for (uint256 i = 0; i < 4; i++) {
-      uint256 j = i * 6;
+    for (uint8 i = 0; i < 4; ) {
+      uint8 j = i * 6;
       input[j + 0] = p1[i].x;
       input[j + 1] = p1[i].y;
       input[j + 2] = p2[i].x[0];
       input[j + 3] = p2[i].x[1];
       input[j + 4] = p2[i].y[0];
       input[j + 5] = p2[i].y[1];
+
+      unchecked {
+        i++;
+      }
     }
 
     uint256[1] memory out;

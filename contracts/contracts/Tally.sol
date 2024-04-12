@@ -359,15 +359,16 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs {
     );
 
     if (mode == Mode.QV) {
-      uint256[3] memory tally = [
-        hashLeftRight(computedRoot, _tallyResultSalt),
-        _spentVoiceCreditsHash,
-        _perVOSpentVoiceCreditsHash
-      ];
+      uint256[3] memory tally;
+      tally[0] = hashLeftRight(computedRoot, _tallyResultSalt);
+      tally[1] = _spentVoiceCreditsHash;
+      tally[2] = _perVOSpentVoiceCreditsHash;
 
       isValid = hash3(tally) == tallyCommitment;
     } else if (mode == Mode.NON_QV) {
-      uint256[2] memory tally = [hashLeftRight(computedRoot, _tallyResultSalt), _spentVoiceCreditsHash];
+      uint256[2] memory tally;
+      tally[0] = hashLeftRight(computedRoot, _tallyResultSalt);
+      tally[1] = _spentVoiceCreditsHash;
 
       isValid = hash2(tally) == tallyCommitment;
     }

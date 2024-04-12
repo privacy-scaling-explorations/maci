@@ -144,7 +144,9 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
     }
 
     // init messageAq here by inserting placeholderLeaf
-    uint256[2] memory dat = [NOTHING_UP_MY_SLEEVE, 0];
+    uint256[2] memory dat;
+    dat[0] = NOTHING_UP_MY_SLEEVE;
+    dat[1] = 0;
 
     (Message memory _message, PubKey memory _padKey, uint256 placeholderLeaf) = padAndHashMessage(dat, 1);
     extContracts.messageAq.enqueue(placeholderLeaf);
@@ -165,7 +167,10 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable, EmptyBallotRoots, IPol
     /// @notice topupCredit is a trusted token contract which reverts if the transfer fails
     extContracts.topupCredit.transferFrom(msg.sender, address(this), amount);
 
-    uint256[2] memory dat = [stateIndex, amount];
+    uint256[2] memory dat;
+    dat[0] = stateIndex;
+    dat[1] = amount;
+
     (Message memory _message, , uint256 messageLeaf) = padAndHashMessage(dat, 2);
 
     extContracts.messageAq.enqueue(messageLeaf);
