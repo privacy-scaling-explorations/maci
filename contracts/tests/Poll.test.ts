@@ -1,15 +1,23 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from "chai";
-import { BaseContract, Signer } from "ethers";
+import { Signer } from "ethers";
 import { EthereumProvider } from "hardhat/types";
 import { MaciState } from "maci-core";
 import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, Message, PCommand, PubKey } from "maci-domainobjs";
 
-import { parseArtifact } from "../ts/abi";
 import { EMode } from "../ts/constants";
 import { getDefaultSigner, getSigners } from "../ts/utils";
-import { AccQueue, MACI, Poll as PollContract, TopupCredit, Verifier, VkRegistry } from "../typechain-types";
+import {
+  AccQueue,
+  AccQueueQuinaryMaci__factory as AccQueueQuinaryMaciFactory,
+  MACI,
+  Poll as PollContract,
+  Poll__factory as PollFactory,
+  TopupCredit,
+  Verifier,
+  VkRegistry,
+} from "../typechain-types";
 
 import {
   MESSAGE_TREE_DEPTH,
@@ -32,8 +40,6 @@ describe("Poll", () => {
   let signer: Signer;
   let deployTime: number;
   const coordinator = new Keypair();
-  const [pollAbi] = parseArtifact("Poll");
-  const [accQueueQuinaryMaciAbi] = parseArtifact("AccQueueQuinaryMaci");
 
   const maciState = new MaciState(STATE_TREE_DEPTH);
 
@@ -74,7 +80,7 @@ describe("Poll", () => {
       pollId = event.args._pollId;
 
       const pollContractAddress = await maciContract.getPoll(pollId);
-      pollContract = new BaseContract(pollContractAddress, pollAbi, signer) as PollContract;
+      pollContract = PollFactory.connect(pollContractAddress, signer);
 
       // deploy local poll
       const p = maciState.deployPoll(
@@ -273,7 +279,7 @@ describe("Poll", () => {
       const extContracts = await pollContract.extContracts();
 
       const messageAqAddress = extContracts.messageAq;
-      messageAqContract = new BaseContract(messageAqAddress, accQueueQuinaryMaciAbi, signer) as AccQueue;
+      messageAqContract = AccQueueQuinaryMaciFactory.connect(messageAqAddress, signer);
     });
 
     it("should revert if the subtrees are not merged for StateAq", async () => {

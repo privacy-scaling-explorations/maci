@@ -1,15 +1,22 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from "chai";
-import { AbiCoder, BaseContract, BigNumberish, Contract, Signer } from "ethers";
+import { AbiCoder, BigNumberish, Signer } from "ethers";
 import { EthereumProvider } from "hardhat/types";
 import { MaciState } from "maci-core";
 import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, PubKey, Message } from "maci-domainobjs";
 
-import { parseArtifact } from "../ts/abi";
 import { EMode } from "../ts/constants";
 import { getDefaultSigner, getSigners } from "../ts/utils";
-import { AccQueueQuinaryMaci, MACI, Poll as PollContract, Verifier, VkRegistry } from "../typechain-types";
+import {
+  AccQueueQuinaryBlankSl__factory as AccQueueQuinaryBlankSlFactory,
+  AccQueueQuinaryMaci,
+  MACI,
+  Poll as PollContract,
+  Poll__factory as PollFactory,
+  Verifier,
+  VkRegistry,
+} from "../typechain-types";
 
 import {
   STATE_TREE_DEPTH,
@@ -29,7 +36,6 @@ describe("MACI", () => {
   let pollId: bigint;
 
   const coordinator = new Keypair();
-  const [pollAbi] = parseArtifact("Poll");
   const users = [new Keypair(), new Keypair(), new Keypair()];
 
   let signer: Signer;
@@ -55,7 +61,7 @@ describe("MACI", () => {
 
     it("should be the owner of the stateAqContract", async () => {
       const stateAqAddr = await maciContract.stateAq();
-      const stateAq = new Contract(stateAqAddr, parseArtifact("AccQueueQuinaryBlankSl")[0], signer);
+      const stateAq = AccQueueQuinaryBlankSlFactory.connect(stateAqAddr, signer);
 
       expect(await stateAq.owner()).to.eq(await maciContract.getAddress());
     });
@@ -229,7 +235,7 @@ describe("MACI", () => {
 
     before(async () => {
       const pollContractAddress = await maciContract.getPoll(pollId);
-      pollContract = new BaseContract(pollContractAddress, pollAbi, signer) as PollContract;
+      pollContract = PollFactory.connect(pollContractAddress, signer);
     });
 
     it("should not allow the coordinator to merge the signUp AccQueue", async () => {

@@ -2,8 +2,9 @@
 pragma solidity ^0.8.10;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { SignUpGatekeeper } from "../SignUpGatekeeper.sol";
-import { IHats } from "../../interfaces/IHats.sol";
+
+import { IHats } from "../interfaces/IHats.sol";
+import { SignUpGatekeeper } from "./SignUpGatekeeper.sol";
 
 /// @title HatsGatekeeperBase
 /// @notice Abstract contract containing the base elements of a Hats Gatekeeper contract

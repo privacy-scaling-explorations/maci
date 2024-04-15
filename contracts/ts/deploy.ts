@@ -3,7 +3,6 @@ import { type ContractFactory, type Signer, BaseContract } from "ethers";
 import type { IDeployMaciArgs, IDeployedMaci, IDeployedPoseidonContracts } from "./types";
 
 import {
-  AccQueueQuinaryMaci,
   ConstantInitialVoiceCreditProxy,
   FreeForAllGatekeeper,
   PoseidonT3__factory as PoseidonT3Factory,
@@ -24,9 +23,9 @@ import {
   TopupCredit,
   Verifier,
   VkRegistry,
+  AccQueueQuinaryMaci__factory as AccQueueQuinaryMaciFactory,
 } from "../typechain-types";
 
-import { parseArtifact } from "./abi";
 import { getDefaultSigner, getFeeData, log } from "./utils";
 
 /**
@@ -339,13 +338,8 @@ export const deployMaci = async ({
     stateTreeDepth,
   );
 
-  const [AccQueueQuinaryMaciAbi] = parseArtifact("AccQueue");
   const stateAqContractAddress = await maciContract.stateAq();
-  const stateAqContract = new BaseContract(
-    stateAqContractAddress,
-    AccQueueQuinaryMaciAbi,
-    await getDefaultSigner(),
-  ) as AccQueueQuinaryMaci;
+  const stateAqContract = AccQueueQuinaryMaciFactory.connect(stateAqContractAddress, await getDefaultSigner());
 
   return {
     maciContract,
