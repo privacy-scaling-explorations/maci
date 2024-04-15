@@ -95,6 +95,6 @@
     "hardhat-contract-sizer": "^2.10.0",
     "lowdb": "^1.0.0",
     "ts-node": "^10.9.1",
-    "typescript": "^5.4.4"
+    "typescript": "^5.4.5"
   }
 }
