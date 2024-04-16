@@ -55,8 +55,8 @@ async function main(): Promise<void> {
   await Promise.all(PATHS.map((filepath) => fs.existsSync(filepath) && fs.promises.rm(filepath, { recursive: true })));
 
   await Promise.all(
-    ZERO_TREES.map(({ name, zero, hashLength, comment }) => {
-      const text = genZerosContract({
+    ZERO_TREES.map(({ name, zero, hashLength, comment }) =>
+      genZerosContract({
         name,
         zeroVal: zero,
         hashLength,
@@ -64,12 +64,13 @@ async function main(): Promise<void> {
         comment,
         useSha256: false,
         subDepth: 0,
-      });
-      return fs.promises.writeFile(path.resolve(__dirname, "..", "contracts/trees/zeros", `${name}.sol`), `${text}\n`);
-    }),
+      }).then((text) =>
+        fs.promises.writeFile(path.resolve(__dirname, "..", "contracts/trees/zeros", `${name}.sol`), `${text}\n`),
+      ),
+    ),
   );
 
-  genEmptyBallotRootsContract();
+  await genEmptyBallotRootsContract();
 
   await hre.run("compile");
 

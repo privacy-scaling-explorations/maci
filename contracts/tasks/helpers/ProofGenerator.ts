@@ -11,7 +11,6 @@ import type { ICircuitFiles, IPrepareStateParams, IProofGeneratorParams, TallyDa
 import type { Proof } from "../../ts/types";
 import type { BigNumberish } from "ethers";
 
-import { genMaciStateFromContract } from "../../ts/genMaciState";
 import { asHex } from "../../ts/utils";
 
 /**
@@ -127,14 +126,16 @@ export class ProofGenerator {
 
     const maciContractAddress = await maciContract.getAddress();
 
-    return genMaciStateFromContract(
-      signer.provider!,
-      maciContractAddress,
-      coordinatorKeypair,
-      BigInt(pollId),
-      fromBlock,
-      blocksPerBatch,
-      endBlock || defaultEndBlock,
+    return import("../../ts/genMaciState").then(({ genMaciStateFromContract }) =>
+      genMaciStateFromContract(
+        signer.provider!,
+        maciContractAddress,
+        coordinatorKeypair,
+        BigInt(pollId),
+        fromBlock,
+        blocksPerBatch,
+        endBlock || defaultEndBlock,
+      ),
     );
   }
 

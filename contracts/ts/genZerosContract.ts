@@ -14,7 +14,7 @@ interface IGetZerosContractArgs {
   subDepth: number;
 }
 
-export const genZerosContract = ({
+export const genZerosContract = async ({
   name,
   zeroVal,
   hashLength,
@@ -22,41 +22,36 @@ export const genZerosContract = ({
   comment,
   useSha256,
   subDepth,
-}: IGetZerosContractArgs): string => {
+}: IGetZerosContractArgs): Promise<string> => {
   assert(hashLength === 2 || hashLength === 5);
 
-  const template = fs.readFileSync(path.resolve(__dirname, "..", "templates", "MerkleZeros.sol.template")).toString();
+  const template = await fs.promises
+    .readFile(path.resolve(__dirname, "..", "templates", "MerkleZeros.sol.template"))
+    .then((res) => res.toString());
 
-  const zeros: bigint[] = [zeroVal];
-  for (let i = 1; i < numZeros; i += 1) {
-    const z = zeros[i - 1];
+  const hashes: bigint[] = [zeroVal];
+
+  for (let index = 1; index < numZeros; index += 1) {
+    const zero = hashes[index - 1];
     let hashed: bigint;
 
-    if (useSha256 && i <= subDepth) {
-      if (hashLength === 2) {
-        hashed = sha256Hash([z, z]);
-      } else {
-        hashed = sha256Hash([z, z, z, z, z]);
-      }
+    if (useSha256 && index <= subDepth) {
+      hashed = sha256Hash([zero, zero, zero, zero, zero].slice(0, hashLength));
     } else if (hashLength === 2) {
-      hashed = hashLeftRight(z, z);
+      hashed = hashLeftRight(zero, zero);
     } else {
-      hashed = hash5([z, z, z, z, z]);
+      hashed = hash5([zero, zero, zero, zero, zero]);
     }
 
-    zeros.push(hashed);
+    hashes.push(hashed);
   }
 
-  let z = "";
-  for (let i = 0; i < zeros.length; i += 1) {
-    z += `    zeros[${i}] = uint256(${zeros[i]});\n`;
-  }
+  const zeros = hashes.map((hash, index) => `${"".padStart(4)}zeros[${index}] = uint256(${hash.toString()});`);
 
-  const generated = template
+  return template
     .replace("<% CONTRACT_NAME %>", name)
     .replace("<% NUM_ZEROS %>", numZeros.toString())
-    .replace("<% ZEROS %>", `    ${z.trim()}`)
-    .replace("<% COMMENT %>", comment.trim());
-
-  return generated.trim();
+    .replace("<% ZEROS %>", zeros.join("\n"))
+    .replace("<% COMMENT %>", comment.trim())
+    .trim();
 };
