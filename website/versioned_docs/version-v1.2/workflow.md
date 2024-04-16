@@ -65,15 +65,15 @@ Therefore, even if a coordinator is corrupt, they are unable to change a user’
 
 To explain the MACI workflow, let's give a quick overview of the key smart contracts.
 
-See our [smart contract docs](/docs/contracts) or our [contract source code](https://github.com/privacy-scaling-explorations/maci/tree/dev/contracts/contracts) for a more in-depth explanation of all smart contracts.
+See our [smart contract docs](/docs/v1.2/contracts) or our [contract source code](https://github.com/privacy-scaling-explorations/maci/tree/dev/contracts/contracts) for a more in-depth explanation of all smart contracts.
 
 ### MACI.sol
 
-The MACI contract is responsible for registering user signups by recording the initial public key for each user (via the [`signUp` function](/docs/solidity-docs/MACI#signup-1)). To conduct a voting round, the coordinator can deploy a Poll via MACI (with the [`deployPoll` function](/docs/solidity-docs/MACI#deploypoll)).
+The MACI contract is responsible for registering user signups by recording the initial public key for each user (via the [`signUp` function](/docs/v1.2/solidity-docs/MACI#signup-1)). To conduct a voting round, the coordinator can deploy a Poll via MACI (with the [`deployPoll` function](/docs/v1.2/solidity-docs/MACI#deploypoll)).
 
 ### Poll.sol
 
-The Poll contract is where users submit their votes (via the [`publishMessage` function](/docs/typedoc/core/classes/Poll#publishmessage)). One MACI contract can be used for multiple Poll contracts. In other words, a user that signed up to the MACI contract can vote on multiple issues, with each issue represented by a distinct Poll contract.
+The Poll contract is where users submit their votes (via the [`publishMessage` function](/docs/v1.2/typedoc/core/classes/Poll#publishmessage)). One MACI contract can be used for multiple Poll contracts. In other words, a user that signed up to the MACI contract can vote on multiple issues, with each issue represented by a distinct Poll contract.
 
 ### MessageProcessor.sol and Tally.sol
 
@@ -120,13 +120,13 @@ At this point, the coordinator must process all the messages, tally the results,
 
 Once the voting period has completed for a specific poll, the coordinator will use the `MessageProcessor` contract to first prove that they have correctly decrypted each message and applied them to correctly create an updated state tree. This state tree keeps an account of all the valid votes that should be counted. So, when processing the messages, the coordinator will not keep messages that are later overridden by a newer message inside the state tree. For example, if a user votes for option A, but then later sends a new message to vote for option B, the coordinator will only count the vote for option B.
 
-The coordinator must process messages in batches so that proving on chain does not exceed the data limit. The coordinator then creates a zk-SNARK proving their state tree correctly contains only the valid messages. Once the proof is ready, the coordinator calls [`MessageProcessor.processMessages()`](/docs/solidity-docs/MessageProcessor#processmessages), providing a hash of the state tree and the zk-SNARK proof as an input parameters.
+The coordinator must process messages in batches so that proving on chain does not exceed the data limit. The coordinator then creates a zk-SNARK proving their state tree correctly contains only the valid messages. Once the proof is ready, the coordinator calls [`MessageProcessor.processMessages()`](/docs/v1.2/solidity-docs/MessageProcessor#processmessages), providing a hash of the state tree and the zk-SNARK proof as an input parameters.
 
 The `MessageProcessor` contract will send the proof to a separate verifier contract. The verifier contract is specifically built to read MACI zk-SNARK proofs and tell if they are valid or not. So, if the verifier contract returns true, then everyone can see on-chain that the coordinator correctly processed that batch of messages. The coordinator repeats this process until all messages have been processed.
 
 #### Tally Results
 
-Finally, once all messages have been processed, the coordinator tallies the votes of the valid messages (off-chain). The coordinator creates a zk-SNARK proving that the valid messages in the state tree (proved in Process Messages step) contain votes that sum to the given tally result. Then, they call [`Tally.tallyVotes()`](/docs/solidity-docs/Tally#tallyvotes) with a hash of the correct tally results and the zk-SNARK proof. Similarly to the processMessages function, the `tallyVotes` function will send the proof to a verifier contract to ensure that it is valid.
+Finally, once all messages have been processed, the coordinator tallies the votes of the valid messages (off-chain). The coordinator creates a zk-SNARK proving that the valid messages in the state tree (proved in Process Messages step) contain votes that sum to the given tally result. Then, they call [`Tally.tallyVotes()`](/docs/v1.2/solidity-docs/Tally#tallyvotes) with a hash of the correct tally results and the zk-SNARK proof. Similarly to the processMessages function, the `tallyVotes` function will send the proof to a verifier contract to ensure that it is valid.
 
 <!-- "hash of the correct tally results" - so are the final results actually put on chain? or just a hash?? -->
 

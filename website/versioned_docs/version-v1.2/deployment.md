@@ -29,9 +29,9 @@ In order, these are the steps for contract deployment:
 
 ### Note on ZKey artifacts
 
-For testing purposes, you can use the test zkeys and artifacts that you can download using `pnpm download:test-zkeys`. For production use, you can download the most recent artifacts that have undergone a trusted setup. Please refer to the [Trusted Setup](/docs/trusted-setup) section for more information. To download those, please use `pnpm download:ceremony-zkeys`.
+For testing purposes, you can use the test zkeys and artifacts that you can download using `pnpm download:test-zkeys`. For production use, you can download the most recent artifacts that have undergone a trusted setup. Please refer to the [Trusted Setup](/docs/v1.2/trusted-setup) section for more information. To download those, please use `pnpm download:ceremony-zkeys`.
 
-Please do not use test artifacts in production. If you do require zKeys configured for larger param sizes, please reach out to us if you will be using them in production and we'll discuss running a new ceremony for those parameters. To build new circuits artifacts for testing purposes, please refer to the [installation page](/docs/installation/#configure-circomkit) and to the [circuits](/docs/circuits) section.
+Please do not use test artifacts in production. If you do require zKeys configured for larger param sizes, please reach out to us if you will be using them in production and we'll discuss running a new ceremony for those parameters. To build new circuits artifacts for testing purposes, please refer to the [installation page](/docs/v1.2/installation/#configure-circomkit) and to the [circuits](/docs/v1.2/circuits) section.
 
 ### Deployment using `maci-cli`
 
@@ -118,5 +118,5 @@ Should you wish to deploy on a different network, you will need to update the [c
 6. You will find all of the deployed contracts addresses and configs in the `deployed-contracts.json` file inside the contracts folder.
 
 :::info
-You can find more information on integration and usage in the [Integrating MACI](/docs/integrating) section.
+You can find more information on integration and usage in the [Integrating MACI](/docs/v1.2/integrating) section.
 :::

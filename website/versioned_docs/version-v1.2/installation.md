@@ -158,7 +158,7 @@ MACI has two main zk-SNARK circuits (plus an optional Subsidy circuit). Each cir
 
 Unless you wish to generate a fresh set of `.zkey` files, you should obtain
 them from someone who has performed a multi-party trusted setup for said
-circuits. For more details on which artifacts have undergone a trusted setup, please refer to the [Trusted Setup](/docs/trusted-setup) page.
+circuits. For more details on which artifacts have undergone a trusted setup, please refer to the [Trusted Setup](/docs/v1.2/trusted-setup) page.
 
 Note the locations of the `.zkey` files as the CLI requires them as command-line flags.
 
