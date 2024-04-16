@@ -100,12 +100,6 @@ maci-cli verify \
     --tally-file tally.json # this file is generated in genProofs
 ```
 
-When poll finishes, [Tally contract](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/Tally.sol) emits the event with poll address so you can track the state changes.
-
-```javascript
-event BallotsTallied(address poll);
-```
-
 ## MACI Contract
 
 The MACI contract is the core of the protocol. Contracts can inherit from MACI and thus expose the signup and topup functions. As with standalone MACI, one would need to deploy a [sign up gatekeeper](/docs/v1.2/contracts#signupgatekeeper) as well as the [voice credit proxy](/docs/v1.2/contracts#voicecreditproxy).

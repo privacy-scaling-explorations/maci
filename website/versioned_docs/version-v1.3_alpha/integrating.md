@@ -13,7 +13,11 @@ Here we will be looking at QFI and how it was used. Please note that this will b
 
 ## Deployment
 
-First, you need to deploy contracts to start using MACI. This can be easily done via `maci-cli`.
+First, you need to deploy contracts to start using MACI. This could be done through either `maci-cli` or by using hardhat tasks in the `contracts` folder.
+
+### Via `maci-cli`
+
+This can be easily done via [`maci-cli`](/docs/cli#subcommands).
 Deployment order is:
 
 1. Deploy crypto (Hasher, Poseidon)
@@ -55,6 +59,72 @@ maci-cli deployPoll \
     --vote-option-tree-depth 2
 ```
 
+### Deploy contracts in `maci/contracts`
+
+This could also be done via running commands in `maci/contracts`. Please download the maci repository, install and build everything, then navigate to the `contracts` folder.
+
+First of all, modify the `deploy-config.json` file:
+
+```
+{
+  "choose-a-network": {
+    "ConstantInitialVoiceCreditProxy": {
+      "deploy": true,
+      "amount": 99
+    },
+    "FreeForAllGatekeeper": {
+      "deploy": false
+    },
+    "EASGatekeeper": {
+      "deploy": true,
+      "easAddress": "0xC2679fBD37d54388Ce493F1DB75320D236e1815e",
+      "schema": "0xe2636f31239f7948afdd9a9c477048b7fc2a089c347af60e3aa1251e5bf63e5c",
+      "attester": "attester-address"
+    },
+    "MACI": {
+      "stateTreeDepth": 10,
+      "gatekeeper": "EASGatekeeper"
+    },
+    "VkRegistry": {
+      "stateTreeDepth": 10,
+      "intStateTreeDepth": 1,
+      "messageTreeDepth": 2,
+      "voteOptionTreeDepth": 2,
+      "messageBatchDepth": 1,
+      "zkeys": {
+        "qv": {
+          "processMessagesZkey": "../cli/zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test.0.zkey",
+          "tallyVotesZkey": "../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey"
+        },
+        "nonQv": {
+          "processMessagesZkey": "../cli/zkeys/ProcessMessagesNonQv_10-2-1-2_test/ProcessMessagesNonQv_10-2-1-2_test.0.zkey",
+          "tallyVotesZkey": "../cli/zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test.0.zkey"
+        }
+      }
+    },
+    "Poll": {
+      "pollDuration": 30,
+      "coordinatorPubkey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
+      "useQuadraticVoting": true
+    }
+  }
+}
+```
+
+and run the following command:
+
+```
+pnpm run deploy:[network]
+pnpm run deploy-poll:[network]
+```
+
+The network options are: **_localhost, sepolia, and optimism-sepolia_**, and the tasks flags and parameters are as follows:
+
+| Command     | Flags                                                                                                                     | Options                                               |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| deploy      | `--incremental`: incremental deployment <br/> `--strict`: fail on warning <br/> `--verify`: verify contracts on Etherscan | `--skip <index>`: Skip steps with less or equal index |
+| deploy-poll | `--incremental`: incremental deployment <br/> `--strict`: fail on warning <br/> `--verify`: verify contracts on Etherscan | `--skip <index>`: Skip steps with less or equal index |
+
 ## Signups and votes
 
 Next, you can start accept user signup and votes. This can be done via `maci-cli` as well:
@@ -75,6 +145,10 @@ maci-cli publish \
 ## Poll finalization
 
 As a coordinator, first you need to merge signups and messages (votes). Signups and messages are stored in a queue so when the poll in over, the coordinator needs to create the tree from the queue. This optimization is needed to reduce gas cost for voters. Then coordinator generates proofs for the message processing, and tally calculations. This allows to publish the poll results on-chain and then everyone can verify the results when the poll is over.
+
+This could also be done by `maci-cli` or run commands in `contracts` folder.
+
+### Via `maci-cli`
 
 ```bash
 maci-cli mergeSignups --poll-id 0
@@ -97,11 +171,26 @@ maci-cli verify \
     --tally-file tally.json # this file is generated in genProofs
 ```
 
-When poll finishes, [Tally contract](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/Tally.sol) emits the event with poll address so you can track the state changes.
+### Finalize in `maci/contracts`
 
-```javascript
-event BallotsTallied(address poll);
 ```
+pnpm merge:[network] --poll 0
+pnpm run prove:[network] --poll 0 \
+    --coordinator-private-key "macisk.1751146b59d32e3c0d7426de411218172428263f93b2fc4d981c036047a4d8c0" \
+    --process-zkey ../cli/zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test.0.zkey \
+    --tally-zkey ../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey \
+    --tally-file ../cli/tally.json \
+    --output-dir ../cli/proofs/ \
+    --tally-wasm ../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm \
+    --process-wasm ../cli/zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test_js/ProcessMessages_10-2-1-2_test.wasm
+```
+
+The network options are: **_localhost, sepolia, and optimism-sepolia_**, and the tasks flags and parameters are as follows:
+
+| Command | Flags                                                            | Options                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| merge   |                                                                  | `--poll <pollId>`: the poll id <br/> `--queue-ops <queueOps>`: The number of queue operations to perform <br/> `--prove <prove>`: Run prove command after merging or not                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| prove   | `--use-quadratic-voting`: Whether to use quadratic voting or not | `--poll <pollId>`: the poll id <br/> `--output-dir <outputDir>`: Output directory for proofs <br /> `--coordinator-private-key <coordinatorPrivateKey>`: Coordinator maci private key <br /> `--rapid-snark <rapidSnark>`: Rapidsnark binary path <br /> `--process-zkey <processKey>`: Process zkey file path <br /> `--process-witgen <processWitgen>`: Process witgen binary path <br /> `--process-wasm <processWasm>`: Process wasm file path <br /> `--tally-file <tallyFile>`: The file to store the tally proof <br /> `--tally-zkey <tallyZkey>`: Tally zkey file path <br /> `--tally-witgen <tallyWitgen>`: Tally witgen binary path <br /> `--tally-wasm <tallyWasm>`: Tally wasm file path <br /> `--state-file <stateFile>`: The file with the serialized maci state <br /> `--start-block <startBlock>`: The block number to start fetching logs from <br /> `--blocks-per-batch <blocksPerBatch>`: The number of blocks to fetch logs from <br /> `--end-block <endBlock>`: The block number to stop fetching logs from <br /> `--transaction-hash <transactionHash>`: The transaction hash of the first transaction |
 
 ## MACI Contract
 
