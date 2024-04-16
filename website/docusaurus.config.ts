@@ -171,7 +171,7 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} Privacy and Scaling Explorations`,
+      copyright: `Copyright © ${new Date().getFullYear().toString()} Privacy and Scaling Explorations`,
     },
     zoom: {},
   } satisfies Preset.ThemeConfig,
