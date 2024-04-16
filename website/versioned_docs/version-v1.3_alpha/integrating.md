@@ -29,6 +29,12 @@ Deployment order is:
 
 Before running the deploy command make sure you have [zkey files](https://maci.pse.dev/docs/trusted-setup) from trusted setup and env variables `ETH_PROVIDER` (RPC endpoint) and `ETH_SK` (wallet private key) are set. For production environment make sure you don't use zkey files from our examples.
 
+:::note Non Quadratic Voting
+
+Make sure that if you intend to run a non quadratic voting Poll, you set the **NonQv** zKey files on the VkRegistry contract, as well as deploy the Poll with the option `--use-quadratic-voting false`. Finally, remember to use the correct zk-SNARK artifacts (zKeys, and witnesses) in the genProof/prove commands.
+
+:::
+
 ```bash
 maci-cli deployVkRegistry
 maci-cli setVerifyingKeys \
