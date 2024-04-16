@@ -92,6 +92,7 @@ module.exports = {
     "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/prefer-nullish-coalescing": "off",
     "@typescript-eslint/no-floating-promises": "off",
+    "@typescript-eslint/use-unknown-in-catch-callback-variable": "off",
     "@typescript-eslint/no-explicit-any": "error",
     "@typescript-eslint/explicit-module-boundary-types": "error",
     "@typescript-eslint/no-use-before-define": ["error", { functions: false, classes: false }],
@@ -103,5 +104,6 @@ module.exports = {
         allow: ["location", "event", "history", "name", "status", "Option", "test", "expect"],
       },
     ],
+    "@typescript-eslint/restrict-template-expressions": ["error", { allowNumber: true }],
   },
 };

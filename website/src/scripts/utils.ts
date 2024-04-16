@@ -69,7 +69,7 @@ export function generateSidebarString({ title, description, label, position }: S
   }
 
   if (position) {
-    ret = `${ret}sidebar_position: ${position}\n`;
+    ret = `${ret}sidebar_position: ${position.toString()}\n`;
   }
 
   ret = `${ret}---\n`;
