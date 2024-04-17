@@ -25,9 +25,12 @@ function updateMdFiles(file: string, sidebarInfo: string) {
   fs.writeFileSync(file, `${sidebarInfo}\n${writtenContent}`);
 }
 
-// read all dir in typedoc/ -> rename README.md as index.md -> remove upper navigations
-const directories = fs.readdirSync(TYPEDOC_DIR);
-directories.forEach((dir) => {
+/**
+ * A function that parses a sub-directory of typedoc/,
+ * defines label for it and updates the markdown files.
+ * @param dir - the sub-directory being processed
+ */
+function parseAndRenameDirectory(dir: string) {
   const dirname = path.resolve(TYPEDOC_DIR, dir);
   const label = fitFormat(dir);
 
@@ -63,25 +66,37 @@ directories.forEach((dir) => {
       }
     });
   }
-});
-
-// insert index page
-insertIndexPage(TYPEDOC_DIR, { title: "Typedoc", label: "Typedoc" });
-
-// find the target moving directory
-const versionFile = path.resolve(__dirname, "../../versions.json");
-let versionDir = "";
-try {
-  const versionContent = fs.readFileSync(versionFile, "utf8");
-  if (versionContent) {
-    const versionContentJson = JSON.parse(versionContent) as string[];
-    versionDir = path.resolve(__dirname, `../../versioned_docs/version-${versionContentJson[0]}/typedoc`);
-  }
-} catch (e) {
-  versionDir = path.resolve(__dirname, "../../docs/typedoc");
 }
 
-// move the typedoc/ directory to target directory
-copyDirectory(TYPEDOC_DIR, versionDir);
+/**
+ * A function that parses a sub-directory of typedoc/,
+ * defines label for it and updates the markdown files.
+ * @return target directory path for typedocs
+ */
+function defineTargetDirectory() {
+  const versionFile = path.resolve(__dirname, "../../versions.json");
 
-fs.rmSync(TYPEDOC_DIR, { recursive: true, force: true });
+  if (fs.existsSync(versionFile)) {
+    const versionContent = fs.readFileSync(versionFile, "utf8");
+    if (versionContent) {
+      const versionContentJson = JSON.parse(versionContent) as string[];
+      return path.resolve(__dirname, `../../versioned_docs/version-${versionContentJson[0]}/typedoc`);
+    }
+  }
+
+  return path.resolve(__dirname, "../../docs/typedoc");
+}
+
+if (fs.existsSync(TYPEDOC_DIR)) {
+  const directories = fs.readdirSync(TYPEDOC_DIR, "utf8");
+  directories.forEach((dir) => {
+    parseAndRenameDirectory(dir);
+  });
+
+  insertIndexPage(TYPEDOC_DIR, { title: "Typedoc", label: "Typedoc" });
+
+  const versionDir = defineTargetDirectory();
+  copyDirectory(TYPEDOC_DIR, versionDir);
+
+  fs.rmSync(TYPEDOC_DIR, { recursive: true, force: true });
+}
