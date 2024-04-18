@@ -21,31 +21,31 @@ describe("Incremental Quinary Tree (IQT)", function test() {
 
   before(async () => {
     circuitLeafExists = await circomkitInstance.WitnessTester("quinLeafExists", {
-      file: "./iqt",
+      file: "./trees/incrementalQuinaryTree",
       template: "QuinLeafExists",
       params: [3],
     });
 
     circuitGeneratePathIndices = await circomkitInstance.WitnessTester("quinGeneratePathIndices", {
-      file: "./iqt",
+      file: "./trees/incrementalQuinaryTree",
       template: "QuinGeneratePathIndices",
       params: [4],
     });
 
     circuitQuinSelector = await circomkitInstance.WitnessTester("quinSelector", {
-      file: "./iqt",
+      file: "./trees/incrementalQuinaryTree",
       template: "QuinSelector",
       params: [5],
     });
 
     splicerCircuit = await circomkitInstance.WitnessTester("splicer", {
-      file: "./iqt",
+      file: "./trees/incrementalQuinaryTree",
       template: "Splicer",
       params: [4],
     });
 
     quinCheckRoot = await circomkitInstance.WitnessTester("quinCheckRoot", {
-      file: "iqt",
+      file: "./trees/incrementalQuinaryTree",
       template: "QuinCheckRoot",
       params: [3],
     });

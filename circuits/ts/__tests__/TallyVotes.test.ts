@@ -56,7 +56,7 @@ describe("TallyVotes circuit", function test() {
     });
 
     circuitNonQv = await circomkitInstance.WitnessTester("tallyVotesNonQv", {
-      file: "tallyVotesNonQv",
+      file: "tallyVotes",
       template: "TallyVotesNonQv",
       params: [10, 1, 2],
     });

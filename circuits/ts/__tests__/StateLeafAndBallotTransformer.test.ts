@@ -59,7 +59,7 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
 
   before(async () => {
     circuit = await circomkitInstance.WitnessTester("stateLeafAndBallotTransformer", {
-      file: "stateLeafAndBallotTransformer",
+      file: "./utils/stateLeafAndBallotTransformer",
       template: "StateLeafAndBallotTransformer",
     });
   });

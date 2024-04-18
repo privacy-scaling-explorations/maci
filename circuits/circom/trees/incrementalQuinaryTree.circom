@@ -6,8 +6,8 @@ include "./safe-comparators.circom";
 include "./bitify.circom";
 include "./mux1.circom";
 // local.
-include "./calculateTotal.circom";
-include "./hashers.circom";
+include "../utils/calculateTotal.circom";
+include "../utils/hashers.circom";
 
 // Incremental Quintary Merkle Tree (IQT) verification circuits.
 // Since each node contains 5 leaves, we are using PoseidonT6 for hashing them.

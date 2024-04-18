@@ -12,7 +12,7 @@ describe("Signature verification circuit", function test() {
 
   before(async () => {
     circuit = await circomkitInstance.WitnessTester("verifySignature", {
-      file: "verifySignature",
+      file: "./utils/verifySignature",
       template: "VerifySignature",
     });
   });

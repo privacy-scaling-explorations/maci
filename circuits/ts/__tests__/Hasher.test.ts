@@ -16,7 +16,7 @@ describe("Poseidon hash circuits", function test() {
         const n = 2;
 
         circuit = await circomkitInstance.WitnessTester("sha256hasher", {
-          file: "hashers",
+          file: "./utils/hashers",
           template: "Sha256Hasher",
           params: [n],
         });
@@ -43,7 +43,7 @@ describe("Poseidon hash circuits", function test() {
         const n = 3;
 
         circuit = await circomkitInstance.WitnessTester("sha256hasher", {
-          file: "hashers",
+          file: "./utils/hashers",
           template: "Sha256Hasher",
           params: [n],
         });
@@ -70,7 +70,7 @@ describe("Poseidon hash circuits", function test() {
         const n = 4;
 
         circuit = await circomkitInstance.WitnessTester("sha256hasher", {
-          file: "hashers",
+          file: "./utils/hashers",
           template: "Sha256Hasher",
           params: [n],
         });
@@ -97,7 +97,7 @@ describe("Poseidon hash circuits", function test() {
         const n = 5;
 
         circuit = await circomkitInstance.WitnessTester("sha256hasher", {
-          file: "hashers",
+          file: "./utils/hashers",
           template: "Sha256Hasher",
           params: [n],
         });
@@ -124,7 +124,7 @@ describe("Poseidon hash circuits", function test() {
         const n = 6;
 
         circuit = await circomkitInstance.WitnessTester("sha256hasher", {
-          file: "hashers",
+          file: "./utils/hashers",
           template: "Sha256Hasher",
           params: [n],
         });
@@ -151,7 +151,7 @@ describe("Poseidon hash circuits", function test() {
         const n = 10;
 
         circuit = await circomkitInstance.WitnessTester("sha256hasher", {
-          file: "hashers",
+          file: "./utils/hashers",
           template: "Sha256Hasher",
           params: [n],
         });
@@ -184,7 +184,7 @@ describe("Poseidon hash circuits", function test() {
         const n = 2;
 
         circuit = await circomkitInstance.WitnessTester("poseidonHasher", {
-          file: "hashers",
+          file: "./utils/hashers",
           template: "PoseidonHasher",
           params: [n],
         });
@@ -211,7 +211,7 @@ describe("Poseidon hash circuits", function test() {
         const n = 3;
 
         circuit = await circomkitInstance.WitnessTester("poseidonHasher", {
-          file: "hashers",
+          file: "./utils/hashers",
           template: "PoseidonHasher",
           params: [n],
         });
@@ -238,7 +238,7 @@ describe("Poseidon hash circuits", function test() {
         const n = 4;
 
         circuit = await circomkitInstance.WitnessTester("poseidonHasher", {
-          file: "hashers",
+          file: "./utils/hashers",
           template: "PoseidonHasher",
           params: [n],
         });
@@ -265,7 +265,7 @@ describe("Poseidon hash circuits", function test() {
         const n = 5;
 
         circuit = await circomkitInstance.WitnessTester("poseidonHasher", {
-          file: "hashers",
+          file: "./utils/hashers",
           template: "PoseidonHasher",
           params: [n],
         });
@@ -295,7 +295,7 @@ describe("Poseidon hash circuits", function test() {
 
     before(async () => {
       circuit = await circomkitInstance.WitnessTester("messageHasher", {
-        file: "hashers",
+        file: "./utils/hashers",
         template: "MessageHasher",
       });
     });

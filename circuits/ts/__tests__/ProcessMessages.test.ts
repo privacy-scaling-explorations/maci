@@ -62,7 +62,7 @@ describe("ProcessMessage circuit", function test() {
     });
 
     circuitNonQv = await circomkitInstance.WitnessTester("processMessagesNonQv", {
-      file: "processMessagesNonQv",
+      file: "processMessages",
       template: "ProcessMessagesNonQv",
       params: [10, 2, 1, 2],
     });

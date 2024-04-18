@@ -6,7 +6,7 @@
     "pubs": ["inputHash"]
   },
   "ProcessMessagesNonQv_10-2-1-2_test": {
-    "file": "processMessagesNonQv",
+    "file": "processMessages",
     "template": "ProcessMessagesNonQv",
     "params": [10, 2, 1, 2],
     "pubs": ["inputHash"]
@@ -18,7 +18,7 @@
     "pubs": ["inputHash"]
   },
   "TallyVotesNonQv_10-1-2_test": {
-    "file": "tallyVotesNonQv",
+    "file": "tallyVotes",
     "template": "TallyVotesNonQv",
     "params": [10, 1, 2],
     "pubs": ["inputHash"]
