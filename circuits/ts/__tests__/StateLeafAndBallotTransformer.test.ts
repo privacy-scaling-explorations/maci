@@ -204,7 +204,7 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
     expect(isValid.toString()).to.be.eq("0");
   });
 
-  it("should output existing state leaf and ballot values if the command is invalid", async () => {
+  it("should output existing state leaf and ballot values if the command is invalid (non quadratic-voting)", async () => {
     const circuitInputs = {
       numSignUps,
       maxVoteOptions,
