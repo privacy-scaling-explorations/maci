@@ -11,11 +11,6 @@ include "./mux1.circom";
  * Checks if a MACI message is valid or not.
  * This template supports the Quadratic Voting (QV).
  */
-
-/**
- * Checks if a MACI message is valid or not.
- * This template supports the Quadratic Voting (QV).
- */
 template MessageValidator() {
     // Length of the packed command.
     var PACKED_CMD_LENGTH = 4;

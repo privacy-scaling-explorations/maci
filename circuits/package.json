@@ -32,7 +32,7 @@
     "test:processMessages": "NODE_OPTIONS=--max-old-space-size=4096 ts-mocha --exit ts/__tests__/ProcessMessages.test.ts",
     "test:tallyVotes": "NODE_OPTIONS=--max-old-space-size=4096 ts-mocha --exit ts/__tests__/TallyVotes.test.ts",
     "test:ceremonyParams": "ts-mocha --exit ts/__tests__/CeremonyParams.test.ts",
-    "test:incrementalQuinaryTree": "ts-mocha --exit ts/__tests__/incrementalQuinaryTree.test.ts"
+    "test:incrementalQuinaryTree": "ts-mocha --exit ts/__tests__/IncrementalQuinaryTree.test.ts"
   },
   "dependencies": {
     "@zk-kit/circuits": "^0.4.0",

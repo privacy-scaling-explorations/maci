@@ -9,455 +9,491 @@ include "./utils/calculateTotal.circom";
 include "./utils/hashers.circom";
 include "./unpack-element.circom";
 
-// Tally votes in the ballots, batch by batch.
+/**
+ * Processes batches of votes and verifies their validity in a Merkle tree structure.
+ * This template supports the Quadratic Voting (QV).
+ */
 template TallyVotes(
     stateTreeDepth,
     intStateTreeDepth,
     voteOptionTreeDepth
 ) {
+    // Ensure there's at least one level in the vote option tree.
     assert(voteOptionTreeDepth > 0);
+    // Ensure the internal state tree has at least one level.
     assert(intStateTreeDepth > 0);
-    assert(intStateTreeDepth < stateTreeDepth);
+    // The internal state tree must be smaller than the full state tree.
+    assert(intStateTreeDepth < stateTreeDepth); 
 
+    // Number of children per node in the tree, defining the tree's branching factor.
     var TREE_ARITY = 5;
 
-    // The number of ballots in this batch
+    // The number of ballots processed at once, determined by the depth of the internal state tree.
     var batchSize = TREE_ARITY ** intStateTreeDepth;
+    // Number of voting options available, determined by the depth of the vote option tree.
     var numVoteOptions = TREE_ARITY ** voteOptionTreeDepth;
 
+    // Number of elements in each ballot.
     var BALLOT_LENGTH = 2;
+    // Index for the nonce in the ballot array.
     var BALLOT_NONCE_IDX = 0;
+    // Index for the voting option root in the ballot array.
     var BALLOT_VO_ROOT_IDX = 1;
+    // Difference in tree depths, used in path calculations.
+    var k = stateTreeDepth - intStateTreeDepth;
 
+    // Root of the state Merkle tree, representing the overall state before voting.
     signal input stateRoot;
+    // Root of the ballot Merkle tree, representing the submitted ballots.
     signal input ballotRoot;
+    // Salt used in commitment to secure the ballot data.
     signal input sbSalt;
 
-    // The only public input (inputHash) is the hash of the following:
+    // Inputs combined into a hash to verify the integrity and authenticity of the data.
     signal input packedVals;
+    // Commitment to the state and ballots.
     signal input sbCommitment;
+    // Commitment to the current tally before this batch.
     signal input currentTallyCommitment;
+    // Commitment to the new tally after processing this batch.
     signal input newTallyCommitment;
     
     // A tally commitment is the hash of the following salted values:
-    //   - the vote results
-    //   - the number of voice credits spent per vote option
-    //   - the total number of spent voice credits
+    //   - the vote results,
+    //   - the number of voice credits spent per vote option,
+    //   - the total number of spent voice credits.
 
+    // Hash of all inputs to ensure they are unchanged and authentic.
     signal input inputHash;
-
-    var k = stateTreeDepth - intStateTreeDepth;
-    // The ballots
+    
+    // Ballots and their corresponding path elements for verification in the tree.
     signal input ballots[batchSize][BALLOT_LENGTH];
     signal input ballotPathElements[k][TREE_ARITY - 1];
     signal input votes[batchSize][numVoteOptions];
 
+    // Current results for each vote option.
     signal input currentResults[numVoteOptions];
+    // Salt for the root of the current results.
     signal input currentResultsRootSalt;
-
+    
+    // Total voice credits spent so far.
     signal input currentSpentVoiceCreditSubtotal;
+    // Salt for the total spent voice credits.
     signal input currentSpentVoiceCreditSubtotalSalt;
 
+    // Spent voice credits per vote option.
     signal input currentPerVOSpentVoiceCredits[numVoteOptions];
+    // Salt for the root of spent credits per option.
     signal input currentPerVOSpentVoiceCreditsRootSalt;
 
+    // Salt for the root of the new results.
     signal input newResultsRootSalt;
+    // Salt for the new spent credits per vote option root.
     signal input newPerVOSpentVoiceCreditsRootSalt;
+    // Salt for the new total spent voice credits root. 
     signal input newSpentVoiceCreditSubtotalSalt;
+    // The number of total registrations, used to validate the batch index.
+    signal numSignUps;
+    // Index of the first ballot in this batch.
+    signal batchStartIndex;
 
-    //  ----------------------------------------------------------------------- 
-    // Verify sbCommitment
+    // Verify sbCommitment.
     var sbCommitmentHash = PoseidonHasher(3)([stateRoot, ballotRoot, sbSalt]);
     sbCommitmentHash === sbCommitment;
 
-    //  ----------------------------------------------------------------------- 
-    // Verify inputHash
-    component inputHasher = TallyVotesInputHasher();
-    inputHasher.sbCommitment <== sbCommitment;
-    inputHasher.currentTallyCommitment <== currentTallyCommitment;
-    inputHasher.newTallyCommitment <== newTallyCommitment;
-    inputHasher.packedVals <== packedVals;
-    inputHasher.hash === inputHash;
+    // Verify inputHash.
+    var (
+        inputHasherNumSignUps,
+        inputHasherBatchNum,
+        inputHasherHash
+    ) = TallyVotesInputHasher()(
+        sbCommitment,
+        currentTallyCommitment,
+        newTallyCommitment,
+        packedVals
+    );
 
-    signal numSignUps;
-    signal batchStartIndex;
+    inputHash === inputHasherHash;
+    numSignUps <== inputHasherNumSignUps;
+    batchStartIndex <== inputHasherBatchNum * batchSize;
 
-    numSignUps <== inputHasher.numSignUps;
-    batchStartIndex <== inputHasher.batchNum * batchSize;
+    // Validates that the batchStartIndex is within the valid range of sign-ups.
+    var validNumSignups = LessEqThan(50)([batchStartIndex, numSignUps]);
+    validNumSignups === 1;
 
-    //  ----------------------------------------------------------------------- 
-    // Validate batchStartIndex and numSignUps
-    // batchStartIndex should be less than numSignUps
-    component validNumSignups = LessEqThan(50);
-    validNumSignups.in[0] <== batchStartIndex;
-    validNumSignups.in[1] <== numSignUps;
-    validNumSignups.out === 1;
-
-    //  ----------------------------------------------------------------------- 
-    // Verify the ballots
-
-    // Hash each ballot and generate the subroot of the ballots
-    component ballotSubroot = QuinCheckRoot(intStateTreeDepth);
+    // Hashes each ballot for subroot generation, and checks the existence of the leaf in the Merkle tree.    
     var ballotHashers[batchSize];
+    
     for (var i = 0; i < batchSize; i++) {
         ballotHashers[i] = PoseidonHasher(2)([ballots[i][BALLOT_NONCE_IDX], ballots[i][BALLOT_VO_ROOT_IDX]]);
-        ballotSubroot.leaves[i] <== ballotHashers[i];
     }
 
-    component ballotQle = QuinLeafExists(k);
-    component ballotPathIndices = QuinGeneratePathIndices(k);
-    ballotPathIndices.in <== inputHasher.batchNum;
-    ballotQle.leaf <== ballotSubroot.root;
-    ballotQle.root <== ballotRoot;
-    for (var i = 0; i < k; i++) {
-        ballotQle.path_index[i] <== ballotPathIndices.out[i];
-        for (var j = 0; j < TREE_ARITY - 1; j++) {
-            ballotQle.path_elements[i][j] <== ballotPathElements[i][j];
-        }
-    }
+    var ballotSubroot = QuinCheckRoot(intStateTreeDepth)(ballotHashers);
+    var ballotPathIndices[k] = QuinGeneratePathIndices(k)(inputHasherBatchNum);
 
-    //  ----------------------------------------------------------------------- 
-    // Verify the vote option roots
-    component voteTree[batchSize];
+    // Verifies each ballot's inclusion within the ballot tree.
+    QuinLeafExists(k)(
+        ballotSubroot,
+        ballotPathIndices,
+        ballotPathElements,
+        ballotRoot
+    );
+
+    // Processes vote options, verifying each against its declared root.
+    var voteTree[batchSize];
     for (var i = 0; i < batchSize; i++) {
-        voteTree[i] = QuinCheckRoot(voteOptionTreeDepth);
-        for (var j = 0; j < TREE_ARITY ** voteOptionTreeDepth; j++) {
-            voteTree[i].leaves[j] <== votes[i][j];
-        }
-        voteTree[i].root === ballots[i][BALLOT_VO_ROOT_IDX];
+        voteTree[i] = QuinCheckRoot(voteOptionTreeDepth)(votes[i]);
+        voteTree[i] === ballots[i][BALLOT_VO_ROOT_IDX];
     }
 
-    component isFirstBatch = IsZero();
-    isFirstBatch.in <== batchStartIndex;
-    
-    component iz = IsZero();
-    iz.in <== isFirstBatch.out;
+    // Calculates new results and spent voice credits based on the current and incoming votes.
+    var isFirstBatch = IsZero()(batchStartIndex);
+    var iz = IsZero()(isFirstBatch);
 
-    //  ----------------------------------------------------------------------- 
-    // Tally the new results
-    component resultCalc[numVoteOptions];
+    // Tally the new results.
+    var resultCalc[numVoteOptions];
     for (var i = 0; i < numVoteOptions; i++) {
-        resultCalc[i] = CalculateTotal(batchSize + 1);
-        resultCalc[i].nums[batchSize] <== currentResults[i] * iz.out;
+        var numsRC[batchSize + 1];
+        numsRC[batchSize] = currentResults[i] * iz;
         for (var j = 0; j < batchSize; j++) {
-            resultCalc[i].nums[j] <== votes[j][i];
+            numsRC[j] = votes[j][i];
         }
+
+        resultCalc[i] = CalculateTotal(batchSize + 1)(numsRC);
     }
 
-    // Tally the new total of spent voice credits
-    component newSpentVoiceCreditSubtotal = CalculateTotal(batchSize * numVoteOptions + 1);
-    newSpentVoiceCreditSubtotal.nums[batchSize * numVoteOptions] <== currentSpentVoiceCreditSubtotal * iz.out;
+    // Tally the new spent voice credit total.
+    var numsSVC[batchSize * numVoteOptions + 1];
+    numsSVC[batchSize * numVoteOptions] = currentSpentVoiceCreditSubtotal * iz;
     for (var i = 0; i < batchSize; i++) {
         for (var j = 0; j < numVoteOptions; j++) {
-            newSpentVoiceCreditSubtotal.nums[i * numVoteOptions + j] <==
-                votes[i][j] * votes[i][j];
+            numsSVC[i * numVoteOptions + j] = votes[i][j] * votes[i][j];
         }
     }
 
-    // Tally the spent voice credits per vote option
-    component newPerVOSpentVoiceCredits[numVoteOptions];
+    var newSpentVoiceCreditSubtotal = CalculateTotal(batchSize * numVoteOptions + 1)(numsSVC);
+
+    // Tally the spent voice credits per vote option.
+    var newPerVOSpentVoiceCredits[numVoteOptions];
+
     for (var i = 0; i < numVoteOptions; i++) {
-        newPerVOSpentVoiceCredits[i] = CalculateTotal(batchSize + 1);
-        newPerVOSpentVoiceCredits[i].nums[batchSize] <== currentPerVOSpentVoiceCredits[i] * iz.out;
+        var numsVOSVC[batchSize + 1];
+        numsVOSVC[batchSize] = currentPerVOSpentVoiceCredits[i] * iz;
         for (var j = 0; j < batchSize; j++) {
-            newPerVOSpentVoiceCredits[i].nums[j] <== votes[j][i] * votes[j][i];
+            numsVOSVC[j] = votes[j][i] * votes[j][i];
         }
-    }
 
-    // Verify the current and new tally
-    component rcv = ResultCommitmentVerifier(voteOptionTreeDepth);
-    rcv.isFirstBatch <== isFirstBatch.out;
-    rcv.currentTallyCommitment <== currentTallyCommitment;
-    rcv.newTallyCommitment <== newTallyCommitment;
-    rcv.currentResultsRootSalt <== currentResultsRootSalt;
-    rcv.newResultsRootSalt <== newResultsRootSalt;
-    rcv.currentSpentVoiceCreditSubtotal <== currentSpentVoiceCreditSubtotal;
-    rcv.currentSpentVoiceCreditSubtotalSalt <== currentSpentVoiceCreditSubtotalSalt;
-    rcv.newSpentVoiceCreditSubtotal <== newSpentVoiceCreditSubtotal.sum;
-    rcv.newSpentVoiceCreditSubtotalSalt <== newSpentVoiceCreditSubtotalSalt;
-    rcv.currentPerVOSpentVoiceCreditsRootSalt <== currentPerVOSpentVoiceCreditsRootSalt;
-    rcv.newPerVOSpentVoiceCreditsRootSalt <== newPerVOSpentVoiceCreditsRootSalt;
-
-    for (var i = 0; i < numVoteOptions; i++) {
-        rcv.currentResults[i] <== currentResults[i];
-        rcv.newResults[i] <== resultCalc[i].sum;
-        rcv.currentPerVOSpentVoiceCredits[i] <== currentPerVOSpentVoiceCredits[i];
-        rcv.newPerVOSpentVoiceCredits[i] <== newPerVOSpentVoiceCredits[i].sum;
+        newPerVOSpentVoiceCredits[i] = CalculateTotal(batchSize + 1)(numsVOSVC);
     }
+    
+    // Verifies the updated results and spent credits, ensuring consistency and correctness of tally updates.
+    ResultCommitmentVerifier(voteOptionTreeDepth)(
+        isFirstBatch,
+        currentTallyCommitment,
+        newTallyCommitment,
+        currentResults,
+        currentResultsRootSalt,
+        resultCalc,
+        newResultsRootSalt,
+        currentSpentVoiceCreditSubtotal,
+        currentSpentVoiceCreditSubtotalSalt,
+        newSpentVoiceCreditSubtotal,
+        newSpentVoiceCreditSubtotalSalt,
+        currentPerVOSpentVoiceCredits,
+        currentPerVOSpentVoiceCreditsRootSalt,
+        newPerVOSpentVoiceCredits,
+        newPerVOSpentVoiceCreditsRootSalt        
+    );
 }
 
-// Tally votes in the ballots, batch by batch.
+/**
+ * Processes batches of votes and verifies their validity in a Merkle tree structure.
+ * This template does not support the Quadratic Voting (QV).
+ */
 template TallyVotesNonQv(
     stateTreeDepth,
     intStateTreeDepth,
     voteOptionTreeDepth
 ) {
+    // Ensure there's at least one level in the vote option tree.
     assert(voteOptionTreeDepth > 0);
+    // Ensure the internal state tree has at least one level.
     assert(intStateTreeDepth > 0);
-    assert(intStateTreeDepth < stateTreeDepth);
+    // The internal state tree must be smaller than the full state tree.
+    assert(intStateTreeDepth < stateTreeDepth); 
 
+    // Number of children per node in the tree, defining the tree's branching factor.
     var TREE_ARITY = 5;
 
-    // The number of ballots in this batch
+    // The number of ballots processed at once, determined by the depth of the internal state tree.
     var batchSize = TREE_ARITY ** intStateTreeDepth;
+    // Number of voting options available, determined by the depth of the vote option tree.
     var numVoteOptions = TREE_ARITY ** voteOptionTreeDepth;
 
+    // Number of elements in each ballot.
     var BALLOT_LENGTH = 2;
+    // Index for the nonce in the ballot array.
     var BALLOT_NONCE_IDX = 0;
+    // Index for the voting option root in the ballot array.
     var BALLOT_VO_ROOT_IDX = 1;
+    // Difference in tree depths, used in path calculations.
+    var k = stateTreeDepth - intStateTreeDepth;
 
+    // Root of the state Merkle tree, representing the overall state before voting.
     signal input stateRoot;
+    // Root of the ballot Merkle tree, representing the submitted ballots.
     signal input ballotRoot;
+    // Salt used in commitment to secure the ballot data.
     signal input sbSalt;
 
-    // The only public input (inputHash) is the hash of the following:
+    // Inputs combined into a hash to verify the integrity and authenticity of the data.
     signal input packedVals;
+    // Commitment to the state and ballots.
     signal input sbCommitment;
+    // Commitment to the current tally before this batch.
     signal input currentTallyCommitment;
+    // Commitment to the new tally after processing this batch.
     signal input newTallyCommitment;
     
     // A tally commitment is the hash of the following salted values:
-    //   - the vote results
-    //   - the number of voice credits spent per vote option
-    //   - the total number of spent voice credits
+    //   - the vote results,
+    //   - the number of voice credits spent per vote option,
+    //   - the total number of spent voice credits.
 
+    // Hash of all inputs to ensure they are unchanged and authentic.
     signal input inputHash;
-
-    var k = stateTreeDepth - intStateTreeDepth;
-    // The ballots
+    
+    // Ballots and their corresponding path elements for verification in the tree.
     signal input ballots[batchSize][BALLOT_LENGTH];
     signal input ballotPathElements[k][TREE_ARITY - 1];
     signal input votes[batchSize][numVoteOptions];
 
+    // Current results for each vote option.
     signal input currentResults[numVoteOptions];
+    // Salt for the root of the current results.
     signal input currentResultsRootSalt;
-
+    
+    // Total voice credits spent so far.
     signal input currentSpentVoiceCreditSubtotal;
+    // Salt for the total spent voice credits.
     signal input currentSpentVoiceCreditSubtotalSalt;
 
+    // Spent voice credits per vote option.
     signal input currentPerVOSpentVoiceCredits[numVoteOptions];
+    // Salt for the root of spent credits per option.
     signal input currentPerVOSpentVoiceCreditsRootSalt;
 
+    // Salt for the root of the new results.
     signal input newResultsRootSalt;
+    // Salt for the new spent credits per vote option root.
     signal input newPerVOSpentVoiceCreditsRootSalt;
+    // Salt for the new total spent voice credits root. 
     signal input newSpentVoiceCreditSubtotalSalt;
+    // The number of total registrations, used to validate the batch index.
+    signal numSignUps;
+    // Index of the first ballot in this batch.
+    signal batchStartIndex;
 
-    //  ----------------------------------------------------------------------- 
-    // Verify sbCommitment
+    // Verify sbCommitment.
     var sbCommitmentHash = PoseidonHasher(3)([stateRoot, ballotRoot, sbSalt]);
     sbCommitmentHash === sbCommitment;
 
-    //  ----------------------------------------------------------------------- 
-    // Verify inputHash
-    component inputHasher = TallyVotesInputHasher();
-    inputHasher.sbCommitment <== sbCommitment;
-    inputHasher.currentTallyCommitment <== currentTallyCommitment;
-    inputHasher.newTallyCommitment <== newTallyCommitment;
-    inputHasher.packedVals <== packedVals;
-    inputHasher.hash === inputHash;
+    // Verify inputHash.
+    var (
+        inputHasherNumSignUps,
+        inputHasherBatchNum,
+        inputHasherHash
+    ) = TallyVotesInputHasher()(
+        sbCommitment,
+        currentTallyCommitment,
+        newTallyCommitment,
+        packedVals
+    );
 
-    signal numSignUps;
-    signal batchStartIndex;
+    inputHash === inputHasherHash;
+    numSignUps <== inputHasherNumSignUps;
+    batchStartIndex <== inputHasherBatchNum * batchSize;
 
-    numSignUps <== inputHasher.numSignUps;
-    batchStartIndex <== inputHasher.batchNum * batchSize;
+    // Validates that the batchStartIndex is within the valid range of sign-ups.
+    var validNumSignups = LessEqThan(50)([batchStartIndex, numSignUps]);
+    validNumSignups === 1;
 
-    //  ----------------------------------------------------------------------- 
-    // Validate batchStartIndex and numSignUps
-    // batchStartIndex should be less than numSignUps
-    component validNumSignups = LessEqThan(50);
-    validNumSignups.in[0] <== batchStartIndex;
-    validNumSignups.in[1] <== numSignUps;
-    validNumSignups.out === 1;
-
-    //  ----------------------------------------------------------------------- 
-    // Verify the ballots
-
-    // Hash each ballot and generate the subroot of the ballots
-    component ballotSubroot = QuinCheckRoot(intStateTreeDepth);
+    // Hashes each ballot for subroot generation, and checks the existence of the leaf in the Merkle tree.    
     var ballotHashers[batchSize];
+    
     for (var i = 0; i < batchSize; i++) {
         ballotHashers[i] = PoseidonHasher(2)([ballots[i][BALLOT_NONCE_IDX], ballots[i][BALLOT_VO_ROOT_IDX]]);
-
-        ballotSubroot.leaves[i] <== ballotHashers[i];
     }
 
-    component ballotQle = QuinLeafExists(k);
-    component ballotPathIndices = QuinGeneratePathIndices(k);
-    ballotPathIndices.in <== inputHasher.batchNum;
-    ballotQle.leaf <== ballotSubroot.root;
-    ballotQle.root <== ballotRoot;
-    for (var i = 0; i < k; i++) {
-        ballotQle.path_index[i] <== ballotPathIndices.out[i];
-        for (var j = 0; j < TREE_ARITY - 1; j++) {
-            ballotQle.path_elements[i][j] <== ballotPathElements[i][j];
-        }
-    }
+    var ballotSubroot = QuinCheckRoot(intStateTreeDepth)(ballotHashers);
+    var ballotPathIndices[k] = QuinGeneratePathIndices(k)(inputHasherBatchNum);
 
-    //  ----------------------------------------------------------------------- 
-    // Verify the vote option roots
-    component voteTree[batchSize];
+    // Verifies each ballot's inclusion within the ballot tree.
+    QuinLeafExists(k)(
+        ballotSubroot,
+        ballotPathIndices,
+        ballotPathElements,
+        ballotRoot
+    );
+
+    // Processes vote options, verifying each against its declared root.
+    var voteTree[batchSize];
     for (var i = 0; i < batchSize; i++) {
-        voteTree[i] = QuinCheckRoot(voteOptionTreeDepth);
-        for (var j = 0; j < TREE_ARITY ** voteOptionTreeDepth; j++) {
-            voteTree[i].leaves[j] <== votes[i][j];
-        }
-        voteTree[i].root === ballots[i][BALLOT_VO_ROOT_IDX];
+        voteTree[i] = QuinCheckRoot(voteOptionTreeDepth)(votes[i]);
+        voteTree[i] === ballots[i][BALLOT_VO_ROOT_IDX];
     }
 
-    component isFirstBatch = IsZero();
-    isFirstBatch.in <== batchStartIndex;
-    
-    component iz = IsZero();
-    iz.in <== isFirstBatch.out;
+    // Calculates new results and spent voice credits based on the current and incoming votes.
+    var isFirstBatch = IsZero()(batchStartIndex);
+    var iz = IsZero()(isFirstBatch);
 
-    //  ----------------------------------------------------------------------- 
-    // Tally the new results
-    component resultCalc[numVoteOptions];
+    // Tally the new results.
+    var resultCalc[numVoteOptions];
     for (var i = 0; i < numVoteOptions; i++) {
-        resultCalc[i] = CalculateTotal(batchSize + 1);
-        resultCalc[i].nums[batchSize] <== currentResults[i] * iz.out;
+        var numsRC[batchSize + 1];
+        numsRC[batchSize] = currentResults[i] * iz;
         for (var j = 0; j < batchSize; j++) {
-            resultCalc[i].nums[j] <== votes[j][i];
+            numsRC[j] = votes[j][i];
         }
+
+        resultCalc[i] = CalculateTotal(batchSize + 1)(numsRC);
     }
 
-    // Tally the new total of spent voice credits
-    component newSpentVoiceCreditSubtotal = CalculateTotal(batchSize * numVoteOptions + 1);
-    newSpentVoiceCreditSubtotal.nums[batchSize * numVoteOptions] <== currentSpentVoiceCreditSubtotal * iz.out;
+    // Tally the new spent voice credit total.
+    var numsSVC[batchSize * numVoteOptions + 1];
+    numsSVC[batchSize * numVoteOptions] = currentSpentVoiceCreditSubtotal * iz;
     for (var i = 0; i < batchSize; i++) {
         for (var j = 0; j < numVoteOptions; j++) {
-            newSpentVoiceCreditSubtotal.nums[i * numVoteOptions + j] <==
-                votes[i][j];
+            numsSVC[i * numVoteOptions + j] = votes[i][j];
         }
     }
 
-    // Tally the spent voice credits per vote option
-    component newPerVOSpentVoiceCredits[numVoteOptions];
+    var newSpentVoiceCreditSubtotal = CalculateTotal(batchSize * numVoteOptions + 1)(numsSVC);
+
+    // Tally the spent voice credits per vote option.
+    var newPerVOSpentVoiceCredits[numVoteOptions];
+
     for (var i = 0; i < numVoteOptions; i++) {
-        newPerVOSpentVoiceCredits[i] = CalculateTotal(batchSize + 1);
-        newPerVOSpentVoiceCredits[i].nums[batchSize] <== currentPerVOSpentVoiceCredits[i] * iz.out;
+        var numsVOSVC[batchSize + 1];
+        numsVOSVC[batchSize] = currentPerVOSpentVoiceCredits[i] * iz;
         for (var j = 0; j < batchSize; j++) {
-            newPerVOSpentVoiceCredits[i].nums[j] <== votes[j][i];
+            numsVOSVC[j] = votes[j][i];
         }
+
+        newPerVOSpentVoiceCredits[i] = CalculateTotal(batchSize + 1)(numsVOSVC);
     }
 
-    // Verify the current and new tally
-    component rcv = ResultCommitmentVerifier(voteOptionTreeDepth);
-    rcv.isFirstBatch <== isFirstBatch.out;
-    rcv.currentTallyCommitment <== currentTallyCommitment;
-    rcv.newTallyCommitment <== newTallyCommitment;
-    rcv.currentResultsRootSalt <== currentResultsRootSalt;
-    rcv.newResultsRootSalt <== newResultsRootSalt;
-    rcv.currentSpentVoiceCreditSubtotal <== currentSpentVoiceCreditSubtotal;
-    rcv.currentSpentVoiceCreditSubtotalSalt <== currentSpentVoiceCreditSubtotalSalt;
-    rcv.newSpentVoiceCreditSubtotal <== newSpentVoiceCreditSubtotal.sum;
-    rcv.newSpentVoiceCreditSubtotalSalt <== newSpentVoiceCreditSubtotalSalt;
-    rcv.currentPerVOSpentVoiceCreditsRootSalt <== currentPerVOSpentVoiceCreditsRootSalt;
-    rcv.newPerVOSpentVoiceCreditsRootSalt <== newPerVOSpentVoiceCreditsRootSalt;
 
-    for (var i = 0; i < numVoteOptions; i++) {
-        rcv.currentResults[i] <== currentResults[i];
-        rcv.newResults[i] <== resultCalc[i].sum;
-        rcv.currentPerVOSpentVoiceCredits[i] <== currentPerVOSpentVoiceCredits[i];
-        rcv.newPerVOSpentVoiceCredits[i] <== newPerVOSpentVoiceCredits[i].sum;
-    }
+    // Verifies the updated results and spent credits, ensuring consistency and correctness of tally updates.
+    ResultCommitmentVerifier(voteOptionTreeDepth)(
+        isFirstBatch,
+        currentTallyCommitment,
+        newTallyCommitment,
+        currentResults,
+        currentResultsRootSalt,
+        resultCalc,
+        newResultsRootSalt,
+        currentSpentVoiceCreditSubtotal,
+        currentSpentVoiceCreditSubtotalSalt,
+        newSpentVoiceCreditSubtotal,
+        newSpentVoiceCreditSubtotalSalt,
+        currentPerVOSpentVoiceCredits,
+        currentPerVOSpentVoiceCreditsRootSalt,
+        newPerVOSpentVoiceCredits,
+        newPerVOSpentVoiceCreditsRootSalt        
+    );
 }
 
-// Verifies the commitment to the current results. Also computes and outputs a
-// commitment to the new results.
+/** 
+ * Performs verifications and computations related to current voting results. 
+ * Also, computes and outputs a commitment to the new results.
+ */
 template ResultCommitmentVerifier(voteOptionTreeDepth) {
+    // Number of children per node in the tree, defining the tree's branching factor.
     var TREE_ARITY = 5;
+    // Number of voting options available, determined by the depth of the vote option tree.
     var numVoteOptions = TREE_ARITY ** voteOptionTreeDepth;
 
-    // 1 if this is the first batch, and 0 otherwise
+    // Equal to 1 if this is the first batch, otherwise 0.
     signal input isFirstBatch;
+    // Commitment to the current tally before this batch.
     signal input currentTallyCommitment;
+    // Commitment to the new tally after processing this batch.
     signal input newTallyCommitment;
 
-    // Results
+    // Current results for each vote option.
     signal input currentResults[numVoteOptions];
+    // Salt for the root of the current results.
     signal input currentResultsRootSalt;
 
+    // New results for each vote option.
     signal input newResults[numVoteOptions];
+    // Salt for the root of the new results.
     signal input newResultsRootSalt;
 
-    // Spent voice credits
+    // Total voice credits spent so far.
     signal input currentSpentVoiceCreditSubtotal;
+    // Salt for the total spent voice credits.
     signal input currentSpentVoiceCreditSubtotalSalt;
 
+    // Total new voice credits spent.
     signal input newSpentVoiceCreditSubtotal;
+    // Salt for the new total spent voice credits.
     signal input newSpentVoiceCreditSubtotalSalt;
 
-    // Spent voice credits per vote option
+    // Spent voice credits per vote option.
     signal input currentPerVOSpentVoiceCredits[numVoteOptions];
+    // Salt for the root of spent credits per option.
     signal input currentPerVOSpentVoiceCreditsRootSalt;
 
+    // New spent voice credits per vote option.
     signal input newPerVOSpentVoiceCredits[numVoteOptions];
+    // Salt for the root of new spent credits per option.
     signal input newPerVOSpentVoiceCreditsRootSalt;
 
-    // Compute the commitment to the current results
-    component currentResultsRoot = QuinCheckRoot(voteOptionTreeDepth);
-    for (var i = 0; i < numVoteOptions; i++) {
-        currentResultsRoot.leaves[i] <== currentResults[i];
-    }
+    // Compute the commitment to the current results.
+    var currentResultsRoot = QuinCheckRoot(voteOptionTreeDepth)(currentResults);
 
-    var currentResultsCommitmentHash = PoseidonHasher(2)([currentResultsRoot.root, currentResultsRootSalt]);
+    // Verify currentResultsCommitmentHash.
+    var currentResultsCommitmentHash = PoseidonHasher(2)([currentResultsRoot, currentResultsRootSalt]);
 
-    // Compute the commitment to the current spent voice credits
+    // Compute the commitment to the current spent voice credits.
     var currentSpentVoiceCreditsCommitmentHash = PoseidonHasher(2)([currentSpentVoiceCreditSubtotal, currentSpentVoiceCreditSubtotalSalt]);
 
-    // Compute the root of the spent voice credits per vote option
-    component currentPerVOSpentVoiceCreditsRoot = QuinCheckRoot(voteOptionTreeDepth);
-    for (var i = 0; i < numVoteOptions; i++) {
-        currentPerVOSpentVoiceCreditsRoot.leaves[i] <== currentPerVOSpentVoiceCredits[i];
-    }
+    // Compute the root of the spent voice credits per vote option.
+    var currentPerVOSpentVoiceCreditsRoot = QuinCheckRoot(voteOptionTreeDepth)(currentPerVOSpentVoiceCredits);
+    var currentPerVOSpentVoiceCreditsCommitmentHash = PoseidonHasher(2)([currentPerVOSpentVoiceCreditsRoot, currentPerVOSpentVoiceCreditsRootSalt]);
 
-    var currentPerVOSpentVoiceCreditsCommitmentHash = PoseidonHasher(2)([currentPerVOSpentVoiceCreditsRoot.root, currentPerVOSpentVoiceCreditsRootSalt]);
-
-    // Commit to the current tally
+    // Commit to the current tally.
     var currentTallyCommitmentHash = PoseidonHasher(3)([
         currentResultsCommitmentHash, 
         currentSpentVoiceCreditsCommitmentHash, 
         currentPerVOSpentVoiceCreditsCommitmentHash
     ]);
 
-    // Check if the current tally commitment is correct only if this is not the first batch
-    component iz = IsZero();
-    iz.in <== isFirstBatch;
-    // iz.out is 1 if this is not the first batch
-    // iz.out is 0 if this is the first batch
+    // Check if the current tally commitment is correct only if this is not the first batch.
+    // iz.out is 1 if this is not the first batch.
+    // iz.out is 0 if this is the first batch.
+    var iz = IsZero()(isFirstBatch);
 
-    // hz is 0 if this is the first batch
-    // currentTallyCommitment should be 0 if this is the first batch
-
-    // hz is 1 if this is not the first batch
-    // currentTallyCommitment should not be 0 if this is the first batch
+    // hz is 0 if this is the first batch, currentTallyCommitment should be 0 if this is the first batch.
+    // hz is 1 if this is not the first batch, currentTallyCommitment should not be 0 if this is the first batch.
     signal hz;
-    hz <== iz.out * currentTallyCommitmentHash;
-
+    hz <== iz * currentTallyCommitmentHash;
     hz === currentTallyCommitment;
 
-    // Compute the root of the new results
-    component newResultsRoot = QuinCheckRoot(voteOptionTreeDepth);
-    for (var i = 0; i < numVoteOptions; i++) {
-        newResultsRoot.leaves[i] <== newResults[i];
-    }
+    // Compute the root of the new results.
+    var newResultsRoot = QuinCheckRoot(voteOptionTreeDepth)(newResults);
+    var newResultsCommitmentHash = PoseidonHasher(2)([newResultsRoot, newResultsRootSalt]);
 
-    var newResultsCommitmentHash = PoseidonHasher(2)([newResultsRoot.root, newResultsRootSalt]);
-
-    // Compute the commitment to the new spent voice credits value
+    // Compute the commitment to the new spent voice credits value.
     var newSpentVoiceCreditsCommitmentHash = PoseidonHasher(2)([newSpentVoiceCreditSubtotal, newSpentVoiceCreditSubtotalSalt]);
 
-    // Compute the root of the spent voice credits per vote option
-    component newPerVOSpentVoiceCreditsRoot = QuinCheckRoot(voteOptionTreeDepth);
-    for (var i = 0; i < numVoteOptions; i++) {
-        newPerVOSpentVoiceCreditsRoot.leaves[i] <== newPerVOSpentVoiceCredits[i];
-    }
+    // Compute the root of the spent voice credits per vote option.
+    var newPerVOSpentVoiceCreditsRoot = QuinCheckRoot(voteOptionTreeDepth)(newPerVOSpentVoiceCredits);
+    var newPerVOSpentVoiceCreditsCommitmentHash = PoseidonHasher(2)([newPerVOSpentVoiceCreditsRoot, newPerVOSpentVoiceCreditsRootSalt]);
 
-    var newPerVOSpentVoiceCreditsCommitmentHash = PoseidonHasher(2)([newPerVOSpentVoiceCreditsRoot.root, newPerVOSpentVoiceCreditsRootSalt]);
-
-    // Commit to the new tally
+    // Commit to the new tally.
     var newTallyCommitmentHash = PoseidonHasher(3)([
         newResultsCommitmentHash,
         newSpentVoiceCreditsCommitmentHash,
@@ -467,21 +503,27 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     newTallyCommitmentHash === newTallyCommitment;
 }
 
-// template that generates a sha256 hash of the provided tally inputs
+/**
+ * Generates a sha256 hash of the provided tally inputs.
+ */
 template TallyVotesInputHasher() {
+    // Commitment to the state and ballots.
     signal input sbCommitment;
+    // Commitment to the current tally before this batch.
     signal input currentTallyCommitment;
+    // Commitment to the new tally after processing this batch.
     signal input newTallyCommitment;
+    // Packed values.
     signal input packedVals;
 
     signal output numSignUps;
     signal output batchNum;
     signal output hash;
 
-    component unpack = UnpackElement(2);
-    unpack.in <== packedVals;
-    batchNum <== unpack.out[1];
-    numSignUps <== unpack.out[0];
+    // Unpack the elements.
+    var unpacked[2] = UnpackElement(2)(packedVals);
+    batchNum <== unpacked[1];
+    numSignUps <== unpacked[0];
 
     hash <== Sha256Hasher(4)([
         packedVals,

@@ -11,130 +11,111 @@ include "./escalarmulfix.circom";
 // local imports
 include "./hashers.circom";
 
+/**
+ * Variant of the EdDSAPoseidonVerifier template from circomlib
+ * https://github.com/iden3/circomlib/blob/master/circuits/eddsa.circom
+ */
 template EdDSAPoseidonVerifier_patched() {
+    // The x and y coordinates of the public key.
     signal input Ax;
     signal input Ay;
+    // Signature scalar.
     signal input S;
+    // The x and y coordinates of the signature point.
     signal input R8x;
     signal input R8y;
+    // Message hash.
     signal input M;
 
     signal output valid;
 
-    var i;
+    // Ensure S<Subgroup Order.
+    // convert the signature scalar S into its binary representation.
+    var snum2bits[254] = Num2Bits(254)(S);
 
-    // Ensure S<Subgroup Order
-    component snum2bits = Num2Bits(254);
-    snum2bits.in <== S;
-
-    component compConstant = CompConstant(2736030358979909402780800718157159386076813972158567259200215660948447373040);
-
-    for (i=0; i<253; i++) {
-        snum2bits.out[i] ==> compConstant.in[i];
+    var compConstantIn[254];
+    for (var i=0; i<253; i++) {
+        compConstantIn[i] = snum2bits[i];
     }
-    compConstant.in[253] <== 0;
+    compConstantIn[253] = 0;
 
-    // Calculate the h = H(R,A, msg)
-    component h2bits = Num2Bits_strict();
-    h2bits.in <== PoseidonHasher(5)([R8x, R8y, Ax, Ay, M]);
+    // A component that ensures S is within a valid range, 
+    // comparing it against a constant representing the subgroup order.
+    var compConstant = CompConstant(2736030358979909402780800718157159386076813972158567259200215660948447373040)(compConstantIn);
 
-    // Calculate second part of the right side:  right2 = h*8*A
+    // Calculate the h = H(R,A, msg).
+    var h2bits[254] = Num2Bits_strict()(PoseidonHasher(5)([R8x, R8y, Ax, Ay, M]));
 
-    // Multiply by 8 by adding it 3 times. This also ensures that the result is
-    // in the subgroup.
-    component dbl1 = BabyDbl();
-    dbl1.x <== Ax;
-    dbl1.y <== Ay;
-    component dbl2 = BabyDbl();
-    dbl2.x <== dbl1.xout;
-    dbl2.y <== dbl1.yout;
-    component dbl3 = BabyDbl();
-    dbl3.x <== dbl2.xout;
-    dbl3.y <== dbl2.yout;
+    // These components perform point doubling operations on the public key
+    // to align it within the correct subgroup as part of the verification process.
+    var (dbl1XOut, dbl1YOut) = BabyDbl()(Ax, Ay);
+    var (dbl2XOut, dbl2YOut) = BabyDbl()(dbl1XOut, dbl1YOut);
+    var (dbl3XOut, dbl3YOut) = BabyDbl()(dbl2XOut, dbl2YOut);
 
-    component mulAny = EscalarMulAny(254);
-    for (i=0; i<254; i++) {
-        mulAny.e[i] <== h2bits.out[i];
-    }
-    mulAny.p[0] <== dbl3.xout;
-    mulAny.p[1] <== dbl3.yout;
+    // A component that performs scalar multiplication of the 
+    // adjusted public key by the hash output, essential for the verification calculation.
+    var mulAny[2] = EscalarMulAny(254)(h2bits, [dbl3XOut, dbl3YOut]);
 
+    // Compute the right side: right =  R8 + right2.
+    var (addRightXOut, addRightYOut) = BabyAdd()(R8x, R8y, mulAny[0], mulAny[1]);
 
-    // Compute the right side: right =  R8 + right2
-    component addRight = BabyAdd();
-    addRight.x1 <== R8x;
-    addRight.y1 <== R8y;
-    addRight.x2 <== mulAny.out[0];
-    addRight.y2 <== mulAny.out[1];
-
-    // Calculate left side of equation left = S*B8
+    // Calculate left side of equation left = S*B8.
     var BASE8[2] = [
         5299619240641551281634865583518297030282874472190772894086521144482721001553,
         16950150798460657717958625567821834550301663161624707787222815936182638968203
     ];
-    component mulFix = EscalarMulFix(253, BASE8);
-    for (i=0; i<253; i++) {
-        mulFix.e[i] <== snum2bits.out[i];
-    }
+    
+    // Fixed-base scalar multiplication of a base point by S.
+    var mulFix[2] = EscalarMulFix(254, BASE8)(snum2bits);
 
-    // Valid should equal to 0 if its valid
-    component rightValid = IsEqual();
-    rightValid.in[0] <== mulFix.out[0];
-    rightValid.in[1] <== addRight.xout;
+    // Components to check the equality of x and y coordinates 
+    // between the computed and expected points of the signature.
+    var rightValid = IsEqual()([mulFix[0], addRightXOut]);
+    var leftValid = IsEqual()([mulFix[1], addRightYOut]);
+    var leftRightValid = IsEqual()([rightValid + leftValid, 2]);
 
-    component leftValid = IsEqual();
-    leftValid.in[0] <== mulFix.out[1];
-    leftValid.in[1] <== addRight.yout;
+    // Components to handle edge cases and ensure that all conditions 
+    // for a valid signature are met, including the 
+    // public key not being zero and other integrity checks.
+    var isZero = IsZero()(Ax);
+    var iz = IsEqual()([isZero, 0]);
+    var isCcZero = IsZero()(compConstant);
+    var isValid = IsEqual()([leftRightValid + iz + isCcZero, 3]);
 
-    component leftRightValid = IsEqual();
-    leftRightValid.in[0] <== rightValid.out + leftValid.out;
-    leftRightValid.in[1] <== 2;
-
-    // If A is not zero, isZero.out will be 0.
-    // To prevent a scenario where the user can DoS the proof generation by
-    // passing in an invalid pubkey, we don't establish a constraint that A is
-    // not 0. Rather, if A is 0, valid should be 0. 
-    component isZero = IsZero();
-    isZero.in <== dbl3.x;
-
-    component iz = IsEqual();
-    iz.in[0] <== isZero.out;
-    iz.in[1] <== 0;
-
-    // If compConstant.out is not zero, then valid should be 0.
-    component isCcZero = IsZero();
-    isCcZero.in <== compConstant.out;
-
-    component isValid = IsEqual();
-    isValid.in[0] <== leftRightValid.out + iz.out + isCcZero.out;
-    isValid.in[1] <== 3;
-
-    valid <== isValid.out;
+    valid <== isValid;
 }
 
-// verify a EdDSA signature
+/**
+ * Verifies the EdDSA signature for a given command, which has exactly four elements in the hash preimage.
+ */
 template VerifySignature() {
-    // Verify the signature of a Command, which has exactly 4 elements in the
-    // hash preimage
+    // Public key of the signer, consisting of two coordinates [x, y].
     signal input pubKey[2];
+    // R8 point from the signature, consisting of two coordinates [x, y]. 
     signal input R8[2];
+    // Scalar component of the signature.
     signal input S;
 
+    // Number of elements in the hash preimage.
     var k = 4;
+    
+    // The preimage data that was hashed, an array of four elements.
     signal input preimage[k];
 
     signal output valid;
 
+    // Hash the preimage using the Poseidon hashing function configured for four inputs.
     var M = PoseidonHasher(4)(preimage);
 
-    component verifier = EdDSAPoseidonVerifier_patched();
+    // Instantiate the patched EdDSA Poseidon verifier with the necessary inputs.
+    var verifier = EdDSAPoseidonVerifier_patched()(
+        pubKey[0],
+        pubKey[1],
+        S,
+        R8[0],
+        R8[1],
+        M
+    );
 
-    verifier.Ax <== pubKey[0];
-    verifier.Ay <== pubKey[1];
-    verifier.S <== S;
-    verifier.R8x <== R8[0];
-    verifier.R8y <== R8[1];
-    verifier.M <== M;
-
-    valid <== verifier.valid;
+    valid <== verifier;
 }

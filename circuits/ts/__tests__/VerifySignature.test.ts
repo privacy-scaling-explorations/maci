@@ -70,7 +70,6 @@ describe("Signature verification circuit", function test() {
     await circuit.expectConstraintPass(witness);
     const isValid = await getSignal(circuit, witness, "valid");
     expect(isValid.toString()).to.be.eq("0");
-    expect((await getSignal(circuit, witness, "verifier.isCcZero.out")).toString()).to.be.eq("1");
   });
 
   it("should reject an invalid signature (wrong S)", async () => {
@@ -96,6 +95,5 @@ describe("Signature verification circuit", function test() {
     await circuit.expectConstraintPass(witness);
     const isValid = await getSignal(circuit, witness, "valid");
     expect(isValid.toString()).to.be.eq("0");
-    expect((await getSignal(circuit, witness, "verifier.isCcZero.out")).toString()).to.be.eq("0");
   });
 });

@@ -148,7 +148,7 @@ describe("TallyVotes circuit", function test() {
     });
   });
 
-  describe("1 user, 2 messages (non qv)", () => {
+  describe("1 user, 2 messages (non quadratic-voting)", () => {
     let stateIndex: bigint;
     let pollId: bigint;
     let poll: Poll;
