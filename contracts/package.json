@@ -72,7 +72,7 @@
   "dependencies": {
     "@nomicfoundation/hardhat-ethers": "^3.0.5",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
-    "@openzeppelin/contracts": "^4.8.0",
+    "@openzeppelin/contracts": "^5.0.2",
     "circomlibjs": "^0.1.7",
     "ethers": "^6.11.1",
     "hardhat": "^2.22.2",

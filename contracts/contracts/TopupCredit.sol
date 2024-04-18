@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.20;
 
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
@@ -7,7 +7,7 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 /// @title TopupCredit
 /// @notice A contract representing a token used to topup a MACI's voter
 /// credits
-contract TopupCredit is ERC20, Ownable {
+contract TopupCredit is ERC20, Ownable(msg.sender) {
   uint8 public constant DECIMALS = 1;
   uint256 public constant MAXIMUM_AIRDROP_AMOUNT = 100000 * 10 ** DECIMALS;
 

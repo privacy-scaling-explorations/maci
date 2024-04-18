@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.20;
 
 import { SnarkConstants } from "./SnarkConstants.sol";
 import { PoseidonT3 } from "./PoseidonT3.sol";

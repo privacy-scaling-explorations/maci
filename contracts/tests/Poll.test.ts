@@ -11,9 +11,10 @@ import { getDefaultSigner, getSigners } from "../ts/utils";
 import {
   AccQueue,
   AccQueueQuinaryMaci__factory as AccQueueQuinaryMaciFactory,
+  Poll__factory as PollFactory,
+  IERC20Errors__factory as IERC20ErrorsFactory,
   MACI,
   Poll as PollContract,
-  Poll__factory as PollFactory,
   TopupCredit,
   Verifier,
   VkRegistry,
@@ -162,7 +163,12 @@ describe("Poll", () => {
     });
 
     it("should throw when the user does not have enough tokens", async () => {
-      await expect(pollContract.connect(signer).topup(1n, 50n)).to.be.revertedWith("ERC20: insufficient allowance");
+      const pollAddress = await pollContract.getAddress();
+
+      await expect(pollContract.connect(signer).topup(1n, 50n)).to.be.revertedWithCustomError(
+        IERC20ErrorsFactory.connect(pollAddress),
+        "ERC20InsufficientAllowance",
+      );
     });
 
     it("should emit an event when publishing a topup message", async () => {

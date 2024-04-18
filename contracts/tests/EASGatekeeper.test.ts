@@ -101,8 +101,9 @@ describe("EAS Gatekeeper", () => {
 
     it("should fail to set MACI instance when the caller is not the owner", async () => {
       const [, secondSigner] = await getSigners();
-      await expect(easGatekeeper.connect(secondSigner).setMaciInstance(signerAddress)).to.be.revertedWith(
-        "Ownable: caller is not the owner",
+      await expect(easGatekeeper.connect(secondSigner).setMaciInstance(signerAddress)).to.be.revertedWithCustomError(
+        easGatekeeper,
+        "OwnableUnauthorizedAccount",
       );
     });
 

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.20;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Hasher } from "../crypto/Hasher.sol";
@@ -10,7 +10,7 @@ import { Hasher } from "../crypto/Hasher.sol";
 /// subtrees together. Merging subtrees requires at least 2 operations:
 /// mergeSubRoots(), and merge(). To get around the gas limit,
 /// the mergeSubRoots() can be performed in multiple transactions.
-abstract contract AccQueue is Ownable, Hasher {
+abstract contract AccQueue is Ownable(msg.sender), Hasher {
   // The maximum tree depth
   uint256 public constant MAX_DEPTH = 32;
 

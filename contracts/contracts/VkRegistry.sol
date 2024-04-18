@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.20;
 
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
@@ -10,7 +10,7 @@ import { DomainObjs } from "./utilities/DomainObjs.sol";
 /// @notice Stores verifying keys for the circuits.
 /// Each circuit has a signature which is its compile-time constants represented
 /// as a uint256.
-contract VkRegistry is Ownable, DomainObjs, SnarkCommon, IVkRegistry {
+contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry {
   mapping(Mode => mapping(uint256 => VerifyingKey)) internal processVks;
   mapping(Mode => mapping(uint256 => bool)) internal processVkSet;
 

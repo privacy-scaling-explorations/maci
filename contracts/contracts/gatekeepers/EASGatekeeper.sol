@@ -9,7 +9,7 @@ import { IEAS } from "../interfaces/IEAS.sol";
 /// @title EASGatekeeper
 /// @notice A gatekeeper contract which allows users to sign up to MACI
 /// only if they've received an attestation of a specific schema from a trusted attester
-contract EASGatekeeper is SignUpGatekeeper, Ownable {
+contract EASGatekeeper is SignUpGatekeeper, Ownable(msg.sender) {
   // the reference to the EAS contract
   IEAS private immutable eas;
 
@@ -38,7 +38,7 @@ contract EASGatekeeper is SignUpGatekeeper, Ownable {
   /// @param _eas The EAS contract
   /// @param _attester The trusted attester
   /// @param _schema The schema UID
-  constructor(address _eas, address _attester, bytes32 _schema) payable Ownable() {
+  constructor(address _eas, address _attester, bytes32 _schema) payable {
     if (_eas == address(0) || _attester == address(0)) revert ZeroAddress();
     eas = IEAS(_eas);
     schema = _schema;

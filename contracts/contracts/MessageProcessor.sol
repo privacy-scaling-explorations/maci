@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.20;
 
 import { AccQueue } from "./trees/AccQueue.sol";
 import { IMACI } from "./interfaces/IMACI.sol";
@@ -17,7 +17,7 @@ import { DomainObjs } from "./utilities/DomainObjs.sol";
 /// @dev MessageProcessor is used to process messages published by signup users.
 /// It will process message by batch due to large size of messages.
 /// After it finishes processing, the sbCommitment will be used for Tally and Subsidy contracts.
-contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMessageProcessor, DomainObjs {
+contract MessageProcessor is Ownable(msg.sender), SnarkCommon, Hasher, CommonUtilities, IMessageProcessor, DomainObjs {
   /// @notice custom errors
   error NoMoreMessages();
   error StateAqNotMerged();
