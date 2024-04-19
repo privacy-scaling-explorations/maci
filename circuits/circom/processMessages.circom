@@ -190,7 +190,7 @@ template ProcessMessages(
     }
 
     // Check whether each message exists in the Message tree.
-    // Otherwise, throws (needs constaint to prevent such a proof).
+    // Otherwise, throws (needs constraint to prevent such a proof).
     // To save constraints, compute the subroot of the messages and check
     // whether the subroot is a member of the message tree. This means that
     // batchSize must be the message tree arity raised to some power (e.g. 5 ^ n).
@@ -248,7 +248,7 @@ template ProcessMessages(
     }
 
     // Process messages in reverse order.
-    // Assign current state and ballor roots.
+    // Assign current state and ballot roots.
     stateRoots[batchSize] <== currentStateRoot;
     ballotRoots[batchSize] <== currentBallotRoot;
 
@@ -362,7 +362,7 @@ template ProcessMessages(
     var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
     var STATE_LEAF_TIMESTAMP_IDX = 3;
     var msgTreeZeroValue = 8370432830353022751713833565135785980866757267633941821328460903436894336785;
-    
+
     // nb. The usage of SHA-256 hash is necessary to save some gas costs at verification time
     // at the cost of more constraints for the prover.
     // Basically, some values from the contract are passed as private inputs and the hash as a public input.
@@ -509,7 +509,7 @@ template ProcessMessages(
     }
 
     // Check whether each message exists in the Message tree.
-    // Otherwise, throws (needs constaint to prevent such a proof).
+    // Otherwise, throws (needs constraint to prevent such a proof).
     // To save constraints, compute the subroot of the messages and check
     // whether the subroot is a member of the message tree. This means that
     // batchSize must be the message tree arity raised to some power (e.g. 5 ^ n).
@@ -567,7 +567,7 @@ template ProcessMessages(
     }
 
     // Process messages in reverse order.
-    // Assign current state and ballor roots.
+    // Assign current state and ballot roots.
     stateRoots[batchSize] <== currentStateRoot;
     ballotRoots[batchSize] <== currentBallotRoot;
 
@@ -670,6 +670,7 @@ template ProcessTopup(stateTreeDepth) {
     var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
     // Timestamp.
     var STATE_LEAF_TIMESTAMP_IDX = 3;
+    var N_BITS = 252;
 
     // Inputs for the template.
     signal input msgType;
@@ -698,23 +699,26 @@ template ProcessTopup(stateTreeDepth) {
     index <== stateTreeIndex * (msgType - 1);
     
     // check the state index and, if invalid, set index and amount to zero.
-    var validStateLeafIndex = LessEqThan(252)([index, numSignUps]);
+    var validStateLeafIndex = LessEqThan(N_BITS)([index, numSignUps]);
     var indexMux = Mux1()([0, index], validStateLeafIndex);
     var amtMux =  Mux1()([0, amt], validStateLeafIndex);
     
     // check less than field size.
     newCreditBalance <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + amtMux;
 
-    var validCreditBalance = LessEqThan(252)([
+    var validCreditBalance = LessEqThan(N_BITS)([
         stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX],
         newCreditBalance
     ]);
+
+    // If the new one is <= the old one, then we have a valid topup.
+    var creditBalanceMux = Mux1()([stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX], newCreditBalance], validCreditBalance);
 
     // update the voice balance balance.
     var newStateLeafHash = PoseidonHasher(4)([
         stateLeaf[STATE_LEAF_PUB_X_IDX],
         stateLeaf[STATE_LEAF_PUB_Y_IDX],
-        newCreditBalance,
+        creditBalanceMux,
         stateLeaf[STATE_LEAF_TIMESTAMP_IDX]
     ]);
 
@@ -753,6 +757,7 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
     // Timestamp.
     var STATE_LEAF_TIMESTAMP_IDX = 3;
+    var N_BITS = 252;
 
     // Inputs representing the message and the current state.
     signal input msgType;
@@ -838,7 +843,9 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     tmpIndex2 <== topupStateIndex * (msgType - 1);
     indexByType <== tmpIndex1 + tmpIndex2;
 
-    var stateIndexMux = Mux1()([0, indexByType], isValid + msgType - 1);
+    var validStateLeafIndex = SafeLessThan(N_BITS)([indexByType, numSignUps]);
+
+    var stateIndexMux = Mux1()([0, indexByType], validStateLeafIndex);
     var stateLeafPathIndices[stateTreeDepth] = QuinGeneratePathIndices(stateTreeDepth)(stateIndexMux);
 
     // 3. Verify that the original state leaf exists in the given state root.
@@ -876,9 +883,8 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     ]);
 
     var isMessageValid = IsEqual()([2, isValid + enoughVoiceCredits]);
-
-    var cmdVoteOptionIndexMux = Mux1()([0, cmdVoteOptionIndex], isMessageValid);
-
+    var validVoteOptionIndex = SafeLessThan(N_BITS)([cmdVoteOptionIndex, maxVoteOptions]);
+    var cmdVoteOptionIndexMux = Mux1()([0, cmdVoteOptionIndex], validVoteOptionIndex);
     var currentVoteWeightPathIndices[voteOptionTreeDepth] = QuinGeneratePathIndices(voteOptionTreeDepth)(cmdVoteOptionIndexMux);
 
     var currentVoteWeightQip = QuinTreeInclusionProof(voteOptionTreeDepth)(

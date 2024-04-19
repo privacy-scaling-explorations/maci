@@ -54,7 +54,7 @@ template QuinSelector(choices) {
 }
 
 /**
- * The output array contains the input items, with the the leaf inserted at the
+ * The output array contains the input items, with the leaf inserted at the
  * specified index. For example, if input = [0, 20, 30, 40], index = 3, and
  * leaf = 10, the output will be [0, 20, 30, 10, 40].
  */
