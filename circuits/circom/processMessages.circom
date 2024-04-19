@@ -979,6 +979,7 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
     // Timestamp.
     var STATE_LEAF_TIMESTAMP_IDX = 3;
+    var N_BITS = 252;
 
     // Inputs representing the message and the current state.
     signal input msgType;
@@ -1064,7 +1065,8 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     tmpIndex2 <== topupStateIndex * (msgType - 1);
     indexByType <== tmpIndex1 + tmpIndex2;
 
-    var stateIndexMux = Mux1()([0, indexByType], isValid + msgType - 1);
+    var validStateLeafIndex = SafeLessThan(N_BITS)([indexByType, numSignUps]);
+    var stateIndexMux = Mux1()([0, indexByType], validStateLeafIndex);
     var stateLeafPathIndices[stateTreeDepth] = QuinGeneratePathIndices(stateTreeDepth)(stateIndexMux);
 
     // 3. Verify that the original state leaf exists in the given state root.
@@ -1103,7 +1105,9 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
 
     var isMessageValid = IsEqual()([2, isValid + enoughVoiceCredits]);
 
-    var cmdVoteOptionIndexMux = Mux1()([0, cmdVoteOptionIndex], isMessageValid);
+    var validVoteOptionIndex = SafeLessThan(N_BITS)([cmdVoteOptionIndex, maxVoteOptions]);
+
+    var cmdVoteOptionIndexMux = Mux1()([0, cmdVoteOptionIndex], validVoteOptionIndex);
 
     var currentVoteWeightPathIndices[voteOptionTreeDepth] = QuinGeneratePathIndices(voteOptionTreeDepth)(cmdVoteOptionIndexMux);
 

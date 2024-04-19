@@ -186,7 +186,6 @@ template StateLeafAndBallotTransformerNonQv() {
         cmdNewVoteWeight
     );
 
-
     // If the message is valid then we swap out the public key.
     // This means using a Mux1() for pubKey[0] and another one
     // for pubKey[1].
