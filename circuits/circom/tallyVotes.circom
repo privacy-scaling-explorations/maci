@@ -278,15 +278,8 @@ template TallyVotesNonQv(
     // Salt for the total spent voice credits.
     signal input currentSpentVoiceCreditSubtotalSalt;
 
-    // Spent voice credits per vote option.
-    signal input currentPerVOSpentVoiceCredits[numVoteOptions];
-    // Salt for the root of spent credits per option.
-    signal input currentPerVOSpentVoiceCreditsRootSalt;
-
     // Salt for the root of the new results.
     signal input newResultsRootSalt;
-    // Salt for the new spent credits per vote option root.
-    signal input newPerVOSpentVoiceCreditsRootSalt;
     // Salt for the new total spent voice credits root. 
     signal input newSpentVoiceCreditSubtotalSalt;
     // The number of total registrations, used to validate the batch index.
@@ -370,22 +363,8 @@ template TallyVotesNonQv(
 
     var newSpentVoiceCreditSubtotal = CalculateTotal(batchSize * numVoteOptions + 1)(numsSVC);
 
-    // Tally the spent voice credits per vote option.
-    var newPerVOSpentVoiceCredits[numVoteOptions];
-
-    for (var i = 0; i < numVoteOptions; i++) {
-        var numsVOSVC[batchSize + 1];
-        numsVOSVC[batchSize] = currentPerVOSpentVoiceCredits[i] * iz;
-        for (var j = 0; j < batchSize; j++) {
-            numsVOSVC[j] = votes[j][i];
-        }
-
-        newPerVOSpentVoiceCredits[i] = CalculateTotal(batchSize + 1)(numsVOSVC);
-    }
-
-
     // Verifies the updated results and spent credits, ensuring consistency and correctness of tally updates.
-    ResultCommitmentVerifier(voteOptionTreeDepth)(
+    ResultCommitmentVerifierNonQv(voteOptionTreeDepth)(
         isFirstBatch,
         currentTallyCommitment,
         newTallyCommitment,
@@ -396,17 +375,14 @@ template TallyVotesNonQv(
         currentSpentVoiceCreditSubtotal,
         currentSpentVoiceCreditSubtotalSalt,
         newSpentVoiceCreditSubtotal,
-        newSpentVoiceCreditSubtotalSalt,
-        currentPerVOSpentVoiceCredits,
-        currentPerVOSpentVoiceCreditsRootSalt,
-        newPerVOSpentVoiceCredits,
-        newPerVOSpentVoiceCreditsRootSalt        
+        newSpentVoiceCreditSubtotalSalt        
     );
 }
 
 /** 
  * Performs verifications and computations related to current voting results. 
  * Also, computes and outputs a commitment to the new results.
+ * This template supports the Quadratic Voting (QV).
  */
 template ResultCommitmentVerifier(voteOptionTreeDepth) {
     // Number of children per node in the tree, defining the tree's branching factor.
@@ -498,6 +474,83 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
         newResultsCommitmentHash,
         newSpentVoiceCreditsCommitmentHash,
         newPerVOSpentVoiceCreditsCommitmentHash
+    ]);
+    
+    newTallyCommitmentHash === newTallyCommitment;
+}
+
+/** 
+ * Performs verifications and computations related to current voting results. 
+ * Also, computes and outputs a commitment to the new results.
+ * This template does not support the Quadratic Voting (QV).
+ */
+ template ResultCommitmentVerifierNonQv(voteOptionTreeDepth) {
+    // Number of children per node in the tree, defining the tree's branching factor.
+    var TREE_ARITY = 5;
+    // Number of voting options available, determined by the depth of the vote option tree.
+    var numVoteOptions = TREE_ARITY ** voteOptionTreeDepth;
+
+    // Equal to 1 if this is the first batch, otherwise 0.
+    signal input isFirstBatch;
+    // Commitment to the current tally before this batch.
+    signal input currentTallyCommitment;
+    // Commitment to the new tally after processing this batch.
+    signal input newTallyCommitment;
+
+    // Current results for each vote option.
+    signal input currentResults[numVoteOptions];
+    // Salt for the root of the current results.
+    signal input currentResultsRootSalt;
+
+    // New results for each vote option.
+    signal input newResults[numVoteOptions];
+    // Salt for the root of the new results.
+    signal input newResultsRootSalt;
+
+    // Total voice credits spent so far.
+    signal input currentSpentVoiceCreditSubtotal;
+    // Salt for the total spent voice credits.
+    signal input currentSpentVoiceCreditSubtotalSalt;
+
+    // Total new voice credits spent.
+    signal input newSpentVoiceCreditSubtotal;
+    // Salt for the new total spent voice credits.
+    signal input newSpentVoiceCreditSubtotalSalt;
+
+    // Compute the commitment to the current results.
+    var currentResultsRoot = QuinCheckRoot(voteOptionTreeDepth)(currentResults);
+
+    // Verify currentResultsCommitmentHash.
+    var currentResultsCommitmentHash = PoseidonHasher(2)([currentResultsRoot, currentResultsRootSalt]);
+
+    // Compute the commitment to the current spent voice credits.
+    var currentSpentVoiceCreditsCommitmentHash = PoseidonHasher(2)([currentSpentVoiceCreditSubtotal, currentSpentVoiceCreditSubtotalSalt]);
+
+    // Commit to the current tally
+    var currentTallyCommitmentHasher = PoseidonHasher(2)([currentResultsCommitmentHash, currentSpentVoiceCreditsCommitmentHash]);
+
+    // Check if the current tally commitment is correct only if this is not the first batch.
+    // iz.out is 1 if this is not the first batch.
+    // iz.out is 0 if this is the first batch.
+    var iz = IsZero()(isFirstBatch);
+
+    // hz is 0 if this is the first batch, currentTallyCommitment should be 0 if this is the first batch.
+    // hz is 1 if this is not the first batch, currentTallyCommitment should not be 0 if this is the first batch.
+    signal hz;
+    hz <== iz * currentTallyCommitmentHasher;
+    hz === currentTallyCommitment;
+
+    // Compute the root of the new results.
+    var newResultsRoot = QuinCheckRoot(voteOptionTreeDepth)(newResults);
+    var newResultsCommitmentHash = PoseidonHasher(2)([newResultsRoot, newResultsRootSalt]);
+
+    // Compute the commitment to the new spent voice credits value.
+    var newSpentVoiceCreditsCommitmentHash = PoseidonHasher(2)([newSpentVoiceCreditSubtotal, newSpentVoiceCreditSubtotalSalt]);
+
+    // Commit to the new tally.
+    var newTallyCommitmentHash = PoseidonHasher(2)([
+        newResultsCommitmentHash,
+        newSpentVoiceCreditsCommitmentHash
     ]);
     
     newTallyCommitmentHash === newTallyCommitment;

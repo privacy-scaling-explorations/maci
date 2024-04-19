@@ -1036,10 +1036,10 @@ export class Poll implements IPoll {
       stateRoot,
       ballotRoot,
       sbSalt,
+      packedVals, // contains numSignUps and batchStartIndex
       sbCommitment,
       currentTallyCommitment,
       newTallyCommitment,
-      packedVals, // contains numSignUps and batchStartIndex
       inputHash,
       ballots: ballots.map((x) => x.asCircuitInputs()),
       ballotPathElements: ballotSubrootProof!.pathElements,
@@ -1176,10 +1176,10 @@ export class Poll implements IPoll {
       stateRoot,
       ballotRoot,
       sbSalt,
+      packedVals, // contains numSignUps and batchStartIndex
       sbCommitment,
       currentTallyCommitment,
       newTallyCommitment,
-      packedVals, // contains numSignUps and batchStartIndex
       inputHash,
       ballots: ballots.map((x) => x.asCircuitInputs()),
       ballotPathElements: ballotSubrootProof!.pathElements,
