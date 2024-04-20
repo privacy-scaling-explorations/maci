@@ -36,7 +36,7 @@ describe("MessageValidator circuit", function test() {
 
     before(async () => {
       circuit = await circomkitInstance.WitnessTester("messageValidator", {
-        file: "./utils/messageValidator",
+        file: "./utils/qv/messageValidator",
         template: "MessageValidator",
       });
     });
@@ -182,7 +182,7 @@ describe("MessageValidator circuit", function test() {
 
     before(async () => {
       circuit = await circomkitInstance.WitnessTester("messageValidatorNonQv", {
-        file: "./utils/messageValidator",
+        file: "./utils/non-qv/messageValidator",
         template: "MessageValidatorNonQv",
       });
     });

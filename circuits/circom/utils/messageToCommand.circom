@@ -1,13 +1,14 @@
 pragma circom 2.0.0;
 
-
-// from @zk-kit/circuits package.
+// zk-kit imports
 include "./ecdh.circom";
 include "./unpack-element.circom";
 include "./poseidon-cipher.circom";
-// from circomlib.
+
+// circomlib import
 include "./bitify.circom";
-// local.
+
+// local imports
 include "./hashers.circom";
 
 /**

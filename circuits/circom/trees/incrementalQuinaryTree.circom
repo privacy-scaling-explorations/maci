@@ -1,11 +1,13 @@
 pragma circom 2.0.0;
 
-// from @zk-kit/circuits package.
+// zk-kit import
 include "./safe-comparators.circom";
-// from circomlib.
+
+// circomlib imports
 include "./bitify.circom";
 include "./mux1.circom";
-// local.
+
+// local imports
 include "../utils/calculateTotal.circom";
 include "../utils/hashers.circom";
 

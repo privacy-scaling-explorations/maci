@@ -1,8 +1,9 @@
 pragma circom 2.0.0;
 
-// from @zk-kit/circuits package.
+// zk-kit imports
 include "./poseidon-cipher.circom";
-// from circomlib.
+
+// circomlib import
 include "./sha256/sha256.circom"; 
 include "./bitify.circom";
 

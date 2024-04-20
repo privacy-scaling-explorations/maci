@@ -56,19 +56,19 @@ describe("ProcessMessage circuit", function test() {
 
   before(async () => {
     circuit = await circomkitInstance.WitnessTester("processMessages", {
-      file: "processMessages",
+      file: "./core/qv/processMessages",
       template: "ProcessMessages",
       params: [10, 2, 1, 2],
     });
 
     circuitNonQv = await circomkitInstance.WitnessTester("processMessagesNonQv", {
-      file: "processMessages",
+      file: "./core/non-qv/processMessages",
       template: "ProcessMessagesNonQv",
       params: [10, 2, 1, 2],
     });
 
-    hasherCircuit = await circomkitInstance.WitnessTester("processMessageInputHasher", {
-      file: "processMessages",
+    hasherCircuit = await circomkitInstance.WitnessTester("ProcessMessagesInputHasher", {
+      file: "./utils/processMessagesInputHasher",
       template: "ProcessMessagesInputHasher",
     });
   });

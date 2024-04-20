@@ -1,6 +1,6 @@
 pragma circom 2.0.0;
 
-// from circomlib.
+// circomlib imports
 include "./bitify.circom";
 include "./escalarmulfix.circom";
 

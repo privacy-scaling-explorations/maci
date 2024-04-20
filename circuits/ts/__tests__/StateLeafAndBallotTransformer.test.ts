@@ -83,12 +83,12 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
 
   before(async () => {
     circuit = await circomkitInstance.WitnessTester("stateLeafAndBallotTransformer", {
-      file: "./utils/stateLeafAndBallotTransformer",
+      file: "./utils/qv/stateLeafAndBallotTransformer",
       template: "StateLeafAndBallotTransformer",
     });
 
     circuitNonQv = await circomkitInstance.WitnessTester("StateLeafAndBallotTransformerNonQv", {
-      file: "./utils/stateLeafAndBallotTransformer",
+      file: "./utils/non-qv/stateLeafAndBallotTransformer",
       template: "StateLeafAndBallotTransformerNonQv",
     });
   });
