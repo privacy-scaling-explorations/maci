@@ -28,8 +28,7 @@ export function handleDeployPoll(event: DeployPollEvent): void {
   entity.subsidy = event.params.pollAddr.subsidy;
   entity.maxMessages = maxValues.value0;
   entity.maxVoteOption = maxValues.value1;
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  entity.treeDepth = treeDepths.value0;
+  entity.treeDepth = GraphBN.fromI32(treeDepths.value0);
   entity.duration = durations.value1;
 
   entity.blockNumber = event.block.number;

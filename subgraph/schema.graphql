@@ -1,7 +1,7 @@
 type MACI @entity {
   id: ID!
   owner: Bytes! # address
-  stateTreeDepth: Int! # uint8
+  stateTreeDepth: BigInt! # uint8
   updatedAt: BigInt!
   blockNumber: BigInt!
   txHash: Bytes!
@@ -39,7 +39,7 @@ type Poll @entity {
   id: Bytes! # poll address
   pollId: BigInt # uint256
   duration: BigInt! # uint256
-  treeDepth: Int! # uint8
+  treeDepth: BigInt! # uint8
   maxMessages: BigInt
   maxVoteOption: BigInt
   messageProcessor: Bytes # address

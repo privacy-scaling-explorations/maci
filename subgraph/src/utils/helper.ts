@@ -17,8 +17,7 @@ export const createOrLoadMACI = (
   if (!maci) {
     maci = new MACI(DEFAULT_MACI_ID);
     maci.owner = owner !== null ? owner : (event.transaction.from as Bytes);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    maci.stateTreeDepth = stateTreeDepth.toI32();
+    maci.stateTreeDepth = stateTreeDepth;
     maci.updatedAt = event.block.timestamp;
     maci.blockNumber = event.block.number;
     maci.txHash = event.transaction.hash;
