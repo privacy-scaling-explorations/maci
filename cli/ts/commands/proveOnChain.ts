@@ -3,7 +3,6 @@ import { type BigNumberish } from "ethers";
 import {
   MACI__factory as MACIFactory,
   AccQueue__factory as AccQueueFactory,
-  Subsidy__factory as SubsidyFactory,
   Tally__factory as TallyFactory,
   MessageProcessor__factory as MessageProcessorFactory,
   Poll__factory as PollFactory,
@@ -11,7 +10,6 @@ import {
   Verifier__factory as VerifierFactory,
   formatProofForVerifierContract,
   type IVerifyingKeyStruct,
-  type Subsidy,
 } from "maci-contracts";
 import { STATE_TREE_ARITY } from "maci-core";
 import { G1Point, G2Point, hashLeftRight } from "maci-crypto";
@@ -43,11 +41,9 @@ import {
 export const proveOnChain = async ({
   pollId,
   proofDir,
-  subsidyEnabled,
   maciAddress,
   messageProcessorAddress,
   tallyAddress,
-  subsidyAddress,
   signer,
   quiet = true,
 }: ProveOnChainArgs): Promise<void> => {
@@ -64,20 +60,12 @@ export const proveOnChain = async ({
   if (!readContractAddress(`Tally-${pollId}`, network?.name) && !tallyAddress) {
     logError("Tally contract address is empty");
   }
-  if (subsidyEnabled && !readContractAddress(`Subsidy-${pollId}`, network?.name) && !subsidyAddress) {
-    logError("Subsidy contract address is empty");
-  }
 
   // check validity of contract addresses
   const maciContractAddress = maciAddress || readContractAddress("MACI", network?.name);
   const messageProcessorContractAddress =
     messageProcessorAddress || readContractAddress(`MessageProcessor-${pollId}`, network?.name);
   const tallyContractAddress = tallyAddress || readContractAddress(`Tally-${pollId}`, network?.name);
-
-  let subsidyContractAddress;
-  if (subsidyEnabled) {
-    subsidyContractAddress = subsidyAddress || readContractAddress(`Subsidy-${pollId}`, network?.name);
-  }
 
   // check contracts are deployed on chain
   if (!(await contractExists(signer.provider!, maciContractAddress))) {
@@ -92,10 +80,6 @@ export const proveOnChain = async ({
     logError("Tally contract does not exist");
   }
 
-  if (subsidyEnabled && subsidyContractAddress && !(await contractExists(signer.provider!, subsidyContractAddress))) {
-    logError("Subsidy contract does not exist");
-  }
-
   const maciContract = MACIFactory.connect(maciContractAddress, signer);
   const pollAddr = await maciContract.polls(pollId);
 
@@ -107,11 +91,6 @@ export const proveOnChain = async ({
 
   const mpContract = MessageProcessorFactory.connect(messageProcessorContractAddress, signer);
   const tallyContract = TallyFactory.connect(tallyContractAddress, signer);
-
-  let subsidyContract: Subsidy | undefined;
-  if (subsidyEnabled && subsidyContractAddress) {
-    subsidyContract = SubsidyFactory.connect(subsidyContractAddress, signer);
-  }
 
   const messageAqContractAddress = (await pollContract.extContracts()).messageAq;
 
@@ -138,7 +117,6 @@ export const proveOnChain = async ({
   const data = {
     processProofs: [] as Proof[],
     tallyProofs: [] as Proof[],
-    subsidyProofs: [] as Proof[],
   };
 
   let numProcessProofs = 0;
@@ -159,14 +137,6 @@ export const proveOnChain = async ({
     match = filename.match(/tally_(\d+)/);
     if (match) {
       data.tallyProofs[Number(match[1])] = JSON.parse(fs.readFileSync(filepath).toString()) as Proof;
-      return;
-    }
-
-    if (subsidyEnabled) {
-      match = filename.match(/subsidy_(\d+)/);
-      if (match) {
-        data.subsidyProofs[Number(match[1])] = JSON.parse(fs.readFileSync(filepath).toString()) as Proof;
-      }
     }
   });
 
@@ -177,7 +147,6 @@ export const proveOnChain = async ({
   const numMessages = Number(numSignUpsAndMessages[1]);
   const messageBatchSize = STATE_TREE_ARITY ** Number(treeDepths.messageTreeSubDepth);
   const tallyBatchSize = STATE_TREE_ARITY ** Number(treeDepths.intStateTreeDepth);
-  const subsidyBatchSize = STATE_TREE_ARITY ** Number(treeDepths.intStateTreeDepth);
   let totalMessageBatches = numMessages <= messageBatchSize ? 1 : Math.floor(numMessages / messageBatchSize);
 
   if (numMessages > messageBatchSize && numMessages % messageBatchSize > 0) {
@@ -196,6 +165,13 @@ export const proveOnChain = async ({
   }
 
   let numberBatchesProcessed = Number(await mpContract.numBatchesProcessed());
+  const tallyMode = await tallyContract.mode();
+  const mpMode = await mpContract.mode();
+
+  if (tallyMode !== mpMode) {
+    logError("Tally and MessageProcessor modes are not compatible");
+  }
+
   const messageRootOnChain = await messageAqContract.getMainRoot(Number(treeDepths.messageTreeDepth));
 
   const stateTreeDepth = Number(await maciContract.stateTreeDepth());
@@ -204,6 +180,7 @@ export const proveOnChain = async ({
     treeDepths.messageTreeDepth,
     treeDepths.voteOptionTreeDepth,
     messageBatchSize,
+    mpMode,
   );
 
   const dd = await pollContract.getDeployTimeAndDuration();
@@ -344,92 +321,6 @@ export const proveOnChain = async ({
 
   if (numberBatchesProcessed === totalMessageBatches) {
     logGreen(quiet, success("All message processing proofs have been submitted."));
-  }
-
-  // subsidy calculations if any subsidy proofs are provided
-  if (subsidyEnabled && subsidyContractAddress && Object.keys(data.subsidyProofs).length !== 0) {
-    let rbi = Number(await subsidyContract!.rbi());
-    let cbi = Number(await subsidyContract!.cbi());
-    const num1DBatches = Math.ceil(numSignUps / subsidyBatchSize);
-    let subsidyBatchNum = rbi * num1DBatches + cbi;
-    const totalBatchNum = (num1DBatches * (num1DBatches + 1)) / 2;
-
-    logYellow(quiet, info(`number of subsidy batch processed: ${subsidyBatchNum}, numleaf=${numSignUps}`));
-
-    // process all batches
-    for (let i = subsidyBatchNum; i < totalBatchNum; i += 1) {
-      if (i === 0) {
-        await subsidyContract!.updateSbCommitment().then((tx) => tx.wait());
-      }
-
-      const { proof, circuitInputs, publicInputs } = data.subsidyProofs[i];
-
-      // ensure the commitment matches
-
-      const subsidyCommitmentOnChain = await subsidyContract!.subsidyCommitment();
-
-      if (subsidyCommitmentOnChain.toString() !== circuitInputs.currentSubsidyCommitment) {
-        logError(`subsidycommitment mismatch`);
-      }
-
-      const packedValsOnChain = BigInt(await subsidyContract!.genSubsidyPackedVals(numSignUps));
-
-      if (circuitInputs.packedVals !== packedValsOnChain.toString()) {
-        logError("subsidy packedVals mismatch.");
-      }
-      // ensure the state and ballot root commitment matches
-
-      const currentSbCommitmentOnChain = await subsidyContract!.sbCommitment();
-
-      if (currentSbCommitmentOnChain.toString() !== circuitInputs.sbCommitment) {
-        logError("currentSbCommitment mismatch.");
-      }
-
-      const publicInputHashOnChain = await subsidyContract!.genSubsidyPublicInputHash(
-        numSignUps,
-        circuitInputs.newSubsidyCommitment as BigNumberish,
-      );
-
-      if (publicInputHashOnChain.toString() !== publicInputs[0]) {
-        logError("public input mismatch.");
-      }
-
-      // format the proof so it can be verify on chain
-      const formattedProof = formatProofForVerifierContract(proof);
-
-      try {
-        // verify the proof on chain and set the new subsidy commitment
-
-        const tx = await subsidyContract!.updateSubsidy(
-          circuitInputs.newSubsidyCommitment as BigNumberish,
-          formattedProof,
-        );
-
-        const receipt = await tx.wait();
-
-        if (receipt?.status !== 1) {
-          logError("updateSubsidy() failed.");
-        }
-
-        logYellow(quiet, info(`Transaction hash: ${receipt!.hash}`));
-        logYellow(quiet, info(`Progress: ${subsidyBatchNum + 1} / ${totalBatchNum}`));
-
-        const [nrbi, ncbi] = await Promise.all([
-          subsidyContract!.rbi().then(Number),
-          subsidyContract!.cbi().then(Number),
-        ]);
-
-        rbi = nrbi;
-        cbi = ncbi;
-        subsidyBatchNum = rbi * num1DBatches + cbi;
-      } catch (err) {
-        logError((err as Error).message);
-      }
-    }
-
-    if (subsidyBatchNum === totalBatchNum) {
-      logGreen(quiet, success("All subsidy calculation proofs have been submitted."));
-    }
   }
 
   // vote tallying proofs

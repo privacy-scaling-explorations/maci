@@ -13,7 +13,6 @@ solc
 cli/tally.json
 **/test_tally.json
 **/tally.json
-**/subsidy.json
 integrationTests/test_tally.json
 integrationTests/artifacts/**
 deployedAddresses.json
@@ -153,8 +152,5 @@ circuits/circom/test
 
 # mdBook rendered files
 publish
-
-# typedoc
-docs/typedoc/*
 
 **/ts/__benchmarks__/results/**

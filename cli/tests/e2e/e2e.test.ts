@@ -51,7 +51,7 @@ import {
   deployArgs,
   timeTravelArgs,
 } from "../constants";
-import { cleanVanilla, isArm } from "../utils";
+import { clean, isArm } from "../utils";
 
 /**
  Test scenarios:
@@ -88,6 +88,7 @@ describe("e2e tests", function test() {
     processWasm: testProcessMessagesWasmPath,
     tallyWasm: testTallyVotesWasmPath,
     useWasm,
+    useQuadraticVoting: true,
   };
 
   // before all tests we deploy the vk registry contract and set the verifying keys
@@ -102,7 +103,7 @@ describe("e2e tests", function test() {
 
   describe("1 signup, 1 message", () => {
     after(() => {
-      cleanVanilla();
+      clean();
     });
 
     const user = new Keypair();
@@ -111,7 +112,7 @@ describe("e2e tests", function test() {
       // deploy the smart contracts
       maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
-      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
+      pollAddresses = await deployPoll({ ...deployPollArgs, signer, useQuadraticVoting: true });
     });
 
     it("should signup one user", async () => {
@@ -126,7 +127,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: user.privKey.serialize(),
         signer,
@@ -149,7 +150,7 @@ describe("e2e tests", function test() {
 
   describe("2 signups (1 after stateAq is merged and logs are fetched), 1 message", () => {
     after(() => {
-      cleanVanilla();
+      clean();
     });
 
     const user = new Keypair();
@@ -173,7 +174,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: user.privKey.serialize(),
         signer,
@@ -199,7 +200,7 @@ describe("e2e tests", function test() {
 
   describe("4 signups, 8 messages", () => {
     after(() => {
-      cleanVanilla();
+      clean();
     });
 
     const users = [new Keypair(), new Keypair(), new Keypair(), new Keypair()];
@@ -227,7 +228,7 @@ describe("e2e tests", function test() {
         nonce: 2n,
         pollId: 0n,
         newVoteWeight: 4n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[0].privKey.serialize(),
         signer,
@@ -239,7 +240,7 @@ describe("e2e tests", function test() {
         nonce: 2n,
         pollId: 0n,
         newVoteWeight: 3n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[0].privKey.serialize(),
         signer,
@@ -251,7 +252,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[0].privKey.serialize(),
         signer,
@@ -263,7 +264,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[1].privKey.serialize(),
         signer,
@@ -275,7 +276,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[2].privKey.serialize(),
         signer,
@@ -287,7 +288,7 @@ describe("e2e tests", function test() {
         nonce: 3n,
         pollId: 0n,
         newVoteWeight: 3n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[3].privKey.serialize(),
         signer,
@@ -299,7 +300,7 @@ describe("e2e tests", function test() {
         nonce: 2n,
         pollId: 0n,
         newVoteWeight: 2n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[3].privKey.serialize(),
         signer,
@@ -311,7 +312,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[3].privKey.serialize(),
         signer,
@@ -330,7 +331,7 @@ describe("e2e tests", function test() {
 
   describe("5 signups, 1 message", () => {
     after(() => {
-      cleanVanilla();
+      clean();
     });
 
     const users = [
@@ -368,7 +369,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[0].privKey.serialize(),
         signer,
@@ -387,7 +388,7 @@ describe("e2e tests", function test() {
 
   describe("8 signups (same key), 12 messages (same message)", () => {
     after(() => {
-      cleanVanilla();
+      clean();
     });
 
     const user = new Keypair();
@@ -416,7 +417,7 @@ describe("e2e tests", function test() {
           nonce: 1n,
           pollId: 0n,
           newVoteWeight: 9n,
-          maciContractAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciAddress,
           salt: genRandomSalt(),
           privateKey: user.privKey.serialize(),
           signer,
@@ -436,7 +437,7 @@ describe("e2e tests", function test() {
 
   describe("30 signups (31 ballots), 4 messages", () => {
     after(() => {
-      cleanVanilla();
+      clean();
     });
 
     const users = Array.from({ length: 30 }, () => new Keypair());
@@ -459,7 +460,7 @@ describe("e2e tests", function test() {
     it("should publish 4 messages", async () => {
       // publish four different messages
       await publish({
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         pubkey: users[0].pubKey.serialize(),
         stateIndex: 1n,
         voteOptionIndex: 0n,
@@ -472,7 +473,7 @@ describe("e2e tests", function test() {
       });
 
       await publish({
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         pubkey: users[1].pubKey.serialize(),
         stateIndex: 2n,
         voteOptionIndex: 1n,
@@ -485,7 +486,7 @@ describe("e2e tests", function test() {
       });
 
       await publish({
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         pubkey: users[2].pubKey.serialize(),
         stateIndex: 3n,
         voteOptionIndex: 2n,
@@ -498,7 +499,7 @@ describe("e2e tests", function test() {
       });
 
       await publish({
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         pubkey: users[3].pubKey.serialize(),
         stateIndex: 4n,
         voteOptionIndex: 3n,
@@ -533,7 +534,7 @@ describe("e2e tests", function test() {
 
   describe("multiplePolls1", () => {
     after(() => {
-      cleanVanilla();
+      clean();
     });
 
     const user = new Keypair();
@@ -553,7 +554,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: user.privKey.serialize(),
         signer,
@@ -566,7 +567,7 @@ describe("e2e tests", function test() {
       const tallyFileData = await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...verifyArgs(), tallyData: tallyFileData, signer });
-      cleanVanilla();
+      clean();
     });
 
     it("should deploy a new poll", async () => {
@@ -581,7 +582,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 1n,
         newVoteWeight: 7n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: user.privKey.serialize(),
         signer,
@@ -612,7 +613,7 @@ describe("e2e tests", function test() {
     let secondPollAddresses: PollContracts;
 
     after(() => {
-      cleanVanilla();
+      clean();
     });
 
     before(async () => {
@@ -649,7 +650,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[0].privKey.serialize(),
         signer,
@@ -663,7 +664,7 @@ describe("e2e tests", function test() {
       await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...verifyArgs(), signer });
-      cleanVanilla();
+      clean();
     });
 
     it("should deploy two more polls", async () => {
@@ -680,7 +681,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 1n,
         newVoteWeight: 9n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[0].privKey.serialize(),
         signer,
@@ -693,7 +694,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 1n,
         newVoteWeight: 1n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[1].privKey.serialize(),
         signer,
@@ -706,7 +707,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 1n,
         newVoteWeight: 3n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[2].privKey.serialize(),
         signer,
@@ -721,7 +722,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 2n,
         newVoteWeight: 3n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[3].privKey.serialize(),
         signer,
@@ -734,7 +735,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 2n,
         newVoteWeight: 2n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[4].privKey.serialize(),
         signer,
@@ -747,7 +748,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 2n,
         newVoteWeight: 9n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: users[5].privKey.serialize(),
         signer,
@@ -775,7 +776,7 @@ describe("e2e tests", function test() {
         tallyAddress: pollAddresses.tally,
         signer,
       });
-      cleanVanilla();
+      clean();
     });
 
     it("should complete the third poll", async () => {
@@ -807,7 +808,7 @@ describe("e2e tests", function test() {
     const user = new Keypair();
 
     after(() => {
-      cleanVanilla();
+      clean();
 
       if (fs.existsSync(stateOutPath)) {
         fs.unlinkSync(stateOutPath);
@@ -833,7 +834,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 3n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: user.privKey.serialize(),
         signer,
@@ -846,7 +847,6 @@ describe("e2e tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, signer });
       await genLocalState({
         outputPath: stateOutPath,
-        startBlock: 0,
         coordinatorPrivateKey: coordinatorPrivKey,
         blockPerBatch: 50,
         pollId: 0n,
@@ -868,7 +868,7 @@ describe("e2e tests", function test() {
     let stateIndex: bigint | undefined;
 
     after(() => {
-      cleanVanilla();
+      clean();
     });
 
     before(async () => {
@@ -914,7 +914,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 3n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: user.privKey.serialize(),
         signer,

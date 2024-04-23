@@ -22,7 +22,6 @@ export interface PollContracts {
   poll: string;
   messageProcessor: string;
   tally: string;
-  subsidy?: string;
 }
 
 /**
@@ -123,20 +122,6 @@ export interface TallyData {
      * The commitment of the per VO spent voice credits.
      */
     commitment: string;
-  };
-}
-
-/**
- * A util interface that represents a subsidy file
- */
-export interface SubsidyData {
-  provider: string;
-  maci: string;
-  pollId: bigint;
-  newSubsidyCommitment: string;
-  results: {
-    subsidy: string[];
-    salt: string;
   };
 }
 
@@ -249,14 +234,14 @@ export interface CheckVerifyingKeysArgs {
   vkRegistry?: string;
 
   /**
-   * The path to the subsidy zkey
-   */
-  subsidyZkeyPath?: string;
-
-  /**
    * Whether to log the output
    */
   quiet?: boolean;
+
+  /**
+   * Whether to use quadratic voting or not
+   */
+  useQuadraticVoting?: boolean;
 }
 
 /**
@@ -312,11 +297,6 @@ export interface DeployArgs {
    * Whether to log the output
    */
   quiet?: boolean;
-
-  /**
-   * Whether to use quadratic voting or not
-   */
-  useQv?: boolean;
 }
 
 /**
@@ -354,11 +334,6 @@ export interface DeployPollArgs {
   coordinatorPubkey: string;
 
   /**
-   * Whether to deploy subsidy contract
-   */
-  subsidyEnabled: boolean;
-
-  /**
    * A signer object
    */
   signer: Signer;
@@ -377,6 +352,11 @@ export interface DeployPollArgs {
    * Whether to log the output to the console
    */
   quiet?: boolean;
+
+  /**
+   * Whether to use quadratic voting or not
+   */
+  useQuadraticVoting?: boolean;
 }
 
 /**
@@ -402,7 +382,7 @@ export interface GenLocalStateArgs {
   /**
    * The address of the MACI contract
    */
-  maciContractAddress?: string;
+  maciAddress?: string;
 
   /**
    * The private key of the MACI coordinator
@@ -480,16 +460,6 @@ export interface GenProofsArgs {
   signer: Signer;
 
   /**
-   * The file to store the subsidy proof
-   */
-  subsidyFile?: string;
-
-  /**
-   * The path to the subsidy zkey file
-   */
-  subsidyZkey?: string;
-
-  /**
    * The path to the rapidsnark binary
    */
   rapidsnark?: string;
@@ -515,16 +485,6 @@ export interface GenProofsArgs {
   tallyDatFile?: string;
 
   /**
-   * The path to the subsidy witnessgen binary
-   */
-  subsidyWitgen?: string;
-
-  /**
-   * The path to the subsidy dat file
-   */
-  subsidyDatFile?: string;
-
-  /**
    * The coordinator's private key
    */
   coordinatorPrivKey?: string;
@@ -548,11 +508,6 @@ export interface GenProofsArgs {
    * The path to the tally wasm file
    */
   tallyWasm?: string;
-
-  /**
-   * The path to the subsidy wasm file
-   */
-  subsidyWasm?: string;
 
   /**
    * Whether to use wasm or rapidsnark
@@ -617,7 +572,7 @@ export interface MergeMessagesArgs {
   /**
    * The address of the MACI contract
    */
-  maciContractAddress?: string;
+  maciAddress?: string;
 
   /**
    * The number of queue operations to merge
@@ -642,7 +597,7 @@ export interface MergeSignupsArgs {
   /**
    * The address of the MACI contract
    */
-  maciContractAddress?: string;
+  maciAddress?: string;
 
   /**
    * The number of queue operations to perform
@@ -670,11 +625,6 @@ export interface ProveOnChainArgs {
   proofDir: string;
 
   /**
-   * Whether to deploy subsidy contract
-   */
-  subsidyEnabled: boolean;
-
-  /**
    * A signer object
    */
   signer: Signer;
@@ -693,11 +643,6 @@ export interface ProveOnChainArgs {
    * The address of the Tally contract
    */
   tallyAddress?: string;
-
-  /**
-   * The address of the Subsidy contract
-   */
-  subsidyAddress?: string;
 
   /**
    * Whether to log the output
@@ -722,7 +667,7 @@ export interface PublishArgs extends IPublishMessage {
   /**
    * The address of the MACI contract
    */
-  maciContractAddress: string;
+  maciAddress: string;
 
   /**
    * The id of the poll
@@ -757,7 +702,7 @@ export interface IPublishBatchArgs {
   /**
    * The address of the MACI contract
    */
-  maciContractAddress: string;
+  maciAddress: string;
 
   /**
    * The public key of the user
@@ -860,14 +805,24 @@ export interface SetVerifyingKeysArgs {
   messageBatchDepth: number;
 
   /**
-   * The path to the process messages zkey
+   * The path to the process messages qv zkey
    */
-  processMessagesZkeyPath: string;
+  processMessagesZkeyPathQv?: string;
 
   /**
-   * The path to the tally votes zkey
+   * The path to the tally votes qv zkey
    */
-  tallyVotesZkeyPath: string;
+  tallyVotesZkeyPathQv?: string;
+
+  /**
+   * The path to the process messages non-qv zkey
+   */
+  processMessagesZkeyPathNonQv?: string;
+
+  /**
+   * The path to the tally votes non-qv zkey
+   */
+  tallyVotesZkeyPathNonQv?: string;
 
   /**
    * A signer object
@@ -880,14 +835,14 @@ export interface SetVerifyingKeysArgs {
   vkRegistry?: string;
 
   /**
-   * The path to the subsidy zkey
-   */
-  subsidyZkeyPath?: string;
-
-  /**
    * Whether to log the output
    */
   quiet?: boolean;
+
+  /**
+   * Whether to use quadratic voting or not
+   */
+  useQuadraticVoting?: boolean;
 }
 
 /**
@@ -958,6 +913,11 @@ export interface IRegisteredUserArgs {
    * The address of the MACI contract
    */
   maciAddress: string;
+
+  /**
+   * Start block for event parsing
+   */
+  startBlock?: number;
 
   /**
    * Whether to log the output
@@ -1075,11 +1035,6 @@ export interface VerifyArgs {
   pollId: bigint;
 
   /**
-   * Whether to deploy subsidy contract
-   */
-  subsidyEnabled: boolean;
-
-  /**
    * A signer object
    */
   signer: Signer;
@@ -1098,16 +1053,6 @@ export interface VerifyArgs {
    * The address of the Tally contract
    */
   tallyAddress: string;
-
-  /**
-   * The address of the Subsidy contract
-   */
-  subsidyAddress?: string;
-
-  /**
-   * The subsidy data
-   */
-  subsidyData?: SubsidyData;
 
   /**
    * Whether to log the output

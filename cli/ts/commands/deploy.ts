@@ -33,7 +33,6 @@ export const deploy = async ({
   poseidonT4Address,
   poseidonT5Address,
   poseidonT6Address,
-  useQv = true,
   signer,
   quiet = true,
 }: DeployArgs): Promise<DeployedContracts> => {
@@ -97,7 +96,6 @@ export const deploy = async ({
     signer,
     stateTreeDepth,
     quiet: true,
-    useQv,
   });
 
   const [maciContractAddress, stateAqContractAddress, pollFactoryContractAddress] = await Promise.all([

@@ -60,7 +60,7 @@ describe("publish", () => {
       pollAddresses = await deployPoll({ ...deployPollArgs, signer });
 
       defaultArgs = {
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         publicKey: user.pubKey.serialize(),
         privateKey: user.privKey.serialize(),
         messages,

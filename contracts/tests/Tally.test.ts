@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from "chai";
-import { AbiCoder, BaseContract, Signer } from "ethers";
+import { AbiCoder, Signer } from "ethers";
 import { EthereumProvider } from "hardhat/types";
 import {
   MaciState,
@@ -12,10 +12,20 @@ import {
 import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, Message, PubKey } from "maci-domainobjs";
 
-import { parseArtifact } from "../ts/abi";
+import { EMode } from "../ts/constants";
 import { IVerifyingKeyStruct } from "../ts/types";
 import { getDefaultSigner } from "../ts/utils";
-import { Tally, MACI, Poll as PollContract, MessageProcessor, Verifier, VkRegistry } from "../typechain-types";
+import {
+  Tally,
+  MACI,
+  Poll as PollContract,
+  MessageProcessor,
+  Verifier,
+  VkRegistry,
+  MessageProcessor__factory as MessageProcessorFactory,
+  Poll__factory as PollFactory,
+  Tally__factory as TallyFactory,
+} from "../typechain-types";
 
 import {
   STATE_TREE_DEPTH,
@@ -43,10 +53,6 @@ describe("TallyVotes", () => {
   let users: Keypair[];
   let maciState: MaciState;
 
-  const [pollAbi] = parseArtifact("Poll");
-  const [mpAbi] = parseArtifact("MessageProcessor");
-  const [tallyAbi] = parseArtifact("Tally");
-
   let pollId: bigint;
   let poll: Poll;
 
@@ -59,7 +65,7 @@ describe("TallyVotes", () => {
 
     signer = await getDefaultSigner();
 
-    const r = await deployTestContracts(100, STATE_TREE_DEPTH, signer, true, true);
+    const r = await deployTestContracts(100, STATE_TREE_DEPTH, signer, true);
     maciContract = r.maciContract;
     verifierContract = r.mockVerifierContract as Verifier;
     vkRegistryContract = r.vkRegistryContract;
@@ -72,7 +78,7 @@ describe("TallyVotes", () => {
       coordinator.pubKey.asContractParam(),
       verifierContract,
       vkRegistryContract,
-      false,
+      EMode.QV,
       {
         gasLimit: 10000000,
       },
@@ -101,9 +107,9 @@ describe("TallyVotes", () => {
     pollId = event.args._pollId;
 
     const pollContractAddress = await maciContract.getPoll(pollId);
-    pollContract = new BaseContract(pollContractAddress, pollAbi, signer) as PollContract;
-    mpContract = new BaseContract(event.args.pollAddr.messageProcessor, mpAbi, signer) as MessageProcessor;
-    tallyContract = new BaseContract(event.args.pollAddr.tally, tallyAbi, signer) as Tally;
+    pollContract = PollFactory.connect(pollContractAddress, signer);
+    mpContract = MessageProcessorFactory.connect(event.args.pollAddr.messageProcessor, signer);
+    tallyContract = TallyFactory.connect(event.args.pollAddr.tally, signer);
 
     // deploy local poll
     const p = maciState.deployPoll(BigInt(deployTime + duration), maxValues, treeDepths, messageBatchSize, coordinator);
@@ -137,6 +143,7 @@ describe("TallyVotes", () => {
       treeDepths.messageTreeDepth,
       treeDepths.voteOptionTreeDepth,
       messageBatchSize,
+      EMode.QV,
       testProcessVk.asContractParam() as IVerifyingKeyStruct,
       testTallyVk.asContractParam() as IVerifyingKeyStruct,
       { gasLimit: 1000000 },
@@ -221,7 +228,7 @@ describe("TallyVotes", () => {
 
       const intStateTreeDepth = 2;
 
-      const r = await deployTestContracts(100, STATE_TREE_DEPTH, signer, true, true);
+      const r = await deployTestContracts(100, STATE_TREE_DEPTH, signer, true);
       maciContract = r.maciContract;
       verifierContract = r.mockVerifierContract as Verifier;
       vkRegistryContract = r.vkRegistryContract;
@@ -253,7 +260,7 @@ describe("TallyVotes", () => {
         coordinator.pubKey.asContractParam(),
         verifierContract,
         vkRegistryContract,
-        false,
+        EMode.QV,
         {
           gasLimit: 10000000,
         },
@@ -282,9 +289,9 @@ describe("TallyVotes", () => {
       pollId = event.args._pollId;
 
       const pollContractAddress = await maciContract.getPoll(pollId);
-      pollContract = new BaseContract(pollContractAddress, pollAbi, signer) as PollContract;
-      mpContract = new BaseContract(event.args.pollAddr.messageProcessor, mpAbi, signer) as MessageProcessor;
-      tallyContract = new BaseContract(event.args.pollAddr.tally, tallyAbi, signer) as Tally;
+      pollContract = PollFactory.connect(pollContractAddress, signer);
+      mpContract = MessageProcessorFactory.connect(event.args.pollAddr.messageProcessor, signer);
+      tallyContract = TallyFactory.connect(event.args.pollAddr.tally, signer);
 
       // deploy local poll
       const p = maciState.deployPoll(
@@ -324,6 +331,7 @@ describe("TallyVotes", () => {
         treeDepths.messageTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
+        EMode.QV,
         testProcessVk.asContractParam() as IVerifyingKeyStruct,
         testTallyVk.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 1000000 },
@@ -362,7 +370,7 @@ describe("TallyVotes", () => {
 
       const intStateTreeDepth = 2;
 
-      const r = await deployTestContracts(100, STATE_TREE_DEPTH, signer, true, true);
+      const r = await deployTestContracts(100, STATE_TREE_DEPTH, signer, true);
       maciContract = r.maciContract;
       verifierContract = r.mockVerifierContract as Verifier;
       vkRegistryContract = r.vkRegistryContract;
@@ -394,7 +402,7 @@ describe("TallyVotes", () => {
         coordinator.pubKey.asContractParam(),
         verifierContract,
         vkRegistryContract,
-        false,
+        EMode.QV,
         {
           gasLimit: 10000000,
         },
@@ -423,9 +431,9 @@ describe("TallyVotes", () => {
       pollId = event.args._pollId;
 
       const pollContractAddress = await maciContract.getPoll(pollId);
-      pollContract = new BaseContract(pollContractAddress, pollAbi, signer) as PollContract;
-      mpContract = new BaseContract(event.args.pollAddr.messageProcessor, mpAbi, signer) as MessageProcessor;
-      tallyContract = new BaseContract(event.args.pollAddr.tally, tallyAbi, signer) as Tally;
+      pollContract = PollFactory.connect(pollContractAddress, signer);
+      mpContract = MessageProcessorFactory.connect(event.args.pollAddr.messageProcessor, signer);
+      tallyContract = TallyFactory.connect(event.args.pollAddr.tally, signer);
 
       // deploy local poll
       const p = maciState.deployPoll(
@@ -465,6 +473,7 @@ describe("TallyVotes", () => {
         treeDepths.messageTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
+        EMode.QV,
         testProcessVk.asContractParam() as IVerifyingKeyStruct,
         testTallyVk.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 1000000 },

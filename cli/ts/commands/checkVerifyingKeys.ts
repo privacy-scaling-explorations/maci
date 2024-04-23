@@ -1,6 +1,5 @@
 import { extractVk } from "maci-circuits";
-import { VkRegistry__factory as VkRegistryFactory } from "maci-contracts";
-import { G1Point, G2Point } from "maci-crypto";
+import { EMode, VkRegistry__factory as VkRegistryFactory } from "maci-contracts";
 import { VerifyingKey } from "maci-domainobjs";
 
 import fs from "fs";
@@ -34,8 +33,8 @@ export const checkVerifyingKeys = async ({
   processMessagesZkeyPath,
   tallyVotesZkeyPath,
   vkRegistry,
-  subsidyZkeyPath,
   signer,
+  useQuadraticVoting = true,
   quiet = true,
 }: CheckVerifyingKeysArgs): Promise<boolean> => {
   banner(quiet);
@@ -67,15 +66,6 @@ export const checkVerifyingKeys = async ({
   const processVk = VerifyingKey.fromObj(await extractVk(processMessagesZkeyPath));
   const tallyVk = VerifyingKey.fromObj(await extractVk(tallyVotesZkeyPath));
 
-  // check the subsidy key
-  let subsidyVk: VerifyingKey | undefined;
-  if (subsidyZkeyPath) {
-    if (!fs.existsSync(subsidyZkeyPath)) {
-      logError("The provided Subsidy zkey does not exist");
-    }
-    subsidyVk = VerifyingKey.fromObj(await extractVk(subsidyZkeyPath));
-  }
-
   try {
     logYellow(quiet, info("Retrieving verifying keys from the contract..."));
     // retrieve the verifying keys from the contract
@@ -86,30 +76,15 @@ export const checkVerifyingKeys = async ({
       messageTreeDepth,
       voteOptionTreeDepth,
       messageBatchSize,
+      useQuadraticVoting ? EMode.QV : EMode.NON_QV,
     );
 
     const tallyVkOnChain = await vkRegistryContractInstance.getTallyVk(
       stateTreeDepth,
       intStateTreeDepth,
       voteOptionTreeDepth,
+      useQuadraticVoting ? EMode.QV : EMode.NON_QV,
     );
-
-    let subsidyVkOnChain: VerifyingKey | undefined;
-
-    if (subsidyVk) {
-      subsidyVkOnChain = await vkRegistryContractInstance
-        .getSubsidyVk(stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth)
-        .then(
-          ({ alpha1, beta2, gamma2, delta2, ic }) =>
-            new VerifyingKey(
-              new G1Point(alpha1.x, alpha1.y),
-              new G2Point(beta2.x, beta2.y),
-              new G2Point(gamma2.x, gamma2.y),
-              new G2Point(delta2.x, delta2.y),
-              ic.map(({ x, y }) => new G1Point(x, y)),
-            ),
-        );
-    }
 
     // do the actual validation
     if (!compareVks(processVk, processVkOnChain)) {
@@ -118,10 +93,6 @@ export const checkVerifyingKeys = async ({
 
     if (!compareVks(tallyVk, tallyVkOnChain)) {
       logError("Tally verifying keys do not match");
-    }
-
-    if (subsidyVk && !compareVks(subsidyVk, subsidyVkOnChain!)) {
-      logError("Subsidy verifying keys do not match");
     }
   } catch (error) {
     logError((error as Error).message);

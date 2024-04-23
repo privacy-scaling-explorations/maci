@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.20;
 
 import { AccQueue } from "./trees/AccQueue.sol";
 import { IMACI } from "./interfaces/IMACI.sol";
@@ -11,12 +11,13 @@ import { IVerifier } from "./interfaces/IVerifier.sol";
 import { IVkRegistry } from "./interfaces/IVkRegistry.sol";
 import { IMessageProcessor } from "./interfaces/IMessageProcessor.sol";
 import { CommonUtilities } from "./utilities/CommonUtilities.sol";
+import { DomainObjs } from "./utilities/DomainObjs.sol";
 
 /// @title MessageProcessor
 /// @dev MessageProcessor is used to process messages published by signup users.
 /// It will process message by batch due to large size of messages.
 /// After it finishes processing, the sbCommitment will be used for Tally and Subsidy contracts.
-contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMessageProcessor {
+contract MessageProcessor is Ownable(msg.sender), SnarkCommon, Hasher, CommonUtilities, IMessageProcessor, DomainObjs {
   /// @notice custom errors
   error NoMoreMessages();
   error StateAqNotMerged();
@@ -48,15 +49,18 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
   IPoll public immutable poll;
   IVerifier public immutable verifier;
   IVkRegistry public immutable vkRegistry;
+  Mode public immutable mode;
 
   /// @notice Create a new instance
   /// @param _verifier The Verifier contract address
   /// @param _vkRegistry The VkRegistry contract address
   /// @param _poll The Poll contract address
-  constructor(address _verifier, address _vkRegistry, address _poll) payable {
+  /// @param _mode Voting mode
+  constructor(address _verifier, address _vkRegistry, address _poll, Mode _mode) payable {
     verifier = IVerifier(_verifier);
     vkRegistry = IVkRegistry(_vkRegistry);
     poll = IPoll(_poll);
+    mode = _mode;
   }
 
   /// @notice Update the Poll's currentSbCommitment if the proof is valid.
@@ -184,7 +188,8 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
       maci.stateTreeDepth(),
       _messageTreeDepth,
       _voteOptionTreeDepth,
-      TREE_ARITY ** _messageTreeSubDepth
+      TREE_ARITY ** _messageTreeSubDepth,
+      mode
     );
 
     isValid = verifier.verify(_proof, vk, publicInputHash);

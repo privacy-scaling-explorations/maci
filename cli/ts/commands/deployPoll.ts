@@ -1,4 +1,4 @@
-import { MACI__factory as MACIFactory } from "maci-contracts";
+import { MACI__factory as MACIFactory, EMode } from "maci-contracts";
 import { PubKey } from "maci-domainobjs";
 
 import {
@@ -25,11 +25,11 @@ export const deployPoll = async ({
   messageTreeDepth,
   voteOptionTreeDepth,
   coordinatorPubkey,
-  subsidyEnabled,
   maciAddress,
   vkRegistryAddress,
   signer,
   quiet = true,
+  useQuadraticVoting = false,
 }: DeployPollArgs): Promise<PollContracts> => {
   banner(quiet);
 
@@ -93,7 +93,6 @@ export const deployPoll = async ({
   let pollAddr = "";
   let messageProcessorContractAddress = "";
   let tallyContractAddress = "";
-  let subsidyContractAddress;
 
   try {
     // deploy the poll contract via the maci contract
@@ -108,7 +107,7 @@ export const deployPoll = async ({
       unserializedKey.asContractParam(),
       verifierContractAddress,
       vkRegistry,
-      subsidyEnabled,
+      useQuadraticVoting ? EMode.QV : EMode.NON_QV,
       { gasLimit: 10000000 },
     );
 
@@ -129,7 +128,6 @@ export const deployPoll = async ({
           poll: string;
           messageProcessor: string;
           tally: string;
-          subsidy: string;
         };
       };
       name: string;
@@ -147,18 +145,11 @@ export const deployPoll = async ({
     messageProcessorContractAddress = log.args.pollAddr.messageProcessor;
     tallyContractAddress = log.args.pollAddr.tally;
 
-    if (subsidyEnabled) {
-      subsidyContractAddress = log.args.pollAddr.subsidy;
-    }
-
     logGreen(quiet, info(`Poll ID: ${pollId.toString()}`));
     logGreen(quiet, info(`Poll contract: ${pollAddr}`));
     logGreen(quiet, info(`Message Processor contract: ${messageProcessorContractAddress}`));
     logGreen(quiet, info(`Tally contract: ${tallyContractAddress}`));
-    if (subsidyEnabled && subsidyContractAddress) {
-      logGreen(quiet, info(`Subsidy contract: ${subsidyContractAddress}`));
-      storeContractAddress(`Subsidy-${pollId.toString()}`, subsidyContractAddress, network?.name);
-    }
+
     // store the address
     storeContractAddress(`MessageProcessor-${pollId.toString()}`, messageProcessorContractAddress, network?.name);
     storeContractAddress(`Tally-${pollId.toString()}`, tallyContractAddress, network?.name);
@@ -171,7 +162,6 @@ export const deployPoll = async ({
   return {
     messageProcessor: messageProcessorContractAddress,
     tally: tallyContractAddress,
-    subsidy: subsidyContractAddress,
     poll: pollAddr,
   };
 };

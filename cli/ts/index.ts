@@ -32,7 +32,7 @@ import {
   checkVerifyingKeys,
   genLocalState,
 } from "./commands";
-import { SubsidyData, TallyData, logError, promptSensitiveValue, readContractAddress } from "./utils";
+import { TallyData, logError, promptSensitiveValue, readContractAddress } from "./utils";
 
 // set the description version and name of the cli tool
 const { description, version, name } = JSON.parse(
@@ -59,7 +59,6 @@ program
   .option("-g, --signupGatekeeperAddress <signupGatekeeperAddress>", "the signup gatekeeper contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .option("-uq, --use-quadratic-voting", "whether to use quadratic voting", (value) => value === "true", true)
   .requiredOption("-s, --stateTreeDepth <stateTreeDepth>", "the state tree depth", parseInt)
   .action(async (cmdOptions) => {
     try {
@@ -74,7 +73,6 @@ program
         poseidonT4Address: cmdOptions.poseidonT4Address,
         poseidonT5Address: cmdOptions.poseidonT5Address,
         poseidonT6Address: cmdOptions.poseidonT6Address,
-        useQv: cmdOptions.useQuadraticVoting,
         quiet: cmdOptions.quiet,
         signer,
       });
@@ -85,6 +83,7 @@ program
 program
   .command("checkVerifyingKeys")
   .description("check that the verifying keys in the contract match the local ones")
+  .option("-uq, --use-quadratic-voting", "whether to use quadratic voting", (value) => value === "true", true)
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .option("-vk, --vk-contract <vkContract>", "the VkRegistry contract address")
@@ -101,10 +100,6 @@ program
     "-t, --tally-votes-zkey <tallyVotesZkeyPath>",
     "the tally votes zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
-  .option(
-    "-ss, --subsidy-zkey <subsidyZkeyPath>",
-    "the subsidy zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
-  )
   .action(async (cmdOptions) => {
     try {
       const signer = await getSigner();
@@ -118,8 +113,8 @@ program
         processMessagesZkeyPath: cmdOptions.processMessagesZkey,
         tallyVotesZkeyPath: cmdOptions.tallyVotesZkey,
         vkRegistry: cmdOptions.vkContract,
-        subsidyZkeyPath: cmdOptions.subsidyZkey,
         quiet: cmdOptions.quiet,
+        useQuadraticVoting: cmdOptions.useQuadraticVoting,
         signer,
       });
     } catch (error) {
@@ -148,7 +143,7 @@ program
   .command("airdrop")
   .description("airdrop topup credits to the coordinator")
   .requiredOption("-a, --amount <amount>", "the amount of topup", parseInt)
-  .option("-x, --contract <contract>", "the MACI contract address")
+  .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .option("-o, --poll-id <pollId>", "poll id", BigInt)
   .option("-t, --token-address <tokenAddress>", "the token address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
@@ -159,7 +154,7 @@ program
 
       await airdrop({
         amount: cmdObj.amount,
-        maciAddress: cmdObj.contract,
+        maciAddress: cmdObj.maciAddress,
         pollId: cmdObj.pollId,
         contractAddress: cmdObj.tokenAddress,
         quiet: cmdObj.quiet,
@@ -205,12 +200,7 @@ program
   .requiredOption("-m, --msg-tree-depth <messageTreeDepth>", "the message tree depth", parseInt)
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
   .requiredOption("-pk, --pubkey <coordinatorPubkey>", "the coordinator public key")
-  .requiredOption(
-    "-se, --subsidy-enabled <subsidyEnabled>",
-    "whether to deploy subsidy contract",
-    (value) => value === "true",
-    false,
-  )
+  .option("-uq, --use-quadratic-voting", "whether to use quadratic voting", (value) => value === "true", true)
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
@@ -225,10 +215,10 @@ program
         messageTreeDepth: cmdObj.msgTreeDepth,
         voteOptionTreeDepth: cmdObj.voteOptionTreeDepth,
         coordinatorPubkey: cmdObj.pubkey,
-        subsidyEnabled: cmdObj.subsidyEnabled,
         maciAddress: cmdObj.maciAddress,
         vkRegistryAddress: cmdObj.vkRegistryAddress,
         quiet: cmdObj.quiet,
+        useQuadraticVoting: cmdObj.useQuadraticVoting,
         signer,
       });
     } catch (error) {
@@ -243,21 +233,26 @@ program
   .requiredOption("-m, --msg-tree-depth <messageTreeDepth>", "the message tree depth", parseInt)
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
   .requiredOption("-b, --msg-batch-depth <messageBatchDepth>", "the message batch depth", parseInt)
-  .requiredOption(
-    "-p, --process-messages-zkey <processMessagesZkeyPath>",
-    "the process messages zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+  .option(
+    "-pqv, --process-messages-zkey-qv <processMessagesZkeyPathQv>",
+    "the process messages qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
-  .requiredOption(
-    "-t, --tally-votes-zkey <tallyVotesZkeyPath>",
-    "the tally votes zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+  .option(
+    "-tqv, --tally-votes-zkey-qv <tallyVotesZkeyPathQv>",
+    "the tally votes qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
+  .option(
+    "-pnqv, --process-messages-zkey-non-qv <processMessagesZkeyPathNonQv>",
+    "the process messages non-qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+  )
+  .option(
+    "-tnqv, --tally-votes-zkey-non-qv <tallyVotesZkeyPathNonQv>",
+    "the tally votes non-qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+  )
+  .option("-uq, --use-quadratic-voting", "whether to use quadratic voting", (value) => value === "true", true)
   .option("-k, --vk-registry <vkRegistry>", "the vk registry contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .option(
-    "-ss, --subsidy-zkey <subsidyZkeyPath>",
-    "the subsidy zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
-  )
   .action(async (cmdObj) => {
     try {
       const signer = await getSigner();
@@ -268,11 +263,13 @@ program
         messageTreeDepth: cmdObj.msgTreeDepth,
         voteOptionTreeDepth: cmdObj.voteOptionTreeDepth,
         messageBatchDepth: cmdObj.msgBatchDepth,
-        processMessagesZkeyPath: cmdObj.processMessagesZkey,
-        tallyVotesZkeyPath: cmdObj.tallyVotesZkey,
+        processMessagesZkeyPathQv: cmdObj.processMessagesZkeyQv,
+        tallyVotesZkeyPathQv: cmdObj.tallyVotesZkeyQv,
+        processMessagesZkeyPathNonQv: cmdObj.processMessagesZkeyNonQv,
+        tallyVotesZkeyPathNonQv: cmdObj.tallyVotesZkeyNonQv,
         vkRegistry: cmdObj.vkRegistry,
-        subsidyZkeyPath: cmdObj.subsidyZkey,
         quiet: cmdObj.quiet,
+        useQuadraticVoting: cmdObj.useQuadraticVoting,
         signer,
       });
     } catch (error) {
@@ -286,7 +283,7 @@ program
     "-p, --pubkey <pubkey>",
     "the MACI public key which should replace the user's public key in the state tree",
   )
-  .option("-x, --contract <contract>", "the MACI contract address")
+  .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .option("-sk, --privkey <privkey>", "your serialized MACI private key")
   .requiredOption("-i, --state-index <stateIndex>", "the user's state index", BigInt)
   .requiredOption("-v, --vote-option-index <voteOptionIndex>", "the vote option index", BigInt)
@@ -301,7 +298,7 @@ program
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
 
-      const maciContractAddress = cmdObj.contract || readContractAddress("MACI", network?.name);
+      const maciAddress = cmdObj.maciAddress || readContractAddress("MACI", network?.name);
       const privateKey = cmdObj.privkey || (await promptSensitiveValue("Insert your MACI private key"));
 
       await publish({
@@ -311,7 +308,7 @@ program
         nonce: cmdObj.nonce,
         pollId: cmdObj.pollId,
         newVoteWeight: cmdObj.newVoteWeight,
-        maciContractAddress,
+        maciAddress,
         salt: cmdObj.salt,
         privateKey,
         quiet: cmdObj.quiet,
@@ -326,7 +323,7 @@ program
   .description("merge the message accumulator queue")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .option("-x, --maci-contract-address <maciContractAddress>", "the MACI contract address")
+  .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .requiredOption("-o, --poll-id <pollId>", "the poll id", BigInt)
   .option("-n, --num-queue-ops <numQueueOps>", "the number of queue operations", parseInt)
   .action(async (cmdObj) => {
@@ -335,7 +332,7 @@ program
 
       await mergeMessages({
         pollId: cmdObj.pollId,
-        maciContractAddress: cmdObj.maciContractAddress,
+        maciAddress: cmdObj.maciAddress,
         numQueueOps: cmdObj.numQueueOps?.toString(),
         quiet: cmdObj.quiet,
         signer,
@@ -349,7 +346,7 @@ program
   .description("merge the signups accumulator queue")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .option("-x, --maci-contract-address <maciContractAddress>", "the MACI contract address")
+  .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .requiredOption("-o, --poll-id <pollId>", "the poll id", BigInt)
   .option("-n, --num-queue-ops <numQueueOps>", "the number of queue operations", parseInt)
   .action(async (cmdObj) => {
@@ -358,7 +355,7 @@ program
 
       await mergeSignups({
         pollId: cmdObj.pollId,
-        maciContractAddress: cmdObj.maciContractAddress,
+        maciAddress: cmdObj.maciAddress,
         numQueueOps: cmdObj.numQueueOps?.toString(),
         quiet: cmdObj.quiet,
         signer,
@@ -396,11 +393,11 @@ program
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
 
-      const maciContractAddress = cmdObj.maciAddress || readContractAddress("MACI", network?.name);
+      const maciAddress = cmdObj.maciAddress || readContractAddress("MACI", network?.name);
 
       await signup({
         maciPubKey: cmdObj.pubkey,
-        maciAddress: maciContractAddress,
+        maciAddress,
         sgDataArg: cmdObj.sgData,
         ivcpDataArg: cmdObj.ivcpData,
         quiet: cmdObj.quiet,
@@ -421,11 +418,11 @@ program
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
 
-      const maciContractAddress = cmdObj.maciAddress || readContractAddress("MACI", network?.name);
+      const maciAddress = cmdObj.maciAddress || readContractAddress("MACI", network?.name);
 
       await isRegisteredUser({
         maciPubKey: cmdObj.pubkey,
-        maciAddress: maciContractAddress,
+        maciAddress,
         signer,
         quiet: cmdObj.quiet,
       });
@@ -444,11 +441,11 @@ program
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
 
-      const maciContractAddress = cmdObj.maciAddress || readContractAddress("MACI", network?.name);
+      const maciAddress = cmdObj.maciAddress || readContractAddress("MACI", network?.name);
 
       await getPoll({
         pollId: cmdObj.poll,
-        maciAddress: maciContractAddress,
+        maciAddress,
         signer,
         quiet: cmdObj.quiet,
       });
@@ -499,22 +496,14 @@ program
   });
 program
   .command("verify")
-  .description("verify the results of a poll and optionally the subsidy results")
+  .description("verify the results of a poll")
   .requiredOption("-o, --poll-id <pollId>", "the poll id", BigInt)
   .requiredOption(
     "-t, --tally-file <tallyFile>",
     "the tally file with results, per vote option spent credits, spent voice credits total",
   )
-  .requiredOption(
-    "-se, --subsidy-enabled <subsidyEnabled>",
-    "whether to deploy subsidy contract",
-    (value) => value === "true",
-    false,
-  )
-  .option("-s, --subsidy-file <subsidyFile>", "the subsidy file")
-  .option("-x, --contract <contract>", "the MACI contract address")
+  .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .option("-tc, --tally-contract <tallyContract>", "the tally contract address")
-  .option("-sc, --subsidy-contract <subsidyContract>", "the subsidy contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
@@ -529,28 +518,15 @@ program
 
       const tallyData = JSON.parse(fs.readFileSync(cmdObj.tallyFile, { encoding: "utf8" })) as TallyData;
 
-      const maciAddress = tallyData.maci || cmdObj.contract || readContractAddress("MACI", network?.name);
-      const subsidyAddress = cmdObj.subsidyContract || readContractAddress(`Subsidy-${cmdObj.pollId}`, network?.name);
+      const maciAddress = tallyData.maci || cmdObj.maciAddress || readContractAddress("MACI", network?.name);
       const tallyAddress =
         tallyData.tallyAddress || cmdObj.tallyContract || readContractAddress(`Tally-${cmdObj.pollId}`, network?.name);
-
-      // read the subsidy file
-      if (cmdObj.subsidyEnabled && (!cmdObj.subsidyFile || !fs.existsSync(cmdObj.subsidyFile))) {
-        logError(`There is no such file: ${cmdObj.subsidyFile}`);
-      }
-
-      const subsidyData = cmdObj.subsidyEnabled
-        ? (JSON.parse(fs.readFileSync(cmdObj.subsidyFile!, { encoding: "utf8" })) as SubsidyData)
-        : undefined;
 
       await verify({
         tallyData,
         pollId: cmdObj.pollId,
-        subsidyEnabled: cmdObj.subsidyEnabled,
         maciAddress,
         tallyAddress,
-        subsidyAddress,
-        subsidyData,
         quiet: cmdObj.quiet,
         signer,
       });
@@ -562,24 +538,20 @@ program
   .command("genProofs")
   .description("generate the proofs for a poll")
   .option("-sk, --privkey <privkey>", "your serialized MACI private key")
-  .option("-x, --contract <contract>", "the MACI contract address")
+  .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .requiredOption("-o, --poll-id <pollId>", "the poll id", BigInt)
   .requiredOption(
     "-t, --tally-file <tallyFile>",
     "the tally file with results, per vote option spent credits, spent voice credits total",
   )
   .option("-ta, --tally-address <tallyAddress>", "the tally contract address")
-  .option("-s, --subsidy-file <subsidyFile>", "the subsidy file")
   .option("-r, --rapidsnark <rapidsnark>", "the path to the rapidsnark binary")
   .option("-wp, --process-witnessgen <processWitnessgen>", "the path to the process witness generation binary")
   .option("-pd, --process-witnessdat <processWitnessdat>", "the path to the process witness dat file")
   .option("-wt, --tally-witnessgen <tallyWitnessgen>", "the path to the tally witness generation binary")
   .option("-td, --tally-witnessdat <tallyWitnessdat>", "the path to the tally witness dat file")
-  .option("-ws, --subsidy-witnessgen <subsidyWitnessgen>", "the path to the subsidy witness generation binary")
-  .option("-sd, --subsidy-witnessdat <subsidyWitnessdat>", "the path to the subsidy witness dat file")
   .requiredOption("-zp, --process-zkey <processZkey>", "the path to the process zkey")
   .requiredOption("-zt, --tally-zkey <tallyZkey>", "the path to the tally zkey")
-  .option("-zs, --subsidy-zkey <subsidyZkey>", "the path to the subsidy zkey")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-p, --rpc-provider <provider>", "the rpc provider URL")
   .requiredOption("-f, --output <outputDir>", "the output directory for proofs")
@@ -587,7 +559,6 @@ program
   .option("-w, --wasm", "whether to use the wasm binaries")
   .option("-pw, --process-wasm <processWasm>", "the path to the process witness generation wasm binary")
   .option("-tw, --tally-wasm <tallyWasm>", "the path to the tally witness generation wasm binary")
-  .option("-sw, --subsidy-wasm <subsidyWasm>", "the path to the subsidy witness generation wasm binary")
   .option("-st, --state-file <stateFile>", "the path to the state file containing the serialized maci state")
   .option("-sb, --start-block <startBlock>", "the block number to start looking for events from", parseInt)
   .option("-eb, --end-block <endBlock>", "the block number to end looking for events from", parseInt)
@@ -603,21 +574,16 @@ program
         tallyZkey: cmdObj.tallyZkey,
         processZkey: cmdObj.processZkey,
         pollId: cmdObj.pollId,
-        subsidyFile: cmdObj.subsidyFile,
-        subsidyZkey: cmdObj.subsidyZkey,
         rapidsnark: cmdObj.rapidsnark,
         processWitgen: cmdObj.processWitnessgen,
         processDatFile: cmdObj.processWitnessdat,
         tallyWitgen: cmdObj.tallyWitnessgen,
         tallyDatFile: cmdObj.tallyWitnessdat,
-        subsidyWitgen: cmdObj.subsidyWitnessgen,
-        subsidyDatFile: cmdObj.subsidyWitnessdat,
         coordinatorPrivKey: cmdObj.privkey,
-        maciAddress: cmdObj.contract,
+        maciAddress: cmdObj.maciAddress,
         transactionHash: cmdObj.transactionHash,
         processWasm: cmdObj.processWasm,
         tallyWasm: cmdObj.tallyWasm,
-        subsidyWasm: cmdObj.subsidyWasm,
         useWasm: cmdObj.wasm,
         stateFile: cmdObj.stateFile,
         startBlock: cmdObj.startBlock,
@@ -637,7 +603,7 @@ program
   .description("generate a local MACI state from the smart contracts events")
   .requiredOption("-o, --output <outputPath>", "the path where to write the state")
   .requiredOption("-p, --poll-id <pollId>", "the id of the poll", BigInt)
-  .option("-x, --contract <contract>", "the MACI contract address")
+  .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .option("-sk, --privkey <privkey>", "your serialized MACI private key")
   .option("-eb, --end-block <endBlock>", "the end block number", parseInt)
   .option("-sb, --start-block <startBlock>", "the start block number", parseInt)
@@ -653,7 +619,7 @@ program
       await genLocalState({
         outputPath: cmdObj.output.toString(),
         pollId: cmdObj.pollId,
-        maciContractAddress: cmdObj.contract,
+        maciAddress: cmdObj.maciAddress,
         coordinatorPrivateKey: cmdObj.privkey,
         ethereumProvider: cmdObj.rpcProvider,
         endBlock: cmdObj.endBlock,
@@ -672,18 +638,11 @@ program
   .command("proveOnChain")
   .description("prove the results of a poll on chain")
   .requiredOption("-o, --poll-id <pollId>", "the poll id", BigInt)
-  .requiredOption(
-    "-se, --subsidy-enabled <subsidyEnabled>",
-    "whether to deploy subsidy contract",
-    (value) => value === "true",
-    false,
-  )
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .option("-x, --contract <contract>", "the MACI contract address")
+  .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .option("-p, --message-processor-address <messageProcessorAddress>", "the message processor contract address")
   .option("-t, --tally-contract <tallyContract>", "the tally contract address")
-  .option("-s, --subsidy-contract <subsidyContract>", "the subsidy contract address")
   .requiredOption("-f, --proof-dir <proofDir>", "the proof output directory from the genProofs subcommand")
   .action(async (cmdObj) => {
     try {
@@ -692,11 +651,9 @@ program
       await proveOnChain({
         pollId: cmdObj.pollId,
         proofDir: cmdObj.proofDir,
-        subsidyEnabled: cmdObj.subsidyEnabled,
-        maciAddress: cmdObj.contract,
+        maciAddress: cmdObj.maciAddress,
         messageProcessorAddress: cmdObj.messageProcessorAddress,
         tallyAddress: cmdObj.tallyContract,
-        subsidyAddress: cmdObj.subsidyContract,
         quiet: cmdObj.quiet,
         signer,
       });
@@ -751,7 +708,6 @@ export type {
   VerifyArgs,
   ProveOnChainArgs,
   DeployArgs,
-  SubsidyData,
   IRegisteredUserArgs,
   IGenKeypairArgs,
   IGetPollArgs,

@@ -1,15 +1,23 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from "chai";
-import { BaseContract, Signer } from "ethers";
+import { Signer } from "ethers";
 import { EthereumProvider } from "hardhat/types";
 import { MaciState, Poll, packProcessMessageSmallVals, IProcessMessagesCircuitInputs } from "maci-core";
 import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, Message, PubKey } from "maci-domainobjs";
 
-import { parseArtifact } from "../ts/abi";
+import { EMode } from "../ts/constants";
 import { IVerifyingKeyStruct } from "../ts/types";
 import { getDefaultSigner } from "../ts/utils";
-import { MACI, MessageProcessor, Poll as PollContract, Verifier, VkRegistry } from "../typechain-types";
+import {
+  MACI,
+  MessageProcessor,
+  MessageProcessor__factory as MessageProcessorFactory,
+  Poll as PollContract,
+  Poll__factory as PollFactory,
+  Verifier,
+  VkRegistry,
+} from "../typechain-types";
 
 import {
   STATE_TREE_DEPTH,
@@ -30,9 +38,6 @@ describe("MessageProcessor", () => {
   let verifierContract: Verifier;
   let vkRegistryContract: VkRegistry;
   let mpContract: MessageProcessor;
-
-  const [pollAbi] = parseArtifact("Poll");
-  const [mpAbi] = parseArtifact("MessageProcessor");
 
   let pollId: bigint;
 
@@ -62,7 +67,7 @@ describe("MessageProcessor", () => {
       coordinator.pubKey.asContractParam(),
       verifierContract,
       vkRegistryContract,
-      false,
+      EMode.QV,
       {
         gasLimit: 10000000,
       },
@@ -86,9 +91,9 @@ describe("MessageProcessor", () => {
     pollId = event.args._pollId;
 
     const pollContractAddress = await maciContract.getPoll(pollId);
-    pollContract = new BaseContract(pollContractAddress, pollAbi, signer) as PollContract;
+    pollContract = PollFactory.connect(pollContractAddress, signer);
 
-    mpContract = new BaseContract(event.args.pollAddr.messageProcessor, mpAbi, signer) as MessageProcessor;
+    mpContract = MessageProcessorFactory.connect(event.args.pollAddr.messageProcessor, signer);
 
     const block = await signer.provider!.getBlock(receipt!.blockHash);
     const deployTime = block!.timestamp;
@@ -124,6 +129,7 @@ describe("MessageProcessor", () => {
       treeDepths.messageTreeDepth,
       treeDepths.voteOptionTreeDepth,
       messageBatchSize,
+      EMode.QV,
       testProcessVk.asContractParam() as IVerifyingKeyStruct,
       testTallyVk.asContractParam() as IVerifyingKeyStruct,
       { gasLimit: 1000000 },

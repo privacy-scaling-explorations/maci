@@ -5,17 +5,17 @@ description: An outline of the 2024 MACI team & product roadmap
 
 # MACI Product Roadmap
 
-This document aims to outline the 2024 MACI team & product roadmap.
-
 _This public roadmap is part of our core team's efforts to make our work more accessible and to foster more collaboration from our open source community. We plan to re-assess & iterate on our roadmap over time, and will update this document when we do._
 
 :::info
-Our roadmap is still under active discussion - please join the conversation in our [GitHub discussion](https://github.com/privacy-scaling-explorations/maci/discussions/859) if you have feedback!
+This document aims to outline the 2024 MACI roadmap. Our roadmap is under constant discussion and evolution (e.g. see our [Q1](/blog/2024-team-roadmap) and [Q2](/blog/2024-q2-roadmap) updates) but we try our best to maintain this page to provide a high-level overview. Please join the conversation in our [latest GitHub discussion](https://github.com/privacy-scaling-explorations/maci/discussions/1381) if you have feedback!
+
+**Last updated: 2024-04-16**
 :::
 
 ## Team description
 
-The MACI core team is a small collaborative engineering team building various projects within [Privacy & Scaling Explorations (PSE)](https://pse.dev/). Our sustained focus is on MACI: an on-chain voting protocol that provides greatly increased collusion resistance & privacy. We also allocate a significant portion of our time to support the practical adoption of this technology by supporting community leaders to run democratic governance and public funding initiatives, like Quadratic Voting (QV) & Quadratic Funding (QF) grant rounds.
+The MACI core team is a small collaborative engineering team building various projects within [Privacy & Scaling Explorations (PSE)](https://pse.dev/). Our sustained focus is on MACI: an on-chain voting protocol that provides greatly increased collusion resistance & privacy. We also allocate a significant portion of our time to support the practical adoption of this technology by supporting community leaders to run democratic governance and public funding initiatives, like Quadratic Voting (QV), Quadratic Funding (QF), and Retroactive Public Goods Funding (RPGF) grant rounds.
 
 ## MACI mission & vision
 

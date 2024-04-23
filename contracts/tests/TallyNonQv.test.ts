@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from "chai";
-import { BaseContract, Signer } from "ethers";
+import { Signer } from "ethers";
 import { EthereumProvider } from "hardhat/types";
 import {
   MaciState,
@@ -12,11 +12,20 @@ import {
 import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, Message, PubKey } from "maci-domainobjs";
 
-import type { Tally, MACI, Poll as PollContract, MessageProcessor, Verifier, VkRegistry } from "../typechain-types";
-
-import { parseArtifact } from "../ts/abi";
+import { EMode } from "../ts/constants";
 import { IVerifyingKeyStruct } from "../ts/types";
 import { getDefaultSigner } from "../ts/utils";
+import {
+  Tally,
+  MACI,
+  Poll as PollContract,
+  MessageProcessor,
+  Verifier,
+  VkRegistry,
+  MessageProcessor__factory as MessageProcessorFactory,
+  Poll__factory as PollFactory,
+  Tally__factory as TallyFactory,
+} from "../typechain-types";
 
 import {
   STATE_TREE_DEPTH,
@@ -43,10 +52,6 @@ describe("TallyVotesNonQv", () => {
   let users: Keypair[];
   let maciState: MaciState;
 
-  const [pollAbi] = parseArtifact("Poll");
-  const [mpAbi] = parseArtifact("MessageProcessor");
-  const [tallyAbi] = parseArtifact("TallyNonQv");
-
   let pollId: bigint;
   let poll: Poll;
 
@@ -59,7 +64,7 @@ describe("TallyVotesNonQv", () => {
 
     signer = await getDefaultSigner();
 
-    const r = await deployTestContracts(100, STATE_TREE_DEPTH, signer, false, true);
+    const r = await deployTestContracts(100, STATE_TREE_DEPTH, signer, false);
     maciContract = r.maciContract;
     verifierContract = r.mockVerifierContract as Verifier;
     vkRegistryContract = r.vkRegistryContract;
@@ -72,7 +77,7 @@ describe("TallyVotesNonQv", () => {
       coordinator.pubKey.asContractParam(),
       verifierContract,
       vkRegistryContract,
-      false,
+      EMode.NON_QV,
       {
         gasLimit: 10000000,
       },
@@ -101,9 +106,9 @@ describe("TallyVotesNonQv", () => {
     pollId = event.args._pollId;
 
     const pollContractAddress = await maciContract.getPoll(pollId);
-    pollContract = new BaseContract(pollContractAddress, pollAbi, signer) as PollContract;
-    mpContract = new BaseContract(event.args.pollAddr.messageProcessor, mpAbi, signer) as MessageProcessor;
-    tallyContract = new BaseContract(event.args.pollAddr.tally, tallyAbi, signer) as Tally;
+    pollContract = PollFactory.connect(pollContractAddress, signer);
+    mpContract = MessageProcessorFactory.connect(event.args.pollAddr.messageProcessor, signer);
+    tallyContract = TallyFactory.connect(event.args.pollAddr.tally, signer);
 
     // deploy local poll
     const p = maciState.deployPoll(BigInt(deployTime + duration), maxValues, treeDepths, messageBatchSize, coordinator);
@@ -137,6 +142,7 @@ describe("TallyVotesNonQv", () => {
       treeDepths.messageTreeDepth,
       treeDepths.voteOptionTreeDepth,
       messageBatchSize,
+      EMode.NON_QV,
       testProcessVk.asContractParam() as IVerifyingKeyStruct,
       testTallyVk.asContractParam() as IVerifyingKeyStruct,
       { gasLimit: 1000000 },
@@ -202,6 +208,13 @@ describe("TallyVotesNonQv", () => {
     it("isTallied should return true", async () => {
       const isTallied = await tallyContract.isTallied();
       expect(isTallied).to.eq(true);
+    });
+
+    it("should throw error if try to call verifyPerVOSpentVoiceCredits for non-qv", async () => {
+      await expect(tallyContract.verifyPerVOSpentVoiceCredits(0, 0, [], 0, 0, 0, 0)).to.be.revertedWithCustomError(
+        tallyContract,
+        "NotSupported",
+      );
     });
 
     it("tallyVotes() should revert when votes have already been tallied", async () => {

@@ -6,7 +6,7 @@ import path from "path";
  * Test utility to clean up the proofs directory
  * and the tally.json file
  */
-export const cleanVanilla = (): void => {
+export const clean = (): void => {
   const files = fs.readdirSync("./proofs");
 
   files.forEach((file) => {
@@ -15,18 +15,6 @@ export const cleanVanilla = (): void => {
 
   if (fs.existsSync("./tally.json")) {
     fs.rmSync("./tally.json");
-  }
-};
-
-/**
- * Test utility to clean up the proofs directory
- * and the subsidy.json file
- */
-export const cleanSubsidy = (): void => {
-  cleanVanilla();
-
-  if (fs.existsSync("./subsidy.json")) {
-    fs.rmSync("./subsidy.json");
   }
 };
 

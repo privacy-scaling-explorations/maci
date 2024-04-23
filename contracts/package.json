@@ -25,7 +25,7 @@
   "scripts": {
     "watch": "tsc --watch",
     "hardhat": "hardhat node",
-    "compileSol": "./scripts/compileSol.sh $1",
+    "compileSol": "TS_NODE_TRANSPILE_ONLY=1 ts-node ./scripts/compileSol.ts",
     "moveIntegrationArtifacts": "cp -r artifacts/ ../integrationTests/artifacts",
     "prebuild": "pnpm run compileSol",
     "build": "tsc -p tsconfig.build.json",
@@ -47,7 +47,6 @@
     "test:hasherBenchmarks": "pnpm run test ./tests/HasherBenchmarks.test.ts",
     "test:vkRegistry": "pnpm run test ./tests/VkRegistry.test.ts",
     "test:pollFactory": "pnpm run test ./tests/PollFactory.test.ts",
-    "test:subsidy": "pnpm run test ./tests/Subsidy.test.ts",
     "test:eas_gatekeeper": "pnpm run test ./tests/EASGatekeeper.test.ts",
     "test:hats_gatekeeper": "pnpm run test ./tests/HatsGatekeeper.test.ts",
     "deploy": "hardhat deploy-full",
@@ -73,7 +72,7 @@
   "dependencies": {
     "@nomicfoundation/hardhat-ethers": "^3.0.5",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
-    "@openzeppelin/contracts": "^4.8.0",
+    "@openzeppelin/contracts": "^5.0.2",
     "circomlibjs": "^0.1.7",
     "ethers": "^6.11.1",
     "hardhat": "^2.22.2",
@@ -88,7 +87,7 @@
     "@types/circomlibjs": "^0.1.6",
     "@types/lowdb": "^1.0.15",
     "@types/mocha": "^10.0.6",
-    "@types/node": "^20.11.30",
+    "@types/node": "^20.12.7",
     "@types/snarkjs": "^0.7.8",
     "chai": "^4.3.10",
     "dotenv": "^16.4.5",
@@ -96,6 +95,6 @@
     "hardhat-contract-sizer": "^2.10.0",
     "lowdb": "^1.0.0",
     "ts-node": "^10.9.1",
-    "typescript": "^5.4.3"
+    "typescript": "^5.4.5"
   }
 }

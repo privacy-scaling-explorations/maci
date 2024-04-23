@@ -3,17 +3,7 @@ import { G1Point, G2Point, hashLeftRight } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
 
 import type { IVerifyingKeyStruct, Proof } from "../../ts/types";
-import type {
-  AccQueue,
-  MACI,
-  MessageProcessor,
-  Poll,
-  Subsidy,
-  Tally,
-  TallyNonQv,
-  Verifier,
-  VkRegistry,
-} from "../../typechain-types";
+import type { AccQueue, MACI, MessageProcessor, Poll, Tally, Verifier, VkRegistry } from "../../typechain-types";
 import type { BigNumberish } from "ethers";
 
 import { formatProofForVerifierContract, asHex } from "../../ts/utils";
@@ -22,7 +12,7 @@ import { STATE_TREE_ARITY } from "./constants";
 import { IProverParams } from "./types";
 
 /**
- * Prover class is designed to prove message processing, tally and subsidy (optional) proofs on-chain.
+ * Prover class is designed to prove message processing and tally proofs on-chain.
  */
 export class Prover {
   /**
@@ -58,12 +48,7 @@ export class Prover {
   /**
    * Tally contract typechain wrapper
    */
-  private tallyContract: Tally | TallyNonQv;
-
-  /**
-   * Subsidy contract typechain wrapper
-   */
-  private subsidyContract?: Subsidy;
+  private tallyContract: Tally;
 
   /**
    * Initialize class properties
@@ -77,7 +62,6 @@ export class Prover {
     maciContract,
     vkRegistryContract,
     verifierContract,
-    subsidyContract,
     tallyContract,
   }: IProverParams) {
     this.pollContract = pollContract;
@@ -86,7 +70,6 @@ export class Prover {
     this.maciContract = maciContract;
     this.vkRegistryContract = vkRegistryContract;
     this.verifierContract = verifierContract;
-    this.subsidyContract = subsidyContract;
     this.tallyContract = tallyContract;
   }
 
@@ -97,7 +80,7 @@ export class Prover {
    */
   async proveMessageProcessing(proofs: Proof[]): Promise<void> {
     // retrieve the values we need from the smart contracts
-    const [treeDepths, numSignUpsAndMessages, numBatchesProcessed, stateTreeDepth, dd, coordinatorPubKeyHash] =
+    const [treeDepths, numSignUpsAndMessages, numBatchesProcessed, stateTreeDepth, dd, coordinatorPubKeyHash, mode] =
       await Promise.all([
         this.pollContract.treeDepths(),
         this.pollContract.numSignUpsAndMessages(),
@@ -105,6 +88,7 @@ export class Prover {
         this.maciContract.stateTreeDepth().then(Number),
         this.pollContract.getDeployTimeAndDuration(),
         this.pollContract.coordinatorPubKeyHash(),
+        this.mpContract.mode(),
       ]);
 
     const numSignUps = Number(numSignUpsAndMessages[0]);
@@ -124,6 +108,7 @@ export class Prover {
         treeDepths.messageTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
+        mode,
       ),
     ]);
 
@@ -254,91 +239,6 @@ export class Prover {
 
     if (numberBatchesProcessed === totalMessageBatches) {
       console.log("All message processing proofs have been submitted.");
-    }
-  }
-
-  /**
-   * Prove subsidy on-chain
-   *
-   * @param proofs - subsidy proofs
-   */
-  async proveSubsidy(proofs: Proof[]): Promise<void> {
-    if (!this.subsidyContract || proofs.length === 0) {
-      return;
-    }
-
-    const [treeDepths, numSignUpsAndMessages, r, c] = await Promise.all([
-      this.pollContract.treeDepths(),
-      this.pollContract.numSignUpsAndMessages(),
-      this.subsidyContract.rbi(),
-      this.subsidyContract.cbi(),
-    ]);
-
-    const numSignUps = Number(numSignUpsAndMessages[0]);
-    const subsidyBatchSize = STATE_TREE_ARITY ** Number(treeDepths.intStateTreeDepth);
-    // subsidy calculations if any subsidy proofs are provided
-    let cbi = Number(c);
-    let rbi = Number(r);
-
-    const num1DBatches = Math.ceil(numSignUps / subsidyBatchSize);
-    let subsidyBatchNum = rbi * num1DBatches + cbi;
-    const totalBatchNum = (num1DBatches * (num1DBatches + 1)) / 2;
-
-    console.log(`number of subsidy batch processed: ${subsidyBatchNum}, numleaf=${numSignUps}`);
-
-    // process all batches
-    for (let i = subsidyBatchNum; i < totalBatchNum; i += 1) {
-      if (i === 0) {
-        await this.subsidyContract.updateSbCommitment().then((tx) => tx.wait());
-      }
-
-      const { proof, circuitInputs, publicInputs } = proofs[i];
-
-      // ensure the commitment matches
-      const subsidyCommitmentOnChain = await this.subsidyContract.subsidyCommitment();
-      this.validateCommitment(circuitInputs.currentSubsidyCommitment as BigNumberish, subsidyCommitmentOnChain);
-
-      const packedValsOnChain = BigInt(await this.subsidyContract.genSubsidyPackedVals(numSignUps));
-      this.validatePackedValues(circuitInputs.packedVals as BigNumberish, packedValsOnChain);
-
-      // ensure the state and ballot root commitment matches
-      const currentSbCommitmentOnChain = await this.subsidyContract.sbCommitment();
-      this.validateCommitment(circuitInputs.currentSbCommitment as BigNumberish, currentSbCommitmentOnChain);
-
-      const publicInputHashOnChain = await this.subsidyContract.genSubsidyPublicInputHash(
-        numSignUps,
-        circuitInputs.newSubsidyCommitment as BigNumberish,
-      );
-
-      this.validatePublicInput(publicInputs[0] as BigNumberish, publicInputHashOnChain.toString());
-
-      // format the proof so it can be verify on chain
-      const formattedProof = formatProofForVerifierContract(proof);
-
-      // verify the proof on chain and set the new subsidy commitment
-      const receipt = await this.subsidyContract
-        .updateSubsidy(circuitInputs.newSubsidyCommitment as BigNumberish, formattedProof)
-        .then((tx) => tx.wait());
-
-      if (receipt?.status !== 1) {
-        throw new Error("updateSubsidy() failed.");
-      }
-
-      console.log(`Transaction hash: ${receipt.hash}`);
-      console.log(`Progress: ${subsidyBatchNum + 1} / ${totalBatchNum}`);
-
-      const [nrbi, ncbi] = await Promise.all([
-        this.subsidyContract.rbi().then(Number),
-        this.subsidyContract.cbi().then(Number),
-      ]);
-
-      rbi = nrbi;
-      cbi = ncbi;
-      subsidyBatchNum = rbi * num1DBatches + cbi;
-    }
-
-    if (subsidyBatchNum === totalBatchNum) {
-      console.log("All subsidy calculation proofs have been submitted.");
     }
   }
 

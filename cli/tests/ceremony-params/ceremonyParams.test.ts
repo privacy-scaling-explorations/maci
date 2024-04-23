@@ -46,7 +46,7 @@ import {
   ceremonyProcessMessagesNonQvWasmPath,
   ceremonyTallyVotesNonQvWasmPath,
 } from "../constants";
-import { cleanVanilla, isArm } from "../utils";
+import { clean, isArm } from "../utils";
 
 describe("Stress tests with ceremony params (6,9,2,3)", function test() {
   const messageTreeDepth = 9;
@@ -56,8 +56,6 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
   const intStateTreeDepth = 2;
 
   const pollDuration = 60000;
-
-  const subsidyEnabled = false;
 
   const useWasm = isArm();
   this.timeout(90000000);
@@ -72,8 +70,8 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
     messageTreeDepth,
     voteOptionTreeDepth,
     messageBatchDepth,
-    processMessagesZkeyPath: ceremonyProcessMessagesZkeyPath,
-    tallyVotesZkeyPath: ceremonyTallyVotesZkeyPath,
+    processMessagesZkeyPathQv: ceremonyProcessMessagesZkeyPath,
+    tallyVotesZkeyPathQv: ceremonyTallyVotesZkeyPath,
   };
 
   const verifyingKeysNonQvArgs: Omit<SetVerifyingKeysArgs, "signer"> = {
@@ -83,8 +81,8 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
     messageTreeDepth,
     voteOptionTreeDepth,
     messageBatchDepth,
-    processMessagesZkeyPath: ceremonyProcessMessagesNonQvZkeyPath,
-    tallyVotesZkeyPath: ceremonyTallyVotesNonQvZkeyPath,
+    processMessagesZkeyPathNonQv: ceremonyProcessMessagesNonQvZkeyPath,
+    tallyVotesZkeyPathNonQv: ceremonyTallyVotesNonQvZkeyPath,
   };
 
   const ceremonyDeployArgs: Omit<DeployArgs, "signer"> = {
@@ -98,7 +96,6 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
     messageTreeDepth,
     voteOptionTreeDepth,
     coordinatorPubkey: coordinatorPubKey,
-    subsidyEnabled,
   };
 
   const genProofsCeremonyArgs: Omit<GenProofsArgs, "signer"> = {
@@ -133,7 +130,7 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
 
     describe("1 user, 2 messages", () => {
       after(() => {
-        cleanVanilla();
+        clean();
       });
 
       before(async () => {
@@ -159,7 +156,7 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
             voteOptionIndex: randomVoteOption,
             nonce: 1n,
             newVoteWeight: randomVoteWeight,
-            maciContractAddress: maciAddresses.maciAddress,
+            maciAddress: maciAddresses.maciAddress,
             salt: genRandomSalt(),
             privateKey: users[0].privKey.serialize(),
             pollId: 0n,
@@ -180,7 +177,7 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
 
     describe("25 signups, 100 messages", () => {
       after(() => {
-        cleanVanilla();
+        clean();
       });
 
       before(async () => {
@@ -211,7 +208,7 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
             nonce: 1n,
             pollId: 0n,
             newVoteWeight: randomVoteWeight,
-            maciContractAddress: maciAddresses.maciAddress,
+            maciAddress: maciAddresses.maciAddress,
             salt: genRandomSalt(),
             privateKey: users[i].privKey.serialize(),
             signer,
@@ -261,14 +258,14 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
 
     describe("1 signup, 1 message", () => {
       after(() => {
-        cleanVanilla();
+        clean();
       });
 
       before(async () => {
         // deploy the smart contracts
-        maciAddresses = await deploy({ ...ceremonyDeployArgs, signer, useQv: false });
+        maciAddresses = await deploy({ ...ceremonyDeployArgs, signer });
         // deploy a poll contract
-        await deployPoll({ ...deployPollArgs, signer });
+        await deployPoll({ ...deployPollArgs, signer, useQuadraticVoting: false });
       });
 
       it("should signup one user", async () => {
@@ -283,7 +280,7 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
           nonce: 1n,
           pollId: 0n,
           newVoteWeight: 9n,
-          maciContractAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciAddress,
           salt: genRandomSalt(),
           privateKey: users[0].privKey.serialize(),
           signer,
@@ -308,14 +305,14 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
 
     describe("25 signups, 100 messages", () => {
       after(() => {
-        cleanVanilla();
+        clean();
       });
 
       before(async () => {
         // deploy the smart contracts
-        maciAddresses = await deploy({ ...ceremonyDeployArgs, signer, useQv: false });
+        maciAddresses = await deploy({ ...ceremonyDeployArgs, signer });
         // deploy a poll contract
-        await deployPoll({ ...deployPollArgs, signer });
+        await deployPoll({ ...deployPollArgs, signer, useQuadraticVoting: false });
       });
 
       it("should signup 25 users", async () => {
@@ -339,7 +336,7 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
             nonce: 1n,
             pollId: 0n,
             newVoteWeight: randomVoteWeight,
-            maciContractAddress: maciAddresses.maciAddress,
+            maciAddress: maciAddresses.maciAddress,
             salt: genRandomSalt(),
             privateKey: users[i].privKey.serialize(),
             signer,

@@ -50,12 +50,12 @@
     "@types/chai": "^4.3.11",
     "@types/chai-as-promised": "^7.1.8",
     "@types/mocha": "^10.0.6",
-    "@types/node": "^20.11.30",
+    "@types/node": "^20.12.7",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
-    "mocha": "^10.3.0",
+    "mocha": "^10.4.0",
     "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.1",
-    "typescript": "^5.4.3"
+    "typescript": "^5.4.5"
   }
 }

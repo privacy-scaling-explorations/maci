@@ -10,8 +10,6 @@ import { exit } from "process";
 import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import type { ConfigurableTaskDefinition, HardhatRuntimeEnvironment, TaskArguments } from "hardhat/types";
 
-import { parseArtifact } from "../../ts/abi";
-
 import { ContractStorage } from "./ContractStorage";
 import { EContracts, IDeployParams, IDeployStep, IDeployStepCatalog, IGetContractParams } from "./types";
 
@@ -409,8 +407,12 @@ export class Deployment {
     const deployer = signer || (await this.getDeployer());
     const contractAddress = address || this.storage.mustGetAddress(name, this.hre!.network.name, key);
 
-    const [abi] = parseArtifact(name.toString());
+    const factory = await this.hre?.ethers.getContractAt(name.toString(), contractAddress, deployer);
 
-    return new BaseContract(contractAddress, abi, deployer) as T;
+    if (!factory) {
+      throw new Error(`Contract ${name} not found`);
+    }
+
+    return factory.connect(deployer) as unknown as T;
   }
 }

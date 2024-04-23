@@ -45,7 +45,7 @@ import {
   verifyArgs,
   timeTravelArgs,
 } from "../constants";
-import { cleanVanilla, isArm } from "../utils";
+import { clean, isArm } from "../utils";
 
 describe("keyChange tests", function test() {
   const useWasm = isArm();
@@ -85,7 +85,7 @@ describe("keyChange tests", function test() {
 
   describe("keyChange and new vote (new vote has same nonce)", () => {
     after(() => {
-      cleanVanilla();
+      clean();
     });
 
     const keypair1 = new Keypair();
@@ -115,7 +115,7 @@ describe("keyChange tests", function test() {
         nonce: initialNonce,
         pollId,
         newVoteWeight: initialVoteAmount,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: keypair1.privKey.serialize(),
         signer,
@@ -130,7 +130,7 @@ describe("keyChange tests", function test() {
         nonce: initialNonce,
         pollId,
         newVoteWeight: initialVoteAmount - 1n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: keypair1.privKey.serialize(),
         signer,
@@ -155,7 +155,7 @@ describe("keyChange tests", function test() {
 
   describe("keyChange and new vote (new vote has greater nonce and different vote option)", () => {
     after(() => {
-      cleanVanilla();
+      clean();
     });
 
     const keypair1 = new Keypair();
@@ -185,7 +185,7 @@ describe("keyChange tests", function test() {
         nonce: initialNonce,
         pollId,
         newVoteWeight: initialVoteAmount,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: keypair1.privKey.serialize(),
         signer,
@@ -200,7 +200,7 @@ describe("keyChange tests", function test() {
         nonce: initialNonce + 1n,
         pollId,
         newVoteWeight: initialVoteAmount - 1n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: keypair1.privKey.serialize(),
         signer,
@@ -225,7 +225,7 @@ describe("keyChange tests", function test() {
 
   describe("keyChange and new vote (new vote has same nonce and different vote option)", () => {
     after(() => {
-      cleanVanilla();
+      clean();
     });
 
     const keypair1 = new Keypair();
@@ -255,7 +255,7 @@ describe("keyChange tests", function test() {
         nonce: initialNonce,
         pollId,
         newVoteWeight: initialVoteAmount,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: keypair1.privKey.serialize(),
         signer,
@@ -270,7 +270,7 @@ describe("keyChange tests", function test() {
         nonce: initialNonce,
         pollId,
         newVoteWeight: initialVoteAmount - 3n,
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
         privateKey: keypair1.privKey.serialize(),
         signer,

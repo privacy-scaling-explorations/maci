@@ -17,7 +17,6 @@ import {
   verify,
   DeployedContracts,
   PollContracts,
-  SubsidyData,
 } from "maci-cli";
 import { getDefaultSigner } from "maci-contracts";
 import { MaciState, MaxValues, TreeDepths } from "maci-core";
@@ -41,8 +40,8 @@ import {
   maxMessages,
   messageBatchDepth,
 } from "./utils/constants";
-import { ITestSuite, Subsidy } from "./utils/interfaces";
-import { expectSubsidy, expectTally, genTestUserCommands, isArm } from "./utils/utils";
+import { ITestSuite } from "./utils/interfaces";
+import { expectTally, genTestUserCommands, isArm } from "./utils/utils";
 
 chai.use(chaiAsPromised);
 
@@ -79,19 +78,23 @@ describe("Integration tests", function test() {
       messageTreeDepth: MSG_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       messageBatchDepth: MSG_BATCH_DEPTH,
-      processMessagesZkeyPath: path.resolve(
+      processMessagesZkeyPathQv: path.resolve(
         __dirname,
         "../../../cli/zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test.0.zkey",
       ),
-      tallyVotesZkeyPath: path.resolve(
+      tallyVotesZkeyPathQv: path.resolve(
         __dirname,
         "../../../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey",
       ),
-      vkRegistry: vkRegistryAddress,
-      subsidyZkeyPath: path.resolve(
+      processMessagesZkeyPathNonQv: path.resolve(
         __dirname,
-        "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test/SubsidyPerBatch_10-1-2_test.0.zkey",
+        "../../../cli/zkeys/ProcessMessagesNonQv_10-2-1-2_test/ProcessMessagesNonQv_10-2-1-2_test.0.zkey",
       ),
+      tallyVotesZkeyPathNonQv: path.resolve(
+        __dirname,
+        "../../../cli/zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test.0.zkey",
+      ),
+      vkRegistry: vkRegistryAddress,
       signer,
     });
   });
@@ -117,9 +120,9 @@ describe("Integration tests", function test() {
       messageTreeDepth: MSG_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       coordinatorPubkey: coordinatorKeypair.pubKey.serialize(),
-      subsidyEnabled: true,
       maciAddress: contracts.maciAddress,
       signer,
+      useQuadraticVoting: true,
     });
 
     const treeDepths: TreeDepths = {
@@ -146,10 +149,6 @@ describe("Integration tests", function test() {
       fs.unlinkSync(path.resolve(__dirname, "../../../cli/tally.json"));
     }
 
-    if (fs.existsSync(path.resolve(__dirname, "../../../cli/subsidy.json"))) {
-      fs.unlinkSync(path.resolve(__dirname, "../../../cli/subsidy.json"));
-    }
-
     const directory = path.resolve(__dirname, "../../../cli/proofs/");
 
     if (!fs.existsSync(directory)) {
@@ -174,9 +173,6 @@ describe("Integration tests", function test() {
 
   data.suites.forEach((testCase) => {
     it(testCase.description, async () => {
-      // check if we have subsidy enabled
-      const subsidyEnabled = Boolean(testCase.subsidy?.enabled);
-
       const users = genTestUserCommands(testCase.numUsers, testCase.numVotesPerUser, testCase.bribers, testCase.votes);
 
       // loop through all users and generate keypair + signup
@@ -222,7 +218,7 @@ describe("Integration tests", function test() {
             nonce,
             pollId,
             newVoteWeight: newVoteWeight!,
-            maciContractAddress: contracts.maciAddress,
+            maciAddress: contracts.maciAddress,
             salt,
             // if it's a key change command, then we pass the old private key otherwise just pass the current
             privateKey: isKeyChange ? oldKeypair.privKey.serialize() : user.keypair.privKey.serialize(),
@@ -252,12 +248,12 @@ describe("Integration tests", function test() {
 
       // merge messages
       await expect(
-        mergeMessages({ pollId, maciContractAddress: contracts.maciAddress, signer }),
+        mergeMessages({ pollId, maciAddress: contracts.maciAddress, signer }),
       ).to.eventually.not.be.rejectedWith();
 
       // merge signups
       await expect(
-        mergeSignups({ pollId, maciContractAddress: contracts.maciAddress, signer }),
+        mergeSignups({ pollId, maciAddress: contracts.maciAddress, signer }),
       ).to.eventually.not.be.rejectedWith();
 
       // generate proofs
@@ -270,11 +266,6 @@ describe("Integration tests", function test() {
           "../../../cli/zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test.0.zkey",
         ),
         pollId,
-        subsidyFile: path.resolve(__dirname, "../../../cli/subsidy.json"),
-        subsidyZkey: path.resolve(
-          __dirname,
-          "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test/SubsidyPerBatch_10-1-2_test.0.zkey",
-        ),
         rapidsnark: `${homedir()}/rapidsnark/build/prover`,
         processWitgen: path.resolve(
           __dirname,
@@ -292,14 +283,6 @@ describe("Integration tests", function test() {
           __dirname,
           "../../../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_cpp/TallyVotes_10-1-2_test.dat",
         ),
-        subsidyWitgen: path.resolve(
-          __dirname,
-          "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test/SubsidyPerBatch_10-1-2_test_cpp/SubsidyPerBatch_10-1-2_test",
-        ),
-        subsidyDatFile: path.resolve(
-          __dirname,
-          "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test/SubsidyPerBatch_10-1-2_test_cpp/SubsidyPerBatch_10-1-2_test.dat",
-        ),
         coordinatorPrivKey: coordinatorKeypair.privKey.serialize(),
         maciAddress: contracts.maciAddress,
         processWasm: path.resolve(
@@ -310,11 +293,8 @@ describe("Integration tests", function test() {
           __dirname,
           "../../../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm",
         ),
-        subsidyWasm: path.resolve(
-          __dirname,
-          "../../../cli/zkeys/SubsidyPerBatch_10-1-2_test/SubsidyPerBatch_10-1-2_test_js/SubsidyPerBatch_10-1-2_test.wasm",
-        ),
         useWasm,
+        useQuadraticVoting: true,
         signer,
       });
       expect(tallyData).to.not.eq(undefined);
@@ -328,23 +308,14 @@ describe("Integration tests", function test() {
         tallyData,
       );
 
-      if (subsidyEnabled) {
-        const subsidy = JSON.parse(
-          fs.readFileSync(path.resolve(__dirname, "../../../cli/subsidy.json")).toString(),
-        ) as Subsidy;
-        expectSubsidy(maxMessages, testCase.subsidy?.expectedSubsidy ?? [], subsidy);
-      }
-
       // prove on chain if everything matches
       await expect(
         proveOnChain({
           pollId,
           proofDir: path.resolve(__dirname, "../../../cli/proofs"),
-          subsidyEnabled,
           maciAddress: contracts.maciAddress,
           messageProcessorAddress: pollContracts.messageProcessor,
           tallyAddress: pollContracts.tally,
-          subsidyAddress: pollContracts.subsidy,
           signer,
         }),
       ).to.not.be.rejected;
@@ -353,16 +324,9 @@ describe("Integration tests", function test() {
       await expect(
         verify({
           pollId,
-          subsidyEnabled,
           tallyData,
           maciAddress: contracts.maciAddress,
           tallyAddress: pollContracts.tally,
-          subsidyAddress: pollContracts.subsidy,
-          subsidyData: subsidyEnabled
-            ? (JSON.parse(
-                fs.readFileSync(path.resolve(__dirname, "../../../cli/subsidy.json")).toString(),
-              ) as SubsidyData)
-            : undefined,
           signer,
         }),
       ).to.not.be.rejected;

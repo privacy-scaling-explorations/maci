@@ -87,14 +87,7 @@ describe("EAS Gatekeeper", () => {
     let maciContract: MACI;
 
     before(async () => {
-      const r = await deployTestContracts(
-        initialVoiceCreditBalance,
-        STATE_TREE_DEPTH,
-        signer,
-        true,
-        true,
-        easGatekeeper,
-      );
+      const r = await deployTestContracts(initialVoiceCreditBalance, STATE_TREE_DEPTH, signer, true, easGatekeeper);
 
       maciContract = r.maciContract;
     });
@@ -108,8 +101,9 @@ describe("EAS Gatekeeper", () => {
 
     it("should fail to set MACI instance when the caller is not the owner", async () => {
       const [, secondSigner] = await getSigners();
-      await expect(easGatekeeper.connect(secondSigner).setMaciInstance(signerAddress)).to.be.revertedWith(
-        "Ownable: caller is not the owner",
+      await expect(easGatekeeper.connect(secondSigner).setMaciInstance(signerAddress)).to.be.revertedWithCustomError(
+        easGatekeeper,
+        "OwnableUnauthorizedAccount",
       );
     });
 

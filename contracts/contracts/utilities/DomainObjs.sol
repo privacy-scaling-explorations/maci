@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.20;
 
 /// @title DomainObjs
 /// @notice An utility contract that holds
@@ -7,6 +7,12 @@ pragma solidity ^0.8.10;
 contract DomainObjs {
   /// @notice the length of a MACI message
   uint8 public constant MESSAGE_DATA_LENGTH = 10;
+
+  /// @notice voting modes
+  enum Mode {
+    QV,
+    NON_QV
+  }
 
   /// @title Message
   /// @notice this struct represents a MACI message

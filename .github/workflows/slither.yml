@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v3
         with:
-          version: latest
+          version: 8
 
       - name: Use Node.js 20
         uses: actions/setup-node@v4
@@ -33,7 +33,7 @@ jobs:
           pnpm run build
 
       - name: Run Slither
-        uses: crytic/slither-action@v0.3.1
+        uses: crytic/slither-action@v0.3.2
         continue-on-error: true
         id: slither
         with:

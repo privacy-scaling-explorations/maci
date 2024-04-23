@@ -1,11 +1,7 @@
 import {
   Tally__factory as TallyFactory,
-  TallyNonQv__factory as TallyNonQvFactory,
   MACI__factory as MACIFactory,
-  Subsidy__factory as SubsidyFactory,
   Poll__factory as PollFactory,
-  Tally,
-  TallyNonQv,
 } from "maci-contracts/typechain-types";
 import { hash2, hash3, genTreeCommitment, hashLeftRight } from "maci-crypto";
 
@@ -17,17 +13,14 @@ import { info, logError, logGreen, logYellow, success } from "../utils/theme";
 import { verifyPerVOSpentVoiceCredits, verifyTallyResults } from "../utils/verifiers";
 
 /**
- * Verify the results of a poll and optionally the subsidy results on-chain
+ * Verify the results of a poll on-chain
  * @param VerifyArgs - The arguments for the verify command
  */
 export const verify = async ({
   pollId,
-  subsidyEnabled,
   tallyData,
   maciAddress,
   tallyAddress,
-  subsidyAddress,
-  subsidyData,
   signer,
   quiet = true,
 }: VerifyArgs): Promise<void> => {
@@ -59,31 +52,13 @@ export const verify = async ({
     logError(`Error: there is no MACI contract deployed at ${maciContractAddress}.`);
   }
 
-  let subsidyContractAddress = "";
-
-  // subsidy validation
-  if (subsidyEnabled) {
-    subsidyContractAddress = subsidyAddress!;
-
-    if (!subsidyContractAddress) {
-      logError("Subsidy contract address is empty");
-    }
-
-    if (!(await contractExists(signer.provider!, subsidyContractAddress))) {
-      logError(`Error: there is no Subsidy contract deployed at ${subsidyContractAddress}.`);
-    }
-  }
-
   // get the contract objects
   const maciContract = MACIFactory.connect(maciContractAddress, signer);
   const pollAddr = await maciContract.polls(pollId);
 
   const pollContract = PollFactory.connect(pollAddr, signer);
 
-  const subsidyContract = subsidyEnabled ? SubsidyFactory.connect(subsidyContractAddress, signer) : undefined;
-  const tallyContract = useQv
-    ? TallyFactory.connect(tallyContractAddress, signer)
-    : TallyNonQvFactory.connect(tallyContractAddress, signer);
+  const tallyContract = TallyFactory.connect(tallyContractAddress, signer);
 
   // verification
   const onChainTallyCommitment = BigInt(await tallyContract.tallyCommitment());
@@ -145,7 +120,7 @@ export const verify = async ({
     logGreen(quiet, success("The on-chain tally commitment matches."));
 
     // verify total spent voice credits on-chain
-    const isValid = await (tallyContract as Tally).verifySpentVoiceCredits(
+    const isValid = await tallyContract.verifySpentVoiceCredits(
       tallyResults.totalSpentVoiceCredits.spent,
       tallyResults.totalSpentVoiceCredits.salt,
       newResultsCommitment,
@@ -160,7 +135,7 @@ export const verify = async ({
 
     // verify per vote option voice credits on-chain
     const failedSpentCredits = await verifyPerVOSpentVoiceCredits(
-      tallyContract as Tally,
+      tallyContract,
       tallyResults,
       voteOptionTreeDepth,
       newSpentVoiceCreditsCommitment,
@@ -207,10 +182,11 @@ export const verify = async ({
     logGreen(quiet, success("The on-chain tally commitment matches."));
 
     // verify total spent voice credits on-chain
-    const isValid = await (tallyContract as TallyNonQv).verifySpentVoiceCredits(
+    const isValid = await tallyContract.verifySpentVoiceCredits(
       tallyResults.totalSpentVoiceCredits.spent,
       tallyResults.totalSpentVoiceCredits.salt,
       newResultsCommitment,
+      0n,
     );
 
     if (isValid) {
@@ -236,36 +212,5 @@ export const verify = async ({
         )}`,
       );
     }
-  }
-
-  // verify subsidy result if subsidy file is provided
-  if (subsidyEnabled && subsidyData && subsidyContract !== undefined) {
-    const onChainSubsidyCommitment = BigInt(await subsidyContract.subsidyCommitment());
-
-    logYellow(quiet, info(`on-chain subsidy commitment: ${onChainSubsidyCommitment.toString(16)}`));
-
-    // check the results commitment
-    const validResultsSubsidyCommitment = subsidyData.newSubsidyCommitment.match(/0x[a-fA-F0-9]+/);
-
-    if (!validResultsSubsidyCommitment) {
-      logError("Invalid results commitment format");
-    }
-
-    if (subsidyData.results.subsidy.length !== numVoteOptions) {
-      logError("Wrong number of vote options.");
-    }
-
-    // compute the new SubsidyCommitment
-    const newSubsidyCommitment = genTreeCommitment(
-      subsidyData.results.subsidy.map((x) => BigInt(x)),
-      BigInt(subsidyData.results.salt),
-      voteOptionTreeDepth,
-    );
-
-    if (onChainSubsidyCommitment !== newSubsidyCommitment) {
-      logError("The on-chain subsidy commitment does not match.");
-    }
-
-    logGreen(quiet, success("The on-chain subsidy commitment matches."));
   }
 };

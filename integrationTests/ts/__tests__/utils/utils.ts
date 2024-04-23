@@ -18,7 +18,7 @@ import { arch } from "os";
 import type { TallyData } from "maci-cli";
 
 import { defaultVote } from "./constants";
-import { Subsidy, IVote, IBriber, IDeployedTestContracts } from "./interfaces";
+import { IVote, IBriber, IDeployedTestContracts } from "./interfaces";
 import { UserCommand } from "./user";
 
 /**
@@ -138,24 +138,6 @@ export const expectTally = (
   expect(tallyFile.results.tally).to.deep.equal(genTally);
   expect(tallyFile.perVOSpentVoiceCredits?.tally).to.deep.equal(genPerVOSpentVoiceCredits);
   expect(tallyFile.totalSpentVoiceCredits.spent).to.eq(expectedTotalSpentVoiceCredits.toString());
-};
-
-/**
- * Assertion function to ensure that the subsidy results are as expected
- * @param maxMessages - the max number of messages
- * @param expectedSubsidy - the expected subsidy values
- * @param SubsidyFile - the subsidy file itself as an object
- */
-export const expectSubsidy = (maxMessages: number, expectedSubsidy: number[], subsidyFile: Subsidy): void => {
-  const genSubsidy = Array(maxMessages).fill("0");
-
-  expectedSubsidy.forEach((value, index) => {
-    if (value !== 0) {
-      genSubsidy[index] = value.toString();
-    }
-  });
-
-  expect(subsidyFile.results.subsidy).to.deep.equal(genSubsidy);
 };
 
 /**

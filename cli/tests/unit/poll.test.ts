@@ -15,7 +15,7 @@ import {
 } from "../../ts/commands";
 import { DeployedContracts, PollContracts } from "../../ts/utils";
 import { deployPollArgs, setVerifyingKeysArgs, deployArgs } from "../constants";
-import { cleanVanilla } from "../utils";
+import { clean } from "../utils";
 
 describe("poll", () => {
   let maciAddresses: DeployedContracts;
@@ -34,7 +34,7 @@ describe("poll", () => {
 
   describe("check deploy and get poll", () => {
     after(() => {
-      cleanVanilla();
+      clean();
     });
 
     before(async () => {

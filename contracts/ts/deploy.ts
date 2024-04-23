@@ -2,8 +2,9 @@ import { type ContractFactory, type Signer, BaseContract } from "ethers";
 
 import type { IDeployMaciArgs, IDeployedMaci, IDeployedPoseidonContracts } from "./types";
 
+import { Deployment } from "../tasks/helpers/Deployment";
+import { EContracts } from "../tasks/helpers/types";
 import {
-  AccQueueQuinaryMaci,
   ConstantInitialVoiceCreditProxy,
   FreeForAllGatekeeper,
   PoseidonT3__factory as PoseidonT3Factory,
@@ -14,7 +15,6 @@ import {
   MockVerifier,
   PollFactory,
   MessageProcessorFactory,
-  SubsidyFactory,
   TallyFactory,
   PoseidonT3,
   PoseidonT4,
@@ -25,11 +25,10 @@ import {
   TopupCredit,
   Verifier,
   VkRegistry,
-  TallyNonQvFactory,
+  AccQueueQuinaryMaci__factory as AccQueueQuinaryMaciFactory,
 } from "../typechain-types";
 
-import { parseArtifact } from "./abi";
-import { getDefaultSigner, getFeeData, log } from "./utils";
+import { getDefaultSigner, log } from "./utils";
 
 /**
  * Link Poseidon libraries to a Smart Contract
@@ -52,19 +51,19 @@ export const linkPoseidonLibraries = async (
   quiet = false,
 ): Promise<ContractFactory> => {
   log(`Linking Poseidon libraries to ${solFileToLink}`, quiet);
-  const { ethers } = await import("hardhat");
+  const hre = await import("hardhat");
+  const deployment = Deployment.getInstance(hre);
+  deployment.setHre(hre);
+  const deployer = signer || (await deployment.getDeployer());
 
-  const contractFactory = await ethers.getContractFactory(solFileToLink, {
-    signer: signer || (await getDefaultSigner()),
-    libraries: {
-      PoseidonT3: poseidonT3Address,
-      PoseidonT4: poseidonT4Address,
-      PoseidonT5: poseidonT5Address,
-      PoseidonT6: poseidonT6Address,
-    },
-  });
-
-  return contractFactory;
+  return deployment.linkPoseidonLibraries(
+    solFileToLink as EContracts,
+    poseidonT3Address,
+    poseidonT4Address,
+    poseidonT5Address,
+    poseidonT6Address,
+    deployer,
+  );
 };
 
 /**
@@ -81,17 +80,11 @@ export const deployContract = async <T extends BaseContract>(
   ...args: unknown[]
 ): Promise<T> => {
   log(`Deploying ${contractName}`, quiet);
-  const { ethers } = await import("hardhat");
+  const hre = await import("hardhat");
+  const deployment = Deployment.getInstance(hre);
+  deployment.setHre(hre);
 
-  const contractFactory = await ethers.getContractFactory(contractName, signer || (await getDefaultSigner()));
-  const feeData = await getFeeData();
-  const contract = await contractFactory.deploy(...args, {
-    maxFeePerGas: feeData?.maxFeePerGas,
-    maxPriorityFeePerGas: feeData?.maxPriorityFeePerGas,
-  });
-  await contract.deploymentTransaction()!.wait();
-
-  return contract as unknown as T;
+  return deployment.deployContract(contractName as EContracts, signer, ...args);
 };
 
 /**
@@ -212,19 +205,13 @@ export const deployPoseidonContracts = async (
  */
 export const deployContractWithLinkedLibraries = async <T extends BaseContract>(
   contractFactory: ContractFactory,
-  name: string,
-  quiet = false,
   ...args: unknown[]
 ): Promise<T> => {
-  log(`Deploying ${name}`, quiet);
-  const feeData = await getFeeData();
-  const contract = await contractFactory.deploy(...args, {
-    maxFeePerGas: feeData?.maxFeePerGas,
-    maxPriorityFeePerGas: feeData?.maxPriorityFeePerGas,
-  });
-  await contract.deploymentTransaction()!.wait();
+  const hre = await import("hardhat");
+  const deployment = Deployment.getInstance(hre);
+  deployment.setHre(hre);
 
-  return contract as T;
+  return deployment.deployContractWithLinkedLibraries(contractFactory, ...args);
 };
 
 /**
@@ -241,6 +228,7 @@ export const deployPollFactory = async (signer: Signer, quiet = false): Promise<
     poseidonContracts.PoseidonT5Contract.getAddress(),
     poseidonContracts.PoseidonT6Contract.getAddress(),
   ]);
+
   const contractFactory = await linkPoseidonLibraries(
     "PollFactory",
     poseidonT3Contract,
@@ -250,7 +238,8 @@ export const deployPollFactory = async (signer: Signer, quiet = false): Promise<
     signer,
     quiet,
   );
-  return deployContractWithLinkedLibraries(contractFactory, "PollFactory", quiet);
+
+  return deployContractWithLinkedLibraries(contractFactory);
 };
 
 /**
@@ -265,7 +254,6 @@ export const deployMaci = async ({
   signer,
   poseidonAddresses,
   stateTreeDepth = 10,
-  useQv = true,
   quiet = true,
 }: IDeployMaciArgs): Promise<IDeployedMaci> => {
   const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } =
@@ -283,14 +271,7 @@ export const deployMaci = async ({
     poseidonT6,
   }));
 
-  const contractsToLink = [
-    "MACI",
-    "PollFactory",
-    "MessageProcessorFactory",
-    "TallyFactory",
-    "TallyNonQvFactory",
-    "SubsidyFactory",
-  ];
+  const contractsToLink = ["MACI", "PollFactory", "MessageProcessorFactory", "TallyFactory"];
 
   // Link Poseidon contracts to MACI
   const linkedContractFactories = await Promise.all(
@@ -307,67 +288,35 @@ export const deployMaci = async ({
     ),
   );
 
-  const [
-    maciContractFactory,
-    pollFactoryContractFactory,
-    messageProcessorFactory,
-    tallyFactory,
-    tallyFactoryNonQv,
-    subsidyFactory,
-  ] = await Promise.all(linkedContractFactories);
+  const [maciContractFactory, pollFactoryContractFactory, messageProcessorFactory, tallyFactory] =
+    await Promise.all(linkedContractFactories);
 
-  const pollFactoryContract = await deployContractWithLinkedLibraries<PollFactory>(
-    pollFactoryContractFactory,
-    "PollFactory",
-    quiet,
-  );
+  const pollFactoryContract = await deployContractWithLinkedLibraries<PollFactory>(pollFactoryContractFactory);
 
-  const messageProcessorFactoryContract = await deployContractWithLinkedLibraries<MessageProcessorFactory>(
-    messageProcessorFactory,
-    "MessageProcessorFactory",
-    quiet,
-  );
+  const messageProcessorFactoryContract =
+    await deployContractWithLinkedLibraries<MessageProcessorFactory>(messageProcessorFactory);
 
-  // deploy either the qv or non qv tally factory - they both implement the same interface
-  // so as long as maci is concerned, they are interchangeable
-  const tallyFactoryContract = useQv
-    ? await deployContractWithLinkedLibraries<TallyFactory>(tallyFactory, "TallyFactory", quiet)
-    : await deployContractWithLinkedLibraries<TallyNonQvFactory>(tallyFactoryNonQv, "TallyNonQvFactory", quiet);
+  const tallyFactoryContract = await deployContractWithLinkedLibraries<TallyFactory>(tallyFactory);
 
-  const subsidyFactoryContract = await deployContractWithLinkedLibraries<SubsidyFactory>(
-    subsidyFactory,
-    "SubsidyFactory",
-    quiet,
-  );
-
-  const [pollAddr, mpAddr, tallyAddr, subsidyAddr] = await Promise.all([
+  const [pollAddress, messageProcessorAddress, tallyAddress] = await Promise.all([
     pollFactoryContract.getAddress(),
     messageProcessorFactoryContract.getAddress(),
     tallyFactoryContract.getAddress(),
-    subsidyFactoryContract.getAddress(),
   ]);
 
   const maciContract = await deployContractWithLinkedLibraries<MACI>(
     maciContractFactory,
-    "MACI",
-    quiet,
-    pollAddr,
-    mpAddr,
-    tallyAddr,
-    subsidyAddr,
+    pollAddress,
+    messageProcessorAddress,
+    tallyAddress,
     signUpTokenGatekeeperContractAddress,
     initialVoiceCreditBalanceAddress,
     topupCreditContractAddress,
     stateTreeDepth,
   );
 
-  const [AccQueueQuinaryMaciAbi] = parseArtifact("AccQueue");
-  const stateAqContractAddress = await maciContract.stateAq();
-  const stateAqContract = new BaseContract(
-    stateAqContractAddress,
-    AccQueueQuinaryMaciAbi,
-    await getDefaultSigner(),
-  ) as AccQueueQuinaryMaci;
+  const [stateAqContractAddress, deployer] = await Promise.all([maciContract.stateAq(), getDefaultSigner()]);
+  const stateAqContract = AccQueueQuinaryMaciFactory.connect(stateAqContractAddress, signer || deployer);
 
   return {
     maciContract,

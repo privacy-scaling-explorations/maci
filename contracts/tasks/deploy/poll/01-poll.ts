@@ -1,8 +1,9 @@
 /* eslint-disable no-console */
-import { ZeroAddress } from "ethers";
 import { PubKey } from "maci-domainobjs";
 
-import { AccQueueBinary, MACI, Poll } from "../../../typechain-types";
+import type { AccQueueBinary, MACI, Poll } from "../../../typechain-types";
+
+import { EMode } from "../../../ts/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
 import { EContracts } from "../../helpers/types";
@@ -53,12 +54,13 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").setAction(async (_, hre
   const messageTreeSubDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageBatchDepth");
   const messageTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageTreeDepth");
   const voteOptionTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "voteOptionTreeDepth");
-  const subsidyEnabled = deployment.getDeployConfigField<boolean | null>(EContracts.Poll, "subsidyEnabled") ?? false;
+
   const useQuadraticVoting =
     deployment.getDeployConfigField<boolean | null>(EContracts.Poll, "useQuadraticVoting") ?? false;
   const unserializedKey = PubKey.deserialize(coordinatorPubkey);
+  const mode = useQuadraticVoting ? EMode.QV : EMode.NON_QV;
 
-  const [pollContractAddress, messageProcessorContractAddress, tallyContractAddress, subsidyContractAddress] =
+  const [pollContractAddress, messageProcessorContractAddress, tallyContractAddress] =
     await maciContract.deployPoll.staticCall(
       pollDuration,
       {
@@ -70,7 +72,7 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").setAction(async (_, hre
       unserializedKey.asContractParam(),
       verifierContractAddress,
       vkRegistryContractAddress,
-      subsidyEnabled,
+      mode,
     );
 
   const tx = await maciContract.deployPoll(
@@ -84,7 +86,7 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").setAction(async (_, hre
     unserializedKey.asContractParam(),
     verifierContractAddress,
     vkRegistryContractAddress,
-    subsidyEnabled,
+    mode,
   );
 
   const receipt = await tx.wait();
@@ -102,7 +104,7 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").setAction(async (_, hre
   });
 
   const tallyContract = await deployment.getContract({
-    name: useQuadraticVoting ? EContracts.Tally : EContracts.TallyNonQv,
+    name: EContracts.Tally,
     address: tallyContractAddress,
   });
 
@@ -135,15 +137,21 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").setAction(async (_, hre
       id: EContracts.MessageProcessor,
       key: `poll-${pollId}`,
       contract: messageProcessorContract,
-      args: [verifierContractAddress, vkRegistryContractAddress, pollContractAddress],
+      args: [verifierContractAddress, vkRegistryContractAddress, pollContractAddress, mode],
       network: hre.network.name,
     }),
 
     storage.register({
-      id: useQuadraticVoting ? EContracts.Tally : EContracts.TallyNonQv,
+      id: EContracts.Tally,
       key: `poll-${pollId}`,
       contract: tallyContract,
-      args: [verifierContractAddress, vkRegistryContractAddress, pollContractAddress, messageProcessorContractAddress],
+      args: [
+        verifierContractAddress,
+        vkRegistryContractAddress,
+        pollContractAddress,
+        messageProcessorContractAddress,
+        mode,
+      ],
       network: hre.network.name,
     }),
 
@@ -156,19 +164,4 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").setAction(async (_, hre
       network: hre.network.name,
     }),
   ]);
-
-  if (subsidyContractAddress && subsidyContractAddress !== ZeroAddress) {
-    const subsidyContract = await deployment.getContract({
-      name: EContracts.Subsidy,
-      address: subsidyContractAddress,
-    });
-
-    await storage.register({
-      id: EContracts.Subsidy,
-      key: `poll-${pollId}`,
-      contract: subsidyContract,
-      args: [verifierContractAddress, vkRegistryContractAddress, pollContractAddress, messageProcessorContractAddress],
-      network: hre.network.name,
-    });
-  }
 });

@@ -1,14 +1,4 @@
-import type {
-  AccQueue,
-  MACI,
-  MessageProcessor,
-  Poll,
-  Subsidy,
-  Tally,
-  TallyNonQv,
-  Verifier,
-  VkRegistry,
-} from "../../typechain-types";
+import type { AccQueue, MACI, MessageProcessor, Poll, Tally, Verifier, VkRegistry } from "../../typechain-types";
 import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import type { BaseContract, BigNumberish, Signer } from "ethers";
 import type { Libraries, TaskArguments } from "hardhat/types";
@@ -120,26 +110,6 @@ export interface IProveParams {
   tallyWasm?: string;
 
   /**
-   * The file to store the subsidy proof
-   */
-  subsidyFile?: string;
-
-  /**
-   * The path to the subsidy zkey file
-   */
-  subsidyZkey?: string;
-
-  /**
-   * The path to the subsidy witnessgen binary
-   */
-  subsidyWitgen?: string;
-
-  /**
-   * The path to the subsidy wasm file
-   */
-  subsidyWasm?: string;
-
-  /**
    * Whether to use quadratic voting or not
    */
   useQuadraticVoting?: boolean;
@@ -200,11 +170,6 @@ export interface IProofGeneratorParams {
   tallyOutputFile: string;
 
   /**
-   * File to store the subsidy proof
-   */
-  subsidyOutputFile?: string;
-
-  /**
    * Message processing circuit files
    */
   mp: ICircuitFiles;
@@ -213,11 +178,6 @@ export interface IProofGeneratorParams {
    * Tally circuit files
    */
   tally: ICircuitFiles;
-
-  /**
-   * Subsidy circuit files
-   */
-  subsidy?: ICircuitFiles;
 
   /**
    * Path to the rapidsnark binary
@@ -255,9 +215,19 @@ export interface ICircuitFiles {
  */
 export interface IPrepareStateParams {
   /**
-   * MACI contract address
+   * MACI contract
    */
-  maciContractAddress: string;
+  maciContract: MACI;
+
+  /**
+   * Poll contract
+   */
+  pollContract: Poll;
+
+  /**
+   * MessageAq contract
+   */
+  messageAq: AccQueue;
 
   /**
    * Poll id
@@ -347,12 +317,7 @@ export interface IProverParams {
   /**
    * Tally contract typechain wrapper
    */
-  tallyContract: Tally | TallyNonQv;
-
-  /**
-   * Subsidy contract typechain wrapper
-   */
-  subsidyContract?: Subsidy;
+  tallyContract: Tally;
 }
 
 /**
@@ -512,8 +477,6 @@ export enum EContracts {
   PollFactory = "PollFactory",
   MessageProcessorFactory = "MessageProcessorFactory",
   TallyFactory = "TallyFactory",
-  TallyNonQvFactory = "TallyNonQvFactory",
-  SubsidyFactory = "SubsidyFactory",
   PoseidonT3 = "PoseidonT3",
   PoseidonT4 = "PoseidonT4",
   PoseidonT5 = "PoseidonT5",
@@ -521,9 +484,7 @@ export enum EContracts {
   VkRegistry = "VkRegistry",
   Poll = "Poll",
   Tally = "Tally",
-  TallyNonQv = "TallyNonQv",
   MessageProcessor = "MessageProcessor",
-  Subsidy = "Subsidy",
   AccQueue = "AccQueue",
   AccQueueQuinaryBlankSl = "AccQueueQuinaryBlankSl",
   AccQueueQuinaryMaci = "AccQueueQuinaryMaci",

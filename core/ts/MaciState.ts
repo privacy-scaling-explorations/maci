@@ -75,7 +75,6 @@ export class MaciState implements IMaciState {
       treeDepths,
       {
         messageBatchSize,
-        subsidyBatchSize: STATE_TREE_ARITY ** treeDepths.intStateTreeDepth,
         tallyBatchSize: STATE_TREE_ARITY ** treeDepths.intStateTreeDepth,
       },
       maxValues,

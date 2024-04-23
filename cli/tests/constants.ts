@@ -29,9 +29,7 @@ export const tallyVotesTestZkeyPath = "./zkeys/TallyVotes_10-1-2_test/TallyVotes
 export const processMessageTestNonQvZkeyPath =
   "./zkeys/ProcessMessagesNonQv_10-2-1-2_test/ProcessMessagesNonQv_10-2-1-2_test.0.zkey";
 export const tallyVotesTestNonQvZkeyPath = "./zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test.0.zkey";
-export const subsidyTestZkeyPath = "./zkeys/SubsidyPerBatch_10-1-2_test/SubsidyPerBatch_10-1-2_test.0.zkey";
 export const testTallyFilePath = "./tally.json";
-export const testSubsidyFilePath = "./subsidy.json";
 export const testProofsDirPath = "./proofs";
 export const testProcessMessagesWitnessPath =
   "./zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test_cpp/ProcessMessages_10-2-1-2_test";
@@ -41,16 +39,10 @@ export const testTallyVotesWitnessPath =
   "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_cpp/TallyVotes_10-1-2_test";
 export const testTallyVotesWitnessDatPath =
   "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_cpp/TallyVotes_10-1-2_test.dat";
-export const testSubsidyWitnessPath =
-  "./zkeys/SubsidyPerBatch_10-1-2_test/SubsidyPerBatch_10-1-2_test_cpp/SubsidyPerBatch_10-1-2_test";
-export const testSubsidyWitnessDatPath =
-  "./zkeys/SubsidyPerBatch_10-1-2_test/SubsidyPerBatch_10-1-2_test_cpp/SubsidyPerBatch_10-1-2_test.dat";
 export const testProcessMessagesWasmPath =
   "./zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test_js/ProcessMessages_10-2-1-2_test.wasm";
 export const testTallyVotesWasmPath =
   "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm";
-export const testSubsidyWasmPath =
-  "./zkeys/SubsidyPerBatch_10-1-2_test/SubsidyPerBatch_10-1-2_test_js/SubsidyPerBatch_10-1-2_test.wasm";
 export const testRapidsnarkPath = `${homedir()}/rapidsnark/build/prover`;
 export const ceremonyProcessMessagesZkeyPath = "./zkeys/ProcessMessages_6-9-2-3/processMessages_6-9-2-3.zkey";
 export const ceremonyProcessMessagesNonQvZkeyPath =
@@ -102,8 +94,8 @@ export const setVerifyingKeysArgs: Omit<SetVerifyingKeysArgs, "signer"> = {
   messageTreeDepth: MSG_TREE_DEPTH,
   voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
   messageBatchDepth: MSG_BATCH_DEPTH,
-  processMessagesZkeyPath: processMessageTestZkeyPath,
-  tallyVotesZkeyPath: tallyVotesTestZkeyPath,
+  processMessagesZkeyPathQv: processMessageTestZkeyPath,
+  tallyVotesZkeyPathQv: tallyVotesTestZkeyPath,
 };
 
 export const setVerifyingKeysNonQvArgs: Omit<SetVerifyingKeysArgs, "signer"> = {
@@ -113,8 +105,8 @@ export const setVerifyingKeysNonQvArgs: Omit<SetVerifyingKeysArgs, "signer"> = {
   messageTreeDepth: MSG_TREE_DEPTH,
   voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
   messageBatchDepth: MSG_BATCH_DEPTH,
-  processMessagesZkeyPath: processMessageTestNonQvZkeyPath,
-  tallyVotesZkeyPath: tallyVotesTestNonQvZkeyPath,
+  processMessagesZkeyPathNonQv: processMessageTestNonQvZkeyPath,
+  tallyVotesZkeyPathNonQv: tallyVotesTestNonQvZkeyPath,
 };
 
 export const checkVerifyingKeysArgs: Omit<CheckVerifyingKeysArgs, "signer"> = {
@@ -142,7 +134,6 @@ export const mergeSignupsArgs: Omit<MergeSignupsArgs, "signer"> = {
 export const proveOnChainArgs: Omit<ProveOnChainArgs, "signer"> = {
   pollId: 0n,
   proofDir: testProofsDirPath,
-  subsidyEnabled: false,
 };
 
 export const verifyArgs = (): Omit<VerifyArgs, "signer"> => {
@@ -150,7 +141,6 @@ export const verifyArgs = (): Omit<VerifyArgs, "signer"> => {
 
   return {
     pollId: 0n,
-    subsidyEnabled: false,
     tallyData,
     maciAddress: tallyData.maci,
     tallyAddress: tallyData.tallyAddress,
@@ -168,5 +158,5 @@ export const deployPollArgs: Omit<DeployPollArgs, "signer"> = {
   messageTreeDepth: MSG_TREE_DEPTH,
   voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
   coordinatorPubkey: coordinatorPubKey,
-  subsidyEnabled: false,
+  useQuadraticVoting: true,
 };

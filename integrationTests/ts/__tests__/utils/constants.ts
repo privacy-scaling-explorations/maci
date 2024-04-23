@@ -28,7 +28,6 @@ export const signUpDuration = 120;
 export const votingDuration = 120;
 export const signUpDurationInSeconds = 3600;
 export const votingDurationInSeconds = 3600;
-export const coordinatorPrivKey = "2222222222263902553431241761119057960280734584214105336279476766401963593688";
 export const messageBatchSize = 4;
 export const tallyBatchSize = 4;
 export const quadVoteTallyBatchSize = 4;
