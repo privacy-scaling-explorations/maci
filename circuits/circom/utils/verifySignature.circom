@@ -7,7 +7,6 @@ include "./pointbits.circom";
 include "./bitify.circom";
 include "./escalarmulany.circom";
 include "./escalarmulfix.circom";
-
 // local imports
 include "./hashers.circom";
 
@@ -31,33 +30,33 @@ template EdDSAPoseidonVerifier_patched() {
 
     // Ensure S<Subgroup Order.
     // convert the signature scalar S into its binary representation.
-    var snum2bits[254] = Num2Bits(254)(S);
+    var computedNum2Bits[254] = Num2Bits(254)(S);
 
-    var compConstantIn[254];
+    var computedCompConstantIn[254];
     for (var i=0; i<253; i++) {
-        compConstantIn[i] = snum2bits[i];
+        computedCompConstantIn[i] = computedNum2Bits[i];
     }
-    compConstantIn[253] = 0;
+    computedCompConstantIn[253] = 0;
 
     // A component that ensures S is within a valid range, 
     // comparing it against a constant representing the subgroup order.
-    var compConstant = CompConstant(2736030358979909402780800718157159386076813972158567259200215660948447373040)(compConstantIn);
+    var computedCompConstant = CompConstant(2736030358979909402780800718157159386076813972158567259200215660948447373040)(computedCompConstantIn);
 
     // Calculate the h = H(R,A, msg).
-    var h2bits[254] = Num2Bits_strict()(PoseidonHasher(5)([R8x, R8y, Ax, Ay, M]));
+    var computedH2Bits[254] = Num2Bits_strict()(PoseidonHasher(5)([R8x, R8y, Ax, Ay, M]));
 
     // These components perform point doubling operations on the public key
     // to align it within the correct subgroup as part of the verification process.
-    var (dbl1XOut, dbl1YOut) = BabyDbl()(Ax, Ay);
-    var (dbl2XOut, dbl2YOut) = BabyDbl()(dbl1XOut, dbl1YOut);
-    var (dbl3XOut, dbl3YOut) = BabyDbl()(dbl2XOut, dbl2YOut);
+    var (computedDbl1XOut, computedDbl1YOut) = BabyDbl()(Ax, Ay);
+    var (computedDbl2XOut, computedDbl2YOut) = BabyDbl()(computedDbl1XOut, computedDbl1YOut);
+    var (computedDbl3XOut, computedDbl3YOut) = BabyDbl()(computedDbl2XOut, computedDbl2YOut);
 
     // A component that performs scalar multiplication of the 
     // adjusted public key by the hash output, essential for the verification calculation.
-    var mulAny[2] = EscalarMulAny(254)(h2bits, [dbl3XOut, dbl3YOut]);
+    var computedEscalarMulAny[2] = EscalarMulAny(254)(computedH2Bits, [computedDbl3XOut, computedDbl3YOut]);
 
     // Compute the right side: right =  R8 + right2.
-    var (addRightXOut, addRightYOut) = BabyAdd()(R8x, R8y, mulAny[0], mulAny[1]);
+    var (computedAddRightXOut, computedAddRightYOut) = BabyAdd()(R8x, R8y, computedEscalarMulAny[0], computedEscalarMulAny[1]);
 
     // Calculate left side of equation left = S*B8.
     var BASE8[2] = [
@@ -66,23 +65,23 @@ template EdDSAPoseidonVerifier_patched() {
     ];
     
     // Fixed-base scalar multiplication of a base point by S.
-    var mulFix[2] = EscalarMulFix(254, BASE8)(snum2bits);
+    var computedEscalarMulFix[2] = EscalarMulFix(254, BASE8)(computedNum2Bits);
 
     // Components to check the equality of x and y coordinates 
     // between the computed and expected points of the signature.
-    var rightValid = IsEqual()([mulFix[0], addRightXOut]);
-    var leftValid = IsEqual()([mulFix[1], addRightYOut]);
-    var leftRightValid = IsEqual()([rightValid + leftValid, 2]);
+    var computedIsRightValid = IsEqual()([computedEscalarMulFix[0], computedAddRightXOut]);
+    var computedIsLeftValid = IsEqual()([computedEscalarMulFix[1], computedAddRightYOut]);
+    var computedIsLeftRightValid = IsEqual()([computedIsRightValid + computedIsLeftValid, 2]);
 
     // Components to handle edge cases and ensure that all conditions 
     // for a valid signature are met, including the 
     // public key not being zero and other integrity checks.
-    var isZero = IsZero()(Ax);
-    var iz = IsEqual()([isZero, 0]);
-    var isCcZero = IsZero()(compConstant);
-    var isValid = IsEqual()([leftRightValid + iz + isCcZero, 3]);
+    var computedIsAxZero = IsZero()(Ax);
+    var computedIsAxEqual = IsEqual()([computedIsAxZero, 0]);
+    var computedIsCcZero = IsZero()(computedCompConstant);
+    var computedIsValid = IsEqual()([computedIsLeftRightValid + computedIsAxEqual + computedIsCcZero, 3]);
 
-    valid <== isValid;
+    valid <== computedIsValid;
 }
 
 /**
@@ -105,17 +104,17 @@ template VerifySignature() {
     signal output valid;
 
     // Hash the preimage using the Poseidon hashing function configured for four inputs.
-    var M = PoseidonHasher(4)(preimage);
+    var computedM = PoseidonHasher(4)(preimage);
 
     // Instantiate the patched EdDSA Poseidon verifier with the necessary inputs.
-    var verifier = EdDSAPoseidonVerifier_patched()(
+    var computedVerifier = EdDSAPoseidonVerifier_patched()(
         pubKey[0],
         pubKey[1],
         S,
         R8[0],
         R8[1],
-        M
+        computedM
     );
 
-    valid <== verifier;
+    valid <== computedVerifier;
 }

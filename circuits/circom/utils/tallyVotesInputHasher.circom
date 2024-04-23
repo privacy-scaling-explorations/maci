@@ -1,10 +1,9 @@
 pragma circom 2.0.0;
 
-// local imports
-include "./hashers.circom";
-
 // zk-kit imports
 include "./safe-comparators.circom";
+// local imports
+include "./hashers.circom";
 
 /**
  * Generates a sha256 hash of the provided tally inputs.
@@ -24,9 +23,9 @@ template TallyVotesInputHasher() {
     signal output hash;
 
     // Unpack the elements.
-    var unpacked[2] = UnpackElement(2)(packedVals);
-    batchNum <== unpacked[1];
-    numSignUps <== unpacked[0];
+    var computedUnpackedElement[2] = UnpackElement(2)(packedVals);
+    batchNum <== computedUnpackedElement[1];
+    numSignUps <== computedUnpackedElement[0];
 
     hash <== Sha256Hasher(4)([
         packedVals,

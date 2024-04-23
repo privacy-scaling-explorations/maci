@@ -1,11 +1,10 @@
 pragma circom 2.0.0;
 
-// zk-kit imports
-include "./poseidon-cipher.circom";
-
 // circomlib import
 include "./sha256/sha256.circom"; 
 include "./bitify.circom";
+// zk-kit imports
+include "./poseidon-cipher.circom";
 
 /**
  * Computes the SHA-256 hash of an array of input signals. Each input is first
@@ -14,30 +13,34 @@ include "./bitify.circom";
  * converted back to numbers.
  */
 template Sha256Hasher(length) {
-    var inBits = 256 * length;
+    var SHA_LENGTH = 256;
+    var inBits = SHA_LENGTH * length;
 
     signal input in[length];
     signal output hash;
 
-    component n2b[length];
-    for (var i = 0; i < length; i++) {
-        n2b[i] = Num2Bits(256);
-        n2b[i].in <== in[i];
-    }
+    // Array to store all bits of inputs for SHA-256 input.
+    var computedBits[inBits];
 
-    component sha = Sha256(inBits);
+    // Convert each input into bits and store them in the `bits` array.
     for (var i = 0; i < length; i++) {
-        for (var j = 0; j < 256; j++) {
-            sha.in[(i * 256) + 255 - j] <== n2b[i].out[j];
+        var computedBitsInput[SHA_LENGTH] = Num2Bits(SHA_LENGTH)(in[i]);
+        for (var j = 0; j < SHA_LENGTH; j++) {
+            computedBits[(i * SHA_LENGTH) + (SHA_LENGTH - 1) - j] = computedBitsInput[j];
         }
     }
 
-    component shaOut = Bits2Num(256);
-    for (var i = 0; i < 256; i++) {
-        shaOut.in[i] <== sha.out[255-i];
-    }
+    // SHA-256 hash computation.
+    var computedSha256Bits[SHA_LENGTH] = Sha256(inBits)(computedBits);
 
-    hash <== shaOut.out;
+    // Convert SHA-256 output back to number.
+    var computedBitsToNumInput[SHA_LENGTH];
+    for (var i = 0; i < SHA_LENGTH; i++) {
+        computedBitsToNumInput[i] = computedSha256Bits[(SHA_LENGTH - 1) - i];
+    }
+    var computedSha256Number = Bits2Num(256)(computedBitsToNumInput); 
+
+    hash <== computedSha256Number;
 }
 
 /**
@@ -51,18 +54,18 @@ template PoseidonHasher(n) {
     signal output out;
 
     // [0, inputs].
-    var extendedInputs[n + 1];
-    extendedInputs[0] = 0;
+    var computedExtendedInputs[n + 1];
+    computedExtendedInputs[0] = 0;
 
     for (var i = 0; i < n; i++) {
-        extendedInputs[i + 1] = inputs[i];
+        computedExtendedInputs[i + 1] = inputs[i];
     }
 
     // Compute the Poseidon hash of the extended inputs.
-    var perm[n + 1]; 
-    perm = PoseidonPerm(n + 1)(extendedInputs);
+    var computedPoseidonPerm[n + 1]; 
+    computedPoseidonPerm = PoseidonPerm(n + 1)(computedExtendedInputs);
 
-    out <== perm[0];
+    out <== computedPoseidonPerm[0];
 }
 
 /**
@@ -89,8 +92,8 @@ template MessageHasher() {
     //     in[12]
     // )
 
-    var hasher5_1;
-    hasher5_1 = PoseidonHasher(5)([
+    var computedHasher5_1;
+    computedHasher5_1 = PoseidonHasher(5)([
         in[1],
         in[2],
         in[3],
@@ -98,8 +101,8 @@ template MessageHasher() {
         in[5]
     ]);
 
-    var hasher5_2;
-    hasher5_2 = PoseidonHasher(5)([
+    var computedHasher5_2;
+    computedHasher5_2 = PoseidonHasher(5)([
         in[6],        
         in[7],
         in[8],
@@ -109,8 +112,8 @@ template MessageHasher() {
 
     hash <== PoseidonHasher(5)([
         in[0],
-        hasher5_1,
-        hasher5_2,
+        computedHasher5_1,
+        computedHasher5_2,
         encPubKey[0],
         encPubKey[1]        
     ]);

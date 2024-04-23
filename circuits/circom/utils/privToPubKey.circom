@@ -19,10 +19,10 @@ template PrivToPubKey() {
     signal output pubKey[2];
 
     // Convert the private key to bits.
-    var privBits[253] = Num2Bits(253)(privKey);
+    var computedPrivBits[253] = Num2Bits(253)(privKey);
 
     // Perform scalar multiplication with the basepoint.
-    var mulFix[2] = EscalarMulFix(253, BASE8)(privBits);
+    var computedEscalarMulFix[2] = EscalarMulFix(253, BASE8)(computedPrivBits);
 
-    pubKey <== mulFix;
+    pubKey <== computedEscalarMulFix;
 }

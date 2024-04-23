@@ -1,13 +1,11 @@
 pragma circom 2.0.0;
 
+// circomlib import
+include "./bitify.circom";
 // zk-kit imports
 include "./ecdh.circom";
 include "./unpack-element.circom";
 include "./poseidon-cipher.circom";
-
-// circomlib import
-include "./bitify.circom";
-
 // local imports
 include "./hashers.circom";
 
@@ -44,10 +42,10 @@ template MessageToCommand() {
     signal output packedCommandOut[PACKED_CMD_LENGTH];
 
     // Generate the shared key for decrypting the message.
-    var ecdh[2] = Ecdh()(encPrivKey, encPubKey);
+    var computedEcdh[2] = Ecdh()(encPrivKey, encPubKey);
 
     // Decrypt the message using Poseidon decryption.
-    var decryptor[DECRYPTED_LENGTH] = PoseidonDecryptWithoutCheck(MSG_LENGTH)(
+    var computedDecryptor[DECRYPTED_LENGTH] = PoseidonDecryptWithoutCheck(MSG_LENGTH)(
         [
             // nb. the first one is the msg type => skip.
             message[1], message[2], message[3], message[4],
@@ -55,31 +53,31 @@ template MessageToCommand() {
             message[9], message[10]            
         ],
         0, 
-        ecdh
+        computedEcdh
     );
 
     // Save the decrypted message into a packed command signal.
     signal packedCommand[PACKED_CMD_LENGTH];
     for (var i = 0; i < PACKED_CMD_LENGTH; i++) {
-        packedCommand[i] <== decryptor[i];
+        packedCommand[i] <== computedDecryptor[i];
     }
 
-    var unpack[UNPACK_ELEM_LENGTH] = UnpackElement(UNPACK_ELEM_LENGTH)(packedCommand[0]);
+    var computedUnpackElement[UNPACK_ELEM_LENGTH] = UnpackElement(UNPACK_ELEM_LENGTH)(packedCommand[0]);
 
     // Everything below were packed into the first element.
-    stateIndex <== unpack[4];
-    voteOptionIndex <== unpack[3];
-    newVoteWeight <== unpack[2];
-    nonce <== unpack[1];
-    pollId <== unpack[0];
+    stateIndex <== computedUnpackElement[4];
+    voteOptionIndex <== computedUnpackElement[3];
+    newVoteWeight <== computedUnpackElement[2];
+    nonce <== computedUnpackElement[1];
+    pollId <== computedUnpackElement[0];
 
     newPubKey[0] <== packedCommand[1];
     newPubKey[1] <== packedCommand[2];
     salt <== packedCommand[3];
 
-    sigR8[0] <== decryptor[4];
-    sigR8[1] <== decryptor[5];
-    sigS <== decryptor[6];
+    sigR8[0] <== computedDecryptor[4];
+    sigR8[1] <== computedDecryptor[5];
+    sigS <== computedDecryptor[6];
 
     packedCommandOut <== packedCommand;
 }

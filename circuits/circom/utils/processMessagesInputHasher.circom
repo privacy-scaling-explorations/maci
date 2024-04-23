@@ -1,10 +1,9 @@
 pragma circom 2.0.0;
 
-// local imports
-include "hashers.circom";
-
 // zk-kit imports
 include "./unpack-element.circom";
+// local imports
+include "hashers.circom";
 
 /**
  * Processes various inputs, including packed values and public keys, to produce a SHA256 hash. 
@@ -38,20 +37,20 @@ template ProcessMessagesInputHasher() {
     signal output hash;
     
     // 1. Unpack packedVals and ensure that it is valid.
-    var unpack[UNPACK_ELEM_LENGTH] = UnpackElement(UNPACK_ELEM_LENGTH)(packedVals);
+    var computedUnpackElement[UNPACK_ELEM_LENGTH] = UnpackElement(UNPACK_ELEM_LENGTH)(packedVals);
 
-    maxVoteOptions <== unpack[3];
-    numSignUps <== unpack[2];
-    batchStartIndex <== unpack[1];
-    batchEndIndex <== unpack[0];
+    maxVoteOptions <== computedUnpackElement[3];
+    numSignUps <== computedUnpackElement[2];
+    batchStartIndex <== computedUnpackElement[1];
+    batchEndIndex <== computedUnpackElement[0];
 
     // 2. Hash coordPubKey.
-    var pubKeyHash = PoseidonHasher(2)(coordPubKey);
+    var computedPubKey = PoseidonHasher(2)(coordPubKey);
 
     // 3. Hash the 6 inputs with SHA256.
     hash <== Sha256Hasher(6)([
         packedVals,
-        pubKeyHash,
+        computedPubKey,
         msgRoot,
         currentSbCommitment,
         newSbCommitment,

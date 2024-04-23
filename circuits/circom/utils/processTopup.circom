@@ -2,13 +2,11 @@ pragma circom 2.0.0;
 
 // circomlib import
 include "./mux1.circom";
-
+// zk-kit imports
+include "./safe-comparators.circom";
 // local imports
 include "./hashers.circom";
 include "../trees/incrementalQuinaryTree.circom";
-
-// zk-kit imports
-include "./safe-comparators.circom";
 
 /**
  * Processes top-ups for a state tree, managing updates based on the transaction's message type and amount. 
@@ -61,33 +59,33 @@ template ProcessTopup(stateTreeDepth) {
     index <== stateTreeIndex * (msgType - 1);
     
     // check the state index and, if invalid, set index and amount to zero.
-    var validStateLeafIndex = LessEqThan(N_BITS)([index, numSignUps]);
-    var indexMux = Mux1()([0, index], validStateLeafIndex);
-    var amtMux =  Mux1()([0, amt], validStateLeafIndex);
+    var computedIsStateLeafIndexValid = LessEqThan(N_BITS)([index, numSignUps]);
+    var computedIndexMux = Mux1()([0, index], computedIsStateLeafIndexValid);
+    var computedAmtMux =  Mux1()([0, amt], computedIsStateLeafIndexValid);
     
     // check less than field size.
-    newCreditBalance <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + amtMux;
+    newCreditBalance <== stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + computedAmtMux;
 
-    var validCreditBalance = LessEqThan(N_BITS)([
+    var computedIsCreditBalanceValid = LessEqThan(N_BITS)([
         stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX],
         newCreditBalance
     ]);
 
     // If the new one is <= the old one, then we have a valid topup.
-    var creditBalanceMux = Mux1()([stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX], newCreditBalance], validCreditBalance);
+    var computedCreditBalanceMux = Mux1()([stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX], newCreditBalance], computedIsCreditBalanceValid);
 
     // update the voice balance balance.
-    var newStateLeafHash = PoseidonHasher(4)([
+    var computedNewStateLeaf = PoseidonHasher(4)([
         stateLeaf[STATE_LEAF_PUB_X_IDX],
         stateLeaf[STATE_LEAF_PUB_Y_IDX],
-        creditBalanceMux,
+        computedCreditBalanceMux,
         stateLeaf[STATE_LEAF_TIMESTAMP_IDX]
     ]);
 
-    var stateLeafPathIndices[stateTreeDepth] = QuinGeneratePathIndices(stateTreeDepth)(indexMux);
+    var computedStateLeafPathIndices[stateTreeDepth] = QuinGeneratePathIndices(stateTreeDepth)(computedIndexMux);
     newStateRoot <== QuinTreeInclusionProof(stateTreeDepth)(
-        newStateLeafHash,
-        stateLeafPathIndices,
+        computedNewStateLeaf,
+        computedStateLeafPathIndices,
         stateLeafPathElements
     );
 }

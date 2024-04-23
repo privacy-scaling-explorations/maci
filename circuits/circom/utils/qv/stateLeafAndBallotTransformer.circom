@@ -2,7 +2,6 @@ pragma circom 2.0.0;
 
 // circomlib import
 include "./mux1.circom";
-
 // local import
 include "./messageValidator.circom";
 
@@ -69,7 +68,7 @@ template StateLeafAndBallotTransformer() {
     signal output isValid;
 
     // Check if the command / message is valid.
-    var messageValidator = MessageValidator()(
+    var computedMessageValidator = MessageValidator()(
         cmdStateIndex,
         numSignUps,
         cmdVoteOptionIndex,
@@ -90,18 +89,18 @@ template StateLeafAndBallotTransformer() {
     // If the message is valid then we swap out the public key.
     // This means using a Mux1() for pubKey[0] and another one
     // for pubKey[1].
-    var newSlPubKey0Mux = Mux1()([slPubKey[0], cmdNewPubKey[0]], messageValidator);
-    var newSlPubKey1Mux = Mux1()([slPubKey[1], cmdNewPubKey[1]], messageValidator);
+    var computedNewSlPubKey0Mux = Mux1()([slPubKey[0], cmdNewPubKey[0]], computedMessageValidator);
+    var computedNewSlPubKey1Mux = Mux1()([slPubKey[1], cmdNewPubKey[1]], computedMessageValidator);
 
-    newSlPubKey[0] <== newSlPubKey0Mux;
-    newSlPubKey[1] <== newSlPubKey1Mux;
+    newSlPubKey[0] <== computedNewSlPubKey0Mux;
+    newSlPubKey[1] <== computedNewSlPubKey1Mux;
 
     // If the message is valid, then we swap out the ballot nonce
     // using a Mux1().
-    var newBallotNonceMux = Mux1()([ballotNonce, cmdNonce], messageValidator);
+    var computedNewBallotNonceMux = Mux1()([ballotNonce, cmdNonce], computedMessageValidator);
 
-    newBallotNonce <== newBallotNonceMux;
+    newBallotNonce <== computedNewBallotNonceMux;
 
-    isValid <== messageValidator;
+    isValid <== computedMessageValidator;
 }
 

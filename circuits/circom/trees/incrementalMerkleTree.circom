@@ -38,10 +38,10 @@ template MerkleTreeInclusionProof(n_levels) {
             path_index[i]
         );
 
-        var hasher = PoseidonHasher(2)([mux[0], mux[1]]);
+        var computedLevelHash = PoseidonHasher(2)([mux[0], mux[1]]);
 
         // Store the resulting hash as the next level's hash.
-        levelHashes[i + 1] <== hasher;
+        levelHashes[i + 1] <== computedLevelHash;
     }
 
     // Set the final level hash as the root.
@@ -62,13 +62,13 @@ template LeafExists(levels){
   // The root of the Merkle tree, against which the inclusion is verified.
   signal input root;
 
-  var merkletree = MerkleTreeInclusionProof(levels)(
+  var computedMerkleRoot = MerkleTreeInclusionProof(levels)(
     leaf,
     path_index,
     path_elements
   );
 
-  root === merkletree;
+  root === computedMerkleRoot;
 }
 
 /**
@@ -94,20 +94,20 @@ template CheckRoot(levels) {
     // Total number of hashers used in constructing the tree, one less than the total number of leaves,
     // since each level of the tree combines two elements into one.
     var numHashers = totalLeaves - 1;
-    var hashers[numHashers];
+    var computedLevelHashers[numHashers];
 
     // Initialize hashers for the leaves, each taking two adjacent leaves as inputs.
     for (var i = 0; i < numLeafHashers; i++){
-        hashers[i] = PoseidonHasher(2)([leaves[i*2], leaves[i*2+1]]);
+        computedLevelHashers[i] = PoseidonHasher(2)([leaves[i*2], leaves[i*2+1]]);
     }
 
     // Initialize hashers for intermediate levels, each taking the outputs of two hashers from the previous level.
     var k = 0;
     for (var i = numLeafHashers; i < numLeafHashers + numIntermediateHashers; i++) {
-        hashers[i] = PoseidonHasher(2)([hashers[k*2], hashers[k*2+1]]);
+        computedLevelHashers[i] = PoseidonHasher(2)([hashers[k*2], hashers[k*2+1]]);
         k++;
     }
 
     // Connect the output of the final hasher in the array to the root output signal.
-    root <== hashers[numHashers-1];
+    root <== computedLevelHashers[numHashers-1];
 }

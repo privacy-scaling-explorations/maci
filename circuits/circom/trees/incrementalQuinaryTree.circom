@@ -1,12 +1,10 @@
 pragma circom 2.0.0;
 
-// zk-kit import
-include "./safe-comparators.circom";
-
 // circomlib imports
 include "./bitify.circom";
 include "./mux1.circom";
-
+// zk-kit import
+include "./safe-comparators.circom";
 // local imports
 include "../utils/calculateTotal.circom";
 include "../utils/hashers.circom";
@@ -37,22 +35,22 @@ template QuinSelector(choices) {
     signal output out;
     
     // Ensure that index < choices.
-    var lessThan = SafeLessThan(3)([index, choices]);
-    lessThan === 1;
+    var computedLtIndex = SafeLessThan(3)([index, choices]);
+    computedLtIndex === 1;
 
     // Initialize an array to hold the results of equality checks.
-    var results[choices];
+    var computedResults[choices];
 
     // For each item, check whether its index equals the input index.
     // The result is multiplied by the corresponding input value.
     for (var i = 0; i < choices; i++) {
-        var isEq = IsEqual()([i, index]);
+        var computedIsIndexEqual = IsEqual()([i, index]);
 
-        results[i] = isEq * in[i];
+        computedResults[i] = computedIsIndexEqual * in[i];
     }
 
     // Calculate the total sum of the results array.
-    out <== CalculateTotal(choices)(results);
+    out <== CalculateTotal(choices)(computedResults);
 }
 
 /**
@@ -97,15 +95,15 @@ template Splicer(numItems) {
 
     for (var i = 0; i < NUM_OUTPUT_ITEMS; i++) {
         // Determines if current index is greater than the insertion index.
-        var isAfterInsertPoint = SafeGreaterThan(3)([i, index]);
+        var computedIsIndexAfterInsertPoint = SafeGreaterThan(3)([i, index]);
 
         // Calculates correct index for original items, adjusting for leaf insertion.
-        var adjustedIndex = i - isAfterInsertPoint;
+        var computedAdjustedIndex = i - computedIsIndexAfterInsertPoint;
 
         // Selects item from the original array or the leaf for insertion.
-        var selected = QuinSelector(NUM_OUTPUT_ITEMS)([in[0], in[1], in[2], in[3], 0], adjustedIndex);
-        var isEq = IsEqual()([index, i]);
-        var mux = Mux1()([selected, leaf], isEq);
+        var computedQuinSelected = QuinSelector(NUM_OUTPUT_ITEMS)([in[0], in[1], in[2], in[3], 0], computedAdjustedIndex);
+        var computedIsIndexEqual = IsEqual()([index, i]);
+        var mux = Mux1()([computedQuinSelected, leaf], computedIsIndexEqual);
 
         out[i] <== mux;
     }
@@ -131,18 +129,18 @@ template QuinTreeInclusionProof(levels) {
 
     // Iteratively hash each level of path_elements with the leaf or previous hash
     for (var i = 0; i < levels; i++) {
-        var splicedLeaf[LEAVES_PER_NODE] = Splicer(LEAVES_PER_PATH_LEVEL)(
+        var computedSplicedLeaf[LEAVES_PER_NODE] = Splicer(LEAVES_PER_PATH_LEVEL)(
             [path_elements[i][0], path_elements[i][1], path_elements[i][2], path_elements[i][3]], 
             currentLeaf, 
             path_index[i]
         );
 
         currentLeaf = PoseidonHasher(5)([
-            splicedLeaf[0],
-            splicedLeaf[1],
-            splicedLeaf[2],
-            splicedLeaf[3],
-            splicedLeaf[4]
+            computedSplicedLeaf[0],
+            computedSplicedLeaf[1],
+            computedSplicedLeaf[2],
+            computedSplicedLeaf[3],
+            computedSplicedLeaf[4]
         ]);
     }
 
@@ -164,9 +162,9 @@ template QuinLeafExists(levels){
     signal input root;
 
     // Verify the Merkle path.
-    var verifier = QuinTreeInclusionProof(levels)(leaf, path_index, path_elements);
+    var computedRoot = QuinTreeInclusionProof(levels)(leaf, path_index, path_elements);
 
-    root === verifier;
+    root === computedRoot;
 }
 
 /**
@@ -184,10 +182,10 @@ template QuinBatchLeavesExists(levels, batchLevels) {
     signal input path_elements[levels - batchLevels][LEAVES_PER_PATH_LEVEL];
 
     // Compute the subroot (= leaf).
-    var subroot = QuinCheckRoot(batchLevels)(leaves);
+    var computedQuinSubroot = QuinCheckRoot(batchLevels)(leaves);
 
     // Check if the Merkle path is valid
-    QuinLeafExists(levels - batchLevels)(subroot, path_index, path_elements, root);
+    QuinLeafExists(levels - batchLevels)(computedQuinSubroot, path_index, path_elements, root);
 }
 
 /**
@@ -204,7 +202,7 @@ template QuinGeneratePathIndices(levels) {
     signal n[levels + 1];
 
     var m = in;
-    var results[levels];
+    var computedResults[levels];
 
     for (var i = 0; i < levels; i++) {
         // circom's best practices suggests to avoid using <-- unless you
@@ -218,17 +216,17 @@ template QuinGeneratePathIndices(levels) {
 
     for (var i = 0; i < levels; i++) {
         // Check that each output element is less than the base.
-        var lessThan = SafeLessThan(3)([out[i], BASE]);
-        lessThan === 1;
+        var computedIsOutputElementLessThanBase = SafeLessThan(3)([out[i], BASE]);
+        computedIsOutputElementLessThanBase === 1;
 
         // Re-compute the total sum.
-        results[i] = out[i] * (BASE ** i);
+        computedResults[i] = out[i] * (BASE ** i);
     }
     
     // Check that the total sum matches the index.
-    var calculateTotal = CalculateTotal(levels)(results);
+    var computedCalculateTotal = CalculateTotal(levels)(computedResults);
 
-    calculateTotal === in;
+    computedCalculateTotal === in;
 }
 
 /**
@@ -252,11 +250,11 @@ template QuinCheckRoot(levels) {
         numHashers += LEAVES_PER_NODE ** i;
     }
 
-    var hashers[numHashers]; 
+    var computedHashers[numHashers]; 
 
     // Initialize hashers for the leaves.
     for (var i = 0; i < numLeafHashers; i++) {
-        hashers[i] = PoseidonHasher(5)([
+        computedHashers[i] = PoseidonHasher(5)([
             leaves[i*LEAVES_PER_NODE+0],
             leaves[i*LEAVES_PER_NODE+1],
             leaves[i*LEAVES_PER_NODE+2],
@@ -268,15 +266,15 @@ template QuinCheckRoot(levels) {
     // Initialize hashers for intermediate nodes and compute the root.
     var k = 0;
     for (var i = numLeafHashers; i < numHashers; i++) {
-        hashers[i] = PoseidonHasher(5)([
-            hashers[k*LEAVES_PER_NODE+0],
-            hashers[k*LEAVES_PER_NODE+1],
-            hashers[k*LEAVES_PER_NODE+2],
-            hashers[k*LEAVES_PER_NODE+3],
-            hashers[k*LEAVES_PER_NODE+4]
+        computedHashers[i] = PoseidonHasher(5)([
+            computedHashers[k*LEAVES_PER_NODE+0],
+            computedHashers[k*LEAVES_PER_NODE+1],
+            computedHashers[k*LEAVES_PER_NODE+2],
+            computedHashers[k*LEAVES_PER_NODE+3],
+            computedHashers[k*LEAVES_PER_NODE+4]
         ]);
         k++;
     }
 
-    root <== hashers[numHashers-1]; 
+    root <== computedHashers[numHashers-1]; 
 }

@@ -2,19 +2,17 @@ pragma circom 2.0.0;
 
 // circomlib import
 include "./comparators.circom";
-
+// zk-kit import
+include "./unpack-element.circom";
 // local imports
 include "../../trees/incrementalQuinaryTree.circom";
 include "../../utils/calculateTotal.circom";
 include "../../utils/hashers.circom";
 include "../../utils/tallyVotesInputHasher.circom";
 
-// zk-kit import
-include "./unpack-element.circom";
-
 /**
  * Processes batches of votes and verifies their validity in a Merkle tree structure.
- * This template does not support the Quadratic Voting (QV).
+ * This template does not support Quadratic Voting (QV).
  */
 template TallyVotesNonQv(
     stateTreeDepth,
@@ -23,15 +21,15 @@ template TallyVotesNonQv(
 ) {
     // Ensure there's at least one level in the vote option tree.
     assert(voteOptionTreeDepth > 0);
-    // Ensure the internal state tree has at least one level.
+    // Ensure the intermediate state tree has at least one level.
     assert(intStateTreeDepth > 0);
-    // The internal state tree must be smaller than the full state tree.
+    // The intermediate state tree must be smaller than the full state tree.
     assert(intStateTreeDepth < stateTreeDepth); 
 
     // Number of children per node in the tree, defining the tree's branching factor.
     var TREE_ARITY = 5;
 
-    // The number of ballots processed at once, determined by the depth of the internal state tree.
+    // The number of ballots processed at once, determined by the depth of the intermediate state tree.
     var batchSize = TREE_ARITY ** intStateTreeDepth;
     // Number of voting options available, determined by the depth of the vote option tree.
     var numVoteOptions = TREE_ARITY ** voteOptionTreeDepth;
@@ -94,14 +92,14 @@ template TallyVotesNonQv(
     signal batchStartIndex;
 
     // Verify sbCommitment.
-    var sbCommitmentHash = PoseidonHasher(3)([stateRoot, ballotRoot, sbSalt]);
-    sbCommitmentHash === sbCommitment;
+    var computedSbCommitment = PoseidonHasher(3)([stateRoot, ballotRoot, sbSalt]);
+    computedSbCommitment === sbCommitment;
 
     // Verify inputHash.
     var (
-        inputHasherNumSignUps,
-        inputHasherBatchNum,
-        inputHasherHash
+        computedNumSignUps,
+        computedBatchNum,
+        computedHash
     ) = TallyVotesInputHasher()(
         sbCommitment,
         currentTallyCommitment,
@@ -109,78 +107,78 @@ template TallyVotesNonQv(
         packedVals
     );
 
-    inputHash === inputHasherHash;
-    numSignUps <== inputHasherNumSignUps;
-    batchStartIndex <== inputHasherBatchNum * batchSize;
+    inputHash === computedHash;
+    numSignUps <== computedNumSignUps;
+    batchStartIndex <== computedBatchNum * batchSize;
 
     // Validates that the batchStartIndex is within the valid range of sign-ups.
-    var validNumSignups = LessEqThan(50)([batchStartIndex, numSignUps]);
-    validNumSignups === 1;
+    var numSignUpsValid = LessEqThan(50)([batchStartIndex, numSignUps]);
+    numSignUpsValid === 1;
 
     // Hashes each ballot for subroot generation, and checks the existence of the leaf in the Merkle tree.    
-    var ballotHashers[batchSize];
+    var computedBallotHashers[batchSize];
     
     for (var i = 0; i < batchSize; i++) {
-        ballotHashers[i] = PoseidonHasher(2)([ballots[i][BALLOT_NONCE_IDX], ballots[i][BALLOT_VO_ROOT_IDX]]);
+        computedBallotHashers[i] = PoseidonHasher(2)([ballots[i][BALLOT_NONCE_IDX], ballots[i][BALLOT_VO_ROOT_IDX]]);
     }
 
-    var ballotSubroot = QuinCheckRoot(intStateTreeDepth)(ballotHashers);
-    var ballotPathIndices[k] = QuinGeneratePathIndices(k)(inputHasherBatchNum);
+    var computedBallotSubroot = QuinCheckRoot(intStateTreeDepth)(computedBallotHashers);
+    var computedBallotPathIndices[k] = QuinGeneratePathIndices(k)(computedBatchNum);
 
-    // Verifies each ballot's inclusion within the ballot tree.
+    // Verifies each ballot's existence within the ballot tree.
     QuinLeafExists(k)(
-        ballotSubroot,
-        ballotPathIndices,
+        computedBallotSubroot,
+        computedBallotPathIndices,
         ballotPathElements,
         ballotRoot
     );
 
     // Processes vote options, verifying each against its declared root.
-    var voteTree[batchSize];
+    var computedVoteTree[batchSize];
     for (var i = 0; i < batchSize; i++) {
-        voteTree[i] = QuinCheckRoot(voteOptionTreeDepth)(votes[i]);
-        voteTree[i] === ballots[i][BALLOT_VO_ROOT_IDX];
+        computedVoteTree[i] = QuinCheckRoot(voteOptionTreeDepth)(votes[i]);
+        computedVoteTree[i] === ballots[i][BALLOT_VO_ROOT_IDX];
     }
 
     // Calculates new results and spent voice credits based on the current and incoming votes.
-    var isFirstBatch = IsZero()(batchStartIndex);
-    var iz = IsZero()(isFirstBatch);
+    var computedIsFirstBatch = IsZero()(batchStartIndex);
+    var computedIsZero = IsZero()(computedIsFirstBatch);
 
     // Tally the new results.
-    var resultCalc[numVoteOptions];
+    var computedCalculateTotalResult[numVoteOptions];
     for (var i = 0; i < numVoteOptions; i++) {
-        var numsRC[batchSize + 1];
-        numsRC[batchSize] = currentResults[i] * iz;
+        var computedNumsRC[batchSize + 1];
+        computedNumsRC[batchSize] = currentResults[i] * computedIsZero;
         for (var j = 0; j < batchSize; j++) {
-            numsRC[j] = votes[j][i];
+            computedNumsRC[j] = votes[j][i];
         }
 
-        resultCalc[i] = CalculateTotal(batchSize + 1)(numsRC);
+        computedCalculateTotalResult[i] = CalculateTotal(batchSize + 1)(computedNumsRC);
     }
 
     // Tally the new spent voice credit total.
-    var numsSVC[batchSize * numVoteOptions + 1];
-    numsSVC[batchSize * numVoteOptions] = currentSpentVoiceCreditSubtotal * iz;
+    var computedNumsSVC[batchSize * numVoteOptions + 1];
+    computedNumsSVC[batchSize * numVoteOptions] = currentSpentVoiceCreditSubtotal * computedIsZero;
     for (var i = 0; i < batchSize; i++) {
         for (var j = 0; j < numVoteOptions; j++) {
-            numsSVC[i * numVoteOptions + j] = votes[i][j];
+            computedNumsSVC[i * numVoteOptions + j] = votes[i][j];
         }
     }
 
-    var newSpentVoiceCreditSubtotal = CalculateTotal(batchSize * numVoteOptions + 1)(numsSVC);
+    var computedNewSpentVoiceCreditSubtotal = CalculateTotal(batchSize * numVoteOptions + 1)(computedNumsSVC);
 
     // Verifies the updated results and spent credits, ensuring consistency and correctness of tally updates.
     ResultCommitmentVerifierNonQv(voteOptionTreeDepth)(
-        isFirstBatch,
+        computedIsFirstBatch,
         currentTallyCommitment,
         newTallyCommitment,
         currentResults,
         currentResultsRootSalt,
-        resultCalc,
+        computedCalculateTotalResult,
         newResultsRootSalt,
         currentSpentVoiceCreditSubtotal,
         currentSpentVoiceCreditSubtotalSalt,
-        newSpentVoiceCreditSubtotal,
+        computedNewSpentVoiceCreditSubtotal,
         newSpentVoiceCreditSubtotalSalt        
     );
 }
@@ -188,7 +186,7 @@ template TallyVotesNonQv(
 /** 
  * Performs verifications and computations related to current voting results. 
  * Also, computes and outputs a commitment to the new results.
- * This template does not support the Quadratic Voting (QV).
+ * This template does not support Quadratic Voting (QV).
  */
  template ResultCommitmentVerifierNonQv(voteOptionTreeDepth) {
     // Number of children per node in the tree, defining the tree's branching factor.
@@ -224,40 +222,40 @@ template TallyVotesNonQv(
     signal input newSpentVoiceCreditSubtotalSalt;
 
     // Compute the commitment to the current results.
-    var currentResultsRoot = QuinCheckRoot(voteOptionTreeDepth)(currentResults);
+    var computedCurrentResultsRoot = QuinCheckRoot(voteOptionTreeDepth)(currentResults);
 
     // Verify currentResultsCommitmentHash.
-    var currentResultsCommitmentHash = PoseidonHasher(2)([currentResultsRoot, currentResultsRootSalt]);
+    var computedCurrentResultsCommitment = PoseidonHasher(2)([computedCurrentResultsRoot, currentResultsRootSalt]);
 
     // Compute the commitment to the current spent voice credits.
-    var currentSpentVoiceCreditsCommitmentHash = PoseidonHasher(2)([currentSpentVoiceCreditSubtotal, currentSpentVoiceCreditSubtotalSalt]);
+    var computedCurrentSpentVoiceCreditsCommitment = PoseidonHasher(2)([currentSpentVoiceCreditSubtotal, currentSpentVoiceCreditSubtotalSalt]);
 
     // Commit to the current tally
-    var currentTallyCommitmentHasher = PoseidonHasher(2)([currentResultsCommitmentHash, currentSpentVoiceCreditsCommitmentHash]);
+    var computedCurrentTallyCommitment = PoseidonHasher(2)([computedCurrentResultsCommitment, computedCurrentSpentVoiceCreditsCommitment]);
 
     // Check if the current tally commitment is correct only if this is not the first batch.
-    // iz.out is 1 if this is not the first batch.
-    // iz.out is 0 if this is the first batch.
-    var iz = IsZero()(isFirstBatch);
+    // computedIsZero.out is 1 if this is not the first batch.
+    // computedIsZero.out is 0 if this is the first batch.
+    var computedIsZero = IsZero()(isFirstBatch);
 
     // hz is 0 if this is the first batch, currentTallyCommitment should be 0 if this is the first batch.
     // hz is 1 if this is not the first batch, currentTallyCommitment should not be 0 if this is the first batch.
     signal hz;
-    hz <== iz * currentTallyCommitmentHasher;
+    hz <== computedIsZero * computedCurrentTallyCommitment;
     hz === currentTallyCommitment;
 
     // Compute the root of the new results.
-    var newResultsRoot = QuinCheckRoot(voteOptionTreeDepth)(newResults);
-    var newResultsCommitmentHash = PoseidonHasher(2)([newResultsRoot, newResultsRootSalt]);
+    var computedNewResultsRoot = QuinCheckRoot(voteOptionTreeDepth)(newResults);
+    var computedNewResultsCommitment = PoseidonHasher(2)([computedNewResultsRoot, newResultsRootSalt]);
 
     // Compute the commitment to the new spent voice credits value.
-    var newSpentVoiceCreditsCommitmentHash = PoseidonHasher(2)([newSpentVoiceCreditSubtotal, newSpentVoiceCreditSubtotalSalt]);
+    var computedNewSpentVoiceCreditsCommitment = PoseidonHasher(2)([newSpentVoiceCreditSubtotal, newSpentVoiceCreditSubtotalSalt]);
 
     // Commit to the new tally.
-    var newTallyCommitmentHash = PoseidonHasher(2)([
-        newResultsCommitmentHash,
-        newSpentVoiceCreditsCommitmentHash
+    var computedNewTallyCommitment = PoseidonHasher(2)([
+        computedNewResultsCommitment,
+        computedNewSpentVoiceCreditsCommitment
     ]);
     
-    newTallyCommitmentHash === newTallyCommitment;
+    computedNewTallyCommitment === newTallyCommitment;
 }

@@ -2,7 +2,8 @@ pragma circom 2.0.0;
 
 // circomlib import
 include "./mux1.circom";
-
+// zk-kit imports
+include "./safe-comparators.circom";
 // local imports
 include "../../utils/hashers.circom";
 include "../../utils/messageToCommand.circom";
@@ -11,9 +12,6 @@ include "../../utils/processMessagesInputHasher.circom";
 include "../../utils/processTopup.circom";
 include "../../utils/qv/stateLeafAndBallotTransformer.circom";
 include "../../trees/incrementalQuinaryTree.circom";
-
-// zk-kit imports
-include "./safe-comparators.circom";
 
 /**
  * Proves the correctness of processing a batch of MACI messages.
@@ -93,7 +91,7 @@ template ProcessMessages(
     // The salted commitment to the new state and ballot roots.
     signal input newSbCommitment;
     signal input newSbSalt;
-    // The ballots before message processing.
+    // The current ballot root before batch processing.
     signal input currentBallotRoot;
     // Intermediate ballots.
     signal input currentBallots[batchSize][BALLOT_LENGTH];
@@ -124,11 +122,17 @@ template ProcessMessages(
     signal tmpBallotRoot2[batchSize];
 
     // Must verify the current sb commitment.
-    var currentSbCommitmentHash = PoseidonHasher(3)([currentStateRoot, currentBallotRoot, currentSbSalt]);
-    currentSbCommitmentHash === currentSbCommitment;
+    var computedCurrentSbCommitment = PoseidonHasher(3)([currentStateRoot, currentBallotRoot, currentSbSalt]);
+    computedCurrentSbCommitment === currentSbCommitment;
 
-    // Verify "public" inputs and assign unpacked values.
-    var (ihMaxVoteOptions, ihNumSignUps, ihBatchStartIndex, ihBatchEndIndex, ihHash) = ProcessMessagesInputHasher()(
+    // Verify public inputs and assign unpacked values.
+    var (
+        computedMaxVoteOptions, 
+        computedNumSignUps, 
+        computedBatchStartIndex, 
+        computedBatchEndIndex, 
+        computedHash
+    ) = ProcessMessagesInputHasher()(
         packedVals,
         coordPubKey,
         msgRoot,
@@ -138,47 +142,45 @@ template ProcessMessages(
     );
 
     // The unpacked values from packedVals.
-    ihMaxVoteOptions ==> maxVoteOptions;
-    ihNumSignUps ==> numSignUps;
-    ihBatchStartIndex ==> batchStartIndex;
-    ihBatchEndIndex ==> batchEndIndex;
+    computedMaxVoteOptions ==> maxVoteOptions;
+    computedNumSignUps ==> numSignUps;
+    computedBatchStartIndex ==> batchStartIndex;
+    computedBatchEndIndex ==> batchEndIndex;
     // Matching constraints.
-    ihHash === inputHash;
+    computedHash === inputHash;
 
     // 0. Ensure that the maximum vote options signal is valid and if
     // the maximum users signal is valid.
     var maxVoValid = LessEqThan(32)([maxVoteOptions, TREE_ARITY ** voteOptionTreeDepth]);
     maxVoValid === 1;
 
-    // Check numSignUps < the max number of users (i.e., number of state leaves
+    // Check numSignUps <= the max number of users (i.e., number of state leaves
     // that can fit the state tree).
     var numSignUpsValid = LessEqThan(32)([numSignUps, TREE_ARITY ** stateTreeDepth]);
     numSignUpsValid === 1;
 
     // Hash each Message to check their existence in the Message tree.
-    var messageHashers[batchSize];
+    var computedMessageHashers[batchSize];
     for (var i = 0; i < batchSize; i++) {
-        messageHashers[i] = MessageHasher()(msgs[i], encPubKeys[i]);
+        computedMessageHashers[i] = MessageHasher()(msgs[i], encPubKeys[i]);
     }
 
     // If batchEndIndex - batchStartIndex < batchSize, the remaining
     // message hashes should be the zero value.
     // e.g. [m, z, z, z, z] if there is only 1 real message in the batch
     // This makes possible to have a batch of messages which is only partially full.
-    var leaves[batchSize];
-    var pathElements[msgTreeDepth - msgBatchDepth][TREE_ARITY - 1];
-    var pathIndex[msgTreeDepth - msgBatchDepth];
+    var computedLeaves[batchSize];
+    var computedPathElements[msgTreeDepth - msgBatchDepth][TREE_ARITY - 1];
+    var computedPathIndex[msgTreeDepth - msgBatchDepth];
 
     for (var i = 0; i < batchSize; i++) {
-        var lt = SafeLessThan(32)([batchStartIndex + i, batchEndIndex]);
-        var mux = Mux1()([msgTreeZeroValue, messageHashers[i]], lt);
-
-        leaves[i] = mux;
+        var batchStartIndexValid = SafeLessThan(32)([batchStartIndex + i, batchEndIndex]);
+        computedLeaves[i] = Mux1()([msgTreeZeroValue, computedMessageHashers[i]], batchStartIndexValid);
     }
 
     for (var i = 0; i < msgTreeDepth - msgBatchDepth; i++) {
         for (var j = 0; j < TREE_ARITY - 1; j++) {
-            pathElements[i][j] = msgSubrootPathElements[i][j];
+            computedPathElements[i][j] = msgSubrootPathElements[i][j];
         }
     }
 
@@ -186,10 +188,10 @@ template ProcessMessages(
     // the existence of a subroot, the length of the proof correspond to the last 
     // n elements of a proof from the root to a leaf, where n = msgTreeDepth - msgBatchDepth.
     // e.g. if batchStartIndex = 25, msgTreeDepth = 4, msgBatchDepth = 2, then path_index = [1, 0].
-    var msgBatchPathIndices[msgTreeDepth] = QuinGeneratePathIndices(msgTreeDepth)(batchStartIndex);
+    var computedMsgBatchPathIndices[msgTreeDepth] = QuinGeneratePathIndices(msgTreeDepth)(batchStartIndex);
 
     for (var i = msgBatchDepth; i < msgTreeDepth; i++) {
-        pathIndex[i - msgBatchDepth] = msgBatchPathIndices[i];
+        computedPathIndex[i - msgBatchDepth] = computedMsgBatchPathIndices[i];
     }
 
     // Check whether each message exists in the Message tree.
@@ -199,9 +201,9 @@ template ProcessMessages(
     // batchSize must be the message tree arity raised to some power (e.g. 5 ^ n).
     QuinBatchLeavesExists(msgTreeDepth, msgBatchDepth)(
         msgRoot,
-        leaves,
-        pathIndex,
-        pathElements   
+        computedLeaves,
+        computedPathIndex,
+        computedPathElements   
     );
 
     // Decrypt each Message to a Command.
@@ -219,16 +221,16 @@ template ProcessMessages(
     // The command i-th is composed by the following fields.
     // e.g., command 0 is made of commandsStateIndex[0], 
     // commandsNewPubKey[0], ..., commandsPackedCommandOut[0]
-    var commandsStateIndex[batchSize];
-    var commandsNewPubKey[batchSize][2];
-    var commandsVoteOptionIndex[batchSize];
-    var commandsNewVoteWeight[batchSize];
-    var commandsNonce[batchSize];
-    var commandsPollId[batchSize];
-    var commandsSalt[batchSize];
-    var commandsSigR8[batchSize][2];
-    var commandsSigS[batchSize];
-    var commandsPackedCommandOut[batchSize][PACKED_CMD_LENGTH];
+    var computedCommandsStateIndex[batchSize];
+    var computedCommandsNewPubKey[batchSize][2];
+    var computedCommandsVoteOptionIndex[batchSize];
+    var computedCommandsNewVoteWeight[batchSize];
+    var computedCommandsNonce[batchSize];
+    var computedCommandsPollId[batchSize];
+    var computedCommandsSalt[batchSize];
+    var computedCommandsSigR8[batchSize][2];
+    var computedCommandsSigS[batchSize];
+    var computedCommandsPackedCommandOut[batchSize][PACKED_CMD_LENGTH];
 
     for (var i = 0; i < batchSize; i++) {
         var message[MSG_LENGTH];
@@ -237,16 +239,16 @@ template ProcessMessages(
         }
 
         (
-            commandsStateIndex[i],
-            commandsNewPubKey[i],
-            commandsVoteOptionIndex[i],
-            commandsNewVoteWeight[i],
-            commandsNonce[i],
-            commandsPollId[i],
-            commandsSalt[i],
-            commandsSigR8[i],
-            commandsSigS[i],
-            commandsPackedCommandOut[i]
+            computedCommandsStateIndex[i],
+            computedCommandsNewPubKey[i],
+            computedCommandsVoteOptionIndex[i],
+            computedCommandsNewVoteWeight[i],
+            computedCommandsNonce[i],
+            computedCommandsPollId[i],
+            computedCommandsSalt[i],
+            computedCommandsSigR8[i],
+            computedCommandsSigS[i],
+            computedCommandsPackedCommandOut[i]
         ) = MessageToCommand()(message, coordPrivKey, encPubKeys[i]);
     }
 
@@ -256,13 +258,13 @@ template ProcessMessages(
     ballotRoots[batchSize] <== currentBallotRoot;
 
     // Define vote type message processors.
-    var newVoteStateRoot[batchSize];
-    var newVoteBallotRoot[batchSize];
+    var computedNewVoteStateRoot[batchSize];
+    var computedNewVoteBallotRoot[batchSize];
     // Define topup type message processors.
-    var newTopupStateRoot[batchSize];
+    var computedNewTopupStateRoot[batchSize];
 
     // Start from batchSize and decrement for process in reverse order.
-    for (var i = batchSize - 1; i >= 0; i --) {
+    for (var i = batchSize - 1; i >= 0; i--) {
         // Process as vote type message.
         var currentStateLeavesPathElement[stateTreeDepth][TREE_ARITY - 1];
         var currentBallotPathElement[stateTreeDepth][TREE_ARITY - 1];
@@ -281,7 +283,7 @@ template ProcessMessages(
             }
         }
         
-        (newVoteStateRoot[i], newVoteBallotRoot[i]) = ProcessOne(stateTreeDepth, voteOptionTreeDepth)(
+        (computedNewVoteStateRoot[i], computedNewVoteBallotRoot[i]) = ProcessOne(stateTreeDepth, voteOptionTreeDepth)(
             msgs[i][0],
             numSignUps,
             maxVoteOptions,
@@ -294,21 +296,21 @@ template ProcessMessages(
             currentBallotPathElement,
             currentVoteWeights[i],
             currentVoteWeightsPathElement,
-            commandsStateIndex[i],
+            computedCommandsStateIndex[i],
             msgs[i][1],
-            commandsNewPubKey[i],
-            commandsVoteOptionIndex[i],
-            commandsNewVoteWeight[i],
-            commandsNonce[i],
-            commandsPollId[i],
-            commandsSalt[i],
-            commandsSigR8[i],
-            commandsSigS[i],
-            commandsPackedCommandOut[i]
+            computedCommandsNewPubKey[i],
+            computedCommandsVoteOptionIndex[i],
+            computedCommandsNewVoteWeight[i],
+            computedCommandsNonce[i],
+            computedCommandsPollId[i],
+            computedCommandsSalt[i],
+            computedCommandsSigR8[i],
+            computedCommandsSigS[i],
+            computedCommandsPackedCommandOut[i]
         );
 
         // Process as topup type message.
-        newTopupStateRoot[i] = ProcessTopup(stateTreeDepth)(
+        computedNewTopupStateRoot[i] = ProcessTopup(stateTreeDepth)(
             msgs[i][0],
             msgs[i][1],
             msgs[i][2],
@@ -318,10 +320,10 @@ template ProcessMessages(
         );
 
         // Pick the correct result by Message type.
-        tmpStateRoot1[i] <== newVoteStateRoot[i] * (2 - msgs[i][0]); 
-        tmpStateRoot2[i] <== newTopupStateRoot[i] * (msgs[i][0] - 1);
+        tmpStateRoot1[i] <== computedNewVoteStateRoot[i] * (2 - msgs[i][0]); 
+        tmpStateRoot2[i] <== computedNewTopupStateRoot[i] * (msgs[i][0] - 1);
 
-        tmpBallotRoot1[i] <== newVoteBallotRoot[i] * (2 - msgs[i][0]); 
+        tmpBallotRoot1[i] <== computedNewVoteBallotRoot[i] * (2 - msgs[i][0]); 
         tmpBallotRoot2[i] <== ballotRoots[i + 1] * (msgs[i][0] - 1);
 
         stateRoots[i] <== tmpStateRoot1[i] + tmpStateRoot2[i];
@@ -329,8 +331,8 @@ template ProcessMessages(
         ballotRoots[i] <== tmpBallotRoot1[i] + tmpBallotRoot2[i];
     }
 
-    var sbCommitmentHash = PoseidonHasher(3)([stateRoots[0], ballotRoots[0], newSbSalt]);
-    sbCommitmentHash === newSbCommitment;
+    var computedNewSbCommitment = PoseidonHasher(3)([stateRoots[0], ballotRoots[0], newSbSalt]);
+    computedNewSbCommitment === newSbCommitment;
 }
 
 /**
@@ -418,8 +420,8 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
 
     // 1. Transform a state leaf and a ballot with a command.
     // The result is a new state leaf, a new ballot, and an isValid signal (0 or 1).
-    var newSlPubKey[2], newBallotNonce, isValid;
-    (newSlPubKey, newBallotNonce, isValid) = StateLeafAndBallotTransformer()(
+    var computedNewSlPubKey[2], computedNewBallotNonce, computedIsValid;
+    (computedNewSlPubKey, computedNewBallotNonce, computedIsValid) = StateLeafAndBallotTransformer()(
         numSignUps,
         maxVoteOptions,
         [stateLeaf[STATE_LEAF_PUB_X_IDX], stateLeaf[STATE_LEAF_PUB_Y_IDX]],
@@ -446,117 +448,112 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     tmpIndex2 <== topupStateIndex * (msgType - 1);
     indexByType <== tmpIndex1 + tmpIndex2;
 
-    var validStateLeafIndex = SafeLessThan(N_BITS)([indexByType, numSignUps]);
-
-    var stateIndexMux = Mux1()([0, indexByType], validStateLeafIndex);
-    var stateLeafPathIndices[stateTreeDepth] = QuinGeneratePathIndices(stateTreeDepth)(stateIndexMux);
+    var stateLeafIndexValid = SafeLessThan(N_BITS)([indexByType, numSignUps]);
+    var stateIndexMux = Mux1()([0, indexByType], stateLeafIndexValid);
+    var computedStateLeafPathIndices[stateTreeDepth] = QuinGeneratePathIndices(stateTreeDepth)(stateIndexMux);
 
     // 3. Verify that the original state leaf exists in the given state root.
     var stateLeafHash = PoseidonHasher(4)(stateLeaf);
     var stateLeafQip = QuinTreeInclusionProof(stateTreeDepth)(
         stateLeafHash,
-        stateLeafPathIndices,
+        computedStateLeafPathIndices,
         stateLeafPathElements
     );
 
     stateLeafQip === currentStateRoot;
 
     // 4. Verify that the original ballot exists in the given ballot root.
-    var ballotHash = PoseidonHasher(2)([
+    var computedBallot = PoseidonHasher(2)([
         ballot[BALLOT_NONCE_IDX], 
         ballot[BALLOT_VO_ROOT_IDX]
     ]);
 
-    var ballotQip = QuinTreeInclusionProof(stateTreeDepth)(
-        ballotHash,
-        stateLeafPathIndices,
+    var computedBallotQip = QuinTreeInclusionProof(stateTreeDepth)(
+        computedBallot,
+        computedStateLeafPathIndices,
         ballotPathElements
     );
 
-    ballotQip === currentBallotRoot;
+    computedBallotQip === currentBallotRoot;
 
     // 5. Verify that currentVoteWeight exists in the ballot's vote option root
     // at cmdVoteOptionIndex.
     b <== currentVoteWeight * currentVoteWeight;
     c <== cmdNewVoteWeight * cmdNewVoteWeight;
 
-    var enoughVoiceCredits = SafeGreaterEqThan(252)([
+    var voiceCreditAmountValid = SafeGreaterEqThan(252)([
         stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + b,
         c
     ]);
 
-    var isMessageValid = IsEqual()([2, isValid + enoughVoiceCredits]);
-    var validVoteOptionIndex = SafeLessThan(N_BITS)([cmdVoteOptionIndex, maxVoteOptions]);
-    var cmdVoteOptionIndexMux = Mux1()([0, cmdVoteOptionIndex], validVoteOptionIndex);
-    var currentVoteWeightPathIndices[voteOptionTreeDepth] = QuinGeneratePathIndices(voteOptionTreeDepth)(cmdVoteOptionIndexMux);
+    var computedIsMessageEqual = IsEqual()([2, computedIsValid + voiceCreditAmountValid]);
+    var voteOptionIndexValid = SafeLessThan(N_BITS)([cmdVoteOptionIndex, maxVoteOptions]);
+    var cmdVoteOptionIndexMux = Mux1()([0, cmdVoteOptionIndex], voteOptionIndexValid);
+    var computedCurrentVoteWeightPathIndices[voteOptionTreeDepth] = QuinGeneratePathIndices(voteOptionTreeDepth)(cmdVoteOptionIndexMux);
 
-    var currentVoteWeightQip = QuinTreeInclusionProof(voteOptionTreeDepth)(
+    var computedCurrentVoteWeightQip = QuinTreeInclusionProof(voteOptionTreeDepth)(
         currentVoteWeight,
-        currentVoteWeightPathIndices,
+        computedCurrentVoteWeightPathIndices,
         currentVoteWeightsPathElements
     );
 
-    currentVoteWeightQip === ballot[BALLOT_VO_ROOT_IDX];
+    computedCurrentVoteWeightQip === ballot[BALLOT_VO_ROOT_IDX];
 
-    var voteWeightMux = Mux1()([currentVoteWeight, cmdNewVoteWeight], isMessageValid);
-
-    var newSlVoiceCreditBalance = Mux1()(
+    var voteWeightMux = Mux1()([currentVoteWeight, cmdNewVoteWeight], computedIsMessageEqual);
+    var newSlVoiceCreditBalanceMux = Mux1()(
         [
             stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX],
             stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + b - c
         ],
-        enoughVoiceCredits
+        voiceCreditAmountValid
     );
-
     var voiceCreditBalanceMux = Mux1()(
         [
             stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX],
-            newSlVoiceCreditBalance
+            newSlVoiceCreditBalanceMux
         ],
-        isMessageValid
+        computedIsMessageEqual
     );
 
     // 5.1. Update the ballot's vote option root with the new vote weight.
-    var newVoteOptionTreeQip = QuinTreeInclusionProof(voteOptionTreeDepth)(
+    var computedNewVoteOptionTreeQip = QuinTreeInclusionProof(voteOptionTreeDepth)(
         voteWeightMux,
-        currentVoteWeightPathIndices,
+        computedCurrentVoteWeightPathIndices,
         currentVoteWeightsPathElements
     );
 
     // The new vote option root in the ballot
     var newBallotVoRootMux = Mux1()(
-        [ballot[BALLOT_VO_ROOT_IDX], newVoteOptionTreeQip],
-        isMessageValid
+        [ballot[BALLOT_VO_ROOT_IDX], computedNewVoteOptionTreeQip],
+        computedIsMessageEqual
     );
 
     newBallotVoRoot <== newBallotVoRootMux;
 
     // 6. Generate a new state root.
-    var newStateLeafhash = PoseidonHasher(4)([
-        newSlPubKey[STATE_LEAF_PUB_X_IDX],
-        newSlPubKey[STATE_LEAF_PUB_Y_IDX],
+    var computedNewStateLeafhash = PoseidonHasher(4)([
+        computedNewSlPubKey[STATE_LEAF_PUB_X_IDX],
+        computedNewSlPubKey[STATE_LEAF_PUB_Y_IDX],
         voiceCreditBalanceMux,
         stateLeaf[STATE_LEAF_TIMESTAMP_IDX]
     ]);
 
-    var newStateLeafQip = QuinTreeInclusionProof(stateTreeDepth)(
-        newStateLeafhash,
-        stateLeafPathIndices,
+    var computedNewStateLeafQip = QuinTreeInclusionProof(stateTreeDepth)(
+        computedNewStateLeafhash,
+        computedStateLeafPathIndices,
         stateLeafPathElements
     );
 
-    newStateRoot <== newStateLeafQip;
+    newStateRoot <== computedNewStateLeafQip;
  
     // 7. Generate a new ballot root.    
-    var newBallotNonceMux = Mux1()([ballot[BALLOT_NONCE_IDX], newBallotNonce], isMessageValid);
-
-    var newBallotHash = PoseidonHasher(2)([newBallotNonceMux, newBallotVoRoot]);
-
-    var newBallotQip = QuinTreeInclusionProof(stateTreeDepth)(
-        newBallotHash,
-        stateLeafPathIndices,
+    var newBallotNonceMux = Mux1()([ballot[BALLOT_NONCE_IDX], computedNewBallotNonce], computedIsMessageEqual);
+    var computedNewBallot = PoseidonHasher(2)([newBallotNonceMux, newBallotVoRoot]);
+    var computedNewBallotQip = QuinTreeInclusionProof(stateTreeDepth)(
+        computedNewBallot,
+        computedStateLeafPathIndices,
         ballotPathElements
     );
 
-    newBallotRoot <== newBallotQip;
+    newBallotRoot <== computedNewBallotQip;
 }

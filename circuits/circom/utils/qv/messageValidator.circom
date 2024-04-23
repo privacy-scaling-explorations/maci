@@ -1,10 +1,9 @@
 pragma circom 2.0.0;
 
-// local imports
-include "../verifySignature.circom";
-
 // zk-kit imports
 include "./safe-comparators.circom";
+// local imports
+include "../verifySignature.circom";
 
 /**
  * Checks if a MACI message is valid or not.
@@ -52,28 +51,28 @@ template MessageValidator() {
     // The check ensure that the stateTreeIndex <= numSignUps as first validation.
     // Must be <= because the stateTreeIndex is 1-based. Zero is for blank state leaf
     // while 1 is for the first actual user matching the numSignUps start.
-    var validStateLeafIndex = SafeLessEqThan(252)([stateTreeIndex, numSignUps]);
+    var computedIsStateLeafIndexValid = SafeLessEqThan(252)([stateTreeIndex, numSignUps]);
 
     // Check (2) - The max vote option tree index must be correct.
-    var validVoteOptionIndex = SafeLessThan(252)([voteOptionIndex, maxVoteOptions]);
+    var computedIsVoteOptionIndexValid = SafeLessThan(252)([voteOptionIndex, maxVoteOptions]);
 
     // Check (3) - The nonce must be correct.    
-    var validNonce = IsEqual()([originalNonce + 1, nonce]);
+    var computedIsNonceValid = IsEqual()([originalNonce + 1, nonce]);
 
     // Check (4) - The signature must be correct.    
-    var validSignature = VerifySignature()(pubKey, sigR8, sigS, cmd);
+    var computedIsSignatureValid = VerifySignature()(pubKey, sigR8, sigS, cmd);
 
     // Check (5) - The state leaf must be inserted before the Poll period end.    
-    var validTimestamp = SafeLessEqThan(252)([slTimestamp, pollEndTimestamp]);
+    var computedIsTimestampValid = SafeLessEqThan(252)([slTimestamp, pollEndTimestamp]);
 
     // Check (6) - There must be sufficient voice credits.
     // The check ensure that the voteWeight is < sqrt(field size)
     // so that voteWeight ^ 2 will not overflow.
-    var validVoteWeight = SafeLessEqThan(252)([voteWeight, 147946756881789319005730692170996259609]);
+    var computedIsVoteWeightValid = SafeLessEqThan(252)([voteWeight, 147946756881789319005730692170996259609]);
 
     // Check (7) - Check the current voice credit balance.
     // The check ensure that currentVoiceCreditBalance + (currentVotesForOption ** 2) >= (voteWeight ** 2)
-    var sufficientVoiceCredits = SafeGreaterEqThan(252)(
+    var computedAreVoiceCreditsSufficient = SafeGreaterEqThan(252)(
         [
             (currentVotesForOption * currentVotesForOption) + currentVoiceCreditBalance,
             voteWeight * voteWeight
@@ -81,19 +80,19 @@ template MessageValidator() {
     );
 
     // When all seven checks are correct, then isValid = 1.
-    var validUpdate = IsEqual()(
+    var computedIsUpdateValid = IsEqual()(
         [
             7,
-            validSignature + 
-            sufficientVoiceCredits +
-            validVoteWeight +
-            validNonce +
-            validStateLeafIndex +
-            validTimestamp +
-            validVoteOptionIndex
+            computedIsSignatureValid + 
+            computedAreVoiceCreditsSufficient +
+            computedIsVoteWeightValid +
+            computedIsNonceValid +
+            computedIsStateLeafIndexValid +
+            computedIsTimestampValid +
+            computedIsVoteOptionIndexValid
         ]
     );
 
-    isValid <== validUpdate;
+    isValid <== computedIsUpdateValid;
 }
 
