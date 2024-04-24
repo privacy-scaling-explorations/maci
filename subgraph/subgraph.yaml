@@ -30,7 +30,7 @@ dataSources:
           file: ./node_modules/maci-contracts/build/artifacts/contracts/Poll.sol/Poll.json
       eventHandlers:
         - event: DeployPoll(uint256,indexed uint256,indexed
-            uint256,(address,address,address,address))
+            uint256,(address,address,address))
           handler: handleDeployPoll
         - event: OwnershipTransferred(indexed address,indexed address)
           handler: handleOwnershipTransferred
@@ -57,13 +57,13 @@ templates:
         - name: Poll
           file: ./node_modules/maci-contracts/build/artifacts/contracts/Poll.sol/Poll.json
       eventHandlers:
-        - event: MergeMaciStateAq(uint256,uint256)
+        - event: MergeMaciStateAq(indexed uint256,indexed uint256)
           handler: handleMergeMaciStateAq
-        - event: MergeMaciStateAqSubRoots(uint256)
+        - event: MergeMaciStateAqSubRoots(indexed uint256)
           handler: handleMergeMaciStateAqSubRoots
-        - event: MergeMessageAq(uint256)
+        - event: MergeMessageAq(indexed uint256)
           handler: handleMergeMessageAq
-        - event: MergeMessageAqSubRoots(uint256)
+        - event: MergeMessageAqSubRoots(indexed uint256)
           handler: handleMergeMessageAqSubRoots
         - event: OwnershipTransferred(indexed address,indexed address)
           handler: handleOwnershipTransferred
