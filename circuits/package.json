@@ -39,7 +39,7 @@
   },
   "dependencies": {
     "@zk-kit/circuits": "^0.4.0",
-    "circomkit": "^0.0.24",
+    "circomkit": "^0.0.25",
     "circomlib": "^2.0.5",
     "maci-core": "^1.2.0",
     "maci-crypto": "^1.2.0",
