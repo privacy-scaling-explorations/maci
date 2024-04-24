@@ -2,9 +2,10 @@ import { expect } from "chai";
 import { BigNumberish } from "ethers";
 import { sha256Hash, hashLeftRight, hash3, hash4, hash5, genRandomSalt } from "maci-crypto";
 
-import { deployPoseidonContracts, linkPoseidonLibraries } from "../ts/deploy";
+import { linkPoseidonLibraries } from "../tasks/helpers/abi";
+import { deployPoseidonContracts, createContractFactory } from "../ts/deploy";
 import { getDefaultSigner } from "../ts/utils";
-import { Hasher } from "../typechain-types";
+import { Hasher, Hasher__factory as HasherFactory } from "../typechain-types";
 
 describe("Hasher", () => {
   let hasherContract: Hasher;
@@ -20,14 +21,17 @@ describe("Hasher", () => {
         PoseidonT6Contract.getAddress(),
       ]);
     // Link Poseidon contracts
-    const hasherContractFactory = await linkPoseidonLibraries(
-      "Hasher",
-      poseidonT3ContractAddress,
-      poseidonT4ContractAddress,
-      poseidonT5ContractAddress,
-      poseidonT6ContractAddress,
+    const hasherContractFactory = await createContractFactory(
+      HasherFactory.abi,
+      HasherFactory.linkBytecode(
+        linkPoseidonLibraries(
+          poseidonT3ContractAddress,
+          poseidonT4ContractAddress,
+          poseidonT5ContractAddress,
+          poseidonT6ContractAddress,
+        ),
+      ),
       await getDefaultSigner(),
-      true,
     );
 
     hasherContract = (await hasherContractFactory.deploy()) as Hasher;

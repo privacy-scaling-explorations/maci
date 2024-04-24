@@ -6,6 +6,7 @@ import { IVkContractParams, VerifyingKey } from "maci-domainobjs";
 
 import type { EthereumProvider } from "hardhat/types";
 
+import { linkPoseidonLibraries } from "../tasks/helpers/abi";
 import { getDefaultSigner } from "../ts";
 import {
   deployConstantInitialVoiceCreditProxy,
@@ -15,10 +16,17 @@ import {
   deployPoseidonContracts,
   deployTopupCredit,
   deployVkRegistry,
-  linkPoseidonLibraries,
+  createContractFactory,
 } from "../ts/deploy";
 import { IDeployedTestContracts } from "../ts/types";
-import { AccQueue as AccQueueContract, FreeForAllGatekeeper } from "../typechain-types";
+import {
+  AccQueueBinary0__factory as AccQueueBinary0Factory,
+  AccQueueBinaryMaci__factory as AccQueueBinaryMaciFactory,
+  AccQueue as AccQueueContract,
+  AccQueueQuinary0__factory as AccQueueQuinary0Factory,
+  AccQueueQuinaryMaci__factory as AccQueueQuinaryMaciFactory,
+  FreeForAllGatekeeper,
+} from "../typechain-types";
 
 export const insertSubTreeGasLimit = { gasLimit: 300000 };
 export const enqueueGasLimit = { gasLimit: 500000 };
@@ -70,7 +78,11 @@ export const compareVks = (vk: VerifyingKey, vkOnChain: IVkContractParams): void
  * @returns the AccQueue class instance and the AccQueue contract
  */
 export const deployTestAccQueues = async (
-  contractName: string,
+  factory:
+    | typeof AccQueueBinary0Factory
+    | typeof AccQueueQuinary0Factory
+    | typeof AccQueueQuinaryMaciFactory
+    | typeof AccQueueBinaryMaciFactory,
   SUB_DEPTH: number,
   HASH_LENGTH: number,
   ZERO: bigint,
@@ -86,17 +98,20 @@ export const deployTestAccQueues = async (
       PoseidonT6Contract.getAddress(),
     ]);
   // Link Poseidon contracts
-  const AccQueueFactory = await linkPoseidonLibraries(
-    contractName,
-    poseidonT3ContractAddress,
-    poseidonT4ContractAddress,
-    poseidonT5ContractAddress,
-    poseidonT6ContractAddress,
+  const accQueueFactory = await createContractFactory(
+    factory.abi,
+    factory.linkBytecode(
+      linkPoseidonLibraries(
+        poseidonT3ContractAddress,
+        poseidonT4ContractAddress,
+        poseidonT5ContractAddress,
+        poseidonT6ContractAddress,
+      ),
+    ),
     await getDefaultSigner(),
-    true,
   );
 
-  const aqContract = await AccQueueFactory.deploy(SUB_DEPTH);
+  const aqContract = await accQueueFactory.deploy(SUB_DEPTH);
 
   await aqContract.deploymentTransaction()?.wait();
 

@@ -1,13 +1,24 @@
 import { expect } from "chai";
 import { AccQueue, NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 
-import { deployPoseidonContracts, linkPoseidonLibraries } from "../ts/deploy";
+import { linkPoseidonLibraries } from "../tasks/helpers/abi";
+import { deployPoseidonContracts, createContractFactory } from "../ts/deploy";
 import { getDefaultSigner } from "../ts/utils";
-import { AccQueue as AccQueueContract } from "../typechain-types";
+import {
+  AccQueueBinary0__factory as AccQueueBinary0Factory,
+  AccQueue as AccQueueContract,
+  AccQueueQuinary0__factory as AccQueueQuinary0Factory,
+  AccQueueQuinaryMaci__factory as AccQueueQuinaryMaciFactory,
+} from "../typechain-types";
 
 let aqContract: AccQueueContract;
 
-const deploy = async (contractName: string, SUB_DEPTH: number, HASH_LENGTH: number, ZERO: bigint) => {
+const deploy = async (
+  factory: typeof AccQueueBinary0Factory | typeof AccQueueQuinary0Factory | typeof AccQueueQuinaryMaciFactory,
+  SUB_DEPTH: number,
+  HASH_LENGTH: number,
+  ZERO: bigint,
+) => {
   const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } =
     await deployPoseidonContracts(await getDefaultSigner(), {}, true);
   const [poseidonT3ContractAddress, poseidonT4ContractAddress, poseidonT5ContractAddress, poseidonT6ContractAddress] =
@@ -19,14 +30,17 @@ const deploy = async (contractName: string, SUB_DEPTH: number, HASH_LENGTH: numb
     ]);
 
   // Link Poseidon contracts
-  const AccQueueFactory = await linkPoseidonLibraries(
-    contractName,
-    poseidonT3ContractAddress,
-    poseidonT4ContractAddress,
-    poseidonT5ContractAddress,
-    poseidonT6ContractAddress,
+  const AccQueueFactory = await createContractFactory(
+    factory.abi,
+    factory.linkBytecode(
+      linkPoseidonLibraries(
+        poseidonT3ContractAddress,
+        poseidonT4ContractAddress,
+        poseidonT5ContractAddress,
+        poseidonT6ContractAddress,
+      ),
+    ),
     await getDefaultSigner(),
-    true,
   );
 
   aqContract = (await AccQueueFactory.deploy(SUB_DEPTH)) as typeof aqContract;
@@ -116,7 +130,7 @@ describe("AccQueue gas benchmarks", () => {
     const HASH_LENGTH = 2;
     const ZERO = BigInt(0);
     before(async () => {
-      const r = await deploy("AccQueueBinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
+      const r = await deploy(AccQueueBinary0Factory, SUB_DEPTH, HASH_LENGTH, ZERO);
       aqContract = r.aqContract;
     });
 
@@ -137,7 +151,7 @@ describe("AccQueue gas benchmarks", () => {
     const HASH_LENGTH = 2;
     const ZERO = BigInt(0);
     before(async () => {
-      const r = await deploy("AccQueueBinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
+      const r = await deploy(AccQueueBinary0Factory, SUB_DEPTH, HASH_LENGTH, ZERO);
       aqContract = r.aqContract;
     });
 
@@ -160,7 +174,7 @@ describe("AccQueue gas benchmarks", () => {
     const HASH_LENGTH = 5;
     const ZERO = BigInt(0);
     before(async () => {
-      const r = await deploy("AccQueueQuinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
+      const r = await deploy(AccQueueQuinary0Factory, SUB_DEPTH, HASH_LENGTH, ZERO);
       aqContract = r.aqContract;
     });
 
@@ -181,7 +195,7 @@ describe("AccQueue gas benchmarks", () => {
     const HASH_LENGTH = 5;
     const ZERO = NOTHING_UP_MY_SLEEVE;
     before(async () => {
-      const r = await deploy("AccQueueQuinaryMaci", SUB_DEPTH, HASH_LENGTH, ZERO);
+      const r = await deploy(AccQueueQuinaryMaciFactory, SUB_DEPTH, HASH_LENGTH, ZERO);
       aqContract = r.aqContract;
     });
 
@@ -207,7 +221,7 @@ describe("AccQueue gas benchmarks", () => {
     const NUM_SUBTREES = 32;
     let aq: AccQueue;
     before(async () => {
-      const r = await deploy("AccQueueBinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
+      const r = await deploy(AccQueueBinary0Factory, SUB_DEPTH, HASH_LENGTH, ZERO);
       aq = r.aq;
       aqContract = r.aqContract;
     });
@@ -226,7 +240,7 @@ describe("AccQueue gas benchmarks", () => {
     const NUM_MERGES = 4;
     let aq: AccQueue;
     before(async () => {
-      const r = await deploy("AccQueueBinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
+      const r = await deploy(AccQueueBinary0Factory, SUB_DEPTH, HASH_LENGTH, ZERO);
       aq = r.aq;
       aqContract = r.aqContract;
     });
@@ -244,7 +258,7 @@ describe("AccQueue gas benchmarks", () => {
     const NUM_SUBTREES = 25;
     let aq: AccQueue;
     before(async () => {
-      const r = await deploy("AccQueueQuinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
+      const r = await deploy(AccQueueQuinary0Factory, SUB_DEPTH, HASH_LENGTH, ZERO);
       aq = r.aq;
       aqContract = r.aqContract;
     });
@@ -264,7 +278,7 @@ describe("AccQueue gas benchmarks", () => {
     let aq: AccQueue;
 
     before(async () => {
-      const r = await deploy("AccQueueQuinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
+      const r = await deploy(AccQueueQuinary0Factory, SUB_DEPTH, HASH_LENGTH, ZERO);
       aq = r.aq;
       aqContract = r.aqContract;
     });

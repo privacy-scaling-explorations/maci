@@ -9,9 +9,8 @@ const storage = ContractStorage.getInstance();
 /**
  * Deploy step registration and task itself
  */
-deployment
-  .deployTask("full:deploy-gatekeepers", "Deploy gatekeepers")
-  .setAction(async ({ incremental }: IDeployParams, hre) => {
+deployment.deployTask("full:deploy-gatekeepers", "Deploy gatekeepers").then((task) =>
+  task.setAction(async ({ incremental }: IDeployParams, hre) => {
     deployment.setHre(hre);
     const deployer = await deployment.getDeployer();
 
@@ -34,11 +33,14 @@ deployment
     }
 
     if (!skipDeployFreeForAllGatekeeper) {
-      const freeFroAllGatekeeperContract = await deployment.deployContract(EContracts.FreeForAllGatekeeper, deployer);
+      const freeForAllGatekeeperContract = await deployment.deployContract({
+        name: EContracts.FreeForAllGatekeeper,
+        signer: deployer,
+      });
 
       await storage.register({
         id: EContracts.FreeForAllGatekeeper,
-        contract: freeFroAllGatekeeperContract,
+        contract: freeForAllGatekeeperContract,
         args: [],
         network: hre.network.name,
       });
@@ -54,8 +56,10 @@ deployment
       const attester = deployment.getDeployConfigField<string>(EContracts.EASGatekeeper, "attester", true);
 
       const easGatekeeperContract = await deployment.deployContract(
-        EContracts.EASGatekeeper,
-        deployer,
+        {
+          name: EContracts.EASGatekeeper,
+          signer: deployer,
+        },
         easAddress,
         attester,
         encodedSchema,
@@ -68,4 +72,5 @@ deployment
         network: hre.network.name,
       });
     }
-  });
+  }),
+);

@@ -65,6 +65,7 @@ export const deploy = async ({
   // check if we have a signupGatekeeper already deployed or passed as arg
   let signupGatekeeperContractAddress =
     signupGatekeeperAddress || readContractAddress("SignUpGatekeeper", network?.name);
+
   if (!signupGatekeeperContractAddress) {
     const contract = await deployFreeForAllSignUpGatekeeper(signer, true);
     signupGatekeeperContractAddress = await contract.getAddress();

@@ -8,9 +8,8 @@ const storage = ContractStorage.getInstance();
 /**
  * Deploy step registration and task itself
  */
-deployment
-  .deployTask("full:deploy-poseidon", "Deploy poseidon contracts")
-  .setAction(async ({ incremental }: IDeployParams, hre) => {
+deployment.deployTask("full:deploy-poseidon", "Deploy poseidon contracts").then((task) =>
+  task.setAction(async ({ incremental }: IDeployParams, hre) => {
     deployment.setHre(hre);
     const deployer = await deployment.getDeployer();
 
@@ -29,10 +28,10 @@ deployment
       return;
     }
 
-    const PoseidonT3Contract = await deployment.deployContract(EContracts.PoseidonT3, deployer);
-    const PoseidonT4Contract = await deployment.deployContract(EContracts.PoseidonT4, deployer);
-    const PoseidonT5Contract = await deployment.deployContract(EContracts.PoseidonT5, deployer);
-    const PoseidonT6Contract = await deployment.deployContract(EContracts.PoseidonT6, deployer);
+    const PoseidonT3Contract = await deployment.deployContract({ name: EContracts.PoseidonT3, signer: deployer });
+    const PoseidonT4Contract = await deployment.deployContract({ name: EContracts.PoseidonT4, signer: deployer });
+    const PoseidonT5Contract = await deployment.deployContract({ name: EContracts.PoseidonT5, signer: deployer });
+    const PoseidonT6Contract = await deployment.deployContract({ name: EContracts.PoseidonT6, signer: deployer });
 
     await Promise.all([
       storage.register({
@@ -60,4 +59,5 @@ deployment
         network: hre.network.name,
       }),
     ]);
-  });
+  }),
+);

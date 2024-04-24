@@ -15,9 +15,8 @@ const storage = ContractStorage.getInstance();
 /**
  * Deploy step registration and task itself
  */
-deployment
-  .deployTask("full:deploy-vk-registry", "Deploy Vk Registry and set keys")
-  .setAction(async ({ incremental }: IDeployParams, hre) => {
+deployment.deployTask("full:deploy-vk-registry", "Deploy Vk Registry and set keys").then((task) =>
+  task.setAction(async ({ incremental }: IDeployParams, hre) => {
     deployment.setHre(hre);
     const deployer = await deployment.getDeployer();
 
@@ -66,7 +65,10 @@ deployment
       tallyVotesZkeyPathNonQv && extractVk(tallyVotesZkeyPathNonQv),
     ]).then((vks) => vks.map((vk) => vk && (VerifyingKey.fromObj(vk).asContractParam() as IVerifyingKeyStruct)));
 
-    const vkRegistryContract = await deployment.deployContract<VkRegistry>(EContracts.VkRegistry, deployer);
+    const vkRegistryContract = await deployment.deployContract<VkRegistry>({
+      name: EContracts.VkRegistry,
+      signer: deployer,
+    });
 
     const processZkeys = [qvProcessVk, nonQvProcessVk].filter(Boolean) as IVerifyingKeyStruct[];
     const tallyZkeys = [qvTallyVk, nonQvTallyQv].filter(Boolean) as IVerifyingKeyStruct[];
@@ -99,4 +101,5 @@ deployment
       args: [],
       network: hre.network.name,
     });
-  });
+  }),
+);

@@ -1,17 +1,24 @@
 /* eslint-disable no-console */
 /* eslint-disable import/no-extraneous-dependencies */
 import { BaseContract, ContractFactory, Signer } from "ethers";
-import { task } from "hardhat/config";
 import low from "lowdb";
 import FileSync from "lowdb/adapters/FileSync";
 
-import { exit } from "process";
+import path from "path";
 
+import type { TAbi } from "./types";
 import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import type { ConfigurableTaskDefinition, HardhatRuntimeEnvironment, TaskArguments } from "hardhat/types";
 
 import { ContractStorage } from "./ContractStorage";
-import { EContracts, IDeployParams, IDeployStep, IDeployStepCatalog, IGetContractParams } from "./types";
+import {
+  EContracts,
+  IDeployContractArgs,
+  IDeployParams,
+  IDeployStep,
+  IDeployStepCatalog,
+  IGetContractParams,
+} from "./types";
 
 /**
  * Internal deploy config structure type.
@@ -56,7 +63,7 @@ export class Deployment {
       ["poll", []],
     ]);
     this.hre = hre;
-    this.config = low(new FileSync<TConfig>("./deploy-config.json"));
+    this.config = low(new FileSync<TConfig>(path.resolve(__dirname, "..", "..", "./deploy-config.json")));
     this.storage = ContractStorage.getInstance();
   }
 
@@ -186,7 +193,7 @@ export class Deployment {
 
     if (!success) {
       console.log("\nDeployment has failed");
-      exit(1);
+      await import("process").then(({ exit }) => exit(1));
     }
 
     console.log("\nDeployment has finished");
@@ -231,17 +238,17 @@ export class Deployment {
    * @param taskName - unique task name
    * @param stepName - task description
    * @param paramsFn - optional function to override default task arguments
-   * @returns {ConfigurableTaskDefinition} hardhat task definition
+   * @returns {Promise<ConfigurableTaskDefinition>} hardhat task definition
    */
-  deployTask(
+  async deployTask(
     taskName: string,
     stepName: string,
     paramsFn?: (params: IDeployParams) => Promise<TaskArguments>,
-  ): ConfigurableTaskDefinition {
+  ): Promise<ConfigurableTaskDefinition> {
     const deployType = taskName.substring(0, taskName.indexOf(":"));
     this.addStep(deployType, { name: stepName, taskName, paramsFn: paramsFn || this.getDefaultParams });
 
-    return task(taskName, stepName);
+    return import("hardhat/config").then(({ task }) => task(taskName, stepName));
   }
 
   /**
@@ -302,14 +309,14 @@ export class Deployment {
    * @returns deployed contract
    */
   async deployContract<T extends BaseContract>(
-    contractName: EContracts,
-    signer?: Signer,
+    { name, abi, bytecode, signer }: IDeployContractArgs,
     ...args: unknown[]
   ): Promise<T> {
-    const { ethers } = await import("hardhat");
-
     const deployer = signer || (await this.getDeployer());
-    const contractFactory = await ethers.getContractFactory(contractName, deployer);
+    const contractFactory =
+      abi && bytecode
+        ? new ContractFactory(abi, bytecode, deployer)
+        : await import("hardhat").then(({ ethers }) => ethers.getContractFactory(name, deployer));
     const feeData = await deployer.provider?.getFeeData();
 
     const contract = await contractFactory.deploy(...args, {
@@ -345,37 +352,18 @@ export class Deployment {
   }
 
   /**
-   *  Link poseidon libraries with contract factory and return it
+   * Creates contract factory from abi and bytecode
    *
    * @param name - contract name
-   * @param poseidonT3Address - PoseidonT3 contract address
-   * @param poseidonT4Address - PoseidonT4 contract address
-   * @param poseidonT5Address - PoseidonT5 contract address
-   * @param poseidonT6Address - PoseidonT6 contract address
+   * @param abi - Contract abi
+   * @param bytecode - Contract linked bytecode
    * @param signer - signer
    * @returns contract factory with linked libraries
    */
-  async linkPoseidonLibraries(
-    name: EContracts,
-    poseidonT3Address: string,
-    poseidonT4Address: string,
-    poseidonT5Address: string,
-    poseidonT6Address: string,
-    signer?: Signer,
-  ): Promise<ContractFactory> {
-    const { ethers } = await import("hardhat");
+  async createContractFactory(abi: TAbi, bytecode: string, signer?: Signer): Promise<ContractFactory> {
+    const deployer = signer || (await this.getDeployer());
 
-    const contractFactory = await ethers.getContractFactory(name, {
-      signer: signer || (await this.getDeployer()),
-      libraries: {
-        PoseidonT3: poseidonT3Address,
-        PoseidonT4: poseidonT4Address,
-        PoseidonT5: poseidonT5Address,
-        PoseidonT6: poseidonT6Address,
-      },
-    });
-
-    return contractFactory;
+    return new ContractFactory(abi, bytecode, deployer);
   }
 
   /**
