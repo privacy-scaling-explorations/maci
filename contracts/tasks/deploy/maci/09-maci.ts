@@ -13,9 +13,8 @@ const STATE_TREE_SUBDEPTH = 2;
 /**
  * Deploy step registration and task itself
  */
-deployment
-  .deployTask("full:deploy-maci", "Deploy MACI contract")
-  .setAction(async ({ incremental }: IDeployParams, hre) => {
+deployment.deployTask("full:deploy-maci", "Deploy MACI contract").then((task) =>
+  task.setAction(async ({ incremental }: IDeployParams, hre) => {
     deployment.setHre(hre);
     const deployer = await deployment.getDeployer();
 
@@ -30,14 +29,15 @@ deployment
     const poseidonT5ContractAddress = storage.mustGetAddress(EContracts.PoseidonT5, hre.network.name);
     const poseidonT6ContractAddress = storage.mustGetAddress(EContracts.PoseidonT6, hre.network.name);
 
-    const maciContractFactory = await deployment.linkPoseidonLibraries(
-      EContracts.MACI,
-      poseidonT3ContractAddress,
-      poseidonT4ContractAddress,
-      poseidonT5ContractAddress,
-      poseidonT6ContractAddress,
-      deployer,
-    );
+    const maciContractFactory = await hre.ethers.getContractFactory(EContracts.MACI, {
+      signer: deployer,
+      libraries: {
+        PoseidonT3: poseidonT3ContractAddress,
+        PoseidonT4: poseidonT4ContractAddress,
+        PoseidonT5: poseidonT5ContractAddress,
+        PoseidonT6: poseidonT6ContractAddress,
+      },
+    });
 
     const constantInitialVoiceCreditProxyContractAddress = storage.mustGetAddress(
       EContracts.ConstantInitialVoiceCreditProxy,
@@ -107,4 +107,5 @@ deployment
       args: [STATE_TREE_SUBDEPTH],
       network: hre.network.name,
     });
-  });
+  }),
+);

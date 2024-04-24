@@ -1,6 +1,6 @@
 import type { AccQueue, MACI, MessageProcessor, Poll, Tally, Verifier, VkRegistry } from "../../typechain-types";
 import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import type { BaseContract, BigNumberish, Signer } from "ethers";
+import type { BaseContract, BigNumberish, Fragment, JsonFragment, Signer } from "ethers";
 import type { Libraries, TaskArguments } from "hardhat/types";
 import type { Poll as PollWrapper } from "maci-core";
 import type { Keypair, PrivKey } from "maci-domainobjs";
@@ -652,4 +652,32 @@ export interface TallyData {
      */
     commitment: string;
   };
+}
+
+// a type representing the ABI of a contract
+export type TAbi = string | readonly (string | Fragment | JsonFragment)[];
+
+/**
+ * Interface that represents deploy params
+ */
+export interface IDeployContractArgs {
+  /**
+   * Contract name
+   */
+  name: EContracts;
+
+  /**
+   * Contract abi
+   */
+  abi?: TAbi;
+
+  /**
+   * Contract bytecode
+   */
+  bytecode?: string;
+
+  /**
+   * Eth signer
+   */
+  signer?: Signer;
 }

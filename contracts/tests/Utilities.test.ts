@@ -2,9 +2,10 @@ import { expect } from "chai";
 import { BigNumberish, ZeroAddress } from "ethers";
 import { StateLeaf, Keypair } from "maci-domainobjs";
 
-import { deployPoseidonContracts, linkPoseidonLibraries } from "../ts/deploy";
+import { linkPoseidonLibraries } from "../tasks/helpers/abi";
+import { deployPoseidonContracts, createContractFactory } from "../ts/deploy";
 import { getDefaultSigner } from "../ts/utils";
-import { Utilities } from "../typechain-types";
+import { Utilities, Utilities__factory as UtilitiesFactory } from "../typechain-types";
 
 describe("Utilities", () => {
   let utilitiesContract: Utilities;
@@ -27,14 +28,17 @@ describe("Utilities", () => {
       ]);
 
       // Link Poseidon contracts
-      const utilitiesContractFactory = await linkPoseidonLibraries(
-        "Utilities",
-        poseidonT3ContractAddress,
-        poseidonT4ContractAddress,
-        poseidonT5ContractAddress,
-        poseidonT6ContractAddress,
+      const utilitiesContractFactory = await createContractFactory(
+        UtilitiesFactory.abi,
+        UtilitiesFactory.linkBytecode(
+          linkPoseidonLibraries(
+            poseidonT3ContractAddress,
+            poseidonT4ContractAddress,
+            poseidonT5ContractAddress,
+            poseidonT6ContractAddress,
+          ),
+        ),
         await getDefaultSigner(),
-        true,
       );
 
       utilitiesContract = (await utilitiesContractFactory.deploy()) as Utilities;

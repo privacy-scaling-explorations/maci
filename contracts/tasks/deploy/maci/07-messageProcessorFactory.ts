@@ -8,9 +8,8 @@ const storage = ContractStorage.getInstance();
 /**
  * Deploy step registration and task itself
  */
-deployment
-  .deployTask("full:deploy-message-processor-factory", "Deploy message processor factory")
-  .setAction(async ({ incremental }: IDeployParams, hre) => {
+deployment.deployTask("full:deploy-message-processor-factory", "Deploy message processor factory").then((task) =>
+  task.setAction(async ({ incremental }: IDeployParams, hre) => {
     deployment.setHre(hre);
     const deployer = await deployment.getDeployer();
 
@@ -28,13 +27,17 @@ deployment
     const poseidonT5ContractAddress = storage.mustGetAddress(EContracts.PoseidonT5, hre.network.name);
     const poseidonT6ContractAddress = storage.mustGetAddress(EContracts.PoseidonT6, hre.network.name);
 
-    const linkedMessageProcessorFactoryContract = await deployment.linkPoseidonLibraries(
+    const linkedMessageProcessorFactoryContract = await hre.ethers.getContractFactory(
       EContracts.MessageProcessorFactory,
-      poseidonT3ContractAddress,
-      poseidonT4ContractAddress,
-      poseidonT5ContractAddress,
-      poseidonT6ContractAddress,
-      deployer,
+      {
+        signer: deployer,
+        libraries: {
+          PoseidonT3: poseidonT3ContractAddress,
+          PoseidonT4: poseidonT4ContractAddress,
+          PoseidonT5: poseidonT5ContractAddress,
+          PoseidonT6: poseidonT6ContractAddress,
+        },
+      },
     );
 
     const messageProcessorFactoryContract = await deployment.deployContractWithLinkedLibraries(
@@ -47,4 +50,5 @@ deployment
       args: [],
       network: hre.network.name,
     });
-  });
+  }),
+);

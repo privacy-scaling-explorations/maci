@@ -24,7 +24,7 @@
     "@types/node": "^20.12.7",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
-    "hardhat": "^2.22.2",
+    "hardhat": "^2.22.3",
     "hardhat-artifactor": "^0.2.0",
     "hardhat-contract-sizer": "^2.0.3",
     "mocha": "^10.4.0",

@@ -2,6 +2,8 @@
 import low from "lowdb";
 import FileSync from "lowdb/adapters/FileSync";
 
+import path from "path";
+
 import type { EContracts, IRegisterContract, IStorageInstanceEntry, IStorageNamedEntry } from "./types";
 
 /**
@@ -38,7 +40,7 @@ export class ContractStorage {
    * Initialize class properties only once
    */
   private constructor() {
-    this.db = low(new FileSync<TStorage>("./deployed-contracts.json"));
+    this.db = low(new FileSync<TStorage>(path.resolve(__dirname, "..", "..", "./deployed-contracts.json")));
   }
 
   /**

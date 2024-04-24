@@ -8,9 +8,8 @@ const storage = ContractStorage.getInstance();
 /**
  * Deploy step registration and task itself
  */
-deployment
-  .deployTask("full:deploy-topup-credit", "Deploy topup credit")
-  .setAction(async ({ incremental }: IDeployParams, hre) => {
+deployment.deployTask("full:deploy-topup-credit", "Deploy topup credit").then((task) =>
+  task.setAction(async ({ incremental }: IDeployParams, hre) => {
     deployment.setHre(hre);
     const deployer = await deployment.getDeployer();
 
@@ -20,7 +19,7 @@ deployment
       return;
     }
 
-    const topupCreditContract = await deployment.deployContract(EContracts.TopupCredit, deployer);
+    const topupCreditContract = await deployment.deployContract({ name: EContracts.TopupCredit, signer: deployer });
 
     await storage.register({
       id: EContracts.TopupCredit,
@@ -28,4 +27,5 @@ deployment
       args: [],
       network: hre.network.name,
     });
-  });
+  }),
+);

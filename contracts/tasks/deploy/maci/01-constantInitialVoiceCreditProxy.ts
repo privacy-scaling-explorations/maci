@@ -12,39 +12,40 @@ const storage = ContractStorage.getInstance();
  */
 deployment
   .deployTask("full:deploy-constant-initial-voice-credit-proxy", "Deploy constant initial voice credit proxy")
-  .setAction(async ({ incremental }: IDeployParams, hre) => {
-    deployment.setHre(hre);
-    const deployer = await deployment.getDeployer();
+  .then((task) =>
+    task.setAction(async ({ incremental }: IDeployParams, hre) => {
+      deployment.setHre(hre);
+      const deployer = await deployment.getDeployer();
 
-    const needDeploy = deployment.getDeployConfigField(EContracts.ConstantInitialVoiceCreditProxy, "deploy");
+      const needDeploy = deployment.getDeployConfigField(EContracts.ConstantInitialVoiceCreditProxy, "deploy");
 
-    if (needDeploy === false) {
-      return;
-    }
+      if (needDeploy === false) {
+        return;
+      }
 
-    const constantInitialVoiceCreditProxyContractAddress = storage.getAddress(
-      EContracts.ConstantInitialVoiceCreditProxy,
-      hre.network.name,
-    );
+      const constantInitialVoiceCreditProxyContractAddress = storage.getAddress(
+        EContracts.ConstantInitialVoiceCreditProxy,
+        hre.network.name,
+      );
 
-    if (incremental && constantInitialVoiceCreditProxyContractAddress) {
-      return;
-    }
+      if (incremental && constantInitialVoiceCreditProxyContractAddress) {
+        return;
+      }
 
-    const amount =
-      deployment.getDeployConfigField<number | null>(EContracts.ConstantInitialVoiceCreditProxy, "amount") ??
-      DEFAULT_INITIAL_VOICE_CREDITS;
+      const amount =
+        deployment.getDeployConfigField<number | null>(EContracts.ConstantInitialVoiceCreditProxy, "amount") ??
+        DEFAULT_INITIAL_VOICE_CREDITS;
 
-    const constantInitialVoiceCreditProxyContract = await deployment.deployContract(
-      EContracts.ConstantInitialVoiceCreditProxy,
-      deployer,
-      amount.toString(),
-    );
+      const constantInitialVoiceCreditProxyContract = await deployment.deployContract(
+        { name: EContracts.ConstantInitialVoiceCreditProxy, signer: deployer },
+        amount.toString(),
+      );
 
-    await storage.register({
-      id: EContracts.ConstantInitialVoiceCreditProxy,
-      contract: constantInitialVoiceCreditProxyContract,
-      args: [amount.toString()],
-      network: hre.network.name,
-    });
-  });
+      await storage.register({
+        id: EContracts.ConstantInitialVoiceCreditProxy,
+        contract: constantInitialVoiceCreditProxyContract,
+        args: [amount.toString()],
+        network: hre.network.name,
+      });
+    }),
+  );

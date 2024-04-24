@@ -1,7 +1,13 @@
 import { expect } from "chai";
 import { AccQueue, hashLeftRight, NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 
-import { AccQueue as AccQueueContract } from "../typechain-types";
+import {
+  AccQueueBinary0__factory as AccQueueBinary0Factory,
+  AccQueueBinaryMaci__factory as AccQueueBinaryMaciFactory,
+  AccQueue as AccQueueContract,
+  AccQueueQuinary0__factory as AccQueueQuinary0Factory,
+  AccQueueQuinaryMaci__factory as AccQueueQuinaryMaciFactory,
+} from "../typechain-types";
 
 import {
   deployTestAccQueues,
@@ -26,7 +32,7 @@ describe("AccQueues", () => {
     let aqContract: AccQueueContract;
 
     before(async () => {
-      const r = await deployTestAccQueues("AccQueueBinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
+      const r = await deployTestAccQueues(AccQueueBinary0Factory, SUB_DEPTH, HASH_LENGTH, ZERO);
       aqContract = r.aqContract as AccQueueContract;
     });
 
@@ -50,7 +56,7 @@ describe("AccQueues", () => {
     let aqContract: AccQueueContract;
 
     before(async () => {
-      const r = await deployTestAccQueues("AccQueueQuinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
+      const r = await deployTestAccQueues(AccQueueQuinary0Factory, SUB_DEPTH, HASH_LENGTH, ZERO);
       aqContract = r.aqContract as AccQueueContract;
     });
 
@@ -75,7 +81,7 @@ describe("AccQueues", () => {
     let aqContract: AccQueueContract;
 
     before(async () => {
-      const r = await deployTestAccQueues("AccQueueBinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
+      const r = await deployTestAccQueues(AccQueueBinary0Factory, SUB_DEPTH, HASH_LENGTH, ZERO);
       aq = r.aq;
       aqContract = r.aqContract as AccQueueContract;
     });
@@ -105,7 +111,7 @@ describe("AccQueues", () => {
     let aqContract: AccQueueContract;
 
     before(async () => {
-      const r = await deployTestAccQueues("AccQueueQuinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
+      const r = await deployTestAccQueues(AccQueueQuinary0Factory, SUB_DEPTH, HASH_LENGTH, ZERO);
       aq = r.aq;
       aqContract = r.aqContract as AccQueueContract;
     });
@@ -135,7 +141,7 @@ describe("AccQueues", () => {
     let aqContract: AccQueueContract;
 
     before(async () => {
-      const r = await deployTestAccQueues("AccQueueBinaryMaci", SUB_DEPTH, HASH_LENGTH, ZERO);
+      const r = await deployTestAccQueues(AccQueueBinaryMaciFactory, SUB_DEPTH, HASH_LENGTH, ZERO);
       aq = r.aq;
       aqContract = r.aqContract as AccQueueContract;
     });
@@ -165,7 +171,7 @@ describe("AccQueues", () => {
     let aqContract: AccQueueContract;
 
     before(async () => {
-      const r = await deployTestAccQueues("AccQueueQuinaryMaci", SUB_DEPTH, HASH_LENGTH, ZERO);
+      const r = await deployTestAccQueues(AccQueueQuinaryMaciFactory, SUB_DEPTH, HASH_LENGTH, ZERO);
       aq = r.aq;
       aqContract = r.aqContract as AccQueueContract;
     });
@@ -194,7 +200,7 @@ describe("AccQueues", () => {
     const MAIN_DEPTH = 3;
 
     it("should produce the correct main roots", async () => {
-      const r = await deployTestAccQueues("AccQueueBinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
+      const r = await deployTestAccQueues(AccQueueBinary0Factory, SUB_DEPTH, HASH_LENGTH, ZERO);
       await testMergeAgain(r.aq, r.aqContract as AccQueueContract, MAIN_DEPTH);
     });
   });
@@ -205,7 +211,7 @@ describe("AccQueues", () => {
     const ZERO = BigInt(0);
 
     it("should not be possible to merge into a tree of depth 0", async () => {
-      const r = await deployTestAccQueues("AccQueueBinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
+      const r = await deployTestAccQueues(AccQueueBinary0Factory, SUB_DEPTH, HASH_LENGTH, ZERO);
 
       const aqContract = r.aqContract as AccQueueContract;
       await aqContract.enqueue(1).then((tx) => tx.wait());
@@ -217,7 +223,7 @@ describe("AccQueues", () => {
     });
 
     it("A small SRT of depth 1 should just have 2 leaves", async () => {
-      const r = await deployTestAccQueues("AccQueueBinary0", 1, HASH_LENGTH, ZERO);
+      const r = await deployTestAccQueues(AccQueueBinary0Factory, 1, HASH_LENGTH, ZERO);
 
       const aqContract = r.aqContract as AccQueueContract;
       await aqContract.enqueue(0, enqueueGasLimit).then((tx) => tx.wait());
@@ -228,7 +234,7 @@ describe("AccQueues", () => {
     });
 
     it("should not be possible to merge subroots into a tree shorter than the SRT depth", async () => {
-      const r = await deployTestAccQueues("AccQueueBinary0", 1, HASH_LENGTH, ZERO);
+      const r = await deployTestAccQueues(AccQueueBinary0Factory, 1, HASH_LENGTH, ZERO);
       const aqContract = r.aqContract as AccQueueContract;
       for (let i = 0; i < 4; i += 1) {
         // eslint-disable-next-line no-await-in-loop
@@ -246,7 +252,7 @@ describe("AccQueues", () => {
     it("Merging without enqueuing new data should not change the root", async () => {
       const MAIN_DEPTH = 5;
 
-      const r = await deployTestAccQueues("AccQueueBinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
+      const r = await deployTestAccQueues(AccQueueBinary0Factory, SUB_DEPTH, HASH_LENGTH, ZERO);
 
       const { aq } = r;
       const aqContract = r.aqContract as AccQueueContract;
@@ -272,7 +278,7 @@ describe("AccQueues", () => {
     const testParams = [1, 2, 3, 4];
     testParams.forEach((testParam) => {
       it(`should merge ${testParam} subtrees`, async () => {
-        const r = await deployTestAccQueues("AccQueueBinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
+        const r = await deployTestAccQueues(AccQueueBinary0Factory, SUB_DEPTH, HASH_LENGTH, ZERO);
         const { aq } = r;
         const aqContract = r.aqContract as AccQueueContract;
         await testMerge(aq, aqContract, testParam, MAIN_DEPTH);
@@ -289,7 +295,7 @@ describe("AccQueues", () => {
     const testParams = [1, 5, 26];
     testParams.forEach((testParam) => {
       it(`should merge ${testParam} subtrees`, async () => {
-        const r = await deployTestAccQueues("AccQueueQuinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
+        const r = await deployTestAccQueues(AccQueueQuinary0Factory, SUB_DEPTH, HASH_LENGTH, ZERO);
         const { aq } = r;
         const aqContract = r.aqContract as AccQueueContract;
         await testMerge(aq, aqContract, testParam, MAIN_DEPTH);
@@ -304,7 +310,7 @@ describe("AccQueues", () => {
     const ZERO = BigInt(0);
 
     it("Enqueued leaves and inserted subtrees should be in the right order", async () => {
-      const r = await deployTestAccQueues("AccQueueBinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
+      const r = await deployTestAccQueues(AccQueueBinary0Factory, SUB_DEPTH, HASH_LENGTH, ZERO);
       const { aq } = r;
       const aqContract = r.aqContract as AccQueueContract;
       await testEnqueueAndInsertSubTree(aq, aqContract);
@@ -313,7 +319,7 @@ describe("AccQueues", () => {
     const testParams = [1, 2, 3, 9];
     testParams.forEach((testParam) => {
       it(`should insert ${testParam} subtrees`, async () => {
-        const r = await deployTestAccQueues("AccQueueBinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
+        const r = await deployTestAccQueues(AccQueueBinary0Factory, SUB_DEPTH, HASH_LENGTH, ZERO);
         const { aq } = r;
         const aqContract = r.aqContract as AccQueueContract;
         await testInsertSubTrees(aq, aqContract, testParam, MAIN_DEPTH);
@@ -328,7 +334,7 @@ describe("AccQueues", () => {
     const ZERO = BigInt(0);
 
     it("Enqueued leaves and inserted subtrees should be in the right order", async () => {
-      const r = await deployTestAccQueues("AccQueueQuinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
+      const r = await deployTestAccQueues(AccQueueQuinary0Factory, SUB_DEPTH, HASH_LENGTH, ZERO);
       const { aq } = r;
       const aqContract = r.aqContract as AccQueueContract;
       await testEnqueueAndInsertSubTree(aq, aqContract);
@@ -337,7 +343,7 @@ describe("AccQueues", () => {
     const testParams = [1, 4, 9, 26];
     testParams.forEach((testParam) => {
       it(`should insert ${testParam} subtrees`, async () => {
-        const r = await deployTestAccQueues("AccQueueQuinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
+        const r = await deployTestAccQueues(AccQueueQuinary0Factory, SUB_DEPTH, HASH_LENGTH, ZERO);
         const { aq } = r;
         const aqContract = r.aqContract as AccQueueContract;
         await testInsertSubTrees(aq, aqContract, testParam, MAIN_DEPTH);
@@ -355,7 +361,7 @@ describe("AccQueues", () => {
     let aqContract: AccQueueContract;
 
     before(async () => {
-      const r = await deployTestAccQueues("AccQueueBinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
+      const r = await deployTestAccQueues(AccQueueBinary0Factory, SUB_DEPTH, HASH_LENGTH, ZERO);
       aq = r.aq;
       aqContract = r.aqContract as AccQueueContract;
     });
@@ -404,7 +410,7 @@ describe("AccQueues", () => {
     let aqContract: AccQueueContract;
 
     before(async () => {
-      const r = await deployTestAccQueues("AccQueueQuinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
+      const r = await deployTestAccQueues(AccQueueQuinary0Factory, SUB_DEPTH, HASH_LENGTH, ZERO);
       aq = r.aq;
       aqContract = r.aqContract as AccQueueContract;
     });
@@ -451,7 +457,7 @@ describe("AccQueues", () => {
     let aqContract: AccQueueContract;
 
     before(async () => {
-      const r = await deployTestAccQueues("AccQueueBinary0", SUB_DEPTH, HASH_LENGTH, ZERO);
+      const r = await deployTestAccQueues(AccQueueBinary0Factory, SUB_DEPTH, HASH_LENGTH, ZERO);
       aqContract = r.aqContract as AccQueueContract;
     });
 
