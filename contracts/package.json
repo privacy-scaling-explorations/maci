@@ -75,7 +75,7 @@
     "@openzeppelin/contracts": "^5.0.2",
     "circomlibjs": "^0.1.7",
     "ethers": "^6.12.0",
-    "hardhat": "^2.22.2",
+    "hardhat": "^2.22.3",
     "maci-circuits": "^1.2.0",
     "maci-core": "^1.2.0",
     "maci-crypto": "^1.2.0",
