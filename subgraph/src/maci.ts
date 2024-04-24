@@ -25,7 +25,6 @@ export function handleDeployPoll(event: DeployPollEvent): void {
   entity.pollId = event.params._pollId;
   entity.messageProcessor = event.params.pollAddr.messageProcessor;
   entity.tally = event.params.pollAddr.tally;
-  entity.subsidy = event.params.pollAddr.subsidy;
   entity.maxMessages = maxValues.value0;
   entity.maxVoteOption = maxValues.value1;
   entity.treeDepth = GraphBN.fromI32(treeDepths.value0);

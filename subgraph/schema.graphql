@@ -44,7 +44,6 @@ type Poll @entity {
   maxVoteOption: BigInt
   messageProcessor: Bytes # address
   tally: Bytes # address
-  subsidy: Bytes # address
   "merge state after ended"
   stateRoot: BigInt # uint256
   numSignups: BigInt! # uint256
