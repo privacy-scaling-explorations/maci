@@ -25,7 +25,7 @@ template ProcessMessagesInputHasher() {
     signal input packedVals;
     signal input coordPubKey[2];
     signal input msgRoot;
-    // The current state and ballot root commitment (hash(stateRoot, ballotRoot, salt).
+    // The current state and ballot root commitment (hash(stateRoot, ballotRoot, salt)).
     signal input currentSbCommitment;
     signal input newSbCommitment;
     signal input pollEndTimestamp;

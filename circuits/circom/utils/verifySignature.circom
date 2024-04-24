@@ -58,7 +58,7 @@ template EdDSAPoseidonVerifier_patched() {
     // Compute the right side: right =  R8 + right2.
     var (computedAddRightXOut, computedAddRightYOut) = BabyAdd()(R8x, R8y, computedEscalarMulAny[0], computedEscalarMulAny[1]);
 
-    // Calculate left side of equation left = S*B8.
+    // Calculate the left side: left = S * B8.
     var BASE8[2] = [
         5299619240641551281634865583518297030282874472190772894086521144482721001553,
         16950150798460657717958625567821834550301663161624707787222815936182638968203
