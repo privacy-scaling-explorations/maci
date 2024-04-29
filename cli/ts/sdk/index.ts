@@ -7,7 +7,25 @@ import { verify } from "../commands/verify";
 
 export { genKeyPair, genMaciPubKey, publish, publishBatch, signup, isRegisteredUser, verify, getPoll };
 
-export type { Signer } from "ethers";
+export type { ISnarkJSVerificationKey } from "maci-circuits";
+
+export {
+  linkPoseidonLibraries,
+  Deployment,
+  ContractStorage,
+  EContracts,
+  EMode,
+  PollFactory__factory as PollFactoryFactory,
+  MessageProcessorFactory__factory as MessageProcessorFactoryFactory,
+  TallyFactory__factory as TallyFactoryFactory,
+  MACI__factory as MACIFactory,
+  type MACI,
+  type EASGatekeeper,
+  type IVerifyingKeyStruct,
+  type VkRegistry,
+} from "maci-contracts";
+
+export { VerifyingKey, type IVkObjectParams } from "maci-domainobjs";
 
 export type {
   TallyData,
