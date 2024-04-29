@@ -111,8 +111,8 @@ importers:
         specifier: ^1.2.0
         version: link:../domainobjs
       snarkjs:
-        specifier: ^0.7.3
-        version: 0.7.3
+        specifier: ^0.7.4
+        version: 0.7.4
     devDependencies:
       '@types/chai':
         specifier: ^4.3.11
@@ -212,8 +212,8 @@ importers:
         specifier: ^15.1.0
         version: 15.1.0
       snarkjs:
-        specifier: ^0.7.3
-        version: 0.7.3
+        specifier: ^0.7.4
+        version: 0.7.4
       ts-mocha:
         specifier: ^10.0.0
         version: 10.0.0(mocha@10.4.0)
@@ -3629,6 +3629,13 @@ packages:
     dependencies:
       fastfile: 0.0.20
       ffjavascript: 0.2.63
+    dev: false
+
+  /@iden3/binfileutils@0.0.12:
+    resolution: {integrity: sha512-naAmzuDufRIcoNfQ1d99d7hGHufLA3wZSibtr4dMe6ZeiOPV1KwOZWTJ1YVz4HbaWlpDuzVU72dS4ATQS4PXBQ==}
+    dependencies:
+      fastfile: 0.0.20
+      ffjavascript: 0.3.0
 
   /@isaacs/cliui@8.0.2:
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
@@ -7657,11 +7664,11 @@ packages:
       ffjavascript: 0.2.56
     dev: false
 
-  /circom_runtime@0.1.24:
-    resolution: {integrity: sha512-H7/7I2J/cBmRnZm9docOCGhfxzS61BEm4TMCWcrZGsWNBQhePNfQq88Oj2XpUfzmBTCd8pRvRb3Mvazt3TMrJw==}
+  /circom_runtime@0.1.25:
+    resolution: {integrity: sha512-xBGsBFF5Uv6AKvbpgExYqpHfmfawH2HKe+LyjfKSRevqEV8u63i9KGHVIILsbJNW+0c5bm/66f0PUYQ7qZSkJA==}
     hasBin: true
     dependencies:
-      ffjavascript: 0.2.60
+      ffjavascript: 0.3.0
 
   /circom_tester@0.0.19:
     resolution: {integrity: sha512-SNHaBsGxcBH6XsVWfsRbRPA7NF8m8AMKJI9dtJJCFGUtOTT2+zsoIqAwi50z6XCnO4TtjyXq7AeXa1PLHqT0tw==}
@@ -7684,7 +7691,7 @@ packages:
       chai: 4.4.1
       circom_tester: 0.0.19
       loglevel: 1.9.1
-      snarkjs: 0.7.3
+      snarkjs: 0.7.4
     dev: false
 
   /circomlib@2.0.5:
@@ -10220,15 +10227,16 @@ packages:
       web-worker: 1.3.0
     dev: false
 
-  /ffjavascript@0.2.60:
-    resolution: {integrity: sha512-T/9bnEL5xAZRDbQoEMf+pM9nrhK+C3JyZNmqiWub26EQorW7Jt+jR54gpqDhceA4Nj0YctPQwYnl8xa52/A26A==}
+  /ffjavascript@0.2.63:
+    resolution: {integrity: sha512-dBgdsfGks58b66JnUZeZpGxdMIDQ4QsD3VYlRJyFVrKQHb2kJy4R2gufx5oetrTxXPT+aEjg0dOvOLg1N0on4A==}
     dependencies:
       wasmbuilder: 0.0.16
       wasmcurves: 0.2.2
-      web-worker: 1.3.0
+      web-worker: 1.2.0
+    dev: false
 
-  /ffjavascript@0.2.63:
-    resolution: {integrity: sha512-dBgdsfGks58b66JnUZeZpGxdMIDQ4QsD3VYlRJyFVrKQHb2kJy4R2gufx5oetrTxXPT+aEjg0dOvOLg1N0on4A==}
+  /ffjavascript@0.3.0:
+    resolution: {integrity: sha512-l7sR5kmU3gRwDy8g0Z2tYBXy5ttmafRPFOqY7S6af5cq51JqJWt5eQ/lSR/rs2wQNbDYaYlQr5O+OSUf/oMLoQ==}
     dependencies:
       wasmbuilder: 0.0.16
       wasmcurves: 0.2.2
@@ -16377,13 +16385,13 @@ packages:
       ffjavascript: 0.2.56
     dev: false
 
-  /r1csfile@0.0.47:
-    resolution: {integrity: sha512-oI4mAwuh1WwuFg95eJDNDDL8hCaZkwnPuNZrQdLBWvDoRU7EG+L/MOHL7SwPW2Y+ZuYcTLpj3rBkgllBQZN/JA==}
+  /r1csfile@0.0.48:
+    resolution: {integrity: sha512-kHRkKUJNaor31l05f2+RFzvcH5XSa7OfEfd/l4hzjte6NL6fjRkSMfZ4BjySW9wmfdwPOtq3mXurzPvPGEf5Tw==}
     dependencies:
       '@iden3/bigarray': 0.0.2
-      '@iden3/binfileutils': 0.0.11
+      '@iden3/binfileutils': 0.0.12
       fastfile: 0.0.20
-      ffjavascript: 0.2.60
+      ffjavascript: 0.3.0
 
   /randombytes@2.1.0:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
@@ -17589,20 +17597,20 @@ packages:
       r1csfile: 0.0.41
     dev: false
 
-  /snarkjs@0.7.3:
-    resolution: {integrity: sha512-cDLpWqdqEJSCQNc+cXYX1XTKdUZBtYEisuOsgmXf/HUsN5WmGN+FO7HfCS+cMQT1Nzbm1a9gAEpKH6KRtDtS1Q==}
+  /snarkjs@0.7.4:
+    resolution: {integrity: sha512-x4cOCR4YXSyBlLtfnUUwfbZrw8wFd/Y0lk83eexJzKwZB8ELdpH+10ts8YtDsm2/a3WK7c7p514bbE8NpqxW8w==}
     hasBin: true
     dependencies:
-      '@iden3/binfileutils': 0.0.11
+      '@iden3/binfileutils': 0.0.12
       bfj: 7.1.0
       blake2b-wasm: 2.4.0
-      circom_runtime: 0.1.24
+      circom_runtime: 0.1.25
       ejs: 3.1.10
       fastfile: 0.0.20
-      ffjavascript: 0.2.63
+      ffjavascript: 0.3.0
       js-sha3: 0.8.0
       logplease: 1.2.15
-      r1csfile: 0.0.47
+      r1csfile: 0.0.48
 
   /sockjs@0.3.24:
     resolution: {integrity: sha512-GJgLTZ7vYb/JtPSSZ10hsOYIvEYsjbNU+zPdIHcUaWVNUEPivzxku31865sSSud0Da0W4lEeOPlmw93zLQchuQ==}
@@ -19265,6 +19273,7 @@ packages:
 
   /web-worker@1.3.0:
     resolution: {integrity: sha512-BSR9wyRsy/KOValMgd5kMyr3JzpdeoR9KVId8u5GVlTTAtNChlsE4yTxeY7zMdNSyOmoKBv8NH2qeRY9Tg+IaA==}
+    dev: false
 
   /web3-utils@1.10.4:
     resolution: {integrity: sha512-tsu8FiKJLk2PzhDl9fXbGUWTkkVXYhtTA+SmEFkKft+9BgwLxfCRpU96sWv7ICC8zixBNd3JURVoiR3dUXgP8A==}
