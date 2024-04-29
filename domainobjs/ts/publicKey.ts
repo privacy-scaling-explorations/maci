@@ -1,4 +1,4 @@
-import { SNARK_FIELD_SIZE, hashLeftRight, packPubKey, unpackPubKey, type PubKey as RawPubKey } from "maci-crypto";
+import { inCurve, hashLeftRight, packPubKey, unpackPubKey, type PubKey as RawPubKey } from "maci-crypto";
 
 import assert from "assert";
 
@@ -19,11 +19,18 @@ export class PubKey {
 
   /**
    * Create a new instance of a public key
+   * @dev You might want to allow an invalid raw key,
+   * as when decrypting invalid messages, the public key data
+   * will be random, and likely not be a point on the curve.
+   * However we need to match keys to the circuit which does
+   * not perform such checks
    * @param rawPubKey the raw public key
+   * @param allowInvalid whether to allow invalid public keys
    */
-  constructor(rawPubKey: RawPubKey) {
-    assert(rawPubKey[0] < SNARK_FIELD_SIZE);
-    assert(rawPubKey[1] < SNARK_FIELD_SIZE);
+  constructor(rawPubKey: RawPubKey, allowInvalid = false) {
+    if (!allowInvalid) {
+      assert(inCurve(rawPubKey), "PubKey not on curve");
+    }
     this.rawPubKey = rawPubKey;
   }
 
@@ -63,12 +70,6 @@ export class PubKey {
    * @returns the string representation of a serialized public key
    */
   serialize = (): string => {
-    const { x, y } = this.asContractParam();
-    // Blank leaves have pubkey [0, 0], which packPubKey does not support
-    if (BigInt(x) === BigInt(0) && BigInt(y) === BigInt(0)) {
-      return `${SERIALIZED_PUB_KEY_PREFIX}z`;
-    }
-
     const packed = packPubKey(this.rawPubKey).toString(16);
 
     if (packed.length % 2 !== 0) {
@@ -97,11 +98,6 @@ export class PubKey {
    * @returns the deserialized public key
    */
   static deserialize = (s: string): PubKey => {
-    // Blank leaves have pubkey [0, 0], which packPubKey does not support
-    if (s === `${SERIALIZED_PUB_KEY_PREFIX}z`) {
-      return new PubKey([BigInt(0), BigInt(0)]);
-    }
-
     const len = SERIALIZED_PUB_KEY_PREFIX.length;
     return new PubKey(unpackPubKey(BigInt(`0x${s.slice(len).toString()}`)));
   };

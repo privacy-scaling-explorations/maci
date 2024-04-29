@@ -9,6 +9,7 @@ import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.s
 import { EmptyBallotRoots } from "./trees/EmptyBallotRoots.sol";
 import { IPoll } from "./interfaces/IPoll.sol";
 import { Utilities } from "./utilities/Utilities.sol";
+import { CurveBabyJubJub } from "./crypto/BabyJubJub.sol";
 
 /// @title Poll
 /// @notice A Poll contract allows voters to submit encrypted messages
@@ -68,7 +69,7 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable(msg.sender), EmptyBallo
   error VotingPeriodNotOver();
   error PollAlreadyInit();
   error TooManyMessages();
-  error MaciPubKeyLargerThanSnarkFieldSize();
+  error InvalidPubKey();
   error StateAqAlreadyMerged();
   error StateAqSubtreesNeedMerge();
   error InvalidBatchLength();
@@ -95,8 +96,8 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable(msg.sender), EmptyBallo
     ExtContracts memory _extContracts
   ) payable {
     // check that the coordinator public key is valid
-    if (_coordinatorPubKey.x >= SNARK_SCALAR_FIELD || _coordinatorPubKey.y >= SNARK_SCALAR_FIELD) {
-      revert MaciPubKeyLargerThanSnarkFieldSize();
+    if (!CurveBabyJubJub.isOnCurve(_coordinatorPubKey.x, _coordinatorPubKey.y)) {
+      revert InvalidPubKey();
     }
 
     // store the pub key as object then calculate the hash
@@ -183,9 +184,9 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable(msg.sender), EmptyBallo
     // we check that we do not exceed the max number of messages
     if (numMessages >= maxValues.maxMessages) revert TooManyMessages();
 
-    // validate that the public key is valid
-    if (_encPubKey.x >= SNARK_SCALAR_FIELD || _encPubKey.y >= SNARK_SCALAR_FIELD) {
-      revert MaciPubKeyLargerThanSnarkFieldSize();
+    // check if the public key is on the curve
+    if (!CurveBabyJubJub.isOnCurve(_encPubKey.x, _encPubKey.y)) {
+      revert InvalidPubKey();
     }
 
     // cannot realistically overflow

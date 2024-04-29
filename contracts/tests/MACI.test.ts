@@ -121,7 +121,7 @@ describe("MACI", () => {
       }
     });
 
-    it("should fail when given an invalid pubkey", async () => {
+    it("should fail when given an invalid pubkey (x >= p)", async () => {
       await expect(
         maciContract.signUp(
           {
@@ -132,7 +132,49 @@ describe("MACI", () => {
           AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
           signUpTxOpts,
         ),
-      ).to.be.revertedWithCustomError(maciContract, "MaciPubKeyLargerThanSnarkFieldSize");
+      ).to.be.revertedWithCustomError(maciContract, "InvalidPubKey");
+    });
+
+    it("should fail when given an invalid pubkey (y >= p)", async () => {
+      await expect(
+        maciContract.signUp(
+          {
+            x: "1",
+            y: "21888242871839275222246405745257275088548364400416034343698204186575808495617",
+          },
+          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
+          AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
+          signUpTxOpts,
+        ),
+      ).to.be.revertedWithCustomError(maciContract, "InvalidPubKey");
+    });
+
+    it("should fail when given an invalid pubkey (x >= p and y >= p)", async () => {
+      await expect(
+        maciContract.signUp(
+          {
+            x: "21888242871839275222246405745257275088548364400416034343698204186575808495617",
+            y: "21888242871839275222246405745257275088548364400416034343698204186575808495617",
+          },
+          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
+          AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
+          signUpTxOpts,
+        ),
+      ).to.be.revertedWithCustomError(maciContract, "InvalidPubKey");
+    });
+
+    it("should fail when given an invalid public key (not on the curve)", async () => {
+      await expect(
+        maciContract.signUp(
+          {
+            x: "1",
+            y: "1",
+          },
+          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
+          AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
+          signUpTxOpts,
+        ),
+      ).to.be.revertedWithCustomError(maciContract, "InvalidPubKey");
     });
 
     it("should not allow to sign up more than the supported amount of users (5 ** stateTreeDepth)", async () => {
