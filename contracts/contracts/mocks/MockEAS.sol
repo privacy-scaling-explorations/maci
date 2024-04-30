@@ -8,17 +8,14 @@ import { IEAS } from "../interfaces/IEAS.sol";
 contract MockEAS is IEAS {
   address public immutable attester;
   bytes32 public immutable schema;
+  address public immutable recipient;
 
-  address public recipient;
-
+  /// @param _attester The address of the attester
+  /// @param _schema The schema of the attestation
+  /// @param _recipient The recipient of the attestation
   constructor(address _attester, bytes32 _schema, address _recipient) {
     attester = _attester;
     schema = _schema;
-    recipient = _recipient;
-  }
-
-  /// @notice Set the attestation recipient (mock)
-  function setRecipient(address _recipient) public {
     recipient = _recipient;
   }
 
