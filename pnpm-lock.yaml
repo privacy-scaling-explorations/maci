@@ -96,8 +96,8 @@ importers:
         specifier: ^0.4.0
         version: 0.4.0
       circomkit:
-        specifier: ^0.0.25
-        version: 0.0.25
+        specifier: ^0.1.0
+        version: 0.1.0
       circomlib:
         specifier: ^2.0.5
         version: 2.0.5
@@ -7676,8 +7676,8 @@ packages:
       util: 0.12.5
     dev: false
 
-  /circomkit@0.0.25:
-    resolution: {integrity: sha512-/YejX4lDOaaFgZ8hM3fZcecwzrAVllakk/FkDVK5lCjQfnA+ngE+RtY8OjGCTcAQUmDi4EHYP2RJ6Q1I60L+oA==}
+  /circomkit@0.1.0:
+    resolution: {integrity: sha512-Mnc9IuOoaN7FitfURvbg2Q5j62S7/zQl6l18u5dcIhZg3Ot9MZYLiGIotCaF1Gfp/vAUKnvO2lnS3Xc1TdTISA==}
     engines: {node: '>=12.0.0'}
     hasBin: true
     dependencies:
