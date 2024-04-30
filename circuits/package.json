@@ -44,7 +44,7 @@
     "maci-core": "^1.2.0",
     "maci-crypto": "^1.2.0",
     "maci-domainobjs": "^1.2.0",
-    "snarkjs": "^0.7.3"
+    "snarkjs": "^0.7.4"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
