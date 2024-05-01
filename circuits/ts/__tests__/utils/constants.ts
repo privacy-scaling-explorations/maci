@@ -7,7 +7,7 @@ export const maxValues = {
   maxVoteOptions: 25,
 };
 export const treeDepths = {
-  intStateTreeDepth: 2,
+  intStateTreeDepth: 5,
   messageTreeDepth: 2,
   messageTreeSubDepth: 1,
   voteOptionTreeDepth: 2,

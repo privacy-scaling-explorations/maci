@@ -183,8 +183,7 @@ describe("TallyVotes", () => {
   describe("after merging acc queues", () => {
     let tallyGeneratedInputs: ITallyCircuitInputs;
     before(async () => {
-      await pollContract.mergeMaciStateAqSubRoots(0, pollId);
-      await pollContract.mergeMaciStateAq(0);
+      await pollContract.mergeMaciStateAq();
 
       await pollContract.mergeMessageAqSubRoots(0);
       await pollContract.mergeMessageAq();
@@ -338,8 +337,7 @@ describe("TallyVotes", () => {
       );
 
       await timeTravel(signer.provider! as unknown as EthereumProvider, updatedDuration);
-      await pollContract.mergeMaciStateAqSubRoots(0, pollId);
-      await pollContract.mergeMaciStateAq(0);
+      await pollContract.mergeMaciStateAq();
 
       await pollContract.mergeMessageAqSubRoots(0);
       await pollContract.mergeMessageAq();
@@ -349,13 +347,17 @@ describe("TallyVotes", () => {
     });
 
     it("should tally votes correctly", async () => {
-      const tallyGeneratedInputs = poll.tallyVotes();
-      await tallyContract.tallyVotes(tallyGeneratedInputs.newTallyCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);
+      let tallyGeneratedInputs: ITallyCircuitInputs;
+      while (poll.hasUntalliedBallots()) {
+        tallyGeneratedInputs = poll.tallyVotes();
+        // eslint-disable-next-line no-await-in-loop
+        await tallyContract.tallyVotes(tallyGeneratedInputs.newTallyCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);
+      }
 
       const onChainNewTallyCommitment = await tallyContract.tallyCommitment();
-      expect(tallyGeneratedInputs.newTallyCommitment).to.eq(onChainNewTallyCommitment.toString());
+      expect(tallyGeneratedInputs!.newTallyCommitment).to.eq(onChainNewTallyCommitment.toString());
       await expect(
-        tallyContract.tallyVotes(tallyGeneratedInputs.newTallyCommitment, [0, 0, 0, 0, 0, 0, 0, 0]),
+        tallyContract.tallyVotes(tallyGeneratedInputs!.newTallyCommitment, [0, 0, 0, 0, 0, 0, 0, 0]),
       ).to.be.revertedWithCustomError(tallyContract, "AllBallotsTallied");
     });
   });
@@ -480,8 +482,7 @@ describe("TallyVotes", () => {
       );
 
       await timeTravel(signer.provider! as unknown as EthereumProvider, updatedDuration);
-      await pollContract.mergeMaciStateAqSubRoots(0, pollId);
-      await pollContract.mergeMaciStateAq(0);
+      await pollContract.mergeMaciStateAq();
 
       await pollContract.mergeMessageAqSubRoots(0);
       await pollContract.mergeMessageAq();
@@ -504,6 +505,13 @@ describe("TallyVotes", () => {
       tallyGeneratedInputs = poll.tallyVotes();
 
       await tallyContract.tallyVotes(tallyGeneratedInputs.newTallyCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);
+
+      // tally everything else
+      while (poll.hasUntalliedBallots()) {
+        tallyGeneratedInputs = poll.tallyVotes();
+        // eslint-disable-next-line no-await-in-loop
+        await tallyContract.tallyVotes(tallyGeneratedInputs.newTallyCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);
+      }
 
       // check that it fails to tally again
       await expect(

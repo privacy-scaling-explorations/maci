@@ -221,6 +221,8 @@ contract MessageProcessor is Ownable(msg.sender), SnarkCommon, Hasher, CommonUti
   ) public view returns (uint256 inputHash) {
     uint256 coordinatorPubKeyHash = poll.coordinatorPubKeyHash();
 
+    uint8 actualStateTreeDepth = poll.actualStateTreeDepth();
+
     // pack the values
     uint256 packedVals = genProcessMessagesPackedVals(
       _currentMessageBatchIndex,
@@ -233,13 +235,14 @@ contract MessageProcessor is Ownable(msg.sender), SnarkCommon, Hasher, CommonUti
     (uint256 deployTime, uint256 duration) = poll.getDeployTimeAndDuration();
 
     // generate the circuit only public input
-    uint256[] memory input = new uint256[](6);
+    uint256[] memory input = new uint256[](7);
     input[0] = packedVals;
     input[1] = coordinatorPubKeyHash;
     input[2] = _messageRoot;
     input[3] = _currentSbCommitment;
     input[4] = _newSbCommitment;
     input[5] = deployTime + duration;
+    input[6] = actualStateTreeDepth;
     inputHash = sha256Hash(input);
   }
 

@@ -125,7 +125,7 @@ export class IncrementalQuinTree {
     }
 
     if (index >= this.capacity) {
-      throw new Error("+The leaf index must be less than the tree capacity");
+      throw new Error("The leaf index must be less than the tree capacity");
     }
 
     const pathElements: bigint[][] = [];

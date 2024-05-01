@@ -1,4 +1,5 @@
-import { IncrementalQuinTree, hash5 } from "maci-crypto";
+import { STATE_TREE_ARITY } from "maci-core";
+import { IncrementalQuinTree, hash2 } from "maci-crypto";
 import { Ballot } from "maci-domainobjs";
 
 import fs from "fs";
@@ -17,9 +18,9 @@ export const genEmptyBallotRootsContract = async (): Promise<string> => {
   for (let i = 0; i < 5; i += 1) {
     const ballot = new Ballot(0, i + 1);
     // The empty Ballot tree root
-    const ballotTree = new IncrementalQuinTree(stateTreeDepth, ballot.hash(), 5, hash5);
+    const ballotTree = new IncrementalQuinTree(stateTreeDepth, ballot.hash(), STATE_TREE_ARITY, hash2);
 
-    roots.push(`emptyBallotRoots[${i}] = uint256(${ballotTree.root});`.padStart(4));
+    roots.push(`${"".padStart(4)}emptyBallotRoots[${i}] = uint256(${ballotTree.root});`.padStart(4));
   }
 
   return template.replace("<% ROOTS %>", roots.join("\n")).trim();

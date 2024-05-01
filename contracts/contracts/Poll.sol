@@ -56,6 +56,10 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable(msg.sender), EmptyBallo
   /// before the Poll ended (stateAq merged)
   uint256 public numSignups;
 
+  /// @notice The actual depth of the state tree
+  /// to be used as public input for the circuit
+  uint8 public actualStateTreeDepth;
+
   /// @notice Max values for the poll
   MaxValues public maxValues;
 
@@ -225,18 +229,7 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable(msg.sender), EmptyBallo
   }
 
   /// @inheritdoc IPoll
-  function mergeMaciStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId) public onlyOwner isAfterVotingDeadline {
-    // This function cannot be called after the stateAq was merged
-    if (stateAqMerged) revert StateAqAlreadyMerged();
-
-    // merge subroots
-    extContracts.maci.mergeStateAqSubRoots(_numSrQueueOps, _pollId);
-
-    emit MergeMaciStateAqSubRoots(_numSrQueueOps);
-  }
-
-  /// @inheritdoc IPoll
-  function mergeMaciStateAq(uint256 _pollId) public onlyOwner isAfterVotingDeadline {
+  function mergeMaciStateAq() public onlyOwner isAfterVotingDeadline {
     // This function can only be called once per Poll after the voting
     // deadline
     if (stateAqMerged) revert StateAqAlreadyMerged();
@@ -244,10 +237,7 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable(msg.sender), EmptyBallo
     // set merged to true so it cannot be called again
     stateAqMerged = true;
 
-    // the subtrees must have been merged first
-    if (!extContracts.maci.stateAq().subTreesMerged()) revert StateAqSubtreesNeedMerge();
-
-    mergedStateRoot = extContracts.maci.mergeStateAq(_pollId);
+    mergedStateRoot = extContracts.maci.getStateTreeRoot();
 
     // Set currentSbCommitment
     uint256[3] memory sb;
@@ -257,7 +247,18 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable(msg.sender), EmptyBallo
 
     currentSbCommitment = hash3(sb);
 
-    numSignups = extContracts.maci.numSignUps();
+    // get number of signups and cache in a var for later use
+    uint256 _numSignups = extContracts.maci.numSignUps();
+    numSignups = _numSignups;
+
+    // dynamically determine the actual depth of the state tree
+    uint8 depth = 1;
+    while (uint40(2) ** uint40(depth) < _numSignups) {
+      depth++;
+    }
+
+    actualStateTreeDepth = depth;
+
     emit MergeMaciStateAq(mergedStateRoot, numSignups);
   }
 

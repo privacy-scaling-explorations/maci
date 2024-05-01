@@ -6,7 +6,6 @@ import type { Groth16Proof, PublicSignals } from "snarkjs";
 
 export interface DeployedContracts {
   maciAddress: string;
-  stateAqAddress: string;
   pollFactoryAddress: string;
   topupCreditAddress: string;
   poseidonT3Address: string;

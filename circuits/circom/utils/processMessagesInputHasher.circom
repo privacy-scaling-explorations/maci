@@ -29,6 +29,7 @@ template ProcessMessagesInputHasher() {
     signal input currentSbCommitment;
     signal input newSbCommitment;
     signal input pollEndTimestamp;
+    signal input actualStateTreeDepth;
 
     signal output maxVoteOptions;
     signal output numSignUps;
@@ -48,12 +49,13 @@ template ProcessMessagesInputHasher() {
     var computedPubKey = PoseidonHasher(2)(coordPubKey);
 
     // 3. Hash the 6 inputs with SHA256.
-    hash <== Sha256Hasher(6)([
+    hash <== Sha256Hasher(7)([
         packedVals,
         computedPubKey,
         msgRoot,
         currentSbCommitment,
         newSbCommitment,
-        pollEndTimestamp
+        pollEndTimestamp,
+        actualStateTreeDepth
     ]);
 }

@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
 import { MaciState, Poll, packProcessMessageSmallVals, STATE_TREE_ARITY } from "maci-core";
-import { hash5, IncrementalQuinTree, NOTHING_UP_MY_SLEEVE, AccQueue } from "maci-crypto";
+import { IncrementalQuinTree, hash2 } from "maci-crypto";
 import { PrivKey, Keypair, PCommand, Message, Ballot, PubKey } from "maci-domainobjs";
 
 import { IProcessMessagesInputs } from "../types";
@@ -73,11 +73,10 @@ describe("ProcessMessage circuit", function test() {
     });
   });
 
-  describe("1 user, 2 messages", () => {
+  describe("5 users, 1 messages", () => {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     const voteWeight = BigInt(9);
     const voteOptionIndex = BigInt(1);
-    let stateIndex: bigint;
     let pollId: bigint;
     let poll: Poll;
     const messages: Message[] = [];
@@ -85,10 +84,11 @@ describe("ProcessMessage circuit", function test() {
 
     before(() => {
       // Sign up and publish
-      const userKeypair = new Keypair(new PrivKey(BigInt(1)));
-      stateIndex = BigInt(
-        maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000))),
-      );
+      const users = new Array(5).fill(0).map(() => new Keypair());
+
+      users.forEach((userKeypair) => {
+        maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+      });
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
@@ -123,15 +123,15 @@ describe("ProcessMessage circuit", function test() {
 
       // First command (valid)
       const command = new PCommand(
-        stateIndex, // BigInt(1),
-        userKeypair.pubKey,
+        5n,
+        users[4].pubKey,
         voteOptionIndex, // voteOptionIndex,
         voteWeight, // vote weight
         BigInt(2), // nonce
         BigInt(pollId),
       );
 
-      const signature = command.sign(userKeypair.privKey);
+      const signature = command.sign(users[4].privKey);
 
       const ecdhKeypair = new Keypair();
       const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
@@ -140,91 +140,14 @@ describe("ProcessMessage circuit", function test() {
       commands.push(command);
 
       poll.publishMessage(message, ecdhKeypair.pubKey);
-
-      // Second command (valid)
-      const command2 = new PCommand(
-        stateIndex,
-        userKeypair.pubKey,
-        voteOptionIndex, // voteOptionIndex,
-        BigInt(1), // vote weight
-        BigInt(1), // nonce
-        BigInt(pollId),
-      );
-      const signature2 = command2.sign(userKeypair.privKey);
-
-      const ecdhKeypair2 = new Keypair();
-      const sharedKey2 = Keypair.genEcdhSharedKey(ecdhKeypair2.privKey, coordinatorKeypair.pubKey);
-      const message2 = command2.encrypt(signature2, sharedKey2);
-      messages.push(message2);
-      commands.push(command2);
-      poll.publishMessage(message2, ecdhKeypair2.pubKey);
-      // Use the accumulator queue to compare the root of the message tree
-      const accumulatorQueue: AccQueue = new AccQueue(
-        treeDepths.messageTreeSubDepth,
-        STATE_TREE_ARITY,
-        NOTHING_UP_MY_SLEEVE,
-      );
-      accumulatorQueue.enqueue(nothing.hash(encP));
-      accumulatorQueue.enqueue(message.hash(ecdhKeypair.pubKey));
-      accumulatorQueue.enqueue(message2.hash(ecdhKeypair2.pubKey));
-      accumulatorQueue.mergeSubRoots(0);
-      accumulatorQueue.merge(treeDepths.messageTreeDepth);
-
-      expect(poll.messageTree.root.toString()).to.be.eq(
-        accumulatorQueue.getMainRoots()[treeDepths.messageTreeDepth].toString(),
-      );
     });
 
-    it("should produce the correct state root and ballot root", async () => {
-      // The current roots
-      const emptyBallot = new Ballot(poll.maxValues.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
-      const emptyBallotHash = emptyBallot.hash();
-      const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash5);
-
-      ballotTree.insert(emptyBallot.hash());
-
-      poll.stateLeaves.forEach(() => {
-        ballotTree.insert(emptyBallotHash);
-      });
-
-      const currentStateRoot = poll.stateTree?.root;
-      const currentBallotRoot = ballotTree.root;
-
+    it("should produce a proof", async () => {
       const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
 
       // Calculate the witness
       const witness = await circuit.calculateWitness(inputs);
       await circuit.expectConstraintPass(witness);
-
-      // The new roots, which should differ, since at least one of the
-      // messages modified a Ballot or State Leaf
-      const newStateRoot = poll.stateTree?.root;
-      const newBallotRoot = poll.ballotTree?.root;
-
-      expect(newStateRoot?.toString()).not.to.be.eq(currentStateRoot?.toString());
-      expect(newBallotRoot?.toString()).not.to.be.eq(currentBallotRoot.toString());
-
-      const packedVals = packProcessMessageSmallVals(
-        BigInt(maxValues.maxVoteOptions),
-        BigInt(poll.maciStateRef.numSignUps),
-        0,
-        3,
-      );
-
-      // Test the ProcessMessagesInputHasher circuit
-      const hasherCircuitInputs = {
-        packedVals,
-        coordPubKey: inputs.coordPubKey,
-        msgRoot: inputs.msgRoot,
-        currentSbCommitment: inputs.currentSbCommitment,
-        newSbCommitment: inputs.newSbCommitment,
-        pollEndTimestamp: inputs.pollEndTimestamp,
-      };
-
-      const hasherWitness = await hasherCircuit.calculateWitness(hasherCircuitInputs);
-      await hasherCircuit.expectConstraintPass(hasherWitness);
-      const hash = await getSignal(hasherCircuit, hasherWitness, "hash");
-      expect(hash.toString()).to.be.eq(inputs.inputHash.toString());
     });
   });
 
@@ -299,7 +222,7 @@ describe("ProcessMessage circuit", function test() {
       // The current roots
       const emptyBallot = new Ballot(poll.maxValues.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
       const emptyBallotHash = emptyBallot.hash();
-      const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash5);
+      const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash2);
 
       ballotTree.insert(emptyBallot.hash());
 
@@ -339,6 +262,7 @@ describe("ProcessMessage circuit", function test() {
         currentSbCommitment: inputs.currentSbCommitment,
         newSbCommitment: inputs.newSbCommitment,
         pollEndTimestamp: inputs.pollEndTimestamp,
+        actualStateTreeDepth: inputs.actualStateTreeDepth,
       };
 
       const hasherWitness = await hasherCircuit.calculateWitness(hasherCircuitInputs);
@@ -401,27 +325,13 @@ describe("ProcessMessage circuit", function test() {
       commands.push(command);
 
       poll.publishMessage(message, ecdhKeypair.pubKey);
-
-      // Use the accumulator queue to compare the root of the message tree
-      const accumulatorQueue: AccQueue = new AccQueue(
-        treeDepths.messageTreeSubDepth,
-        STATE_TREE_ARITY,
-        NOTHING_UP_MY_SLEEVE,
-      );
-      accumulatorQueue.enqueue(message.hash(ecdhKeypair.pubKey));
-      accumulatorQueue.mergeSubRoots(0);
-      accumulatorQueue.merge(treeDepths.messageTreeDepth);
-
-      expect(poll.messageTree.root.toString()).to.be.eq(
-        accumulatorQueue.getRoot(treeDepths.messageTreeDepth)?.toString(),
-      );
     });
 
     it("should produce the correct state root and ballot root", async () => {
       // The current roots
       const emptyBallot = new Ballot(poll.maxValues.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
       const emptyBallotHash = emptyBallot.hash();
-      const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash5);
+      const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash2);
 
       ballotTree.insert(emptyBallot.hash());
 
@@ -537,21 +447,6 @@ describe("ProcessMessage circuit", function test() {
       messages.push(message3);
       commands.push(command3);
       poll.publishMessage(message3, ecdhKeypair3.pubKey);
-      // Use the accumulator queue to compare the root of the message tree
-      const accumulatorQueue: AccQueue = new AccQueue(
-        treeDepths.messageTreeSubDepth,
-        STATE_TREE_ARITY,
-        NOTHING_UP_MY_SLEEVE,
-      );
-      accumulatorQueue.enqueue(message.hash(ecdhKeypair.pubKey));
-      accumulatorQueue.enqueue(message2.hash(ecdhKeypair2.pubKey));
-      accumulatorQueue.enqueue(message3.hash(ecdhKeypair3.pubKey));
-      accumulatorQueue.mergeSubRoots(0);
-      accumulatorQueue.merge(treeDepths.messageTreeDepth);
-
-      expect(poll.messageTree.root.toString()).to.be.eq(
-        accumulatorQueue.getRoot(treeDepths.messageTreeDepth)?.toString(),
-      );
     });
 
     describe(`1 user, ${messageBatchSize * NUM_BATCHES} messages`, () => {
@@ -765,7 +660,7 @@ describe("ProcessMessage circuit", function test() {
       // The current roots
       const emptyBallot = new Ballot(poll.maxValues.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
       const emptyBallotHash = emptyBallot.hash();
-      const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash5);
+      const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash2);
 
       ballotTree.insert(emptyBallot.hash());
 
@@ -887,7 +782,7 @@ describe("ProcessMessage circuit", function test() {
       // The current roots
       const emptyBallot = new Ballot(poll.maxValues.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
       const emptyBallotHash = emptyBallot.hash();
-      const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash5);
+      const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash2);
 
       ballotTree.insert(emptyBallot.hash());
 
@@ -1031,7 +926,7 @@ describe("ProcessMessage circuit", function test() {
       // The current roots
       const emptyBallot = new Ballot(poll.maxValues.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
       const emptyBallotHash = emptyBallot.hash();
-      const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash5);
+      const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash2);
 
       ballotTree.insert(emptyBallot.hash());
 

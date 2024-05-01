@@ -27,18 +27,10 @@ interface IPoll {
   /// to encrypt the message.
   function publishMessage(DomainObjs.Message memory _message, DomainObjs.PubKey calldata _encPubKey) external;
 
-  /// @notice The first step of merging the MACI state AccQueue. This allows the
-  /// ProcessMessages circuit to access the latest state tree and ballots via
-  /// currentSbCommitment.
-  /// @param _numSrQueueOps Number of operations
-  /// @param _pollId The ID of the active Poll
-  function mergeMaciStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId) external;
-
   /// @notice The second step of merging the MACI state AccQueue. This allows the
   /// ProcessMessages circuit to access the latest state tree and ballots via
   /// currentSbCommitment.
-  /// @param _pollId The ID of the active Poll
-  function mergeMaciStateAq(uint256 _pollId) external;
+  function mergeMaciStateAq() external;
 
   /// @notice The first step in merging the message AccQueue so that the
   /// ProcessMessages circuit can access the message root.
@@ -92,4 +84,8 @@ interface IPoll {
   /// the case that none of the messages are valid.
   /// @return The commitment to the state leaves and the ballots
   function currentSbCommitment() external view returns (uint256);
+
+  /// @notice Get the dynamic depth of the state tree at the time of poll
+  /// finalization (based on the number of leaves inserted)
+  function actualStateTreeDepth() external view returns (uint8);
 }

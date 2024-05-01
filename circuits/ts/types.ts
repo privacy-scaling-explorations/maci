@@ -19,6 +19,7 @@ export interface IGenProofOptions {
  * Inputs for circuit ProcessMessages
  */
 export interface IProcessMessagesInputs {
+  actualStateTreeDepth: bigint;
   inputHash: bigint;
   packedVals: bigint;
   pollEndTimestamp: bigint;

@@ -232,6 +232,9 @@ importers:
       '@openzeppelin/contracts':
         specifier: ^5.0.2
         version: 5.0.2
+      '@zk-kit/imt.sol':
+        specifier: 2.0.0-beta.12
+        version: 2.0.0-beta.12
       circomlibjs:
         specifier: ^0.1.7
         version: 0.1.7
@@ -6357,6 +6360,12 @@ packages:
       '@zk-kit/baby-jubjub': 0.3.0
       '@zk-kit/utils': 0.8.1
       buffer: 6.0.3
+    dev: false
+
+  /@zk-kit/imt.sol@2.0.0-beta.12:
+    resolution: {integrity: sha512-kKgopVO6zlfSiQgv3X9WykaCeyb8jGtthWGqdo1ZD7fY1bH8A7BWhhWxtoCuU5mPEgRbamw1cAoUynuLoEULsg==}
+    dependencies:
+      poseidon-solidity: 0.0.5
     dev: false
 
   /@zk-kit/poseidon-cipher@0.3.0:
@@ -15743,6 +15752,10 @@ packages:
     resolution: {integrity: sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA==}
     engines: {node: '>=4'}
     dev: true
+
+  /poseidon-solidity@0.0.5:
+    resolution: {integrity: sha512-NzrvSwHzvZgT4hvg2GyGqeR+UOU/eLSEt4wAoXEua+VaR7NTKKwx1X9bPlh1VMBEVEno+IWvkRBbidFGzTeAqQ==}
+    dev: false
 
   /possible-typed-array-names@1.0.0:
     resolution: {integrity: sha512-d7Uw+eZoloe0EHDIYoe+bQ5WXnGMOpmiZFTuMWCwpjzzkL2nTjcKiAk4hh8TjnGye2TwWOk3UXucZ+3rbmBa8Q==}

@@ -6,7 +6,7 @@ include "./mux1.circom";
 include "./safe-comparators.circom";
 // local imports
 include "./hashers.circom";
-include "../trees/incrementalQuinaryTree.circom";
+include "../trees/incrementalMerkleTree.circom";
 
 /**
  * Processes top-ups for a state tree, managing updates based on the transaction's message type and amount. 
@@ -20,7 +20,7 @@ template ProcessTopup(stateTreeDepth) {
     // Constants defining the structure and size of state and ballots.
     var STATE_LEAF_LENGTH = 4;
     var MSG_LENGTH = 11;
-    var TREE_ARITY = 5;
+    var STATE_TREE_ARITY = 2;
 
     // Indices for elements within a state leaf.
     // Public key.
@@ -38,10 +38,12 @@ template ProcessTopup(stateTreeDepth) {
     signal input amount;
     signal input numSignUps;
 
+    // The actual state tree depth (can be <= stateTreeDepth)
+    signal input actualStateTreeDepth;
     // The state leaf and related path elements.
     signal input stateLeaf[STATE_LEAF_LENGTH];
     // Sibling nodes at each level of the state tree to verify the specific state leaf.
-    signal input stateLeafPathElements[stateTreeDepth][TREE_ARITY - 1];
+    signal input stateLeafPathElements[stateTreeDepth][STATE_TREE_ARITY - 1];
 
     signal output newStateRoot;
 
@@ -82,9 +84,11 @@ template ProcessTopup(stateTreeDepth) {
         stateLeaf[STATE_LEAF_TIMESTAMP_IDX]
     ]);
 
-    var computedStateLeafPathIndices[stateTreeDepth] = QuinGeneratePathIndices(stateTreeDepth)(computedIndexMux);
-    newStateRoot <== QuinTreeInclusionProof(stateTreeDepth)(
+    var computedStateLeafPathIndices[stateTreeDepth] = MerkleGeneratePathIndices(stateTreeDepth)(computedIndexMux);
+    
+    newStateRoot <== BinaryMerkleRoot(stateTreeDepth)(
         computedNewStateLeaf,
+        actualStateTreeDepth,
         computedStateLeafPathIndices,
         stateLeafPathElements
     );
