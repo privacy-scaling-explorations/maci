@@ -23,7 +23,7 @@ const GWEI = 1e9;
 export const STATE_TREE_ARITY = 5;
 
 /**
- * Convert gas price from gwei to wei
+ * Convert gas price from gweguari to wei
  *
  * @param value - gas price in gwei
  * @returns gas price in wei
@@ -46,11 +46,12 @@ export const NETWORKS_DEFAULT_GAS: Record<ESupportedChains, number | "auto"> = {
  * @returns {Record<ESupportedChains, string>} rpc urls for supported networks
  */
 export const getNetworkRpcUrls = (): Record<ESupportedChains, string> => {
-  const INFURA_KEY = process.env.INFURA_KEY ?? "";
+  const SEPOLIA_RPC_URL = process.env.SEPOLIA_RPC_URL ?? "";
+  const OP_SEPOLIA_RPC_URL = process.env.OP_SEPOLIA_RPC_URL ?? "";
 
   return {
-    [ESupportedChains.Sepolia]: `https://sepolia.infura.io/v3/${INFURA_KEY}`,
-    [ESupportedChains.OptimismSepolia]: `https://optimism-sepolia.infura.io/v3/${INFURA_KEY}`,
+    [ESupportedChains.Sepolia]: SEPOLIA_RPC_URL,
+    [ESupportedChains.OptimismSepolia]: OP_SEPOLIA_RPC_URL,
     [ESupportedChains.Coverage]: "http://localhost:8555",
     [ESupportedChains.Hardhat]: "http://localhost:8545",
   };
