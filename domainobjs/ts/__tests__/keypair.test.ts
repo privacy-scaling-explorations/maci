@@ -3,7 +3,8 @@ import { genKeypair, genPrivKey } from "maci-crypto";
 
 import { Keypair, PrivKey } from "..";
 
-describe("keypair", () => {
+describe("keypair", function test() {
+  this.timeout(900000);
   describe("constructor", () => {
     it("should generate a random keypair if not provided a private key", () => {
       const k1 = new Keypair();
@@ -12,6 +13,12 @@ describe("keypair", () => {
       expect(k1.equals(k2)).to.eq(false);
 
       expect(k1.privKey.rawPrivKey).not.to.eq(k2.privKey.rawPrivKey);
+    });
+
+    it("should always generate a valid keypair", () => {
+      for (let i = 0; i < 100; i += 1) {
+        expect(() => new Keypair()).to.not.throw();
+      }
     });
 
     it("should generate the correct public key given a private key", () => {

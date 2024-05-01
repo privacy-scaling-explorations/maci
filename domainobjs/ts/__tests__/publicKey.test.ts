@@ -59,11 +59,6 @@ describe("public key", () => {
         expect(unpacked[0].toString()).to.eq(pk1.rawPubKey[0].toString());
         expect(unpacked[1].toString()).to.eq(pk1.rawPubKey[1].toString());
       });
-      it("should serialize into an invalid serialized key when the key is [bigint(0), bigint(0)]", () => {
-        const pk1 = new PubKey([BigInt(0), BigInt(0)]);
-        const s = pk1.serialize();
-        expect(s).to.eq("macipk.z");
-      });
     });
 
     describe("deserialize", () => {
@@ -73,10 +68,6 @@ describe("public key", () => {
         const s = pk1.serialize();
         const pk2 = PubKey.deserialize(s);
         expect(pk1.rawPubKey.toString()).to.eq(pk2.rawPubKey.toString());
-      });
-      it("should deserialize into an invalid serialized key when the key is equal to macipk.z", () => {
-        const pk1 = PubKey.deserialize("macipk.z");
-        expect(pk1.rawPubKey.toString()).to.eq([BigInt(0), BigInt(0)].toString());
       });
     });
 

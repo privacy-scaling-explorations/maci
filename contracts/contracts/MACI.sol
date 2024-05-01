@@ -13,6 +13,7 @@ import { Params } from "./utilities/Params.sol";
 import { TopupCredit } from "./TopupCredit.sol";
 import { Utilities } from "./utilities/Utilities.sol";
 import { DomainObjs } from "./utilities/DomainObjs.sol";
+import { CurveBabyJubJub } from "./crypto/BabyJubJub.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 /// @title MACI - Minimum Anti-Collusion Infrastructure Version 1
@@ -101,7 +102,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable(msg.sender) {
   error CallerMustBePoll(address _caller);
   error PoseidonHashLibrariesNotLinked();
   error TooManySignups();
-  error MaciPubKeyLargerThanSnarkFieldSize();
+  error InvalidPubKey();
   error PreviousPollNotCompleted(uint256 pollId);
   error PollDoesNotExist(uint256 pollId);
   error SignupTemporaryBlocked();
@@ -168,8 +169,9 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable(msg.sender) {
     // ensure we do not have more signups than what the circuits support
     if (numSignUps >= uint256(TREE_ARITY) ** uint256(stateTreeDepth)) revert TooManySignups();
 
-    if (_pubKey.x >= SNARK_SCALAR_FIELD || _pubKey.y >= SNARK_SCALAR_FIELD) {
-      revert MaciPubKeyLargerThanSnarkFieldSize();
+    // ensure that the public key is on the baby jubjub curve
+    if (!CurveBabyJubJub.isOnCurve(_pubKey.x, _pubKey.y)) {
+      revert InvalidPubKey();
     }
 
     // Increment the number of signups
@@ -217,6 +219,11 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable(msg.sender) {
     // 2 ** 256 polls available
     unchecked {
       nextPollId++;
+    }
+
+    // check coordinator key is a valid point on the curve
+    if (!CurveBabyJubJub.isOnCurve(_coordinatorPubKey.x, _coordinatorPubKey.y)) {
+      revert InvalidPubKey();
     }
 
     if (pollId > 0) {

@@ -141,6 +141,29 @@ describe("Poll", () => {
       const numMessages = await pollContract.numMessages();
       expect(numMessages.toString()).to.eq("1");
     });
+
+    it("should fail when passing an invalid coordinator public key", async () => {
+      const r = await deployTestContracts(initialVoiceCreditBalance, STATE_TREE_DEPTH, signer, true);
+      const testMaciContract = r.maciContract;
+
+      // deploy on chain poll
+      await expect(
+        testMaciContract.deployPoll(
+          duration,
+          treeDepths,
+          {
+            x: "100",
+            y: "1",
+          },
+          r.mockVerifierContract as Verifier,
+          r.vkRegistryContract,
+          EMode.QV,
+          {
+            gasLimit: 10000000,
+          },
+        ),
+      ).to.be.revertedWithCustomError(testMaciContract, "InvalidPubKey");
+    });
   });
 
   describe("topup", () => {
@@ -202,6 +225,20 @@ describe("Poll", () => {
       maciState.polls.get(pollId)?.publishMessage(message, keypair.pubKey);
     });
 
+    it("should throw when the encPubKey is not a point on the baby jubjub curve", async () => {
+      const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, 0n);
+
+      const signature = command.sign(keypair.privKey);
+      const sharedKey = Keypair.genEcdhSharedKey(keypair.privKey, coordinator.pubKey);
+      const message = command.encrypt(signature, sharedKey);
+      await expect(
+        pollContract.publishMessage(message.asContractParam(), {
+          x: "1",
+          y: "1",
+        }),
+      ).to.be.revertedWithCustomError(pollContract, "InvalidPubKey");
+    });
+
     it("should emit an event when publishing a message", async () => {
       const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, 0n);
 
@@ -252,7 +289,7 @@ describe("Poll", () => {
 
     it("should not allow to publish a message after the voting period ends", async () => {
       const dd = await pollContract.getDeployTimeAndDuration();
-      await timeTravel(signer.provider as unknown as EthereumProvider, Number(dd[0]) + 1);
+      await timeTravel(signer.provider as unknown as EthereumProvider, Number(dd[0]) + 10);
 
       const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, 0n);
 
@@ -261,7 +298,7 @@ describe("Poll", () => {
       const message = command.encrypt(signature, sharedKey);
 
       await expect(
-        pollContract.publishMessage(message.asContractParam(), keypair.pubKey.asContractParam(), { gasLimit: 300000 }),
+        pollContract.publishMessage(message.asContractParam(), keypair.pubKey.asContractParam()),
       ).to.be.revertedWithCustomError(pollContract, "VotingPeriodOver");
     });
 
@@ -271,9 +308,7 @@ describe("Poll", () => {
       const sharedKey = Keypair.genEcdhSharedKey(keypair.privKey, coordinator.pubKey);
       const message = command.encrypt(signature, sharedKey);
       await expect(
-        pollContract.publishMessageBatch([message.asContractParam()], [keypair.pubKey.asContractParam()], {
-          gasLimit: 300000,
-        }),
+        pollContract.publishMessageBatch([message.asContractParam()], [keypair.pubKey.asContractParam()]),
       ).to.be.revertedWithCustomError(pollContract, "VotingPeriodOver");
     });
   });

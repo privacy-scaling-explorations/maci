@@ -23,6 +23,8 @@ export { G1Point, G2Point, genRandomBabyJubValue } from "./babyjub";
 
 export { sha256Hash, hashLeftRight, hashN, hash2, hash3, hash4, hash5, hash13, hashOne } from "./hashing";
 
+export { inCurve } from "@zk-kit/baby-jubjub";
+
 export { poseidonDecrypt, poseidonDecryptWithoutCheck, poseidonEncrypt } from "@zk-kit/poseidon-cipher";
 
 export { verifySignature, signMessage as sign } from "@zk-kit/eddsa-poseidon";
