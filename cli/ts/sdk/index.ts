@@ -15,15 +15,10 @@ export {
   ContractStorage,
   EContracts,
   EMode,
-  PollFactory__factory as PollFactoryFactory,
-  MessageProcessorFactory__factory as MessageProcessorFactoryFactory,
-  TallyFactory__factory as TallyFactoryFactory,
-  MACI__factory as MACIFactory,
-  type MACI,
-  type EASGatekeeper,
   type IVerifyingKeyStruct,
-  type VkRegistry,
 } from "maci-contracts";
+
+export * from "maci-contracts/typechain-types";
 
 export { VerifyingKey, type IVkObjectParams } from "maci-domainobjs";
 

@@ -3,6 +3,7 @@
 import { BaseContract, ContractFactory, Signer } from "ethers";
 import low from "lowdb";
 import FileSync from "lowdb/adapters/FileSync";
+import LocalStorageSync from "lowdb/adapters/LocalStorage";
 
 import path from "path";
 
@@ -63,7 +64,11 @@ export class Deployment {
       ["poll", []],
     ]);
     this.hre = hre;
-    this.config = low(new FileSync<TConfig>(path.resolve(__dirname, "..", "..", "./deploy-config.json")));
+    this.config = low(
+      typeof window !== "undefined"
+        ? new LocalStorageSync<TConfig>("deploy-config")
+        : new FileSync<TConfig>(path.resolve(__dirname, "..", "..", "./deploy-config.json")),
+    );
     this.storage = ContractStorage.getInstance();
   }
 
