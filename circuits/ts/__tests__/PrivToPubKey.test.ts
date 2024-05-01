@@ -12,7 +12,7 @@ describe("Public key derivation circuit", function test() {
 
   before(async () => {
     circuit = await circomkitInstance.WitnessTester("privToPubKey", {
-      file: "privToPubKey",
+      file: "./utils/privToPubKey",
       template: "PrivToPubKey",
     });
   });

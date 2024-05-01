@@ -50,13 +50,13 @@ describe("TallyVotes circuit", function test() {
 
   before(async () => {
     circuit = await circomkitInstance.WitnessTester("tallyVotes", {
-      file: "tallyVotes",
+      file: "./core/qv/tallyVotes",
       template: "TallyVotes",
       params: [10, 1, 2],
     });
 
     circuitNonQv = await circomkitInstance.WitnessTester("tallyVotesNonQv", {
-      file: "tallyVotesNonQv",
+      file: "./core/non-qv/tallyVotes",
       template: "TallyVotesNonQv",
       params: [10, 1, 2],
     });
@@ -148,7 +148,7 @@ describe("TallyVotes circuit", function test() {
     });
   });
 
-  describe("1 user, 2 messages (non qv)", () => {
+  describe("1 user, 2 messages (non quadratic-voting)", () => {
     let stateIndex: bigint;
     let pollId: bigint;
     let poll: Poll;

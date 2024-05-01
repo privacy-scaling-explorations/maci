@@ -22,20 +22,17 @@
     "types": "tsc -p tsconfig.json --noEmit",
     "test": "ts-mocha --exit ts/__tests__/*.test.ts",
     "test:hasher": "ts-mocha --exit ts/__tests__/Hasher.test.ts",
-    "test:unpackElement": "ts-mocha --exit ts/__tests__/UnpackElement.test.ts",
     "test:slAndBallotTransformer": "ts-mocha --exit ts/__tests__/StateLeafAndBallotTransformer.test.ts",
     "test:messageToCommand": "ts-mocha --exit ts/__tests__/MessageToCommand.test.ts",
     "test:messageValidator": "ts-mocha --exit ts/__tests__/MessageValidator.test.ts",
     "test:verifySignature": "ts-mocha --exit ts/__tests__/VerifySignature.test.ts",
     "test:splicer": "ts-mocha --exit ts/__tests__/Splicer.test.ts",
-    "test:ecdh": "ts-mocha --exit ts/__tests__/Ecdh.test.ts",
     "test:privToPubKey": "ts-mocha --exit ts/__tests__/PrivToPubKey.test.ts",
     "test:calculateTotal": "ts-mocha --exit ts/__tests__/CalculateTotal.test.ts",
     "test:processMessages": "NODE_OPTIONS=--max-old-space-size=4096 ts-mocha --exit ts/__tests__/ProcessMessages.test.ts",
     "test:tallyVotes": "NODE_OPTIONS=--max-old-space-size=4096 ts-mocha --exit ts/__tests__/TallyVotes.test.ts",
     "test:ceremonyParams": "ts-mocha --exit ts/__tests__/CeremonyParams.test.ts",
-    "test:quinCheckRoot": "ts-mocha --exit ts/__tests__/QuinCheckRoot.test.ts",
-    "test:incrementalQuinTree": "ts-mocha --exit ts/__tests__/IncrementalQuinTree.test.ts"
+    "test:incrementalQuinaryTree": "ts-mocha --exit ts/__tests__/IncrementalQuinaryTree.test.ts"
   },
   "dependencies": {
     "@zk-kit/circuits": "^0.4.0",

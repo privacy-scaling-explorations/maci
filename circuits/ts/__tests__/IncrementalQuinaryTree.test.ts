@@ -7,7 +7,7 @@ import { getSignal, circomkitInstance } from "./utils/utils";
 
 chai.use(chaiAsPromised);
 
-describe("IncrementalQuinTree circuit", function test() {
+describe("Incremental Quinary Tree (IQT)", function test() {
   this.timeout(50000);
 
   const leavesPerNode = 5;
@@ -17,30 +17,37 @@ describe("IncrementalQuinTree circuit", function test() {
   let circuitGeneratePathIndices: WitnessTester<["in"], ["out"]>;
   let circuitQuinSelector: WitnessTester<["in", "index"], ["out"]>;
   let splicerCircuit: WitnessTester<["in", "leaf", "index"], ["out"]>;
+  let quinCheckRoot: WitnessTester<["leaves"], ["root"]>;
 
   before(async () => {
     circuitLeafExists = await circomkitInstance.WitnessTester("quinLeafExists", {
-      file: "./trees/incrementalQuinTree",
+      file: "./trees/incrementalQuinaryTree",
       template: "QuinLeafExists",
       params: [3],
     });
 
     circuitGeneratePathIndices = await circomkitInstance.WitnessTester("quinGeneratePathIndices", {
-      file: "./trees/incrementalQuinTree",
+      file: "./trees/incrementalQuinaryTree",
       template: "QuinGeneratePathIndices",
       params: [4],
     });
 
     circuitQuinSelector = await circomkitInstance.WitnessTester("quinSelector", {
-      file: "./trees/incrementalQuinTree",
+      file: "./trees/incrementalQuinaryTree",
       template: "QuinSelector",
       params: [5],
     });
 
     splicerCircuit = await circomkitInstance.WitnessTester("splicer", {
-      file: "./trees/incrementalQuinTree",
+      file: "./trees/incrementalQuinaryTree",
       template: "Splicer",
       params: [4],
+    });
+
+    quinCheckRoot = await circomkitInstance.WitnessTester("quinCheckRoot", {
+      file: "./trees/incrementalQuinaryTree",
+      template: "QuinCheckRoot",
+      params: [3],
     });
   });
 
@@ -147,6 +154,39 @@ describe("IncrementalQuinTree circuit", function test() {
       };
 
       await expect(circuitLeafExists.calculateWitness(circuitInputs)).to.be.rejectedWith("Assert Failed.");
+    });
+  });
+
+  describe("QuinCheckRoot", () => {
+    it("should compute the correct merkle root", async () => {
+      const leaves = Array<bigint>(leavesPerNode ** treeDepth).fill(5n);
+
+      const circuitInputs = {
+        leaves,
+      };
+
+      const tree = new IncrementalQuinTree(3, 0n, 5, hash5);
+      leaves.forEach((leaf) => {
+        tree.insert(leaf);
+      });
+
+      const witness = await quinCheckRoot.calculateWitness(circuitInputs);
+      await quinCheckRoot.expectConstraintPass(witness);
+
+      const circuitRoot = await getSignal(quinCheckRoot, witness, "root");
+      expect(circuitRoot.toString()).to.be.eq(tree.root.toString());
+    });
+
+    it("should not accept less leaves than a full tree", async () => {
+      const leaves = Array<bigint>(leavesPerNode ** treeDepth - 1).fill(5n);
+
+      const circuitInputs = {
+        leaves,
+      };
+
+      await expect(quinCheckRoot.calculateWitness(circuitInputs)).to.be.rejectedWith(
+        "Not enough values for input signal leaves",
+      );
     });
   });
 });

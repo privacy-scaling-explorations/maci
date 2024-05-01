@@ -24,7 +24,7 @@ describe("MessageToCommand circuit", () => {
 
   before(async () => {
     circuit = await circomkitInstance.WitnessTester("messageToCommand", {
-      file: "messageToCommand",
+      file: "./utils/messageToCommand",
       template: "MessageToCommand",
     });
   });

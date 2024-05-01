@@ -17,7 +17,7 @@ export class IncrementalQuinTree {
   // the hash function used in the tree
   hashFunc: (leaves: Leaf[]) => bigint;
 
-  // The the smallest empty leaf index
+  // The smallest empty leaf index
   nextIndex = 0;
 
   // Contains the zero value per level. i.e. zeros[0] is zeroValue,

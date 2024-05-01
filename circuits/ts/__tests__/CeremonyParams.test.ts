@@ -78,13 +78,13 @@ describe("Ceremony param tests", () => {
 
     before(async () => {
       circuit = await circomkitInstance.WitnessTester("processMessages", {
-        file: "processMessages",
+        file: "./core/qv/processMessages",
         template: "ProcessMessages",
         params: [6, 9, 2, 3],
       });
 
       hasherCircuit = await circomkitInstance.WitnessTester("processMessageInputHasher", {
-        file: "processMessages",
+        file: "./utils/processMessagesInputHasher",
         template: "ProcessMessagesInputHasher",
       });
     });
@@ -255,7 +255,7 @@ describe("Ceremony param tests", () => {
 
       before(async () => {
         testCircuit = await circomkitInstance.WitnessTester("tallyVotes", {
-          file: "tallyVotes",
+          file: "./core/qv/tallyVotes",
           template: "TallyVotes",
           params: [6, 2, 3],
         });
