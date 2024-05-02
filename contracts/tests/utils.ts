@@ -529,7 +529,7 @@ export const deployTestContracts = async (
       topupCreditContract.getAddress(),
     ]);
 
-  const { maciContract, stateAqContract } = await deployMaci({
+  const { maciContract } = await deployMaci({
     signUpTokenGatekeeperContractAddress: gatekeeperContractAddress,
     initialVoiceCreditBalanceAddress: constantIntialVoiceCreditProxyContractAddress,
     topupCreditContractAddress,
@@ -543,7 +543,6 @@ export const deployTestContracts = async (
     gatekeeperContract,
     constantIntialVoiceCreditProxyContract,
     maciContract,
-    stateAqContract,
     vkRegistryContract,
     topupCreditContract,
   };

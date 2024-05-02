@@ -83,7 +83,7 @@ export const genLocalState = async ({
     maciContract
       .queryFilter(maciContract.filters.DeployPoll(), startBlock)
       .then((events) => events[0]?.blockNumber ?? 0),
-    maciContract.getStateAqRoot(),
+    maciContract.getStateTreeRoot(),
     maciContract.numSignUps(),
     messageAqContract.getMainRoot(messageTreeDepth),
   ]);

@@ -599,6 +599,98 @@ describe("e2e tests", function test() {
     });
   });
 
+  describe("multiplePolls with new signups", () => {
+    after(() => {
+      clean();
+    });
+
+    const users = Array.from({ length: 4 }, () => new Keypair());
+
+    before(async () => {
+      // deploy the smart contracts
+      maciAddresses = await deploy({ ...deployArgs, signer });
+      // deploy a poll contract
+      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
+      // signup
+      await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[0].pubKey.serialize(), signer });
+      // publish
+      await publish({
+        pubkey: users[0].pubKey.serialize(),
+        stateIndex: 1n,
+        voteOptionIndex: 0n,
+        nonce: 1n,
+        pollId: 0n,
+        newVoteWeight: 9n,
+        maciAddress: maciAddresses.maciAddress,
+        salt: genRandomSalt(),
+        privateKey: users[0].privKey.serialize(),
+        signer,
+      });
+      await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[1].pubKey.serialize(), signer });
+      await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[1].pubKey.serialize(), signer });
+
+      // time travel
+      await timeTravel({ ...timeTravelArgs, signer });
+      // generate proofs
+      await mergeMessages({ ...mergeMessagesArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, signer });
+      const tallyFileData = await genProofs({ ...genProofsArgs, signer });
+      await proveOnChain({ ...proveOnChainArgs, signer });
+      await verify({ ...verifyArgs(), tallyData: tallyFileData, signer });
+      clean();
+    });
+
+    it("should deploy a new poll", async () => {
+      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
+    });
+
+    it("should signup four new users", async () => {
+      await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[2].pubKey.serialize(), signer });
+      await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[3].pubKey.serialize(), signer });
+      await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[3].pubKey.serialize(), signer });
+      await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[3].pubKey.serialize(), signer });
+    });
+
+    it("should publish a new message from the first poll voter", async () => {
+      await publish({
+        pubkey: users[0].pubKey.serialize(),
+        stateIndex: 1n,
+        voteOptionIndex: 0n,
+        nonce: 1n,
+        pollId: 1n,
+        newVoteWeight: 7n,
+        maciAddress: maciAddresses.maciAddress,
+        salt: genRandomSalt(),
+        privateKey: users[0].privKey.serialize(),
+        signer,
+      });
+    });
+
+    it("should publish a new message by the new poll voters", async () => {
+      await publish({
+        pubkey: users[1].pubKey.serialize(),
+        stateIndex: 1n,
+        voteOptionIndex: 0n,
+        nonce: 1n,
+        pollId: 1n,
+        newVoteWeight: 7n,
+        maciAddress: maciAddresses.maciAddress,
+        salt: genRandomSalt(),
+        privateKey: users[1].privKey.serialize(),
+        signer,
+      });
+    });
+
+    it("should generate proofs and verify them", async () => {
+      await timeTravel({ ...timeTravelArgs, signer });
+      await mergeMessages({ pollId: 1n, signer });
+      await mergeSignups({ pollId: 1n, signer });
+      await genProofs({ ...genProofsArgs, pollId: 1n, signer });
+      await proveOnChain({ ...proveOnChainArgs, pollId: 1n, signer });
+      await verify({ ...verifyArgs(), pollId: 1n, signer });
+    });
+  });
+
   describe("multiplePolls2", () => {
     const users = [
       new Keypair(),

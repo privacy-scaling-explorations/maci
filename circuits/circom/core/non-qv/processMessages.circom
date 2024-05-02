@@ -32,8 +32,10 @@ include "../../trees/incrementalQuinaryTree.circom";
     assert(msgTreeDepth >= msgBatchDepth);
 
     // Default for IQT (quinary trees).
-    var TREE_ARITY = 5;
-    var batchSize = TREE_ARITY ** msgBatchDepth;
+    var MESSAGE_TREE_ARITY = 5;
+    // Default for Binary trees.
+    var STATE_TREE_ARITY = 2;
+    var batchSize = MESSAGE_TREE_ARITY ** msgBatchDepth;
     var MSG_LENGTH = 11;
     var PACKED_CMD_LENGTH = 4;
     var STATE_LEAF_LENGTH = 4;
@@ -64,7 +66,7 @@ include "../../trees/incrementalQuinaryTree.circom";
     // The messages.
     signal input msgs[batchSize][MSG_LENGTH];
     // Sibling messages.
-    signal input msgSubrootPathElements[msgTreeDepth - msgBatchDepth][TREE_ARITY - 1];
+    signal input msgSubrootPathElements[msgTreeDepth - msgBatchDepth][MESSAGE_TREE_ARITY - 1];
     // The coordinator's private key.
     signal input coordPrivKey;
     // The cooordinator's public key (derived from the contract).
@@ -73,6 +75,10 @@ include "../../trees/incrementalQuinaryTree.circom";
     signal input encPubKeys[batchSize][2];
     // The current state root (before the processing).
     signal input currentStateRoot;
+    // The actual tree depth (might be <= stateTreeDepth).
+    // @note it is a public input to ensure fair processing from 
+    // the coordinator (no censoring)
+    signal input actualStateTreeDepth;
 
     // The state leaves upon which messages are applied.
     //    transform(currentStateLeaf[4], message5) => newStateLeaf4
@@ -84,7 +90,7 @@ include "../../trees/incrementalQuinaryTree.circom";
 
     signal input currentStateLeaves[batchSize][STATE_LEAF_LENGTH];
     // The Merkle path to each incremental new state root.
-    signal input currentStateLeavesPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];
+    signal input currentStateLeavesPathElements[batchSize][stateTreeDepth][STATE_TREE_ARITY - 1];
     // The salted commitment to the state and ballot roots.
     signal input currentSbCommitment;
     signal input currentSbSalt;
@@ -95,10 +101,10 @@ include "../../trees/incrementalQuinaryTree.circom";
     signal input currentBallotRoot;
     // Intermediate ballots.
     signal input currentBallots[batchSize][BALLOT_LENGTH];
-    signal input currentBallotsPathElements[batchSize][stateTreeDepth][TREE_ARITY - 1];
+    signal input currentBallotsPathElements[batchSize][stateTreeDepth][STATE_TREE_ARITY - 1];
     // Intermediate vote weights.
     signal input currentVoteWeights[batchSize];
-    signal input currentVoteWeightsPathElements[batchSize][voteOptionTreeDepth][TREE_ARITY - 1];
+    signal input currentVoteWeightsPathElements[batchSize][voteOptionTreeDepth][MESSAGE_TREE_ARITY - 1];
 
     // nb. The messages are processed in REVERSE order.
     // Therefore, the index of the first message to process does not match the index of the
@@ -138,7 +144,8 @@ include "../../trees/incrementalQuinaryTree.circom";
         msgRoot,
         currentSbCommitment,
         newSbCommitment,
-        pollEndTimestamp
+        pollEndTimestamp,
+        actualStateTreeDepth
     );
 
     // The unpacked values from packedVals.
@@ -152,12 +159,12 @@ include "../../trees/incrementalQuinaryTree.circom";
     //  ----------------------------------------------------------------------- 
     // 0. Ensure that the maximum vote options signal is valid and if
     // the maximum users signal is valid.
-    var maxVoValid = LessEqThan(32)([maxVoteOptions, TREE_ARITY ** voteOptionTreeDepth]);
+    var maxVoValid = LessEqThan(32)([maxVoteOptions, MESSAGE_TREE_ARITY ** voteOptionTreeDepth]);
     maxVoValid === 1;
 
     // Check numSignUps <= the max number of users (i.e., number of state leaves
     // that can fit the state tree).
-    var numSignUpsValid = LessEqThan(32)([numSignUps, TREE_ARITY ** stateTreeDepth]);
+    var numSignUpsValid = LessEqThan(32)([numSignUps, STATE_TREE_ARITY ** stateTreeDepth]);
     numSignUpsValid === 1;
 
     // Hash each Message to check their existence in the Message tree.
@@ -171,7 +178,7 @@ include "../../trees/incrementalQuinaryTree.circom";
     // e.g. [m, z, z, z, z] if there is only 1 real message in the batch
     // This makes possible to have a batch of messages which is only partially full.
     var computedLeaves[batchSize];
-    var computedPathElements[msgTreeDepth - msgBatchDepth][TREE_ARITY - 1];
+    var computedPathElements[msgTreeDepth - msgBatchDepth][MESSAGE_TREE_ARITY - 1];
     var computedPathIndex[msgTreeDepth - msgBatchDepth];
 
     for (var i = 0; i < batchSize; i++) {
@@ -180,7 +187,7 @@ include "../../trees/incrementalQuinaryTree.circom";
     }
 
     for (var i = 0; i < msgTreeDepth - msgBatchDepth; i++) {
-        for (var j = 0; j < TREE_ARITY - 1; j++) {
+        for (var j = 0; j < MESSAGE_TREE_ARITY - 1; j++) {
             computedPathElements[i][j] = msgSubrootPathElements[i][j];
         }
     }
@@ -267,22 +274,23 @@ include "../../trees/incrementalQuinaryTree.circom";
     // Start from batchSize and decrement for process in reverse order.
     for (var i = batchSize - 1; i >= 0; i--) {
         // Process as vote type message.
-        var currentStateLeavesPathElement[stateTreeDepth][TREE_ARITY - 1];
-        var currentBallotPathElement[stateTreeDepth][TREE_ARITY - 1];
-        var currentVoteWeightsPathElement[voteOptionTreeDepth][TREE_ARITY - 1];
+        var currentStateLeavesPathElement[stateTreeDepth][STATE_TREE_ARITY - 1];
+        var currentBallotPathElement[stateTreeDepth][STATE_TREE_ARITY - 1];
+        var currentVoteWeightsPathElement[voteOptionTreeDepth][MESSAGE_TREE_ARITY - 1];
         
         for (var j = 0; j < stateTreeDepth; j++) {
-            for (var k = 0; k < TREE_ARITY - 1; k++) {
+            for (var k = 0; k < STATE_TREE_ARITY - 1; k++) {
                 currentStateLeavesPathElement[j][k] = currentStateLeavesPathElements[i][j][k];
                 currentBallotPathElement[j][k] = currentBallotsPathElements[i][j][k];
             }
         }
 
         for (var j = 0; j < voteOptionTreeDepth; j++) {
-            for (var k = 0; k < TREE_ARITY - 1; k++) {
+            for (var k = 0; k < MESSAGE_TREE_ARITY - 1; k++) {
                 currentVoteWeightsPathElement[j][k] = currentVoteWeightsPathElements[i][j][k];
             }
         }
+
         (computedNewVoteStateRoot[i], computedNewVoteBallotRoot[i]) = ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth)(
             msgs[i][0],
             numSignUps,
@@ -290,6 +298,7 @@ include "../../trees/incrementalQuinaryTree.circom";
             pollEndTimestamp,
             stateRoots[i + 1],
             ballotRoots[i + 1],
+            actualStateTreeDepth,
             currentStateLeaves[i],
             currentStateLeavesPathElement,
             currentBallots[i],
@@ -315,6 +324,7 @@ include "../../trees/incrementalQuinaryTree.circom";
             msgs[i][1],
             msgs[i][2],
             numSignUps,
+            actualStateTreeDepth,
             currentStateLeaves[i],
             currentStateLeavesPathElement
         );
@@ -349,7 +359,8 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     var BALLOT_LENGTH = 2;
     var MSG_LENGTH = 11;
     var PACKED_CMD_LENGTH = 4;
-    var TREE_ARITY = 5;
+    var MESSAGE_TREE_ARITY = 5;
+    var STATE_TREE_ARITY = 2;
     var BALLOT_NONCE_IDX = 0;
     // Ballot vote option (VO) root index.
     var BALLOT_VO_ROOT_IDX = 1;
@@ -374,19 +385,21 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     signal input currentStateRoot;
     // The current value of the ballot tree root.
     signal input currentBallotRoot;
+    // The actual tree depth (might be <= stateTreeDepth).
+    signal input actualStateTreeDepth;
 
     // The state leaf and related path elements.
     signal input stateLeaf[STATE_LEAF_LENGTH];
     // Sibling nodes at each level of the state tree to verify the specific state leaf.
-    signal input stateLeafPathElements[stateTreeDepth][TREE_ARITY - 1];
+    signal input stateLeafPathElements[stateTreeDepth][STATE_TREE_ARITY - 1];
 
     // The ballot and related path elements.
     signal input ballot[BALLOT_LENGTH];
-    signal input ballotPathElements[stateTreeDepth][TREE_ARITY - 1];
+    signal input ballotPathElements[stateTreeDepth][STATE_TREE_ARITY - 1];
 
     // The current vote weight and related path elements.
     signal input currentVoteWeight;
-    signal input currentVoteWeightsPathElements[voteOptionTreeDepth][TREE_ARITY - 1];
+    signal input currentVoteWeightsPathElements[voteOptionTreeDepth][MESSAGE_TREE_ARITY - 1];
 
     // Inputs related to the command being processed.
     signal input cmdStateIndex;
@@ -450,12 +463,13 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
 
     var stateLeafIndexValid = SafeLessThan(N_BITS)([indexByType, numSignUps]);
     var stateIndexMux = Mux1()([0, indexByType], stateLeafIndexValid);
-    var computedStateLeafPathIndices[stateTreeDepth] = QuinGeneratePathIndices(stateTreeDepth)(stateIndexMux);
+    var computedStateLeafPathIndices[stateTreeDepth] = MerkleGeneratePathIndices(stateTreeDepth)(stateIndexMux);
 
     // 3. Verify that the original state leaf exists in the given state root.
     var stateLeafHash = PoseidonHasher(4)(stateLeaf);
-    var stateLeafQip = QuinTreeInclusionProof(stateTreeDepth)(
+    var stateLeafQip = BinaryMerkleRoot(stateTreeDepth)(
         stateLeafHash,
+        actualStateTreeDepth,
         computedStateLeafPathIndices,
         stateLeafPathElements
     );
@@ -468,7 +482,7 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
         ballot[BALLOT_VO_ROOT_IDX]
     ]);
 
-    var computedBallotQip = QuinTreeInclusionProof(stateTreeDepth)(
+    var computedBallotQip = MerkleTreeInclusionProof(stateTreeDepth)(
         computedBallot,
         computedStateLeafPathIndices,
         ballotPathElements
@@ -538,8 +552,9 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
         stateLeaf[STATE_LEAF_TIMESTAMP_IDX]
     ]);
 
-    var computedNewStateLeafQip = QuinTreeInclusionProof(stateTreeDepth)(
+    var computedNewStateLeafQip = BinaryMerkleRoot(stateTreeDepth)(
         computedNewStateLeafhash,
+        actualStateTreeDepth,
         computedStateLeafPathIndices,
         stateLeafPathElements
     );
@@ -549,7 +564,7 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     // 7. Generate a new ballot root.    
     var newBallotNonceMux = Mux1()([ballot[BALLOT_NONCE_IDX], computedNewBallotNonce], computedIsMessageEqual);
     var computedNewBallot = PoseidonHasher(2)([newBallotNonceMux, newBallotVoRoot]);
-    var computedNewBallotQip = QuinTreeInclusionProof(stateTreeDepth)(
+    var computedNewBallotQip = MerkleTreeInclusionProof(stateTreeDepth)(
         computedNewBallot,
         computedStateLeafPathIndices,
         ballotPathElements

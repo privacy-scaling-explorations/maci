@@ -26,14 +26,13 @@ import {
   TopupCredit,
   Verifier,
   VkRegistry,
-  AccQueueQuinaryMaci__factory as AccQueueQuinaryMaciFactory,
   PollFactory__factory as PollFactoryFactory,
   MACI__factory as MACIFactory,
   MessageProcessorFactory__factory as MessageProcessorFactoryFactory,
   TallyFactory__factory as TallyFactoryFactory,
 } from "../typechain-types";
 
-import { getDefaultSigner, log } from "./utils";
+import { log } from "./utils";
 
 /**
  * Creates contract factory from abi and bytecode
@@ -303,12 +302,8 @@ export const deployMaci = async ({
     stateTreeDepth,
   );
 
-  const [stateAqContractAddress, deployer] = await Promise.all([maciContract.stateAq(), getDefaultSigner()]);
-  const stateAqContract = AccQueueQuinaryMaciFactory.connect(stateAqContractAddress, signer || deployer);
-
   return {
     maciContract,
-    stateAqContract,
     pollFactoryContract,
     poseidonAddrs,
   };

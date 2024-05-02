@@ -1,6 +1,6 @@
 import { extractVk } from "maci-circuits";
 import { type IVerifyingKeyStruct, VkRegistry__factory as VkRegistryFactory, EMode } from "maci-contracts";
-import { genProcessVkSig, genTallyVkSig } from "maci-core";
+import { genProcessVkSig, genTallyVkSig, MESSAGE_TREE_ARITY } from "maci-core";
 import { VerifyingKey } from "maci-domainobjs";
 
 import fs from "fs";
@@ -116,7 +116,7 @@ export const setVerifyingKeys = async ({
   // connect to VkRegistry contract
   const vkRegistryContract = VkRegistryFactory.connect(vkRegistryAddress, signer);
 
-  const messageBatchSize = 5 ** messageBatchDepth;
+  const messageBatchSize = MESSAGE_TREE_ARITY ** messageBatchDepth;
 
   // check if the process messages vk was already set
   const processVkSig = genProcessVkSig(stateTreeDepth, messageTreeDepth, voteOptionTreeDepth, messageBatchSize);

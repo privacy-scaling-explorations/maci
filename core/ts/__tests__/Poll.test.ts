@@ -483,8 +483,13 @@ describe("Poll", function test() {
     });
 
     it("should generate the correct results", () => {
-      poll.processAllMessages();
-      poll.tallyVotes();
+      while (poll.hasUnprocessedMessages()) {
+        poll.processAllMessages();
+      }
+
+      while (poll.hasUntalliedBallots()) {
+        poll.tallyVotes();
+      }
 
       const spentVoiceCredits = poll.totalSpentVoiceCredits;
       const results = poll.tallyResult;

@@ -1,5 +1,4 @@
 import type {
-  AccQueueQuinaryMaci,
   ConstantInitialVoiceCreditProxy,
   FreeForAllGatekeeper,
   MACI,
@@ -80,7 +79,6 @@ export interface IDeployedTestContracts {
   gatekeeperContract: FreeForAllGatekeeper;
   constantIntialVoiceCreditProxyContract: ConstantInitialVoiceCreditProxy;
   maciContract: MACI;
-  stateAqContract: AccQueueQuinaryMaci;
   vkRegistryContract: VkRegistry;
   topupCreditContract: TopupCredit;
 }
@@ -169,7 +167,6 @@ export interface IDeployMaciArgs {
  */
 export interface IDeployedMaci {
   maciContract: MACI;
-  stateAqContract: AccQueueQuinaryMaci;
   pollFactoryContract: PollFactory;
   poseidonAddrs: {
     poseidonT3: string;

@@ -16,7 +16,8 @@ import { DomainObjs } from "./utilities/DomainObjs.sol";
 /// @notice The Tally contract is used during votes tallying
 /// and by users to verify the tally results.
 contract Tally is Ownable(msg.sender), SnarkCommon, CommonUtilities, Hasher, DomainObjs {
-  uint256 internal constant TREE_ARITY = 5;
+  uint256 internal constant TREE_ARITY = 2;
+  uint256 internal constant VOTE_OPTION_TREE_ARITY = 5;
 
   /// @notice The commitment to the tally results. Its initial value is 0, but after
   /// the tally of each batch is proven on-chain via a zk-SNARK, it should be
@@ -212,14 +213,14 @@ contract Tally is Ownable(msg.sender), SnarkCommon, CommonUtilities, Hasher, Dom
     uint256 _leaf,
     uint256[][] calldata _pathElements
   ) internal pure returns (uint256 current) {
-    uint256 pos = _index % TREE_ARITY;
+    uint256 pos = _index % VOTE_OPTION_TREE_ARITY;
     current = _leaf;
     uint8 k;
 
-    uint256[TREE_ARITY] memory level;
+    uint256[VOTE_OPTION_TREE_ARITY] memory level;
 
     for (uint8 i = 0; i < _depth; ++i) {
-      for (uint8 j = 0; j < TREE_ARITY; ++j) {
+      for (uint8 j = 0; j < VOTE_OPTION_TREE_ARITY; ++j) {
         if (j == pos) {
           level[j] = current;
         } else {
@@ -232,8 +233,8 @@ contract Tally is Ownable(msg.sender), SnarkCommon, CommonUtilities, Hasher, Dom
         }
       }
 
-      _index /= TREE_ARITY;
-      pos = _index % TREE_ARITY;
+      _index /= VOTE_OPTION_TREE_ARITY;
+      pos = _index % VOTE_OPTION_TREE_ARITY;
       current = hash5(level);
     }
   }

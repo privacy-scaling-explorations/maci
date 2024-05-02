@@ -147,6 +147,7 @@ export interface IProcessMessagesOutput {
  * An interface describing the circuit inputs to the ProcessMessage circuit
  */
 export interface IProcessMessagesCircuitInputs {
+  actualStateTreeDepth: string;
   pollEndTimestamp: string;
   packedVals: string;
   msgRoot: string;

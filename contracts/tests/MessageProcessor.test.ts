@@ -153,8 +153,7 @@ describe("MessageProcessor", () => {
 
   describe("after merging acc queues", () => {
     before(async () => {
-      await pollContract.mergeMaciStateAqSubRoots(0, pollId);
-      await pollContract.mergeMaciStateAq(0);
+      await pollContract.mergeMaciStateAq();
 
       await pollContract.mergeMessageAqSubRoots(0);
       await pollContract.mergeMessageAq();

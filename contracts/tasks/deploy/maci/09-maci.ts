@@ -8,7 +8,6 @@ const deployment = Deployment.getInstance();
 const storage = ContractStorage.getInstance();
 
 const DEFAULT_STATE_TREE_DEPTH = 10;
-const STATE_TREE_SUBDEPTH = 2;
 
 /**
  * Deploy step registration and task itself
@@ -91,20 +90,6 @@ deployment.deployTask("full:deploy-maci", "Deploy MACI contract").then((task) =>
         topupCreditContractAddress,
         stateTreeDepth,
       ],
-      network: hre.network.name,
-    });
-
-    const accQueueAddress = await maciContract.stateAq();
-    const accQueue = await deployment.getContract({
-      name: EContracts.AccQueueQuinaryBlankSl,
-      address: accQueueAddress,
-    });
-
-    await storage.register({
-      id: EContracts.AccQueueQuinaryBlankSl,
-      name: "contracts/trees/AccQueueQuinaryBlankSl.sol:AccQueueQuinaryBlankSl",
-      contract: accQueue,
-      args: [STATE_TREE_SUBDEPTH],
       network: hre.network.name,
     });
   }),

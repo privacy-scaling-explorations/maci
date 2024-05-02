@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { PubKey } from "maci-domainobjs";
 
-import type { AccQueueBinary, MACI, Poll } from "../../../typechain-types";
+import type { MACI, Poll } from "../../../typechain-types";
 
 import { EMode } from "../../../ts/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
@@ -36,18 +36,6 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").then((task) =>
 
     const maciContract = await deployment.getContract<MACI>({ name: EContracts.MACI });
     const pollId = await maciContract.nextPollId();
-    const stateAqContractAddress = await maciContract.stateAq();
-
-    const stateAq = await deployment.getContract<AccQueueBinary>({
-      name: EContracts.AccQueue,
-      address: stateAqContractAddress,
-    });
-    const isTreeMerged = await stateAq.treeMerged();
-
-    if (pollId > 0n && !isTreeMerged) {
-      console.log("Previous poll is not completed");
-      return;
-    }
 
     const coordinatorPubkey = deployment.getDeployConfigField<string>(EContracts.Poll, "coordinatorPubkey");
     const pollDuration = deployment.getDeployConfigField<number>(EContracts.Poll, "pollDuration");

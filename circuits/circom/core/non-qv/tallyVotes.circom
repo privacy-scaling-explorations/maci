@@ -5,6 +5,7 @@ include "./comparators.circom";
 // zk-kit import
 include "./unpack-element.circom";
 // local imports
+include "../../trees/incrementalMerkleTree.circom";
 include "../../trees/incrementalQuinaryTree.circom";
 include "../../utils/calculateTotal.circom";
 include "../../utils/hashers.circom";
@@ -28,9 +29,10 @@ template TallyVotesNonQv(
 
     // Number of children per node in the tree, defining the tree's branching factor.
     var TREE_ARITY = 5;
+    var BALLOT_TREE_ARITY = 2;
 
     // The number of ballots processed at once, determined by the depth of the intermediate state tree.
-    var batchSize = TREE_ARITY ** intStateTreeDepth;
+    var batchSize = BALLOT_TREE_ARITY ** intStateTreeDepth;
     // Number of voting options available, determined by the depth of the vote option tree.
     var numVoteOptions = TREE_ARITY ** voteOptionTreeDepth;
 
@@ -69,7 +71,7 @@ template TallyVotesNonQv(
     
     // Ballots and their corresponding path elements for verification in the tree.
     signal input ballots[batchSize][BALLOT_LENGTH];
-    signal input ballotPathElements[k][TREE_ARITY - 1];
+    signal input ballotPathElements[k][BALLOT_TREE_ARITY - 1];
     signal input votes[batchSize][numVoteOptions];
 
     // Current results for each vote option.
@@ -122,14 +124,14 @@ template TallyVotesNonQv(
         computedBallotHashers[i] = PoseidonHasher(2)([ballots[i][BALLOT_NONCE_IDX], ballots[i][BALLOT_VO_ROOT_IDX]]);
     }
 
-    var computedBallotSubroot = QuinCheckRoot(intStateTreeDepth)(computedBallotHashers);
-    var computedBallotPathIndices[k] = QuinGeneratePathIndices(k)(computedBatchNum);
+    var computedBallotSubroot = CheckRoot(intStateTreeDepth)(computedBallotHashers);
+    var computedBallotPathIndices[k] = MerkleGeneratePathIndices(k)(computedBatchNum);
 
     // Verifies each ballot's existence within the ballot tree.
-    QuinLeafExists(k)(
+    LeafExists(k)(
         computedBallotSubroot,
-        computedBallotPathIndices,
         ballotPathElements,
+        computedBallotPathIndices,
         ballotRoot
     );
 

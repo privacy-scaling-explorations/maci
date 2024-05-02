@@ -25,16 +25,10 @@ task("merge", "Merge signups and messages")
     const deployer = await deployment.getDeployer();
 
     const maciContract = await deployment.getContract<MACI>({ name: EContracts.MACI });
-    const signupAccQueueContractAddress = await maciContract.stateAq();
 
     const pollContractAddress = await maciContract.polls(poll);
     const pollContract = await deployment.getContract<Poll>({ name: EContracts.Poll, address: pollContractAddress });
     const [, messageAccQueueContractAddress] = await pollContract.extContracts();
-
-    const signupAccQueueContract = await deployment.getContract<AccQueue>({
-      name: EContracts.AccQueue,
-      address: signupAccQueueContractAddress,
-    });
 
     const messageAccQueueContract = await deployment.getContract<AccQueue>({
       name: EContracts.AccQueue,
@@ -48,8 +42,6 @@ task("merge", "Merge signups and messages")
     const treeMerger = new TreeMerger({
       deployer,
       pollContract,
-      signupAccQueueContract,
-      maciContract,
       messageAccQueueContract,
     });
 
@@ -60,9 +52,7 @@ task("merge", "Merge signups and messages")
     await treeMerger.checkPollOwner();
     await treeMerger.checkPollDuration();
 
-    await treeMerger.mergeSignupSubtrees(poll, queueOps);
-    await treeMerger.mergeSignups(poll);
-
+    await treeMerger.mergeSignups();
     await treeMerger.mergeMessageSubtrees(queueOps);
     await treeMerger.mergeMessages();
 

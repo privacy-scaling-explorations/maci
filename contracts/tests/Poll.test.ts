@@ -323,13 +323,6 @@ describe("Poll", () => {
       messageAqContract = AccQueueQuinaryMaciFactory.connect(messageAqAddress, signer);
     });
 
-    it("should revert if the subtrees are not merged for StateAq", async () => {
-      await expect(pollContract.mergeMaciStateAq(0, { gasLimit: 4000000 })).to.be.revertedWithCustomError(
-        pollContract,
-        "StateAqSubtreesNeedMerge",
-      );
-    });
-
     it("should allow the coordinator to merge the message AccQueue", async () => {
       let tx = await pollContract.mergeMessageAqSubRoots(0, {
         gasLimit: 3000000,

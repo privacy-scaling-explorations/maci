@@ -11,7 +11,7 @@ import {
   formatProofForVerifierContract,
   type IVerifyingKeyStruct,
 } from "maci-contracts";
-import { STATE_TREE_ARITY } from "maci-core";
+import { MESSAGE_TREE_ARITY, STATE_TREE_ARITY } from "maci-core";
 import { G1Point, G2Point, hashLeftRight } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
 
@@ -145,7 +145,7 @@ export const proveOnChain = async ({
   const numSignUpsAndMessages = await pollContract.numSignUpsAndMessages();
   const numSignUps = Number(numSignUpsAndMessages[0]);
   const numMessages = Number(numSignUpsAndMessages[1]);
-  const messageBatchSize = STATE_TREE_ARITY ** Number(treeDepths.messageTreeSubDepth);
+  const messageBatchSize = MESSAGE_TREE_ARITY ** Number(treeDepths.messageTreeSubDepth);
   const tallyBatchSize = STATE_TREE_ARITY ** Number(treeDepths.intStateTreeDepth);
   let totalMessageBatches = numMessages <= messageBatchSize ? 1 : Math.floor(numMessages / messageBatchSize);
 
@@ -299,7 +299,6 @@ export const proveOnChain = async ({
 
     try {
       // validate process messaging proof and store the new state and ballot root commitment
-
       const tx = await mpContract.processMessages(asHex(circuitInputs.newSbCommitment as BigNumberish), formattedProof);
       const receipt = await tx.wait();
 
@@ -308,8 +307,6 @@ export const proveOnChain = async ({
       }
 
       logYellow(quiet, info(`Transaction hash: ${receipt!.hash}`));
-
-      // Wait for the node to catch up
 
       numberBatchesProcessed = Number(await mpContract.numBatchesProcessed());
 

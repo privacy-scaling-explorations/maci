@@ -533,19 +533,9 @@ export interface ITreeMergeParams {
   deployer: HardhatEthersSigner;
 
   /**
-   * AccQueue contract
-   */
-  signupAccQueueContract: AccQueue;
-
-  /**
    * Poll contract
    */
   pollContract: Poll;
-
-  /**
-   * MACI contract
-   */
-  maciContract: MACI;
 
   /**
    * Message AccQueue contract
