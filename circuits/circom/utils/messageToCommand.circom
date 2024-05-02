@@ -21,9 +21,9 @@ template MessageToCommand() {
     var UNPACKED_CMD_LENGTH = 8;
     var UNPACK_ELEM_LENGTH = 5;
     var DECRYPTED_LENGTH = 9;
-    var MESSAGE_PARTS = 11;
+    var MESSAGE_PARTS = 10;
 
-    // The message is an array of 11 parts.
+    // The message is an array of 10 parts.
     signal input message[MESSAGE_PARTS];
     signal input encPrivKey;
     signal input encPubKey[2];
@@ -47,10 +47,9 @@ template MessageToCommand() {
     // Decrypt the message using Poseidon decryption.
     var computedDecryptor[DECRYPTED_LENGTH] = PoseidonDecryptWithoutCheck(MSG_LENGTH)(
         [
-            // nb. the first one is the msg type => skip.
-            message[1], message[2], message[3], message[4],
-            message[5], message[6], message[7], message[8],
-            message[9], message[10]            
+            message[0], message[1], message[2], message[3],
+            message[4], message[5], message[6], message[7],
+            message[8], message[9]            
         ],
         0, 
         computedEcdh

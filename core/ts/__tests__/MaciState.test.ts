@@ -126,11 +126,6 @@ describe("MaciState", function test() {
     });
 
     it("should create a JSON object from a MaciState object", () => {
-      // test loading a topup message
-      m1.polls.get(pollId)!.topupMessage(new Message(2n, [0n, 5n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n]));
-
-      // mock a message with invalid message type
-      m1.polls.get(pollId)!.messages[1].msgType = 3n;
       const json = m1.toJSON();
       fs.writeFileSync(stateFile, JSON.stringify(json, null, 4));
       const content = JSON.parse(fs.readFileSync(stateFile).toString()) as IJsonMaciState;
@@ -149,42 +144,6 @@ describe("MaciState", function test() {
       const maciState = new MaciState(STATE_TREE_DEPTH);
       maciState.deployNullPoll();
       expect(maciState.polls.get(0n)).to.eq(null);
-    });
-  });
-
-  describe("topup", () => {
-    const maciState = new MaciState(STATE_TREE_DEPTH);
-    const pollId = maciState.deployPoll(
-      BigInt(Math.floor(Date.now() / 1000) + duration),
-      maxValues,
-      treeDepths,
-      messageBatchSize,
-      coordinatorKeypair,
-    );
-    const poll = maciState.polls.get(pollId)!;
-
-    it("should allow to publish a topup message", () => {
-      const user1Keypair = new Keypair();
-      // signup the user
-      const user1StateIndex = maciState.signUp(
-        user1Keypair.pubKey,
-        voiceCreditBalance,
-        BigInt(Math.floor(Date.now() / 1000)),
-      );
-
-      const message = new Message(2n, [BigInt(user1StateIndex), 50n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n]);
-
-      poll.topupMessage(message);
-
-      expect(poll.messages.length).to.eq(1);
-    });
-
-    it("should throw if the message has an invalid message type", () => {
-      const message = new Message(1n, [1n, 50n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n]);
-
-      expect(() => {
-        poll.topupMessage(message);
-      }).to.throw("A Topup message must have msgType 2");
     });
   });
 });

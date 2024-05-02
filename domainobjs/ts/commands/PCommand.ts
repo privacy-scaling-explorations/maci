@@ -14,7 +14,7 @@ import {
 
 import assert from "assert";
 
-import type { ICommand, IJsonPCommand } from "./types";
+import type { IJsonPCommand } from "./types";
 import type { PrivKey } from "../privateKey";
 
 import { Message } from "../message";
@@ -29,9 +29,7 @@ export interface IDecryptMessage {
  * @notice Unencrypted data whose fields include the user's public key, vote etc.
  * This represents a Vote command.
  */
-export class PCommand implements ICommand {
-  cmdType: bigint;
-
+export class PCommand {
   stateIndex: bigint;
 
   newPubKey: PubKey;
@@ -65,8 +63,6 @@ export class PCommand implements ICommand {
     pollId: bigint,
     salt: bigint = genRandomSalt(),
   ) {
-    this.cmdType = BigInt(1);
-
     const limit50Bits = BigInt(2 ** 50);
     assert(limit50Bits >= stateIndex);
     assert(limit50Bits >= voteOptionIndex);
@@ -166,7 +162,7 @@ export class PCommand implements ICommand {
 
     const ciphertext: Ciphertext = poseidonEncrypt(plaintext, sharedKey, BigInt(0));
 
-    const message = new Message(BigInt(1), ciphertext as bigint[]);
+    const message = new Message(ciphertext as bigint[]);
 
     return message;
   };
@@ -234,7 +230,6 @@ export class PCommand implements ICommand {
       nonce: this.nonce.toString(),
       pollId: this.pollId.toString(),
       salt: this.salt.toString(),
-      cmdType: this.cmdType.toString(),
     };
   }
 

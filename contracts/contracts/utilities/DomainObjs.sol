@@ -16,9 +16,8 @@ contract DomainObjs {
 
   /// @title Message
   /// @notice this struct represents a MACI message
-  /// @dev msgType: 1 for vote message, 2 for topup message (size 2)
+  /// @dev msgType: 1 for vote message
   struct Message {
-    uint256 msgType;
     uint256[MESSAGE_DATA_LENGTH] data;
   }
 

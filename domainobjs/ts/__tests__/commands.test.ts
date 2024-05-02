@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { genRandomSalt } from "maci-crypto";
 
-import { PCommand, Keypair, TCommand } from "..";
+import { PCommand, Keypair } from "..";
 
 describe("Commands", () => {
   const { privKey, pubKey } = new Keypair();
@@ -21,10 +21,6 @@ describe("Commands", () => {
         random50bitBigInt(),
         genRandomSalt(),
       );
-      expect(command).to.not.eq(null);
-    });
-    it("should create a TCommand", () => {
-      const command: TCommand = new TCommand(random50bitBigInt(), random50bitBigInt(), random50bitBigInt());
       expect(command).to.not.eq(null);
     });
   });
@@ -105,34 +101,10 @@ describe("Commands", () => {
 
       expect(c1.nonce.toString()).not.to.eq(c3.nonce.toString());
     });
-
-    it("should produce a deep copy for TCommand", () => {
-      const c1: TCommand = new TCommand(BigInt(10), BigInt(0), BigInt(9));
-
-      // shallow copy
-      const c2 = c1;
-      c1.amount = BigInt(9999);
-      expect(c1.amount.toString()).to.eq(c2.amount.toString());
-
-      // deep copy
-      const c3 = c1.copy();
-      c1.amount = BigInt(8888);
-
-      expect(c1.amount.toString()).not.to.eq(c3.amount.toString());
-    });
   });
 
   describe("deserialization/serialization", () => {
     describe("toJSON", () => {
-      it("should produce a JSON object with valid values", () => {
-        const c1: TCommand = new TCommand(BigInt(10), BigInt(0), BigInt(9));
-        const json = c1.toJSON();
-        expect(json).to.not.eq(null);
-        expect(json.cmdType).to.eq("2");
-        expect(json.stateIndex).to.eq("10");
-        expect(json.amount).to.eq("0");
-        expect(json.pollId).to.eq("9");
-      });
       it("should produce a JSON object with valid values", () => {
         const c1: PCommand = new PCommand(BigInt(10), pubKey, BigInt(0), BigInt(9), BigInt(1), BigInt(123));
         const json = c1.toJSON();
@@ -142,17 +114,10 @@ describe("Commands", () => {
         expect(json.newVoteWeight).to.eq("9");
         expect(json.nonce).to.eq("1");
         expect(json.pollId).to.eq("123");
-        expect(json.cmdType).to.eq("1");
       });
     });
 
     describe("fromJSON", () => {
-      it("should produce a TCommand from a JSON object", () => {
-        const c1: TCommand = new TCommand(BigInt(10), BigInt(0), BigInt(9));
-        const json = c1.toJSON();
-        const c2 = TCommand.fromJSON(json);
-        expect(c2.equals(c1)).to.eq(true);
-      });
       it("should produce a PCommand from a JSON object", () => {
         const c1: PCommand = new PCommand(BigInt(10), pubKey, BigInt(0), BigInt(9), BigInt(1), BigInt(123));
         const json = c1.toJSON();

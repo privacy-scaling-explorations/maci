@@ -7,7 +7,6 @@ import type { Groth16Proof, PublicSignals } from "snarkjs";
 export interface DeployedContracts {
   maciAddress: string;
   pollFactoryAddress: string;
-  topupCreditAddress: string;
   poseidonT3Address: string;
   poseidonT4Address: string;
   poseidonT5Address: string;
@@ -146,41 +145,6 @@ export interface ISnarkJSVerificationKey {
   vk_delta_2: BigNumberish[][];
   vk_alphabeta_12: BigNumberish[][][];
   IC: BigNumberish[][];
-}
-
-/**
- * Interface for the arguments to the airdrop command
- */
-export interface AirdropArgs {
-  /**
-   * The amount of credits to airdrop
-   */
-  amount: number;
-
-  /**
-   * A signer object
-   */
-  signer: Signer;
-
-  /**
-   * The address of the ERC20 contract
-   */
-  contractAddress?: string;
-
-  /**
-   * The id of the poll
-   */
-  pollId?: bigint;
-
-  /**
-   * The address of the MACI contract
-   */
-  maciAddress?: string;
-
-  /**
-   * Whether to log the output
-   */
-  quiet?: boolean;
 }
 
 /**
@@ -987,41 +951,6 @@ export interface IGetPollData {
    * Whether the MACI contract's stateAq has been merged by this contract
    */
   isStateAqMerged: boolean;
-}
-
-/**
- * Interface for the arguments to the topup command
- */
-export interface TopupArgs {
-  /**
-   * The amount to topup
-   */
-  amount: number;
-
-  /**
-   * The state index of the user
-   */
-  stateIndex: number;
-
-  /**
-   * The poll ID
-   */
-  pollId: bigint;
-
-  /**
-   * The address of the MACI contract
-   */
-  maciAddress?: string;
-
-  /**
-   * A signer object
-   */
-  signer: Signer;
-
-  /**
-   * Whether to log the output
-   */
-  quiet?: boolean;
 }
 
 /**

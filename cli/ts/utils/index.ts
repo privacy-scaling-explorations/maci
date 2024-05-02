@@ -15,7 +15,6 @@ export {
   DEFAULT_SR_QUEUE_OPS,
 } from "./defaults";
 export type {
-  AirdropArgs,
   CheckVerifyingKeysArgs,
   DeployVkRegistryArgs,
   DeployArgs,
@@ -36,7 +35,6 @@ export type {
   DeployPollArgs,
   PollContracts,
   TallyData,
-  TopupArgs,
   VerifyArgs,
   IRegisteredUserArgs,
   IGenKeypairArgs,

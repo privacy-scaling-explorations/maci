@@ -127,8 +127,8 @@ export const hash5 = (elements: Plaintext): bigint => hashN(5, elements);
  * @param elements The elements to hash
  * @returns The hash of the elements
  */
-export const hash13 = (elements: Plaintext): bigint => {
-  const max = 13;
+export const hash12 = (elements: Plaintext): bigint => {
+  const max = 12;
   const elementLength = elements.length;
 
   if (elementLength > max) {
@@ -143,12 +143,11 @@ export const hash13 = (elements: Plaintext): bigint => {
     }
   }
 
-  return poseidonT6([
-    elementsPadded[0],
-    poseidonT6(elementsPadded.slice(1, 6)),
-    poseidonT6(elementsPadded.slice(6, 11)),
+  return poseidonT5([
+    poseidonT6(elementsPadded.slice(0, 5)),
+    poseidonT6(elementsPadded.slice(5, 10)),
+    elementsPadded[10],
     elementsPadded[11],
-    elementsPadded[12],
   ]);
 };
 

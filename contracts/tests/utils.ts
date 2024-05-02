@@ -14,7 +14,6 @@ import {
   deployMaci,
   deployMockVerifier,
   deployPoseidonContracts,
-  deployTopupCredit,
   deployVkRegistry,
   createContractFactory,
 } from "../ts/deploy";
@@ -521,18 +520,14 @@ export const deployTestContracts = async (
 
   // VkRegistry
   const vkRegistryContract = await deployVkRegistry(signer, true);
-  const topupCreditContract = await deployTopupCredit(signer, true);
-  const [gatekeeperContractAddress, constantIntialVoiceCreditProxyContractAddress, topupCreditContractAddress] =
-    await Promise.all([
-      gatekeeperContract.getAddress(),
-      constantIntialVoiceCreditProxyContract.getAddress(),
-      topupCreditContract.getAddress(),
-    ]);
+  const [gatekeeperContractAddress, constantIntialVoiceCreditProxyContractAddress] = await Promise.all([
+    gatekeeperContract.getAddress(),
+    constantIntialVoiceCreditProxyContract.getAddress(),
+  ]);
 
   const { maciContract } = await deployMaci({
     signUpTokenGatekeeperContractAddress: gatekeeperContractAddress,
     initialVoiceCreditBalanceAddress: constantIntialVoiceCreditProxyContractAddress,
-    topupCreditContractAddress,
     signer,
     stateTreeDepth,
     quiet,
@@ -544,6 +539,5 @@ export const deployTestContracts = async (
     constantIntialVoiceCreditProxyContract,
     maciContract,
     vkRegistryContract,
-    topupCreditContract,
   };
 };

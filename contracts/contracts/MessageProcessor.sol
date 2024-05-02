@@ -92,7 +92,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
     // calculate the message batch size from the message tree subdepth
     uint256 messageBatchSize = TREE_ARITY ** messageTreeSubDepth;
 
-    (, AccQueue messageAq, ) = poll.extContracts();
+    (, AccQueue messageAq) = poll.extContracts();
 
     // Require that the message queue has been merged
     uint256 messageRoot = messageAq.getMainRoot(messageTreeDepth);
@@ -175,7 +175,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
     // get the message batch size from the message tree subdepth
     // get the number of signups
     (uint256 numSignUps, uint256 numMessages) = poll.numSignUpsAndMessages();
-    (IMACI maci, , ) = poll.extContracts();
+    (IMACI maci, ) = poll.extContracts();
 
     // Calculate the public input hash (a SHA256 hash of several values)
     uint256 publicInputHash = genProcessMessagesPublicInputHash(

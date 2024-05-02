@@ -1,6 +1,5 @@
 export {
   deployMockVerifier,
-  deployTopupCredit,
   deployVkRegistry,
   deployMaci,
   deployContract,

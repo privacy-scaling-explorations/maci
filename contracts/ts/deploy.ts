@@ -23,7 +23,6 @@ import {
   PoseidonT6,
   SignUpToken,
   SignUpTokenGatekeeper,
-  TopupCredit,
   Verifier,
   VkRegistry,
   PollFactory__factory as PollFactoryFactory,
@@ -72,15 +71,6 @@ export const deployContract = async <T extends BaseContract>(
 
   return deployment.deployContract({ name: contractName as EContracts, signer }, ...args);
 };
-
-/**
- * Deploy a TopupCredit contract
- * @param signer - the signer to use to deploy the contract
- * @param quiet - whether to suppress console output
- * @returns the deployed TopupCredit contract
- */
-export const deployTopupCredit = async (signer?: Signer, quiet = false): Promise<TopupCredit> =>
-  deployContract<TopupCredit>("TopupCredit", signer, quiet);
 
 /**
  * Deploy a VkRegistry contract
@@ -259,7 +249,6 @@ export const deployPollFactory = async (signer: Signer, quiet = false): Promise<
 export const deployMaci = async ({
   signUpTokenGatekeeperContractAddress,
   initialVoiceCreditBalanceAddress,
-  topupCreditContractAddress,
   signer,
   poseidonAddresses,
   stateTreeDepth = 10,
@@ -321,7 +310,6 @@ export const deployMaci = async ({
     tallyAddress,
     signUpTokenGatekeeperContractAddress,
     initialVoiceCreditBalanceAddress,
-    topupCreditContractAddress,
     stateTreeDepth,
   );
 

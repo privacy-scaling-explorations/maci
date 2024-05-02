@@ -8,7 +8,6 @@ import { InitialVoiceCreditProxy } from "./initialVoiceCreditProxy/InitialVoiceC
 import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
 import { IMACI } from "./interfaces/IMACI.sol";
 import { Params } from "./utilities/Params.sol";
-import { TopupCredit } from "./TopupCredit.sol";
 import { Utilities } from "./utilities/Utilities.sol";
 import { DomainObjs } from "./utilities/DomainObjs.sol";
 import { CurveBabyJubJub } from "./crypto/BabyJubJub.sol";
@@ -37,9 +36,6 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
 
   /// @notice A mapping of poll IDs to Poll contracts.
   mapping(uint256 => address) public polls;
-
-  /// @notice ERC20 contract that hold topup credits
-  TopupCredit public immutable topupCredit;
 
   /// @notice Factory contract that deploy a Poll contract
   IPollFactory public immutable pollFactory;
@@ -96,7 +92,6 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
   /// @param _tallyFactory The TallyFactory contract
   /// @param _signUpGatekeeper The SignUpGatekeeper contract
   /// @param _initialVoiceCreditProxy The InitialVoiceCreditProxy contract
-  /// @param _topupCredit The TopupCredit contract
   /// @param _stateTreeDepth The depth of the state tree
   constructor(
     IPollFactory _pollFactory,
@@ -104,7 +99,6 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
     ITallyFactory _tallyFactory,
     SignUpGatekeeper _signUpGatekeeper,
     InitialVoiceCreditProxy _initialVoiceCreditProxy,
-    TopupCredit _topupCredit,
     uint8 _stateTreeDepth
   ) payable {
     // initialize and insert the blank leaf
@@ -114,7 +108,6 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
     pollFactory = _pollFactory;
     messageProcessorFactory = _messageProcessorFactory;
     tallyFactory = _tallyFactory;
-    topupCredit = _topupCredit;
     signUpGatekeeper = _signUpGatekeeper;
     initialVoiceCreditProxy = _initialVoiceCreditProxy;
     stateTreeDepth = _stateTreeDepth;
@@ -202,7 +195,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
     // the owner of the message processor and tally contract will be the msg.sender
     address _msgSender = msg.sender;
 
-    address p = pollFactory.deploy(_duration, maxValues, _treeDepths, _coordinatorPubKey, address(this), topupCredit);
+    address p = pollFactory.deploy(_duration, maxValues, _treeDepths, _coordinatorPubKey, address(this));
 
     address mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p, _msgSender, _mode);
     address tally = tallyFactory.deploy(_verifier, _vkRegistry, p, mp, _msgSender, _mode);

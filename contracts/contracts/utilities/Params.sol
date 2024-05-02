@@ -3,7 +3,6 @@ pragma solidity ^0.8.20;
 
 import { IMACI } from "../interfaces/IMACI.sol";
 import { AccQueue } from "../trees/AccQueue.sol";
-import { TopupCredit } from "../TopupCredit.sol";
 
 /// @title Params
 /// @notice This contracts contains a number of structures
@@ -31,6 +30,5 @@ contract Params {
   struct ExtContracts {
     IMACI maci;
     AccQueue messageAq;
-    TopupCredit topupCredit;
   }
 }
