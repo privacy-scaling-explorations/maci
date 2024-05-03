@@ -199,7 +199,6 @@ template QuinGeneratePathIndices(levels) {
 
     signal input in; 
     signal output out[levels];
-    signal n[levels + 1];
 
     var m = in;
     var computedResults[levels];
@@ -207,14 +206,9 @@ template QuinGeneratePathIndices(levels) {
     for (var i = 0; i < levels; i++) {
         // circom's best practices suggests to avoid using <-- unless you
         // are aware of what's going on. This is the only way to do modulo operation.
-        n[i] <-- m;        
         out[i] <-- m % BASE;
         m = m \ BASE;
-    }
 
-    n[levels] <-- m;
-
-    for (var i = 0; i < levels; i++) {
         // Check that each output element is less than the base.
         var computedIsOutputElementLessThanBase = SafeLessThan(3)([out[i], BASE]);
         computedIsOutputElementLessThanBase === 1;
