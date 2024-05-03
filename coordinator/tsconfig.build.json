@@ -5,6 +5,6 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true
   },
-  "include": ["./ts"],
+  "include": ["./ts", "./scripts"],
   "files": ["./hardhat.config.ts"]
 }
