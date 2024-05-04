@@ -156,7 +156,7 @@ export const genProofs = async ({
   const messageAqContract = AccQueueFactory.connect(messageAqContractAddr, signer);
 
   // Check that the state and message trees have been merged
-  if (!(await pollContract.stateAqMerged())) {
+  if (!(await pollContract.stateMerged())) {
     logError("The state tree has not been merged yet. Please use the mergeSignups subcommmand to do so.");
   }
 
@@ -201,7 +201,7 @@ export const genProofs = async ({
         .queryFilter(pollContract.filters.MergeMessageAq(messageRoot), fromBlock)
         .then((events) => events[events.length - 1]?.blockNumber),
       pollContract
-        .queryFilter(pollContract.filters.MergeMaciStateAq(stateRoot, numSignups), fromBlock)
+        .queryFilter(pollContract.filters.MergeMaciState(stateRoot, numSignups), fromBlock)
         .then((events) => events[events.length - 1]?.blockNumber),
     ]).then((blocks) => Math.max(...blocks));
 

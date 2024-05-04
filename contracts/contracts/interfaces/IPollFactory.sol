@@ -15,7 +15,6 @@ interface IPollFactory {
   /// @param _coordinatorPubKey The coordinator's public key
   /// @param _maci The MACI contract interface reference
   /// @param _topupCredit The TopupCredit contract
-  /// @param _pollOwner The owner of the poll
   /// @return The deployed Poll contract
   function deploy(
     uint256 _duration,
@@ -23,7 +22,6 @@ interface IPollFactory {
     Params.TreeDepths memory _treeDepths,
     DomainObjs.PubKey memory _coordinatorPubKey,
     address _maci,
-    TopupCredit _topupCredit,
-    address _pollOwner
+    TopupCredit _topupCredit
   ) external returns (address);
 }

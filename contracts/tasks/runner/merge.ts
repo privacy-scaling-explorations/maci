@@ -49,7 +49,6 @@ task("merge", "Merge signups and messages")
 
     console.log("Start balance: ", Number(startBalance / 10n ** 12n) / 1e6);
 
-    await treeMerger.checkPollOwner();
     await treeMerger.checkPollDuration();
 
     await treeMerger.mergeSignups();

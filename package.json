@@ -1,6 +1,6 @@
 {
   "name": "maci",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Minimal Anti-Collusion Infrastructure",
   "repository": "https://github.com/privacy-scaling-explorations/maci",
   "license": "MIT",

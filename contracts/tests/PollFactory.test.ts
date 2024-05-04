@@ -27,7 +27,6 @@ describe("pollFactory", () => {
         coordinatorPubKey.asContractParam(),
         ZeroAddress,
         ZeroAddress,
-        await signer.getAddress(),
       );
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
@@ -45,7 +44,6 @@ describe("pollFactory", () => {
           coordinatorPubKey.asContractParam(),
           ZeroAddress,
           ZeroAddress,
-          await signer.getAddress(),
         ),
       ).to.be.revertedWithCustomError(pollFactory, "InvalidMaxValues");
     });

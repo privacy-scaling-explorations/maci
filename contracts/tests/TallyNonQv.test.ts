@@ -182,7 +182,7 @@ describe("TallyVotesNonQv", () => {
   describe("after merging acc queues", () => {
     let tallyGeneratedInputs: ITallyCircuitInputs;
     before(async () => {
-      await pollContract.mergeMaciStateAq();
+      await pollContract.mergeMaciState();
 
       await pollContract.mergeMessageAqSubRoots(0);
       await pollContract.mergeMessageAq();

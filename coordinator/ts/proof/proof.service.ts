@@ -64,7 +64,7 @@ export class ProofGeneratorService {
       address: messageAqAddress,
     });
 
-    const isStateAqMerged = await pollContract.stateAqMerged();
+    const isStateAqMerged = await pollContract.stateMerged();
 
     if (!isStateAqMerged) {
       throw new Error("The state tree has not been merged yet. Please use the mergeSignups subcommmand to do so.");

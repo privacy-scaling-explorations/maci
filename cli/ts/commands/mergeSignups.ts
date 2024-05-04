@@ -54,10 +54,10 @@ export const mergeSignups = async ({ pollId, maciAddress, signer, quiet = true }
     logError("Voting period is not over");
   }
 
-  if (!(await pollContract.stateAqMerged())) {
+  if (!(await pollContract.stateMerged())) {
     // go and merge the state tree
-    logYellow(quiet, info("Merging subroots to a main state root..."));
-    const tx = await pollContract.mergeMaciStateAq();
+    logYellow(quiet, info("Calculating root and storing on Poll..."));
+    const tx = await pollContract.mergeMaciState();
     const receipt = await tx.wait();
 
     if (receipt?.status !== 1) {

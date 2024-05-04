@@ -30,7 +30,7 @@ interface IPoll {
   /// @notice The second step of merging the MACI state AccQueue. This allows the
   /// ProcessMessages circuit to access the latest state tree and ballots via
   /// currentSbCommitment.
-  function mergeMaciStateAq() external;
+  function mergeMaciState() external;
 
   /// @notice The first step in merging the message AccQueue so that the
   /// ProcessMessages circuit can access the message root.
@@ -48,7 +48,7 @@ interface IPoll {
 
   /// @notice Get the result of whether the MACI contract's stateAq has been merged by this contract
   /// @return Whether the MACI contract's stateAq has been merged by this contract
-  function stateAqMerged() external view returns (bool);
+  function stateMerged() external view returns (bool);
 
   /// @notice Get the depths of the merkle trees
   /// @return intStateTreeDepth The depth of the state tree

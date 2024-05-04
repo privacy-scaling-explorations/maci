@@ -95,7 +95,7 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
         name: EContracts.AccQueue,
         address: messageAqContractAddress,
       });
-      const isStateAqMerged = await pollContract.stateAqMerged();
+      const isStateAqMerged = await pollContract.stateMerged();
 
       // Check that the state and message trees have been merged for at least the first poll
       if (!isStateAqMerged && poll.toString() === "0") {

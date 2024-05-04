@@ -35,18 +35,6 @@ export class TreeMerger {
   }
 
   /**
-   * Check if signer is an owner. Otherwise, throw an error.
-   */
-  async checkPollOwner(): Promise<void> {
-    const pollOwner = await this.pollContract.owner();
-    const deployerAddress = await this.deployer.getAddress();
-
-    if (pollOwner.toLowerCase() !== deployerAddress.toLowerCase()) {
-      throw new Error("The signer is not the owner of this Poll contract");
-    }
-  }
-
-  /**
    * Check if voting period is over. Otherwise, throw an error.
    */
   async checkPollDuration(): Promise<void> {
@@ -70,10 +58,10 @@ export class TreeMerger {
    */
   async mergeSignups(): Promise<void> {
     // check if the state tree has been fully merged
-    if (!(await this.pollContract.stateAqMerged())) {
+    if (!(await this.pollContract.stateMerged())) {
       // go and merge the state tree
       console.log("Merging subroots to a main state root...");
-      const receipt = await this.pollContract.mergeMaciStateAq().then((tx) => tx.wait());
+      const receipt = await this.pollContract.mergeMaciState().then((tx) => tx.wait());
 
       if (receipt?.status !== 1) {
         throw new Error("Error merging signup state subroots");

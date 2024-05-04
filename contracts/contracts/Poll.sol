@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import { Params } from "./utilities/Params.sol";
-import { SnarkCommon } from "./crypto/SnarkCommon.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+
+import { Params } from "./utilities/Params.sol";
+import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { EmptyBallotRoots } from "./trees/EmptyBallotRoots.sol";
 import { IPoll } from "./interfaces/IPoll.sol";
 import { Utilities } from "./utilities/Utilities.sol";
@@ -16,7 +16,7 @@ import { CurveBabyJubJub } from "./crypto/BabyJubJub.sol";
 /// which can be either votes, key change messages or topup messages.
 /// @dev Do not deploy this directly. Use PollFactory.deploy() which performs some
 /// checks on the Poll constructor arguments.
-contract Poll is Params, Utilities, SnarkCommon, Ownable(msg.sender), EmptyBallotRoots, IPoll {
+contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   using SafeERC20 for ERC20;
 
   /// @notice Whether the Poll has been initialized
@@ -38,7 +38,7 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable(msg.sender), EmptyBallo
   uint256 internal immutable duration;
 
   /// @notice Whether the MACI contract's stateAq has been merged by this contract
-  bool public stateAqMerged;
+  bool public stateMerged;
 
   /// @notice Get the commitment to the state leaves and the ballots. This is
   /// hash3(stateRoot, ballotRoot, salt).
@@ -74,14 +74,12 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable(msg.sender), EmptyBallo
   error PollAlreadyInit();
   error TooManyMessages();
   error InvalidPubKey();
-  error StateAqAlreadyMerged();
-  error StateAqSubtreesNeedMerge();
+  error StateAlreadyMerged();
   error InvalidBatchLength();
 
   event PublishMessage(Message _message, PubKey _encPubKey);
   event TopupMessage(Message _message);
-  event MergeMaciStateAqSubRoots(uint256 indexed _numSrQueueOps);
-  event MergeMaciStateAq(uint256 indexed _stateRoot, uint256 indexed _numSignups);
+  event MergeMaciState(uint256 indexed _stateRoot, uint256 indexed _numSignups);
   event MergeMessageAqSubRoots(uint256 indexed _numSrQueueOps);
   event MergeMessageAq(uint256 indexed _messageRoot);
 
@@ -229,13 +227,13 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable(msg.sender), EmptyBallo
   }
 
   /// @inheritdoc IPoll
-  function mergeMaciStateAq() public onlyOwner isAfterVotingDeadline {
+  function mergeMaciState() public isAfterVotingDeadline {
     // This function can only be called once per Poll after the voting
     // deadline
-    if (stateAqMerged) revert StateAqAlreadyMerged();
+    if (stateMerged) revert StateAlreadyMerged();
 
     // set merged to true so it cannot be called again
-    stateAqMerged = true;
+    stateMerged = true;
 
     mergedStateRoot = extContracts.maci.getStateTreeRoot();
 
@@ -259,17 +257,17 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable(msg.sender), EmptyBallo
 
     actualStateTreeDepth = depth;
 
-    emit MergeMaciStateAq(mergedStateRoot, numSignups);
+    emit MergeMaciState(mergedStateRoot, numSignups);
   }
 
   /// @inheritdoc IPoll
-  function mergeMessageAqSubRoots(uint256 _numSrQueueOps) public onlyOwner isAfterVotingDeadline {
+  function mergeMessageAqSubRoots(uint256 _numSrQueueOps) public isAfterVotingDeadline {
     extContracts.messageAq.mergeSubRoots(_numSrQueueOps);
     emit MergeMessageAqSubRoots(_numSrQueueOps);
   }
 
   /// @inheritdoc IPoll
-  function mergeMessageAq() public onlyOwner isAfterVotingDeadline {
+  function mergeMessageAq() public isAfterVotingDeadline {
     uint256 root = extContracts.messageAq.merge(treeDepths.messageTreeDepth);
     emit MergeMessageAq(root);
   }

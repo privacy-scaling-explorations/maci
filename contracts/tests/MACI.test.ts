@@ -7,7 +7,7 @@ import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, PubKey, Message } from "maci-domainobjs";
 
 import { EMode } from "../ts/constants";
-import { getDefaultSigner } from "../ts/utils";
+import { getDefaultSigner, getSigners } from "../ts/utils";
 import { MACI, Poll as PollContract, Poll__factory as PollFactory, Verifier, VkRegistry } from "../typechain-types";
 
 import {
@@ -162,7 +162,7 @@ describe("MACI", function test() {
       ).to.be.revertedWithCustomError(maciContract, "InvalidPubKey");
     });
 
-    it("should not allow to sign up more than the supported amount of users (5 ** stateTreeDepth)", async () => {
+    it("should not allow to sign up more than the supported amount of users (2 ** stateTreeDepth)", async () => {
       const stateTreeDepthTest = 1;
       const maxUsers = 2 ** stateTreeDepthTest;
       const maci = (await deployTestContracts(initialVoiceCreditBalance, stateTreeDepthTest, signer, true))
@@ -259,6 +259,39 @@ describe("MACI", function test() {
       ]);
       maciState.polls.get(pollId)?.publishMessage(message, padKey);
     });
+
+    it("should allow to deploy a new poll even before the first one is completed", async () => {
+      const tx = await maciContract.deployPoll(
+        duration,
+        treeDepths,
+        coordinator.pubKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
+        verifierContract,
+        vkRegistryContract,
+        EMode.QV,
+        { gasLimit: 10000000 },
+      );
+      const receipt = await tx.wait();
+      expect(receipt?.status).to.eq(1);
+      expect(await maciContract.nextPollId()).to.eq(2);
+    });
+
+    it("should allow any user to deploy a poll", async () => {
+      const [, user] = await getSigners();
+      const tx = await maciContract
+        .connect(user)
+        .deployPoll(
+          duration,
+          treeDepths,
+          users[0].pubKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
+          verifierContract,
+          vkRegistryContract,
+          EMode.QV,
+          { gasLimit: 10000000 },
+        );
+      const receipt = await tx.wait();
+      expect(receipt?.status).to.eq(1);
+      expect(await maciContract.nextPollId()).to.eq(3);
+    });
   });
 
   describe("Merge sign-ups", () => {
@@ -269,17 +302,17 @@ describe("MACI", function test() {
       pollContract = PollFactory.connect(pollContractAddress, signer);
     });
 
-    it("should allow a Poll contract to merge the signUp AccQueue", async () => {
+    it("should allow a Poll contract to merge the state tree (calculate the state root)", async () => {
       await timeTravel(signer.provider as unknown as EthereumProvider, Number(duration) + 1);
 
-      const tx = await pollContract.mergeMaciStateAq({
+      const tx = await pollContract.mergeMaciState({
         gasLimit: 3000000,
       });
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
     });
 
-    it("should have the correct state root on chain after merging the acc queue", async () => {
+    it("should have the correct state root on chain after calculating the root on chain", async () => {
       maciState.polls.get(pollId)?.updatePoll(await pollContract.numSignups());
       expect(await maciContract.getStateTreeRoot()).to.eq(maciState.polls.get(pollId)?.stateTree?.root.toString());
     });
@@ -289,7 +322,7 @@ describe("MACI", function test() {
       expect(onChainStateRoot.toString()).to.eq(maciState.polls.get(pollId)?.stateTree?.root.toString());
     });
 
-    it("should allow a user to signup after the signUp AccQueue was merged", async () => {
+    it("should allow a user to signup after the state tree root was calculated", async () => {
       const tx = await maciContract.signUp(
         users[0].pubKey.asContractParam(),
         AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),

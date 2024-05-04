@@ -15,7 +15,7 @@ import { DomainObjs } from "./utilities/DomainObjs.sol";
 /// @title Tally
 /// @notice The Tally contract is used during votes tallying
 /// and by users to verify the tally results.
-contract Tally is Ownable(msg.sender), SnarkCommon, CommonUtilities, Hasher, DomainObjs {
+contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs {
   uint256 internal constant TREE_ARITY = 2;
   uint256 internal constant VOTE_OPTION_TREE_ARITY = 5;
 
@@ -65,7 +65,16 @@ contract Tally is Ownable(msg.sender), SnarkCommon, CommonUtilities, Hasher, Dom
   /// @param _vkRegistry The VkRegistry contract
   /// @param _poll The Poll contract
   /// @param _mp The MessageProcessor contract
-  constructor(address _verifier, address _vkRegistry, address _poll, address _mp, Mode _mode) payable {
+  /// @param _tallyOwner The owner of the Tally contract
+  /// @param _mode The mode of the poll
+  constructor(
+    address _verifier,
+    address _vkRegistry,
+    address _poll,
+    address _mp,
+    address _tallyOwner,
+    Mode _mode
+  ) payable Ownable(_tallyOwner) {
     verifier = IVerifier(_verifier);
     vkRegistry = IVkRegistry(_vkRegistry);
     poll = IPoll(_poll);
