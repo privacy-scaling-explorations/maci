@@ -5,6 +5,14 @@ on:
     branches: [dev]
   pull_request:
 
+env:
+  COORDINATOR_PUBLIC_KEY_PATH: "./pub.key"
+  COORDINATOR_PRIVATE_KEY_PATH: "./priv.key"
+  COORDINATOR_TALLY_ZKEY_NAME: "TallyVotes"
+  COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME: "ProcessMessages"
+  COORDINATOR_ZKEY_PATH: "./zkeys"
+  COORDINATOR_RAPIDSNARK_EXE: ""
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true

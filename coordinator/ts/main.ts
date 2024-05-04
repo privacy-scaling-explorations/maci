@@ -2,7 +2,9 @@ import { NestFactory } from "@nestjs/core";
 import dotenv from "dotenv";
 import helmet from "helmet";
 
-dotenv.config();
+import path from "path";
+
+dotenv.config({ path: [path.resolve(__dirname, "../.env"), path.resolve(__dirname, "../.env.example")] });
 
 async function bootstrap() {
   const { AppModule } = await import("./app.module");
