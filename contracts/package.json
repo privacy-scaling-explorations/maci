@@ -75,7 +75,7 @@
     "@openzeppelin/contracts": "^5.0.2",
     "@zk-kit/imt.sol": "2.0.0-beta.12",
     "circomlibjs": "^0.1.7",
-    "ethers": "^6.12.0",
+    "ethers": "^6.12.1",
     "hardhat": "^2.22.3",
     "maci-circuits": "^1.2.0",
     "maci-core": "^1.2.0",
