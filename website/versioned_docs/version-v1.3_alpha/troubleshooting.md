@@ -47,7 +47,7 @@ Error: Error executing ./zkeys/ProcessMessages_10-2-1-2_test /tmp/tmp-9904-zG0k8
 You can generate the missing `.dat` files using the following command:
 
 ```bash
-pnpm build:circuits-c
+pnpm build:circuits-c -- --outPath ../cli/zkeys
 ```
 
 ## contracts: `prove` command failure

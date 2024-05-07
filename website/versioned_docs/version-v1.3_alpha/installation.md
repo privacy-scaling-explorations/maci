@@ -133,13 +133,13 @@ pnpm test:circuits-c
 **for the wasm witness generator**
 
 ```bash
-pnpm build:circuits-wasm
+pnpm build:circuits-wasm -- --outPath ../cli/zkeys
 ```
 
 Finally, generate the `.zkey` files. This may require a lot of memory and time.
 
 ```bash
-pnpm setup:zkeys
+pnpm setup:zkeys --outPath ../cli/zkeys
 ```
 
 > If on a ARM64 chip, the above will work with the wasm witness only. The errors you will get for the c++ witness are:

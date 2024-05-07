@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import hre from "hardhat";
 
 import fs from "fs";

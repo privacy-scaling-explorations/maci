@@ -1,11 +1,11 @@
 import "@nomicfoundation/hardhat-toolbox";
-import { config as envConfig } from "dotenv";
+import dotenv from "dotenv";
 
 import path from "path";
 
 import type { HardhatUserConfig } from "hardhat/config";
 
-envConfig();
+dotenv.config();
 
 const parentDir = __dirname.includes("build") ? ".." : "";
 
@@ -13,9 +13,23 @@ const config: HardhatUserConfig = {
   defaultNetwork: "localhost",
   networks: {
     localhost: {
-      url: process.env.ETH_PROVIDER,
-      accounts: [process.env.ETH_SK!],
+      url: process.env.COORDINATOR_RPC_URL,
       loggingEnabled: false,
+      accounts: {
+        mnemonic: process.env.COORDINATOR_MNEMONIC,
+        path: "m/44'/60'/0'/0",
+        initialIndex: 0,
+        count: 20,
+      },
+    },
+    hardhat: {
+      loggingEnabled: false,
+      accounts: {
+        mnemonic: process.env.COORDINATOR_MNEMONIC,
+        path: "m/44'/60'/0'/0",
+        initialIndex: 0,
+        count: 20,
+      },
     },
   },
   paths: {

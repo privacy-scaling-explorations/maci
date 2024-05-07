@@ -213,7 +213,7 @@ export class ProofGenerator {
    * @param network - current network
    * @returns tally proofs
    */
-  async generateTallyProofs(network: Network): Promise<Proof[]> {
+  async generateTallyProofs(network: Network): Promise<{ proofs: Proof[]; tallyData: TallyData }> {
     performance.mark("tally-proofs-start");
 
     console.log(`Generating proofs of vote tallying...`);
@@ -316,7 +316,7 @@ export class ProofGenerator {
     performance.mark("tally-proofs-end");
     performance.measure("Generate tally proofs", "tally-proofs-start", "tally-proofs-end");
 
-    return proofs;
+    return { proofs, tallyData: tallyFileData };
   }
 
   /**
@@ -359,7 +359,14 @@ export class ProofGenerator {
       publicInputs: publicSignals,
     });
 
-    fs.writeFileSync(path.resolve(this.outputDir, outputFile), JSON.stringify(proofs[proofs.length - 1], null, 4));
+    if (!fs.existsSync(path.resolve(this.outputDir))) {
+      await fs.promises.mkdir(path.resolve(this.outputDir));
+    }
+
+    await fs.promises.writeFile(
+      path.resolve(this.outputDir, outputFile),
+      JSON.stringify(proofs[proofs.length - 1], null, 4),
+    );
 
     return proofs;
   }
