@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
-    "ethers": "^6.12.0",
+    "ethers": "^6.12.1",
     "maci-circuits": "^1.2.0",
     "maci-cli": "^1.2.0",
     "maci-contracts": "^1.2.0",
