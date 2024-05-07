@@ -7,9 +7,9 @@
   "scripts": {
     "benchmarks": "lerna run benchmarks",
     "build": "lerna run build --ignore=website",
-    "build:circuits-c": "lerna run build-test-circuits-c -- --outPath ../cli/zkeys --scope \"maci-circuits\"",
-    "build:circuits-wasm": "lerna run build-test-circuits-wasm -- --outPath ../cli/zkeys --scope \"maci-circuits\"",
-    "setup:zkeys": "NODE_OPTIONS=--max-old-space-size=4096 lerna run gen-zkeys -- --outPath ../cli/zkeys --scope \"maci-circuits\"",
+    "build:circuits-c": "lerna run build-test-circuits-c --scope \"maci-circuits\"",
+    "build:circuits-wasm": "lerna run build-test-circuits-wasm --scope \"maci-circuits\"",
+    "setup:zkeys": "NODE_OPTIONS=--max-old-space-size=4096 lerna run gen-zkeys --scope \"maci-circuits\"",
     "clean": "lerna exec -- rm -rf node_modules build && rm -rf node_modules",
     "commit": "git cz",
     "download:test-zkeys-1-2": "lerna run download-zkeys --scope \"maci-integrationtests\"",

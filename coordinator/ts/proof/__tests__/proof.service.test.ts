@@ -76,7 +76,7 @@ describe("ProofGeneratorService", () => {
 
     defaultProofGenerator = {
       generateMpProofs: jest.fn(() => Promise.resolve([1])),
-      generateTallyProofs: jest.fn(() => Promise.resolve([1])),
+      generateTallyProofs: jest.fn(() => Promise.resolve({ proofs: [1], tallyData: {} })),
     };
 
     defaultCryptoService = {

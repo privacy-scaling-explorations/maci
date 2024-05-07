@@ -9,6 +9,7 @@
     "README.md"
   ],
   "scripts": {
+    "hardhat": "hardhat node",
     "prebuild": "pnpm run generate-keypair",
     "build": "nest build",
     "start": "nest start",
@@ -17,6 +18,7 @@
     "test": "jest",
     "test:coverage": "jest --coverage",
     "types": "tsc -p tsconfig.json --noEmit",
+    "download-zkeys:test": "ts-node ./scripts/downloadZkeys.ts test",
     "generate-keypair": "ts-node ./scripts/generateKeypair.ts"
   },
   "dependencies": {
@@ -34,7 +36,8 @@
     "maci-contracts": "^1.2.0",
     "maci-domainobjs": "^1.2.0",
     "reflect-metadata": "^0.2.0",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "tar": "^7.1.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.3.2",
@@ -52,6 +55,7 @@
     "typescript": "^5.4.5"
   },
   "jest": {
+    "testTimeout": 900000,
     "moduleFileExtensions": [
       "js",
       "json",
@@ -64,11 +68,13 @@
     ],
     "testRegex": ".*\\.test\\.ts$",
     "transform": {
+      "^.+\\.js$": "<rootDir>/ts/jest/transform.js",
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s",
-      "!<rootDir>/ts/main.ts"
+      "!<rootDir>/ts/main.ts",
+      "!<rootDir>/hardhat.config.ts"
     ],
     "coverageDirectory": "<rootDir>/coverage",
     "testEnvironment": "node"

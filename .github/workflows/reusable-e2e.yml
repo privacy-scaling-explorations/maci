@@ -82,8 +82,8 @@ jobs:
       - name: Compile Circuits And Generate zkeys
         if: ${{ env.CHANGED == 'true' }}
         run: |
-          pnpm build:circuits-c
-          pnpm setup:zkeys
+          pnpm build:circuits-c -- --outPath ../cli/zkeys
+          pnpm setup:zkeys -- --outPath ../cli/zkeys
 
       - name: Download zkeys
         if: ${{ env.CHANGED == 'false' }}

@@ -2,7 +2,7 @@ import { Module } from "@nestjs/common";
 import { ThrottlerModule } from "@nestjs/throttler";
 
 import { AppController } from "./app.controller";
-import { AppService } from "./app.service";
+import { ProofGeneratorService } from "./proof/proof.service";
 
 @Module({
   imports: [
@@ -14,6 +14,6 @@ import { AppService } from "./app.service";
     ]),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [ProofGeneratorService],
 })
 export class AppModule {}

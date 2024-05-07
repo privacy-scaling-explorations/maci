@@ -444,7 +444,7 @@ pnpm circom:build $CIRCUIT_NAME
 Run from the root directory to save to the `cli/zkeys` folder:
 
 ```bash
-pnpm setup:zkeys
+pnpm setup:zkeys --outPath ../cli/zkeys
 ```
 
 Run from the circuits folder with `--outPath` to save to a custom folder:

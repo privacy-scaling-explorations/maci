@@ -69,8 +69,8 @@ jobs:
 
       - name: Compile Circuits And Generate zkeys
         run: |
-          pnpm build:circuits-c
-          pnpm setup:zkeys
+          pnpm build:circuits-c -- --outPath ../cli/zkeys
+          pnpm setup:zkeys -- --outPath ../cli/zkeys
 
       - name: ${{ matrix.command }}
         run: pnpm run ${{ matrix.command }}

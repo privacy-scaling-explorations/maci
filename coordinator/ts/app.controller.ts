@@ -1,13 +1,16 @@
-import { Controller, Get } from "@nestjs/common";
+import { Body, Controller, HttpException, HttpStatus, Post } from "@nestjs/common";
 
-import { AppService } from "./app.service";
+import { ProofGeneratorService } from "./proof/proof.service";
+import { IGenerateArgs, IGenerateData } from "./proof/types";
 
-@Controller()
+@Controller("v1/proof")
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(private readonly proofGeneratorService: ProofGeneratorService) {}
 
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  @Post("generate")
+  async generate(@Body() args: IGenerateArgs): Promise<IGenerateData> {
+    return this.proofGeneratorService.generate(args).catch((error: Error) => {
+      throw new HttpException("BadRequest", HttpStatus.BAD_REQUEST, { cause: error.message });
+    });
   }
 }

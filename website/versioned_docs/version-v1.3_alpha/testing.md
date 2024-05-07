@@ -97,13 +97,13 @@ From the root folder, run:
 **for c++ witness generator**
 
 ```bash
-pnpm build:circuits-c
+pnpm build:circuits-c -- --outPath ../cli/zkeys
 ```
 
 **for wasm witness generator**
 
 ```bash
-pnpm build:circuits-wasm
+pnpm build:circuits-wasm -- --outPath ../cli/zkeys
 ```
 
 You should see the following files in `maci/cli/`:
@@ -248,7 +248,7 @@ zkeys/SubsidyPerBatch_10-1-2_test/SubsidyPerBatch_10-1-2_test_cpp/SubsidyPerBatc
 **generate zkeys**
 
 ```bash
-pnpm setup:zkeys
+pnpm setup:zkeys --outPath ../cli/zkeys
 ```
 
 ### Check the Rapidsnark binary

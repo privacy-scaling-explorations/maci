@@ -1,4 +1,5 @@
 import type { BigNumberish } from "ethers";
+import type { TallyData } from "maci-cli";
 import type { Proof } from "maci-contracts";
 
 /**
@@ -59,6 +60,11 @@ export interface IGenerateData {
    * Tally proofs
    */
   tallyProofs: Proof[];
+
+  /**
+   * TallyData
+   */
+  tallyData: TallyData;
 }
 
 /**

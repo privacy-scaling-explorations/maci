@@ -81,7 +81,6 @@ export class ProofGeneratorService {
     const privateKey = await fs.promises.readFile(path.resolve(process.env.COORDINATOR_PRIVATE_KEY_PATH!));
     const maciPrivateKey = PrivKey.deserialize(this.cryptoService.decrypt(privateKey, encryptedCoordinatorPrivateKey));
     const coordinatorKeypair = new Keypair(maciPrivateKey);
-
     const maciState = await ProofGenerator.prepareState({
       maciContract,
       pollContract,
@@ -111,16 +110,17 @@ export class ProofGeneratorService {
       mp: this.getZkeyFiles(process.env.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME!, useQuadraticVoting),
       rapidsnark: process.env.COORDINATOR_RAPIDSNARK_EXE,
       outputDir: path.resolve("./proofs"),
-      tallyOutputFile: path.resolve("./tally"),
+      tallyOutputFile: path.resolve("./tally.json"),
       useQuadraticVoting,
     });
 
     const processProofs = await proofGenerator.generateMpProofs();
-    const tallyProofs = await proofGenerator.generateTallyProofs(hre.network);
+    const { proofs: tallyProofs, tallyData } = await proofGenerator.generateTallyProofs(hre.network);
 
     return {
       processProofs,
       tallyProofs,
+      tallyData,
     };
   }
 
@@ -133,12 +133,16 @@ export class ProofGeneratorService {
    */
   private getZkeyFiles(name: string, useQuadraticVoting: boolean): { zkey: string; wasm: string; witgen: string } {
     const root = path.resolve(process.env.COORDINATOR_ZKEY_PATH!);
-    const mode = useQuadraticVoting ? "Qv" : "NonQv";
+    const index = name.indexOf("_");
+    const type = name.slice(0, index);
+    const params = name.slice(index + 1);
+    const mode = useQuadraticVoting ? "" : "NonQv";
+    const filename = `${type}${mode}_${params}`;
 
     return {
-      zkey: path.resolve(root, `${name}${mode}.zkey`),
-      wasm: path.resolve(root, `${name}${mode}.wasm`),
-      witgen: path.resolve(root, `${name}${mode}.witgen`),
+      zkey: path.resolve(root, `${filename}/${filename}.0.zkey`),
+      wasm: path.resolve(root, `${filename}/${filename}_js/${filename}.wasm`),
+      witgen: path.resolve(root, `${filename}/${filename}_cpp/${filename}`),
     };
   }
 }
