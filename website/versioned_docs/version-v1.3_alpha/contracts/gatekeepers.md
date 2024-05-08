@@ -8,7 +8,7 @@ sidebar_label: Gatekeepers
 
 MACI is composed of multiple smart contracts, which together with the zk-SNARK circuits, can be used to carry out on-chain voting. Start with an [overview of our smart contracts here](/docs/contracts).
 
-MACI uses a "gatekeeper" contract, which is used to configure and enforce the eligibility criteria of voters who can participate in MACI polls. It is up to MACI's deployer how they wish configure signup eligibility and to protect agaisnt sybil attacks.
+MACI uses a "gatekeeper" contract, which is used to configure and enforce the eligibility criteria of voters who can participate in MACI polls. Operators of MACI can use the gatekeeper contract to configure signup eligibility and to protect agaisnt sybil attacks in their polls.
 
 The MACI repository comes with several out-of-the-box options:
 
