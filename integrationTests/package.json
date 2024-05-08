@@ -1,6 +1,6 @@
 {
   "name": "maci-integrationtests",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "",
   "main": "build/ts/index.js",
   "files": [
@@ -34,11 +34,11 @@
   "dependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "ethers": "^6.12.0",
-    "maci-circuits": "^1.2.0",
-    "maci-cli": "^1.2.0",
-    "maci-contracts": "^1.2.0",
-    "maci-core": "^1.2.0",
-    "maci-crypto": "^1.2.0",
-    "maci-domainobjs": "^1.2.0"
+    "maci-circuits": "^1.2.1",
+    "maci-cli": "^1.2.1",
+    "maci-contracts": "^1.2.1",
+    "maci-core": "^1.2.1",
+    "maci-crypto": "^1.2.1",
+    "maci-domainobjs": "^1.2.1"
   }
 }

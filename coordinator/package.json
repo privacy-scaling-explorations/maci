@@ -1,6 +1,7 @@
 {
   "name": "maci-coordinator",
-  "version": "0.1.0",
+  "version": "1.2.1",
+  "private": true,
   "description": "Coordinator service for MACI",
   "main": "build/ts/main.js",
   "files": [
@@ -27,10 +28,10 @@
     "ethers": "^6.12.0",
     "hardhat": "^2.22.3",
     "helmet": "^7.1.0",
-    "maci-circuits": "^1.2.0",
-    "maci-cli": "^1.2.0",
-    "maci-contracts": "^1.2.0",
-    "maci-domainobjs": "^1.2.0",
+    "maci-circuits": "^1.2.1",
+    "maci-cli": "^1.2.1",
+    "maci-contracts": "^1.2.1",
+    "maci-domainobjs": "^1.2.1",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1"
   },

@@ -1,6 +1,6 @@
 {
   "name": "maci-contracts",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Solidity Smart Contracts for MACI (Minimal Anti-Collusion Infrastructure)",
   "main": "build/ts/index.js",
   "exports": {
@@ -76,10 +76,10 @@
     "circomlibjs": "^0.1.7",
     "ethers": "^6.12.0",
     "hardhat": "^2.22.3",
-    "maci-circuits": "^1.2.0",
-    "maci-core": "^1.2.0",
-    "maci-crypto": "^1.2.0",
-    "maci-domainobjs": "^1.2.0",
+    "maci-circuits": "^1.2.1",
+    "maci-core": "^1.2.1",
+    "maci-crypto": "^1.2.1",
+    "maci-domainobjs": "^1.2.1",
     "solidity-docgen": "^0.6.0-beta.36"
   },
   "devDependencies": {
