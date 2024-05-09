@@ -30,6 +30,7 @@ import {
   MACI__factory as MACIFactory,
   MessageProcessorFactory__factory as MessageProcessorFactoryFactory,
   TallyFactory__factory as TallyFactoryFactory,
+  GitcoinPassportGatekeeper,
 } from "../typechain-types";
 
 import { log } from "./utils";
@@ -153,6 +154,28 @@ export const deploySignupTokenGatekeeper = async (
  */
 export const deployFreeForAllSignUpGatekeeper = async (signer?: Signer, quiet = false): Promise<FreeForAllGatekeeper> =>
   deployContract<FreeForAllGatekeeper>("FreeForAllGatekeeper", signer, quiet);
+
+/**
+ * Deploy a GitcoinPassportGatekeeper contract
+ * @param decoderAddress - the address of the GitcoinPassportDecoder contract
+ * @param minimumScore - the minimum score required to pass
+ * @param signer - the signer to use to deploy the contract
+ * @param quiet - whether to suppress console output
+ * @returns the deployed GitcoinPassportGatekeeper contract
+ */
+export const deployGitcoinPassportGatekeeper = async (
+  decoderAddress: string,
+  minimumScore: number,
+  signer?: Signer,
+  quiet = false,
+): Promise<GitcoinPassportGatekeeper> =>
+  deployContract<GitcoinPassportGatekeeper>(
+    "GitcoinPassportGatekeeper",
+    signer,
+    quiet,
+    decoderAddress,
+    minimumScore.toString(),
+  );
 
 /**
  * Deploy Poseidon contracts

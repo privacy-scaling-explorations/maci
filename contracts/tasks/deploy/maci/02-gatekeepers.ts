@@ -16,17 +16,21 @@ deployment.deployTask("full:deploy-gatekeepers", "Deploy gatekeepers").then((tas
 
     const freeForAllGatekeeperContractAddress = storage.getAddress(EContracts.FreeForAllGatekeeper, hre.network.name);
     const easGatekeeperContractAddress = storage.getAddress(EContracts.EASGatekeeper, hre.network.name);
+    const gitcoinGatekeeperContractAddress = storage.getAddress(EContracts.GitcoinPassportGatekeeper, hre.network.name);
     const deployFreeForAllGatekeeper = deployment.getDeployConfigField(EContracts.FreeForAllGatekeeper, "deploy");
     const deployEASGatekeeper = deployment.getDeployConfigField(EContracts.EASGatekeeper, "deploy");
+    const deployGitcoinGatekeeper = deployment.getDeployConfigField(EContracts.GitcoinPassportGatekeeper, "deploy");
 
     const skipDeployFreeForAllGatekeeper = deployFreeForAllGatekeeper === false;
     const skipDeployEASGatekeeper = deployEASGatekeeper === false;
+    const skipDeployGitcoinGatekeeper = deployGitcoinGatekeeper === false;
 
     const canSkipDeploy =
       incremental &&
       (freeForAllGatekeeperContractAddress || skipDeployFreeForAllGatekeeper) &&
       (easGatekeeperContractAddress || skipDeployEASGatekeeper) &&
-      (!skipDeployFreeForAllGatekeeper || !skipDeployEASGatekeeper);
+      (gitcoinGatekeeperContractAddress || skipDeployGitcoinGatekeeper) &&
+      (!skipDeployFreeForAllGatekeeper || !skipDeployEASGatekeeper || !skipDeployGitcoinGatekeeper);
 
     if (canSkipDeploy) {
       return;
@@ -46,11 +50,11 @@ deployment.deployTask("full:deploy-gatekeepers", "Deploy gatekeepers").then((tas
       });
     }
 
-    const isSupportedNetwork = ![ESupportedChains.Hardhat, ESupportedChains.Coverage].includes(
+    const isSupportedEASGatekeeperNetwork = ![ESupportedChains.Hardhat, ESupportedChains.Coverage].includes(
       hre.network.name as ESupportedChains,
     );
 
-    if (!skipDeployEASGatekeeper && isSupportedNetwork) {
+    if (!skipDeployEASGatekeeper && isSupportedEASGatekeeperNetwork) {
       const easAddress = deployment.getDeployConfigField<string>(EContracts.EASGatekeeper, "easAddress", true);
       const encodedSchema = deployment.getDeployConfigField<string>(EContracts.EASGatekeeper, "schema", true);
       const attester = deployment.getDeployConfigField<string>(EContracts.EASGatekeeper, "attester", true);
@@ -69,6 +73,40 @@ deployment.deployTask("full:deploy-gatekeepers", "Deploy gatekeepers").then((tas
         id: EContracts.EASGatekeeper,
         contract: easGatekeeperContract,
         args: [easAddress, attester, encodedSchema],
+        network: hre.network.name,
+      });
+    }
+
+    const isSupportedGitcoinGatekeeperNetwork = ![
+      ESupportedChains.Hardhat,
+      ESupportedChains.Coverage,
+      ESupportedChains.Sepolia,
+    ].includes(hre.network.name as ESupportedChains);
+
+    if (!skipDeployGitcoinGatekeeper && isSupportedGitcoinGatekeeperNetwork) {
+      const gitcoinGatekeeperDecoderAddress = deployment.getDeployConfigField<string>(
+        EContracts.GitcoinPassportGatekeeper,
+        "decoderAddress",
+        true,
+      );
+      const gitcoinGatekeeperPassingScore = deployment.getDeployConfigField<number>(
+        EContracts.GitcoinPassportGatekeeper,
+        "passingScore",
+        true,
+      );
+      const gitcoinGatekeeperContract = await deployment.deployContract(
+        {
+          name: EContracts.GitcoinPassportGatekeeper,
+          signer: deployer,
+        },
+        gitcoinGatekeeperDecoderAddress,
+        gitcoinGatekeeperPassingScore,
+      );
+
+      await storage.register({
+        id: EContracts.GitcoinPassportGatekeeper,
+        contract: gitcoinGatekeeperContract,
+        args: [gitcoinGatekeeperDecoderAddress, gitcoinGatekeeperPassingScore],
         network: hre.network.name,
       });
     }

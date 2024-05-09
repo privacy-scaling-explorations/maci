@@ -11,7 +11,7 @@ import { IEAS } from "../interfaces/IEAS.sol";
 /// only if they've received an attestation of a specific schema from a trusted attester
 contract EASGatekeeper is SignUpGatekeeper, Ownable(msg.sender) {
   // the reference to the EAS contract
-  IEAS private immutable eas;
+  IEAS public immutable eas;
 
   // the schema to check against
   bytes32 public immutable schema;
