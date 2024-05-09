@@ -58,7 +58,7 @@ deployment.deployTask("full:deploy-maci", "Deploy MACI contract").then((task) =>
       deployment.getDeployConfigField<number | null>(EContracts.MACI, "stateTreeDepth") ?? DEFAULT_STATE_TREE_DEPTH;
 
     const maciContract = await deployment.deployContractWithLinkedLibraries<MACI>(
-      maciContractFactory,
+      { contractFactory: maciContractFactory },
       pollFactoryContractAddress,
       messageProcessorFactoryContractAddress,
       tallyFactoryContractAddress,

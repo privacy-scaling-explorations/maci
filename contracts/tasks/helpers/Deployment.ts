@@ -15,6 +15,7 @@ import { ContractStorage } from "./ContractStorage";
 import {
   EContracts,
   IDeployContractArgs,
+  IDeployContractWithLinkedLibrariesArgs,
   IDeployParams,
   IDeployStep,
   IDeployStepCatalog,
@@ -341,15 +342,15 @@ export class Deployment {
    * @returns deployed contract
    */
   async deployContractWithLinkedLibraries<T extends BaseContract>(
-    contractFactory: ContractFactory,
+    { contractFactory, signer }: IDeployContractWithLinkedLibrariesArgs,
     ...args: unknown[]
   ): Promise<T> {
-    const deployer = await this.getDeployer();
-    const feeData = await deployer.provider.getFeeData();
+    const deployer = signer || (await this.getDeployer());
+    const feeData = await deployer.provider?.getFeeData();
 
     const contract = await contractFactory.deploy(...args, {
-      maxFeePerGas: feeData.maxFeePerGas,
-      maxPriorityFeePerGas: feeData.maxPriorityFeePerGas,
+      maxFeePerGas: feeData?.maxFeePerGas,
+      maxPriorityFeePerGas: feeData?.maxPriorityFeePerGas,
     });
     await contract.deploymentTransaction()!.wait();
 

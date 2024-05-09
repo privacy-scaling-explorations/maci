@@ -34,7 +34,9 @@ deployment.deployTask("full:deploy-poll-factory", "Deploy poll factory").then((t
       },
     });
 
-    const pollFactoryContract = await deployment.deployContractWithLinkedLibraries(linkedPollFactoryContract);
+    const pollFactoryContract = await deployment.deployContractWithLinkedLibraries({
+      contractFactory: linkedPollFactoryContract,
+    });
 
     await storage.register({
       id: EContracts.PollFactory,

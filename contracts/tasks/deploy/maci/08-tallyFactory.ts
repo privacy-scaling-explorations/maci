@@ -34,7 +34,9 @@ deployment.deployTask("full:deploy-tally-factory", "Deploy tally factory").then(
       },
     });
 
-    const tallyFactoryContract = await deployment.deployContractWithLinkedLibraries(linkedTallyFactoryContract);
+    const tallyFactoryContract = await deployment.deployContractWithLinkedLibraries({
+      contractFactory: linkedTallyFactoryContract,
+    });
 
     await storage.register({
       id: EContracts.TallyFactory,

@@ -219,7 +219,7 @@ export const deployContractWithLinkedLibraries = async <T extends BaseContract>(
   const deployment = Deployment.getInstance(hre);
   deployment.setHre(hre);
 
-  return deployment.deployContractWithLinkedLibraries(contractFactory, ...args);
+  return deployment.deployContractWithLinkedLibraries({ contractFactory }, ...args);
 };
 
 /**
