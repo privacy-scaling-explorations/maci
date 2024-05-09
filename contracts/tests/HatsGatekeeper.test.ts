@@ -1,5 +1,4 @@
 import { expect } from "chai";
-import dotenv from "dotenv";
 import { AbiCoder, Signer, ZeroAddress } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
@@ -9,8 +8,6 @@ import { HatsGatekeeperMultiple, HatsGatekeeperSingle, MACI, MockHatsProtocol } 
 
 import { STATE_TREE_DEPTH, initialVoiceCreditBalance } from "./constants";
 import { deployTestContracts } from "./utils";
-
-dotenv.config();
 
 describe("HatsProtocol Gatekeeper", () => {
   let maciContract: MACI;

@@ -1,5 +1,4 @@
 import { expect } from "chai";
-import dotenv from "dotenv";
 import { AbiCoder, Signer, ZeroAddress, toBeArray } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
@@ -9,8 +8,6 @@ import { EASGatekeeper, MACI } from "../typechain-types";
 
 import { STATE_TREE_DEPTH, initialVoiceCreditBalance } from "./constants";
 import { deployTestContracts } from "./utils";
-
-dotenv.config();
 
 describe("EAS Gatekeeper", () => {
   let easGatekeeper: EASGatekeeper;
