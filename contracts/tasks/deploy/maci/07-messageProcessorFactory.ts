@@ -40,9 +40,9 @@ deployment.deployTask("full:deploy-message-processor-factory", "Deploy message p
       },
     );
 
-    const messageProcessorFactoryContract = await deployment.deployContractWithLinkedLibraries(
-      linkedMessageProcessorFactoryContract,
-    );
+    const messageProcessorFactoryContract = await deployment.deployContractWithLinkedLibraries({
+      contractFactory: linkedMessageProcessorFactoryContract,
+    });
 
     await storage.register({
       id: EContracts.MessageProcessorFactory,

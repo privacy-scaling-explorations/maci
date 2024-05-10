@@ -1,6 +1,6 @@
 import type { AccQueue, MACI, MessageProcessor, Poll, Tally, Verifier, VkRegistry } from "../../typechain-types";
 import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import type { BaseContract, BigNumberish, Fragment, JsonFragment, Signer } from "ethers";
+import type { BaseContract, BigNumberish, Fragment, JsonFragment, Signer, ContractFactory } from "ethers";
 import type { Libraries, TaskArguments } from "hardhat/types";
 import type { Poll as PollWrapper } from "maci-core";
 import type { Keypair, PrivKey } from "maci-domainobjs";
@@ -666,6 +666,21 @@ export interface IDeployContractArgs {
    * Contract bytecode
    */
   bytecode?: string;
+
+  /**
+   * Eth signer
+   */
+  signer?: Signer;
+}
+
+/**
+ * Interface that represents deploy params
+ */
+export interface IDeployContractWithLinkedLibrariesArgs {
+  /**
+   * Contract factory
+   */
+  contractFactory: ContractFactory;
 
   /**
    * Eth signer
