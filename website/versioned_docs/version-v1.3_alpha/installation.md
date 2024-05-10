@@ -164,9 +164,19 @@ Note the locations of the `.zkey` files as the CLI requires them as command-line
 
 **Download test artifacts**
 
+If using the latest dev updates:
+
 ```bash
-pnpm download:test-zkeys
+pnpm download:test-zkeys-1-3
 ```
+
+If using **1.2.1**
+
+```bash
+pnpm download:test-zkeys-1-2
+```
+
+Note that the below will work up until **1.2.1**
 
 **Download ceremony artifacts**
 
