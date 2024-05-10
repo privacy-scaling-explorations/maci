@@ -40,7 +40,7 @@ export const storeContractAddress = (contractName: string, address: string, netw
 /**
  * Read a contract address from the local address store file
  * @param contractName - the name of the contract
- * @returns the contract address or a undefined it it does not exist
+ * @returns the contract address or a undefined if it does not exist
  */
 export const readContractAddress = (contractName: string, network = "default"): string => {
   try {
@@ -51,7 +51,7 @@ export const readContractAddress = (contractName: string, network = "default"): 
 };
 
 /**
- * Delete the content of the contract address file file
+ * Delete the content of the contract address file
  */
 export const resetContractAddresses = (): void => {
   fs.writeFileSync(contractAddressesStore, JSON.stringify({}, null, 4));
