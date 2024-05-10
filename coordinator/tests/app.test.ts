@@ -1,4 +1,6 @@
+import { ValidationPipe, type INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
+import { getBytes, hashMessage, type Signer } from "ethers";
 import hardhat from "hardhat";
 import {
   type DeployedContracts,
@@ -19,8 +21,6 @@ import request from "supertest";
 import fs from "fs";
 import path from "path";
 
-import type { INestApplication } from "@nestjs/common";
-import type { Signer } from "ethers";
 import type { App } from "supertest/types";
 
 import { AppModule } from "../ts/app.module";
@@ -39,8 +39,17 @@ describe("AppController (e2e)", () => {
   let maciAddresses: DeployedContracts;
   let pollContracts: PollContracts;
 
+  const getAuthorizationHeader = async () => {
+    const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
+    const signature = await signer.signMessage("message");
+    const digest = Buffer.from(getBytes(hashMessage("message"))).toString("hex");
+    return CryptoService.getInstance().encrypt(publicKey, `${signature}:${digest}`);
+  };
+
   beforeAll(async () => {
     [signer] = await hardhat.ethers.getSigners();
+
+    process.env.COORDINATOR_ADDRESS = await signer.getAddress();
 
     await deployVkRegistryContract({ signer });
     await setVerifyingKeys({
@@ -82,7 +91,107 @@ describe("AppController (e2e)", () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(new ValidationPipe({ transform: true }));
     await app.init();
+  });
+
+  describe("validation /v1/proof/generate POST", () => {
+    beforeAll(async () => {
+      const user = new Keypair();
+
+      await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer });
+      await publish({
+        pubkey: user.pubKey.serialize(),
+        stateIndex: 1n,
+        voteOptionIndex: 0n,
+        nonce: 1n,
+        pollId: 0n,
+        newVoteWeight: 9n,
+        maciAddress: maciAddresses.maciAddress,
+        salt: 0n,
+        privateKey: user.privKey.serialize(),
+        signer,
+      });
+    });
+
+    test("should throw an error if poll id is invalid", async () => {
+      const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
+      const encryptedCoordinatorPrivateKey = CryptoService.getInstance().encrypt(
+        publicKey,
+        coordinatorKeypair.privKey.serialize(),
+      );
+      const encryptedHeader = await getAuthorizationHeader();
+
+      await request(app.getHttpServer() as App)
+        .post("/v1/proof/generate")
+        .set("Authorization", encryptedHeader)
+        .send({
+          poll: "-1",
+          encryptedCoordinatorPrivateKey,
+          maciContractAddress: maciAddresses.maciAddress,
+          tallyContractAddress: pollContracts.tally,
+          useQuadraticVoting: false,
+        })
+        .expect(400);
+    });
+
+    test("should throw an error if encrypted key is invalid", async () => {
+      const encryptedHeader = await getAuthorizationHeader();
+
+      await request(app.getHttpServer() as App)
+        .post("/v1/proof/generate")
+        .set("Authorization", encryptedHeader)
+        .send({
+          poll: "0",
+          encryptedCoordinatorPrivateKey: "",
+          maciContractAddress: maciAddresses.maciAddress,
+          tallyContractAddress: pollContracts.tally,
+          useQuadraticVoting: false,
+        })
+        .expect(400);
+    });
+
+    test("should throw an error if maci address is invalid", async () => {
+      const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
+      const encryptedCoordinatorPrivateKey = CryptoService.getInstance().encrypt(
+        publicKey,
+        coordinatorKeypair.privKey.serialize(),
+      );
+      const encryptedHeader = await getAuthorizationHeader();
+
+      await request(app.getHttpServer() as App)
+        .post("/v1/proof/generate")
+        .set("Authorization", encryptedHeader)
+        .send({
+          poll: "0",
+          encryptedCoordinatorPrivateKey,
+          maciContractAddress: "wrong",
+          tallyContractAddress: pollContracts.tally,
+          useQuadraticVoting: false,
+        })
+        .expect(400);
+    });
+
+    test("should throw an error if tally address is invalid", async () => {
+      const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
+      const encryptedCoordinatorPrivateKey = CryptoService.getInstance().encrypt(
+        publicKey,
+        coordinatorKeypair.privKey.serialize(),
+      );
+      const encryptedHeader = await getAuthorizationHeader();
+
+      await request(app.getHttpServer() as App)
+        .post("/v1/proof/generate")
+        .set("Authorization", encryptedHeader)
+        .send({
+          poll: "0",
+          encryptedCoordinatorPrivateKey,
+          maciContractAddress: maciAddresses.maciAddress,
+          tallyContractAddress: "invalid",
+          useQuadraticVoting: false,
+        })
+        .expect(400);
+    });
   });
 
   describe("/v1/proof/generate POST", () => {
@@ -110,11 +219,13 @@ describe("AppController (e2e)", () => {
         publicKey,
         coordinatorKeypair.privKey.serialize(),
       );
+      const encryptedHeader = await getAuthorizationHeader();
 
       await request(app.getHttpServer() as App)
         .post("/v1/proof/generate")
+        .set("Authorization", encryptedHeader)
         .send({
-          poll: "0",
+          poll: 0,
           encryptedCoordinatorPrivateKey,
           maciContractAddress: maciAddresses.maciAddress,
           tallyContractAddress: pollContracts.tally,
@@ -131,11 +242,13 @@ describe("AppController (e2e)", () => {
         publicKey,
         coordinatorKeypair.privKey.serialize(),
       );
+      const encryptedHeader = await getAuthorizationHeader();
 
       await request(app.getHttpServer() as App)
         .post("/v1/proof/generate")
+        .set("Authorization", encryptedHeader)
         .send({
-          poll: "0",
+          poll: 0,
           encryptedCoordinatorPrivateKey,
           maciContractAddress: maciAddresses.maciAddress,
           tallyContractAddress: pollContracts.tally,
@@ -152,11 +265,13 @@ describe("AppController (e2e)", () => {
         publicKey,
         coordinatorKeypair.privKey.serialize(),
       );
+      const encryptedHeader = await getAuthorizationHeader();
 
       await request(app.getHttpServer() as App)
         .post("/v1/proof/generate")
+        .set("Authorization", encryptedHeader)
         .send({
-          poll: "0",
+          poll: 0,
           encryptedCoordinatorPrivateKey,
           maciContractAddress: maciAddresses.maciAddress,
           tallyContractAddress: pollContracts.tally,
@@ -168,10 +283,13 @@ describe("AppController (e2e)", () => {
     test("should throw an error if coordinator key decryption is failed", async () => {
       await mergeMessages({ pollId: 0n, signer });
 
+      const encryptedHeader = await getAuthorizationHeader();
+
       await request(app.getHttpServer() as App)
         .post("/v1/proof/generate")
+        .set("Authorization", encryptedHeader)
         .send({
-          poll: "0",
+          poll: 0,
           encryptedCoordinatorPrivateKey: coordinatorKeypair.privKey.serialize(),
           maciContractAddress: maciAddresses.maciAddress,
           tallyContractAddress: pollContracts.tally,
@@ -183,16 +301,34 @@ describe("AppController (e2e)", () => {
     test("should throw an error if there is no such poll", async () => {
       await mergeMessages({ pollId: 0n, signer });
 
+      const encryptedHeader = await getAuthorizationHeader();
+
       await request(app.getHttpServer() as App)
         .post("/v1/proof/generate")
+        .set("Authorization", encryptedHeader)
         .send({
-          poll: "9000",
+          poll: 9000,
           encryptedCoordinatorPrivateKey: coordinatorKeypair.privKey.serialize(),
           maciContractAddress: maciAddresses.maciAddress,
           tallyContractAddress: pollContracts.tally,
           useQuadraticVoting: false,
         })
         .expect(400);
+    });
+
+    test("should throw an error if there is no authorization header", async () => {
+      await mergeMessages({ pollId: 0n, signer });
+
+      await request(app.getHttpServer() as App)
+        .post("/v1/proof/generate")
+        .send({
+          poll: 0,
+          encryptedCoordinatorPrivateKey: coordinatorKeypair.privKey.serialize(),
+          maciContractAddress: maciAddresses.maciAddress,
+          tallyContractAddress: pollContracts.tally,
+          useQuadraticVoting: false,
+        })
+        .expect(403);
     });
 
     test("should generate proofs properly", async () => {
@@ -203,11 +339,13 @@ describe("AppController (e2e)", () => {
         publicKey,
         coordinatorKeypair.privKey.serialize(),
       );
+      const encryptedHeader = await getAuthorizationHeader();
 
       await request(app.getHttpServer() as App)
         .post("/v1/proof/generate")
+        .set("Authorization", encryptedHeader)
         .send({
-          poll: "0",
+          poll: 0,
           encryptedCoordinatorPrivateKey,
           maciContractAddress: maciAddresses.maciAddress,
           tallyContractAddress: pollContracts.tally,

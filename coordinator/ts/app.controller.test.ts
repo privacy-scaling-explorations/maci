@@ -11,7 +11,7 @@ describe("AppController", () => {
   let appController: AppController;
 
   const defaultProofGeneratorArgs: IGenerateArgs = {
-    poll: 0n,
+    poll: 0,
     maciContractAddress: "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
     tallyContractAddress: "0x6F1216D1BFe15c98520CA1434FC1d9D57AC95321",
     useQuadraticVoting: false,

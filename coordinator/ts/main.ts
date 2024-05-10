@@ -1,3 +1,4 @@
+import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import dotenv from "dotenv";
 import helmet from "helmet";
@@ -9,6 +10,7 @@ dotenv.config({ path: [path.resolve(__dirname, "../.env"), path.resolve(__dirnam
 async function bootstrap() {
   const { AppModule } = await import("./app.module");
   const app = await NestFactory.create(AppModule);
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.use(helmet());
   app.enableCors();
   await app.listen(3000);
