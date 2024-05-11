@@ -323,7 +323,7 @@ describe("Poll", () => {
       messageAqContract = AccQueueQuinaryMaciFactory.connect(messageAqAddress, signer);
     });
 
-    it("should allow the coordinator to merge the message AccQueue", async () => {
+    it("should allow to merge the message AccQueue", async () => {
       let tx = await pollContract.mergeMessageAqSubRoots(0, {
         gasLimit: 3000000,
       });
@@ -340,6 +340,27 @@ describe("Poll", () => {
       const offChainMessageRoot = maciState.polls.get(pollId)!.messageTree.root;
 
       expect(onChainMessageRoot.toString()).to.eq(offChainMessageRoot.toString());
+    });
+
+    it("should prevent merging subroots again", async () => {
+      await expect(pollContract.mergeMessageAqSubRoots(0)).to.be.revertedWithCustomError(
+        messageAqContract,
+        "SubTreesAlreadyMerged",
+      );
+    });
+
+    it("should not change the message root if merging a second time", async () => {
+      await pollContract.mergeMessageAq();
+      const onChainMessageRoot = await messageAqContract.getMainRoot(MESSAGE_TREE_DEPTH);
+      const offChainMessageRoot = maciState.polls.get(pollId)!.messageTree.root;
+
+      expect(onChainMessageRoot.toString()).to.eq(offChainMessageRoot.toString());
+    });
+
+    it("should emit an event with the same root when merging another time", async () => {
+      expect(await pollContract.mergeMessageAq())
+        .to.emit(pollContract, "MergeMessageAq")
+        .withArgs(maciState.polls.get(pollId)!.messageTree.root);
     });
   });
 });

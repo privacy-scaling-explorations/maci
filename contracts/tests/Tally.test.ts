@@ -183,7 +183,7 @@ describe("TallyVotes", () => {
   describe("after merging acc queues", () => {
     let tallyGeneratedInputs: ITallyCircuitInputs;
     before(async () => {
-      await pollContract.mergeMaciStateAq();
+      await pollContract.mergeMaciState();
 
       await pollContract.mergeMessageAqSubRoots(0);
       await pollContract.mergeMessageAq();
@@ -337,7 +337,7 @@ describe("TallyVotes", () => {
       );
 
       await timeTravel(signer.provider! as unknown as EthereumProvider, updatedDuration);
-      await pollContract.mergeMaciStateAq();
+      await pollContract.mergeMaciState();
 
       await pollContract.mergeMessageAqSubRoots(0);
       await pollContract.mergeMessageAq();
@@ -482,7 +482,7 @@ describe("TallyVotes", () => {
       );
 
       await timeTravel(signer.provider! as unknown as EthereumProvider, updatedDuration);
-      await pollContract.mergeMaciStateAq();
+      await pollContract.mergeMaciState();
 
       await pollContract.mergeMessageAqSubRoots(0);
       await pollContract.mergeMessageAq();

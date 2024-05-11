@@ -42,7 +42,7 @@ export const getPoll = async ({
 
   const [[deployTime, duration], isStateAqMerged] = await Promise.all([
     pollContract.getDeployTimeAndDuration(),
-    pollContract.stateAqMerged(),
+    pollContract.stateMerged(),
   ]);
 
   const numSignups = await (isStateAqMerged ? pollContract.numSignups() : maciContract.numSignUps());

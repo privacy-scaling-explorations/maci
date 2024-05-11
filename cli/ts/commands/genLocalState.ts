@@ -95,7 +95,7 @@ export const genLocalState = async ({
       .queryFilter(pollContract.filters.MergeMessageAq(messageRoot), fromBlock)
       .then((events) => events[events.length - 1]?.blockNumber),
     pollContract
-      .queryFilter(pollContract.filters.MergeMaciStateAq(stateRoot, numSignups), fromBlock)
+      .queryFilter(pollContract.filters.MergeMaciState(stateRoot, numSignups), fromBlock)
       .then((events) => events[events.length - 1]?.blockNumber),
   ]).then((blocks) => Math.max(...blocks));
 

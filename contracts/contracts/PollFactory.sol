@@ -31,8 +31,7 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
     TreeDepths calldata _treeDepths,
     PubKey calldata _coordinatorPubKey,
     address _maci,
-    TopupCredit _topupCredit,
-    address _pollOwner
+    TopupCredit _topupCredit
   ) public virtual returns (address pollAddr) {
     /// @notice Validate _maxValues
     /// maxVoteOptions must be less than 2 ** 50 due to circuit limitations;
@@ -61,8 +60,6 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
 
     // init Poll
     poll.init();
-
-    poll.transferOwnership(_pollOwner);
 
     pollAddr = address(poll);
   }

@@ -146,14 +146,14 @@ describe("MessageProcessor", () => {
     it("processMessages() should fail if the state AQ has not been merged", async () => {
       await expect(mpContract.processMessages(0, [0, 0, 0, 0, 0, 0, 0, 0])).to.be.revertedWithCustomError(
         mpContract,
-        "StateAqNotMerged",
+        "StateNotMerged",
       );
     });
   });
 
   describe("after merging acc queues", () => {
     before(async () => {
-      await pollContract.mergeMaciStateAq();
+      await pollContract.mergeMaciState();
 
       await pollContract.mergeMessageAqSubRoots(0);
       await pollContract.mergeMessageAq();

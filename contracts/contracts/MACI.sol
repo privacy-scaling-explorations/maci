@@ -12,21 +12,19 @@ import { TopupCredit } from "./TopupCredit.sol";
 import { Utilities } from "./utilities/Utilities.sol";
 import { DomainObjs } from "./utilities/DomainObjs.sol";
 import { CurveBabyJubJub } from "./crypto/BabyJubJub.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { InternalLazyIMT, LazyIMTData } from "./trees/LazyIMT.sol";
 
 /// @title MACI - Minimum Anti-Collusion Infrastructure Version 1
 /// @notice A contract which allows users to sign up, and deploy new polls
-contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable(msg.sender) {
+contract MACI is IMACI, DomainObjs, Params, Utilities {
   /// @notice The state tree depth is fixed. As such it should be as large as feasible
-  /// so that there can be as many users as possible.  i.e. 5 ** 10 = 9765625
+  /// so that there can be as many users as possible.  i.e. 2 ** 23 = 8388608
   /// this should also match the parameter of the circom circuits.
-  uint8 public immutable stateTreeDepth;
-
   /// @notice IMPORTANT: remember to change the ballot tree depth
   /// in contracts/ts/genEmptyBallotRootsContract.ts file
   /// if we change the state tree depth!
-  uint8 internal constant STATE_TREE_SUBDEPTH = 2;
+  uint8 public immutable stateTreeDepth;
+
   uint8 internal constant TREE_ARITY = 2;
   uint8 internal constant MESSAGE_TREE_ARITY = 5;
 
@@ -86,20 +84,11 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable(msg.sender) {
     PollContracts pollAddr
   );
 
-  /// @notice Only allow a Poll contract to call the modified function.
-  modifier onlyPoll(uint256 _pollId) {
-    if (msg.sender != address(polls[_pollId])) revert CallerMustBePoll(msg.sender);
-    _;
-  }
-
   /// @notice custom errors
-  error CallerMustBePoll(address _caller);
   error PoseidonHashLibrariesNotLinked();
   error TooManySignups();
   error InvalidPubKey();
-  error PreviousPollNotCompleted(uint256 pollId);
   error PollDoesNotExist(uint256 pollId);
-  error SignupTemporaryBlocked();
 
   /// @notice Create a new instance of the MACI contract.
   /// @param _pollFactory The PollFactory contract
@@ -190,7 +179,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable(msg.sender) {
     address _verifier,
     address _vkRegistry,
     Mode _mode
-  ) public virtual onlyOwner returns (PollContracts memory pollAddr) {
+  ) public virtual returns (PollContracts memory pollAddr) {
     // cache the poll to a local variable so we can increment it
     uint256 pollId = nextPollId;
 
@@ -210,20 +199,13 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable(msg.sender) {
       maxVoteOptions: uint256(MESSAGE_TREE_ARITY) ** _treeDepths.voteOptionTreeDepth
     });
 
-    address _owner = owner();
+    // the owner of the message processor and tally contract will be the msg.sender
+    address _msgSender = msg.sender;
 
-    address p = pollFactory.deploy(
-      _duration,
-      maxValues,
-      _treeDepths,
-      _coordinatorPubKey,
-      address(this),
-      topupCredit,
-      _owner
-    );
+    address p = pollFactory.deploy(_duration, maxValues, _treeDepths, _coordinatorPubKey, address(this), topupCredit);
 
-    address mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p, _owner, _mode);
-    address tally = tallyFactory.deploy(_verifier, _vkRegistry, p, mp, _owner, _mode);
+    address mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p, _msgSender, _mode);
+    address tally = tallyFactory.deploy(_verifier, _vkRegistry, p, mp, _msgSender, _mode);
 
     polls[pollId] = p;
 

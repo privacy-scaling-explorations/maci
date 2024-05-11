@@ -47,7 +47,7 @@ describe("ProofGeneratorService", () => {
     getMainRoot: jest.fn(),
     treeDepths: jest.fn(),
     extContracts: jest.fn(),
-    stateAqMerged: jest.fn(),
+    stateMerged: jest.fn(),
   };
 
   let defaultProofGenerator = {
@@ -71,7 +71,7 @@ describe("ProofGeneratorService", () => {
       getMainRoot: jest.fn(() => Promise.resolve(1n)),
       treeDepths: jest.fn(() => Promise.resolve([1, 2, 3])),
       extContracts: jest.fn(() => Promise.resolve({ messageAq: ZeroAddress })),
-      stateAqMerged: jest.fn(() => Promise.resolve(true)),
+      stateMerged: jest.fn(() => Promise.resolve(true)),
     };
 
     defaultProofGenerator = {
@@ -103,7 +103,7 @@ describe("ProofGeneratorService", () => {
   });
 
   test("should throw error if state is not merged yet", async () => {
-    mockContract.stateAqMerged.mockResolvedValue(false);
+    mockContract.stateMerged.mockResolvedValue(false);
 
     const service = new ProofGeneratorService();
 

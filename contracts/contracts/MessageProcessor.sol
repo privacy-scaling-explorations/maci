@@ -17,13 +17,12 @@ import { DomainObjs } from "./utilities/DomainObjs.sol";
 /// @dev MessageProcessor is used to process messages published by signup users.
 /// It will process message by batch due to large size of messages.
 /// After it finishes processing, the sbCommitment will be used for Tally and Subsidy contracts.
-contract MessageProcessor is Ownable(msg.sender), SnarkCommon, Hasher, CommonUtilities, IMessageProcessor, DomainObjs {
+contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMessageProcessor, DomainObjs {
   /// @notice custom errors
   error NoMoreMessages();
-  error StateAqNotMerged();
+  error StateNotMerged();
   error MessageAqNotMerged();
   error InvalidProcessMessageProof();
-  error VkNotSet();
   error MaxVoteOptionsTooLarge();
   error NumSignUpsTooLarge();
   error CurrentMessageBatchIndexTooLarge();
@@ -55,8 +54,15 @@ contract MessageProcessor is Ownable(msg.sender), SnarkCommon, Hasher, CommonUti
   /// @param _verifier The Verifier contract address
   /// @param _vkRegistry The VkRegistry contract address
   /// @param _poll The Poll contract address
+  /// @param _mpOwner The owner of the MessageProcessor contract
   /// @param _mode Voting mode
-  constructor(address _verifier, address _vkRegistry, address _poll, Mode _mode) payable {
+  constructor(
+    address _verifier,
+    address _vkRegistry,
+    address _poll,
+    address _mpOwner,
+    Mode _mode
+  ) payable Ownable(_mpOwner) {
     verifier = IVerifier(_verifier);
     vkRegistry = IVkRegistry(_vkRegistry);
     poll = IPoll(_poll);
@@ -77,8 +83,8 @@ contract MessageProcessor is Ownable(msg.sender), SnarkCommon, Hasher, CommonUti
     }
 
     // The state AccQueue must be merged
-    if (!poll.stateAqMerged()) {
-      revert StateAqNotMerged();
+    if (!poll.stateMerged()) {
+      revert StateNotMerged();
     }
 
     // Retrieve stored vals
