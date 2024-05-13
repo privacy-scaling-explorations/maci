@@ -130,8 +130,8 @@ importers:
         specifier: ^4.3.10
         version: 4.4.1
       chai-as-promised:
-        specifier: ^7.1.1
-        version: 7.1.1(chai@4.4.1)
+        specifier: ^7.1.2
+        version: 7.1.2(chai@4.4.1)
       mocha:
         specifier: ^10.4.0
         version: 10.4.0
@@ -203,8 +203,8 @@ importers:
         specifier: ^4.3.10
         version: 4.4.1
       chai-as-promised:
-        specifier: ^7.1.1
-        version: 7.1.1(chai@4.4.1)
+        specifier: ^7.1.2
+        version: 7.1.2(chai@4.4.1)
       mocha:
         specifier: ^10.4.0
         version: 10.4.0
@@ -554,8 +554,8 @@ importers:
         specifier: ^4.3.10
         version: 4.4.1
       chai-as-promised:
-        specifier: ^7.1.1
-        version: 7.1.1(chai@4.4.1)
+        specifier: ^7.1.2
+        version: 7.1.2(chai@4.4.1)
       hardhat:
         specifier: ^2.22.3
         version: 2.22.3(ts-node@10.9.2)(typescript@5.4.5)
@@ -4984,7 +4984,7 @@ packages:
       '@nomicfoundation/hardhat-ethers': 3.0.5(ethers@6.12.1)(hardhat@2.22.3)
       '@types/chai-as-promised': 7.1.8
       chai: 4.4.1
-      chai-as-promised: 7.1.1(chai@4.4.1)
+      chai-as-promised: 7.1.2(chai@4.4.1)
       deep-eql: 4.1.3
       ethers: 6.12.1
       hardhat: 2.22.3(ts-node@10.9.2)(typescript@5.4.5)
@@ -8081,10 +8081,10 @@ packages:
   /ccount@2.0.1:
     resolution: {integrity: sha512-eyrF0jiFpY+3drT6383f1qhkbGsLSifNAjA61IUjZjmLCWjItY6LB9ft9YhoDgwfmclB2zhu51Lc7+95b8NRAg==}
 
-  /chai-as-promised@7.1.1(chai@4.4.1):
-    resolution: {integrity: sha512-azL6xMoi+uxu6z4rhWQ1jbdUhOMhis2PvscD/xjLqNMkv3BPPp2JyyuTHOrf9BOosGpNQ11v6BKv/g57RXbiaA==}
+  /chai-as-promised@7.1.2(chai@4.4.1):
+    resolution: {integrity: sha512-aBDHZxRzYnUYuIAIPBH2s511DjlKPzXNlXSGFC8CwmroWQLfrW0LtE1nK3MAwwNhJPa9raEjNCmRoFpG0Hurdw==}
     peerDependencies:
-      chai: '>= 2.1.2 < 5'
+      chai: '>= 2.1.2 < 6'
     dependencies:
       chai: 4.4.1
       check-error: 1.0.3
