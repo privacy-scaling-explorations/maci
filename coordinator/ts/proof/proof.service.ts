@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import hre from "hardhat";
 import { Deployment, EContracts, ProofGenerator, type Poll, type MACI, type AccQueue } from "maci-contracts";
-import { Keypair, PrivKey } from "maci-domainobjs";
+import { Keypair, PrivKey, PubKey } from "maci-domainobjs";
 
 import fs from "fs";
 import path from "path";
@@ -58,7 +58,10 @@ export class ProofGeneratorService {
     const signer = await this.deployment.getDeployer();
     const pollAddress = await maciContract.polls(poll);
     const pollContract = await this.deployment.getContract<Poll>({ name: EContracts.Poll, address: pollAddress });
-    const { messageAq: messageAqAddress } = await pollContract.extContracts();
+    const [{ messageAq: messageAqAddress }, coordinatorPublicKey] = await Promise.all([
+      pollContract.extContracts(),
+      pollContract.coordinatorPubKey(),
+    ]);
     const messageAq = await this.deployment.getContract<AccQueue>({
       name: EContracts.AccQueue,
       address: messageAqAddress,
@@ -81,6 +84,15 @@ export class ProofGeneratorService {
     const privateKey = await fs.promises.readFile(path.resolve(process.env.COORDINATOR_PRIVATE_KEY_PATH!));
     const maciPrivateKey = PrivKey.deserialize(this.cryptoService.decrypt(privateKey, encryptedCoordinatorPrivateKey));
     const coordinatorKeypair = new Keypair(maciPrivateKey);
+    const publicKey = new PubKey([
+      BigInt(coordinatorPublicKey.x.toString()),
+      BigInt(coordinatorPublicKey.y.toString()),
+    ]);
+
+    if (!coordinatorKeypair.pubKey.equals(publicKey)) {
+      throw new Error("Private key mismatch error");
+    }
+
     const maciState = await ProofGenerator.prepareState({
       maciContract,
       pollContract,

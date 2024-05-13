@@ -1,4 +1,3 @@
-import type { BigNumberish } from "ethers";
 import type { TallyData } from "maci-cli";
 import type { Proof } from "maci-contracts";
 
@@ -9,7 +8,7 @@ export interface IGenerateArgs {
   /**
    * Poll id
    */
-  poll: BigNumberish;
+  poll: number;
 
   /**
    * Maci contract address

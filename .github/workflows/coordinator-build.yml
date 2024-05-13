@@ -13,7 +13,6 @@ env:
   COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME: "ProcessMessages_10-2-1-2_test"
   COORDINATOR_ZKEY_PATH: "./zkeys"
   COORDINATOR_RAPIDSNARK_EXE: "~/rapidsnark/build/prover"
-  COORDINATOR_MNEMONIC: ${{ secrets.COORDINATOR_MNEMONIC }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
