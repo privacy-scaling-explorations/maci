@@ -425,8 +425,8 @@ Before building the project, make sure you have the following dependencies insta
 To build the main circuits of MACI, run the following command (`-c` postfix for c++ witness gen, and `-wasm` postfix for WASM witness gen only):
 
 ```
-pnpm build-test-circuits-c
-pnpm build-test-circuits-wasm
+pnpm build-test-circuits-c -- --out-path $OUT_PATH
+pnpm build-test-circuits-wasm -- --out-path $OUT_PATH
 ```
 
 Please note that the circuits are configured with testing purpose parameters, which means it can only handle a limited amount of messages (up to 25 messages). For more information on the parameters and how to configure them, please refer to the individual circuit documentation within this page. Also, within the [configure-circomkit](https://maci.pse.dev/docs/installation#configure-circomkit) section of the `installation` page, you'll see how you can update the config file with new params.
@@ -444,7 +444,7 @@ pnpm circom:build $CIRCUIT_NAME
 Run from the root directory to save to the `cli/zkeys` folder:
 
 ```bash
-pnpm setup:zkeys --outPath ../cli/zkeys
+pnpm setup:zkeys -- --outPath ../cli/zkeys
 ```
 
 Run from the circuits folder with `--outPath` to save to a custom folder:
