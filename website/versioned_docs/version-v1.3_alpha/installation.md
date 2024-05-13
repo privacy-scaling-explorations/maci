@@ -127,7 +127,7 @@ Next, run the following to compile the circuits with parameters you specified:
 **for the c++ witness generator**
 
 ```bash
-pnpm test:circuits-c
+pnpm test:circuits-c -- --outPath ../cli/zkeys
 ```
 
 **for the wasm witness generator**
@@ -139,7 +139,7 @@ pnpm build:circuits-wasm -- --outPath ../cli/zkeys
 Finally, generate the `.zkey` files. This may require a lot of memory and time.
 
 ```bash
-pnpm setup:zkeys --outPath ../cli/zkeys
+pnpm setup:zkeys -- --outPath ../cli/zkeys
 ```
 
 > If on a ARM64 chip, the above will work with the wasm witness only. The errors you will get for the c++ witness are:
