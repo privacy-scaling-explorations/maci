@@ -62,7 +62,7 @@ describe("AppController", () => {
       mockGeneratorService.generate.mockRejectedValue(error);
 
       await expect(appController.generate(defaultProofGeneratorArgs)).rejects.toThrow(
-        new HttpException("BadRequest", HttpStatus.BAD_REQUEST, { cause: error.message }),
+        new HttpException(error.message, HttpStatus.BAD_REQUEST),
       );
     });
   });

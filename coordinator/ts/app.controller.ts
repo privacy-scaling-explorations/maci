@@ -13,7 +13,7 @@ export class AppController {
   @Post("generate")
   async generate(@Body() args: GenerateProofDto): Promise<IGenerateData> {
     return this.proofGeneratorService.generate(args).catch((error: Error) => {
-      throw new HttpException("BadRequest", HttpStatus.BAD_REQUEST, { cause: error.message });
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     });
   }
 }

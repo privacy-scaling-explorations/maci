@@ -1,4 +1,4 @@
-import { ValidationPipe, type INestApplication } from "@nestjs/common";
+import { HttpStatus, ValidationPipe, type INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import { getBytes, hashMessage, type Signer } from "ethers";
 import hardhat from "hardhat";
@@ -24,6 +24,7 @@ import path from "path";
 import type { App } from "supertest/types";
 
 import { AppModule } from "../ts/app.module";
+import { ErrorCodes } from "../ts/common";
 import { CryptoService } from "../ts/crypto/crypto.service";
 
 const STATE_TREE_DEPTH = 10;
@@ -122,7 +123,7 @@ describe("AppController (e2e)", () => {
       );
       const encryptedHeader = await getAuthorizationHeader();
 
-      await request(app.getHttpServer() as App)
+      const result = await request(app.getHttpServer() as App)
         .post("/v1/proof/generate")
         .set("Authorization", encryptedHeader)
         .send({
@@ -133,22 +134,34 @@ describe("AppController (e2e)", () => {
           useQuadraticVoting: false,
         })
         .expect(400);
+
+      expect(result.body).toStrictEqual({
+        error: "Bad Request",
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: ["poll must not be less than 0", "poll must be an integer number"],
+      });
     });
 
     test("should throw an error if encrypted key is invalid", async () => {
       const encryptedHeader = await getAuthorizationHeader();
 
-      await request(app.getHttpServer() as App)
+      const result = await request(app.getHttpServer() as App)
         .post("/v1/proof/generate")
         .set("Authorization", encryptedHeader)
         .send({
-          poll: "0",
+          poll: 0,
           encryptedCoordinatorPrivateKey: "",
           maciContractAddress: maciAddresses.maciAddress,
           tallyContractAddress: pollContracts.tally,
           useQuadraticVoting: false,
         })
         .expect(400);
+
+      expect(result.body).toStrictEqual({
+        error: "Bad Request",
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: ["encryptedCoordinatorPrivateKey must be longer than or equal to 1 characters"],
+      });
     });
 
     test("should throw an error if maci address is invalid", async () => {
@@ -159,17 +172,23 @@ describe("AppController (e2e)", () => {
       );
       const encryptedHeader = await getAuthorizationHeader();
 
-      await request(app.getHttpServer() as App)
+      const result = await request(app.getHttpServer() as App)
         .post("/v1/proof/generate")
         .set("Authorization", encryptedHeader)
         .send({
-          poll: "0",
+          poll: 0,
           encryptedCoordinatorPrivateKey,
           maciContractAddress: "wrong",
           tallyContractAddress: pollContracts.tally,
           useQuadraticVoting: false,
         })
         .expect(400);
+
+      expect(result.body).toStrictEqual({
+        error: "Bad Request",
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: ["maciContractAddress must be an Ethereum address"],
+      });
     });
 
     test("should throw an error if tally address is invalid", async () => {
@@ -180,17 +199,23 @@ describe("AppController (e2e)", () => {
       );
       const encryptedHeader = await getAuthorizationHeader();
 
-      await request(app.getHttpServer() as App)
+      const result = await request(app.getHttpServer() as App)
         .post("/v1/proof/generate")
         .set("Authorization", encryptedHeader)
         .send({
-          poll: "0",
+          poll: 0,
           encryptedCoordinatorPrivateKey,
           maciContractAddress: maciAddresses.maciAddress,
           tallyContractAddress: "invalid",
           useQuadraticVoting: false,
         })
         .expect(400);
+
+      expect(result.body).toStrictEqual({
+        error: "Bad Request",
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: ["tallyContractAddress must be an Ethereum address"],
+      });
     });
   });
 
@@ -221,7 +246,7 @@ describe("AppController (e2e)", () => {
       );
       const encryptedHeader = await getAuthorizationHeader();
 
-      await request(app.getHttpServer() as App)
+      const result = await request(app.getHttpServer() as App)
         .post("/v1/proof/generate")
         .set("Authorization", encryptedHeader)
         .send({
@@ -232,10 +257,42 @@ describe("AppController (e2e)", () => {
           useQuadraticVoting: false,
         })
         .expect(400);
+
+      expect(result.body).toStrictEqual({
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: ErrorCodes.NOT_MERGED_STATE_TREE,
+      });
+    });
+
+    test("should throw an error if signups are not merged", async () => {
+      const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
+      const encryptedCoordinatorPrivateKey = CryptoService.getInstance().encrypt(
+        publicKey,
+        coordinatorKeypair.privKey.serialize(),
+      );
+      const encryptedHeader = await getAuthorizationHeader();
+
+      const result = await request(app.getHttpServer() as App)
+        .post("/v1/proof/generate")
+        .set("Authorization", encryptedHeader)
+        .send({
+          poll: 0,
+          encryptedCoordinatorPrivateKey,
+          maciContractAddress: maciAddresses.maciAddress,
+          tallyContractAddress: pollContracts.tally,
+          useQuadraticVoting: false,
+        })
+        .expect(400);
+
+      expect(result.body).toStrictEqual({
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: ErrorCodes.NOT_MERGED_STATE_TREE,
+      });
     });
 
     test("should throw an error if messages are not merged", async () => {
       await timeTravel({ seconds: 30, signer });
+      await mergeSignups({ pollId: 0n, signer });
 
       const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
       const encryptedCoordinatorPrivateKey = CryptoService.getInstance().encrypt(
@@ -244,7 +301,7 @@ describe("AppController (e2e)", () => {
       );
       const encryptedHeader = await getAuthorizationHeader();
 
-      await request(app.getHttpServer() as App)
+      const result = await request(app.getHttpServer() as App)
         .post("/v1/proof/generate")
         .set("Authorization", encryptedHeader)
         .send({
@@ -255,29 +312,11 @@ describe("AppController (e2e)", () => {
           useQuadraticVoting: false,
         })
         .expect(400);
-    });
 
-    test("should throw an error if signups are not merged", async () => {
-      await mergeMessages({ pollId: 0n, signer });
-
-      const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
-      const encryptedCoordinatorPrivateKey = CryptoService.getInstance().encrypt(
-        publicKey,
-        coordinatorKeypair.privKey.serialize(),
-      );
-      const encryptedHeader = await getAuthorizationHeader();
-
-      await request(app.getHttpServer() as App)
-        .post("/v1/proof/generate")
-        .set("Authorization", encryptedHeader)
-        .send({
-          poll: 0,
-          encryptedCoordinatorPrivateKey,
-          maciContractAddress: maciAddresses.maciAddress,
-          tallyContractAddress: pollContracts.tally,
-          useQuadraticVoting: false,
-        })
-        .expect(400);
+      expect(result.body).toStrictEqual({
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: ErrorCodes.NOT_MERGED_MESSAGE_TREE,
+      });
     });
 
     test("should throw an error if coordinator key decryption is failed", async () => {
@@ -285,7 +324,7 @@ describe("AppController (e2e)", () => {
 
       const encryptedHeader = await getAuthorizationHeader();
 
-      await request(app.getHttpServer() as App)
+      const result = await request(app.getHttpServer() as App)
         .post("/v1/proof/generate")
         .set("Authorization", encryptedHeader)
         .send({
@@ -296,14 +335,17 @@ describe("AppController (e2e)", () => {
           useQuadraticVoting: false,
         })
         .expect(400);
+
+      expect(result.body).toStrictEqual({
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: ErrorCodes.DECRYPTION,
+      });
     });
 
     test("should throw an error if there is no such poll", async () => {
-      await mergeMessages({ pollId: 0n, signer });
-
       const encryptedHeader = await getAuthorizationHeader();
 
-      await request(app.getHttpServer() as App)
+      const result = await request(app.getHttpServer() as App)
         .post("/v1/proof/generate")
         .set("Authorization", encryptedHeader)
         .send({
@@ -314,12 +356,15 @@ describe("AppController (e2e)", () => {
           useQuadraticVoting: false,
         })
         .expect(400);
+
+      expect(result.body).toStrictEqual({
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: ErrorCodes.POLL_NOT_FOUND,
+      });
     });
 
     test("should throw an error if there is no authorization header", async () => {
-      await mergeMessages({ pollId: 0n, signer });
-
-      await request(app.getHttpServer() as App)
+      const result = await request(app.getHttpServer() as App)
         .post("/v1/proof/generate")
         .send({
           poll: 0,
@@ -329,11 +374,36 @@ describe("AppController (e2e)", () => {
           useQuadraticVoting: false,
         })
         .expect(403);
+
+      expect(result.body).toStrictEqual({
+        error: "Forbidden",
+        message: "Forbidden resource",
+        statusCode: HttpStatus.FORBIDDEN,
+      });
+    });
+
+    test("should throw error if coordinator key cannot be decrypted", async () => {
+      const encryptedHeader = await getAuthorizationHeader();
+
+      const result = await request(app.getHttpServer() as App)
+        .post("/v1/proof/generate")
+        .set("Authorization", encryptedHeader)
+        .send({
+          poll: 0,
+          encryptedCoordinatorPrivateKey: "unknown",
+          maciContractAddress: maciAddresses.maciAddress,
+          tallyContractAddress: pollContracts.tally,
+          useQuadraticVoting: false,
+        })
+        .expect(400);
+
+      expect(result.body).toStrictEqual({
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: ErrorCodes.DECRYPTION,
+      });
     });
 
     test("should generate proofs properly", async () => {
-      await mergeSignups({ pollId: 0n, signer });
-
       const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
       const encryptedCoordinatorPrivateKey = CryptoService.getInstance().encrypt(
         publicKey,

@@ -1,5 +1,7 @@
 import { publicEncrypt, privateDecrypt, type KeyLike } from "crypto";
 
+import { ErrorCodes } from "../common";
+
 /**
  * CryptoService is responsible for encrypting and decrypting user sensitive data
  */
@@ -37,9 +39,13 @@ export class CryptoService {
    * @returns ciphertext
    */
   encrypt(publicKey: KeyLike, value: string): string {
-    const encrypted = publicEncrypt(publicKey, Buffer.from(value));
+    try {
+      const encrypted = publicEncrypt(publicKey, Buffer.from(value));
 
-    return encrypted.toString("base64");
+      return encrypted.toString("base64");
+    } catch (error) {
+      throw new Error(ErrorCodes.ENCRYPTION);
+    }
   }
 
   /**
@@ -50,8 +56,12 @@ export class CryptoService {
    * @returns plaintext
    */
   decrypt(privateKey: KeyLike, value: string): string {
-    const decryptedData = privateDecrypt(privateKey, Buffer.from(value, "base64"));
+    try {
+      const decryptedData = privateDecrypt(privateKey, Buffer.from(value, "base64"));
 
-    return decryptedData.toString();
+      return decryptedData.toString();
+    } catch (error) {
+      throw new Error(ErrorCodes.DECRYPTION);
+    }
   }
 }

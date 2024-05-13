@@ -2,9 +2,22 @@ import fc from "fast-check";
 
 import { generateKeyPairSync } from "crypto";
 
+import { ErrorCodes } from "../../common";
 import { CryptoService } from "../crypto.service";
 
 describe("CryptoService", () => {
+  test("should throw encryption error if key is invalid", () => {
+    const service = CryptoService.getInstance();
+
+    expect(() => service.encrypt("", "")).toThrow(ErrorCodes.ENCRYPTION);
+  });
+
+  test("should throw decryption error if key is invalid", () => {
+    const service = CryptoService.getInstance();
+
+    expect(() => service.decrypt("", "")).toThrow(ErrorCodes.DECRYPTION);
+  });
+
   test("should encrypt and decrypt properly", () => {
     fc.assert(
       fc.property(fc.string(), (text: string) => {
