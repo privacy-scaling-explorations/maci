@@ -11,7 +11,6 @@ import "./cliInit";
 import {
   genKeyPair,
   genMaciPubKey,
-  airdrop,
   deployVkRegistryContract,
   deploy,
   showContracts,
@@ -24,7 +23,6 @@ import {
   timeTravel,
   signup,
   isRegisteredUser,
-  topup,
   verify,
   genProofs,
   fundWallet,
@@ -138,31 +136,6 @@ program
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action((cmdObj) => {
     genKeyPair({ seed: cmdObj.seed, quiet: cmdObj.quiet });
-  });
-program
-  .command("airdrop")
-  .description("airdrop topup credits to the coordinator")
-  .requiredOption("-a, --amount <amount>", "the amount of topup", parseInt)
-  .option("-x, --maci-address <maciAddress>", "the MACI contract address")
-  .option("-o, --poll-id <pollId>", "poll id", BigInt)
-  .option("-t, --token-address <tokenAddress>", "the token address")
-  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
-  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .action(async (cmdObj) => {
-    try {
-      const signer = await getSigner();
-
-      await airdrop({
-        amount: cmdObj.amount,
-        maciAddress: cmdObj.maciAddress,
-        pollId: cmdObj.pollId,
-        contractAddress: cmdObj.tokenAddress,
-        quiet: cmdObj.quiet,
-        signer,
-      });
-    } catch (error) {
-      program.error((error as Error).message, { exitCode: 1 });
-    }
   });
 program
   .command("deployVkRegistry")
@@ -454,31 +427,6 @@ program
     }
   });
 program
-  .command("topup")
-  .description("Top up an account with voice credits")
-  .requiredOption("-a, --amount <amount>", "the amount of topup", parseInt)
-  .option("-x, --maci-address <maciAddress>", "the MACI contract address")
-  .requiredOption("-i, --state-index <stateIndex>", "state leaf index", parseInt)
-  .requiredOption("-o, --poll-id <pollId>", "poll id", BigInt)
-  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
-  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .action(async (cmdObj) => {
-    try {
-      const signer = await getSigner();
-
-      await topup({
-        amount: cmdObj.amount,
-        stateIndex: cmdObj.stateIndex,
-        pollId: cmdObj.pollId,
-        maciAddress: cmdObj.maciAddress,
-        quiet: cmdObj.quiet,
-        signer,
-      });
-    } catch (error) {
-      program.error((error as Error).message, { exitCode: 1 });
-    }
-  });
-program
   .command("fundWallet")
   .description("Fund a wallet with Ether")
   .requiredOption("-a, --amount <amount>", "the amount of Ether", parseInt)
@@ -668,7 +616,6 @@ if (require.main === module) {
 
 // export everything so we can use in other packages
 export {
-  airdrop,
   checkVerifyingKeys,
   deploy,
   deployPoll,
@@ -688,7 +635,6 @@ export {
   signup,
   isRegisteredUser,
   timeTravel,
-  topup,
   verify,
 } from "./commands";
 
@@ -703,8 +649,6 @@ export type {
   SignupArgs,
   MergeMessagesArgs,
   MergeSignupsArgs,
-  AirdropArgs,
-  TopupArgs,
   VerifyArgs,
   ProveOnChainArgs,
   DeployArgs,

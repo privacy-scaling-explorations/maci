@@ -101,7 +101,7 @@ describe("ProcessMessage circuit", function test() {
       poll = maciState.polls.get(pollId)!;
       poll.updatePoll(BigInt(maciState.stateLeaves.length));
 
-      const nothing = new Message(1n, [
+      const nothing = new Message([
         8370432830353022751713833565135785980866757267633941821328460903436894336785n,
         0n,
         0n,
@@ -499,77 +499,6 @@ describe("ProcessMessage circuit", function test() {
     });
   });
 
-  describe("1 user, 1 topup, 2 messages", () => {
-    const maciState = new MaciState(STATE_TREE_DEPTH);
-    const voteOptionIndex = BigInt(0);
-    let stateIndex: bigint;
-    let pollId: bigint;
-    let poll: Poll;
-    const userKeypair = new Keypair();
-
-    before(() => {
-      // Sign up and publish
-      stateIndex = BigInt(
-        maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000))),
-      );
-
-      pollId = maciState.deployPoll(
-        BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues,
-        treeDepths,
-        messageBatchSize,
-        coordinatorKeypair,
-      );
-
-      poll = maciState.polls.get(pollId)!;
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
-    });
-
-    it("should work when publishing 2 vote messages and a topup (the second vote uses more than initial voice credit balance)", async () => {
-      // First command (valid)
-      const command1 = new PCommand(
-        stateIndex, // BigInt(1),
-        userKeypair.pubKey,
-        voteOptionIndex + 1n, // voteOptionIndex,
-        5n, // vote weight
-        BigInt(2), // nonce
-        BigInt(pollId),
-      );
-
-      const signature1 = command1.sign(userKeypair.privKey);
-
-      const ecdhKeypair1 = new Keypair();
-      const sharedKey1 = Keypair.genEcdhSharedKey(ecdhKeypair1.privKey, coordinatorKeypair.pubKey);
-      const message1 = command1.encrypt(signature1, sharedKey1);
-
-      poll.publishMessage(message1, ecdhKeypair1.pubKey);
-
-      poll.topupMessage(new Message(2n, [BigInt(stateIndex), 50n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n]));
-
-      // First command (valid)
-      const command = new PCommand(
-        stateIndex, // BigInt(1),
-        userKeypair.pubKey,
-        voteOptionIndex, // voteOptionIndex,
-        10n, // vote weight
-        BigInt(1), // nonce
-        BigInt(pollId),
-      );
-
-      const signature = command.sign(userKeypair.privKey);
-
-      const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
-      const message = command.encrypt(signature, sharedKey);
-
-      poll.publishMessage(message, ecdhKeypair.pubKey);
-
-      const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
-      const witness = await circuit.calculateWitness(inputs);
-      await circuit.expectConstraintPass(witness);
-    });
-  });
-
   describe("1 user, 2 messages", () => {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     const voteOptionIndex = 1n;
@@ -597,7 +526,7 @@ describe("ProcessMessage circuit", function test() {
       poll = maciState.polls.get(pollId)!;
       poll.updatePoll(BigInt(maciState.stateLeaves.length));
 
-      const nothing = new Message(1n, [
+      const nothing = new Message([
         8370432830353022751713833565135785980866757267633941821328460903436894336785n,
         0n,
         0n,
@@ -714,7 +643,7 @@ describe("ProcessMessage circuit", function test() {
       poll = maciState.polls.get(pollId)!;
       poll.updatePoll(BigInt(maciState.stateLeaves.length));
 
-      const nothing = new Message(1n, [
+      const nothing = new Message([
         8370432830353022751713833565135785980866757267633941821328460903436894336785n,
         0n,
         0n,
@@ -839,7 +768,7 @@ describe("ProcessMessage circuit", function test() {
       poll = maciState.polls.get(pollId)!;
       poll.updatePoll(BigInt(maciState.stateLeaves.length));
 
-      const nothing = new Message(1n, [
+      const nothing = new Message([
         8370432830353022751713833565135785980866757267633941821328460903436894336785n,
         0n,
         0n,

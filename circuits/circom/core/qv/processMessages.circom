@@ -9,7 +9,6 @@ include "../../utils/hashers.circom";
 include "../../utils/messageToCommand.circom";
 include "../../utils/privToPubKey.circom";
 include "../../utils/processMessagesInputHasher.circom";
-include "../../utils/processTopup.circom";
 include "../../utils/qv/stateLeafAndBallotTransformer.circom";
 include "../../trees/incrementalQuinaryTree.circom";
 include "../../trees/incrementalMerkleTree.circom";
@@ -37,7 +36,7 @@ template ProcessMessages(
     // Default for binary trees.
     var STATE_TREE_ARITY = 2;
     var batchSize = MESSAGE_TREE_ARITY ** msgBatchDepth;
-    var MSG_LENGTH = 11;
+    var MSG_LENGTH = 10;
     var PACKED_CMD_LENGTH = 4;
     var STATE_LEAF_LENGTH = 4;
     var BALLOT_LENGTH = 2;
@@ -123,10 +122,6 @@ template ProcessMessages(
     // signals (for processing purposes).
     signal stateRoots[batchSize + 1];
     signal ballotRoots[batchSize + 1];
-    signal tmpStateRoot1[batchSize];
-    signal tmpStateRoot2[batchSize];
-    signal tmpBallotRoot1[batchSize];
-    signal tmpBallotRoot2[batchSize];
 
     // Must verify the current sb commitment.
     var computedCurrentSbCommitment = PoseidonHasher(3)([currentStateRoot, currentBallotRoot, currentSbSalt]);
@@ -292,7 +287,6 @@ template ProcessMessages(
         }
         
         (computedNewVoteStateRoot[i], computedNewVoteBallotRoot[i]) = ProcessOne(stateTreeDepth, voteOptionTreeDepth)(
-            msgs[i][0],
             numSignUps,
             maxVoteOptions,
             pollEndTimestamp,
@@ -306,7 +300,6 @@ template ProcessMessages(
             currentVoteWeights[i],
             currentVoteWeightsPathElement,
             computedCommandsStateIndex[i],
-            msgs[i][1],
             computedCommandsNewPubKey[i],
             computedCommandsVoteOptionIndex[i],
             computedCommandsNewVoteWeight[i],
@@ -318,27 +311,8 @@ template ProcessMessages(
             computedCommandsPackedCommandOut[i]
         );
 
-        // Process as topup type message.
-        computedNewTopupStateRoot[i] = ProcessTopup(stateTreeDepth)(
-            msgs[i][0],
-            msgs[i][1],
-            msgs[i][2],
-            numSignUps,
-            actualStateTreeDepth,
-            currentStateLeaves[i],
-            currentStateLeavesPathElement
-        );
-
-        // Pick the correct result by Message type.
-        tmpStateRoot1[i] <== computedNewVoteStateRoot[i] * (2 - msgs[i][0]); 
-        tmpStateRoot2[i] <== computedNewTopupStateRoot[i] * (msgs[i][0] - 1);
-
-        tmpBallotRoot1[i] <== computedNewVoteBallotRoot[i] * (2 - msgs[i][0]); 
-        tmpBallotRoot2[i] <== ballotRoots[i + 1] * (msgs[i][0] - 1);
-
-        stateRoots[i] <== tmpStateRoot1[i] + tmpStateRoot2[i];
-
-        ballotRoots[i] <== tmpBallotRoot1[i] + tmpBallotRoot2[i];
+        stateRoots[i] <== computedNewVoteStateRoot[i];
+        ballotRoots[i] <== computedNewVoteBallotRoot[i];
     }
 
     var computedNewSbCommitment = PoseidonHasher(3)([stateRoots[0], ballotRoots[0], newSbSalt]);
@@ -357,7 +331,7 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     // Constants defining the structure and size of state and ballots.
     var STATE_LEAF_LENGTH = 4;
     var BALLOT_LENGTH = 2;
-    var MSG_LENGTH = 11;
+    var MSG_LENGTH = 10;
     var PACKED_CMD_LENGTH = 4;
     var MESSAGE_TREE_ARITY = 5;
     var STATE_TREE_ARITY = 2;
@@ -376,7 +350,6 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     var N_BITS = 252;
 
     // Inputs representing the message and the current state.
-    signal input msgType;
     signal input numSignUps;
     signal input maxVoteOptions;
     signal input pollEndTimestamp;
@@ -403,7 +376,6 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
 
     // Inputs related to the command being processed.
     signal input cmdStateIndex;
-    signal input topupStateIndex;
     signal input cmdNewPubKey[2];
     signal input cmdVoteOptionIndex;
     signal input cmdNewVoteWeight;
@@ -418,12 +390,6 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     signal output newBallotRoot;
 
     // Intermediate signals.
-    // cmdStateIndex * (2 - msgType).
-    signal tmpIndex1;
-    // topupStateIndex * (msgType - 1).
-    signal tmpIndex2;
-    // sum of tmpIndex1 + tmpIndex2.
-    signal indexByType;
     // currentVoteWeight * currentVoteWeight.
     signal b;
     // cmdNewVoteWeight * cmdNewVoteWeight.
@@ -455,14 +421,10 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
         packedCmd
     );
 
-    // 2. If msgType and isValid are equal to zero, generate indices for leaf zero.
-    // Otherwise, generate indices for commmand.stateIndex or topupStateIndex depending on msgType.
-    tmpIndex1 <== cmdStateIndex * (2 - msgType);
-    tmpIndex2 <== topupStateIndex * (msgType - 1);
-    indexByType <== tmpIndex1 + tmpIndex2;
-
-    var stateLeafIndexValid = SafeLessThan(N_BITS)([indexByType, numSignUps]);
-    var stateIndexMux = Mux1()([0, indexByType], stateLeafIndexValid);
+    // 2. If isValid is equal to zero, generate indices for leaf zero.
+    // Otherwise, generate indices for commmand.stateIndex.
+    var stateLeafIndexValid = SafeLessThan(N_BITS)([cmdStateIndex, numSignUps]);
+    var stateIndexMux = Mux1()([0, cmdStateIndex], stateLeafIndexValid);
     var computedStateLeafPathIndices[stateTreeDepth] = MerkleGeneratePathIndices(stateTreeDepth)(stateIndexMux);
 
     // 3. Verify that the original state leaf exists in the given state root.

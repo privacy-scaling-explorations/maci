@@ -1,4 +1,4 @@
-import { hash13 } from "maci-crypto";
+import { hash12 } from "maci-crypto";
 
 import assert from "assert";
 
@@ -9,8 +9,6 @@ import type { IMessageContractParams } from "./types";
  * @notice An encrypted command and signature.
  */
 export class Message {
-  msgType: bigint;
-
   data: bigint[];
 
   static DATA_LENGTH = 10;
@@ -20,9 +18,8 @@ export class Message {
    * @param msgType the type of the message
    * @param data the data of the message
    */
-  constructor(msgType: bigint, data: bigint[]) {
+  constructor(data: bigint[]) {
     assert(data.length === Message.DATA_LENGTH);
-    this.msgType = msgType;
     this.data = data;
   }
 
@@ -30,14 +27,13 @@ export class Message {
    * Return the message as an array of bigints
    * @returns the message as an array of bigints
    */
-  private asArray = (): bigint[] => [this.msgType].concat(this.data);
+  private asArray = (): bigint[] => this.data;
 
   /**
    * Return the message as a contract param
    * @returns the message as a contract param
    */
   asContractParam = (): IMessageContractParams => ({
-    msgType: this.msgType.toString(),
     data: this.data.map((x: bigint) => x.toString()),
   });
 
@@ -52,17 +48,13 @@ export class Message {
    * @param encPubKey the public key that is used to encrypt this message
    * @returns the hash of the message data and the public key
    */
-  hash = (encPubKey: PubKey): bigint => hash13([...[this.msgType], ...this.data, ...encPubKey.rawPubKey]);
+  hash = (encPubKey: PubKey): bigint => hash12([...this.data, ...encPubKey.rawPubKey]);
 
   /**
    * Create a copy of the message
    * @returns a copy of the message
    */
-  copy = (): Message =>
-    new Message(
-      BigInt(this.msgType.toString()),
-      this.data.map((x: bigint) => BigInt(x.toString())),
-    );
+  copy = (): Message => new Message(this.data.map((x: bigint) => BigInt(x.toString())));
 
   /**
    * Check if two messages are equal
@@ -71,9 +63,6 @@ export class Message {
    */
   equals = (m: Message): boolean => {
     if (this.data.length !== m.data.length) {
-      return false;
-    }
-    if (this.msgType !== m.msgType) {
       return false;
     }
 
@@ -93,9 +82,6 @@ export class Message {
    * @returns the deserialized object as a Message instance
    */
   static fromJSON(json: IMessageContractParams): Message {
-    return new Message(
-      BigInt(json.msgType),
-      json.data.map((x) => BigInt(x)),
-    );
+    return new Message(json.data.map((x) => BigInt(x)));
   }
 }

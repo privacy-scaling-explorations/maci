@@ -4,7 +4,6 @@ pragma solidity ^0.8.10;
 import { DomainObjs } from "../utilities/DomainObjs.sol";
 import { IMACI } from "./IMACI.sol";
 import { AccQueue } from "../trees/AccQueue.sol";
-import { TopupCredit } from "../TopupCredit.sol";
 
 /// @title IPoll
 /// @notice Poll interface
@@ -13,11 +12,6 @@ interface IPoll {
   /// @return numSignups The number of signups
   /// @return numMsgs The number of messages sent by voters
   function numSignUpsAndMessages() external view returns (uint256 numSignups, uint256 numMsgs);
-
-  /// @notice Allows to publish a Topup message
-  /// @param stateIndex The index of user in the state queue
-  /// @param amount The amount of credits to topup
-  function topup(uint256 stateIndex, uint256 amount) external;
 
   /// @notice Allows anyone to publish a message (an encrypted command and signature).
   /// This function also enqueues the message.
@@ -68,8 +62,7 @@ interface IPoll {
   /// @notice Get the external contracts
   /// @return maci The IMACI contract
   /// @return messageAq The AccQueue contract
-  /// @return topupCredit The TopupCredit contract
-  function extContracts() external view returns (IMACI maci, AccQueue messageAq, TopupCredit topupCredit);
+  function extContracts() external view returns (IMACI maci, AccQueue messageAq);
 
   /// @notice Get the hash of coordinator's public key
   /// @return _coordinatorPubKeyHash the hash of coordinator's public key

@@ -29,13 +29,6 @@ export type {
   IJsonBallot,
 } from "./types";
 
-export {
-  type ICommand,
-  type IJsonCommand,
-  type IJsonTCommand,
-  type IJsonPCommand,
-  TCommand,
-  PCommand,
-} from "./commands";
+export { type IJsonTCommand, type IJsonPCommand, PCommand } from "./commands";
 
 export { VerifyingKey } from "./verifyingKey";

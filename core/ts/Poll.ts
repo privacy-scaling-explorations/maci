@@ -13,19 +13,15 @@ import {
 } from "maci-crypto";
 import {
   PCommand,
-  TCommand,
   Keypair,
   Ballot,
   PubKey,
   PrivKey,
   Message,
   blankStateLeaf,
-  type ICommand,
   type StateLeaf,
   type IMessageContractParams,
-  type IJsonCommand,
   type IJsonPCommand,
-  type IJsonTCommand,
   blankStateLeafHash,
 } from "maci-domainobjs";
 
@@ -79,7 +75,7 @@ export class Poll implements IPoll {
 
   messageTree: IncrementalQuinTree;
 
-  commands: ICommand[] = [];
+  commands: PCommand[] = [];
 
   encPubKeys: PubKey[] = [];
 
@@ -328,41 +324,12 @@ export class Poll implements IPoll {
   };
 
   /**
-   * Top up the voice credit balance of a user.
-   * @param message - The message to top up the voice credit balance
-   */
-  topupMessage = (message: Message): void => {
-    assert(message.msgType === 2n, "A Topup message must have msgType 2");
-
-    message.data.forEach((d) => {
-      assert(d < SNARK_FIELD_SIZE, "The message data is not in the correct range");
-    });
-
-    const padKey = new PubKey([
-      BigInt("10457101036533406547632367118273992217979173478358440826365724437999023779287"),
-      BigInt("19824078218392094440610104313265183977899662750282163392862422243483260492317"),
-    ]);
-
-    // save the message
-    this.messages.push(message);
-    // save the pad key
-    this.encPubKeys.push(padKey);
-    // insert the message into the message tree
-    this.messageTree.insert(message.hash(padKey));
-
-    // we create a topup command and save it
-    const command = new TCommand(message.data[0], message.data[1], BigInt(this.pollId));
-    this.commands.push(command as ICommand);
-  };
-
-  /**
    * Inserts a Message and the corresponding public key used to generate the
    * ECDH shared key which was used to encrypt said message.
    * @param message - The message to insert
    * @param encPubKey - The public key used to encrypt the message
    */
   publishMessage = (message: Message, encPubKey: PubKey): void => {
-    assert(message.msgType === 1n, "A vote or key change message must have msgType 1");
     assert(
       encPubKey.rawPubKey[0] < SNARK_FIELD_SIZE && encPubKey.rawPubKey[1] < SNARK_FIELD_SIZE,
       "The public key is not in the correct range",
@@ -386,12 +353,12 @@ export class Poll implements IPoll {
       // step 2. we decrypt it
       const { command } = PCommand.decrypt(message, sharedKey);
       // step 3. we store it in the commands array
-      this.commands.push(command as ICommand);
+      this.commands.push(command);
     } catch (e) {
       // if there is an error we store an empty command
       const keyPair = new Keypair();
       const command = new PCommand(0n, keyPair.pubKey, 0n, 0n, 0n, 0n, 0n);
-      this.commands.push(command as ICommand);
+      this.commands.push(command);
     }
   };
 
@@ -509,189 +476,117 @@ export class Poll implements IPoll {
         message = this.messages[idx];
         encPubKey = this.encPubKeys[idx];
 
-        // based on the message type we have to process it differently
-        switch (message.msgType) {
-          case 1n:
-            try {
-              // check if the command is valid
-              const r = this.processMessage(message, encPubKey, qv);
-              const index = r.stateLeafIndex!;
+        try {
+          // check if the command is valid
+          const r = this.processMessage(message, encPubKey, qv);
+          const index = r.stateLeafIndex!;
 
-              // we add at position 0 the original data
-              currentStateLeaves.unshift(r.originalStateLeaf!);
-              currentBallots.unshift(r.originalBallot!);
-              currentVoteWeights.unshift(r.originalVoteWeight!);
-              currentVoteWeightsPathElements.unshift(r.originalVoteWeightsPathElements!);
-              currentStateLeavesPathElements.unshift(r.originalStateLeafPathElements!);
-              currentBallotsPathElements.unshift(r.originalBallotPathElements!);
+          // we add at position 0 the original data
+          currentStateLeaves.unshift(r.originalStateLeaf!);
+          currentBallots.unshift(r.originalBallot!);
+          currentVoteWeights.unshift(r.originalVoteWeight!);
+          currentVoteWeightsPathElements.unshift(r.originalVoteWeightsPathElements!);
+          currentStateLeavesPathElements.unshift(r.originalStateLeafPathElements!);
+          currentBallotsPathElements.unshift(r.originalBallotPathElements!);
 
-              // update the state leaves with the new state leaf (result of processing the message)
-              this.stateLeaves[index] = r.newStateLeaf!.copy();
+          // update the state leaves with the new state leaf (result of processing the message)
+          this.stateLeaves[index] = r.newStateLeaf!.copy();
 
-              // we also update the state tree with the hash of the new state leaf
-              this.stateTree?.update(index, r.newStateLeaf!.hash());
+          // we also update the state tree with the hash of the new state leaf
+          this.stateTree?.update(index, r.newStateLeaf!.hash());
 
-              // store the new ballot
-              this.ballots[index] = r.newBallot!;
-              // update the ballot tree
-              this.ballotTree?.update(index, r.newBallot!.hash());
-            } catch (e) {
-              // if the error is not a ProcessMessageError we throw it and exit here
-              // otherwise we continue processing but add the default blank data instead of
-              // this invalid message
-              if (e instanceof ProcessMessageError) {
-                // if logging is enabled, and it's not the first message, print the error
-                if (!quiet && idx !== 0) {
-                  // eslint-disable-next-line no-console
-                  console.log(`Error at message index ${idx} - ${e.message}`);
+          // store the new ballot
+          this.ballots[index] = r.newBallot!;
+          // update the ballot tree
+          this.ballotTree?.update(index, r.newBallot!.hash());
+        } catch (e) {
+          // if the error is not a ProcessMessageError we throw it and exit here
+          // otherwise we continue processing but add the default blank data instead of
+          // this invalid message
+          if (e instanceof ProcessMessageError) {
+            // if logging is enabled, and it's not the first message, print the error
+            if (!quiet && idx !== 0) {
+              // eslint-disable-next-line no-console
+              console.log(`Error at message index ${idx} - ${e.message}`);
+            }
+
+            // @note we want to send the correct state leaf to the circuit
+            // even if a message is invalid
+            // this way if a message is invalid we can still generate a proof of processing
+            // we also want to prevent a DoS attack by a voter
+            // which sends a message that when force decrypted on the circuit
+            // results in a valid state index thus forcing the circuit to look
+            // for a valid state leaf, and failing to generate a proof
+
+            // gen shared key
+            const sharedKey = Keypair.genEcdhSharedKey(this.coordinatorKeypair.privKey, encPubKey);
+
+            // force decrypt it
+            const { command } = PCommand.decrypt(message, sharedKey, true);
+
+            // cache state leaf index
+            const stateLeafIndex = command.stateIndex;
+
+            // if the state leaf index is valid then use it
+            if (stateLeafIndex < this.stateLeaves.length) {
+              currentStateLeaves.unshift(this.stateLeaves[Number(stateLeafIndex)].copy());
+              currentStateLeavesPathElements.unshift(this.stateTree!.genProof(Number(stateLeafIndex)).pathElements);
+
+              // copy the ballot
+              const ballot = this.ballots[Number(stateLeafIndex)].copy();
+              currentBallots.unshift(ballot);
+              currentBallotsPathElements.unshift(this.ballotTree!.genProof(Number(stateLeafIndex)).pathElements);
+
+              // @note we check that command.voteOptionIndex is valid so < maxVoteOptions
+              // this might be unnecessary but we do it to prevent a possible DoS attack
+              // from voters who could potentially encrypt a message in such as way that
+              // when decrypted it results in a valid state leaf index but an invalid vote option index
+              if (command.voteOptionIndex < this.maxValues.maxVoteOptions) {
+                currentVoteWeights.unshift(ballot.votes[Number(command.voteOptionIndex)]);
+
+                // create a new quinary tree and add all votes we have so far
+                const vt = new IncrementalQuinTree(this.treeDepths.voteOptionTreeDepth, 0n, MESSAGE_TREE_ARITY, hash5);
+
+                // fill the vote option tree with the votes we have so far
+                for (let j = 0; j < this.ballots[0].votes.length; j += 1) {
+                  vt.insert(ballot.votes[j]);
                 }
 
-                // @note we want to send the correct state leaf to the circuit
-                // even if a message is invalid
-                // this way if a message is invalid we can still generate a proof of processing
-                // we also want to prevent a DoS attack by a voter
-                // which sends a message that when force decrypted on the circuit
-                // results in a valid state index thus forcing the circuit to look
-                // for a valid state leaf, and failing to generate a proof
-
-                // gen shared key
-                const sharedKey = Keypair.genEcdhSharedKey(this.coordinatorKeypair.privKey, encPubKey);
-
-                // force decrypt it
-                const { command } = PCommand.decrypt(message, sharedKey, true);
-
-                // cache state leaf index
-                const stateLeafIndex = command.stateIndex;
-
-                // if the state leaf index is valid then use it
-                if (stateLeafIndex < this.stateLeaves.length) {
-                  currentStateLeaves.unshift(this.stateLeaves[Number(stateLeafIndex)].copy());
-                  currentStateLeavesPathElements.unshift(this.stateTree!.genProof(Number(stateLeafIndex)).pathElements);
-
-                  // copy the ballot
-                  const ballot = this.ballots[Number(stateLeafIndex)].copy();
-                  currentBallots.unshift(ballot);
-                  currentBallotsPathElements.unshift(this.ballotTree!.genProof(Number(stateLeafIndex)).pathElements);
-
-                  // @note we check that command.voteOptionIndex is valid so < maxVoteOptions
-                  // this might be unnecessary but we do it to prevent a possible DoS attack
-                  // from voters who could potentially encrypt a message in such as way that
-                  // when decrypted it results in a valid state leaf index but an invalid vote option index
-                  if (command.voteOptionIndex < this.maxValues.maxVoteOptions) {
-                    currentVoteWeights.unshift(ballot.votes[Number(command.voteOptionIndex)]);
-
-                    // create a new quinary tree and add all votes we have so far
-                    const vt = new IncrementalQuinTree(
-                      this.treeDepths.voteOptionTreeDepth,
-                      0n,
-                      MESSAGE_TREE_ARITY,
-                      hash5,
-                    );
-
-                    // fill the vote option tree with the votes we have so far
-                    for (let j = 0; j < this.ballots[0].votes.length; j += 1) {
-                      vt.insert(ballot.votes[j]);
-                    }
-
-                    // get the path elements for the first vote leaf
-                    currentVoteWeightsPathElements.unshift(vt.genProof(Number(command.voteOptionIndex)).pathElements);
-                  } else {
-                    currentVoteWeights.unshift(ballot.votes[0]);
-
-                    // create a new quinary tree and add all votes we have so far
-                    const vt = new IncrementalQuinTree(
-                      this.treeDepths.voteOptionTreeDepth,
-                      0n,
-                      STATE_TREE_ARITY,
-                      hash5,
-                    );
-
-                    // fill the vote option tree with the votes we have so far
-                    for (let j = 0; j < this.ballots[0].votes.length; j += 1) {
-                      vt.insert(ballot.votes[j]);
-                    }
-
-                    // get the path elements for the first vote leaf
-                    currentVoteWeightsPathElements.unshift(vt.genProof(0).pathElements);
-                  }
-                } else {
-                  // just use state leaf index 0
-                  currentStateLeaves.unshift(this.stateLeaves[0].copy());
-                  currentStateLeavesPathElements.unshift(this.stateTree!.genProof(0).pathElements);
-                  currentBallots.unshift(this.ballots[0].copy());
-                  currentBallotsPathElements.unshift(this.ballotTree!.genProof(0).pathElements);
-
-                  // Since the command is invalid, we use a zero vote weight
-                  currentVoteWeights.unshift(this.ballots[0].votes[0]);
-
-                  // create a new quinary tree and add an empty vote
-                  const vt = new IncrementalQuinTree(
-                    this.treeDepths.voteOptionTreeDepth,
-                    0n,
-                    MESSAGE_TREE_ARITY,
-                    hash5,
-                  );
-                  vt.insert(this.ballots[0].votes[0]);
-                  // get the path elements for this empty vote weight leaf
-                  currentVoteWeightsPathElements.unshift(vt.genProof(0).pathElements);
-                }
+                // get the path elements for the first vote leaf
+                currentVoteWeightsPathElements.unshift(vt.genProof(Number(command.voteOptionIndex)).pathElements);
               } else {
-                throw e;
+                currentVoteWeights.unshift(ballot.votes[0]);
+
+                // create a new quinary tree and add all votes we have so far
+                const vt = new IncrementalQuinTree(this.treeDepths.voteOptionTreeDepth, 0n, MESSAGE_TREE_ARITY, hash5);
+
+                // fill the vote option tree with the votes we have so far
+                for (let j = 0; j < this.ballots[0].votes.length; j += 1) {
+                  vt.insert(ballot.votes[j]);
+                }
+
+                // get the path elements for the first vote leaf
+                currentVoteWeightsPathElements.unshift(vt.genProof(0).pathElements);
               }
-            }
-            break;
-          case 2n:
-            try {
-              // --------------------------------------
-              // generate topup circuit inputs
-              const stateIndex = Number(message.data[0] >= BigInt(this.ballots.length) ? 0n : message.data[0]);
-              const amount = message.data[0] >= BigInt(this.ballots.length) ? 0n : message.data[1];
+            } else {
+              // just use state leaf index 0
+              currentStateLeaves.unshift(this.stateLeaves[0].copy());
+              currentStateLeavesPathElements.unshift(this.stateTree!.genProof(0).pathElements);
+              currentBallots.unshift(this.ballots[0].copy());
+              currentBallotsPathElements.unshift(this.ballotTree!.genProof(0).pathElements);
 
-              currentStateLeaves.unshift(this.stateLeaves[stateIndex].copy());
-              currentStateLeavesPathElements.unshift(this.stateTree!.genProof(stateIndex).pathElements);
+              // Since the command is invalid, we use a zero vote weight
+              currentVoteWeights.unshift(this.ballots[0].votes[0]);
 
-              // create a copy of the state leaf
-              const newStateLeaf = this.stateLeaves[stateIndex].copy();
-              // update the voice credit balance
-              newStateLeaf.voiceCreditBalance += amount;
-
-              // we should not be in this state as it means we are dealing with very large numbers which will cause problems in the circuits
-              if (newStateLeaf.voiceCreditBalance > SNARK_FIELD_SIZE) {
-                throw new Error(
-                  "State leaf voice credit balance exceeds SNARK_FIELD_SIZE. This should not be a state MACI should find itself in, as it will cause complications in the circuits. Rounds should not accept topups with large values.",
-                );
-              }
-
-              // save it
-              this.stateLeaves[stateIndex] = newStateLeaf;
-              // update the state tree
-              this.stateTree?.update(stateIndex, newStateLeaf.hash());
-
-              // we still need them as placeholder for vote command
-              const currentBallot = this.ballots[stateIndex].copy();
-              currentBallots.unshift(currentBallot);
-              currentBallotsPathElements.unshift(this.ballotTree!.genProof(Number(stateIndex)).pathElements);
-              currentVoteWeights.unshift(currentBallot.votes[0]);
-
-              // create a quinary tree to fill with the votes of the current ballot
+              // create a new quinary tree and add an empty vote
               const vt = new IncrementalQuinTree(this.treeDepths.voteOptionTreeDepth, 0n, MESSAGE_TREE_ARITY, hash5);
-
-              for (let j = 0; j < this.ballots[0].votes.length; j += 1) {
-                vt.insert(currentBallot.votes[j]);
-              }
-
-              // add to the first position the path elements of the vote weight tree
+              vt.insert(this.ballots[0].votes[0]);
+              // get the path elements for this empty vote weight leaf
               currentVoteWeightsPathElements.unshift(vt.genProof(0).pathElements);
-            } catch (e) {
-              if (!quiet) {
-                // eslint-disable-next-line no-console
-                console.log("Error processing topup message: ", (e as Error).message);
-              }
-              throw e;
             }
-            break;
-          default:
-            break;
+          } else {
+            throw e;
+          }
         }
       } else {
         // Since we don't have a command at that position, use a blank state leaf
@@ -1401,7 +1296,7 @@ export class Poll implements IPoll {
       batchSizes: this.batchSizes,
       maxValues: this.maxValues,
       messages: this.messages.map((message) => message.toJSON()),
-      commands: this.commands.map((command) => command.toJSON() as IJsonCommand),
+      commands: this.commands.map((command) => command.toJSON()),
       ballots: this.ballots.map((ballot) => ballot.toJSON()),
       encPubKeys: this.encPubKeys.map((encPubKey) => encPubKey.serialize()),
       currentMessageBatchIndex: this.currentMessageBatchIndex!,
@@ -1432,21 +1327,7 @@ export class Poll implements IPoll {
     poll.ballots = json.ballots.map((ballot) => Ballot.fromJSON(ballot));
     poll.encPubKeys = json.encPubKeys.map((key: string) => PubKey.deserialize(key));
     poll.messages = json.messages.map((message) => Message.fromJSON(message as IMessageContractParams));
-    poll.commands = json.commands.map((command: IJsonCommand) => {
-      switch (command.cmdType) {
-        case "1": {
-          return PCommand.fromJSON(command as IJsonPCommand) as ICommand;
-        }
-
-        case "2": {
-          return TCommand.fromJSON(command as IJsonTCommand) as ICommand;
-        }
-
-        default: {
-          return { cmdType: command.cmdType } as unknown as ICommand;
-        }
-      }
-    });
+    poll.commands = json.commands.map((command: IJsonPCommand) => PCommand.fromJSON(command));
     poll.tallyResult = json.results.map((result: string) => BigInt(result));
     poll.currentMessageBatchIndex = json.currentMessageBatchIndex;
     poll.numBatchesProcessed = json.numBatchesProcessed;

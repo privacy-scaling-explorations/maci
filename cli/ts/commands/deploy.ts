@@ -3,7 +3,6 @@ import {
   deployFreeForAllSignUpGatekeeper,
   deployVerifier,
   deployMaci,
-  deployTopupCredit,
 } from "maci-contracts";
 
 import {
@@ -74,19 +73,12 @@ export const deploy = async ({
   // deploy a verifier contract
   const verifierContract = await deployVerifier(signer, true);
 
-  // topup credit
-  const topUpCredit = await deployTopupCredit(signer, true);
-
-  const [verifierContractAddress, topUpCreditAddress] = await Promise.all([
-    verifierContract.getAddress(),
-    topUpCredit.getAddress(),
-  ]);
+  const verifierContractAddress = await verifierContract.getAddress();
 
   // deploy MACI, stateAq, PollFactory and poseidon
   const { maciContract, pollFactoryContract, poseidonAddrs } = await deployMaci({
     signUpTokenGatekeeperContractAddress: signupGatekeeperContractAddress,
     initialVoiceCreditBalanceAddress: initialVoiceCreditProxyContractAddress,
-    topupCreditContractAddress: topUpCreditAddress,
     poseidonAddresses: {
       poseidonT3,
       poseidonT4,
@@ -109,7 +101,6 @@ export const deploy = async ({
   storeContractAddress("Verifier", verifierContractAddress, network?.name);
   storeContractAddress("MACI", maciContractAddress, network?.name);
   storeContractAddress("PollFactory", pollFactoryContractAddress, network?.name);
-  storeContractAddress("TopupCredit", topUpCreditAddress, network?.name);
   storeContractAddress("PoseidonT3", poseidonAddrs.poseidonT3, network?.name);
   storeContractAddress("PoseidonT4", poseidonAddrs.poseidonT4, network?.name);
   storeContractAddress("PoseidonT5", poseidonAddrs.poseidonT5, network?.name);
@@ -122,7 +113,6 @@ export const deploy = async ({
     maciAddress: maciContractAddress,
     pollFactoryAddress: pollFactoryContractAddress,
     verifierAddress: verifierContractAddress,
-    topupCreditAddress: topUpCreditAddress,
     poseidonT3Address: poseidonAddrs.poseidonT3,
     poseidonT4Address: poseidonAddrs.poseidonT4,
     poseidonT5Address: poseidonAddrs.poseidonT5,

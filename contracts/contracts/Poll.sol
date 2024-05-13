@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 import { Params } from "./utilities/Params.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
@@ -17,8 +16,6 @@ import { CurveBabyJubJub } from "./crypto/BabyJubJub.sol";
 /// @dev Do not deploy this directly. Use PollFactory.deploy() which performs some
 /// checks on the Poll constructor arguments.
 contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
-  using SafeERC20 for ERC20;
-
   /// @notice Whether the Poll has been initialized
   bool internal isInit;
 
@@ -78,7 +75,6 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   error InvalidBatchLength();
 
   event PublishMessage(Message _message, PubKey _encPubKey);
-  event TopupMessage(Message _message);
   event MergeMaciState(uint256 indexed _stateRoot, uint256 indexed _numSignups);
   event MergeMessageAqSubRoots(uint256 indexed _numSrQueueOps);
   event MergeMessageAq(uint256 indexed _messageRoot);
@@ -151,34 +147,10 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     dat[0] = NOTHING_UP_MY_SLEEVE;
     dat[1] = 0;
 
-    (Message memory _message, PubKey memory _padKey, uint256 placeholderLeaf) = padAndHashMessage(dat, 1);
+    (Message memory _message, PubKey memory _padKey, uint256 placeholderLeaf) = padAndHashMessage(dat);
     extContracts.messageAq.enqueue(placeholderLeaf);
 
     emit PublishMessage(_message, _padKey);
-  }
-
-  /// @inheritdoc IPoll
-  function topup(uint256 stateIndex, uint256 amount) public virtual isWithinVotingDeadline {
-    // we check that we do not exceed the max number of messages
-    if (numMessages >= maxValues.maxMessages) revert TooManyMessages();
-
-    // cannot realistically overflow
-    unchecked {
-      numMessages++;
-    }
-
-    /// @notice topupCredit is a trusted token contract which reverts if the transfer fails
-    extContracts.topupCredit.transferFrom(msg.sender, address(this), amount);
-
-    uint256[2] memory dat;
-    dat[0] = stateIndex;
-    dat[1] = amount;
-
-    (Message memory _message, , uint256 messageLeaf) = padAndHashMessage(dat, 2);
-
-    extContracts.messageAq.enqueue(messageLeaf);
-
-    emit TopupMessage(_message);
   }
 
   /// @inheritdoc IPoll
@@ -195,10 +167,6 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     unchecked {
       numMessages++;
     }
-
-    // we enforce that msgType here is 1 so we don't need checks
-    // at the circuit level
-    _message.msgType = 1;
 
     uint256 messageLeaf = hashMessageAndEncPubKey(_message, _encPubKey);
     extContracts.messageAq.enqueue(messageLeaf);

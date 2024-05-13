@@ -1,24 +1,7 @@
 /**
- * @notice A parent interface for all the commands
- */
-export interface ICommand {
-  cmdType: bigint;
-  copy: <T extends this>() => T;
-  equals: <T extends this>(command: T) => boolean;
-  toJSON: () => unknown;
-}
-
-/**
- * @notice An interface representing a generic json command
- */
-export interface IJsonCommand {
-  cmdType: string;
-}
-
-/**
  * @notice An interface representing a json T command
  */
-export interface IJsonTCommand extends IJsonCommand {
+export interface IJsonTCommand {
   stateIndex: string;
   amount: string;
   pollId: string;
@@ -27,7 +10,7 @@ export interface IJsonTCommand extends IJsonCommand {
 /**
  * @notice An interface representing a json P command
  */
-export interface IJsonPCommand extends IJsonCommand {
+export interface IJsonPCommand {
   stateIndex: string;
   newPubKey: string;
   voteOptionIndex: string;

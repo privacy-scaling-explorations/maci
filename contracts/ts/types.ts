@@ -8,7 +8,6 @@ import type {
   PoseidonT4,
   PoseidonT5,
   PoseidonT6,
-  TopupCredit,
   VkRegistry,
 } from "../typechain-types";
 import type { BigNumberish, Signer } from "ethers";
@@ -80,7 +79,6 @@ export interface IDeployedTestContracts {
   constantIntialVoiceCreditProxyContract: ConstantInitialVoiceCreditProxy;
   maciContract: MACI;
   vkRegistryContract: VkRegistry;
-  topupCreditContract: TopupCredit;
 }
 
 /**
@@ -130,11 +128,6 @@ export interface IDeployMaciArgs {
    * The address of the ConstantInitialVoiceCreditProxy contract
    */
   initialVoiceCreditBalanceAddress: string;
-
-  /**
-   * The address of the TopupCredit contract
-   */
-  topupCreditContractAddress: string;
 
   /**
    * The signer to use to deploy the contract
