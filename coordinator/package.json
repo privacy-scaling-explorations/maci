@@ -11,7 +11,6 @@
   ],
   "scripts": {
     "hardhat": "hardhat node",
-    "prebuild": "pnpm run generate-keypair",
     "build": "nest build",
     "start": "nest start",
     "start:dev": "nest start --watch",
