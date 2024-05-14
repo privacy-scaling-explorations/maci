@@ -5,6 +5,7 @@ import { Keypair, PrivKey } from "maci-domainobjs";
 
 import type { IGenerateArgs } from "../types";
 
+import { ErrorCodes } from "../../common";
 import { CryptoService } from "../../crypto/crypto.service";
 import { ProofGeneratorService } from "../proof.service";
 
@@ -69,7 +70,7 @@ describe("ProofGeneratorService", () => {
 
   beforeEach(() => {
     mockContract = {
-      polls: jest.fn(() => Promise.resolve()),
+      polls: jest.fn(() => Promise.resolve(ZeroAddress.replace("0x0", "0x1"))),
       getMainRoot: jest.fn(() => Promise.resolve(1n)),
       treeDepths: jest.fn(() => Promise.resolve([1, 2, 3])),
       extContracts: jest.fn(() => Promise.resolve({ messageAq: ZeroAddress })),
@@ -115,9 +116,7 @@ describe("ProofGeneratorService", () => {
 
     const service = new ProofGeneratorService();
 
-    await expect(service.generate(defaultArgs)).rejects.toThrow(
-      "The state tree has not been merged yet. Please use the mergeSignups subcommmand to do so.",
-    );
+    await expect(service.generate(defaultArgs)).rejects.toThrow(ErrorCodes.NOT_MERGED_STATE_TREE);
   });
 
   test("should throw error if private key is wrong", async () => {
@@ -126,7 +125,7 @@ describe("ProofGeneratorService", () => {
 
     const service = new ProofGeneratorService();
 
-    await expect(service.generate(defaultArgs)).rejects.toThrow("Private key mismatch error");
+    await expect(service.generate(defaultArgs)).rejects.toThrow(ErrorCodes.PRIVATE_KEY_MISMATCH);
   });
 
   test("should throw error if there is no any poll", async () => {
@@ -134,15 +133,13 @@ describe("ProofGeneratorService", () => {
 
     const service = new ProofGeneratorService();
 
-    await expect(service.generate(defaultArgs)).rejects.toThrow(
-      "The message tree has not been merged yet. Please use the mergeMessages subcommmand to do so.",
-    );
+    await expect(service.generate(defaultArgs)).rejects.toThrow(ErrorCodes.NOT_MERGED_MESSAGE_TREE);
   });
 
   test("should throw error if poll is not found", async () => {
     const service = new ProofGeneratorService();
 
-    await expect(service.generate({ ...defaultArgs, poll: 2 })).rejects.toThrow("Poll 2 not found");
+    await expect(service.generate({ ...defaultArgs, poll: 2 })).rejects.toThrow(ErrorCodes.POLL_NOT_FOUND);
   });
 
   test("should throw error if coordinator key cannot be decrypted", async () => {

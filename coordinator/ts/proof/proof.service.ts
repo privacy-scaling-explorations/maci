@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { ZeroAddress } from "ethers";
 import hre from "hardhat";
 import { Deployment, EContracts, ProofGenerator, type Poll, type MACI, type AccQueue } from "maci-contracts";
 import { Keypair, PrivKey, PubKey } from "maci-domainobjs";
@@ -8,6 +9,7 @@ import path from "path";
 
 import type { IGenerateArgs, IGenerateData } from "./types";
 
+import { ErrorCodes } from "../common";
 import { CryptoService } from "../crypto/crypto.service";
 
 /**
@@ -57,6 +59,11 @@ export class ProofGeneratorService {
 
     const signer = await this.deployment.getDeployer();
     const pollAddress = await maciContract.polls(poll);
+
+    if (pollAddress.toLowerCase() === ZeroAddress.toLowerCase()) {
+      throw new Error(ErrorCodes.POLL_NOT_FOUND);
+    }
+
     const pollContract = await this.deployment.getContract<Poll>({ name: EContracts.Poll, address: pollAddress });
     const [{ messageAq: messageAqAddress }, coordinatorPublicKey] = await Promise.all([
       pollContract.extContracts(),
@@ -70,7 +77,7 @@ export class ProofGeneratorService {
     const isStateAqMerged = await pollContract.stateMerged();
 
     if (!isStateAqMerged) {
-      throw new Error("The state tree has not been merged yet. Please use the mergeSignups subcommmand to do so.");
+      throw new Error(ErrorCodes.NOT_MERGED_STATE_TREE);
     }
 
     const messageTreeDepth = await pollContract.treeDepths().then((depths) => Number(depths[2]));
@@ -78,7 +85,7 @@ export class ProofGeneratorService {
     const mainRoot = await messageAq.getMainRoot(messageTreeDepth.toString());
 
     if (mainRoot.toString() === "0") {
-      throw new Error("The message tree has not been merged yet. Please use the mergeMessages subcommmand to do so.");
+      throw new Error(ErrorCodes.NOT_MERGED_MESSAGE_TREE);
     }
 
     const privateKey = await fs.promises.readFile(path.resolve(process.env.COORDINATOR_PRIVATE_KEY_PATH!));
@@ -90,7 +97,7 @@ export class ProofGeneratorService {
     ]);
 
     if (!coordinatorKeypair.pubKey.equals(publicKey)) {
-      throw new Error("Private key mismatch error");
+      throw new Error(ErrorCodes.PRIVATE_KEY_MISMATCH);
     }
 
     const maciState = await ProofGenerator.prepareState({
@@ -111,7 +118,7 @@ export class ProofGeneratorService {
     const foundPoll = maciState.polls.get(BigInt(poll));
 
     if (!foundPoll) {
-      throw new Error(`Poll ${poll} not found`);
+      throw new Error(ErrorCodes.POLL_NOT_FOUND);
     }
 
     const proofGenerator = new ProofGenerator({
