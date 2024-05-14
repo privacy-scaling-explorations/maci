@@ -29,6 +29,7 @@ import {
   proveOnChain,
   checkVerifyingKeys,
   genLocalState,
+  extractVkToFile,
 } from "./commands";
 import { TallyData, logError, promptSensitiveValue, readContractAddress } from "./utils";
 
@@ -353,6 +354,39 @@ program
       const signer = await getSigner();
 
       await timeTravel({ seconds: cmdObj.seconds, quiet: cmdObj.quiet, signer });
+    } catch (error) {
+      program.error((error as Error).message, { exitCode: 1 });
+    }
+  });
+program
+  .command("extractVkToFile")
+  .description("extract vkey to json file")
+  .requiredOption(
+    "-pqv, --process-messages-zkey-qv <processMessagesZkeyPathQv>",
+    "the process messages qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+  )
+  .requiredOption(
+    "-tqv, --tally-votes-zkey-qv <tallyVotesZkeyPathQv>",
+    "the tally votes qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+  )
+  .requiredOption(
+    "-pnqv, --process-messages-zkey-non-qv <processMessagesZkeyPathNonQv>",
+    "the process messages non-qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+  )
+  .requiredOption(
+    "-tnqv, --tally-votes-zkey-non-qv <tallyVotesZkeyPathNonQv>",
+    "the tally votes non-qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+  )
+  .requiredOption("-o, --output-file <outputFile>", "the output file path of extracted vkeys")
+  .action(async (cmdObj) => {
+    try {
+      await extractVkToFile({
+        processMessagesZkeyPathQv: cmdObj.processMessagesZkeyQv,
+        tallyVotesZkeyPathQv: cmdObj.tallyVotesZkeyQv,
+        processMessagesZkeyPathNonQv: cmdObj.processMessagesZkeyNonQv,
+        tallyVotesZkeyPathNonQv: cmdObj.tallyVotesZkeyNonQv,
+        outputFilePath: cmdObj.outputFile,
+      });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
