@@ -24,7 +24,7 @@
     "test:cli": "lerna run test --scope \"maci-cli\"",
     "test:cli-ceremony": "lerna run test:ceremony --scope \"maci-cli\"",
     "test:integration": "lerna run test --scope \"maci-integrationtests\"",
-    "test": "lerna run test --ignore maci-integrationtests --ignore maci-cli",
+    "test": "lerna run test --ignore maci-integrationtests --ignore maci-cli --ignore maci-coordinator",
     "types": "lerna run types",
     "docs": "lerna run docs",
     "prepare": "is-ci || husky"
