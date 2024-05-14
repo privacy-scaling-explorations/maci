@@ -21,9 +21,9 @@ deployment.deployTask("full:deploy-gatekeepers", "Deploy gatekeepers").then((tas
     const deployEASGatekeeper = deployment.getDeployConfigField(EContracts.EASGatekeeper, "deploy");
     const deployGitcoinGatekeeper = deployment.getDeployConfigField(EContracts.GitcoinPassportGatekeeper, "deploy");
 
-    const skipDeployFreeForAllGatekeeper = deployFreeForAllGatekeeper === false;
-    const skipDeployEASGatekeeper = deployEASGatekeeper === false;
-    const skipDeployGitcoinGatekeeper = deployGitcoinGatekeeper === false;
+    const skipDeployFreeForAllGatekeeper = deployFreeForAllGatekeeper !== true;
+    const skipDeployEASGatekeeper = deployEASGatekeeper !== true;
+    const skipDeployGitcoinGatekeeper = deployGitcoinGatekeeper !== true;
 
     const canSkipDeploy =
       incremental &&
