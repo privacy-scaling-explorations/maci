@@ -46,7 +46,6 @@ deployment.deployTask("full:deploy-maci", "Deploy MACI contract").then((task) =>
       deployment.getDeployConfigField<EContracts | null>(EContracts.MACI, "gatekeeper") ||
       EContracts.FreeForAllGatekeeper;
     const gatekeeperContractAddress = storage.mustGetAddress(gatekeeper, hre.network.name);
-    const topupCreditContractAddress = storage.mustGetAddress(EContracts.TopupCredit, hre.network.name);
     const pollFactoryContractAddress = storage.mustGetAddress(EContracts.PollFactory, hre.network.name);
     const messageProcessorFactoryContractAddress = storage.mustGetAddress(
       EContracts.MessageProcessorFactory,
@@ -64,7 +63,6 @@ deployment.deployTask("full:deploy-maci", "Deploy MACI contract").then((task) =>
       tallyFactoryContractAddress,
       gatekeeperContractAddress,
       constantInitialVoiceCreditProxyContractAddress,
-      topupCreditContractAddress,
       stateTreeDepth,
     );
 
@@ -95,7 +93,6 @@ deployment.deployTask("full:deploy-maci", "Deploy MACI contract").then((task) =>
         tallyFactoryContractAddress,
         gatekeeperContractAddress,
         constantInitialVoiceCreditProxyContractAddress,
-        topupCreditContractAddress,
         stateTreeDepth,
       ],
       network: hre.network.name,
