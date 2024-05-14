@@ -157,7 +157,7 @@ export const genProofs = async ({
 
   // Check that the state and message trees have been merged
   if (!(await pollContract.stateMerged())) {
-    logError("The state tree has not been merged yet. Please use the mergeSignups subcommmand to do so.");
+    logError("The state tree has not been merged yet. Please use the mergeSignups subcommand to do so.");
   }
 
   const messageTreeDepth = Number((await pollContract.treeDepths()).messageTreeDepth);
@@ -165,7 +165,7 @@ export const genProofs = async ({
   // check that the main root is set
   const mainRoot = (await messageAqContract.getMainRoot(messageTreeDepth.toString())).toString();
   if (mainRoot === "0") {
-    logError("The message tree has not been merged yet. Please use the mergeMessages subcommmand to do so.");
+    logError("The message tree has not been merged yet. Please use the mergeMessages subcommand to do so.");
   }
 
   let maciState: MaciState | undefined;

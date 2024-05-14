@@ -402,7 +402,7 @@ Deserialize into a PCommand instance
 
 [`PCommand`](PCommand.md)
 
-a PComamnd instance
+a PCommand instance
 
 #### Defined in
 

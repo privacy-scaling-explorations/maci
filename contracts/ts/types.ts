@@ -76,7 +76,7 @@ export interface Proof {
 export interface IDeployedTestContracts {
   mockVerifierContract: MockVerifier;
   gatekeeperContract: FreeForAllGatekeeper;
-  constantIntialVoiceCreditProxyContract: ConstantInitialVoiceCreditProxy;
+  constantInitialVoiceCreditProxyContract: ConstantInitialVoiceCreditProxy;
   maciContract: MACI;
   vkRegistryContract: VkRegistry;
 }

@@ -236,7 +236,7 @@ export class PCommand {
   /**
    * Deserialize into a PCommand instance
    * @param json
-   * @returns a PComamnd instance
+   * @returns a PCommand instance
    */
   static fromJSON(json: IJsonPCommand): PCommand {
     const command = new PCommand(

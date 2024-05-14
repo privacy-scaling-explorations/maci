@@ -427,7 +427,7 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     );
 
     // 2. If isValid is equal to zero, generate indices for leaf zero.
-    // Otherwise, generate indices for commmand.stateIndex.
+    // Otherwise, generate indices for command.stateIndex.
     var stateLeafIndexValid = SafeLessThan(N_BITS)([cmdStateIndex, numSignUps]);
     var stateIndexMux = Mux1()([0, cmdStateIndex], stateLeafIndexValid);
     var computedStateLeafPathIndices[stateTreeDepth] = MerkleGeneratePathIndices(stateTreeDepth)(stateIndexMux);

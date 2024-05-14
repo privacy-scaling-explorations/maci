@@ -99,7 +99,7 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
 
       // Check that the state and message trees have been merged for at least the first poll
       if (!isStateAqMerged && poll.toString() === "0") {
-        throw new Error("The state tree has not been merged yet. Please use the mergeSignups subcommmand to do so.");
+        throw new Error("The state tree has not been merged yet. Please use the mergeSignups subcommand to do so.");
       }
 
       const messageTreeDepth = await pollContract.treeDepths().then((depths) => Number(depths[2]));
@@ -108,7 +108,7 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
       const mainRoot = await messageAqContract.getMainRoot(messageTreeDepth.toString());
 
       if (mainRoot.toString() === "0") {
-        throw new Error("The message tree has not been merged yet. Please use the mergeMessages subcommmand to do so.");
+        throw new Error("The message tree has not been merged yet. Please use the mergeMessages subcommand to do so.");
       }
 
       const maciState = await ProofGenerator.prepareState({
