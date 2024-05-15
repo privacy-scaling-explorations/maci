@@ -19,7 +19,7 @@ export const genEmptyBallotRootsContract = async (): Promise<string> => {
     // The empty Ballot tree root
     const ballotTree = new IncrementalQuinTree(stateTreeDepth, ballot.hash(), 5, hash5);
 
-    roots.push(`emptyBallotRoots[${i}] = uint256(${ballotTree.root});`.padStart(4));
+    roots.push(`${"".padStart(4)}emptyBallotRoots[${i}] = uint256(${ballotTree.root});`.padStart(4));
   }
 
   return template.replace("<% ROOTS %>", roots.join("\n")).trim();

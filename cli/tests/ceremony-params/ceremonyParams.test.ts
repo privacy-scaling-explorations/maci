@@ -72,17 +72,9 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
     messageBatchDepth,
     processMessagesZkeyPathQv: ceremonyProcessMessagesZkeyPath,
     tallyVotesZkeyPathQv: ceremonyTallyVotesZkeyPath,
-  };
-
-  const verifyingKeysNonQvArgs: Omit<SetVerifyingKeysArgs, "signer"> = {
-    quiet: true,
-    stateTreeDepth,
-    intStateTreeDepth,
-    messageTreeDepth,
-    voteOptionTreeDepth,
-    messageBatchDepth,
     processMessagesZkeyPathNonQv: ceremonyProcessMessagesNonQvZkeyPath,
     tallyVotesZkeyPathNonQv: ceremonyTallyVotesNonQvZkeyPath,
+    useQuadraticVoting: true,
   };
 
   const ceremonyDeployArgs: Omit<DeployArgs, "signer"> = {
@@ -96,6 +88,7 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
     messageTreeDepth,
     voteOptionTreeDepth,
     coordinatorPubkey: coordinatorPubKey,
+    useQuadraticVoting: true,
   };
 
   const genProofsCeremonyArgs: Omit<GenProofsArgs, "signer"> = {
@@ -113,6 +106,7 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
     tallyWasm: ceremonyTallyVotesWasmPath,
     processDatFile: ceremonyProcessMessagesDatPath,
     tallyDatFile: ceremonyTallyVotesDatPath,
+    useQuadraticVoting: true,
   };
 
   const users = Array<Keypair>(100).fill(new Keypair());
@@ -253,7 +247,7 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
       // we deploy the vk registry contract
       await deployVkRegistryContract({ signer });
       // we set the verifying keys
-      await setVerifyingKeys({ ...verifyingKeysNonQvArgs, signer });
+      await setVerifyingKeys({ ...verifyingKeysArgs, signer });
     });
 
     describe("1 signup, 1 message", () => {

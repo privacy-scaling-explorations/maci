@@ -27,7 +27,7 @@ node build/ts/index.js publish \
     --state-index 1 \
     --vote-option-index 0 \
     --new-vote-weight 9 \
-    --nonce 1 \
+    --nonce 2 \
     --poll-id 0
 node build/ts/index.js publish \
     --pubkey macipk.1cac8e4e5b54d7dcce4aa06e71d8b9f324458756e7a9368383d005592719512a \
@@ -35,7 +35,7 @@ node build/ts/index.js publish \
     --state-index 1 \
     --vote-option-index 1 \
     --new-vote-weight 9 \
-    --nonce 2 \
+    --nonce 1 \
     --poll-id 0
 node build/ts/index.js timeTravel -s 100
 node build/ts/index.js mergeSignups --poll-id 0
@@ -50,6 +50,7 @@ node build/ts/index.js genProofs \
     -tw ./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm \
     -pw ./zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test_js/ProcessMessages_10-2-1-2_test.wasm \
     -w true \
+    -uq true \
     -q false 
 node build/ts/index.js proveOnChain \
     --poll-id 0 \

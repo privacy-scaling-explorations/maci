@@ -70,7 +70,9 @@ async function main(): Promise<void> {
     ),
   );
 
-  await genEmptyBallotRootsContract();
+  await genEmptyBallotRootsContract().then((text) =>
+    fs.promises.writeFile(path.resolve(__dirname, "..", "contracts/trees/EmptyBallotRoots.sol"), `${text}\n`),
+  );
 
   await hre.run("compile");
 
