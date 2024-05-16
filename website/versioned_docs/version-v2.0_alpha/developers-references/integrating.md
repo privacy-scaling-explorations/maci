@@ -194,7 +194,7 @@ The network options are: **_localhost, sepolia, and optimism-sepolia_**, and the
 
 ## MACI Contract
 
-The MACI contract is the core of the protocol. Contracts can inherit from MACI and thus expose the signup and topup functions. As with standalone MACI, one would need to deploy a [sign up gatekeeper](/docs/developers-references/smart-contracts/contracts#signupgatekeeper) as well as the [voice credit proxy](/docs/developers-references/smart-contracts/contracts#voicecreditproxy).
+The MACI contract is the core of the protocol. Contracts can inherit from MACI and thus expose the signup and topup functions. As with standalone MACI, one would need to deploy a [sign up gatekeeper](/docs/developers-references/smart-contracts/Gatekeepers) as well as the [voice credit proxy](/docs/developers-references/smart-contracts/VoiceCreditProxy).
 
 As an example, within the quadratic funding infrastructure project, the QFI contract inherits from MACI and allows sign up via the contribute function.
 

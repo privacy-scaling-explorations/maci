@@ -144,7 +144,7 @@ Please remember to pull the latest MACI repo updates(`git fetch origin && git pu
 
 ### Verifier contract found the proof invalid
 
-If your log looks like the following, that's because the zkey and wasm files added to the [`VkRegistry` contract](/docs/developers-references/smart-contracts/contracts#vkregistry) are different from what you use to run the **prove** command. Check if you're using the correct zkey and wasm files.
+If your log looks like the following, that's because the zkey and wasm files added to the [`VkRegistry` contract](/docs/developers-references/smart-contracts/VkRegistry) are different from what you use to run the **prove** command. Check if you're using the correct zkey and wasm files.
 
 ```
 Error: The verifier contract found the proof invalid.

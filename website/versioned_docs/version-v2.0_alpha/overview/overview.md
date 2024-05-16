@@ -32,7 +32,7 @@ The MACI smart contracts are written in [Solidity](https://soliditylang.org/).
 
 Contracts are released through the [`@maci-contracts`](https://www.npmjs.com/package/maci-contracts) NPM package.
 
-[Learn more about MACI contracts](/docs/developers-references/smart-contracts/contracts)
+[Learn more about MACI contracts](/docs/category/smart-contracts)
 
 ## TypeScript libraries
 
