@@ -1,0 +1,6 @@
+[default.extend-words]
+ba = "ba"
+groth = "groth"
+
+[files]
+extend-exclude = ["/**/CHANGELOG.md"]

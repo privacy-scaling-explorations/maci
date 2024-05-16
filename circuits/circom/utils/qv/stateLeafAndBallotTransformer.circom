@@ -25,7 +25,7 @@ template StateLeafAndBallotTransformer() {
     signal input slPubKey[2];
     // Current voice credit balance.
     signal input slVoiceCreditBalance;
-    // Signup timestmap.
+    // Signup timestamp.
     signal input slTimestamp;
     // Timestamp indicating when the poll ends.
     signal input pollEndTimestamp;

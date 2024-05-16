@@ -512,7 +512,7 @@ export const deployTestContracts = async (
     gatekeeperContract = await deployFreeForAllSignUpGatekeeper(signer, true);
   }
 
-  const constantIntialVoiceCreditProxyContract = await deployConstantInitialVoiceCreditProxy(
+  const constantInitialVoiceCreditProxyContract = await deployConstantInitialVoiceCreditProxy(
     initialVoiceCreditBalance,
     signer,
     true,
@@ -520,14 +520,14 @@ export const deployTestContracts = async (
 
   // VkRegistry
   const vkRegistryContract = await deployVkRegistry(signer, true);
-  const [gatekeeperContractAddress, constantIntialVoiceCreditProxyContractAddress] = await Promise.all([
+  const [gatekeeperContractAddress, constantInitialVoiceCreditProxyContractAddress] = await Promise.all([
     gatekeeperContract.getAddress(),
-    constantIntialVoiceCreditProxyContract.getAddress(),
+    constantInitialVoiceCreditProxyContract.getAddress(),
   ]);
 
   const { maciContract } = await deployMaci({
     signUpTokenGatekeeperContractAddress: gatekeeperContractAddress,
-    initialVoiceCreditBalanceAddress: constantIntialVoiceCreditProxyContractAddress,
+    initialVoiceCreditBalanceAddress: constantInitialVoiceCreditProxyContractAddress,
     signer,
     stateTreeDepth,
     quiet,
@@ -536,7 +536,7 @@ export const deployTestContracts = async (
   return {
     mockVerifierContract,
     gatekeeperContract,
-    constantIntialVoiceCreditProxyContract,
+    constantInitialVoiceCreditProxyContract,
     maciContract,
     vkRegistryContract,
   };
