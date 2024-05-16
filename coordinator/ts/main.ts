@@ -10,7 +10,9 @@ dotenv.config({ path: [path.resolve(__dirname, "../.env"), path.resolve(__dirnam
 
 async function bootstrap() {
   const { AppModule } = await import("./app.module");
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: ["log", "fatal", "error", "warn"],
+  });
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.use(
@@ -32,6 +34,7 @@ async function bootstrap() {
     .setDescription("Coordinator service API methods")
     .setVersion("1.0")
     .addTag("coordinator")
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("api", app, document);

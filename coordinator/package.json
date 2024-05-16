@@ -79,7 +79,7 @@
       "**/*.(t|j)s",
       "!<rootDir>/ts/main.ts",
       "!<rootDir>/ts/jest/*.js",
-      "!<rootDir>/hardhat.config.ts"
+      "!<rootDir>/hardhat.config.js"
     ],
     "coverageDirectory": "<rootDir>/coverage",
     "testEnvironment": "node"
