@@ -1,15 +1,14 @@
-import "@nomicfoundation/hardhat-toolbox";
-import dotenv from "dotenv";
+/* eslint-disable @typescript-eslint/no-var-requires */
+require("@nomicfoundation/hardhat-toolbox");
+const dotenv = require("dotenv");
 
-import path from "path";
-
-import type { HardhatUserConfig } from "hardhat/config";
+const path = require("path");
 
 dotenv.config();
 
 const parentDir = __dirname.includes("build") ? ".." : "";
 
-const config: HardhatUserConfig = {
+module.exports = {
   defaultNetwork: "localhost",
   networks: {
     localhost: {
@@ -25,5 +24,3 @@ const config: HardhatUserConfig = {
     artifacts: path.resolve(__dirname, parentDir, "../contracts/artifacts"),
   },
 };
-
-export default config;
