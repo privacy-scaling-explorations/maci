@@ -14,8 +14,8 @@ import type { ConfigurableTaskDefinition, HardhatRuntimeEnvironment, TaskArgumen
 import { ContractStorage } from "./ContractStorage";
 import {
   EContracts,
-  IDeployContractArgs,
-  IDeployContractWithLinkedLibrariesArgs,
+  IDeployContractParams,
+  IDeployContractWithLinkedLibrariesParams,
   IDeployParams,
   IDeployStep,
   IDeployStepCatalog,
@@ -309,13 +309,12 @@ export class Deployment {
   /**
    * Deploy contract and return it
    *
-   * @param contractName - contract name
-   * @param signer - signer
+   * @param {IDeployContractParams} params - parameters of deploy contract
    * @param args - constructor arguments
    * @returns deployed contract
    */
   async deployContract<T extends BaseContract>(
-    { name, abi, bytecode, signer }: IDeployContractArgs,
+    { name, abi, bytecode, signer }: IDeployContractParams,
     ...args: unknown[]
   ): Promise<T> {
     const deployer = signer || (await this.getDeployer());
@@ -337,12 +336,12 @@ export class Deployment {
   /**
    * Deploy contract with linked libraries using contract factory
    *
-   * @param contractFactory - ethers contract factory
+   * @param {IDeployContractWithLinkedLibrariesParams} params - parameters of deploy contract with linked libraries
    * @param args - constructor arguments
    * @returns deployed contract
    */
   async deployContractWithLinkedLibraries<T extends BaseContract>(
-    { contractFactory, signer }: IDeployContractWithLinkedLibrariesArgs,
+    { contractFactory, signer }: IDeployContractWithLinkedLibrariesParams,
     ...args: unknown[]
   ): Promise<T> {
     const deployer = signer || (await this.getDeployer());
