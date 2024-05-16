@@ -36,6 +36,7 @@ export type {
   PollContracts,
   TallyData,
   VerifyArgs,
+  ExtractVkToFileArgs,
   IRegisteredUserArgs,
   IGenKeypairArgs,
   IGetPollArgs,

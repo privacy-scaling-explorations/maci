@@ -17,3 +17,4 @@ export { fundWallet } from "./fundWallet";
 export { proveOnChain } from "./proveOnChain";
 export { checkVerifyingKeys } from "./checkVerifyingKeys";
 export { genLocalState } from "./genLocalState";
+export { extractVkToFile } from "./extractVkToFile";

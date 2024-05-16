@@ -1062,3 +1062,30 @@ export interface DeployVkRegistryArgs {
    */
   quiet?: boolean;
 }
+
+export interface ExtractVkToFileArgs {
+  /**
+   * File path for processMessagesQv zkey
+   */
+  processMessagesZkeyPathQv: string;
+
+  /**
+   * File path for tallyVotesQv zkey
+   */
+  tallyVotesZkeyPathQv: string;
+
+  /**
+   * File path for processMessagesNonQv zkey
+   */
+  processMessagesZkeyPathNonQv: string;
+
+  /**
+   * File path for tallyVotes zkey
+   */
+  tallyVotesZkeyPathNonQv: string;
+
+  /**
+   * Output file path of extracted vkeys
+   */
+  outputFilePath: string;
+}
