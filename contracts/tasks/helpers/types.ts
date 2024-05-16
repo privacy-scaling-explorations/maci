@@ -651,7 +651,7 @@ export type TAbi = string | readonly (string | Fragment | JsonFragment)[];
 /**
  * Interface that represents deploy params
  */
-export interface IDeployContractArgs {
+export interface IDeployContractParams {
   /**
    * Contract name
    */
@@ -676,7 +676,7 @@ export interface IDeployContractArgs {
 /**
  * Interface that represents deploy params
  */
-export interface IDeployContractWithLinkedLibrariesArgs {
+export interface IDeployContractWithLinkedLibrariesParams {
   /**
    * Contract factory
    */

@@ -20,7 +20,7 @@ export {
 
 export * from "maci-contracts/typechain-types";
 
-export { VerifyingKey, type IVkObjectParams } from "maci-domainobjs";
+export { VerifyingKey, PubKey, type IVkObjectParams } from "maci-domainobjs";
 
 export type {
   TallyData,
