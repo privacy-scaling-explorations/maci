@@ -1,4 +1,4 @@
-import { CanActivate, type ExecutionContext, Injectable } from "@nestjs/common";
+import { Logger, CanActivate, type ExecutionContext, Injectable } from "@nestjs/common";
 import { ethers } from "ethers";
 
 import fs from "fs";
@@ -27,7 +27,12 @@ export class AccountSignatureGuard implements CanActivate {
   /**
    * Crypto service
    */
-  private cryptoService = CryptoService.getInstance();
+  private readonly cryptoService = CryptoService.getInstance();
+
+  /**
+   * Logger
+   */
+  private readonly logger = new Logger(AccountSignatureGuard.name);
 
   /**
    * This function should return a boolean, indicating  whether the request is allowed or not based on message signature and digest.
@@ -41,13 +46,17 @@ export class AccountSignatureGuard implements CanActivate {
       const encryptedHeader = request.headers.authorization;
 
       if (!encryptedHeader) {
+        this.logger.warn("No authorization header");
         return false;
       }
 
       const privateKey = await fs.promises.readFile(path.resolve(process.env.COORDINATOR_PRIVATE_KEY_PATH!));
-      const [signature, digest] = this.cryptoService.decrypt(privateKey, encryptedHeader).split(":");
+      const [signature, digest] = this.cryptoService
+        .decrypt(privateKey, encryptedHeader.replace("Bearer", "").trim())
+        .split(":");
 
       if (!signature || !digest) {
+        this.logger.warn("No signature or digest");
         return false;
       }
 
@@ -56,6 +65,7 @@ export class AccountSignatureGuard implements CanActivate {
 
       return address === coordinatorAddress;
     } catch (error) {
+      this.logger.error("Error", error);
       return false;
     }
   }

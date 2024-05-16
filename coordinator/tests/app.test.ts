@@ -44,7 +44,7 @@ describe("AppController (e2e)", () => {
     const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
     const signature = await signer.signMessage("message");
     const digest = Buffer.from(getBytes(hashMessage("message"))).toString("hex");
-    return CryptoService.getInstance().encrypt(publicKey, `${signature}:${digest}`);
+    return `Bearer ${CryptoService.getInstance().encrypt(publicKey, `${signature}:${digest}`)}`;
   };
 
   beforeAll(async () => {

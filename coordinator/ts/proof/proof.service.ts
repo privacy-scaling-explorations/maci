@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Logger, Injectable } from "@nestjs/common";
 import { ZeroAddress } from "ethers";
 import hre from "hardhat";
 import { Deployment, EContracts, ProofGenerator, type Poll, type MACI, type AccQueue } from "maci-contracts";
@@ -20,12 +20,17 @@ export class ProofGeneratorService {
   /**
    * Deployment helper
    */
-  private deployment: Deployment;
+  private readonly deployment: Deployment;
 
   /**
    * CryptoService for user sensitive data decryption
    */
-  private cryptoService: CryptoService;
+  private readonly cryptoService: CryptoService;
+
+  /**
+   * Logger
+   */
+  private readonly logger: Logger;
 
   /**
    * Proof generator initialization
@@ -34,6 +39,7 @@ export class ProofGeneratorService {
     this.deployment = Deployment.getInstance(hre);
     this.deployment.setHre(hre);
     this.cryptoService = CryptoService.getInstance();
+    this.logger = new Logger(ProofGeneratorService.name);
   }
 
   /**
@@ -61,6 +67,7 @@ export class ProofGeneratorService {
     const pollAddress = await maciContract.polls(poll);
 
     if (pollAddress.toLowerCase() === ZeroAddress.toLowerCase()) {
+      this.logger.error(`Error: ${ErrorCodes.POLL_NOT_FOUND}, Poll ${poll} not found`);
       throw new Error(ErrorCodes.POLL_NOT_FOUND);
     }
 
@@ -77,6 +84,7 @@ export class ProofGeneratorService {
     const isStateAqMerged = await pollContract.stateMerged();
 
     if (!isStateAqMerged) {
+      this.logger.error(`Error: ${ErrorCodes.NOT_MERGED_STATE_TREE}, state tree is not merged`);
       throw new Error(ErrorCodes.NOT_MERGED_STATE_TREE);
     }
 
@@ -85,6 +93,7 @@ export class ProofGeneratorService {
     const mainRoot = await messageAq.getMainRoot(messageTreeDepth.toString());
 
     if (mainRoot.toString() === "0") {
+      this.logger.error(`Error: ${ErrorCodes.NOT_MERGED_MESSAGE_TREE}, message tree is not merged`);
       throw new Error(ErrorCodes.NOT_MERGED_MESSAGE_TREE);
     }
 
@@ -97,6 +106,7 @@ export class ProofGeneratorService {
     ]);
 
     if (!coordinatorKeypair.pubKey.equals(publicKey)) {
+      this.logger.error(`Error: ${ErrorCodes.PRIVATE_KEY_MISMATCH}, wrong private key`);
       throw new Error(ErrorCodes.PRIVATE_KEY_MISMATCH);
     }
 
@@ -118,6 +128,7 @@ export class ProofGeneratorService {
     const foundPoll = maciState.polls.get(BigInt(poll));
 
     if (!foundPoll) {
+      this.logger.error(`Error: ${ErrorCodes.POLL_NOT_FOUND}, Poll ${poll} not found in maci state`);
       throw new Error(ErrorCodes.POLL_NOT_FOUND);
     }
 

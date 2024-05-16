@@ -1,3 +1,5 @@
+import { Logger } from "@nestjs/common";
+
 import { publicEncrypt, privateDecrypt, type KeyLike } from "crypto";
 
 import { ErrorCodes } from "../common";
@@ -12,10 +14,15 @@ export class CryptoService {
   private static INSTANCE?: CryptoService;
 
   /**
+   * Logger
+   */
+  private readonly logger: Logger;
+
+  /**
    * Empty constructor
    */
   private constructor() {
-    // use singleton initialization
+    this.logger = new Logger(CryptoService.name);
   }
 
   /**
@@ -44,6 +51,7 @@ export class CryptoService {
 
       return encrypted.toString("base64");
     } catch (error) {
+      this.logger.error(`Error: ${ErrorCodes.ENCRYPTION}`, error);
       throw new Error(ErrorCodes.ENCRYPTION);
     }
   }
@@ -61,6 +69,7 @@ export class CryptoService {
 
       return decryptedData.toString();
     } catch (error) {
+      this.logger.error(`Error: ${ErrorCodes.DECRYPTION}`, error);
       throw new Error(ErrorCodes.DECRYPTION);
     }
   }
