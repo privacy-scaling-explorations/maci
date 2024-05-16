@@ -2,7 +2,7 @@
 title: MACI v1.0 Specification
 description: A detailed specification meant to assist auditors in reviewing MACI version 1.0
 sidebar_label: Specification
-sidebar_position: 17
+sidebar_position: 5
 ---
 
 # MACI v1.0 Specification
@@ -575,7 +575,7 @@ The integration tests and shell scripts in the `cli` directory provide examples 
 | `signUp(PubKey memory _pubKey, bytes memory _signUpGatekeeperData, bytes memory _initialVoiceCreditProxyData)`                | Executable only during the sign-up period and after initialisation  | Participant registration and voice credit assignment                         |
 | `mergeStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId)`                                                               | Executable only by poll contract `_pollId` and after initialisation | Merge queued state leaves to form the state tree subroots                    |
 | `mergeStateAq(uint256 _pollId)`                                                                                               | Executable only by poll contract `_pollId` and after initialisation | Merge the state subroots to form the state root                              |
-| `getStateAqRoot()`                                                                                                            | Non-applicable                                                      | Query the state root                                                         |
+| `getStateTreeRoot()`                                                                                                          | Non-applicable                                                      | Query the state root                                                         |
 | `deployPoll(uint256 _duration, MaxValues memory _maxValues, TreeDepths memory _treeDepths, PubKey memory _coordinatorPubKey)` | Executable only after initialisation                                | Create a new poll                                                            |
 | `getPoll(uint256 _pollId)`                                                                                                    | Non-applicable                                                      | Query a poll address                                                         |
 

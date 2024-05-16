@@ -1,0 +1,8 @@
+{
+  "label": "zk-SNARK Circuits",
+  "position": 3,
+  "link": {
+    "type": "generated-index",
+    "description": "MACI's zk-SNARK circuits"
+  }
+}

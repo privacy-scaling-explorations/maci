@@ -80,11 +80,14 @@ function defineTargetDirectory() {
     const versionContent = fs.readFileSync(versionFile, "utf8");
     if (versionContent) {
       const versionContentJson = JSON.parse(versionContent) as string[];
-      return path.resolve(__dirname, `../../versioned_docs/version-${versionContentJson[0]}/typedoc`);
+      return path.resolve(
+        __dirname,
+        `../../versioned_docs/version-${versionContentJson[0]}/developers-references/typescript-code/typedoc`,
+      );
     }
   }
 
-  return path.resolve(__dirname, "../../docs/typedoc");
+  return path.resolve(__dirname, "../../docs/developers-references/typescript-code/typedoc");
 }
 
 if (fs.existsSync(TYPEDOC_DIR)) {
