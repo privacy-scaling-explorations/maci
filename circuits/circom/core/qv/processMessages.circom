@@ -115,7 +115,7 @@ template ProcessMessages(
     
     // The index of the last message leaf in the batch to process, exclusive.
     // This value may be less than batchStartIndex + batchSize if this batch is
-    // the last batch and the total number of mesages is not a multiple of the batch size.
+    // the last batch and the total number of messages is not a multiple of the batch size.
     signal batchEndIndex;
 
     // The history of state and ballot roots and temporary intermediate
