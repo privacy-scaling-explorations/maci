@@ -6,5 +6,5 @@
     "experimentalDecorators": true
   },
   "include": ["./ts", "./scripts"],
-  "files": ["./hardhat.config.ts"]
+  "files": ["./hardhat.config.js"]
 }
