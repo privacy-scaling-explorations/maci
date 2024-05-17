@@ -44,8 +44,8 @@ export const getPoll = async ({
     pollContract.getDeployTimeAndDuration(),
     pollContract.mergedStateRoot(),
   ]);
-
-  const numSignups = await (mergedStateRoot ? pollContract.numSignups() : maciContract.numSignUps());
+  const isMerged = mergedStateRoot !== BigInt(0);
+  const numSignups = await (isMerged ? pollContract.numSignups() : maciContract.numSignUps());
 
   logGreen(
     quiet,
@@ -55,7 +55,7 @@ export const getPoll = async ({
         `Deploy time: ${new Date(Number(deployTime) * 1000).toString()}`,
         `End time: ${new Date(Number(deployTime + duration) * 1000).toString()}`,
         `Number of signups ${numSignups}`,
-        `State Aq merged: ${mergedStateRoot}`,
+        `State tree merged: ${mergedStateRoot}`,
       ].join("\n"),
     ),
   );
@@ -66,6 +66,6 @@ export const getPoll = async ({
     deployTime,
     duration,
     numSignups,
-    mergedStateRoot,
+    isMerged,
   };
 };
