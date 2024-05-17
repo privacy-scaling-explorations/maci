@@ -2,7 +2,7 @@
 title: MACI Circuits
 description: Introduction to the core zk-SNARK circuits of MACI
 sidebar_label: Circuits
-sidebar_position: 9
+sidebar_position: 5
 ---
 
 # zk-SNARKS in MACI
@@ -11,11 +11,10 @@ MACI uses zk-SNARKs to essentially hide how each person voted while still reveal
 
 ## MACI Circuits
 
-MACI has three main zk-SNARK [circuits](https://github.com/privacy-scaling-explorations/maci/tree/dev/circuits):
+MACI has two main zk-SNARK [circuits](https://github.com/privacy-scaling-explorations/maci/tree/dev/circuits):
 
 1. [`ProcessMessages.circom`](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/processMessages.circom), which takes a batch of encrypted messages, decrypts them, and generates a proof that the coordinator's local processing was performed correctly.
 2. [`TallyVotes.circom`](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/tallyVotes.circom), which counts votes from users' ballots, batch by batch.
-3. [`Subsidy.circom`](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/subsidy.circom), which implements [pairwise subsidy](https://hackmd.io/@chaosma/H1_9xmT2K). Please note this is an optional feature.
 
 The rest of the circuits are utilities templates that are required for the main circuits to work correctly. These include utilities such as float math, conversion of private keys, and Poseidon hashing/encryption.
 
@@ -280,19 +279,6 @@ $poseidon_3([tc_r, tc_t, tc_p])$
 6. That the tally is valid, which is:
    - That the sum of votes per vote option is correct
 
-### Subsisdy ([`subsidy`](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/subsidy.circom))
-
-This circuit is an optional feature - it's not required for MACI to function.  
-The subsidy circuit is used to implement pairwise subsidy. This is a technique that can be used to detect voters collusion. It currently is not optimized for production and the team will work on a more efficient implementation in the future.
-
-#### Parameters
-
-| #   | Parameter              | Description                                              |
-| --- | ---------------------- | -------------------------------------------------------- |
-| 0   | State tree depth       | Allows $(5^{n})$ signups.                                |
-| 1   | State leaf batch depth | Allows $(5^{n})$ users' votes to be processed per batch. |
-| 2   | Vote option tree depth | Allows $(5^{n})$ vote options.                           |
-
 ### Utility circuits
 
 #### Process Messages Input Hasher
@@ -439,11 +425,11 @@ Before building the project, make sure you have the following dependencies insta
 To build the main circuits of MACI, run the following command (`-c` postfix for c++ witness gen, and `-wasm` postfix for WASM witness gen only):
 
 ```
-pnpm build-test-circuits-c
-pnpm build-test-circuits-wasm
+pnpm build-test-circuits-c -- --out-path $OUT_PATH
+pnpm build-test-circuits-wasm -- --out-path $OUT_PATH
 ```
 
-Please note that the circuits are configured with testing purpose parameters, which means it can only handle a limited amount of messages (up to 25 messages). For more information on the parameters and how to configure them, please refer to the individual circuit documentation within this page. Also, within the [configure-circomkit](/docs/v1.2/installation#configure-circomkit) section of the `installation` page, you'll see how you can update the config file with new params.
+Please note that the circuits are configured with testing purpose parameters, which means it can only handle a limited amount of messages (up to 25 messages). For more information on the parameters and how to configure them, please refer to the individual circuit documentation within this page. Also, within the [configure-circomkit](https://maci.pse.dev/docs/installation#configure-circomkit) section of the `installation` page, you'll see how you can update the config file with new params.
 
 To compile a single circuit, you can run:
 
@@ -458,7 +444,7 @@ pnpm circom:build $CIRCUIT_NAME
 Run from the root directory to save to the `cli/zkeys` folder:
 
 ```bash
-pnpm setup:zkeys
+pnpm setup:zkeys -- --outPath ../cli/zkeys
 ```
 
 Run from the circuits folder with `--outPath` to save to a custom folder:
@@ -505,4 +491,4 @@ To run individual tests, you can use the following commands (for all other circu
 - `pnpm run test:processMessages` to run the tests for the `processMessages` circuit.
 - `pnpm run test:tallyVotes` to run the tests for the `tallyVotes` circuit.
 
-More details on testing are provided in the [testing section](/docs/v1.2/testing) of the documentation.
+More details on testing are provided in the [testing section](/docs/testing) of the documentation.

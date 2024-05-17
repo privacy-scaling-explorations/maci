@@ -1,0 +1,8 @@
+{
+  "label": "Overview",
+  "position": 2,
+  "link": {
+    "type": "generated-index",
+    "description": "An overview of MACI's codebase and MACI core values and purpose."
+  }
+}

@@ -98,7 +98,7 @@ Whether the verifying keys match or not
 
 **`Note`**
 
-see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing
+see different options for zkey files to use specific circuits https://maci.pse.dev/docs/security/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing
 
 #### Defined in
 
@@ -295,7 +295,7 @@ The tally data
 
 **`Note`**
 
-see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing
+see different options for zkey files to use specific circuits https://maci.pse.dev/docs/security/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing
 
 #### Defined in
 
@@ -459,7 +459,7 @@ Function that sets the verifying keys in the VkRegistry contract
 
 **`Note`**
 
-see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing
+see different options for zkey files to use specific circuits https://maci.pse.dev/docs/security/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing
 
 #### Defined in
 
