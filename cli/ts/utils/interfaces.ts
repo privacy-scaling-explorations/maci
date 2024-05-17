@@ -950,7 +950,7 @@ export interface IGetPollData {
   /**
    * Whether the MACI contract's stateAq has been merged by this contract
    */
-  isStateAqMerged: boolean;
+  mergedStateRoot: bigint;
 }
 
 /**
