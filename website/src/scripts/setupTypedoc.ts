@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 
-import { copyDirectory, fitFormat, generateSidebarString, insertIndexPage } from "./utils";
+import { copyDirectory, fitFormat, generateSidebarString, generateToC, insertIndexPage } from "./utils";
 
 const TYPEDOC_DIR = path.resolve(__dirname, "../../typedoc");
 
@@ -96,7 +96,11 @@ if (fs.existsSync(TYPEDOC_DIR)) {
     parseAndRenameDirectory(dir);
   });
 
-  insertIndexPage(TYPEDOC_DIR, { title: "Typedoc", label: "Typedoc" });
+  insertIndexPage(
+    TYPEDOC_DIR,
+    { title: "Typedoc", label: "Typedoc" },
+    `\nTypedoc API documentation.\n${generateToC(TYPEDOC_DIR)}\n`,
+  );
 
   const versionDir = defineTargetDirectory();
   copyDirectory(TYPEDOC_DIR, versionDir);
