@@ -948,9 +948,9 @@ export interface IGetPollData {
   numSignups: BigNumberish;
 
   /**
-   * Whether the MACI contract's stateAq has been merged by this contract
+   * Whether the MACI contract's state root has been merged
    */
-  isStateAqMerged: boolean;
+  isMerged: boolean;
 }
 
 /**

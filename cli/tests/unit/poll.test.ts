@@ -63,7 +63,7 @@ describe("poll", () => {
 
       expect(pollData.id).to.eq(finishedPollData.id);
       expect(pollData.address).to.eq(finishedPollData.address);
-      expect(finishedPollData.isStateAqMerged).to.eq(true);
+      expect(finishedPollData.isMerged).to.eq(true);
     });
 
     it("should throw error if there are no signer and provider", async () => {

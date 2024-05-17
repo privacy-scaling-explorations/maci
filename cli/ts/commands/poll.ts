@@ -40,12 +40,12 @@ export const getPoll = async ({
 
   const pollContract = PollFactory.connect(pollAddress, signer ?? provider);
 
-  const [[deployTime, duration], isStateAqMerged] = await Promise.all([
+  const [[deployTime, duration], mergedStateRoot] = await Promise.all([
     pollContract.getDeployTimeAndDuration(),
-    pollContract.stateMerged(),
+    pollContract.mergedStateRoot(),
   ]);
-
-  const numSignups = await (isStateAqMerged ? pollContract.numSignups() : maciContract.numSignUps());
+  const isMerged = mergedStateRoot !== BigInt(0);
+  const numSignups = await (isMerged ? pollContract.numSignups() : maciContract.numSignUps());
 
   logGreen(
     quiet,
@@ -55,7 +55,7 @@ export const getPoll = async ({
         `Deploy time: ${new Date(Number(deployTime) * 1000).toString()}`,
         `End time: ${new Date(Number(deployTime + duration) * 1000).toString()}`,
         `Number of signups ${numSignups}`,
-        `State Aq merged: ${isStateAqMerged}`,
+        `State tree merged: ${mergedStateRoot}`,
       ].join("\n"),
     ),
   );
@@ -66,6 +66,6 @@ export const getPoll = async ({
     deployTime,
     duration,
     numSignups,
-    isStateAqMerged,
+    isMerged,
   };
 };
