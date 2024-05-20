@@ -396,9 +396,13 @@ export class Deployment {
    * @param {IGetContractParams} params - params
    * @returns contract wrapper
    */
-  async getContract<T extends BaseContract>({ name, key, address, signer }: IGetContractParams): Promise<T> {
+  async getContract<T extends BaseContract>({ name, key, address, abi, signer }: IGetContractParams): Promise<T> {
     const deployer = signer || (await this.getDeployer());
     const contractAddress = address || this.storage.mustGetAddress(name, this.hre!.network.name, key);
+
+    if (abi) {
+      return new BaseContract(contractAddress, abi, deployer) as unknown as T;
+    }
 
     const factory = await this.hre?.ethers.getContractAt(name.toString(), contractAddress, deployer);
 
