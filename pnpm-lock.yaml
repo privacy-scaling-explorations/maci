@@ -16,10 +16,10 @@ importers:
         version: 19.2.2
       '@typescript-eslint/eslint-plugin':
         specifier: ^7.8.0
-        version: 7.8.0(@typescript-eslint/parser@7.8.0)(eslint@8.57.0)(typescript@5.4.5)
+        version: 7.8.0(@typescript-eslint/parser@7.9.0)(eslint@8.57.0)(typescript@5.4.5)
       '@typescript-eslint/parser':
-        specifier: ^7.8.0
-        version: 7.8.0(eslint@8.57.0)(typescript@5.4.5)
+        specifier: ^7.9.0
+        version: 7.9.0(eslint@8.57.0)(typescript@5.4.5)
       conventional-changelog-conventionalcommits:
         specifier: ^8.0.0
         version: 8.0.0
@@ -37,10 +37,10 @@ importers:
         version: 9.1.0(eslint@8.57.0)
       eslint-import-resolver-typescript:
         specifier: ^3.6.1
-        version: 3.6.1(@typescript-eslint/parser@7.8.0)(eslint-plugin-import@2.29.1)(eslint@8.57.0)
+        version: 3.6.1(@typescript-eslint/parser@7.9.0)(eslint-plugin-import@2.29.1)(eslint@8.57.0)
       eslint-plugin-import:
         specifier: ^2.29.1
-        version: 2.29.1(@typescript-eslint/parser@7.8.0)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
+        version: 2.29.1(@typescript-eslint/parser@7.9.0)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
       eslint-plugin-json:
         specifier: ^3.1.0
         version: 3.1.0
@@ -103,13 +103,13 @@ importers:
         version: 2.0.5
       maci-core:
         specifier: ^1.2.1
-        version: link:../core
+        version: 1.2.2
       maci-crypto:
         specifier: ^1.2.1
-        version: link:../crypto
+        version: 1.2.2
       maci-domainobjs:
         specifier: ^1.2.1
-        version: link:../domainobjs
+        version: 1.2.2
       snarkjs:
         specifier: ^0.7.4
         version: 0.7.4
@@ -167,19 +167,19 @@ importers:
         version: 2.22.3(ts-node@10.9.2)(typescript@5.4.5)
       maci-circuits:
         specifier: ^1.2.1
-        version: link:../circuits
+        version: 1.2.2
       maci-contracts:
         specifier: ^1.2.1
-        version: link:../contracts
+        version: 1.2.2(@nomicfoundation/hardhat-chai-matchers@2.0.6)(@nomicfoundation/hardhat-ignition-ethers@0.15.1)(@nomicfoundation/hardhat-network-helpers@1.0.10)(@nomicfoundation/hardhat-verify@2.0.5)(@typechain/ethers-v6@0.5.1)(@typechain/hardhat@9.1.0)(@types/chai@4.3.14)(@types/mocha@10.0.6)(@types/node@20.12.11)(chai@4.4.1)(hardhat-gas-reporter@1.0.10)(solidity-coverage@0.8.12)(ts-node@10.9.2)(typechain@8.3.2)(typescript@5.4.5)
       maci-core:
         specifier: ^1.2.1
-        version: link:../core
+        version: 1.2.2
       maci-crypto:
         specifier: ^1.2.1
-        version: link:../crypto
+        version: 1.2.2
       maci-domainobjs:
         specifier: ^1.2.1
-        version: link:../domainobjs
+        version: 1.2.2
       prompt:
         specifier: ^1.3.0
         version: 1.3.0
@@ -249,16 +249,16 @@ importers:
         version: 1.0.0
       maci-circuits:
         specifier: ^1.2.1
-        version: link:../circuits
+        version: 1.2.2
       maci-core:
         specifier: ^1.2.1
-        version: link:../core
+        version: 1.2.2
       maci-crypto:
         specifier: ^1.2.1
-        version: link:../crypto
+        version: 1.2.2
       maci-domainobjs:
         specifier: ^1.2.1
-        version: link:../domainobjs
+        version: 1.2.2
       solidity-docgen:
         specifier: ^0.6.0-beta.36
         version: 0.6.0-beta.36(hardhat@2.22.3)
@@ -343,16 +343,16 @@ importers:
         version: 7.1.0
       maci-circuits:
         specifier: ^1.2.1
-        version: link:../circuits
+        version: 1.2.2
       maci-cli:
         specifier: ^1.2.1
-        version: link:../cli
+        version: 1.2.2(@nomicfoundation/hardhat-chai-matchers@2.0.6)(@nomicfoundation/hardhat-ethers@3.0.5)(@nomicfoundation/hardhat-ignition-ethers@0.15.1)(@nomicfoundation/hardhat-network-helpers@1.0.10)(@nomicfoundation/hardhat-verify@2.0.5)(@typechain/ethers-v6@0.5.1)(@typechain/hardhat@9.1.0)(@types/chai@4.3.14)(@types/mocha@10.0.6)(@types/node@20.12.11)(chai@4.4.1)(hardhat-gas-reporter@1.0.10)(solidity-coverage@0.8.12)(ts-node@10.9.2)(typechain@8.3.2)(typescript@5.4.5)
       maci-contracts:
         specifier: ^1.2.1
-        version: link:../contracts
+        version: 1.2.2(@nomicfoundation/hardhat-chai-matchers@2.0.6)(@nomicfoundation/hardhat-ignition-ethers@0.15.1)(@nomicfoundation/hardhat-network-helpers@1.0.10)(@nomicfoundation/hardhat-verify@2.0.5)(@typechain/ethers-v6@0.5.1)(@typechain/hardhat@9.1.0)(@types/chai@4.3.14)(@types/mocha@10.0.6)(@types/node@20.12.11)(chai@4.4.1)(hardhat-gas-reporter@1.0.10)(solidity-coverage@0.8.12)(ts-node@10.9.2)(typechain@8.3.2)(typescript@5.4.5)
       maci-domainobjs:
         specifier: ^1.2.1
-        version: link:../domainobjs
+        version: 1.2.2
       reflect-metadata:
         specifier: ^0.2.0
         version: 0.2.2
@@ -407,10 +407,10 @@ importers:
     dependencies:
       maci-crypto:
         specifier: ^1.2.1
-        version: link:../crypto
+        version: 1.2.2
       maci-domainobjs:
         specifier: ^1.2.1
-        version: link:../domainobjs
+        version: 1.2.2
     devDependencies:
       '@types/chai':
         specifier: ^4.3.11
@@ -493,7 +493,7 @@ importers:
     dependencies:
       maci-crypto:
         specifier: ^1.2.1
-        version: link:../crypto
+        version: 1.2.2
     devDependencies:
       '@types/chai':
         specifier: ^4.3.11
@@ -527,22 +527,22 @@ importers:
         version: 6.12.1
       maci-circuits:
         specifier: ^1.2.1
-        version: link:../circuits
+        version: 1.2.2
       maci-cli:
         specifier: ^1.2.1
-        version: link:../cli
+        version: 1.2.2(@nomicfoundation/hardhat-chai-matchers@2.0.6)(@nomicfoundation/hardhat-ethers@3.0.5)(@nomicfoundation/hardhat-ignition-ethers@0.15.1)(@nomicfoundation/hardhat-network-helpers@1.0.10)(@nomicfoundation/hardhat-verify@2.0.5)(@typechain/ethers-v6@0.5.1)(@typechain/hardhat@9.1.0)(@types/chai@4.3.14)(@types/mocha@10.0.6)(@types/node@20.12.11)(chai@4.4.1)(hardhat-gas-reporter@1.0.10)(solidity-coverage@0.8.12)(ts-node@10.9.2)(typechain@8.3.2)(typescript@5.4.5)
       maci-contracts:
         specifier: ^1.2.1
-        version: link:../contracts
+        version: 1.2.2(@nomicfoundation/hardhat-chai-matchers@2.0.6)(@nomicfoundation/hardhat-ignition-ethers@0.15.1)(@nomicfoundation/hardhat-network-helpers@1.0.10)(@nomicfoundation/hardhat-verify@2.0.5)(@typechain/ethers-v6@0.5.1)(@typechain/hardhat@9.1.0)(@types/chai@4.3.14)(@types/mocha@10.0.6)(@types/node@20.12.11)(chai@4.4.1)(hardhat-gas-reporter@1.0.10)(solidity-coverage@0.8.12)(ts-node@10.9.2)(typechain@8.3.2)(typescript@5.4.5)
       maci-core:
         specifier: ^1.2.1
-        version: link:../core
+        version: 1.2.2
       maci-crypto:
         specifier: ^1.2.1
-        version: link:../crypto
+        version: 1.2.2
       maci-domainobjs:
         specifier: ^1.2.1
-        version: link:../domainobjs
+        version: 1.2.2
     devDependencies:
       '@types/chai':
         specifier: ^4.3.11
@@ -6723,7 +6723,7 @@ packages:
     dependencies:
       '@types/yargs-parser': 21.0.3
 
-  /@typescript-eslint/eslint-plugin@7.8.0(@typescript-eslint/parser@7.8.0)(eslint@8.57.0)(typescript@5.4.5):
+  /@typescript-eslint/eslint-plugin@7.8.0(@typescript-eslint/parser@7.9.0)(eslint@8.57.0)(typescript@5.4.5):
     resolution: {integrity: sha512-gFTT+ezJmkwutUPmB0skOj3GZJtlEGnlssems4AjkVweUPGj7jRwwqg0Hhg7++kPGJqKtTYx+R05Ftww372aIg==}
     engines: {node: ^18.18.0 || >=20.0.0}
     peerDependencies:
@@ -6735,7 +6735,7 @@ packages:
         optional: true
     dependencies:
       '@eslint-community/regexpp': 4.10.0
-      '@typescript-eslint/parser': 7.8.0(eslint@8.57.0)(typescript@5.4.5)
+      '@typescript-eslint/parser': 7.9.0(eslint@8.57.0)(typescript@5.4.5)
       '@typescript-eslint/scope-manager': 7.8.0
       '@typescript-eslint/type-utils': 7.8.0(eslint@8.57.0)(typescript@5.4.5)
       '@typescript-eslint/utils': 7.8.0(eslint@8.57.0)(typescript@5.4.5)
@@ -6752,8 +6752,8 @@ packages:
       - supports-color
     dev: true
 
-  /@typescript-eslint/parser@7.8.0(eslint@8.57.0)(typescript@5.4.5):
-    resolution: {integrity: sha512-KgKQly1pv0l4ltcftP59uQZCi4HUYswCLbTqVZEJu7uLX8CTLyswqMLqLN+2QFz4jCptqWVV4SB7vdxcH2+0kQ==}
+  /@typescript-eslint/parser@7.9.0(eslint@8.57.0)(typescript@5.4.5):
+    resolution: {integrity: sha512-qHMJfkL5qvgQB2aLvhUSXxbK7OLnDkwPzFalg458pxQgfxKDfT1ZDbHQM/I6mDIf/svlMkj21kzKuQ2ixJlatQ==}
     engines: {node: ^18.18.0 || >=20.0.0}
     peerDependencies:
       eslint: ^8.56.0
@@ -6762,10 +6762,10 @@ packages:
       typescript:
         optional: true
     dependencies:
-      '@typescript-eslint/scope-manager': 7.8.0
-      '@typescript-eslint/types': 7.8.0
-      '@typescript-eslint/typescript-estree': 7.8.0(typescript@5.4.5)
-      '@typescript-eslint/visitor-keys': 7.8.0
+      '@typescript-eslint/scope-manager': 7.9.0
+      '@typescript-eslint/types': 7.9.0
+      '@typescript-eslint/typescript-estree': 7.9.0(typescript@5.4.5)
+      '@typescript-eslint/visitor-keys': 7.9.0
       debug: 4.3.4(supports-color@8.1.1)
       eslint: 8.57.0
       typescript: 5.4.5
@@ -6779,6 +6779,14 @@ packages:
     dependencies:
       '@typescript-eslint/types': 7.8.0
       '@typescript-eslint/visitor-keys': 7.8.0
+    dev: true
+
+  /@typescript-eslint/scope-manager@7.9.0:
+    resolution: {integrity: sha512-ZwPK4DeCDxr3GJltRz5iZejPFAAr4Wk3+2WIBaj1L5PYK5RgxExu/Y68FFVclN0y6GGwH8q+KgKRCvaTmFBbgQ==}
+    engines: {node: ^18.18.0 || >=20.0.0}
+    dependencies:
+      '@typescript-eslint/types': 7.9.0
+      '@typescript-eslint/visitor-keys': 7.9.0
     dev: true
 
   /@typescript-eslint/type-utils@7.8.0(eslint@8.57.0)(typescript@5.4.5):
@@ -6806,6 +6814,11 @@ packages:
     engines: {node: ^18.18.0 || >=20.0.0}
     dev: true
 
+  /@typescript-eslint/types@7.9.0:
+    resolution: {integrity: sha512-oZQD9HEWQanl9UfsbGVcZ2cGaR0YT5476xfWE0oE5kQa2sNK2frxOlkeacLOTh9po4AlUT5rtkGyYM5kew0z5w==}
+    engines: {node: ^18.18.0 || >=20.0.0}
+    dev: true
+
   /@typescript-eslint/typescript-estree@7.8.0(typescript@5.4.5):
     resolution: {integrity: sha512-5pfUCOwK5yjPaJQNy44prjCwtr981dO8Qo9J9PwYXZ0MosgAbfEMB008dJ5sNo3+/BN6ytBPuSvXUg9SAqB0dg==}
     engines: {node: ^18.18.0 || >=20.0.0}
@@ -6817,6 +6830,28 @@ packages:
     dependencies:
       '@typescript-eslint/types': 7.8.0
       '@typescript-eslint/visitor-keys': 7.8.0
+      debug: 4.3.4(supports-color@8.1.1)
+      globby: 11.1.0
+      is-glob: 4.0.3
+      minimatch: 9.0.4
+      semver: 7.6.0
+      ts-api-utils: 1.3.0(typescript@5.4.5)
+      typescript: 5.4.5
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
+
+  /@typescript-eslint/typescript-estree@7.9.0(typescript@5.4.5):
+    resolution: {integrity: sha512-zBCMCkrb2YjpKV3LA0ZJubtKCDxLttxfdGmwZvTqqWevUPN0FZvSI26FalGFFUZU/9YQK/A4xcQF9o/VVaCKAg==}
+    engines: {node: ^18.18.0 || >=20.0.0}
+    peerDependencies:
+      typescript: '*'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+    dependencies:
+      '@typescript-eslint/types': 7.9.0
+      '@typescript-eslint/visitor-keys': 7.9.0
       debug: 4.3.4(supports-color@8.1.1)
       globby: 11.1.0
       is-glob: 4.0.3
@@ -6852,6 +6887,14 @@ packages:
     engines: {node: ^18.18.0 || >=20.0.0}
     dependencies:
       '@typescript-eslint/types': 7.8.0
+      eslint-visitor-keys: 3.4.3
+    dev: true
+
+  /@typescript-eslint/visitor-keys@7.9.0:
+    resolution: {integrity: sha512-iESPx2TNLDNGQLyjKhUvIKprlP49XNEK+MvIf9nIO7ZZaZdbnfWKHnXAgufpxqfA0YryH8XToi4+CjBgVnFTSQ==}
+    engines: {node: ^18.18.0 || >=20.0.0}
+    dependencies:
+      '@typescript-eslint/types': 7.9.0
       eslint-visitor-keys: 3.4.3
     dev: true
 
@@ -10223,7 +10266,7 @@ packages:
     dependencies:
       confusing-browser-globals: 1.0.11
       eslint: 8.57.0
-      eslint-plugin-import: 2.29.1(@typescript-eslint/parser@7.8.0)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
+      eslint-plugin-import: 2.29.1(@typescript-eslint/parser@7.9.0)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
       object.assign: 4.1.5
       object.entries: 1.1.8
       semver: 6.3.1
@@ -10241,7 +10284,7 @@ packages:
     dependencies:
       eslint: 8.57.0
       eslint-config-airbnb-base: 15.0.0(eslint-plugin-import@2.29.1)(eslint@8.57.0)
-      eslint-plugin-import: 2.29.1(@typescript-eslint/parser@7.8.0)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
+      eslint-plugin-import: 2.29.1(@typescript-eslint/parser@7.9.0)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
       eslint-plugin-jsx-a11y: 6.8.0(eslint@8.57.0)
       eslint-plugin-react: 7.34.1(eslint@8.57.0)
       eslint-plugin-react-hooks: 4.6.2(eslint@8.57.0)
@@ -10268,7 +10311,7 @@ packages:
       - supports-color
     dev: true
 
-  /eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@7.8.0)(eslint-plugin-import@2.29.1)(eslint@8.57.0):
+  /eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@7.9.0)(eslint-plugin-import@2.29.1)(eslint@8.57.0):
     resolution: {integrity: sha512-xgdptdoi5W3niYeuQxKmzVDTATvLYqhpwmykwsh7f6HIOStGWEIL9iqZgQDF9u9OEzrRwR8no5q2VT+bjAujTg==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
@@ -10278,8 +10321,8 @@ packages:
       debug: 4.3.4(supports-color@8.1.1)
       enhanced-resolve: 5.16.0
       eslint: 8.57.0
-      eslint-module-utils: 2.8.1(@typescript-eslint/parser@7.8.0)(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
-      eslint-plugin-import: 2.29.1(@typescript-eslint/parser@7.8.0)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
+      eslint-module-utils: 2.8.1(@typescript-eslint/parser@7.9.0)(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
+      eslint-plugin-import: 2.29.1(@typescript-eslint/parser@7.9.0)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
       fast-glob: 3.3.2
       get-tsconfig: 4.7.3
       is-core-module: 2.13.1
@@ -10291,7 +10334,7 @@ packages:
       - supports-color
     dev: true
 
-  /eslint-module-utils@2.8.1(@typescript-eslint/parser@7.8.0)(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0):
+  /eslint-module-utils@2.8.1(@typescript-eslint/parser@7.9.0)(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0):
     resolution: {integrity: sha512-rXDXR3h7cs7dy9RNpUlQf80nX31XWJEyGq1tRMo+6GsO5VmTe4UTwtmonAD4ZkAsrfMVDA2wlGJ3790Ys+D49Q==}
     engines: {node: '>=4'}
     peerDependencies:
@@ -10312,16 +10355,16 @@ packages:
       eslint-import-resolver-webpack:
         optional: true
     dependencies:
-      '@typescript-eslint/parser': 7.8.0(eslint@8.57.0)(typescript@5.4.5)
+      '@typescript-eslint/parser': 7.9.0(eslint@8.57.0)(typescript@5.4.5)
       debug: 3.2.7
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@7.8.0)(eslint-plugin-import@2.29.1)(eslint@8.57.0)
+      eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@7.9.0)(eslint-plugin-import@2.29.1)(eslint@8.57.0)
     transitivePeerDependencies:
       - supports-color
     dev: true
 
-  /eslint-plugin-import@2.29.1(@typescript-eslint/parser@7.8.0)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0):
+  /eslint-plugin-import@2.29.1(@typescript-eslint/parser@7.9.0)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0):
     resolution: {integrity: sha512-BbPC0cuExzhiMo4Ff1BTVwHpjjv28C5R+btTOGaCRC7UEz801up0JadwkeSk5Ued6TG34uaczuVuH6qyy5YUxw==}
     engines: {node: '>=4'}
     peerDependencies:
@@ -10331,7 +10374,7 @@ packages:
       '@typescript-eslint/parser':
         optional: true
     dependencies:
-      '@typescript-eslint/parser': 7.8.0(eslint@8.57.0)(typescript@5.4.5)
+      '@typescript-eslint/parser': 7.9.0(eslint@8.57.0)(typescript@5.4.5)
       array-includes: 3.1.8
       array.prototype.findlastindex: 1.2.5
       array.prototype.flat: 1.3.2
@@ -10340,7 +10383,7 @@ packages:
       doctrine: 2.1.0
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.8.1(@typescript-eslint/parser@7.8.0)(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
+      eslint-module-utils: 2.8.1(@typescript-eslint/parser@7.9.0)(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
       hasown: 2.0.2
       is-core-module: 2.13.1
       is-glob: 4.0.3
@@ -10456,7 +10499,7 @@ packages:
       '@typescript-eslint/eslint-plugin':
         optional: true
     dependencies:
-      '@typescript-eslint/eslint-plugin': 7.8.0(@typescript-eslint/parser@7.8.0)(eslint@8.57.0)(typescript@5.4.5)
+      '@typescript-eslint/eslint-plugin': 7.8.0(@typescript-eslint/parser@7.9.0)(eslint@8.57.0)(typescript@5.4.5)
       eslint: 8.57.0
       eslint-rule-composer: 0.3.0
     dev: true
@@ -14394,6 +14437,129 @@ packages:
 
   /lunr@2.3.9:
     resolution: {integrity: sha512-zTU3DaZaF3Rt9rhN3uBMGQD3dD2/vFQqnvZCDv4dl5iOzq2IZQqTxu90r4E5J+nP70J3ilqVCrbho2eWaeW8Ow==}
+
+  /maci-circuits@1.2.2:
+    resolution: {integrity: sha512-CBKeLfT5uywgUC+l4W+ZpDf7Av3ZGNpVX//tjgiy0Bgaps5bOhAScmKpAZIfB3aTitpOtiao9E9veb9syTNhnw==}
+    dependencies:
+      '@zk-kit/circuits': 0.4.0
+      circomkit: 0.1.0
+      circomlib: 2.0.5
+      maci-core: 1.2.2
+      maci-crypto: 1.2.2
+      maci-domainobjs: 1.2.2
+      snarkjs: 0.7.4
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
+
+  /maci-cli@1.2.2(@nomicfoundation/hardhat-chai-matchers@2.0.6)(@nomicfoundation/hardhat-ethers@3.0.5)(@nomicfoundation/hardhat-ignition-ethers@0.15.1)(@nomicfoundation/hardhat-network-helpers@1.0.10)(@nomicfoundation/hardhat-verify@2.0.5)(@typechain/ethers-v6@0.5.1)(@typechain/hardhat@9.1.0)(@types/chai@4.3.14)(@types/mocha@10.0.6)(@types/node@20.12.11)(chai@4.4.1)(hardhat-gas-reporter@1.0.10)(solidity-coverage@0.8.12)(ts-node@10.9.2)(typechain@8.3.2)(typescript@5.4.5):
+    resolution: {integrity: sha512-l5L7FpUH5eH5NkNFPsqXrWvJkdgkdSSZmjy28FR3SBNIGzfbgfT32x0hBoNSDs2QIb+72KZ3rgGyorc/icTXlg==}
+    hasBin: true
+    dependencies:
+      '@commander-js/extra-typings': 12.0.1(commander@12.0.0)
+      '@nomicfoundation/hardhat-toolbox': 5.0.0(@nomicfoundation/hardhat-chai-matchers@2.0.6)(@nomicfoundation/hardhat-ethers@3.0.5)(@nomicfoundation/hardhat-ignition-ethers@0.15.1)(@nomicfoundation/hardhat-network-helpers@1.0.10)(@nomicfoundation/hardhat-verify@2.0.5)(@typechain/ethers-v6@0.5.1)(@typechain/hardhat@9.1.0)(@types/chai@4.3.14)(@types/mocha@10.0.6)(@types/node@20.12.11)(chai@4.4.1)(ethers@6.12.1)(hardhat-gas-reporter@1.0.10)(hardhat@2.22.3)(solidity-coverage@0.8.12)(ts-node@10.9.2)(typechain@8.3.2)(typescript@5.4.5)
+      commander: 12.0.0
+      dotenv: 16.4.5
+      ethers: 6.12.1
+      hardhat: 2.22.3(ts-node@10.9.2)(typescript@5.4.5)
+      maci-circuits: 1.2.2
+      maci-contracts: 1.2.2(@nomicfoundation/hardhat-chai-matchers@2.0.6)(@nomicfoundation/hardhat-ignition-ethers@0.15.1)(@nomicfoundation/hardhat-network-helpers@1.0.10)(@nomicfoundation/hardhat-verify@2.0.5)(@typechain/ethers-v6@0.5.1)(@typechain/hardhat@9.1.0)(@types/chai@4.3.14)(@types/mocha@10.0.6)(@types/node@20.12.11)(chai@4.4.1)(hardhat-gas-reporter@1.0.10)(solidity-coverage@0.8.12)(ts-node@10.9.2)(typechain@8.3.2)(typescript@5.4.5)
+      maci-core: 1.2.2
+      maci-crypto: 1.2.2
+      maci-domainobjs: 1.2.2
+      prompt: 1.3.0
+    transitivePeerDependencies:
+      - '@nomicfoundation/hardhat-chai-matchers'
+      - '@nomicfoundation/hardhat-ethers'
+      - '@nomicfoundation/hardhat-ignition-ethers'
+      - '@nomicfoundation/hardhat-network-helpers'
+      - '@nomicfoundation/hardhat-verify'
+      - '@typechain/ethers-v6'
+      - '@typechain/hardhat'
+      - '@types/chai'
+      - '@types/mocha'
+      - '@types/node'
+      - bufferutil
+      - c-kzg
+      - chai
+      - hardhat-gas-reporter
+      - solidity-coverage
+      - supports-color
+      - ts-node
+      - typechain
+      - typescript
+      - utf-8-validate
+    dev: false
+
+  /maci-contracts@1.2.2(@nomicfoundation/hardhat-chai-matchers@2.0.6)(@nomicfoundation/hardhat-ignition-ethers@0.15.1)(@nomicfoundation/hardhat-network-helpers@1.0.10)(@nomicfoundation/hardhat-verify@2.0.5)(@typechain/ethers-v6@0.5.1)(@typechain/hardhat@9.1.0)(@types/chai@4.3.14)(@types/mocha@10.0.6)(@types/node@20.12.11)(chai@4.4.1)(hardhat-gas-reporter@1.0.10)(solidity-coverage@0.8.12)(ts-node@10.9.2)(typechain@8.3.2)(typescript@5.4.5):
+    resolution: {integrity: sha512-Iws+V2EOe6z8hobEwGnVTV90i6eyCHixFAYdAcVU34bCwksFgL03EssXLi5baS+a3Uig3VgjUE4QbidpBFi0Jw==}
+    hasBin: true
+    dependencies:
+      '@nomicfoundation/hardhat-ethers': 3.0.5(ethers@6.12.1)(hardhat@2.22.3)
+      '@nomicfoundation/hardhat-toolbox': 5.0.0(@nomicfoundation/hardhat-chai-matchers@2.0.6)(@nomicfoundation/hardhat-ethers@3.0.5)(@nomicfoundation/hardhat-ignition-ethers@0.15.1)(@nomicfoundation/hardhat-network-helpers@1.0.10)(@nomicfoundation/hardhat-verify@2.0.5)(@typechain/ethers-v6@0.5.1)(@typechain/hardhat@9.1.0)(@types/chai@4.3.14)(@types/mocha@10.0.6)(@types/node@20.12.11)(chai@4.4.1)(ethers@6.12.1)(hardhat-gas-reporter@1.0.10)(hardhat@2.22.3)(solidity-coverage@0.8.12)(ts-node@10.9.2)(typechain@8.3.2)(typescript@5.4.5)
+      '@openzeppelin/contracts': 5.0.2
+      circomlibjs: 0.1.7
+      ethers: 6.12.1
+      hardhat: 2.22.3(ts-node@10.9.2)(typescript@5.4.5)
+      lowdb: 1.0.0
+      maci-circuits: 1.2.2
+      maci-core: 1.2.2
+      maci-crypto: 1.2.2
+      maci-domainobjs: 1.2.2
+      solidity-docgen: 0.6.0-beta.36(hardhat@2.22.3)
+    transitivePeerDependencies:
+      - '@nomicfoundation/hardhat-chai-matchers'
+      - '@nomicfoundation/hardhat-ignition-ethers'
+      - '@nomicfoundation/hardhat-network-helpers'
+      - '@nomicfoundation/hardhat-verify'
+      - '@typechain/ethers-v6'
+      - '@typechain/hardhat'
+      - '@types/chai'
+      - '@types/mocha'
+      - '@types/node'
+      - bufferutil
+      - c-kzg
+      - chai
+      - hardhat-gas-reporter
+      - solidity-coverage
+      - supports-color
+      - ts-node
+      - typechain
+      - typescript
+      - utf-8-validate
+    dev: false
+
+  /maci-core@1.2.2:
+    resolution: {integrity: sha512-a4OdSnlP7Rk9g4rn5D8oCjQIIYSMxd5DH1Entgj1JnJ7G4GuIEoC1RP2zw/Bh7wolDi1J9IYFmwFIzdS332ggA==}
+    dependencies:
+      maci-crypto: 1.2.2
+      maci-domainobjs: 1.2.2
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
+
+  /maci-crypto@1.2.2:
+    resolution: {integrity: sha512-N752cmfC+guhCrV+2szXsf+1ChFBsVRVGiFLJAGw+rKIERlct4jJryzM4kTVIfL0qFSKBsw8NsQQfrRacLMlFQ==}
+    dependencies:
+      '@zk-kit/baby-jubjub': 0.3.0
+      '@zk-kit/eddsa-poseidon': 0.11.0
+      '@zk-kit/poseidon-cipher': 0.3.0
+      ethers: 6.12.1
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
+
+  /maci-domainobjs@1.2.2:
+    resolution: {integrity: sha512-Wdtb/baKeITXGTAfA+6X573bcarCxD0KGXaSxoEuxZDbdamwhBqYdTRBcLNBFLK4eWC0RethzwW7lAQuGJfPdg==}
+    dependencies:
+      maci-crypto: 1.2.2
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
 
   /magic-string@0.30.5:
     resolution: {integrity: sha512-7xlpfBaQaP/T6Vh8MO/EqXSW5En6INHEvEXQiuff7Gku0PWjU3uf6w/j9o7O+SpB5fOAkrI5HeoNgwjEO0pFsA==}
