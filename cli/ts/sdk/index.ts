@@ -1,3 +1,4 @@
+import { extractVkToFile } from "../commands/extractVkToFile";
 import { genKeyPair } from "../commands/genKeyPair";
 import { genMaciPubKey } from "../commands/genPubKey";
 import { getPoll } from "../commands/poll";
@@ -5,7 +6,7 @@ import { publish, publishBatch } from "../commands/publish";
 import { signup, isRegisteredUser } from "../commands/signup";
 import { verify } from "../commands/verify";
 
-export { genKeyPair, genMaciPubKey, publish, publishBatch, signup, isRegisteredUser, verify, getPoll };
+export { genKeyPair, genMaciPubKey, publish, publishBatch, signup, isRegisteredUser, verify, getPoll, extractVkToFile };
 
 export type { ISnarkJSVerificationKey } from "maci-circuits";
 
