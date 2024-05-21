@@ -2,10 +2,8 @@
 title: MACI Poll Types
 description: Which type of polls you can run on MACI
 sidebar_label: MACI poll types
-sidebar_position: 21
+sidebar_position: 9
 ---
-
-# MACI Poll Types
 
 MACI allows to conduct polls in both a quadratic voting and non quadratic voting fashion. One should be aware that the only distinction between the two happens when messages are processed and votes tallied. On top of that, the Tally smart contract has been split into two different ones, with the non quadratic voting version one being slightly smaller, due to the need of one less function.
 
@@ -15,7 +13,7 @@ This document will explain how to use each of these options.
 
 MACI has always worked with quadratic voting. Users signing up to MACI are assigned a number of voice credits based on certain conditions (enforced by the [initial voice credit proxy contract](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/initialVoiceCreditProxy/InitialVoiceCreditProxy.sol)), and after each vote, the number of voice credits is reduced by the square of the weight of the vote casted. For instance, if the vote weight is 5, a user must have at least 25 voice credits to cast the vote.
 
-To run a poll with quadratic voting, the coordinator must set the `useQuadraticVoting` parameter to `true` when creating the MACI instance. This will make the MACI instance use the `Tally` smart contract, which is the one that has been used since the beginning of MACI.
+To run a poll with quadratic voting, the coordinator must deploy the Poll with the mode set to quadratic voting.
 
 Using MACI's cli, one can create a MACI instance with quadratic voting by running the following command:
 
