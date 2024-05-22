@@ -1,7 +1,7 @@
 ---
-title: MACI Commands and Messages
+title: Commands and Messages
 description: A short introduction of MACI's commands and messages
-sidebar_label: MACI Commands and Messages
+sidebar_label: Commands and Messages
 sidebar_position: 3
 ---
 

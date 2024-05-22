@@ -1,7 +1,7 @@
 ---
-title: MACI Ballot
+title: Ballot
 description: A short introduction of the main primitives used by MACI
-sidebar_label: MACI Ballot
+sidebar_label: Ballot
 sidebar_position: 4
 ---
 

@@ -1,7 +1,7 @@
 ---
-title: MACI StateLeaf
+title: StateLeaf
 description: A short introduction of the main primitives used by MACI
-sidebar_label: MACI StateLeaf
+sidebar_label: StateLeaf
 sidebar_position: 6
 ---
 
