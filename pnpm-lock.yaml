@@ -96,8 +96,8 @@ importers:
         specifier: ^0.4.0
         version: 0.4.0
       circomkit:
-        specifier: ^0.1.0
-        version: 0.1.0
+        specifier: ^0.2.1
+        version: 0.2.1(@types/snarkjs@0.7.8)(snarkjs@0.7.4)
       circomlib:
         specifier: ^2.0.5
         version: 2.0.5
@@ -6641,7 +6641,6 @@ packages:
 
   /@types/snarkjs@0.7.8:
     resolution: {integrity: sha512-x37Jsv1vx6I6RMJdfvYEmDUOLYgzYMecwlk13gniDOcN20xLVe9hy9DlQxWeCPirqpDY/jwugQSqCi2RxehU3g==}
-    dev: true
 
   /@types/sockjs@0.3.36:
     resolution: {integrity: sha512-MK9V6NzAS1+Ud7JV9lJLFqW85VbC9dq3LmwZCuBe4wBDgKC0Kj/jd8Xl+nSviU+Qc3+m7umHHyHg//2KSa0a0Q==}
@@ -8282,13 +8281,17 @@ packages:
       util: 0.12.5
     dev: false
 
-  /circomkit@0.1.0:
-    resolution: {integrity: sha512-Mnc9IuOoaN7FitfURvbg2Q5j62S7/zQl6l18u5dcIhZg3Ot9MZYLiGIotCaF1Gfp/vAUKnvO2lnS3Xc1TdTISA==}
+  /circomkit@0.2.1(@types/snarkjs@0.7.8)(snarkjs@0.7.4):
+    resolution: {integrity: sha512-7O8QsOLUq2QvwGMimvWxwdg7OgV33OT7ZBND+81dv3JrVp8ove93yV16jF3TW6XBncSY92/Aka8F4CAi/H9VQw==}
     engines: {node: '>=12.0.0'}
     hasBin: true
+    peerDependencies:
+      '@types/snarkjs': ^0.7.x
+      snarkjs: ^0.7.x
     dependencies:
-      chai: 4.4.1
+      '@types/snarkjs': 0.7.8
       circom_tester: 0.0.19
+      commander: 12.1.0
       loglevel: 1.9.1
       snarkjs: 0.7.4
     dev: false
