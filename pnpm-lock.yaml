@@ -452,8 +452,8 @@ importers:
         specifier: ^0.11.0
         version: 0.11.0
       '@zk-kit/poseidon-cipher':
-        specifier: ^0.3.0
-        version: 0.3.0
+        specifier: ^0.3.1
+        version: 0.3.1
       ethers:
         specifier: ^6.12.1
         version: 6.12.1
@@ -6982,16 +6982,16 @@ packages:
       tslib: 2.6.2
     dev: true
 
-  /@zk-kit/baby-jubjub@0.2.0:
-    resolution: {integrity: sha512-pqiPq621oKpwiIkf1KcVh5MdbFX0V67s9gCmiEkhLMeafZaIXEwVt5qmIu1d2HB4mjXgr4Ys8Jpn2Rw4KXxnFQ==}
-    dependencies:
-      '@zk-kit/utils': 0.3.0
-    dev: false
-
   /@zk-kit/baby-jubjub@0.3.0:
     resolution: {integrity: sha512-mA3/M/+4C2vDtc0SpXf/q/nsvwBh+s42ou176sgDzqIBQD/u/N+LaLGorDh+X5AD3dVMHb8rheFpnnrJmjsqdA==}
     dependencies:
       '@zk-kit/utils': 0.6.0
+    dev: false
+
+  /@zk-kit/baby-jubjub@1.0.1:
+    resolution: {integrity: sha512-ADQd4nI71uZLd9mMLHm5u97QS9zwUBOIxK8776Og1gHHrIdsku8q8X1Xi54QAsbidvRBC5FDIQnP7QMUWJK/hQ==}
+    dependencies:
+      '@zk-kit/utils': 1.0.0
     dev: false
 
   /@zk-kit/circuits@0.4.0:
@@ -7014,15 +7014,11 @@ packages:
       poseidon-solidity: 0.0.5
     dev: false
 
-  /@zk-kit/poseidon-cipher@0.3.0:
-    resolution: {integrity: sha512-Byszt7dxssgsR7hog2nf9AMaBKYr8LrgtlU/PPHPEe2OkJwIeQSshoxqquLlZsyfOn2c1ZmTJb4Mo4aHY11pCA==}
+  /@zk-kit/poseidon-cipher@0.3.1:
+    resolution: {integrity: sha512-3plpr4Dk0EADSRPJ0NLNt7x+QG8zlJhT264zVGRxgl4yhraE2C/wAxrclUx1mcw8I04hYoXf1BTd0noAIwd5/A==}
     dependencies:
-      '@zk-kit/baby-jubjub': 0.2.0
-      '@zk-kit/utils': 0.3.0
-    dev: false
-
-  /@zk-kit/utils@0.3.0:
-    resolution: {integrity: sha512-yVBczOwOSV+evSgdsJ0tpPn3oQpbL7a7fRqANDogleaLLte1IFxKTFLz3WNcgd28Asq2guMGiU6SmiEc61uHAg==}
+      '@zk-kit/baby-jubjub': 1.0.1
+      '@zk-kit/utils': 1.0.0
     dev: false
 
   /@zk-kit/utils@0.6.0:
@@ -7033,6 +7029,12 @@ packages:
 
   /@zk-kit/utils@0.8.1:
     resolution: {integrity: sha512-m5cvnYo5IBZQCO8H5X0Mw3rGRGEoSqlYXVVF1+4M9IT3olDWcJHLPRqtYGF9zNf+vXV/21srpZ0hX3X2Lzp1TQ==}
+    dependencies:
+      buffer: 6.0.3
+    dev: false
+
+  /@zk-kit/utils@1.0.0:
+    resolution: {integrity: sha512-v5UjrZiaRNAN2UJmTFHvlMktaA2Efc2qN1Mwd4060ExX12yRhY8ZhzdlDODhnuHkvW5zPukuBHgQhHMScNP3Pg==}
     dependencies:
       buffer: 6.0.3
     dev: false
