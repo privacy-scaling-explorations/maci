@@ -263,8 +263,6 @@ template ProcessMessages(
     // Define vote type message processors.
     var computedNewVoteStateRoot[batchSize];
     var computedNewVoteBallotRoot[batchSize];
-    // Define topup type message processors.
-    var computedNewTopupStateRoot[batchSize];
 
     // Start from batchSize and decrement for process in reverse order.
     for (var i = batchSize - 1; i >= 0; i--) {

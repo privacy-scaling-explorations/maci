@@ -12,7 +12,7 @@ import { CurveBabyJubJub } from "./crypto/BabyJubJub.sol";
 
 /// @title Poll
 /// @notice A Poll contract allows voters to submit encrypted messages
-/// which can be either votes, key change messages or topup messages.
+/// which can be either votes or key change messages.
 /// @dev Do not deploy this directly. Use PollFactory.deploy() which performs some
 /// checks on the Poll constructor arguments.
 contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
