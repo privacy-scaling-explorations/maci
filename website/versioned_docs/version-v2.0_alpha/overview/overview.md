@@ -22,7 +22,7 @@ in [Circom](https://iden3.io/circom).
 
 The MACI circuits are released through the [`@maci-circuits`](https://www.npmjs.com/package/maci-circuits) NPM package.
 
-[Learn more about MACI circuits](/docs/developers-references/zk-snark-circuits/circuits)
+[Learn more about MACI circuits](/docs/developers-references/zk-snark-circuits/introduction)
 
 ## Smart contracts
 
