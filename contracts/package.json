@@ -71,7 +71,7 @@
     "verify:optimism-sepolia": "pnpm run verify --network optimism_sepolia"
   },
   "dependencies": {
-    "@nomicfoundation/hardhat-ethers": "^3.0.5",
+    "@nomicfoundation/hardhat-ethers": "^3.0.6",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@openzeppelin/contracts": "^5.0.2",
     "@zk-kit/imt.sol": "2.0.0-beta.12",
