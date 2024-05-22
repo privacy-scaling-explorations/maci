@@ -2,10 +2,8 @@
 title: MACI key change
 description: How key change messages work
 sidebar_label: Key change
-sidebar_position: 4
+sidebar_position: 8
 ---
-
-# MACI Key Change
 
 MACI's voters are identified by their MACI public key. Together with their private key, they can sign and submit messages to live Polls.
 
