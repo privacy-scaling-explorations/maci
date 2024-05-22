@@ -446,8 +446,8 @@ importers:
   crypto:
     dependencies:
       '@zk-kit/baby-jubjub':
-        specifier: ^0.3.0
-        version: 0.3.0
+        specifier: ^1.0.1
+        version: 1.0.1
       '@zk-kit/eddsa-poseidon':
         specifier: ^1.0.1
         version: 1.0.1
@@ -6982,12 +6982,6 @@ packages:
       tslib: 2.6.2
     dev: true
 
-  /@zk-kit/baby-jubjub@0.3.0:
-    resolution: {integrity: sha512-mA3/M/+4C2vDtc0SpXf/q/nsvwBh+s42ou176sgDzqIBQD/u/N+LaLGorDh+X5AD3dVMHb8rheFpnnrJmjsqdA==}
-    dependencies:
-      '@zk-kit/utils': 0.6.0
-    dev: false
-
   /@zk-kit/baby-jubjub@1.0.1:
     resolution: {integrity: sha512-ADQd4nI71uZLd9mMLHm5u97QS9zwUBOIxK8776Og1gHHrIdsku8q8X1Xi54QAsbidvRBC5FDIQnP7QMUWJK/hQ==}
     dependencies:
@@ -7019,12 +7013,6 @@ packages:
     dependencies:
       '@zk-kit/baby-jubjub': 1.0.1
       '@zk-kit/utils': 1.0.0
-    dev: false
-
-  /@zk-kit/utils@0.6.0:
-    resolution: {integrity: sha512-sUF1yVjlGmm7/NIN/+d+N8WOcI77bTzgV5+vZmp/S7lXcy4fmO+5TdHERRsDbs8Ep8K33EOC6V+U+JXzmjSe5A==}
-    dependencies:
-      buffer: 6.0.3
     dev: false
 
   /@zk-kit/utils@1.0.0:
