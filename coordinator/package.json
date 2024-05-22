@@ -33,7 +33,7 @@
     "class-validator": "^0.14.1",
     "dotenv": "^16.4.5",
     "ethers": "^6.12.1",
-    "hardhat": "^2.22.3",
+    "hardhat": "^2.22.4",
     "helmet": "^7.1.0",
     "maci-circuits": "1.2.2",
     "maci-cli": "1.2.2",
