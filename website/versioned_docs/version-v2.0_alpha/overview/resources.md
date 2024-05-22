@@ -1,7 +1,7 @@
 ---
-title: MACI resources
+title: Resources
 description: A collection of resources for better understanding MACI
-sidebar_label: MACI resources
+sidebar_label: Resources
 sidebar_position: 3
 ---
 

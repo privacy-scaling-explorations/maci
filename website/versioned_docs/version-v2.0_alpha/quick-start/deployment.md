@@ -1,11 +1,9 @@
 ---
-title: MACI Deployment
+title: Deployment
 description: MACI Smart Contracts deployment
-sidebar_label: MACI deployment
+sidebar_label: Deployment
 sidebar_position: 3
 ---
-
-# MACI Deployment
 
 Currently, it is possible to deploy MACI contracts in two ways:
 
@@ -16,7 +14,7 @@ Currently, it is possible to deploy MACI contracts in two ways:
 We recommend to use the hardhat tasks inside the `maci-contracts` folder, due to their semplicity and customizability.
 :::
 
-## MACI Deployment Steps
+## Deployment Steps
 
 In order, these are the steps for a full MACI deployment:
 

@@ -1,5 +1,5 @@
 ---
-title: MACI key change
+title: Key change
 description: How key change messages work
 sidebar_label: Key change
 sidebar_position: 8

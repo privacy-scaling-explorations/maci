@@ -1,7 +1,7 @@
 ---
-title: MACI Poll Types
+title: Poll Types
 description: Which type of polls you can run on MACI
-sidebar_label: MACI poll types
+sidebar_label: Poll types
 sidebar_position: 9
 ---
 
