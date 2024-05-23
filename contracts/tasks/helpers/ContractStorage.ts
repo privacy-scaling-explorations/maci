@@ -87,6 +87,7 @@ export class ContractStorage {
 
     const logEntry: IStorageInstanceEntry = {
       id,
+      deploymentTxHash: deploymentTx?.hash,
     };
 
     if (args !== undefined) {
@@ -175,6 +176,20 @@ export class ContractStorage {
     }
 
     return address;
+  }
+
+  /**
+   * Get Contract Deployment Transaction Hash
+   */
+  getDeploymentTxHash(id: EContracts, network: string, address: string): string | undefined {
+    const collection = this.db.get(`${network}.instance.${address}`);
+    const instanceEntry = collection.value() as IStorageInstanceEntry | undefined;
+
+    if (instanceEntry?.id !== id) {
+      throw new Error(`Contract ${id} with address ${address} and network ${network} not found.`);
+    }
+
+    return instanceEntry.deploymentTxHash;
   }
 
   /**

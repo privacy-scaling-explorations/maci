@@ -432,6 +432,11 @@ export interface IStorageInstanceEntry {
   id: string;
 
   /**
+   * Deployment Transaction Hash
+   */
+  deploymentTxHash?: string;
+
+  /**
    * Params for verification
    */
   verify?: {
