@@ -1,4 +1,8 @@
-import { type SignalValueType } from "circomkit/dist/types/circuit";
+/** An integer value is a numerical string, a number, or a bigint. */
+export type IntegerValueType = `${number}` | number | bigint;
+
+/** A signal value is a number, or an array of numbers (recursively). */
+export type SignalValueType = IntegerValueType | SignalValueType[];
 
 /**
  * Circuit inputs for testing the MessageValidator circuit
