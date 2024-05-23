@@ -1,6 +1,5 @@
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
-import { SignalValueType } from "circomkit/dist/types/circuit";
 import { genRandomSalt } from "maci-crypto";
 import { PCommand, Keypair } from "maci-domainobjs";
 
@@ -58,7 +57,7 @@ describe("MessageValidator circuit", function test() {
       const signature = command.sign(privKey);
 
       circuitInputs = {
-        stateTreeIndex: 0n as SignalValueType,
+        stateTreeIndex: 0n,
         numSignUps: 1n,
         voteOptionIndex: 0n,
         maxVoteOptions: 1n,
@@ -204,7 +203,7 @@ describe("MessageValidator circuit", function test() {
       const signature = command.sign(privKey);
 
       circuitInputs = {
-        stateTreeIndex: 0n as SignalValueType,
+        stateTreeIndex: 0n,
         numSignUps: 1n,
         voteOptionIndex: 0n,
         maxVoteOptions: 1n,
