@@ -1,0 +1,37 @@
+name: CoordinatorDeploy
+on:
+  push:
+    branches:
+      - dev
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::490752553772:role/maci-coordinator-ecs-deploy-slc
+          role-duration-seconds: 2700
+          aws-region: eu-central-1
+
+      - name: Build and Push images to ECR
+        run: |
+          .github/scripts/build.sh ${{ secrets.COORDINATOR_RPC_URL }} ${{ secrets.COORDINATOR_ADDRESS }} ${{ secrets.COORDINATOR_ALLOWED_ORIGIN }}
+
+      - name: Create Deployment
+        run: |
+          .github/scripts/deploy.sh
