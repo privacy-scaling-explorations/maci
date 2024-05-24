@@ -1,4 +1,4 @@
-import { Logger } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 
 import { publicEncrypt, privateDecrypt, type KeyLike } from "crypto";
 
@@ -7,35 +7,18 @@ import { ErrorCodes } from "../common";
 /**
  * CryptoService is responsible for encrypting and decrypting user sensitive data
  */
+@Injectable()
 export class CryptoService {
-  /**
-   * Singleton instance
-   */
-  private static INSTANCE?: CryptoService;
-
   /**
    * Logger
    */
   private readonly logger: Logger;
 
   /**
-   * Empty constructor
+   * Initialize service
    */
-  private constructor() {
+  constructor() {
     this.logger = new Logger(CryptoService.name);
-  }
-
-  /**
-   * Get singleton crypto service instance
-   *
-   * @returns crypto service instance
-   */
-  static getInstance(): CryptoService {
-    if (!CryptoService.INSTANCE) {
-      CryptoService.INSTANCE = new CryptoService();
-    }
-
-    return CryptoService.INSTANCE;
   }
 
   /**

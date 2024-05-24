@@ -1,10 +1,12 @@
 import { HttpException, HttpStatus } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 
+import type { IGetPublicKeyData } from "./file/types";
 import type { IGenerateArgs, IGenerateData } from "./proof/types";
 import type { TallyData } from "maci-cli";
 
 import { AppController } from "./app.controller";
+import { FileService } from "./file/file.service";
 import { ProofGeneratorService } from "./proof/proof.service";
 
 describe("AppController", () => {
@@ -25,8 +27,16 @@ describe("AppController", () => {
     tallyData: {} as TallyData,
   };
 
+  const defaultPublicKeyData: IGetPublicKeyData = {
+    publicKey: "key",
+  };
+
   const mockGeneratorService = {
     generate: jest.fn(),
+  };
+
+  const mockFileService = {
+    getPublicKey: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -40,6 +50,12 @@ describe("AppController", () => {
           return mockGeneratorService;
         }
 
+        if (token === FileService) {
+          mockFileService.getPublicKey.mockResolvedValue(defaultPublicKeyData);
+
+          return mockFileService;
+        }
+
         return jest.fn();
       })
       .compile();
@@ -51,7 +67,7 @@ describe("AppController", () => {
     jest.clearAllMocks();
   });
 
-  describe("v1/proof", () => {
+  describe("v1/proof/generate", () => {
     test("should return generated proof data", async () => {
       const data = await appController.generate(defaultProofGeneratorArgs);
       expect(data).toStrictEqual(defaultProofGeneratorData);
@@ -62,6 +78,22 @@ describe("AppController", () => {
       mockGeneratorService.generate.mockRejectedValue(error);
 
       await expect(appController.generate(defaultProofGeneratorArgs)).rejects.toThrow(
+        new HttpException(error.message, HttpStatus.BAD_REQUEST),
+      );
+    });
+  });
+
+  describe("v1/proof/publicKey", () => {
+    test("should return public key properly", async () => {
+      const data = await appController.getPublicKey();
+      expect(data).toStrictEqual(defaultPublicKeyData);
+    });
+
+    test("should throw an error if file service throws an error", async () => {
+      const error = new Error("error");
+      mockFileService.getPublicKey.mockRejectedValue(error);
+
+      await expect(appController.getPublicKey()).rejects.toThrow(
         new HttpException(error.message, HttpStatus.BAD_REQUEST),
       );
     });

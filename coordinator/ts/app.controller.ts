@@ -1,10 +1,13 @@
-import { Body, Controller, HttpException, HttpStatus, Logger, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, HttpException, HttpStatus, Logger, Post, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiBody, ApiResponse, ApiTags } from "@nestjs/swagger";
 
-import { AccountSignatureGuard } from "./auth/AccountSignatureGuard.service";
+import type { IGetPublicKeyData } from "./file/types";
+import type { IGenerateData } from "./proof/types";
+
+import { AccountSignatureGuard, Public } from "./auth/AccountSignatureGuard.service";
+import { FileService } from "./file/file.service";
 import { GenerateProofDto } from "./proof/dto";
 import { ProofGeneratorService } from "./proof/proof.service";
-import { IGenerateData } from "./proof/types";
 
 @ApiTags("v1/proof")
 @ApiBearerAuth()
@@ -20,8 +23,12 @@ export class AppController {
    * Initialize AppController
    *
    * @param proofGeneratorService - proof generator service
+   * @param fileService - file service
    */
-  constructor(private readonly proofGeneratorService: ProofGeneratorService) {}
+  constructor(
+    private readonly proofGeneratorService: ProofGeneratorService,
+    private readonly fileService: FileService,
+  ) {}
 
   /**
    * Generate proofs api method
@@ -36,6 +43,22 @@ export class AppController {
   @Post("generate")
   async generate(@Body() args: GenerateProofDto): Promise<IGenerateData> {
     return this.proofGeneratorService.generate(args).catch((error: Error) => {
+      this.logger.error(`Error:`, error);
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    });
+  }
+
+  /**
+   * Get RSA public key for authorization setup
+   *
+   * @returns RSA public key
+   */
+  @ApiResponse({ status: HttpStatus.OK, description: "Public key was successfully returned" })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "BadRequest" })
+  @Public()
+  @Get("publicKey")
+  async getPublicKey(): Promise<IGetPublicKeyData> {
+    return this.fileService.getPublicKey().catch((error: Error) => {
       this.logger.error(`Error:`, error);
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     });

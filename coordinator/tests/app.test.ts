@@ -26,6 +26,7 @@ import type { App } from "supertest/types";
 import { AppModule } from "../ts/app.module";
 import { ErrorCodes } from "../ts/common";
 import { CryptoService } from "../ts/crypto/crypto.service";
+import { FileModule } from "../ts/file/file.module";
 
 const STATE_TREE_DEPTH = 10;
 const INT_STATE_TREE_DEPTH = 1;
@@ -40,11 +41,13 @@ describe("AppController (e2e)", () => {
   let maciAddresses: DeployedContracts;
   let pollContracts: PollContracts;
 
+  const cryptoService = new CryptoService();
+
   const getAuthorizationHeader = async () => {
     const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
     const signature = await signer.signMessage("message");
     const digest = Buffer.from(getBytes(hashMessage("message"))).toString("hex");
-    return `Bearer ${CryptoService.getInstance().encrypt(publicKey, `${signature}:${digest}`)}`;
+    return `Bearer ${cryptoService.encrypt(publicKey, `${signature}:${digest}`)}`;
   };
 
   beforeAll(async () => {
@@ -88,7 +91,7 @@ describe("AppController (e2e)", () => {
 
   beforeEach(async () => {
     const moduleFixture = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [AppModule, FileModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
@@ -117,10 +120,7 @@ describe("AppController (e2e)", () => {
 
     test("should throw an error if poll id is invalid", async () => {
       const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
-      const encryptedCoordinatorPrivateKey = CryptoService.getInstance().encrypt(
-        publicKey,
-        coordinatorKeypair.privKey.serialize(),
-      );
+      const encryptedCoordinatorPrivateKey = cryptoService.encrypt(publicKey, coordinatorKeypair.privKey.serialize());
       const encryptedHeader = await getAuthorizationHeader();
 
       const result = await request(app.getHttpServer() as App)
@@ -166,10 +166,7 @@ describe("AppController (e2e)", () => {
 
     test("should throw an error if maci address is invalid", async () => {
       const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
-      const encryptedCoordinatorPrivateKey = CryptoService.getInstance().encrypt(
-        publicKey,
-        coordinatorKeypair.privKey.serialize(),
-      );
+      const encryptedCoordinatorPrivateKey = cryptoService.encrypt(publicKey, coordinatorKeypair.privKey.serialize());
       const encryptedHeader = await getAuthorizationHeader();
 
       const result = await request(app.getHttpServer() as App)
@@ -193,10 +190,7 @@ describe("AppController (e2e)", () => {
 
     test("should throw an error if tally address is invalid", async () => {
       const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
-      const encryptedCoordinatorPrivateKey = CryptoService.getInstance().encrypt(
-        publicKey,
-        coordinatorKeypair.privKey.serialize(),
-      );
+      const encryptedCoordinatorPrivateKey = cryptoService.encrypt(publicKey, coordinatorKeypair.privKey.serialize());
       const encryptedHeader = await getAuthorizationHeader();
 
       const result = await request(app.getHttpServer() as App)
@@ -216,6 +210,18 @@ describe("AppController (e2e)", () => {
         statusCode: HttpStatus.BAD_REQUEST,
         message: ["tallyContractAddress must be an Ethereum address"],
       });
+    });
+  });
+
+  describe("/v1/proof/publicKey GET", () => {
+    test("should get public key properly", async () => {
+      const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
+
+      const result = await request(app.getHttpServer() as App)
+        .get("/v1/proof/publicKey")
+        .expect(200);
+
+      expect(result.body).toStrictEqual({ publicKey: publicKey.toString() });
     });
   });
 
@@ -240,10 +246,7 @@ describe("AppController (e2e)", () => {
 
     test("should throw an error if poll is not over", async () => {
       const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
-      const encryptedCoordinatorPrivateKey = CryptoService.getInstance().encrypt(
-        publicKey,
-        coordinatorKeypair.privKey.serialize(),
-      );
+      const encryptedCoordinatorPrivateKey = cryptoService.encrypt(publicKey, coordinatorKeypair.privKey.serialize());
       const encryptedHeader = await getAuthorizationHeader();
 
       const result = await request(app.getHttpServer() as App)
@@ -266,10 +269,7 @@ describe("AppController (e2e)", () => {
 
     test("should throw an error if signups are not merged", async () => {
       const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
-      const encryptedCoordinatorPrivateKey = CryptoService.getInstance().encrypt(
-        publicKey,
-        coordinatorKeypair.privKey.serialize(),
-      );
+      const encryptedCoordinatorPrivateKey = cryptoService.encrypt(publicKey, coordinatorKeypair.privKey.serialize());
       const encryptedHeader = await getAuthorizationHeader();
 
       const result = await request(app.getHttpServer() as App)
@@ -295,10 +295,7 @@ describe("AppController (e2e)", () => {
       await mergeSignups({ pollId: 0n, signer });
 
       const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
-      const encryptedCoordinatorPrivateKey = CryptoService.getInstance().encrypt(
-        publicKey,
-        coordinatorKeypair.privKey.serialize(),
-      );
+      const encryptedCoordinatorPrivateKey = cryptoService.encrypt(publicKey, coordinatorKeypair.privKey.serialize());
       const encryptedHeader = await getAuthorizationHeader();
 
       const result = await request(app.getHttpServer() as App)
@@ -405,10 +402,7 @@ describe("AppController (e2e)", () => {
 
     test("should generate proofs properly", async () => {
       const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
-      const encryptedCoordinatorPrivateKey = CryptoService.getInstance().encrypt(
-        publicKey,
-        coordinatorKeypair.privKey.serialize(),
-      );
+      const encryptedCoordinatorPrivateKey = cryptoService.encrypt(publicKey, coordinatorKeypair.privKey.serialize());
       const encryptedHeader = await getAuthorizationHeader();
 
       await request(app.getHttpServer() as App)

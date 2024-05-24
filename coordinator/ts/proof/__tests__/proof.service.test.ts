@@ -7,6 +7,7 @@ import type { IGenerateArgs } from "../types";
 
 import { ErrorCodes } from "../../common";
 import { CryptoService } from "../../crypto/crypto.service";
+import { FileService } from "../../file/file.service";
 import { ProofGeneratorService } from "../proof.service";
 
 dotenv.config();
@@ -58,15 +59,17 @@ describe("ProofGeneratorService", () => {
     generateTallyProofs: jest.fn(),
   };
 
-  let defaultCryptoService = {
+  const defaultCryptoService = {
     decrypt: jest.fn(),
-  };
+  } as unknown as CryptoService;
 
   const defaultDeploymentService = {
     setHre: jest.fn(),
     getDeployer: jest.fn(() => Promise.resolve({})),
     getContract: jest.fn(() => Promise.resolve(mockContract)),
   };
+
+  const fileService = new FileService();
 
   beforeEach(() => {
     mockContract = {
@@ -88,9 +91,9 @@ describe("ProofGeneratorService", () => {
       generateTallyProofs: jest.fn(() => Promise.resolve({ proofs: [1], tallyData: {} })),
     };
 
-    defaultCryptoService = {
-      decrypt: jest.fn(() => "macisk.6d5efa8ebc6f7a6ee3e9bf573346af2df29b007b29ef420c030aa4a7f3410182"),
-    };
+    (defaultCryptoService.decrypt as jest.Mock) = jest.fn(
+      () => "macisk.6d5efa8ebc6f7a6ee3e9bf573346af2df29b007b29ef420c030aa4a7f3410182",
+    );
 
     (Deployment.getInstance as jest.Mock).mockReturnValue(defaultDeploymentService);
 
@@ -103,8 +106,6 @@ describe("ProofGeneratorService", () => {
         polls: new Map<bigint, unknown>([[1n, {}]]),
       }),
     );
-
-    (CryptoService.getInstance as jest.Mock).mockReturnValue(defaultCryptoService);
   });
 
   afterEach(() => {
@@ -114,7 +115,7 @@ describe("ProofGeneratorService", () => {
   test("should throw error if state is not merged yet", async () => {
     mockContract.stateMerged.mockResolvedValue(false);
 
-    const service = new ProofGeneratorService();
+    const service = new ProofGeneratorService(defaultCryptoService, fileService);
 
     await expect(service.generate(defaultArgs)).rejects.toThrow(ErrorCodes.NOT_MERGED_STATE_TREE);
   });
@@ -123,7 +124,7 @@ describe("ProofGeneratorService", () => {
     const keypair = new Keypair(new PrivKey(0n));
     mockContract.coordinatorPubKey.mockResolvedValue(keypair.pubKey.asContractParam());
 
-    const service = new ProofGeneratorService();
+    const service = new ProofGeneratorService(defaultCryptoService, fileService);
 
     await expect(service.generate(defaultArgs)).rejects.toThrow(ErrorCodes.PRIVATE_KEY_MISMATCH);
   });
@@ -131,21 +132,28 @@ describe("ProofGeneratorService", () => {
   test("should throw error if there is no any poll", async () => {
     mockContract.getMainRoot.mockResolvedValue(0n);
 
-    const service = new ProofGeneratorService();
+    const service = new ProofGeneratorService(defaultCryptoService, fileService);
 
     await expect(service.generate(defaultArgs)).rejects.toThrow(ErrorCodes.NOT_MERGED_MESSAGE_TREE);
   });
 
   test("should throw error if poll is not found", async () => {
-    const service = new ProofGeneratorService();
+    const service = new ProofGeneratorService(defaultCryptoService, fileService);
+
+    await expect(service.generate({ ...defaultArgs, poll: 2 })).rejects.toThrow(ErrorCodes.POLL_NOT_FOUND);
+  });
+
+  test("should throw error if poll is not found in maci contract", async () => {
+    mockContract.polls.mockResolvedValue(ZeroAddress);
+    const service = new ProofGeneratorService(defaultCryptoService, fileService);
 
     await expect(service.generate({ ...defaultArgs, poll: 2 })).rejects.toThrow(ErrorCodes.POLL_NOT_FOUND);
   });
 
   test("should throw error if coordinator key cannot be decrypted", async () => {
-    defaultCryptoService.decrypt.mockReturnValue("unknown");
+    (defaultCryptoService.decrypt as jest.Mock).mockReturnValue("unknown");
 
-    const service = new ProofGeneratorService();
+    const service = new ProofGeneratorService(defaultCryptoService, fileService);
 
     await expect(service.generate({ ...defaultArgs, encryptedCoordinatorPrivateKey: "unknown" })).rejects.toThrow(
       "Cannot convert 0x to a BigInt",
@@ -153,7 +161,7 @@ describe("ProofGeneratorService", () => {
   });
 
   test("should generate proofs properly for NonQv", async () => {
-    const service = new ProofGeneratorService();
+    const service = new ProofGeneratorService(defaultCryptoService, fileService);
 
     const data = await service.generate(defaultArgs);
 
@@ -162,7 +170,7 @@ describe("ProofGeneratorService", () => {
   });
 
   test("should generate proofs properly for Qv", async () => {
-    const service = new ProofGeneratorService();
+    const service = new ProofGeneratorService(defaultCryptoService, fileService);
 
     const data = await service.generate({ ...defaultArgs, useQuadraticVoting: true });
 
