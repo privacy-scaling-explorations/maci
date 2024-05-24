@@ -32,7 +32,7 @@ In order, these are the steps for a full MACI deployment:
 
 For testing purposes, you can use the test zkeys and artifacts that you can download using `pnpm download:test-zkeys`. For production use, you can download the most recent artifacts that have undergone a trusted setup. Please refer to the [Trusted Setup](/docs/security/trusted-setup) section for more information. To download those, please use `pnpm download:ceremony-zkeys`.
 
-Please do not use test artifacts in production. If you do require zKeys configured for larger param sizes, please reach out to us if you will be using them in production and we'll discuss running a new ceremony for those parameters. To build new circuits artifacts for testing purposes, please refer to the [installation page](/docs/quick-start/installation#configure-circomkit) and to the [circuits](/docs/developers-references/zk-snark-circuits/circuits) section.
+Please do not use test artifacts in production. If you do require zKeys configured for larger param sizes, please reach out to us if you will be using them in production and we'll discuss running a new ceremony for those parameters. To build new circuits artifacts for testing purposes, please refer to the [installation page](/docs/quick-start/installation#configure-circomkit) and to the [circuits](/docs/developers-references/zk-snark-circuits/introduction) section.
 
 ### Deployment using `maci-contracts` hardhat tasks
 
