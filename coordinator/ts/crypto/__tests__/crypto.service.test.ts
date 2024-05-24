@@ -7,13 +7,13 @@ import { CryptoService } from "../crypto.service";
 
 describe("CryptoService", () => {
   test("should throw encryption error if key is invalid", () => {
-    const service = CryptoService.getInstance();
+    const service = new CryptoService();
 
     expect(() => service.encrypt("", "")).toThrow(ErrorCodes.ENCRYPTION);
   });
 
   test("should throw decryption error if key is invalid", () => {
-    const service = CryptoService.getInstance();
+    const service = new CryptoService();
 
     expect(() => service.decrypt("", "")).toThrow(ErrorCodes.DECRYPTION);
   });
@@ -21,7 +21,7 @@ describe("CryptoService", () => {
   test("should encrypt and decrypt properly", () => {
     fc.assert(
       fc.property(fc.string(), (text: string) => {
-        const service = CryptoService.getInstance();
+        const service = new CryptoService();
 
         const keypair = generateKeyPairSync("rsa", {
           modulusLength: 2048,

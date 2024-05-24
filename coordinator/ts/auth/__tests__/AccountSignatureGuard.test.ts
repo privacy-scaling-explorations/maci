@@ -1,3 +1,4 @@
+import { Reflector } from "@nestjs/core";
 import dotenv from "dotenv";
 import { getBytes, hashMessage } from "ethers";
 import hardhat from "hardhat";
@@ -5,7 +6,7 @@ import hardhat from "hardhat";
 import type { ExecutionContext } from "@nestjs/common";
 
 import { CryptoService } from "../../crypto/crypto.service";
-import { AccountSignatureGuard } from "../AccountSignatureGuard.service";
+import { AccountSignatureGuard, PUBLIC_METADATA_KEY, Public } from "../AccountSignatureGuard.service";
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ describe("AccountSignatureGuard", () => {
   };
 
   const mockContext = {
+    getHandler: jest.fn(),
     switchToHttp: jest.fn().mockReturnValue({
       getRequest: jest.fn(() => mockRequest),
     }),
@@ -32,20 +34,30 @@ describe("AccountSignatureGuard", () => {
 
   const mockCryptoService = {
     decrypt: jest.fn(),
-  };
+  } as unknown as CryptoService;
+
+  const reflector = {
+    get: jest.fn(),
+  } as Reflector & { get: jest.Mock };
 
   beforeEach(() => {
     mockCryptoService.decrypt = jest.fn(() => `${mockSignature}:${mockDigest}`);
-
-    (CryptoService.getInstance as jest.Mock).mockReturnValue(mockCryptoService);
+    reflector.get.mockReturnValue(false);
   });
 
   afterEach(() => {
     jest.clearAllMocks();
   });
 
+  test("should create public decorator properly", () => {
+    const decorator = Public();
+
+    expect(decorator.KEY).toBe(PUBLIC_METADATA_KEY);
+  });
+
   test("should return false if there is no Authorization header", async () => {
     const ctx = {
+      getHandler: jest.fn(),
       switchToHttp: jest.fn().mockReturnValue({
         getRequest: jest.fn(() => ({
           headers: { authorization: "" },
@@ -53,7 +65,7 @@ describe("AccountSignatureGuard", () => {
       }),
     } as unknown as ExecutionContext;
 
-    const guard = new AccountSignatureGuard();
+    const guard = new AccountSignatureGuard(mockCryptoService, reflector);
 
     const result = await guard.canActivate(ctx);
 
@@ -61,9 +73,9 @@ describe("AccountSignatureGuard", () => {
   });
 
   test("should return false if there is no signature", async () => {
-    mockCryptoService.decrypt.mockReturnValue(`:${mockDigest}`);
+    (mockCryptoService.decrypt as jest.Mock).mockReturnValue(`:${mockDigest}`);
 
-    const guard = new AccountSignatureGuard();
+    const guard = new AccountSignatureGuard(mockCryptoService, reflector);
 
     const result = await guard.canActivate(mockContext);
 
@@ -71,9 +83,9 @@ describe("AccountSignatureGuard", () => {
   });
 
   test("should return false if there is no digest", async () => {
-    mockCryptoService.decrypt.mockReturnValue(mockSignature);
+    (mockCryptoService.decrypt as jest.Mock).mockReturnValue(mockSignature);
 
-    const guard = new AccountSignatureGuard();
+    const guard = new AccountSignatureGuard(mockCryptoService, reflector);
 
     const result = await guard.canActivate(mockContext);
 
@@ -81,9 +93,9 @@ describe("AccountSignatureGuard", () => {
   });
 
   test("should return false if signature or digest are invalid", async () => {
-    mockCryptoService.decrypt.mockReturnValue(`signature:digest`);
+    (mockCryptoService.decrypt as jest.Mock).mockReturnValue(`signature:digest`);
 
-    const guard = new AccountSignatureGuard();
+    const guard = new AccountSignatureGuard(mockCryptoService, reflector);
 
     const result = await guard.canActivate(mockContext);
 
@@ -95,9 +107,9 @@ describe("AccountSignatureGuard", () => {
     const signature = await signer.signMessage("message");
     const digest = Buffer.from(getBytes(hashMessage("message"))).toString("hex");
 
-    mockCryptoService.decrypt.mockReturnValue(`${signature}:${digest}`);
+    (mockCryptoService.decrypt as jest.Mock).mockReturnValue(`${signature}:${digest}`);
 
-    const guard = new AccountSignatureGuard();
+    const guard = new AccountSignatureGuard(mockCryptoService, reflector);
 
     const result = await guard.canActivate(mockContext);
 
@@ -110,9 +122,18 @@ describe("AccountSignatureGuard", () => {
     const signature = await signer.signMessage("message");
     const digest = Buffer.from(getBytes(hashMessage("message"))).toString("hex");
 
-    mockCryptoService.decrypt.mockReturnValue(`${signature}:${digest}`);
+    (mockCryptoService.decrypt as jest.Mock).mockReturnValue(`${signature}:${digest}`);
 
-    const guard = new AccountSignatureGuard();
+    const guard = new AccountSignatureGuard(mockCryptoService, reflector);
+
+    const result = await guard.canActivate(mockContext);
+
+    expect(result).toBe(true);
+  });
+
+  test("should return true if can skip authorization", async () => {
+    reflector.get.mockReturnValue(true);
+    const guard = new AccountSignatureGuard(mockCryptoService, reflector);
 
     const result = await guard.canActivate(mockContext);
 

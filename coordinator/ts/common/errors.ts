@@ -8,4 +8,5 @@ export enum ErrorCodes {
   POLL_NOT_FOUND = "3",
   DECRYPTION = "4",
   ENCRYPTION = "5",
+  FILE_NOT_FOUND = "6",
 }

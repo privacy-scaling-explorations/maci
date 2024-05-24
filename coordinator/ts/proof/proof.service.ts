@@ -4,13 +4,13 @@ import hre from "hardhat";
 import { Deployment, EContracts, ProofGenerator, type Poll, type MACI, type AccQueue } from "maci-contracts";
 import { Keypair, PrivKey, PubKey } from "maci-domainobjs";
 
-import fs from "fs";
 import path from "path";
 
 import type { IGenerateArgs, IGenerateData } from "./types";
 
 import { ErrorCodes } from "../common";
 import { CryptoService } from "../crypto/crypto.service";
+import { FileService } from "../file/file.service";
 
 /**
  * ProofGeneratorService is responsible for generating message processing and tally proofs.
@@ -23,11 +23,6 @@ export class ProofGeneratorService {
   private readonly deployment: Deployment;
 
   /**
-   * CryptoService for user sensitive data decryption
-   */
-  private readonly cryptoService: CryptoService;
-
-  /**
    * Logger
    */
   private readonly logger: Logger;
@@ -35,10 +30,13 @@ export class ProofGeneratorService {
   /**
    * Proof generator initialization
    */
-  constructor() {
+  constructor(
+    private readonly cryptoService: CryptoService,
+    private readonly fileService: FileService,
+  ) {
     this.deployment = Deployment.getInstance(hre);
     this.deployment.setHre(hre);
-    this.cryptoService = CryptoService.getInstance();
+    this.fileService = fileService;
     this.logger = new Logger(ProofGeneratorService.name);
   }
 
@@ -97,7 +95,7 @@ export class ProofGeneratorService {
       throw new Error(ErrorCodes.NOT_MERGED_MESSAGE_TREE);
     }
 
-    const privateKey = await fs.promises.readFile(path.resolve(process.env.COORDINATOR_PRIVATE_KEY_PATH!));
+    const { privateKey } = await this.fileService.getPrivateKey();
     const maciPrivateKey = PrivKey.deserialize(this.cryptoService.decrypt(privateKey, encryptedCoordinatorPrivateKey));
     const coordinatorKeypair = new Keypair(maciPrivateKey);
     const publicKey = new PubKey([
@@ -136,8 +134,8 @@ export class ProofGeneratorService {
       poll: foundPoll,
       maciContractAddress,
       tallyContractAddress,
-      tally: this.getZkeyFiles(process.env.COORDINATOR_TALLY_ZKEY_NAME!, useQuadraticVoting),
-      mp: this.getZkeyFiles(process.env.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME!, useQuadraticVoting),
+      tally: this.fileService.getZkeyFilePaths(process.env.COORDINATOR_TALLY_ZKEY_NAME!, useQuadraticVoting),
+      mp: this.fileService.getZkeyFilePaths(process.env.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME!, useQuadraticVoting),
       rapidsnark: process.env.COORDINATOR_RAPIDSNARK_EXE,
       outputDir: path.resolve("./proofs"),
       tallyOutputFile: path.resolve("./tally.json"),
@@ -151,28 +149,6 @@ export class ProofGeneratorService {
       processProofs,
       tallyProofs,
       tallyData,
-    };
-  }
-
-  /**
-   * Get zkey, wasm and witgen filepaths for zkey set
-   *
-   * @param name - zkey set name
-   * @param useQuadraticVoting - whether to use Qv or NonQv
-   * @returns zkey and wasm filepaths
-   */
-  private getZkeyFiles(name: string, useQuadraticVoting: boolean): { zkey: string; wasm: string; witgen: string } {
-    const root = path.resolve(process.env.COORDINATOR_ZKEY_PATH!);
-    const index = name.indexOf("_");
-    const type = name.slice(0, index);
-    const params = name.slice(index + 1);
-    const mode = useQuadraticVoting ? "" : "NonQv";
-    const filename = `${type}${mode}_${params}`;
-
-    return {
-      zkey: path.resolve(root, `${filename}/${filename}.0.zkey`),
-      wasm: path.resolve(root, `${filename}/${filename}_js/${filename}.wasm`),
-      witgen: path.resolve(root, `${filename}/${filename}_cpp/${filename}`),
     };
   }
 }

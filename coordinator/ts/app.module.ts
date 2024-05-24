@@ -2,6 +2,8 @@ import { Module } from "@nestjs/common";
 import { ThrottlerModule } from "@nestjs/throttler";
 
 import { AppController } from "./app.controller";
+import { CryptoModule } from "./crypto/crypto.module";
+import { FileModule } from "./file/file.module";
 import { ProofGeneratorService } from "./proof/proof.service";
 
 @Module({
@@ -12,6 +14,8 @@ import { ProofGeneratorService } from "./proof/proof.service";
         limit: Number(process.env.LIMIT),
       },
     ]),
+    FileModule,
+    CryptoModule,
   ],
   controllers: [AppController],
   providers: [ProofGeneratorService],

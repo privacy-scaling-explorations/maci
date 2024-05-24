@@ -1,4 +1,12 @@
-import { Logger, CanActivate, type ExecutionContext, Injectable } from "@nestjs/common";
+import {
+  Logger,
+  CanActivate,
+  Injectable,
+  SetMetadata,
+  type ExecutionContext,
+  type CustomDecorator,
+} from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
 import { ethers } from "ethers";
 
 import fs from "fs";
@@ -7,6 +15,18 @@ import path from "path";
 import type { Request as Req } from "express";
 
 import { CryptoService } from "../crypto/crypto.service";
+
+/**
+ * Public metadata key
+ */
+export const PUBLIC_METADATA_KEY = "isPublic";
+
+/**
+ * Public decorator to by-pass auth checks
+ *
+ * @returns public decorator
+ */
+export const Public = (): CustomDecorator => SetMetadata(PUBLIC_METADATA_KEY, true);
 
 /**
  * AccountSignatureGuard is responsible for protecting calling controller functions.
@@ -25,14 +45,16 @@ import { CryptoService } from "../crypto/crypto.service";
 @Injectable()
 export class AccountSignatureGuard implements CanActivate {
   /**
-   * Crypto service
-   */
-  private readonly cryptoService = CryptoService.getInstance();
-
-  /**
    * Logger
    */
-  private readonly logger = new Logger(AccountSignatureGuard.name);
+  private readonly logger: Logger;
+
+  constructor(
+    private readonly cryptoService: CryptoService,
+    private readonly reflector: Reflector,
+  ) {
+    this.logger = new Logger(AccountSignatureGuard.name);
+  }
 
   /**
    * This function should return a boolean, indicating  whether the request is allowed or not based on message signature and digest.
@@ -42,6 +64,12 @@ export class AccountSignatureGuard implements CanActivate {
    */
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     try {
+      const isPublic = this.reflector.get<boolean>(PUBLIC_METADATA_KEY, ctx.getHandler());
+
+      if (isPublic) {
+        return true;
+      }
+
       const request = ctx.switchToHttp().getRequest<Req>();
       const encryptedHeader = request.headers.authorization;
 
