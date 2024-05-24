@@ -2,6 +2,7 @@ pragma circom 2.0.0;
 
 // circomlib imports
 include "./bitify.circom";
+include "./comparators.circom";
 include "./escalarmulfix.circom";
 
 /**
@@ -15,8 +16,15 @@ template PrivToPubKey() {
         16950150798460657717958625567821834550301663161624707787222815936182638968203
     ];
 
+    // Prime subgroup order 'l'.
+    var l = 2736030358979909402780800718157159386076813972158567259200215660948447373041;
+
     signal input privKey;
     signal output pubKey[2];
+
+    // Check if private key is in the prime subgroup order 'l'
+    var isLessThan = LessThan(251)([privKey, l]);
+    isLessThan === 1;
 
     // Convert the private key to bits.
     var computedPrivBits[253] = Num2Bits(253)(privKey);
