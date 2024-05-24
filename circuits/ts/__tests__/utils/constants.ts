@@ -13,3 +13,5 @@ export const treeDepths = {
   voteOptionTreeDepth: 2,
 };
 export const messageBatchSize = 5;
+
+export const L = 2736030358979909402780800718157159386076813972158567259200215660948447373041n;
