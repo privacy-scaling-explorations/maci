@@ -1,5 +1,7 @@
 import dotenv from "dotenv";
 
+import fs from "fs";
+
 import { ErrorCodes } from "../../common";
 import { FileService } from "../file.service";
 
@@ -66,9 +68,20 @@ describe("FileService", () => {
     expect(witgen).toBeDefined();
   });
 
-  test("should throw an error if there are not zkey filepaths", () => {
+  test("should throw an error if there are no zkey filepaths", () => {
     const service = new FileService();
 
     expect(() => service.getZkeyFilePaths("unknown", false)).toThrow(ErrorCodes.FILE_NOT_FOUND);
+  });
+
+  test("should throw an error if there are no wasm and witgen filepaths", () => {
+    const spyExistsSync = jest.spyOn(fs, "existsSync");
+    spyExistsSync.mockReturnValueOnce(true).mockReturnValue(false);
+
+    const service = new FileService();
+
+    expect(() => service.getZkeyFilePaths(process.env.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME!, false)).toThrow(
+      ErrorCodes.FILE_NOT_FOUND,
+    );
   });
 });

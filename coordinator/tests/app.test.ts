@@ -53,7 +53,7 @@ describe("AppController (e2e)", () => {
   beforeAll(async () => {
     [signer] = await hardhat.ethers.getSigners();
 
-    process.env.COORDINATOR_ADDRESS = await signer.getAddress();
+    process.env.COORDINATOR_ADDRESSES = await signer.getAddress();
 
     await deployVkRegistryContract({ signer });
     await setVerifyingKeys({

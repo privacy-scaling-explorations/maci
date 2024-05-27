@@ -89,9 +89,10 @@ export class AccountSignatureGuard implements CanActivate {
       }
 
       const address = ethers.recoverAddress(Buffer.from(digest, "hex"), signature).toLowerCase();
-      const coordinatorAddress = process.env.COORDINATOR_ADDRESS?.toLowerCase();
+      const coordinatorAddress =
+        process.env.COORDINATOR_ADDRESSES?.split(",").map((value) => value.toLowerCase()) ?? [];
 
-      return address === coordinatorAddress;
+      return coordinatorAddress.includes(address);
     } catch (error) {
       this.logger.error("Error", error);
       return false;
