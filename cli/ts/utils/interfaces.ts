@@ -1,3 +1,6 @@
+import { MACI } from "maci-contracts/typechain-types";
+import { PubKey } from "maci-domainobjs";
+
 import type { Provider, Signer } from "ethers";
 import type { SnarkProof } from "maci-contracts";
 import type { CircuitInputs } from "maci-core";
@@ -1088,4 +1091,29 @@ export interface ExtractVkToFileArgs {
    * Output file path of extracted vkeys
    */
   outputFilePath: string;
+}
+
+/**
+ * Interface for the arguments to the parseSignupEvents function
+ */
+export interface IParseSignupEventsArgs {
+  /**
+   * The MACI contract
+   */
+  maciContract: MACI;
+
+  /**
+   * The start block
+   */
+  startBlock: number;
+
+  /**
+   * The current block
+   */
+  currentBlock: number;
+
+  /**
+   * The public key
+   */
+  publicKey: PubKey;
 }
