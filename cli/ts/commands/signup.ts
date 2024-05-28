@@ -1,7 +1,7 @@
 import { MACI__factory as MACIFactory } from "maci-contracts/typechain-types";
 import { PubKey } from "maci-domainobjs";
 
-import type { IRegisteredUserArgs, ISignupData, SignupArgs } from "../utils/interfaces";
+import type { IParseSignupEventsArgs, IRegisteredUserArgs, ISignupData, SignupArgs } from "../utils/interfaces";
 import type { ContractTransactionReceipt } from "ethers";
 
 import { banner } from "../utils/banner";
@@ -87,6 +87,36 @@ export const signup = async ({
 };
 
 /**
+ * Parse the signup events from the MACI contract
+ */
+const parseSignupEvents = async ({ maciContract, startBlock, currentBlock, publicKey }: IParseSignupEventsArgs) => {
+  // 1000 blocks at a time
+  for (let block = startBlock; block <= currentBlock; block += 1000) {
+    const toBlock = Math.min(block + 999, currentBlock);
+    // eslint-disable-next-line no-await-in-loop
+    const newEvents = await maciContract.queryFilter(
+      maciContract.filters.SignUp(undefined, publicKey.rawPubKey[0], publicKey.rawPubKey[1]),
+      block,
+      toBlock,
+    );
+
+    if (newEvents.length > 0) {
+      const [event] = newEvents;
+
+      return {
+        stateIndex: event.args[0].toString(),
+        voiceCredits: event.args[3].toString(),
+      };
+    }
+  }
+
+  return {
+    stateIndex: undefined,
+    voiceCredits: undefined,
+  };
+};
+
+/**
  * Checks if user is registered with public key
  * @param IRegisteredArgs - The arguments for the register check command
  * @returns user registered or not and state index, voice credit balance
@@ -101,14 +131,16 @@ export const isRegisteredUser = async ({
   banner(quiet);
 
   const maciContract = MACIFactory.connect(maciAddress, signer);
-  const publicKey = PubKey.deserialize(maciPubKey).asContractParam();
+  const publicKey = PubKey.deserialize(maciPubKey);
+  const startBlockNumber = startBlock || 0;
+  const currentBlock = await signer.provider!.getBlockNumber();
 
-  const events = await maciContract.queryFilter(
-    maciContract.filters.SignUp(undefined, publicKey.x, publicKey.y),
-    startBlock,
-  );
-  const stateIndex = events[0]?.args[0].toString() as string | undefined;
-  const voiceCredits = events[0]?.args[3].toString() as string | undefined;
+  const { stateIndex, voiceCredits } = await parseSignupEvents({
+    maciContract,
+    startBlock: startBlockNumber,
+    currentBlock,
+    publicKey,
+  });
 
   logGreen(quiet, success(`State index: ${stateIndex?.toString()}, registered: ${stateIndex !== undefined}`));
 

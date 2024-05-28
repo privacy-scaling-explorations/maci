@@ -37,6 +37,7 @@
     "test:genKeypair": "ts-mocha --exit tests/unit/genKeyPair.test.ts",
     "test:timeTravel": "ts-mocha --exit tests/unit/timeTravel.test.ts",
     "test:fundWallet": "ts-mocha --exit tests/unit/fundWallet.test.ts",
+    "test:signup": "ts-mocha --exit tests/unit/signup.test.ts",
     "test:utils": "ts-mocha --exit tests/unit/utils.test.ts",
     "docs": "typedoc --plugin typedoc-plugin-markdown --options ./typedoc.json"
   },
