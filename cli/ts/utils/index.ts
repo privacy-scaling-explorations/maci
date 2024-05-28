@@ -45,6 +45,7 @@ export type {
   IPublishBatchArgs,
   IPublishBatchData,
   IPublishMessage,
+  IParseSignupEventsArgs,
 } from "./interfaces";
 export { compareVks } from "./vks";
 export { delay } from "./time";

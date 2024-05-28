@@ -10,7 +10,7 @@
     "website",
     "coordinator"
   ],
-  "version": "1.2.2",
+  "version": "1.2.3",
   "npmClient": "pnpm",
   "changelogPreset": {
     "name": "conventionalcommits",
