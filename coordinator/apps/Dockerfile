@@ -25,8 +25,8 @@ ARG PORT=3000
 
 WORKDIR ./maci
 COPY --chown=node:node  --from=builder /builder/ ./
+RUN pnpm run download-zkeys-coordinator:test
 WORKDIR /maci/coordinator
-RUN pnpm run download-zkeys:test
 RUN pnpm run generate-keypair
 
 EXPOSE ${PORT}

@@ -167,19 +167,15 @@ Note the locations of the `.zkey` files as the CLI requires them as command-line
 If using the latest dev updates:
 
 ```bash
-pnpm download:test-zkeys-1-3
+pnpm download-zkeys:test
 ```
-
-If using **1.2.1**
-
-```bash
-pnpm download:test-zkeys-1-2
-```
-
-Note that the below will work up until **1.2.1**
 
 **Download ceremony artifacts**
 
+:::info
+Currently, the ceremony artifacts work with MACI version up to 1.2.2.
+:::
+
 ```bash
-pnpm download:ceremony-zkeys
+pnpm download-zkeys:ceremony
 ```

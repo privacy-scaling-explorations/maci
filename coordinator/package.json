@@ -18,7 +18,6 @@
     "test": "jest",
     "test:coverage": "jest --coverage",
     "types": "tsc -p tsconfig.json --noEmit",
-    "download-zkeys:test": "ts-node ./scripts/downloadZkeys.ts test",
     "generate-keypair": "ts-node ./scripts/generateKeypair.ts"
   },
   "dependencies": {

@@ -56,7 +56,7 @@ jobs:
           chmod +x ~/rapidsnark/build/prover
 
       - name: Download ceremony artifacts
-        run: ./.github/scripts/download-ceremony-artifacts.sh
+        run: pnpm download-zkeys:ceremony
 
       - name: Run e2e tests
         run: pnpm test:cli-ceremony

@@ -11,7 +11,7 @@ env:
   COORDINATOR_PRIVATE_KEY_PATH: "./priv.key"
   COORDINATOR_TALLY_ZKEY_NAME: "TallyVotes_10-1-2_test"
   COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME: "ProcessMessages_10-2-1-2_test"
-  COORDINATOR_ZKEY_PATH: "./zkeys"
+  COORDINATOR_ZKEY_PATH: "./zkeys/"
   COORDINATOR_RAPIDSNARK_EXE: "~/rapidsnark/build/prover"
 
 concurrency:
@@ -98,8 +98,7 @@ jobs:
       - name: Download zkeys
         if: ${{ env.CHANGED == 'false' }}
         run: |
-          pnpm download-zkeys:test
-        working-directory: coordinator
+          pnpm download-zkeys-coordinator:test
 
       - name: Generate keypair
         run: |
