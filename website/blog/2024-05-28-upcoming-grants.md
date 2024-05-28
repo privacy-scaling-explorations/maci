@@ -14,7 +14,7 @@ Minimal Anti Collusion Infrastructure ([MACI](https://github.com/privacy-scaling
 
 Given MACI's open source nature, it's common for our core team to develop new features or to fix issues based on community feedback. However, it's been less common for external contributors to make significant changes to the core protocol.
 
-Well, this soon will be a reality thanks to a MACI improvement proposal sent by the [3327](https://3327.io/) team. 3327 is collective of 10+ people working on improving blockchain technologies, with a focus on research and engineering. Their engineering team previously worked on implementing the [ElGamal flow](https://github.com/0x3327/maci/blob/feat/elgamal/docs/elgamal-flow.md) into MACI, and the work described in this post aims to be its direct replacement due to its simplified nature and several additional benefits.
+Well, this soon will be a reality thanks to a MACI improvement proposal sent by the [3327](https://3327.io/) team. 3327 is collective of 10+ people working on improving blockchain technologies, with a focus on research and engineering. Their engineering team previously worked on implementing the [ElGamal flow](https://github.com/0x3327/maci/blob/feat/elgamal/docs/elgamal-flow.md) into MACI ([here's a nice presentation on it from Marija Mikić at EthCC [6]](https://www.youtube.com/live/X54LaXfJTn4)). The work described in this post aims to be its direct replacement due to its simplified nature and several additional benefits.
 
 This proposal can be divided into two parts:
 
@@ -25,7 +25,7 @@ This proposal can be divided into two parts:
 
 Currently with MACI, if a voter performs a [key change](/docs/core-concepts/key-change), the voter's new key would not be anonymous to the coordinator. The coordinator could collude with a bad actor to inform the latter of the key change, as the coordinator would have access to all decrypted messages.
 
-The key focus of this improvement is to allow users to be completely anonymous by removing the link between the original signup key and the key used for voting. How would this work? Well, users sign up to vote via the [MACI contract](/docs/developers-references/smart-contracts/MACI), and depending on the gatekeeper in use, they'd have to prove that they've passed the entry condition. Now, given knowledge of this key, they can signup with a new key to polls deployed by this same MACI contract.
+The key focus of this improvement is to enable users to be completely anonymous by removing the link between the original signup key and the key used for voting. How would this work? Well, users sign up to vote via the [MACI contract](/docs/developers-references/smart-contracts/MACI), and depending on the [gatekeeper](/docs/developers-references/smart-contracts/Gatekeepers) in use, they'd have to prove that they've passed the entry condition. Now, given knowledge of this key, they can signup with a new key to polls deployed by this same MACI contract.
 
 Thus, voters can prove anonymously that they know the preimage of a [`StateLeaf`](/docs/developers-references/typescript-code/typedoc/domainobjs/classes/StateLeaf), by passing this information to a zk-SNARK circuit, and validating this proof within the poll contract when joining with the new key. You might be thinking that everyone knows the preimage of a state leaf, as it's public information that can be taken from the contracts' logs. However, the circuit will not accept the public key directly but would instead take the private key and use it to generate the public key. This way, only users with knowledge of a specific private key can generate a valid inclusion proof.
 
@@ -50,7 +50,7 @@ Merkle trees are usually bound by a depth property. Together with the number of 
 
 **Cheaper operations**
 
-In general, hashing the previous hash chain with the message is cheaper than inserting into a Merkle tree, as well as the coordinator not needing to perform any merge operations on the accumulator queues that were used on chain, thus greatly reducing costs and processing time.
+Hashing the previous hash chain with the message is cheaper than inserting into a Merkle tree. Additionally, removing the need for the coordinator to perform merge operations on the accumulator queues that were used on chain will greatly reduce costs and processing time.
 
 **Smaller circuits**
 
@@ -62,13 +62,13 @@ So what does this mean for you, Anon?
 
 As an open-source project of [PSE](https://pse.dev) with support from the Ethereum Foundation, MACI is fortunate to have the resources to invest in the maintenance and improvement of the protocol. This means we're able to fund full-time developers as well as allocate grants for various research and development initiatives.
 
-We encourage all community members to contribute as much as possible to the development of MACI! After all, our goal is to build the most secure e-voting system, and this cannot be accomplished without all of your support.
+We encourage all community members to contribute to the improvement and ongoing development of MACI! After all, our goal is to build the most secure e-voting system, and this cannot be accomplished without all of your support.
 
 As a team, we are incredibly excited about this proposal and will continue to work hard to help the [3327 team](https://3327.io/) get this upgrade production-ready over the next 3 months.
 
 To contribute to MACI, submit issues, or learn more about it, you can reach out to us either via [Discord](https://discord.com/invite/sF5CT5rzrR) or [GitHub issues](https://github.com/privacy-scaling-explorations/maci/issues/new/choose).
 
-If you have an ambitious idea you'd like to work on, reach out to talk to us and we could create a proposal to build together! If you don't yet have an idea but would like to work on MACI still, we have some research ideas which might inspire you and we could collaborate on a grant together! Feel free to explore some ideas below and get in touch:
+If you have an ambitious idea you'd like to work on, reach out to us and we could create a proposal to build together! If you don't yet have a specific idea but are still keen to work on MACI, we have some research ideas which might inspire you and we could collaborate on a grant together. Feel free to explore these ideas below and get in touch:
 
 - [MACI coordinator in a TEE](https://github.com/privacy-scaling-explorations/maci/discussions/1385)
 - [Group wise matching](https://github.com/privacy-scaling-explorations/maci/issues/905)
@@ -79,5 +79,6 @@ If you have an ambitious idea you'd like to work on, reach out to talk to us and
 - [3327 team](https://3327.io/)
 - [3327 ElGamal flow](https://github.com/0x3327/maci/blob/feat/elgamal/docs/elgamal-flow.md)
 - [3327 ElGamal API](https://github.com/0x3327/maci/blob/feat/elgamal/docs/elgamal-api.md)
+- [Marija Mikić - Anonymity in MACI - EthCC [6]](https://www.youtube.com/live/X54LaXfJTn4)
 - [MACI Original idea](https://ethresear.ch/t/minimal-anti-collusion-infrastructure/5413)
 - [MACI Anonymization](https://ethresear.ch/t/maci-anonymization-using-rerandomizable-encryption/7054)
