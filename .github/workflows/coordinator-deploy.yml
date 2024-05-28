@@ -30,7 +30,7 @@ jobs:
 
       - name: Build and Push images to ECR
         run: |
-          .github/scripts/build.sh ${{ secrets.COORDINATOR_RPC_URL }} ${{ secrets.COORDINATOR_ADDRESS }} ${{ secrets.COORDINATOR_ALLOWED_ORIGIN }}
+          .github/scripts/build.sh ${{ secrets.COORDINATOR_RPC_URL }} ${{ secrets.COORDINATOR_ADDRESSES }} ${{ secrets.COORDINATOR_ALLOWED_ORIGINS }}
 
       - name: Create Deployment
         run: |

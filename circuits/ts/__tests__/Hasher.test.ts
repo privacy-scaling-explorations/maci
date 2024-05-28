@@ -193,7 +193,7 @@ describe("Poseidon hash circuits", function test() {
                 inputs: preImages,
               });
               await circuit.expectConstraintPass(witness);
-              const output = await getSignal(circuit, witness, "hash");
+              const output = await getSignal(circuit, witness, "out");
               const outputJS = hash2(preImages);
 
               return output === outputJS;
@@ -219,7 +219,7 @@ describe("Poseidon hash circuits", function test() {
                 inputs: preImages,
               });
               await circuit.expectConstraintPass(witness);
-              const output = await getSignal(circuit, witness, "hash");
+              const output = await getSignal(circuit, witness, "out");
               const outputJS = hash3(preImages);
 
               return output === outputJS;
@@ -245,7 +245,7 @@ describe("Poseidon hash circuits", function test() {
                 inputs: preImages,
               });
               await circuit.expectConstraintPass(witness);
-              const output = await getSignal(circuit, witness, "hash");
+              const output = await getSignal(circuit, witness, "out");
               const outputJS = hash4(preImages);
 
               return output === outputJS;
@@ -271,7 +271,7 @@ describe("Poseidon hash circuits", function test() {
                 inputs: preImages,
               });
               await circuit.expectConstraintPass(witness);
-              const output = await getSignal(circuit, witness, "hash");
+              const output = await getSignal(circuit, witness, "out");
               const outputJS = hash5(preImages);
 
               return output === outputJS;

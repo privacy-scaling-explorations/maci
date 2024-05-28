@@ -7,7 +7,7 @@ import { Keypair, PrivKey, PubKey } from "maci-domainobjs";
 import { L } from "./utils/constants";
 import { circomkitInstance, getSignal } from "./utils/utils";
 
-describe.only("Public key derivation circuit", function test() {
+describe("Public key derivation circuit", function test() {
   this.timeout(900000);
 
   let circuit: WitnessTester<["privKey"], ["pubKey"]>;

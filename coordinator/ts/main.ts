@@ -27,7 +27,7 @@ async function bootstrap() {
       },
     }),
   );
-  app.enableCors({ origin: process.env.COORDINATOR_ALLOWED_ORIGIN });
+  app.enableCors({ origin: process.env.COORDINATOR_ALLOWED_ORIGINS?.split(",") });
 
   const config = new DocumentBuilder()
     .setTitle("Coordinator service")

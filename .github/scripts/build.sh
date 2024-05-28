@@ -4,8 +4,8 @@ set -ex
 cp coordinator/.env.example coordinator/.env
 
 sed -i "s|^\(COORDINATOR_RPC_URL=\).*|\1$1|" coordinator/.env
-sed -i "s|^\(COORDINATOR_ADDRESS=\).*|\1$2|" coordinator/.env
-sed -i "s|^\(COORDINATOR_ALLOWED_ORIGIN=\).*|\1$3|" coordinator/.env
+sed -i "s|^\(COORDINATOR_ADDRESSES=\).*|\1$2|" coordinator/.env
+sed -i "s|^\(COORDINATOR_ALLOWED_ORIGINS=\).*|\1$3|" coordinator/.env
 
 aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin 490752553772.dkr.ecr.eu-central-1.amazonaws.com
 

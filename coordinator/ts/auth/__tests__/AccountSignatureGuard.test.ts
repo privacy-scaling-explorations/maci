@@ -118,7 +118,7 @@ describe("AccountSignatureGuard", () => {
 
   test("should return true if authorization is passed properly", async () => {
     const [signer] = await hardhat.ethers.getSigners();
-    process.env.COORDINATOR_ADDRESS = await signer.getAddress();
+    process.env.COORDINATOR_ADDRESSES = await signer.getAddress();
     const signature = await signer.signMessage("message");
     const digest = Buffer.from(getBytes(hashMessage("message"))).toString("hex");
 
@@ -129,6 +129,21 @@ describe("AccountSignatureGuard", () => {
     const result = await guard.canActivate(mockContext);
 
     expect(result).toBe(true);
+  });
+
+  test("should return false if there is no COORDINATOR_ADDRESSES env", async () => {
+    const [signer] = await hardhat.ethers.getSigners();
+    process.env.COORDINATOR_ADDRESSES = undefined;
+    const signature = await signer.signMessage("message");
+    const digest = Buffer.from(getBytes(hashMessage("message"))).toString("hex");
+
+    (mockCryptoService.decrypt as jest.Mock).mockReturnValue(`${signature}:${digest}`);
+
+    const guard = new AccountSignatureGuard(mockCryptoService, reflector);
+
+    const result = await guard.canActivate(mockContext);
+
+    expect(result).toBe(false);
   });
 
   test("should return true if can skip authorization", async () => {
