@@ -9,6 +9,31 @@ As a coordinator, first you need to merge signups and messages (votes). Messages
 
 This could be done using `maci-cli` or by running commands in the `contracts` folder.
 
+## Finalize in `maci/contracts`
+
+```bash
+pnpm merge:[network] --poll 0
+pnpm run prove:[network] --poll 0 \
+    --coordinator-private-key "macisk.1751146b59d32e3c0d7426de411218172428263f93b2fc4d981c036047a4d8c0" \
+    --process-zkey ../cli/zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test.0.zkey \
+    --tally-zkey ../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey \
+    --tally-file ../cli/tally.json \
+    --output-dir ../cli/proofs/ \
+    --tally-wasm ../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm \
+    --process-wasm ../cli/zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test_js/ProcessMessages_10-2-1-2_test.wasm
+```
+
+:::info
+If the poll was configured to use quadratic voting, please ensure your prove command has the flag `--use-quadratic-voting`. Omitting the flag will make it work with non quadratic voting only.
+:::
+
+The network options are: **_localhost, sepolia, and optimism-sepolia_**, and the tasks flags and parameters are as follows:
+
+| Command | Flags                                                            | Options                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| merge   |                                                                  | `--poll <pollId>`: the poll id <br/> `--queue-ops <queueOps>`: The number of queue operations to perform <br/> `--prove <prove>`: Run prove command after merging or not                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| prove   | `--use-quadratic-voting`: Whether to use quadratic voting or not | `--poll <pollId>`: the poll id <br/> `--output-dir <outputDir>`: Output directory for proofs <br /> `--coordinator-private-key <coordinatorPrivateKey>`: Coordinator maci private key <br /> `--rapid-snark <rapidSnark>`: Rapidsnark binary path <br /> `--process-zkey <processKey>`: Process zkey file path <br /> `--process-witgen <processWitgen>`: Process witgen binary path <br /> `--process-wasm <processWasm>`: Process wasm file path <br /> `--tally-file <tallyFile>`: The file to store the tally proof <br /> `--tally-zkey <tallyZkey>`: Tally zkey file path <br /> `--tally-witgen <tallyWitgen>`: Tally witgen binary path <br /> `--tally-wasm <tallyWasm>`: Tally wasm file path <br /> `--state-file <stateFile>`: The file with the serialized maci state <br /> `--start-block <startBlock>`: The block number to start fetching logs from <br /> `--blocks-per-batch <blocksPerBatch>`: The number of blocks to fetch logs from <br /> `--end-block <endBlock>`: The block number to stop fetching logs from <br /> `--transaction-hash <transactionHash>`: The transaction hash of the first transaction |
+
 ## Via `maci-cli`
 
 ```bash
@@ -32,27 +57,6 @@ maci-cli verify \
     --poll-id 0 \
     --tally-file tally.json # this file is generated in genProofs
 ```
-
-## Finalize in `maci/contracts`
-
-```bash
-pnpm merge:[network] --poll 0
-pnpm run prove:[network] --poll 0 \
-    --coordinator-private-key "macisk.1751146b59d32e3c0d7426de411218172428263f93b2fc4d981c036047a4d8c0" \
-    --process-zkey ../cli/zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test.0.zkey \
-    --tally-zkey ../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey \
-    --tally-file ../cli/tally.json \
-    --output-dir ../cli/proofs/ \
-    --tally-wasm ../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm \
-    --process-wasm ../cli/zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test_js/ProcessMessages_10-2-1-2_test.wasm
-```
-
-The network options are: **_localhost, sepolia, and optimism-sepolia_**, and the tasks flags and parameters are as follows:
-
-| Command | Flags                                                            | Options                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| ------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| merge   |                                                                  | `--poll <pollId>`: the poll id <br/> `--queue-ops <queueOps>`: The number of queue operations to perform <br/> `--prove <prove>`: Run prove command after merging or not                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| prove   | `--use-quadratic-voting`: Whether to use quadratic voting or not | `--poll <pollId>`: the poll id <br/> `--output-dir <outputDir>`: Output directory for proofs <br /> `--coordinator-private-key <coordinatorPrivateKey>`: Coordinator maci private key <br /> `--rapid-snark <rapidSnark>`: Rapidsnark binary path <br /> `--process-zkey <processKey>`: Process zkey file path <br /> `--process-witgen <processWitgen>`: Process witgen binary path <br /> `--process-wasm <processWasm>`: Process wasm file path <br /> `--tally-file <tallyFile>`: The file to store the tally proof <br /> `--tally-zkey <tallyZkey>`: Tally zkey file path <br /> `--tally-witgen <tallyWitgen>`: Tally witgen binary path <br /> `--tally-wasm <tallyWasm>`: Tally wasm file path <br /> `--state-file <stateFile>`: The file with the serialized maci state <br /> `--start-block <startBlock>`: The block number to start fetching logs from <br /> `--blocks-per-batch <blocksPerBatch>`: The number of blocks to fetch logs from <br /> `--end-block <endBlock>`: The block number to stop fetching logs from <br /> `--transaction-hash <transactionHash>`: The transaction hash of the first transaction |
 
 ## Tally
 
