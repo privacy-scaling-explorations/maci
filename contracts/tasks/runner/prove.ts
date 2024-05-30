@@ -1,9 +1,13 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-console */
 import { task, types } from "hardhat/config";
+import low from "lowdb";
+import FileSync from "lowdb/adapters/FileSync";
+import LocalStorageSync from "lowdb/adapters/LocalStorage";
 import { Keypair, PrivKey } from "maci-domainobjs";
 
 import fs from "fs";
+import path from "path";
 
 import type { Proof } from "../../ts/types";
 import type { VkRegistry, Verifier, MACI, Poll, AccQueue, MessageProcessor, Tally } from "../../typechain-types";
@@ -15,6 +19,11 @@ import { Prover } from "../helpers/Prover";
 import { EContracts, type IProveParams } from "../helpers/types";
 
 /**
+ * Internal deploy config structure type.
+ */
+type TConfig = Record<string, Record<string, string | number | boolean>>;
+
+/**
  * Prove hardhat task for generating off-chain proofs and sending them on-chain
  */
 task("prove", "Command to generate proof and prove the result of a poll on-chain")
@@ -22,15 +31,10 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
   .addParam("outputDir", "Output directory for proofs", undefined, types.string)
   .addParam("coordinatorPrivateKey", "Coordinator maci private key", undefined, types.string)
   .addOptionalParam("rapidsnark", "Rapidsnark binary path", undefined, types.string)
-  .addParam("processZkey", "Process zkey file path", undefined, types.string)
   .addOptionalParam("processWitgen", "Process witgen binary path", undefined, types.string)
-  .addOptionalParam("processWasm", "Process wasm file path", undefined, types.string)
   .addParam("tallyFile", "The file to store the tally proof", undefined, types.string)
-  .addParam("tallyZkey", "Tally zkey file path", undefined, types.string)
   .addOptionalParam("tallyWitgen", "Tally witgen binary path", undefined, types.string)
-  .addOptionalParam("tallyWasm", "Tally wasm file path", undefined, types.string)
   .addOptionalParam("stateFile", "The file with the serialized maci state", undefined, types.string)
-  .addFlag("useQuadraticVoting", "Whether to use quadratic voting or not")
   .addOptionalParam("startBlock", "The block number to start fetching logs from", undefined, types.int)
   .addOptionalParam("blocksPerBatch", "The number of blocks to fetch logs from", undefined, types.int)
   .addOptionalParam("endBlock", "The block number to stop fetching logs from", undefined, types.int)
@@ -43,14 +47,9 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
         coordinatorPrivateKey,
         stateFile,
         rapidsnark,
-        processZkey,
         processWitgen,
-        processWasm,
-        tallyZkey,
         tallyWitgen,
-        tallyWasm,
         tallyFile,
-        useQuadraticVoting,
         startBlock,
         blocksPerBatch,
         endBlock,
@@ -66,12 +65,17 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
         // Create the directory
         fs.mkdirSync(outputDir);
       }
-
+      const config: low.LowdbSync<TConfig> = low(
+        typeof window !== "undefined"
+          ? new LocalStorageSync<TConfig>("deploy-config")
+          : new FileSync<TConfig>(path.resolve(__dirname, "..", "..", "./deploy-config.json")),
+      );
       const maciPrivateKey = PrivKey.deserialize(coordinatorPrivateKey);
       const coordinatorKeypair = new Keypair(maciPrivateKey);
 
       const signer = await deployment.getDeployer();
       const { network } = hre;
+      const useQuadraticVoting = config.get(`${network.name}.Poll.useQuadraticVoting`).value() as unknown as boolean;
 
       const startBalance = await signer.provider.getBalance(signer);
 
@@ -99,7 +103,7 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
 
       // Check that the state and message trees have been merged for at least the first poll
       if (!isStateAqMerged && poll.toString() === "0") {
-        throw new Error("The state tree has not been merged yet. Please use the mergeSignups subcommand to do so.");
+        throw new Error("The state tree has not been merged yet. Please use the mergeSignups subcommmand to do so.");
       }
 
       const messageTreeDepth = await pollContract.treeDepths().then((depths) => Number(depths[2]));
@@ -108,7 +112,7 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
       const mainRoot = await messageAqContract.getMainRoot(messageTreeDepth.toString());
 
       if (mainRoot.toString() === "0") {
-        throw new Error("The message tree has not been merged yet. Please use the mergeMessages subcommand to do so.");
+        throw new Error("The message tree has not been merged yet. Please use the mergeMessages subcommmand to do so.");
       }
 
       const maciState = await ProofGenerator.prepareState({
@@ -146,20 +150,27 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
       });
       const tallyContractAddress = await tallyContract.getAddress();
 
+      let qv = "qv";
+      if (useQuadraticVoting) {
+        qv = "qv";
+      } else {
+        qv = "nonQv";
+      }
+
       const proofGenerator = new ProofGenerator({
         poll: foundPoll,
         maciContractAddress,
         tallyContractAddress,
         rapidsnark,
         tally: {
-          zkey: tallyZkey,
+          zkey: config.get(`${network.name}.VkRegistry.zkeys.${qv}.tallyVotesZkey`).value() as unknown as string, // TODO: depends QV or not QV
           witgen: tallyWitgen,
-          wasm: tallyWasm,
+          wasm: config.get(`${network.name}.VkRegistry.zkeys.${qv}.tallyWasm`).value() as unknown as string,
         },
         mp: {
-          zkey: processZkey,
+          zkey: config.get(`${network.name}.VkRegistry.zkeys.${qv}.processMessagesZkey`).value() as unknown as string,
           witgen: processWitgen,
-          wasm: processWasm,
+          wasm: config.get(`${network.name}.VkRegistry.zkeys.${qv}.processWasm`).value() as unknown as string,
         },
         outputDir,
         tallyOutputFile: tallyFile,
