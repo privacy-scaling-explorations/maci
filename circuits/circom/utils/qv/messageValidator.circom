@@ -48,10 +48,10 @@ template MessageValidator() {
     signal output isValid;
 
     // Check (1) - The state leaf index must be valid.
-    // The check ensure that the stateTreeIndex <= numSignUps as first validation.
-    // Must be <= because the stateTreeIndex is 1-based. Zero is for blank state leaf
-    // while 1 is for the first actual user matching the numSignUps start.
-    var computedIsStateLeafIndexValid = SafeLessEqThan(252)([stateTreeIndex, numSignUps]);
+    // The check ensure that the stateTreeIndex < numSignUps as first validation.
+    // Must be < because the stateTreeIndex is 0-based. Zero is for blank state leaf
+    // while 1 is for the first actual user.
+    var computedIsStateLeafIndexValid = SafeLessThan(252)([stateTreeIndex, numSignUps]);
 
     // Check (2) - The max vote option tree index must be correct.
     var computedIsVoteOptionIndexValid = SafeLessThan(252)([voteOptionIndex, maxVoteOptions]);
