@@ -1,13 +1,9 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-console */
 import { task, types } from "hardhat/config";
-import low from "lowdb";
-import FileSync from "lowdb/adapters/FileSync";
-import LocalStorageSync from "lowdb/adapters/LocalStorage";
 import { Keypair, PrivKey } from "maci-domainobjs";
 
 import fs from "fs";
-import path from "path";
 
 import type { Proof } from "../../ts/types";
 import type { VkRegistry, Verifier, MACI, Poll, AccQueue, MessageProcessor, Tally } from "../../typechain-types";
@@ -17,11 +13,6 @@ import { Deployment } from "../helpers/Deployment";
 import { ProofGenerator } from "../helpers/ProofGenerator";
 import { Prover } from "../helpers/Prover";
 import { EContracts, type IProveParams } from "../helpers/types";
-
-/**
- * Internal deploy config structure type.
- */
-type TConfig = Record<string, Record<string, string | number | boolean>>;
 
 /**
  * Prove hardhat task for generating off-chain proofs and sending them on-chain
@@ -65,17 +56,12 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
         // Create the directory
         fs.mkdirSync(outputDir);
       }
-      const config: low.LowdbSync<TConfig> = low(
-        typeof window !== "undefined"
-          ? new LocalStorageSync<TConfig>("deploy-config")
-          : new FileSync<TConfig>(path.resolve(__dirname, "..", "..", "./deploy-config.json")),
-      );
+
       const maciPrivateKey = PrivKey.deserialize(coordinatorPrivateKey);
       const coordinatorKeypair = new Keypair(maciPrivateKey);
 
       const signer = await deployment.getDeployer();
       const { network } = hre;
-      const useQuadraticVoting = config.get(`${network.name}.Poll.useQuadraticVoting`).value() as unknown as boolean;
 
       const startBalance = await signer.provider.getBalance(signer);
 
@@ -149,7 +135,8 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
         key: `poll-${poll.toString()}`,
       });
       const tallyContractAddress = await tallyContract.getAddress();
-
+      const useQuadraticVoting =
+        deployment.getDeployConfigField<boolean | null>(EContracts.Poll, "useQuadraticVoting") ?? false;
       const mode = useQuadraticVoting ? "qv" : "nonQv";
       const tallyZkey = deployment.getDeployConfigField<string>(EContracts.VkRegistry, `zkeys.${mode}.tallyVotesZkey`);
       const tallyWasm = deployment.getDeployConfigField<string>(EContracts.VkRegistry, `zkeys.${mode}.tallyWasm`);
