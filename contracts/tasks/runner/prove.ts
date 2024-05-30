@@ -103,7 +103,7 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
 
       // Check that the state and message trees have been merged for at least the first poll
       if (!isStateAqMerged && poll.toString() === "0") {
-        throw new Error("The state tree has not been merged yet. Please use the mergeSignups subcommmand to do so.");
+        throw new Error("The state tree has not been merged yet. Please use the mergeSignups subcommand to do so.");
       }
 
       const messageTreeDepth = await pollContract.treeDepths().then((depths) => Number(depths[2]));
@@ -112,7 +112,7 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
       const mainRoot = await messageAqContract.getMainRoot(messageTreeDepth.toString());
 
       if (mainRoot.toString() === "0") {
-        throw new Error("The message tree has not been merged yet. Please use the mergeMessages subcommmand to do so.");
+        throw new Error("The message tree has not been merged yet. Please use the mergeMessages subcommand to do so.");
       }
 
       const maciState = await ProofGenerator.prepareState({
@@ -150,27 +150,28 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
       });
       const tallyContractAddress = await tallyContract.getAddress();
 
-      let qv = "qv";
-      if (useQuadraticVoting) {
-        qv = "qv";
-      } else {
-        qv = "nonQv";
-      }
-
+      const mode = useQuadraticVoting ? "qv" : "nonQv";
+      const tallyZkey = deployment.getDeployConfigField<string>(EContracts.VkRegistry, `zkeys.${mode}.tallyVotesZkey`);
+      const tallyWasm = deployment.getDeployConfigField<string>(EContracts.VkRegistry, `zkeys.${mode}.tallyWasm`);
+      const processZkey = deployment.getDeployConfigField<string>(
+        EContracts.VkRegistry,
+        `zkeys.${mode}.processMessagesZkey`,
+      );
+      const processWasm = deployment.getDeployConfigField<string>(EContracts.VkRegistry, `zkeys.${mode}.processWasm`);
       const proofGenerator = new ProofGenerator({
         poll: foundPoll,
         maciContractAddress,
         tallyContractAddress,
         rapidsnark,
         tally: {
-          zkey: config.get(`${network.name}.VkRegistry.zkeys.${qv}.tallyVotesZkey`).value() as unknown as string, // TODO: depends QV or not QV
+          zkey: tallyZkey,
           witgen: tallyWitgen,
-          wasm: config.get(`${network.name}.VkRegistry.zkeys.${qv}.tallyWasm`).value() as unknown as string,
+          wasm: tallyWasm,
         },
         mp: {
-          zkey: config.get(`${network.name}.VkRegistry.zkeys.${qv}.processMessagesZkey`).value() as unknown as string,
+          zkey: processZkey,
           witgen: processWitgen,
-          wasm: config.get(`${network.name}.VkRegistry.zkeys.${qv}.processWasm`).value() as unknown as string,
+          wasm: processWasm,
         },
         outputDir,
         tallyOutputFile: tallyFile,
