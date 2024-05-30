@@ -13,6 +13,11 @@
       "schema": "0xe2636f31239f7948afdd9a9c477048b7fc2a089c347af60e3aa1251e5bf63e5c",
       "attester": "the-attester-address"
     },
+    "GitcoinPassportGatekeeper": {
+      "deploy": false,
+      "decoderAddress": "0xe53C60F8069C2f0c3a84F9B3DB5cf56f3100ba56",
+      "passingScore": 5
+    },
     "MACI": {
       "stateTreeDepth": 10,
       "gatekeeper": "EASGatekeeper"
