@@ -52,7 +52,7 @@ describe("Public key derivation circuit", function test() {
 
   it("should throw error if private key is not in the prime subgroup l", async () => {
     await fc.assert(
-      fc.asyncProperty(fc.bigInt({ min: L, max: r }), async (privKey: bigint) => {
+      fc.asyncProperty(fc.bigInt({ min: L, max: r - 1n }), async (privKey: bigint) => {
         const error = await circuit.expectFail({ privKey });
 
         return error.includes("Assert Failed");

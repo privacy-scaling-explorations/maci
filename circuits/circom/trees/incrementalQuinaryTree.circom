@@ -249,11 +249,11 @@ template QuinCheckRoot(levels) {
     // Initialize hashers for the leaves.
     for (var i = 0; i < numLeafHashers; i++) {
         computedHashers[i] = PoseidonHasher(5)([
-            leaves[i*LEAVES_PER_NODE+0],
-            leaves[i*LEAVES_PER_NODE+1],
-            leaves[i*LEAVES_PER_NODE+2],
-            leaves[i*LEAVES_PER_NODE+3],
-            leaves[i*LEAVES_PER_NODE+4]
+            leaves[i * LEAVES_PER_NODE + 0],
+            leaves[i * LEAVES_PER_NODE + 1],
+            leaves[i * LEAVES_PER_NODE + 2],
+            leaves[i * LEAVES_PER_NODE + 3],
+            leaves[i * LEAVES_PER_NODE + 4]
         ]);
     }
 
@@ -261,14 +261,14 @@ template QuinCheckRoot(levels) {
     var k = 0;
     for (var i = numLeafHashers; i < numHashers; i++) {
         computedHashers[i] = PoseidonHasher(5)([
-            computedHashers[k*LEAVES_PER_NODE+0],
-            computedHashers[k*LEAVES_PER_NODE+1],
-            computedHashers[k*LEAVES_PER_NODE+2],
-            computedHashers[k*LEAVES_PER_NODE+3],
-            computedHashers[k*LEAVES_PER_NODE+4]
+            computedHashers[k * LEAVES_PER_NODE + 0],
+            computedHashers[k * LEAVES_PER_NODE + 1],
+            computedHashers[k * LEAVES_PER_NODE + 2],
+            computedHashers[k * LEAVES_PER_NODE + 3],
+            computedHashers[k * LEAVES_PER_NODE + 4]
         ]);
         k++;
     }
 
-    root <== computedHashers[numHashers-1]; 
+    root <== computedHashers[numHashers - 1]; 
 }
