@@ -138,13 +138,22 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
       const useQuadraticVoting =
         deployment.getDeployConfigField<boolean | null>(EContracts.Poll, "useQuadraticVoting") ?? false;
       const mode = useQuadraticVoting ? "qv" : "nonQv";
-      const tallyZkey = deployment.getDeployConfigField<string>(EContracts.VkRegistry, `zkeys.${mode}.tallyVotesZkey`);
-      const tallyWasm = deployment.getDeployConfigField<string>(EContracts.VkRegistry, `zkeys.${mode}.tallyWasm`);
+      const tallyZkey = deployment.getDeployConfigField<string>(
+        EContracts.VkRegistry,
+        `zkeys.${mode}.tallyVotesZkey`,
+        true,
+      );
+      const tallyWasm = deployment.getDeployConfigField<string>(EContracts.VkRegistry, `zkeys.${mode}.tallyWasm`, true);
       const processZkey = deployment.getDeployConfigField<string>(
         EContracts.VkRegistry,
         `zkeys.${mode}.processMessagesZkey`,
+        true,
       );
-      const processWasm = deployment.getDeployConfigField<string>(EContracts.VkRegistry, `zkeys.${mode}.processWasm`);
+      const processWasm = deployment.getDeployConfigField<string>(
+        EContracts.VkRegistry,
+        `zkeys.${mode}.processWasm`,
+        true,
+      );
       const proofGenerator = new ProofGenerator({
         poll: foundPoll,
         maciContractAddress,
