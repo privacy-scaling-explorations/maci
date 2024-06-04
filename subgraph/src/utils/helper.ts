@@ -7,16 +7,11 @@ import { DEFAULT_MACI_ID } from "./constants";
 
 export const packPubkey = (pubkeyX: GraphBN, pubkeyY: GraphBN): string => `${pubkeyX.toString()}-${pubkeyY.toString()}`;
 
-export const createOrLoadMACI = (
-  event: ethereum.Event,
-  owner: Bytes | null = null,
-  stateTreeDepth: GraphBN = GraphBN.fromI32(10),
-): MACI => {
+export const createOrLoadMACI = (event: ethereum.Event, stateTreeDepth: GraphBN = GraphBN.fromI32(10)): MACI => {
   let maci = MACI.load(DEFAULT_MACI_ID);
 
   if (!maci) {
     maci = new MACI(DEFAULT_MACI_ID);
-    maci.owner = owner !== null ? owner : (event.transaction.from as Bytes);
     maci.stateTreeDepth = stateTreeDepth;
     maci.updatedAt = event.block.timestamp;
     maci.blockNumber = event.block.number;

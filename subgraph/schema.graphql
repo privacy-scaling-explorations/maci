@@ -1,6 +1,5 @@
 type MACI @entity {
   id: ID!
-  owner: Bytes! # address
   stateTreeDepth: BigInt! # uint8
   updatedAt: BigInt!
   blockNumber: BigInt!
@@ -32,7 +31,7 @@ type Account @entity {
 
   "relations"
   owner: User!
-  topupHistory: [TopupCredit!]! @derivedFrom(field: "account")
+  # topupHistory: [TopupCredit!]! @derivedFrom(field: "account")
 }
 
 type Poll @entity {
@@ -60,12 +59,11 @@ type Poll @entity {
   coordinator: User!
   owner: Bytes!
   votes: [Vote!]! @derivedFrom(field: "poll")
-  topupHistory: [TopupCredit!]! @derivedFrom(field: "poll")
+  # topupHistory: [TopupCredit!]! @derivedFrom(field: "poll")
 }
 
 type Vote @entity(immutable: true) {
   id: Bytes!
-  msgType: BigInt! # uint256
   data: [BigInt!]! # uint256[10]
   timestamp: BigInt!
   blockNumber: BigInt!
@@ -73,18 +71,4 @@ type Vote @entity(immutable: true) {
 
   "relations"
   poll: Poll!
-}
-
-type TopupCredit @entity(immutable: true) {
-  id: Bytes!
-  amount: BigInt!
-  msgType: BigInt # uint256
-  data: [BigInt!] # uint256[10]
-  timestamp: BigInt!
-  blockNumber: BigInt!
-  txHash: Bytes!
-
-  "relations"
-  poll: Poll!
-  account: Account!
 }
