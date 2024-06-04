@@ -50,6 +50,7 @@
     "test:eas_gatekeeper": "pnpm run test ./tests/EASGatekeeper.test.ts",
     "test:hats_gatekeeper": "pnpm run test ./tests/HatsGatekeeper.test.ts",
     "test:gitcoin_gatekeeper": "pnpm run test ./tests/GitcoinPassportGatekeeper.test.ts",
+    "test:zupass_gatekeeper": "pnpm run test ./tests/ZupassGatekeeper.test.ts",
     "deploy": "hardhat deploy-full",
     "deploy-poll": "hardhat deploy-poll",
     "verify": "hardhat verify-full",
