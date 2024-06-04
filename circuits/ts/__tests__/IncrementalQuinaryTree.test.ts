@@ -440,7 +440,7 @@ describe("Incremental Quinary Tree (IQT)", function test() {
       };
 
       for (let level = 0; level < maxLevel; level += 1) {
-        it.only(`should check the computation of correct merkle root (level ${level + 1}) [fuzz]`, async () => {
+        it(`should check the computation of correct merkle root (level ${level + 1}) [fuzz]`, async () => {
           await fc.assert(
             fc.asyncProperty(generateLeaves(level + 1), async (leaves: bigint[]) => quinCheckRootTest(leaves)),
           );
