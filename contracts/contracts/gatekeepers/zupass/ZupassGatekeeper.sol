@@ -12,14 +12,14 @@ import { Groth16Verifier } from "./Groth16Verifier.sol";
 /// by requiring new voters to own a certain Zupass event ticket
 contract ZupassGatekeeper is SignUpGatekeeper, Ownable(msg.sender) {
   /// @notice the Zupass event UUID converted to bigint
-  uint256 private immutable validEventId;
+  uint256 public immutable validEventId;
 
   /// @notice the Zupass event signer converted to bigint
-  uint256 private immutable validSigner1;
-  uint256 private immutable validSigner2;
+  uint256 public immutable validSigner1;
+  uint256 public immutable validSigner2;
 
   /// @notice the Groth16Verifier contract address
-  Groth16Verifier private immutable verifier;
+  Groth16Verifier public immutable verifier;
 
   /// @notice the reference to the MACI contract
   address public maci;
@@ -65,6 +65,12 @@ contract ZupassGatekeeper is SignUpGatekeeper, Ownable(msg.sender) {
     (uint256[2] memory _pA, uint256[2][2] memory _pB, uint256[2] memory _pC, uint256[38] memory _pubSignals) = abi
       .decode(_data, (uint256[2], uint256[2][2], uint256[2], uint256[38]));
 
+    // Ticket ID is stored at index 0
+    uint256 ticketId = _pubSignals[0];
+    if (registeredTickets[ticketId]) revert AlreadyRegistered();
+
+    registeredTickets[ticketId] = true;
+
     // Verify proof
     if (!verifier.verifyProof(_pA, _pB, _pC, _pubSignals)) revert InvalidProof();
 
@@ -77,11 +83,5 @@ contract ZupassGatekeeper is SignUpGatekeeper, Ownable(msg.sender) {
     // Watermark is stored at index 37
     // user address converted to bigint is used as the watermark
     if (_pubSignals[37] != uint256(uint160(_user))) revert InvalidWatermark();
-
-    // Ticket ID is stored at index 0
-    uint256 ticketId = _pubSignals[0];
-    if (registeredTickets[ticketId]) revert AlreadyRegistered();
-
-    registeredTickets[ticketId] = true;
   }
 }
