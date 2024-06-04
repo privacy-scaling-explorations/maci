@@ -8,7 +8,7 @@ sidebar_position: 17
 # MACI v1.0 Specification
 
 :::info
-This document is a copy of the [MACI 1.0 Specification (for audit) document](https://hackmd.io/AP6zPSgtThWxx6pjXY7R8A), created in July 2021 for one of [MACI's formal audits](/docs/audit).
+This document is a copy of the [MACI 1.0 Specification (for audit) document](https://hackmd.io/AP6zPSgtThWxx6pjXY7R8A), created in July 2021 for one of [MACI's formal audits](/docs/security/audit).
 
 This historical document is stored here for informational purposes. We do not intend to edit it. As a result, some of the information within this document may be outdated.
 :::

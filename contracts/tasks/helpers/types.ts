@@ -1,6 +1,15 @@
 import type { AccQueue, MACI, MessageProcessor, Poll, Tally, Verifier, VkRegistry } from "../../typechain-types";
 import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import type { BaseContract, BigNumberish, Signer } from "ethers";
+import type {
+  BaseContract,
+  BigNumberish,
+  Fragment,
+  JsonFragment,
+  Signer,
+  ContractFactory,
+  Interface,
+  InterfaceAbi,
+} from "ethers";
 import type { Libraries, TaskArguments } from "hardhat/types";
 import type { Poll as PollWrapper } from "maci-core";
 import type { Keypair, PrivKey } from "maci-domainobjs";
@@ -363,6 +372,11 @@ export interface IGetContractParams {
   address?: string;
 
   /**
+   * Contract abi
+   */
+  abi?: Interface | InterfaceAbi;
+
+  /**
    * Eth signer
    */
   signer?: Signer;
@@ -418,6 +432,11 @@ export interface IStorageInstanceEntry {
   id: string;
 
   /**
+   * Deployment Transaction Hash
+   */
+  deploymentTxHash?: string;
+
+  /**
    * Params for verification
    */
   verify?: {
@@ -470,8 +489,8 @@ export enum EContracts {
   ConstantInitialVoiceCreditProxy = "ConstantInitialVoiceCreditProxy",
   FreeForAllGatekeeper = "FreeForAllGatekeeper",
   EASGatekeeper = "EASGatekeeper",
+  GitcoinPassportGatekeeper = "GitcoinPassportGatekeeper",
   Verifier = "Verifier",
-  TopupCredit = "TopupCredit",
   MACI = "MACI",
   StateAq = "StateAq",
   PollFactory = "PollFactory",
@@ -533,19 +552,9 @@ export interface ITreeMergeParams {
   deployer: HardhatEthersSigner;
 
   /**
-   * AccQueue contract
-   */
-  signupAccQueueContract: AccQueue;
-
-  /**
    * Poll contract
    */
   pollContract: Poll;
-
-  /**
-   * MACI contract
-   */
-  maciContract: MACI;
 
   /**
    * Message AccQueue contract
@@ -652,4 +661,47 @@ export interface TallyData {
      */
     commitment: string;
   };
+}
+
+// a type representing the ABI of a contract
+export type TAbi = string | readonly (string | Fragment | JsonFragment)[];
+
+/**
+ * Interface that represents deploy params
+ */
+export interface IDeployContractParams {
+  /**
+   * Contract name
+   */
+  name: EContracts;
+
+  /**
+   * Contract abi
+   */
+  abi?: TAbi;
+
+  /**
+   * Contract bytecode
+   */
+  bytecode?: string;
+
+  /**
+   * Eth signer
+   */
+  signer?: Signer;
+}
+
+/**
+ * Interface that represents deploy params
+ */
+export interface IDeployContractWithLinkedLibrariesParams {
+  /**
+   * Contract factory
+   */
+  contractFactory: ContractFactory;
+
+  /**
+   * Eth signer
+   */
+  signer?: Signer;
 }

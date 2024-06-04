@@ -101,7 +101,7 @@ export class ProofGenerator {
           .queryFilter(maciContract.filters.DeployPoll(), startBlock)
           .then((events) => events[0]?.blockNumber ?? 0),
         pollContract.treeDepths(),
-        maciContract.getStateAqRoot(),
+        maciContract.getStateTreeRoot(),
         maciContract.numSignUps(),
       ]);
     const defaultStartBlock = Math.min(defaultStartBlockPoll, defaultStartBlockSignup);
@@ -113,7 +113,7 @@ export class ProofGenerator {
         .queryFilter(pollContract.filters.MergeMessageAq(messageRoot), fromBlock)
         .then((events) => events[events.length - 1]?.blockNumber),
       pollContract
-        .queryFilter(pollContract.filters.MergeMaciStateAq(stateRoot, numSignups), fromBlock)
+        .queryFilter(pollContract.filters.MergeMaciState(stateRoot, numSignups), fromBlock)
         .then((events) => events[events.length - 1]?.blockNumber),
     ]).then((blocks) => Math.max(...blocks));
 
@@ -213,7 +213,7 @@ export class ProofGenerator {
    * @param network - current network
    * @returns tally proofs
    */
-  async generateTallyProofs(network: Network): Promise<Proof[]> {
+  async generateTallyProofs(network: Network): Promise<{ proofs: Proof[]; tallyData: TallyData }> {
     performance.mark("tally-proofs-start");
 
     console.log(`Generating proofs of vote tallying...`);
@@ -316,7 +316,7 @@ export class ProofGenerator {
     performance.mark("tally-proofs-end");
     performance.measure("Generate tally proofs", "tally-proofs-start", "tally-proofs-end");
 
-    return proofs;
+    return { proofs, tallyData: tallyFileData };
   }
 
   /**
@@ -359,7 +359,14 @@ export class ProofGenerator {
       publicInputs: publicSignals,
     });
 
-    fs.writeFileSync(path.resolve(this.outputDir, outputFile), JSON.stringify(proofs[proofs.length - 1], null, 4));
+    if (!fs.existsSync(path.resolve(this.outputDir))) {
+      await fs.promises.mkdir(path.resolve(this.outputDir));
+    }
+
+    await fs.promises.writeFile(
+      path.resolve(this.outputDir, outputFile),
+      JSON.stringify(proofs[proofs.length - 1], null, 4),
+    );
 
     return proofs;
   }

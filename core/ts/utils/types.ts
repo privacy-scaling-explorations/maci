@@ -4,16 +4,13 @@ import type { PathElements } from "maci-crypto";
 import type {
   Ballot,
   IJsonBallot,
-  IJsonCommand,
   IJsonPCommand,
   IJsonStateLeaf,
-  IJsonTCommand,
   Keypair,
   Message,
   PCommand,
   PubKey,
   StateLeaf,
-  TCommand,
 } from "maci-domainobjs";
 
 /**
@@ -82,7 +79,6 @@ export interface IMaciState {
 export interface IPoll {
   // These methods are used for sending a message to the poll from user
   publishMessage(message: Message, encPubKey: PubKey): void;
-  topupMessage(message: Message): void;
   // These methods are used to generate circuit inputs
   processMessages(pollId: bigint): IProcessMessagesCircuitInputs;
   tallyVotes(): ITallyCircuitInputs;
@@ -105,7 +101,7 @@ export interface IJsonPoll {
   batchSizes: BatchSizes;
   maxValues: MaxValues;
   messages: unknown[];
-  commands: IJsonCommand[] | IJsonTCommand[] | IJsonPCommand[];
+  commands: IJsonPCommand[];
   ballots: IJsonBallot[];
   encPubKeys: string[];
   currentMessageBatchIndex: number;
@@ -140,13 +136,14 @@ export interface IProcessMessagesOutput {
   newBallot?: Ballot;
   originalBallot?: Ballot;
   originalBallotPathElements?: PathElements;
-  command?: PCommand | TCommand;
+  command?: PCommand;
 }
 
 /**
  * An interface describing the circuit inputs to the ProcessMessage circuit
  */
 export interface IProcessMessagesCircuitInputs {
+  actualStateTreeDepth: string;
   pollEndTimestamp: string;
   packedVals: string;
   msgRoot: string;

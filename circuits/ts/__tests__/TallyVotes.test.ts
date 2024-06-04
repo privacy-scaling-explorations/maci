@@ -1,7 +1,5 @@
-import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
-import { MaciState, Poll, STATE_TREE_ARITY } from "maci-core";
-import { AccQueue, NOTHING_UP_MY_SLEEVE } from "maci-crypto";
+import { MaciState, Poll } from "maci-core";
 import { Keypair, PCommand, Message } from "maci-domainobjs";
 
 import { ITallyVotesInputs } from "../types";
@@ -50,13 +48,13 @@ describe("TallyVotes circuit", function test() {
 
   before(async () => {
     circuit = await circomkitInstance.WitnessTester("tallyVotes", {
-      file: "tallyVotes",
+      file: "./core/qv/tallyVotes",
       template: "TallyVotes",
       params: [10, 1, 2],
     });
 
     circuitNonQv = await circomkitInstance.WitnessTester("tallyVotesNonQv", {
-      file: "tallyVotesNonQv",
+      file: "./core/non-qv/tallyVotes",
       template: "TallyVotesNonQv",
       params: [10, 1, 2],
     });
@@ -110,19 +108,7 @@ describe("TallyVotes circuit", function test() {
       commands.push(command);
 
       poll.publishMessage(message, ecdhKeypair.pubKey);
-      // Use the accumulator queue to compare the root of the message tree
-      const accumulatorQueue: AccQueue = new AccQueue(
-        treeDepths.messageTreeSubDepth,
-        STATE_TREE_ARITY,
-        NOTHING_UP_MY_SLEEVE,
-      );
-      accumulatorQueue.enqueue(message.hash(ecdhKeypair.pubKey));
-      accumulatorQueue.mergeSubRoots(0);
-      accumulatorQueue.merge(treeDepths.messageTreeDepth);
 
-      expect(poll.messageTree.root.toString()).to.be.eq(
-        accumulatorQueue.getMainRoots()[treeDepths.messageTreeDepth].toString(),
-      );
       // Process messages
       poll.processMessages(pollId);
     });
@@ -148,7 +134,7 @@ describe("TallyVotes circuit", function test() {
     });
   });
 
-  describe("1 user, 2 messages (non qv)", () => {
+  describe("1 user, 2 messages (non quadratic-voting)", () => {
     let stateIndex: bigint;
     let pollId: bigint;
     let poll: Poll;
@@ -196,19 +182,7 @@ describe("TallyVotes circuit", function test() {
       commands.push(command);
 
       poll.publishMessage(message, ecdhKeypair.pubKey);
-      // Use the accumulator queue to compare the root of the message tree
-      const accumulatorQueue: AccQueue = new AccQueue(
-        treeDepths.messageTreeSubDepth,
-        STATE_TREE_ARITY,
-        NOTHING_UP_MY_SLEEVE,
-      );
-      accumulatorQueue.enqueue(message.hash(ecdhKeypair.pubKey));
-      accumulatorQueue.mergeSubRoots(0);
-      accumulatorQueue.merge(treeDepths.messageTreeDepth);
 
-      expect(poll.messageTree.root.toString()).to.be.eq(
-        accumulatorQueue.getMainRoots()[treeDepths.messageTreeDepth].toString(),
-      );
       // Process messages
       poll.processMessages(pollId, false);
     });

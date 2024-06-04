@@ -14,7 +14,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v3
+      - uses: pnpm/action-setup@v4
         with:
           version: 8
 
@@ -82,13 +82,13 @@ jobs:
       - name: Compile Circuits And Generate zkeys
         if: ${{ env.CHANGED == 'true' }}
         run: |
-          pnpm build:circuits-c
-          pnpm setup:zkeys
+          pnpm build:circuits-c -- --outPath ../cli/zkeys
+          pnpm setup:zkeys -- --outPath ../cli/zkeys
 
       - name: Download zkeys
         if: ${{ env.CHANGED == 'false' }}
         run: |
-          pnpm download:test-zkeys
+          pnpm download-zkeys:test
 
       - name: ${{ matrix.command }}
         run: pnpm run ${{ matrix.command }}

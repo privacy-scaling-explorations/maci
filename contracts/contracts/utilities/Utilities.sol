@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
+
 import { DomainObjs } from "./DomainObjs.sol";
 import { Hasher } from "../crypto/Hasher.sol";
 import { SnarkConstants } from "../crypto/SnarkConstants.sol";
@@ -28,13 +29,11 @@ contract Utilities is SnarkConstants, DomainObjs, Hasher {
 
   /// @notice An utility function used to pad and hash a MACI message
   /// @param dataToPad the data to be padded
-  /// @param msgType the type of the message
   /// @return message The padded message
   /// @return padKey The padding public key
   /// @return msgHash The hash of the padded message and encryption key
   function padAndHashMessage(
-    uint256[2] memory dataToPad,
-    uint256 msgType
+    uint256[2] memory dataToPad
   ) public pure returns (Message memory message, PubKey memory padKey, uint256 msgHash) {
     // add data and pad it to 10 elements (automatically cause it's the default value)
     uint256[10] memory dat;
@@ -42,7 +41,7 @@ contract Utilities is SnarkConstants, DomainObjs, Hasher {
     dat[1] = dataToPad[1];
 
     padKey = PubKey(PAD_PUBKEY_X, PAD_PUBKEY_Y);
-    message = Message({ msgType: msgType, data: dat });
+    message = Message({ data: dat });
     msgHash = hashMessageAndEncPubKey(message, padKey);
   }
 
@@ -72,6 +71,6 @@ contract Utilities is SnarkConstants, DomainObjs, Hasher {
     m[3] = _message.data[8];
     m[4] = _message.data[9];
 
-    msgHash = hash5([_message.msgType, hash5(n), hash5(m), _encPubKey.x, _encPubKey.y]);
+    msgHash = hash4([hash5(n), hash5(m), _encPubKey.x, _encPubKey.y]);
   }
 }

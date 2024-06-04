@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 
-import { copyDirectory, fitFormat, generateSidebarString, insertIndexPage } from "./utils";
+import { copyDirectory, fitFormat, generateSidebarString, generateToC, insertIndexPage } from "./utils";
 
 const TYPEDOC_DIR = path.resolve(__dirname, "../../typedoc");
 
@@ -80,11 +80,14 @@ function defineTargetDirectory() {
     const versionContent = fs.readFileSync(versionFile, "utf8");
     if (versionContent) {
       const versionContentJson = JSON.parse(versionContent) as string[];
-      return path.resolve(__dirname, `../../versioned_docs/version-${versionContentJson[0]}/typedoc`);
+      return path.resolve(
+        __dirname,
+        `../../versioned_docs/version-${versionContentJson[0]}/developers-references/typescript-code/typedoc`,
+      );
     }
   }
 
-  return path.resolve(__dirname, "../../docs/typedoc");
+  return path.resolve(__dirname, "../../docs/developers-references/typescript-code/typedoc");
 }
 
 if (fs.existsSync(TYPEDOC_DIR)) {
@@ -93,7 +96,11 @@ if (fs.existsSync(TYPEDOC_DIR)) {
     parseAndRenameDirectory(dir);
   });
 
-  insertIndexPage(TYPEDOC_DIR, { title: "Typedoc", label: "Typedoc" });
+  insertIndexPage(
+    TYPEDOC_DIR,
+    { title: "Typedoc", label: "Typedoc" },
+    `\nTypedoc API documentation.\n${generateToC(TYPEDOC_DIR)}\n`,
+  );
 
   const versionDir = defineTargetDirectory();
   copyDirectory(TYPEDOC_DIR, versionDir);

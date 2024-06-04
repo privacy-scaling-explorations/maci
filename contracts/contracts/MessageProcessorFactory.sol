@@ -18,8 +18,7 @@ contract MessageProcessorFactory is Params, DomainObjs, IMessageProcessorFactory
     Mode _mode
   ) public returns (address messageProcessorAddr) {
     // deploy MessageProcessor for this Poll
-    MessageProcessor messageProcessor = new MessageProcessor(_verifier, _vkRegistry, _poll, _mode);
-    messageProcessor.transferOwnership(_owner);
+    MessageProcessor messageProcessor = new MessageProcessor(_verifier, _vkRegistry, _poll, _owner, _mode);
     messageProcessorAddr = address(messageProcessor);
   }
 }

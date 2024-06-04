@@ -6,28 +6,26 @@ import { IMessageProcessorFactory } from "./interfaces/IMPFactory.sol";
 import { ITallyFactory } from "./interfaces/ITallyFactory.sol";
 import { InitialVoiceCreditProxy } from "./initialVoiceCreditProxy/InitialVoiceCreditProxy.sol";
 import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
-import { AccQueue } from "./trees/AccQueue.sol";
-import { AccQueueQuinaryBlankSl } from "./trees/AccQueueQuinaryBlankSl.sol";
 import { IMACI } from "./interfaces/IMACI.sol";
 import { Params } from "./utilities/Params.sol";
-import { TopupCredit } from "./TopupCredit.sol";
 import { Utilities } from "./utilities/Utilities.sol";
 import { DomainObjs } from "./utilities/DomainObjs.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { CurveBabyJubJub } from "./crypto/BabyJubJub.sol";
+import { InternalLazyIMT, LazyIMTData } from "./trees/LazyIMT.sol";
 
 /// @title MACI - Minimum Anti-Collusion Infrastructure Version 1
 /// @notice A contract which allows users to sign up, and deploy new polls
-contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable(msg.sender) {
+contract MACI is IMACI, DomainObjs, Params, Utilities {
   /// @notice The state tree depth is fixed. As such it should be as large as feasible
-  /// so that there can be as many users as possible.  i.e. 5 ** 10 = 9765625
+  /// so that there can be as many users as possible.  i.e. 2 ** 23 = 8388608
   /// this should also match the parameter of the circom circuits.
-  uint8 public immutable stateTreeDepth;
-
   /// @notice IMPORTANT: remember to change the ballot tree depth
   /// in contracts/ts/genEmptyBallotRootsContract.ts file
   /// if we change the state tree depth!
-  uint8 internal constant STATE_TREE_SUBDEPTH = 2;
-  uint8 internal constant TREE_ARITY = 5;
+  uint8 public immutable stateTreeDepth;
+
+  uint8 internal constant TREE_ARITY = 2;
+  uint8 internal constant MESSAGE_TREE_ARITY = 5;
 
   /// @notice The hash of a blank state leaf
   uint256 internal constant BLANK_STATE_LEAF_HASH =
@@ -39,15 +37,6 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable(msg.sender) {
   /// @notice A mapping of poll IDs to Poll contracts.
   mapping(uint256 => address) public polls;
 
-  /// @notice Whether the subtrees have been merged (can merge root before new signup)
-  bool public subtreesMerged;
-
-  /// @notice The number of signups
-  uint256 public numSignUps;
-
-  /// @notice ERC20 contract that hold topup credits
-  TopupCredit public immutable topupCredit;
-
   /// @notice Factory contract that deploy a Poll contract
   IPollFactory public immutable pollFactory;
 
@@ -57,9 +46,9 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable(msg.sender) {
   /// @notice Factory contract that deploy a Tally contract
   ITallyFactory public immutable tallyFactory;
 
-  /// @notice The state AccQueue. Represents a mapping between each user's public key
+  /// @notice The state tree. Represents a mapping between each user's public key
   /// and their voice credit balance.
-  AccQueue public immutable stateAq;
+  LazyIMTData public lazyIMTData;
 
   /// @notice Address of the SignUpGatekeeper, a contract which determines whether a
   /// user may sign up to vote
@@ -91,20 +80,11 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable(msg.sender) {
     PollContracts pollAddr
   );
 
-  /// @notice Only allow a Poll contract to call the modified function.
-  modifier onlyPoll(uint256 _pollId) {
-    if (msg.sender != address(polls[_pollId])) revert CallerMustBePoll(msg.sender);
-    _;
-  }
-
   /// @notice custom errors
-  error CallerMustBePoll(address _caller);
   error PoseidonHashLibrariesNotLinked();
   error TooManySignups();
-  error MaciPubKeyLargerThanSnarkFieldSize();
-  error PreviousPollNotCompleted(uint256 pollId);
+  error InvalidPubKey();
   error PollDoesNotExist(uint256 pollId);
-  error SignupTemporaryBlocked();
 
   /// @notice Create a new instance of the MACI contract.
   /// @param _pollFactory The PollFactory contract
@@ -112,7 +92,6 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable(msg.sender) {
   /// @param _tallyFactory The TallyFactory contract
   /// @param _signUpGatekeeper The SignUpGatekeeper contract
   /// @param _initialVoiceCreditProxy The InitialVoiceCreditProxy contract
-  /// @param _topupCredit The TopupCredit contract
   /// @param _stateTreeDepth The depth of the state tree
   constructor(
     IPollFactory _pollFactory,
@@ -120,23 +99,15 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable(msg.sender) {
     ITallyFactory _tallyFactory,
     SignUpGatekeeper _signUpGatekeeper,
     InitialVoiceCreditProxy _initialVoiceCreditProxy,
-    TopupCredit _topupCredit,
     uint8 _stateTreeDepth
   ) payable {
-    // Deploy the state AccQueue
-    stateAq = new AccQueueQuinaryBlankSl(STATE_TREE_SUBDEPTH);
-    stateAq.enqueue(BLANK_STATE_LEAF_HASH);
-
-    // because we add a blank leaf we need to count one signup
-    // so we don't allow max + 1
-    unchecked {
-      numSignUps++;
-    }
+    // initialize and insert the blank leaf
+    InternalLazyIMT._init(lazyIMTData, _stateTreeDepth);
+    InternalLazyIMT._insert(lazyIMTData, BLANK_STATE_LEAF_HASH);
 
     pollFactory = _pollFactory;
     messageProcessorFactory = _messageProcessorFactory;
     tallyFactory = _tallyFactory;
-    topupCredit = _topupCredit;
     signUpGatekeeper = _signUpGatekeeper;
     initialVoiceCreditProxy = _initialVoiceCreditProxy;
     stateTreeDepth = _stateTreeDepth;
@@ -162,21 +133,12 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable(msg.sender) {
     bytes memory _signUpGatekeeperData,
     bytes memory _initialVoiceCreditProxyData
   ) public virtual {
-    // prevent new signups until we merge the roots (possible DoS)
-    if (subtreesMerged) revert SignupTemporaryBlocked();
-
     // ensure we do not have more signups than what the circuits support
-    if (numSignUps >= uint256(TREE_ARITY) ** uint256(stateTreeDepth)) revert TooManySignups();
+    if (lazyIMTData.numberOfLeaves >= uint256(TREE_ARITY) ** uint256(stateTreeDepth)) revert TooManySignups();
 
-    if (_pubKey.x >= SNARK_SCALAR_FIELD || _pubKey.y >= SNARK_SCALAR_FIELD) {
-      revert MaciPubKeyLargerThanSnarkFieldSize();
-    }
-
-    // Increment the number of signups
-    // cannot overflow with realistic STATE_TREE_DEPTH
-    // values as numSignUps < 5 ** STATE_TREE_DEPTH -1
-    unchecked {
-      numSignUps++;
+    // ensure that the public key is on the baby jubjub curve
+    if (!CurveBabyJubJub.isOnCurve(_pubKey.x, _pubKey.y)) {
+      revert InvalidPubKey();
     }
 
     // Register the user via the sign-up gatekeeper. This function should
@@ -187,11 +149,12 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable(msg.sender) {
     uint256 voiceCreditBalance = initialVoiceCreditProxy.getVoiceCredits(msg.sender, _initialVoiceCreditProxyData);
 
     uint256 timestamp = block.timestamp;
-    // Create a state leaf and enqueue it.
-    uint256 stateLeaf = hashStateLeaf(StateLeaf(_pubKey, voiceCreditBalance, timestamp));
-    uint256 stateIndex = stateAq.enqueue(stateLeaf);
 
-    emit SignUp(stateIndex, _pubKey.x, _pubKey.y, voiceCreditBalance, timestamp);
+    // Create a state leaf and insert it into the tree.
+    uint256 stateLeaf = hashStateLeaf(StateLeaf(_pubKey, voiceCreditBalance, timestamp));
+    InternalLazyIMT._insert(lazyIMTData, stateLeaf);
+
+    emit SignUp(lazyIMTData.numberOfLeaves - 1, _pubKey.x, _pubKey.y, voiceCreditBalance, timestamp);
   }
 
   /// @notice Deploy a new Poll contract.
@@ -209,7 +172,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable(msg.sender) {
     address _verifier,
     address _vkRegistry,
     Mode _mode
-  ) public virtual onlyOwner returns (PollContracts memory pollAddr) {
+  ) public virtual returns (PollContracts memory pollAddr) {
     // cache the poll to a local variable so we can increment it
     uint256 pollId = nextPollId;
 
@@ -219,29 +182,23 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable(msg.sender) {
       nextPollId++;
     }
 
-    if (pollId > 0) {
-      if (!stateAq.treeMerged()) revert PreviousPollNotCompleted(pollId);
+    // check coordinator key is a valid point on the curve
+    if (!CurveBabyJubJub.isOnCurve(_coordinatorPubKey.x, _coordinatorPubKey.y)) {
+      revert InvalidPubKey();
     }
 
     MaxValues memory maxValues = MaxValues({
-      maxMessages: uint256(TREE_ARITY) ** _treeDepths.messageTreeDepth,
-      maxVoteOptions: uint256(TREE_ARITY) ** _treeDepths.voteOptionTreeDepth
+      maxMessages: uint256(MESSAGE_TREE_ARITY) ** _treeDepths.messageTreeDepth,
+      maxVoteOptions: uint256(MESSAGE_TREE_ARITY) ** _treeDepths.voteOptionTreeDepth
     });
 
-    address _owner = owner();
+    // the owner of the message processor and tally contract will be the msg.sender
+    address _msgSender = msg.sender;
 
-    address p = pollFactory.deploy(
-      _duration,
-      maxValues,
-      _treeDepths,
-      _coordinatorPubKey,
-      address(this),
-      topupCredit,
-      _owner
-    );
+    address p = pollFactory.deploy(_duration, maxValues, _treeDepths, _coordinatorPubKey, address(this));
 
-    address mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p, _owner, _mode);
-    address tally = tallyFactory.deploy(_verifier, _vkRegistry, p, mp, _owner, _mode);
+    address mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p, _msgSender, _mode);
+    address tally = tallyFactory.deploy(_verifier, _vkRegistry, p, mp, _msgSender, _mode);
 
     polls[pollId] = p;
 
@@ -252,26 +209,8 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable(msg.sender) {
   }
 
   /// @inheritdoc IMACI
-  function mergeStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId) public onlyPoll(_pollId) {
-    stateAq.mergeSubRoots(_numSrQueueOps);
-
-    // if we have merged all subtrees then put a block
-    if (stateAq.subTreesMerged()) {
-      subtreesMerged = true;
-    }
-  }
-
-  /// @inheritdoc IMACI
-  function mergeStateAq(uint256 _pollId) public onlyPoll(_pollId) returns (uint256 root) {
-    // remove block
-    subtreesMerged = false;
-
-    root = stateAq.merge(stateTreeDepth);
-  }
-
-  /// @inheritdoc IMACI
-  function getStateAqRoot() public view returns (uint256 root) {
-    root = stateAq.getMainRoot(stateTreeDepth);
+  function getStateTreeRoot() public view returns (uint256 root) {
+    root = InternalLazyIMT._root(lazyIMTData);
   }
 
   /// @notice Get the Poll details
@@ -280,5 +219,10 @@ contract MACI is IMACI, DomainObjs, Params, Utilities, Ownable(msg.sender) {
   function getPoll(uint256 _pollId) public view returns (address poll) {
     if (_pollId >= nextPollId) revert PollDoesNotExist(_pollId);
     poll = polls[_pollId];
+  }
+
+  /// @inheritdoc IMACI
+  function numSignUps() public view returns (uint256 signUps) {
+    signUps = lazyIMTData.numberOfLeaves;
   }
 }

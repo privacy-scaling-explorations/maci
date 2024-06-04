@@ -8,9 +8,8 @@ const storage = ContractStorage.getInstance();
 /**
  * Deploy step registration and task itself
  */
-deployment
-  .deployTask("full:deploy-verifier", "Deploy verifier")
-  .setAction(async ({ incremental }: IDeployParams, hre) => {
+deployment.deployTask("full:deploy-verifier", "Deploy verifier").then((task) =>
+  task.setAction(async ({ incremental }: IDeployParams, hre) => {
     deployment.setHre(hre);
     const deployer = await deployment.getDeployer();
 
@@ -20,7 +19,7 @@ deployment
       return;
     }
 
-    const verifierContract = await deployment.deployContract(EContracts.Verifier, deployer);
+    const verifierContract = await deployment.deployContract({ name: EContracts.Verifier, signer: deployer });
 
     await storage.register({
       id: EContracts.Verifier,
@@ -28,4 +27,5 @@ deployment
       args: [],
       network: hre.network.name,
     });
-  });
+  }),
+);

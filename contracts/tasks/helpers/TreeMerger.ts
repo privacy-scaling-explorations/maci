@@ -1,8 +1,6 @@
 /* eslint-disable no-console */
-import { type BigNumberish } from "ethers";
-
 import type { ITreeMergeParams } from "./types";
-import type { AccQueue, MACI, Poll } from "../../typechain-types";
+import type { AccQueue, Poll } from "../../typechain-types";
 import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 
 /**
@@ -10,16 +8,6 @@ import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signer
  * This class is using for merging signups and messages.
  */
 export class TreeMerger {
-  /**
-   * MACI contract
-   */
-  private maciContract: MACI;
-
-  /**
-   * User signups AccQueue contract
-   */
-  private signupAccQueueContract: AccQueue;
-
   /**
    * User messages AccQueue contract
    */
@@ -40,30 +28,10 @@ export class TreeMerger {
    *
    * @param {ITreeMergeParams} params - contracts and signer
    */
-  constructor({
-    deployer,
-    signupAccQueueContract,
-    messageAccQueueContract,
-    pollContract,
-    maciContract,
-  }: ITreeMergeParams) {
-    this.maciContract = maciContract;
+  constructor({ deployer, messageAccQueueContract, pollContract }: ITreeMergeParams) {
     this.pollContract = pollContract;
-    this.signupAccQueueContract = signupAccQueueContract;
     this.messageAccQueueContract = messageAccQueueContract;
     this.deployer = deployer;
-  }
-
-  /**
-   * Check if signer is an owner. Otherwise, throw an error.
-   */
-  async checkPollOwner(): Promise<void> {
-    const pollOwner = await this.pollContract.owner();
-    const deployerAddress = await this.deployer.getAddress();
-
-    if (pollOwner.toLowerCase() !== deployerAddress.toLowerCase()) {
-      throw new Error("The signer is not the owner of this Poll contract");
-    }
   }
 
   /**
@@ -84,57 +52,16 @@ export class TreeMerger {
   }
 
   /**
-   * Merge user signup subtrees
-   *
-   * @param pollId - poll id
-   * @param queueOps - the number of queue operations to perform
-   */
-  async mergeSignupSubtrees(pollId: BigNumberish, queueOps: number): Promise<void> {
-    let subTreesMerged = false;
-
-    // infinite loop to merge the sub trees
-    while (!subTreesMerged) {
-      // eslint-disable-next-line no-await-in-loop
-      subTreesMerged = await this.signupAccQueueContract.subTreesMerged();
-
-      if (subTreesMerged) {
-        console.log("All state subtrees have been merged.");
-      } else {
-        // eslint-disable-next-line no-await-in-loop
-        await this.signupAccQueueContract.getSrIndices().then((indices) => {
-          console.log(`Merging state subroots ${indices[0] + 1n} / ${indices[1] + 1n}`);
-        });
-
-        // first merge the subroots
-        // eslint-disable-next-line no-await-in-loop
-        const receipt = await this.pollContract
-          .mergeMaciStateAqSubRoots(queueOps, pollId.toString())
-          .then((tx) => tx.wait());
-
-        if (receipt?.status !== 1) {
-          throw new Error("Error merging state subroots");
-        }
-
-        console.log(`Transaction hash: ${receipt.hash}`);
-        console.log(`Executed mergeMaciStateAqSubRoots(); gas used: ${receipt.gasUsed.toString()}`);
-      }
-    }
-  }
-
-  /**
    * Merge user signup MACI state
    *
    * @param pollId - poll id
    */
-  async mergeSignups(pollId: BigNumberish): Promise<void> {
-    // check if the state AQ has been fully merged
-    const stateTreeDepth = Number(await this.maciContract.stateTreeDepth());
-    const mainRoot = await this.signupAccQueueContract.getMainRoot(stateTreeDepth.toString());
-
-    if (mainRoot.toString() === "0" || BigInt(pollId) > 0n) {
+  async mergeSignups(): Promise<void> {
+    // check if the state tree has been fully merged
+    if (!(await this.pollContract.stateMerged())) {
       // go and merge the state tree
       console.log("Merging subroots to a main state root...");
-      const receipt = await this.pollContract.mergeMaciStateAq(pollId.toString()).then((tx) => tx.wait());
+      const receipt = await this.pollContract.mergeMaciState().then((tx) => tx.wait());
 
       if (receipt?.status !== 1) {
         throw new Error("Error merging signup state subroots");
@@ -143,7 +70,7 @@ export class TreeMerger {
       console.log(`Transaction hash: ${receipt.hash}`);
       console.log(`Executed mergeStateAq(); gas used: ${receipt.gasUsed.toString()}`);
     } else {
-      console.log("The signup state tree has already been merged.");
+      console.log("The state tree has already been merged.");
     }
   }
 

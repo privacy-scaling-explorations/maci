@@ -1,6 +1,6 @@
 {
   "name": "maci-contracts",
-  "version": "1.2.0",
+  "version": "1.2.2",
   "description": "Solidity Smart Contracts for MACI (Minimal Anti-Collusion Infrastructure)",
   "main": "build/ts/index.js",
   "exports": {
@@ -49,6 +49,7 @@
     "test:pollFactory": "pnpm run test ./tests/PollFactory.test.ts",
     "test:eas_gatekeeper": "pnpm run test ./tests/EASGatekeeper.test.ts",
     "test:hats_gatekeeper": "pnpm run test ./tests/HatsGatekeeper.test.ts",
+    "test:gitcoin_gatekeeper": "pnpm run test ./tests/GitcoinPassportGatekeeper.test.ts",
     "deploy": "hardhat deploy-full",
     "deploy-poll": "hardhat deploy-poll",
     "verify": "hardhat verify-full",
@@ -70,16 +71,18 @@
     "verify:optimism-sepolia": "pnpm run verify --network optimism_sepolia"
   },
   "dependencies": {
-    "@nomicfoundation/hardhat-ethers": "^3.0.5",
+    "@nomicfoundation/hardhat-ethers": "^3.0.6",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@openzeppelin/contracts": "^5.0.2",
+    "@zk-kit/imt.sol": "2.0.0-beta.12",
     "circomlibjs": "^0.1.7",
-    "ethers": "^6.11.1",
-    "hardhat": "^2.22.2",
-    "maci-circuits": "^1.2.0",
-    "maci-core": "^1.2.0",
-    "maci-crypto": "^1.2.0",
-    "maci-domainobjs": "^1.2.0",
+    "ethers": "^6.12.1",
+    "hardhat": "^2.22.4",
+    "lowdb": "^1.0.0",
+    "maci-circuits": "1.2.2",
+    "maci-core": "1.2.2",
+    "maci-crypto": "1.2.2",
+    "maci-domainobjs": "1.2.2",
     "solidity-docgen": "^0.6.0-beta.36"
   },
   "devDependencies": {
@@ -87,13 +90,12 @@
     "@types/circomlibjs": "^0.1.6",
     "@types/lowdb": "^1.0.15",
     "@types/mocha": "^10.0.6",
-    "@types/node": "^20.12.7",
+    "@types/node": "^20.12.12",
     "@types/snarkjs": "^0.7.8",
     "chai": "^4.3.10",
     "dotenv": "^16.4.5",
     "hardhat-artifactor": "^0.2.0",
     "hardhat-contract-sizer": "^2.10.0",
-    "lowdb": "^1.0.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.4.5"
   }

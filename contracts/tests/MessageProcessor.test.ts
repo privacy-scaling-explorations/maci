@@ -107,7 +107,7 @@ describe("MessageProcessor", () => {
     for (let i = 1; i < 10; i += 1) {
       messageData.push(BigInt(0));
     }
-    const message = new Message(BigInt(1), messageData);
+    const message = new Message(messageData);
     const padKey = new PubKey([
       BigInt("10457101036533406547632367118273992217979173478358440826365724437999023779287"),
       BigInt("19824078218392094440610104313265183977899662750282163392862422243483260492317"),
@@ -146,15 +146,14 @@ describe("MessageProcessor", () => {
     it("processMessages() should fail if the state AQ has not been merged", async () => {
       await expect(mpContract.processMessages(0, [0, 0, 0, 0, 0, 0, 0, 0])).to.be.revertedWithCustomError(
         mpContract,
-        "StateAqNotMerged",
+        "StateNotMerged",
       );
     });
   });
 
   describe("after merging acc queues", () => {
     before(async () => {
-      await pollContract.mergeMaciStateAqSubRoots(0, pollId);
-      await pollContract.mergeMaciStateAq(0);
+      await pollContract.mergeMaciState();
 
       await pollContract.mergeMessageAqSubRoots(0);
       await pollContract.mergeMessageAq();

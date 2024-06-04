@@ -8,7 +8,7 @@ import {
   hash3,
   hash4,
   hash5,
-  hash13,
+  hash12,
   hashLeftRight,
   hashN,
   hashOne,
@@ -320,9 +320,9 @@ describe("Crypto", function test() {
         expect(hash).to.not.eq(BigInt(0));
       });
     });
-    describe("hash13", () => {
+    describe("hash12", () => {
       it("should produce the same output for the same input", () => {
-        const res1 = hash13([
+        const res1 = hash12([
           BigInt(1),
           BigInt(2),
           BigInt(3),
@@ -335,9 +335,8 @@ describe("Crypto", function test() {
           BigInt(10),
           BigInt(11),
           BigInt(12),
-          BigInt(13),
         ]);
-        const res2 = hash13([
+        const res2 = hash12([
           BigInt(1),
           BigInt(2),
           BigInt(3),
@@ -350,12 +349,11 @@ describe("Crypto", function test() {
           BigInt(10),
           BigInt(11),
           BigInt(12),
-          BigInt(13),
         ]);
         expect(res1).to.eq(res2);
       });
       it("should produce different outputs for different inputs", () => {
-        const res1 = hash13([
+        const res1 = hash12([
           BigInt(1),
           BigInt(2),
           BigInt(3),
@@ -368,9 +366,8 @@ describe("Crypto", function test() {
           BigInt(10),
           BigInt(11),
           BigInt(12),
-          BigInt(13),
         ]);
-        const res2 = hash13([
+        const res2 = hash12([
           BigInt(2),
           BigInt(1),
           BigInt(3),
@@ -383,12 +380,11 @@ describe("Crypto", function test() {
           BigInt(10),
           BigInt(11),
           BigInt(12),
-          BigInt(13),
         ]);
         expect(res1).to.not.eq(res2);
       });
       it("should produce a non zero value", () => {
-        const hash = hash13([
+        const hash = hash12([
           BigInt(1),
           BigInt(2),
           BigInt(3),
@@ -401,13 +397,12 @@ describe("Crypto", function test() {
           BigInt(10),
           BigInt(11),
           BigInt(12),
-          BigInt(13),
         ]);
         expect(hash).to.not.eq(BigInt(0));
       });
       it("should throw when elements is more than numElement", () => {
         expect(() =>
-          hash13([
+          hash12([
             BigInt(1),
             BigInt(2),
             BigInt(3),
@@ -421,12 +416,11 @@ describe("Crypto", function test() {
             BigInt(11),
             BigInt(12),
             BigInt(13),
-            BigInt(14),
           ]),
-        ).to.throw("the length of the elements array should be at most 13; got 14");
+        ).to.throw("the length of the elements array should be at most 12; got 13");
       });
       it("should work (and apply padding) when passed less than numElement elements", () => {
-        const hash = hash13([BigInt(1), BigInt(2)]);
+        const hash = hash12([BigInt(1), BigInt(2)]);
         expect(hash).to.not.eq(BigInt(0));
       });
     });

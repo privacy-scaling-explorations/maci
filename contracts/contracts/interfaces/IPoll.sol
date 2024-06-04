@@ -4,7 +4,6 @@ pragma solidity ^0.8.10;
 import { DomainObjs } from "../utilities/DomainObjs.sol";
 import { IMACI } from "./IMACI.sol";
 import { AccQueue } from "../trees/AccQueue.sol";
-import { TopupCredit } from "../TopupCredit.sol";
 
 /// @title IPoll
 /// @notice Poll interface
@@ -14,11 +13,6 @@ interface IPoll {
   /// @return numMsgs The number of messages sent by voters
   function numSignUpsAndMessages() external view returns (uint256 numSignups, uint256 numMsgs);
 
-  /// @notice Allows to publish a Topup message
-  /// @param stateIndex The index of user in the state queue
-  /// @param amount The amount of credits to topup
-  function topup(uint256 stateIndex, uint256 amount) external;
-
   /// @notice Allows anyone to publish a message (an encrypted command and signature).
   /// This function also enqueues the message.
   /// @param _message The message to publish
@@ -27,18 +21,10 @@ interface IPoll {
   /// to encrypt the message.
   function publishMessage(DomainObjs.Message memory _message, DomainObjs.PubKey calldata _encPubKey) external;
 
-  /// @notice The first step of merging the MACI state AccQueue. This allows the
-  /// ProcessMessages circuit to access the latest state tree and ballots via
-  /// currentSbCommitment.
-  /// @param _numSrQueueOps Number of operations
-  /// @param _pollId The ID of the active Poll
-  function mergeMaciStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId) external;
-
   /// @notice The second step of merging the MACI state AccQueue. This allows the
   /// ProcessMessages circuit to access the latest state tree and ballots via
   /// currentSbCommitment.
-  /// @param _pollId The ID of the active Poll
-  function mergeMaciStateAq(uint256 _pollId) external;
+  function mergeMaciState() external;
 
   /// @notice The first step in merging the message AccQueue so that the
   /// ProcessMessages circuit can access the message root.
@@ -56,7 +42,7 @@ interface IPoll {
 
   /// @notice Get the result of whether the MACI contract's stateAq has been merged by this contract
   /// @return Whether the MACI contract's stateAq has been merged by this contract
-  function stateAqMerged() external view returns (bool);
+  function stateMerged() external view returns (bool);
 
   /// @notice Get the depths of the merkle trees
   /// @return intStateTreeDepth The depth of the state tree
@@ -76,8 +62,7 @@ interface IPoll {
   /// @notice Get the external contracts
   /// @return maci The IMACI contract
   /// @return messageAq The AccQueue contract
-  /// @return topupCredit The TopupCredit contract
-  function extContracts() external view returns (IMACI maci, AccQueue messageAq, TopupCredit topupCredit);
+  function extContracts() external view returns (IMACI maci, AccQueue messageAq);
 
   /// @notice Get the hash of coordinator's public key
   /// @return _coordinatorPubKeyHash the hash of coordinator's public key
@@ -92,4 +77,8 @@ interface IPoll {
   /// the case that none of the messages are valid.
   /// @return The commitment to the state leaves and the ballots
   function currentSbCommitment() external view returns (uint256);
+
+  /// @notice Get the dynamic depth of the state tree at the time of poll
+  /// finalization (based on the number of leaves inserted)
+  function actualStateTreeDepth() external view returns (uint8);
 }

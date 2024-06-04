@@ -57,10 +57,39 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
     ["newSlPubKey", "newBallotNonce", "isValid"]
   >;
 
+  let circuitNonQv: WitnessTester<
+    [
+      "numSignUps",
+      "maxVoteOptions",
+      "slPubKey",
+      "slVoiceCreditBalance",
+      "slTimestamp",
+      "pollEndTimestamp",
+      "ballotNonce",
+      "ballotCurrentVotesForOption",
+      "cmdStateIndex",
+      "cmdNewPubKey",
+      "cmdVoteOptionIndex",
+      "cmdNewVoteWeight",
+      "cmdNonce",
+      "cmdPollId",
+      "cmdSalt",
+      "cmdSigR8",
+      "cmdSigS",
+      "packedCommand",
+    ],
+    ["newSlPubKey", "newBallotNonce", "isValid"]
+  >;
+
   before(async () => {
     circuit = await circomkitInstance.WitnessTester("stateLeafAndBallotTransformer", {
-      file: "stateLeafAndBallotTransformer",
+      file: "./utils/qv/stateLeafAndBallotTransformer",
       template: "StateLeafAndBallotTransformer",
+    });
+
+    circuitNonQv = await circomkitInstance.WitnessTester("StateLeafAndBallotTransformerNonQv", {
+      file: "./utils/non-qv/stateLeafAndBallotTransformer",
+      template: "StateLeafAndBallotTransformerNonQv",
     });
   });
 
@@ -101,6 +130,43 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
     expect(isValid.toString()).to.be.eq("1");
   });
 
+  it("should output new state leaf and ballot values if the command is valid (non-quadratic voting)", async () => {
+    const circuitInputs = {
+      numSignUps,
+      maxVoteOptions,
+      slPubKey: slPubKey.asCircuitInputs() as unknown as [bigint, bigint],
+      slVoiceCreditBalance,
+      slTimestamp,
+      pollEndTimestamp,
+      ballotNonce,
+      ballotCurrentVotesForOption,
+      cmdStateIndex: command.stateIndex,
+      cmdNewPubKey: command.newPubKey.asCircuitInputs() as unknown as [bigint, bigint],
+      cmdVoteOptionIndex: command.voteOptionIndex,
+      cmdNewVoteWeight: command.newVoteWeight,
+      cmdNonce: command.nonce,
+      cmdPollId: command.pollId,
+      cmdSalt: command.salt,
+      cmdSigR8: signature.R8 as [bigint, bigint],
+      cmdSigS: signature.S as bigint,
+      packedCommand: command.asCircuitInputs(),
+    };
+
+    const witness = await circuitNonQv.calculateWitness(circuitInputs);
+    await circuitNonQv.expectConstraintPass(witness);
+
+    const newSlPubKey0 = await getSignal(circuitNonQv, witness, "newSlPubKey[0]");
+    const newSlPubKey1 = await getSignal(circuitNonQv, witness, "newSlPubKey[1]");
+    const newBallotNonce = await getSignal(circuitNonQv, witness, "newBallotNonce");
+
+    expect(newSlPubKey0.toString()).to.be.eq(command.newPubKey.rawPubKey[0].toString());
+    expect(newSlPubKey1.toString()).to.be.eq(command.newPubKey.rawPubKey[1].toString());
+    expect(newBallotNonce.toString()).to.be.eq(command.nonce.toString());
+
+    const isValid = await getSignal(circuitNonQv, witness, "isValid");
+    expect(isValid.toString()).to.be.eq("1");
+  });
+
   it("should output existing state leaf and ballot values if the command is invalid", async () => {
     const circuitInputs = {
       numSignUps,
@@ -135,6 +201,43 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
     expect(newBallotNonce.toString()).to.be.eq("0");
 
     const isValid = await getSignal(circuit, witness, "isValid");
+    expect(isValid.toString()).to.be.eq("0");
+  });
+
+  it("should output existing state leaf and ballot values if the command is invalid (non quadratic-voting)", async () => {
+    const circuitInputs = {
+      numSignUps,
+      maxVoteOptions,
+      slPubKey: slPubKey.asCircuitInputs() as unknown as [bigint, bigint],
+      slVoiceCreditBalance,
+      slTimestamp,
+      pollEndTimestamp,
+      ballotNonce,
+      ballotCurrentVotesForOption,
+      cmdStateIndex: command.stateIndex,
+      cmdNewPubKey: command.newPubKey.asCircuitInputs() as unknown as [bigint, bigint],
+      cmdVoteOptionIndex: command.voteOptionIndex,
+      cmdNewVoteWeight: command.newVoteWeight,
+      cmdNonce: 2n, // invalid
+      cmdPollId: command.pollId,
+      cmdSalt: command.salt,
+      cmdSigR8: signature.R8 as [bigint, bigint],
+      cmdSigS: signature.S as bigint,
+      packedCommand: command.asCircuitInputs(),
+    };
+
+    const witness = await circuitNonQv.calculateWitness(circuitInputs);
+    await circuitNonQv.expectConstraintPass(witness);
+
+    const newSlPubKey0 = await getSignal(circuitNonQv, witness, "newSlPubKey[0]");
+    const newSlPubKey1 = await getSignal(circuitNonQv, witness, "newSlPubKey[1]");
+    const newBallotNonce = await getSignal(circuitNonQv, witness, "newBallotNonce");
+
+    expect(newSlPubKey0.toString()).to.be.eq(slPubKey.rawPubKey[0].toString());
+    expect(newSlPubKey1.toString()).to.be.eq(slPubKey.rawPubKey[1].toString());
+    expect(newBallotNonce.toString()).to.be.eq("0");
+
+    const isValid = await getSignal(circuitNonQv, witness, "isValid");
     expect(isValid.toString()).to.be.eq("0");
   });
 });

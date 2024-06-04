@@ -42,7 +42,7 @@ All private inputs are set by the coordinator.
 | `command`                          | The command to process. Includes all the details in the leaf.                                                                                  |
 | `noOp`                             | The no-op flag                                                                                                                                 |
 | `userPubKey`                       | The public key associated with the private key used to sign the command                                                                        |
-| `encPubKey`                        | The ephermeral public key used to generate the ECDH shared key which was used to encrypt the command.                                          |
+| `encPubKey`                        | The ephemeral public key used to generate the ECDH shared key which was used to encrypt the command.                                           |
 | `coordinatorPrivKey`               | The coordinator's private key.                                                                                                                 |
 
 For the sake of simplicity, in this specification, we assume that there is no batching of commands and we handle each command one at a time.

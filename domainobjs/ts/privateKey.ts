@@ -5,11 +5,11 @@ import type { IJsonPrivateKey } from "./types";
 export const SERIALIZED_PRIV_KEY_PREFIX = "macisk.";
 
 /**
- * @notice PrivKey is a TS Class representing a MACI PrivateKey (on the jubjub curve)
+ * @notice PrivKey is a TS Class representing a MACI PrivateKey
+ * which is a seed to be used to generate a public key (point on the curve)
  * This is a MACI private key, which is not to be
  * confused with an Ethereum private key.
  * A serialized MACI private key is prefixed by 'macisk.'
- * A raw MACI private key can be thought as a point on the baby jubjub curve
  */
 export class PrivKey {
   rawPrivKey: RawPrivKey;

@@ -155,9 +155,9 @@ export const genProofs = async ({
   const messageAqContractAddr = extContracts.messageAq;
   const messageAqContract = AccQueueFactory.connect(messageAqContractAddr, signer);
 
-  // Check that the state and message trees have been merged for at least the first poll
-  if (!(await pollContract.stateAqMerged()) && pollId.toString() === "0") {
-    logError("The state tree has not been merged yet. Please use the mergeSignups subcommmand to do so.");
+  // Check that the state and message trees have been merged
+  if (!(await pollContract.stateMerged())) {
+    logError("The state tree has not been merged yet. Please use the mergeSignups subcommand to do so.");
   }
 
   const messageTreeDepth = Number((await pollContract.treeDepths()).messageTreeDepth);
@@ -165,7 +165,7 @@ export const genProofs = async ({
   // check that the main root is set
   const mainRoot = (await messageAqContract.getMainRoot(messageTreeDepth.toString())).toString();
   if (mainRoot === "0") {
-    logError("The message tree has not been merged yet. Please use the mergeMessages subcommmand to do so.");
+    logError("The message tree has not been merged yet. Please use the mergeMessages subcommand to do so.");
   }
 
   let maciState: MaciState | undefined;
@@ -189,7 +189,7 @@ export const genProofs = async ({
       maciContract
         .queryFilter(maciContract.filters.DeployPoll(), startBlock)
         .then((events) => events[0]?.blockNumber ?? 0),
-      maciContract.getStateAqRoot(),
+      maciContract.getStateTreeRoot(),
       maciContract.numSignUps(),
       messageAqContract.getMainRoot(messageTreeDepth),
     ]);
@@ -201,7 +201,7 @@ export const genProofs = async ({
         .queryFilter(pollContract.filters.MergeMessageAq(messageRoot), fromBlock)
         .then((events) => events[events.length - 1]?.blockNumber),
       pollContract
-        .queryFilter(pollContract.filters.MergeMaciStateAq(stateRoot, numSignups), fromBlock)
+        .queryFilter(pollContract.filters.MergeMaciState(stateRoot, numSignups), fromBlock)
         .then((events) => events[events.length - 1]?.blockNumber),
     ]).then((blocks) => Math.max(...blocks));
 

@@ -1,4 +1,3 @@
-export { airdrop } from "./airdrop";
 export { deploy } from "./deploy";
 export { deployPoll } from "./deployPoll";
 export { getPoll } from "./poll";
@@ -12,10 +11,10 @@ export { setVerifyingKeys } from "./setVerifyingKeys";
 export { showContracts } from "./showContracts";
 export { timeTravel } from "./timeTravel";
 export { signup, isRegisteredUser } from "./signup";
-export { topup } from "./topup";
 export { verify } from "./verify";
 export { genProofs } from "./genProofs";
 export { fundWallet } from "./fundWallet";
 export { proveOnChain } from "./proveOnChain";
 export { checkVerifyingKeys } from "./checkVerifyingKeys";
 export { genLocalState } from "./genLocalState";
+export { extractVkToFile } from "./extractVkToFile";

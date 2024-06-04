@@ -58,14 +58,6 @@ export const mergeMessages = async ({
 
   const accQueueContract = AccQueueFactory.connect(messageAqContractAddr, signer);
 
-  // we need to ensure that the signer is the owner of the poll contract
-  // this is because only the owner can merge the message AQ
-  const pollOwner = await pollContract.owner();
-  const signerAddress = await signer.getAddress();
-  if (pollOwner.toLowerCase() !== signerAddress.toLowerCase()) {
-    logError("The signer is not the owner of this Poll contract");
-  }
-
   // check if it's time to merge the message AQ
   const dd = await pollContract.getDeployTimeAndDuration();
   const deadline = Number(dd[0]) + Number(dd[1]);

@@ -49,8 +49,7 @@ interface SidebarProps {
 }
 
 /**
- * A function that forces the first letter to be capital,
- * while the rest of the string must be lower case.
+ * A function to generate a sidebar string for a markdown file
  * @param sidebarProps - including title, description, label, and position
  */
 export function generateSidebarString({ title, description, label, position }: SidebarProps): string {
@@ -78,10 +77,39 @@ export function generateSidebarString({ title, description, label, position }: S
 }
 
 /**
+ * Generate a table of contents for a directory
+ * @param dir - the directory to generate a table of contents for
+ * @returns a string with the table of contents
+ */
+export function generateToC(dir: string, prefix = ""): string {
+  const files = fs.readdirSync(dir);
+  let content = "";
+
+  files.forEach((file) => {
+    const filePath = path.join(dir, file);
+    const fileStat = fs.statSync(filePath);
+    if (fileStat.isDirectory()) {
+      content += generateToC(filePath, `${prefix}${file}/`);
+    } else if (file !== "index.md" && file !== "README.md" && file.endsWith(".md")) {
+      content += `- [${prefix}${file}](${prefix}${file})\n`;
+    }
+  });
+
+  return content;
+}
+
+/**
  * A function that insert a index page
  * @param dir - the directory to insert an index page
  * @param sidebarProps - including title, description, label, and position
  */
-export function insertIndexPage(dir: string, { title, description, label, position }: SidebarProps): void {
-  fs.writeFileSync(`${dir}/index.md`, generateSidebarString({ title, description, label, position }));
+export function insertIndexPage(
+  dir: string,
+  { title, description, label, position }: SidebarProps,
+  content?: string,
+): void {
+  fs.writeFileSync(
+    `${dir}/index.md`,
+    `${generateSidebarString({ title, description, label, position })}${content ?? ""}`,
+  );
 }

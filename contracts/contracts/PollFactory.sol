@@ -4,7 +4,6 @@ pragma solidity ^0.8.20;
 import { IMACI } from "./interfaces/IMACI.sol";
 import { AccQueue } from "./trees/AccQueue.sol";
 import { AccQueueQuinaryMaci } from "./trees/AccQueueQuinaryMaci.sol";
-import { TopupCredit } from "./TopupCredit.sol";
 import { Params } from "./utilities/Params.sol";
 import { DomainObjs } from "./utilities/DomainObjs.sol";
 import { Poll } from "./Poll.sol";
@@ -14,9 +13,6 @@ import { IPollFactory } from "./interfaces/IPollFactory.sol";
 /// @notice A factory contract which deploys Poll contracts. It allows the MACI contract
 /// size to stay within the limit set by EIP-170.
 contract PollFactory is Params, DomainObjs, IPollFactory {
-  // The number of children each node in the message tree has
-  uint256 internal constant TREE_ARITY = 5;
-
   // custom error
   error InvalidMaxValues();
 
@@ -30,9 +26,7 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
     MaxValues calldata _maxValues,
     TreeDepths calldata _treeDepths,
     PubKey calldata _coordinatorPubKey,
-    address _maci,
-    TopupCredit _topupCredit,
-    address _pollOwner
+    address _maci
   ) public virtual returns (address pollAddr) {
     /// @notice Validate _maxValues
     /// maxVoteOptions must be less than 2 ** 50 due to circuit limitations;
@@ -46,11 +40,7 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
     AccQueue messageAq = new AccQueueQuinaryMaci(_treeDepths.messageTreeSubDepth);
 
     /// @notice the smart contracts that a Poll would interact with
-    ExtContracts memory extContracts = ExtContracts({
-      maci: IMACI(_maci),
-      messageAq: messageAq,
-      topupCredit: _topupCredit
-    });
+    ExtContracts memory extContracts = ExtContracts({ maci: IMACI(_maci), messageAq: messageAq });
 
     // deploy the poll
     Poll poll = new Poll(_duration, _maxValues, _treeDepths, _coordinatorPubKey, extContracts);
@@ -61,8 +51,6 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
 
     // init Poll
     poll.init();
-
-    poll.transferOwnership(_pollOwner);
 
     pollAddr = address(poll);
   }

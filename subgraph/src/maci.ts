@@ -1,11 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { Address, BigInt as GraphBN } from "@graphprotocol/graph-ts";
 
-import {
-  DeployPoll as DeployPollEvent,
-  OwnershipTransferred as OwnershipTransferredEvent,
-  SignUp as SignUpEvent,
-} from "../generated/MACI/MACI";
+import { DeployPoll as DeployPollEvent, SignUp as SignUpEvent } from "../generated/MACI/MACI";
 import { Poll } from "../generated/schema";
 import { Poll as PollTemplate } from "../generated/templates";
 import { Poll as PollContract } from "../generated/templates/Poll/Poll";
@@ -51,15 +47,6 @@ export function handleDeployPoll(event: DeployPollEvent): void {
   // Start indexing the poll; `event.params.pollAddr.poll` is the
   // address of the new poll contract
   PollTemplate.create(Address.fromBytes(entity.id));
-}
-
-export function handleOwnershipTransferred(event: OwnershipTransferredEvent): void {
-  const entity = createOrLoadMACI(event);
-  entity.owner = event.params.newOwner;
-  entity.blockNumber = event.block.number;
-  entity.updatedAt = event.block.timestamp;
-  entity.txHash = event.transaction.hash;
-  entity.save();
 }
 
 export function handleSignUp(event: SignUpEvent): void {

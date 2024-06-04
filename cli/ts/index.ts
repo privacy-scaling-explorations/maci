@@ -11,7 +11,6 @@ import "./cliInit";
 import {
   genKeyPair,
   genMaciPubKey,
-  airdrop,
   deployVkRegistryContract,
   deploy,
   showContracts,
@@ -24,13 +23,13 @@ import {
   timeTravel,
   signup,
   isRegisteredUser,
-  topup,
   verify,
   genProofs,
   fundWallet,
   proveOnChain,
   checkVerifyingKeys,
   genLocalState,
+  extractVkToFile,
 } from "./commands";
 import { TallyData, logError, promptSensitiveValue, readContractAddress } from "./utils";
 
@@ -140,31 +139,6 @@ program
     genKeyPair({ seed: cmdObj.seed, quiet: cmdObj.quiet });
   });
 program
-  .command("airdrop")
-  .description("airdrop topup credits to the coordinator")
-  .requiredOption("-a, --amount <amount>", "the amount of topup", parseInt)
-  .option("-x, --maci-address <maciAddress>", "the MACI contract address")
-  .option("-o, --poll-id <pollId>", "poll id", BigInt)
-  .option("-t, --token-address <tokenAddress>", "the token address")
-  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
-  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .action(async (cmdObj) => {
-    try {
-      const signer = await getSigner();
-
-      await airdrop({
-        amount: cmdObj.amount,
-        maciAddress: cmdObj.maciAddress,
-        pollId: cmdObj.pollId,
-        contractAddress: cmdObj.tokenAddress,
-        quiet: cmdObj.quiet,
-        signer,
-      });
-    } catch (error) {
-      program.error((error as Error).message, { exitCode: 1 });
-    }
-  });
-program
   .command("deployVkRegistry")
   .description("deploy a new verification key registry contract")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
@@ -200,7 +174,12 @@ program
   .requiredOption("-m, --msg-tree-depth <messageTreeDepth>", "the message tree depth", parseInt)
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
   .requiredOption("-pk, --pubkey <coordinatorPubkey>", "the coordinator public key")
-  .option("-uq, --use-quadratic-voting", "whether to use quadratic voting", (value) => value === "true", true)
+  .option(
+    "-uq, --use-quadratic-voting <useQuadraticVoting>",
+    "whether to use quadratic voting",
+    (value) => value === "true",
+    true,
+  )
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
@@ -380,6 +359,39 @@ program
     }
   });
 program
+  .command("extractVkToFile")
+  .description("extract vkey to json file")
+  .requiredOption(
+    "-pqv, --process-messages-zkey-qv <processMessagesZkeyPathQv>",
+    "the process messages qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+  )
+  .requiredOption(
+    "-tqv, --tally-votes-zkey-qv <tallyVotesZkeyPathQv>",
+    "the tally votes qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+  )
+  .requiredOption(
+    "-pnqv, --process-messages-zkey-non-qv <processMessagesZkeyPathNonQv>",
+    "the process messages non-qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+  )
+  .requiredOption(
+    "-tnqv, --tally-votes-zkey-non-qv <tallyVotesZkeyPathNonQv>",
+    "the tally votes non-qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+  )
+  .requiredOption("-o, --output-file <outputFile>", "the output file path of extracted vkeys")
+  .action(async (cmdObj) => {
+    try {
+      await extractVkToFile({
+        processMessagesZkeyPathQv: cmdObj.processMessagesZkeyQv,
+        tallyVotesZkeyPathQv: cmdObj.tallyVotesZkeyQv,
+        processMessagesZkeyPathNonQv: cmdObj.processMessagesZkeyNonQv,
+        tallyVotesZkeyPathNonQv: cmdObj.tallyVotesZkeyNonQv,
+        outputFilePath: cmdObj.outputFile,
+      });
+    } catch (error) {
+      program.error((error as Error).message, { exitCode: 1 });
+    }
+  });
+program
   .command("signup")
   .description("Sign up to a MACI contract")
   .requiredOption("-p, --pubkey <maciPubKey>", "the MACI public key")
@@ -448,31 +460,6 @@ program
         maciAddress,
         signer,
         quiet: cmdObj.quiet,
-      });
-    } catch (error) {
-      program.error((error as Error).message, { exitCode: 1 });
-    }
-  });
-program
-  .command("topup")
-  .description("Top up an account with voice credits")
-  .requiredOption("-a, --amount <amount>", "the amount of topup", parseInt)
-  .option("-x, --maci-address <maciAddress>", "the MACI contract address")
-  .requiredOption("-i, --state-index <stateIndex>", "state leaf index", parseInt)
-  .requiredOption("-o, --poll-id <pollId>", "poll id", BigInt)
-  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
-  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .action(async (cmdObj) => {
-    try {
-      const signer = await getSigner();
-
-      await topup({
-        amount: cmdObj.amount,
-        stateIndex: cmdObj.stateIndex,
-        pollId: cmdObj.pollId,
-        maciAddress: cmdObj.maciAddress,
-        quiet: cmdObj.quiet,
-        signer,
       });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
@@ -563,7 +550,12 @@ program
   .option("-sb, --start-block <startBlock>", "the block number to start looking for events from", parseInt)
   .option("-eb, --end-block <endBlock>", "the block number to end looking for events from", parseInt)
   .option("-bb, --blocks-per-batch <blockPerBatch>", "the number of blocks to process per batch", parseInt)
-  .option("-uq, --use-quadratic-voting", "whether to use quadratic voting", (value) => value === "true", true)
+  .option(
+    "-uq, --use-quadratic-voting <useQuadraticVoting>",
+    "whether to use quadratic voting",
+    (value) => value === "true",
+    true,
+  )
   .action(async (cmdObj) => {
     try {
       const signer = await getSigner();
@@ -668,7 +660,6 @@ if (require.main === module) {
 
 // export everything so we can use in other packages
 export {
-  airdrop,
   checkVerifyingKeys,
   deploy,
   deployPoll,
@@ -688,7 +679,6 @@ export {
   signup,
   isRegisteredUser,
   timeTravel,
-  topup,
   verify,
 } from "./commands";
 
@@ -703,8 +693,6 @@ export type {
   SignupArgs,
   MergeMessagesArgs,
   MergeSignupsArgs,
-  AirdropArgs,
-  TopupArgs,
   VerifyArgs,
   ProveOnChainArgs,
   DeployArgs,

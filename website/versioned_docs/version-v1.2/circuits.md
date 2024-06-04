@@ -241,7 +241,7 @@ The hash is computed using the `sha256` Solidity function and is then subject to
 | 4th 50 bits | `numSignUps`      |
 | 5th 50 bits | `batchStartIndex` |
 
-`numSignUps`, a value provided by the contract, is the number of users who have signed up. This is one less than the number of leaves inserted in the state tree (since the 0th state leaf is a [blank state leaf](./primitives#state-leaf)). `batchStartIndex` is the ballot tree index at which the batch begins.
+`numSignUps`, a value provided by the contract, is the number of users who have signed up. This is one less than the number of leaves inserted in the state tree (since the 0th state leaf is a blank state leaf). `batchStartIndex` is the ballot tree index at which the batch begins.
 
 For instance, if `numSignUps` is 25 and the batch index is `5`, and all other values are 0, the following is the `packedVals` representation in hexadecimal:
 

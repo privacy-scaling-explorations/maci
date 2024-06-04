@@ -17,13 +17,12 @@ import { DomainObjs } from "./utilities/DomainObjs.sol";
 /// @dev MessageProcessor is used to process messages published by signup users.
 /// It will process message by batch due to large size of messages.
 /// After it finishes processing, the sbCommitment will be used for Tally and Subsidy contracts.
-contract MessageProcessor is Ownable(msg.sender), SnarkCommon, Hasher, CommonUtilities, IMessageProcessor, DomainObjs {
+contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMessageProcessor, DomainObjs {
   /// @notice custom errors
   error NoMoreMessages();
-  error StateAqNotMerged();
+  error StateNotMerged();
   error MessageAqNotMerged();
   error InvalidProcessMessageProof();
-  error VkNotSet();
   error MaxVoteOptionsTooLarge();
   error NumSignUpsTooLarge();
   error CurrentMessageBatchIndexTooLarge();
@@ -55,8 +54,15 @@ contract MessageProcessor is Ownable(msg.sender), SnarkCommon, Hasher, CommonUti
   /// @param _verifier The Verifier contract address
   /// @param _vkRegistry The VkRegistry contract address
   /// @param _poll The Poll contract address
+  /// @param _mpOwner The owner of the MessageProcessor contract
   /// @param _mode Voting mode
-  constructor(address _verifier, address _vkRegistry, address _poll, Mode _mode) payable {
+  constructor(
+    address _verifier,
+    address _vkRegistry,
+    address _poll,
+    address _mpOwner,
+    Mode _mode
+  ) payable Ownable(_mpOwner) {
     verifier = IVerifier(_verifier);
     vkRegistry = IVkRegistry(_vkRegistry);
     poll = IPoll(_poll);
@@ -77,8 +83,8 @@ contract MessageProcessor is Ownable(msg.sender), SnarkCommon, Hasher, CommonUti
     }
 
     // The state AccQueue must be merged
-    if (!poll.stateAqMerged()) {
-      revert StateAqNotMerged();
+    if (!poll.stateMerged()) {
+      revert StateNotMerged();
     }
 
     // Retrieve stored vals
@@ -86,7 +92,7 @@ contract MessageProcessor is Ownable(msg.sender), SnarkCommon, Hasher, CommonUti
     // calculate the message batch size from the message tree subdepth
     uint256 messageBatchSize = TREE_ARITY ** messageTreeSubDepth;
 
-    (, AccQueue messageAq, ) = poll.extContracts();
+    (, AccQueue messageAq) = poll.extContracts();
 
     // Require that the message queue has been merged
     uint256 messageRoot = messageAq.getMainRoot(messageTreeDepth);
@@ -169,7 +175,7 @@ contract MessageProcessor is Ownable(msg.sender), SnarkCommon, Hasher, CommonUti
     // get the message batch size from the message tree subdepth
     // get the number of signups
     (uint256 numSignUps, uint256 numMessages) = poll.numSignUpsAndMessages();
-    (IMACI maci, , ) = poll.extContracts();
+    (IMACI maci, ) = poll.extContracts();
 
     // Calculate the public input hash (a SHA256 hash of several values)
     uint256 publicInputHash = genProcessMessagesPublicInputHash(
@@ -221,6 +227,8 @@ contract MessageProcessor is Ownable(msg.sender), SnarkCommon, Hasher, CommonUti
   ) public view returns (uint256 inputHash) {
     uint256 coordinatorPubKeyHash = poll.coordinatorPubKeyHash();
 
+    uint8 actualStateTreeDepth = poll.actualStateTreeDepth();
+
     // pack the values
     uint256 packedVals = genProcessMessagesPackedVals(
       _currentMessageBatchIndex,
@@ -233,13 +241,14 @@ contract MessageProcessor is Ownable(msg.sender), SnarkCommon, Hasher, CommonUti
     (uint256 deployTime, uint256 duration) = poll.getDeployTimeAndDuration();
 
     // generate the circuit only public input
-    uint256[] memory input = new uint256[](6);
+    uint256[] memory input = new uint256[](7);
     input[0] = packedVals;
     input[1] = coordinatorPubKeyHash;
     input[2] = _messageRoot;
     input[3] = _currentSbCommitment;
     input[4] = _newSbCommitment;
     input[5] = deployTime + duration;
+    input[6] = actualStateTreeDepth;
     inputHash = sha256Hash(input);
   }
 

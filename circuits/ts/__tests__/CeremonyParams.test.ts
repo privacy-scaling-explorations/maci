@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
-import { MaciState, Poll, packProcessMessageSmallVals, STATE_TREE_ARITY } from "maci-core";
-import { hash5, IncrementalQuinTree, NOTHING_UP_MY_SLEEVE, AccQueue } from "maci-crypto";
+import { MaciState, Poll, packProcessMessageSmallVals, STATE_TREE_ARITY, MESSAGE_TREE_ARITY } from "maci-core";
+import { hash5, IncrementalQuinTree } from "maci-crypto";
 import { PrivKey, Keypair, PCommand, Message, Ballot } from "maci-domainobjs";
 
 import { IProcessMessagesInputs, ITallyVotesInputs } from "../types";
@@ -24,8 +24,8 @@ describe("Ceremony param tests", () => {
 
   const maxValues = {
     maxUsers: STATE_TREE_ARITY ** params.stateTreeDepth,
-    maxMessages: STATE_TREE_ARITY ** params.messageTreeDepth,
-    maxVoteOptions: STATE_TREE_ARITY ** params.voteOptionTreeDepth,
+    maxMessages: MESSAGE_TREE_ARITY ** params.messageTreeDepth,
+    maxVoteOptions: MESSAGE_TREE_ARITY ** params.voteOptionTreeDepth,
   };
 
   const treeDepths = {
@@ -35,7 +35,7 @@ describe("Ceremony param tests", () => {
     voteOptionTreeDepth: params.voteOptionTreeDepth,
   };
 
-  const messageBatchSize = STATE_TREE_ARITY ** params.messageBatchTreeDepth;
+  const messageBatchSize = MESSAGE_TREE_ARITY ** params.messageBatchTreeDepth;
 
   const voiceCreditBalance = BigInt(100);
   const duration = 30;
@@ -78,13 +78,13 @@ describe("Ceremony param tests", () => {
 
     before(async () => {
       circuit = await circomkitInstance.WitnessTester("processMessages", {
-        file: "processMessages",
+        file: "./core/qv/processMessages",
         template: "ProcessMessages",
         params: [6, 9, 2, 3],
       });
 
       hasherCircuit = await circomkitInstance.WitnessTester("processMessageInputHasher", {
-        file: "processMessages",
+        file: "./utils/processMessagesInputHasher",
         template: "ProcessMessagesInputHasher",
       });
     });
@@ -156,21 +156,6 @@ describe("Ceremony param tests", () => {
         messages.push(message2);
         commands.push(command2);
         poll.publishMessage(message2, ecdhKeypair2.pubKey);
-
-        // Use the accumulator queue to compare the root of the message tree
-        const accumulatorQueue: AccQueue = new AccQueue(
-          params.messageTreeDepth,
-          STATE_TREE_ARITY,
-          NOTHING_UP_MY_SLEEVE,
-        );
-        accumulatorQueue.enqueue(message.hash(ecdhKeypair.pubKey));
-        accumulatorQueue.enqueue(message2.hash(ecdhKeypair2.pubKey));
-        accumulatorQueue.mergeSubRoots(0);
-        accumulatorQueue.merge(params.messageTreeDepth);
-
-        expect(poll.messageTree.root.toString()).to.be.eq(
-          accumulatorQueue.getMainRoots()[params.messageTreeDepth].toString(),
-        );
       });
 
       it("should produce the correct state root and ballot root", async () => {
@@ -216,6 +201,7 @@ describe("Ceremony param tests", () => {
           currentSbCommitment: inputs.currentSbCommitment,
           newSbCommitment: inputs.newSbCommitment,
           pollEndTimestamp: inputs.pollEndTimestamp,
+          actualStateTreeDepth: inputs.actualStateTreeDepth,
         };
 
         const hasherWitness = await hasherCircuit.calculateWitness(hasherCircuitInputs);
@@ -255,7 +241,7 @@ describe("Ceremony param tests", () => {
 
       before(async () => {
         testCircuit = await circomkitInstance.WitnessTester("tallyVotes", {
-          file: "tallyVotes",
+          file: "./core/qv/tallyVotes",
           template: "TallyVotes",
           params: [6, 2, 3],
         });
@@ -311,19 +297,7 @@ describe("Ceremony param tests", () => {
           commands.push(command);
 
           poll.publishMessage(message, ecdhKeypair.pubKey);
-          // Use the accumulator queue to compare the root of the message tree
-          const accumulatorQueue: AccQueue = new AccQueue(
-            params.messageTreeDepth,
-            STATE_TREE_ARITY,
-            NOTHING_UP_MY_SLEEVE,
-          );
-          accumulatorQueue.enqueue(message.hash(ecdhKeypair.pubKey));
-          accumulatorQueue.mergeSubRoots(0);
-          accumulatorQueue.merge(params.messageTreeDepth);
 
-          expect(poll.messageTree.root.toString()).to.be.eq(
-            accumulatorQueue.getMainRoots()[params.messageTreeDepth].toString(),
-          );
           // Process messages
           poll.processMessages(pollId);
         });

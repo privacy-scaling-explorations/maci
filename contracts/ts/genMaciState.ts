@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { type Provider } from "ethers";
-import { MaciState, STATE_TREE_ARITY } from "maci-core";
+import { MaciState, MESSAGE_TREE_ARITY, STATE_TREE_ARITY } from "maci-core";
 import { type Keypair, PubKey, Message } from "maci-domainobjs";
 
 import assert from "assert";
@@ -137,7 +137,7 @@ export const genMaciStateFromContract = async (
 
   const batchSizes = {
     tallyBatchSize: STATE_TREE_ARITY ** Number(onChainTreeDepths.intStateTreeDepth),
-    messageBatchSize: STATE_TREE_ARITY ** Number(onChainTreeDepths.messageTreeSubDepth),
+    messageBatchSize: MESSAGE_TREE_ARITY ** Number(onChainTreeDepths.messageTreeSubDepth),
   };
 
   // fetch poll contract logs
@@ -146,13 +146,11 @@ export const genMaciStateFromContract = async (
 
     const [
       publishMessageLogs,
-      topupLogs,
       mergeMessageAqSubRootsLogs,
       mergeMessageAqLogs,
       // eslint-disable-next-line no-await-in-loop
     ] = await Promise.all([
       pollContract.queryFilter(pollContract.filters.PublishMessage(), i, toBlock),
-      pollContract.queryFilter(pollContract.filters.TopupMessage(), i, toBlock),
       pollContract.queryFilter(pollContract.filters.MergeMessageAqSubRoots(), i, toBlock),
       pollContract.queryFilter(pollContract.filters.MergeMessageAq(), i, toBlock),
     ]);
@@ -160,11 +158,7 @@ export const genMaciStateFromContract = async (
     publishMessageLogs.forEach((event) => {
       assert(!!event);
 
-      const message = new Message(
-        BigInt(event.args._message[0]),
-
-        event.args._message[1].map((x) => BigInt(x)),
-      );
+      const message = new Message(event.args._message[0].map((x) => BigInt(x)));
 
       const encPubKey = new PubKey(event.args._encPubKey.map((x) => BigInt(x.toString())) as [bigint, bigint]);
 
@@ -175,24 +169,6 @@ export const genMaciStateFromContract = async (
         data: {
           message,
           encPubKey,
-        },
-      });
-    });
-
-    topupLogs.forEach((event) => {
-      assert(!!event);
-
-      const message = new Message(
-        BigInt(event.args._message[0]),
-        event.args._message[1].map((x) => BigInt(x)),
-      );
-
-      actions.push({
-        type: "TopupMessage",
-        blockNumber: event.blockNumber,
-        transactionIndex: event.transactionIndex,
-        data: {
-          message,
         },
       });
     });
@@ -258,12 +234,6 @@ export const genMaciStateFromContract = async (
       case action.type === "PublishMessage": {
         const { encPubKey, message } = action.data;
         maciState.polls.get(pollId)?.publishMessage(message!, encPubKey!);
-        break;
-      }
-
-      case action.type === "TopupMessage": {
-        const { message } = action.data;
-        maciState.polls.get(pollId)?.topupMessage(message!);
         break;
       }
 

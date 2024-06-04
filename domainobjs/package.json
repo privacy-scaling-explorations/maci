@@ -1,6 +1,6 @@
 {
   "name": "maci-domainobjs",
-  "version": "1.2.0",
+  "version": "1.2.2",
   "description": "",
   "main": "build/ts/index.js",
   "files": [
@@ -18,14 +18,14 @@
   "devDependencies": {
     "@types/chai": "^4.3.11",
     "@types/mocha": "^10.0.6",
-    "@types/node": "^20.12.7",
+    "@types/node": "^20.12.12",
     "chai": "^4.3.10",
     "mocha": "^10.4.0",
     "nyc": "^15.1.0",
     "ts-mocha": "^10.0.0"
   },
   "dependencies": {
-    "maci-crypto": "^1.2.0"
+    "maci-crypto": "1.2.2"
   },
   "nyc": {
     "reporter": [

@@ -1,10 +1,11 @@
 import { expect } from "chai";
 import { BigNumberish, ZeroAddress } from "ethers";
-import { StateLeaf, Keypair } from "maci-domainobjs";
+import { StateLeaf, Keypair, Message, PubKey } from "maci-domainobjs";
 
-import { deployPoseidonContracts, linkPoseidonLibraries } from "../ts/deploy";
+import { linkPoseidonLibraries } from "../tasks/helpers/abi";
+import { deployPoseidonContracts, createContractFactory } from "../ts/deploy";
 import { getDefaultSigner } from "../ts/utils";
-import { Utilities } from "../typechain-types";
+import { Utilities, Utilities__factory as UtilitiesFactory } from "../typechain-types";
 
 describe("Utilities", () => {
   let utilitiesContract: Utilities;
@@ -27,14 +28,17 @@ describe("Utilities", () => {
       ]);
 
       // Link Poseidon contracts
-      const utilitiesContractFactory = await linkPoseidonLibraries(
-        "Utilities",
-        poseidonT3ContractAddress,
-        poseidonT4ContractAddress,
-        poseidonT5ContractAddress,
-        poseidonT6ContractAddress,
+      const utilitiesContractFactory = await createContractFactory(
+        UtilitiesFactory.abi,
+        UtilitiesFactory.linkBytecode(
+          linkPoseidonLibraries(
+            poseidonT3ContractAddress,
+            poseidonT4ContractAddress,
+            poseidonT5ContractAddress,
+            poseidonT6ContractAddress,
+          ),
+        ),
         await getDefaultSigner(),
-        true,
       );
 
       utilitiesContract = (await utilitiesContractFactory.deploy()) as Utilities;
@@ -62,13 +66,11 @@ describe("Utilities", () => {
   describe("padAndHashMessage", () => {
     it("should correctly pad and hash a message", async () => {
       const dataToPad: [BigNumberish, BigNumberish] = [1234, 1234];
-      const msgType = BigInt(2) as BigNumberish;
 
       // Call the padAndHashMessage function
-      const { message, padKey } = await utilitiesContract.padAndHashMessage(dataToPad, msgType);
+      const { message, padKey } = await utilitiesContract.padAndHashMessage(dataToPad);
 
       // Validate the returned message
-      expect(message.msgType.toString()).to.eq(msgType.toString());
       expect(message.data.slice(0, 2)).to.deep.eq(dataToPad);
       for (let i = 2; i < 10; i += 1) {
         expect(message.data[i]).to.eq(0);
@@ -81,6 +83,23 @@ describe("Utilities", () => {
       expect(padKey.y.toString()).to.eq(
         "19824078218392094440610104313265183977899662750282163392862422243483260492317",
       );
+    });
+
+    it("should produce the same hash locally", async () => {
+      const message = new Message([0n, 0n, 1234n, 1234n, 0n, 0n, 0n, 0n, 0n, 0n]);
+      const padKey = new PubKey([
+        10457101036533406547632367118273992217979173478358440826365724437999023779287n,
+        19824078218392094440610104313265183977899662750282163392862422243483260492317n,
+      ]);
+
+      const expectedHash = message.hash(padKey);
+
+      const onChainHash = await utilitiesContract.hashMessageAndEncPubKey(
+        message.asContractParam(),
+        padKey.asContractParam(),
+      );
+
+      expect(onChainHash.toString()).to.eq(expectedHash.toString());
     });
   });
 });

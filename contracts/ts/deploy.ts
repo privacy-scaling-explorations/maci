@@ -1,6 +1,7 @@
 import { type ContractFactory, type Signer, BaseContract } from "ethers";
 
 import type { IDeployMaciArgs, IDeployedMaci, IDeployedPoseidonContracts } from "./types";
+import type { TAbi } from "../tasks/helpers/types";
 
 import { Deployment } from "../tasks/helpers/Deployment";
 import { EContracts } from "../tasks/helpers/types";
@@ -22,48 +23,32 @@ import {
   PoseidonT6,
   SignUpToken,
   SignUpTokenGatekeeper,
-  TopupCredit,
   Verifier,
   VkRegistry,
-  AccQueueQuinaryMaci__factory as AccQueueQuinaryMaciFactory,
+  PollFactory__factory as PollFactoryFactory,
+  MACI__factory as MACIFactory,
+  MessageProcessorFactory__factory as MessageProcessorFactoryFactory,
+  TallyFactory__factory as TallyFactoryFactory,
+  GitcoinPassportGatekeeper,
 } from "../typechain-types";
 
-import { getDefaultSigner, log } from "./utils";
+import { log } from "./utils";
 
 /**
- * Link Poseidon libraries to a Smart Contract
- * @param solFileToLink - the name of the contract to link the libraries to
- * @param poseidonT3Address - the address of the PoseidonT3 contract
- * @param poseidonT4Address - the address of the PoseidonT4 contract
- * @param poseidonT5Address - the address of the PoseidonT5 contract
- * @param poseidonT6Address - the address of the PoseidonT6 contract
+ * Creates contract factory from abi and bytecode
+ *
+ * @param abi - Contract abi
+ * @param bytecode - Contract bytecode
  * @param signer - the signer to use to deploy the contract
- * @param quiet - whether to suppress console output
  * @returns a contract factory with the libraries linked
  */
-export const linkPoseidonLibraries = async (
-  solFileToLink: string,
-  poseidonT3Address: string,
-  poseidonT4Address: string,
-  poseidonT5Address: string,
-  poseidonT6Address: string,
-  signer?: Signer,
-  quiet = false,
-): Promise<ContractFactory> => {
-  log(`Linking Poseidon libraries to ${solFileToLink}`, quiet);
+export const createContractFactory = async (abi: TAbi, bytecode: string, signer?: Signer): Promise<ContractFactory> => {
   const hre = await import("hardhat");
   const deployment = Deployment.getInstance(hre);
   deployment.setHre(hre);
   const deployer = signer || (await deployment.getDeployer());
 
-  return deployment.linkPoseidonLibraries(
-    solFileToLink as EContracts,
-    poseidonT3Address,
-    poseidonT4Address,
-    poseidonT5Address,
-    poseidonT6Address,
-    deployer,
-  );
+  return deployment.createContractFactory(abi, bytecode, deployer);
 };
 
 /**
@@ -84,17 +69,8 @@ export const deployContract = async <T extends BaseContract>(
   const deployment = Deployment.getInstance(hre);
   deployment.setHre(hre);
 
-  return deployment.deployContract(contractName as EContracts, signer, ...args);
+  return deployment.deployContract({ name: contractName as EContracts, signer }, ...args);
 };
-
-/**
- * Deploy a TopupCredit contract
- * @param signer - the signer to use to deploy the contract
- * @param quiet - whether to suppress console output
- * @returns the deployed TopupCredit contract
- */
-export const deployTopupCredit = async (signer?: Signer, quiet = false): Promise<TopupCredit> =>
-  deployContract<TopupCredit>("TopupCredit", signer, quiet);
 
 /**
  * Deploy a VkRegistry contract
@@ -170,6 +146,28 @@ export const deployFreeForAllSignUpGatekeeper = async (signer?: Signer, quiet = 
   deployContract<FreeForAllGatekeeper>("FreeForAllGatekeeper", signer, quiet);
 
 /**
+ * Deploy a GitcoinPassportGatekeeper contract
+ * @param decoderAddress - the address of the GitcoinPassportDecoder contract
+ * @param minimumScore - the minimum score required to pass
+ * @param signer - the signer to use to deploy the contract
+ * @param quiet - whether to suppress console output
+ * @returns the deployed GitcoinPassportGatekeeper contract
+ */
+export const deployGitcoinPassportGatekeeper = async (
+  decoderAddress: string,
+  minimumScore: number,
+  signer?: Signer,
+  quiet = false,
+): Promise<GitcoinPassportGatekeeper> =>
+  deployContract<GitcoinPassportGatekeeper>(
+    "GitcoinPassportGatekeeper",
+    signer,
+    quiet,
+    decoderAddress,
+    minimumScore.toString(),
+  );
+
+/**
  * Deploy Poseidon contracts
  * @param signer - the signer to use to deploy the contracts
  * @param quiet - whether to suppress console output
@@ -211,7 +209,7 @@ export const deployContractWithLinkedLibraries = async <T extends BaseContract>(
   const deployment = Deployment.getInstance(hre);
   deployment.setHre(hre);
 
-  return deployment.deployContractWithLinkedLibraries(contractFactory, ...args);
+  return deployment.deployContractWithLinkedLibraries({ contractFactory }, ...args);
 };
 
 /**
@@ -229,14 +227,15 @@ export const deployPollFactory = async (signer: Signer, quiet = false): Promise<
     poseidonContracts.PoseidonT6Contract.getAddress(),
   ]);
 
-  const contractFactory = await linkPoseidonLibraries(
-    "PollFactory",
-    poseidonT3Contract,
-    poseidonT4Contract,
-    poseidonT5Contract,
-    poseidonT6Contract,
+  const contractFactory = await createContractFactory(
+    PollFactoryFactory.abi,
+    PollFactoryFactory.linkBytecode({
+      "contracts/crypto/PoseidonT3.sol:PoseidonT3": poseidonT3Contract,
+      "contracts/crypto/PoseidonT4.sol:PoseidonT4": poseidonT4Contract,
+      "contracts/crypto/PoseidonT5.sol:PoseidonT5": poseidonT5Contract,
+      "contracts/crypto/PoseidonT6.sol:PoseidonT6": poseidonT6Contract,
+    }),
     signer,
-    quiet,
   );
 
   return deployContractWithLinkedLibraries(contractFactory);
@@ -250,7 +249,6 @@ export const deployPollFactory = async (signer: Signer, quiet = false): Promise<
 export const deployMaci = async ({
   signUpTokenGatekeeperContractAddress,
   initialVoiceCreditBalanceAddress,
-  topupCreditContractAddress,
   signer,
   poseidonAddresses,
   stateTreeDepth = 10,
@@ -271,19 +269,20 @@ export const deployMaci = async ({
     poseidonT6,
   }));
 
-  const contractsToLink = ["MACI", "PollFactory", "MessageProcessorFactory", "TallyFactory"];
+  const contractsToLink = [MACIFactory, PollFactoryFactory, MessageProcessorFactoryFactory, TallyFactoryFactory];
 
   // Link Poseidon contracts to MACI
   const linkedContractFactories = await Promise.all(
-    contractsToLink.map(async (contractName: string) =>
-      linkPoseidonLibraries(
-        contractName,
-        poseidonAddrs.poseidonT3,
-        poseidonAddrs.poseidonT4,
-        poseidonAddrs.poseidonT5,
-        poseidonAddrs.poseidonT6,
+    contractsToLink.map(async (factory) =>
+      createContractFactory(
+        factory.abi,
+        factory.linkBytecode({
+          "contracts/crypto/PoseidonT3.sol:PoseidonT3": poseidonAddrs.poseidonT3,
+          "contracts/crypto/PoseidonT4.sol:PoseidonT4": poseidonAddrs.poseidonT4,
+          "contracts/crypto/PoseidonT5.sol:PoseidonT5": poseidonAddrs.poseidonT5,
+          "contracts/crypto/PoseidonT6.sol:PoseidonT6": poseidonAddrs.poseidonT6,
+        }),
         signer,
-        quiet,
       ),
     ),
   );
@@ -311,16 +310,11 @@ export const deployMaci = async ({
     tallyAddress,
     signUpTokenGatekeeperContractAddress,
     initialVoiceCreditBalanceAddress,
-    topupCreditContractAddress,
     stateTreeDepth,
   );
 
-  const [stateAqContractAddress, deployer] = await Promise.all([maciContract.stateAq(), getDefaultSigner()]);
-  const stateAqContract = AccQueueQuinaryMaciFactory.connect(stateAqContractAddress, signer || deployer);
-
   return {
     maciContract,
-    stateAqContract,
     pollFactoryContract,
     poseidonAddrs,
   };

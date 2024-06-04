@@ -1,24 +1,24 @@
 {
   "ProcessMessages_10-2-1-2_test": {
-    "file": "processMessages",
+    "file": "./core/qv/processMessages",
     "template": "ProcessMessages",
     "params": [10, 2, 1, 2],
     "pubs": ["inputHash"]
   },
   "ProcessMessagesNonQv_10-2-1-2_test": {
-    "file": "processMessagesNonQv",
+    "file": "./core/non-qv/processMessages",
     "template": "ProcessMessagesNonQv",
     "params": [10, 2, 1, 2],
     "pubs": ["inputHash"]
   },
   "TallyVotes_10-1-2_test": {
-    "file": "tallyVotes",
+    "file": "./core/qv/tallyVotes",
     "template": "TallyVotes",
     "params": [10, 1, 2],
     "pubs": ["inputHash"]
   },
   "TallyVotesNonQv_10-1-2_test": {
-    "file": "tallyVotesNonQv",
+    "file": "./core/non-qv/tallyVotes",
     "template": "TallyVotesNonQv",
     "params": [10, 1, 2],
     "pubs": ["inputHash"]

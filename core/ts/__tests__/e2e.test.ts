@@ -1,10 +1,10 @@
 import { expect } from "chai";
-import { hash5, NOTHING_UP_MY_SLEEVE, IncrementalQuinTree, AccQueue } from "maci-crypto";
+import { hash5, NOTHING_UP_MY_SLEEVE, IncrementalQuinTree, AccQueue, hash2 } from "maci-crypto";
 import { PCommand, Keypair, StateLeaf, blankStateLeafHash } from "maci-domainobjs";
 
 import { MaciState } from "../MaciState";
 import { Poll } from "../Poll";
-import { STATE_TREE_DEPTH, STATE_TREE_ARITY } from "../utils/constants";
+import { STATE_TREE_DEPTH, STATE_TREE_ARITY, MESSAGE_TREE_ARITY } from "../utils/constants";
 import { packProcessMessageSmallVals, unpackProcessMessageSmallVals } from "../utils/utils";
 
 import {
@@ -357,7 +357,6 @@ describe("MaciState/Poll e2e", function test() {
     let pollId: bigint;
     let poll: Poll;
     let msgTree: IncrementalQuinTree;
-    let stateTree: IncrementalQuinTree;
     const voteWeight = 9n;
     const voteOptionIndex = 0n;
     let stateIndex: number;
@@ -365,8 +364,7 @@ describe("MaciState/Poll e2e", function test() {
 
     before(() => {
       maciState = new MaciState(STATE_TREE_DEPTH);
-      msgTree = new IncrementalQuinTree(treeDepths.messageTreeDepth, NOTHING_UP_MY_SLEEVE, 5, hash5);
-      stateTree = new IncrementalQuinTree(STATE_TREE_DEPTH, blankStateLeafHash, STATE_TREE_ARITY, hash5);
+      msgTree = new IncrementalQuinTree(treeDepths.messageTreeDepth, NOTHING_UP_MY_SLEEVE, MESSAGE_TREE_ARITY, hash5);
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
@@ -386,10 +384,12 @@ describe("MaciState/Poll e2e", function test() {
       const stateLeaf = new StateLeaf(userKeypair.pubKey, voiceCreditBalance, timestamp);
 
       stateIndex = maciState.signUp(userKeypair.pubKey, voiceCreditBalance, timestamp);
+      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+
+      const stateTree = new IncrementalQuinTree(poll.actualStateTreeDepth, blankStateLeafHash, STATE_TREE_ARITY, hash2);
+
       stateTree.insert(blankStateLeafHash);
       stateTree.insert(stateLeaf.hash());
-
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
 
       expect(stateIndex.toString()).to.eq("1");
       expect(stateTree.root.toString()).to.eq(poll.stateTree?.root.toString());
@@ -417,7 +417,7 @@ describe("MaciState/Poll e2e", function test() {
       // Use the accumulator queue to compare the root of the message tree
       const accumulatorQueue: AccQueue = new AccQueue(
         treeDepths.messageTreeSubDepth,
-        STATE_TREE_ARITY,
+        MESSAGE_TREE_ARITY,
         NOTHING_UP_MY_SLEEVE,
       );
       accumulatorQueue.enqueue(message.hash(ecdhKeypair.pubKey));
@@ -588,7 +588,9 @@ describe("MaciState/Poll e2e", function test() {
       expect(poll.hasUntalliedBallots()).to.eq(true);
 
       // First batch tally
-      poll.tallyVotes();
+      while (poll.hasUntalliedBallots()) {
+        poll.tallyVotes();
+      }
 
       // Recall that each user `i` cast the same number of votes for
       // their option `i`

@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { PCommand, Message, Keypair, StateLeaf, PrivKey, Ballot } from "maci-domainobjs";
+import { PCommand, Keypair, StateLeaf, PrivKey, Ballot } from "maci-domainobjs";
 
 import { MaciState } from "../MaciState";
 import { Poll } from "../Poll";
@@ -322,20 +322,10 @@ describe("Poll", function test() {
       expect(() => poll.processMessages(pollId)).to.not.throw;
     });
 
-    it("should correctly process a topup message and increase an user's voice credit balance", () => {
-      const topupMessage = new Message(2n, [BigInt(user1StateIndex), 50n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n]);
-
-      poll.topupMessage(topupMessage);
-
-      const balanceBefore = poll.stateLeaves[user1StateIndex].voiceCreditBalance;
-
-      poll.processMessages(pollId);
-
-      // check balance
-      expect(poll.stateLeaves[user1StateIndex].voiceCreditBalance.toString()).to.eq((balanceBefore + 50n).toString());
-    });
-
     it("should throw when called after all messages have been processed", () => {
+      while (poll.hasUnprocessedMessages()) {
+        poll.processMessages(pollId);
+      }
       expect(() => poll.processMessages(pollId)).to.throw("No more messages to process");
     });
   });
@@ -483,8 +473,13 @@ describe("Poll", function test() {
     });
 
     it("should generate the correct results", () => {
-      poll.processAllMessages();
-      poll.tallyVotes();
+      while (poll.hasUnprocessedMessages()) {
+        poll.processAllMessages();
+      }
+
+      while (poll.hasUntalliedBallots()) {
+        poll.tallyVotes();
+      }
 
       const spentVoiceCredits = poll.totalSpentVoiceCredits;
       const results = poll.tallyResult;

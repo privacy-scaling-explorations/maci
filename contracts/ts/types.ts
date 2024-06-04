@@ -1,5 +1,4 @@
 import type {
-  AccQueueQuinaryMaci,
   ConstantInitialVoiceCreditProxy,
   FreeForAllGatekeeper,
   MACI,
@@ -9,7 +8,6 @@ import type {
   PoseidonT4,
   PoseidonT5,
   PoseidonT6,
-  TopupCredit,
   VkRegistry,
 } from "../typechain-types";
 import type { BigNumberish, Signer } from "ethers";
@@ -78,11 +76,9 @@ export interface Proof {
 export interface IDeployedTestContracts {
   mockVerifierContract: MockVerifier;
   gatekeeperContract: FreeForAllGatekeeper;
-  constantIntialVoiceCreditProxyContract: ConstantInitialVoiceCreditProxy;
+  constantInitialVoiceCreditProxyContract: ConstantInitialVoiceCreditProxy;
   maciContract: MACI;
-  stateAqContract: AccQueueQuinaryMaci;
   vkRegistryContract: VkRegistry;
-  topupCreditContract: TopupCredit;
 }
 
 /**
@@ -134,11 +130,6 @@ export interface IDeployMaciArgs {
   initialVoiceCreditBalanceAddress: string;
 
   /**
-   * The address of the TopupCredit contract
-   */
-  topupCreditContractAddress: string;
-
-  /**
    * The signer to use to deploy the contract
    */
   signer?: Signer;
@@ -169,7 +160,6 @@ export interface IDeployMaciArgs {
  */
 export interface IDeployedMaci {
   maciContract: MACI;
-  stateAqContract: AccQueueQuinaryMaci;
   pollFactoryContract: PollFactory;
   poseidonAddrs: {
     poseidonT3: string;

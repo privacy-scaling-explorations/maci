@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import hre from "hardhat";
 
 import fs from "fs";
@@ -30,6 +29,12 @@ const ZERO_TREES = [
     zero: NOTHING_UP_MY_SLEEVE_MACI_NUMS,
     hashLength: 2,
     comment: "Binary tree zeros (Keccak hash of 'Maci')",
+  },
+  {
+    name: "MerkleBinaryBlankSl",
+    zero: BLANK_STATE_LEAF,
+    hashLength: 2,
+    comment: "Binary tree zeros (hash of a blank state leaf)",
   },
   {
     name: "MerkleQuinary0",
@@ -70,7 +75,9 @@ async function main(): Promise<void> {
     ),
   );
 
-  await genEmptyBallotRootsContract();
+  await genEmptyBallotRootsContract().then((text) =>
+    fs.promises.writeFile(path.resolve(__dirname, "..", "contracts/trees/EmptyBallotRoots.sol"), `${text}\n`),
+  );
 
   await hre.run("compile");
 

@@ -1,6 +1,9 @@
 /* eslint-disable import/no-extraneous-dependencies, no-console */
 import low from "lowdb";
 import FileSync from "lowdb/adapters/FileSync";
+import LocalStorageSync from "lowdb/adapters/LocalStorage";
+
+import path from "path";
 
 import type { EContracts, IRegisterContract, IStorageInstanceEntry, IStorageNamedEntry } from "./types";
 
@@ -38,7 +41,11 @@ export class ContractStorage {
    * Initialize class properties only once
    */
   private constructor() {
-    this.db = low(new FileSync<TStorage>("./deployed-contracts.json"));
+    this.db = low(
+      typeof window !== "undefined"
+        ? new LocalStorageSync<TStorage>("deployed-contracts")
+        : new FileSync<TStorage>(path.resolve(__dirname, "..", "..", "./deployed-contracts.json")),
+    );
   }
 
   /**
@@ -80,6 +87,7 @@ export class ContractStorage {
 
     const logEntry: IStorageInstanceEntry = {
       id,
+      deploymentTxHash: deploymentTx?.hash,
     };
 
     if (args !== undefined) {
@@ -168,6 +176,20 @@ export class ContractStorage {
     }
 
     return address;
+  }
+
+  /**
+   * Get Contract Deployment Transaction Hash
+   */
+  getDeploymentTxHash(id: EContracts, network: string, address: string): string | undefined {
+    const collection = this.db.get(`${network}.instance.${address}`);
+    const instanceEntry = collection.value() as IStorageInstanceEntry | undefined;
+
+    if (instanceEntry?.id !== id) {
+      throw new Error(`Contract ${id} with address ${address} and network ${network} not found.`);
+    }
+
+    return instanceEntry.deploymentTxHash;
   }
 
   /**

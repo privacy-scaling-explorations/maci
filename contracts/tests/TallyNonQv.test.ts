@@ -64,7 +64,7 @@ describe("TallyVotesNonQv", () => {
 
     signer = await getDefaultSigner();
 
-    const r = await deployTestContracts(100, STATE_TREE_DEPTH, signer, false);
+    const r = await deployTestContracts(100, STATE_TREE_DEPTH, signer, true);
     maciContract = r.maciContract;
     verifierContract = r.mockVerifierContract as Verifier;
     vkRegistryContract = r.vkRegistryContract;
@@ -118,7 +118,7 @@ describe("TallyVotesNonQv", () => {
     for (let i = 1; i < 10; i += 1) {
       messageData.push(BigInt(0));
     }
-    const message = new Message(BigInt(1), messageData);
+    const message = new Message(messageData);
     const padKey = new PubKey([
       BigInt("10457101036533406547632367118273992217979173478358440826365724437999023779287"),
       BigInt("19824078218392094440610104313265183977899662750282163392862422243483260492317"),
@@ -182,8 +182,7 @@ describe("TallyVotesNonQv", () => {
   describe("after merging acc queues", () => {
     let tallyGeneratedInputs: ITallyCircuitInputs;
     before(async () => {
-      await pollContract.mergeMaciStateAqSubRoots(0, pollId);
-      await pollContract.mergeMaciStateAq(0);
+      await pollContract.mergeMaciState();
 
       await pollContract.mergeMessageAqSubRoots(0);
       await pollContract.mergeMessageAq();

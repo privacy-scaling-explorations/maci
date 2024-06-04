@@ -79,7 +79,6 @@ export interface IStateLeafContractParams {
 }
 
 export interface IMessageContractParams {
-  msgType: string;
   data: BigNumberish[];
 }
 

@@ -1,3 +1,6 @@
+import { MACI } from "maci-contracts/typechain-types";
+import { PubKey } from "maci-domainobjs";
+
 import type { Provider, Signer } from "ethers";
 import type { SnarkProof } from "maci-contracts";
 import type { CircuitInputs } from "maci-core";
@@ -6,9 +9,7 @@ import type { Groth16Proof, PublicSignals } from "snarkjs";
 
 export interface DeployedContracts {
   maciAddress: string;
-  stateAqAddress: string;
   pollFactoryAddress: string;
-  topupCreditAddress: string;
   poseidonT3Address: string;
   poseidonT4Address: string;
   poseidonT5Address: string;
@@ -147,41 +148,6 @@ export interface ISnarkJSVerificationKey {
   vk_delta_2: BigNumberish[][];
   vk_alphabeta_12: BigNumberish[][][];
   IC: BigNumberish[][];
-}
-
-/**
- * Interface for the arguments to the airdrop command
- */
-export interface AirdropArgs {
-  /**
-   * The amount of credits to airdrop
-   */
-  amount: number;
-
-  /**
-   * A signer object
-   */
-  signer: Signer;
-
-  /**
-   * The address of the ERC20 contract
-   */
-  contractAddress?: string;
-
-  /**
-   * The id of the poll
-   */
-  pollId?: bigint;
-
-  /**
-   * The address of the MACI contract
-   */
-  maciAddress?: string;
-
-  /**
-   * Whether to log the output
-   */
-  quiet?: boolean;
 }
 
 /**
@@ -985,44 +951,9 @@ export interface IGetPollData {
   numSignups: BigNumberish;
 
   /**
-   * Whether the MACI contract's stateAq has been merged by this contract
+   * Whether the MACI contract's state root has been merged
    */
-  isStateAqMerged: boolean;
-}
-
-/**
- * Interface for the arguments to the topup command
- */
-export interface TopupArgs {
-  /**
-   * The amount to topup
-   */
-  amount: number;
-
-  /**
-   * The state index of the user
-   */
-  stateIndex: number;
-
-  /**
-   * The poll ID
-   */
-  pollId: bigint;
-
-  /**
-   * The address of the MACI contract
-   */
-  maciAddress?: string;
-
-  /**
-   * A signer object
-   */
-  signer: Signer;
-
-  /**
-   * Whether to log the output
-   */
-  quiet?: boolean;
+  isMerged: boolean;
 }
 
 /**
@@ -1133,4 +1064,56 @@ export interface DeployVkRegistryArgs {
    * Whether to log the output
    */
   quiet?: boolean;
+}
+
+export interface ExtractVkToFileArgs {
+  /**
+   * File path for processMessagesQv zkey
+   */
+  processMessagesZkeyPathQv: string;
+
+  /**
+   * File path for tallyVotesQv zkey
+   */
+  tallyVotesZkeyPathQv: string;
+
+  /**
+   * File path for processMessagesNonQv zkey
+   */
+  processMessagesZkeyPathNonQv: string;
+
+  /**
+   * File path for tallyVotes zkey
+   */
+  tallyVotesZkeyPathNonQv: string;
+
+  /**
+   * Output file path of extracted vkeys
+   */
+  outputFilePath: string;
+}
+
+/**
+ * Interface for the arguments to the parseSignupEvents function
+ */
+export interface IParseSignupEventsArgs {
+  /**
+   * The MACI contract
+   */
+  maciContract: MACI;
+
+  /**
+   * The start block
+   */
+  startBlock: number;
+
+  /**
+   * The current block
+   */
+  currentBlock: number;
+
+  /**
+   * The public key
+   */
+  publicKey: PubKey;
 }

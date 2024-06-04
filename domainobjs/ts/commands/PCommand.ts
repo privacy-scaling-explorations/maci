@@ -14,7 +14,7 @@ import {
 
 import assert from "assert";
 
-import type { ICommand, IJsonPCommand } from "./types";
+import type { IJsonPCommand } from "./types";
 import type { PrivKey } from "../privateKey";
 
 import { Message } from "../message";
@@ -29,9 +29,7 @@ export interface IDecryptMessage {
  * @notice Unencrypted data whose fields include the user's public key, vote etc.
  * This represents a Vote command.
  */
-export class PCommand implements ICommand {
-  cmdType: bigint;
-
+export class PCommand {
   stateIndex: bigint;
 
   newPubKey: PubKey;
@@ -65,8 +63,6 @@ export class PCommand implements ICommand {
     pollId: bigint,
     salt: bigint = genRandomSalt(),
   ) {
-    this.cmdType = BigInt(1);
-
     const limit50Bits = BigInt(2 ** 50);
     assert(limit50Bits >= stateIndex);
     assert(limit50Bits >= voteOptionIndex);
@@ -166,7 +162,7 @@ export class PCommand implements ICommand {
 
     const ciphertext: Ciphertext = poseidonEncrypt(plaintext, sharedKey, BigInt(0));
 
-    const message = new Message(BigInt(1), ciphertext as bigint[]);
+    const message = new Message(ciphertext as bigint[]);
 
     return message;
   };
@@ -175,9 +171,9 @@ export class PCommand implements ICommand {
    * Decrypts a Message to produce a Command.
    * @dev You can force decrypt the message by setting `force` to true.
    * This is useful in case you don't want an invalid message to throw an error.
-   * @param {Message} message - the message to decrypt
-   * @param {EcdhSharedKey} sharedKey - the shared key to use for decryption
-   * @param {boolean} force - whether to force decryption or not
+   * @param message - the message to decrypt
+   * @param sharedKey - the shared key to use for decryption
+   * @param force - whether to force decryption or not
    */
   static decrypt = (message: Message, sharedKey: EcdhSharedKey, force = false): IDecryptMessage => {
     const decrypted = force
@@ -207,7 +203,9 @@ export class PCommand implements ICommand {
     const nonce = extract(p, 150);
     const pollId = extract(p, 200);
 
-    const newPubKey = new PubKey([decrypted[1], decrypted[2]]);
+    // create new public key but allow it to be invalid (as when passing an mismatched
+    // encPubKey, a message will not decrypt resulting in potentially invalid public keys)
+    const newPubKey = new PubKey([decrypted[1], decrypted[2]], true);
     const salt = decrypted[3];
 
     const command = new PCommand(stateIndex, newPubKey, voteOptionIndex, newVoteWeight, nonce, pollId, salt);
@@ -232,14 +230,13 @@ export class PCommand implements ICommand {
       nonce: this.nonce.toString(),
       pollId: this.pollId.toString(),
       salt: this.salt.toString(),
-      cmdType: this.cmdType.toString(),
     };
   }
 
   /**
    * Deserialize into a PCommand instance
    * @param json
-   * @returns a PComamnd instance
+   * @returns a PCommand instance
    */
   static fromJSON(json: IJsonPCommand): PCommand {
     const command = new PCommand(

@@ -1,0 +1,8 @@
+[default.extend-words]
+ba = "ba"
+groth = "groth"
+Allo = "Allo"
+Buidl = "Buidl"
+
+[files]
+extend-exclude = ["/**/CHANGELOG.md", "/**/*.svg", "/**/*.excalidraw"]

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import { TopupCredit } from "../TopupCredit.sol";
 import { Params } from "../utilities/Params.sol";
 import { DomainObjs } from "../utilities/DomainObjs.sol";
 
@@ -14,16 +13,12 @@ interface IPollFactory {
   /// @param _treeDepths The depths of the merkle trees
   /// @param _coordinatorPubKey The coordinator's public key
   /// @param _maci The MACI contract interface reference
-  /// @param _topupCredit The TopupCredit contract
-  /// @param _pollOwner The owner of the poll
   /// @return The deployed Poll contract
   function deploy(
     uint256 _duration,
     Params.MaxValues memory _maxValues,
     Params.TreeDepths memory _treeDepths,
     DomainObjs.PubKey memory _coordinatorPubKey,
-    address _maci,
-    TopupCredit _topupCredit,
-    address _pollOwner
+    address _maci
   ) external returns (address);
 }

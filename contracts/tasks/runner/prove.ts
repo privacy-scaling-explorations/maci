@@ -22,15 +22,10 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
   .addParam("outputDir", "Output directory for proofs", undefined, types.string)
   .addParam("coordinatorPrivateKey", "Coordinator maci private key", undefined, types.string)
   .addOptionalParam("rapidsnark", "Rapidsnark binary path", undefined, types.string)
-  .addParam("processZkey", "Process zkey file path", undefined, types.string)
   .addOptionalParam("processWitgen", "Process witgen binary path", undefined, types.string)
-  .addOptionalParam("processWasm", "Process wasm file path", undefined, types.string)
   .addParam("tallyFile", "The file to store the tally proof", undefined, types.string)
-  .addParam("tallyZkey", "Tally zkey file path", undefined, types.string)
   .addOptionalParam("tallyWitgen", "Tally witgen binary path", undefined, types.string)
-  .addOptionalParam("tallyWasm", "Tally wasm file path", undefined, types.string)
   .addOptionalParam("stateFile", "The file with the serialized maci state", undefined, types.string)
-  .addFlag("useQuadraticVoting", "Whether to use quadratic voting or not")
   .addOptionalParam("startBlock", "The block number to start fetching logs from", undefined, types.int)
   .addOptionalParam("blocksPerBatch", "The number of blocks to fetch logs from", undefined, types.int)
   .addOptionalParam("endBlock", "The block number to stop fetching logs from", undefined, types.int)
@@ -43,14 +38,9 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
         coordinatorPrivateKey,
         stateFile,
         rapidsnark,
-        processZkey,
         processWitgen,
-        processWasm,
-        tallyZkey,
         tallyWitgen,
-        tallyWasm,
         tallyFile,
-        useQuadraticVoting,
         startBlock,
         blocksPerBatch,
         endBlock,
@@ -95,11 +85,11 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
         name: EContracts.AccQueue,
         address: messageAqContractAddress,
       });
-      const isStateAqMerged = await pollContract.stateAqMerged();
+      const isStateAqMerged = await pollContract.stateMerged();
 
       // Check that the state and message trees have been merged for at least the first poll
       if (!isStateAqMerged && poll.toString() === "0") {
-        throw new Error("The state tree has not been merged yet. Please use the mergeSignups subcommmand to do so.");
+        throw new Error("The state tree has not been merged yet. Please use the mergeSignups subcommand to do so.");
       }
 
       const messageTreeDepth = await pollContract.treeDepths().then((depths) => Number(depths[2]));
@@ -108,7 +98,7 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
       const mainRoot = await messageAqContract.getMainRoot(messageTreeDepth.toString());
 
       if (mainRoot.toString() === "0") {
-        throw new Error("The message tree has not been merged yet. Please use the mergeMessages subcommmand to do so.");
+        throw new Error("The message tree has not been merged yet. Please use the mergeMessages subcommand to do so.");
       }
 
       const maciState = await ProofGenerator.prepareState({
@@ -145,7 +135,25 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
         key: `poll-${poll.toString()}`,
       });
       const tallyContractAddress = await tallyContract.getAddress();
-
+      const useQuadraticVoting =
+        deployment.getDeployConfigField<boolean | null>(EContracts.Poll, "useQuadraticVoting") ?? false;
+      const mode = useQuadraticVoting ? "qv" : "nonQv";
+      const tallyZkey = deployment.getDeployConfigField<string>(
+        EContracts.VkRegistry,
+        `zkeys.${mode}.tallyVotesZkey`,
+        true,
+      );
+      const tallyWasm = deployment.getDeployConfigField<string>(EContracts.VkRegistry, `zkeys.${mode}.tallyWasm`, true);
+      const processZkey = deployment.getDeployConfigField<string>(
+        EContracts.VkRegistry,
+        `zkeys.${mode}.processMessagesZkey`,
+        true,
+      );
+      const processWasm = deployment.getDeployConfigField<string>(
+        EContracts.VkRegistry,
+        `zkeys.${mode}.processWasm`,
+        true,
+      );
       const proofGenerator = new ProofGenerator({
         poll: foundPoll,
         maciContractAddress,
@@ -184,7 +192,7 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
       data.processProofs = await proofGenerator.generateMpProofs();
       await prover.proveMessageProcessing(data.processProofs);
 
-      data.tallyProofs = await proofGenerator.generateTallyProofs(network);
+      data.tallyProofs = await proofGenerator.generateTallyProofs(network).then(({ proofs }) => proofs);
       await prover.proveTally(data.tallyProofs);
 
       const endBalance = await signer.provider.getBalance(signer);

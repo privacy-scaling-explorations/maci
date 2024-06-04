@@ -18,8 +18,7 @@ contract TallyFactory is ITallyFactory, DomainObjs {
     Mode _mode
   ) public virtual returns (address tallyAddr) {
     // deploy Tally for this Poll
-    Tally tally = new Tally(_verifier, _vkRegistry, _poll, _messageProcessor, _mode);
-    tally.transferOwnership(_owner);
+    Tally tally = new Tally(_verifier, _vkRegistry, _poll, _messageProcessor, _owner, _mode);
     tallyAddr = address(tally);
   }
 }

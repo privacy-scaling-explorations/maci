@@ -1,23 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+
 import { Params } from "./utilities/Params.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { EmptyBallotRoots } from "./trees/EmptyBallotRoots.sol";
 import { IPoll } from "./interfaces/IPoll.sol";
 import { Utilities } from "./utilities/Utilities.sol";
+import { CurveBabyJubJub } from "./crypto/BabyJubJub.sol";
 
 /// @title Poll
 /// @notice A Poll contract allows voters to submit encrypted messages
-/// which can be either votes, key change messages or topup messages.
+/// which can be either votes or key change messages.
 /// @dev Do not deploy this directly. Use PollFactory.deploy() which performs some
 /// checks on the Poll constructor arguments.
-contract Poll is Params, Utilities, SnarkCommon, Ownable(msg.sender), EmptyBallotRoots, IPoll {
-  using SafeERC20 for ERC20;
-
+contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   /// @notice Whether the Poll has been initialized
   bool internal isInit;
 
@@ -37,7 +35,7 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable(msg.sender), EmptyBallo
   uint256 internal immutable duration;
 
   /// @notice Whether the MACI contract's stateAq has been merged by this contract
-  bool public stateAqMerged;
+  bool public stateMerged;
 
   /// @notice Get the commitment to the state leaves and the ballots. This is
   /// hash3(stateRoot, ballotRoot, salt).
@@ -55,6 +53,10 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable(msg.sender), EmptyBallo
   /// before the Poll ended (stateAq merged)
   uint256 public numSignups;
 
+  /// @notice The actual depth of the state tree
+  /// to be used as public input for the circuit
+  uint8 public actualStateTreeDepth;
+
   /// @notice Max values for the poll
   MaxValues public maxValues;
 
@@ -68,15 +70,12 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable(msg.sender), EmptyBallo
   error VotingPeriodNotOver();
   error PollAlreadyInit();
   error TooManyMessages();
-  error MaciPubKeyLargerThanSnarkFieldSize();
-  error StateAqAlreadyMerged();
-  error StateAqSubtreesNeedMerge();
+  error InvalidPubKey();
+  error StateAlreadyMerged();
   error InvalidBatchLength();
 
   event PublishMessage(Message _message, PubKey _encPubKey);
-  event TopupMessage(Message _message);
-  event MergeMaciStateAqSubRoots(uint256 indexed _numSrQueueOps);
-  event MergeMaciStateAq(uint256 indexed _stateRoot, uint256 indexed _numSignups);
+  event MergeMaciState(uint256 indexed _stateRoot, uint256 indexed _numSignups);
   event MergeMessageAqSubRoots(uint256 indexed _numSrQueueOps);
   event MergeMessageAq(uint256 indexed _messageRoot);
 
@@ -95,8 +94,8 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable(msg.sender), EmptyBallo
     ExtContracts memory _extContracts
   ) payable {
     // check that the coordinator public key is valid
-    if (_coordinatorPubKey.x >= SNARK_SCALAR_FIELD || _coordinatorPubKey.y >= SNARK_SCALAR_FIELD) {
-      revert MaciPubKeyLargerThanSnarkFieldSize();
+    if (!CurveBabyJubJub.isOnCurve(_coordinatorPubKey.x, _coordinatorPubKey.y)) {
+      revert InvalidPubKey();
     }
 
     // store the pub key as object then calculate the hash
@@ -148,34 +147,10 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable(msg.sender), EmptyBallo
     dat[0] = NOTHING_UP_MY_SLEEVE;
     dat[1] = 0;
 
-    (Message memory _message, PubKey memory _padKey, uint256 placeholderLeaf) = padAndHashMessage(dat, 1);
+    (Message memory _message, PubKey memory _padKey, uint256 placeholderLeaf) = padAndHashMessage(dat);
     extContracts.messageAq.enqueue(placeholderLeaf);
 
     emit PublishMessage(_message, _padKey);
-  }
-
-  /// @inheritdoc IPoll
-  function topup(uint256 stateIndex, uint256 amount) public virtual isWithinVotingDeadline {
-    // we check that we do not exceed the max number of messages
-    if (numMessages >= maxValues.maxMessages) revert TooManyMessages();
-
-    // cannot realistically overflow
-    unchecked {
-      numMessages++;
-    }
-
-    /// @notice topupCredit is a trusted token contract which reverts if the transfer fails
-    extContracts.topupCredit.transferFrom(msg.sender, address(this), amount);
-
-    uint256[2] memory dat;
-    dat[0] = stateIndex;
-    dat[1] = amount;
-
-    (Message memory _message, , uint256 messageLeaf) = padAndHashMessage(dat, 2);
-
-    extContracts.messageAq.enqueue(messageLeaf);
-
-    emit TopupMessage(_message);
   }
 
   /// @inheritdoc IPoll
@@ -183,19 +158,15 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable(msg.sender), EmptyBallo
     // we check that we do not exceed the max number of messages
     if (numMessages >= maxValues.maxMessages) revert TooManyMessages();
 
-    // validate that the public key is valid
-    if (_encPubKey.x >= SNARK_SCALAR_FIELD || _encPubKey.y >= SNARK_SCALAR_FIELD) {
-      revert MaciPubKeyLargerThanSnarkFieldSize();
+    // check if the public key is on the curve
+    if (!CurveBabyJubJub.isOnCurve(_encPubKey.x, _encPubKey.y)) {
+      revert InvalidPubKey();
     }
 
     // cannot realistically overflow
     unchecked {
       numMessages++;
     }
-
-    // we enforce that msgType here is 1 so we don't need checks
-    // at the circuit level
-    _message.msgType = 1;
 
     uint256 messageLeaf = hashMessageAndEncPubKey(_message, _encPubKey);
     extContracts.messageAq.enqueue(messageLeaf);
@@ -224,29 +195,15 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable(msg.sender), EmptyBallo
   }
 
   /// @inheritdoc IPoll
-  function mergeMaciStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId) public onlyOwner isAfterVotingDeadline {
-    // This function cannot be called after the stateAq was merged
-    if (stateAqMerged) revert StateAqAlreadyMerged();
-
-    // merge subroots
-    extContracts.maci.mergeStateAqSubRoots(_numSrQueueOps, _pollId);
-
-    emit MergeMaciStateAqSubRoots(_numSrQueueOps);
-  }
-
-  /// @inheritdoc IPoll
-  function mergeMaciStateAq(uint256 _pollId) public onlyOwner isAfterVotingDeadline {
+  function mergeMaciState() public isAfterVotingDeadline {
     // This function can only be called once per Poll after the voting
     // deadline
-    if (stateAqMerged) revert StateAqAlreadyMerged();
+    if (stateMerged) revert StateAlreadyMerged();
 
     // set merged to true so it cannot be called again
-    stateAqMerged = true;
+    stateMerged = true;
 
-    // the subtrees must have been merged first
-    if (!extContracts.maci.stateAq().subTreesMerged()) revert StateAqSubtreesNeedMerge();
-
-    mergedStateRoot = extContracts.maci.mergeStateAq(_pollId);
+    mergedStateRoot = extContracts.maci.getStateTreeRoot();
 
     // Set currentSbCommitment
     uint256[3] memory sb;
@@ -256,18 +213,29 @@ contract Poll is Params, Utilities, SnarkCommon, Ownable(msg.sender), EmptyBallo
 
     currentSbCommitment = hash3(sb);
 
-    numSignups = extContracts.maci.numSignUps();
-    emit MergeMaciStateAq(mergedStateRoot, numSignups);
+    // get number of signups and cache in a var for later use
+    uint256 _numSignups = extContracts.maci.numSignUps();
+    numSignups = _numSignups;
+
+    // dynamically determine the actual depth of the state tree
+    uint8 depth = 1;
+    while (uint40(2) ** uint40(depth) < _numSignups) {
+      depth++;
+    }
+
+    actualStateTreeDepth = depth;
+
+    emit MergeMaciState(mergedStateRoot, numSignups);
   }
 
   /// @inheritdoc IPoll
-  function mergeMessageAqSubRoots(uint256 _numSrQueueOps) public onlyOwner isAfterVotingDeadline {
+  function mergeMessageAqSubRoots(uint256 _numSrQueueOps) public isAfterVotingDeadline {
     extContracts.messageAq.mergeSubRoots(_numSrQueueOps);
     emit MergeMessageAqSubRoots(_numSrQueueOps);
   }
 
   /// @inheritdoc IPoll
-  function mergeMessageAq() public onlyOwner isAfterVotingDeadline {
+  function mergeMessageAq() public isAfterVotingDeadline {
     uint256 root = extContracts.messageAq.merge(treeDepths.messageTreeDepth);
     emit MergeMessageAq(root);
   }

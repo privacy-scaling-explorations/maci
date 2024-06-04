@@ -7,15 +7,13 @@ import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, Message, PCommand, PubKey } from "maci-domainobjs";
 
 import { EMode } from "../ts/constants";
-import { getDefaultSigner, getSigners } from "../ts/utils";
+import { getDefaultSigner } from "../ts/utils";
 import {
   AccQueue,
   AccQueueQuinaryMaci__factory as AccQueueQuinaryMaciFactory,
   Poll__factory as PollFactory,
-  IERC20Errors__factory as IERC20ErrorsFactory,
   MACI,
   Poll as PollContract,
-  TopupCredit,
   Verifier,
   VkRegistry,
 } from "../typechain-types";
@@ -37,7 +35,6 @@ describe("Poll", () => {
   let pollContract: PollContract;
   let verifierContract: Verifier;
   let vkRegistryContract: VkRegistry;
-  let topupCreditContract: TopupCredit;
   let signer: Signer;
   let deployTime: number;
   const coordinator = new Keypair();
@@ -53,7 +50,6 @@ describe("Poll", () => {
       maciContract = r.maciContract;
       verifierContract = r.mockVerifierContract as Verifier;
       vkRegistryContract = r.vkRegistryContract;
-      topupCreditContract = r.topupCreditContract;
 
       // deploy on chain poll
       const tx = await maciContract.deployPoll(
@@ -97,7 +93,7 @@ describe("Poll", () => {
       for (let i = 1; i < 10; i += 1) {
         messageData.push(BigInt(0));
       }
-      const message = new Message(BigInt(1), messageData);
+      const message = new Message(messageData);
       const padKey = new PubKey([
         BigInt("10457101036533406547632367118273992217979173478358440826365724437999023779287"),
         BigInt("19824078218392094440610104313265183977899662750282163392862422243483260492317"),
@@ -141,50 +137,28 @@ describe("Poll", () => {
       const numMessages = await pollContract.numMessages();
       expect(numMessages.toString()).to.eq("1");
     });
-  });
 
-  describe("topup", () => {
-    let voter: Signer;
+    it("should fail when passing an invalid coordinator public key", async () => {
+      const r = await deployTestContracts(initialVoiceCreditBalance, STATE_TREE_DEPTH, signer, true);
+      const testMaciContract = r.maciContract;
 
-    before(async () => {
-      // transfer tokens to a user and pre-approve
-      [, voter] = await getSigners();
-      await topupCreditContract.airdropTo(voter.getAddress(), 200n);
-      await topupCreditContract.connect(voter).approve(await pollContract.getAddress(), 1000n);
-    });
-
-    it("should allow to publish a topup message when the caller has enough topup tokens", async () => {
-      const tx = await pollContract.connect(voter).topup(1n, 50n);
-      const receipt = await tx.wait();
-      expect(receipt?.status).to.eq(1);
-
-      // publish on local maci state
-      maciState.polls.get(pollId)?.topupMessage(new Message(2n, [1n, 50n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n]));
-    });
-
-    it("should throw when the user does not have enough tokens", async () => {
-      const pollAddress = await pollContract.getAddress();
-
-      await expect(pollContract.connect(signer).topup(1n, 50n)).to.be.revertedWithCustomError(
-        IERC20ErrorsFactory.connect(pollAddress),
-        "ERC20InsufficientAllowance",
-      );
-    });
-
-    it("should emit an event when publishing a topup message", async () => {
-      expect(await pollContract.connect(voter).topup(1n, 50n)).to.emit(pollContract, "TopupMessage");
-      // publish on local maci state
-      maciState.polls.get(pollId)?.topupMessage(new Message(2n, [1n, 50n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n]));
-    });
-
-    it("should successfully increase the number of messages", async () => {
-      const numMessages = await pollContract.numMessages();
-      await pollContract.connect(voter).topup(1n, 50n);
-      const newNumMessages = await pollContract.numMessages();
-      expect(newNumMessages.toString()).to.eq((numMessages + 1n).toString());
-
-      // publish on local maci state
-      maciState.polls.get(pollId)?.topupMessage(new Message(2n, [1n, 50n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n]));
+      // deploy on chain poll
+      await expect(
+        testMaciContract.deployPoll(
+          duration,
+          treeDepths,
+          {
+            x: "100",
+            y: "1",
+          },
+          r.mockVerifierContract as Verifier,
+          r.vkRegistryContract,
+          EMode.QV,
+          {
+            gasLimit: 10000000,
+          },
+        ),
+      ).to.be.revertedWithCustomError(testMaciContract, "InvalidPubKey");
     });
   });
 
@@ -200,6 +174,20 @@ describe("Poll", () => {
       expect(receipt?.status).to.eq(1);
 
       maciState.polls.get(pollId)?.publishMessage(message, keypair.pubKey);
+    });
+
+    it("should throw when the encPubKey is not a point on the baby jubjub curve", async () => {
+      const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, 0n);
+
+      const signature = command.sign(keypair.privKey);
+      const sharedKey = Keypair.genEcdhSharedKey(keypair.privKey, coordinator.pubKey);
+      const message = command.encrypt(signature, sharedKey);
+      await expect(
+        pollContract.publishMessage(message.asContractParam(), {
+          x: "1",
+          y: "1",
+        }),
+      ).to.be.revertedWithCustomError(pollContract, "InvalidPubKey");
     });
 
     it("should emit an event when publishing a message", async () => {
@@ -252,7 +240,7 @@ describe("Poll", () => {
 
     it("should not allow to publish a message after the voting period ends", async () => {
       const dd = await pollContract.getDeployTimeAndDuration();
-      await timeTravel(signer.provider as unknown as EthereumProvider, Number(dd[0]) + 1);
+      await timeTravel(signer.provider as unknown as EthereumProvider, Number(dd[0]) + 10);
 
       const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, 0n);
 
@@ -261,7 +249,7 @@ describe("Poll", () => {
       const message = command.encrypt(signature, sharedKey);
 
       await expect(
-        pollContract.publishMessage(message.asContractParam(), keypair.pubKey.asContractParam(), { gasLimit: 300000 }),
+        pollContract.publishMessage(message.asContractParam(), keypair.pubKey.asContractParam()),
       ).to.be.revertedWithCustomError(pollContract, "VotingPeriodOver");
     });
 
@@ -271,9 +259,7 @@ describe("Poll", () => {
       const sharedKey = Keypair.genEcdhSharedKey(keypair.privKey, coordinator.pubKey);
       const message = command.encrypt(signature, sharedKey);
       await expect(
-        pollContract.publishMessageBatch([message.asContractParam()], [keypair.pubKey.asContractParam()], {
-          gasLimit: 300000,
-        }),
+        pollContract.publishMessageBatch([message.asContractParam()], [keypair.pubKey.asContractParam()]),
       ).to.be.revertedWithCustomError(pollContract, "VotingPeriodOver");
     });
   });
@@ -288,14 +274,7 @@ describe("Poll", () => {
       messageAqContract = AccQueueQuinaryMaciFactory.connect(messageAqAddress, signer);
     });
 
-    it("should revert if the subtrees are not merged for StateAq", async () => {
-      await expect(pollContract.mergeMaciStateAq(0, { gasLimit: 4000000 })).to.be.revertedWithCustomError(
-        pollContract,
-        "StateAqSubtreesNeedMerge",
-      );
-    });
-
-    it("should allow the coordinator to merge the message AccQueue", async () => {
+    it("should allow to merge the message AccQueue", async () => {
       let tx = await pollContract.mergeMessageAqSubRoots(0, {
         gasLimit: 3000000,
       });
@@ -312,6 +291,27 @@ describe("Poll", () => {
       const offChainMessageRoot = maciState.polls.get(pollId)!.messageTree.root;
 
       expect(onChainMessageRoot.toString()).to.eq(offChainMessageRoot.toString());
+    });
+
+    it("should prevent merging subroots again", async () => {
+      await expect(pollContract.mergeMessageAqSubRoots(0)).to.be.revertedWithCustomError(
+        messageAqContract,
+        "SubTreesAlreadyMerged",
+      );
+    });
+
+    it("should not change the message root if merging a second time", async () => {
+      await pollContract.mergeMessageAq();
+      const onChainMessageRoot = await messageAqContract.getMainRoot(MESSAGE_TREE_DEPTH);
+      const offChainMessageRoot = maciState.polls.get(pollId)!.messageTree.root;
+
+      expect(onChainMessageRoot.toString()).to.eq(offChainMessageRoot.toString());
+    });
+
+    it("should emit an event with the same root when merging another time", async () => {
+      expect(await pollContract.mergeMessageAq())
+        .to.emit(pollContract, "MergeMessageAq")
+        .withArgs(maciState.polls.get(pollId)!.messageTree.root);
     });
   });
 });
