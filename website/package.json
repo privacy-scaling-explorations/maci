@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@docusaurus/core": "^3.3.2",
-    "@docusaurus/preset-classic": "^3.3.2",
+    "@docusaurus/preset-classic": "^3.4.0",
     "@docusaurus/theme-classic": "^3.3.2",
     "@docusaurus/theme-common": "^3.3.2",
     "@easyops-cn/docusaurus-search-local": "^0.41.0",
