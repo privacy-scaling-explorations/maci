@@ -490,6 +490,8 @@ export enum EContracts {
   FreeForAllGatekeeper = "FreeForAllGatekeeper",
   EASGatekeeper = "EASGatekeeper",
   GitcoinPassportGatekeeper = "GitcoinPassportGatekeeper",
+  ZupassGatekeeper = "ZupassGatekeeper",
+  ZupassGroth16Verifier = "ZupassGroth16Verifier",
   Verifier = "Verifier",
   MACI = "MACI",
   StateAq = "StateAq",
