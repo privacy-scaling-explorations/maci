@@ -5,7 +5,7 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 import { SignUpGatekeeper } from "../SignUpGatekeeper.sol";
 
-import { Groth16Verifier } from "./Groth16Verifier.sol";
+import { ZupassGroth16Verifier } from "./ZupassGroth16Verifier.sol";
 
 /// @title ZupassGatekeeper
 /// @notice This contract allows to gatekeep MACI signups
@@ -18,8 +18,8 @@ contract ZupassGatekeeper is SignUpGatekeeper, Ownable(msg.sender) {
   uint256 public immutable validSigner1;
   uint256 public immutable validSigner2;
 
-  /// @notice the Groth16Verifier contract address
-  Groth16Verifier public immutable verifier;
+  /// @notice the ZupassGroth16Verifier contract address
+  ZupassGroth16Verifier public immutable verifier;
 
   /// @notice the reference to the MACI contract
   address public maci;
@@ -40,12 +40,12 @@ contract ZupassGatekeeper is SignUpGatekeeper, Ownable(msg.sender) {
   /// @param _validEventId Zupass event UUID converted to bigint
   /// @param _validSigner1 Zupass event signer[0] converted to bigint
   /// @param _validSigner2 Zupass event signer[1] converted to bigint
-  /// @param _verifier The Groth16Verifier contract address
+  /// @param _verifier The ZupassGroth16Verifier contract address
   constructor(uint256 _validEventId, uint256 _validSigner1, uint256 _validSigner2, address _verifier) payable {
     validEventId = _validEventId;
     validSigner1 = _validSigner1;
     validSigner2 = _validSigner2;
-    verifier = Groth16Verifier(_verifier);
+    verifier = ZupassGroth16Verifier(_verifier);
   }
 
   /// @notice Adds an uninitialised MACI instance to allow for token signups

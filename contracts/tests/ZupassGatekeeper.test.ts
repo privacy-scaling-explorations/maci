@@ -31,7 +31,7 @@ describe("Zupass Gatekeeper", () => {
 
   before(async () => {
     signer = await getDefaultSigner();
-    const verifier = await deployContract("Groth16Verifier", signer, true);
+    const verifier = await deployContract("ZupassGroth16Verifier", signer, true);
     const verifierAddress = await verifier.getAddress();
     signerAddress = await signer.getAddress();
     zupassGatekeeper = await deployContract(

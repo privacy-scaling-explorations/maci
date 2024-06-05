@@ -20,7 +20,7 @@
 
 pragma solidity ^0.8.20;
 
-contract Groth16Verifier {
+contract ZupassGroth16Verifier {
   // Scalar field size
   uint256 private constant r = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
   // Base field size

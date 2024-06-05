@@ -1,7 +1,7 @@
 import { ESupportedChains } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
-import { uuidToBigInt } from "../../helpers/NumericRepresentation";
+import { uuidToBigInt } from "../../helpers/numericRepresentation";
 import { EContracts, IDeployParams } from "../../helpers/types";
 
 const deployment = Deployment.getInstance();
@@ -124,17 +124,16 @@ deployment.deployTask("full:deploy-gatekeepers", "Deploy gatekeepers").then((tas
       const validEventId = uuidToBigInt(eventId);
       const validSigner1 = deployment.getDeployConfigField<string>(EContracts.ZupassGatekeeper, "signer1", true);
       const validSigner2 = deployment.getDeployConfigField<string>(EContracts.ZupassGatekeeper, "signer2", true);
-      let verifier: string | undefined = deployment.getDeployConfigField<string>(
-        EContracts.ZupassGatekeeper,
-        "zupassVerifier",
-      );
+      let verifier = deployment.getDeployConfigField<string | undefined>(EContracts.ZupassGatekeeper, "zupassVerifier");
+
       if (!verifier) {
         const verifierContract = await deployment.deployContract({
-          name: EContracts.Groth16Verifier,
+          name: EContracts.ZupassGroth16Verifier,
           signer: deployer,
         });
         verifier = await verifierContract.getAddress();
       }
+
       const ZupassGatekeeperContract = await deployment.deployContract(
         {
           name: EContracts.ZupassGatekeeper,
