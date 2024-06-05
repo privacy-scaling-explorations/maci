@@ -1,7 +1,7 @@
 import { ESupportedChains } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
-import { uuidToBigInt } from "../../helpers/numericRepresentation";
+import { uuidToBigInt } from "../../helpers/numericParser";
 import { EContracts, IDeployParams } from "../../helpers/types";
 
 const deployment = Deployment.getInstance();
