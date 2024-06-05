@@ -1,6 +1,7 @@
 import { ESupportedChains } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
+import { uuidToBigInt } from "../../helpers/NumericRepresentation";
 import { EContracts, IDeployParams } from "../../helpers/types";
 
 const deployment = Deployment.getInstance();
@@ -17,20 +18,27 @@ deployment.deployTask("full:deploy-gatekeepers", "Deploy gatekeepers").then((tas
     const freeForAllGatekeeperContractAddress = storage.getAddress(EContracts.FreeForAllGatekeeper, hre.network.name);
     const easGatekeeperContractAddress = storage.getAddress(EContracts.EASGatekeeper, hre.network.name);
     const gitcoinGatekeeperContractAddress = storage.getAddress(EContracts.GitcoinPassportGatekeeper, hre.network.name);
+    const zupassGatekeeperContractAddress = storage.getAddress(EContracts.ZupassGatekeeper, hre.network.name);
     const deployFreeForAllGatekeeper = deployment.getDeployConfigField(EContracts.FreeForAllGatekeeper, "deploy");
     const deployEASGatekeeper = deployment.getDeployConfigField(EContracts.EASGatekeeper, "deploy");
     const deployGitcoinGatekeeper = deployment.getDeployConfigField(EContracts.GitcoinPassportGatekeeper, "deploy");
+    const deployZupassGatekeeper = deployment.getDeployConfigField(EContracts.ZupassGatekeeper, "deploy");
 
     const skipDeployFreeForAllGatekeeper = deployFreeForAllGatekeeper !== true;
     const skipDeployEASGatekeeper = deployEASGatekeeper !== true;
     const skipDeployGitcoinGatekeeper = deployGitcoinGatekeeper !== true;
+    const skipDeployZupassGatekeeper = deployZupassGatekeeper !== true;
 
     const canSkipDeploy =
       incremental &&
       (freeForAllGatekeeperContractAddress || skipDeployFreeForAllGatekeeper) &&
       (easGatekeeperContractAddress || skipDeployEASGatekeeper) &&
       (gitcoinGatekeeperContractAddress || skipDeployGitcoinGatekeeper) &&
-      (!skipDeployFreeForAllGatekeeper || !skipDeployEASGatekeeper || !skipDeployGitcoinGatekeeper);
+      (zupassGatekeeperContractAddress || skipDeployZupassGatekeeper) &&
+      (!skipDeployFreeForAllGatekeeper ||
+        !skipDeployEASGatekeeper ||
+        !skipDeployGitcoinGatekeeper ||
+        !skipDeployZupassGatekeeper);
 
     if (canSkipDeploy) {
       return;
@@ -107,6 +115,40 @@ deployment.deployTask("full:deploy-gatekeepers", "Deploy gatekeepers").then((tas
         id: EContracts.GitcoinPassportGatekeeper,
         contract: gitcoinGatekeeperContract,
         args: [gitcoinGatekeeperDecoderAddress, gitcoinGatekeeperPassingScore],
+        network: hre.network.name,
+      });
+    }
+
+    if (!skipDeployZupassGatekeeper) {
+      const eventId = deployment.getDeployConfigField<string>(EContracts.ZupassGatekeeper, "eventId", true);
+      const validEventId = uuidToBigInt(eventId);
+      const validSigner1 = deployment.getDeployConfigField<string>(EContracts.ZupassGatekeeper, "signer1", true);
+      const validSigner2 = deployment.getDeployConfigField<string>(EContracts.ZupassGatekeeper, "signer2", true);
+      let verifier: string | undefined = deployment.getDeployConfigField<string>(
+        EContracts.ZupassGatekeeper,
+        "groth16Verifier",
+      );
+      if (!verifier) {
+        const verifierContract = await deployment.deployContract({
+          name: EContracts.Groth16Verifier,
+          signer: deployer,
+        });
+        verifier = await verifierContract.getAddress();
+      }
+      const ZupassGatekeeperContract = await deployment.deployContract(
+        {
+          name: EContracts.ZupassGatekeeper,
+          signer: deployer,
+        },
+        validEventId,
+        validSigner1,
+        validSigner2,
+        verifier,
+      );
+      await storage.register({
+        id: EContracts.ZupassGatekeeper,
+        contract: ZupassGatekeeperContract,
+        args: [validEventId.toString(), validSigner1, validSigner2, verifier],
         network: hre.network.name,
       });
     }
