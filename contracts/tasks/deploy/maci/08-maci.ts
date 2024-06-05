@@ -74,9 +74,7 @@ deployment.deployTask("full:deploy-maci", "Deploy MACI contract").then((task) =>
       const maciInstanceAddress = await maciContract.getAddress();
 
       await gatekeeperContract.setMaciInstance(maciInstanceAddress).then((tx) => tx.wait());
-    }
-
-    if (gatekeeper === EContracts.GitcoinPassportGatekeeper) {
+    } else if (gatekeeper === EContracts.GitcoinPassportGatekeeper) {
       const gatekeeperContract = await deployment.getContract<GitcoinPassportGatekeeper>({
         name: EContracts.GitcoinPassportGatekeeper,
         address: gatekeeperContractAddress,
@@ -84,8 +82,7 @@ deployment.deployTask("full:deploy-maci", "Deploy MACI contract").then((task) =>
       const maciInstanceAddress = await maciContract.getAddress();
 
       await gatekeeperContract.setMaciInstance(maciInstanceAddress).then((tx) => tx.wait());
-    }
-    if (gatekeeper === EContracts.ZupassGatekeeper) {
+    } else if (gatekeeper === EContracts.ZupassGatekeeper) {
       const gatekeeperContract = await deployment.getContract<ZupassGatekeeper>({
         name: EContracts.ZupassGatekeeper,
         address: gatekeeperContractAddress,

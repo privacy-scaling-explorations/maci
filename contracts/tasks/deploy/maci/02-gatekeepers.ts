@@ -126,7 +126,7 @@ deployment.deployTask("full:deploy-gatekeepers", "Deploy gatekeepers").then((tas
       const validSigner2 = deployment.getDeployConfigField<string>(EContracts.ZupassGatekeeper, "signer2", true);
       let verifier: string | undefined = deployment.getDeployConfigField<string>(
         EContracts.ZupassGatekeeper,
-        "groth16Verifier",
+        "zupassVerifier",
       );
       if (!verifier) {
         const verifierContract = await deployment.deployContract({

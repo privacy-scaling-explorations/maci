@@ -76,7 +76,6 @@
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@openzeppelin/contracts": "^5.0.2",
     "@zk-kit/imt.sol": "2.0.0-beta.12",
-    "buffer": "^6.0.3",
     "circomlibjs": "^0.1.7",
     "ethers": "^6.12.1",
     "hardhat": "^2.22.4",
