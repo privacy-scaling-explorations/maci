@@ -256,9 +256,12 @@ describe("Poll", () => {
   });
 
   describe("Message hash chain", () => {
-    it("should correctly compute the first message chain hash", async () => {
+    it("should correctly compute chain hash and batch hashes array", async () => {
       const currentChainHash = await pollContract.chainHash();
+      const currentBatchHashes = await pollContract.getBatchHashes();
+
       expect(currentChainHash).to.eq(maciState.polls.get(pollId)?.chainHash);
+      expect(currentBatchHashes).to.deep.equal(maciState.polls.get(pollId)?.batchHashes);
     });
   });
 

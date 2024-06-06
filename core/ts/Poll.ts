@@ -120,6 +120,9 @@ export class Poll implements IPoll {
   // message chain hash
   chainHash = NOTHING_UP_MY_SLEEVE;
 
+  // batch chain hashes
+  batchHashes = [NOTHING_UP_MY_SLEEVE];
+
   // how many users signed up
   private numSignups = 0n;
 
@@ -374,7 +377,10 @@ export class Poll implements IPoll {
    */
   updateChainHash = (messageHash: bigint): void => {
     this.chainHash = hash2([this.chainHash, messageHash]);
-    // TODO: Update batch array
+
+    if (this.messages.length % this.maxValues.maxMessageBatchSize === 0) {
+      this.batchHashes.push(this.chainHash);
+    }
   };
 
   /**
@@ -1321,6 +1327,7 @@ export class Poll implements IPoll {
       numBatchesProcessed: this.numBatchesProcessed,
       numSignups: this.numSignups.toString(),
       chainHash: this.chainHash,
+      batchHashes: this.batchHashes,
     };
   }
 

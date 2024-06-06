@@ -164,6 +164,11 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     emit PublishMessage(_message, _padKey);
   }
 
+  // get all batch hash array elements
+  function getBatchHashes() external view returns (uint256[] memory) {
+    return batchHashes;
+  }
+
   /// @inheritdoc IPoll
   function publishMessage(Message memory _message, PubKey calldata _encPubKey) public virtual isWithinVotingDeadline {
     // we check that we do not exceed the max number of messages

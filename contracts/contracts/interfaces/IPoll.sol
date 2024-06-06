@@ -13,6 +13,10 @@ interface IPoll {
   /// @return numMsgs The number of messages sent by voters
   function numSignUpsAndMessages() external view returns (uint256 numSignups, uint256 numMsgs);
 
+  /// @notice Get all message batch hashes
+  /// @return betchHashes array containing all batch hashes
+  function getBatchHashes() external view returns (uint256[] memory);
+
   /// @notice Allows anyone to publish a message (an encrypted command and signature).
   /// This function also enqueues the message.
   /// @param _message The message to publish
