@@ -110,6 +110,7 @@ describe("Integration tests", function test() {
     const maxValues: MaxValues = {
       maxMessages: 25,
       maxVoteOptions: 25,
+      maxMessageBatchSize: 20,
     };
 
     // 4. create a poll

@@ -46,10 +46,12 @@ export interface BatchSizes {
  * This interface defines the maximum values that the circuit can handle.
  * @property maxMessages - The maximum number of messages.
  * @property maxVoteOptions - The maximum number of vote options.
+ * @property maxMessageBatchSize - The maximum number of message in one processed batch.
  */
 export interface MaxValues {
   maxMessages: number;
   maxVoteOptions: number;
+  maxMessageBatchSize: number;
 }
 
 /**

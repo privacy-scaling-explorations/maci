@@ -45,6 +45,7 @@ export const initialVoiceCreditBalance = 100;
 export const maxValues: MaxValues = {
   maxMessages: MESSAGE_TREE_ARITY ** MESSAGE_TREE_DEPTH,
   maxVoteOptions: 25,
+  maxMessageBatchSize: 20,
 };
 
 export const treeDepths: TreeDepths = {

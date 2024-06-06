@@ -178,13 +178,17 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
       numMessages++;
     }
 
+    // compute current message hash
     uint256 messageHash = hashMessageAndEncPubKey(_message, _encPubKey);
-    // extContracts.messageAq.enqueue(messageLeaf);
+
+    // update current message chain hash
     updateChainHash(messageHash);
 
     emit PublishMessage(_message, _encPubKey);
   }
 
+  /// @notice compute and update current message chain hash
+  /// @param messageHash hash of the current message
   function updateChainHash(uint256 messageHash) internal {
     chainHash = hash2([chainHash, messageHash]);
     // if

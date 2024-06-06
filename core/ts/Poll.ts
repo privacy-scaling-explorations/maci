@@ -1196,6 +1196,7 @@ export class Poll implements IPoll {
       {
         maxMessages: Number(this.maxValues.maxMessages.toString()),
         maxVoteOptions: Number(this.maxValues.maxVoteOptions.toString()),
+        maxMessageBatchSize: Number(this.maxValues.maxMessageBatchSize.toString()),
       },
       this.maciStateRef,
     );

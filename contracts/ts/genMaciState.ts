@@ -126,6 +126,7 @@ export const genMaciStateFromContract = async (
   const maxValues = {
     maxMessages: Number(onChainMaxValues.maxMessages),
     maxVoteOptions: Number(onChainMaxValues.maxVoteOptions),
+    maxMessageBatchSize: Number(onChainMaxValues.maxMessageBatchSize),
   };
 
   const treeDepths = {
