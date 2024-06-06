@@ -92,6 +92,7 @@ export interface IPoll {
   equals(p: Poll): boolean;
   toJSON(): IJsonPoll;
   setCoordinatorKeypair(serializedPrivateKey: string): void;
+  updateChainHash(messageHash: bigint): void;
 }
 
 /**
@@ -111,6 +112,7 @@ export interface IJsonPoll {
   results: string[];
   numBatchesProcessed: number;
   numSignups: string;
+  chainHash: bigint;
 }
 
 /**

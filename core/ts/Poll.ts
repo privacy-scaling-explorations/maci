@@ -117,6 +117,9 @@ export class Poll implements IPoll {
 
   emptyBallotHash?: bigint;
 
+  // message chain hash
+  chainHash = NOTHING_UP_MY_SLEEVE;
+
   // how many users signed up
   private numSignups = 0n;
 
@@ -344,7 +347,10 @@ export class Poll implements IPoll {
     // store the message locally
     this.messages.push(message);
     // add the message hash to the message tree
-    this.messageTree.insert(message.hash(encPubKey));
+    const messageHash = message.hash(encPubKey);
+    this.messageTree.insert(messageHash);
+    // update chain hash
+    this.updateChainHash(messageHash);
 
     // Decrypt the message and store the Command
     // step 1. we generate the shared key
@@ -360,6 +366,15 @@ export class Poll implements IPoll {
       const command = new PCommand(0n, keyPair.pubKey, 0n, 0n, 0n, 0n, 0n);
       this.commands.push(command);
     }
+  };
+
+  /**
+   * Updates message chain hash
+   * @param messageHash
+   */
+  updateChainHash = (messageHash: bigint): void => {
+    this.chainHash = hash2([this.chainHash, messageHash]);
+    // TODO: Update batch array
   };
 
   /**
@@ -1305,6 +1320,7 @@ export class Poll implements IPoll {
       results: this.tallyResult.map((result) => result.toString()),
       numBatchesProcessed: this.numBatchesProcessed,
       numSignups: this.numSignups.toString(),
+      chainHash: this.chainHash,
     };
   }
 

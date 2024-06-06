@@ -26,6 +26,7 @@ describe("Ceremony param tests", () => {
     maxUsers: STATE_TREE_ARITY ** params.stateTreeDepth,
     maxMessages: MESSAGE_TREE_ARITY ** params.messageTreeDepth,
     maxVoteOptions: MESSAGE_TREE_ARITY ** params.voteOptionTreeDepth,
+    maxMessageBatchSize: 20,
   };
 
   const treeDepths = {

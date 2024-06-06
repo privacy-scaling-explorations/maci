@@ -9,6 +9,7 @@ export const MAX_VALUES = {
   maxUsers: 25,
   maxMessages: 25,
   maxVoteOptions: 25,
+  maxMessageBatchSize: 20,
 };
 
 export const TREE_DEPTHS = {
