@@ -18,6 +18,13 @@
       "decoderAddress": "0xe53C60F8069C2f0c3a84F9B3DB5cf56f3100ba56",
       "passingScore": 5
     },
+    "ZupassGatekeeper": {
+      "deploy": false,
+      "signer1": "13908133709081944902758389525983124100292637002438232157513257158004852609027",
+      "signer2": "7654374482676219729919246464135900991450848628968334062174564799457623790084",
+      "eventId": "69c0caaa-c65d-5345-a20c-867774f18c67",
+      "zupassVerifier": "0x2272cdb3596617886d0F48524DA486044E0376d6"
+    },
     "MACI": {
       "stateTreeDepth": 10,
       "gatekeeper": "EASGatekeeper"

@@ -274,6 +274,9 @@ importers:
       solidity-docgen:
         specifier: ^0.6.0-beta.36
         version: 0.6.0-beta.36(hardhat@2.22.5)
+      uuid:
+        specifier: ^9.0.0
+        version: 9.0.1
     devDependencies:
       '@types/chai':
         specifier: ^4.3.11
@@ -293,6 +296,9 @@ importers:
       '@types/snarkjs':
         specifier: ^0.7.8
         version: 0.7.8
+      '@types/uuid':
+        specifier: ^9.0.2
+        version: 9.0.8
       chai:
         specifier: ^4.3.10
         version: 4.4.1
@@ -6624,6 +6630,10 @@ packages:
     dependencies:
       '@types/node': 20.14.1
     dev: false
+
+  /@types/uuid@9.0.8:
+    resolution: {integrity: sha512-jg+97EGIcY9AGHJJRaaPVgetKDsrTgbRjQ5Msgjh/DQKEFl0DtyRr/VCOyD1T2R1MNeWPK/u7JoGhlDZnKBAfA==}
+    dev: true
 
   /@types/ws@8.5.10:
     resolution: {integrity: sha512-vmQSUcfalpIq0R9q7uTo2lXs6eGIpt9wtnLdMv9LVpIjCA/+ufZRozlVoVelIYixx1ugCBKDhn89vnsEGOCx9A==}
@@ -20875,7 +20885,6 @@ packages:
   /uuid@9.0.1:
     resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
     hasBin: true
-    dev: true
 
   /v8-compile-cache-lib@3.0.1:
     resolution: {integrity: sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==}
