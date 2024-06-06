@@ -8,18 +8,9 @@ import { Keypair, Message, PCommand, PubKey } from "maci-domainobjs";
 
 import { EMode } from "../ts/constants";
 import { getDefaultSigner } from "../ts/utils";
-import {
-  AccQueue,
-  AccQueueQuinaryMaci__factory as AccQueueQuinaryMaciFactory,
-  Poll__factory as PollFactory,
-  MACI,
-  Poll as PollContract,
-  Verifier,
-  VkRegistry,
-} from "../typechain-types";
+import { Poll__factory as PollFactory, MACI, Poll as PollContract, Verifier, VkRegistry } from "../typechain-types";
 
 import {
-  MESSAGE_TREE_DEPTH,
   STATE_TREE_DEPTH,
   duration,
   initialVoiceCreditBalance,
@@ -264,54 +255,62 @@ describe("Poll", () => {
     });
   });
 
-  describe("Merge messages", () => {
-    let messageAqContract: AccQueue;
-
-    beforeEach(async () => {
-      const extContracts = await pollContract.extContracts();
-
-      const messageAqAddress = extContracts.messageAq;
-      messageAqContract = AccQueueQuinaryMaciFactory.connect(messageAqAddress, signer);
-    });
-
-    it("should allow to merge the message AccQueue", async () => {
-      let tx = await pollContract.mergeMessageAqSubRoots(0, {
-        gasLimit: 3000000,
-      });
-      let receipt = await tx.wait();
-      expect(receipt?.status).to.eq(1);
-
-      tx = await pollContract.mergeMessageAq({ gasLimit: 4000000 });
-      receipt = await tx.wait();
-      expect(receipt?.status).to.eq(1);
-    });
-
-    it("should have the correct message root set", async () => {
-      const onChainMessageRoot = await messageAqContract.getMainRoot(MESSAGE_TREE_DEPTH);
-      const offChainMessageRoot = maciState.polls.get(pollId)!.messageTree.root;
-
-      expect(onChainMessageRoot.toString()).to.eq(offChainMessageRoot.toString());
-    });
-
-    it("should prevent merging subroots again", async () => {
-      await expect(pollContract.mergeMessageAqSubRoots(0)).to.be.revertedWithCustomError(
-        messageAqContract,
-        "SubTreesAlreadyMerged",
-      );
-    });
-
-    it("should not change the message root if merging a second time", async () => {
-      await pollContract.mergeMessageAq();
-      const onChainMessageRoot = await messageAqContract.getMainRoot(MESSAGE_TREE_DEPTH);
-      const offChainMessageRoot = maciState.polls.get(pollId)!.messageTree.root;
-
-      expect(onChainMessageRoot.toString()).to.eq(offChainMessageRoot.toString());
-    });
-
-    it("should emit an event with the same root when merging another time", async () => {
-      expect(await pollContract.mergeMessageAq())
-        .to.emit(pollContract, "MergeMessageAq")
-        .withArgs(maciState.polls.get(pollId)!.messageTree.root);
+  describe("Message hash chain", () => {
+    it("should correctly compute the first message chain hash", async () => {
+      const currentChainHash = await pollContract.chainHash();
+      expect(currentChainHash).to.eq(maciState.polls.get(pollId)?.chainHash);
     });
   });
+
+  // DEPRECATED
+  // describe("Merge messages", () => {
+  //   let messageAqContract: AccQueue;
+
+  //   beforeEach(async () => {
+  //     const extContracts = await pollContract.extContracts();
+
+  //     const messageAqAddress = extContracts.messageAq;
+  //     messageAqContract = AccQueueQuinaryMaciFactory.connect(messageAqAddress, signer);
+  //   });
+
+  //   it("should allow to merge the message AccQueue", async () => {
+  //     let tx = await pollContract.mergeMessageAqSubRoots(0, {
+  //       gasLimit: 3000000,
+  //     });
+  //     let receipt = await tx.wait();
+  //     expect(receipt?.status).to.eq(1);
+
+  //     tx = await pollContract.mergeMessageAq({ gasLimit: 4000000 });
+  //     receipt = await tx.wait();
+  //     expect(receipt?.status).to.eq(1);
+  //   });
+
+  //   it("should have the correct message root set", async () => {
+  //     const onChainMessageRoot = await messageAqContract.getMainRoot(MESSAGE_TREE_DEPTH);
+  //     const offChainMessageRoot = maciState.polls.get(pollId)!.messageTree.root;
+
+  //     expect(onChainMessageRoot.toString()).to.eq(offChainMessageRoot.toString());
+  //   });
+
+  //   it("should prevent merging subroots again", async () => {
+  //     await expect(pollContract.mergeMessageAqSubRoots(0)).to.be.revertedWithCustomError(
+  //       messageAqContract,
+  //       "SubTreesAlreadyMerged",
+  //     );
+  //   });
+
+  //   it("should not change the message root if merging a second time", async () => {
+  //     await pollContract.mergeMessageAq();
+  //     const onChainMessageRoot = await messageAqContract.getMainRoot(MESSAGE_TREE_DEPTH);
+  //     const offChainMessageRoot = maciState.polls.get(pollId)!.messageTree.root;
+
+  //     expect(onChainMessageRoot.toString()).to.eq(offChainMessageRoot.toString());
+  //   });
+
+  //   it("should emit an event with the same root when merging another time", async () => {
+  //     expect(await pollContract.mergeMessageAq())
+  //       .to.emit(pollContract, "MergeMessageAq")
+  //       .withArgs(maciState.polls.get(pollId)!.messageTree.root);
+  //   });
+  // });
 });

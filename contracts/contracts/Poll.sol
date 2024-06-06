@@ -157,8 +157,9 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
 
     (Message memory _message, PubKey memory _padKey, uint256 placeholderLeaf) = padAndHashMessage(dat);
     // extContracts.messageAq.enqueue(placeholderLeaf);
-    chainHash = placeholderLeaf;
+    chainHash = NOTHING_UP_MY_SLEEVE;
     batchHashes.push(chainHash);
+    updateChainHash(placeholderLeaf);
 
     emit PublishMessage(_message, _padKey);
   }
