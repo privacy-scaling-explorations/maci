@@ -57,7 +57,8 @@ interface IPoll {
   /// @notice Get the max values for the poll
   /// @return maxMessages The maximum number of messages
   /// @return maxVoteOptions The maximum number of vote options
-  function maxValues() external view returns (uint256 maxMessages, uint256 maxVoteOptions);
+  /// @return maxMessageBatchSize The maximum size of batch
+  function maxValues() external view returns (uint256 maxMessages, uint256 maxVoteOptions, uint256 maxMessageBatchSize);
 
   /// @notice Get the external contracts
   /// @return maci The IMACI contract

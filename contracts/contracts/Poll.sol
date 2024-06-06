@@ -67,13 +67,10 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   /// @notice The contracts used by the Poll
   ExtContracts public extContracts;
 
-  /// @notice
+  /// @notice The array for chain hash checkpoints
   uint256[] public batchHashes;
 
-  /// @notice
-  uint8 public constant BATCH_SIZE = 50;
-
-  /// @notice
+  /// @notice Current chain hash
   uint256 public chainHash;
 
   error VotingPeriodOver();
