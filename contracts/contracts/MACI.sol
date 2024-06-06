@@ -26,6 +26,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
 
   uint8 internal constant TREE_ARITY = 2;
   uint8 internal constant MESSAGE_TREE_ARITY = 5;
+  uint8 internal constant MESSAGE_BATCH_SIZE = 20;
 
   /// @notice The hash of a blank state leaf
   uint256 internal constant BLANK_STATE_LEAF_HASH =
@@ -189,7 +190,8 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
 
     MaxValues memory maxValues = MaxValues({
       maxMessages: uint256(MESSAGE_TREE_ARITY) ** _treeDepths.messageTreeDepth,
-      maxVoteOptions: uint256(MESSAGE_TREE_ARITY) ** _treeDepths.voteOptionTreeDepth
+      maxVoteOptions: uint256(MESSAGE_TREE_ARITY) ** _treeDepths.voteOptionTreeDepth,
+      maxMessageBatchSize: uint256(MESSAGE_BATCH_SIZE)
     });
 
     // the owner of the message processor and tally contract will be the msg.sender

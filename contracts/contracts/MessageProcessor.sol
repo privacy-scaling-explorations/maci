@@ -30,6 +30,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
 
   // the number of children per node in the merkle trees
   uint256 internal constant TREE_ARITY = 5;
+  uint256 internal constant MESSAGE_BATCH_SIZE = 20;
 
   /// @inheritdoc IMessageProcessor
   bool public processingComplete;
@@ -90,7 +91,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
     // Retrieve stored vals
     (, uint8 messageTreeSubDepth, uint8 messageTreeDepth, uint8 voteOptionTreeDepth) = poll.treeDepths();
     // calculate the message batch size from the message tree subdepth
-    uint256 messageBatchSize = TREE_ARITY ** messageTreeSubDepth;
+    uint256 messageBatchSize = MESSAGE_BATCH_SIZE;
 
     (, AccQueue messageAq) = poll.extContracts();
 

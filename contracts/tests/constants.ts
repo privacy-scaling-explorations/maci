@@ -7,7 +7,7 @@ export const duration = 2_000;
 export const STATE_TREE_DEPTH = 10;
 export const MESSAGE_TREE_DEPTH = 2;
 export const MESSAGE_TREE_SUBDEPTH = 1;
-export const messageBatchSize = MESSAGE_TREE_ARITY ** MESSAGE_TREE_SUBDEPTH;
+export const messageBatchSize = 20;
 
 export const testProcessVk = new VerifyingKey(
   new G1Point(BigInt(0), BigInt(1)),

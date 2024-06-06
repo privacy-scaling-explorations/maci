@@ -9,6 +9,7 @@ import { EmptyBallotRoots } from "./trees/EmptyBallotRoots.sol";
 import { IPoll } from "./interfaces/IPoll.sol";
 import { Utilities } from "./utilities/Utilities.sol";
 import { CurveBabyJubJub } from "./crypto/BabyJubJub.sol";
+import { Hasher } from "./crypto/Hasher.sol";
 
 /// @title Poll
 /// @notice A Poll contract allows voters to submit encrypted messages
@@ -66,6 +67,15 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   /// @notice The contracts used by the Poll
   ExtContracts public extContracts;
 
+  /// @notice
+  uint256[] public batchHashes;
+
+  /// @notice
+  uint8 public constant BATCH_SIZE = 50;
+
+  /// @notice
+  uint256 public chainHash;
+
   error VotingPeriodOver();
   error VotingPeriodNotOver();
   error PollAlreadyInit();
@@ -86,6 +96,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   /// @param _treeDepths The depths of the merkle trees
   /// @param _coordinatorPubKey The coordinator's public key
   /// @param _extContracts The external contracts
+
   constructor(
     uint256 _duration,
     MaxValues memory _maxValues,
@@ -148,7 +159,9 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     dat[1] = 0;
 
     (Message memory _message, PubKey memory _padKey, uint256 placeholderLeaf) = padAndHashMessage(dat);
-    extContracts.messageAq.enqueue(placeholderLeaf);
+    // extContracts.messageAq.enqueue(placeholderLeaf);
+    chainHash = placeholderLeaf;
+    batchHashes.push(chainHash);
 
     emit PublishMessage(_message, _padKey);
   }
@@ -168,10 +181,19 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
       numMessages++;
     }
 
-    uint256 messageLeaf = hashMessageAndEncPubKey(_message, _encPubKey);
-    extContracts.messageAq.enqueue(messageLeaf);
+    uint256 messageHash = hashMessageAndEncPubKey(_message, _encPubKey);
+    // extContracts.messageAq.enqueue(messageLeaf);
+    updateChainHash(messageHash);
 
     emit PublishMessage(_message, _encPubKey);
+  }
+
+  function updateChainHash(uint256 messageHash) internal {
+    chainHash = hash2([chainHash, messageHash]);
+    // if
+    if (numMessages % maxValues.maxMessageBatchSize == 0) {
+      batchHashes.push(chainHash);
+    }
   }
 
   /// @notice submit a message batch

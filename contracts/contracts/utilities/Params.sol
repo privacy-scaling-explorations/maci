@@ -22,6 +22,7 @@ contract Params {
   struct MaxValues {
     uint256 maxMessages;
     uint256 maxVoteOptions;
+    uint256 maxMessageBatchSize;
   }
 
   /// @notice A struct holding the external contracts
