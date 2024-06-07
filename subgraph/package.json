@@ -1,7 +1,12 @@
 {
   "name": "maci-subgraph",
+  "version": "1.2.2",
   "description": "A subgraph to index data from MACI protocol to serve as data layer for frontend integration",
-  "license": "MIT",
+  "private": true,
+  "files": [
+    "build",
+    "README.md"
+  ],
   "scripts": {
     "precodegen": "rm -rf ./generated && pnpm generate:schema && pnpm generate:yaml",
     "codegen": "graph codegen",
