@@ -61,6 +61,11 @@ It's necesary to define which gatekeeper are you going to use before deploying, 
       "schema": "0xe2636f31239f7948afdd9a9c477048b7fc2a089c347af60e3aa1251e5bf63e5c",
       "attester": "0xcbc8a82e3dfc6faa2506f3033271ebc7447f096b"
     },
+    "GitcoinPassportGatekeeper": {
+      "deploy": false,
+      "decoderAddress": "0xe53C60F8069C2f0c3a84F9B3DB5cf56f3100ba56",
+      "passingScore": 5
+    },
     "ZupassGatekeeper": {
       "deploy": false,
       "signer1": "13908133709081944902758389525983124100292637002438232157513257158004852609027",
@@ -94,7 +99,7 @@ It's necesary to define which gatekeeper are you going to use before deploying, 
       }
     },
     "Poll": {
-      "pollDuration": 60,
+      "pollDuration": 3600,
       "coordinatorPubkey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
       "useQuadraticVoting": false
     }
