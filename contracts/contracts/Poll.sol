@@ -203,6 +203,20 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     }
   }
 
+  // padovati nule do kraja batch-a
+  function padLastBatch() public isAfterVotingDeadline {
+    uint256 inBatch = numMessages % maxValues.maxMessageBatchSize;
+    if (inBatch != 0) {
+      for (uint256 i = 0; i < maxValues.maxMessageBatchSize - inBatch; i++) {
+        chainHash = hash2([chainHash, 0]);
+        // unchecked {
+        //   numMessages++;
+        // }
+      }
+      batchHashes.push(chainHash);
+    }
+  }
+
   /// @notice submit a message batch
   /// @dev Can only be submitted before the voting deadline
   /// @param _messages the messages

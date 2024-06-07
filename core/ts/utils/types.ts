@@ -93,6 +93,7 @@ export interface IPoll {
   toJSON(): IJsonPoll;
   setCoordinatorKeypair(serializedPrivateKey: string): void;
   updateChainHash(messageHash: bigint): void;
+  padLastBatch(): void;
 }
 
 /**

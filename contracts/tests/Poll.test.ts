@@ -263,6 +263,14 @@ describe("Poll", () => {
       expect(currentChainHash).to.eq(maciState.polls.get(pollId)?.chainHash);
       expect(currentBatchHashes).to.deep.equal(maciState.polls.get(pollId)?.batchHashes);
     });
+
+    it("should corectly pad batch hash array with zeros", async () => {
+      await pollContract.padLastBatch();
+      maciState.polls.get(pollId)?.padLastBatch();
+
+      expect(await pollContract.chainHash()).to.eq(maciState.polls.get(pollId)?.chainHash);
+      expect(await pollContract.getBatchHashes()).to.deep.eq(maciState.polls.get(pollId)?.batchHashes);
+    });
   });
 
   // DEPRECATED

@@ -384,6 +384,19 @@ export class Poll implements IPoll {
   };
 
   /**
+   * Pad zeroes to chain hash until batch is full
+   */
+  padLastBatch = (): void => {
+    const inBatch = this.messages.length % this.maxValues.maxMessageBatchSize;
+    if (inBatch !== 0) {
+      for (let i = 0; i < this.maxValues.maxMessageBatchSize - inBatch; i += 1) {
+        this.chainHash = hash2([this.chainHash, BigInt(0)]);
+      }
+      this.batchHashes.push(this.chainHash);
+    }
+  };
+
+  /**
    * This method checks if there are any unprocessed messages in the Poll instance.
    * @returns Returns true if the number of processed batches is
    * less than the total number of batches, false otherwise.
@@ -1355,6 +1368,8 @@ export class Poll implements IPoll {
     poll.tallyResult = json.results.map((result: string) => BigInt(result));
     poll.currentMessageBatchIndex = json.currentMessageBatchIndex;
     poll.numBatchesProcessed = json.numBatchesProcessed;
+    poll.chainHash = json.chainHash;
+    poll.batchHashes = json.batchHashes;
 
     // fill the trees
     for (let i = 0; i < poll.messages.length; i += 1) {
