@@ -1,0 +1,31 @@
+{
+  "name": "maci-subgraph",
+  "description": "A subgraph to index data from MACI protocol to serve as data layer for frontend integration",
+  "license": "MIT",
+  "scripts": {
+    "precodegen": "rm -rf ./generated && pnpm generate:schema && pnpm generate:yaml",
+    "codegen": "graph codegen",
+    "generate:yaml": "mustache ./config/${NETWORK:-optimism-sepolia}.json ./templates/subgraph.template.yaml > subgraph.yaml",
+    "generate:schema": "cp ./schemas/schema.${VERSION:-v1}.graphql schema.graphql",
+    "prebuild": "pnpm codegen",
+    "build": "graph build",
+    "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ maci-subgraph",
+    "create-local": "graph create --node http://localhost:8020/ maci-subgraph",
+    "remove-local": "graph remove --node http://localhost:8020/ maci-subgraph",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 maci-subgraph --network localhost",
+    "deploy:mainnet": "graph deploy --node https://api.studio.thegraph.com/deploy/ maci-subgraph --network mainnet",
+    "test": "graph test",
+    "test:coverage": "graph test && graph test -c"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "^0.73.0",
+    "@graphprotocol/graph-ts": "^0.35.1",
+    "maci-contracts": "1.2.2"
+  },
+  "devDependencies": {
+    "assemblyscript": "0.19.23",
+    "matchstick-as": "^0.6.0",
+    "mustache": "^4.2.0",
+    "wabt": "^1.0.35"
+  }
+}

@@ -1,0 +1,72 @@
+type MACI @entity {
+  id: ID!
+  stateTreeDepth: BigInt! # uint8
+  updatedAt: BigInt!
+  blockNumber: BigInt!
+  txHash: Bytes!
+
+  "state"
+  numSignUps: BigInt!
+  numPoll: BigInt!
+  latestPoll: Bytes!
+}
+
+type User @entity(immutable: true) {
+  id: ID! # pubkey
+  timestamp: BigInt! # uint256
+  blockNumber: BigInt!
+  txHash: Bytes!
+
+  "relations"
+  polls: [Poll!]! @derivedFrom(field: "coordinator")
+  accounts: [Account!]! @derivedFrom(field: "owner")
+}
+
+type Account @entity {
+  id: ID! # stateIndex
+  voiceCreditBalance: BigInt! # uint256
+  timestamp: BigInt! # uint256
+  blockNumber: BigInt!
+  txHash: Bytes!
+
+  "relations"
+  owner: User!
+}
+
+type Poll @entity {
+  id: Bytes! # poll address
+  pollId: BigInt # uint256
+  duration: BigInt! # uint256
+  treeDepth: BigInt! # uint8
+  maxMessages: BigInt
+  maxVoteOption: BigInt
+  messageProcessor: Bytes # address
+  tally: Bytes # address
+  "merge state after ended"
+  stateRoot: BigInt # uint256
+  numSignups: BigInt! # uint256
+  numMessages: BigInt! # uint256
+  "merge message tree after ended"
+  numSrQueueOps: BigInt # uint256
+  messageRoot: BigInt
+  createdAt: BigInt! # startedAt
+  updatedAt: BigInt!
+  blockNumber: BigInt!
+  txHash: Bytes!
+
+  "relations"
+  coordinator: User!
+  owner: Bytes!
+  votes: [Vote!]! @derivedFrom(field: "poll")
+}
+
+type Vote @entity(immutable: true) {
+  id: Bytes!
+  data: [BigInt!]! # uint256[10]
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  txHash: Bytes!
+
+  "relations"
+  poll: Poll!
+}

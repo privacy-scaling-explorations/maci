@@ -1,0 +1,112 @@
+/* eslint-disable no-underscore-dangle, @typescript-eslint/no-unnecessary-type-assertion */
+import { BigInt } from "@graphprotocol/graph-ts";
+import { test, describe, afterEach, clearStore, assert, beforeEach } from "matchstick-as";
+
+import { MACI, Poll } from "../../generated/schema";
+import { handleDeployPoll } from "../../src/maci";
+import {
+  handleMergeMaciState,
+  handleMergeMessageAq,
+  handleMergeMessageAqSubRoots,
+  handlePublishMessage,
+} from "../../src/poll";
+import { DEFAULT_MACI_ID } from "../../src/utils/constants";
+import {
+  DEFAULT_MESSAGE_PROCESSOR_ADDRESS,
+  DEFAULT_POLL_ADDRESS,
+  DEFAULT_TALLY_ADDRESS,
+  mockPollContract,
+} from "../common";
+import { createDeployPollEvent } from "../maci/utils";
+
+import {
+  createMergeMaciStateEvent,
+  createMergeMessageAqEvent,
+  createMergeMessageAqSubRootsEvent,
+  createPublishMessageEvent,
+} from "./utils";
+
+export { handleMergeMaciState, handleMergeMessageAq, handleMergeMessageAqSubRoots, handlePublishMessage };
+
+describe("Poll", () => {
+  beforeEach(() => {
+    mockPollContract();
+
+    const event = createDeployPollEvent(
+      BigInt.fromI32(1),
+      BigInt.fromI32(1),
+      BigInt.fromI32(1),
+      DEFAULT_POLL_ADDRESS,
+      DEFAULT_MESSAGE_PROCESSOR_ADDRESS,
+      DEFAULT_TALLY_ADDRESS,
+    );
+
+    handleDeployPoll(event);
+  });
+
+  afterEach(() => {
+    clearStore();
+  });
+
+  test("should handle merge maci state properly", () => {
+    const event = createMergeMaciStateEvent(DEFAULT_POLL_ADDRESS, BigInt.fromI32(1), BigInt.fromI32(3));
+
+    handleMergeMaciState(event);
+
+    const maci = MACI.load(DEFAULT_MACI_ID)!;
+    const poll = Poll.load(maci.latestPoll)!;
+
+    assert.fieldEquals("Poll", poll.id.toHex(), "stateRoot", "1");
+    assert.fieldEquals("Poll", poll.id.toHex(), "numSignups", "3");
+    assert.fieldEquals("MACI", DEFAULT_MACI_ID, "numPoll", "1");
+    assert.fieldEquals("MACI", DEFAULT_MACI_ID, "numSignUps", "3");
+    assert.fieldEquals("MACI", DEFAULT_MACI_ID, "latestPoll", poll.id.toHex());
+  });
+
+  test("should handle merge message queue properly", () => {
+    const event = createMergeMessageAqEvent(DEFAULT_POLL_ADDRESS, BigInt.fromI32(1));
+
+    handleMergeMessageAq(event);
+
+    const poll = Poll.load(DEFAULT_POLL_ADDRESS)!;
+
+    assert.fieldEquals("Poll", poll.id.toHex(), "messageRoot", "1");
+  });
+
+  test("should handle merge message queue subroots properly", () => {
+    const event = createMergeMessageAqSubRootsEvent(DEFAULT_POLL_ADDRESS, BigInt.fromI32(1));
+
+    handleMergeMessageAqSubRoots(event);
+
+    const poll = Poll.load(DEFAULT_POLL_ADDRESS)!;
+
+    assert.fieldEquals("Poll", poll.id.toHex(), "numSrQueueOps", "1");
+  });
+
+  test("should handle publish message properly", () => {
+    const event = createPublishMessageEvent(
+      DEFAULT_POLL_ADDRESS,
+      [
+        BigInt.fromI32(0),
+        BigInt.fromI32(1),
+        BigInt.fromI32(2),
+        BigInt.fromI32(3),
+        BigInt.fromI32(4),
+        BigInt.fromI32(5),
+        BigInt.fromI32(6),
+        BigInt.fromI32(7),
+        BigInt.fromI32(8),
+        BigInt.fromI32(9),
+      ],
+      BigInt.fromI32(2),
+      BigInt.fromI32(3),
+    );
+
+    handlePublishMessage(event);
+
+    const poll = Poll.load(DEFAULT_POLL_ADDRESS)!;
+
+    assert.entityCount("Vote", 1);
+    assert.fieldEquals("Poll", poll.id.toHex(), "numMessages", "1");
+  });
+});
