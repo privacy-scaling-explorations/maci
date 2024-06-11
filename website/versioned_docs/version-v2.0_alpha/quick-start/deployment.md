@@ -7,11 +7,11 @@ sidebar_position: 3
 
 Currently, it is possible to deploy MACI contracts in two ways:
 
-- using the cli (`maci-cli`)
 - using the hardhat tasks inside the `maci-contracts` package
+- using the cli (`maci-cli`)
 
 :::info
-We recommend to use the hardhat tasks inside the `maci-contracts` folder, due to their semplicity and customizability.
+We recommend to use the hardhat tasks inside the `maci-contracts` folder, due to their simplicity and customizability.
 :::
 
 ## Deployment Steps
@@ -34,6 +34,12 @@ For testing purposes, you can use the test zkeys and artifacts that you can down
 
 Please do not use test artifacts in production. If you do require zKeys configured for larger param sizes, please reach out to us if you will be using them in production and we'll discuss running a new ceremony for those parameters. To build new circuits artifacts for testing purposes, please refer to the [installation page](/docs/quick-start/installation#configure-circomkit) and to the [circuits](/docs/developers-references/zk-snark-circuits/introduction) section.
 
+### Note on Gatekeepers
+
+MACI uses a "gatekeeper" contract to configure and enforce the eligibility criteria of voters who can participate in MACI polls. In other words, it is a way to allowlist signups to the system. Operators of MACI can use the gatekeeper contract to configure signup eligibility and to protect against sybil attacks in their polls.
+
+It's necessary to define which gatekeeper you are going to use before deploying, please refer to the [gatekeepers section](/docs/developers-references/smart-contracts/Gatekeepers) for more information on the supported Gatekeepers.
+
 ### Deployment using `maci-contracts` hardhat tasks
 
 1. Take the `deploy-config-example.json` file and copy it over to `deploy-config.json`
@@ -51,14 +57,21 @@ Please do not use test artifacts in production. If you do require zKeys configur
     },
     "EASGatekeeper": {
       "deploy": true,
-      "easAddress": "0xC2679fBD37d54388Ce493F1DB75320D236e1815e",
+      "easAddress": "0x4200000000000000000000000000000000000021",
       "schema": "0xe2636f31239f7948afdd9a9c477048b7fc2a089c347af60e3aa1251e5bf63e5c",
-      "attester": "0xa73C483623C0EA0A8AA11AD696a29622ba381555"
+      "attester": "0xcbc8a82e3dfc6faa2506f3033271ebc7447f096b"
     },
     "GitcoinPassportGatekeeper": {
       "deploy": false,
       "decoderAddress": "0xe53C60F8069C2f0c3a84F9B3DB5cf56f3100ba56",
       "passingScore": 5
+    },
+    "ZupassGatekeeper": {
+      "deploy": false,
+      "signer1": "13908133709081944902758389525983124100292637002438232157513257158004852609027",
+      "signer2": "7654374482676219729919246464135900991450848628968334062174564799457623790084",
+      "eventId": "69c0caaa-c65d-5345-a20c-867774f18c67",
+      "zupassVerifier": "0x2272cdb3596617886d0F48524DA486044E0376d6"
     },
     "MACI": {
       "stateTreeDepth": 10,
@@ -73,18 +86,22 @@ Please do not use test artifacts in production. If you do require zKeys configur
       "zkeys": {
         "qv": {
           "processMessagesZkey": "../cli/zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test.0.zkey",
-          "tallyVotesZkey": "../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey"
+          "tallyVotesZkey": "../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey",
+          "processWasm": "../cli/zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test_js/ProcessMessages_10-2-1-2_test.wasm",
+          "tallyWasm": "../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm"
         },
         "nonQv": {
           "processMessagesZkey": "../cli/zkeys/ProcessMessagesNonQv_10-2-1-2_test/ProcessMessagesNonQv_10-2-1-2_test.0.zkey",
-          "tallyVotesZkey": "../cli/zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test.0.zkey"
+          "tallyVotesZkey": "../cli/zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test.0.zkey",
+          "processWasm": "../cli/zkeys/ProcessMessagesNonQv_10-2-1-2_test/ProcessMessagesNonQv_10-2-1-2_test_js/ProcessMessagesNonQv_10-2-1-2_test.wasm",
+          "tallyWasm": "../cli/zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test_js/TallyVotesNonQv_10-1-2_test.wasm"
         }
       }
     },
     "Poll": {
-      "pollDuration": 30000,
-      "coordinatorPubkey": "macipk.8c7d230547b3ccd75610b2db934ee7e1ea0a01db679e2cfcabe535234f046a18",
-      "useQuadraticVoting": true
+      "pollDuration": 3600,
+      "coordinatorPubkey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
+      "useQuadraticVoting": false
     }
   }
 }
