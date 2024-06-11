@@ -62,7 +62,7 @@
     "@types/node": "^20.12.12",
     "@types/prompt": "^1.1.8",
     "chai": "^4.3.10",
-    "chai-as-promised": "^7.1.2",
+    "chai-as-promised": "^8.0.0",
     "mocha": "^10.4.0",
     "nyc": "^17.0.0",
     "snarkjs": "^0.7.4",

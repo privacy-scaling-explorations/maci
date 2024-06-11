@@ -139,8 +139,8 @@ importers:
         specifier: ^4.3.10
         version: 4.4.1
       chai-as-promised:
-        specifier: ^7.1.2
-        version: 7.1.2(chai@4.4.1)
+        specifier: ^8.0.0
+        version: 8.0.0(chai@4.4.1)
       fast-check:
         specifier: ^3.18.0
         version: 3.19.0
@@ -215,8 +215,8 @@ importers:
         specifier: ^4.3.10
         version: 4.4.1
       chai-as-promised:
-        specifier: ^7.1.2
-        version: 7.1.2(chai@4.4.1)
+        specifier: ^8.0.0
+        version: 8.0.0(chai@4.4.1)
       mocha:
         specifier: ^10.4.0
         version: 10.4.0
@@ -578,8 +578,8 @@ importers:
         specifier: ^4.3.10
         version: 4.4.1
       chai-as-promised:
-        specifier: ^7.1.2
-        version: 7.1.2(chai@4.4.1)
+        specifier: ^8.0.0
+        version: 8.0.0(chai@4.4.1)
       hardhat:
         specifier: ^2.22.4
         version: 2.22.5(ts-node@10.9.2)(typescript@5.4.5)
@@ -8299,6 +8299,16 @@ packages:
     dependencies:
       chai: 4.4.1
       check-error: 1.0.3
+    dev: false
+
+  /chai-as-promised@8.0.0(chai@4.4.1):
+    resolution: {integrity: sha512-sMsGXTrS3FunP/wbqh/KxM8Kj/aLPXQGkNtvE5wPfSToq8wkkvBpTZo1LIiEVmC4BwkKpag+l5h/20lBMk6nUg==}
+    peerDependencies:
+      chai: '>= 2.1.2 < 6'
+    dependencies:
+      chai: 4.4.1
+      check-error: 2.1.1
+    dev: true
 
   /chai@4.4.1:
     resolution: {integrity: sha512-13sOfMv2+DWduEU+/xbun3LScLoqN17nBeTLUsmDfKdoiC1fr0n9PU4guu4AhRcOVFk/sW8LyZWHuhWtQZiF+g==}
@@ -8375,6 +8385,11 @@ packages:
     resolution: {integrity: sha512-iKEoDYaRmd1mxM90a2OEfWhjsjPpYPuQ+lMYsoxB126+t8fw7ySEO48nmDg5COTjxDI65/Y2OWpeEHk3ZOe8zg==}
     dependencies:
       get-func-name: 2.0.2
+
+  /check-error@2.1.1:
+    resolution: {integrity: sha512-OAlb+T7V4Op9OwdkjmguYRqncdlx5JiofwOAUkmTF+jNdHwzTaTs4sRAGpzLF3oOz5xAyDGrPgeIDFQmDOTiJw==}
+    engines: {node: '>= 16'}
+    dev: true
 
   /check-types@11.2.3:
     resolution: {integrity: sha512-+67P1GkJRaxQD6PKK0Et9DhwQB+vGg3PM5+aavopCpZT1lj9jeqfvpgTLAWErNj8qApkkmXlu/Ug74kmhagkXg==}

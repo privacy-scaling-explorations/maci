@@ -52,7 +52,7 @@
     "@types/node": "^20.12.12",
     "@zk-kit/baby-jubjub": "^1.0.1",
     "chai": "^4.3.10",
-    "chai-as-promised": "^7.1.2",
+    "chai-as-promised": "^8.0.0",
     "fast-check": "^3.18.0",
     "mocha": "^10.4.0",
     "ts-mocha": "^10.0.0",
