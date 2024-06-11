@@ -21,7 +21,7 @@ pnpm run prove:[network] --poll 0 \
 ```
 
 :::info
-If the poll was configured to use quadratic voting, please ensure your prove command has the flag `--use-quadratic-voting`. Omitting the flag will make it work with non quadratic voting only. We also suggest including the `--start-block` flag so the proving doesn't start from block 0.
+If the poll was configured to use quadratic voting, please ensure your prove command has the flag `--use-quadratic-voting`. Omitting the flag will make it work with non quadratic voting only. We also suggest including the `--start-block` flag, proving requires fetching all events from the smartcontract and by default starts from block zero, this would take a lot of time and is error-prone due to RPC provider limitations.
 :::
 
 The network options are: **_localhost, sepolia, and optimism-sepolia_**, and the tasks flags and parameters are as follows:

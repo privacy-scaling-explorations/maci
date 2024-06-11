@@ -38,7 +38,7 @@ Please do not use test artifacts in production. If you do require zKeys configur
 
 MACI uses a "gatekeeper" contract to configure and enforce the eligibility criteria of voters who can participate in MACI polls. In other words, it is a way to allowlist signups to the system. Operators of MACI can use the gatekeeper contract to configure signup eligibility and to protect against sybil attacks in their polls.
 
-It's necessary to define which gatekeeper are you going to use before deploying, please refer to the [gatekeepers page](/docs/developers-references/smart-contracts/Gatekeepers) section for more information on the supported Gatekeepers.
+It's necessary to define which gatekeeper you are going to use before deploying, please refer to the [gatekeepers section](/docs/developers-references/smart-contracts/Gatekeepers) for more information on the supported Gatekeepers.
 
 ### Deployment using `maci-contracts` hardhat tasks
 
