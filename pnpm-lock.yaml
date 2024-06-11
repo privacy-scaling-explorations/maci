@@ -639,8 +639,8 @@ importers:
         specifier: ^3.3.2
         version: 3.4.0(@docusaurus/types@3.4.0)(eslint@8.57.0)(react-dom@18.3.1)(react@18.3.1)(typescript@5.4.5)
       '@easyops-cn/docusaurus-search-local':
-        specifier: ^0.41.0
-        version: 0.41.1(@docusaurus/theme-common@3.4.0)(@docusaurus/types@3.4.0)(eslint@8.57.0)(react-dom@18.3.1)(react@18.3.1)(typescript@5.4.5)
+        specifier: ^0.44.0
+        version: 0.44.0(@docusaurus/theme-common@3.4.0)(@docusaurus/types@3.4.0)(eslint@8.57.0)(react-dom@18.3.1)(react@18.3.1)(typescript@5.4.5)
       '@mdx-js/react':
         specifier: ^3.0.1
         version: 3.0.1(@types/react@18.3.3)(react@18.3.1)
@@ -3445,8 +3445,8 @@ packages:
       immediate: 3.3.0
     dev: false
 
-  /@easyops-cn/docusaurus-search-local@0.41.1(@docusaurus/theme-common@3.4.0)(@docusaurus/types@3.4.0)(eslint@8.57.0)(react-dom@18.3.1)(react@18.3.1)(typescript@5.4.5):
-    resolution: {integrity: sha512-Y7pUb19YgB3SI0Fy9quTIP0wekU1Qt93b4ZmooR3errteGuNB7yiXgGKrOmEx6XlP2ClVXqV1fWSaNe0jZmRvQ==}
+  /@easyops-cn/docusaurus-search-local@0.44.0(@docusaurus/theme-common@3.4.0)(@docusaurus/types@3.4.0)(eslint@8.57.0)(react-dom@18.3.1)(react@18.3.1)(typescript@5.4.5):
+    resolution: {integrity: sha512-sgLpvkRtYuEGvd4peYQW2oInI4JkcQfxo7HgEnkhcxn9kxDY5laA8DiCx9qMKAkM9cMed9e8IsLk5gBeDh8Rqw==}
     engines: {node: '>=12'}
     peerDependencies:
       '@docusaurus/theme-common': ^2 || ^3
