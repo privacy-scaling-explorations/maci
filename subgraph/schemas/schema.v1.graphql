@@ -18,7 +18,6 @@ type User @entity(immutable: true) {
   txHash: Bytes!
 
   "relations"
-  polls: [Poll!]! @derivedFrom(field: "coordinator")
   accounts: [Account!]! @derivedFrom(field: "owner")
 }
 
@@ -55,7 +54,6 @@ type Poll @entity {
   txHash: Bytes!
 
   "relations"
-  coordinator: User!
   owner: Bytes!
   votes: [Vote!]! @derivedFrom(field: "poll")
 }
