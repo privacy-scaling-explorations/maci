@@ -34,9 +34,6 @@ export function handleDeployPoll(event: DeployPollEvent): void {
 
   entity.numSignups = maci.numSignUps;
   entity.numMessages = GraphBN.zero();
-
-  const coordinator = createOrLoadUser(event.params._coordinatorPubKeyX, event.params._coordinatorPubKeyY, event);
-  entity.coordinator = coordinator.id;
   entity.save();
 
   maci.numPoll = maci.numPoll.plus(ONE_BIG_INT);
