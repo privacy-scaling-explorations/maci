@@ -85,7 +85,7 @@
     "maci-crypto": "1.2.2",
     "maci-domainobjs": "1.2.2",
     "solidity-docgen": "^0.6.0-beta.36",
-    "uuid": "^9.0.0"
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
