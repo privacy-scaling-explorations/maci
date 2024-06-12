@@ -1,4 +1,4 @@
-import { ContractTransactionReceipt, isBytesLike } from "ethers";
+import { type ContractTransactionReceipt, isBytesLike } from "ethers";
 import { MACI__factory as MACIFactory } from "maci-contracts/typechain-types";
 import { PubKey } from "maci-domainobjs";
 
