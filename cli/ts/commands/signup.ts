@@ -1,8 +1,8 @@
+import { type ContractTransactionReceipt, isBytesLike } from "ethers";
 import { MACI__factory as MACIFactory } from "maci-contracts/typechain-types";
 import { PubKey } from "maci-domainobjs";
 
 import type { IParseSignupEventsArgs, IRegisteredUserArgs, ISignupData, SignupArgs } from "../utils/interfaces";
-import type { ContractTransactionReceipt } from "ethers";
 
 import { banner } from "../utils/banner";
 import { contractExists } from "../utils/contracts";
@@ -38,14 +38,12 @@ export const signup = async ({
   const sgData = sgDataArg || DEFAULT_SG_DATA;
   const ivcpData = ivcpDataArg || DEFAULT_IVCP_DATA;
 
-  const regex32ByteHex = /^0x[a-fA-F0-9]{64}$/;
-
   // we validate that the signup data and voice credit data is valid
-  if (!sgData.match(regex32ByteHex)) {
+  if (!isBytesLike(sgData)) {
     logError("invalid signup gateway data");
   }
 
-  if (!ivcpData.match(regex32ByteHex)) {
+  if (!isBytesLike(ivcpData)) {
     logError("invalid initial voice credit proxy data");
   }
 
