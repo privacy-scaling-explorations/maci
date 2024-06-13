@@ -37,7 +37,7 @@ To contribute to MACI, create feature/fix branches, then open PRs into `dev`. [L
 
 ### Local development
 
-For installation and local development instructions, please see our [installation docs](https://maci.pse.dev/docs/installation/).
+For installation and local development instructions, please see our [installation docs](https://maci.pse.dev/docs/quick-start/installation/).
 
 This repository is organized as Lerna submodules. Each submodule contains its
 own unit tests.
@@ -61,7 +61,7 @@ Please refer to the [testing documentation](https://maci.pse.dev/docs/testing) f
 
 ### CI pipeline
 
-CI pipeline ensures that we have automated tests that constantly validate. For more information about pipeline workflows, [read our CI documentation](https://maci.pse.dev/docs/ci-pipeline).
+CI pipeline ensures that we have automated tests that constantly validate. For more information about pipeline workflows, [read our CI documentation](https://maci.pse.dev/docs/processes/ci-pipeline).
 
 [telegram-badge]: https://badges.aleen42.com/src/telegram.svg
 [telegram-link]: https://t.me/joinchat/LUgOpE7J2gstRcZqdERyvw
