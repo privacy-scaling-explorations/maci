@@ -17,10 +17,7 @@ export function handleMergeMaciState(event: MergeMaciStateEvent): void {
   if (poll) {
     poll.stateRoot = event.params._stateRoot;
     poll.numSignups = event.params._numSignups;
-
-    poll.blockNumber = event.block.number;
     poll.updatedAt = event.block.timestamp;
-    poll.txHash = event.transaction.hash;
     poll.save();
   }
 
@@ -35,10 +32,7 @@ export function handleMergeMessageAq(event: MergeMessageAqEvent): void {
 
   if (poll) {
     poll.messageRoot = event.params._messageRoot;
-
-    poll.blockNumber = event.block.number;
     poll.updatedAt = event.block.timestamp;
-    poll.txHash = event.transaction.hash;
     poll.save();
   }
 }
@@ -48,10 +42,7 @@ export function handleMergeMessageAqSubRoots(event: MergeMessageAqSubRootsEvent)
 
   if (poll) {
     poll.numSrQueueOps = event.params._numSrQueueOps;
-
-    poll.blockNumber = event.block.number;
     poll.updatedAt = event.block.timestamp;
-    poll.txHash = event.transaction.hash;
     poll.save();
   }
 }
@@ -60,10 +51,7 @@ export function handlePublishMessage(event: PublishMessageEvent): void {
   const vote = new Vote(event.transaction.hash.concatI32(event.logIndex.toI32()));
   vote.data = event.params._message.data;
   vote.poll = event.address;
-
-  vote.blockNumber = event.block.number;
   vote.timestamp = event.block.timestamp;
-  vote.txHash = event.transaction.hash;
   vote.save();
 
   const poll = Poll.load(event.address);

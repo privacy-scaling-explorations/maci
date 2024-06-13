@@ -12,38 +12,36 @@ import { createOrLoadMACI, createOrLoadUser, createOrLoadAccount } from "./utils
 export function handleDeployPoll(event: DeployPollEvent): void {
   const maci = createOrLoadMACI(event);
 
-  const entity = new Poll(event.params.pollAddr.poll);
+  const poll = new Poll(event.params.pollAddr.poll);
   const contract = PollContract.bind(event.params.pollAddr.poll);
   const maxValues = contract.maxValues();
   const treeDepths = contract.treeDepths();
   const durations = contract.getDeployTimeAndDuration();
 
-  entity.pollId = event.params._pollId;
-  entity.messageProcessor = event.params.pollAddr.messageProcessor;
-  entity.tally = event.params.pollAddr.tally;
-  entity.maxMessages = maxValues.value0;
-  entity.maxVoteOption = maxValues.value1;
-  entity.treeDepth = GraphBN.fromI32(treeDepths.value0);
-  entity.duration = durations.value1;
+  poll.pollId = event.params._pollId;
+  poll.messageProcessor = event.params.pollAddr.messageProcessor;
+  poll.tally = event.params.pollAddr.tally;
+  poll.maxMessages = maxValues.value0;
+  poll.maxVoteOption = maxValues.value1;
+  poll.treeDepth = GraphBN.fromI32(treeDepths.value0);
+  poll.duration = durations.value1;
 
-  entity.blockNumber = event.block.number;
-  entity.createdAt = event.block.timestamp;
-  entity.updatedAt = event.block.timestamp;
-  entity.txHash = event.transaction.hash;
-  entity.owner = event.transaction.from;
+  poll.createdAt = event.block.timestamp;
+  poll.updatedAt = event.block.timestamp;
+  poll.owner = event.transaction.from;
 
-  entity.numSignups = maci.numSignUps;
-  entity.numMessages = GraphBN.zero();
-  entity.save();
+  poll.numSignups = maci.numSignUps;
+  poll.numMessages = GraphBN.zero();
+  poll.save();
 
   maci.numPoll = maci.numPoll.plus(ONE_BIG_INT);
-  maci.latestPoll = entity.id;
+  maci.latestPoll = poll.id;
   maci.updatedAt = event.block.timestamp;
   maci.save();
 
   // Start indexing the poll; `event.params.pollAddr.poll` is the
   // address of the new poll contract
-  PollTemplate.create(Address.fromBytes(entity.id));
+  PollTemplate.create(Address.fromBytes(poll.id));
 }
 
 export function handleSignUp(event: SignUpEvent): void {

@@ -12,9 +12,6 @@ export const createOrLoadMACI = (event: ethereum.Event, stateTreeDepth: GraphBN 
     maci = new MACI(DEFAULT_MACI_ID);
     maci.stateTreeDepth = stateTreeDepth;
     maci.updatedAt = event.block.timestamp;
-    maci.blockNumber = event.block.number;
-    maci.txHash = event.transaction.hash;
-
     maci.numPoll = GraphBN.zero();
     maci.numSignUps = GraphBN.zero();
     maci.latestPoll = Bytes.empty();
@@ -30,9 +27,7 @@ export const createOrLoadUser = (publicKeyX: GraphBN, publicKeyY: GraphBN, event
 
   if (!user) {
     user = new User(publicKey);
-    user.timestamp = event.block.timestamp;
-    user.blockNumber = event.block.number;
-    user.txHash = event.transaction.hash;
+    user.createdAt = event.block.timestamp;
     user.save();
   }
 
@@ -52,9 +47,7 @@ export const createOrLoadAccount = (
     account = new Account(id);
     account.owner = owner;
     account.voiceCreditBalance = voiceCreditBalance;
-    account.timestamp = event.block.timestamp;
-    account.blockNumber = event.block.number;
-    account.txHash = event.transaction.hash;
+    account.createdAt = event.block.timestamp;
     account.save();
   }
 
