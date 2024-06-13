@@ -32,6 +32,7 @@ export function handleDeployPoll(event: DeployPollEvent): void {
 
   poll.numSignups = maci.numSignUps;
   poll.numMessages = GraphBN.zero();
+  poll.maci = maci.id;
   poll.save();
 
   maci.numPoll = maci.numPoll.plus(ONE_BIG_INT);

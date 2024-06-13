@@ -10,7 +10,6 @@ import {
   handleMergeMessageAqSubRoots,
   handlePublishMessage,
 } from "../../src/poll";
-import { DEFAULT_MACI_ID } from "../../src/utils/constants";
 import {
   DEFAULT_MESSAGE_PROCESSOR_ADDRESS,
   DEFAULT_POLL_ADDRESS,
@@ -53,14 +52,15 @@ describe("Poll", () => {
 
     handleMergeMaciState(event);
 
-    const maci = MACI.load(DEFAULT_MACI_ID)!;
-    const poll = Poll.load(maci.latestPoll)!;
+    const poll = Poll.load(event.address)!;
+    const maci = MACI.load(poll.maci)!;
 
     assert.fieldEquals("Poll", poll.id.toHex(), "stateRoot", "1");
     assert.fieldEquals("Poll", poll.id.toHex(), "numSignups", "3");
-    assert.fieldEquals("MACI", DEFAULT_MACI_ID, "numPoll", "1");
-    assert.fieldEquals("MACI", DEFAULT_MACI_ID, "numSignUps", "3");
-    assert.fieldEquals("MACI", DEFAULT_MACI_ID, "latestPoll", poll.id.toHex());
+    assert.fieldEquals("MACI", maci.id.toHexString(), "numPoll", "1");
+    assert.fieldEquals("MACI", maci.id.toHexString(), "numSignUps", "3");
+    assert.fieldEquals("MACI", maci.id.toHexString(), "latestPoll", poll.id.toHex());
+    assert.assertTrue(maci.polls.load().length === 1);
   });
 
   test("should handle merge message queue properly", () => {
@@ -78,7 +78,7 @@ describe("Poll", () => {
 
     handleMergeMessageAqSubRoots(event);
 
-    const poll = Poll.load(DEFAULT_POLL_ADDRESS)!;
+    const poll = Poll.load(event.address)!;
 
     assert.fieldEquals("Poll", poll.id.toHex(), "numSrQueueOps", "1");
   });
@@ -104,7 +104,7 @@ describe("Poll", () => {
 
     handlePublishMessage(event);
 
-    const poll = Poll.load(DEFAULT_POLL_ADDRESS)!;
+    const poll = Poll.load(event.address)!;
 
     assert.entityCount("Vote", 1);
     assert.fieldEquals("Poll", poll.id.toHex(), "numMessages", "1");

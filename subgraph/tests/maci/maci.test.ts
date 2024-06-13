@@ -4,7 +4,6 @@ import { test, describe, afterEach, clearStore, assert, beforeAll } from "matchs
 
 import { Account, MACI, Poll, User } from "../../generated/schema";
 import { handleSignUp, handleDeployPoll } from "../../src/maci";
-import { DEFAULT_MACI_ID } from "../../src/utils/constants";
 import {
   DEFAULT_MESSAGE_PROCESSOR_ADDRESS,
   DEFAULT_POLL_ADDRESS,
@@ -37,16 +36,18 @@ describe("MACI", () => {
     handleSignUp(event);
 
     const userId = `${event.params._userPubKeyX.toString()} ${event.params._userPubKeyY.toString()}`;
+    const maciAddress = event.address;
     const user = User.load(userId)!;
     const account = Account.load(event.params._stateIndex.toString())!;
-    const maci = MACI.load(DEFAULT_MACI_ID)!;
+    const maci = MACI.load(maciAddress)!;
     const poll = Poll.load(maci.latestPoll);
 
     assert.fieldEquals("User", user.id, "id", userId);
     assert.fieldEquals("Account", account.id, "id", event.params._stateIndex.toString());
-    assert.fieldEquals("MACI", DEFAULT_MACI_ID, "numPoll", "0");
-    assert.fieldEquals("MACI", DEFAULT_MACI_ID, "numSignUps", "1");
-    assert.fieldEquals("MACI", DEFAULT_MACI_ID, "latestPoll", "0x00000000");
+    assert.fieldEquals("MACI", maciAddress.toHexString(), "numPoll", "0");
+    assert.fieldEquals("MACI", maciAddress.toHexString(), "numSignUps", "1");
+    assert.fieldEquals("MACI", maciAddress.toHexString(), "latestPoll", "0x00000000");
+    assert.assertTrue(maci.polls.load().length === 0);
     assert.assertNull(poll);
   });
 
@@ -62,13 +63,15 @@ describe("MACI", () => {
 
     handleDeployPoll(event);
 
-    const maci = MACI.load(DEFAULT_MACI_ID)!;
+    const maciAddress = event.address;
+    const maci = MACI.load(maciAddress)!;
     const poll = Poll.load(maci.latestPoll)!;
 
     assert.fieldEquals("Poll", poll.id.toHex(), "id", DEFAULT_POLL_ADDRESS.toHexString());
-    assert.fieldEquals("MACI", DEFAULT_MACI_ID, "numPoll", "1");
-    assert.fieldEquals("MACI", DEFAULT_MACI_ID, "numSignUps", "0");
-    assert.fieldEquals("MACI", DEFAULT_MACI_ID, "latestPoll", poll.id.toHex());
+    assert.fieldEquals("MACI", maciAddress.toHexString(), "numPoll", "1");
+    assert.fieldEquals("MACI", maciAddress.toHexString(), "numSignUps", "0");
+    assert.fieldEquals("MACI", maciAddress.toHexString(), "latestPoll", poll.id.toHex());
+    assert.assertTrue(maci.polls.load().length === 1);
   });
 
   test("should handle signup with deployed poll properly", () => {
@@ -93,16 +96,18 @@ describe("MACI", () => {
     handleSignUp(signUpEvent);
 
     const userId = `${signUpEvent.params._userPubKeyX.toString()} ${signUpEvent.params._userPubKeyY.toString()}`;
+    const maciAddress = deployPollEvent.address;
     const user = User.load(userId)!;
     const account = Account.load(signUpEvent.params._stateIndex.toString())!;
-    const maci = MACI.load(DEFAULT_MACI_ID)!;
+    const maci = MACI.load(maciAddress)!;
     const poll = Poll.load(maci.latestPoll)!;
 
     assert.fieldEquals("User", user.id, "id", userId);
     assert.fieldEquals("Account", account.id, "id", signUpEvent.params._stateIndex.toString());
-    assert.fieldEquals("MACI", DEFAULT_MACI_ID, "numPoll", "1");
-    assert.fieldEquals("MACI", DEFAULT_MACI_ID, "numSignUps", "1");
-    assert.fieldEquals("MACI", DEFAULT_MACI_ID, "latestPoll", poll.id.toHex());
+    assert.fieldEquals("MACI", maciAddress.toHexString(), "numPoll", "1");
+    assert.fieldEquals("MACI", maciAddress.toHexString(), "numSignUps", "1");
+    assert.fieldEquals("MACI", maciAddress.toHexString(), "latestPoll", poll.id.toHex());
+    assert.assertTrue(maci.polls.load().length === 1);
     assert.assertNotNull(poll);
   });
 });

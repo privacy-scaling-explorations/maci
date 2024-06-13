@@ -3,13 +3,11 @@ import { BigInt as GraphBN, Bytes, ethereum } from "@graphprotocol/graph-ts";
 
 import { Account, MACI, User } from "../../generated/schema";
 
-import { DEFAULT_MACI_ID } from "./constants";
-
 export const createOrLoadMACI = (event: ethereum.Event, stateTreeDepth: GraphBN = GraphBN.fromI32(10)): MACI => {
-  let maci = MACI.load(DEFAULT_MACI_ID);
+  let maci = MACI.load(event.address);
 
   if (!maci) {
-    maci = new MACI(DEFAULT_MACI_ID);
+    maci = new MACI(event.address);
     maci.stateTreeDepth = stateTreeDepth;
     maci.updatedAt = event.block.timestamp;
     maci.numPoll = GraphBN.zero();
