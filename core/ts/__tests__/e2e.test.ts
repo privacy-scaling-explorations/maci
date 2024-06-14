@@ -356,7 +356,6 @@ describe("MaciState/Poll e2e", function test() {
     let maciState: MaciState;
     let pollId: bigint;
     let poll: Poll;
-    let msgTree: IncrementalQuinTree;
     const voteWeight = 9n;
     const voteOptionIndex = 0n;
     let stateIndex: number;
@@ -364,7 +363,6 @@ describe("MaciState/Poll e2e", function test() {
 
     before(() => {
       maciState = new MaciState(STATE_TREE_DEPTH);
-      msgTree = new IncrementalQuinTree(treeDepths.messageTreeDepth, NOTHING_UP_MY_SLEEVE, MESSAGE_TREE_ARITY, hash5);
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
@@ -412,7 +410,6 @@ describe("MaciState/Poll e2e", function test() {
       const message = command.encrypt(signature, sharedKey);
 
       poll.publishMessage(message, ecdhKeypair.pubKey);
-      msgTree.insert(message.hash(ecdhKeypair.pubKey));
 
       // Use the accumulator queue to compare the root of the message tree
       const accumulatorQueue: AccQueue = new AccQueue(
@@ -424,7 +421,7 @@ describe("MaciState/Poll e2e", function test() {
       accumulatorQueue.mergeSubRoots(0);
       accumulatorQueue.merge(treeDepths.messageTreeDepth);
 
-      expect(accumulatorQueue.getRoot(treeDepths.messageTreeDepth)?.toString()).to.eq(msgTree.root.toString());
+      expect(accumulatorQueue.getRoot(treeDepths.messageTreeDepth)?.toString()).to.eq(poll.messageTree.root.toString());
     });
 
     it("packProcessMessageSmallVals and unpackProcessMessageSmallVals", () => {
