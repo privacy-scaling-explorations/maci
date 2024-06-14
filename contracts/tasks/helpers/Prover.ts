@@ -103,13 +103,7 @@ export class Prover {
 
     const [messageRootOnChain, onChainProcessVk] = await Promise.all([
       this.messageAqContract.getMainRoot(Number(treeDepths[2])),
-      this.vkRegistryContract.getProcessVk(
-        stateTreeDepth,
-        treeDepths.messageTreeDepth,
-        treeDepths.voteOptionTreeDepth,
-        messageBatchSize,
-        mode,
-      ),
+      this.vkRegistryContract.getProcessVk(stateTreeDepth, treeDepths.voteOptionTreeDepth, messageBatchSize, mode),
     ]);
 
     const pollEndTimestampOnChain = BigInt(dd[0]) + BigInt(dd[1]);
@@ -184,11 +178,12 @@ export class Prover {
         await this.mpContract.genProcessMessagesPublicInputHash(
           currentMessageBatchIndex,
           messageRootOnChain.toString(),
+          messageRootOnChain.toString(),
           numSignUps,
           numMessages,
           circuitInputs.currentSbCommitment as BigNumberish,
           circuitInputs.newSbCommitment as BigNumberish,
-          treeDepths.messageTreeSubDepth,
+          messageBatchSize,
           treeDepths.voteOptionTreeDepth,
         ),
       );

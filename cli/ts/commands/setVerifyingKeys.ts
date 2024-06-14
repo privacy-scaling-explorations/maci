@@ -164,7 +164,6 @@ export const setVerifyingKeys = async ({
     const tx = await vkRegistryContract.setVerifyingKeysBatch(
       stateTreeDepth,
       intStateTreeDepth,
-      messageTreeDepth,
       voteOptionTreeDepth,
       messageBatchSize,
       modes,
@@ -184,7 +183,6 @@ export const setVerifyingKeys = async ({
     if (useQuadraticVoting) {
       const processVkOnChain = await vkRegistryContract.getProcessVk(
         stateTreeDepth,
-        messageTreeDepth,
         voteOptionTreeDepth,
         messageBatchSize,
         EMode.QV,
@@ -207,7 +205,6 @@ export const setVerifyingKeys = async ({
     } else {
       const processVkOnChain = await vkRegistryContract.getProcessVk(
         stateTreeDepth,
-        messageTreeDepth,
         voteOptionTreeDepth,
         messageBatchSize,
         EMode.NON_QV,

@@ -140,7 +140,6 @@ describe("TallyVotes", () => {
     await vkRegistryContract.setVerifyingKeys(
       STATE_TREE_DEPTH,
       treeDepths.intStateTreeDepth,
-      treeDepths.messageTreeDepth,
       treeDepths.voteOptionTreeDepth,
       messageBatchSize,
       EMode.QV,
@@ -327,7 +326,6 @@ describe("TallyVotes", () => {
       await vkRegistryContract.setVerifyingKeys(
         STATE_TREE_DEPTH,
         intStateTreeDepth,
-        treeDepths.messageTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
         EMode.QV,
@@ -472,7 +470,6 @@ describe("TallyVotes", () => {
       await vkRegistryContract.setVerifyingKeys(
         STATE_TREE_DEPTH,
         intStateTreeDepth,
-        treeDepths.messageTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
         EMode.QV,

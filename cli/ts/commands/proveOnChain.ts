@@ -177,7 +177,6 @@ export const proveOnChain = async ({
   const stateTreeDepth = Number(await maciContract.stateTreeDepth());
   const onChainProcessVk = await vkRegistryContract.getProcessVk(
     stateTreeDepth,
-    treeDepths.messageTreeDepth,
     treeDepths.voteOptionTreeDepth,
     messageBatchSize,
     mpMode,
@@ -263,6 +262,7 @@ export const proveOnChain = async ({
     const publicInputHashOnChain = BigInt(
       await mpContract.genProcessMessagesPublicInputHash(
         currentMessageBatchIndex,
+        messageRootOnChain.toString(),
         messageRootOnChain.toString(),
         numSignUps,
         numMessages,

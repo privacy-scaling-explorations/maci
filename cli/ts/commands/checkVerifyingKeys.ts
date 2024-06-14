@@ -27,7 +27,7 @@ import {
 export const checkVerifyingKeys = async ({
   stateTreeDepth,
   intStateTreeDepth,
-  messageTreeDepth,
+  // messageTreeDepth,
   voteOptionTreeDepth,
   messageBatchDepth,
   processMessagesZkeyPath,
@@ -73,7 +73,6 @@ export const checkVerifyingKeys = async ({
 
     const processVkOnChain = await vkRegistryContractInstance.getProcessVk(
       stateTreeDepth,
-      messageTreeDepth,
       voteOptionTreeDepth,
       messageBatchSize,
       useQuadraticVoting ? EMode.QV : EMode.NON_QV,
