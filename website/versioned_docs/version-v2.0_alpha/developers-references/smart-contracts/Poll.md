@@ -94,3 +94,7 @@ At the same time, the coordinator can merge the message accumulator queue and ge
 
 - `mergeMessageAqSubRoots` - merges the Poll's messages tree subroot
 - `mergeMessageAq` - merges the Poll's messages tree
+
+:::info
+Please be advised that the number of signups in this case includes the zero leaf. For this reason, when accounting for the real users signed up to the Poll, you should subtract one from the value stored in the Poll contract.
+:::

@@ -147,3 +147,7 @@ Polls require the following information:
 - `verifier`: the address of the zk-SNARK verifier contract
 - `vkRegistry`: the address of the vk registry contract
 - `mode`: the mode of the poll, to set whether it supports quadratic voting or non quadratic voting
+
+:::info
+Please be advised that the number of signups in the MACI contract (number of leaves in the merkle tree holding MACI's state) considers the initial zero leaf as one signup. For this reason, when accounting for the real users signed up to MACI, you should subtract one from the value returned from the `numSignUps` function.
+:::
