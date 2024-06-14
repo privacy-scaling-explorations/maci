@@ -1,0 +1,8 @@
+{
+  "label": "Local Elections",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "An overview of MACI's use cases for local elections"
+  }
+}
