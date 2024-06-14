@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 
-import { Poll, Vote } from "../generated/schema";
+import { Poll, Vote, MACI } from "../generated/schema";
 import {
   MergeMaciState as MergeMaciStateEvent,
   MergeMessageAq as MergeMessageAqEvent,
@@ -9,7 +9,6 @@ import {
 } from "../generated/templates/Poll/Poll";
 
 import { ONE_BIG_INT } from "./utils/constants";
-import { createOrLoadMACI } from "./utils/entity";
 
 export function handleMergeMaciState(event: MergeMaciStateEvent): void {
   const poll = Poll.load(event.address);
@@ -19,12 +18,15 @@ export function handleMergeMaciState(event: MergeMaciStateEvent): void {
     poll.numSignups = event.params._numSignups;
     poll.updatedAt = event.block.timestamp;
     poll.save();
-  }
 
-  const maci = createOrLoadMACI(event);
-  maci.numSignUps = event.params._numSignups;
-  maci.updatedAt = event.block.timestamp;
-  maci.save();
+    const maci = MACI.load(poll.maci);
+
+    if (maci) {
+      maci.numSignUps = event.params._numSignups;
+      maci.updatedAt = event.block.timestamp;
+      maci.save();
+    }
+  }
 }
 
 export function handleMergeMessageAq(event: MergeMessageAqEvent): void {
