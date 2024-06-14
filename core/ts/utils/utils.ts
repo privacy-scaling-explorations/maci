@@ -52,6 +52,11 @@ export const packProcessMessageSmallVals = (
   batchStartIndex: number,
   batchEndIndex: number,
 ): bigint => {
+  // console.log("-------------- core ---------------");
+  // console.log("maxVoteOption", maxVoteOptions);
+  // console.log("numUsers", numUsers);
+  // console.log("batchStartIndex", batchStartIndex);
+  // console.log("batchEndIndex", batchEndIndex);
   const packedVals =
     // Note: the << operator has lower precedence than +
     BigInt(`${maxVoteOptions}`) +

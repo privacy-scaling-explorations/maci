@@ -197,21 +197,16 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   /// @param messageHash hash of the current message
   function updateChainHash(uint256 messageHash) internal {
     chainHash = hash2([chainHash, messageHash]);
-    // if
     if (numMessages % maxValues.maxMessageBatchSize == 0) {
       batchHashes.push(chainHash);
     }
   }
 
-  // padovati nule do kraja batch-a
-  function padLastBatch() public isAfterVotingDeadline {
+  function padLastBatch() external isAfterVotingDeadline {
     uint256 inBatch = numMessages % maxValues.maxMessageBatchSize;
     if (inBatch != 0) {
       for (uint256 i = 0; i < maxValues.maxMessageBatchSize - inBatch; i++) {
         chainHash = hash2([chainHash, 0]);
-        // unchecked {
-        //   numMessages++;
-        // }
       }
       batchHashes.push(chainHash);
     }
@@ -237,6 +232,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     }
   }
 
+  // DEPRECATED
   /// @inheritdoc IPoll
   function mergeMaciState() public isAfterVotingDeadline {
     // This function can only be called once per Poll after the voting
@@ -271,12 +267,14 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     emit MergeMaciState(mergedStateRoot, numSignups);
   }
 
+  // DEPRECATED
   /// @inheritdoc IPoll
   function mergeMessageAqSubRoots(uint256 _numSrQueueOps) public isAfterVotingDeadline {
     extContracts.messageAq.mergeSubRoots(_numSrQueueOps);
     emit MergeMessageAqSubRoots(_numSrQueueOps);
   }
 
+  // DEPRECATED
   /// @inheritdoc IPoll
   function mergeMessageAq() public isAfterVotingDeadline {
     uint256 root = extContracts.messageAq.merge(treeDepths.messageTreeDepth);

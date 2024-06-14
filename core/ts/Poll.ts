@@ -445,6 +445,8 @@ export class Poll implements IPoll {
       // been fully processed
       this.maciStateRef.pollBeingProcessed = true;
       this.maciStateRef.currentPollBeingProcessed = pollId;
+
+      this.padLastBatch();
     }
 
     // Only allow one poll to be processed at a time
@@ -453,17 +455,11 @@ export class Poll implements IPoll {
     }
 
     if (this.numBatchesProcessed === 0) {
-      const r = this.messages.length % batchSize;
-
-      this.currentMessageBatchIndex = this.messages.length;
+      this.currentMessageBatchIndex = this.batchHashes.length;
 
       // if there are messages
       if (this.currentMessageBatchIndex > 0) {
-        if (r === 0) {
-          this.currentMessageBatchIndex -= batchSize;
-        } else {
-          this.currentMessageBatchIndex -= r;
-        }
+        this.currentMessageBatchIndex -= 1;
       }
 
       this.sbSalts[this.currentMessageBatchIndex] = 0n;
@@ -471,7 +467,6 @@ export class Poll implements IPoll {
 
     // The starting index must be valid
     assert(this.currentMessageBatchIndex! >= 0, "The starting index must be >= 0");
-    assert(this.currentMessageBatchIndex! % batchSize === 0, "The starting index must be a multiple of the batch size");
 
     // ensure we copy the state from MACI when we start processing the
     // first batch
@@ -502,7 +497,7 @@ export class Poll implements IPoll {
     // loop through the batch of messages
     for (let i = 0; i < batchSize; i += 1) {
       // we process the messages in reverse order
-      const idx = this.currentMessageBatchIndex! + batchSize - i - 1;
+      const idx = this.currentMessageBatchIndex! * batchSize - i - 1;
       assert(idx >= 0, "The message index must be >= 0");
       let message: Message;
       let encPubKey: PubKey;
@@ -688,7 +683,8 @@ export class Poll implements IPoll {
     circuitInputs.inputHash = sha256Hash([
       circuitInputs.packedVals as bigint,
       coordPubKeyHash,
-      circuitInputs.msgRoot as bigint,
+      circuitInputs.inputBatchHash as bigint,
+      circuitInputs.outputBatchHash as bigint,
       circuitInputs.currentSbCommitment as bigint,
       circuitInputs.newSbCommitment,
       this.pollEndTimestamp,
@@ -715,7 +711,7 @@ export class Poll implements IPoll {
     const { messageBatchSize } = this.batchSizes;
 
     assert(index <= this.messages.length, "The index must be <= the number of messages");
-    assert(index % messageBatchSize === 0, "The index must be a multiple of the message batch size");
+    // assert(index % messageBatchSize === 0, "The index must be a multiple of the message batch size");
 
     // fill the msgs array with a copy of the messages we have
     // plus empty messages to fill the batch
@@ -743,22 +739,11 @@ export class Poll implements IPoll {
     }
 
     // we only take the messages we need for this batch
-    msgs = msgs.slice(index, index + messageBatchSize);
-
-    // insert zero value in the message tree as padding
-    while (this.messageTree.nextIndex < index + messageBatchSize) {
-      this.messageTree.insert(this.messageTree.zeroValue);
-    }
-
-    // generate the path to the subroot of the message tree for this batch
-    const messageSubrootPath = this.messageTree.genSubrootProof(index, index + messageBatchSize);
-
-    // verify it
-    assert(this.messageTree.verifyProof(messageSubrootPath), "The message subroot path is invalid");
+    msgs = msgs.slice(index * messageBatchSize, (index + 1) * messageBatchSize);
 
     // validate that the batch index is correct, if not fix it
     // this means that the end will be the last message
-    let batchEndIndex = index + messageBatchSize;
+    let batchEndIndex = (index + 1) * messageBatchSize;
     if (batchEndIndex > this.messages.length) {
       batchEndIndex = this.messages.length;
     }
@@ -773,7 +758,6 @@ export class Poll implements IPoll {
     encPubKeys = encPubKeys.slice(index, index + messageBatchSize);
 
     // cache tree roots
-    const msgRoot = this.messageTree.root;
     const currentStateRoot = this.stateTree!.root;
     const currentBallotRoot = this.ballotTree!.root;
     // calculate the current state and ballot root
@@ -784,6 +768,12 @@ export class Poll implements IPoll {
       currentBallotRoot,
       this.sbSalts[this.currentMessageBatchIndex!],
     ]);
+
+    // console.log("index", index);
+    // console.log("input bH", this.batchHashes[index - 1]);
+    // console.log("output bH", this.batchHashes[index]);
+    const inputBatchHash = this.batchHashes[index - 1];
+    const outputBatchHash = this.batchHashes[index];
 
     // Generate a SHA256 hash of inputs which the contract provides
     /* eslint-disable no-bitwise */
@@ -797,9 +787,9 @@ export class Poll implements IPoll {
     return stringifyBigInts({
       pollEndTimestamp: this.pollEndTimestamp,
       packedVals,
-      msgRoot,
+      inputBatchHash,
+      outputBatchHash,
       msgs,
-      msgSubrootPathElements: messageSubrootPath.pathElements,
       coordPrivKey: this.coordinatorKeypair.privKey.asCircuitInputs(),
       coordPubKey: this.coordinatorKeypair.pubKey.asCircuitInputs(),
       encPubKeys: encPubKeys.map((x) => x.asCircuitInputs()),
