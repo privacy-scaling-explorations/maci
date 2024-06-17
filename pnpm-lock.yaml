@@ -602,8 +602,8 @@ importers:
   subgraph:
     dependencies:
       '@graphprotocol/graph-cli':
-        specifier: ^0.73.0
-        version: 0.73.0(@types/node@20.14.2)(node-fetch@3.3.2)(typescript@5.4.5)
+        specifier: ^0.74.1
+        version: 0.74.1(@types/node@20.14.2)(node-fetch@3.3.2)(typescript@5.4.5)
       '@graphprotocol/graph-ts':
         specifier: ^0.35.1
         version: 0.35.1
@@ -3899,8 +3899,8 @@ packages:
       js-yaml: 4.1.0
     dev: false
 
-  /@graphprotocol/graph-cli@0.73.0(@types/node@20.14.2)(node-fetch@3.3.2)(typescript@5.4.5):
-    resolution: {integrity: sha512-g+EapDRvxhRjMccnUJE8gBRGDIF6mXqtv8g0tzzixVClw/BezBni8QXtXMHs4Gg0G2UnerJJLp5ZQgZqtHWnmg==}
+  /@graphprotocol/graph-cli@0.74.1(@types/node@20.14.2)(node-fetch@3.3.2)(typescript@5.4.5):
+    resolution: {integrity: sha512-xdFJGuINdgt3dWRp/aNkqZujCyab4cPWVsvX7FSjX4k7xT4eea3nxZsksJzDrdbOrr2pf/UBLZoBBz3SqxxSXg==}
     engines: {node: '>=18'}
     hasBin: true
     dependencies:
@@ -5620,7 +5620,7 @@ packages:
       '@octokit/request-error': 3.0.3
       '@octokit/types': 9.3.2
       is-plain-object: 5.0.0
-      node-fetch: 2.6.7
+      node-fetch: 2.7.0
       universal-user-agent: 6.0.1
     transitivePeerDependencies:
       - encoding
@@ -10968,7 +10968,7 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       cross-spawn: 7.0.3
-      get-stream: 6.0.0
+      get-stream: 6.0.1
       human-signals: 2.1.0
       is-stream: 2.0.1
       merge-stream: 2.0.0
@@ -16756,7 +16756,7 @@ packages:
       bl: 4.1.0
       chalk: 4.1.2
       cli-cursor: 3.1.0
-      cli-spinners: 2.6.1
+      cli-spinners: 2.9.2
       is-interactive: 1.0.0
       log-symbols: 4.1.0
       strip-ansi: 6.0.1

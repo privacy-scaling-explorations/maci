@@ -23,7 +23,7 @@
     "test:coverage": "graph test && graph test -c"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "^0.73.0",
+    "@graphprotocol/graph-cli": "^0.74.1",
     "@graphprotocol/graph-ts": "^0.35.1",
     "maci-contracts": "1.2.2"
   },
