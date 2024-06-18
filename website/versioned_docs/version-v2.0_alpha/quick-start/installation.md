@@ -69,7 +69,7 @@ pnpm run build
 ```
 
 :::info
-Depending on the number of signups you would like to support, you will be required to re-compile the contracts with a different STATE_TREE_DEPTH parameter. This is by default 10 and can be used for testing purposes. For more information about the parameters please refer to the [circuits page](/docs/developers-references/zk-snark-circuits/setup#Parameters).
+Depending on the number of signups you would like to support, you will be required to re-compile the contracts with a different STATE_TREE_DEPTH parameter. This is by default 10 and can be used for testing purposes. For more information about the parameters please refer to the [circuits page](/docs/v1.2/circuits#parameters).
 
 To re-compile with a different state tree depth parameter please run:
 
