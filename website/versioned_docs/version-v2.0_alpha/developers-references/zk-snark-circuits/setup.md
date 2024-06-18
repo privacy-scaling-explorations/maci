@@ -30,6 +30,22 @@ pnpm circom:build $CIRCUIT_NAME
 
 > Please note that the name should match one of the circuit names inside the `circom.json` file.
 
+### Parameters
+
+MACI's circuits are parameterized, and thus can be configured to support different number of users, messages (votes), and vote options. Please ensure you understand what each of these parameter means and correctly configure them when building circuits from scratch, and when deploying the smart contracts.
+
+- **STATE_TREE_DEPTH** = how many users the system supports
+- **MESSAGE_TREE_DEPTH** = how many messages (votes) the system supports
+- **VOTE_OPTIONS_TREE_DEPTH** = how many vote options the system supports
+- **MESSAGE_BATCH_TREE_DEPTH** = how many messages in a batch can the circuit process
+- **INT_STATE_TREE_DEPTH** = how many ballots can be processed per batch when tallying the results
+
+For instance, given a binary tree for signups, if you set `STATE_TREE_DEPTH` to 2, the system will support 4 users, as 2 \*\* 2 = 4.
+
+For messages, we use a quinary (five leaves) merkle tree, so if you set `MESSAGE_TREE_DEPTH` to 2, the system will support 32 messages, as 5 \*\* 2 = 32.
+
+Please refer to the individual circuit documentation for more details on the inner working of each circuit and where parameters fit.
+
 ### Generating zKeys
 
 Run from the root directory to save to the `cli/zkeys` folder:
