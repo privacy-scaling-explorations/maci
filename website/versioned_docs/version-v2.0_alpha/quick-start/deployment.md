@@ -16,6 +16,14 @@ We recommend to use the hardhat tasks inside the `maci-contracts` folder, due to
 
 ## Deployment Steps
 
+:::info
+Before deploying the contracts, please ensure that you have compiled the project using the correct state tree depth argument. This defines the maximum number of users that the system supports, and by default the parameter is set to 10 (to support 2 \*\* 10 users) for testing purposes. For production use, you might need to change this parameter to a different value. For more information about the parameters please refer to the [circuits page](/docs/developers-references/zk-snark-circuits/setup#Parameters).
+
+To re-compile with a different state tree depth parameter please run:
+
+`export STATE_TREE_DEPTH=$ENTER_VALUE_HERE && pnpm build`
+:::
+
 In order, these are the steps for a full MACI deployment:
 
 1. Deploy crypto (Hasher, Poseidon)
