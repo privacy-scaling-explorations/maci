@@ -30,7 +30,7 @@ pnpm circom:build $CIRCUIT_NAME
 
 > Please note that the name should match one of the circuit names inside the `circom.json` file.
 
-### Parameters
+### Parameters
 
 MACI's circuits are parameterized, and thus can be configured to support different number of users, messages (votes), and vote options. Please ensure you understand what each of these parameter means and correctly configure them when building circuits from scratch, and when deploying the smart contracts.
 
