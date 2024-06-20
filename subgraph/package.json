@@ -1,6 +1,6 @@
 {
   "name": "maci-subgraph",
-  "version": "1.2.2",
+  "version": "2.0.0-alpha",
   "description": "A subgraph to index data from MACI protocol to serve as data layer for frontend integration",
   "private": true,
   "files": [
@@ -25,7 +25,7 @@
   "dependencies": {
     "@graphprotocol/graph-cli": "^0.74.1",
     "@graphprotocol/graph-ts": "^0.35.1",
-    "maci-contracts": "1.2.2"
+    "maci-contracts": "2.0.0-alpha"
   },
   "devDependencies": {
     "assemblyscript": "0.19.23",
