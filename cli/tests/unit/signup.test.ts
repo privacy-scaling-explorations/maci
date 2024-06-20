@@ -30,6 +30,8 @@ describe("signup", () => {
   });
 
   it("should allow to signup and return the user data", async () => {
+    const startBlock = await signer.provider?.getBlockNumber();
+
     const signUpData = await signup({
       maciAddress: maciAddresses.maciAddress,
       maciPubKey: user.pubKey.serialize(),
@@ -38,7 +40,7 @@ describe("signup", () => {
 
     const registeredUserData = await isRegisteredUser({
       maciAddress: maciAddresses.maciAddress,
-      startBlock: await signer.provider?.getBlockNumber(),
+      startBlock,
       maciPubKey: user.pubKey.serialize(),
       signer,
     });
