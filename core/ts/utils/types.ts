@@ -152,7 +152,8 @@ export interface IProcessMessagesCircuitInputs {
   actualStateTreeDepth: string;
   pollEndTimestamp: string;
   packedVals: string;
-  msgRoot: string;
+  inputBatchHash: string;
+  outputBatchHash: string;
   msgs: string[];
   msgSubrootPathElements: string[][];
   coordPrivKey: string;

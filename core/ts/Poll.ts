@@ -117,6 +117,8 @@ export class Poll implements IPoll {
 
   emptyBallotHash?: bigint;
 
+  cnt = 0;
+
   // message chain hash
   chainHash = NOTHING_UP_MY_SLEEVE;
 
@@ -351,7 +353,7 @@ export class Poll implements IPoll {
     this.messages.push(message);
     // add the message hash to the message tree
     const messageHash = message.hash(encPubKey);
-    this.messageTree.insert(messageHash);
+    // this.messageTree.insert(messageHash);
     // update chain hash
     this.updateChainHash(messageHash);
 
@@ -369,6 +371,7 @@ export class Poll implements IPoll {
       const command = new PCommand(0n, keyPair.pubKey, 0n, 0n, 0n, 0n, 0n);
       this.commands.push(command);
     }
+    // console.log("publish", message);
   };
 
   /**
@@ -376,11 +379,16 @@ export class Poll implements IPoll {
    * @param messageHash
    */
   updateChainHash = (messageHash: bigint): void => {
+    // console.log("ts i", this.cnt);
+    // console.log("ts old chainHash:", this.chainHash);
+    // console.log("ts messageHash:", messageHash);
     this.chainHash = hash2([this.chainHash, messageHash]);
+    // console.log("ts new chainHash:", this.chainHash);
 
     if (this.messages.length % this.maxValues.maxMessageBatchSize === 0) {
       this.batchHashes.push(this.chainHash);
     }
+    this.cnt += 1;
   };
 
   /**
@@ -390,7 +398,9 @@ export class Poll implements IPoll {
     const inBatch = this.messages.length % this.maxValues.maxMessageBatchSize;
     if (inBatch !== 0) {
       for (let i = 0; i < this.maxValues.maxMessageBatchSize - inBatch; i += 1) {
-        this.chainHash = hash2([this.chainHash, BigInt(0)]);
+        // console.log("paddovao", i);
+        this.updateChainHash(NOTHING_UP_MY_SLEEVE);
+        // this.publishMessage(nothing, encP);
       }
       this.batchHashes.push(this.chainHash);
     }
@@ -430,7 +440,9 @@ export class Poll implements IPoll {
   processMessages = (pollId: bigint, qv = true, quiet = true): IProcessMessagesCircuitInputs => {
     assert(this.hasUnprocessedMessages(), "No more messages to process");
 
-    const batchSize = this.batchSizes.messageBatchSize;
+    const batchSize = this.maxValues.maxMessageBatchSize;
+    // console.log("numBatchesProcessed", this.numBatchesProcessed);
+    // console.log("currentMessageBatchIndex", this.currentMessageBatchIndex);
 
     if (this.numBatchesProcessed === 0) {
       // The starting index of the batch of messages to process.
@@ -447,14 +459,7 @@ export class Poll implements IPoll {
       this.maciStateRef.currentPollBeingProcessed = pollId;
 
       this.padLastBatch();
-    }
 
-    // Only allow one poll to be processed at a time
-    if (this.maciStateRef.pollBeingProcessed) {
-      assert(this.maciStateRef.currentPollBeingProcessed === pollId, "Another poll is currently being processed");
-    }
-
-    if (this.numBatchesProcessed === 0) {
       this.currentMessageBatchIndex = this.batchHashes.length;
 
       // if there are messages
@@ -463,6 +468,12 @@ export class Poll implements IPoll {
       }
 
       this.sbSalts[this.currentMessageBatchIndex] = 0n;
+      // console.log("batchHashes", this.batchHashes);
+    }
+
+    // Only allow one poll to be processed at a time
+    if (this.maciStateRef.pollBeingProcessed) {
+      assert(this.maciStateRef.currentPollBeingProcessed === pollId, "Another poll is currently being processed");
     }
 
     // The starting index must be valid
@@ -495,6 +506,8 @@ export class Poll implements IPoll {
     const currentVoteWeightsPathElements: PathElements[] = [];
 
     // loop through the batch of messages
+    // console.log("messages",this.messages);
+    // console.log("encPubKeys", this.encPubKeys);
     for (let i = 0; i < batchSize; i += 1) {
       // we process the messages in reverse order
       const idx = this.currentMessageBatchIndex! * batchSize - i - 1;
@@ -657,7 +670,7 @@ export class Poll implements IPoll {
     this.numBatchesProcessed += 1;
 
     if (this.currentMessageBatchIndex! > 0) {
-      this.currentMessageBatchIndex! -= batchSize;
+      this.currentMessageBatchIndex! -= 1;
     }
 
     // ensure newSbSalt differs from currentSbSalt
@@ -733,29 +746,53 @@ export class Poll implements IPoll {
     // copy the messages to a new array
     let msgs = this.messages.map((x) => x.asCircuitInputs());
 
+    // console.log("msgs pre pad", msgs);
+
     // pad with our state index 0 message
+    // let cnt = 0;
+    // console.log("msgs.length", msgs.length);
+    // console.log("batchSize", messageBatchSize);
     while (msgs.length % messageBatchSize > 0) {
       msgs.push(msg.asCircuitInputs());
+      // cnt++;
     }
+    // console.log("cnt", cnt);
+    // console.log("msgs posle pad", msgs);
 
     // we only take the messages we need for this batch
-    msgs = msgs.slice(index * messageBatchSize, (index + 1) * messageBatchSize);
+    // console.log("msgs length", msgs.length);
+    // console.log("index 1", (index - 1) * messageBatchSize);
+    // console.log("index 2", index * messageBatchSize);
+    msgs = msgs.slice((index - 1) * messageBatchSize, index * messageBatchSize);
+    // console.log("msgs length", msgs.length);
+
+    // console.log("msgs posle slice", msgs);
 
     // validate that the batch index is correct, if not fix it
     // this means that the end will be the last message
-    let batchEndIndex = (index + 1) * messageBatchSize;
+    let batchEndIndex = index * messageBatchSize;
+    // console.log("index", index);
+    // console.log("batchEndIndex", batchEndIndex);
+    // console.log("this.messages.length", this.messages.length);
     if (batchEndIndex > this.messages.length) {
-      batchEndIndex = this.messages.length;
+      batchEndIndex = this.messages.length - (index - 1) * messageBatchSize;
     }
-
+    // console.log("prosao if");
     // copy the public keys, pad the array with the last keys if needed
     let encPubKeys = this.encPubKeys.map((x) => x.copy());
+    // console.log("encPubKey.length", encPubKeys.length);
     while (encPubKeys.length % messageBatchSize > 0) {
       // pad with the public key used to encrypt the message with state index 0 (padding)
       encPubKeys.push(key.pubKey.copy());
     }
+    // console.log("encPubKey.length after push", encPubKeys.length);
+    // console.log("encPubKeys kolo", encPubKeys);
+
     // then take the ones part of this batch
-    encPubKeys = encPubKeys.slice(index, index + messageBatchSize);
+    // console.log("index", index);
+    // console.log("messageBatchSize (20)", messageBatchSize);
+    encPubKeys = encPubKeys.slice((index - 1) * messageBatchSize, index * messageBatchSize);
+    // console.log("encPubKey.length after slice", encPubKeys.length);
 
     // cache tree roots
     const currentStateRoot = this.stateTree!.root;
@@ -777,10 +814,15 @@ export class Poll implements IPoll {
 
     // Generate a SHA256 hash of inputs which the contract provides
     /* eslint-disable no-bitwise */
+    // console.log("-------------- Poll.ts ---------------");
+    // console.log("maxVoteOptions", this.maxValues.maxVoteOptions);
+    // console.log("numSignups", this.numSignups);
+    // console.log("index", index);
+    // console.log("batchEndIndex", batchEndIndex);
     const packedVals =
       BigInt(this.maxValues.maxVoteOptions) +
       (BigInt(this.numSignups) << 50n) +
-      (BigInt(index) << 100n) +
+      (BigInt(0) << 100n) +
       (BigInt(batchEndIndex) << 150n);
     /* eslint-enable no-bitwise */
 

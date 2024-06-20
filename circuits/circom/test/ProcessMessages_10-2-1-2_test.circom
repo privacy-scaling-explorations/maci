@@ -3,4 +3,4 @@ pragma circom 2.0.0;
 
 include ".././core/qv/processMessages.circom";
 
-component main {public[inputHash]} = ProcessMessages(10, 2, 1, 2);
+component main {public[inputHash]} = ProcessMessages(10, 20, 2);

@@ -51,7 +51,8 @@ describe("Ceremony param tests", () => {
         "inputHash",
         "packedVals",
         "pollEndTimestamp",
-        "msgRoot",
+        "inputBatchHash",
+        "outputBatchHash",
         "msgs",
         "msgSubrootPathElements",
         "coordPrivKey",
@@ -73,7 +74,16 @@ describe("Ceremony param tests", () => {
     >;
 
     let hasherCircuit: WitnessTester<
-      ["packedVals", "coordPubKey", "msgRoot", "currentSbCommitment", "newSbCommitment", "pollEndTimestamp"],
+      [
+        "packedVals",
+        "coordPubKey",
+        "inputBatchHash",
+        "outputBatchHash",
+        "currentSbCommitment",
+        "newSbCommitment",
+        "pollEndTimestamp",
+        "actualStateTreeDepth",
+      ],
       ["maxVoteOptions", "numSignUps", "batchStartIndex", "batchEndIndex", "hash"]
     >;
 
@@ -198,7 +208,8 @@ describe("Ceremony param tests", () => {
         const hasherCircuitInputs = {
           packedVals,
           coordPubKey: inputs.coordPubKey,
-          msgRoot: inputs.msgRoot,
+          inputBatchHash: inputs.inputBatchHash,
+          outputBatchHash: inputs.outputBatchHash,
           currentSbCommitment: inputs.currentSbCommitment,
           newSbCommitment: inputs.newSbCommitment,
           pollEndTimestamp: inputs.pollEndTimestamp,

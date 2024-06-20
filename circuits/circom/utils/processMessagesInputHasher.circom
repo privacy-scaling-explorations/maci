@@ -24,7 +24,8 @@ template ProcessMessagesInputHasher() {
 
     signal input packedVals;
     signal input coordPubKey[2];
-    signal input msgRoot;
+    signal input inputBatchHash;
+    signal input outputBatchHash;
     // The current state and ballot root commitment (hash(stateRoot, ballotRoot, salt)).
     signal input currentSbCommitment;
     signal input newSbCommitment;
@@ -48,11 +49,12 @@ template ProcessMessagesInputHasher() {
     // 2. Hash coordPubKey.
     var computedPubKey = PoseidonHasher(2)(coordPubKey);
 
-    // 3. Hash the 6 inputs with SHA256.
-    hash <== Sha256Hasher(7)([
+    // 3. Hash the 8 inputs with SHA256.
+    hash <== Sha256Hasher(8)([
         packedVals,
         computedPubKey,
-        msgRoot,
+        inputBatchHash,
+        outputBatchHash,
         currentSbCommitment,
         newSbCommitment,
         pollEndTimestamp,

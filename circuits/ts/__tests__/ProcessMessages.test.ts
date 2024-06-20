@@ -10,7 +10,7 @@ import {
   STATE_TREE_DEPTH,
   duration,
   maxValues,
-  messageBatchSize,
+  // messageBatchSize,
   treeDepths,
   voiceCreditBalance,
 } from "./utils/constants";
@@ -25,7 +25,8 @@ describe("ProcessMessage circuit", function test() {
     "inputHash",
     "packedVals",
     "pollEndTimestamp",
-    "msgRoot",
+    "inputBatchHash",
+    "outputBatchHash",
     "msgs",
     "msgSubrootPathElements",
     "coordPrivKey",
@@ -50,7 +51,16 @@ describe("ProcessMessage circuit", function test() {
   let circuitNonQv: WitnessTester<ProcessMessageCircuitInputs>;
 
   let hasherCircuit: WitnessTester<
-    ["packedVals", "coordPubKey", "msgRoot", "currentSbCommitment", "newSbCommitment", "pollEndTimestamp"],
+    [
+      "packedVals",
+      "coordPubKey",
+      "inputBatchHash",
+      "outputBatchHash",
+      "currentSbCommitment",
+      "newSbCommitment",
+      "pollEndTimestamp",
+      "actualStateTreeDepth",
+    ],
     ["maxVoteOptions", "numSignUps", "batchStartIndex", "batchEndIndex", "hash"]
   >;
 
@@ -58,13 +68,13 @@ describe("ProcessMessage circuit", function test() {
     circuit = await circomkitInstance.WitnessTester("processMessages", {
       file: "./core/qv/processMessages",
       template: "ProcessMessages",
-      params: [10, 2, 1, 2],
+      params: [10, 20, 2],
     });
 
     circuitNonQv = await circomkitInstance.WitnessTester("processMessagesNonQv", {
       file: "./core/non-qv/processMessages",
       template: "ProcessMessagesNonQv",
-      params: [10, 2, 1, 2],
+      params: [10, 20, 2],
     });
 
     hasherCircuit = await circomkitInstance.WitnessTester("ProcessMessagesInputHasher", {
@@ -73,7 +83,7 @@ describe("ProcessMessage circuit", function test() {
     });
   });
 
-  describe("5 users, 1 messages", () => {
+  describe("1) 5 users, 1 messages", () => {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     const voteWeight = BigInt(9);
     const voteOptionIndex = BigInt(1);
@@ -94,7 +104,7 @@ describe("ProcessMessage circuit", function test() {
         BigInt(Math.floor(Date.now() / 1000) + duration),
         maxValues,
         treeDepths,
-        messageBatchSize,
+        maxValues.maxMessageBatchSize,
         coordinatorKeypair,
       );
 
@@ -144,6 +154,7 @@ describe("ProcessMessage circuit", function test() {
 
     it("should produce a proof", async () => {
       const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
+      // console.log("inputs", inputs);
 
       // Calculate the witness
       const witness = await circuit.calculateWitness(inputs);
@@ -151,7 +162,7 @@ describe("ProcessMessage circuit", function test() {
     });
   });
 
-  describe("1 user, 2 messages (non-quadratic voting)", () => {
+  describe("2) 1 user, 2 messages (non-quadratic voting)", () => {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     const voteWeight = BigInt(9);
     const voteOptionIndex = BigInt(0);
@@ -172,7 +183,7 @@ describe("ProcessMessage circuit", function test() {
         BigInt(Math.floor(Date.now() / 1000) + duration),
         maxValues,
         treeDepths,
-        messageBatchSize,
+        maxValues.maxMessageBatchSize,
         coordinatorKeypair,
       );
 
@@ -258,7 +269,8 @@ describe("ProcessMessage circuit", function test() {
       const hasherCircuitInputs = {
         packedVals,
         coordPubKey: inputs.coordPubKey,
-        msgRoot: inputs.msgRoot,
+        inputBatchHash: inputs.inputBatchHash,
+        outputBatchHash: inputs.outputBatchHash,
         currentSbCommitment: inputs.currentSbCommitment,
         newSbCommitment: inputs.newSbCommitment,
         pollEndTimestamp: inputs.pollEndTimestamp,
@@ -272,7 +284,7 @@ describe("ProcessMessage circuit", function test() {
     });
   });
 
-  describe("2 users, 1 message", () => {
+  describe("3) 2 users, 1 message", () => {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     let pollId: bigint;
     let poll: Poll;
@@ -299,7 +311,7 @@ describe("ProcessMessage circuit", function test() {
         BigInt(2 + duration), // BigInt(Math.floor(Date.now() / 1000) + duration),
         maxValues,
         treeDepths,
-        messageBatchSize,
+        maxValues.maxMessageBatchSize,
         coordinatorKeypair,
       );
 
@@ -343,6 +355,7 @@ describe("ProcessMessage circuit", function test() {
       const currentBallotRoot = ballotTree.root;
 
       const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
+      // console.log(inputs.msgs.length);
       // Calculate the witness
       const witness = await circuit.calculateWitness(inputs);
       await circuit.expectConstraintPass(witness);
@@ -357,7 +370,7 @@ describe("ProcessMessage circuit", function test() {
     });
   });
 
-  describe("1 user, key-change", () => {
+  describe.only("4) 1 user, key-change", () => {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     const voteWeight = BigInt(9);
     let stateIndex: number;
@@ -383,7 +396,7 @@ describe("ProcessMessage circuit", function test() {
         BigInt(2 + duration), // BigInt(Math.floor(Date.now() / 1000) + duration),
         maxValues,
         treeDepths,
-        messageBatchSize,
+        maxValues.maxMessageBatchSize,
         coordinatorKeypair,
       );
 
@@ -449,7 +462,7 @@ describe("ProcessMessage circuit", function test() {
       poll.publishMessage(message3, ecdhKeypair3.pubKey);
     });
 
-    describe(`1 user, ${messageBatchSize * NUM_BATCHES} messages`, () => {
+    describe(`1 user, ${maxValues.maxMessageBatchSize * NUM_BATCHES - 1} messages`, () => {
       it("should produce the correct state root and ballot root", async () => {
         const state = new MaciState(STATE_TREE_DEPTH);
         const userKeypair = new Keypair();
@@ -460,7 +473,7 @@ describe("ProcessMessage circuit", function test() {
           BigInt(Math.floor(Date.now() / 1000) + duration),
           maxValues,
           treeDepths,
-          messageBatchSize,
+          maxValues.maxMessageBatchSize,
           coordinatorKeypair,
         );
 
@@ -469,7 +482,7 @@ describe("ProcessMessage circuit", function test() {
         selectedPoll?.updatePoll(BigInt(state.stateLeaves.length));
 
         // Second batch is not a full batch
-        const numMessages = messageBatchSize * NUM_BATCHES - 1;
+        const numMessages = maxValues.maxMessageBatchSize * NUM_BATCHES - 1;
         for (let i = 0; i < numMessages; i += 1) {
           const command = new PCommand(
             BigInt(index),
@@ -488,7 +501,8 @@ describe("ProcessMessage circuit", function test() {
           selectedPoll?.publishMessage(message, ecdhKeypair.pubKey);
         }
 
-        for (let i = 0; i < 2; i += 1) {
+        for (let i = 0; i < NUM_BATCHES; i += 1) {
+          // console.log("batch index", i);
           const inputs = selectedPoll?.processMessages(id) as unknown as IProcessMessagesInputs;
           // eslint-disable-next-line no-await-in-loop
           const witness = await circuit.calculateWitness(inputs);
@@ -499,7 +513,7 @@ describe("ProcessMessage circuit", function test() {
     });
   });
 
-  describe("1 user, 2 messages", () => {
+  describe("5) 1 user, 2 messages", () => {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     const voteOptionIndex = 1n;
     let stateIndex: bigint;
@@ -519,7 +533,7 @@ describe("ProcessMessage circuit", function test() {
         BigInt(Math.floor(Date.now() / 1000) + duration),
         maxValues,
         treeDepths,
-        messageBatchSize,
+        maxValues.maxMessageBatchSize,
         coordinatorKeypair,
       );
 
@@ -616,7 +630,7 @@ describe("ProcessMessage circuit", function test() {
     });
   });
 
-  describe("1 user, 2 messages in different batches", () => {
+  describe("6) 1 user, 2 messages in different batches", () => {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     const voteOptionIndex = 1n;
     let stateIndex: bigint;
@@ -636,7 +650,7 @@ describe("ProcessMessage circuit", function test() {
         BigInt(Math.floor(Date.now() / 1000) + duration),
         maxValues,
         treeDepths,
-        messageBatchSize,
+        maxValues.maxMessageBatchSize,
         coordinatorKeypair,
       );
 
@@ -684,7 +698,7 @@ describe("ProcessMessage circuit", function test() {
       poll.publishMessage(message, ecdhKeypair.pubKey);
 
       // fill the batch with nothing messages
-      for (let i = 0; i < messageBatchSize - 1; i += 1) {
+      for (let i = 0; i < maxValues.maxMessageBatchSize - 1; i += 1) {
         poll.publishMessage(nothing, encP);
       }
 
@@ -741,7 +755,7 @@ describe("ProcessMessage circuit", function test() {
     });
   });
 
-  describe("1 user, 3 messages in different batches", () => {
+  describe("7) 1 user, 3 messages in different batches", () => {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     const voteOptionIndex = 1n;
     let stateIndex: bigint;
@@ -761,7 +775,7 @@ describe("ProcessMessage circuit", function test() {
         BigInt(Math.floor(Date.now() / 1000) + duration),
         maxValues,
         treeDepths,
-        messageBatchSize,
+        maxValues.maxMessageBatchSize,
         coordinatorKeypair,
       );
 
@@ -828,7 +842,7 @@ describe("ProcessMessage circuit", function test() {
       poll.publishMessage(message, ecdhKeypair.pubKey);
 
       // fill the batch with nothing messages
-      for (let i = 0; i < messageBatchSize - 1; i += 1) {
+      for (let i = 0; i < maxValues.maxMessageBatchSize - 1; i += 1) {
         poll.publishMessage(nothing, encP);
       }
 
@@ -860,7 +874,7 @@ describe("ProcessMessage circuit", function test() {
       ballotTree.insert(emptyBallot.hash());
 
       poll.stateLeaves.forEach(() => {
-        ballotTree.insert(emptyBallotHash);
+        ballotTree.insert(emptyBallotHash); // niz poruka koje racuna, batch hasheve,
       });
 
       while (poll.hasUnprocessedMessages()) {

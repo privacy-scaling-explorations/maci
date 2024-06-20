@@ -52,7 +52,7 @@ export const packProcessMessageSmallVals = (
   batchStartIndex: number,
   batchEndIndex: number,
 ): bigint => {
-  // console.log("-------------- core ---------------");
+  // console.log("-------------- utils.ts ---------------");
   // console.log("maxVoteOption", maxVoteOptions);
   // console.log("numUsers", numUsers);
   // console.log("batchStartIndex", batchStartIndex);

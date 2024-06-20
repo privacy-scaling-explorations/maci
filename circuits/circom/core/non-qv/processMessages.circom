@@ -21,21 +21,21 @@ include "../../trees/incrementalQuinaryTree.circom";
  */
  template ProcessMessagesNonQv(
     stateTreeDepth,
-    msgTreeDepth,
-    msgBatchDepth,
+    // msgTreeDepth,
+    batchSize, // msgBatchSize
     voteOptionTreeDepth
 ) {
     // Must ensure that the trees have a valid structure.
     assert(stateTreeDepth > 0);
-    assert(msgBatchDepth > 0);
+    assert(batchSize > 0);
     assert(voteOptionTreeDepth > 0);
-    assert(msgTreeDepth >= msgBatchDepth);
+    // assert(msgTreeDepth >= msgBatchDepth);
 
     // Default for IQT (quinary trees).
     var MESSAGE_TREE_ARITY = 5;
     // Default for Binary trees.
     var STATE_TREE_ARITY = 2;
-    var batchSize = MESSAGE_TREE_ARITY ** msgBatchDepth;
+    // var batchSize = MESSAGE_TREE_ARITY ** msgBatchDepth;
     var MSG_LENGTH = 10;
     var PACKED_CMD_LENGTH = 4;
     var STATE_LEAF_LENGTH = 4;
@@ -61,12 +61,12 @@ include "../../trees/incrementalQuinaryTree.circom";
     signal maxVoteOptions;
     // Time when the poll ends.
     signal input pollEndTimestamp;
-    // The existing message tree root.
-    signal input msgRoot;
+    // // The existing message tree root.
+    // signal input msgRoot;
+    signal input inputBatchHash;
+    signal input outputBatchHash;
     // The messages.
     signal input msgs[batchSize][MSG_LENGTH];
-    // Sibling messages.
-    signal input msgSubrootPathElements[msgTreeDepth - msgBatchDepth][MESSAGE_TREE_ARITY - 1];
     // The coordinator's private key.
     signal input coordPrivKey;
     // The cooordinator's public key (derived from the contract).
@@ -141,7 +141,8 @@ include "../../trees/incrementalQuinaryTree.circom";
     ) = ProcessMessagesInputHasher()(
         packedVals,
         coordPubKey,
-        msgRoot,
+        inputBatchHash,
+        outputBatchHash,
         currentSbCommitment,
         newSbCommitment,
         pollEndTimestamp,
@@ -169,50 +170,59 @@ include "../../trees/incrementalQuinaryTree.circom";
 
     // Hash each Message to check their existence in the Message tree.
     var computedMessageHashers[batchSize];
+    var computedLeaves[batchSize];
+    var chainHash[batchSize + 1];
+    chainHash[0] = inputBatchHash;
     for (var i = 0; i < batchSize; i++) {
         computedMessageHashers[i] = MessageHasher()(msgs[i], encPubKeys[i]);
+        var batchStartIndexValid = SafeLessThan(32)([batchStartIndex + i, batchEndIndex]);
+        computedLeaves[i] = Mux1()([msgTreeZeroValue, computedMessageHashers[i]], batchStartIndexValid);
+        chainHash[i + 1] = PoseidonHasher(2)([chainHash[i], computedLeaves[i]]);
     }
 
     // If batchEndIndex - batchStartIndex < batchSize, the remaining
     // message hashes should be the zero value.
     // e.g. [m, z, z, z, z] if there is only 1 real message in the batch
     // This makes possible to have a batch of messages which is only partially full.
-    var computedLeaves[batchSize];
-    var computedPathElements[msgTreeDepth - msgBatchDepth][MESSAGE_TREE_ARITY - 1];
-    var computedPathIndex[msgTreeDepth - msgBatchDepth];
+    // var computedLeaves[batchSize];
+    // var computedPathElements[msgTreeDepth - msgBatchDepth][MESSAGE_TREE_ARITY - 1];
+    // var computedPathIndex[msgTreeDepth - msgBatchDepth];
 
-    for (var i = 0; i < batchSize; i++) {
-        var batchStartIndexValid = SafeLessThan(32)([batchStartIndex + i, batchEndIndex]);
-        computedLeaves[i] = Mux1()([msgTreeZeroValue, computedMessageHashers[i]], batchStartIndexValid);
-    }
+    // for (var i = 0; i < batchSize; i++) {
+    //     var batchStartIndexValid = SafeLessThan(32)([batchStartIndex + i, batchEndIndex]);
+    //     computedLeaves[i] = Mux1()([msgTreeZeroValue, computedMessageHashers[i]], batchStartIndexValid);
+    //     chainHash[i + 1] = PoseidonHasher(2)([chainHash[i], computedLeaves[i]]);
+    // }
 
-    for (var i = 0; i < msgTreeDepth - msgBatchDepth; i++) {
-        for (var j = 0; j < MESSAGE_TREE_ARITY - 1; j++) {
-            computedPathElements[i][j] = msgSubrootPathElements[i][j];
-        }
-    }
+    chainHash[batchSize] === outputBatchHash;
+
+    // for (var i = 0; i < msgTreeDepth - msgBatchDepth; i++) {
+    //     for (var j = 0; j < MESSAGE_TREE_ARITY - 1; j++) {
+    //         computedPathElements[i][j] = msgSubrootPathElements[i][j];
+    //     }
+    // }
 
     // Computing the path_index values. Since msgBatchLeavesExists tests
     // the existence of a subroot, the length of the proof correspond to the last 
     // n elements of a proof from the root to a leaf, where n = msgTreeDepth - msgBatchDepth.
     // e.g. if batchStartIndex = 25, msgTreeDepth = 4, msgBatchDepth = 2, then path_index = [1, 0].
-    var computedMsgBatchPathIndices[msgTreeDepth] = QuinGeneratePathIndices(msgTreeDepth)(batchStartIndex);
+    // var computedMsgBatchPathIndices[msgTreeDepth] = QuinGeneratePathIndices(msgTreeDepth)(batchStartIndex);
 
-    for (var i = msgBatchDepth; i < msgTreeDepth; i++) {
-        computedPathIndex[i - msgBatchDepth] = computedMsgBatchPathIndices[i];
-    }
+    // for (var i = msgBatchDepth; i < msgTreeDepth; i++) {
+    //     computedPathIndex[i - msgBatchDepth] = computedMsgBatchPathIndices[i];
+    // }
 
     // Check whether each message exists in the Message tree.
     // Otherwise, throws (needs constraint to prevent such a proof).
     // To save constraints, compute the subroot of the messages and check
     // whether the subroot is a member of the message tree. This means that
     // batchSize must be the message tree arity raised to some power (e.g. 5 ^ n).
-    QuinBatchLeavesExists(msgTreeDepth, msgBatchDepth)(
-        msgRoot,
-        computedLeaves,
-        computedPathIndex,
-        computedPathElements   
-    );
+    // QuinBatchLeavesExists(msgTreeDepth, msgBatchDepth)(
+    //     msgRoot,
+    //     computedLeaves,
+    //     computedPathIndex,
+    //     computedPathElements   
+    // );
 
     // Decrypt each Message to a Command.
     // MessageToCommand derives the ECDH shared key from the coordinator's
