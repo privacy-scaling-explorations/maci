@@ -2,7 +2,7 @@ import { extractVk } from "maci-circuits";
 
 import fs from "fs";
 
-import { ExtractVkToFileArgs } from "../utils";
+import { ExtractVkToFileArgs } from "../utils/interfaces";
 
 /**
  * Command to confirm that the verifying keys in the contract match the
