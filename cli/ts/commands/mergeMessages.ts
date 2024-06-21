@@ -4,19 +4,13 @@ import {
   AccQueue__factory as AccQueueFactory,
 } from "maci-contracts/typechain-types";
 
-import {
-  DEFAULT_SR_QUEUE_OPS,
-  banner,
-  contractExists,
-  currentBlockTimestamp,
-  info,
-  logError,
-  logGreen,
-  logYellow,
-  success,
-  readContractAddress,
-  type MergeMessagesArgs,
-} from "../utils";
+import type { MergeMessagesArgs } from "../utils/interfaces";
+
+import { banner } from "../utils/banner";
+import { contractExists, currentBlockTimestamp } from "../utils/contracts";
+import { DEFAULT_SR_QUEUE_OPS } from "../utils/defaults";
+import { readContractAddress } from "../utils/storage";
+import { info, logError, logGreen, logYellow, success } from "../utils/theme";
 
 /**
  * Merge the message queue on chain
