@@ -82,7 +82,12 @@ program
 program
   .command("checkVerifyingKeys")
   .description("check that the verifying keys in the contract match the local ones")
-  .option("-uq, --use-quadratic-voting", "whether to use quadratic voting", (value) => value === "true", true)
+  .option(
+    "-uq, --use-quadratic-voting <useQuadraticVoting>",
+    "whether to use quadratic voting",
+    (value) => value === "true",
+    true,
+  )
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .option("-vk, --vk-contract <vkContract>", "the VkRegistry contract address")
@@ -228,7 +233,12 @@ program
     "-tnqv, --tally-votes-zkey-non-qv <tallyVotesZkeyPathNonQv>",
     "the tally votes non-qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
-  .option("-uq, --use-quadratic-voting", "whether to use quadratic voting", (value) => value === "true", true)
+  .option(
+    "-uq, --use-quadratic-voting <useQuadraticVoting>",
+    "whether to use quadratic voting",
+    (value) => value === "true",
+    true,
+  )
   .option("-k, --vk-registry <vkRegistry>", "the vk registry contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
