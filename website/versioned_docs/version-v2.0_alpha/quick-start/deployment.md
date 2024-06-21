@@ -81,6 +81,11 @@ It's necessary to define which gatekeeper you are going to use before deploying,
       "eventId": "69c0caaa-c65d-5345-a20c-867774f18c67",
       "zupassVerifier": "0x2272cdb3596617886d0F48524DA486044E0376d6"
     },
+    "SemaphoreGatekeeper": {
+      "deploy": false,
+      "semaphoreContract": "0x0000000000000000000000000000000000000000",
+      "groupId": 0
+    },
     "MACI": {
       "stateTreeDepth": 10,
       "gatekeeper": "EASGatekeeper"

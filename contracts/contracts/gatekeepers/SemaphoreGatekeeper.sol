@@ -65,6 +65,8 @@ contract SemaphoreGatekeeper is SignUpGatekeeper, Ownable(msg.sender) {
     if (proof.scope != groupId) revert InvalidGroup();
 
     // register the nullifier so it cannot be called again with the same one
+    // note that given the nullifier will be hash(secret, groupId), the same
+    // identity cannot then be registered twice for this group
     registeredIdentities[proof.nullifier] = true;
 
     // check if the proof validates
