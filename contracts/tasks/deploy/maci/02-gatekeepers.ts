@@ -19,15 +19,18 @@ deployment.deployTask("full:deploy-gatekeepers", "Deploy gatekeepers").then((tas
     const easGatekeeperContractAddress = storage.getAddress(EContracts.EASGatekeeper, hre.network.name);
     const gitcoinGatekeeperContractAddress = storage.getAddress(EContracts.GitcoinPassportGatekeeper, hre.network.name);
     const zupassGatekeeperContractAddress = storage.getAddress(EContracts.ZupassGatekeeper, hre.network.name);
+    const semaphoreGatekeeperContractAddress = storage.getAddress(EContracts.SemaphoreGatekeeper, hre.network.name);
     const deployFreeForAllGatekeeper = deployment.getDeployConfigField(EContracts.FreeForAllGatekeeper, "deploy");
     const deployEASGatekeeper = deployment.getDeployConfigField(EContracts.EASGatekeeper, "deploy");
     const deployGitcoinGatekeeper = deployment.getDeployConfigField(EContracts.GitcoinPassportGatekeeper, "deploy");
     const deployZupassGatekeeper = deployment.getDeployConfigField(EContracts.ZupassGatekeeper, "deploy");
+    const deploySemaphoreGatekeeper = deployment.getDeployConfigField(EContracts.SemaphoreGatekeeper, "deploy");
 
     const skipDeployFreeForAllGatekeeper = deployFreeForAllGatekeeper !== true;
     const skipDeployEASGatekeeper = deployEASGatekeeper !== true;
     const skipDeployGitcoinGatekeeper = deployGitcoinGatekeeper !== true;
     const skipDeployZupassGatekeeper = deployZupassGatekeeper !== true;
+    const skipDeploySemaphoreGatekeeper = deploySemaphoreGatekeeper !== true;
 
     const canSkipDeploy =
       incremental &&
@@ -35,10 +38,12 @@ deployment.deployTask("full:deploy-gatekeepers", "Deploy gatekeepers").then((tas
       (easGatekeeperContractAddress || skipDeployEASGatekeeper) &&
       (gitcoinGatekeeperContractAddress || skipDeployGitcoinGatekeeper) &&
       (zupassGatekeeperContractAddress || skipDeployZupassGatekeeper) &&
+      (semaphoreGatekeeperContractAddress || skipDeploySemaphoreGatekeeper) &&
       (!skipDeployFreeForAllGatekeeper ||
         !skipDeployEASGatekeeper ||
         !skipDeployGitcoinGatekeeper ||
-        !skipDeployZupassGatekeeper);
+        !skipDeployZupassGatekeeper ||
+        !skipDeploySemaphoreGatekeeper);
 
     if (canSkipDeploy) {
       return;
@@ -148,6 +153,31 @@ deployment.deployTask("full:deploy-gatekeepers", "Deploy gatekeepers").then((tas
         id: EContracts.ZupassGatekeeper,
         contract: ZupassGatekeeperContract,
         args: [validEventId.toString(), validSigner1, validSigner2, verifier],
+        network: hre.network.name,
+      });
+    }
+
+    if (!skipDeploySemaphoreGatekeeper) {
+      const semaphoreContractAddress = deployment.getDeployConfigField<string>(
+        EContracts.SemaphoreGatekeeper,
+        "semaphoreContract",
+        true,
+      );
+      const groupId = deployment.getDeployConfigField<number>(EContracts.SemaphoreGatekeeper, "groupId", true);
+
+      const semaphoreGatekeeperContract = await deployment.deployContract(
+        {
+          name: EContracts.SemaphoreGatekeeper,
+          signer: deployer,
+        },
+        semaphoreContractAddress,
+        groupId,
+      );
+
+      await storage.register({
+        id: EContracts.SemaphoreGatekeeper,
+        contract: semaphoreGatekeeperContract,
+        args: [semaphoreContractAddress, groupId.toString()],
         network: hre.network.name,
       });
     }

@@ -25,6 +25,11 @@
       "eventId": "69c0caaa-c65d-5345-a20c-867774f18c67",
       "zupassVerifier": "0x2272cdb3596617886d0F48524DA486044E0376d6"
     },
+    "SemaphoreGatekeeper": {
+      "deploy": false,
+      "semaphoreContract": "0x0A09FB3f63c13F1C54F2fA41AFB1e7a98cffc774",
+      "groupId": 0
+    },
     "MACI": {
       "stateTreeDepth": 10,
       "gatekeeper": "EASGatekeeper"
@@ -75,6 +80,11 @@
       "signer1": "13908133709081944902758389525983124100292637002438232157513257158004852609027",
       "signer2": "7654374482676219729919246464135900991450848628968334062174564799457623790084",
       "eventId": "d2ce5bb2-99a3-5a61-b7e6-1cd46d2ee00d"
+    },
+    "SemaphoreGatekeeper": {
+      "deploy": false,
+      "semaphoreContract": "0x0000000000000000000000000000000000000000",
+      "groupId": 0
     },
     "MACI": {
       "stateTreeDepth": 10,
@@ -132,6 +142,11 @@
       "signer2": "7654374482676219729919246464135900991450848628968334062174564799457623790084",
       "eventId": "69c0caaa-c65d-5345-a20c-867774f18c67",
       "zupassVerifier": "0x2272cdb3596617886d0F48524DA486044E0376d6"
+    },
+    "SemaphoreGatekeeper": {
+      "deploy": false,
+      "semaphoreContract": "0x0000000000000000000000000000000000000000",
+      "groupId": 0
     },
     "MACI": {
       "stateTreeDepth": 6,
