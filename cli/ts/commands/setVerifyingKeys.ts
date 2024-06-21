@@ -1,5 +1,6 @@
 import { extractVk } from "maci-circuits";
-import { type IVerifyingKeyStruct, VkRegistry__factory as VkRegistryFactory, EMode } from "maci-contracts";
+import { type IVerifyingKeyStruct, EMode } from "maci-contracts";
+import { VkRegistry__factory as VkRegistryFactory } from "maci-contracts/typechain-types";
 import { genProcessVkSig, genTallyVkSig, MESSAGE_TREE_ARITY } from "maci-core";
 import { VerifyingKey } from "maci-domainobjs";
 

@@ -1,4 +1,4 @@
-import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts";
+import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts/typechain-types";
 
 import {
   banner,

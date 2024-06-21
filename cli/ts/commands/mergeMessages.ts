@@ -2,7 +2,7 @@ import {
   MACI__factory as MACIFactory,
   Poll__factory as PollFactory,
   AccQueue__factory as AccQueueFactory,
-} from "maci-contracts";
+} from "maci-contracts/typechain-types";
 
 import {
   DEFAULT_SR_QUEUE_OPS,
