@@ -1,5 +1,6 @@
 /* eslint-disable no-await-in-loop */
 import { type BigNumberish } from "ethers";
+import { type IVerifyingKeyStruct, formatProofForVerifierContract } from "maci-contracts";
 import {
   MACI__factory as MACIFactory,
   AccQueue__factory as AccQueueFactory,
@@ -8,9 +9,7 @@ import {
   Poll__factory as PollFactory,
   VkRegistry__factory as VkRegistryFactory,
   Verifier__factory as VerifierFactory,
-  formatProofForVerifierContract,
-  type IVerifyingKeyStruct,
-} from "maci-contracts";
+} from "maci-contracts/typechain-types";
 import { MESSAGE_TREE_ARITY, STATE_TREE_ARITY } from "maci-core";
 import { G1Point, G2Point, hashLeftRight } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
@@ -158,7 +157,7 @@ export const proveOnChain = async ({
     logRed(
       quiet,
       error(
-        `The proof files inside ${proofDir} do not have the correct number of message processign proofs` +
+        `The proof files inside ${proofDir} do not have the correct number of message processing proofs` +
           `(expected ${totalMessageBatches}, got ${numProcessProofs}).`,
       ),
     );
