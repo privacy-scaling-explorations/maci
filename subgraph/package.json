@@ -28,7 +28,7 @@
     "maci-contracts": "2.0.0-alpha"
   },
   "devDependencies": {
-    "assemblyscript": "0.19.23",
+    "assemblyscript": "0.27.28",
     "matchstick-as": "^0.6.0",
     "mustache": "^4.2.0",
     "wabt": "^1.0.35"
