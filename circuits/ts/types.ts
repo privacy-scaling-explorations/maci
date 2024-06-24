@@ -1,6 +1,31 @@
 import type { CircuitConfig } from "circomkit";
 import type { CircuitInputs } from "maci-core";
-import type { ISnarkJSVerificationKey } from "snarkjs";
+import type { Groth16Proof, PublicSignals } from "snarkjs";
+
+export type BigNumberish = number | string | bigint;
+
+/**
+ * Interface that represents Verification key
+ */
+export interface ISnarkJSVerificationKey {
+  protocol: BigNumberish;
+  curve: BigNumberish;
+  nPublic: BigNumberish;
+  vk_alpha_1: BigNumberish[];
+  vk_beta_2: BigNumberish[][];
+  vk_gamma_2: BigNumberish[][];
+  vk_delta_2: BigNumberish[][];
+  vk_alphabeta_12: BigNumberish[][][];
+  IC: BigNumberish[][];
+}
+
+/**
+ * Return type for proof generation function
+ */
+export interface FullProveResult {
+  proof: Groth16Proof;
+  publicSignals: PublicSignals;
+}
 
 /**
  * Parameters for the genProof function
@@ -75,5 +100,3 @@ export interface ITallyVotesInputs {
 export interface CircuitConfigWithName extends CircuitConfig {
   name: string;
 }
-
-export type { ISnarkJSVerificationKey };
