@@ -81,8 +81,8 @@ importers:
         specifier: ^5.0.1
         version: 5.0.1(typescript@5.4.5)
       tar:
-        specifier: ^7.1.0
-        version: 7.2.0
+        specifier: ^7.4.0
+        version: 7.4.0
       ts-node:
         specifier: ^10.9.1
         version: 10.9.2(@types/node@20.14.8)(typescript@5.4.5)
@@ -378,8 +378,8 @@ importers:
         specifier: ^7.8.1
         version: 7.8.1
       tar:
-        specifier: ^7.1.0
-        version: 7.2.0
+        specifier: ^7.4.0
+        version: 7.4.0
     devDependencies:
       '@nestjs/cli':
         specifier: ^10.3.2
@@ -19898,8 +19898,8 @@ packages:
       mkdirp: 1.0.4
       yallist: 4.0.0
 
-  /tar@7.2.0:
-    resolution: {integrity: sha512-hctwP0Nb4AB60bj8WQgRYaMOuJYRAPMGiQUAotms5igN8ppfQM+IvjQ5HcKu1MaZh2Wy2KWVTe563Yj8dfc14w==}
+  /tar@7.4.0:
+    resolution: {integrity: sha512-XQs0S8fuAkQWuqhDeCdMlJXDX80D7EOVLDPVFkna9yQfzS+PHKgfxcei0jf6/+QAWcjqrnC8uM3fSAnrQl+XYg==}
     engines: {node: '>=18'}
     dependencies:
       '@isaacs/fs-minipass': 4.0.1
