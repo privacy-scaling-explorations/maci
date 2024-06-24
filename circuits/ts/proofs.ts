@@ -1,19 +1,13 @@
 import { stringifyBigInts } from "maci-crypto";
-import {
-  zKey,
-  groth16,
-  type FullProveResult,
-  type PublicSignals,
-  type Groth16Proof,
-  type ISnarkJSVerificationKey,
-} from "snarkjs";
+import { zKey, groth16, type PublicSignals, type Groth16Proof } from "snarkjs";
 
 import { execFileSync } from "child_process";
 import fs from "fs";
 import { tmpdir } from "os";
 import path from "path";
 
-import type { IGenProofOptions } from "./types";
+import type { IGenProofOptions, ISnarkJSVerificationKey, FullProveResult } from "./types";
+import type { IVkObjectParams } from "maci-domainobjs";
 
 import { cleanThreads, isArm } from "./utils";
 
@@ -129,8 +123,8 @@ export const verifyProof = async (
  * @param zkeyPath - the path to the zKey
  * @returns the verification key
  */
-export const extractVk = async (zkeyPath: string): Promise<ISnarkJSVerificationKey> => {
-  const vk = await zKey.exportVerificationKey(zkeyPath);
-  await cleanThreads();
-  return vk;
-};
+export const extractVk = async (zkeyPath: string): Promise<IVkObjectParams> =>
+  zKey
+    .exportVerificationKey(zkeyPath)
+    .then((vk) => vk as IVkObjectParams)
+    .finally(() => cleanThreads());

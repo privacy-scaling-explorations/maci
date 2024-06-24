@@ -1,5 +1,5 @@
 import { extractVk } from "maci-circuits";
-import { VerifyingKey } from "maci-domainobjs";
+import { type IVkObjectParams, VerifyingKey } from "maci-domainobjs";
 
 import type { IVerifyingKeyStruct } from "../../../ts/types";
 import type { VkRegistry } from "../../../typechain-types";
@@ -63,7 +63,12 @@ deployment.deployTask("full:deploy-vk-registry", "Deploy Vk Registry and set key
       tallyVotesZkeyPathQv && extractVk(tallyVotesZkeyPathQv),
       processMessagesZkeyPathNonQv && extractVk(processMessagesZkeyPathNonQv),
       tallyVotesZkeyPathNonQv && extractVk(tallyVotesZkeyPathNonQv),
-    ]).then((vks) => vks.map((vk) => vk && (VerifyingKey.fromObj(vk).asContractParam() as IVerifyingKeyStruct)));
+    ]).then((vks) =>
+      vks.map(
+        (vk: IVkObjectParams | "" | undefined) =>
+          vk && (VerifyingKey.fromObj(vk).asContractParam() as IVerifyingKeyStruct),
+      ),
+    );
 
     const vkRegistryContract = await deployment.deployContract<VkRegistry>({
       name: EContracts.VkRegistry,
