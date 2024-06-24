@@ -602,8 +602,8 @@ importers:
   subgraph:
     dependencies:
       '@graphprotocol/graph-cli':
-        specifier: ^0.74.1
-        version: 0.74.1(@types/node@20.14.2)(node-fetch@3.3.2)(typescript@5.4.5)
+        specifier: ^0.76.0
+        version: 0.76.0(@types/node@20.14.2)(node-fetch@3.3.2)(typescript@5.4.5)
       '@graphprotocol/graph-ts':
         specifier: ^0.35.1
         version: 0.35.1
@@ -3899,8 +3899,8 @@ packages:
       js-yaml: 4.1.0
     dev: false
 
-  /@graphprotocol/graph-cli@0.74.1(@types/node@20.14.2)(node-fetch@3.3.2)(typescript@5.4.5):
-    resolution: {integrity: sha512-xdFJGuINdgt3dWRp/aNkqZujCyab4cPWVsvX7FSjX4k7xT4eea3nxZsksJzDrdbOrr2pf/UBLZoBBz3SqxxSXg==}
+  /@graphprotocol/graph-cli@0.76.0(@types/node@20.14.2)(node-fetch@3.3.2)(typescript@5.4.5):
+    resolution: {integrity: sha512-pxYu7OBgOBljC5/t/uQQrBJsL9wDejv/C/yMBioh0MR0kLeUG3JMvZL4cG65dD3OLzpS//b2oYDuPP9OSs2SCQ==}
     engines: {node: '>=18'}
     hasBin: true
     dependencies:
