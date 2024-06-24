@@ -54,7 +54,7 @@
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.2",
     "fast-check": "^3.18.0",
-    "mocha": "^10.4.0",
+    "mocha": "^10.5.0",
     "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.4.5"
