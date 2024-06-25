@@ -5,7 +5,7 @@ import { Keypair } from "maci-domainobjs";
 import { deployPollFactory, getDefaultSigner } from "../ts";
 import { PollFactory } from "../typechain-types";
 
-import { maxValues, treeDepths } from "./constants";
+import { batchSizes, maxValues, treeDepths } from "./constants";
 
 describe("pollFactory", () => {
   let pollFactory: PollFactory;
@@ -24,6 +24,7 @@ describe("pollFactory", () => {
         "100",
         maxValues,
         treeDepths,
+        batchSizes,
         coordinatorPubKey.asContractParam(),
         ZeroAddress,
       );
@@ -38,9 +39,10 @@ describe("pollFactory", () => {
           {
             maxMessages: maxValues.maxMessages,
             maxVoteOptions: 2 ** 50,
-            maxMessageBatchSize: maxValues.maxMessageBatchSize,
+            // maxMessageBatchSize: maxValues.maxMessageBatchSize,
           },
           treeDepths,
+          batchSizes,
           coordinatorPubKey.asContractParam(),
           ZeroAddress,
         ),

@@ -695,7 +695,7 @@ export type {
   GenProofsArgs,
   PublishArgs,
   SignupArgs,
-  MergeMessagesArgs,
+  // MergeMessagesArgs,
   MergeSignupsArgs,
   VerifyArgs,
   ProveOnChainArgs,

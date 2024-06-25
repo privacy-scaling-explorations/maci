@@ -1,4 +1,10 @@
-import { MaxValues, TreeDepths, STATE_TREE_ARITY, MESSAGE_TREE_ARITY } from "maci-core";
+import {
+  MaxValues,
+  TreeDepths,
+  STATE_TREE_ARITY,
+  BatchSizes,
+  MESSAGE_BATCH_SIZE /* , MESSAGE_TREE_ARITY */,
+} from "maci-core";
 import { G1Point, G2Point } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
 
@@ -8,6 +14,7 @@ export const STATE_TREE_DEPTH = 10;
 export const MESSAGE_TREE_DEPTH = 2;
 export const MESSAGE_TREE_SUBDEPTH = 1;
 export const messageBatchSize = 20;
+export const tallyBatchSize = STATE_TREE_ARITY ** 1;
 
 export const testProcessVk = new VerifyingKey(
   new G1Point(BigInt(0), BigInt(1)),
@@ -43,16 +50,21 @@ export const testTallyVkNonQv = new VerifyingKey(
 
 export const initialVoiceCreditBalance = 100;
 export const maxValues: MaxValues = {
-  maxMessages: MESSAGE_TREE_ARITY ** MESSAGE_TREE_DEPTH,
+  maxMessages: 1000,
   maxVoteOptions: 25,
-  maxMessageBatchSize: 20,
+  // maxMessageBatchSize: 20,
 };
 
 export const treeDepths: TreeDepths = {
   intStateTreeDepth: 1,
-  messageTreeDepth: MESSAGE_TREE_DEPTH,
-  messageTreeSubDepth: MESSAGE_TREE_SUBDEPTH,
+  // messageTreeDepth: MESSAGE_TREE_DEPTH,
+  // messageTreeSubDepth: MESSAGE_TREE_SUBDEPTH,
   voteOptionTreeDepth: 2,
 };
 
-export const tallyBatchSize = STATE_TREE_ARITY ** treeDepths.intStateTreeDepth;
+export const batchSizes: BatchSizes = {
+  tallyBatchSize: STATE_TREE_ARITY ** treeDepths.intStateTreeDepth,
+  messageBatchSize: MESSAGE_BATCH_SIZE,
+};
+
+// export const tallyBatchSize = STATE_TREE_ARITY ** treeDepths.intStateTreeDepth;

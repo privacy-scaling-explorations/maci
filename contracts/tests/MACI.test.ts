@@ -12,6 +12,7 @@ import { MACI, Poll as PollContract, Poll__factory as PollFactory, Verifier, VkR
 
 import {
   STATE_TREE_DEPTH,
+  batchSizes,
   duration,
   initialVoiceCreditBalance,
   maxValues,
@@ -219,6 +220,7 @@ describe("MACI", function test() {
       const tx = await maciContract.deployPoll(
         duration,
         treeDepths,
+        batchSizes,
         coordinator.pubKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
         verifierContract,
         vkRegistryContract,
@@ -264,6 +266,7 @@ describe("MACI", function test() {
       const tx = await maciContract.deployPoll(
         duration,
         treeDepths,
+        batchSizes,
         coordinator.pubKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
         verifierContract,
         vkRegistryContract,
@@ -282,6 +285,7 @@ describe("MACI", function test() {
         .deployPoll(
           duration,
           treeDepths,
+          batchSizes,
           users[0].pubKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
           verifierContract,
           vkRegistryContract,

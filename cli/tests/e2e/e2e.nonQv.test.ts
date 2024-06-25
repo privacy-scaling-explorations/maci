@@ -9,7 +9,7 @@ import {
   deployPoll,
   deployVkRegistryContract,
   genProofs,
-  mergeMessages,
+  // mergeMessages,
   mergeSignups,
   proveOnChain,
   publish,
@@ -25,7 +25,7 @@ import {
   pollDuration,
   proveOnChainArgs,
   verifyArgs,
-  mergeMessagesArgs,
+  // mergeMessagesArgs,
   mergeSignupsArgs,
   testProofsDirPath,
   testRapidsnarkPath,
@@ -117,7 +117,7 @@ describe("e2e tests with non quadratic voting", function test() {
 
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel({ seconds: pollDuration, signer });
-      await mergeMessages({ ...mergeMessagesArgs, signer });
+      // await mergeMessages({ ...mergeMessagesArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, signer });
       const tallyFileData = await genProofs({ ...genProofsArgs, signer, useQuadraticVoting: false });
       await proveOnChain({ ...proveOnChainArgs, signer });

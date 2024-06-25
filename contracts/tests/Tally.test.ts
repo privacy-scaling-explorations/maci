@@ -29,6 +29,7 @@ import {
 
 import {
   STATE_TREE_DEPTH,
+  batchSizes,
   duration,
   initialVoiceCreditBalance,
   maxValues,
@@ -75,6 +76,7 @@ describe("TallyVotes", () => {
     const tx = await maciContract.deployPoll(
       duration,
       treeDepths,
+      batchSizes,
       coordinator.pubKey.asContractParam(),
       verifierContract,
       vkRegistryContract,
@@ -184,8 +186,8 @@ describe("TallyVotes", () => {
     before(async () => {
       await pollContract.mergeMaciState();
 
-      await pollContract.mergeMessageAqSubRoots(0);
-      await pollContract.mergeMessageAq();
+      // await pollContract.mergeMessageAqSubRoots(0);
+      // await pollContract.mergeMessageAq();
       tallyGeneratedInputs = poll.tallyVotes();
     });
 
@@ -255,6 +257,7 @@ describe("TallyVotes", () => {
           ...treeDepths,
           intStateTreeDepth,
         },
+        batchSizes,
         coordinator.pubKey.asContractParam(),
         verifierContract,
         vkRegistryContract,
@@ -337,8 +340,8 @@ describe("TallyVotes", () => {
       await timeTravel(signer.provider! as unknown as EthereumProvider, updatedDuration);
       await pollContract.mergeMaciState();
 
-      await pollContract.mergeMessageAqSubRoots(0);
-      await pollContract.mergeMessageAq();
+      // await pollContract.mergeMessageAqSubRoots(0);
+      // await pollContract.mergeMessageAq();
 
       const processMessagesInputs = poll.processMessages(pollId);
       await mpContract.processMessages(processMessagesInputs.newSbCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);
@@ -399,6 +402,7 @@ describe("TallyVotes", () => {
           ...treeDepths,
           intStateTreeDepth,
         },
+        batchSizes,
         coordinator.pubKey.asContractParam(),
         verifierContract,
         vkRegistryContract,
@@ -481,8 +485,8 @@ describe("TallyVotes", () => {
       await timeTravel(signer.provider! as unknown as EthereumProvider, updatedDuration);
       await pollContract.mergeMaciState();
 
-      await pollContract.mergeMessageAqSubRoots(0);
-      await pollContract.mergeMessageAq();
+      // await pollContract.mergeMessageAqSubRoots(0);
+      // await pollContract.mergeMessageAq();
 
       const processMessagesInputs = poll.processMessages(pollId);
       await mpContract.processMessages(processMessagesInputs.newSbCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);

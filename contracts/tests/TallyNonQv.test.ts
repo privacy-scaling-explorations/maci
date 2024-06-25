@@ -29,6 +29,7 @@ import {
 
 import {
   STATE_TREE_DEPTH,
+  batchSizes,
   duration,
   maxValues,
   messageBatchSize,
@@ -74,6 +75,7 @@ describe("TallyVotesNonQv", () => {
     const tx = await maciContract.deployPoll(
       duration,
       treeDepths,
+      batchSizes,
       coordinator.pubKey.asContractParam(),
       verifierContract,
       vkRegistryContract,
@@ -183,8 +185,8 @@ describe("TallyVotesNonQv", () => {
     before(async () => {
       await pollContract.mergeMaciState();
 
-      await pollContract.mergeMessageAqSubRoots(0);
-      await pollContract.mergeMessageAq();
+      // await pollContract.mergeMessageAqSubRoots(0);
+      // await pollContract.mergeMessageAq();
       tallyGeneratedInputs = poll.tallyVotes();
     });
 

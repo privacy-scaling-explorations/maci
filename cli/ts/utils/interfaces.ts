@@ -297,6 +297,9 @@ export interface DeployPollArgs {
    */
   // messageTreeDepth: number;
 
+  /**
+   * The size of the message batch
+   */
   messageBatchSize: number;
 
   /**

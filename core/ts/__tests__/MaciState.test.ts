@@ -79,15 +79,17 @@ describe("MaciState", function test() {
       m9.polls.get(pollId)!.treeDepths.intStateTreeDepth += 1;
       expect(m1.equals(m9)).not.to.eq(true);
 
+      // DEPRECATED
       // modify poll.treeDepths.messageTreeDepth
-      const m10 = m1.copy();
-      m10.polls.get(pollId)!.treeDepths.messageTreeDepth += 1;
-      expect(m1.equals(m10)).not.to.eq(true);
+      // const m10 = m1.copy();
+      // m10.polls.get(pollId)!.treeDepths.messageTreeDepth += 1;
+      // expect(m1.equals(m10)).not.to.eq(true);
 
+      // DEPRECATED
       // modify poll.treeDepths.messageTreeSubDepth
-      const m11 = m1.copy();
-      m11.polls.get(pollId)!.treeDepths.messageTreeSubDepth += 1;
-      expect(m1.equals(m11)).not.to.eq(true);
+      // const m11 = m1.copy();
+      // m11.polls.get(pollId)!.treeDepths.messageTreeSubDepth += 1;
+      // expect(m1.equals(m11)).not.to.eq(true);
 
       // modify poll.treeDepths.voteOptionTreeDepth
       const m12 = m1.copy();

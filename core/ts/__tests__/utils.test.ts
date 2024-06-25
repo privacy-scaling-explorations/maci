@@ -11,7 +11,7 @@ import {
 
 describe("Utils", () => {
   it("genProcessVkSig should work", () => {
-    const result = genProcessVkSig(1, 2, 3, 4);
+    const result = genProcessVkSig(1, 2, 20);
     expect(result).to.equal(25108406941546723055683440059751604127909689873435325366275n);
   });
 

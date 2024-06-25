@@ -12,6 +12,7 @@ import { Poll__factory as PollFactory, MACI, Poll as PollContract, Verifier, VkR
 
 import {
   STATE_TREE_DEPTH,
+  batchSizes,
   duration,
   initialVoiceCreditBalance,
   maxValues,
@@ -46,6 +47,7 @@ describe("Poll", () => {
       const tx = await maciContract.deployPoll(
         duration,
         treeDepths,
+        batchSizes,
         coordinator.pubKey.asContractParam(),
         verifierContract,
         vkRegistryContract,
@@ -119,9 +121,9 @@ describe("Poll", () => {
     it("should have the correct tree depths set", async () => {
       const td = await pollContract.treeDepths();
       expect(td[0].toString()).to.eq(treeDepths.intStateTreeDepth.toString());
-      expect(td[1].toString()).to.eq(treeDepths.messageTreeSubDepth.toString());
-      expect(td[2].toString()).to.eq(treeDepths.messageTreeDepth.toString());
-      expect(td[3].toString()).to.eq(treeDepths.voteOptionTreeDepth.toString());
+      // expect(td[1].toString()).to.eq(treeDepths.messageTreeSubDepth.toString());
+      // expect(td[2].toString()).to.eq(treeDepths.messageTreeDepth.toString());
+      expect(td[1].toString()).to.eq(treeDepths.voteOptionTreeDepth.toString());
     });
 
     it("should have numMessages set to 1 (blank message)", async () => {
@@ -138,6 +140,7 @@ describe("Poll", () => {
         testMaciContract.deployPoll(
           duration,
           treeDepths,
+          batchSizes,
           {
             x: "100",
             y: "1",

@@ -1,10 +1,10 @@
 import { expect } from "chai";
-import { hash5, NOTHING_UP_MY_SLEEVE, IncrementalQuinTree, AccQueue, hash2 } from "maci-crypto";
+import { hash5, NOTHING_UP_MY_SLEEVE, IncrementalQuinTree /* , AccQueue */, hash2 } from "maci-crypto";
 import { PCommand, Keypair, StateLeaf, blankStateLeafHash } from "maci-domainobjs";
 
 import { MaciState } from "../MaciState";
 import { Poll } from "../Poll";
-import { STATE_TREE_DEPTH, STATE_TREE_ARITY, MESSAGE_TREE_ARITY } from "../utils/constants";
+import { STATE_TREE_DEPTH, STATE_TREE_ARITY /* , MESSAGE_TREE_ARITY */ } from "../utils/constants";
 import { packProcessMessageSmallVals, unpackProcessMessageSmallVals } from "../utils/utils";
 
 import {
@@ -356,7 +356,7 @@ describe("MaciState/Poll e2e", function test() {
     let maciState: MaciState;
     let pollId: bigint;
     let poll: Poll;
-    let msgTree: IncrementalQuinTree;
+    // let msgTree: IncrementalQuinTree;
     const voteWeight = 9n;
     const voteOptionIndex = 0n;
     let stateIndex: number;
@@ -364,7 +364,7 @@ describe("MaciState/Poll e2e", function test() {
 
     before(() => {
       maciState = new MaciState(STATE_TREE_DEPTH);
-      msgTree = new IncrementalQuinTree(treeDepths.messageTreeDepth, NOTHING_UP_MY_SLEEVE, MESSAGE_TREE_ARITY, hash5);
+      // msgTree = new IncrementalQuinTree(treeDepths.messageTreeDepth, NOTHING_UP_MY_SLEEVE, MESSAGE_TREE_ARITY, hash5);
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
@@ -395,37 +395,38 @@ describe("MaciState/Poll e2e", function test() {
       expect(stateTree.root.toString()).to.eq(poll.stateTree?.root.toString());
     });
 
-    it("the message root should be correct", () => {
-      const command = new PCommand(
-        BigInt(stateIndex),
-        userKeypair.pubKey,
-        voteOptionIndex,
-        voteWeight,
-        1n,
-        BigInt(pollId),
-      );
+    // DEPRECATED
+    // it("the message root should be correct", () => {
+    //   const command = new PCommand(
+    //     BigInt(stateIndex),
+    //     userKeypair.pubKey,
+    //     voteOptionIndex,
+    //     voteWeight,
+    //     1n,
+    //     BigInt(pollId),
+    //   );
 
-      const signature = command.sign(userKeypair.privKey);
+    //   const signature = command.sign(userKeypair.privKey);
 
-      const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
-      const message = command.encrypt(signature, sharedKey);
+    //   const ecdhKeypair = new Keypair();
+    //   const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+    //   const message = command.encrypt(signature, sharedKey);
 
-      poll.publishMessage(message, ecdhKeypair.pubKey);
-      msgTree.insert(message.hash(ecdhKeypair.pubKey));
+    //   poll.publishMessage(message, ecdhKeypair.pubKey);
+    //   msgTree.insert(message.hash(ecdhKeypair.pubKey));
 
-      // Use the accumulator queue to compare the root of the message tree
-      const accumulatorQueue: AccQueue = new AccQueue(
-        treeDepths.messageTreeSubDepth,
-        MESSAGE_TREE_ARITY,
-        NOTHING_UP_MY_SLEEVE,
-      );
-      accumulatorQueue.enqueue(message.hash(ecdhKeypair.pubKey));
-      accumulatorQueue.mergeSubRoots(0);
-      accumulatorQueue.merge(treeDepths.messageTreeDepth);
+    //   // Use the accumulator queue to compare the root of the message tree
+    //   const accumulatorQueue: AccQueue = new AccQueue(
+    //     treeDepths.messageTreeSubDepth,
+    //     MESSAGE_TREE_ARITY,
+    //     NOTHING_UP_MY_SLEEVE,
+    //   );
+    //   accumulatorQueue.enqueue(message.hash(ecdhKeypair.pubKey));
+    //   accumulatorQueue.mergeSubRoots(0);
+    //   accumulatorQueue.merge(treeDepths.messageTreeDepth);
 
-      expect(accumulatorQueue.getRoot(treeDepths.messageTreeDepth)?.toString()).to.eq(msgTree.root.toString());
-    });
+    //   expect(accumulatorQueue.getRoot(treeDepths.messageTreeDepth)?.toString()).to.eq(msgTree.root.toString());
+    // });
 
     it("packProcessMessageSmallVals and unpackProcessMessageSmallVals", () => {
       const maxVoteOptions = 1n;
