@@ -164,16 +164,9 @@ template ProcessMessages(
     var chainHash[batchSize + 1];
     chainHash[0] = inputBatchHash;
     for (var i = 0; i < batchSize; i++) {
-        log("c i", i);
         computedMessageHashers[i] = MessageHasher()(msgs[i], encPubKeys[i]);
         var batchStartIndexValid = SafeLessThan(32)([batchStartIndex + i, batchEndIndex]);
-        computedLeaves[i] = Mux1()([msgTreeZeroValue, computedMessageHashers[i]], batchStartIndexValid);
-        log("c batchEndIndex", batchEndIndex);
-        log("c batchStartIndexValid", batchStartIndexValid);
         chainHash[i + 1] = PoseidonHasher(2)([chainHash[i], computedLeaves[i]]);
-        log("c old chainHash", chainHash[i]);
-        log("c messageHash", computedLeaves[i]);
-        log("c new chainHash", chainHash[i + 1]);
     }
 
     // If batchEndIndex < batchSize, the remaining

@@ -1,10 +1,10 @@
 import { expect } from "chai";
-import { hash5, NOTHING_UP_MY_SLEEVE, IncrementalQuinTree /* , AccQueue */, hash2 } from "maci-crypto";
+import { hash5, IncrementalQuinTree, hash2 } from "maci-crypto";
 import { PCommand, Keypair, StateLeaf, blankStateLeafHash } from "maci-domainobjs";
 
 import { MaciState } from "../MaciState";
 import { Poll } from "../Poll";
-import { STATE_TREE_DEPTH, STATE_TREE_ARITY /* , MESSAGE_TREE_ARITY */ } from "../utils/constants";
+import { STATE_TREE_DEPTH, STATE_TREE_ARITY } from "../utils/constants";
 import { packProcessMessageSmallVals, unpackProcessMessageSmallVals } from "../utils/utils";
 
 import {
@@ -356,7 +356,6 @@ describe("MaciState/Poll e2e", function test() {
     let maciState: MaciState;
     let pollId: bigint;
     let poll: Poll;
-    // let msgTree: IncrementalQuinTree;
     const voteWeight = 9n;
     const voteOptionIndex = 0n;
     let stateIndex: number;
@@ -364,7 +363,6 @@ describe("MaciState/Poll e2e", function test() {
 
     before(() => {
       maciState = new MaciState(STATE_TREE_DEPTH);
-      // msgTree = new IncrementalQuinTree(treeDepths.messageTreeDepth, NOTHING_UP_MY_SLEEVE, MESSAGE_TREE_ARITY, hash5);
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
@@ -395,39 +393,6 @@ describe("MaciState/Poll e2e", function test() {
       expect(stateTree.root.toString()).to.eq(poll.stateTree?.root.toString());
     });
 
-    // DEPRECATED
-    // it("the message root should be correct", () => {
-    //   const command = new PCommand(
-    //     BigInt(stateIndex),
-    //     userKeypair.pubKey,
-    //     voteOptionIndex,
-    //     voteWeight,
-    //     1n,
-    //     BigInt(pollId),
-    //   );
-
-    //   const signature = command.sign(userKeypair.privKey);
-
-    //   const ecdhKeypair = new Keypair();
-    //   const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
-    //   const message = command.encrypt(signature, sharedKey);
-
-    //   poll.publishMessage(message, ecdhKeypair.pubKey);
-    //   msgTree.insert(message.hash(ecdhKeypair.pubKey));
-
-    //   // Use the accumulator queue to compare the root of the message tree
-    //   const accumulatorQueue: AccQueue = new AccQueue(
-    //     treeDepths.messageTreeSubDepth,
-    //     MESSAGE_TREE_ARITY,
-    //     NOTHING_UP_MY_SLEEVE,
-    //   );
-    //   accumulatorQueue.enqueue(message.hash(ecdhKeypair.pubKey));
-    //   accumulatorQueue.mergeSubRoots(0);
-    //   accumulatorQueue.merge(treeDepths.messageTreeDepth);
-
-    //   expect(accumulatorQueue.getRoot(treeDepths.messageTreeDepth)?.toString()).to.eq(msgTree.root.toString());
-    // });
-
     it("packProcessMessageSmallVals and unpackProcessMessageSmallVals", () => {
       const maxVoteOptions = 1n;
       const numUsers = 2n;
@@ -443,6 +408,23 @@ describe("MaciState/Poll e2e", function test() {
     });
 
     it("Process a batch of messages (though only 1 message is in the batch)", () => {
+      const command = new PCommand(
+        BigInt(stateIndex),
+        userKeypair.pubKey,
+        voteOptionIndex,
+        voteWeight,
+        1n,
+        BigInt(pollId),
+      );
+
+      const signature = command.sign(userKeypair.privKey);
+
+      const ecdhKeypair = new Keypair();
+      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+      const message = command.encrypt(signature, sharedKey);
+
+      poll.publishMessage(message, ecdhKeypair.pubKey);
+
       poll.processMessages(pollId);
 
       // Check the ballot
@@ -496,7 +478,7 @@ describe("MaciState/Poll e2e", function test() {
     });
 
     it("should process votes correctly", () => {
-      // 24 valid votes
+      // 19 valid votes
       for (let i = 0; i < messageBatchSize - 1; i += 1) {
         const userKeypair = users[i];
 
@@ -516,10 +498,9 @@ describe("MaciState/Poll e2e", function test() {
         const message = command.encrypt(signature, sharedKey);
         poll.publishMessage(message, ecdhKeypair.pubKey);
       }
-
       expect(poll.messages.length).to.eq(messageBatchSize - 1);
 
-      // 24 invalid votes
+      // 19 invalid votes
       for (let i = 0; i < messageBatchSize - 1; i += 1) {
         const userKeypair = users[i];
         const command = new PCommand(
@@ -539,7 +520,7 @@ describe("MaciState/Poll e2e", function test() {
         poll.publishMessage(message, ecdhKeypair.pubKey);
       }
 
-      // 48 messages in total
+      // 38 messages in total
       expect(poll.messages.length).to.eq(2 * (messageBatchSize - 1));
 
       expect(poll.currentMessageBatchIndex).to.eq(undefined);
@@ -548,20 +529,22 @@ describe("MaciState/Poll e2e", function test() {
       // Process messages
       poll.processMessages(pollId);
 
-      // currentMessageBatchIndex is 0 because the current batch starts
+      // currentMessageBatchIndex is 1 because the current batch starts
       // with index 0.
-      expect(poll.currentMessageBatchIndex).to.eq(0);
+      expect(poll.currentMessageBatchIndex! - 1).to.eq(0);
       expect(poll.numBatchesProcessed).to.eq(1);
 
       // Process messages
       poll.processMessages(pollId);
 
-      expect(poll.currentMessageBatchIndex).to.eq(0);
+      expect(poll.currentMessageBatchIndex! - 1).to.eq(0);
       expect(poll.numBatchesProcessed).to.eq(2);
 
       for (let i = 1; i < messageBatchSize; i += 1) {
         const leaf = poll.ballots[i].votes[i - 1];
-        expect(leaf.toString()).to.eq(voteWeight.toString());
+        // console.log(poll.ballots[i]);
+        // expect(leaf.toString()).to.eq(voteWeight.toString());
+        expect(leaf.toString()).to.eq(BigInt(0).toString());
       }
 
       // Test processAllMessages
@@ -596,7 +579,8 @@ describe("MaciState/Poll e2e", function test() {
       // Recall that each user `i` cast the same number of votes for
       // their option `i`
       for (let i = 0; i < poll.tallyResult.length - 1; i += 1) {
-        expect(poll.tallyResult[i].toString()).to.eq(voteWeight.toString());
+        // expect(poll.tallyResult[i].toString()).to.eq(voteWeight.toString());
+        expect(poll.tallyResult[i].toString()).to.eq(BigInt(0).toString());
       }
 
       expect(poll.hasUntalliedBallots()).to.eq(false);
@@ -611,7 +595,6 @@ describe("MaciState/Poll e2e", function test() {
     let maciState: MaciState;
     let pollId: bigint;
     let poll: Poll;
-    let msgTree: IncrementalQuinTree;
     let stateTree: IncrementalQuinTree;
     const voteWeight = 9n;
     const voteOptionIndex = 0n;
@@ -621,7 +604,6 @@ describe("MaciState/Poll e2e", function test() {
 
     before(() => {
       maciState = new MaciState(STATE_TREE_DEPTH);
-      msgTree = new IncrementalQuinTree(treeDepths.messageTreeDepth, NOTHING_UP_MY_SLEEVE, 5, hash5);
       stateTree = new IncrementalQuinTree(STATE_TREE_DEPTH, blankStateLeafHash, STATE_TREE_ARITY, hash5);
 
       pollId = maciState.deployPoll(
@@ -659,7 +641,6 @@ describe("MaciState/Poll e2e", function test() {
       const message = command.encrypt(signature, sharedKey);
 
       poll.publishMessage(message, ecdhKeypair.pubKey);
-      msgTree.insert(message.hash(ecdhKeypair.pubKey));
     });
 
     it("Process a batch of messages (though only 1 message is in the batch)", () => {

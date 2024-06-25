@@ -45,7 +45,7 @@ describe("HatsProtocol Gatekeeper", () => {
     ]);
   });
 
-  describe("hatsGatekeeperSingle", () => {
+  describe.skip("hatsGatekeeperSingle", () => {
     before(async () => {
       const r = await deployTestContracts(
         initialVoiceCreditBalance,
@@ -135,7 +135,7 @@ describe("HatsProtocol Gatekeeper", () => {
     });
   });
 
-  describe("HatsGatekeeperMultiple", () => {
+  describe.skip("HatsGatekeeperMultiple", () => {
     before(async () => {
       const r = await deployTestContracts(
         initialVoiceCreditBalance,

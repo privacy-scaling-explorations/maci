@@ -113,8 +113,8 @@ export interface IJsonPoll {
   results: string[];
   numBatchesProcessed: number;
   numSignups: string;
-  chainHash: bigint;
-  batchHashes: bigint[];
+  chainHash: string;
+  batchHashes: string[];
 }
 
 /**

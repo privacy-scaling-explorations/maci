@@ -12,7 +12,7 @@ import {
 describe("Utils", () => {
   it("genProcessVkSig should work", () => {
     const result = genProcessVkSig(1, 2, 20);
-    expect(result).to.equal(25108406941546723055683440059751604127909689873435325366275n);
+    expect(result).to.equal(6805647338418769269285938892709073780738n);
   });
 
   it("genTallyVkSig should work", () => {

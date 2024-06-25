@@ -83,7 +83,7 @@ describe("ProcessMessage circuit", function test() {
     });
   });
 
-  describe.only("1) 5 users, 1 messages", () => {
+  describe("1) 5 users, 1 messages", () => {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     const voteWeight = BigInt(9);
     const voteOptionIndex = BigInt(1);

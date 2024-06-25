@@ -155,13 +155,6 @@ export class Poll implements IPoll {
     this.stateTreeDepth = maciStateRef.stateTreeDepth;
     this.actualStateTreeDepth = maciStateRef.stateTreeDepth;
 
-    // this.messageTree = new IncrementalQuinTree(
-    //   this.treeDepths.messageTreeDepth,
-    //   NOTHING_UP_MY_SLEEVE,
-    //   /*MESSAGE_TREE_ARITY,*/
-    //   hash5,
-    // );
-
     this.tallyResult = new Array(this.maxValues.maxVoteOptions).fill(0n) as bigint[];
     this.perVOSpentVoiceCredits = new Array(this.maxValues.maxVoteOptions).fill(0n) as bigint[];
 
@@ -434,7 +427,9 @@ export class Poll implements IPoll {
 
     const batchSize = this.batchSizes.messageBatchSize;
 
+    // console.log(this.numBatchesProcessed);
     if (this.numBatchesProcessed === 0) {
+      // console.log("usao numBP");
       // The starting index of the batch of messages to process.
       // Note that we process messages in reverse order.
       // e.g if there are 8 messages and the batch size is 5, then
@@ -458,6 +453,9 @@ export class Poll implements IPoll {
       }
 
       this.sbSalts[this.currentMessageBatchIndex] = 0n;
+    } else {
+      this.currentMessageBatchIndex = this.batchHashes.length - 1;
+      this.sbSalts[this.currentMessageBatchIndex] = 0n;
     }
 
     // Only allow one poll to be processed at a time
@@ -466,7 +464,7 @@ export class Poll implements IPoll {
     }
 
     // The starting index must be valid
-    assert(this.currentMessageBatchIndex! >= 0, "The starting index must be >= 0");
+    assert(this.currentMessageBatchIndex >= 0, "The starting index must be >= 0");
 
     // ensure we copy the state from MACI when we start processing the
     // first batch
@@ -476,7 +474,7 @@ export class Poll implements IPoll {
 
     // Generate circuit inputs
     const circuitInputs = stringifyBigInts(
-      this.genProcessMessagesCircuitInputsPartial(this.currentMessageBatchIndex!),
+      this.genProcessMessagesCircuitInputsPartial(this.currentMessageBatchIndex),
     ) as CircuitInputs;
 
     // we want to store the state leaves at this point in time
@@ -497,7 +495,7 @@ export class Poll implements IPoll {
     // loop through the batch of messages
     for (let i = 0; i < batchSize; i += 1) {
       // we process the messages in reverse order
-      const idx = this.currentMessageBatchIndex! * batchSize - i - 1;
+      const idx = this.currentMessageBatchIndex * batchSize - i - 1;
       assert(idx >= 0, "The message index must be >= 0");
       let message: Message;
       let encPubKey: PubKey;
@@ -671,16 +669,16 @@ export class Poll implements IPoll {
     // record that we processed one batch
     this.numBatchesProcessed += 1;
 
-    if (this.currentMessageBatchIndex! > 0) {
-      this.currentMessageBatchIndex! -= 1;
+    if (this.currentMessageBatchIndex > 0) {
+      this.currentMessageBatchIndex -= 1;
     }
 
     // ensure newSbSalt differs from currentSbSalt
     let newSbSalt = genRandomSalt();
-    while (this.sbSalts[this.currentMessageBatchIndex!] === newSbSalt) {
+    while (this.sbSalts[this.currentMessageBatchIndex] === newSbSalt) {
       newSbSalt = genRandomSalt();
     }
-    this.sbSalts[this.currentMessageBatchIndex!] = newSbSalt;
+    this.sbSalts[this.currentMessageBatchIndex] = newSbSalt;
 
     // store the salt in the circuit inputs
     circuitInputs.newSbSalt = newSbSalt;
@@ -1340,8 +1338,8 @@ export class Poll implements IPoll {
       results: this.tallyResult.map((result) => result.toString()),
       numBatchesProcessed: this.numBatchesProcessed,
       numSignups: this.numSignups.toString(),
-      chainHash: this.chainHash,
-      batchHashes: this.batchHashes,
+      chainHash: this.chainHash.toString(),
+      batchHashes: this.batchHashes.map((batchHash) => batchHash.toString()),
     };
   }
 
@@ -1369,8 +1367,8 @@ export class Poll implements IPoll {
     poll.tallyResult = json.results.map((result: string) => BigInt(result));
     poll.currentMessageBatchIndex = json.currentMessageBatchIndex;
     poll.numBatchesProcessed = json.numBatchesProcessed;
-    poll.chainHash = json.chainHash;
-    poll.batchHashes = json.batchHashes;
+    poll.chainHash = BigInt(json.chainHash);
+    poll.batchHashes = json.batchHashes.map((batchHash: string) => BigInt(batchHash));
 
     // fill the trees
     // for (let i = 0; i < poll.messages.length; i += 1) {
