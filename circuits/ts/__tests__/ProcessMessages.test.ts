@@ -10,7 +10,7 @@ import {
   STATE_TREE_DEPTH,
   duration,
   maxValues,
-  // messageBatchSize,
+  messageBatchSize,
   treeDepths,
   voiceCreditBalance,
 } from "./utils/constants";
@@ -83,7 +83,7 @@ describe("ProcessMessage circuit", function test() {
     });
   });
 
-  describe("1) 5 users, 1 messages", () => {
+  describe.only("1) 5 users, 1 messages", () => {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     const voteWeight = BigInt(9);
     const voteOptionIndex = BigInt(1);
@@ -104,7 +104,7 @@ describe("ProcessMessage circuit", function test() {
         BigInt(Math.floor(Date.now() / 1000) + duration),
         maxValues,
         treeDepths,
-        maxValues.maxMessageBatchSize,
+        messageBatchSize,
         coordinatorKeypair,
       );
 
@@ -154,7 +154,6 @@ describe("ProcessMessage circuit", function test() {
 
     it("should produce a proof", async () => {
       const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
-      // console.log("inputs", inputs);
 
       // Calculate the witness
       const witness = await circuit.calculateWitness(inputs);
@@ -183,7 +182,7 @@ describe("ProcessMessage circuit", function test() {
         BigInt(Math.floor(Date.now() / 1000) + duration),
         maxValues,
         treeDepths,
-        maxValues.maxMessageBatchSize,
+        messageBatchSize,
         coordinatorKeypair,
       );
 
@@ -311,7 +310,7 @@ describe("ProcessMessage circuit", function test() {
         BigInt(2 + duration), // BigInt(Math.floor(Date.now() / 1000) + duration),
         maxValues,
         treeDepths,
-        maxValues.maxMessageBatchSize,
+        messageBatchSize,
         coordinatorKeypair,
       );
 
@@ -394,7 +393,7 @@ describe("ProcessMessage circuit", function test() {
         BigInt(2 + duration), // BigInt(Math.floor(Date.now() / 1000) + duration),
         maxValues,
         treeDepths,
-        maxValues.maxMessageBatchSize,
+        messageBatchSize,
         coordinatorKeypair,
       );
 
@@ -493,7 +492,7 @@ describe("ProcessMessage circuit", function test() {
   });
 
   const NUM_BATCHES = 2;
-  describe.only(`5) 1 user, ${maxValues.maxMessageBatchSize * NUM_BATCHES - 1} messages`, () => {
+  describe(`5) 1 user, ${messageBatchSize * NUM_BATCHES - 1} messages`, () => {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     let stateIndex: number;
     let pollId: bigint;
@@ -508,7 +507,7 @@ describe("ProcessMessage circuit", function test() {
         BigInt(Math.floor(Date.now() / 1000) + duration),
         maxValues,
         treeDepths,
-        maxValues.maxMessageBatchSize,
+        messageBatchSize,
         coordinatorKeypair,
       );
 
@@ -517,7 +516,7 @@ describe("ProcessMessage circuit", function test() {
       poll.updatePoll(BigInt(maciState.stateLeaves.length));
 
       // Second batch is not a full batch
-      const numMessages = maxValues.maxMessageBatchSize * NUM_BATCHES - 1;
+      const numMessages = messageBatchSize * NUM_BATCHES - 1;
       for (let i = 0; i < numMessages; i += 1) {
         const command = new PCommand(
           BigInt(stateIndex),
@@ -569,7 +568,7 @@ describe("ProcessMessage circuit", function test() {
         BigInt(Math.floor(Date.now() / 1000) + duration),
         maxValues,
         treeDepths,
-        maxValues.maxMessageBatchSize,
+        messageBatchSize,
         coordinatorKeypair,
       );
 
@@ -686,7 +685,7 @@ describe("ProcessMessage circuit", function test() {
         BigInt(Math.floor(Date.now() / 1000) + duration),
         maxValues,
         treeDepths,
-        maxValues.maxMessageBatchSize,
+        messageBatchSize,
         coordinatorKeypair,
       );
 
@@ -734,7 +733,7 @@ describe("ProcessMessage circuit", function test() {
       poll.publishMessage(message, ecdhKeypair.pubKey);
 
       // fill the batch with nothing messages
-      for (let i = 0; i < maxValues.maxMessageBatchSize - 1; i += 1) {
+      for (let i = 0; i < messageBatchSize - 1; i += 1) {
         poll.publishMessage(nothing, encP);
       }
 
@@ -811,7 +810,7 @@ describe("ProcessMessage circuit", function test() {
         BigInt(Math.floor(Date.now() / 1000) + duration),
         maxValues,
         treeDepths,
-        maxValues.maxMessageBatchSize,
+        messageBatchSize,
         coordinatorKeypair,
       );
 
@@ -878,7 +877,7 @@ describe("ProcessMessage circuit", function test() {
       poll.publishMessage(message, ecdhKeypair.pubKey);
 
       // fill the batch with nothing messages
-      for (let i = 0; i < maxValues.maxMessageBatchSize - 1; i += 1) {
+      for (let i = 0; i < messageBatchSize - 1; i += 1) {
         poll.publishMessage(nothing, encP);
       }
 

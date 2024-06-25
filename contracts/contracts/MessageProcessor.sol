@@ -90,9 +90,9 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
     }
 
     // Retrieve stored vals
-    (, , , uint8 voteOptionTreeDepth) = poll.treeDepths();
+    (, uint8 voteOptionTreeDepth) = poll.treeDepths();
     // calculate the message batch size from the message tree subdepth
-    (, , uint256 messageBatchSize) = poll.maxValues();
+    uint256 messageBatchSize = poll.batchSizes();
 
     // Copy the state and ballot commitment and set the batch index if this
     // is the first batch to process
@@ -160,7 +160,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
     // get the message batch size from the message tree subdepth
     // get the number of signups
     (uint256 numSignUps, uint256 numMessages) = poll.numSignUpsAndMessages();
-    (IMACI maci, ) = poll.extContracts();
+    IMACI maci = poll.extContracts();
 
     // Calculate the public input hash (a SHA256 hash of several values)
     uint256 publicInputHash = genProcessMessagesPublicInputHash(

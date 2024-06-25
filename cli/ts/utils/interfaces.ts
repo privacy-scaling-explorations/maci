@@ -164,20 +164,27 @@ export interface CheckVerifyingKeysArgs {
    */
   intStateTreeDepth: number;
 
+  //  DEPRECATED
   /**
    * The depth of the message tree
    */
-  messageTreeDepth: number;
+  // messageTreeDepth: number;
 
   /**
    * The depth of the vote option tree
    */
   voteOptionTreeDepth: number;
 
+  // DEPRECATED
   /**
    * The depth of the message batch tree
    */
-  messageBatchDepth: number;
+  // messageBatchDepth: number;
+
+  /**
+   * The size of the message  batch
+   */
+  messageBatchSize: number;
 
   /**
    * The path to the process messages zkey
@@ -279,15 +286,18 @@ export interface DeployPollArgs {
    */
   intStateTreeDepth: number;
 
+  // DEPRECATED
   /**
    * The depth of the message tree sublevels
    */
-  messageTreeSubDepth: number;
+  // messageTreeSubDepth: number;
 
   /**
    * The depth of the message tree
    */
-  messageTreeDepth: number;
+  // messageTreeDepth: number;
+
+  messageBatchSize: number;
 
   /**
    * The depth of the vote option tree
@@ -516,35 +526,36 @@ export interface GenProofsArgs {
   tallyAddress?: string;
 }
 
+// DEPRECATED
 /**
  * Interface for the arguments to the mergeMessages command
  */
-export interface MergeMessagesArgs {
-  /**
-   * The id of the poll
-   */
-  pollId: bigint;
+// export interface MergeMessagesArgs {
+//   /**
+//    * The id of the poll
+//    */
+//   pollId: bigint;
 
-  /**
-   * A signer object
-   */
-  signer: Signer;
+//   /**
+//    * A signer object
+//    */
+//   signer: Signer;
 
-  /**
-   * Whether to log the output
-   */
-  quiet?: boolean;
+//   /**
+//    * Whether to log the output
+//    */
+//   quiet?: boolean;
 
-  /**
-   * The address of the MACI contract
-   */
-  maciAddress?: string;
+//   /**
+//    * The address of the MACI contract
+//    */
+//   maciAddress?: string;
 
-  /**
-   * The number of queue operations to merge
-   */
-  numQueueOps?: string;
-}
+//   /**
+//    * The number of queue operations to merge
+//    */
+//   numQueueOps?: string;
+// }
 
 /**
  * Interface for the arguments to the mergeSignups command
@@ -755,20 +766,27 @@ export interface SetVerifyingKeysArgs {
    */
   intStateTreeDepth: number;
 
+  // DEPRECATED
   /**
    * The depth of the message tree
    */
-  messageTreeDepth: number;
+  // messageTreeDepth: number;
 
   /**
    * The depth of the vote option tree
    */
   voteOptionTreeDepth: number;
 
+  // DEPRECATED
   /**
    * The depth of the message batch tree
    */
-  messageBatchDepth: number;
+  // messageBatchDepth: number;
+
+  /**
+   * The size of message batch
+   */
+  messageBatchSize: number;
 
   /**
    * The path to the process messages qv zkey

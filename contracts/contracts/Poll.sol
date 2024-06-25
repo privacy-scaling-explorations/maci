@@ -61,6 +61,9 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   /// @notice Max values for the poll
   MaxValues public maxValues;
 
+  /// @notice Batch sizes for the poll
+  BatchSizes public batchSizes;
+
   /// @notice Depths of the merkle trees
   TreeDepths public treeDepths;
 
@@ -91,6 +94,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   /// @param _duration The duration of the voting period, in seconds
   /// @param _maxValues The maximum number of messages and vote options
   /// @param _treeDepths The depths of the merkle trees
+  /// @param _batchSizes The size of message batch
   /// @param _coordinatorPubKey The coordinator's public key
   /// @param _extContracts The external contracts
 
@@ -98,6 +102,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     uint256 _duration,
     MaxValues memory _maxValues,
     TreeDepths memory _treeDepths,
+    BatchSizes memory _batchSizes,
     PubKey memory _coordinatorPubKey,
     ExtContracts memory _extContracts
   ) payable {
@@ -116,6 +121,8 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     duration = _duration;
     // store max values
     maxValues = _maxValues;
+    // store batch sizes
+    batchSizes = _batchSizes;
     // store tree depth
     treeDepths = _treeDepths;
     // Record the current timestamp
@@ -140,7 +147,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
 
   /// @notice The initialization function.
   /// @dev Should be called immediately after Poll creation
-  /// and messageAq ownership transferred
+  /// and chainhash ownership transferred
   function init() public {
     if (isInit) revert PollAlreadyInit();
     // set to true so it cannot be called again
@@ -150,7 +157,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
       numMessages++;
     }
 
-    // init messageAq here by inserting placeholderLeaf
+    // init chainHash here by inserting placeholderLeaf
     uint256[2] memory dat;
     dat[0] = NOTHING_UP_MY_SLEEVE;
     dat[1] = 0;
@@ -197,16 +204,18 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   /// @param messageHash hash of the current message
   function updateChainHash(uint256 messageHash) internal {
     chainHash = hash2([chainHash, messageHash]);
-    if (numMessages % maxValues.maxMessageBatchSize == 0) {
+    if (numMessages % batchSizes.messageBatchSize == 0) {
       batchHashes.push(chainHash);
     }
   }
 
+  /// @notice pad nothing messages at the end of last batch
+  ///         until is full
   function padLastBatch() external isAfterVotingDeadline {
-    uint256 inBatch = numMessages % maxValues.maxMessageBatchSize;
+    uint256 inBatch = numMessages % batchSizes.messageBatchSize;
     if (inBatch != 0) {
-      for (uint256 i = 0; i < maxValues.maxMessageBatchSize - inBatch; i++) {
-        chainHash = hash2([chainHash, 0]);
+      for (uint256 i = 0; i < batchSizes.messageBatchSize - inBatch; i++) {
+        chainHash = hash2([chainHash, NOTHING_UP_MY_SLEEVE]);
       }
       batchHashes.push(chainHash);
     }
@@ -265,20 +274,6 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     actualStateTreeDepth = depth;
 
     emit MergeMaciState(mergedStateRoot, numSignups);
-  }
-
-  // DEPRECATED
-  /// @inheritdoc IPoll
-  function mergeMessageAqSubRoots(uint256 _numSrQueueOps) public isAfterVotingDeadline {
-    extContracts.messageAq.mergeSubRoots(_numSrQueueOps);
-    emit MergeMessageAqSubRoots(_numSrQueueOps);
-  }
-
-  // DEPRECATED
-  /// @inheritdoc IPoll
-  function mergeMessageAq() public isAfterVotingDeadline {
-    uint256 root = extContracts.messageAq.merge(treeDepths.messageTreeDepth);
-    emit MergeMessageAq(root);
   }
 
   /// @inheritdoc IPoll

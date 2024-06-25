@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { type Provider } from "ethers";
-import { MaciState, MESSAGE_TREE_ARITY, STATE_TREE_ARITY } from "maci-core";
+import { MaciState, STATE_TREE_ARITY, MESSAGE_BATCH_SIZE } from "maci-core";
 import { type Keypair, PubKey, Message } from "maci-domainobjs";
 
 import assert from "assert";
@@ -126,19 +126,19 @@ export const genMaciStateFromContract = async (
   const maxValues = {
     maxMessages: Number(onChainMaxValues.maxMessages),
     maxVoteOptions: Number(onChainMaxValues.maxVoteOptions),
-    maxMessageBatchSize: Number(onChainMaxValues.maxMessageBatchSize),
+    // maxMessageBatchSize: Number(onChainMaxValues.maxMessageBatchSize),
   };
 
   const treeDepths = {
     intStateTreeDepth: Number(onChainTreeDepths.intStateTreeDepth),
-    messageTreeDepth: Number(onChainTreeDepths.messageTreeDepth),
-    messageTreeSubDepth: Number(onChainTreeDepths.messageTreeSubDepth),
+    // messageTreeDepth: Number(onChainTreeDepths.messageTreeDepth),
+    // messageTreeSubDepth: Number(onChainTreeDepths.messageTreeSubDepth),
     voteOptionTreeDepth: Number(onChainTreeDepths.voteOptionTreeDepth),
   };
 
   const batchSizes = {
     tallyBatchSize: STATE_TREE_ARITY ** Number(onChainTreeDepths.intStateTreeDepth),
-    messageBatchSize: MESSAGE_TREE_ARITY ** Number(onChainTreeDepths.messageTreeSubDepth),
+    messageBatchSize: MESSAGE_BATCH_SIZE,
   };
 
   // fetch poll contract logs
@@ -238,11 +238,12 @@ export const genMaciStateFromContract = async (
         break;
       }
 
+      // DEPRICATED
       // ensure that the message root is correct (i.e. all messages have been published offchain)
-      case action.type === "MergeMessageAq": {
-        assert(maciState.polls.get(pollId)?.messageTree.root.toString() === action.data.messageRoot?.toString());
-        break;
-      }
+      // case action.type === "MergeMessageAq": {
+      //   assert(maciState.polls.get(pollId)?.messageTree.root.toString() === action.data.messageRoot?.toString());
+      //   break;
+      // }
 
       default:
         break;

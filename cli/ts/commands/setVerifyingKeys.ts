@@ -1,6 +1,6 @@
 import { extractVk } from "maci-circuits";
 import { type IVerifyingKeyStruct, VkRegistry__factory as VkRegistryFactory, EMode } from "maci-contracts";
-import { genProcessVkSig, genTallyVkSig, MESSAGE_TREE_ARITY } from "maci-core";
+import { genProcessVkSig, genTallyVkSig /* , MESSAGE_BATCH_SIZE */ } from "maci-core";
 import { VerifyingKey } from "maci-domainobjs";
 
 import fs from "fs";
@@ -26,9 +26,10 @@ import {
 export const setVerifyingKeys = async ({
   stateTreeDepth,
   intStateTreeDepth,
-  messageTreeDepth,
+  // messageTreeDepth,
   voteOptionTreeDepth,
-  messageBatchDepth,
+  // messageBatchDepth,
+  messageBatchSize,
   processMessagesZkeyPathQv,
   tallyVotesZkeyPathQv,
   processMessagesZkeyPathNonQv,
@@ -77,9 +78,9 @@ export const setVerifyingKeys = async ({
   if (
     stateTreeDepth < 1 ||
     intStateTreeDepth < 1 ||
-    messageTreeDepth < 1 ||
+    // messageTreeDepth < 1 ||
     voteOptionTreeDepth < 1 ||
-    messageBatchDepth < 1
+    messageBatchSize < 1
   ) {
     logError("Invalid depth or batch size parameters");
   }
@@ -92,8 +93,9 @@ export const setVerifyingKeys = async ({
     processMessagesZkeyPath: processMessagesZkeyPathQv!,
     tallyVotesZkeyPath: tallyVotesZkeyPathQv!,
     stateTreeDepth,
-    messageTreeDepth,
-    messageBatchDepth,
+    // messageTreeDepth,
+    // messageBatchDepth,
+    messageBatchSize,
     voteOptionTreeDepth,
     intStateTreeDepth,
   });
@@ -102,8 +104,9 @@ export const setVerifyingKeys = async ({
     processMessagesZkeyPath: processMessagesZkeyPathNonQv!,
     tallyVotesZkeyPath: tallyVotesZkeyPathNonQv!,
     stateTreeDepth,
-    messageTreeDepth,
-    messageBatchDepth,
+    // messageTreeDepth,
+    // messageBatchDepth,
+    messageBatchSize,
     voteOptionTreeDepth,
     intStateTreeDepth,
   });
@@ -116,10 +119,10 @@ export const setVerifyingKeys = async ({
   // connect to VkRegistry contract
   const vkRegistryContract = VkRegistryFactory.connect(vkRegistryAddress, signer);
 
-  const messageBatchSize = MESSAGE_TREE_ARITY ** messageBatchDepth;
+  // const messageBatchSize = MESSAGE_BATCH_SIZE;
 
   // check if the process messages vk was already set
-  const processVkSig = genProcessVkSig(stateTreeDepth, messageTreeDepth, voteOptionTreeDepth, messageBatchSize);
+  const processVkSig = genProcessVkSig(stateTreeDepth /* , messageTreeDepth */, voteOptionTreeDepth, messageBatchSize);
 
   if (useQuadraticVoting && (await vkRegistryContract.isProcessVkSet(processVkSig, EMode.QV))) {
     logError("This process verifying key is already set in the contract");
@@ -234,8 +237,9 @@ export const setVerifyingKeys = async ({
 
 interface ICheckZkeyFilepathsArgs {
   stateTreeDepth: number;
-  messageTreeDepth: number;
-  messageBatchDepth: number;
+  // messageTreeDepth: number;
+  // messageBatchDepth: number;
+  messageBatchSize: number;
   voteOptionTreeDepth: number;
   intStateTreeDepth: number;
   processMessagesZkeyPath?: string;
@@ -246,8 +250,9 @@ function checkZkeyFilepaths({
   processMessagesZkeyPath,
   tallyVotesZkeyPath,
   stateTreeDepth,
-  messageTreeDepth,
-  messageBatchDepth,
+  // messageTreeDepth,
+  // messageBatchDepth,
+  messageBatchSize,
   voteOptionTreeDepth,
   intStateTreeDepth,
 }: ICheckZkeyFilepathsArgs): void {
@@ -256,7 +261,7 @@ function checkZkeyFilepaths({
   }
 
   // Check the pm zkey filename against specified params
-  const pmMatch = processMessagesZkeyPath.match(/.+_(\d+)-(\d+)-(\d+)-(\d+)/);
+  const pmMatch = processMessagesZkeyPath.match(/.+_(\d+)-(\d+)-(\d+)/);
 
   if (!pmMatch) {
     logError(`${processMessagesZkeyPath} has an invalid filename`);
@@ -264,9 +269,10 @@ function checkZkeyFilepaths({
   }
 
   const pmStateTreeDepth = Number(pmMatch[1]);
-  const pmMsgTreeDepth = Number(pmMatch[2]);
-  const pmMsgBatchDepth = Number(pmMatch[3]);
-  const pmVoteOptionTreeDepth = Number(pmMatch[4]);
+  // const pmMsgTreeDepth = Number(pmMatch[2]);
+  // const pmMsgBatchDepth = Number(pmMatch[3]);
+  const pmMsgBatchSize = Number(pmMatch[2]);
+  const pmVoteOptionTreeDepth = Number(pmMatch[3]);
 
   const tvMatch = tallyVotesZkeyPath.match(/.+_(\d+)-(\d+)-(\d+)/);
 
@@ -281,8 +287,9 @@ function checkZkeyFilepaths({
 
   if (
     stateTreeDepth !== pmStateTreeDepth ||
-    messageTreeDepth !== pmMsgTreeDepth ||
-    messageBatchDepth !== pmMsgBatchDepth ||
+    // messageTreeDepth !== pmMsgTreeDepth ||
+    // messageBatchDepth !== pmMsgBatchDepth ||
+    messageBatchSize !== pmMsgBatchSize ||
     voteOptionTreeDepth !== pmVoteOptionTreeDepth ||
     stateTreeDepth !== tvStateTreeDepth ||
     intStateTreeDepth !== tvIntStateTreeDepth ||

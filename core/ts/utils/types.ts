@@ -27,8 +27,8 @@ export type CircuitInputs = Record<string, string | bigint | bigint[] | bigint[]
  */
 export interface TreeDepths {
   intStateTreeDepth: number;
-  messageTreeDepth: number;
-  messageTreeSubDepth: number;
+  // messageTreeDepth: number;
+  // messageTreeSubDepth: number;
   voteOptionTreeDepth: number;
 }
 
@@ -51,7 +51,7 @@ export interface BatchSizes {
 export interface MaxValues {
   maxMessages: number;
   maxVoteOptions: number;
-  maxMessageBatchSize: number;
+  // maxMessageBatchSize: number;
 }
 
 /**

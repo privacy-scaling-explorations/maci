@@ -11,16 +11,8 @@ import assert from "assert";
  * @param batchSize - The size of the batch.
  * @returns Returns a signature for querying if a verifying key with the given parameters is already registered in the contract.
  */
-export const genProcessVkSig = (
-  stateTreeDepth: number,
-  messageTreeDepth: number,
-  voteOptionTreeDepth: number,
-  batchSize: number,
-): bigint =>
-  (BigInt(batchSize) << 192n) +
-  (BigInt(stateTreeDepth) << 128n) +
-  (BigInt(messageTreeDepth) << 64n) +
-  BigInt(voteOptionTreeDepth);
+export const genProcessVkSig = (stateTreeDepth: number, voteOptionTreeDepth: number, batchSize: number): bigint =>
+  (BigInt(batchSize) << 128n) + (BigInt(stateTreeDepth) << 64n) + BigInt(voteOptionTreeDepth);
 
 /**
  * This function generates the signature of a Tally Verifying Key(VK).
@@ -52,11 +44,6 @@ export const packProcessMessageSmallVals = (
   batchStartIndex: number,
   batchEndIndex: number,
 ): bigint => {
-  // console.log("-------------- utils.ts ---------------");
-  // console.log("maxVoteOption", maxVoteOptions);
-  // console.log("numUsers", numUsers);
-  // console.log("batchStartIndex", batchStartIndex);
-  // console.log("batchEndIndex", batchEndIndex);
   const packedVals =
     // Note: the << operator has lower precedence than +
     BigInt(`${maxVoteOptions}`) +

@@ -1,7 +1,7 @@
 import { Logger, Injectable } from "@nestjs/common";
 import { ZeroAddress } from "ethers";
 import hre from "hardhat";
-import { Deployment, EContracts, ProofGenerator, type Poll, type MACI, type AccQueue } from "maci-contracts";
+import { Deployment, EContracts, ProofGenerator, type Poll, type MACI /* , type AccQueue */ } from "maci-contracts";
 import { Keypair, PrivKey, PubKey } from "maci-domainobjs";
 
 import path from "path";
@@ -70,14 +70,14 @@ export class ProofGeneratorService {
     }
 
     const pollContract = await this.deployment.getContract<Poll>({ name: EContracts.Poll, address: pollAddress });
-    const [{ messageAq: messageAqAddress }, coordinatorPublicKey] = await Promise.all([
-      pollContract.extContracts(),
+    const [/* { messageAq: messageAqAddress }, */ coordinatorPublicKey] = await Promise.all([
+      // pollContract.extContracts(),
       pollContract.coordinatorPubKey(),
     ]);
-    const messageAq = await this.deployment.getContract<AccQueue>({
-      name: EContracts.AccQueue,
-      address: messageAqAddress,
-    });
+    // const messageAq = await this.deployment.getContract<AccQueue>({
+    //   name: EContracts.AccQueue,
+    //   address: messageAqAddress,
+    // });
 
     const isStateAqMerged = await pollContract.stateMerged();
 
@@ -86,14 +86,14 @@ export class ProofGeneratorService {
       throw new Error(ErrorCodes.NOT_MERGED_STATE_TREE);
     }
 
-    const messageTreeDepth = await pollContract.treeDepths().then((depths) => Number(depths[2]));
+    // const messageTreeDepth = await pollContract.treeDepths().then((depths) => Number(depths[2]));
 
-    const mainRoot = await messageAq.getMainRoot(messageTreeDepth.toString());
+    // const mainRoot = await messageAq.getMainRoot(messageTreeDepth.toString());
 
-    if (mainRoot.toString() === "0") {
-      this.logger.error(`Error: ${ErrorCodes.NOT_MERGED_MESSAGE_TREE}, message tree is not merged`);
-      throw new Error(ErrorCodes.NOT_MERGED_MESSAGE_TREE);
-    }
+    // if (mainRoot.toString() === "0") {
+    //   this.logger.error(`Error: ${ErrorCodes.NOT_MERGED_MESSAGE_TREE}, message tree is not merged`);
+    //   throw new Error(ErrorCodes.NOT_MERGED_MESSAGE_TREE);
+    // }
 
     const { privateKey } = await this.fileService.getPrivateKey();
     const maciPrivateKey = PrivKey.deserialize(this.cryptoService.decrypt(privateKey, encryptedCoordinatorPrivateKey));
@@ -111,7 +111,7 @@ export class ProofGeneratorService {
     const maciState = await ProofGenerator.prepareState({
       maciContract,
       pollContract,
-      messageAq,
+      // messageAq,
       maciPrivateKey,
       coordinatorKeypair,
       pollId: poll,

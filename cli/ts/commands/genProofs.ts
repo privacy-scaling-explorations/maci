@@ -1,7 +1,7 @@
 import { extractVk, genProof, verifyProof } from "maci-circuits";
 import {
   MACI__factory as MACIFactory,
-  AccQueue__factory as AccQueueFactory,
+  // AccQueue__factory as AccQueueFactory,
   Poll__factory as PollFactory,
   genMaciStateFromContract,
 } from "maci-contracts";
@@ -151,22 +151,22 @@ export const genProofs = async ({
   }
   const pollContract = PollFactory.connect(pollAddr, signer);
 
-  const extContracts = await pollContract.extContracts();
-  const messageAqContractAddr = extContracts.messageAq;
-  const messageAqContract = AccQueueFactory.connect(messageAqContractAddr, signer);
+  // const extContracts = await pollContract.extContracts();
+  // const messageAqContractAddr = extContracts.messageAq;
+  // const messageAqContract = AccQueueFactory.connect(messageAqContractAddr, signer);
 
   // Check that the state and message trees have been merged
   if (!(await pollContract.stateMerged())) {
     logError("The state tree has not been merged yet. Please use the mergeSignups subcommand to do so.");
   }
 
-  const messageTreeDepth = Number((await pollContract.treeDepths()).messageTreeDepth);
+  // const messageTreeDepth = Number((await pollContract.treeDepths()).messageTreeDepth);
 
   // check that the main root is set
-  const mainRoot = (await messageAqContract.getMainRoot(messageTreeDepth.toString())).toString();
-  if (mainRoot === "0") {
-    logError("The message tree has not been merged yet. Please use the mergeMessages subcommand to do so.");
-  }
+  // const mainRoot = (await messageAqContract.getMainRoot(messageTreeDepth.toString())).toString();
+  // if (mainRoot === "0") {
+  //   logError("The message tree has not been merged yet. Please use the mergeMessages subcommand to do so.");
+  // }
 
   let maciState: MaciState | undefined;
   if (stateFile) {
@@ -184,22 +184,25 @@ export const genProofs = async ({
     }
   } else {
     // build an off-chain representation of the MACI contract using data in the contract storage
-    const [defaultStartBlockSignup, defaultStartBlockPoll, stateRoot, numSignups, messageRoot] = await Promise.all([
-      maciContract.queryFilter(maciContract.filters.SignUp(), startBlock).then((events) => events[0]?.blockNumber ?? 0),
-      maciContract
-        .queryFilter(maciContract.filters.DeployPoll(), startBlock)
-        .then((events) => events[0]?.blockNumber ?? 0),
-      maciContract.getStateTreeRoot(),
-      maciContract.numSignUps(),
-      messageAqContract.getMainRoot(messageTreeDepth),
-    ]);
+    const [defaultStartBlockSignup, defaultStartBlockPoll, stateRoot, numSignups /* , messageRoot */] =
+      await Promise.all([
+        maciContract
+          .queryFilter(maciContract.filters.SignUp(), startBlock)
+          .then((events) => events[0]?.blockNumber ?? 0),
+        maciContract
+          .queryFilter(maciContract.filters.DeployPoll(), startBlock)
+          .then((events) => events[0]?.blockNumber ?? 0),
+        maciContract.getStateTreeRoot(),
+        maciContract.numSignUps(),
+        // messageAqContract.getMainRoot(messageTreeDepth),
+      ]);
     const defaultStartBlock = Math.min(defaultStartBlockPoll, defaultStartBlockSignup);
     let fromBlock = startBlock ? Number(startBlock) : defaultStartBlock;
 
     const defaultEndBlock = await Promise.all([
-      pollContract
-        .queryFilter(pollContract.filters.MergeMessageAq(messageRoot), fromBlock)
-        .then((events) => events[events.length - 1]?.blockNumber),
+      // pollContract
+      //   .queryFilter(pollContract.filters.MergeMessageAq(messageRoot), fromBlock)
+      //   .then((events) => events[events.length - 1]?.blockNumber),
       pollContract
         .queryFilter(pollContract.filters.MergeMaciState(stateRoot, numSignups), fromBlock)
         .then((events) => events[events.length - 1]?.blockNumber),

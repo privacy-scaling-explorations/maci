@@ -25,7 +25,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
   uint8 public immutable stateTreeDepth;
 
   uint8 internal constant TREE_ARITY = 2;
-  uint8 internal constant MESSAGE_TREE_ARITY = 5;
+  // uint8 internal constant MESSAGE_TREE_ARITY = 5;
   uint8 internal constant MESSAGE_BATCH_SIZE = 20;
 
   /// @notice The hash of a blank state leaf
@@ -169,6 +169,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
   function deployPoll(
     uint256 _duration,
     TreeDepths memory _treeDepths,
+    BatchSizes memory _batchSizes,
     PubKey memory _coordinatorPubKey,
     address _verifier,
     address _vkRegistry,
@@ -188,16 +189,14 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
       revert InvalidPubKey();
     }
 
-    MaxValues memory maxValues = MaxValues({
-      maxMessages: uint256(MESSAGE_TREE_ARITY) ** _treeDepths.messageTreeDepth,
-      maxVoteOptions: uint256(MESSAGE_TREE_ARITY) ** _treeDepths.voteOptionTreeDepth,
-      maxMessageBatchSize: uint256(MESSAGE_BATCH_SIZE)
-    });
+    MaxValues memory maxValues = MaxValues({ maxMessages: 1000, maxVoteOptions: 25 });
+
+    BatchSizes memory batchSizes = BatchSizes({ messageBatchSize: 20 });
 
     // the owner of the message processor and tally contract will be the msg.sender
     address _msgSender = msg.sender;
 
-    address p = pollFactory.deploy(_duration, maxValues, _treeDepths, _coordinatorPubKey, address(this));
+    address p = pollFactory.deploy(_duration, maxValues, _treeDepths, batchSizes, _coordinatorPubKey, address(this));
 
     address mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p, _msgSender, _mode);
     address tally = tallyFactory.deploy(_verifier, _vkRegistry, p, mp, _msgSender, _mode);

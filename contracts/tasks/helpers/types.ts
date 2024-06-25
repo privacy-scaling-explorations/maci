@@ -233,10 +233,11 @@ export interface IPrepareStateParams {
    */
   pollContract: Poll;
 
+  // DEPRECATED
   /**
    * MessageAq contract
    */
-  messageAq: AccQueue;
+  // messageAq: AccQueue;
 
   /**
    * Poll id
@@ -303,10 +304,11 @@ export interface IProverParams {
    */
   mpContract: MessageProcessor;
 
+  // DEPRECATED
   /**
    * AccQueue contract typechain wrapper (messages)
    */
-  messageAqContract: AccQueue;
+  // messageAqContract: AccQueue;
 
   /**
    * MACI contract typechain wrapper

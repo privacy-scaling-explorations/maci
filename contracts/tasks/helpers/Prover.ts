@@ -3,12 +3,12 @@ import { G1Point, G2Point, hashLeftRight } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
 
 import type { IVerifyingKeyStruct, Proof } from "../../ts/types";
-import type { AccQueue, MACI, MessageProcessor, Poll, Tally, Verifier, VkRegistry } from "../../typechain-types";
+import type { /* AccQueue */ MACI, MessageProcessor, Poll, Tally, Verifier, VkRegistry } from "../../typechain-types";
 import type { BigNumberish } from "ethers";
 
 import { formatProofForVerifierContract, asHex } from "../../ts/utils";
 
-import { STATE_TREE_ARITY } from "./constants";
+import { STATE_TREE_ARITY, MESSAGE_BATCH_SIZE } from "./constants";
 import { IProverParams } from "./types";
 
 /**
@@ -25,10 +25,11 @@ export class Prover {
    */
   private mpContract: MessageProcessor;
 
+  // DEPRECATED
   /**
    * AccQueue contract typechain wrapper (messages)
    */
-  private messageAqContract: AccQueue;
+  // private messageAqContract: AccQueue;
 
   /**
    * MACI contract typechain wrapper
@@ -58,7 +59,7 @@ export class Prover {
   constructor({
     pollContract,
     mpContract,
-    messageAqContract,
+    // messageAqContract,
     maciContract,
     vkRegistryContract,
     verifierContract,
@@ -66,7 +67,7 @@ export class Prover {
   }: IProverParams) {
     this.pollContract = pollContract;
     this.mpContract = mpContract;
-    this.messageAqContract = messageAqContract;
+    // this.messageAqContract = messageAqContract;
     this.maciContract = maciContract;
     this.vkRegistryContract = vkRegistryContract;
     this.verifierContract = verifierContract;
@@ -80,20 +81,29 @@ export class Prover {
    */
   async proveMessageProcessing(proofs: Proof[]): Promise<void> {
     // retrieve the values we need from the smart contracts
-    const [treeDepths, numSignUpsAndMessages, numBatchesProcessed, stateTreeDepth, dd, coordinatorPubKeyHash, mode] =
-      await Promise.all([
-        this.pollContract.treeDepths(),
-        this.pollContract.numSignUpsAndMessages(),
-        this.mpContract.numBatchesProcessed().then(Number),
-        this.maciContract.stateTreeDepth().then(Number),
-        this.pollContract.getDeployTimeAndDuration(),
-        this.pollContract.coordinatorPubKeyHash(),
-        this.mpContract.mode(),
-      ]);
+    const [
+      treeDepths,
+      batchSizes,
+      numSignUpsAndMessages,
+      numBatchesProcessed,
+      stateTreeDepth,
+      dd,
+      coordinatorPubKeyHash,
+      mode,
+    ] = await Promise.all([
+      this.pollContract.treeDepths(),
+      this.pollContract.batchSizes(),
+      this.pollContract.numSignUpsAndMessages(),
+      this.mpContract.numBatchesProcessed().then(Number),
+      this.maciContract.stateTreeDepth().then(Number),
+      this.pollContract.getDeployTimeAndDuration(),
+      this.pollContract.coordinatorPubKeyHash(),
+      this.mpContract.mode(),
+    ]);
 
     const numSignUps = Number(numSignUpsAndMessages[0]);
     const numMessages = Number(numSignUpsAndMessages[1]);
-    const messageBatchSize = STATE_TREE_ARITY ** Number(treeDepths[1]);
+    const messageBatchSize = MESSAGE_BATCH_SIZE;
     let totalMessageBatches = numMessages <= messageBatchSize ? 1 : Math.floor(numMessages / messageBatchSize);
     let numberBatchesProcessed = numBatchesProcessed;
 
@@ -101,10 +111,12 @@ export class Prover {
       totalMessageBatches += 1;
     }
 
-    const [messageRootOnChain, onChainProcessVk] = await Promise.all([
-      this.messageAqContract.getMainRoot(Number(treeDepths[2])),
-      this.vkRegistryContract.getProcessVk(stateTreeDepth, treeDepths.voteOptionTreeDepth, messageBatchSize, mode),
-    ]);
+    const onChainProcessVk = await this.vkRegistryContract.getProcessVk(
+      stateTreeDepth,
+      treeDepths.voteOptionTreeDepth,
+      messageBatchSize,
+      mode,
+    );
 
     const pollEndTimestampOnChain = BigInt(dd[0]) + BigInt(dd[1]);
 
@@ -139,7 +151,7 @@ export class Prover {
 
       // validation
       this.validatePollDuration(circuitInputs.pollEndTimestamp as BigNumberish, pollEndTimestampOnChain);
-      this.validateMessageRoot(circuitInputs.msgRoot as BigNumberish, messageRootOnChain);
+      // this.validateMessageRoot(circuitInputs.msgRoot as BigNumberish, messageRootOnChain);
 
       let currentSbCommitmentOnChain: bigint;
 
@@ -166,7 +178,7 @@ export class Prover {
           currentMessageBatchIndex,
           numSignUps,
           numMessages,
-          treeDepths.messageTreeSubDepth,
+          batchSizes,
           treeDepths.voteOptionTreeDepth,
         ),
       ).toString();
@@ -174,11 +186,13 @@ export class Prover {
 
       const formattedProof = formatProofForVerifierContract(proof);
 
+      const batchHashes = await this.pollContract.getBatchHashes();
+
       const publicInputHashOnChain = BigInt(
         await this.mpContract.genProcessMessagesPublicInputHash(
           currentMessageBatchIndex,
-          messageRootOnChain.toString(),
-          messageRootOnChain.toString(),
+          batchHashes[currentMessageBatchIndex].toString(),
+          batchHashes[currentMessageBatchIndex + 1].toString(),
           numSignUps,
           numMessages,
           circuitInputs.currentSbCommitment as BigNumberish,
@@ -328,6 +342,7 @@ export class Prover {
     }
   }
 
+  // DEPRECATED
   /**
    * Validate message root
    *
@@ -335,11 +350,11 @@ export class Prover {
    * @param messageRootOnChain - on-chain message root
    * @throws error if roots don't match
    */
-  private validateMessageRoot(messageRoot: BigNumberish, messageRootOnChain: BigNumberish) {
-    if (BigInt(messageRoot).toString() !== messageRootOnChain.toString()) {
-      throw new Error("message root mismatch");
-    }
-  }
+  // private validateMessageRoot(messageRoot: BigNumberish, messageRootOnChain: BigNumberish) {
+  //   if (BigInt(messageRoot).toString() !== messageRootOnChain.toString()) {
+  //     throw new Error("message root mismatch");
+  //   }
+  // }
 
   /**
    * Validate commitment

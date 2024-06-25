@@ -29,7 +29,8 @@ export const checkVerifyingKeys = async ({
   intStateTreeDepth,
   // messageTreeDepth,
   voteOptionTreeDepth,
-  messageBatchDepth,
+  // messageBatchDepth,
+  messageBatchSize,
   processMessagesZkeyPath,
   tallyVotesZkeyPath,
   vkRegistry,
@@ -69,7 +70,7 @@ export const checkVerifyingKeys = async ({
   try {
     logYellow(quiet, info("Retrieving verifying keys from the contract..."));
     // retrieve the verifying keys from the contract
-    const messageBatchSize = 5 ** messageBatchDepth;
+    // const messageBatchSize = 5 ** messageBatchDepth;
 
     const processVkOnChain = await vkRegistryContractInstance.getProcessVk(
       stateTreeDepth,

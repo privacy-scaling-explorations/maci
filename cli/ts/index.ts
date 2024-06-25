@@ -16,7 +16,7 @@ import {
   showContracts,
   deployPoll,
   getPoll,
-  mergeMessages,
+  // mergeMessages,
   publish,
   setVerifyingKeys,
   mergeSignups,
@@ -88,9 +88,10 @@ program
   .option("-vk, --vk-contract <vkContract>", "the VkRegistry contract address")
   .requiredOption("-s, --state-tree-depth <stateTreeDepth>", "the state tree depth", parseInt)
   .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the intermediate state tree depth", parseInt)
-  .requiredOption("-m, --msg-tree-depth <messageTreeDepth>", "the message tree depth", parseInt)
+  // .requiredOption("-m, --msg-tree-depth <messageTreeDepth>", "the message tree depth", parseInt)
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
-  .requiredOption("-b, --msg-batch-depth <messageBatchDepth>", "the message batch depth", parseInt)
+  // .requiredOption("-b, --msg-batch-depth <messageBatchDepth>", "the message batch depth", parseInt)
+  .requiredOption("-b, --msg-batch-size <messageBatchSize>", "the message batch size", parseInt)
   .requiredOption(
     "-p, --process-messages-zkey <processMessagesZkeyPath>",
     "the process messages zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
@@ -106,9 +107,10 @@ program
       await checkVerifyingKeys({
         stateTreeDepth: cmdOptions.stateTreeDepth,
         intStateTreeDepth: cmdOptions.intStateTreeDepth,
-        messageTreeDepth: cmdOptions.msgTreeDepth,
+        // messageTreeDepth: cmdOptions.msgTreeDepth,
         voteOptionTreeDepth: cmdOptions.voteOptionTreeDepth,
-        messageBatchDepth: cmdOptions.msgBatchDepth,
+        // messageBatchDepth: cmdOptions.msgBatchDepth,
+        messageBatchSize: cmdOptions.msgBatchSize,
         processMessagesZkeyPath: cmdOptions.processMessagesZkey,
         tallyVotesZkeyPath: cmdOptions.tallyVotesZkey,
         vkRegistry: cmdOptions.vkContract,
@@ -170,8 +172,9 @@ program
   .option("-vk, --vkRegistryAddress <vkRegistryAddress>", "the vk registry contract address")
   .requiredOption("-t, --duration <pollDuration>", "the poll duration", parseInt)
   .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the int state tree depth", parseInt)
-  .requiredOption("-b, --msg-batch-depth <messageTreeSubDepth>", "the message tree sub depth", parseInt)
-  .requiredOption("-m, --msg-tree-depth <messageTreeDepth>", "the message tree depth", parseInt)
+  .requiredOption("-b, --msg-batch-size <messageBatchSize>", "the message batch size", parseInt)
+  // .requiredOption("-b, --msg-batch-depth <messageTreeSubDepth>", "the message tree sub depth", parseInt)
+  // .requiredOption("-m, --msg-tree-depth <messageTreeDepth>", "the message tree depth", parseInt)
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
   .requiredOption("-pk, --pubkey <coordinatorPubkey>", "the coordinator public key")
   .option(
@@ -190,8 +193,7 @@ program
       await deployPoll({
         pollDuration: cmdObj.duration,
         intStateTreeDepth: cmdObj.intStateTreeDepth,
-        messageTreeSubDepth: cmdObj.msgBatchDepth,
-        messageTreeDepth: cmdObj.msgTreeDepth,
+        messageBatchSize: cmdObj.msgBatchSize,
         voteOptionTreeDepth: cmdObj.voteOptionTreeDepth,
         coordinatorPubkey: cmdObj.pubkey,
         maciAddress: cmdObj.maciAddress,
@@ -209,9 +211,10 @@ program
   .description("set the verifying keys")
   .requiredOption("-s, --state-tree-depth <stateTreeDepth>", "the state tree depth", parseInt)
   .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the intermediate state tree depth", parseInt)
-  .requiredOption("-m, --msg-tree-depth <messageTreeDepth>", "the message tree depth", parseInt)
+  // .requiredOption("-m, --msg-tree-depth <messageTreeDepth>", "the message tree depth", parseInt)
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
-  .requiredOption("-b, --msg-batch-depth <messageBatchDepth>", "the message batch depth", parseInt)
+  // .requiredOption("-b, --msg-batch-depth <messageBatchDepth>", "the message batch depth", parseInt)
+  .requiredOption("-b, --msg-batch-size <messageBatchSize>", "the message batch size", parseInt)
   .option(
     "-pqv, --process-messages-zkey-qv <processMessagesZkeyPathQv>",
     "the process messages qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
@@ -239,9 +242,10 @@ program
       await setVerifyingKeys({
         stateTreeDepth: cmdObj.stateTreeDepth,
         intStateTreeDepth: cmdObj.intStateTreeDepth,
-        messageTreeDepth: cmdObj.msgTreeDepth,
+        // messageTreeDepth: cmdObj.msgTreeDepth,
         voteOptionTreeDepth: cmdObj.voteOptionTreeDepth,
-        messageBatchDepth: cmdObj.msgBatchDepth,
+        // messageBatchDepth: cmdObj.msgBatchDepth,
+        messageBatchSize: cmdObj.msgBatchSize,
         processMessagesZkeyPathQv: cmdObj.processMessagesZkeyQv,
         tallyVotesZkeyPathQv: cmdObj.tallyVotesZkeyQv,
         processMessagesZkeyPathNonQv: cmdObj.processMessagesZkeyNonQv,
@@ -297,29 +301,29 @@ program
       program.error((error as Error).message, { exitCode: 1 });
     }
   });
-program
-  .command("mergeMessages")
-  .description("merge the message accumulator queue")
-  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
-  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .option("-x, --maci-address <maciAddress>", "the MACI contract address")
-  .requiredOption("-o, --poll-id <pollId>", "the poll id", BigInt)
-  .option("-n, --num-queue-ops <numQueueOps>", "the number of queue operations", parseInt)
-  .action(async (cmdObj) => {
-    try {
-      const signer = await getSigner();
+// program
+//   .command("mergeMessages")
+//   .description("merge the message accumulator queue")
+//   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
+//   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
+//   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
+//   .requiredOption("-o, --poll-id <pollId>", "the poll id", BigInt)
+//   .option("-n, --num-queue-ops <numQueueOps>", "the number of queue operations", parseInt)
+//   .action(async (cmdObj) => {
+//     try {
+//       const signer = await getSigner();
 
-      await mergeMessages({
-        pollId: cmdObj.pollId,
-        maciAddress: cmdObj.maciAddress,
-        numQueueOps: cmdObj.numQueueOps?.toString(),
-        quiet: cmdObj.quiet,
-        signer,
-      });
-    } catch (error) {
-      program.error((error as Error).message, { exitCode: 1 });
-    }
-  });
+//       await mergeMessages({
+//         pollId: cmdObj.pollId,
+//         maciAddress: cmdObj.maciAddress,
+//         numQueueOps: cmdObj.numQueueOps?.toString(),
+//         quiet: cmdObj.quiet,
+//         signer,
+//       });
+//     } catch (error) {
+//       program.error((error as Error).message, { exitCode: 1 });
+//     }
+//   });
 program
   .command("mergeSignups")
   .description("merge the signups accumulator queue")
@@ -670,7 +674,7 @@ export {
   genKeyPair,
   genMaciPubKey,
   genProofs,
-  mergeMessages,
+  // mergeMessages,
   mergeSignups,
   publish,
   publishBatch,

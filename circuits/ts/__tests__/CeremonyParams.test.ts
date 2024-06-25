@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
-import { MaciState, Poll, packProcessMessageSmallVals, STATE_TREE_ARITY, MESSAGE_TREE_ARITY } from "maci-core";
+import { MaciState, Poll, packProcessMessageSmallVals, STATE_TREE_ARITY /* , MESSAGE_TREE_ARITY */ } from "maci-core";
 import { hash5, IncrementalQuinTree } from "maci-crypto";
 import { PrivKey, Keypair, PCommand, Message, Ballot } from "maci-domainobjs";
 
@@ -13,9 +13,9 @@ describe("Ceremony param tests", () => {
     // processMessages and Tally
     stateTreeDepth: 6,
     // processMessages
-    messageTreeDepth: 9,
+    // messageTreeDepth: 9,
     // processMessages
-    messageBatchTreeDepth: 2,
+    // messageBatchTreeDepth: 2,
     // processMessages and Tally
     voteOptionTreeDepth: 3,
     // Tally
@@ -24,19 +24,19 @@ describe("Ceremony param tests", () => {
 
   const maxValues = {
     maxUsers: STATE_TREE_ARITY ** params.stateTreeDepth,
-    maxMessages: MESSAGE_TREE_ARITY ** params.messageTreeDepth,
-    maxVoteOptions: MESSAGE_TREE_ARITY ** params.voteOptionTreeDepth,
-    maxMessageBatchSize: 20,
+    maxMessages: 1000,
+    maxVoteOptions: 5 ** params.voteOptionTreeDepth,
+    // maxMessageBatchSize: 20,
   };
 
   const treeDepths = {
-    intStateTreeDepth: params.messageBatchTreeDepth,
-    messageTreeDepth: params.messageTreeDepth,
-    messageTreeSubDepth: params.messageBatchTreeDepth,
+    intStateTreeDepth: params.stateTreeDepth,
+    // messageTreeDepth: params.messageTreeDepth,
+    // messageTreeSubDepth: params.messageBatchTreeDepth,
     voteOptionTreeDepth: params.voteOptionTreeDepth,
   };
 
-  const messageBatchSize = MESSAGE_TREE_ARITY ** params.messageBatchTreeDepth;
+  const messageBatchSize = 20;
 
   const voiceCreditBalance = BigInt(100);
   const duration = 30;

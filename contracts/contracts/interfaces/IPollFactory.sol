@@ -11,6 +11,7 @@ interface IPollFactory {
   /// @param _duration The duration of the poll
   /// @param _maxValues The max values for the poll
   /// @param _treeDepths The depths of the merkle trees
+  /// @param _batchSizes The batch sizes for the poll
   /// @param _coordinatorPubKey The coordinator's public key
   /// @param _maci The MACI contract interface reference
   /// @return The deployed Poll contract
@@ -18,6 +19,7 @@ interface IPollFactory {
     uint256 _duration,
     Params.MaxValues memory _maxValues,
     Params.TreeDepths memory _treeDepths,
+    Params.BatchSizes memory _batchSizes,
     DomainObjs.PubKey memory _coordinatorPubKey,
     address _maci
   ) external returns (address);

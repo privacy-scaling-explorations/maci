@@ -17,7 +17,7 @@ task("merge", "Merge signups and messages")
   .addParam("poll", "The poll id", undefined, types.string)
   .addOptionalParam("queueOps", "The number of queue operations to perform", DEFAULT_SR_QUEUE_OPS, types.int)
   .addOptionalParam("prove", "Run prove command after merging", false, types.boolean)
-  .setAction(async ({ poll, prove, queueOps = DEFAULT_SR_QUEUE_OPS }: IMergeParams, hre) => {
+  .setAction(async ({ poll, prove /* queueOps = DEFAULT_SR_QUEUE_OPS */ }: IMergeParams, hre) => {
     const deployment = Deployment.getInstance(hre);
 
     deployment.setHre(hre);
@@ -52,8 +52,6 @@ task("merge", "Merge signups and messages")
     await treeMerger.checkPollDuration();
 
     await treeMerger.mergeSignups();
-    await treeMerger.mergeMessageSubtrees(queueOps);
-    await treeMerger.mergeMessages();
 
     const endBalance = await deployer.provider.getBalance(deployer);
 

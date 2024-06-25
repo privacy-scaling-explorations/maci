@@ -40,8 +40,8 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").then((task) =>
     const coordinatorPubkey = deployment.getDeployConfigField<string>(EContracts.Poll, "coordinatorPubkey");
     const pollDuration = deployment.getDeployConfigField<number>(EContracts.Poll, "pollDuration");
     const intStateTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "intStateTreeDepth");
-    const messageTreeSubDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageBatchDepth");
-    const messageTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageTreeDepth");
+    const messageBatchSize = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageBatchSize");
+    // const messageTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageTreeDepth");
     const voteOptionTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "voteOptionTreeDepth");
 
     const useQuadraticVoting =
@@ -54,9 +54,12 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").then((task) =>
         pollDuration,
         {
           intStateTreeDepth,
-          messageTreeSubDepth,
-          messageTreeDepth,
+          // messageTreeSubDepth,
+          // messageTreeDepth,
           voteOptionTreeDepth,
+        },
+        {
+          messageBatchSize,
         },
         unserializedKey.asContractParam(),
         verifierContractAddress,
@@ -68,9 +71,12 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").then((task) =>
       pollDuration,
       {
         intStateTreeDepth,
-        messageTreeSubDepth,
-        messageTreeDepth,
+        // messageTreeSubDepth,
+        // messageTreeDepth,
         voteOptionTreeDepth,
+      },
+      {
+        messageBatchSize,
       },
       unserializedKey.asContractParam(),
       verifierContractAddress,
@@ -97,10 +103,10 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").then((task) =>
       address: tallyContractAddress,
     });
 
-    const messageAccQueueContract = await deployment.getContract({
-      name: EContracts.AccQueueQuinaryMaci,
-      address: extContracts[1],
-    });
+    // const messageAccQueueContract = await deployment.getContract({
+    //   name: EContracts.AccQueueQuinaryMaci,
+    //   address: extContracts[1],
+    // });
 
     await Promise.all([
       storage.register({
@@ -112,9 +118,12 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").then((task) =>
           maxValues.map((value) => value.toString()),
           {
             intStateTreeDepth,
-            messageTreeSubDepth,
-            messageTreeDepth,
+            // messageTreeSubDepth,
+            // messageTreeDepth,
             voteOptionTreeDepth,
+          },
+          {
+            messageBatchSize,
           },
           unserializedKey.asContractParam(),
           extContracts,
@@ -144,14 +153,14 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").then((task) =>
         network: hre.network.name,
       }),
 
-      storage.register({
-        id: EContracts.AccQueueQuinaryMaci,
-        key: `poll-${pollId}`,
-        name: "contracts/trees/AccQueueQuinaryMaci.sol:AccQueueQuinaryMaci",
-        contract: messageAccQueueContract,
-        args: [messageTreeSubDepth],
-        network: hre.network.name,
-      }),
+      // storage.register({
+      //   id: EContracts.AccQueueQuinaryMaci,
+      //   key: `poll-${pollId}`,
+      //   name: "contracts/trees/AccQueueQuinaryMaci.sol:AccQueueQuinaryMaci",
+      //   contract: messageAccQueueContract,
+      //   args: [messageTreeSubDepth],
+      //   network: hre.network.name,
+      // }),
     ]);
   }),
 );

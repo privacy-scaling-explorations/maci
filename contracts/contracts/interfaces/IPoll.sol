@@ -3,7 +3,7 @@ pragma solidity ^0.8.10;
 
 import { DomainObjs } from "../utilities/DomainObjs.sol";
 import { IMACI } from "./IMACI.sol";
-import { AccQueue } from "../trees/AccQueue.sol";
+// import { AccQueue } from "../trees/AccQueue.sol";
 
 /// @title IPoll
 /// @notice Poll interface
@@ -17,6 +17,7 @@ interface IPoll {
   /// @return betchHashes array containing all batch hashes
   function getBatchHashes() external view returns (uint256[] memory);
 
+  /// @notice Pad last batch with nothing messages
   function padLastBatch() external;
 
   /// @notice Get all message batch hashes
@@ -36,15 +37,6 @@ interface IPoll {
   /// currentSbCommitment.
   function mergeMaciState() external;
 
-  /// @notice The first step in merging the message AccQueue so that the
-  /// ProcessMessages circuit can access the message root.
-  /// @param _numSrQueueOps The number of subroot queue operations to perform
-  function mergeMessageAqSubRoots(uint256 _numSrQueueOps) external;
-
-  /// @notice The second step in merging the message AccQueue so that the
-  /// ProcessMessages circuit can access the message root.
-  function mergeMessageAq() external;
-
   /// @notice Returns the Poll's deploy time and duration
   /// @return _deployTime The deployment timestamp
   /// @return _duration The duration of the poll
@@ -56,24 +48,27 @@ interface IPoll {
 
   /// @notice Get the depths of the merkle trees
   /// @return intStateTreeDepth The depth of the state tree
-  /// @return messageTreeSubDepth The subdepth of the message tree
-  /// @return messageTreeDepth The depth of the message tree
   /// @return voteOptionTreeDepth The subdepth of the vote option tree
   function treeDepths()
     external
     view
-    returns (uint8 intStateTreeDepth, uint8 messageTreeSubDepth, uint8 messageTreeDepth, uint8 voteOptionTreeDepth);
+    returns (
+      uint8 intStateTreeDepth /*, uint8 messageTreeSubDepth, uint8 messageTreeDepth*/,
+      uint8 voteOptionTreeDepth
+    );
 
   /// @notice Get the max values for the poll
   /// @return maxMessages The maximum number of messages
   /// @return maxVoteOptions The maximum number of vote options
-  /// @return maxMessageBatchSize The maximum size of batch
-  function maxValues() external view returns (uint256 maxMessages, uint256 maxVoteOptions, uint256 maxMessageBatchSize);
+  function maxValues() external view returns (uint256 maxMessages, uint256 maxVoteOptions);
+
+  /// @notice Get the batch sizes for the poll
+  /// @return messageBatchSize The size of batch
+  function batchSizes() external view returns (uint256 messageBatchSize);
 
   /// @notice Get the external contracts
   /// @return maci The IMACI contract
-  /// @return messageAq The AccQueue contract
-  function extContracts() external view returns (IMACI maci, AccQueue messageAq);
+  function extContracts() external view returns (IMACI maci);
 
   /// @notice Get the hash of coordinator's public key
   /// @return _coordinatorPubKeyHash the hash of coordinator's public key

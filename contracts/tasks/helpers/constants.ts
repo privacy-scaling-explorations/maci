@@ -22,6 +22,8 @@ const GWEI = 1e9;
 
 export const STATE_TREE_ARITY = 5;
 
+export const MESSAGE_BATCH_SIZE = 20;
+
 /**
  * Convert gas price from gweguari to wei
  *

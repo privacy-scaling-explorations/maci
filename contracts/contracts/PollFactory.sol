@@ -25,6 +25,7 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
     uint256 _duration,
     MaxValues calldata _maxValues,
     TreeDepths calldata _treeDepths,
+    BatchSizes calldata _batchSizes,
     PubKey calldata _coordinatorPubKey,
     address _maci
   ) public virtual returns (address pollAddr) {
@@ -37,17 +38,18 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
     }
 
     /// @notice deploy a new AccQueue contract to store messages
-    AccQueue messageAq = new AccQueueQuinaryMaci(_treeDepths.messageTreeSubDepth);
+    // AccQueue messageAq = new AccQueueQuinaryMaci(_treeDepths.messageTreeSubDepth);
 
     /// @notice the smart contracts that a Poll would interact with
-    ExtContracts memory extContracts = ExtContracts({ maci: IMACI(_maci), messageAq: messageAq });
+    ExtContracts memory extContracts = ExtContracts({ maci: IMACI(_maci) });
 
     // deploy the poll
-    Poll poll = new Poll(_duration, _maxValues, _treeDepths, _coordinatorPubKey, extContracts);
+    Poll poll = new Poll(_duration, _maxValues, _treeDepths, _batchSizes, _coordinatorPubKey, extContracts);
 
+    // DEPRECATED
     // Make the Poll contract own the messageAq contract, so only it can
     // run enqueue/merge
-    messageAq.transferOwnership(address(poll));
+    // messageAq.transferOwnership(address(poll));
 
     // init Poll
     poll.init();

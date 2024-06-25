@@ -14,7 +14,7 @@ import {
   deployVkRegistryContract,
   genLocalState,
   genProofs,
-  mergeMessages,
+  // mergeMessages,
   mergeSignups,
   proveOnChain,
   publish,
@@ -32,7 +32,7 @@ import {
   pollDuration,
   proveOnChainArgs,
   verifyArgs,
-  mergeMessagesArgs,
+  // mergeMessagesArgs,
   mergeSignupsArgs,
   processMessageTestZkeyPath,
   setVerifyingKeysArgs,
@@ -133,7 +133,7 @@ describe("e2e tests", function test() {
 
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel({ seconds: pollDuration, signer });
-      await mergeMessages({ ...mergeMessagesArgs, signer });
+      // await mergeMessages({ ...mergeMessagesArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, signer });
       const tallyFileData = await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
@@ -180,7 +180,7 @@ describe("e2e tests", function test() {
 
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeMessages({ ...mergeMessagesArgs, signer });
+      // await mergeMessages({ ...mergeMessagesArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, signer });
       const tallyFileData = await genProofs({ ...genProofsArgs, signer });
       await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer });
@@ -318,7 +318,7 @@ describe("e2e tests", function test() {
 
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeMessages({ ...mergeMessagesArgs, signer });
+      // await mergeMessages({ ...mergeMessagesArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, signer });
       await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
@@ -375,7 +375,7 @@ describe("e2e tests", function test() {
 
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeMessages({ ...mergeMessagesArgs, signer });
+      // await mergeMessages({ ...mergeMessagesArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, signer });
       const tallyFileData = await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
@@ -424,7 +424,7 @@ describe("e2e tests", function test() {
 
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeMessages({ ...mergeMessagesArgs, signer });
+      // await mergeMessages({ ...mergeMessagesArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, signer });
       await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
@@ -511,7 +511,7 @@ describe("e2e tests", function test() {
 
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeMessages({ ...mergeMessagesArgs, signer });
+      // await mergeMessages({ ...mergeMessagesArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, signer });
       const tallyFileData = await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
@@ -559,7 +559,7 @@ describe("e2e tests", function test() {
       // time travel
       await timeTravel({ ...timeTravelArgs, signer });
       // generate proofs
-      await mergeMessages({ ...mergeMessagesArgs, signer });
+      // await mergeMessages({ ...mergeMessagesArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, signer });
       const tallyFileData = await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
@@ -588,7 +588,7 @@ describe("e2e tests", function test() {
 
     it("should generate proofs and verify them", async () => {
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeMessages({ pollId: 1n, signer });
+      // await mergeMessages({ pollId: 1n, signer });
       await mergeSignups({ pollId: 1n, signer });
       await genProofs({ ...genProofsArgs, pollId: 1n, signer });
       await proveOnChain({ ...proveOnChainArgs, pollId: 1n, signer });
@@ -629,7 +629,7 @@ describe("e2e tests", function test() {
       // time travel
       await timeTravel({ ...timeTravelArgs, signer });
       // generate proofs
-      await mergeMessages({ ...mergeMessagesArgs, signer });
+      // await mergeMessages({ ...mergeMessagesArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, signer });
       const tallyFileData = await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
@@ -680,7 +680,7 @@ describe("e2e tests", function test() {
 
     it("should generate proofs and verify them", async () => {
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeMessages({ pollId: 1n, signer });
+      // await mergeMessages({ pollId: 1n, signer });
       await mergeSignups({ pollId: 1n, signer });
       await genProofs({ ...genProofsArgs, pollId: 1n, signer });
       await proveOnChain({ ...proveOnChainArgs, pollId: 1n, signer });
@@ -748,7 +748,7 @@ describe("e2e tests", function test() {
       // time travel
       await timeTravel({ ...timeTravelArgs, signer });
       // generate proofs
-      await mergeMessages({ ...mergeMessagesArgs, signer });
+      // await mergeMessages({ ...mergeMessagesArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, signer });
       await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
@@ -846,7 +846,7 @@ describe("e2e tests", function test() {
 
     it("should complete the second poll", async () => {
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeMessages({ pollId: 1n, signer });
+      // await mergeMessages({ pollId: 1n, signer });
       await mergeSignups({ pollId: 1n, signer });
       const tallyData = await genProofs({ ...genProofsArgs, pollId: 1n, signer });
       await proveOnChain({
@@ -869,7 +869,7 @@ describe("e2e tests", function test() {
     });
 
     it("should complete the third poll", async () => {
-      await mergeMessages({ pollId: 2n, signer });
+      // await mergeMessages({ pollId: 2n, signer });
       await mergeSignups({ pollId: 2n, signer });
       const tallyData = await genProofs({ ...genProofsArgs, pollId: 2n, signer });
       await proveOnChain({
@@ -932,7 +932,7 @@ describe("e2e tests", function test() {
 
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeMessages({ ...mergeMessagesArgs, signer });
+      // await mergeMessages({ ...mergeMessagesArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, signer });
       await genLocalState({
         outputPath: stateOutPath,
