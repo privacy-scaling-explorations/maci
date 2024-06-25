@@ -107,6 +107,11 @@ const config: Config = {
           position: "left",
         },
         {
+          to: "/projects",
+          label: "Projects",
+          position: "left",
+        },
+        {
           type: "docsVersionDropdown",
           position: "right",
           dropdownActiveClassDisabled: true,
