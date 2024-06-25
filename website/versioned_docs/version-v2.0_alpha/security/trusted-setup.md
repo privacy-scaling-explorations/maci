@@ -24,8 +24,6 @@ For more info on trusted setup ceremonies please refer to p0tion's [docs](https:
 
 ## Maci v1.2 Trusted Setup Ceremony (most recent)
 
-For your convenience, here is a list of the artifacts that can be used in production:
-
 :::info
 You can download all of the artifacts using the following command from maci's monorepo root:
 
@@ -34,6 +32,23 @@ download:ceremony-zkeys
 ```
 
 :::
+
+Here are the **maximum** values supported by these artifacts:
+
+**_ProcessMessages_**
+
+- users: $5^6 = 15625$
+- votes: $5^9 = 1953125$
+- batch size for proving: $5^2 = 25$
+- vote options: $5^3 = 125$
+
+**_TallyVotes_**
+
+- users (ballots): $5^6 = 15625$
+- batch size for proving: $5^2 = 25$
+- vote options: $5^3 = 125$
+
+For your convenience, here is a list of the artifacts that can be used in production:
 
 | Artifact                               | Description                                                                                              | Parameters | Link                                                                                                                                                                                                                                            |
 | -------------------------------------- | -------------------------------------------------------------------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -59,6 +74,21 @@ download:ceremony-zkeys
 | tallyVotesNonQv Solidity verifier      | The Solidity smart contract which can be used to verify the tallyVotesNonQv circuit proofs on-chain      | 6-2-3      | [tallyvotesnonqv_6-2-3_verifier.sol](https://maci-v1-2-0-trusted-setup-ceremony-pse-p0tion-production.s3.eu-central-1.amazonaws.com/circuits/maci-tallyvotesnonqv_6-2-3/maci-tallyvotesnonqv_6-2-3_verifier.sol)                                |
 
 ## Maci v1.1 Trusted Setup Ceremony
+
+Here are the **maximum** values supported by these artifacts:
+
+**_ProcessMessages_**
+
+- users: $5^6 = 15625$
+- votes: $5^8 = 390625$
+- messages per batch: $5^2 = 25$
+- vote options: $5^3 = 125$
+
+**_TallyVotes_**
+
+- users (ballots): $5^6 = 15625$
+- batch size: $5^2 = 25$
+- vote options: $5^3 = 125$
 
 For your convenience, here is a list of the artifacts that can be used in production:
 
