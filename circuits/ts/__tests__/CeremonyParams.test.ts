@@ -12,10 +12,6 @@ describe("Ceremony param tests", () => {
   const params = {
     // processMessages and Tally
     stateTreeDepth: 6,
-    // processMessages
-    // messageTreeDepth: 9,
-    // processMessages
-    // messageBatchTreeDepth: 2,
     // processMessages and Tally
     voteOptionTreeDepth: 3,
     // Tally
@@ -26,13 +22,10 @@ describe("Ceremony param tests", () => {
     maxUsers: STATE_TREE_ARITY ** params.stateTreeDepth,
     maxMessages: 1000,
     maxVoteOptions: 5 ** params.voteOptionTreeDepth,
-    // maxMessageBatchSize: 20,
   };
 
   const treeDepths = {
     intStateTreeDepth: params.stateTreeDepth,
-    // messageTreeDepth: params.messageTreeDepth,
-    // messageTreeSubDepth: params.messageBatchTreeDepth,
     voteOptionTreeDepth: params.voteOptionTreeDepth,
   };
 
@@ -54,7 +47,6 @@ describe("Ceremony param tests", () => {
         "inputBatchHash",
         "outputBatchHash",
         "msgs",
-        "msgSubrootPathElements",
         "coordPrivKey",
         "coordPubKey",
         "encPubKeys",

@@ -12,8 +12,6 @@ import { IMessageProcessor } from "./interfaces/IMessageProcessor.sol";
 import { CommonUtilities } from "./utilities/CommonUtilities.sol";
 import { DomainObjs } from "./utilities/DomainObjs.sol";
 
-// import "hardhat/console.sol";
-
 /// @title MessageProcessor
 /// @dev MessageProcessor is used to process messages published by signup users.
 /// It will process message by batch due to large size of messages.
@@ -109,9 +107,6 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
       }
     }
 
-    // console.log("currentBatchIndex", currentBatchIndex);
-    // console.log("in", batchHashes[currentBatchIndex - 1]);
-    // console.log("out", batchHashes[currentBatchIndex]);
     uint256 inputBatchHash = batchHashes[currentBatchIndex - 1];
     uint256 outputBatchHash = batchHashes[currentBatchIndex];
 
@@ -268,11 +263,6 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
     if (_numSignUps >= 2 ** 50) revert NumSignUpsTooLarge();
     if (_currentBatchIndex * _messageBatchSize >= 2 ** 50) revert CurrentMessageBatchIndexTooLarge();
     if (batchEndIndex >= 2 ** 50) revert BatchEndIndexTooLarge();
-    // console.log("-------------- contracts ---------------");
-    // console.log("maxVoteOption", maxVoteOptions);
-    // console.log("numUsers", _numSignUps);
-    // console.log("batchStartIndex", _currentBatchIndex * _messageBatchSize);
-    // console.log("batchEndIndex", batchEndIndex);
     result =
       maxVoteOptions +
       (_numSignUps << 50) +

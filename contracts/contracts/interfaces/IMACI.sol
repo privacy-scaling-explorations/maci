@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import { AccQueue } from "../trees/AccQueue.sol";
-
 /// @title IMACI
 /// @notice MACI interface
 interface IMACI {

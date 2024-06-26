@@ -58,11 +58,7 @@ export const deployPoll = async ({
   if (intStateTreeDepth <= 0) {
     logError("Int state tree depth cannot be <= 0");
   }
-  // DEPRECATED
-  // required arg -> message tree sub depth
-  // if (messageTreeSubDepth <= 0) {
-  //   logError("Message tree sub depth cannot be <= 0");
-  // }
+
   // required arg -> message tree depth
   if (messageBatchSize <= 0) {
     logError("Message batch size cannot be <= 0");

@@ -180,13 +180,11 @@ describe("TallyVotesNonQv", () => {
     );
   });
 
-  describe("after merging acc queues", () => {
+  describe("after messages processing", () => {
     let tallyGeneratedInputs: ITallyCircuitInputs;
     before(async () => {
       await pollContract.mergeMaciState();
 
-      // await pollContract.mergeMessageAqSubRoots(0);
-      // await pollContract.mergeMessageAq();
       tallyGeneratedInputs = poll.tallyVotes();
     });
 

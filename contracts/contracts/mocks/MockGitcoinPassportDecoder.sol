@@ -8,7 +8,7 @@ contract MockGitcoinPassportDecoder {
 
   /// @notice Get the score of a user's passport
   /// @param _user The address of the user
-  function getScore(address _user) external view returns (uint256) {
+  function getScore(address _user) external returns (uint256) {
     return score;
   }
 

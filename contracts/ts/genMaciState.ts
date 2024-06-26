@@ -126,13 +126,10 @@ export const genMaciStateFromContract = async (
   const maxValues = {
     maxMessages: Number(onChainMaxValues.maxMessages),
     maxVoteOptions: Number(onChainMaxValues.maxVoteOptions),
-    // maxMessageBatchSize: Number(onChainMaxValues.maxMessageBatchSize),
   };
 
   const treeDepths = {
     intStateTreeDepth: Number(onChainTreeDepths.intStateTreeDepth),
-    // messageTreeDepth: Number(onChainTreeDepths.messageTreeDepth),
-    // messageTreeSubDepth: Number(onChainTreeDepths.messageTreeSubDepth),
     voteOptionTreeDepth: Number(onChainTreeDepths.voteOptionTreeDepth),
   };
 
@@ -237,13 +234,6 @@ export const genMaciStateFromContract = async (
         maciState.polls.get(pollId)?.publishMessage(message!, encPubKey!);
         break;
       }
-
-      // DEPRICATED
-      // ensure that the message root is correct (i.e. all messages have been published offchain)
-      // case action.type === "MergeMessageAq": {
-      //   assert(maciState.polls.get(pollId)?.messageTree.root.toString() === action.data.messageRoot?.toString());
-      //   break;
-      // }
 
       default:
         break;

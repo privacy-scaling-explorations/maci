@@ -241,7 +241,6 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     }
   }
 
-  // DEPRECATED
   /// @inheritdoc IPoll
   function mergeMaciState() public isAfterVotingDeadline {
     // This function can only be called once per Poll after the voting

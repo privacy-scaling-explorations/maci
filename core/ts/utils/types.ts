@@ -21,14 +21,10 @@ export type CircuitInputs = Record<string, string | bigint | bigint[] | bigint[]
 /**
  * This interface defines the tree depths.
  * @property intStateTreeDepth - The depth of the intermediate state tree.
- * @property messageTreeDepth - The depth of the message tree.
- * @property messageTreeSubDepth - The depth of the message tree sub.
  * @property voteOptionTreeDepth - The depth of the vote option tree.
  */
 export interface TreeDepths {
   intStateTreeDepth: number;
-  // messageTreeDepth: number;
-  // messageTreeSubDepth: number;
   voteOptionTreeDepth: number;
 }
 
@@ -46,12 +42,10 @@ export interface BatchSizes {
  * This interface defines the maximum values that the circuit can handle.
  * @property maxMessages - The maximum number of messages.
  * @property maxVoteOptions - The maximum number of vote options.
- * @property maxMessageBatchSize - The maximum number of message in one processed batch.
  */
 export interface MaxValues {
   maxMessages: number;
   maxVoteOptions: number;
-  // maxMessageBatchSize: number;
 }
 
 /**
@@ -155,7 +149,6 @@ export interface IProcessMessagesCircuitInputs {
   inputBatchHash: string;
   outputBatchHash: string;
   msgs: string[];
-  msgSubrootPathElements: string[][];
   coordPrivKey: string;
   coordPubKey: string;
   encPubKeys: string[];

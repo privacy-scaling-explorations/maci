@@ -2,7 +2,7 @@
 import { ZeroAddress } from "ethers";
 import { task, types } from "hardhat/config";
 
-import type { AccQueue, MACI, Poll } from "../../typechain-types";
+import type { MACI, Poll } from "../../typechain-types";
 
 import { Deployment } from "../helpers/Deployment";
 import { TreeMerger } from "../helpers/TreeMerger";
@@ -11,13 +11,13 @@ import { EContracts, type IMergeParams } from "../helpers/types";
 const DEFAULT_SR_QUEUE_OPS = 4;
 
 /**
- * Command to merge signup and message queues of a MACI contract
+ * Command to merge signups of a MACI contract
  */
-task("merge", "Merge signups and messages")
+task("merge", "Merge signups")
   .addParam("poll", "The poll id", undefined, types.string)
   .addOptionalParam("queueOps", "The number of queue operations to perform", DEFAULT_SR_QUEUE_OPS, types.int)
   .addOptionalParam("prove", "Run prove command after merging", false, types.boolean)
-  .setAction(async ({ poll, prove /* queueOps = DEFAULT_SR_QUEUE_OPS */ }: IMergeParams, hre) => {
+  .setAction(async ({ poll, prove }: IMergeParams, hre) => {
     const deployment = Deployment.getInstance(hre);
 
     deployment.setHre(hre);
@@ -28,12 +28,6 @@ task("merge", "Merge signups and messages")
 
     const pollContractAddress = await maciContract.polls(poll);
     const pollContract = await deployment.getContract<Poll>({ name: EContracts.Poll, address: pollContractAddress });
-    const [, messageAccQueueContractAddress] = await pollContract.extContracts();
-
-    const messageAccQueueContract = await deployment.getContract<AccQueue>({
-      name: EContracts.AccQueue,
-      address: messageAccQueueContractAddress,
-    });
 
     if (!pollContractAddress || pollContractAddress === ZeroAddress) {
       throw new Error(`No poll ${poll} found`);
@@ -42,7 +36,6 @@ task("merge", "Merge signups and messages")
     const treeMerger = new TreeMerger({
       deployer,
       pollContract,
-      messageAccQueueContract,
     });
 
     const startBalance = await deployer.provider.getBalance(deployer);

@@ -3,7 +3,7 @@ import { G1Point, G2Point, hashLeftRight } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
 
 import type { IVerifyingKeyStruct, Proof } from "../../ts/types";
-import type { /* AccQueue */ MACI, MessageProcessor, Poll, Tally, Verifier, VkRegistry } from "../../typechain-types";
+import type { MACI, MessageProcessor, Poll, Tally, Verifier, VkRegistry } from "../../typechain-types";
 import type { BigNumberish } from "ethers";
 
 import { formatProofForVerifierContract, asHex } from "../../ts/utils";
@@ -24,12 +24,6 @@ export class Prover {
    * MessageProcessor contract typechain wrapper
    */
   private mpContract: MessageProcessor;
-
-  // DEPRECATED
-  /**
-   * AccQueue contract typechain wrapper (messages)
-   */
-  // private messageAqContract: AccQueue;
 
   /**
    * MACI contract typechain wrapper
@@ -59,7 +53,6 @@ export class Prover {
   constructor({
     pollContract,
     mpContract,
-    // messageAqContract,
     maciContract,
     vkRegistryContract,
     verifierContract,
@@ -67,7 +60,6 @@ export class Prover {
   }: IProverParams) {
     this.pollContract = pollContract;
     this.mpContract = mpContract;
-    // this.messageAqContract = messageAqContract;
     this.maciContract = maciContract;
     this.vkRegistryContract = vkRegistryContract;
     this.verifierContract = verifierContract;
@@ -151,7 +143,6 @@ export class Prover {
 
       // validation
       this.validatePollDuration(circuitInputs.pollEndTimestamp as BigNumberish, pollEndTimestampOnChain);
-      // this.validateMessageRoot(circuitInputs.msgRoot as BigNumberish, messageRootOnChain);
 
       let currentSbCommitmentOnChain: bigint;
 
@@ -341,20 +332,6 @@ export class Prover {
       throw new Error("poll end timestamp mismatch");
     }
   }
-
-  // DEPRECATED
-  /**
-   * Validate message root
-   *
-   * @param messageRoot - off-chain message root
-   * @param messageRootOnChain - on-chain message root
-   * @throws error if roots don't match
-   */
-  // private validateMessageRoot(messageRoot: BigNumberish, messageRootOnChain: BigNumberish) {
-  //   if (BigInt(messageRoot).toString() !== messageRootOnChain.toString()) {
-  //     throw new Error("message root mismatch");
-  //   }
-  // }
 
   /**
    * Validate commitment

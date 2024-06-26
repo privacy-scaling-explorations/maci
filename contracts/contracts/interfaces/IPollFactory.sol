@@ -7,7 +7,7 @@ import { DomainObjs } from "../utilities/DomainObjs.sol";
 /// @title IPollFactory
 /// @notice PollFactory interface
 interface IPollFactory {
-  /// @notice Deploy a new Poll contract and AccQueue contract for messages.
+  /// @notice Deploy a new Poll contract
   /// @param _duration The duration of the poll
   /// @param _maxValues The max values for the poll
   /// @param _treeDepths The depths of the merkle trees

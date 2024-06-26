@@ -3,7 +3,6 @@ pragma solidity ^0.8.10;
 
 import { DomainObjs } from "../utilities/DomainObjs.sol";
 import { IMACI } from "./IMACI.sol";
-// import { AccQueue } from "../trees/AccQueue.sol";
 
 /// @title IPoll
 /// @notice Poll interface
@@ -20,10 +19,6 @@ interface IPoll {
   /// @notice Pad last batch with nothing messages
   function padLastBatch() external;
 
-  /// @notice Get all message batch hashes
-  /// @return length of betchHashes array containing all batch hashes
-  // function getBatchHashesLength() external view returns (uint256);
-
   /// @notice Allows anyone to publish a message (an encrypted command and signature).
   /// This function also enqueues the message.
   /// @param _message The message to publish
@@ -32,7 +27,7 @@ interface IPoll {
   /// to encrypt the message.
   function publishMessage(DomainObjs.Message memory _message, DomainObjs.PubKey calldata _encPubKey) external;
 
-  /// @notice The second step of merging the MACI state AccQueue. This allows the
+  /// @notice The second step of merging the MACI state. This allows the
   /// ProcessMessages circuit to access the latest state tree and ballots via
   /// currentSbCommitment.
   function mergeMaciState() external;
@@ -49,13 +44,7 @@ interface IPoll {
   /// @notice Get the depths of the merkle trees
   /// @return intStateTreeDepth The depth of the state tree
   /// @return voteOptionTreeDepth The subdepth of the vote option tree
-  function treeDepths()
-    external
-    view
-    returns (
-      uint8 intStateTreeDepth /*, uint8 messageTreeSubDepth, uint8 messageTreeDepth*/,
-      uint8 voteOptionTreeDepth
-    );
+  function treeDepths() external view returns (uint8 intStateTreeDepth, uint8 voteOptionTreeDepth);
 
   /// @notice Get the max values for the poll
   /// @return maxMessages The maximum number of messages

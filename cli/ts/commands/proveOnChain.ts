@@ -2,7 +2,6 @@
 import { type BigNumberish } from "ethers";
 import {
   MACI__factory as MACIFactory,
-  // AccQueue__factory as AccQueueFactory,
   Tally__factory as TallyFactory,
   MessageProcessor__factory as MessageProcessorFactory,
   Poll__factory as PollFactory,
@@ -92,13 +91,6 @@ export const proveOnChain = async ({
   const mpContract = MessageProcessorFactory.connect(messageProcessorContractAddress, signer);
   const tallyContract = TallyFactory.connect(tallyContractAddress, signer);
 
-  // const messageAqContractAddress = (await pollContract.extContracts()).messageAq;
-
-  // if (!(await contractExists(signer.provider!, messageAqContractAddress))) {
-  //   logError("There is no MessageAq contract linked to the specified MACI contract.");
-  // }
-
-  // const messageAqContract = AccQueueFactory.connect(messageAqContractAddress, signer);
   const vkRegistryContractAddress = await tallyContract.vkRegistry();
 
   if (!(await contractExists(signer.provider!, vkRegistryContractAddress))) {
@@ -151,10 +143,6 @@ export const proveOnChain = async ({
   const batchHashes = await pollContract.getBatchHashes();
   let totalMessageBatches = batchHashes.length;
 
-  // if (numMessages > messageBatchSize && numMessages % messageBatchSize > 0) {
-  //   totalMessageBatches += 1;
-  // }
-
   // perform validation
   if (numProcessProofs !== totalMessageBatches) {
     logRed(
@@ -173,8 +161,6 @@ export const proveOnChain = async ({
   if (tallyMode !== mpMode) {
     logError("Tally and MessageProcessor modes are not compatible");
   }
-
-  // const messageRootOnChain = await messageAqContract.getMainRoot(Number(treeDepths.messageTreeDepth));
 
   const stateTreeDepth = Number(await maciContract.stateTreeDepth());
   const onChainProcessVk = await vkRegistryContract.getProcessVk(
@@ -211,10 +197,6 @@ export const proveOnChain = async ({
       }
     }
 
-    // if (numberBatchesProcessed > 0 && currentMessageBatchIndex > 0) {
-    //   currentMessageBatchIndex -= messageBatchSize;
-    // }
-
     const { proof, circuitInputs, publicInputs } = data.processProofs[i];
 
     // validation
@@ -231,10 +213,6 @@ export const proveOnChain = async ({
     if (BigInt(circuitInputs.outputBatchHash as BigNumberish).toString() !== outputBatchHash.toString()) {
       logError("output batch hash mismatch.");
     }
-
-    // if (BigInt(circuitInputs.msgRoot as BigNumberish).toString() !== messageRootOnChain.toString()) {
-    //   logError("message root mismatch.");
-    // }
 
     let currentSbCommitmentOnChain: bigint;
     if (numberBatchesProcessed === 0) {

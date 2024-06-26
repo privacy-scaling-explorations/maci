@@ -41,7 +41,7 @@ import type {
 } from "./utils/types";
 import type { PathElements } from "maci-crypto";
 
-import { STATE_TREE_ARITY /* , MESSAGE_TREE_ARITY */, VOTE_OPTION_TREE_ARITY } from "./utils/constants";
+import { STATE_TREE_ARITY, VOTE_OPTION_TREE_ARITY } from "./utils/constants";
 import { ProcessMessageErrors, ProcessMessageError } from "./utils/errors";
 import { packTallyVotesSmallVals } from "./utils/utils";
 
@@ -72,8 +72,6 @@ export class Poll implements IPoll {
   ballotTree?: IncrementalQuinTree;
 
   messages: Message[] = [];
-
-  // messageTree: IncrementalQuinTree;
 
   commands: PCommand[] = [];
 
@@ -116,8 +114,6 @@ export class Poll implements IPoll {
   emptyBallot: Ballot;
 
   emptyBallotHash?: bigint;
-
-  // cnt = 0;
 
   // message chain hash
   chainHash = NOTHING_UP_MY_SLEEVE;
@@ -170,8 +166,8 @@ export class Poll implements IPoll {
    */
   updatePoll = (numSignups: bigint): void => {
     // there might be occasions where we fetch logs after new signups have been made
-    // logs are fetched (and MaciState/Poll created locally) after stateAq have been
-    // merged in. If someone signs up after that and we fetch that record
+    // logs are fetched (and MaciState/Poll created locally).
+    // If someone signs up after that and we fetch that record
     // then we won't be able to verify the processing on chain as the data will
     // not match. For this, we must only copy up to the number of signups
 
@@ -375,7 +371,6 @@ export class Poll implements IPoll {
     if (this.messages.length % this.batchSizes.messageBatchSize === 0) {
       this.batchHashes.push(this.chainHash);
     }
-    // this.cnt += 1;
   };
 
   /**
@@ -427,9 +422,7 @@ export class Poll implements IPoll {
 
     const batchSize = this.batchSizes.messageBatchSize;
 
-    // console.log(this.numBatchesProcessed);
     if (this.numBatchesProcessed === 0) {
-      // console.log("usao numBP");
       // The starting index of the batch of messages to process.
       // Note that we process messages in reverse order.
       // e.g if there are 8 messages and the batch size is 5, then
@@ -1218,8 +1211,6 @@ export class Poll implements IPoll {
       this.coordinatorKeypair.copy(),
       {
         intStateTreeDepth: Number(this.treeDepths.intStateTreeDepth),
-        // messageTreeDepth: Number(this.treeDepths.messageTreeDepth),
-        // messageTreeSubDepth: Number(this.treeDepths.messageTreeSubDepth),
         voteOptionTreeDepth: Number(this.treeDepths.voteOptionTreeDepth),
       },
       {
@@ -1229,7 +1220,6 @@ export class Poll implements IPoll {
       {
         maxMessages: Number(this.maxValues.maxMessages.toString()),
         maxVoteOptions: Number(this.maxValues.maxVoteOptions.toString()),
-        // maxMessageBatchSize: Number(this.maxValues.maxMessageBatchSize.toString()),
       },
       this.maciStateRef,
     );
@@ -1246,7 +1236,6 @@ export class Poll implements IPoll {
 
     copied.currentMessageBatchIndex = this.currentMessageBatchIndex;
     copied.maciStateRef = this.maciStateRef;
-    // copied.messageTree = this.messageTree.copy();
     copied.tallyResult = this.tallyResult.map((x: bigint) => BigInt(x.toString()));
     copied.perVOSpentVoiceCredits = this.perVOSpentVoiceCredits.map((x: bigint) => BigInt(x.toString()));
 
@@ -1291,8 +1280,6 @@ export class Poll implements IPoll {
     const result =
       this.coordinatorKeypair.equals(p.coordinatorKeypair) &&
       this.treeDepths.intStateTreeDepth === p.treeDepths.intStateTreeDepth &&
-      // this.treeDepths.messageTreeDepth === p.treeDepths.messageTreeDepth &&
-      // this.treeDepths.messageTreeSubDepth === p.treeDepths.messageTreeSubDepth &&
       this.treeDepths.voteOptionTreeDepth === p.treeDepths.voteOptionTreeDepth &&
       this.batchSizes.tallyBatchSize === p.batchSizes.tallyBatchSize &&
       this.batchSizes.messageBatchSize === p.batchSizes.messageBatchSize &&
@@ -1369,12 +1356,6 @@ export class Poll implements IPoll {
     poll.numBatchesProcessed = json.numBatchesProcessed;
     poll.chainHash = BigInt(json.chainHash);
     poll.batchHashes = json.batchHashes.map((batchHash: string) => BigInt(batchHash));
-
-    // fill the trees
-    // for (let i = 0; i < poll.messages.length; i += 1) {
-    //   const messageLeaf = poll.messages[i].hash(poll.encPubKeys[i]);
-    //   poll.messageTree.insert(messageLeaf);
-    // }
 
     // copy maci state
     poll.updatePoll(BigInt(json.numSignups));

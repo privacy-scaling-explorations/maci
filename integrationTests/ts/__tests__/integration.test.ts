@@ -7,7 +7,6 @@ import {
   deployPoll,
   deployVkRegistryContract,
   genProofs,
-  // mergeMessages,
   mergeSignups,
   proveOnChain,
   publish,
@@ -19,7 +18,7 @@ import {
   PollContracts,
 } from "maci-cli";
 import { getDefaultSigner } from "maci-contracts";
-import { /* BatchSizes, */ MaciState, MaxValues, TreeDepths } from "maci-core";
+import { MaciState, MaxValues, TreeDepths } from "maci-core";
 import { genPubKey, genRandomSalt } from "maci-crypto";
 import { Keypair, PCommand, PrivKey, PubKey } from "maci-domainobjs";
 
@@ -30,8 +29,6 @@ import path from "path";
 import {
   INT_STATE_TREE_DEPTH,
   MESSAGE_BATCH_SIZE,
-  // MSG_BATCH_DEPTH,
-  // MSG_TREE_DEPTH,
   SG_DATA,
   STATE_TREE_DEPTH,
   VOTE_OPTION_TREE_DEPTH,
@@ -39,7 +36,6 @@ import {
   initialVoiceCredits,
   ivcpData,
   maxMessages,
-  // messageBatchDepth,
 } from "./utils/constants";
 import { ITestSuite } from "./utils/interfaces";
 import { expectTally, genTestUserCommands, isArm } from "./utils/utils";
@@ -76,9 +72,7 @@ describe("Integration tests", function test() {
     await setVerifyingKeys({
       stateTreeDepth: STATE_TREE_DEPTH,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
-      // messageTreeDepth: MSG_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
-      // messageBatchDepth: MSG_BATCH_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
       processMessagesZkeyPathQv: path.resolve(
         __dirname,
@@ -112,15 +106,12 @@ describe("Integration tests", function test() {
     const maxValues: MaxValues = {
       maxMessages: 25,
       maxVoteOptions: 25,
-      // maxMessageBatchSize: 20,
     };
 
     // 4. create a poll
     pollContracts = await deployPoll({
       pollDuration: duration,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
-      // messageTreeSubDepth: MSG_BATCH_DEPTH,
-      // messageTreeDepth: MSG_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       coordinatorPubkey: coordinatorKeypair.pubKey.serialize(),
@@ -131,14 +122,10 @@ describe("Integration tests", function test() {
 
     const treeDepths: TreeDepths = {
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
-      // messageTreeDepth: MSG_TREE_DEPTH,
-      // messageTreeSubDepth: MSG_BATCH_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
     };
 
     const messageBatchSize = MESSAGE_BATCH_SIZE;
-
-    // const messageBatchSize = 5 ** messageBatchDepth;
 
     pollId = maciState.deployPoll(
       BigInt(Date.now() + duration * 60000),
@@ -251,12 +238,6 @@ describe("Integration tests", function test() {
       }
 
       await timeTravel({ seconds: duration, signer });
-
-      // DEPRECATED
-      // merge messages
-      // await expect(
-      //   mergeMessages({ pollId, maciAddress: contracts.maciAddress, signer }),
-      // ).to.eventually.not.be.rejectedWith();
 
       // merge signups
       await expect(

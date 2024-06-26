@@ -164,22 +164,10 @@ export interface CheckVerifyingKeysArgs {
    */
   intStateTreeDepth: number;
 
-  //  DEPRECATED
-  /**
-   * The depth of the message tree
-   */
-  // messageTreeDepth: number;
-
   /**
    * The depth of the vote option tree
    */
   voteOptionTreeDepth: number;
-
-  // DEPRECATED
-  /**
-   * The depth of the message batch tree
-   */
-  // messageBatchDepth: number;
 
   /**
    * The size of the message  batch
@@ -285,17 +273,6 @@ export interface DeployPollArgs {
    * The depth of the intermediate state tree
    */
   intStateTreeDepth: number;
-
-  // DEPRECATED
-  /**
-   * The depth of the message tree sublevels
-   */
-  // messageTreeSubDepth: number;
-
-  /**
-   * The depth of the message tree
-   */
-  // messageTreeDepth: number;
 
   /**
    * The size of the message batch
@@ -529,37 +506,6 @@ export interface GenProofsArgs {
   tallyAddress?: string;
 }
 
-// DEPRECATED
-/**
- * Interface for the arguments to the mergeMessages command
- */
-// export interface MergeMessagesArgs {
-//   /**
-//    * The id of the poll
-//    */
-//   pollId: bigint;
-
-//   /**
-//    * A signer object
-//    */
-//   signer: Signer;
-
-//   /**
-//    * Whether to log the output
-//    */
-//   quiet?: boolean;
-
-//   /**
-//    * The address of the MACI contract
-//    */
-//   maciAddress?: string;
-
-//   /**
-//    * The number of queue operations to merge
-//    */
-//   numQueueOps?: string;
-// }
-
 /**
  * Interface for the arguments to the mergeSignups command
  */
@@ -769,22 +715,10 @@ export interface SetVerifyingKeysArgs {
    */
   intStateTreeDepth: number;
 
-  // DEPRECATED
-  /**
-   * The depth of the message tree
-   */
-  // messageTreeDepth: number;
-
   /**
    * The depth of the vote option tree
    */
   voteOptionTreeDepth: number;
-
-  // DEPRECATED
-  /**
-   * The depth of the message batch tree
-   */
-  // messageBatchDepth: number;
 
   /**
    * The size of message batch

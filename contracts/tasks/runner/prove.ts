@@ -74,17 +74,6 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
 
       const pollAddress = await maciContract.polls(poll);
       const pollContract = await deployment.getContract<Poll>({ name: EContracts.Poll, address: pollAddress });
-      // const messageAqAddress = await pollContract.extContracts().then((contracts) => contracts.messageAq);
-      // const messageAq = await deployment.getContract<AccQueue>({
-      //   name: EContracts.AccQueue,
-      //   address: messageAqAddress,
-      // });
-
-      // const [, messageAqContractAddress] = await pollContract.extContracts();
-      // const messageAqContract = await deployment.getContract<AccQueue>({
-      //   name: EContracts.AccQueue,
-      //   address: messageAqContractAddress,
-      // });
       const isStateAqMerged = await pollContract.stateMerged();
 
       // Check that the state and message trees have been merged for at least the first poll
@@ -92,19 +81,9 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
         throw new Error("The state tree has not been merged yet. Please use the mergeSignups subcommand to do so.");
       }
 
-      // const messageTreeDepth = await pollContract.treeDepths().then((depths) => Number(depths[2]));
-
-      // check that the main root is set
-      // const mainRoot = await messageAqContract.getMainRoot(messageTreeDepth.toString());
-
-      // if (mainRoot.toString() === "0") {
-      //   throw new Error("The message tree has not been merged yet. Please use the mergeMessages subcommand to do so.");
-      // }
-
       const maciState = await ProofGenerator.prepareState({
         maciContract,
         pollContract,
-        // messageAq,
         maciPrivateKey,
         coordinatorKeypair,
         pollId: poll,
@@ -181,7 +160,6 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
 
       const prover = new Prover({
         maciContract,
-        // messageAqContract,
         mpContract,
         pollContract,
         vkRegistryContract,

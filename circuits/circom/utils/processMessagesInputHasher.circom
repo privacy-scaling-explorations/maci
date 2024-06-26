@@ -19,7 +19,7 @@ template ProcessMessagesInputHasher() {
     // Hash coordPubKey:
     // - coordPubKeyHash 
     // Other inputs that can't be compressed or packed:
-    // - currentSbCommitment, newSbCommitment
+    // - currentSbCommitment, newSbCommitment, inputBatchHash, ouptutBatchHash
     var UNPACK_ELEM_LENGTH = 4;
 
     signal input packedVals;

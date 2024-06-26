@@ -1,6 +1,6 @@
 import { extractVk } from "maci-circuits";
 import { type IVerifyingKeyStruct, VkRegistry__factory as VkRegistryFactory, EMode } from "maci-contracts";
-import { genProcessVkSig, genTallyVkSig /* , MESSAGE_BATCH_SIZE */ } from "maci-core";
+import { genProcessVkSig, genTallyVkSig } from "maci-core";
 import { VerifyingKey } from "maci-domainobjs";
 
 import fs from "fs";
@@ -26,9 +26,7 @@ import {
 export const setVerifyingKeys = async ({
   stateTreeDepth,
   intStateTreeDepth,
-  // messageTreeDepth,
   voteOptionTreeDepth,
-  // messageBatchDepth,
   messageBatchSize,
   processMessagesZkeyPathQv,
   tallyVotesZkeyPathQv,
@@ -75,13 +73,7 @@ export const setVerifyingKeys = async ({
   const tallyVkNonQv = tallyVotesZkeyPathNonQv && VerifyingKey.fromObj(await extractVk(tallyVotesZkeyPathNonQv));
 
   // validate args
-  if (
-    stateTreeDepth < 1 ||
-    intStateTreeDepth < 1 ||
-    // messageTreeDepth < 1 ||
-    voteOptionTreeDepth < 1 ||
-    messageBatchSize < 1
-  ) {
+  if (stateTreeDepth < 1 || intStateTreeDepth < 1 || voteOptionTreeDepth < 1 || messageBatchSize < 1) {
     logError("Invalid depth or batch size parameters");
   }
 
@@ -93,8 +85,6 @@ export const setVerifyingKeys = async ({
     processMessagesZkeyPath: processMessagesZkeyPathQv!,
     tallyVotesZkeyPath: tallyVotesZkeyPathQv!,
     stateTreeDepth,
-    // messageTreeDepth,
-    // messageBatchDepth,
     messageBatchSize,
     voteOptionTreeDepth,
     intStateTreeDepth,
@@ -104,8 +94,6 @@ export const setVerifyingKeys = async ({
     processMessagesZkeyPath: processMessagesZkeyPathNonQv!,
     tallyVotesZkeyPath: tallyVotesZkeyPathNonQv!,
     stateTreeDepth,
-    // messageTreeDepth,
-    // messageBatchDepth,
     messageBatchSize,
     voteOptionTreeDepth,
     intStateTreeDepth,
@@ -118,8 +106,6 @@ export const setVerifyingKeys = async ({
 
   // connect to VkRegistry contract
   const vkRegistryContract = VkRegistryFactory.connect(vkRegistryAddress, signer);
-
-  // const messageBatchSize = MESSAGE_BATCH_SIZE;
 
   // check if the process messages vk was already set
   const processVkSig = genProcessVkSig(stateTreeDepth /* , messageTreeDepth */, voteOptionTreeDepth, messageBatchSize);
@@ -237,8 +223,6 @@ export const setVerifyingKeys = async ({
 
 interface ICheckZkeyFilepathsArgs {
   stateTreeDepth: number;
-  // messageTreeDepth: number;
-  // messageBatchDepth: number;
   messageBatchSize: number;
   voteOptionTreeDepth: number;
   intStateTreeDepth: number;
@@ -250,8 +234,6 @@ function checkZkeyFilepaths({
   processMessagesZkeyPath,
   tallyVotesZkeyPath,
   stateTreeDepth,
-  // messageTreeDepth,
-  // messageBatchDepth,
   messageBatchSize,
   voteOptionTreeDepth,
   intStateTreeDepth,
@@ -269,8 +251,6 @@ function checkZkeyFilepaths({
   }
 
   const pmStateTreeDepth = Number(pmMatch[1]);
-  // const pmMsgTreeDepth = Number(pmMatch[2]);
-  // const pmMsgBatchDepth = Number(pmMatch[3]);
   const pmMsgBatchSize = Number(pmMatch[2]);
   const pmVoteOptionTreeDepth = Number(pmMatch[3]);
 
@@ -287,8 +267,6 @@ function checkZkeyFilepaths({
 
   if (
     stateTreeDepth !== pmStateTreeDepth ||
-    // messageTreeDepth !== pmMsgTreeDepth ||
-    // messageBatchDepth !== pmMsgBatchDepth ||
     messageBatchSize !== pmMsgBatchSize ||
     voteOptionTreeDepth !== pmVoteOptionTreeDepth ||
     stateTreeDepth !== tvStateTreeDepth ||

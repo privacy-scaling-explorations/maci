@@ -6,7 +6,6 @@ import {
   CheckVerifyingKeysArgs,
   DeployArgs,
   DeployPollArgs,
-  // MergeMessagesArgs,
   MergeSignupsArgs,
   ProveOnChainArgs,
   SetVerifyingKeysArgs,
@@ -18,7 +17,6 @@ import {
 
 export const STATE_TREE_DEPTH = 10;
 export const INT_STATE_TREE_DEPTH = 1;
-// export const MSG_TREE_DEPTH = 2;
 export const VOTE_OPTION_TREE_DEPTH = 2;
 export const MESSAGE_BATCH_SIZE = 20;
 const coordinatorKeypair = new Keypair();
@@ -91,9 +89,7 @@ export const setVerifyingKeysArgs: Omit<SetVerifyingKeysArgs, "signer"> = {
   quiet: true,
   stateTreeDepth: STATE_TREE_DEPTH,
   intStateTreeDepth: INT_STATE_TREE_DEPTH,
-  // messageTreeDepth: MSG_TREE_DEPTH,
   voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
-  // messageBatchDepth: MSG_BATCH_DEPTH,
   messageBatchSize: MESSAGE_BATCH_SIZE,
   processMessagesZkeyPathQv: processMessageTestZkeyPath,
   tallyVotesZkeyPathQv: tallyVotesTestZkeyPath,
@@ -103,9 +99,7 @@ export const setVerifyingKeysNonQvArgs: Omit<SetVerifyingKeysArgs, "signer"> = {
   quiet: true,
   stateTreeDepth: STATE_TREE_DEPTH,
   intStateTreeDepth: INT_STATE_TREE_DEPTH,
-  // messageTreeDepth: MSG_TREE_DEPTH,
   voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
-  // messageBatchDepth: MSG_BATCH_DEPTH,
   messageBatchSize: MESSAGE_BATCH_SIZE,
   processMessagesZkeyPathNonQv: processMessageTestNonQvZkeyPath,
   tallyVotesZkeyPathNonQv: tallyVotesTestNonQvZkeyPath,
@@ -114,9 +108,7 @@ export const setVerifyingKeysNonQvArgs: Omit<SetVerifyingKeysArgs, "signer"> = {
 export const checkVerifyingKeysArgs: Omit<CheckVerifyingKeysArgs, "signer"> = {
   stateTreeDepth: STATE_TREE_DEPTH,
   intStateTreeDepth: INT_STATE_TREE_DEPTH,
-  // messageTreeDepth: MSG_TREE_DEPTH,
   voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
-  // messageBatchDepth: MSG_BATCH_DEPTH,
   messageBatchSize: MESSAGE_BATCH_SIZE,
   processMessagesZkeyPath: processMessageTestZkeyPath,
   tallyVotesZkeyPath: tallyVotesTestZkeyPath,
@@ -125,10 +117,6 @@ export const checkVerifyingKeysArgs: Omit<CheckVerifyingKeysArgs, "signer"> = {
 export const timeTravelArgs: Omit<TimeTravelArgs, "signer"> = {
   seconds: pollDuration,
 };
-
-// export const mergeMessagesArgs: Omit<MergeMessagesArgs, "signer"> = {
-//   pollId: 0n,
-// };
 
 export const mergeSignupsArgs: Omit<MergeSignupsArgs, "signer"> = {
   pollId: 0n,

@@ -181,13 +181,11 @@ describe("TallyVotes", () => {
     );
   });
 
-  describe("after merging acc queues", () => {
+  describe("after messages processing", () => {
     let tallyGeneratedInputs: ITallyCircuitInputs;
     before(async () => {
       await pollContract.mergeMaciState();
 
-      // await pollContract.mergeMessageAqSubRoots(0);
-      // await pollContract.mergeMessageAq();
       tallyGeneratedInputs = poll.tallyVotes();
     });
 
@@ -340,9 +338,6 @@ describe("TallyVotes", () => {
       await timeTravel(signer.provider! as unknown as EthereumProvider, updatedDuration);
       await pollContract.mergeMaciState();
 
-      // await pollContract.mergeMessageAqSubRoots(0);
-      // await pollContract.mergeMessageAq();
-
       const processMessagesInputs = poll.processMessages(pollId);
       await mpContract.processMessages(processMessagesInputs.newSbCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);
     });
@@ -484,9 +479,6 @@ describe("TallyVotes", () => {
 
       await timeTravel(signer.provider! as unknown as EthereumProvider, updatedDuration);
       await pollContract.mergeMaciState();
-
-      // await pollContract.mergeMessageAqSubRoots(0);
-      // await pollContract.mergeMessageAq();
 
       const processMessagesInputs = poll.processMessages(pollId);
       await mpContract.processMessages(processMessagesInputs.newSbCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);

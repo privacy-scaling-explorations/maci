@@ -2,8 +2,6 @@
 pragma solidity ^0.8.20;
 
 import { IMACI } from "./interfaces/IMACI.sol";
-import { AccQueue } from "./trees/AccQueue.sol";
-import { AccQueueQuinaryMaci } from "./trees/AccQueueQuinaryMaci.sol";
 import { Params } from "./utilities/Params.sol";
 import { DomainObjs } from "./utilities/DomainObjs.sol";
 import { Poll } from "./Poll.sol";
@@ -37,19 +35,11 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
       revert InvalidMaxValues();
     }
 
-    /// @notice deploy a new AccQueue contract to store messages
-    // AccQueue messageAq = new AccQueueQuinaryMaci(_treeDepths.messageTreeSubDepth);
-
     /// @notice the smart contracts that a Poll would interact with
     ExtContracts memory extContracts = ExtContracts({ maci: IMACI(_maci) });
 
     // deploy the poll
     Poll poll = new Poll(_duration, _maxValues, _treeDepths, _batchSizes, _coordinatorPubKey, extContracts);
-
-    // DEPRECATED
-    // Make the Poll contract own the messageAq contract, so only it can
-    // run enqueue/merge
-    // messageAq.transferOwnership(address(poll));
 
     // init Poll
     poll.init();

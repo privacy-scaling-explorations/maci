@@ -71,7 +71,6 @@ export class ProofGenerator {
   static async prepareState({
     maciContract,
     pollContract,
-    // messageAq,
     pollId,
     maciPrivateKey,
     coordinatorKeypair,
@@ -97,18 +96,13 @@ export class ProofGenerator {
       maciContract
         .queryFilter(maciContract.filters.DeployPoll(), startBlock)
         .then((events) => events[0]?.blockNumber ?? 0),
-      // pollContract.treeDepths(),
       maciContract.getStateTreeRoot(),
       maciContract.numSignUps(),
     ]);
     const defaultStartBlock = Math.min(defaultStartBlockPoll, defaultStartBlockSignup);
     let fromBlock = startBlock ? Number(startBlock) : defaultStartBlock;
 
-    // const messageRoot = await messageAq.getMainRoot(messageTreeDepth);
     const defaultEndBlock = await Promise.all([
-      // pollContract
-      //   .queryFilter(pollContract.filters.MergeMessageAq(messageRoot), fromBlock)
-      //   .then((events) => events[events.length - 1]?.blockNumber),
       pollContract
         .queryFilter(pollContract.filters.MergeMaciState(stateRoot, numSignups), fromBlock)
         .then((events) => events[events.length - 1]?.blockNumber),

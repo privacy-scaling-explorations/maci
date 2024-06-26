@@ -25,7 +25,6 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
   uint8 public immutable stateTreeDepth;
 
   uint8 internal constant TREE_ARITY = 2;
-  // uint8 internal constant MESSAGE_TREE_ARITY = 5;
   uint8 internal constant MESSAGE_BATCH_SIZE = 20;
 
   /// @notice The hash of a blank state leaf
@@ -119,8 +118,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
 
   /// @notice Allows any eligible user sign up. The sign-up gatekeeper should prevent
   /// double sign-ups or ineligible users from doing so.  This function will
-  /// only succeed if the sign-up deadline has not passed. It also enqueues a
-  /// fresh state leaf into the state AccQueue.
+  /// only succeed if the sign-up deadline has not passed.
   /// @param _pubKey The user's desired public key.
   /// @param _signUpGatekeeperData Data to pass to the sign-up gatekeeper's
   ///     register() function. For instance, the POAPGatekeeper or

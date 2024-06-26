@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import type { ITreeMergeParams } from "./types";
-import type { /* AccQueue, */ Poll } from "../../typechain-types";
+import type { Poll } from "../../typechain-types";
 import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 
 /**
@@ -8,11 +8,6 @@ import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signer
  * This class is using for merging signups and messages.
  */
 export class TreeMerger {
-  /**
-   * User messages AccQueue contract
-   */
-  // private messageAccQueueContract: AccQueue;
-
   /**
    * Poll contract
    */
@@ -28,9 +23,8 @@ export class TreeMerger {
    *
    * @param {ITreeMergeParams} params - contracts and signer
    */
-  constructor({ deployer /* , messageAccQueueContract */, pollContract }: ITreeMergeParams) {
+  constructor({ deployer, pollContract }: ITreeMergeParams) {
     this.pollContract = pollContract;
-    // this.messageAccQueueContract = messageAccQueueContract;
     this.deployer = deployer;
   }
 

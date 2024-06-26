@@ -28,7 +28,6 @@ describe("ProcessMessage circuit", function test() {
     "inputBatchHash",
     "outputBatchHash",
     "msgs",
-    "msgSubrootPathElements",
     "coordPrivKey",
     "coordPubKey",
     "encPubKeys",
@@ -354,7 +353,6 @@ describe("ProcessMessage circuit", function test() {
       const currentBallotRoot = ballotTree.root;
 
       const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
-      // console.log(inputs.msgs.length);
       // Calculate the witness
       const witness = await circuit.calculateWitness(inputs);
       await circuit.expectConstraintPass(witness);
@@ -476,7 +474,6 @@ describe("ProcessMessage circuit", function test() {
       const currentBallotRoot = ballotTree.root;
 
       const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
-      // console.log(inputs.msgs.length);
       // Calculate the witness
       const witness = await circuit.calculateWitness(inputs);
       await circuit.expectConstraintPass(witness);
@@ -538,7 +535,6 @@ describe("ProcessMessage circuit", function test() {
 
     it("should produce a proof", async () => {
       for (let i = 0; i < NUM_BATCHES; i += 1) {
-        // console.log("batch index", i);
         const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
         // eslint-disable-next-line no-await-in-loop
         const witness = await circuit.calculateWitness(inputs);
