@@ -448,7 +448,7 @@ describe("MaciState/Poll e2e", function test() {
     });
   });
 
-  describe.skip(`Process and tally ${messageBatchSize * 2} messages from ${messageBatchSize} users`, () => {
+  describe(`Process and tally ${messageBatchSize * 2 - 2} messages from ${messageBatchSize - 1} users`, () => {
     let maciState: MaciState;
     let pollId: bigint;
     let poll: Poll;
@@ -501,6 +501,7 @@ describe("MaciState/Poll e2e", function test() {
 
       expect(poll.messages.length).to.eq(messageBatchSize - 1);
 
+      // 19 invalid votes
       for (let i = 0; i < messageBatchSize - 1; i += 1) {
         const userKeypair = users[i];
 
@@ -508,7 +509,7 @@ describe("MaciState/Poll e2e", function test() {
           BigInt(i + 1),
           userKeypair.pubKey,
           BigInt(i), // vote option index
-          voteWeight,
+          voiceCreditBalance * 2n, // invalid vote weight
           1n,
           BigInt(pollId),
         );
@@ -521,58 +522,29 @@ describe("MaciState/Poll e2e", function test() {
         poll.publishMessage(message, ecdhKeypair.pubKey);
       }
 
-      // 19 invalid votes
-      // for (let i = 0; i < messageBatchSize - 1; i += 1) {
-      //   const userKeypair = users[i];
-      //   const command = new PCommand(
-      //     BigInt(i + 1),
-      //     userKeypair.pubKey,
-      //     BigInt(i), // vote option index
-      //     voiceCreditBalance * 10n, // invalid vote weight
-      //     1n,
-      //     BigInt(pollId),
-      //   );
-
-      //   const signature = command.sign(userKeypair.privKey);
-
-      //   const ecdhKeypair = new Keypair();
-      //   const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
-      //   const message = command.encrypt(signature, sharedKey);
-      //   poll.publishMessage(message, ecdhKeypair.pubKey);
-      // }
-
       // 38 messages in total
       expect(poll.messages.length).to.eq(2 * (messageBatchSize - 1));
 
-      expect(poll.currentMessageBatchIndex).to.eq(undefined);
+      expect(poll.currentMessageBatchIndex).to.eq(1);
       expect(poll.numBatchesProcessed).to.eq(0);
 
       // Process messages
       poll.processMessages(pollId);
-
-      // for (let i = 0; i < poll.ballots.length; i += 1) {
-      //   console.log(i, poll.ballots[i].votes);
-      // }
 
       // currentMessageBatchIndex is 1 because the current batch starts
       // with index 0.
       expect(poll.currentMessageBatchIndex!).to.eq(1);
       expect(poll.numBatchesProcessed).to.eq(1);
 
-      // // Process messages
+      // Process messages
       poll.processMessages(pollId);
 
-      expect(poll.currentMessageBatchIndex!).to.eq(1);
+      expect(poll.currentMessageBatchIndex!).to.eq(0);
       expect(poll.numBatchesProcessed).to.eq(2);
 
-      // console.log("posle invalid");
-      // for (let i = 0; i < poll.ballots.length; i += 1) {
-      //   console.log(i, poll.ballots[i].votes);
-      // }
       for (let i = 1; i < messageBatchSize; i += 1) {
         const leaf = poll.ballots[i].votes[i - 1];
         expect(leaf.toString()).to.eq(voteWeight.toString());
-        // expect(leaf.toString()).to.eq(BigInt(0).toString());
       }
 
       // Test processAllMessages
@@ -606,9 +578,8 @@ describe("MaciState/Poll e2e", function test() {
 
       // Recall that each user `i` cast the same number of votes for
       // their option `i`
-      for (let i = 0; i < poll.tallyResult.length - 1; i += 1) {
+      for (let i = 1; i < messageBatchSize - 1; i += 1) {
         expect(poll.tallyResult[i].toString()).to.eq(voteWeight.toString());
-        // expect(poll.tallyResult[i].toString()).to.eq(BigInt(0).toString());
       }
 
       expect(poll.hasUntalliedBallots()).to.eq(false);
