@@ -166,6 +166,7 @@ template ProcessMessages(
     for (var i = 0; i < batchSize; i++) {
         computedMessageHashers[i] = MessageHasher()(msgs[i], encPubKeys[i]);
         var batchStartIndexValid = SafeLessThan(32)([batchStartIndex + i, batchEndIndex]);
+        computedLeaves[i] = Mux1()([msgTreeZeroValue, computedMessageHashers[i]], batchStartIndexValid);
         chainHash[i + 1] = PoseidonHasher(2)([chainHash[i], computedLeaves[i]]);
     }
 

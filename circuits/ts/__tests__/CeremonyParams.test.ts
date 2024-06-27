@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
-import { MaciState, Poll, packProcessMessageSmallVals, STATE_TREE_ARITY /* , MESSAGE_TREE_ARITY */ } from "maci-core";
+import { MaciState, Poll, packProcessMessageSmallVals, STATE_TREE_ARITY } from "maci-core";
+import { MESSAGE_BATCH_SIZE, VOTE_OPTION_TREE_ARITY } from "maci-core/build/ts/utils/constants";
 import { hash5, IncrementalQuinTree } from "maci-crypto";
 import { PrivKey, Keypair, PCommand, Message, Ballot } from "maci-domainobjs";
 
@@ -20,8 +21,8 @@ describe("Ceremony param tests", () => {
 
   const maxValues = {
     maxUsers: STATE_TREE_ARITY ** params.stateTreeDepth,
-    maxMessages: 1000,
-    maxVoteOptions: 5 ** params.voteOptionTreeDepth,
+    maxMessages: 2000000,
+    maxVoteOptions: VOTE_OPTION_TREE_ARITY ** params.voteOptionTreeDepth,
   };
 
   const treeDepths = {
@@ -29,7 +30,7 @@ describe("Ceremony param tests", () => {
     voteOptionTreeDepth: params.voteOptionTreeDepth,
   };
 
-  const messageBatchSize = 20;
+  const messageBatchSize = MESSAGE_BATCH_SIZE;
 
   const voiceCreditBalance = BigInt(100);
   const duration = 30;
@@ -83,7 +84,7 @@ describe("Ceremony param tests", () => {
       circuit = await circomkitInstance.WitnessTester("processMessages", {
         file: "./core/qv/processMessages",
         template: "ProcessMessages",
-        params: [6, 9, 2, 3],
+        params: [10, 20, 2],
       });
 
       hasherCircuit = await circomkitInstance.WitnessTester("processMessageInputHasher", {
