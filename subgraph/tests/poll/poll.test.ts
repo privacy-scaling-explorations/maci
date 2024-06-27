@@ -31,6 +31,7 @@ describe("Poll", () => {
   beforeEach(() => {
     mockPollContract();
 
+    // mock the deploy poll event with non qv mode set
     const event = createDeployPollEvent(
       BigInt.fromI32(1),
       BigInt.fromI32(1),
@@ -38,6 +39,7 @@ describe("Poll", () => {
       DEFAULT_POLL_ADDRESS,
       DEFAULT_MESSAGE_PROCESSOR_ADDRESS,
       DEFAULT_TALLY_ADDRESS,
+      BigInt.fromI32(1),
     );
 
     handleDeployPoll(event);

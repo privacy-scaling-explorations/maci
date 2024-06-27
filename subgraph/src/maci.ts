@@ -25,6 +25,7 @@ export function handleDeployPoll(event: DeployPollEvent): void {
   poll.maxVoteOption = maxValues.value1;
   poll.treeDepth = GraphBN.fromI32(treeDepths.value0);
   poll.duration = durations.value1;
+  poll.mode = GraphBN.fromI32(event.params._mode);
 
   poll.createdAt = event.block.timestamp;
   poll.updatedAt = event.block.timestamp;

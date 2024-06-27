@@ -38,7 +38,7 @@ type Poll @entity {
   tally: Bytes! # address
   createdAt: BigInt!
   updatedAt: BigInt!
-
+  mode: BigInt! # uint8
   "merge state after ended"
   stateRoot: BigInt # uint256
   numSignups: BigInt! # uint256
