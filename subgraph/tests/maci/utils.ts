@@ -31,6 +31,7 @@ export function createDeployPollEvent(
   poll: Address,
   messageProcessor: Address,
   tally: Address,
+  mode: GraphBN,
 ): DeployPoll {
   const event = changetype<DeployPoll>(newMockEvent());
 
@@ -53,6 +54,7 @@ export function createDeployPollEvent(
       ),
     ),
   );
+  event.parameters.push(new ethereum.EventParam("mode", ethereum.Value.fromUnsignedBigInt(mode)));
 
   return event;
 }

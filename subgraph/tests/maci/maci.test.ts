@@ -51,7 +51,7 @@ describe("MACI", () => {
     assert.assertNull(poll);
   });
 
-  test("should handle deploy poll properly", () => {
+  test("should handle deploy poll properly (qv)", () => {
     const event = createDeployPollEvent(
       BigInt.fromI32(1),
       BigInt.fromI32(1),
@@ -59,6 +59,7 @@ describe("MACI", () => {
       DEFAULT_POLL_ADDRESS,
       DEFAULT_MESSAGE_PROCESSOR_ADDRESS,
       DEFAULT_TALLY_ADDRESS,
+      BigInt.fromI32(0),
     );
 
     handleDeployPoll(event);
@@ -71,6 +72,32 @@ describe("MACI", () => {
     assert.fieldEquals("MACI", maciAddress.toHexString(), "numPoll", "1");
     assert.fieldEquals("MACI", maciAddress.toHexString(), "numSignUps", "0");
     assert.fieldEquals("MACI", maciAddress.toHexString(), "latestPoll", poll.id.toHex());
+    assert.fieldEquals("Poll", poll.id.toHexString(), "mode", "0");
+    assert.assertTrue(maci.polls.load().length === 1);
+  });
+
+  test("should handle deploy poll properly (non-qv)", () => {
+    const event = createDeployPollEvent(
+      BigInt.fromI32(1),
+      BigInt.fromI32(1),
+      BigInt.fromI32(1),
+      DEFAULT_POLL_ADDRESS,
+      DEFAULT_MESSAGE_PROCESSOR_ADDRESS,
+      DEFAULT_TALLY_ADDRESS,
+      BigInt.fromI32(1),
+    );
+
+    handleDeployPoll(event);
+
+    const maciAddress = event.address;
+    const maci = MACI.load(maciAddress)!;
+    const poll = Poll.load(maci.latestPoll)!;
+
+    assert.fieldEquals("Poll", poll.id.toHex(), "id", DEFAULT_POLL_ADDRESS.toHexString());
+    assert.fieldEquals("MACI", maciAddress.toHexString(), "numPoll", "1");
+    assert.fieldEquals("MACI", maciAddress.toHexString(), "numSignUps", "0");
+    assert.fieldEquals("MACI", maciAddress.toHexString(), "latestPoll", poll.id.toHex());
+    assert.fieldEquals("Poll", poll.id.toHexString(), "mode", "1");
     assert.assertTrue(maci.polls.load().length === 1);
   });
 
@@ -82,6 +109,7 @@ describe("MACI", () => {
       DEFAULT_POLL_ADDRESS,
       DEFAULT_MESSAGE_PROCESSOR_ADDRESS,
       DEFAULT_TALLY_ADDRESS,
+      BigInt.fromI32(0),
     );
 
     const signUpEvent = createSignUpEvent(

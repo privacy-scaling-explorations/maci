@@ -7,6 +7,8 @@ export enum ESupportedChains {
   OptimismSepolia = "optimism_sepolia",
   Scroll = "scroll",
   ScrollSepolia = "scroll_sepolia",
+  Arbitrum = "arbitrum",
+  ArbitrumSepolia = "arbitrum_sepolia",
   Coverage = "coverage",
   Hardhat = "hardhat",
 }
@@ -21,6 +23,8 @@ export enum EChainId {
   Sepolia = 11155111,
   Scroll = 534352,
   ScrollSepolia = 534351,
+  Arbitrum = 42161,
+  ArbitrumSepolia = 421614,
   Coverage = 1337,
 }
 
@@ -47,6 +51,8 @@ export const NETWORKS_DEFAULT_GAS: Record<ESupportedChains, number | "auto"> = {
   [ESupportedChains.ScrollSepolia]: gasPrice(1),
   [ESupportedChains.Coverage]: gasPrice(1),
   [ESupportedChains.Hardhat]: gasPrice(1),
+  [ESupportedChains.Arbitrum]: gasPrice(1),
+  [ESupportedChains.ArbitrumSepolia]: gasPrice(1),
 };
 
 /**
@@ -60,6 +66,8 @@ export const getNetworkRpcUrls = (): Record<ESupportedChains, string> => {
   const OP_SEPOLIA_RPC_URL = process.env.OP_SEPOLIA_RPC_URL ?? "";
   const SCROLL_RPC_URL = process.env.SCROLL_RPC_URL ?? "";
   const SCROLL_SEPOLIA_RPC_URL = process.env.SCROLL_SEPOLIA_RPC_URL ?? "";
+  const ARB_RPC_URL = process.env.ARB_RPC_URL ?? "";
+  const ARB_SEPOLIA_RPC_URL = process.env.ARB_SEPOLIA_RPC_URL ?? "";
 
   return {
     [ESupportedChains.Sepolia]: SEPOLIA_RPC_URL,
@@ -67,6 +75,8 @@ export const getNetworkRpcUrls = (): Record<ESupportedChains, string> => {
     [ESupportedChains.OptimismSepolia]: OP_SEPOLIA_RPC_URL,
     [ESupportedChains.Scroll]: SCROLL_RPC_URL,
     [ESupportedChains.ScrollSepolia]: SCROLL_SEPOLIA_RPC_URL,
+    [ESupportedChains.Arbitrum]: ARB_RPC_URL,
+    [ESupportedChains.ArbitrumSepolia]: ARB_SEPOLIA_RPC_URL,
     [ESupportedChains.Coverage]: "http://localhost:8555",
     [ESupportedChains.Hardhat]: "http://localhost:8545",
   };
@@ -78,6 +88,8 @@ export const getEtherscanApiKeys = (): Record<ESupportedChains, string | undefin
   [ESupportedChains.OptimismSepolia]: process.env.OPTIMISM_ETHERSCAN_API_KEY,
   [ESupportedChains.Scroll]: process.env.SCROLL_ETHERSCAN_API_KEY,
   [ESupportedChains.ScrollSepolia]: process.env.SCROLL_ETHERSCAN_API_KEY,
+  [ESupportedChains.Arbitrum]: process.env.ARB_ETHERSCAN_API_KEY,
+  [ESupportedChains.ArbitrumSepolia]: process.env.ARB_SEPOLIA_ETHERSCAN_API_KEY,
   [ESupportedChains.Coverage]: undefined,
   [ESupportedChains.Hardhat]: undefined,
 });
