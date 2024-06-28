@@ -12,8 +12,6 @@ describe("TallyVotes circuit", function test() {
 
   const treeDepths = {
     intStateTreeDepth: 1,
-    messageTreeDepth: 2,
-    messageTreeSubDepth: 1,
     voteOptionTreeDepth: 2,
   };
 
