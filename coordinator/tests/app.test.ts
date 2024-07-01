@@ -12,7 +12,6 @@ import {
   signup,
   publish,
   timeTravel,
-  // mergeMessages,
   mergeSignups,
 } from "maci-cli";
 import { Keypair } from "maci-domainobjs";
@@ -320,8 +319,6 @@ describe("AppController (e2e)", () => {
     });
 
     test("should throw an error if coordinator key decryption is failed", async () => {
-      // await mergeMessages({ pollId: 0n, signer });
-
       const encryptedHeader = await getAuthorizationHeader();
 
       const result = await request(app.getHttpServer() as App)

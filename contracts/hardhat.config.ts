@@ -58,7 +58,12 @@ const config: HardhatUserConfig = {
   defaultNetwork: "localhost",
   networks: {
     sepolia: getCommonNetworkConfig(ESupportedChains.Sepolia, EChainId.Sepolia),
+    optimism: getCommonNetworkConfig(ESupportedChains.Optimism, EChainId.Optimism),
     optimism_sepolia: getCommonNetworkConfig(ESupportedChains.OptimismSepolia, EChainId.OptimismSepolia),
+    scroll: getCommonNetworkConfig(ESupportedChains.Scroll, EChainId.Scroll),
+    scroll_sepolia: getCommonNetworkConfig(ESupportedChains.ScrollSepolia, EChainId.ScrollSepolia),
+    arbitrum: getCommonNetworkConfig(ESupportedChains.Arbitrum, EChainId.Arbitrum),
+    arbitrum_sepolia: getCommonNetworkConfig(ESupportedChains.ArbitrumSepolia, EChainId.ArbitrumSepolia),
     coverage: getCommonNetworkConfig(ESupportedChains.Coverage, EChainId.Coverage, TEST_MNEMONIC),
     localhost: {
       url: "http://localhost:8545",
@@ -100,15 +105,60 @@ const config: HardhatUserConfig = {
   etherscan: {
     apiKey: {
       [ESupportedChains.Sepolia]: ETHERSCAN_API_KEYS[ESupportedChains.Sepolia]!,
+      [ESupportedChains.Optimism]: ETHERSCAN_API_KEYS[ESupportedChains.Optimism]!,
       [ESupportedChains.OptimismSepolia]: ETHERSCAN_API_KEYS[ESupportedChains.OptimismSepolia]!,
+      [ESupportedChains.Scroll]: ETHERSCAN_API_KEYS[ESupportedChains.Scroll]!,
+      [ESupportedChains.ScrollSepolia]: ETHERSCAN_API_KEYS[ESupportedChains.ScrollSepolia]!,
+      [ESupportedChains.Arbitrum]: ETHERSCAN_API_KEYS[ESupportedChains.Arbitrum]!,
+      [ESupportedChains.ArbitrumSepolia]: ETHERSCAN_API_KEYS[ESupportedChains.ArbitrumSepolia]!,
     },
     customChains: [
+      {
+        network: ESupportedChains.Optimism,
+        chainId: EChainId.Optimism,
+        urls: {
+          apiURL: "https://api-optimistic.etherscan.io/api",
+          browserURL: "https://optimistic.etherscan.io",
+        },
+      },
       {
         network: ESupportedChains.OptimismSepolia,
         chainId: EChainId.OptimismSepolia,
         urls: {
-          apiURL: "https://api-sepolia-optimism.etherscan.io/api",
-          browserURL: "https://sepolia-optimism.etherscan.io",
+          apiURL: "https://api-sepolia-optimistic.etherscan.io/api",
+          browserURL: "https://sepolia-optimistic.etherscan.io",
+        },
+      },
+      {
+        network: ESupportedChains.Scroll,
+        chainId: EChainId.Scroll,
+        urls: {
+          apiURL: "https://api.scrollscan.com/api",
+          browserURL: "https://scrollscan.com/",
+        },
+      },
+      {
+        network: ESupportedChains.ScrollSepolia,
+        chainId: EChainId.ScrollSepolia,
+        urls: {
+          apiURL: "https://api-sepolia.scrollscan.com/api",
+          browserURL: "https://sepolia.scrollscan.com/",
+        },
+      },
+      {
+        network: ESupportedChains.Arbitrum,
+        chainId: EChainId.Arbitrum,
+        urls: {
+          apiURL: "https://api.arbiscan.io/api",
+          browserURL: "https://arbiscan.io/",
+        },
+      },
+      {
+        network: ESupportedChains.ArbitrumSepolia,
+        chainId: EChainId.ArbitrumSepolia,
+        urls: {
+          apiURL: "https://api-sepolia.arbiscan.io/api",
+          browserURL: "https://sepolia.arbiscan.io/",
         },
       },
     ],

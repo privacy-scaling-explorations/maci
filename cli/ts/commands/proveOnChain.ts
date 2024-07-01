@@ -148,7 +148,7 @@ export const proveOnChain = async ({
     logRed(
       quiet,
       error(
-        `The proof files inside ${proofDir} do not have the correct number of message processign proofs` +
+        `The proof files inside ${proofDir} do not have the correct number of message processing proofs` +
           `(expected ${totalMessageBatches}, got ${numProcessProofs}).`,
       ),
     );

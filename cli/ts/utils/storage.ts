@@ -33,7 +33,7 @@ export const storeContractAddress = (contractName: string, address: string, netw
     contractAddrs[network] = {};
   }
 
-  contractAddrs[network]![contractName] = address;
+  contractAddrs[network][contractName] = address;
   fs.writeFileSync(contractAddressesStore, JSON.stringify(contractAddrs, null, 4));
 };
 

@@ -77,7 +77,8 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
     uint256 _pollId,
     uint256 indexed _coordinatorPubKeyX,
     uint256 indexed _coordinatorPubKeyY,
-    PollContracts pollAddr
+    PollContracts pollAddr,
+    Mode _mode
   );
 
   /// @notice custom errors
@@ -204,7 +205,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
     // store the addresses in a struct so they can be returned
     pollAddr = PollContracts({ poll: p, messageProcessor: mp, tally: tally });
 
-    emit DeployPoll(pollId, _coordinatorPubKey.x, _coordinatorPubKey.y, pollAddr);
+    emit DeployPoll(pollId, _coordinatorPubKey.x, _coordinatorPubKey.y, pollAddr, _mode);
   }
 
   /// @inheritdoc IMACI

@@ -180,6 +180,10 @@ function deployPoll(
 }
 ```
 
+:::info
+Please be advised that the number of signups in the MACI contract (number of leaves in the merkle tree holding MACI's state) considers the initial zero leaf as one signup. For this reason, when accounting for the real users signed up to MACI, you should subtract one from the value returned from the `numSignUps` function.
+:::
+
 ## Poll.sol
 
 This contract allows users to submit their votes.

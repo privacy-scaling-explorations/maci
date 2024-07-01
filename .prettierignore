@@ -15,3 +15,7 @@ website/.docusaurus/
 website/src/pages/solidity-docs/index.md
 **/deployed-contracts.json
 **/deploy-config.json
+subgraph/generated
+subgraph/templates/*.yaml
+subgraph/subgraph.yaml
+

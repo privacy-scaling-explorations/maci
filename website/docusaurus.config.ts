@@ -22,7 +22,7 @@ const config: Config = {
   organizationName: "privacy-scaling-explorations", // Usually your GitHub org/user name.
   projectName: "maci", // Usually your repo name.
 
-  onBrokenLinks: "throw",
+  onBrokenLinks: "warn",
   onBrokenMarkdownLinks: "warn",
 
   // Even if you don't use internationalization, you can use this field to set
@@ -104,6 +104,11 @@ const config: Config = {
         {
           to: "/roadmap",
           label: "Roadmap",
+          position: "left",
+        },
+        {
+          to: "/projects",
+          label: "Projects",
           position: "left",
         },
         {

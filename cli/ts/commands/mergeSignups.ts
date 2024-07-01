@@ -1,17 +1,11 @@
-import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts";
+import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts/typechain-types";
 
-import {
-  banner,
-  contractExists,
-  currentBlockTimestamp,
-  info,
-  logError,
-  logGreen,
-  logYellow,
-  success,
-  readContractAddress,
-  type MergeSignupsArgs,
-} from "../utils";
+import type { MergeSignupsArgs } from "../utils/interfaces";
+
+import { banner } from "../utils/banner";
+import { contractExists, currentBlockTimestamp } from "../utils/contracts";
+import { readContractAddress } from "../utils/storage";
+import { info, logError, logGreen, logYellow, success } from "../utils/theme";
 
 /**
  * Command to merge the signups of a MACI contract

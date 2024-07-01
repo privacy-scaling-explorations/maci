@@ -1,4 +1,4 @@
-import type { EASGatekeeper, GitcoinPassportGatekeeper, MACI } from "../../../typechain-types";
+import type { EASGatekeeper, GitcoinPassportGatekeeper, ZupassGatekeeper, MACI } from "../../../typechain-types";
 
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
@@ -81,6 +81,13 @@ deployment.deployTask("full:deploy-maci", "Deploy MACI contract").then((task) =>
       });
       const maciInstanceAddress = await maciContract.getAddress();
 
+      await gatekeeperContract.setMaciInstance(maciInstanceAddress).then((tx) => tx.wait());
+    } else if (gatekeeper === EContracts.ZupassGatekeeper) {
+      const gatekeeperContract = await deployment.getContract<ZupassGatekeeper>({
+        name: EContracts.ZupassGatekeeper,
+        address: gatekeeperContractAddress,
+      });
+      const maciInstanceAddress = await maciContract.getAddress();
       await gatekeeperContract.setMaciInstance(maciInstanceAddress).then((tx) => tx.wait());
     }
 

@@ -1,0 +1,65 @@
+specVersion: 1.2.0
+description: Subgraph Indexer for MACI contract
+repository: https://github.com/privacy-scaling-explorations/maci
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: MACI
+    network: {{ network }}
+    source:
+      abi: MACI
+      address: "{{ maciContractAddress }}"
+      startBlock: {{ maciContractStartBlock }}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - MACI
+        - User
+        - Account
+        - StateLeaf
+        - Poll
+      abis:
+        - name: MACI
+          file: ./node_modules/maci-contracts/build/artifacts/contracts/MACI.sol/MACI.json
+        - name: Poll
+          file: ./node_modules/maci-contracts/build/artifacts/contracts/Poll.sol/Poll.json
+      eventHandlers:
+        - event: DeployPoll(uint256,indexed uint256,indexed uint256,(address,address,address),uint8)
+          handler: handleDeployPoll
+        - event: SignUp(uint256,indexed uint256,indexed uint256,uint256,uint256)
+          handler: handleSignUp
+      file: ./src/maci.ts
+templates:
+  - kind: ethereum
+    name: Poll
+    network: {{ network }}
+    source:
+      abi: Poll
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - MACI
+        - StateLeaf
+        - Poll
+        - Vote
+        - TopupCredit
+      abis:
+        - name: Poll
+          file: ./node_modules/maci-contracts/build/artifacts/contracts/Poll.sol/Poll.json
+      eventHandlers:
+        - event: MergeMaciState(indexed uint256,indexed uint256)
+          handler: handleMergeMaciState
+        - event: MergeMessageAq(indexed uint256)
+          handler: handleMergeMessageAq
+        - event: MergeMessageAqSubRoots(indexed uint256)
+          handler: handleMergeMessageAqSubRoots
+        - event: PublishMessage((uint256[10]),(uint256,uint256))
+          handler: handlePublishMessage
+      file: ./src/poll.ts
