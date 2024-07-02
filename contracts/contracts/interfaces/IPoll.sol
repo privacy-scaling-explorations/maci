@@ -16,7 +16,7 @@ interface IPoll {
   /// @return betchHashes array containing all batch hashes
   function getBatchHashes() external view returns (uint256[] memory);
 
-  /// @notice Pad last batch with nothing messages
+  /// @notice Pad last unclosed batch
   function padLastBatch() external;
 
   /// @notice Allows anyone to publish a message (an encrypted command and signature).

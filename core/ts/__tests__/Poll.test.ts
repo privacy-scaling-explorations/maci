@@ -258,26 +258,6 @@ describe("Poll", function test() {
       BigInt(Math.floor(Date.now() / 1000)),
     );
 
-    // it("should throw if this is the first batch and currentMessageBatchIndex is defined", () => {
-    //   const command = new PCommand(BigInt(user1StateIndex), user1Keypair.pubKey, 0n, 1n, 0n, BigInt(pollId));
-
-    //   const signature = command.sign(user1Keypair.privKey);
-
-    //   const ecdhKeypair = new Keypair();
-    //   const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
-
-    //   const message = command.encrypt(signature, sharedKey);
-
-    //   poll.publishMessage(message, ecdhKeypair.pubKey);
-
-    //   // mock
-    //   poll.currentMessageBatchIndex = 0;
-    //   expect(() => poll.processMessages(pollId)).to.throw(
-    //     "The current message batch index should be length of batch hashes array",
-    //   );
-    //   poll.currentMessageBatchIndex = poll.batchHashes.length - 1;
-    // });
-
     it("should throw if the state has not been copied prior to calling processMessages", () => {
       const tmpPoll = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
