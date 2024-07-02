@@ -167,7 +167,6 @@ include "../../trees/incrementalQuinaryTree.circom";
     for (var i = 0; i < batchSize; i++) {
         computedMessageHashers[i] = MessageHasher()(msgs[i], encPubKeys[i]);
         var batchStartIndexValid = SafeLessThan(32)([batchStartIndex + i, batchEndIndex]);
-        // computedLeaves[i] = Mux1()([msgTreeZeroValue, computedMessageHashers[i]], batchStartIndexValid);
         computedHashes[i] = PoseidonHasher(2)([chainHash[i], computedMessageHashers[i]]);
 
         chainHash[i + 1] = Mux1()([chainHash[i], computedHashes[i]], batchStartIndexValid);

@@ -147,7 +147,6 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
 
   /// @notice The initialization function.
   /// @dev Should be called immediately after Poll creation
-  /// and chainhash ownership transferred
   function init() public {
     if (isInit) revert PollAlreadyInit();
     // set to true so it cannot be called again

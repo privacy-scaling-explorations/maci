@@ -684,11 +684,9 @@ export class Poll implements IPoll {
     circuitInputs.inputHash = sha256Hash([
       circuitInputs.packedVals as bigint,
       coordPubKeyHash,
-      // circuitInputs.inputBatchHash as bigint,
       circuitInputs.outputBatchHash as bigint,
       circuitInputs.currentSbCommitment as bigint,
       circuitInputs.newSbCommitment,
-      // this.pollEndTimestamp,
       BigInt(this.actualStateTreeDepth),
     ]);
 
@@ -782,7 +780,6 @@ export class Poll implements IPoll {
     /* eslint-enable no-bitwise */
 
     return stringifyBigInts({
-      // pollEndTimestamp: this.pollEndTimestamp,
       packedVals,
       inputBatchHash,
       outputBatchHash,
