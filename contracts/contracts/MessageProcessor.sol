@@ -70,7 +70,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
     vkRegistry = IVkRegistry(_vkRegistry);
     poll = IPoll(_poll);
     mode = _mode;
-    batchHashes = poll.getBatchHashes();
+    batchHashes = [NOTHING_UP_MY_SLEEVE];
     currentBatchIndex = batchHashes.length;
   }
 
