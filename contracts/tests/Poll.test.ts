@@ -267,7 +267,7 @@ describe("Poll", () => {
       expect(currentBatchHashes).to.deep.equal(maciState.polls.get(pollId)?.batchHashes);
     });
 
-    it("should corectly pad batch hash array with zeros", async () => {
+    it("should correctly pad batch hash array with zeros", async () => {
       await pollContract.padLastBatch();
       maciState.polls.get(pollId)?.padLastBatch();
 
