@@ -162,7 +162,6 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     dat[1] = 0;
 
     (Message memory _message, PubKey memory _padKey, uint256 placeholderLeaf) = padAndHashMessage(dat);
-    // extContracts.messageAq.enqueue(placeholderLeaf);
     chainHash = NOTHING_UP_MY_SLEEVE;
     batchHashes.push(chainHash);
     updateChainHash(placeholderLeaf);

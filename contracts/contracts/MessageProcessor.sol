@@ -36,13 +36,10 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
   /// @notice  The number of batches processed
   uint256 public numBatchesProcessed;
 
-  /// @notice  The current message batch index. When the coordinator runs
-  /// processMessages(), this action relates to messages
-  /// currentMessageBatchIndex to currentMessageBatchIndex + messageBatchSize.
-  // uint256 public currentMessageBatchIndex;
-
+  /// @notice The array of chainHash values at the end of each batch
   uint256[] public batchHashes;
 
+  /// @notice The current message batch index
   uint256 public currentBatchIndex;
 
   /// @inheritdoc IMessageProcessor

@@ -190,7 +190,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
 
     MaxValues memory maxValues = MaxValues({ maxMessages: 1000, maxVoteOptions: 25 });
 
-    BatchSizes memory batchSizes = BatchSizes({ messageBatchSize: 20 });
+    BatchSizes memory batchSizes = BatchSizes({ messageBatchSize: MESSAGE_BATCH_SIZE });
 
     // the owner of the message processor and tally contract will be the msg.sender
     address _msgSender = msg.sender;

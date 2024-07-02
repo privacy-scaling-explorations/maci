@@ -84,7 +84,7 @@ describe("Ceremony param tests", () => {
       circuit = await circomkitInstance.WitnessTester("processMessages", {
         file: "./core/qv/processMessages",
         template: "ProcessMessages",
-        params: [10, 20, 2],
+        params: [10, MESSAGE_BATCH_SIZE, 2],
       });
 
       hasherCircuit = await circomkitInstance.WitnessTester("processMessageInputHasher", {

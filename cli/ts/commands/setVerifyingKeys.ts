@@ -108,7 +108,7 @@ export const setVerifyingKeys = async ({
   const vkRegistryContract = VkRegistryFactory.connect(vkRegistryAddress, signer);
 
   // check if the process messages vk was already set
-  const processVkSig = genProcessVkSig(stateTreeDepth /* , messageTreeDepth */, voteOptionTreeDepth, messageBatchSize);
+  const processVkSig = genProcessVkSig(stateTreeDepth, voteOptionTreeDepth, messageBatchSize);
 
   if (useQuadraticVoting && (await vkRegistryContract.isProcessVkSet(processVkSig, EMode.QV))) {
     logError("This process verifying key is already set in the contract");

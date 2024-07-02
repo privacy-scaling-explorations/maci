@@ -445,7 +445,6 @@ describe("ProcessMessage circuit", function test() {
       poll.publishMessage(message3, ecdhKeypair3.pubKey);
     });
 
-    // izbaciti ovaj describe van key-change describe-a
     it("should produce the correct state root and ballot root", async () => {
       // The current roots
       const emptyBallot = new Ballot(poll.maxValues.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
@@ -893,7 +892,7 @@ describe("ProcessMessage circuit", function test() {
       ballotTree.insert(emptyBallot.hash());
 
       poll.stateLeaves.forEach(() => {
-        ballotTree.insert(emptyBallotHash); // niz poruka koje racuna, batch hasheve,
+        ballotTree.insert(emptyBallotHash);
       });
 
       while (poll.hasUnprocessedMessages()) {
