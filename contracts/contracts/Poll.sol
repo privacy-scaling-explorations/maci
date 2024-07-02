@@ -203,11 +203,12 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     // set merged to true so it cannot be called again
     stateMerged = true;
 
-    mergedStateRoot = extContracts.maci.getStateTreeRoot();
+    uint256 _mergedStateRoot = extContracts.maci.getStateTreeRoot();
+    mergedStateRoot = _mergedStateRoot;
 
     // Set currentSbCommitment
     uint256[3] memory sb;
-    sb[0] = mergedStateRoot;
+    sb[0] = _mergedStateRoot;
     sb[1] = emptyBallotRoots[treeDepths.voteOptionTreeDepth - 1];
     sb[2] = uint256(0);
 
@@ -225,7 +226,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
 
     actualStateTreeDepth = depth;
 
-    emit MergeMaciState(mergedStateRoot, numSignups);
+    emit MergeMaciState(_mergedStateRoot, _numSignups);
   }
 
   /// @inheritdoc IPoll
