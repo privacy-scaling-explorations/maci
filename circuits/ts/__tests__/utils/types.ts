@@ -22,5 +22,4 @@ export interface IMessageValidatorCircuitInputs {
   currentVotesForOption: SignalValueType;
   voteWeight: SignalValueType;
   slTimestamp: SignalValueType;
-  pollEndTimestamp: SignalValueType;
 }

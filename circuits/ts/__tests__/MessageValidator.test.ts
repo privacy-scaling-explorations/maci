@@ -28,7 +28,6 @@ describe("MessageValidator circuit", function test() {
         "currentVotesForOption",
         "voteWeight",
         "slTimestamp",
-        "pollEndTimestamp",
       ],
       ["isValid"]
     >;
@@ -71,7 +70,6 @@ describe("MessageValidator circuit", function test() {
         currentVotesForOption: 0n,
         voteWeight: 9n,
         slTimestamp: 1n,
-        pollEndTimestamp: 2n,
       };
     });
 
@@ -174,7 +172,6 @@ describe("MessageValidator circuit", function test() {
         "currentVotesForOption",
         "voteWeight",
         "slTimestamp",
-        "pollEndTimestamp",
       ],
       ["isValid"]
     >;
@@ -217,7 +214,6 @@ describe("MessageValidator circuit", function test() {
         currentVotesForOption: 0n,
         voteWeight: 9n,
         slTimestamp: 1n,
-        pollEndTimestamp: 2n,
       };
     });
 

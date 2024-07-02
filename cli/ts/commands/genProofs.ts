@@ -179,9 +179,6 @@ export const genProofs = async ({
     let fromBlock = startBlock ? Number(startBlock) : defaultStartBlock;
 
     const defaultEndBlock = await Promise.all([
-      // pollContract
-      //   .queryFilter(pollContract.filters.MergeMessageAq(messageRoot), fromBlock)
-      //   .then((events) => events[events.length - 1]?.blockNumber),
       pollContract
         .queryFilter(pollContract.filters.MergeMaciState(stateRoot, numSignups), fromBlock)
         .then((events) => events[events.length - 1]?.blockNumber),

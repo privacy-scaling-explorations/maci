@@ -39,7 +39,6 @@ node build/ts/index.js publish \
     --poll-id 0
 node build/ts/index.js timeTravel -s 100
 node build/ts/index.js mergeSignups --poll-id 0
-# node build/ts/index.js mergeMessages --poll-id 0
 node build/ts/index.js genProofs \
     --privkey macisk.bf92af7614b07e2ba19dce65bb7fef2b93d83b84da2cf2e3af690104fbc52511 \
     --poll-id 0 \

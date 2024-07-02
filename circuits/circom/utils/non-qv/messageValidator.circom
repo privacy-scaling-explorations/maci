@@ -60,7 +60,7 @@ template MessageValidatorNonQv() {
     // Check (4) - The signature must be correct.    
     var computedIsSignatureValid = VerifySignature()(pubKey, sigR8, sigS, cmd);
  
-    // Check (6) - There must be sufficient voice credits.
+    // Check (5) - There must be sufficient voice credits.
     // The check ensure that currentVoiceCreditBalance + (currentVotesForOption) >= (voteWeight).
     var computedAreVoiceCreditsSufficient = SafeGreaterEqThan(252)(
         [
@@ -69,7 +69,7 @@ template MessageValidatorNonQv() {
         ]
     );
 
-    // When all six checks are correct, then isValid = 1.
+    // When all five checks are correct, then isValid = 1.
     var computedIsUpdateValid = IsEqual()(
         [
             5,

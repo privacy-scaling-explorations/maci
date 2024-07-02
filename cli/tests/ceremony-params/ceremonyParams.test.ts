@@ -46,11 +46,9 @@ import {
 } from "../constants";
 import { clean, isArm } from "../utils";
 
-describe("Stress tests with ceremony params (6,9,2,3)", function test() {
-  // const messageTreeDepth = 9;
+describe("Stress tests with ceremony params (6,3,2,20)", function test() {
   const stateTreeDepth = 6;
   const voteOptionTreeDepth = 3;
-  // const messageBatchDepth = 2;
   const intStateTreeDepth = 2;
   const messageBatchSize = 20;
 

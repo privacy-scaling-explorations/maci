@@ -28,7 +28,6 @@ interface IVkRegistry {
   /// @return The verifying key
   function getProcessVk(
     uint256 _stateTreeDepth,
-    // uint256 _messageTreeDepth,
     uint256 _voteOptionTreeDepth,
     uint256 _messageBatchSize,
     DomainObjs.Mode _mode
