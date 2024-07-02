@@ -27,8 +27,6 @@ template StateLeafAndBallotTransformerNonQv() {
     signal input slVoiceCreditBalance;
     // Signup timestamp.
     signal input slTimestamp;
-    // Timestamp indicating when the poll ends.
-    signal input pollEndTimestamp;
 
     // The following signals represents a ballot.
     // Nonce.
@@ -80,7 +78,6 @@ template StateLeafAndBallotTransformerNonQv() {
         cmdSigR8,
         cmdSigS,
         slTimestamp,
-        pollEndTimestamp,
         slVoiceCreditBalance,
         ballotCurrentVotesForOption,
         cmdNewVoteWeight

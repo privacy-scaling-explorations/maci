@@ -54,8 +54,6 @@ include "../../trees/incrementalQuinaryTree.circom";
     signal numSignUps;
     // Number of options for this poll.
     signal maxVoteOptions;
-    // Time when the poll ends.
-    signal input pollEndTimestamp;
     // Value of chainHash at beginning of batch
     signal input inputBatchHash;
     // Value of chainHash at end of batch
@@ -136,11 +134,9 @@ include "../../trees/incrementalQuinaryTree.circom";
     ) = ProcessMessagesInputHasher()(
         packedVals,
         coordPubKey,
-        inputBatchHash,
         outputBatchHash,
         currentSbCommitment,
         newSbCommitment,
-        pollEndTimestamp,
         actualStateTreeDepth
     );
 
@@ -165,14 +161,16 @@ include "../../trees/incrementalQuinaryTree.circom";
 
     // Hash each Message to check their existence in the Message tree.
     var computedMessageHashers[batchSize];
-    var computedLeaves[batchSize];
+    var computedHashes[batchSize];
     var chainHash[batchSize + 1];
     chainHash[0] = inputBatchHash;
     for (var i = 0; i < batchSize; i++) {
         computedMessageHashers[i] = MessageHasher()(msgs[i], encPubKeys[i]);
         var batchStartIndexValid = SafeLessThan(32)([batchStartIndex + i, batchEndIndex]);
-        computedLeaves[i] = Mux1()([msgTreeZeroValue, computedMessageHashers[i]], batchStartIndexValid);
-        chainHash[i + 1] = PoseidonHasher(2)([chainHash[i], computedLeaves[i]]);
+        // computedLeaves[i] = Mux1()([msgTreeZeroValue, computedMessageHashers[i]], batchStartIndexValid);
+        computedHashes[i] = PoseidonHasher(2)([chainHash[i], computedMessageHashers[i]]);
+
+        chainHash[i + 1] = Mux1()([chainHash[i], computedHashes[i]], batchStartIndexValid);
     }
 
     // If batchEndIndex - batchStartIndex < batchSize, the remaining
@@ -260,7 +258,6 @@ include "../../trees/incrementalQuinaryTree.circom";
         (computedNewVoteStateRoot[i], computedNewVoteBallotRoot[i]) = ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth)(
             numSignUps,
             maxVoteOptions,
-            pollEndTimestamp,
             stateRoots[i + 1],
             ballotRoots[i + 1],
             actualStateTreeDepth,
@@ -323,7 +320,6 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     // Inputs representing the message and the current state.
     signal input numSignUps;
     signal input maxVoteOptions;
-    signal input pollEndTimestamp;
 
     // The current value of the state tree root.
     signal input currentStateRoot;
@@ -377,7 +373,6 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
         [stateLeaf[STATE_LEAF_PUB_X_IDX], stateLeaf[STATE_LEAF_PUB_Y_IDX]],
         stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX],
         stateLeaf[STATE_LEAF_TIMESTAMP_IDX],
-        pollEndTimestamp,
         ballot[BALLOT_NONCE_IDX],
         currentVoteWeight,
         cmdStateIndex,

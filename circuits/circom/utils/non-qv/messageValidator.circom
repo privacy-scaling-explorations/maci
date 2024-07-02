@@ -35,8 +35,6 @@ template MessageValidatorNonQv() {
     signal input sigS;
     // State leaf signup timestamp.
     signal input slTimestamp;
-    // Timestamp indicating when the poll ends.
-    signal input pollEndTimestamp;
     // State leaf current voice credit balance.
     signal input currentVoiceCreditBalance;
     // Current number of votes for specific option. 
@@ -61,9 +59,6 @@ template MessageValidatorNonQv() {
 
     // Check (4) - The signature must be correct.    
     var computedIsSignatureValid = VerifySignature()(pubKey, sigR8, sigS, cmd);
-
-    // Check (5) - The state leaf must be inserted before the Poll period end.    
-    var computedIsTimestampValid = SafeLessEqThan(252)([slTimestamp, pollEndTimestamp]);
  
     // Check (6) - There must be sufficient voice credits.
     // The check ensure that currentVoiceCreditBalance + (currentVotesForOption) >= (voteWeight).
@@ -77,12 +72,11 @@ template MessageValidatorNonQv() {
     // When all six checks are correct, then isValid = 1.
     var computedIsUpdateValid = IsEqual()(
         [
-            6,
+            5,
             computedIsSignatureValid + 
             computedAreVoiceCreditsSufficient +
             computedIsNonceValid +
             computedIsStateLeafIndexValid +
-            computedIsTimestampValid +
             computedIsVoteOptionIndexValid
         ]
     );

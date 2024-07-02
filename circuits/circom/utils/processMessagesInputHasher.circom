@@ -19,17 +19,15 @@ template ProcessMessagesInputHasher() {
     // Hash coordPubKey:
     // - coordPubKeyHash 
     // Other inputs that can't be compressed or packed:
-    // - currentSbCommitment, newSbCommitment, inputBatchHash, ouptutBatchHash
+    // - currentSbCommitment, newSbCommitment, ouptutBatchHash
     var UNPACK_ELEM_LENGTH = 4;
 
     signal input packedVals;
     signal input coordPubKey[2];
-    signal input inputBatchHash;
     signal input outputBatchHash;
     // The current state and ballot root commitment (hash(stateRoot, ballotRoot, salt)).
     signal input currentSbCommitment;
     signal input newSbCommitment;
-    signal input pollEndTimestamp;
     signal input actualStateTreeDepth;
 
     signal output maxVoteOptions;
@@ -50,14 +48,12 @@ template ProcessMessagesInputHasher() {
     var computedPubKey = PoseidonHasher(2)(coordPubKey);
 
     // 3. Hash the 8 inputs with SHA256.
-    hash <== Sha256Hasher(8)([
+    hash <== Sha256Hasher(6)([
         packedVals,
         computedPubKey,
-        inputBatchHash,
         outputBatchHash,
         currentSbCommitment,
         newSbCommitment,
-        pollEndTimestamp,
         actualStateTreeDepth
     ]);
 }

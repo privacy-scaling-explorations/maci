@@ -113,7 +113,6 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
     if (
       !verifyProcessProof(
         currentBatchIndex,
-        inputBatchHash,
         outputBatchHash,
         sbCommitment,
         _newSbCommitment,
@@ -143,7 +142,6 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
   /// @return isValid Whether the proof is valid
   function verifyProcessProof(
     uint256 _currentBatchIndex,
-    uint256 _inputBatchHash,
     uint256 _outputBatchHash,
     uint256 _currentSbCommitment,
     uint256 _newSbCommitment,
@@ -160,7 +158,6 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
     // Calculate the public input hash (a SHA256 hash of several values)
     uint256 publicInputHash = genProcessMessagesPublicInputHash(
       _currentBatchIndex,
-      _inputBatchHash,
       _outputBatchHash,
       numSignUps,
       numMessages,
@@ -197,7 +194,6 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
   /// @return inputHash Returns the SHA256 hash of the packed values
   function genProcessMessagesPublicInputHash(
     uint256 _currentBatchIndex,
-    uint256 _inputBatchHash,
     uint256 _outputBatchHash,
     uint256 _numSignUps,
     uint256 _numMessages,
@@ -222,15 +218,13 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
     (uint256 deployTime, uint256 duration) = poll.getDeployTimeAndDuration();
 
     // generate the circuit only public input
-    uint256[] memory input = new uint256[](8);
+    uint256[] memory input = new uint256[](6);
     input[0] = packedVals;
     input[1] = coordinatorPubKeyHash;
-    input[2] = _inputBatchHash;
-    input[3] = _outputBatchHash;
-    input[4] = _currentSbCommitment;
-    input[5] = _newSbCommitment;
-    input[6] = deployTime + duration;
-    input[7] = actualStateTreeDepth;
+    input[2] = _outputBatchHash;
+    input[3] = _currentSbCommitment;
+    input[4] = _newSbCommitment;
+    input[5] = actualStateTreeDepth;
     inputHash = sha256Hash(input);
   }
 

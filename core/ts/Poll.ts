@@ -379,11 +379,7 @@ export class Poll implements IPoll {
    * Pad zeroes to chain hash until batch is full
    */
   padLastBatch = (): void => {
-    const inBatch = this.messages.length % this.batchSizes.messageBatchSize;
-    if (inBatch !== 0) {
-      for (let i = 0; i < this.batchSizes.messageBatchSize - inBatch; i += 1) {
-        this.updateChainHash(NOTHING_UP_MY_SLEEVE);
-      }
+    if (this.messages.length % this.batchSizes.messageBatchSize !== 0) {
       this.batchHashes.push(this.chainHash);
     }
   };
@@ -688,11 +684,11 @@ export class Poll implements IPoll {
     circuitInputs.inputHash = sha256Hash([
       circuitInputs.packedVals as bigint,
       coordPubKeyHash,
-      circuitInputs.inputBatchHash as bigint,
+      // circuitInputs.inputBatchHash as bigint,
       circuitInputs.outputBatchHash as bigint,
       circuitInputs.currentSbCommitment as bigint,
       circuitInputs.newSbCommitment,
-      this.pollEndTimestamp,
+      // this.pollEndTimestamp,
       BigInt(this.actualStateTreeDepth),
     ]);
 
@@ -786,7 +782,7 @@ export class Poll implements IPoll {
     /* eslint-enable no-bitwise */
 
     return stringifyBigInts({
-      pollEndTimestamp: this.pollEndTimestamp,
+      // pollEndTimestamp: this.pollEndTimestamp,
       packedVals,
       inputBatchHash,
       outputBatchHash,

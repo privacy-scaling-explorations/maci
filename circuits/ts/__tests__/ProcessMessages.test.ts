@@ -24,7 +24,6 @@ describe("ProcessMessage circuit", function test() {
   type ProcessMessageCircuitInputs = [
     "inputHash",
     "packedVals",
-    "pollEndTimestamp",
     "inputBatchHash",
     "outputBatchHash",
     "msgs",
@@ -50,16 +49,7 @@ describe("ProcessMessage circuit", function test() {
   let circuitNonQv: WitnessTester<ProcessMessageCircuitInputs>;
 
   let hasherCircuit: WitnessTester<
-    [
-      "packedVals",
-      "coordPubKey",
-      "inputBatchHash",
-      "outputBatchHash",
-      "currentSbCommitment",
-      "newSbCommitment",
-      "pollEndTimestamp",
-      "actualStateTreeDepth",
-    ],
+    ["packedVals", "coordPubKey", "outputBatchHash", "currentSbCommitment", "newSbCommitment", "actualStateTreeDepth"],
     ["maxVoteOptions", "numSignUps", "batchStartIndex", "batchEndIndex", "hash"]
   >;
 
@@ -267,11 +257,9 @@ describe("ProcessMessage circuit", function test() {
       const hasherCircuitInputs = {
         packedVals,
         coordPubKey: inputs.coordPubKey,
-        inputBatchHash: inputs.inputBatchHash,
         outputBatchHash: inputs.outputBatchHash,
         currentSbCommitment: inputs.currentSbCommitment,
         newSbCommitment: inputs.newSbCommitment,
-        pollEndTimestamp: inputs.pollEndTimestamp,
         actualStateTreeDepth: inputs.actualStateTreeDepth,
       };
 

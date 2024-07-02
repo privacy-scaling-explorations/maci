@@ -254,7 +254,6 @@ export const proveOnChain = async ({
     const publicInputHashOnChain = BigInt(
       await mpContract.genProcessMessagesPublicInputHash(
         currentMessageBatchIndex,
-        inputBatchHash.toString(),
         outputBatchHash.toString(),
         numSignUps,
         numMessages,

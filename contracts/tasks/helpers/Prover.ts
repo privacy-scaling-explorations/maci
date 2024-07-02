@@ -182,7 +182,6 @@ export class Prover {
       const publicInputHashOnChain = BigInt(
         await this.mpContract.genProcessMessagesPublicInputHash(
           currentMessageBatchIndex,
-          batchHashes[currentMessageBatchIndex].toString(),
           batchHashes[currentMessageBatchIndex + 1].toString(),
           numSignUps,
           numMessages,

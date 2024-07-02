@@ -212,11 +212,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   /// @notice pad nothing messages at the end of last batch
   ///         until is full
   function padLastBatch() external isAfterVotingDeadline {
-    uint256 inBatch = numMessages % batchSizes.messageBatchSize;
-    if (inBatch != 0) {
-      for (uint256 i = 0; i < batchSizes.messageBatchSize - inBatch; i++) {
-        chainHash = hash2([chainHash, NOTHING_UP_MY_SLEEVE]);
-      }
+    if (numMessages % batchSizes.messageBatchSize != 0) {
       batchHashes.push(chainHash);
     }
   }
