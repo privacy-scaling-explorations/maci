@@ -7,6 +7,7 @@ import { Params } from "./utilities/Params.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { EmptyBallotRoots } from "./trees/EmptyBallotRoots.sol";
 import { IPoll } from "./interfaces/IPoll.sol";
+import { IMACI } from "./interfaces/IMACI.sol";
 import { Utilities } from "./utilities/Utilities.sol";
 import { CurveBabyJubJub } from "./crypto/BabyJubJub.sol";
 import { Hasher } from "./crypto/Hasher.sol";
@@ -68,7 +69,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   TreeDepths public treeDepths;
 
   /// @notice The contracts used by the Poll
-  ExtContracts public extContracts;
+  IMACI public maci;
 
   /// @notice The array for chain hash checkpoints
   uint256[] public batchHashes;
@@ -96,7 +97,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   /// @param _treeDepths The depths of the merkle trees
   /// @param _batchSizes The size of message batch
   /// @param _coordinatorPubKey The coordinator's public key
-  /// @param _extContracts The external contracts
+  /// @param _maci Reference to MACI smart contract
 
   constructor(
     uint256 _duration,
@@ -104,7 +105,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     TreeDepths memory _treeDepths,
     BatchSizes memory _batchSizes,
     PubKey memory _coordinatorPubKey,
-    ExtContracts memory _extContracts
+    IMACI _maci
   ) payable {
     // check that the coordinator public key is valid
     if (!CurveBabyJubJub.isOnCurve(_coordinatorPubKey.x, _coordinatorPubKey.y)) {
@@ -116,7 +117,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     // we hash it ourselves to ensure we store the correct value
     coordinatorPubKeyHash = hashLeftRight(_coordinatorPubKey.x, _coordinatorPubKey.y);
     // store the external contracts to interact with
-    extContracts = _extContracts;
+    maci = _maci;
     // store duration of the poll
     duration = _duration;
     // store max values
@@ -162,12 +163,16 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     dat[1] = 0;
 
     (Message memory _message, PubKey memory _padKey, uint256 placeholderLeaf) = padAndHashMessage(dat);
-    // extContracts.messageAq.enqueue(placeholderLeaf);
     chainHash = NOTHING_UP_MY_SLEEVE;
     batchHashes.push(chainHash);
     updateChainHash(placeholderLeaf);
 
     emit PublishMessage(_message, _padKey);
+  }
+
+  /// @notice Returns reference to MACI contract
+  function getMaci() external view returns (IMACI) {
+    return maci;
   }
 
   // get all batch hash array elements
@@ -244,7 +249,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     // set merged to true so it cannot be called again
     stateMerged = true;
 
-    mergedStateRoot = extContracts.maci.getStateTreeRoot();
+    mergedStateRoot = maci.getStateTreeRoot();
 
     // Set currentSbCommitment
     uint256[3] memory sb;
@@ -255,7 +260,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     currentSbCommitment = hash3(sb);
 
     // get number of signups and cache in a var for later use
-    uint256 _numSignups = extContracts.maci.numSignUps();
+    uint256 _numSignups = maci.numSignUps();
     numSignups = _numSignups;
 
     // dynamically determine the actual depth of the state tree

@@ -24,11 +24,4 @@ contract Params {
   struct BatchSizes {
     uint256 messageBatchSize;
   }
-
-  /// @notice A struct holding the external contracts
-  /// that are to be passed to a Poll contract on
-  /// deployment
-  struct ExtContracts {
-    IMACI maci;
-  }
 }

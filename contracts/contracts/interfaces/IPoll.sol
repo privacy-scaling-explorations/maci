@@ -55,10 +55,6 @@ interface IPoll {
   /// @return messageBatchSize The size of batch
   function batchSizes() external view returns (uint256 messageBatchSize);
 
-  /// @notice Get the external contracts
-  /// @return maci The IMACI contract
-  function extContracts() external view returns (IMACI maci);
-
   /// @notice Get the hash of coordinator's public key
   /// @return _coordinatorPubKeyHash the hash of coordinator's public key
   function coordinatorPubKeyHash() external view returns (uint256 _coordinatorPubKeyHash);
@@ -76,4 +72,7 @@ interface IPoll {
   /// @notice Get the dynamic depth of the state tree at the time of poll
   /// finalization (based on the number of leaves inserted)
   function actualStateTreeDepth() external view returns (uint8);
+
+  /// @notice Return reference to MACI contract
+  function getMaci() external view returns (IMACI);
 }
