@@ -134,7 +134,6 @@ export const proveOnChain = async ({
 
   // retrieve the values we need from the smart contracts
   const treeDepths = await pollContract.treeDepths();
-  // const batchSizes = await pollContract.batchSizes();
   const numSignUpsAndMessages = await pollContract.numSignUpsAndMessages();
   const numSignUps = Number(numSignUpsAndMessages[0]);
   const numMessages = Number(numSignUpsAndMessages[1]);

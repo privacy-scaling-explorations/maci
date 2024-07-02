@@ -86,7 +86,7 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").then((task) =>
     }
 
     const pollContract = await deployment.getContract<Poll>({ name: EContracts.Poll, address: pollContractAddress });
-    const [maxValues, extContracts] = await Promise.all([pollContract.maxValues(), pollContract.extContracts()]);
+    const [maxValues, maci] = await Promise.all([pollContract.maxValues(), pollContract.maci]);
 
     const messageProcessorContract = await deployment.getContract({
       name: EContracts.MessageProcessor,
@@ -114,7 +114,7 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").then((task) =>
             messageBatchSize,
           },
           unserializedKey.asContractParam(),
-          extContracts,
+          maci,
         ],
         network: hre.network.name,
       }),
