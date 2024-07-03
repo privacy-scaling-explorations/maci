@@ -20,7 +20,6 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
   /// @notice custom errors
   error NoMoreMessages();
   error StateNotMerged();
-  error MessageAqNotMerged();
   error InvalidProcessMessageProof();
   error MaxVoteOptionsTooLarge();
   error NumSignUpsTooLarge();
