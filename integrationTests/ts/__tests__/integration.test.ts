@@ -76,7 +76,7 @@ describe("Integration tests", function test() {
       messageBatchSize: MESSAGE_BATCH_SIZE,
       processMessagesZkeyPathQv: path.resolve(
         __dirname,
-        "../../../cli/zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test.0.zkey",
+        "../../../cli/zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey",
       ),
       tallyVotesZkeyPathQv: path.resolve(
         __dirname,
@@ -84,7 +84,7 @@ describe("Integration tests", function test() {
       ),
       processMessagesZkeyPathNonQv: path.resolve(
         __dirname,
-        "../../../cli/zkeys/ProcessMessagesNonQv_10-2-1-2_test/ProcessMessagesNonQv_10-2-1-2_test.0.zkey",
+        "../../../cli/zkeys/ProcessMessagesNonQv_10-20-2_test/ProcessMessagesNonQv_10-20-2_test.0.zkey",
       ),
       tallyVotesZkeyPathNonQv: path.resolve(
         __dirname,
@@ -251,17 +251,17 @@ describe("Integration tests", function test() {
         tallyZkey: path.resolve(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey"),
         processZkey: path.resolve(
           __dirname,
-          "../../../cli/zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test.0.zkey",
+          "../../../cli/zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey",
         ),
         pollId,
-        rapidsnark: `${homedir()}/rapidsnark/build/prover`,
+        rapidsnark: `${homedir()}/3327/maci/rapidsnark/build_prover/src/prover`,
         processWitgen: path.resolve(
           __dirname,
-          "../../../cli/zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test_cpp/ProcessMessages_10-2-1-2_test",
+          "../../../cli/zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_cpp/ProcessMessages_10-20-2_test",
         ),
         processDatFile: path.resolve(
           __dirname,
-          "../../../cli/zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test_cpp/ProcessMessages_10-2-1-2_test.dat",
+          "../../../cli/zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_cpp/ProcessMessages_10-20-2_test.dat",
         ),
         tallyWitgen: path.resolve(
           __dirname,
@@ -275,7 +275,7 @@ describe("Integration tests", function test() {
         maciAddress: contracts.maciAddress,
         processWasm: path.resolve(
           __dirname,
-          "../../../cli/zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test_js/ProcessMessages_10-2-1-2_test.wasm",
+          "../../../cli/zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_js/ProcessMessages_10-20-2_test.wasm",
         ),
         tallyWasm: path.resolve(
           __dirname,

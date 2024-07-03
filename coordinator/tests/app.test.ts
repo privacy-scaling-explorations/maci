@@ -29,9 +29,7 @@ import { FileModule } from "../ts/file/file.module";
 
 const STATE_TREE_DEPTH = 10;
 const INT_STATE_TREE_DEPTH = 1;
-// const MSG_TREE_DEPTH = 2;
 const VOTE_OPTION_TREE_DEPTH = 2;
-// const MSG_BATCH_DEPTH = 1;
 const MESSAGE_BATCH_SIZE = 20;
 
 describe("AppController (e2e)", () => {
@@ -60,13 +58,11 @@ describe("AppController (e2e)", () => {
       quiet: true,
       stateTreeDepth: STATE_TREE_DEPTH,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
-      // messageTreeDepth: MSG_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
-      // messageBatchDepth: MSG_BATCH_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
       processMessagesZkeyPathNonQv: path.resolve(
         __dirname,
-        "../zkeys/ProcessMessagesNonQv_10-2-1-2_test/ProcessMessagesNonQv_10-2-1-2_test.0.zkey",
+        "../zkeys/ProcessMessagesNonQv_10-20-2_test/ProcessMessagesNonQv_10-20-2_test.0.zkey",
       ),
       tallyVotesZkeyPathNonQv: path.resolve(
         __dirname,
@@ -81,8 +77,6 @@ describe("AppController (e2e)", () => {
     pollContracts = await deployPoll({
       pollDuration: 30,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
-      // messageTreeSubDepth: MSG_BATCH_DEPTH,
-      // messageTreeDepth: MSG_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       coordinatorPubkey: coordinatorKeypair.pubKey.serialize(),
