@@ -260,11 +260,6 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs {
     uint256 _resultCommitment,
     uint256 _perVOSpentVoiceCreditsHash
   ) public view returns (bool isValid) {
-    uint256[3] memory tally;
-    tally[0] = _resultCommitment;
-    tally[1] = hashLeftRight(_totalSpent, _totalSpentSalt);
-    tally[2] = _perVOSpentVoiceCreditsHash;
-
     if (mode == Mode.QV) {
       isValid = verifyQvSpentVoiceCredits(_totalSpent, _totalSpentSalt, _resultCommitment, _perVOSpentVoiceCreditsHash);
     } else if (mode == Mode.NON_QV) {
