@@ -254,7 +254,7 @@ describe("Integration tests", function test() {
           "../../../cli/zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey",
         ),
         pollId,
-        rapidsnark: `${homedir()}/3327/maci/rapidsnark/build_prover/src/prover`,
+        rapidsnark: `${homedir()}/rapidsnark/build/prover`,
         processWitgen: path.resolve(
           __dirname,
           "../../../cli/zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_cpp/ProcessMessages_10-20-2_test",

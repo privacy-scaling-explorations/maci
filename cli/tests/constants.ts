@@ -41,7 +41,7 @@ export const testProcessMessagesWasmPath =
   "./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_js/ProcessMessages_10-20-2_test.wasm";
 export const testTallyVotesWasmPath =
   "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm";
-export const testRapidsnarkPath = `${homedir()}/3327/maci/rapidsnark/build_prover/src/prover`;
+export const testRapidsnarkPath = `${homedir()}/rapidsnark/build/prover`;
 export const ceremonyProcessMessagesZkeyPath = "./zkeys/ProcessMessages_6-9-2-3/processMessages_6-9-2-3.zkey";
 export const ceremonyProcessMessagesNonQvZkeyPath =
   "./zkeys/ProcessMessagesNonQv_6-9-2-3/processMessagesNonQv_6-9-2-3.zkey";
