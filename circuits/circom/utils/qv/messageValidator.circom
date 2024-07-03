@@ -74,7 +74,7 @@ template MessageValidator() {
         ]
     );
 
-    // When all seven checks are correct, then isValid = 1.
+    // When all six checks are correct, then isValid = 1.
     var computedIsUpdateValid = IsEqual()(
         [
             6,

@@ -30,8 +30,6 @@ describe("Ceremony param tests", () => {
     voteOptionTreeDepth: params.voteOptionTreeDepth,
   };
 
-  const messageBatchSize = MESSAGE_BATCH_SIZE;
-
   const voiceCreditBalance = BigInt(100);
   const duration = 30;
 
@@ -111,7 +109,7 @@ describe("Ceremony param tests", () => {
           BigInt(Math.floor(Date.now() / 1000) + duration),
           maxValues,
           treeDepths,
-          messageBatchSize,
+          MESSAGE_BATCH_SIZE,
           coordinatorKeypair,
         );
 
@@ -269,7 +267,7 @@ describe("Ceremony param tests", () => {
             BigInt(Math.floor(Date.now() / 1000) + duration),
             maxValues,
             treeDepths,
-            messageBatchSize,
+            MESSAGE_BATCH_SIZE,
             coordinatorKeypair,
           );
 

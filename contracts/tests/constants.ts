@@ -1,10 +1,4 @@
-import {
-  MaxValues,
-  TreeDepths,
-  STATE_TREE_ARITY,
-  BatchSizes,
-  MESSAGE_BATCH_SIZE /* , MESSAGE_TREE_ARITY */,
-} from "maci-core";
+import { MaxValues, TreeDepths, STATE_TREE_ARITY, BatchSizes, MESSAGE_BATCH_SIZE } from "maci-core";
 import { G1Point, G2Point } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
 
@@ -52,13 +46,10 @@ export const initialVoiceCreditBalance = 100;
 export const maxValues: MaxValues = {
   maxMessages: 1000,
   maxVoteOptions: 25,
-  // maxMessageBatchSize: 20,
 };
 
 export const treeDepths: TreeDepths = {
   intStateTreeDepth: 1,
-  // messageTreeDepth: MESSAGE_TREE_DEPTH,
-  // messageTreeSubDepth: MESSAGE_TREE_SUBDEPTH,
   voteOptionTreeDepth: 2,
 };
 
@@ -66,5 +57,3 @@ export const batchSizes: BatchSizes = {
   tallyBatchSize: STATE_TREE_ARITY ** treeDepths.intStateTreeDepth,
   messageBatchSize: MESSAGE_BATCH_SIZE,
 };
-
-// export const tallyBatchSize = STATE_TREE_ARITY ** treeDepths.intStateTreeDepth;
