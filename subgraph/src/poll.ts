@@ -3,8 +3,6 @@
 import { Poll, Vote, MACI } from "../generated/schema";
 import {
   MergeMaciState as MergeMaciStateEvent,
-  MergeMessageAq as MergeMessageAqEvent,
-  MergeMessageAqSubRoots as MergeMessageAqSubRootsEvent,
   PublishMessage as PublishMessageEvent,
 } from "../generated/templates/Poll/Poll";
 
@@ -26,26 +24,6 @@ export function handleMergeMaciState(event: MergeMaciStateEvent): void {
       maci.updatedAt = event.block.timestamp;
       maci.save();
     }
-  }
-}
-
-export function handleMergeMessageAq(event: MergeMessageAqEvent): void {
-  const poll = Poll.load(event.address);
-
-  if (poll) {
-    poll.messageRoot = event.params._messageRoot;
-    poll.updatedAt = event.block.timestamp;
-    poll.save();
-  }
-}
-
-export function handleMergeMessageAqSubRoots(event: MergeMessageAqSubRootsEvent): void {
-  const poll = Poll.load(event.address);
-
-  if (poll) {
-    poll.numSrQueueOps = event.params._numSrQueueOps;
-    poll.updatedAt = event.block.timestamp;
-    poll.save();
   }
 }
 

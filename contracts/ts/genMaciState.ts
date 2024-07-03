@@ -144,14 +144,8 @@ export const genMaciStateFromContract = async (
 
     const [
       publishMessageLogs,
-      mergeMessageAqSubRootsLogs,
-      mergeMessageAqLogs,
       // eslint-disable-next-line no-await-in-loop
-    ] = await Promise.all([
-      pollContract.queryFilter(pollContract.filters.PublishMessage(), i, toBlock),
-      pollContract.queryFilter(pollContract.filters.MergeMessageAqSubRoots(), i, toBlock),
-      pollContract.queryFilter(pollContract.filters.MergeMessageAq(), i, toBlock),
-    ]);
+    ] = await Promise.all([pollContract.queryFilter(pollContract.filters.PublishMessage(), i, toBlock)]);
 
     publishMessageLogs.forEach((event) => {
       assert(!!event);
@@ -168,32 +162,6 @@ export const genMaciStateFromContract = async (
           message,
           encPubKey,
         },
-      });
-    });
-
-    mergeMessageAqSubRootsLogs.forEach((event) => {
-      assert(!!event);
-
-      const numSrQueueOps = Number(event.args._numSrQueueOps);
-      actions.push({
-        type: "MergeMessageAqSubRoots",
-        blockNumber: event.blockNumber,
-        transactionIndex: event.transactionIndex,
-        data: {
-          numSrQueueOps,
-        },
-      });
-    });
-
-    mergeMessageAqLogs.forEach((event) => {
-      assert(!!event);
-
-      const messageRoot = BigInt((event.args as unknown as { _messageRoot: string })._messageRoot);
-      actions.push({
-        type: "MergeMessageAq",
-        blockNumber: event.blockNumber,
-        transactionIndex: event.transactionIndex,
-        data: { messageRoot },
       });
     });
 

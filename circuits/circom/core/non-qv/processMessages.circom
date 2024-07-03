@@ -159,7 +159,7 @@ include "../../trees/incrementalQuinaryTree.circom";
     var numSignUpsValid = LessEqThan(32)([numSignUps, STATE_TREE_ARITY ** stateTreeDepth]);
     numSignUpsValid === 1;
 
-    // Hash each Message to check their existence in the Message tree.
+    // Hash each Message to check their existence in the Message chain hash.
     var computedMessageHashers[batchSize];
     var computedHashes[batchSize];
     var chainHash[batchSize + 1];
@@ -177,6 +177,7 @@ include "../../trees/incrementalQuinaryTree.circom";
     // e.g. [m, z, z, z, z] if there is only 1 real message in the batch
     // This makes possible to have a batch of messages which is only partially full.
 
+    // Ensure that right output batch hash was sent to circuit
     chainHash[batchSize] === outputBatchHash;
 
     // Decrypt each Message to a Command.

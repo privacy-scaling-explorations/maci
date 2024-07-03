@@ -87,8 +87,6 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
 
   event PublishMessage(Message _message, PubKey _encPubKey);
   event MergeMaciState(uint256 indexed _stateRoot, uint256 indexed _numSignups);
-  event MergeMessageAqSubRoots(uint256 indexed _numSrQueueOps);
-  event MergeMessageAq(uint256 indexed _messageRoot);
 
   /// @notice Each MACI instance can have multiple Polls.
   /// When a Poll is deployed, its voting period starts immediately.

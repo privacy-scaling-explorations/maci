@@ -39,7 +39,6 @@ describe("pollFactory", () => {
           {
             maxMessages: maxValues.maxMessages,
             maxVoteOptions: 2 ** 50,
-            // maxMessageBatchSize: maxValues.maxMessageBatchSize,
           },
           treeDepths,
           batchSizes,

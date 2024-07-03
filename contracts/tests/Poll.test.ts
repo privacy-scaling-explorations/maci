@@ -121,8 +121,6 @@ describe("Poll", () => {
     it("should have the correct tree depths set", async () => {
       const td = await pollContract.treeDepths();
       expect(td[0].toString()).to.eq(treeDepths.intStateTreeDepth.toString());
-      // expect(td[1].toString()).to.eq(treeDepths.messageTreeSubDepth.toString());
-      // expect(td[2].toString()).to.eq(treeDepths.messageTreeDepth.toString());
       expect(td[1].toString()).to.eq(treeDepths.voteOptionTreeDepth.toString());
     });
 

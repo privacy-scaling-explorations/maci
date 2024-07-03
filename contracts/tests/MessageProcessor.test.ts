@@ -13,8 +13,6 @@ import {
   MACI,
   MessageProcessor,
   MessageProcessor__factory as MessageProcessorFactory,
-  // Poll as PollContract,
-  // Poll__factory as PollFactory,
   Verifier,
   VkRegistry,
 } from "../typechain-types";
@@ -35,7 +33,6 @@ import { timeTravel, deployTestContracts } from "./utils";
 describe("MessageProcessor", () => {
   // contracts
   let maciContract: MACI;
-  // let pollContract: PollContract;
   let verifierContract: Verifier;
   let vkRegistryContract: VkRegistry;
   let mpContract: MessageProcessor;
@@ -92,9 +89,6 @@ describe("MessageProcessor", () => {
     };
     pollId = event.args._pollId;
 
-    // const pollContractAddress = await maciContract.getPoll(pollId);
-    // pollContract = PollFactory.connect(pollContractAddress, signer);
-
     mpContract = MessageProcessorFactory.connect(event.args.pollAddr.messageProcessor, signer);
 
     const block = await signer.provider!.getBlock(receipt!.blockHash);
@@ -104,12 +98,6 @@ describe("MessageProcessor", () => {
     const p = maciState.deployPoll(BigInt(deployTime + duration), maxValues, treeDepths, messageBatchSize, coordinator);
     expect(p.toString()).to.eq(pollId.toString());
 
-    // publish the NOTHING_UP_MY_SLEEVE message
-    // const messageData = [NOTHING_UP_MY_SLEEVE];
-    // for (let i = 1; i < 10; i += 1) {
-    //   messageData.push(BigInt(0));
-    // }
-    // const message = new Message(messageData);
     const messages = [];
     for (let i = 0; i <= 24; i += 1) {
       const messageData = [NOTHING_UP_MY_SLEEVE];

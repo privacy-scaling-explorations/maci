@@ -8,14 +8,11 @@ import { Deployment } from "../helpers/Deployment";
 import { TreeMerger } from "../helpers/TreeMerger";
 import { EContracts, type IMergeParams } from "../helpers/types";
 
-const DEFAULT_SR_QUEUE_OPS = 4;
-
 /**
  * Command to merge signups of a MACI contract
  */
 task("merge", "Merge signups")
   .addParam("poll", "The poll id", undefined, types.string)
-  .addOptionalParam("queueOps", "The number of queue operations to perform", DEFAULT_SR_QUEUE_OPS, types.int)
   .addOptionalParam("prove", "Run prove command after merging", false, types.boolean)
   .setAction(async ({ poll, prove }: IMergeParams, hre) => {
     const deployment = Deployment.getInstance(hre);
