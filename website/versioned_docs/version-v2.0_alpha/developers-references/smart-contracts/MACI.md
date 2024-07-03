@@ -66,7 +66,7 @@ function signUp(
     bytes memory _initialVoiceCreditProxyData
 ) public virtual {
     // ensure we do not have more signups than what the circuits support
-    if (lazyIMTData.numberOfLeaves >= uint256(TREE_ARITY) ** uint256(stateTreeDepth)) revert TooManySignups();
+    if (lazyIMTData.numberOfLeaves >= maxSignups) revert TooManySignups();
 
     // ensure that the public key is on the baby jubjub curve
     if (!CurveBabyJubJub.isOnCurve(_pubKey.x, _pubKey.y)) {

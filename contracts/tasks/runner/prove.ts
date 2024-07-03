@@ -109,6 +109,7 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
         coordinatorKeypair,
         pollId: poll,
         signer,
+        outputDir,
         options: {
           stateFile,
           transactionHash,
