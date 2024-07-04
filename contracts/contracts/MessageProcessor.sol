@@ -253,11 +253,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
     if (_numSignUps >= 2 ** 50) revert NumSignUpsTooLarge();
     if (_currentBatchIndex * _messageBatchSize >= 2 ** 50) revert CurrentMessageBatchIndexTooLarge();
     if (batchEndIndex >= 2 ** 50) revert BatchEndIndexTooLarge();
-    result =
-      maxVoteOptions +
-      (_numSignUps << 50) +
-      ((_currentBatchIndex * _messageBatchSize) << 100) +
-      (batchEndIndex << 150);
+    result = maxVoteOptions + (_numSignUps << 50) + (_messageBatchSize << 100) + (batchEndIndex << 150);
   }
 
   /// @notice update message processing state variables

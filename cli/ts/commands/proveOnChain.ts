@@ -141,7 +141,7 @@ export const proveOnChain = async ({
   const tallyBatchSize = STATE_TREE_ARITY ** Number(treeDepths.intStateTreeDepth);
   const pollBatchHashes = await pollContract.getBatchHashes();
   const batchHashes = [...pollBatchHashes];
-  let totalMessageBatches = batchHashes.length;
+  const totalMessageBatches = batchHashes.length;
   const lastChainHash = await pollContract.chainHash();
 
   // perform validation
@@ -183,8 +183,7 @@ export const proveOnChain = async ({
       if (numMessages % messageBatchSize !== 0) {
         batchHashes.push(chainHash);
       }
-      totalMessageBatches = batchHashes.length;
-      currentMessageBatchIndex = totalMessageBatches;
+      currentMessageBatchIndex = batchHashes.length;
 
       if (currentMessageBatchIndex > 0) {
         currentMessageBatchIndex -= 1;
