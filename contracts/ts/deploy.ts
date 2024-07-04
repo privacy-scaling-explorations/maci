@@ -30,6 +30,7 @@ import {
   MessageProcessorFactory__factory as MessageProcessorFactoryFactory,
   TallyFactory__factory as TallyFactoryFactory,
   GitcoinPassportGatekeeper,
+  SemaphoreGatekeeper,
 } from "../typechain-types";
 
 import { log } from "./utils";
@@ -166,6 +167,22 @@ export const deployGitcoinPassportGatekeeper = async (
     decoderAddress,
     minimumScore.toString(),
   );
+
+/**
+ * Deploy a SemaphoreGatekeeper contract
+ * @param semaphoreAddress - the address of the Semaphore contract
+ * @param groupId - The group id of the semaphore group
+ * @param signer - the signer to use to deploy the contract
+ * @param quiet - whether to suppress console output
+ * @returns the deployed SemaphoreGatekeeper contract
+ */
+export const deploySemaphoreGatekeeper = async (
+  semaphoreAddress: string,
+  groupId: bigint,
+  signer?: Signer,
+  quiet = false,
+): Promise<SemaphoreGatekeeper> =>
+  deployContract<SemaphoreGatekeeper>("SemaphoreGatekeeper", signer, quiet, semaphoreAddress, groupId.toString());
 
 /**
  * Deploy Poseidon contracts

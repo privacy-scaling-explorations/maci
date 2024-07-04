@@ -9,6 +9,7 @@ export {
   deployConstantInitialVoiceCreditProxy,
   deployFreeForAllSignUpGatekeeper,
   deployGitcoinPassportGatekeeper,
+  deploySemaphoreGatekeeper,
   deployPollFactory,
   createContractFactory,
   deployPoseidonContracts,
