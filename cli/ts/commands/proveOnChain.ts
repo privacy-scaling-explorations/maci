@@ -142,6 +142,7 @@ export const proveOnChain = async ({
   const pollBatchHashes = await pollContract.getBatchHashes();
   const batchHashes = [...pollBatchHashes];
   let totalMessageBatches = batchHashes.length;
+  const lastChainHash = await pollContract.chainHash();
 
   // perform validation
   if (numProcessProofs !== totalMessageBatches) {
@@ -178,7 +179,7 @@ export const proveOnChain = async ({
   for (let i = numberBatchesProcessed; i < totalMessageBatches; i += 1) {
     let currentMessageBatchIndex = totalMessageBatches;
     if (numberBatchesProcessed === 0) {
-      const chainHash = batchHashes[totalMessageBatches - 1];
+      const chainHash = lastChainHash;
       if (numMessages % messageBatchSize !== 0) {
         batchHashes.push(chainHash);
       }
