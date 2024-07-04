@@ -11,7 +11,7 @@ import {
   type IVerifyingKeyStruct,
 } from "maci-contracts";
 import { MESSAGE_BATCH_SIZE, STATE_TREE_ARITY } from "maci-core";
-import { G1Point, G2Point, NOTHING_UP_MY_SLEEVE, hash2, hashLeftRight } from "maci-crypto";
+import { G1Point, G2Point /* , NOTHING_UP_MY_SLEEVE, hash2 */, hashLeftRight } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
 
 import fs from "fs";
@@ -169,8 +169,8 @@ export const proveOnChain = async ({
     mpMode,
   );
 
-  const dd = await pollContract.getDeployTimeAndDuration();
-  const pollEndTimestampOnChain = BigInt(dd[0]) + BigInt(dd[1]);
+  // const dd = await pollContract.getDeployTimeAndDuration();
+  // const pollEndTimestampOnChain = BigInt(dd[0]) + BigInt(dd[1]);
 
   if (numberBatchesProcessed < totalMessageBatches) {
     logYellow(quiet, info("Submitting proofs of message processing..."));
@@ -180,12 +180,8 @@ export const proveOnChain = async ({
   for (let i = numberBatchesProcessed; i < totalMessageBatches; i += 1) {
     let currentMessageBatchIndex = totalMessageBatches;
     if (numberBatchesProcessed === 0) {
-      let chainHash = batchHashes[totalMessageBatches - 1];
-      const inBatch = numMessages % messageBatchSize;
-      if (inBatch !== 0) {
-        for (let J = 0; J < messageBatchSize - inBatch; J += 1) {
-          chainHash = hash2([chainHash, NOTHING_UP_MY_SLEEVE]);
-        }
+      const chainHash = batchHashes[totalMessageBatches - 1];
+      if (numMessages % messageBatchSize !== 0) {
         batchHashes.push(chainHash);
       }
       totalMessageBatches = batchHashes.length;
@@ -199,9 +195,9 @@ export const proveOnChain = async ({
     const { proof, circuitInputs, publicInputs } = data.processProofs[i];
 
     // validation
-    if (circuitInputs.pollEndTimestamp !== pollEndTimestampOnChain.toString()) {
-      logError("pollEndTimestamp mismatch.");
-    }
+    // if (circuitInputs.pollEndTimestamp !== pollEndTimestampOnChain.toString()) {
+    //   logError("pollEndTimestamp mismatch.");
+    // }
 
     const inputBatchHash = batchHashes[currentMessageBatchIndex - 1];
     if (BigInt(circuitInputs.inputBatchHash as BigNumberish).toString() !== inputBatchHash.toString()) {
