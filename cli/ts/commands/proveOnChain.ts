@@ -11,7 +11,7 @@ import {
   type IVerifyingKeyStruct,
 } from "maci-contracts";
 import { MESSAGE_BATCH_SIZE, STATE_TREE_ARITY } from "maci-core";
-import { G1Point, G2Point /* , NOTHING_UP_MY_SLEEVE, hash2 */, NOTHING_UP_MY_SLEEVE, hashLeftRight } from "maci-crypto";
+import { G1Point, G2Point /* , NOTHING_UP_MY_SLEEVE, hash2 */, hashLeftRight } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
 
 import fs from "fs";
@@ -140,7 +140,8 @@ export const proveOnChain = async ({
   const messageBatchSize = MESSAGE_BATCH_SIZE;
   const tallyBatchSize = STATE_TREE_ARITY ** Number(treeDepths.intStateTreeDepth);
   const pollBatchHashes = await pollContract.getBatchHashes();
-  let totalMessageBatches = pollBatchHashes.length;
+  const batchHashes = [...pollBatchHashes];
+  let totalMessageBatches = batchHashes.length;
 
   // perform validation
   if (numProcessProofs !== totalMessageBatches) {
@@ -175,14 +176,11 @@ export const proveOnChain = async ({
 
   // process all batches left
   for (let i = numberBatchesProcessed; i < totalMessageBatches; i += 1) {
-    let batchHashes = [NOTHING_UP_MY_SLEEVE];
     let currentMessageBatchIndex = totalMessageBatches;
     if (numberBatchesProcessed === 0) {
-      const chainHash = pollBatchHashes[totalMessageBatches - 1];
+      const chainHash = batchHashes[totalMessageBatches - 1];
       if (numMessages % messageBatchSize !== 0) {
-        batchHashes = [...pollBatchHashes, chainHash];
-      } else {
-        batchHashes = [...pollBatchHashes];
+        batchHashes.push(chainHash);
       }
       totalMessageBatches = batchHashes.length;
       currentMessageBatchIndex = totalMessageBatches;
