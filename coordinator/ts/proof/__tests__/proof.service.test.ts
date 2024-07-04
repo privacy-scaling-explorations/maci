@@ -127,14 +127,6 @@ describe("ProofGeneratorService", () => {
     await expect(service.generate(defaultArgs)).rejects.toThrow(ErrorCodes.PRIVATE_KEY_MISMATCH);
   });
 
-  // test("should throw error if there is no any poll", async () => {
-  //   mockContract.getMainRoot.mockResolvedValue(0n);
-
-  //   const service = new ProofGeneratorService(defaultCryptoService, fileService);
-
-  //   await expect(service.generate(defaultArgs)).rejects.toThrow(ErrorCodes.NOT_MERGED_MESSAGE_TREE);
-  // });
-
   test("should throw error if poll is not found", async () => {
     const service = new ProofGeneratorService(defaultCryptoService, fileService);
 
