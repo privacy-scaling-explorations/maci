@@ -259,6 +259,11 @@ export interface IPrepareStateParams {
   signer: Signer;
 
   /**
+   * The directory to store the proofs
+   */
+  outputDir: string;
+
+  /**
    * Options for state (on-chain fetching or local file)
    */
   options: Partial<{

@@ -61,8 +61,7 @@ export class ProofGeneratorService {
       address: maciContractAddress,
     });
 
-    const signer = await this.deployment.getDeployer();
-    const pollAddress = await maciContract.polls(poll);
+    const [signer, pollAddress] = await Promise.all([this.deployment.getDeployer(), maciContract.polls(poll)]);
 
     if (pollAddress.toLowerCase() === ZeroAddress.toLowerCase()) {
       this.logger.error(`Error: ${ErrorCodes.POLL_NOT_FOUND}, Poll ${poll} not found`);
@@ -70,23 +69,22 @@ export class ProofGeneratorService {
     }
 
     const pollContract = await this.deployment.getContract<Poll>({ name: EContracts.Poll, address: pollAddress });
-    const [{ messageAq: messageAqAddress }, coordinatorPublicKey] = await Promise.all([
-      pollContract.extContracts(),
-      pollContract.coordinatorPubKey(),
-    ]);
+    const [{ messageAq: messageAqAddress }, coordinatorPublicKey, isStateAqMerged, messageTreeDepth] =
+      await Promise.all([
+        pollContract.extContracts(),
+        pollContract.coordinatorPubKey(),
+        pollContract.stateMerged(),
+        pollContract.treeDepths().then((depths) => Number(depths[2])),
+      ]);
     const messageAq = await this.deployment.getContract<AccQueue>({
       name: EContracts.AccQueue,
       address: messageAqAddress,
     });
 
-    const isStateAqMerged = await pollContract.stateMerged();
-
     if (!isStateAqMerged) {
       this.logger.error(`Error: ${ErrorCodes.NOT_MERGED_STATE_TREE}, state tree is not merged`);
       throw new Error(ErrorCodes.NOT_MERGED_STATE_TREE);
     }
-
-    const messageTreeDepth = await pollContract.treeDepths().then((depths) => Number(depths[2]));
 
     const mainRoot = await messageAq.getMainRoot(messageTreeDepth.toString());
 
@@ -108,6 +106,8 @@ export class ProofGeneratorService {
       throw new Error(ErrorCodes.PRIVATE_KEY_MISMATCH);
     }
 
+    const outputDir = path.resolve("./proofs");
+
     const maciState = await ProofGenerator.prepareState({
       maciContract,
       pollContract,
@@ -116,6 +116,7 @@ export class ProofGeneratorService {
       coordinatorKeypair,
       pollId: poll,
       signer,
+      outputDir,
       options: {
         startBlock,
         endBlock,
@@ -137,7 +138,7 @@ export class ProofGeneratorService {
       tally: this.fileService.getZkeyFilePaths(process.env.COORDINATOR_TALLY_ZKEY_NAME!, useQuadraticVoting),
       mp: this.fileService.getZkeyFilePaths(process.env.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME!, useQuadraticVoting),
       rapidsnark: process.env.COORDINATOR_RAPIDSNARK_EXE,
-      outputDir: path.resolve("./proofs"),
+      outputDir,
       tallyOutputFile: path.resolve("./tally.json"),
       useQuadraticVoting,
     });

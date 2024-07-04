@@ -76,8 +76,13 @@ export class ProofGenerator {
     maciPrivateKey,
     coordinatorKeypair,
     signer,
+    outputDir,
     options: { transactionHash, stateFile, startBlock, endBlock, blocksPerBatch },
   }: IPrepareStateParams): Promise<MaciState> {
+    if (!fs.existsSync(path.resolve(outputDir))) {
+      fs.mkdirSync(path.resolve(outputDir));
+    }
+
     if (stateFile) {
       const content = JSON.parse(fs.readFileSync(stateFile).toString()) as unknown as IJsonMaciState;
       const serializedPrivateKey = maciPrivateKey.serialize();
@@ -175,7 +180,6 @@ export class ProofGenerator {
     performance.mark("mp-proofs-start");
 
     console.log(`Generating proofs of message processing...`);
-    const proofs: Proof[] = [];
     const { messageBatchSize } = this.poll.batchSizes;
     const numMessages = this.poll.messages.length;
     let totalMessageBatches = numMessages <= messageBatchSize ? 1 : Math.floor(numMessages / messageBatchSize);
@@ -183,6 +187,8 @@ export class ProofGenerator {
     if (numMessages > messageBatchSize && numMessages % messageBatchSize > 0) {
       totalMessageBatches += 1;
     }
+
+    const inputs: CircuitInputs[] = [];
 
     // while we have unprocessed messages, process them
     while (this.poll.hasUnprocessedMessages()) {
@@ -193,13 +199,18 @@ export class ProofGenerator {
       ) as unknown as CircuitInputs;
 
       // generate the proof for this batch
-      // eslint-disable-next-line no-await-in-loop
-      await this.generateProofs(circuitInputs, this.mp, `process_${this.poll.numBatchesProcessed - 1}.json`).then(
-        (data) => proofs.push(...data),
-      );
+      inputs.push(circuitInputs);
 
       console.log(`Progress: ${this.poll.numBatchesProcessed} / ${totalMessageBatches}`);
     }
+
+    console.log("Wait until proof generation is finished");
+
+    const proofs = await Promise.all(
+      inputs.map((circuitInputs, index) => this.generateProofs(circuitInputs, this.mp, `process_${index}.json`)),
+    ).then((data) => data.reduce((acc, x) => acc.concat(x), []));
+
+    console.log("Proof generation is finished");
 
     performance.mark("mp-proofs-end");
     performance.measure("Generate message processor proofs", "mp-proofs-start", "mp-proofs-end");
@@ -217,7 +228,6 @@ export class ProofGenerator {
     performance.mark("tally-proofs-start");
 
     console.log(`Generating proofs of vote tallying...`);
-    const proofs: Proof[] = [];
     const { tallyBatchSize } = this.poll.batchSizes;
     const numStateLeaves = this.poll.stateLeaves.length;
     let totalTallyBatches = numStateLeaves <= tallyBatchSize ? 1 : Math.floor(numStateLeaves / tallyBatchSize);
@@ -226,18 +236,25 @@ export class ProofGenerator {
     }
 
     let tallyCircuitInputs: CircuitInputs;
+    const inputs: CircuitInputs[] = [];
+
     while (this.poll.hasUntalliedBallots()) {
       tallyCircuitInputs = (this.useQuadraticVoting
         ? this.poll.tallyVotes()
         : this.poll.tallyVotesNonQv()) as unknown as CircuitInputs;
 
-      // eslint-disable-next-line no-await-in-loop
-      await this.generateProofs(tallyCircuitInputs, this.tally, `tally_${this.poll.numBatchesTallied - 1}.json`).then(
-        (data) => proofs.push(...data),
-      );
+      inputs.push(tallyCircuitInputs);
 
       console.log(`Progress: ${this.poll.numBatchesTallied} / ${totalTallyBatches}`);
     }
+
+    console.log("Wait until proof generation is finished");
+
+    const proofs = await Promise.all(
+      inputs.map((circuitInputs, index) => this.generateProofs(circuitInputs, this.tally, `tally_${index}.json`)),
+    ).then((data) => data.reduce((acc, x) => acc.concat(x), []));
+
+    console.log("Proof generation is finished");
 
     // verify the results
     // Compute newResultsCommitment
@@ -358,10 +375,6 @@ export class ProofGenerator {
       proof,
       publicInputs: publicSignals,
     });
-
-    if (!fs.existsSync(path.resolve(this.outputDir))) {
-      await fs.promises.mkdir(path.resolve(this.outputDir));
-    }
 
     await fs.promises.writeFile(
       path.resolve(this.outputDir, outputFile),

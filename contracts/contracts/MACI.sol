@@ -24,6 +24,8 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
   /// if we change the state tree depth!
   uint8 public immutable stateTreeDepth;
 
+  uint256 public immutable maxSignups;
+
   uint8 internal constant TREE_ARITY = 2;
   uint8 internal constant MESSAGE_TREE_ARITY = 5;
 
@@ -112,6 +114,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
     signUpGatekeeper = _signUpGatekeeper;
     initialVoiceCreditProxy = _initialVoiceCreditProxy;
     stateTreeDepth = _stateTreeDepth;
+    maxSignups = uint256(TREE_ARITY) ** uint256(_stateTreeDepth);
 
     // Verify linked poseidon libraries
     if (hash2([uint256(1), uint256(1)]) == 0) revert PoseidonHashLibrariesNotLinked();
@@ -135,7 +138,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
     bytes memory _initialVoiceCreditProxyData
   ) public virtual {
     // ensure we do not have more signups than what the circuits support
-    if (lazyIMTData.numberOfLeaves >= uint256(TREE_ARITY) ** uint256(stateTreeDepth)) revert TooManySignups();
+    if (lazyIMTData.numberOfLeaves >= maxSignups) revert TooManySignups();
 
     // ensure that the public key is on the baby jubjub curve
     if (!CurveBabyJubJub.isOnCurve(_pubKey.x, _pubKey.y)) {
