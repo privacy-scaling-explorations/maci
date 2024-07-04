@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { AbiCoder, Signer, ZeroAddress } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
-import { deployContract } from "../ts/deploy";
+import { deploySemaphoreGatekeeper, deployContract } from "../ts/deploy";
 import { getDefaultSigner, getSigners } from "../ts/utils";
 import { MACI, SemaphoreGatekeeper, MockSemaphore } from "../typechain-types";
 
@@ -65,7 +65,7 @@ describe("Semaphore Gatekeeper", () => {
     mockSemaphore = await deployContract("MockSemaphore", signer, true, validGroupId);
     const mockSemaphoreAddress = await mockSemaphore.getAddress();
     signerAddress = await signer.getAddress();
-    semaphoreGatekeeper = await deployContract("SemaphoreGatekeeper", signer, true, mockSemaphoreAddress, validGroupId);
+    semaphoreGatekeeper = await deploySemaphoreGatekeeper(mockSemaphoreAddress, validGroupId, signer, true);
   });
 
   describe("Deployment", () => {
