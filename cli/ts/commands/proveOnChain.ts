@@ -169,9 +169,6 @@ export const proveOnChain = async ({
     mpMode,
   );
 
-  // const dd = await pollContract.getDeployTimeAndDuration();
-  // const pollEndTimestampOnChain = BigInt(dd[0]) + BigInt(dd[1]);
-
   if (numberBatchesProcessed < totalMessageBatches) {
     logYellow(quiet, info("Submitting proofs of message processing..."));
   }
@@ -195,9 +192,6 @@ export const proveOnChain = async ({
     const { proof, circuitInputs, publicInputs } = data.processProofs[i];
 
     // validation
-    // if (circuitInputs.pollEndTimestamp !== pollEndTimestampOnChain.toString()) {
-    //   logError("pollEndTimestamp mismatch.");
-    // }
 
     const inputBatchHash = batchHashes[currentMessageBatchIndex - 1];
     if (BigInt(circuitInputs.inputBatchHash as BigNumberish).toString() !== inputBatchHash.toString()) {
