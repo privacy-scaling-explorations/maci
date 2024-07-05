@@ -421,10 +421,10 @@ export class Poll implements IPoll {
     const batchSize = this.batchSizes.messageBatchSize;
 
     if (this.numBatchesProcessed === 0) {
-      // The starting index of the batch of messages to process.
-      // Note that we process messages in reverse order.
+      // The index of the batch to process.
+      // Note that we process batches in reverse order.
       // e.g if there are 8 messages and the batch size is 5, then
-      // the starting index should be 5.
+      // the starting index should be 1.
       assert(
         this.currentMessageBatchIndex === this.batchHashes.length - 1,
         "The current message batch index should be length of batch hashes array",

@@ -69,13 +69,16 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   TreeDepths public treeDepths;
 
   /// @notice The contracts used by the Poll
-  IMACI public maci;
+  IMACI public immutable maci;
 
   /// @notice The array for chain hash checkpoints
   uint256[] public batchHashes;
 
   /// @notice Current chain hash
   uint256 public chainHash;
+
+  ///  @notice flag for batch padding
+  bool public isBatchHashesPadded;
 
   error VotingPeriodOver();
   error VotingPeriodNotOver();
@@ -84,6 +87,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   error InvalidPubKey();
   error StateAlreadyMerged();
   error InvalidBatchLength();
+  error BatchHashesAlreadyPadded();
 
   event PublishMessage(Message _message, PubKey _encPubKey);
   event MergeMaciState(uint256 indexed _stateRoot, uint256 indexed _numSignups);
@@ -136,6 +140,11 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     _;
   }
 
+  modifier isNotPadded() {
+    if (isBatchHashesPadded) revert BatchHashesAlreadyPadded();
+    _;
+  }
+
   /// @notice A modifier that causes the function to revert if the voting period is
   /// over
   modifier isWithinVotingDeadline() {
@@ -162,7 +171,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
 
     (Message memory _message, PubKey memory _padKey, uint256 placeholderLeaf) = padAndHashMessage(dat);
     chainHash = NOTHING_UP_MY_SLEEVE;
-    batchHashes.push(chainHash);
+    batchHashes.push(NOTHING_UP_MY_SLEEVE);
     updateChainHash(placeholderLeaf);
 
     emit PublishMessage(_message, _padKey);
@@ -205,17 +214,19 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   /// @notice compute and update current message chain hash
   /// @param messageHash hash of the current message
   function updateChainHash(uint256 messageHash) internal {
-    chainHash = hash2([chainHash, messageHash]);
+    uint256 newChainHash = hash2([chainHash, messageHash]);
     if (numMessages % batchSizes.messageBatchSize == 0) {
-      batchHashes.push(chainHash);
+      batchHashes.push(newChainHash);
     }
+    chainHash = newChainHash;
   }
 
   /// @notice pad last unclosed batch
-  function padLastBatch() external isAfterVotingDeadline {
+  function padLastBatch() external isAfterVotingDeadline isNotPadded {
     if (numMessages % batchSizes.messageBatchSize != 0) {
       batchHashes.push(chainHash);
     }
+    isBatchHashesPadded = true;
   }
 
   /// @notice submit a message batch

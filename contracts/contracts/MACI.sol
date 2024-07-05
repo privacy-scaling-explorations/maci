@@ -24,7 +24,8 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
   /// if we change the state tree depth!
   uint8 public immutable stateTreeDepth;
 
-  uint8 internal constant TREE_ARITY = 2;
+  uint8 internal constant STATE_TREE_ARITY = 2;
+  uint8 internal constant VOTE_TREE_ARITY = 5;
   uint8 internal constant MESSAGE_BATCH_SIZE = 20;
 
   /// @notice The hash of a blank state leaf
@@ -134,7 +135,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
     bytes memory _initialVoiceCreditProxyData
   ) public virtual {
     // ensure we do not have more signups than what the circuits support
-    if (lazyIMTData.numberOfLeaves >= uint256(TREE_ARITY) ** uint256(stateTreeDepth)) revert TooManySignups();
+    if (lazyIMTData.numberOfLeaves >= uint256(STATE_TREE_ARITY) ** uint256(stateTreeDepth)) revert TooManySignups();
 
     // ensure that the public key is on the baby jubjub curve
     if (!CurveBabyJubJub.isOnCurve(_pubKey.x, _pubKey.y)) {
@@ -188,14 +189,15 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
       revert InvalidPubKey();
     }
 
-    MaxValues memory maxValues = MaxValues({ maxMessages: 1000, maxVoteOptions: 25 });
-
-    BatchSizes memory batchSizes = BatchSizes({ messageBatchSize: MESSAGE_BATCH_SIZE });
+    MaxValues memory maxValues = MaxValues({
+      maxMessages: 1000,
+      maxVoteOptions: VOTE_TREE_ARITY ** _treeDepths.voteOptionTreeDepth
+    });
 
     // the owner of the message processor and tally contract will be the msg.sender
     address _msgSender = msg.sender;
 
-    address p = pollFactory.deploy(_duration, maxValues, _treeDepths, batchSizes, _coordinatorPubKey, address(this));
+    address p = pollFactory.deploy(_duration, maxValues, _treeDepths, _batchSizes, _coordinatorPubKey, address(this));
 
     address mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p, _msgSender, _mode);
     address tally = tallyFactory.deploy(_verifier, _vkRegistry, p, mp, _msgSender, _mode);

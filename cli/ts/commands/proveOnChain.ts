@@ -10,8 +10,8 @@ import {
   formatProofForVerifierContract,
   type IVerifyingKeyStruct,
 } from "maci-contracts";
-import { MESSAGE_BATCH_SIZE, STATE_TREE_ARITY } from "maci-core";
-import { G1Point, G2Point /* , NOTHING_UP_MY_SLEEVE, hash2 */, hashLeftRight } from "maci-crypto";
+import { STATE_TREE_ARITY } from "maci-core";
+import { G1Point, G2Point, hashLeftRight } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
 
 import fs from "fs";
@@ -137,7 +137,7 @@ export const proveOnChain = async ({
   const numSignUpsAndMessages = await pollContract.numSignUpsAndMessages();
   const numSignUps = Number(numSignUpsAndMessages[0]);
   const numMessages = Number(numSignUpsAndMessages[1]);
-  const messageBatchSize = MESSAGE_BATCH_SIZE;
+  const messageBatchSize = Number(await pollContract.batchSizes());
   const tallyBatchSize = STATE_TREE_ARITY ** Number(treeDepths.intStateTreeDepth);
   const pollBatchHashes = await pollContract.getBatchHashes();
   const batchHashes = [...pollBatchHashes];

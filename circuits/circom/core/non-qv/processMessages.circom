@@ -172,7 +172,7 @@ include "../../trees/incrementalQuinaryTree.circom";
         chainHash[i + 1] = Mux1()([chainHash[i], computedHashes[i]], batchStartIndexValid);
     }
 
-    // If batchEndIndex - batchStartIndex < batchSize, the remaining
+    // If batchEndIndex < batchStartIndex + i, the remaining
     // message hashes should be the zero value.
     // e.g. [m, z, z, z, z] if there is only 1 real message in the batch
     // This makes possible to have a batch of messages which is only partially full.

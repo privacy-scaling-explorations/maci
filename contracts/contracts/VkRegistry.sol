@@ -206,7 +206,6 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
   /// @inheritdoc IVkRegistry
   function getProcessVk(
     uint256 _stateTreeDepth,
-    // uint256 _messageTreeDepth,
     uint256 _voteOptionTreeDepth,
     uint256 _messageBatchSize,
     Mode _mode

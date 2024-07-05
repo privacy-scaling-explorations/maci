@@ -35,9 +35,6 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
   /// @notice  The number of batches processed
   uint256 public numBatchesProcessed;
 
-  /// @notice The array of chainHash values at the end of each batch
-  uint256[] public batchHashes;
-
   /// @notice The current message batch index
   uint256 public currentBatchIndex;
 
@@ -66,8 +63,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
     vkRegistry = IVkRegistry(_vkRegistry);
     poll = IPoll(_poll);
     mode = _mode;
-    batchHashes = [NOTHING_UP_MY_SLEEVE];
-    currentBatchIndex = batchHashes.length;
+    currentBatchIndex = 1;
   }
 
   /// @notice Update the Poll's currentSbCommitment if the proof is valid.
@@ -88,6 +84,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
     // calculate the message batch size from the message tree subdepth
     uint256 messageBatchSize = poll.batchSizes();
 
+    uint256[] memory batchHashes;
     // Copy the state and ballot commitment and set the batch index if this
     // is the first batch to process
     if (numBatchesProcessed == 0) {
@@ -101,6 +98,8 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
       if (currentBatchIndex > 0) {
         currentBatchIndex -= 1;
       }
+    } else {
+      batchHashes = poll.getBatchHashes();
     }
 
     uint256 inputBatchHash = batchHashes[currentBatchIndex - 1];
