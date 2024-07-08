@@ -125,7 +125,7 @@ It's necessary to define which gatekeeper you are going to use before deploying,
    - an RPC key
 4. Run `pnpm deploy` to deploy the contracts (you can specify the network by appending `:network` to the command, e.g. `pnpm deploy:sepolia` - please refer to the available networks on the `package.json` scripts section)
 
-The network options are: **_localhost, sepolia, and optimism-sepolia_**, and the tasks flags and parameters are as follows:
+The network options are: **_localhost, optimism, arbitrum, scroll, sepolia, optimism-sepolia, arbitrum-sepolia and scroll-sepolia_**, and the tasks flags and parameters are as follows:
 
 | Command     | Flags                                                                                                                     | Options                                               |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |

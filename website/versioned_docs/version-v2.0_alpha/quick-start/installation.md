@@ -11,8 +11,7 @@ sidebar_position: 1
 
 You need the following to use MACI:
 
-- Node.js: use [`nvm`](https://github.com/nvm-sh/nvm) to install it. MACI has
-  been tested with Node 14, 16, 18 and 20. We do however recommend to use Node 18 or Node 20 as Node 14 is deprecated and Node 16 will soon be deprecated too.
+- Node.js: use a JS toolchain manager like [`nvm`](https://github.com/nvm-sh/nvm) or [`volta`](https://volta.sh/) to install Node.js. We recommend using Node 20 or above.
 - The [`rapidsnark`](https://github.com/iden3/rapidsnark) tool if running on an intel chip (this allows for faster proof generation vs snarkjs).
 
 > Note that MACI works on Linux and MacOS. It has not been tested on Windows, however it should work on Windows Subsystem for Linux (WSL). Keep in mind that when using MACI e2e on a non intel chip, tests will run using snarkjs with WASM. This will result in slower proof generation.
