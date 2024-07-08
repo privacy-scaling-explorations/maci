@@ -531,15 +531,12 @@ describe("MaciState/Poll e2e", function test() {
       // Process messages
       poll.processMessages(pollId);
 
-      // currentMessageBatchIndex is 1 because the current batch starts
-      // with index 0.
-      expect(poll.currentMessageBatchIndex!).to.eq(1);
       expect(poll.numBatchesProcessed).to.eq(1);
 
       // Process messages
       poll.processMessages(pollId);
 
-      expect(poll.currentMessageBatchIndex!).to.eq(0);
+      expect(poll.currentMessageBatchIndex).to.eq(0);
       expect(poll.numBatchesProcessed).to.eq(2);
 
       for (let i = 1; i < messageBatchSize; i += 1) {

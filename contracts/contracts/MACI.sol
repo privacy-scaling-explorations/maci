@@ -26,7 +26,6 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
 
   uint8 internal constant STATE_TREE_ARITY = 2;
   uint8 internal constant VOTE_TREE_ARITY = 5;
-  uint8 internal constant MESSAGE_BATCH_SIZE = 20;
 
   /// @notice The hash of a blank state leaf
   uint256 internal constant BLANK_STATE_LEAF_HASH =
