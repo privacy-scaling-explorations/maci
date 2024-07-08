@@ -81,6 +81,30 @@ currentSbCommitment.
 | -------- | ------- | ------------------------- |
 | \_pollId | uint256 | The ID of the active Poll |
 
+### mergeMessageAqSubRoots
+
+```solidity
+function mergeMessageAqSubRoots(uint256 _numSrQueueOps) external
+```
+
+The first step in merging the message AccQueue so that the
+ProcessMessages circuit can access the message root.
+
+#### Parameters
+
+| Name            | Type    | Description                                       |
+| --------------- | ------- | ------------------------------------------------- |
+| \_numSrQueueOps | uint256 | The number of subroot queue operations to perform |
+
+### mergeMessageAq
+
+```solidity
+function mergeMessageAq() external
+```
+
+The second step in merging the message AccQueue so that the
+ProcessMessages circuit can access the message root.
+
 ### getDeployTimeAndDuration
 
 ```solidity

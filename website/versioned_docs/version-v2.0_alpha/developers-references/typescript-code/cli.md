@@ -249,6 +249,27 @@ Example output:
 [✓] Executed mergeStateAq(); gas used: 1004720
 ```
 
+### Coordinator: merge message tree
+
+Example usage:
+
+```bash
+node build/ts/index.js mergeMessages -o 0
+```
+
+Example output:
+
+```
+[i] Merging message subroots 1 / 1
+[✓] Executed mergeMessageAqSubRoots(); gas used: 602448
+[i] Transaction hash: 0xdf9d11c6b35fcccff82dafa3aa15f760e3f7694a72b07007fbdb359d44df0bea
+[✓] All message subtrees have been merged.
+[i] Merging subroots to a main message root...
+[✓] Executed mergeMessageAq(); gas used: 173346
+[i] Transaction hash: 0x1f18ec08fd14db90a0d1d02d1ed27c0bfd3bc138701e812c4c3382572fc4d151
+[✓] The message tree has been merged.
+```
+
 ### Coordinator: generate Maci state offchain
 
 Example usage to generate the state locally from the smart contracts events:
@@ -592,6 +613,25 @@ Output:
 [i] Merging subroots to a main state root...
 [i] Transaction hash: 0x25f60a9b5a24d11b87c41d8a4f681e3fd895b3bdf78ea86755b9800005662ce6
 [✓] Executed mergeStateAq(); gas used: 1004720
+```
+
+### Coordinator: merge message tree
+
+```bash
+node build/ts/index.js mergeMessages --poll-id 0
+```
+
+Output:
+
+```bash
+[i] Merging message subroots 1 / 1
+[✓] Executed mergeMessageAqSubRoots(); gas used: 600520
+[i] Transaction hash: 0xac0e8a01277db1b6282f8fb3763a8a4aeeebb3e12a41dd0dee9fc2804a4c9e81
+[✓] All message subtrees have been merged.
+[i] Merging subroots to a main message root...
+[✓] Executed mergeMessageAq(); gas used: 173346
+[i] Transaction hash: 0x472f0fd515c7cd2a02c430189e4ee92a6843bd6b19807484ce454cb7dab0e931
+[✓] The message tree has been merged.
 ```
 
 ### Coordinator: generate proofs

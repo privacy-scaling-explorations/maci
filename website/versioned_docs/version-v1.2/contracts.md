@@ -260,6 +260,11 @@ emptyBallotRoots[4] = uint256(52046128053256391732514502788763379478806809315279
 
 It will also store the number of signups at this current block, as well as the merkle root of the state tree.
 
+Now, the coordinator can also perform similar operations to merge the message tree.
+
+- `mergeMessageAqSubRoots` - merges the Poll's messages tree subroot
+- `mergeMessageAq` - merges the Poll's messages tree
+
 ## PollFactory.sol
 
 `PollFactory` is a smart contract that is used to deploy new Polls. This is used by MACI inside the `deployPoll` function.

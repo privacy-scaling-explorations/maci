@@ -90,6 +90,11 @@ emptyBallotRoots[3] = uint256(49048286193070910082046722392313772904950026265341
 emptyBallotRoots[4] = uint256(18694062287284245784028624966421731916526814537891066525886866373016385890569);
 ```
 
+At the same time, the coordinator can merge the message accumulator queue and generate its merkle root. This is achieved by calling the following functions:
+
+- `mergeMessageAqSubRoots` - merges the Poll's messages tree subroot
+- `mergeMessageAq` - merges the Poll's messages tree
+
 :::info
 Please be advised that the number of signups in this case includes the zero leaf. For this reason, when accounting for the real users signed up to the Poll, you should subtract one from the value stored in the Poll contract.
 :::
