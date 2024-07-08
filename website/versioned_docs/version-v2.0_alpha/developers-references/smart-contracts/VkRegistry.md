@@ -22,7 +22,7 @@ The contract owner can set them using the `setVerifyingKeysBatch` function:
     uint256 _intStateTreeDepth,
     uint256 _messageTreeDepth,
     uint256 _voteOptionTreeDepth,
-    uint256 _messageBatchSize,
+    uint8 _messageBatchSize,
     Mode[] calldata _modes,
     VerifyingKey[] calldata _processVks,
     VerifyingKey[] calldata _tallyVks

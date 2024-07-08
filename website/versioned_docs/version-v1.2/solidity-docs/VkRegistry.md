@@ -165,7 +165,7 @@ Check if the subsidy verifying key is set
 ### genProcessVkSig
 
 ```solidity
-function genProcessVkSig(uint256 _stateTreeDepth, uint256 _messageTreeDepth, uint256 _voteOptionTreeDepth, uint256 _messageBatchSize) public pure returns (uint256 sig)
+function genProcessVkSig(uint256 _stateTreeDepth, uint256 _messageTreeDepth, uint256 _voteOptionTreeDepth, uint8 _messageBatchSize) public pure returns (uint256 sig)
 ```
 
 generate the signature for the process verifying key
@@ -177,7 +177,7 @@ generate the signature for the process verifying key
 | \_stateTreeDepth      | uint256 | The state tree depth       |
 | \_messageTreeDepth    | uint256 | The message tree depth     |
 | \_voteOptionTreeDepth | uint256 | The vote option tree depth |
-| \_messageBatchSize    | uint256 | The message batch size     |
+| \_messageBatchSize    | uint8   | The message batch size     |
 
 ### genTallyVkSig
 

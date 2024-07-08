@@ -86,7 +86,7 @@ export class Poll implements IPoll {
   // For message processing
   numBatchesProcessed = 0;
 
-  currentMessageBatchIndex?: number;
+  currentMessageBatchIndex: number;
 
   maciStateRef: MaciState;
 
@@ -364,14 +364,14 @@ export class Poll implements IPoll {
 
   /**
    * Updates message chain hash
-   * @param messageHash
+   * @param messageHash hash of message with encPubKey
    */
   updateChainHash = (messageHash: bigint): void => {
     this.chainHash = hash2([this.chainHash, messageHash]);
 
     if (this.messages.length % this.batchSizes.messageBatchSize === 0) {
       this.batchHashes.push(this.chainHash);
-      this.currentMessageBatchIndex! += 1;
+      this.currentMessageBatchIndex += 1;
     }
   };
 
@@ -421,14 +421,6 @@ export class Poll implements IPoll {
     const batchSize = this.batchSizes.messageBatchSize;
 
     if (this.numBatchesProcessed === 0) {
-      // The index of the batch to process.
-      // Note that we process batches in reverse order.
-      // e.g if there are 8 messages and the batch size is 5, then
-      // the starting index should be 1.
-      assert(
-        this.currentMessageBatchIndex === this.batchHashes.length - 1,
-        "The current message batch index should be length of batch hashes array",
-      );
       // Prevent other polls from being processed until this poll has
       // been fully processed
       this.maciStateRef.pollBeingProcessed = true;
@@ -452,7 +444,7 @@ export class Poll implements IPoll {
     }
 
     // The starting index must be valid
-    assert(this.currentMessageBatchIndex! >= 0, "The starting index must be >= 0");
+    assert(this.currentMessageBatchIndex >= 0, "The starting index must be >= 0");
 
     // ensure we copy the state from MACI when we start processing the
     // first batch
@@ -462,7 +454,7 @@ export class Poll implements IPoll {
 
     // Generate circuit inputs
     const circuitInputs = stringifyBigInts(
-      this.genProcessMessagesCircuitInputsPartial(this.currentMessageBatchIndex!),
+      this.genProcessMessagesCircuitInputsPartial(this.currentMessageBatchIndex),
     ) as CircuitInputs;
 
     // we want to store the state leaves at this point in time
@@ -483,7 +475,7 @@ export class Poll implements IPoll {
     // loop through the batch of messages
     for (let i = 0; i < batchSize; i += 1) {
       // we process the messages in reverse order
-      const idx = this.currentMessageBatchIndex! * batchSize - i - 1;
+      const idx = this.currentMessageBatchIndex * batchSize - i - 1;
       assert(idx >= 0, "The message index must be >= 0");
       let message: Message;
       let encPubKey: PubKey;
@@ -657,16 +649,16 @@ export class Poll implements IPoll {
     // record that we processed one batch
     this.numBatchesProcessed += 1;
 
-    if (this.currentMessageBatchIndex! > 0) {
-      this.currentMessageBatchIndex! -= 1;
+    if (this.currentMessageBatchIndex > 0) {
+      this.currentMessageBatchIndex -= 1;
     }
 
     // ensure newSbSalt differs from currentSbSalt
     let newSbSalt = genRandomSalt();
-    while (this.sbSalts[this.currentMessageBatchIndex!] === newSbSalt) {
+    while (this.sbSalts[this.currentMessageBatchIndex] === newSbSalt) {
       newSbSalt = genRandomSalt();
     }
-    this.sbSalts[this.currentMessageBatchIndex!] = newSbSalt;
+    this.sbSalts[this.currentMessageBatchIndex] = newSbSalt;
 
     // store the salt in the circuit inputs
     circuitInputs.newSbSalt = newSbSalt;
@@ -736,6 +728,8 @@ export class Poll implements IPoll {
       msgs.push(msg.asCircuitInputs());
     }
     // we only take the messages we need for this batch
+    // it slice msgs array from index of first message in current batch to
+    // index of last message in current batch
     msgs = msgs.slice((index - 1) * messageBatchSize, index * messageBatchSize);
 
     // validate that the batch index is correct, if not fix it
@@ -764,7 +758,7 @@ export class Poll implements IPoll {
     const currentSbCommitment = hash3([
       currentStateRoot,
       currentBallotRoot,
-      this.sbSalts[this.currentMessageBatchIndex!],
+      this.sbSalts[this.currentMessageBatchIndex],
     ]);
 
     const inputBatchHash = this.batchHashes[index - 1];
@@ -790,7 +784,7 @@ export class Poll implements IPoll {
       currentStateRoot,
       currentBallotRoot,
       currentSbCommitment,
-      currentSbSalt: this.sbSalts[this.currentMessageBatchIndex!],
+      currentSbSalt: this.sbSalts[this.currentMessageBatchIndex],
     }) as CircuitInputs;
   };
 
@@ -824,7 +818,7 @@ export class Poll implements IPoll {
    */
   tallyVotes = (): ITallyCircuitInputs => {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (this.sbSalts[this.currentMessageBatchIndex!] === undefined) {
+    if (this.sbSalts[this.currentMessageBatchIndex] === undefined) {
       throw new Error("You must process the messages first");
     }
 
@@ -959,7 +953,7 @@ export class Poll implements IPoll {
     // cache vars
     const stateRoot = this.stateTree!.root;
     const ballotRoot = this.ballotTree!.root;
-    const sbSalt = this.sbSalts[this.currentMessageBatchIndex!];
+    const sbSalt = this.sbSalts[this.currentMessageBatchIndex];
     const sbCommitment = hash3([stateRoot, ballotRoot, sbSalt]);
 
     const packedVals = packTallyVotesSmallVals(batchStartIndex, batchSize, Number(this.numSignups));
@@ -999,7 +993,7 @@ export class Poll implements IPoll {
 
   tallyVotesNonQv = (): ITallyCircuitInputs => {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (this.sbSalts[this.currentMessageBatchIndex!] === undefined) {
+    if (this.sbSalts[this.currentMessageBatchIndex] === undefined) {
       throw new Error("You must process the messages first");
     }
 
@@ -1099,7 +1093,7 @@ export class Poll implements IPoll {
     // cache vars
     const stateRoot = this.stateTree!.root;
     const ballotRoot = this.ballotTree!.root;
-    const sbSalt = this.sbSalts[this.currentMessageBatchIndex!];
+    const sbSalt = this.sbSalts[this.currentMessageBatchIndex];
     const sbCommitment = hash3([stateRoot, ballotRoot, sbSalt]);
 
     const packedVals = packTallyVotesSmallVals(batchStartIndex, batchSize, Number(this.numSignups));
@@ -1312,7 +1306,7 @@ export class Poll implements IPoll {
       commands: this.commands.map((command) => command.toJSON()),
       ballots: this.ballots.map((ballot) => ballot.toJSON()),
       encPubKeys: this.encPubKeys.map((encPubKey) => encPubKey.serialize()),
-      currentMessageBatchIndex: this.currentMessageBatchIndex!,
+      currentMessageBatchIndex: this.currentMessageBatchIndex,
       stateLeaves: this.stateLeaves.map((leaf) => leaf.toJSON()),
       results: this.tallyResult.map((result) => result.toString()),
       numBatchesProcessed: this.numBatchesProcessed,

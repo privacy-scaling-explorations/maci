@@ -82,7 +82,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
     // Retrieve stored vals
     (, uint8 voteOptionTreeDepth) = poll.treeDepths();
     // calculate the message batch size from the message tree subdepth
-    uint256 messageBatchSize = poll.batchSizes();
+    uint8 messageBatchSize = poll.batchSizes();
 
     uint256[] memory batchHashes;
     // Copy the state and ballot commitment and set the batch index if this
@@ -111,7 +111,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
         outputBatchHash,
         sbCommitment,
         _newSbCommitment,
-        uint8(messageBatchSize),
+        messageBatchSize,
         voteOptionTreeDepth,
         _proof
       )
@@ -119,11 +119,9 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
       revert InvalidProcessMessageProof();
     }
 
-    {
-      (, uint256 numMessages) = poll.numSignUpsAndMessages();
+    (, uint256 numMessages) = poll.numSignUpsAndMessages();
 
-      updateMessageProcessingData(_newSbCommitment, numMessages <= messageBatchSize * (numBatchesProcessed + 1));
-    }
+    updateMessageProcessingData(_newSbCommitment, numMessages <= messageBatchSize * (numBatchesProcessed + 1));
   }
 
   /// @notice Verify the proof for processMessage

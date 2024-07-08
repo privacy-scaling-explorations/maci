@@ -8,7 +8,7 @@ import type { BigNumberish } from "ethers";
 
 import { formatProofForVerifierContract, asHex } from "../../ts/utils";
 
-import { STATE_TREE_ARITY, MESSAGE_BATCH_SIZE } from "./constants";
+import { STATE_TREE_ARITY } from "./constants";
 import { IProverParams } from "./types";
 
 /**
@@ -95,7 +95,7 @@ export class Prover {
 
     const numSignUps = Number(numSignUpsAndMessages[0]);
     const numMessages = Number(numSignUpsAndMessages[1]);
-    const messageBatchSize = MESSAGE_BATCH_SIZE;
+    const messageBatchSize = Number(batchSizes);
     let totalMessageBatches = numMessages <= messageBatchSize ? 1 : Math.floor(numMessages / messageBatchSize);
     let numberBatchesProcessed = numBatchesProcessed;
 

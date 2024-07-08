@@ -156,15 +156,18 @@ template ProcessMessages(
 
     // Hash each Message to check their existence in the Message tree.
     var computedMessageHashers[batchSize];
-    var computedHashes[batchSize];
+    var computedChainHashes[batchSize];
     var chainHash[batchSize + 1];
     chainHash[0] = inputBatchHash;
     for (var i = 0; i < batchSize; i++) {
+        // calculate message hash
         computedMessageHashers[i] = MessageHasher()(msgs[i], encPubKeys[i]);
+        // check if message is valid or not (if index of message is less than index of last valid message in batch)
         var batchStartIndexValid = SafeLessThan(32)([batchStartIndex + i, batchEndIndex]);
-        computedHashes[i] = PoseidonHasher(2)([chainHash[i], computedMessageHashers[i]]);
-
-        chainHash[i + 1] = Mux1()([chainHash[i], computedHashes[i]], batchStartIndexValid);
+        // calculate chain hash if message is valid
+        computedChainHashes[i] = PoseidonHasher(2)([chainHash[i], computedMessageHashers[i]]);
+        // choose between old chain hash value and new chain hash value depending if message is valid or not
+        chainHash[i + 1] = Mux1()([chainHash[i], computedChainHashes[i]], batchStartIndexValid);
     }
 
     // If batchEndIndex < batchStartIndex + i, the remaining

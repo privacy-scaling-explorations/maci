@@ -54,7 +54,7 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
   function genProcessVkSig(
     uint256 _stateTreeDepth,
     uint256 _voteOptionTreeDepth,
-    uint256 _messageBatchSize
+    uint8 _messageBatchSize
   ) public pure returns (uint256 sig) {
     sig = (_messageBatchSize << 128) + (_stateTreeDepth << 64) + _voteOptionTreeDepth;
   }
@@ -85,7 +85,7 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
     uint256 _stateTreeDepth,
     uint256 _intStateTreeDepth,
     uint256 _voteOptionTreeDepth,
-    uint256 _messageBatchSize,
+    uint8 _messageBatchSize,
     Mode[] calldata _modes,
     VerifyingKey[] calldata _processVks,
     VerifyingKey[] calldata _tallyVks
@@ -126,7 +126,7 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
     uint256 _stateTreeDepth,
     uint256 _intStateTreeDepth,
     uint256 _voteOptionTreeDepth,
-    uint256 _messageBatchSize,
+    uint8 _messageBatchSize,
     Mode _mode,
     VerifyingKey calldata _processVk,
     VerifyingKey calldata _tallyVk
@@ -186,7 +186,7 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
   function hasProcessVk(
     uint256 _stateTreeDepth,
     uint256 _voteOptionTreeDepth,
-    uint256 _messageBatchSize,
+    uint8 _messageBatchSize,
     Mode _mode
   ) public view returns (bool isSet) {
     uint256 sig = genProcessVkSig(_stateTreeDepth, _voteOptionTreeDepth, _messageBatchSize);
@@ -207,7 +207,7 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
   function getProcessVk(
     uint256 _stateTreeDepth,
     uint256 _voteOptionTreeDepth,
-    uint256 _messageBatchSize,
+    uint8 _messageBatchSize,
     Mode _mode
   ) public view returns (VerifyingKey memory vk) {
     uint256 sig = genProcessVkSig(_stateTreeDepth, _voteOptionTreeDepth, _messageBatchSize);

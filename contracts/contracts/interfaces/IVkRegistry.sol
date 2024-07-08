@@ -29,7 +29,7 @@ interface IVkRegistry {
   function getProcessVk(
     uint256 _stateTreeDepth,
     uint256 _voteOptionTreeDepth,
-    uint256 _messageBatchSize,
+    uint8 _messageBatchSize,
     DomainObjs.Mode _mode
   ) external view returns (SnarkCommon.VerifyingKey memory);
 }

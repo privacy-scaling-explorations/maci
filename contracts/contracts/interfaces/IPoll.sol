@@ -53,7 +53,7 @@ interface IPoll {
 
   /// @notice Get the batch sizes for the poll
   /// @return messageBatchSize The size of batch
-  function batchSizes() external view returns (uint256 messageBatchSize);
+  function batchSizes() external view returns (uint8 messageBatchSize);
 
   /// @notice Get the hash of coordinator's public key
   /// @return _coordinatorPubKeyHash the hash of coordinator's public key

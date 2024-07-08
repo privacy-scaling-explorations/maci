@@ -27,7 +27,7 @@ Get the tally verifying key
 ### getProcessVk
 
 ```solidity
-function getProcessVk(uint256 _stateTreeDepth, uint256 _messageTreeDepth, uint256 _voteOptionTreeDepth, uint256 _messageBatchSize) external view returns (struct SnarkCommon.VerifyingKey)
+function getProcessVk(uint256 _stateTreeDepth, uint256 _messageTreeDepth, uint256 _voteOptionTreeDepth, uint8 _messageBatchSize) external view returns (struct SnarkCommon.VerifyingKey)
 ```
 
 Get the process verifying key
@@ -39,7 +39,7 @@ Get the process verifying key
 | \_stateTreeDepth      | uint256 | The state tree depth       |
 | \_messageTreeDepth    | uint256 | The message tree depth     |
 | \_voteOptionTreeDepth | uint256 | The vote option tree depth |
-| \_messageBatchSize    | uint256 | The message batch size     |
+| \_messageBatchSize    | uint8   | The message batch size     |
 
 #### Return Values
 

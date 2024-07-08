@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { type Provider } from "ethers";
-import { MaciState, STATE_TREE_ARITY, MESSAGE_BATCH_SIZE } from "maci-core";
+import { MaciState } from "maci-core";
 import { type Keypair, PubKey, Message } from "maci-domainobjs";
 
 import assert from "assert";
@@ -113,12 +113,14 @@ export const genMaciStateFromContract = async (
   const pollContractAddress = pollContractAddresses.get(pollId)!;
   const pollContract = PollFactory.connect(pollContractAddress, provider);
 
-  const [coordinatorPubKeyOnChain, [deployTime, duration], onChainMaxValues, onChainTreeDepths] = await Promise.all([
-    pollContract.coordinatorPubKey(),
-    pollContract.getDeployTimeAndDuration().then((values) => values.map(Number)),
-    pollContract.maxValues(),
-    pollContract.treeDepths(),
-  ]);
+  const [coordinatorPubKeyOnChain, [deployTime, duration], onChainMaxValues, onChainTreeDepths, batchSizes] =
+    await Promise.all([
+      pollContract.coordinatorPubKey(),
+      pollContract.getDeployTimeAndDuration().then((values) => values.map(Number)),
+      pollContract.maxValues(),
+      pollContract.treeDepths(),
+      pollContract.batchSizes(),
+    ]);
 
   assert(coordinatorPubKeyOnChain[0].toString() === coordinatorKeypair.pubKey.rawPubKey[0].toString());
   assert(coordinatorPubKeyOnChain[1].toString() === coordinatorKeypair.pubKey.rawPubKey[1].toString());
@@ -133,10 +135,7 @@ export const genMaciStateFromContract = async (
     voteOptionTreeDepth: Number(onChainTreeDepths.voteOptionTreeDepth),
   };
 
-  const batchSizes = {
-    tallyBatchSize: STATE_TREE_ARITY ** Number(onChainTreeDepths.intStateTreeDepth),
-    messageBatchSize: MESSAGE_BATCH_SIZE,
-  };
+  const messageBatchSize = Number(batchSizes);
 
   // fetch poll contract logs
   for (let i = fromBlock; i <= lastBlock; i += blocksPerRequest + 1) {
@@ -186,7 +185,7 @@ export const genMaciStateFromContract = async (
           BigInt(deployTime + duration),
           maxValues,
           treeDepths,
-          batchSizes.messageBatchSize,
+          messageBatchSize,
           coordinatorKeypair,
         );
         break;

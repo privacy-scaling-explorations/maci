@@ -22,6 +22,6 @@ contract Params {
   }
 
   struct BatchSizes {
-    uint256 messageBatchSize;
+    uint8 messageBatchSize;
   }
 }
