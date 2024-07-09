@@ -23,7 +23,7 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
     uint256 _duration,
     MaxValues calldata _maxValues,
     TreeDepths calldata _treeDepths,
-    BatchSizes calldata _batchSizes,
+    uint8 _messageBatchSize,
     PubKey calldata _coordinatorPubKey,
     address _maci
   ) public virtual returns (address pollAddr) {
@@ -39,7 +39,7 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
     IMACI maci = IMACI(_maci);
 
     // deploy the poll
-    Poll poll = new Poll(_duration, _maxValues, _treeDepths, _batchSizes, _coordinatorPubKey, maci);
+    Poll poll = new Poll(_duration, _maxValues, _treeDepths, _messageBatchSize, _coordinatorPubKey, maci);
 
     // init Poll
     poll.init();

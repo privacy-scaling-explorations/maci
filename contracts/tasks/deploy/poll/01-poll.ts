@@ -55,9 +55,7 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").then((task) =>
           intStateTreeDepth,
           voteOptionTreeDepth,
         },
-        {
-          messageBatchSize,
-        },
+        messageBatchSize,
         unserializedKey.asContractParam(),
         verifierContractAddress,
         vkRegistryContractAddress,
@@ -70,9 +68,7 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").then((task) =>
         intStateTreeDepth,
         voteOptionTreeDepth,
       },
-      {
-        messageBatchSize,
-      },
+      messageBatchSize,
       unserializedKey.asContractParam(),
       verifierContractAddress,
       vkRegistryContractAddress,

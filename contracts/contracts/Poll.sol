@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-
 import { Params } from "./utilities/Params.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { EmptyBallotRoots } from "./trees/EmptyBallotRoots.sol";
@@ -10,7 +8,6 @@ import { IPoll } from "./interfaces/IPoll.sol";
 import { IMACI } from "./interfaces/IMACI.sol";
 import { Utilities } from "./utilities/Utilities.sol";
 import { CurveBabyJubJub } from "./crypto/BabyJubJub.sol";
-import { Hasher } from "./crypto/Hasher.sol";
 
 /// @title Poll
 /// @notice A Poll contract allows voters to submit encrypted messages
@@ -62,9 +59,6 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   /// @notice Max values for the poll
   MaxValues public maxValues;
 
-  /// @notice Batch sizes for the poll
-  BatchSizes public batchSizes;
-
   /// @notice Depths of the merkle trees
   TreeDepths public treeDepths;
 
@@ -97,7 +91,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   /// @param _duration The duration of the voting period, in seconds
   /// @param _maxValues The maximum number of messages and vote options
   /// @param _treeDepths The depths of the merkle trees
-  /// @param _batchSizes The size of message batch
+  /// @param _messageBatchSize The message batch size
   /// @param _coordinatorPubKey The coordinator's public key
   /// @param _maci Reference to MACI smart contract
 
@@ -105,7 +99,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     uint256 _duration,
     MaxValues memory _maxValues,
     TreeDepths memory _treeDepths,
-    BatchSizes memory _batchSizes,
+    uint8 _messageBatchSize,
     PubKey memory _coordinatorPubKey,
     IMACI _maci
   ) payable {
@@ -124,8 +118,8 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     duration = _duration;
     // store max values
     maxValues = _maxValues;
-    // store batch sizes
-    batchSizes = _batchSizes;
+    // store message batch size
+    messageBatchSize = _messageBatchSize;
     // store tree depth
     treeDepths = _treeDepths;
     // Record the current timestamp
@@ -215,7 +209,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   /// @param messageHash hash of the current message
   function updateChainHash(uint256 messageHash) internal {
     uint256 newChainHash = hash2([chainHash, messageHash]);
-    if (numMessages % batchSizes.messageBatchSize == 0) {
+    if (numMessages % messageBatchSize == 0) {
       batchHashes.push(newChainHash);
     }
     chainHash = newChainHash;
@@ -223,7 +217,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
 
   /// @notice pad last unclosed batch
   function padLastBatch() external isAfterVotingDeadline isNotPadded {
-    if (numMessages % batchSizes.messageBatchSize != 0) {
+    if (numMessages % messageBatchSize != 0) {
       batchHashes.push(chainHash);
     }
     isBatchHashesPadded = true;
@@ -293,5 +287,10 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   function numSignUpsAndMessages() public view returns (uint256 numSUps, uint256 numMsgs) {
     numSUps = numSignups;
     numMsgs = numMessages;
+  }
+
+  /// @inheritdoc IPoll
+  function getMessageBatchSize() public view returns (uint8 msgBatchSize) {
+    msgBatchSize = messageBatchSize;
   }
 }

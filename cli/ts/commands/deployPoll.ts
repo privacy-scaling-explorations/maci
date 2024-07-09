@@ -98,9 +98,7 @@ export const deployPoll = async ({
         intStateTreeDepth,
         voteOptionTreeDepth,
       },
-      {
-        messageBatchSize,
-      },
+      messageBatchSize,
       unserializedKey.asContractParam(),
       verifierContractAddress,
       vkRegistry,

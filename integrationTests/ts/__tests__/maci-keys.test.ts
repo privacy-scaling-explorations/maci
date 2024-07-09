@@ -86,9 +86,7 @@ describe("integration tests private/public/keypair", () => {
           intStateTreeDepth: INT_STATE_TREE_DEPTH,
           voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
         },
-        {
-          messageBatchSize: MESSAGE_BATCH_SIZE,
-        },
+        MESSAGE_BATCH_SIZE,
         coordinatorKeypair.pubKey.asContractParam(),
         verifier,
         vkRegistry,

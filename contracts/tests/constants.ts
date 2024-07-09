@@ -1,4 +1,4 @@
-import { MaxValues, TreeDepths, STATE_TREE_ARITY, BatchSizes, MESSAGE_BATCH_SIZE } from "maci-core";
+import { MaxValues, TreeDepths, STATE_TREE_ARITY } from "maci-core";
 import { G1Point, G2Point } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
 
@@ -8,7 +8,6 @@ export const STATE_TREE_DEPTH = 10;
 export const MESSAGE_TREE_DEPTH = 2;
 export const MESSAGE_TREE_SUBDEPTH = 1;
 export const messageBatchSize = 20;
-export const tallyBatchSize = STATE_TREE_ARITY ** 1;
 
 export const testProcessVk = new VerifyingKey(
   new G1Point(BigInt(0), BigInt(1)),
@@ -53,7 +52,4 @@ export const treeDepths: TreeDepths = {
   voteOptionTreeDepth: 2,
 };
 
-export const batchSizes: BatchSizes = {
-  tallyBatchSize: STATE_TREE_ARITY ** treeDepths.intStateTreeDepth,
-  messageBatchSize: MESSAGE_BATCH_SIZE,
-};
+export const tallyBatchSize = STATE_TREE_ARITY ** treeDepths.intStateTreeDepth;

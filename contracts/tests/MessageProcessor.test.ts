@@ -19,7 +19,6 @@ import {
 
 import {
   STATE_TREE_DEPTH,
-  batchSizes,
   duration,
   initialVoiceCreditBalance,
   maxValues,
@@ -62,7 +61,7 @@ describe("MessageProcessor", () => {
     const tx = await maciContract.deployPoll(
       duration,
       treeDepths,
-      batchSizes,
+      messageBatchSize,
       coordinator.pubKey.asContractParam(),
       verifierContract,
       vkRegistryContract,

@@ -37,9 +37,8 @@
     "VkRegistry": {
       "stateTreeDepth": 10,
       "intStateTreeDepth": 1,
-      "messageTreeDepth": 2,
       "voteOptionTreeDepth": 2,
-      "messageBatchDepth": 1,
+      "messageBatchSize": 20,
       "zkeys": {
         "qv": {
           "processMessagesZkey": "../cli/zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey",
@@ -93,9 +92,8 @@
     "VkRegistry": {
       "stateTreeDepth": 10,
       "intStateTreeDepth": 1,
-      "messageTreeDepth": 2,
       "voteOptionTreeDepth": 2,
-      "messageBatchDepth": 1,
+      "messageBatchSize": 20,
       "zkeys": {
         "qv": {
           "processMessagesZkey": "../cli/zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey",
@@ -155,9 +153,8 @@
     "VkRegistry": {
       "stateTreeDepth": 6,
       "intStateTreeDepth": 2,
-      "messageTreeDepth": 9,
       "voteOptionTreeDepth": 3,
-      "messageBatchDepth": 2,
+      "messageBatchSize": 20,
       "zkeys": {
         "qv": {
           "processMessagesZkey": "../cli/zkeys/ProcessMessages_6-9-2-3/processMessages_6-9-2-3.zkey",
@@ -217,9 +214,8 @@
     "VkRegistry": {
       "stateTreeDepth": 10,
       "intStateTreeDepth": 1,
-      "messageTreeDepth": 2,
       "voteOptionTreeDepth": 2,
-      "messageBatchDepth": 1,
+      "messageBatchSize": 20,
       "zkeys": {
         "qv": {
           "processMessagesZkey": "../cli/zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey",

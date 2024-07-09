@@ -81,8 +81,8 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
 
     // Retrieve stored vals
     (, uint8 voteOptionTreeDepth) = poll.treeDepths();
-    // calculate the message batch size from the message tree subdepth
-    uint8 messageBatchSize = poll.batchSizes();
+    // Retrive stored val
+    uint8 messageBatchSize = poll.getMessageBatchSize();
 
     uint256[] memory batchHashes;
     // Copy the state and ballot commitment and set the batch index if this
@@ -102,7 +102,6 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
       batchHashes = poll.getBatchHashes();
     }
 
-    uint256 inputBatchHash = batchHashes[currentBatchIndex - 1];
     uint256 outputBatchHash = batchHashes[currentBatchIndex];
 
     if (
@@ -207,8 +206,6 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
       _messageBatchSize,
       _voteOptionTreeDepth
     );
-
-    (uint256 deployTime, uint256 duration) = poll.getDeployTimeAndDuration();
 
     // generate the circuit only public input
     uint256[] memory input = new uint256[](6);

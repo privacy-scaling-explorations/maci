@@ -12,7 +12,6 @@ import { Poll__factory as PollFactory, MACI, Poll as PollContract, Verifier, VkR
 
 import {
   STATE_TREE_DEPTH,
-  batchSizes,
   duration,
   initialVoiceCreditBalance,
   maxValues,
@@ -47,7 +46,7 @@ describe("Poll", () => {
       const tx = await maciContract.deployPoll(
         duration,
         treeDepths,
-        batchSizes,
+        messageBatchSize,
         coordinator.pubKey.asContractParam(),
         verifierContract,
         vkRegistryContract,
@@ -138,7 +137,7 @@ describe("Poll", () => {
         testMaciContract.deployPoll(
           duration,
           treeDepths,
-          batchSizes,
+          messageBatchSize,
           {
             x: "100",
             y: "1",

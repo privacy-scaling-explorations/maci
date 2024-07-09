@@ -29,7 +29,6 @@ import {
 
 import {
   STATE_TREE_DEPTH,
-  batchSizes,
   duration,
   initialVoiceCreditBalance,
   maxValues,
@@ -76,7 +75,7 @@ describe("TallyVotes", () => {
     const tx = await maciContract.deployPoll(
       duration,
       treeDepths,
-      batchSizes,
+      messageBatchSize,
       coordinator.pubKey.asContractParam(),
       verifierContract,
       vkRegistryContract,
@@ -255,7 +254,7 @@ describe("TallyVotes", () => {
           ...treeDepths,
           intStateTreeDepth,
         },
-        batchSizes,
+        messageBatchSize,
         coordinator.pubKey.asContractParam(),
         verifierContract,
         vkRegistryContract,
@@ -397,7 +396,7 @@ describe("TallyVotes", () => {
           ...treeDepths,
           intStateTreeDepth,
         },
-        batchSizes,
+        messageBatchSize,
         coordinator.pubKey.asContractParam(),
         verifierContract,
         vkRegistryContract,

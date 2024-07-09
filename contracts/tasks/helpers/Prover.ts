@@ -75,7 +75,7 @@ export class Prover {
     // retrieve the values we need from the smart contracts
     const [
       treeDepths,
-      batchSizes,
+      msgBatchSize,
       numSignUpsAndMessages,
       numBatchesProcessed,
       stateTreeDepth,
@@ -84,7 +84,7 @@ export class Prover {
       mode,
     ] = await Promise.all([
       this.pollContract.treeDepths(),
-      this.pollContract.batchSizes(),
+      this.pollContract.getMessageBatchSize(),
       this.pollContract.numSignUpsAndMessages(),
       this.mpContract.numBatchesProcessed().then(Number),
       this.maciContract.stateTreeDepth().then(Number),
@@ -95,7 +95,7 @@ export class Prover {
 
     const numSignUps = Number(numSignUpsAndMessages[0]);
     const numMessages = Number(numSignUpsAndMessages[1]);
-    const messageBatchSize = Number(batchSizes);
+    const messageBatchSize = Number(msgBatchSize);
     let totalMessageBatches = numMessages <= messageBatchSize ? 1 : Math.floor(numMessages / messageBatchSize);
     let numberBatchesProcessed = numBatchesProcessed;
 
@@ -169,7 +169,7 @@ export class Prover {
           currentMessageBatchIndex,
           numSignUps,
           numMessages,
-          batchSizes,
+          messageBatchSize,
           treeDepths.voteOptionTreeDepth,
         ),
       ).toString();

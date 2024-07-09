@@ -160,6 +160,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
   /// @notice Deploy a new Poll contract.
   /// @param _duration How long should the Poll last for
   /// @param _treeDepths The depth of the Merkle trees
+  /// @param _messageBatchSize The message batch size
   /// @param _coordinatorPubKey The coordinator's public key
   /// @param _verifier The Verifier Contract
   /// @param _vkRegistry The VkRegistry Contract
@@ -168,7 +169,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
   function deployPoll(
     uint256 _duration,
     TreeDepths memory _treeDepths,
-    BatchSizes memory _batchSizes,
+    uint8 _messageBatchSize,
     PubKey memory _coordinatorPubKey,
     address _verifier,
     address _vkRegistry,
@@ -196,7 +197,14 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
     // the owner of the message processor and tally contract will be the msg.sender
     address _msgSender = msg.sender;
 
-    address p = pollFactory.deploy(_duration, maxValues, _treeDepths, _batchSizes, _coordinatorPubKey, address(this));
+    address p = pollFactory.deploy(
+      _duration,
+      maxValues,
+      _treeDepths,
+      _messageBatchSize,
+      _coordinatorPubKey,
+      address(this)
+    );
 
     address mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p, _msgSender, _mode);
     address tally = tallyFactory.deploy(_verifier, _vkRegistry, p, mp, _msgSender, _mode);

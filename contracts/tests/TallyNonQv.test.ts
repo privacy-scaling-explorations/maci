@@ -29,7 +29,6 @@ import {
 
 import {
   STATE_TREE_DEPTH,
-  batchSizes,
   duration,
   maxValues,
   messageBatchSize,
@@ -75,7 +74,7 @@ describe("TallyVotesNonQv", () => {
     const tx = await maciContract.deployPoll(
       duration,
       treeDepths,
-      batchSizes,
+      messageBatchSize,
       coordinator.pubKey.asContractParam(),
       verifierContract,
       vkRegistryContract,

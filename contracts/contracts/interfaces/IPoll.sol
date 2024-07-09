@@ -51,9 +51,9 @@ interface IPoll {
   /// @return maxVoteOptions The maximum number of vote options
   function maxValues() external view returns (uint256 maxMessages, uint256 maxVoteOptions);
 
-  /// @notice Get the batch sizes for the poll
-  /// @return messageBatchSize The size of batch
-  function batchSizes() external view returns (uint8 messageBatchSize);
+  /// @notice Get the message batch size for the poll
+  /// @return msgBatchSize The message batch size
+  function getMessageBatchSize() external view returns (uint8 msgBatchSize);
 
   /// @notice Get the hash of coordinator's public key
   /// @return _coordinatorPubKeyHash the hash of coordinator's public key

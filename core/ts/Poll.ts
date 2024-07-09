@@ -376,7 +376,7 @@ export class Poll implements IPoll {
   };
 
   /**
-   * Pad zeroes to chain hash until batch is full
+   * Pad last unclosed batch
    */
   padLastBatch = (): void => {
     if (this.messages.length % this.batchSizes.messageBatchSize !== 0) {

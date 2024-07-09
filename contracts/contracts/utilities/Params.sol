@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import { IMACI } from "../interfaces/IMACI.sol";
-
 /// @title Params
 /// @notice This contracts contains a number of structures
 /// which are to be passed as parameters to Poll contracts.
@@ -21,7 +19,6 @@ contract Params {
     uint256 maxVoteOptions;
   }
 
-  struct BatchSizes {
-    uint8 messageBatchSize;
-  }
+  /// @notice A variable holding the message batch size for the poll
+  uint8 public messageBatchSize;
 }
