@@ -34,7 +34,7 @@ export class AppController {
    * Generate proofs api method
    *
    * @param args - generate proof dto
-   * @returns
+   * @returns generated proofs and tally data
    */
   @ApiBody({ type: GenerateProofDto })
   @ApiResponse({ status: HttpStatus.CREATED, description: "The proofs have been successfully generated" })

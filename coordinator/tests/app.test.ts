@@ -1,5 +1,6 @@
 import { HttpStatus, ValidationPipe, type INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
+import { ValidationError } from "class-validator";
 import { getBytes, hashMessage, type Signer } from "ethers";
 import hardhat from "hardhat";
 import {
@@ -15,7 +16,10 @@ import {
   mergeMessages,
   mergeSignups,
 } from "maci-cli";
+import { Proof, TallyData } from "maci-contracts";
+import { Poll__factory as PollFactory } from "maci-contracts/typechain-types";
 import { Keypair } from "maci-domainobjs";
+import { io, Socket } from "socket.io-client";
 import request from "supertest";
 
 import fs from "fs";
@@ -26,7 +30,9 @@ import type { App } from "supertest/types";
 import { AppModule } from "../ts/app.module";
 import { ErrorCodes } from "../ts/common";
 import { CryptoService } from "../ts/crypto/crypto.service";
+import { EProofGenerationEvents } from "../ts/events/types";
 import { FileModule } from "../ts/file/file.module";
+import { IGenerateArgs } from "../ts/proof/types";
 
 const STATE_TREE_DEPTH = 10;
 const INT_STATE_TREE_DEPTH = 1;
@@ -40,6 +46,7 @@ describe("AppController (e2e)", () => {
   let signer: Signer;
   let maciAddresses: DeployedContracts;
   let pollContracts: PollContracts;
+  let socket: Socket;
 
   const cryptoService = new CryptoService();
 
@@ -87,16 +94,39 @@ describe("AppController (e2e)", () => {
       useQuadraticVoting: false,
       signer,
     });
-  });
 
-  beforeEach(async () => {
     const moduleFixture = await Test.createTestingModule({
       imports: [AppModule, FileModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ transform: true }));
-    await app.init();
+    await app.listen(3000);
+  });
+
+  beforeEach(async () => {
+    const authorization = await getAuthorizationHeader();
+
+    await new Promise((resolve) => {
+      app.getUrl().then((url) => {
+        socket = io(url, {
+          extraHeaders: {
+            authorization,
+          },
+        });
+        socket.on("connect", () => {
+          resolve(true);
+        });
+      });
+    });
+  });
+
+  afterEach(() => {
+    socket.disconnect();
+  });
+
+  afterAll(async () => {
+    await app.close();
   });
 
   describe("validation /v1/proof/generate POST", () => {
@@ -142,6 +172,32 @@ describe("AppController (e2e)", () => {
       });
     });
 
+    test("should throw an error if poll id is invalid (ws)", async () => {
+      const publicKey = fs.readFileSync(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
+      const encryptedCoordinatorPrivateKey = cryptoService.encrypt(publicKey, coordinatorKeypair.privKey.serialize());
+
+      const args: IGenerateArgs = {
+        poll: "-1" as unknown as number,
+        maciContractAddress: maciAddresses.maciAddress,
+        tallyContractAddress: pollContracts.tally,
+        useQuadraticVoting: false,
+        encryptedCoordinatorPrivateKey,
+      };
+
+      const result = await new Promise<{ min?: string; isInt?: string }>((resolve) => {
+        socket
+          .emit(EProofGenerationEvents.START, args)
+          .on(EProofGenerationEvents.ERROR, (errors: ValidationError[]) => {
+            const error = errors[0]?.constraints;
+
+            resolve({ min: error?.min, isInt: error?.isInt });
+          });
+      });
+
+      expect(result.min).toBe("poll must not be less than 0");
+      expect(result.isInt).toBe("poll must be an integer number");
+    });
+
     test("should throw an error if encrypted key is invalid", async () => {
       const encryptedHeader = await getAuthorizationHeader();
 
@@ -162,6 +218,28 @@ describe("AppController (e2e)", () => {
         statusCode: HttpStatus.BAD_REQUEST,
         message: ["encryptedCoordinatorPrivateKey must be longer than or equal to 1 characters"],
       });
+    });
+
+    test("should throw an error if encrypted key is invalid (ws)", async () => {
+      const args: IGenerateArgs = {
+        poll: 0,
+        maciContractAddress: maciAddresses.maciAddress,
+        tallyContractAddress: pollContracts.tally,
+        useQuadraticVoting: false,
+        encryptedCoordinatorPrivateKey: "",
+      };
+
+      const result = await new Promise<{ isLength?: string }>((resolve) => {
+        socket
+          .emit(EProofGenerationEvents.START, args)
+          .on(EProofGenerationEvents.ERROR, (errors: ValidationError[]) => {
+            const error = errors[0]?.constraints;
+
+            resolve({ isLength: error?.isLength });
+          });
+      });
+
+      expect(result.isLength).toBe("encryptedCoordinatorPrivateKey must be longer than or equal to 1 characters");
     });
 
     test("should throw an error if maci address is invalid", async () => {
@@ -188,6 +266,31 @@ describe("AppController (e2e)", () => {
       });
     });
 
+    test("should throw an error if maci address is invalid (ws)", async () => {
+      const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
+      const encryptedCoordinatorPrivateKey = cryptoService.encrypt(publicKey, coordinatorKeypair.privKey.serialize());
+
+      const args: IGenerateArgs = {
+        poll: 0,
+        maciContractAddress: "wrong",
+        tallyContractAddress: pollContracts.tally,
+        useQuadraticVoting: false,
+        encryptedCoordinatorPrivateKey,
+      };
+
+      const result = await new Promise<{ isEthereumAddress?: string }>((resolve) => {
+        socket
+          .emit(EProofGenerationEvents.START, args)
+          .on(EProofGenerationEvents.ERROR, (errors: ValidationError[]) => {
+            const error = errors[0]?.constraints;
+
+            resolve({ isEthereumAddress: error?.isEthereumAddress });
+          });
+      });
+
+      expect(result.isEthereumAddress).toBe("maciContractAddress must be an Ethereum address");
+    });
+
     test("should throw an error if tally address is invalid", async () => {
       const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
       const encryptedCoordinatorPrivateKey = cryptoService.encrypt(publicKey, coordinatorKeypair.privKey.serialize());
@@ -210,6 +313,31 @@ describe("AppController (e2e)", () => {
         statusCode: HttpStatus.BAD_REQUEST,
         message: ["tallyContractAddress must be an Ethereum address"],
       });
+    });
+
+    test("should throw an error if tally address is invalid (ws)", async () => {
+      const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
+      const encryptedCoordinatorPrivateKey = cryptoService.encrypt(publicKey, coordinatorKeypair.privKey.serialize());
+
+      const args: IGenerateArgs = {
+        poll: 0,
+        maciContractAddress: maciAddresses.maciAddress,
+        tallyContractAddress: "wrong",
+        useQuadraticVoting: false,
+        encryptedCoordinatorPrivateKey,
+      };
+
+      const result = await new Promise<{ isEthereumAddress?: string }>((resolve) => {
+        socket
+          .emit(EProofGenerationEvents.START, args)
+          .on(EProofGenerationEvents.ERROR, (errors: ValidationError[]) => {
+            const error = errors[0]?.constraints;
+
+            resolve({ isEthereumAddress: error?.isEthereumAddress });
+          });
+      });
+
+      expect(result.isEthereumAddress).toBe("tallyContractAddress must be an Ethereum address");
     });
   });
 
@@ -267,6 +395,27 @@ describe("AppController (e2e)", () => {
       });
     });
 
+    test("should throw an error if poll is not over (ws)", async () => {
+      const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
+      const encryptedCoordinatorPrivateKey = cryptoService.encrypt(publicKey, coordinatorKeypair.privKey.serialize());
+
+      const args: IGenerateArgs = {
+        poll: 0,
+        maciContractAddress: maciAddresses.maciAddress,
+        tallyContractAddress: pollContracts.tally,
+        useQuadraticVoting: false,
+        encryptedCoordinatorPrivateKey,
+      };
+
+      const result = await new Promise<Error>((resolve) => {
+        socket.emit(EProofGenerationEvents.START, args).on(EProofGenerationEvents.ERROR, (error: Error) => {
+          resolve(error);
+        });
+      });
+
+      expect(result.message).toBe(ErrorCodes.NOT_MERGED_STATE_TREE);
+    });
+
     test("should throw an error if signups are not merged", async () => {
       const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
       const encryptedCoordinatorPrivateKey = cryptoService.encrypt(publicKey, coordinatorKeypair.privKey.serialize());
@@ -290,9 +439,35 @@ describe("AppController (e2e)", () => {
       });
     });
 
+    test("should throw an error if signups are not merged (ws)", async () => {
+      const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
+      const encryptedCoordinatorPrivateKey = cryptoService.encrypt(publicKey, coordinatorKeypair.privKey.serialize());
+
+      const args: IGenerateArgs = {
+        poll: 0,
+        maciContractAddress: maciAddresses.maciAddress,
+        tallyContractAddress: pollContracts.tally,
+        useQuadraticVoting: false,
+        encryptedCoordinatorPrivateKey,
+      };
+
+      const result = await new Promise<Error>((resolve) => {
+        socket.emit(EProofGenerationEvents.START, args).on(EProofGenerationEvents.ERROR, (error: Error) => {
+          resolve(error);
+        });
+      });
+
+      expect(result.message).toBe(ErrorCodes.NOT_MERGED_STATE_TREE);
+    });
+
     test("should throw an error if messages are not merged", async () => {
-      await timeTravel({ seconds: 30, signer });
-      await mergeSignups({ pollId: 0n, signer });
+      const pollContract = PollFactory.connect(pollContracts.poll, signer);
+      const isStateMerged = await pollContract.stateMerged();
+
+      if (!isStateMerged) {
+        await timeTravel({ seconds: 30, signer });
+        await mergeSignups({ pollId: 0n, signer });
+      }
 
       const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
       const encryptedCoordinatorPrivateKey = cryptoService.encrypt(publicKey, coordinatorKeypair.privKey.serialize());
@@ -314,6 +489,35 @@ describe("AppController (e2e)", () => {
         statusCode: HttpStatus.BAD_REQUEST,
         message: ErrorCodes.NOT_MERGED_MESSAGE_TREE,
       });
+    });
+
+    test("should throw an error if messages are not merged (ws)", async () => {
+      const pollContract = PollFactory.connect(pollContracts.poll, signer);
+      const isStateMerged = await pollContract.stateMerged();
+
+      if (!isStateMerged) {
+        await timeTravel({ seconds: 30, signer });
+        await mergeSignups({ pollId: 0n, signer });
+      }
+
+      const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
+      const encryptedCoordinatorPrivateKey = cryptoService.encrypt(publicKey, coordinatorKeypair.privKey.serialize());
+
+      const args: IGenerateArgs = {
+        poll: 0,
+        maciContractAddress: maciAddresses.maciAddress,
+        tallyContractAddress: pollContracts.tally,
+        useQuadraticVoting: false,
+        encryptedCoordinatorPrivateKey,
+      };
+
+      const result = await new Promise<Error>((resolve) => {
+        socket.emit(EProofGenerationEvents.START, args).on(EProofGenerationEvents.ERROR, (error: Error) => {
+          resolve(error);
+        });
+      });
+
+      expect(result.message).toBe(ErrorCodes.NOT_MERGED_MESSAGE_TREE);
     });
 
     test("should throw an error if coordinator key decryption is failed", async () => {
@@ -339,6 +543,26 @@ describe("AppController (e2e)", () => {
       });
     });
 
+    test("should throw an error if coordinator key decryption is failed (ws)", async () => {
+      await mergeMessages({ pollId: 0n, signer });
+
+      const args: IGenerateArgs = {
+        poll: 0,
+        maciContractAddress: maciAddresses.maciAddress,
+        tallyContractAddress: pollContracts.tally,
+        useQuadraticVoting: false,
+        encryptedCoordinatorPrivateKey: coordinatorKeypair.privKey.serialize(),
+      };
+
+      const result = await new Promise<Error>((resolve) => {
+        socket.emit(EProofGenerationEvents.START, args).on(EProofGenerationEvents.ERROR, (error: Error) => {
+          resolve(error);
+        });
+      });
+
+      expect(result.message).toBe(ErrorCodes.DECRYPTION);
+    });
+
     test("should throw an error if there is no such poll", async () => {
       const encryptedHeader = await getAuthorizationHeader();
 
@@ -360,6 +584,24 @@ describe("AppController (e2e)", () => {
       });
     });
 
+    test("should throw an error if there is no such poll (ws)", async () => {
+      const args: IGenerateArgs = {
+        poll: 9000,
+        maciContractAddress: maciAddresses.maciAddress,
+        tallyContractAddress: pollContracts.tally,
+        useQuadraticVoting: false,
+        encryptedCoordinatorPrivateKey: coordinatorKeypair.privKey.serialize(),
+      };
+
+      const result = await new Promise<Error>((resolve) => {
+        socket.emit(EProofGenerationEvents.START, args).on(EProofGenerationEvents.ERROR, (error: Error) => {
+          resolve(error);
+        });
+      });
+
+      expect(result.message).toBe(ErrorCodes.POLL_NOT_FOUND);
+    });
+
     test("should throw an error if there is no authorization header", async () => {
       const result = await request(app.getHttpServer() as App)
         .post("/v1/proof/generate")
@@ -377,6 +619,26 @@ describe("AppController (e2e)", () => {
         message: "Forbidden resource",
         statusCode: HttpStatus.FORBIDDEN,
       });
+    });
+
+    test("should throw an error if there is no authorization header (ws)", async () => {
+      const args: IGenerateArgs = {
+        poll: 0,
+        maciContractAddress: maciAddresses.maciAddress,
+        tallyContractAddress: pollContracts.tally,
+        useQuadraticVoting: false,
+        encryptedCoordinatorPrivateKey: coordinatorKeypair.privKey.serialize(),
+      };
+
+      const unauthorizedSocket = io(await app.getUrl());
+
+      const result = await new Promise<Error>((resolve) => {
+        unauthorizedSocket.emit(EProofGenerationEvents.START, args).on(EProofGenerationEvents.ERROR, (error: Error) => {
+          resolve(error);
+        });
+      }).finally(() => unauthorizedSocket.disconnect());
+
+      expect(result.message).toBe("Forbidden resource");
     });
 
     test("should throw error if coordinator key cannot be decrypted", async () => {
@@ -400,21 +662,41 @@ describe("AppController (e2e)", () => {
       });
     });
 
+    test("should throw error if coordinator key cannot be decrypted (ws)", async () => {
+      const args: IGenerateArgs = {
+        poll: 0,
+        maciContractAddress: maciAddresses.maciAddress,
+        tallyContractAddress: pollContracts.tally,
+        useQuadraticVoting: false,
+        encryptedCoordinatorPrivateKey: "unknown",
+      };
+
+      const result = await new Promise<Error>((resolve) => {
+        socket.emit(EProofGenerationEvents.START, args).on(EProofGenerationEvents.ERROR, (error: Error) => {
+          resolve(error);
+        });
+      });
+
+      expect(result.message).toBe(ErrorCodes.DECRYPTION);
+    });
+
     test("should generate proofs properly", async () => {
       const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
       const encryptedCoordinatorPrivateKey = cryptoService.encrypt(publicKey, coordinatorKeypair.privKey.serialize());
       const encryptedHeader = await getAuthorizationHeader();
 
+      const args: IGenerateArgs = {
+        poll: 0,
+        encryptedCoordinatorPrivateKey,
+        maciContractAddress: maciAddresses.maciAddress,
+        tallyContractAddress: pollContracts.tally,
+        useQuadraticVoting: false,
+      };
+
       await request(app.getHttpServer() as App)
         .post("/v1/proof/generate")
         .set("Authorization", encryptedHeader)
-        .send({
-          poll: 0,
-          encryptedCoordinatorPrivateKey,
-          maciContractAddress: maciAddresses.maciAddress,
-          tallyContractAddress: pollContracts.tally,
-          useQuadraticVoting: false,
-        })
+        .send(args)
         .expect(201);
 
       const proofData = await Promise.all([
@@ -424,14 +706,27 @@ describe("AppController (e2e)", () => {
       ])
         .then((files) => files.map((item) => JSON.parse(item.toString()) as Record<string, unknown>))
         .then((data) => ({
-          processProofs: [data[0]],
-          tallyProofs: [data[1]],
-          tallyData: [data[2]],
+          processProofs: [data[0]] as unknown as Proof[],
+          tallyProofs: [data[1]] as unknown as Proof[],
+          tallyData: data[2] as unknown as TallyData,
         }));
 
+      interface TResult {
+        tallyData?: TallyData;
+      }
+
+      const result = await new Promise<TallyData>((resolve) => {
+        socket.emit(EProofGenerationEvents.START, args).on(EProofGenerationEvents.FINISH, ({ tallyData }: TResult) => {
+          if (tallyData) {
+            resolve(tallyData);
+          }
+        });
+      });
+
       expect(proofData.processProofs).toHaveLength(1);
-      expect(proofData.tallyData).toHaveLength(1);
+      expect(proofData.tallyProofs).toHaveLength(1);
       expect(proofData.tallyData).toBeDefined();
+      expect(result.results.tally).toStrictEqual(proofData.tallyData.results.tally);
     });
   });
 });

@@ -13,6 +13,7 @@ import fs from "fs";
 import path from "path";
 
 import type { Request as Req } from "express";
+import type { Socket } from "socket.io";
 
 import { CryptoService } from "../crypto/crypto.service";
 
@@ -29,9 +30,9 @@ export const PUBLIC_METADATA_KEY = "isPublic";
 export const Public = (): CustomDecorator => SetMetadata(PUBLIC_METADATA_KEY, true);
 
 /**
- * AccountSignatureGuard is responsible for protecting calling controller functions.
+ * AccountSignatureGuard is responsible for protecting calling controller and websocket gateway functions.
  * If account address is not added to .env file, you will not be allowed to call any API methods.
- * Make sure you send `Authorization encrypt({signature}:{digest})` header where:
+ * Make sure you send `Authorization: Bearer encrypt({signature}:{digest})` header where:
  * 1. encrypt - RSA public encryption.
  * 2. signature - eth wallet signature for any message
  * 3. digest - hex representation of message digest
@@ -70,8 +71,9 @@ export class AccountSignatureGuard implements CanActivate {
         return true;
       }
 
-      const request = ctx.switchToHttp().getRequest<Req>();
-      const encryptedHeader = request.headers.authorization;
+      const request = ctx.switchToHttp().getRequest<Partial<Req>>();
+      const socket = ctx.switchToWs().getClient<Partial<Socket>>();
+      const encryptedHeader = socket.handshake?.headers.authorization || request.headers?.authorization;
 
       if (!encryptedHeader) {
         this.logger.warn("No authorization header");
