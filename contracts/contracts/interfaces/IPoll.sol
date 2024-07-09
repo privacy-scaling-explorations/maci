@@ -16,7 +16,7 @@ interface IPoll {
   /// @notice Allows anyone to publish a message (an encrypted command and signature).
   /// This function also enqueues the message.
   /// @param _message The message to publish
-  /// @param _encPubKey An epheremal public key which can be combined with the
+  /// @param _encPubKey An ephemeral public key which can be combined with the
   /// coordinator's private key to generate an ECDH shared key with which
   /// to encrypt the message.
   function publishMessage(DomainObjs.Message memory _message, DomainObjs.PubKey calldata _encPubKey) external;
