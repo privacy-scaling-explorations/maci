@@ -73,6 +73,7 @@ interface IPoll {
   /// finalization (based on the number of leaves inserted)
   function actualStateTreeDepth() external view returns (uint8);
 
-  /// @notice Return reference to MACI contract
-  function getMaci() external view returns (IMACI);
+  /// @notice Get the external contracts
+  /// @return maci The IMACI contract
+  function extContracts() external view returns (IMACI maci);
 }

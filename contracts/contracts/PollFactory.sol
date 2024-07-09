@@ -36,10 +36,10 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
     }
 
     /// @notice the smart contracts that a Poll would interact with
-    IMACI maci = IMACI(_maci);
+    ExtContracts memory extContracts = ExtContracts({ maci: IMACI(_maci) });
 
     // deploy the poll
-    Poll poll = new Poll(_duration, _maxValues, _treeDepths, _messageBatchSize, _coordinatorPubKey, maci);
+    Poll poll = new Poll(_duration, _maxValues, _treeDepths, _messageBatchSize, _coordinatorPubKey, extContracts);
 
     // init Poll
     poll.init();
