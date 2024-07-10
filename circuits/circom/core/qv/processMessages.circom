@@ -369,7 +369,7 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
         maxVoteOptions,
         [stateLeaf[STATE_LEAF_PUB_X_IDX], stateLeaf[STATE_LEAF_PUB_Y_IDX]],
         stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX],
-        stateLeaf[STATE_LEAF_TIMESTAMP_IDX],
+        // stateLeaf[STATE_LEAF_TIMESTAMP_IDX],
         ballot[BALLOT_NONCE_IDX],
         currentVoteWeight,
         cmdStateIndex,

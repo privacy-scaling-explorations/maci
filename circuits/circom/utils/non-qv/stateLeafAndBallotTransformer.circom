@@ -26,7 +26,7 @@ template StateLeafAndBallotTransformerNonQv() {
     // Current voice credit balance.
     signal input slVoiceCreditBalance;
     // Signup timestamp.
-    signal input slTimestamp;
+    // signal input slTimestamp;
 
     // The following signals represents a ballot.
     // Nonce.
@@ -77,7 +77,7 @@ template StateLeafAndBallotTransformerNonQv() {
         slPubKey,
         cmdSigR8,
         cmdSigS,
-        slTimestamp,
+        // slTimestamp,
         slVoiceCreditBalance,
         ballotCurrentVotesForOption,
         cmdNewVoteWeight
