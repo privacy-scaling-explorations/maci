@@ -12,9 +12,9 @@ import { generateRandomIndex, getSignal, circomkitInstance } from "./utils/utils
 describe("Ceremony param tests", () => {
   const params = {
     // processMessages and Tally
-    stateTreeDepth: 10,
+    stateTreeDepth: 14,
     // processMessages and Tally
-    voteOptionTreeDepth: 2,
+    voteOptionTreeDepth: 3,
     // Tally
     stateLeafBatchDepth: 2,
   };
@@ -78,7 +78,7 @@ describe("Ceremony param tests", () => {
       circuit = await circomkitInstance.WitnessTester("processMessages", {
         file: "./core/qv/processMessages",
         template: "ProcessMessages",
-        params: [10, MESSAGE_BATCH_SIZE, 2],
+        params: [14, MESSAGE_BATCH_SIZE, 3],
       });
 
       hasherCircuit = await circomkitInstance.WitnessTester("processMessageInputHasher", {
@@ -240,7 +240,7 @@ describe("Ceremony param tests", () => {
         testCircuit = await circomkitInstance.WitnessTester("tallyVotes", {
           file: "./core/qv/tallyVotes",
           template: "TallyVotes",
-          params: [10, 1, 2],
+          params: [14, 1, 3],
         });
       });
 
