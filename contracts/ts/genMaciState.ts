@@ -119,7 +119,7 @@ export const genMaciStateFromContract = async (
       pollContract.getDeployTimeAndDuration().then((values) => values.map(Number)),
       pollContract.maxValues(),
       pollContract.treeDepths(),
-      pollContract.getMessageBatchSize(),
+      pollContract.messageBatchSize(),
     ]);
 
   assert(coordinatorPubKeyOnChain[0].toString() === coordinatorKeypair.pubKey.rawPubKey[0].toString());

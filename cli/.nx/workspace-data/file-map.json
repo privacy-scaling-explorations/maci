@@ -1,0 +1,294 @@
+{
+  "version": "6.0",
+  "nxVersion": "19.2.0",
+  "deps": {
+    "@commander-js/extra-typings": "^12.1.0",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.13.1",
+    "hardhat": "^2.22.4",
+    "maci-circuits": "2.0.0-alpha",
+    "maci-contracts": "2.0.0-alpha",
+    "maci-core": "2.0.0-alpha",
+    "maci-crypto": "2.0.0-alpha",
+    "maci-domainobjs": "2.0.0-alpha",
+    "prompt": "^1.3.0",
+    "@types/chai": "^4.3.9",
+    "@types/chai-as-promised": "^7.1.8",
+    "@types/mocha": "^10.0.7",
+    "@types/node": "^20.14.8",
+    "@types/prompt": "^1.1.8",
+    "@types/snarkjs": "^0.7.8",
+    "chai": "^4.3.10",
+    "chai-as-promised": "^7.1.2",
+    "mocha": "^10.5.0",
+    "nyc": "^17.0.0",
+    "snarkjs": "^0.7.4",
+    "ts-mocha": "^10.0.0",
+    "typescript": "^5.5.2"
+  },
+  "pathMappings": {},
+  "nxJsonPlugins": [],
+  "fileMap": {
+    "projectFileMap": {},
+    "nonProjectFiles": [
+      {
+        "file": ".env.template",
+        "hash": "4496193733979220300"
+      },
+      {
+        "file": ".eslintrc.js",
+        "hash": "13229915871480295193"
+      },
+      {
+        "file": ".gitignore",
+        "hash": "17601427163171013260"
+      },
+      {
+        "file": ".npmignore",
+        "hash": "4762767828309406459"
+      },
+      {
+        "file": "CHANGELOG.md",
+        "hash": "14390863546399524797"
+      },
+      {
+        "file": "README.md",
+        "hash": "4260533303401492404"
+      },
+      {
+        "file": "hardhat.config.ts",
+        "hash": "7414675584830231"
+      },
+      {
+        "file": "package.json",
+        "hash": "8969919199423168932"
+      },
+      {
+        "file": "testScript.sh",
+        "hash": "6552564972250301071"
+      },
+      {
+        "file": "tests/ceremony-params/ceremonyParams.test.ts",
+        "hash": "4695420543316718913"
+      },
+      {
+        "file": "tests/constants.ts",
+        "hash": "834225302511162721"
+      },
+      {
+        "file": "tests/e2e/e2e.nonQv.test.ts",
+        "hash": "8752787775264135744"
+      },
+      {
+        "file": "tests/e2e/e2e.test.ts",
+        "hash": "4735806580525622393"
+      },
+      {
+        "file": "tests/e2e/keyChange.test.ts",
+        "hash": "8272771254069481712"
+      },
+      {
+        "file": "tests/unit/fundWallet.test.ts",
+        "hash": "123748459392012199"
+      },
+      {
+        "file": "tests/unit/genKeyPair.test.ts",
+        "hash": "916053683037700604"
+      },
+      {
+        "file": "tests/unit/genPubkey.test.ts",
+        "hash": "7143594747131142129"
+      },
+      {
+        "file": "tests/unit/poll.test.ts",
+        "hash": "3751013877925940590"
+      },
+      {
+        "file": "tests/unit/publish.test.ts",
+        "hash": "8183600869382667112"
+      },
+      {
+        "file": "tests/unit/signup.test.ts",
+        "hash": "13028303752144449323"
+      },
+      {
+        "file": "tests/unit/timeTravel.test.ts",
+        "hash": "13175581218743450859"
+      },
+      {
+        "file": "tests/unit/utils.test.ts",
+        "hash": "2430186141253098205"
+      },
+      {
+        "file": "tests/utils.ts",
+        "hash": "3633349082099021822"
+      },
+      {
+        "file": "ts/cliInit.ts",
+        "hash": "16685555504291186664"
+      },
+      {
+        "file": "ts/commands/checkVerifyingKeys.ts",
+        "hash": "8413716139859049961"
+      },
+      {
+        "file": "ts/commands/deploy.ts",
+        "hash": "14462994409537976077"
+      },
+      {
+        "file": "ts/commands/deployPoll.ts",
+        "hash": "5779216609018490999"
+      },
+      {
+        "file": "ts/commands/deployVkRegistry.ts",
+        "hash": "8163108283884703249"
+      },
+      {
+        "file": "ts/commands/extractVkToFile.ts",
+        "hash": "17582739410094555593"
+      },
+      {
+        "file": "ts/commands/fundWallet.ts",
+        "hash": "1348746165077747833"
+      },
+      {
+        "file": "ts/commands/genKeyPair.ts",
+        "hash": "10652065909828004623"
+      },
+      {
+        "file": "ts/commands/genLocalState.ts",
+        "hash": "1552269152960172083"
+      },
+      {
+        "file": "ts/commands/genProofs.ts",
+        "hash": "9533928754137033680"
+      },
+      {
+        "file": "ts/commands/genPubKey.ts",
+        "hash": "1882712367604386838"
+      },
+      {
+        "file": "ts/commands/index.ts",
+        "hash": "9264548635906148290"
+      },
+      {
+        "file": "ts/commands/mergeSignups.ts",
+        "hash": "5003995119926889935"
+      },
+      {
+        "file": "ts/commands/poll.ts",
+        "hash": "10259267095478474955"
+      },
+      {
+        "file": "ts/commands/proveOnChain.ts",
+        "hash": "3101022441084033518"
+      },
+      {
+        "file": "ts/commands/publish.ts",
+        "hash": "1232970456244327149"
+      },
+      {
+        "file": "ts/commands/setVerifyingKeys.ts",
+        "hash": "18369671270771551215"
+      },
+      {
+        "file": "ts/commands/showContracts.ts",
+        "hash": "1638025963885799044"
+      },
+      {
+        "file": "ts/commands/signup.ts",
+        "hash": "14013052847491736048"
+      },
+      {
+        "file": "ts/commands/timeTravel.ts",
+        "hash": "5973869275556844681"
+      },
+      {
+        "file": "ts/commands/verify.ts",
+        "hash": "3432993291593576348"
+      },
+      {
+        "file": "ts/index.ts",
+        "hash": "1072378689497885293"
+      },
+      {
+        "file": "ts/sdk/index.ts",
+        "hash": "1357559449817093713"
+      },
+      {
+        "file": "ts/utils/banner.ts",
+        "hash": "10033889645635355454"
+      },
+      {
+        "file": "ts/utils/constants.ts",
+        "hash": "5153612984728769244"
+      },
+      {
+        "file": "ts/utils/contracts.ts",
+        "hash": "561817599384115900"
+      },
+      {
+        "file": "ts/utils/defaults.ts",
+        "hash": "12527598307116009548"
+      },
+      {
+        "file": "ts/utils/formatting.ts",
+        "hash": "4890410857583750575"
+      },
+      {
+        "file": "ts/utils/index.ts",
+        "hash": "8338686911311291706"
+      },
+      {
+        "file": "ts/utils/interfaces.ts",
+        "hash": "690318663833054685"
+      },
+      {
+        "file": "ts/utils/prompts.ts",
+        "hash": "5263020004773816163"
+      },
+      {
+        "file": "ts/utils/salt.ts",
+        "hash": "8129964872557305810"
+      },
+      {
+        "file": "ts/utils/storage.ts",
+        "hash": "5074339955655163494"
+      },
+      {
+        "file": "ts/utils/theme.ts",
+        "hash": "3257084485144873716"
+      },
+      {
+        "file": "ts/utils/time.ts",
+        "hash": "11887358613265007967"
+      },
+      {
+        "file": "ts/utils/trees.ts",
+        "hash": "9334245961716993029"
+      },
+      {
+        "file": "ts/utils/verifiers.ts",
+        "hash": "3957954871412705013"
+      },
+      {
+        "file": "ts/utils/vks.ts",
+        "hash": "13020538369154370332"
+      },
+      {
+        "file": "tsconfig.build.json",
+        "hash": "6316099356041924654"
+      },
+      {
+        "file": "tsconfig.json",
+        "hash": "9225464712067449760"
+      },
+      {
+        "file": "typedoc.json",
+        "hash": "16472788055430599547"
+      }
+    ]
+  }
+}

@@ -84,7 +84,7 @@ export class Prover {
       mode,
     ] = await Promise.all([
       this.pollContract.treeDepths(),
-      this.pollContract.getMessageBatchSize(),
+      this.pollContract.messageBatchSize(),
       this.pollContract.numSignUpsAndMessages(),
       this.mpContract.numBatchesProcessed().then(Number),
       this.maciContract.stateTreeDepth().then(Number),

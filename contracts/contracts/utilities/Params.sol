@@ -18,7 +18,4 @@ contract Params {
     uint256 maxMessages;
     uint256 maxVoteOptions;
   }
-
-  /// @notice A variable holding the message batch size for the poll
-  uint8 public messageBatchSize;
 }

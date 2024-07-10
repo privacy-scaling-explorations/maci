@@ -81,8 +81,8 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
 
     // Retrieve stored vals
     (, uint8 voteOptionTreeDepth) = poll.treeDepths();
-    // Retrive stored val
-    uint8 messageBatchSize = poll.getMessageBatchSize();
+    // Retrieve stored val
+    uint8 messageBatchSize = poll.messageBatchSize();
 
     uint256[] memory batchHashes;
     // Copy the state and ballot commitment and set the batch index if this

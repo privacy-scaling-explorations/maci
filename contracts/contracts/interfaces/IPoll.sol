@@ -51,10 +51,6 @@ interface IPoll {
   /// @return maxVoteOptions The maximum number of vote options
   function maxValues() external view returns (uint256 maxMessages, uint256 maxVoteOptions);
 
-  /// @notice Get the message batch size for the poll
-  /// @return msgBatchSize The message batch size
-  function getMessageBatchSize() external view returns (uint8 msgBatchSize);
-
   /// @notice Get the hash of coordinator's public key
   /// @return _coordinatorPubKeyHash the hash of coordinator's public key
   function coordinatorPubKeyHash() external view returns (uint256 _coordinatorPubKeyHash);
@@ -75,4 +71,6 @@ interface IPoll {
 
   /// @notice Return reference to MACI contract
   function getMaci() external view returns (IMACI);
+
+  function messageBatchSize() external view returns (uint8);
 }

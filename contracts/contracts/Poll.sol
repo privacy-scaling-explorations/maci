@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Params } from "./utilities/Params.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { EmptyBallotRoots } from "./trees/EmptyBallotRoots.sol";
@@ -61,6 +62,9 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
 
   /// @notice Depths of the merkle trees
   TreeDepths public treeDepths;
+
+  /// @notice Message batch size for the poll
+  uint8 public immutable messageBatchSize;
 
   /// @notice The contracts used by the Poll
   IMACI public immutable maci;
@@ -287,10 +291,5 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   function numSignUpsAndMessages() public view returns (uint256 numSUps, uint256 numMsgs) {
     numSUps = numSignups;
     numMsgs = numMessages;
-  }
-
-  /// @inheritdoc IPoll
-  function getMessageBatchSize() public view returns (uint8 msgBatchSize) {
-    msgBatchSize = messageBatchSize;
   }
 }
