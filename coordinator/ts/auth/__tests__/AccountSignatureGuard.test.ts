@@ -26,6 +26,9 @@ describe("AccountSignatureGuard", () => {
     switchToHttp: jest.fn().mockReturnValue({
       getRequest: jest.fn(() => mockRequest),
     }),
+    switchToWs: jest.fn().mockReturnValue({
+      getClient: jest.fn(() => ({ handshake: mockRequest })),
+    }),
   } as unknown as ExecutionContext;
 
   const mockSignature =
@@ -62,6 +65,9 @@ describe("AccountSignatureGuard", () => {
         getRequest: jest.fn(() => ({
           headers: { authorization: "" },
         })),
+      }),
+      switchToWs: jest.fn().mockReturnValue({
+        getClient: jest.fn(() => ({ handshake: { headers: { authorization: "" } } })),
       }),
     } as unknown as ExecutionContext;
 

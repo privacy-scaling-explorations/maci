@@ -1,3 +1,4 @@
+import type { Proof } from "../../ts/types";
 import type { AccQueue, MACI, MessageProcessor, Poll, Tally, Verifier, VkRegistry } from "../../typechain-types";
 import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import type {
@@ -292,6 +293,53 @@ export interface IPrepareStateParams {
      */
     transactionHash: string;
   }>;
+}
+
+/**
+ * Interface that represents generate proof options
+ */
+export interface IGenerateProofsOptions {
+  /**
+   * Hook to call when batch generation is completed
+   *
+   * @param data - batch data
+   */
+  onBatchComplete?: (data: IGenerateProofsBatchData) => void;
+
+  /**
+   * Hook to call when proof generation is completed
+   *
+   * @param data - proof generated data
+   * @param tally - tally data
+   */
+  onComplete?: (data: Proof[], tally?: TallyData) => void;
+
+  /**
+   * Hook to call when generation is failed
+   *
+   * @param error - error
+   */
+  onFail?: (error: Error) => void;
+}
+
+/**
+ * Interface that represents batch data
+ */
+export interface IGenerateProofsBatchData {
+  /**
+   * Batch proofs
+   */
+  proofs: Proof[];
+
+  /**
+   * Current batch
+   */
+  current: number;
+
+  /**
+   * Total batches
+   */
+  total: number;
 }
 
 /**

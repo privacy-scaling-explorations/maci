@@ -3,6 +3,7 @@ import { ThrottlerModule } from "@nestjs/throttler";
 
 import { AppController } from "./app.controller";
 import { CryptoModule } from "./crypto/crypto.module";
+import { EventsModule } from "./events/events.module";
 import { FileModule } from "./file/file.module";
 import { ProofGeneratorService } from "./proof/proof.service";
 
@@ -16,6 +17,7 @@ import { ProofGeneratorService } from "./proof/proof.service";
     ]),
     FileModule,
     CryptoModule,
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [ProofGeneratorService],

@@ -22,7 +22,12 @@ export { Deployment } from "../tasks/helpers/Deployment";
 export { ContractStorage } from "../tasks/helpers/ContractStorage";
 export { ProofGenerator } from "../tasks/helpers/ProofGenerator";
 export { Prover } from "../tasks/helpers/Prover";
-export { EContracts } from "../tasks/helpers/types";
+export {
+  EContracts,
+  type IGenerateProofsOptions,
+  type IGenerateProofsBatchData,
+  type TallyData,
+} from "../tasks/helpers/types";
 export { linkPoseidonLibraries } from "../tasks/helpers/abi";
 
 export type { IVerifyingKeyStruct, SnarkProof, Groth16Proof, Proof } from "./types";
