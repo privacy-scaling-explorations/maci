@@ -33,8 +33,6 @@ template MessageValidatorNonQv() {
     signal input sigR8[2];
     // ECDSA signature of the command (S part).
     signal input sigS;
-    // State leaf signup timestamp.
-    // signal input slTimestamp;
     // State leaf current voice credit balance.
     signal input currentVoiceCreditBalance;
     // Current number of votes for specific option. 
