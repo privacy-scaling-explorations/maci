@@ -14,7 +14,7 @@ import {
   STATE_TREE_DEPTH,
   duration,
   initialVoiceCreditBalance,
-  maxValues,
+  maxVoteOptions,
   messageBatchSize,
   treeDepths,
 } from "./constants";
@@ -74,7 +74,7 @@ describe("Poll", () => {
       // deploy local poll
       const p = maciState.deployPoll(
         BigInt(deployTime + duration),
-        maxValues,
+        maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinator,
@@ -112,9 +112,8 @@ describe("Poll", () => {
     });
 
     it("should have the correct max values set", async () => {
-      const mv = await pollContract.maxValues();
-      expect(mv[0].toString()).to.eq(maxValues.maxMessages.toString());
-      expect(mv[1].toString()).to.eq(maxValues.maxVoteOptions.toString());
+      const mvo = await pollContract.maxVoteOptions();
+      expect(mvo.toString()).to.eq(maxVoteOptions.toString());
     });
 
     it("should have the correct tree depths set", async () => {

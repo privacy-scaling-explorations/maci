@@ -6,7 +6,6 @@ export const messageBatchSize = 20;
 export const coordinatorKeypair = new Keypair();
 export const maxValues = {
   maxUsers: 25,
-  maxMessages: 25,
   maxVoteOptions: 25,
 };
 

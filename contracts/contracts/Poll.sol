@@ -56,8 +56,8 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   /// to be used as public input for the circuit
   uint8 public actualStateTreeDepth;
 
-  /// @notice Max values for the poll
-  MaxValues public maxValues;
+  /// @notice Max vote options for the poll
+  uint256 public immutable maxVoteOptions;
 
   /// @notice Depths of the merkle trees
   TreeDepths public treeDepths;
@@ -92,7 +92,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   /// @notice Each MACI instance can have multiple Polls.
   /// When a Poll is deployed, its voting period starts immediately.
   /// @param _duration The duration of the voting period, in seconds
-  /// @param _maxValues The maximum number of messages and vote options
+  /// @param _maxVoteOptions The maximum number of vote options
   /// @param _treeDepths The depths of the merkle trees
   /// @param _messageBatchSize The message batch size
   /// @param _coordinatorPubKey The coordinator's public key
@@ -100,7 +100,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
 
   constructor(
     uint256 _duration,
-    MaxValues memory _maxValues,
+    uint256 _maxVoteOptions,
     TreeDepths memory _treeDepths,
     uint8 _messageBatchSize,
     PubKey memory _coordinatorPubKey,
@@ -119,8 +119,8 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     extContracts = _extContracts;
     // store duration of the poll
     duration = _duration;
-    // store max values
-    maxValues = _maxValues;
+    // store max vote options
+    maxVoteOptions = _maxVoteOptions;
     // store message batch size
     messageBatchSize = _messageBatchSize;
     // store tree depth
@@ -181,9 +181,6 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
 
   /// @inheritdoc IPoll
   function publishMessage(Message memory _message, PubKey calldata _encPubKey) public virtual isWithinVotingDeadline {
-    // we check that we do not exceed the max number of messages
-    if (numMessages >= maxValues.maxMessages) revert TooManyMessages();
-
     // check if the public key is on the curve
     if (!CurveBabyJubJub.isOnCurve(_encPubKey.x, _encPubKey.y)) {
       revert InvalidPubKey();

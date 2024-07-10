@@ -1,6 +1,6 @@
 import { type PubKey, type Keypair, StateLeaf, blankStateLeaf } from "maci-domainobjs";
 
-import type { IJsonMaciState, IJsonPoll, IMaciState, MaxValues, TreeDepths } from "./utils/types";
+import type { IJsonMaciState, IJsonPoll, IMaciState, TreeDepths } from "./utils/types";
 
 import { Poll } from "./Poll";
 import { STATE_TREE_ARITY } from "./utils/constants";
@@ -56,7 +56,7 @@ export class MaciState implements IMaciState {
   /**
    * Deploy a new poll with the given parameters.
    * @param pollEndTimestamp - The Unix timestamp at which the poll ends.
-   * @param maxValues - The maximum number of values for each vote option.
+   * @param maxVoteOptions - The maximum number of vote option.
    * @param treeDepths - The depths of the tree.
    * @param messageBatchSize - The batch size for processing messages.
    * @param coordinatorKeypair - The keypair of the MACI round coordinator.
@@ -64,7 +64,7 @@ export class MaciState implements IMaciState {
    */
   deployPoll(
     pollEndTimestamp: bigint,
-    maxValues: MaxValues,
+    maxVoteOptions: number,
     treeDepths: TreeDepths,
     messageBatchSize: number,
     coordinatorKeypair: Keypair,
@@ -77,7 +77,7 @@ export class MaciState implements IMaciState {
         messageBatchSize,
         tallyBatchSize: STATE_TREE_ARITY ** treeDepths.intStateTreeDepth,
       },
-      maxValues,
+      maxVoteOptions,
       this,
     );
 

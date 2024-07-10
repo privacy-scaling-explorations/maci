@@ -189,17 +189,14 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
       revert InvalidPubKey();
     }
 
-    MaxValues memory maxValues = MaxValues({
-      maxMessages: 1000,
-      maxVoteOptions: VOTE_TREE_ARITY ** _treeDepths.voteOptionTreeDepth
-    });
+    uint256 maxVoteOptions = VOTE_TREE_ARITY ** _treeDepths.voteOptionTreeDepth;
 
     // the owner of the message processor and tally contract will be the msg.sender
     address _msgSender = msg.sender;
 
     address p = pollFactory.deploy(
       _duration,
-      maxValues,
+      maxVoteOptions,
       _treeDepths,
       _messageBatchSize,
       _coordinatorPubKey,

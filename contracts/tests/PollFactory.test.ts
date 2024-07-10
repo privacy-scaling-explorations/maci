@@ -5,7 +5,7 @@ import { Keypair } from "maci-domainobjs";
 import { deployPollFactory, getDefaultSigner } from "../ts";
 import { PollFactory } from "../typechain-types";
 
-import { messageBatchSize, maxValues, treeDepths } from "./constants";
+import { messageBatchSize, maxVoteOptions, treeDepths } from "./constants";
 
 describe("pollFactory", () => {
   let pollFactory: PollFactory;
@@ -22,7 +22,7 @@ describe("pollFactory", () => {
     it("should allow anyone to deploy a new poll", async () => {
       const tx = await pollFactory.deploy(
         "100",
-        maxValues,
+        maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorPubKey.asContractParam(),
@@ -32,20 +32,18 @@ describe("pollFactory", () => {
       expect(receipt?.status).to.eq(1);
     });
 
-    it("should revert when called with an invalid param for max values", async () => {
+    it("should revert when called with an invalid param for max vote options", async () => {
+      const maxVoteOptionsInvalid = 2 ** 50;
       await expect(
         pollFactory.deploy(
           "100",
-          {
-            maxMessages: maxValues.maxMessages,
-            maxVoteOptions: 2 ** 50,
-          },
+          maxVoteOptionsInvalid,
           treeDepths,
           messageBatchSize,
           coordinatorPubKey.asContractParam(),
           ZeroAddress,
         ),
-      ).to.be.revertedWithCustomError(pollFactory, "InvalidMaxValues");
+      ).to.be.revertedWithCustomError(pollFactory, "InvalidMaxVoteOptions");
     });
   });
 });

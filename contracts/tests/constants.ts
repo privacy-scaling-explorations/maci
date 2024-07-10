@@ -1,4 +1,4 @@
-import { MaxValues, TreeDepths, STATE_TREE_ARITY } from "maci-core";
+import { TreeDepths, STATE_TREE_ARITY } from "maci-core";
 import { G1Point, G2Point } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
 
@@ -42,10 +42,7 @@ export const testTallyVkNonQv = new VerifyingKey(
 );
 
 export const initialVoiceCreditBalance = 100;
-export const maxValues: MaxValues = {
-  maxMessages: 1000,
-  maxVoteOptions: 25,
-};
+export const maxVoteOptions = 25;
 
 export const treeDepths: TreeDepths = {
   intStateTreeDepth: 1,

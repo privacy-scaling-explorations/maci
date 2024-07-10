@@ -78,7 +78,7 @@ describe("TallyVotes circuit", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues,
+        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -152,7 +152,7 @@ describe("TallyVotes circuit", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues,
+        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -222,7 +222,7 @@ describe("TallyVotes circuit", function test() {
 
       const pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues,
+        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,

@@ -36,7 +36,7 @@ describe("MaciState", function test() {
       m1.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
       pollId = m1.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues,
+        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -94,25 +94,20 @@ describe("MaciState", function test() {
       m12.polls.get(pollId)!.batchSizes.messageBatchSize += 1;
       expect(m1.equals(m12)).not.to.eq(true);
 
-      // modify poll.maxValues.maxMessages
+      // modify poll.maxVoteOptions
       const m13 = m1.copy();
-      m13.polls.get(pollId)!.maxValues.maxMessages += 1;
+      m13.polls.get(pollId)!.maxVoteOptions += 1;
       expect(m1.equals(m13)).not.to.eq(true);
 
-      // modify poll.maxValues.maxVoteOptions
+      // modify poll.messages
       const m14 = m1.copy();
-      m14.polls.get(pollId)!.maxValues.maxVoteOptions += 1;
+      m14.polls.get(pollId)!.messages[0].data[0] = BigInt(m14.polls.get(pollId)!.messages[0].data[0]) + 1n;
       expect(m1.equals(m14)).not.to.eq(true);
 
-      // modify poll.messages
-      const m15 = m1.copy();
-      m15.polls.get(pollId)!.messages[0].data[0] = BigInt(m15.polls.get(pollId)!.messages[0].data[0]) + 1n;
-      expect(m1.equals(m15)).not.to.eq(true);
-
       // modify poll.encPubKeys
-      const m16 = m1.copy();
-      m16.polls.get(pollId)!.encPubKeys[0] = new Keypair().pubKey;
-      expect(m1.equals(m16)).not.to.eq(true);
+      const m15 = m1.copy();
+      m15.polls.get(pollId)!.encPubKeys[0] = new Keypair().pubKey;
+      expect(m1.equals(m15)).not.to.eq(true);
     });
 
     it("should create a JSON object from a MaciState object", () => {

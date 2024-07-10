@@ -46,10 +46,13 @@ interface IPoll {
   /// @return voteOptionTreeDepth The subdepth of the vote option tree
   function treeDepths() external view returns (uint8 intStateTreeDepth, uint8 voteOptionTreeDepth);
 
-  /// @notice Get the max values for the poll
-  /// @return maxMessages The maximum number of messages
+  /// @notice Get the max vote options for the poll
   /// @return maxVoteOptions The maximum number of vote options
-  function maxValues() external view returns (uint256 maxMessages, uint256 maxVoteOptions);
+  function maxVoteOptions() external view returns (uint256);
+
+  /// @notice Get message batch size for the poll
+  /// @return The message batch size
+  function messageBatchSize() external view returns (uint8);
 
   /// @notice Get the hash of coordinator's public key
   /// @return _coordinatorPubKeyHash the hash of coordinator's public key
@@ -72,8 +75,4 @@ interface IPoll {
   /// @notice Get the external contracts
   /// @return maci The IMACI contract
   function extContracts() external view returns (IMACI maci);
-
-  /// @notice Get message batch size for the poll
-  /// @return The message batch size
-  function messageBatchSize() external view returns (uint8);
 }

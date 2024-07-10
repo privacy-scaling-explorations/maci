@@ -14,7 +14,7 @@ import {
   STATE_TREE_DEPTH,
   duration,
   initialVoiceCreditBalance,
-  maxValues,
+  maxVoteOptions,
   messageBatchSize,
   treeDepths,
 } from "./constants";
@@ -241,7 +241,7 @@ describe("MACI", function test() {
 
       const p = maciState.deployPoll(
         BigInt(deployTime + duration),
-        maxValues,
+        maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinator,

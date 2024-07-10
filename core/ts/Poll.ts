@@ -31,7 +31,6 @@ import type { MaciState } from "./MaciState";
 import type {
   CircuitInputs,
   TreeDepths,
-  MaxValues,
   BatchSizes,
   IPoll,
   IJsonPoll,
@@ -57,7 +56,7 @@ export class Poll implements IPoll {
 
   batchSizes: BatchSizes;
 
-  maxValues: MaxValues;
+  maxVoteOptions: number;
 
   // the depth of the state tree
   stateTreeDepth: number;
@@ -130,7 +129,7 @@ export class Poll implements IPoll {
    * @param coordinatorKeypair - The keypair of the coordinator.
    * @param treeDepths - The depths of the trees used in the poll.
    * @param batchSizes - The sizes of the batches used in the poll.
-   * @param maxValues - The maximum values the MACI circuits can accept.
+   * @param maxVoteOptions - The maximum vote options the MACI circuits can accept.
    * @param maciStateRef - The reference to the MACI state.
    */
   constructor(
@@ -138,25 +137,25 @@ export class Poll implements IPoll {
     coordinatorKeypair: Keypair,
     treeDepths: TreeDepths,
     batchSizes: BatchSizes,
-    maxValues: MaxValues,
+    maxVoteOptions: number,
     maciStateRef: MaciState,
   ) {
     this.pollEndTimestamp = pollEndTimestamp;
     this.coordinatorKeypair = coordinatorKeypair;
     this.treeDepths = treeDepths;
     this.batchSizes = batchSizes;
-    this.maxValues = maxValues;
+    this.maxVoteOptions = maxVoteOptions;
     this.maciStateRef = maciStateRef;
     this.pollId = BigInt(maciStateRef.polls.size);
     this.stateTreeDepth = maciStateRef.stateTreeDepth;
     this.actualStateTreeDepth = maciStateRef.stateTreeDepth;
     this.currentMessageBatchIndex = 0;
 
-    this.tallyResult = new Array(this.maxValues.maxVoteOptions).fill(0n) as bigint[];
-    this.perVOSpentVoiceCredits = new Array(this.maxValues.maxVoteOptions).fill(0n) as bigint[];
+    this.tallyResult = new Array(this.maxVoteOptions).fill(0n) as bigint[];
+    this.perVOSpentVoiceCredits = new Array(this.maxVoteOptions).fill(0n) as bigint[];
 
     // we put a blank state leaf to prevent a DoS attack
-    this.emptyBallot = Ballot.genBlankBallot(this.maxValues.maxVoteOptions, treeDepths.voteOptionTreeDepth);
+    this.emptyBallot = Ballot.genBlankBallot(this.maxVoteOptions, treeDepths.voteOptionTreeDepth);
     this.ballots.push(this.emptyBallot);
   }
 
@@ -243,7 +242,7 @@ export class Poll implements IPoll {
       }
 
       // If the vote option index is invalid, do nothing
-      if (command.voteOptionIndex < 0n || command.voteOptionIndex >= BigInt(this.maxValues.maxVoteOptions)) {
+      if (command.voteOptionIndex < 0n || command.voteOptionIndex >= BigInt(this.maxVoteOptions)) {
         throw new ProcessMessageError(ProcessMessageErrors.InvalidVoteOptionIndex);
       }
 
@@ -548,7 +547,7 @@ export class Poll implements IPoll {
               // this might be unnecessary but we do it to prevent a possible DoS attack
               // from voters who could potentially encrypt a message in such as way that
               // when decrypted it results in a valid state leaf index but an invalid vote option index
-              if (command.voteOptionIndex < this.maxValues.maxVoteOptions) {
+              if (command.voteOptionIndex < this.maxVoteOptions) {
                 currentVoteWeights.unshift(ballot.votes[Number(command.voteOptionIndex)]);
 
                 // create a new quinary tree and add all votes we have so far
@@ -767,7 +766,7 @@ export class Poll implements IPoll {
     // Generate a SHA256 hash of inputs which the contract provides
     /* eslint-disable no-bitwise */
     const packedVals =
-      BigInt(this.maxValues.maxVoteOptions) +
+      BigInt(this.maxVoteOptions) +
       (BigInt(this.numSignups) << 50n) +
       (BigInt(0) << 100n) +
       (BigInt(batchEndIndex) << 150n);
@@ -891,7 +890,7 @@ export class Poll implements IPoll {
       ballots.push(this.ballots[i]);
 
       // for each possible vote option we loop and calculate
-      for (let j = 0; j < this.maxValues.maxVoteOptions; j += 1) {
+      for (let j = 0; j < this.maxVoteOptions; j += 1) {
         const v = this.ballots[i].votes[j];
 
         // the vote itself will be a quadratic vote (sqrt(voiceCredits))
@@ -905,7 +904,7 @@ export class Poll implements IPoll {
       }
     }
 
-    const emptyBallot = new Ballot(this.maxValues.maxVoteOptions, this.treeDepths.voteOptionTreeDepth);
+    const emptyBallot = new Ballot(this.maxVoteOptions, this.treeDepths.voteOptionTreeDepth);
 
     // pad the ballots array
     while (ballots.length < batchSize) {
@@ -1048,7 +1047,7 @@ export class Poll implements IPoll {
       ballots.push(this.ballots[i]);
 
       // for each possible vote option we loop and calculate
-      for (let j = 0; j < this.maxValues.maxVoteOptions; j += 1) {
+      for (let j = 0; j < this.maxVoteOptions; j += 1) {
         const v = this.ballots[i].votes[j];
 
         this.tallyResult[j] += v;
@@ -1058,7 +1057,7 @@ export class Poll implements IPoll {
       }
     }
 
-    const emptyBallot = new Ballot(this.maxValues.maxVoteOptions, this.treeDepths.voteOptionTreeDepth);
+    const emptyBallot = new Ballot(this.maxVoteOptions, this.treeDepths.voteOptionTreeDepth);
 
     // pad the ballots array
     while (ballots.length < batchSize) {
@@ -1203,10 +1202,7 @@ export class Poll implements IPoll {
         tallyBatchSize: Number(this.batchSizes.tallyBatchSize.toString()),
         messageBatchSize: Number(this.batchSizes.messageBatchSize.toString()),
       },
-      {
-        maxMessages: Number(this.maxValues.maxMessages.toString()),
-        maxVoteOptions: Number(this.maxValues.maxVoteOptions.toString()),
-      },
+      this.maxVoteOptions,
       this.maciStateRef,
     );
 
@@ -1269,8 +1265,7 @@ export class Poll implements IPoll {
       this.treeDepths.voteOptionTreeDepth === p.treeDepths.voteOptionTreeDepth &&
       this.batchSizes.tallyBatchSize === p.batchSizes.tallyBatchSize &&
       this.batchSizes.messageBatchSize === p.batchSizes.messageBatchSize &&
-      this.maxValues.maxMessages === p.maxValues.maxMessages &&
-      this.maxValues.maxVoteOptions === p.maxValues.maxVoteOptions &&
+      this.maxVoteOptions === p.maxVoteOptions &&
       this.messages.length === p.messages.length &&
       this.encPubKeys.length === p.encPubKeys.length &&
       this.numSignups === p.numSignups;
@@ -1301,7 +1296,7 @@ export class Poll implements IPoll {
       pollEndTimestamp: this.pollEndTimestamp.toString(),
       treeDepths: this.treeDepths,
       batchSizes: this.batchSizes,
-      maxValues: this.maxValues,
+      maxVoteOptions: this.maxVoteOptions,
       messages: this.messages.map((message) => message.toJSON()),
       commands: this.commands.map((command) => command.toJSON()),
       ballots: this.ballots.map((ballot) => ballot.toJSON()),
@@ -1328,7 +1323,7 @@ export class Poll implements IPoll {
       new Keypair(),
       json.treeDepths,
       json.batchSizes,
-      json.maxValues,
+      json.maxVoteOptions,
       maciState,
     );
 

@@ -21,7 +21,7 @@ import {
   STATE_TREE_DEPTH,
   duration,
   initialVoiceCreditBalance,
-  maxValues,
+  maxVoteOptions,
   messageBatchSize,
   testProcessVk,
   testTallyVk,
@@ -94,7 +94,13 @@ describe("MessageProcessor", () => {
     const deployTime = block!.timestamp;
 
     // deploy local poll
-    const p = maciState.deployPoll(BigInt(deployTime + duration), maxValues, treeDepths, messageBatchSize, coordinator);
+    const p = maciState.deployPoll(
+      BigInt(deployTime + duration),
+      maxVoteOptions,
+      treeDepths,
+      messageBatchSize,
+      coordinator,
+    );
     expect(p.toString()).to.eq(pollId.toString());
 
     const messages = [];
@@ -142,12 +148,7 @@ describe("MessageProcessor", () => {
     });
 
     it("genProcessMessagesPackedVals() should generate the correct value", async () => {
-      const packedVals = packProcessMessageSmallVals(
-        BigInt(maxValues.maxVoteOptions),
-        BigInt(users.length),
-        0,
-        messageBatchSize,
-      );
+      const packedVals = packProcessMessageSmallVals(BigInt(maxVoteOptions), BigInt(users.length), 0, messageBatchSize);
       const onChainPackedVals = BigInt(
         await mpContract.genProcessMessagesPackedVals(
           0,
