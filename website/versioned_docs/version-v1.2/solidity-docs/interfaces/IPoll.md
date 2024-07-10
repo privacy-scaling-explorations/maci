@@ -46,7 +46,7 @@ This function also enqueues the message.
 | Name        | Type                      | Description                                                                                                                                        |
 | ----------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | \_message   | struct DomainObjs.Message | The message to publish                                                                                                                             |
-| \_encPubKey | struct DomainObjs.PubKey  | An epheremal public key which can be combined with the coordinator's private key to generate an ECDH shared key with which to encrypt the message. |
+| \_encPubKey | struct DomainObjs.PubKey  | An ephemeral public key which can be combined with the coordinator's private key to generate an ECDH shared key with which to encrypt the message. |
 
 ### mergeMaciStateAqSubRoots
 
