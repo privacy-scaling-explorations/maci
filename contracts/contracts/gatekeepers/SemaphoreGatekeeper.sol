@@ -72,4 +72,10 @@ contract SemaphoreGatekeeper is SignUpGatekeeper, Ownable(msg.sender) {
     // check if the proof validates
     if (!semaphoreContract.verifyProof(proof.scope, proof)) revert InvalidProof();
   }
+
+  /// @notice Get the trait of the gatekeeper
+  /// @return The type of the gatekeeper
+  function getTrait() public pure override returns (string memory) {
+    return "Semaphore";
+  }
 }

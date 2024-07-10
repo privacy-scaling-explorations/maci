@@ -13,4 +13,8 @@ abstract contract SignUpGatekeeper {
   /// @param _data additional data
   // solhint-disable-next-line no-empty-blocks
   function register(address _user, bytes memory _data) public virtual {}
+
+  /// @notice Get the trait of the gatekeeper
+  /// @return The type of the gatekeeper
+  function getTrait() public pure virtual returns (string memory);
 }

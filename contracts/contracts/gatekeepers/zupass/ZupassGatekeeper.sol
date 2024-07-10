@@ -84,4 +84,10 @@ contract ZupassGatekeeper is SignUpGatekeeper, Ownable(msg.sender) {
     // user address converted to bigint is used as the watermark
     if (_pubSignals[37] != uint256(uint160(_user))) revert InvalidWatermark();
   }
+
+  /// @notice Get the trait of the gatekeeper
+  /// @return The type of the gatekeeper
+  function getTrait() public pure override returns (string memory) {
+    return "Zupass";
+  }
 }

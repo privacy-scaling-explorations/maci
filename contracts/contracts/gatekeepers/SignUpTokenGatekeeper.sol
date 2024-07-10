@@ -56,4 +56,10 @@ contract SignUpTokenGatekeeper is SignUpGatekeeper, Ownable(msg.sender) {
     // Mark the token as already used
     registeredTokenIds[tokenId] = true;
   }
+
+  /// @notice Get the trait of the gatekeeper
+  /// @return The type of the gatekeeper
+  function getTrait() public pure override returns (string memory) {
+    return "Token";
+  }
 }
