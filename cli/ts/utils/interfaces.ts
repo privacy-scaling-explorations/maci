@@ -1117,3 +1117,36 @@ export interface IParseSignupEventsArgs {
    */
   publicKey: PubKey;
 }
+
+/**
+ * Interface for the arguments to the getGatekeeperTrait command
+ */
+export interface IGetGatekeeperTraitArgs {
+  /**
+   * The address of the MACI contract
+   */
+  maciAddress: string;
+
+  /**
+   * A signer object
+   */
+  signer: Signer;
+
+  /**
+   * Whether to log the output
+   */
+  quiet?: boolean;
+}
+
+/**
+ * Enum for the gatekeeper type
+ */
+export enum GatekeeperTrait {
+  EAS = "EAS",
+  FreeForAll = "FreeForAll",
+  GitcoinPassport = "GitcoinPassport",
+  Hats = "Hats",
+  Semaphore = "Semaphore",
+  Token = "Token",
+  Zupass = "Zupass",
+}

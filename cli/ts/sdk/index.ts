@@ -5,7 +5,7 @@ import { mergeMessages } from "../commands/mergeMessages";
 import { mergeSignups } from "../commands/mergeSignups";
 import { getPoll } from "../commands/poll";
 import { publish, publishBatch } from "../commands/publish";
-import { signup, isRegisteredUser } from "../commands/signup";
+import { signup, isRegisteredUser, getGatekeeperTrait } from "../commands/signup";
 import { verify } from "../commands/verify";
 
 export {
@@ -20,6 +20,7 @@ export {
   extractVkToFile,
   mergeSignups,
   mergeMessages,
+  getGatekeeperTrait,
 };
 
 export type { ISnarkJSVerificationKey } from "maci-circuits";
@@ -36,6 +37,8 @@ export {
 export * from "maci-contracts/typechain-types";
 
 export { VerifyingKey, PubKey, type IVkObjectParams } from "maci-domainobjs";
+
+export { GatekeeperTrait } from "../utils";
 
 export type {
   TallyData,

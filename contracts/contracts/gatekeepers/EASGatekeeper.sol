@@ -84,4 +84,10 @@ contract EASGatekeeper is SignUpGatekeeper, Ownable(msg.sender) {
     // one cannot register an attestation for another user
     if (attestation.recipient != _user) revert NotYourAttestation();
   }
+
+  /// @notice Get the trait of the gatekeeper
+  /// @return The type of the gatekeeper
+  function getTrait() public pure override returns (string memory) {
+    return "EAS";
+  }
 }

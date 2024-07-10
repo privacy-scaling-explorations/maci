@@ -20,4 +20,10 @@ contract FreeForAllGatekeeper is SignUpGatekeeper {
   /// @param _data memory additional data
   // solhint-disable-next-line no-empty-blocks
   function register(address _address, bytes memory _data) public override {}
+
+  /// @notice Get the trait of the gatekeeper
+  /// @return The type of the gatekeeper
+  function getTrait() public pure override returns (string memory) {
+    return "FreeForAll";
+  }
 }

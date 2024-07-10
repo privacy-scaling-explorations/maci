@@ -1,8 +1,18 @@
 import { type ContractTransactionReceipt, isBytesLike } from "ethers";
-import { MACI__factory as MACIFactory } from "maci-contracts/typechain-types";
+import {
+  MACI__factory as MACIFactory,
+  SignUpGatekeeper__factory as SignUpGatekeeperFactory,
+} from "maci-contracts/typechain-types";
 import { PubKey } from "maci-domainobjs";
 
-import type { IParseSignupEventsArgs, IRegisteredUserArgs, ISignupData, SignupArgs } from "../utils/interfaces";
+import type {
+  GatekeeperTrait,
+  IGetGatekeeperTraitArgs,
+  IParseSignupEventsArgs,
+  IRegisteredUserArgs,
+  ISignupData,
+  SignupArgs,
+} from "../utils/interfaces";
 
 import { banner } from "../utils/banner";
 import { contractExists } from "../utils/contracts";
@@ -147,4 +157,28 @@ export const isRegisteredUser = async ({
     stateIndex,
     voiceCredits,
   };
+};
+
+/**
+ * Get the gatekeeper type of the MACI contract
+ * @param IGetGatekeeperTraitArgs - The arguments for the get gatekeeper type command
+ * @returns The gatekeeper type
+ */
+export const getGatekeeperTrait = async ({
+  maciAddress,
+  signer,
+  quiet = true,
+}: IGetGatekeeperTraitArgs): Promise<GatekeeperTrait> => {
+  banner(quiet);
+
+  const maciContract = MACIFactory.connect(maciAddress, signer);
+
+  // get the address of the signup gatekeeper
+  const gatekeeperContractAddress = await maciContract.signUpGatekeeper();
+
+  const gatekeeperContract = SignUpGatekeeperFactory.connect(gatekeeperContractAddress, signer);
+
+  const gatekeeperType = await gatekeeperContract.getTrait();
+
+  return gatekeeperType as GatekeeperTrait;
 };

@@ -45,7 +45,9 @@ export type {
   IPublishBatchData,
   IPublishMessage,
   IParseSignupEventsArgs,
+  IGetGatekeeperTraitArgs,
 } from "./interfaces";
+export { GatekeeperTrait } from "./interfaces";
 export { compareVks } from "./vks";
 export { delay } from "./time";
 export {

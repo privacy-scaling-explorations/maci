@@ -23,8 +23,9 @@ import {
   timeTravel,
   verify,
   isRegisteredUser,
+  getGatekeeperTrait,
 } from "../../ts/commands";
-import { DeployedContracts, GenProofsArgs, PollContracts } from "../../ts/utils";
+import { DeployedContracts, GatekeeperTrait, GenProofsArgs, PollContracts } from "../../ts/utils";
 import {
   deployPollArgs,
   checkVerifyingKeysArgs,
@@ -110,6 +111,11 @@ describe("e2e tests", function test() {
       maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
       pollAddresses = await deployPoll({ ...deployPollArgs, signer, useQuadraticVoting: true });
+    });
+
+    it("should get the correct gatekeeper trait", async () => {
+      const gatekeeperTrait = await getGatekeeperTrait({ maciAddress: maciAddresses.maciAddress, signer });
+      expect(gatekeeperTrait).to.eq(GatekeeperTrait.FreeForAll);
     });
 
     it("should signup one user", async () => {
