@@ -49,6 +49,7 @@ describe("ProofGeneratorService", () => {
     polls: jest.fn(),
     getMainRoot: jest.fn(),
     treeDepths: jest.fn(),
+    extContracts: jest.fn(),
     stateMerged: jest.fn(),
     coordinatorPubKey: jest.fn(),
   };
@@ -75,6 +76,7 @@ describe("ProofGeneratorService", () => {
       polls: jest.fn(() => Promise.resolve(ZeroAddress.replace("0x0", "0x1"))),
       getMainRoot: jest.fn(() => Promise.resolve(1n)),
       treeDepths: jest.fn(() => Promise.resolve([1, 2, 3])),
+      extContracts: jest.fn(() => Promise.resolve({ messageAq: ZeroAddress })),
       stateMerged: jest.fn(() => Promise.resolve(true)),
       coordinatorPubKey: jest.fn(() =>
         Promise.resolve({

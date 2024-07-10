@@ -192,7 +192,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs {
   ) public view returns (bool isValid) {
     (uint8 intStateTreeDepth, uint8 voteOptionTreeDepth) = poll.treeDepths();
 
-    IMACI maci = poll.getMaci();
+    IMACI maci = poll.extContracts();
 
     // Get the verifying key
     VerifyingKey memory vk = vkRegistry.getTallyVk(maci.stateTreeDepth(), intStateTreeDepth, voteOptionTreeDepth, mode);

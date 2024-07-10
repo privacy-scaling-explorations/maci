@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import { IMACI } from "../interfaces/IMACI.sol";
+
 /// @title Params
 /// @notice This contracts contains a number of structures
 /// which are to be passed as parameters to Poll contracts.
@@ -17,5 +19,12 @@ contract Params {
   struct MaxValues {
     uint256 maxMessages;
     uint256 maxVoteOptions;
+  }
+
+  /// @notice A struct holding the external contracts
+  /// that are to be passed to a Poll contract on
+  /// deployment
+  struct ExtContracts {
+    IMACI maci;
   }
 }
