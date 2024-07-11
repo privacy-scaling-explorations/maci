@@ -2,6 +2,7 @@ import { type ContractTransactionReceipt, isBytesLike } from "ethers";
 import {
   MACI__factory as MACIFactory,
   SignUpGatekeeper__factory as SignUpGatekeeperFactory,
+  SemaphoreGatekeeper__factory as SemaphoreGatekeeperFactory,
 } from "maci-contracts/typechain-types";
 import { PubKey } from "maci-domainobjs";
 
@@ -12,6 +13,8 @@ import type {
   IRegisteredUserArgs,
   ISignupData,
   SignupArgs,
+  IGetSemaphoreGatekeeperDataArgs,
+  ISemaphoreGatekeeperData,
 } from "../utils/interfaces";
 
 import { banner } from "../utils/banner";
@@ -167,10 +170,7 @@ export const isRegisteredUser = async ({
 export const getGatekeeperTrait = async ({
   maciAddress,
   signer,
-  quiet = true,
 }: IGetGatekeeperTraitArgs): Promise<GatekeeperTrait> => {
-  banner(quiet);
-
   const maciContract = MACIFactory.connect(maciAddress, signer);
 
   // get the address of the signup gatekeeper
@@ -181,4 +181,32 @@ export const getGatekeeperTrait = async ({
   const gatekeeperType = await gatekeeperContract.getTrait();
 
   return gatekeeperType as GatekeeperTrait;
+};
+
+/**
+ * Get the semaphore gatekeeper data
+ * @param IGetSemaphoreGatekeeperDataArgs - The arguments for the get semaphore gatekeeper data command
+ * @returns The semaphore gatekeeper data
+ */
+export const getSemaphoreGatekeeperData = async ({
+  maciAddress,
+  signer,
+}: IGetSemaphoreGatekeeperDataArgs): Promise<ISemaphoreGatekeeperData> => {
+  const maciContract = MACIFactory.connect(maciAddress, signer);
+
+  // get the address of the signup gatekeeper
+  const gatekeeperContractAddress = await maciContract.signUpGatekeeper();
+
+  const gatekeeperContract = SemaphoreGatekeeperFactory.connect(gatekeeperContractAddress, signer);
+
+  // get the group ID and semaphore contract address
+  const [groupId, semaphoreContractAddress] = await Promise.all([
+    gatekeeperContract.groupId(),
+    gatekeeperContract.semaphoreContract(),
+  ]);
+
+  return {
+    address: semaphoreContractAddress,
+    groupId: groupId.toString(),
+  };
 };
