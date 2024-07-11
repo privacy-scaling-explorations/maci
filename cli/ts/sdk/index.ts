@@ -5,7 +5,7 @@ import { mergeMessages } from "../commands/mergeMessages";
 import { mergeSignups } from "../commands/mergeSignups";
 import { getPoll } from "../commands/poll";
 import { publish, publishBatch } from "../commands/publish";
-import { signup, isRegisteredUser, getGatekeeperTrait } from "../commands/signup";
+import { signup, isRegisteredUser, getGatekeeperTrait, getSemaphoreGatekeeperData } from "../commands/signup";
 import { verify } from "../commands/verify";
 
 export {
@@ -21,6 +21,7 @@ export {
   mergeSignups,
   mergeMessages,
   getGatekeeperTrait,
+  getSemaphoreGatekeeperData,
 };
 
 export type { ISnarkJSVerificationKey } from "maci-circuits";
@@ -53,4 +54,6 @@ export type {
   IGenKeypairArgs,
   IPublishBatchData,
   IPublishMessage,
+  IGetSemaphoreGatekeeperDataArgs,
+  ISemaphoreGatekeeperData,
 } from "../utils";

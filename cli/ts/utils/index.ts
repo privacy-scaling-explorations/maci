@@ -46,6 +46,8 @@ export type {
   IPublishMessage,
   IParseSignupEventsArgs,
   IGetGatekeeperTraitArgs,
+  ISemaphoreGatekeeperData,
+  IGetSemaphoreGatekeeperDataArgs,
 } from "./interfaces";
 export { GatekeeperTrait } from "./interfaces";
 export { compareVks } from "./vks";

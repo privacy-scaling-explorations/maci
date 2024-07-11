@@ -1131,11 +1131,6 @@ export interface IGetGatekeeperTraitArgs {
    * A signer object
    */
   signer: Signer;
-
-  /**
-   * Whether to log the output
-   */
-  quiet?: boolean;
 }
 
 /**
@@ -1149,4 +1144,34 @@ export enum GatekeeperTrait {
   Semaphore = "Semaphore",
   Token = "Token",
   Zupass = "Zupass",
+}
+
+/**
+ * Interface for the arguments to the get semaphore gatekeeper data command
+ */
+export interface IGetSemaphoreGatekeeperDataArgs {
+  /**
+   * The address of the MACI contract
+   */
+  maciAddress: string;
+
+  /**
+   * A signer object
+   */
+  signer: Signer;
+}
+
+/**
+ * Interface for the semaphore gatekeeper data
+ */
+export interface ISemaphoreGatekeeperData {
+  /**
+   * The address of the semaphore gatekeeper
+   */
+  address: string;
+
+  /**
+   * The group ID
+   */
+  groupId: string;
 }
