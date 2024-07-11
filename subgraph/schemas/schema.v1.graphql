@@ -32,7 +32,6 @@ type Poll @entity {
   pollId: BigInt! # uint256
   duration: BigInt! # uint256
   treeDepth: BigInt! # uint8
-  maxMessages: BigInt!
   maxVoteOption: BigInt!
   messageProcessor: Bytes! # address
   tally: Bytes! # address
@@ -43,10 +42,6 @@ type Poll @entity {
   stateRoot: BigInt # uint256
   numSignups: BigInt! # uint256
   numMessages: BigInt! # uint256
-  "merge message tree after ended"
-  numSrQueueOps: BigInt # uint256
-  messageRoot: BigInt
-
   "relations"
   owner: Bytes!
   maci: MACI!
