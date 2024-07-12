@@ -39,7 +39,7 @@ export * from "maci-contracts/typechain-types";
 
 export { VerifyingKey, PubKey, type IVkObjectParams } from "maci-domainobjs";
 
-export { GatekeeperTrait } from "../utils";
+export { GatekeeperTrait } from "../utils/interfaces";
 
 export type {
   TallyData,
