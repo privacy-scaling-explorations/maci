@@ -21,6 +21,7 @@
     "generate-keypair": "ts-node ./scripts/generateKeypair.ts"
   },
   "dependencies": {
+    "@graphprotocol/graph-cli": "^0.76.0",
     "@nestjs/common": "^10.3.8",
     "@nestjs/core": "^10.3.9",
     "@nestjs/platform-express": "^10.3.8",
@@ -40,6 +41,7 @@
     "maci-cli": "2.0.0-alpha",
     "maci-contracts": "2.0.0-alpha",
     "maci-domainobjs": "2.0.0-alpha",
+    "mustache": "^4.2.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "socket.io": "^4.7.5",

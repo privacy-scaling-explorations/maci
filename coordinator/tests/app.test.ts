@@ -40,7 +40,7 @@ const MSG_TREE_DEPTH = 2;
 const VOTE_OPTION_TREE_DEPTH = 2;
 const MSG_BATCH_DEPTH = 1;
 
-describe("AppController (e2e)", () => {
+describe("e2e", () => {
   const coordinatorKeypair = new Keypair();
   let app: INestApplication;
   let signer: Signer;

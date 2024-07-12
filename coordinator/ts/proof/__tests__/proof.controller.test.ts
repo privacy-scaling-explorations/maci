@@ -1,16 +1,16 @@
 import { HttpException, HttpStatus } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 
-import type { IGetPublicKeyData } from "./file/types";
-import type { IGenerateArgs, IGenerateData } from "./proof/types";
+import type { IGetPublicKeyData } from "../../file/types";
+import type { IGenerateArgs, IGenerateData } from "../types";
 import type { TallyData } from "maci-cli";
 
-import { AppController } from "./app.controller";
-import { FileService } from "./file/file.service";
-import { ProofGeneratorService } from "./proof/proof.service";
+import { FileService } from "../../file/file.service";
+import { ProofController } from "../proof.controller";
+import { ProofGeneratorService } from "../proof.service";
 
-describe("AppController", () => {
-  let appController: AppController;
+describe("ProofController", () => {
+  let proofController: ProofController;
 
   const defaultProofGeneratorArgs: IGenerateArgs = {
     poll: 0,
@@ -41,7 +41,7 @@ describe("AppController", () => {
 
   beforeEach(async () => {
     const app = await Test.createTestingModule({
-      controllers: [AppController],
+      controllers: [ProofController],
     })
       .useMocker((token) => {
         if (token === ProofGeneratorService) {
@@ -60,7 +60,7 @@ describe("AppController", () => {
       })
       .compile();
 
-    appController = app.get<AppController>(AppController);
+    proofController = app.get<ProofController>(ProofController);
   });
 
   afterEach(() => {
@@ -69,7 +69,7 @@ describe("AppController", () => {
 
   describe("v1/proof/generate", () => {
     test("should return generated proof data", async () => {
-      const data = await appController.generate(defaultProofGeneratorArgs);
+      const data = await proofController.generate(defaultProofGeneratorArgs);
       expect(data).toStrictEqual(defaultProofGeneratorData);
     });
 
@@ -77,7 +77,7 @@ describe("AppController", () => {
       const error = new Error("error");
       mockGeneratorService.generate.mockRejectedValue(error);
 
-      await expect(appController.generate(defaultProofGeneratorArgs)).rejects.toThrow(
+      await expect(proofController.generate(defaultProofGeneratorArgs)).rejects.toThrow(
         new HttpException(error.message, HttpStatus.BAD_REQUEST),
       );
     });
@@ -85,7 +85,7 @@ describe("AppController", () => {
 
   describe("v1/proof/publicKey", () => {
     test("should return public key properly", async () => {
-      const data = await appController.getPublicKey();
+      const data = await proofController.getPublicKey();
       expect(data).toStrictEqual(defaultPublicKeyData);
     });
 
@@ -93,7 +93,7 @@ describe("AppController", () => {
       const error = new Error("error");
       mockFileService.getPublicKey.mockRejectedValue(error);
 
-      await expect(appController.getPublicKey()).rejects.toThrow(
+      await expect(proofController.getPublicKey()).rejects.toThrow(
         new HttpException(error.message, HttpStatus.BAD_REQUEST),
       );
     });

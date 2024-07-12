@@ -13,6 +13,10 @@ env:
   COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME: "ProcessMessages_10-2-1-2_test"
   COORDINATOR_ZKEY_PATH: "./zkeys/"
   COORDINATOR_RAPIDSNARK_EXE: "~/rapidsnark/build/prover"
+  SUBGRAPH_FOLDER: "../subgraph"
+  SUBGRAPH_NAME: ${{ vars.SUBGRAPH_NAME }}
+  SUBGRAPH_PROVIDER_URL: ${{ vars.SUBGRAPH_PROVIDER_URL }}
+  SUBGRAPH_DEPLOY_KEY: ${{ secrets.SUBGRAPH_DEPLOY_KEY }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
