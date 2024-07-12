@@ -7,7 +7,6 @@ import {
 import { PubKey } from "maci-domainobjs";
 
 import type {
-  GatekeeperTrait,
   IGetGatekeeperTraitArgs,
   IParseSignupEventsArgs,
   IRegisteredUserArgs,
@@ -20,6 +19,7 @@ import type {
 import { banner } from "../utils/banner";
 import { contractExists } from "../utils/contracts";
 import { DEFAULT_IVCP_DATA, DEFAULT_SG_DATA } from "../utils/defaults";
+import { GatekeeperTrait } from "../utils/interfaces";
 import { info, logError, logGreen, logYellow, success } from "../utils/theme";
 
 /**
