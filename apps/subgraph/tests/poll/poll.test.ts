@@ -4,27 +4,16 @@ import { test, describe, afterEach, clearStore, assert, beforeEach } from "match
 
 import { MACI, Poll } from "../../generated/schema";
 import { handleDeployPoll } from "../../src/maci";
-import {
-  handleMergeMaciState,
-  handleMergeMessageAq,
-  handleMergeMessageAqSubRoots,
-  handlePublishMessage,
-} from "../../src/poll";
-import { DEFAULT_POLL_ADDRESS, mockMaciContract, mockPollContract } from "../common";
+import { handleMergeMaciState, handlePublishMessage } from "../../src/poll";
+import { DEFAULT_POLL_ADDRESS, mockPollContract } from "../common";
 import { createDeployPollEvent } from "../maci/utils";
 
-import {
-  createMergeMaciStateEvent,
-  createMergeMessageAqEvent,
-  createMergeMessageAqSubRootsEvent,
-  createPublishMessageEvent,
-} from "./utils";
+import { createMergeMaciStateEvent, createPublishMessageEvent } from "./utils";
 
-export { handleMergeMaciState, handleMergeMessageAq, handleMergeMessageAqSubRoots, handlePublishMessage };
+export { handleMergeMaciState, handlePublishMessage };
 
 describe("Poll", () => {
   beforeEach(() => {
-    mockMaciContract();
     mockPollContract();
 
     // mock the deploy poll event with non qv mode set
@@ -51,26 +40,6 @@ describe("Poll", () => {
     assert.fieldEquals("MACI", maci.id.toHexString(), "numSignUps", "3");
     assert.fieldEquals("MACI", maci.id.toHexString(), "latestPoll", poll.id.toHex());
     assert.assertTrue(maci.polls.load().length === 1);
-  });
-
-  test("should handle merge message queue properly", () => {
-    const event = createMergeMessageAqEvent(DEFAULT_POLL_ADDRESS, BigInt.fromI32(1));
-
-    handleMergeMessageAq(event);
-
-    const poll = Poll.load(DEFAULT_POLL_ADDRESS)!;
-
-    assert.fieldEquals("Poll", poll.id.toHex(), "messageRoot", "1");
-  });
-
-  test("should handle merge message queue subroots properly", () => {
-    const event = createMergeMessageAqSubRootsEvent(DEFAULT_POLL_ADDRESS, BigInt.fromI32(1));
-
-    handleMergeMessageAqSubRoots(event);
-
-    const poll = Poll.load(event.address)!;
-
-    assert.fieldEquals("Poll", poll.id.toHex(), "numSrQueueOps", "1");
   });
 
   test("should handle publish message properly", () => {

@@ -1,12 +1,19 @@
 import { expect } from "chai";
-import { hash5, NOTHING_UP_MY_SLEEVE, IncrementalQuinTree, AccQueue, hash2 } from "maci-crypto";
+import { hash5, IncrementalQuinTree, hash2 } from "maci-crypto";
 import { PCommand, Keypair, StateLeaf, blankStateLeafHash } from "maci-domainobjs";
 
 import { MaciState } from "../MaciState";
 import { Poll } from "../Poll";
-import { STATE_TREE_DEPTH, STATE_TREE_ARITY, MESSAGE_TREE_ARITY } from "../utils/constants";
+import { STATE_TREE_DEPTH, STATE_TREE_ARITY } from "../utils/constants";
 
-import { coordinatorKeypair, duration, messageBatchSize, treeDepths, voiceCreditBalance } from "./utils/constants";
+import {
+  coordinatorKeypair,
+  duration,
+  maxValues,
+  messageBatchSize,
+  treeDepths,
+  voiceCreditBalance,
+} from "./utils/constants";
 import { TestHarness, calculateTotal } from "./utils/utils";
 
 describe("MaciState/Poll e2e", function test() {
@@ -46,6 +53,7 @@ describe("MaciState/Poll e2e", function test() {
         // deploy a poll
         pollId = maciState.deployPoll(
           BigInt(Math.floor(Date.now() / 1000) + duration),
+          maxValues.maxVoteOptions,
           treeDepths,
           messageBatchSize,
           coordinatorKeypair,
@@ -148,6 +156,7 @@ describe("MaciState/Poll e2e", function test() {
         // deploy a poll
         pollId = maciState.deployPoll(
           BigInt(Math.floor(Date.now() / 1000) + duration),
+          maxValues.maxVoteOptions,
           treeDepths,
           messageBatchSize,
           coordinatorKeypair,
@@ -260,6 +269,7 @@ describe("MaciState/Poll e2e", function test() {
         // deploy a poll
         pollId = maciState.deployPoll(
           BigInt(Math.floor(Date.now() / 1000) + duration),
+          maxValues.maxVoteOptions,
           treeDepths,
           messageBatchSize,
           coordinatorKeypair,
@@ -355,6 +365,7 @@ describe("MaciState/Poll e2e", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
+        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -381,7 +392,7 @@ describe("MaciState/Poll e2e", function test() {
       expect(stateTree.root.toString()).to.eq(poll.stateTree?.root.toString());
     });
 
-    it("the message root should be correct", () => {
+    it("Process a batch of messages (though only 1 message is in the batch)", () => {
       const command = new PCommand(
         BigInt(stateIndex),
         userKeypair.pubKey,
@@ -399,20 +410,6 @@ describe("MaciState/Poll e2e", function test() {
 
       poll.publishMessage(message, ecdhKeypair.pubKey);
 
-      // Use the accumulator queue to compare the root of the message tree
-      const accumulatorQueue: AccQueue = new AccQueue(
-        treeDepths.messageTreeSubDepth,
-        MESSAGE_TREE_ARITY,
-        NOTHING_UP_MY_SLEEVE,
-      );
-      accumulatorQueue.enqueue(message.hash(ecdhKeypair.pubKey));
-      accumulatorQueue.mergeSubRoots(0);
-      accumulatorQueue.merge(treeDepths.messageTreeDepth);
-
-      expect(accumulatorQueue.getRoot(treeDepths.messageTreeDepth)?.toString()).to.eq(poll.messageTree.root.toString());
-    });
-
-    it("Process a batch of messages (though only 1 message is in the batch)", () => {
       poll.processMessages(pollId);
 
       // Check the ballot
@@ -436,7 +433,7 @@ describe("MaciState/Poll e2e", function test() {
     });
   });
 
-  describe(`Process and tally ${messageBatchSize * 2} messages from ${messageBatchSize} users`, () => {
+  describe(`Process and tally ${messageBatchSize * 2 - 2} messages from ${messageBatchSize - 1} users`, () => {
     let maciState: MaciState;
     let pollId: bigint;
     let poll: Poll;
@@ -456,6 +453,7 @@ describe("MaciState/Poll e2e", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
+        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -465,7 +463,7 @@ describe("MaciState/Poll e2e", function test() {
     });
 
     it("should process votes correctly", () => {
-      // 4 valid votes
+      // 19 valid votes
       for (let i = 0; i < messageBatchSize - 1; i += 1) {
         const userKeypair = users[i];
 
@@ -488,9 +486,10 @@ describe("MaciState/Poll e2e", function test() {
 
       expect(poll.messages.length).to.eq(messageBatchSize - 1);
 
-      // 4 invalid votes
+      // 19 invalid votes
       for (let i = 0; i < messageBatchSize - 1; i += 1) {
         const userKeypair = users[i];
+
         const command = new PCommand(
           BigInt(i + 1),
           userKeypair.pubKey,
@@ -508,18 +507,15 @@ describe("MaciState/Poll e2e", function test() {
         poll.publishMessage(message, ecdhKeypair.pubKey);
       }
 
-      // 48 messages in total
+      // 38 messages in total
       expect(poll.messages.length).to.eq(2 * (messageBatchSize - 1));
 
-      expect(poll.currentMessageBatchIndex).to.eq(undefined);
+      expect(poll.currentMessageBatchIndex).to.eq(1);
       expect(poll.numBatchesProcessed).to.eq(0);
 
       // Process messages
       poll.processMessages(pollId);
 
-      // currentMessageBatchIndex is 0 because the current batch starts
-      // with index 0.
-      expect(poll.currentMessageBatchIndex).to.eq(0);
       expect(poll.numBatchesProcessed).to.eq(1);
 
       // Process messages
@@ -564,7 +560,7 @@ describe("MaciState/Poll e2e", function test() {
 
       // Recall that each user `i` cast the same number of votes for
       // their option `i`
-      for (let i = 0; i < messageBatchSize - 1; i += 1) {
+      for (let i = 1; i < messageBatchSize - 1; i += 1) {
         expect(poll.tallyResult[i].toString()).to.eq(voteWeight.toString());
       }
 
@@ -584,7 +580,6 @@ describe("MaciState/Poll e2e", function test() {
     let maciState: MaciState;
     let pollId: bigint;
     let poll: Poll;
-    let msgTree: IncrementalQuinTree;
     let stateTree: IncrementalQuinTree;
     const voteWeight = 9n;
     const voteOptionIndex = 0n;
@@ -594,11 +589,11 @@ describe("MaciState/Poll e2e", function test() {
 
     before(() => {
       maciState = new MaciState(STATE_TREE_DEPTH);
-      msgTree = new IncrementalQuinTree(treeDepths.messageTreeDepth, NOTHING_UP_MY_SLEEVE, 5, hash5);
       stateTree = new IncrementalQuinTree(STATE_TREE_DEPTH, blankStateLeafHash, STATE_TREE_ARITY, hash5);
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
+        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -631,7 +626,6 @@ describe("MaciState/Poll e2e", function test() {
       const message = command.encrypt(signature, sharedKey);
 
       poll.publishMessage(message, ecdhKeypair.pubKey);
-      msgTree.insert(message.hash(ecdhKeypair.pubKey));
     });
 
     it("Process a batch of messages (though only 1 message is in the batch)", () => {

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import { AccQueue } from "./trees/AccQueue.sol";
 import { IMACI } from "./interfaces/IMACI.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { IPoll } from "./interfaces/IPoll.sol";
@@ -21,7 +20,6 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
   /// @notice custom errors
   error NoMoreMessages();
   error StateNotMerged();
-  error MessageAqNotMerged();
   error InvalidProcessMessageProof();
   error MaxVoteOptionsTooLarge();
   error NumSignUpsTooLarge();
@@ -37,10 +35,8 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
   /// @notice  The number of batches processed
   uint256 public numBatchesProcessed;
 
-  /// @notice  The current message batch index. When the coordinator runs
-  /// processMessages(), this action relates to messages
-  /// currentMessageBatchIndex to currentMessageBatchIndex + messageBatchSize.
-  uint256 public currentMessageBatchIndex;
+  /// @notice The current message batch index
+  uint256 public currentBatchIndex;
 
   /// @inheritdoc IMessageProcessor
   uint256 public sbCommitment;
@@ -67,6 +63,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
     vkRegistry = IVkRegistry(_vkRegistry);
     poll = IPoll(_poll);
     mode = _mode;
+    currentBatchIndex = 1;
   }
 
   /// @notice Update the Poll's currentSbCommitment if the proof is valid.
@@ -82,72 +79,56 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
       revert NoMoreMessages();
     }
 
-    // The state AccQueue must be merged
-    if (!poll.stateMerged()) {
-      revert StateNotMerged();
-    }
+    (, uint8 voteOptionTreeDepth) = poll.treeDepths();
+    uint8 messageBatchSize = poll.messageBatchSize();
 
-    // Retrieve stored vals
-    (, uint8 messageTreeSubDepth, uint8 messageTreeDepth, ) = poll.treeDepths();
-    // calculate the message batch size from the message tree subdepth
-    uint256 messageBatchSize = TREE_ARITY ** messageTreeSubDepth;
-
-    (, AccQueue messageAq) = poll.extContracts();
-
-    // Require that the message queue has been merged
-    uint256 messageRoot = messageAq.getMainRoot(messageTreeDepth);
-    if (messageRoot == 0) {
-      revert MessageAqNotMerged();
-    }
-
+    uint256[] memory batchHashes;
     // Copy the state and ballot commitment and set the batch index if this
     // is the first batch to process
     if (numBatchesProcessed == 0) {
       uint256 currentSbCommitment = poll.currentSbCommitment();
       sbCommitment = currentSbCommitment;
-      (, uint256 numMessages) = poll.numSignUpsAndMessages();
-      uint256 r = numMessages % messageBatchSize;
 
-      currentMessageBatchIndex = numMessages;
+      poll.padLastBatch();
+      batchHashes = poll.getBatchHashes();
+      currentBatchIndex = batchHashes.length;
 
-      if (currentMessageBatchIndex > 0) {
-        if (r == 0) {
-          currentMessageBatchIndex -= messageBatchSize;
-        } else {
-          currentMessageBatchIndex -= r;
-        }
+      if (currentBatchIndex > 0) {
+        currentBatchIndex -= 1;
       }
+    } else {
+      batchHashes = poll.getBatchHashes();
     }
 
-    if (!verifyProcessProof(currentMessageBatchIndex, _newSbCommitment, _proof)) {
+    uint256 outputBatchHash = batchHashes[currentBatchIndex];
+
+    if (
+      !verifyProcessProof(
+        currentBatchIndex,
+        outputBatchHash,
+        sbCommitment,
+        _newSbCommitment,
+        messageBatchSize,
+        voteOptionTreeDepth,
+        _proof
+      )
+    ) {
       revert InvalidProcessMessageProof();
     }
 
-    {
-      (, uint256 numMessages) = poll.numSignUpsAndMessages();
-      // Decrease the message batch start index to ensure that each
-      // message batch is processed in order
-      if (currentMessageBatchIndex > 0) {
-        currentMessageBatchIndex -= messageBatchSize;
-      }
+    (, uint256 numMessages) = poll.numSignUpsAndMessages();
 
-      updateMessageProcessingData(
-        _newSbCommitment,
-        currentMessageBatchIndex,
-        numMessages <= messageBatchSize * (numBatchesProcessed + 1)
-      );
-    }
+    updateMessageProcessingData(_newSbCommitment, numMessages <= messageBatchSize * (numBatchesProcessed + 1));
   }
 
   /// @inheritdoc IMessageProcessor
   function getPublicCircuitInputs(
     uint256 _currentMessageBatchIndex,
-    uint256 _newSbCommitment
+    uint256 _newSbCommitment,
+    uint256 _outputBatchHash
   ) public view override returns (uint256[] memory publicInputs) {
-    (, uint8 messageTreeSubDepth, uint8 messageTreeDepth, ) = poll.treeDepths();
-    (, AccQueue messageAq) = poll.extContracts();
     uint256 coordinatorPubKeyHash = poll.coordinatorPubKeyHash();
-    uint256 messageBatchSize = TREE_ARITY ** messageTreeSubDepth;
+    uint8 messageBatchSize = poll.messageBatchSize();
     (uint256 numSignUps, uint256 numMessages) = poll.numSignUpsAndMessages();
     (uint256 deployTime, uint256 duration) = poll.getDeployTimeAndDuration();
     uint256 batchEndIndex = _currentMessageBatchIndex + messageBatchSize;
@@ -159,7 +140,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
     publicInputs = new uint256[](9);
     publicInputs[0] = numSignUps;
     publicInputs[1] = deployTime + duration;
-    publicInputs[2] = messageAq.getMainRoot(messageTreeDepth);
+    publicInputs[2] = _outputBatchHash;
     publicInputs[3] = poll.actualStateTreeDepth();
     publicInputs[4] = batchEndIndex;
     publicInputs[5] = _currentMessageBatchIndex;
@@ -170,27 +151,36 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
 
   /// @notice Verify the proof for processMessage
   /// @dev used to update the sbCommitment
-  /// @param _currentMessageBatchIndex The current message batch index
-  /// @param _newSbCommitment The new state root and ballot root commitment
-  ///                         after all messages are processed
+  /// @param _currentBatchIndex The batch index of current message batch
+  /// @param _outputBatchHash The output batch hash
+  /// @param _currentSbCommitment The current sbCommitment (state and ballot)
+  /// @param _newSbCommitment The new sbCommitment after we update this message batch
+  /// @param _messageBatchSize The message batch size
+  /// @param _voteOptionTreeDepth The vote option tree depth
   /// @param _proof The zk-SNARK proof
   /// @return isValid Whether the proof is valid
   function verifyProcessProof(
-    uint256 _currentMessageBatchIndex,
+    uint256 _currentBatchIndex,
+    uint256 _outputBatchHash,
+    uint256 _currentSbCommitment,
     uint256 _newSbCommitment,
-    uint256[8] calldata _proof
-  ) public view returns (bool isValid) {
+    uint8 _messageBatchSize,
+    uint8 _voteOptionTreeDepth,
+    uint256[8] memory _proof
+  ) internal view returns (bool isValid) {
     // get the tree depths
-    (, uint8 messageTreeSubDepth, uint8 messageTreeDepth, uint8 voteOptionTreeDepth) = poll.treeDepths();
-    (IMACI maci, ) = poll.extContracts();
-    uint256[] memory publicCircuitInputs = getPublicCircuitInputs(_currentMessageBatchIndex, _newSbCommitment);
+    // get the message batch size from the message tree subdepth
+    // get the number of signups
+    (uint256 numSignUps, uint256 numMessages) = poll.numSignUpsAndMessages();
+    IMACI maci = poll.getMaciContract();
+
+    uint256[] memory publicCircuitInputs = getPublicCircuitInputs(_currentBatchIndex, _newSbCommitment, _outputBatchHash);
 
     // Get the verifying key from the VkRegistry
     VerifyingKey memory vk = vkRegistry.getProcessVk(
       maci.stateTreeDepth(),
-      messageTreeDepth,
-      voteOptionTreeDepth,
-      TREE_ARITY ** messageTreeSubDepth,
+      _voteOptionTreeDepth,
+      _messageBatchSize,
       mode
     );
 
@@ -199,16 +189,11 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
 
   /// @notice update message processing state variables
   /// @param _newSbCommitment sbCommitment to be updated
-  /// @param _currentMessageBatchIndex currentMessageBatchIndex to be updated
   /// @param _processingComplete update flag that indicate processing is finished or not
-  function updateMessageProcessingData(
-    uint256 _newSbCommitment,
-    uint256 _currentMessageBatchIndex,
-    bool _processingComplete
-  ) internal {
+  function updateMessageProcessingData(uint256 _newSbCommitment, bool _processingComplete) internal {
     sbCommitment = _newSbCommitment;
     processingComplete = _processingComplete;
-    currentMessageBatchIndex = _currentMessageBatchIndex;
+    currentBatchIndex -= 1;
     numBatchesProcessed++;
   }
 }

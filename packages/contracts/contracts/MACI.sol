@@ -4,6 +4,8 @@ pragma solidity ^0.8.20;
 import { IPollFactory } from "./interfaces/IPollFactory.sol";
 import { IMessageProcessorFactory } from "./interfaces/IMPFactory.sol";
 import { ITallyFactory } from "./interfaces/ITallyFactory.sol";
+import { IVerifier } from "./interfaces/IVerifier.sol";
+import { IVkRegistry } from "./interfaces/IVkRegistry.sol";
 import { InitialVoiceCreditProxy } from "./initialVoiceCreditProxy/InitialVoiceCreditProxy.sol";
 import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
 import { IMACI } from "./interfaces/IMACI.sol";
@@ -26,7 +28,9 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
 
   uint256 public immutable maxSignups;
 
-  uint8 internal constant TREE_ARITY = 2;
+  uint8 internal constant STATE_TREE_ARITY = 2;
+
+  uint8 internal constant VOTE_TREE_ARITY = 5;
 
   /// @notice The hash of a blank state leaf
   uint256 internal constant BLANK_STATE_LEAF_HASH =
@@ -39,7 +43,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
   uint256 public nextPollId;
 
   /// @notice A mapping of poll IDs to Poll contracts.
-  mapping(uint256 => PollContracts) public polls;
+  mapping(uint256 => address) public polls;
 
   /// @notice Factory contract that deploy a Poll contract
   IPollFactory public immutable pollFactory;
@@ -81,6 +85,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
     uint256 _pollId,
     uint256 indexed _coordinatorPubKeyX,
     uint256 indexed _coordinatorPubKeyY,
+    PollContracts pollAddr,
     Mode _mode
   );
 
@@ -117,7 +122,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
     signUpGatekeeper = _signUpGatekeeper;
     initialVoiceCreditProxy = _initialVoiceCreditProxy;
     stateTreeDepth = _stateTreeDepth;
-    maxSignups = uint256(TREE_ARITY) ** uint256(_stateTreeDepth);
+    maxSignups = uint256(STATE_TREE_ARITY) ** uint256(_stateTreeDepth);
     emptyBallotRoots = _emptyBallotRoots;
 
     // Verify linked poseidon libraries
@@ -126,8 +131,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
 
   /// @notice Allows any eligible user sign up. The sign-up gatekeeper should prevent
   /// double sign-ups or ineligible users from doing so.  This function will
-  /// only succeed if the sign-up deadline has not passed. It also enqueues a
-  /// fresh state leaf into the state AccQueue.
+  /// only succeed if the sign-up deadline has not passed.
   /// @param _pubKey The user's desired public key.
   /// @param _signUpGatekeeperData Data to pass to the sign-up gatekeeper's
   ///     register() function. For instance, the POAPGatekeeper or
@@ -168,6 +172,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
   /// @notice Deploy a new Poll contract.
   /// @param _duration How long should the Poll last for
   /// @param _treeDepths The depth of the Merkle trees
+  /// @param _messageBatchSize The message batch size
   /// @param _coordinatorPubKey The coordinator's public key
   /// @param _verifier The Verifier Contract
   /// @param _vkRegistry The VkRegistry Contract
@@ -175,11 +180,12 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
   function deployPoll(
     uint256 _duration,
     TreeDepths memory _treeDepths,
+    uint8 _messageBatchSize,
     PubKey memory _coordinatorPubKey,
     address _verifier,
     address _vkRegistry,
     Mode _mode
-  ) public virtual {
+  ) public virtual returns (PollContracts memory pollAddr) {
     // cache the poll to a local variable so we can increment it
     uint256 pollId = nextPollId;
 
@@ -195,24 +201,32 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
     }
 
     uint256 voteOptionTreeDepth = _treeDepths.voteOptionTreeDepth;
+    uint256 maxVoteOptions = uint256(VOTE_TREE_ARITY) ** voteOptionTreeDepth;
+
+    ExtContracts memory extContracts = ExtContracts({
+      maci: IMACI(address(this)),
+      verifier: IVerifier(_verifier),
+      vkRegistry: IVkRegistry(_vkRegistry)
+    });
 
     address p = pollFactory.deploy(
       _duration,
+      maxVoteOptions,
       _treeDepths,
+      _messageBatchSize,
       _coordinatorPubKey,
-      address(this),
-      emptyBallotRoots[voteOptionTreeDepth - 1]
+      extContracts
     );
 
     address mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p, msg.sender, _mode);
     address tally = tallyFactory.deploy(_verifier, _vkRegistry, p, mp, msg.sender, _mode);
 
+    polls[pollId] = p;
+
     // store the addresses in a struct so they can be returned
-    PollContracts memory pollAddr = PollContracts({ poll: p, messageProcessor: mp, tally: tally });
+    pollAddr = PollContracts({ poll: p, messageProcessor: mp, tally: tally });
 
-    polls[pollId] = pollAddr;
-
-    emit DeployPoll(pollId, _coordinatorPubKey.x, _coordinatorPubKey.y, _mode);
+    emit DeployPoll(pollId, _coordinatorPubKey.x, _coordinatorPubKey.y, pollAddr, _mode);
   }
 
   /// @inheritdoc IMACI
@@ -222,10 +236,10 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
 
   /// @notice Get the Poll details
   /// @param _pollId The identifier of the Poll to retrieve
-  /// @return pollContracts The Poll contract object
-  function getPoll(uint256 _pollId) public view returns (PollContracts memory pollContracts) {
+  /// @return poll The Poll contract object
+  function getPoll(uint256 _pollId) public view returns (address poll) {
     if (_pollId >= nextPollId) revert PollDoesNotExist(_pollId);
-    pollContracts = polls[_pollId];
+    poll = polls[_pollId];
   }
 
   /// @inheritdoc IMACI

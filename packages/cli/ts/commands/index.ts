@@ -4,7 +4,6 @@ export { getPoll } from "./poll";
 export { deployVkRegistryContract } from "./deployVkRegistry";
 export { genKeyPair } from "./genKeyPair";
 export { genMaciPubKey } from "./genPubKey";
-export { mergeMessages } from "./mergeMessages";
 export { mergeSignups } from "./mergeSignups";
 export { publish, publishBatch } from "./publish";
 export { setVerifyingKeys } from "./setVerifyingKeys";

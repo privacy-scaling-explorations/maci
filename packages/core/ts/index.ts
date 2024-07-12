@@ -13,4 +13,4 @@ export type {
   IJsonMaciState,
 } from "./utils/types";
 
-export { STATE_TREE_ARITY, MESSAGE_TREE_ARITY } from "./utils/constants";
+export { STATE_TREE_ARITY, MESSAGE_BATCH_SIZE, VOTE_OPTION_TREE_ARITY } from "./utils/constants";

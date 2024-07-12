@@ -36,7 +36,6 @@ describe("VkRegistry", () => {
       const tx = await vkRegistryContract.setVerifyingKeys(
         stateTreeDepth,
         treeDepths.intStateTreeDepth,
-        treeDepths.messageTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
         EMode.QV,
@@ -52,7 +51,6 @@ describe("VkRegistry", () => {
         vkRegistryContract.setVerifyingKeys(
           stateTreeDepth,
           treeDepths.intStateTreeDepth,
-          treeDepths.messageTreeDepth,
           treeDepths.voteOptionTreeDepth,
           messageBatchSize,
           EMode.QV,
@@ -66,7 +64,6 @@ describe("VkRegistry", () => {
       const tx = await vkRegistryContract.setVerifyingKeys(
         stateTreeDepth + 1,
         treeDepths.intStateTreeDepth,
-        treeDepths.messageTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
         EMode.QV,
@@ -81,7 +78,6 @@ describe("VkRegistry", () => {
       const tx = await vkRegistryContract.setVerifyingKeys(
         stateTreeDepth + 1,
         treeDepths.intStateTreeDepth,
-        treeDepths.messageTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
         EMode.NON_QV,
@@ -98,7 +94,6 @@ describe("VkRegistry", () => {
       const tx = await vkRegistryContract.setVerifyingKeysBatch(
         stateTreeDepth,
         treeDepths.intStateTreeDepth,
-        treeDepths.messageTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
         [EMode.NON_QV],
@@ -115,7 +110,6 @@ describe("VkRegistry", () => {
         vkRegistryContract.setVerifyingKeysBatch(
           stateTreeDepth,
           treeDepths.intStateTreeDepth,
-          treeDepths.messageTreeDepth,
           treeDepths.voteOptionTreeDepth,
           messageBatchSize,
           [EMode.QV],
@@ -135,7 +129,6 @@ describe("VkRegistry", () => {
         expect(
           await vkRegistryContract.hasProcessVk(
             stateTreeDepth,
-            treeDepths.messageTreeDepth,
             treeDepths.voteOptionTreeDepth,
             messageBatchSize,
             EMode.QV,
@@ -147,7 +140,6 @@ describe("VkRegistry", () => {
         expect(
           await vkRegistryContract.hasProcessVk(
             stateTreeDepth + 2,
-            treeDepths.messageTreeDepth,
             treeDepths.voteOptionTreeDepth,
             messageBatchSize,
             EMode.QV,
@@ -186,7 +178,6 @@ describe("VkRegistry", () => {
       it("should generate a valid signature", async () => {
         const sig = await vkRegistryContract.genProcessVkSig(
           stateTreeDepth,
-          treeDepths.messageTreeDepth,
           treeDepths.voteOptionTreeDepth,
           messageBatchSize,
         );

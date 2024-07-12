@@ -7,7 +7,6 @@ import {
   deployPoll,
   deployVkRegistryContract,
   genProofs,
-  mergeMessages,
   mergeSignups,
   proveOnChain,
   publish,
@@ -28,8 +27,7 @@ import path from "path";
 
 import {
   INT_STATE_TREE_DEPTH,
-  MSG_BATCH_DEPTH,
-  MSG_TREE_DEPTH,
+  MESSAGE_BATCH_SIZE,
   SG_DATA,
   STATE_TREE_DEPTH,
   VOTE_OPTION_TREE_DEPTH,
@@ -37,7 +35,6 @@ import {
   initialVoiceCredits,
   ivcpData,
   maxMessages,
-  messageBatchDepth,
 } from "./utils/constants";
 import { ITestSuite } from "./utils/interfaces";
 import { expectTally, genTestUserCommands, isArm } from "./utils/utils";
@@ -73,12 +70,11 @@ describe("Integration tests", function test() {
     await setVerifyingKeys({
       stateTreeDepth: STATE_TREE_DEPTH,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
-      messageTreeDepth: MSG_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
-      messageBatchDepth: MSG_BATCH_DEPTH,
+      messageBatchSize: MESSAGE_BATCH_SIZE,
       processMessagesZkeyPathQv: path.resolve(
         __dirname,
-        "../../../cli/zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test.0.zkey",
+        "../../../cli/zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey",
       ),
       tallyVotesZkeyPathQv: path.resolve(
         __dirname,
@@ -86,7 +82,7 @@ describe("Integration tests", function test() {
       ),
       processMessagesZkeyPathNonQv: path.resolve(
         __dirname,
-        "../../../cli/zkeys/ProcessMessagesNonQv_10-2-1-2_test/ProcessMessagesNonQv_10-2-1-2_test.0.zkey",
+        "../../../cli/zkeys/ProcessMessagesNonQv_10-20-2_test/ProcessMessagesNonQv_10-20-2_test.0.zkey",
       ),
       tallyVotesZkeyPathNonQv: path.resolve(
         __dirname,
@@ -105,12 +101,13 @@ describe("Integration tests", function test() {
     // 3. deploy maci
     contracts = await deploy({ stateTreeDepth: STATE_TREE_DEPTH, initialVoiceCredits, signer });
 
+    const maxVoteOptions = 25;
+
     // 4. create a poll
     await deployPoll({
       pollDuration: duration,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
-      messageTreeSubDepth: MSG_BATCH_DEPTH,
-      messageTreeDepth: MSG_TREE_DEPTH,
+      messageBatchSize: MESSAGE_BATCH_SIZE,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       coordinatorPubkey: coordinatorKeypair.pubKey.serialize(),
       maciAddress: contracts.maciAddress,
@@ -120,15 +117,17 @@ describe("Integration tests", function test() {
 
     const treeDepths: TreeDepths = {
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
-      messageTreeDepth: MSG_TREE_DEPTH,
-      messageTreeSubDepth: MSG_BATCH_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
     };
 
-    const messageBatchSize = 5 ** messageBatchDepth;
+    const messageBatchSize = MESSAGE_BATCH_SIZE;
 
     pollId = maciState.deployPoll(
       BigInt(Date.now() + duration * 60000),
+<<<<<<< HEAD:packages/integrationTests/ts/__tests__/integration.test.ts
+=======
+      maxVoteOptions,
+>>>>>>> e84f61047 (feat: anonymous poll joining milestone 1 (#1625)):integrationTests/ts/__tests__/integration.test.ts
       treeDepths,
       messageBatchSize,
       coordinatorKeypair,
@@ -232,11 +231,6 @@ describe("Integration tests", function test() {
 
       await timeTravel({ seconds: duration, signer });
 
-      // merge messages
-      await expect(
-        mergeMessages({ pollId, maciAddress: contracts.maciAddress, signer }),
-      ).to.eventually.not.be.rejectedWith();
-
       // merge signups
       await expect(
         mergeSignups({ pollId, maciAddress: contracts.maciAddress, signer }),
@@ -249,17 +243,17 @@ describe("Integration tests", function test() {
         tallyZkey: path.resolve(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey"),
         processZkey: path.resolve(
           __dirname,
-          "../../../cli/zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test.0.zkey",
+          "../../../cli/zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey",
         ),
         pollId,
         rapidsnark: `${homedir()}/rapidsnark/build/prover`,
         processWitgen: path.resolve(
           __dirname,
-          "../../../cli/zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test_cpp/ProcessMessages_10-2-1-2_test",
+          "../../../cli/zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_cpp/ProcessMessages_10-20-2_test",
         ),
         processDatFile: path.resolve(
           __dirname,
-          "../../../cli/zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test_cpp/ProcessMessages_10-2-1-2_test.dat",
+          "../../../cli/zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_cpp/ProcessMessages_10-20-2_test.dat",
         ),
         tallyWitgen: path.resolve(
           __dirname,
@@ -273,7 +267,7 @@ describe("Integration tests", function test() {
         maciAddress: contracts.maciAddress,
         processWasm: path.resolve(
           __dirname,
-          "../../../cli/zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test_js/ProcessMessages_10-2-1-2_test.wasm",
+          "../../../cli/zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_js/ProcessMessages_10-20-2_test.wasm",
         ),
         tallyWasm: path.resolve(
           __dirname,

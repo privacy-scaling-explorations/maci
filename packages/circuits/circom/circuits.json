@@ -1,32 +1,30 @@
 {
-  "ProcessMessages_10-2-1-2_test": {
+  "ProcessMessages_10-20-2_test": {
     "file": "./core/qv/processMessages",
     "template": "ProcessMessages",
-    "params": [10, 2, 1, 2],
+    "params": [10, 20, 2],
     "pubs": [
       "numSignUps",
       "index",
       "batchEndIndex",
-      "msgRoot",
       "currentSbCommitment",
       "newSbCommitment",
-      "pollEndTimestamp",
+      "outputBatchHash",
       "actualStateTreeDepth",
       "coordinatorPublicKeyHash"
     ]
   },
-  "ProcessMessagesNonQv_10-2-1-2_test": {
+  "ProcessMessagesNonQv_10-20-2_test": {
     "file": "./core/non-qv/processMessages",
     "template": "ProcessMessagesNonQv",
-    "params": [10, 2, 1, 2],
+    "params": [10, 20, 2],
     "pubs": [
       "numSignUps",
       "index",
       "batchEndIndex",
-      "msgRoot",
       "currentSbCommitment",
       "newSbCommitment",
-      "pollEndTimestamp",
+      "outputBatchHash",
       "actualStateTreeDepth",
       "coordinatorPublicKeyHash"
     ]

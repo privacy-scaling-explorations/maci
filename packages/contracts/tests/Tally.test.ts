@@ -25,6 +25,7 @@ import {
   STATE_TREE_DEPTH,
   duration,
   initialVoiceCreditBalance,
+  maxVoteOptions,
   messageBatchSize,
   testProcessVk,
   testTallyVk,
@@ -67,6 +68,7 @@ describe("TallyVotes", () => {
     const tx = await maciContract.deployPoll(
       duration,
       treeDepths,
+      messageBatchSize,
       coordinator.pubKey.asContractParam(),
       verifierContract,
       vkRegistryContract,
@@ -79,15 +81,36 @@ describe("TallyVotes", () => {
 
     expect(receipt?.status).to.eq(1);
 
-    pollId = (await maciContract.nextPollId()) - 1n;
+    const iface = maciContract.interface;
+    const logs = receipt!.logs[receipt!.logs.length - 1];
+    const event = iface.parseLog(logs as unknown as { topics: string[]; data: string }) as unknown as {
+      args: {
+        _pollId: bigint;
+        pollAddr: {
+          poll: string;
+          messageProcessor: string;
+          tally: string;
+        };
+      };
+      name: string;
+    };
+    expect(event.name).to.eq("DeployPoll");
 
-    const pollContracts = await maciContract.getPoll(pollId);
-    pollContract = PollFactory.connect(pollContracts.poll, signer);
-    mpContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
-    tallyContract = TallyFactory.connect(pollContracts.tally, signer);
+    pollId = event.args._pollId;
+
+    const pollContractAddress = await maciContract.getPoll(pollId);
+    pollContract = PollFactory.connect(pollContractAddress, signer);
+    mpContract = MessageProcessorFactory.connect(event.args.pollAddr.messageProcessor, signer);
+    tallyContract = TallyFactory.connect(event.args.pollAddr.tally, signer);
 
     // deploy local poll
-    const p = maciState.deployPoll(BigInt(deployTime + duration), treeDepths, messageBatchSize, coordinator);
+    const p = maciState.deployPoll(
+      BigInt(deployTime + duration),
+      maxVoteOptions,
+      treeDepths,
+      messageBatchSize,
+      coordinator,
+    );
     expect(p.toString()).to.eq(pollId.toString());
     // publish the NOTHING_UP_MY_SLEEVE message
     const messageData = [NOTHING_UP_MY_SLEEVE];
@@ -115,7 +138,6 @@ describe("TallyVotes", () => {
     await vkRegistryContract.setVerifyingKeys(
       STATE_TREE_DEPTH,
       treeDepths.intStateTreeDepth,
-      treeDepths.messageTreeDepth,
       treeDepths.voteOptionTreeDepth,
       messageBatchSize,
       EMode.QV,
@@ -148,14 +170,12 @@ describe("TallyVotes", () => {
     );
   });
 
-  describe("after merging acc queues", () => {
+  describe("after messages processing", () => {
     let tallyGeneratedInputs: ITallyCircuitInputs;
 
     before(async () => {
       await pollContract.mergeMaciState();
 
-      await pollContract.mergeMessageAqSubRoots(0);
-      await pollContract.mergeMessageAq();
       tallyGeneratedInputs = poll.tallyVotes();
     });
 
@@ -225,6 +245,7 @@ describe("TallyVotes", () => {
           ...treeDepths,
           intStateTreeDepth,
         },
+        messageBatchSize,
         coordinator.pubKey.asContractParam(),
         verifierContract,
         vkRegistryContract,
@@ -237,16 +258,32 @@ describe("TallyVotes", () => {
 
       expect(receipt?.status).to.eq(1);
 
-      pollId = (await maciContract.nextPollId()) - 1n;
+      const iface = maciContract.interface;
+      const logs = receipt!.logs[receipt!.logs.length - 1];
+      const event = iface.parseLog(logs as unknown as { topics: string[]; data: string }) as unknown as {
+        args: {
+          _pollId: bigint;
+          pollAddr: {
+            poll: string;
+            messageProcessor: string;
+            tally: string;
+          };
+        };
+        name: string;
+      };
+      expect(event.name).to.eq("DeployPoll");
 
-      const pollContracts = await maciContract.getPoll(pollId);
-      pollContract = PollFactory.connect(pollContracts.poll, signer);
-      mpContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
-      tallyContract = TallyFactory.connect(pollContracts.tally, signer);
+      pollId = event.args._pollId;
+
+      const pollContractAddress = await maciContract.getPoll(pollId);
+      pollContract = PollFactory.connect(pollContractAddress, signer);
+      mpContract = MessageProcessorFactory.connect(event.args.pollAddr.messageProcessor, signer);
+      tallyContract = TallyFactory.connect(event.args.pollAddr.tally, signer);
 
       // deploy local poll
       const p = maciState.deployPoll(
         BigInt(deployTime + updatedDuration),
+        maxVoteOptions,
         {
           ...treeDepths,
           intStateTreeDepth,
@@ -278,7 +315,6 @@ describe("TallyVotes", () => {
       await vkRegistryContract.setVerifyingKeys(
         STATE_TREE_DEPTH,
         intStateTreeDepth,
-        treeDepths.messageTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
         EMode.QV,
@@ -288,9 +324,6 @@ describe("TallyVotes", () => {
 
       await timeTravel(signer.provider! as unknown as EthereumProvider, updatedDuration);
       await pollContract.mergeMaciState();
-
-      await pollContract.mergeMessageAqSubRoots(0);
-      await pollContract.mergeMessageAq();
 
       const processMessagesInputs = poll.processMessages(pollId);
 
@@ -509,6 +542,7 @@ describe("TallyVotes", () => {
           ...treeDepths,
           intStateTreeDepth,
         },
+        messageBatchSize,
         coordinator.pubKey.asContractParam(),
         verifierContract,
         vkRegistryContract,
@@ -521,16 +555,32 @@ describe("TallyVotes", () => {
 
       expect(receipt?.status).to.eq(1);
 
-      pollId = (await maciContract.nextPollId()) - 1n;
+      const iface = maciContract.interface;
+      const logs = receipt!.logs[receipt!.logs.length - 1];
+      const event = iface.parseLog(logs as unknown as { topics: string[]; data: string }) as unknown as {
+        args: {
+          _pollId: bigint;
+          pollAddr: {
+            poll: string;
+            messageProcessor: string;
+            tally: string;
+          };
+        };
+        name: string;
+      };
+      expect(event.name).to.eq("DeployPoll");
 
-      const pollContracts = await maciContract.getPoll(pollId);
-      pollContract = PollFactory.connect(pollContracts.poll, signer);
-      mpContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
-      tallyContract = TallyFactory.connect(pollContracts.tally, signer);
+      pollId = event.args._pollId;
+
+      const pollContractAddress = await maciContract.getPoll(pollId);
+      pollContract = PollFactory.connect(pollContractAddress, signer);
+      mpContract = MessageProcessorFactory.connect(event.args.pollAddr.messageProcessor, signer);
+      tallyContract = TallyFactory.connect(event.args.pollAddr.tally, signer);
 
       // deploy local poll
       const p = maciState.deployPoll(
         BigInt(deployTime + updatedDuration),
+        maxVoteOptions,
         {
           ...treeDepths,
           intStateTreeDepth,
@@ -562,7 +612,6 @@ describe("TallyVotes", () => {
       await vkRegistryContract.setVerifyingKeys(
         STATE_TREE_DEPTH,
         intStateTreeDepth,
-        treeDepths.messageTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
         EMode.QV,
@@ -572,9 +621,6 @@ describe("TallyVotes", () => {
 
       await timeTravel(signer.provider! as unknown as EthereumProvider, updatedDuration);
       await pollContract.mergeMaciState();
-
-      await pollContract.mergeMessageAqSubRoots(0);
-      await pollContract.mergeMessageAq();
 
       const processMessagesInputs = poll.processMessages(pollId);
 

@@ -49,8 +49,6 @@
     "test:utilities": "pnpm run test ./tests/Utilities.test.ts",
     "test:signupGatekeeper": "pnpm run test ./tests/SignUpGatekeeper.test.ts",
     "test:verifier": "pnpm run test ./tests/Verifier.test.ts",
-    "test:accQueue": "pnpm run test ./tests/AccQueue.test.ts",
-    "test:accQueueBenchmark": "pnpm run test ./tests/AccQueueBenchmark.test.ts",
     "test:hasherBenchmarks": "pnpm run test ./tests/HasherBenchmarks.test.ts",
     "test:vkRegistry": "pnpm run test ./tests/VkRegistry.test.ts",
     "test:pollFactory": "pnpm run test ./tests/PollFactory.test.ts",

@@ -1,17 +1,17 @@
 /* eslint-disable no-await-in-loop */
 import { type BigNumberish } from "ethers";
-import { type IVerifyingKeyStruct, TallyData, formatProofForVerifierContract } from "maci-contracts";
 import {
   MACI__factory as MACIFactory,
-  AccQueue__factory as AccQueueFactory,
   Tally__factory as TallyFactory,
   MessageProcessor__factory as MessageProcessorFactory,
   Poll__factory as PollFactory,
   VkRegistry__factory as VkRegistryFactory,
   Verifier__factory as VerifierFactory,
-} from "maci-contracts/typechain-types";
-import { MESSAGE_TREE_ARITY, STATE_TREE_ARITY } from "maci-core";
-import { G1Point, G2Point, genTreeProof } from "maci-crypto";
+  formatProofForVerifierContract,
+  type IVerifyingKeyStruct,
+} from "maci-contracts";
+import { STATE_TREE_ARITY } from "maci-core";
+import { G1Point, G2Point, hashLeftRight } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
 
 import fs from "fs";
@@ -72,13 +72,6 @@ export const proveOnChain = async ({
   const mpContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
   const tallyContract = TallyFactory.connect(pollContracts.tally, signer);
 
-  const messageAqContractAddress = (await pollContract.extContracts()).messageAq;
-
-  if (!(await contractExists(signer.provider!, messageAqContractAddress))) {
-    logError("There is no MessageAq contract linked to the specified MACI contract.");
-  }
-
-  const messageAqContract = AccQueueFactory.connect(messageAqContractAddress, signer);
   const vkRegistryContractAddress = await tallyContract.vkRegistry();
 
   if (!(await contractExists(signer.provider!, vkRegistryContractAddress))) {
@@ -129,13 +122,12 @@ export const proveOnChain = async ({
   const numSignUpsAndMessages = await pollContract.numSignUpsAndMessages();
   const numSignUps = Number(numSignUpsAndMessages[0]);
   const numMessages = Number(numSignUpsAndMessages[1]);
-  const messageBatchSize = MESSAGE_TREE_ARITY ** Number(treeDepths.messageTreeSubDepth);
+  const messageBatchSize = Number(await pollContract.messageBatchSize());
   const tallyBatchSize = STATE_TREE_ARITY ** Number(treeDepths.intStateTreeDepth);
-  let totalMessageBatches = numMessages <= messageBatchSize ? 1 : Math.floor(numMessages / messageBatchSize);
-
-  if (numMessages > messageBatchSize && numMessages % messageBatchSize > 0) {
-    totalMessageBatches += 1;
-  }
+  const pollBatchHashes = await pollContract.getBatchHashes();
+  const batchHashes = [...pollBatchHashes];
+  const totalMessageBatches = batchHashes.length;
+  const lastChainHash = await pollContract.chainHash();
 
   // perform validation
   if (numProcessProofs !== totalMessageBatches) {
@@ -156,19 +148,13 @@ export const proveOnChain = async ({
     logError("Tally and MessageProcessor modes are not compatible");
   }
 
-  const messageRootOnChain = await messageAqContract.getMainRoot(Number(treeDepths.messageTreeDepth));
-
   const stateTreeDepth = Number(await maciContract.stateTreeDepth());
   const onChainProcessVk = await vkRegistryContract.getProcessVk(
     stateTreeDepth,
-    treeDepths.messageTreeDepth,
     treeDepths.voteOptionTreeDepth,
     messageBatchSize,
     mpMode,
   );
-
-  const dd = await pollContract.getDeployTimeAndDuration();
-  const pollEndTimestampOnChain = BigInt(dd[0]) + BigInt(dd[1]);
 
   if (numberBatchesProcessed < totalMessageBatches) {
     logYellow(quiet, info("Submitting proofs of message processing..."));
@@ -176,35 +162,31 @@ export const proveOnChain = async ({
 
   // process all batches left
   for (let i = numberBatchesProcessed; i < totalMessageBatches; i += 1) {
-    let currentMessageBatchIndex: number;
+    let currentMessageBatchIndex = totalMessageBatches;
     if (numberBatchesProcessed === 0) {
-      const r = numMessages % messageBatchSize;
-
-      currentMessageBatchIndex = numMessages;
+      const chainHash = lastChainHash;
+      if (numMessages % messageBatchSize !== 0) {
+        batchHashes.push(chainHash);
+      }
+      currentMessageBatchIndex = batchHashes.length;
 
       if (currentMessageBatchIndex > 0) {
-        if (r === 0) {
-          currentMessageBatchIndex -= messageBatchSize;
-        } else {
-          currentMessageBatchIndex -= r;
-        }
+        currentMessageBatchIndex -= 1;
       }
-    } else {
-      currentMessageBatchIndex = (totalMessageBatches - numberBatchesProcessed) * messageBatchSize;
-    }
-
-    if (numberBatchesProcessed > 0 && currentMessageBatchIndex > 0) {
-      currentMessageBatchIndex -= messageBatchSize;
     }
 
     const { proof, circuitInputs, publicInputs } = data.processProofs[i];
 
     // validation
-    if (circuitInputs.pollEndTimestamp !== pollEndTimestampOnChain.toString()) {
-      logError("pollEndTimestamp mismatch.");
+
+    const inputBatchHash = batchHashes[currentMessageBatchIndex - 1];
+    if (BigInt(circuitInputs.inputBatchHash as BigNumberish).toString() !== inputBatchHash.toString()) {
+      logError("input batch hash mismatch.");
     }
-    if (BigInt(circuitInputs.msgRoot as BigNumberish).toString() !== messageRootOnChain.toString()) {
-      logError("message root mismatch.");
+
+    const outputBatchHash = batchHashes[currentMessageBatchIndex];
+    if (BigInt(circuitInputs.outputBatchHash as BigNumberish).toString() !== outputBatchHash.toString()) {
+      logError("output batch hash mismatch.");
     }
 
     let currentSbCommitmentOnChain: bigint;
@@ -225,7 +207,11 @@ export const proveOnChain = async ({
     }
 
     const publicInputsOnChain = await mpContract
-      .getPublicCircuitInputs(currentMessageBatchIndex, asHex(circuitInputs.newSbCommitment as BigNumberish))
+      .getPublicCircuitInputs(
+        currentMessageBatchIndex,
+        asHex(circuitInputs.newSbCommitment as BigNumberish),
+        outputBatchHash.toString(),
+      )
       .then((value) => [...value]);
 
     if (!publicInputsOnChain.every((value, index) => value.toString() === publicInputs[index].toString())) {

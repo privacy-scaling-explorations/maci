@@ -9,7 +9,6 @@ import {
   deployPoll,
   deployVkRegistryContract,
   genProofs,
-  mergeMessages,
   mergeSignups,
   proveOnChain,
   publish,
@@ -31,7 +30,6 @@ import {
   testTallyFilePath,
   ceremonyTallyVotesWasmPath,
   ceremonyTallyVotesWitnessPath,
-  mergeMessagesArgs,
   mergeSignupsArgs,
   proveOnChainArgs,
   verifyArgs,
@@ -48,12 +46,11 @@ import {
 } from "../constants";
 import { clean, isArm } from "../utils";
 
-describe("Stress tests with ceremony params (14,9,2,3)", function test() {
-  const messageTreeDepth = 9;
-  const stateTreeDepth = 14;
+describe("Stress tests with ceremony params (6,3,2,20)", function test() {
+  const stateTreeDepth = 6;
   const voteOptionTreeDepth = 3;
-  const messageBatchDepth = 2;
-  const intStateTreeDepth = 5;
+  const intStateTreeDepth = 2;
+  const messageBatchSize = 20;
 
   const pollDuration = 60000;
 
@@ -67,9 +64,8 @@ describe("Stress tests with ceremony params (14,9,2,3)", function test() {
     quiet: true,
     stateTreeDepth,
     intStateTreeDepth,
-    messageTreeDepth,
     voteOptionTreeDepth,
-    messageBatchDepth,
+    messageBatchSize,
     processMessagesZkeyPathQv: ceremonyProcessMessagesZkeyPath,
     tallyVotesZkeyPathQv: ceremonyTallyVotesZkeyPath,
     processMessagesZkeyPathNonQv: ceremonyProcessMessagesNonQvZkeyPath,
@@ -84,8 +80,7 @@ describe("Stress tests with ceremony params (14,9,2,3)", function test() {
   const deployPollArgs: Omit<DeployPollArgs, "signer"> = {
     pollDuration,
     intStateTreeDepth,
-    messageTreeSubDepth: messageBatchDepth,
-    messageTreeDepth,
+    messageBatchSize,
     voteOptionTreeDepth,
     coordinatorPubkey: coordinatorPubKey,
     useQuadraticVoting: true,
@@ -161,7 +156,6 @@ describe("Stress tests with ceremony params (14,9,2,3)", function test() {
 
       it("should generate zk-SNARK proofs and verify them", async () => {
         await timeTravel({ seconds: pollDuration, signer });
-        await mergeMessages({ ...mergeMessagesArgs, signer });
         await mergeSignups({ ...mergeSignupsArgs, signer });
         await genProofs({ ...genProofsCeremonyArgs, signer });
         await proveOnChain({ ...proveOnChainArgs, signer });
@@ -212,7 +206,6 @@ describe("Stress tests with ceremony params (14,9,2,3)", function test() {
 
       it("should generate zk-SNARK proofs and verify them", async () => {
         await timeTravel({ seconds: pollDuration, signer });
-        await mergeMessages({ ...mergeMessagesArgs, signer });
         await mergeSignups({ ...mergeSignupsArgs, signer });
         await genProofs({ ...genProofsCeremonyArgs, signer });
         await proveOnChain({ ...proveOnChainArgs, signer });
@@ -283,7 +276,6 @@ describe("Stress tests with ceremony params (14,9,2,3)", function test() {
 
       it("should generate zk-SNARK proofs and verify them", async () => {
         await timeTravel({ seconds: pollDuration, signer });
-        await mergeMessages({ ...mergeMessagesArgs, signer });
         await mergeSignups({ ...mergeSignupsArgs, signer });
         const tallyFileData = await genProofs({ ...genProofsArgs, signer, useQuadraticVoting: false });
         await proveOnChain({ ...proveOnChainArgs, signer });
@@ -339,7 +331,6 @@ describe("Stress tests with ceremony params (14,9,2,3)", function test() {
 
       it("should generate zk-SNARK proofs and verify them", async () => {
         await timeTravel({ seconds: pollDuration, signer });
-        await mergeMessages({ ...mergeMessagesArgs, signer });
         await mergeSignups({ ...mergeSignupsArgs, signer });
         const tallyFileData = await genProofs({ ...genProofsArgs, signer, useQuadraticVoting: false });
         await proveOnChain({ ...proveOnChainArgs, signer });

@@ -2,8 +2,6 @@
 pragma solidity ^0.8.20;
 
 import { IMACI } from "./interfaces/IMACI.sol";
-import { AccQueue } from "./trees/AccQueue.sol";
-import { AccQueueQuinaryMaci } from "./trees/AccQueueQuinaryMaci.sol";
 import { Params } from "./utilities/Params.sol";
 import { DomainObjs } from "./utilities/DomainObjs.sol";
 import { Poll } from "./Poll.sol";
@@ -20,23 +18,14 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
   /// @inheritdoc IPollFactory
   function deploy(
     uint256 _duration,
-    TreeDepths calldata _treeDepths,
-    PubKey calldata _coordinatorPubKey,
-    address _maci,
-    uint256 _emptyBallotRoot
+    uint256 _maxVoteOptions,
+    Params.TreeDepths calldata _treeDepths,
+    uint8 _messageBatchSize,
+    DomainObjs.PubKey calldata _coordinatorPubKey,
+    Params.ExtContracts calldata _extContracts
   ) public virtual returns (address pollAddr) {
-    /// @notice deploy a new AccQueue contract to store messages
-    AccQueue messageAq = new AccQueueQuinaryMaci(_treeDepths.messageTreeSubDepth);
-
-    /// @notice the smart contracts that a Poll would interact with
-    ExtContracts memory extContracts = ExtContracts({ maci: IMACI(_maci), messageAq: messageAq });
-
     // deploy the poll
-    Poll poll = new Poll(_duration, _treeDepths, _coordinatorPubKey, extContracts, _emptyBallotRoot);
-
-    // Make the Poll contract own the messageAq contract, so only it can
-    // run enqueue/merge
-    messageAq.transferOwnership(address(poll));
+    Poll poll = new Poll(_duration, _maxVoteOptions, _treeDepths, _messageBatchSize, _coordinatorPubKey, _extContracts);
 
     // init Poll
     poll.init();

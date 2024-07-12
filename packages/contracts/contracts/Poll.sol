@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Params } from "./utilities/Params.sol";
+import { EmptyBallotRoots } from "./trees/EmptyBallotRoots.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { IPoll } from "./interfaces/IPoll.sol";
+import { IMACI } from "./interfaces/IMACI.sol";
 import { Utilities } from "./utilities/Utilities.sol";
 import { CurveBabyJubJub } from "./crypto/BabyJubJub.sol";
 
@@ -12,7 +15,7 @@ import { CurveBabyJubJub } from "./crypto/BabyJubJub.sol";
 /// which can be either votes or key change messages.
 /// @dev Do not deploy this directly. Use PollFactory.deploy() which performs some
 /// checks on the Poll constructor arguments.
-contract Poll is Params, Utilities, SnarkCommon, IPoll {
+contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   /// @notice Whether the Poll has been initialized
   bool internal isInit;
 
@@ -30,9 +33,6 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
 
   // The duration of the polling period, in seconds
   uint256 internal immutable duration;
-
-  /// @notice The root of the empty ballot tree at a given voteOptionTree depth
-  uint256 public immutable emptyBallotRoot;
 
   /// @notice Whether the MACI contract's stateAq has been merged by this contract
   bool public stateMerged;
@@ -57,17 +57,26 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   /// to be used as public input for the circuit
   uint8 public actualStateTreeDepth;
 
+  /// @notice Max vote options for the poll
+  uint256 public immutable maxVoteOptions;
+
   /// @notice Depths of the merkle trees
   TreeDepths public treeDepths;
+
+  /// @notice Message batch size for the poll
+  uint8 public immutable messageBatchSize;
 
   /// @notice The contracts used by the Poll
   ExtContracts public extContracts;
 
-  /// @notice The max number of messages
-  uint256 public immutable maxMessages;
+  /// @notice The array for chain hash checkpoints
+  uint256[] public batchHashes;
 
-  /// @notice The number of children per node in the merkle trees
-  uint256 internal constant TREE_ARITY = 5;
+  /// @notice Current chain hash
+  uint256 public chainHash;
+
+  ///  @notice flag for batch padding
+  bool public isBatchHashesPadded;
 
   error VotingPeriodOver();
   error VotingPeriodNotOver();
@@ -76,24 +85,27 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   error InvalidPubKey();
   error StateAlreadyMerged();
   error InvalidBatchLength();
+  error BatchHashesAlreadyPadded();
 
   event PublishMessage(Message _message, PubKey _encPubKey);
   event MergeMaciState(uint256 indexed _stateRoot, uint256 indexed _numSignups);
-  event MergeMessageAqSubRoots(uint256 indexed _numSrQueueOps);
-  event MergeMessageAq(uint256 indexed _messageRoot);
 
   /// @notice Each MACI instance can have multiple Polls.
   /// When a Poll is deployed, its voting period starts immediately.
   /// @param _duration The duration of the voting period, in seconds
+  /// @param _maxVoteOptions The maximum number of vote options
   /// @param _treeDepths The depths of the merkle trees
+  /// @param _messageBatchSize The message batch size
   /// @param _coordinatorPubKey The coordinator's public key
   /// @param _extContracts The external contracts
+
   constructor(
     uint256 _duration,
+    uint256 _maxVoteOptions,
     TreeDepths memory _treeDepths,
+    uint8 _messageBatchSize,
     PubKey memory _coordinatorPubKey,
-    ExtContracts memory _extContracts,
-    uint256 _emptyBallotRoot
+    ExtContracts memory _extContracts
   ) payable {
     // check that the coordinator public key is valid
     if (!CurveBabyJubJub.isOnCurve(_coordinatorPubKey.x, _coordinatorPubKey.y)) {
@@ -108,14 +120,14 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     extContracts = _extContracts;
     // store duration of the poll
     duration = _duration;
+    // store max vote options
+    maxVoteOptions = _maxVoteOptions;
+    // store message batch size
+    messageBatchSize = _messageBatchSize;
     // store tree depth
     treeDepths = _treeDepths;
     // Record the current timestamp
     deployTime = block.timestamp;
-    // store the empty ballot root
-    emptyBallotRoot = _emptyBallotRoot;
-    // store max messages
-    maxMessages = TREE_ARITY ** _treeDepths.messageTreeDepth;
   }
 
   /// @notice A modifier that causes the function to revert if the voting period is
@@ -123,6 +135,11 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   modifier isAfterVotingDeadline() virtual {
     uint256 secondsPassed = block.timestamp - deployTime;
     if (secondsPassed <= duration) revert VotingPeriodNotOver();
+    _;
+  }
+
+  modifier isNotPadded() {
+    if (isBatchHashesPadded) revert BatchHashesAlreadyPadded();
     _;
   }
 
@@ -136,7 +153,6 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
 
   /// @notice The initialization function.
   /// @dev Should be called immediately after Poll creation
-  /// and messageAq ownership transferred
   function init() public virtual {
     if (isInit) revert PollAlreadyInit();
     // set to true so it cannot be called again
@@ -146,22 +162,26 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
       numMessages++;
     }
 
-    // init messageAq here by inserting placeholderLeaf
+    // init chainHash here by inserting placeholderLeaf
     uint256[2] memory dat;
     dat[0] = NOTHING_UP_MY_SLEEVE;
     dat[1] = 0;
 
     (Message memory _message, PubKey memory _padKey, uint256 placeholderLeaf) = padAndHashMessage(dat);
-    extContracts.messageAq.enqueue(placeholderLeaf);
+    chainHash = NOTHING_UP_MY_SLEEVE;
+    batchHashes.push(NOTHING_UP_MY_SLEEVE);
+    updateChainHash(placeholderLeaf);
 
     emit PublishMessage(_message, _padKey);
   }
 
+  // get all batch hash array elements
+  function getBatchHashes() external view returns (uint256[] memory) {
+    return batchHashes;
+  }
+
   /// @inheritdoc IPoll
   function publishMessage(Message memory _message, PubKey calldata _encPubKey) public virtual isWithinVotingDeadline {
-    // we check that we do not exceed the max number of messages
-    if (numMessages >= maxMessages) revert TooManyMessages();
-
     // check if the public key is on the curve
     if (!CurveBabyJubJub.isOnCurve(_encPubKey.x, _encPubKey.y)) {
       revert InvalidPubKey();
@@ -172,10 +192,31 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
       numMessages++;
     }
 
-    uint256 messageLeaf = hashMessageAndEncPubKey(_message, _encPubKey);
-    extContracts.messageAq.enqueue(messageLeaf);
+    // compute current message hash
+    uint256 messageHash = hashMessageAndEncPubKey(_message, _encPubKey);
+
+    // update current message chain hash
+    updateChainHash(messageHash);
 
     emit PublishMessage(_message, _encPubKey);
+  }
+
+  /// @notice compute and update current message chain hash
+  /// @param messageHash hash of the current message
+  function updateChainHash(uint256 messageHash) internal {
+    uint256 newChainHash = hash2([chainHash, messageHash]);
+    if (numMessages % messageBatchSize == 0) {
+      batchHashes.push(newChainHash);
+    }
+    chainHash = newChainHash;
+  }
+
+  /// @notice pad last unclosed batch
+  function padLastBatch() external isAfterVotingDeadline isNotPadded {
+    if (numMessages % messageBatchSize != 0) {
+      batchHashes.push(chainHash);
+    }
+    isBatchHashesPadded = true;
   }
 
   /// @notice submit a message batch
@@ -216,7 +257,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     // Set currentSbCommitment
     uint256[3] memory sb;
     sb[0] = _mergedStateRoot;
-    sb[1] = emptyBallotRoot;
+    sb[1] = emptyBallotRoots[treeDepths.voteOptionTreeDepth - 1];
     sb[2] = uint256(0);
 
     currentSbCommitment = hash3(sb);
@@ -237,18 +278,6 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   }
 
   /// @inheritdoc IPoll
-  function mergeMessageAqSubRoots(uint256 _numSrQueueOps) public isAfterVotingDeadline {
-    extContracts.messageAq.mergeSubRoots(_numSrQueueOps);
-    emit MergeMessageAqSubRoots(_numSrQueueOps);
-  }
-
-  /// @inheritdoc IPoll
-  function mergeMessageAq() public isAfterVotingDeadline {
-    uint256 root = extContracts.messageAq.merge(treeDepths.messageTreeDepth);
-    emit MergeMessageAq(root);
-  }
-
-  /// @inheritdoc IPoll
   function getDeployTimeAndDuration() public view virtual returns (uint256 pollDeployTime, uint256 pollDuration) {
     pollDeployTime = deployTime;
     pollDuration = duration;
@@ -258,5 +287,10 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   function numSignUpsAndMessages() public view returns (uint256 numSUps, uint256 numMsgs) {
     numSUps = numSignups;
     numMsgs = numMessages;
+  }
+
+  /// @inheritdoc IPoll
+  function getMaciContract() public view returns (IMACI maci) {
+    return extContracts.maci;
   }
 }

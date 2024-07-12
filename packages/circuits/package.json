@@ -29,7 +29,6 @@
     "test:messageToCommand": "pnpm run mocha-test ts/__tests__/MessageToCommand.test.ts",
     "test:messageValidator": "pnpm run mocha-test ts/__tests__/MessageValidator.test.ts",
     "test:verifySignature": "pnpm run mocha-test ts/__tests__/VerifySignature.test.ts",
-    "test:splicer": "pnpm run mocha-test ts/__tests__/Splicer.test.ts",
     "test:privToPubKey": "pnpm run mocha-test ts/__tests__/PrivToPubKey.test.ts",
     "test:calculateTotal": "pnpm run mocha-test ts/__tests__/CalculateTotal.test.ts",
     "test:processMessages": "pnpm run mocha-test ts/__tests__/ProcessMessages.test.ts",

@@ -25,10 +25,6 @@ template StateLeafAndBallotTransformer() {
     signal input slPubKey[2];
     // Current voice credit balance.
     signal input slVoiceCreditBalance;
-    // Signup timestamp.
-    signal input slTimestamp;
-    // Timestamp indicating when the poll ends.
-    signal input pollEndTimestamp;
 
     // The following signals represents a ballot.
     // Nonce.
@@ -83,8 +79,6 @@ template StateLeafAndBallotTransformer() {
         slPubKey,
         cmdSigR8,
         cmdSigS,
-        slTimestamp,
-        pollEndTimestamp,
         slVoiceCreditBalance,
         ballotCurrentVotesForOption,
         cmdNewVoteWeight

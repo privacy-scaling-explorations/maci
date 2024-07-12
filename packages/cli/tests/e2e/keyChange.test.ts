@@ -13,7 +13,6 @@ import {
   deployPoll,
   deployVkRegistryContract,
   genProofs,
-  mergeMessages,
   mergeSignups,
   proveOnChain,
   publish,
@@ -28,7 +27,6 @@ import {
   deployArgs,
   deployPollArgs,
   processMessageTestZkeyPath,
-  mergeMessagesArgs,
   mergeSignupsArgs,
   setVerifyingKeysArgs,
   tallyVotesTestZkeyPath,
@@ -139,7 +137,6 @@ describe("keyChange tests", function test() {
 
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeMessages({ ...mergeMessagesArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, signer });
       await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
@@ -211,7 +208,6 @@ describe("keyChange tests", function test() {
 
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeMessages({ ...mergeMessagesArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, signer });
       await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
@@ -283,7 +279,6 @@ describe("keyChange tests", function test() {
 
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeMessages({ ...mergeMessagesArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, signer });
       await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });

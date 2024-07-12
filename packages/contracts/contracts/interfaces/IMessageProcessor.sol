@@ -16,9 +16,11 @@ interface IMessageProcessor {
   /// @param _currentMessageBatchIndex The current processed batch index
   /// @param _newSbCommitment The new state root and ballot root commitment
   ///                         after all messages are processed
+  /// @param _outputBatchHash The output batch hash
   /// @return publicInputs public circuit inputs
   function getPublicCircuitInputs(
     uint256 _currentMessageBatchIndex,
-    uint256 _newSbCommitment
+    uint256 _newSbCommitment,
+    uint256 _outputBatchHash
   ) external view returns (uint256[] memory);
 }

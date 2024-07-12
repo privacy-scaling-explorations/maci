@@ -56,6 +56,7 @@ export class MaciState implements IMaciState {
   /**
    * Deploy a new poll with the given parameters.
    * @param pollEndTimestamp - The Unix timestamp at which the poll ends.
+   * @param maxVoteOptions - The maximum number of vote option.
    * @param treeDepths - The depths of the tree.
    * @param messageBatchSize - The batch size for processing messages.
    * @param coordinatorKeypair - The keypair of the MACI round coordinator.
@@ -63,6 +64,7 @@ export class MaciState implements IMaciState {
    */
   deployPoll(
     pollEndTimestamp: bigint,
+    maxVoteOptions: number,
     treeDepths: TreeDepths,
     messageBatchSize: number,
     coordinatorKeypair: Keypair,
@@ -75,6 +77,7 @@ export class MaciState implements IMaciState {
         messageBatchSize,
         tallyBatchSize: STATE_TREE_ARITY ** treeDepths.intStateTreeDepth,
       },
+      maxVoteOptions,
       this,
     );
 

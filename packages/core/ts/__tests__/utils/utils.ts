@@ -5,7 +5,7 @@ import { MaciState } from "../../MaciState";
 import { Poll } from "../../Poll";
 import { STATE_TREE_DEPTH } from "../../utils/constants";
 
-import { duration, messageBatchSize, treeDepths, voiceCreditBalance } from "./constants";
+import { duration, maxValues, messageBatchSize, treeDepths, voiceCreditBalance } from "./constants";
 
 /**
  * Calculates the total of a tally result
@@ -36,6 +36,7 @@ export class TestHarness {
   constructor() {
     this.pollId = this.maciState.deployPoll(
       BigInt(Math.floor(Date.now() / 1000) + duration),
+      maxValues.maxVoteOptions,
       treeDepths,
       messageBatchSize,
       this.coordinatorKeypair,

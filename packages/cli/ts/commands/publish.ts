@@ -1,5 +1,4 @@
 import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts/typechain-types";
-import { MESSAGE_TREE_ARITY } from "maci-core";
 import { genRandomSalt } from "maci-crypto";
 import {
   type IG1ContractParams,
@@ -87,9 +86,8 @@ export const publish = async ({
 
   const pollContract = PollFactory.connect(pollContracts.poll, signer);
 
-  const treeDepths = await pollContract.treeDepths();
+  const maxVoteOptions = Number(await pollContract.maxVoteOptions());
   const coordinatorPubKeyResult = await pollContract.coordinatorPubKey();
-  const maxVoteOptions = Number(BigInt(MESSAGE_TREE_ARITY) ** treeDepths.voteOptionTreeDepth);
 
   // validate the vote options index against the max leaf index on-chain
   if (maxVoteOptions < voteOptionIndex) {
@@ -173,11 +171,10 @@ export const publishBatch = async ({
 
   const pollContract = PollFactory.connect(pollContracts.poll, signer);
 
-  const [treeDepths, coordinatorPubKeyResult] = await Promise.all([
-    pollContract.treeDepths(),
+  const [maxVoteOptions, coordinatorPubKeyResult] = await Promise.all([
+    pollContract.maxVoteOptions().then(Number),
     pollContract.coordinatorPubKey(),
   ]);
-  const maxVoteOptions = Number(BigInt(MESSAGE_TREE_ARITY) ** treeDepths.voteOptionTreeDepth);
 
   // validate the vote options index against the max leaf index on-chain
   messages.forEach(({ stateIndex, voteOptionIndex, salt, nonce }) => {

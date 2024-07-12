@@ -50,9 +50,9 @@ export interface IProcessMessagesInputs {
   batchEndIndex: bigint;
   index: bigint;
   maxVoteOptions: bigint;
-  msgRoot: bigint;
+  inputBatchHash: bigint;
+  outputBatchHash: bigint;
   msgs: bigint[];
-  msgSubrootPathElements: bigint[][];
   coordPrivKey: bigint;
   coordinatorPublicKeyHash: bigint;
   encPubKeys: bigint[];

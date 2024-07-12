@@ -10,7 +10,6 @@ import {
   setVerifyingKeys,
   getPoll,
   timeTravel,
-  mergeMessages,
   mergeSignups,
 } from "../../ts/commands";
 import { DeployedContracts, PollContracts } from "../../ts/utils";
@@ -56,7 +55,6 @@ describe("poll", () => {
       const pollData = await getPoll({ maciAddress: maciAddresses.maciAddress, provider: signer.provider! });
 
       await timeTravel({ seconds: Number(pollData.duration), signer });
-      await mergeMessages({ pollId: BigInt(pollData.id), signer });
       await mergeSignups({ pollId: BigInt(pollData.id), signer });
 
       const finishedPollData = await getPoll({ maciAddress: maciAddresses.maciAddress, signer });

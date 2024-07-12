@@ -49,16 +49,14 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
 
   /// @notice generate the signature for the process verifying key
   /// @param _stateTreeDepth The state tree depth
-  /// @param _messageTreeDepth The message tree depth
   /// @param _voteOptionTreeDepth The vote option tree depth
   /// @param _messageBatchSize The message batch size
   function genProcessVkSig(
     uint256 _stateTreeDepth,
-    uint256 _messageTreeDepth,
     uint256 _voteOptionTreeDepth,
-    uint256 _messageBatchSize
+    uint8 _messageBatchSize
   ) public pure returns (uint256 sig) {
-    sig = (_messageBatchSize << 192) + (_stateTreeDepth << 128) + (_messageTreeDepth << 64) + _voteOptionTreeDepth;
+    sig = (_messageBatchSize << 128) + (_stateTreeDepth << 64) + _voteOptionTreeDepth;
   }
 
   /// @notice generate the signature for the tally verifying key
@@ -78,7 +76,6 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
   /// of parameters and modes
   /// @param _stateTreeDepth The state tree depth
   /// @param _intStateTreeDepth The intermediate state tree depth
-  /// @param _messageTreeDepth The message tree depth
   /// @param _voteOptionTreeDepth The vote option tree depth
   /// @param _messageBatchSize The message batch size
   /// @param _modes Array of QV or Non-QV modes (must have the same length as process and tally keys)
@@ -87,9 +84,8 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
   function setVerifyingKeysBatch(
     uint256 _stateTreeDepth,
     uint256 _intStateTreeDepth,
-    uint256 _messageTreeDepth,
     uint256 _voteOptionTreeDepth,
-    uint256 _messageBatchSize,
+    uint8 _messageBatchSize,
     Mode[] calldata _modes,
     VerifyingKey[] calldata _processVks,
     VerifyingKey[] calldata _tallyVks
@@ -104,7 +100,6 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
       setVerifyingKeys(
         _stateTreeDepth,
         _intStateTreeDepth,
-        _messageTreeDepth,
         _voteOptionTreeDepth,
         _messageBatchSize,
         _modes[index],
@@ -122,7 +117,6 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
   /// of parameters
   /// @param _stateTreeDepth The state tree depth
   /// @param _intStateTreeDepth The intermediate state tree depth
-  /// @param _messageTreeDepth The message tree depth
   /// @param _voteOptionTreeDepth The vote option tree depth
   /// @param _messageBatchSize The message batch size
   /// @param _mode QV or Non-QV
@@ -131,14 +125,13 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
   function setVerifyingKeys(
     uint256 _stateTreeDepth,
     uint256 _intStateTreeDepth,
-    uint256 _messageTreeDepth,
     uint256 _voteOptionTreeDepth,
-    uint256 _messageBatchSize,
+    uint8 _messageBatchSize,
     Mode _mode,
     VerifyingKey calldata _processVk,
     VerifyingKey calldata _tallyVk
   ) public onlyOwner {
-    uint256 processVkSig = genProcessVkSig(_stateTreeDepth, _messageTreeDepth, _voteOptionTreeDepth, _messageBatchSize);
+    uint256 processVkSig = genProcessVkSig(_stateTreeDepth, _voteOptionTreeDepth, _messageBatchSize);
 
     if (processVkSet[_mode][processVkSig]) revert ProcessVkAlreadySet();
 
@@ -186,19 +179,17 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
 
   /// @notice Check if the process verifying key is set
   /// @param _stateTreeDepth The state tree depth
-  /// @param _messageTreeDepth The message tree depth
   /// @param _voteOptionTreeDepth The vote option tree depth
   /// @param _messageBatchSize The message batch size
   /// @param _mode QV or Non-QV
   /// @return isSet whether the verifying key is set
   function hasProcessVk(
     uint256 _stateTreeDepth,
-    uint256 _messageTreeDepth,
     uint256 _voteOptionTreeDepth,
-    uint256 _messageBatchSize,
+    uint8 _messageBatchSize,
     Mode _mode
   ) public view returns (bool isSet) {
-    uint256 sig = genProcessVkSig(_stateTreeDepth, _messageTreeDepth, _voteOptionTreeDepth, _messageBatchSize);
+    uint256 sig = genProcessVkSig(_stateTreeDepth, _voteOptionTreeDepth, _messageBatchSize);
     isSet = processVkSet[_mode][sig];
   }
 
@@ -215,12 +206,11 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
   /// @inheritdoc IVkRegistry
   function getProcessVk(
     uint256 _stateTreeDepth,
-    uint256 _messageTreeDepth,
     uint256 _voteOptionTreeDepth,
-    uint256 _messageBatchSize,
+    uint8 _messageBatchSize,
     Mode _mode
   ) public view returns (VerifyingKey memory vk) {
-    uint256 sig = genProcessVkSig(_stateTreeDepth, _messageTreeDepth, _voteOptionTreeDepth, _messageBatchSize);
+    uint256 sig = genProcessVkSig(_stateTreeDepth, _voteOptionTreeDepth, _messageBatchSize);
 
     vk = getProcessVkBySig(sig, _mode);
   }

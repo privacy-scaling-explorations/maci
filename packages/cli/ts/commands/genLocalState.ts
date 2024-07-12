@@ -1,10 +1,5 @@
 import { JsonRpcProvider } from "ethers";
-import {
-  MACI__factory as MACIFactory,
-  AccQueue__factory as AccQueueFactory,
-  Poll__factory as PollFactory,
-  genMaciStateFromContract,
-} from "maci-contracts";
+import { MACI__factory as MACIFactory, Poll__factory as PollFactory, genMaciStateFromContract } from "maci-contracts";
 import { Keypair, PrivKey } from "maci-domainobjs";
 
 import fs from "fs";
@@ -72,28 +67,18 @@ export const genLocalState = async ({
   }
   const pollContract = PollFactory.connect(pollContracts.poll, signer);
 
-  const [{ messageAq }, { messageTreeDepth }] = await Promise.all([
-    pollContract.extContracts(),
-    pollContract.treeDepths(),
-  ]);
-  const messageAqContract = AccQueueFactory.connect(messageAq, signer);
-
-  const [defaultStartBlockSignup, defaultStartBlockPoll, stateRoot, numSignups, messageRoot] = await Promise.all([
+  const [defaultStartBlockSignup, defaultStartBlockPoll, stateRoot, numSignups] = await Promise.all([
     maciContract.queryFilter(maciContract.filters.SignUp(), startBlock).then((events) => events[0]?.blockNumber ?? 0),
     maciContract
       .queryFilter(maciContract.filters.DeployPoll(), startBlock)
       .then((events) => events[0]?.blockNumber ?? 0),
     maciContract.getStateTreeRoot(),
     maciContract.numSignUps(),
-    messageAqContract.getMainRoot(messageTreeDepth),
   ]);
   const defaultStartBlock = Math.min(defaultStartBlockPoll, defaultStartBlockSignup);
   let fromBlock = startBlock ? Number(startBlock) : defaultStartBlock;
 
   const defaultEndBlock = await Promise.all([
-    pollContract
-      .queryFilter(pollContract.filters.MergeMessageAq(messageRoot), fromBlock)
-      .then((events) => events[events.length - 1]?.blockNumber),
     pollContract
       .queryFilter(pollContract.filters.MergeMaciState(stateRoot, numSignups), fromBlock)
       .then((events) => events[events.length - 1]?.blockNumber),

@@ -8,21 +8,13 @@ import { Keypair, Message, PCommand, PubKey } from "maci-domainobjs";
 
 import { EMode } from "../ts/constants";
 import { getDefaultSigner } from "../ts/utils";
-import {
-  AccQueue,
-  AccQueueQuinaryMaci__factory as AccQueueQuinaryMaciFactory,
-  Poll__factory as PollFactory,
-  MACI,
-  Poll as PollContract,
-  Verifier,
-  VkRegistry,
-} from "../typechain-types";
+import { Poll__factory as PollFactory, MACI, Poll as PollContract, Verifier, VkRegistry } from "../typechain-types";
 
 import {
-  MESSAGE_TREE_DEPTH,
   STATE_TREE_DEPTH,
   duration,
   initialVoiceCreditBalance,
+  maxVoteOptions,
   messageBatchSize,
   treeDepths,
 } from "./constants";
@@ -58,6 +50,7 @@ describe("Poll", () => {
       const tx = await maciContract.deployPoll(
         duration,
         treeDepths,
+        messageBatchSize,
         coordinator.pubKey.asContractParam(),
         verifierContract,
         vkRegistryContract,
@@ -72,11 +65,17 @@ describe("Poll", () => {
 
       pollId = (await maciContract.nextPollId()) - 1n;
 
-      const pollContracts = await maciContract.getPoll(pollId);
-      pollContract = PollFactory.connect(pollContracts.poll, signer);
+      const pollContractAddress = await maciContract.getPoll(pollId);
+      pollContract = PollFactory.connect(pollContractAddress, signer);
 
       // deploy local poll
-      const p = maciState.deployPoll(BigInt(deployTime + duration), treeDepths, messageBatchSize, coordinator);
+      const p = maciState.deployPoll(
+        BigInt(deployTime + duration),
+        maxVoteOptions,
+        treeDepths,
+        messageBatchSize,
+        coordinator,
+      );
       expect(p.toString()).to.eq(pollId.toString());
       // publish the NOTHING_UP_MY_SLEEVE message
       const messageData = [NOTHING_UP_MY_SLEEVE];
@@ -109,12 +108,15 @@ describe("Poll", () => {
       expect(dd[1].toString()).to.eq(duration.toString());
     });
 
+    it("should have the correct max values set", async () => {
+      const mvo = await pollContract.maxVoteOptions();
+      expect(mvo.toString()).to.eq(maxVoteOptions.toString());
+    });
+
     it("should have the correct tree depths set", async () => {
       const td = await pollContract.treeDepths();
       expect(td[0].toString()).to.eq(treeDepths.intStateTreeDepth.toString());
-      expect(td[1].toString()).to.eq(treeDepths.messageTreeSubDepth.toString());
-      expect(td[2].toString()).to.eq(treeDepths.messageTreeDepth.toString());
-      expect(td[3].toString()).to.eq(treeDepths.voteOptionTreeDepth.toString());
+      expect(td[1].toString()).to.eq(treeDepths.voteOptionTreeDepth.toString());
     });
 
     it("should have numMessages set to 1 (blank message)", async () => {
@@ -135,6 +137,7 @@ describe("Poll", () => {
         testMaciContract.deployPoll(
           duration,
           treeDepths,
+          messageBatchSize,
           {
             x: "100",
             y: "1",
@@ -249,52 +252,21 @@ describe("Poll", () => {
     });
   });
 
-  describe("Merge messages", () => {
-    let messageAqContract: AccQueue;
+  describe("Message hash chain", () => {
+    it("should correctly compute chain hash and batch hashes array", async () => {
+      const currentChainHash = await pollContract.chainHash();
+      const currentBatchHashes = await pollContract.getBatchHashes();
 
-    beforeEach(async () => {
-      const extContracts = await pollContract.extContracts();
-
-      const messageAqAddress = extContracts.messageAq;
-      messageAqContract = AccQueueQuinaryMaciFactory.connect(messageAqAddress, signer);
+      expect(currentChainHash).to.eq(maciState.polls.get(pollId)?.chainHash);
+      expect(currentBatchHashes).to.deep.equal(maciState.polls.get(pollId)?.batchHashes);
     });
 
-    it("should allow to merge the message AccQueue", async () => {
-      let tx = await pollContract.mergeMessageAqSubRoots(0);
-      let receipt = await tx.wait();
-      expect(receipt?.status).to.eq(1);
+    it("should correctly pad batch hash array with zeros", async () => {
+      await pollContract.padLastBatch();
+      maciState.polls.get(pollId)?.padLastBatch();
 
-      tx = await pollContract.mergeMessageAq();
-      receipt = await tx.wait();
-      expect(receipt?.status).to.eq(1);
-    });
-
-    it("should have the correct message root set", async () => {
-      const onChainMessageRoot = await messageAqContract.getMainRoot(MESSAGE_TREE_DEPTH);
-      const offChainMessageRoot = maciState.polls.get(pollId)!.messageTree.root;
-
-      expect(onChainMessageRoot.toString()).to.eq(offChainMessageRoot.toString());
-    });
-
-    it("should prevent merging subroots again", async () => {
-      await expect(pollContract.mergeMessageAqSubRoots(0)).to.be.revertedWithCustomError(
-        messageAqContract,
-        "SubTreesAlreadyMerged",
-      );
-    });
-
-    it("should not change the message root if merging a second time", async () => {
-      await pollContract.mergeMessageAq();
-      const onChainMessageRoot = await messageAqContract.getMainRoot(MESSAGE_TREE_DEPTH);
-      const offChainMessageRoot = maciState.polls.get(pollId)!.messageTree.root;
-
-      expect(onChainMessageRoot.toString()).to.eq(offChainMessageRoot.toString());
-    });
-
-    it("should emit an event with the same root when merging another time", async () => {
-      expect(await pollContract.mergeMessageAq())
-        .to.emit(pollContract, "MergeMessageAq")
-        .withArgs(maciState.polls.get(pollId)!.messageTree.root);
+      expect(await pollContract.chainHash()).to.eq(maciState.polls.get(pollId)?.chainHash);
+      expect(await pollContract.getBatchHashes()).to.deep.eq(maciState.polls.get(pollId)?.batchHashes);
     });
   });
 });

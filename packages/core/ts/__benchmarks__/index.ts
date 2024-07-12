@@ -6,6 +6,7 @@ import { MaciState } from "..";
 import {
   COORDINATOR_KEYPAIR,
   DURATION,
+  MAX_VALUES,
   MESSAGE_BATCH_SIZE,
   STATE_TREE_DEPTH,
   TREE_DEPTHS,
@@ -34,6 +35,7 @@ export default function runCore(): void {
 
       const pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + DURATION),
+        MAX_VALUES.maxVoteOptions,
         TREE_DEPTHS,
         MESSAGE_BATCH_SIZE,
         COORDINATOR_KEYPAIR,
