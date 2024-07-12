@@ -30,7 +30,7 @@ import {
 import {
   STATE_TREE_DEPTH,
   duration,
-  maxValues,
+  maxVoteOptions,
   messageBatchSize,
   tallyBatchSize,
   testProcessVk,
@@ -74,6 +74,7 @@ describe("TallyVotesNonQv", () => {
     const tx = await maciContract.deployPoll(
       duration,
       treeDepths,
+      messageBatchSize,
       coordinator.pubKey.asContractParam(),
       verifierContract,
       vkRegistryContract,
@@ -111,7 +112,13 @@ describe("TallyVotesNonQv", () => {
     tallyContract = TallyFactory.connect(event.args.pollAddr.tally, signer);
 
     // deploy local poll
-    const p = maciState.deployPoll(BigInt(deployTime + duration), maxValues, treeDepths, messageBatchSize, coordinator);
+    const p = maciState.deployPoll(
+      BigInt(deployTime + duration),
+      maxVoteOptions,
+      treeDepths,
+      messageBatchSize,
+      coordinator,
+    );
     expect(p.toString()).to.eq(pollId.toString());
     // publish the NOTHING_UP_MY_SLEEVE message
     const messageData = [NOTHING_UP_MY_SLEEVE];
@@ -139,7 +146,6 @@ describe("TallyVotesNonQv", () => {
     await vkRegistryContract.setVerifyingKeys(
       STATE_TREE_DEPTH,
       treeDepths.intStateTreeDepth,
-      treeDepths.messageTreeDepth,
       treeDepths.voteOptionTreeDepth,
       messageBatchSize,
       EMode.NON_QV,
@@ -179,13 +185,11 @@ describe("TallyVotesNonQv", () => {
     );
   });
 
-  describe("after merging acc queues", () => {
+  describe("after messages processing", () => {
     let tallyGeneratedInputs: ITallyCircuitInputs;
     before(async () => {
       await pollContract.mergeMaciState();
 
-      await pollContract.mergeMessageAqSubRoots(0);
-      await pollContract.mergeMessageAq();
       tallyGeneratedInputs = poll.tallyVotes();
     });
 

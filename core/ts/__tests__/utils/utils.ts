@@ -36,7 +36,7 @@ export class TestHarness {
   constructor() {
     this.pollId = this.maciState.deployPoll(
       BigInt(Math.floor(Date.now() / 1000) + duration),
-      maxValues,
+      maxValues.maxVoteOptions,
       treeDepths,
       messageBatchSize,
       this.coordinatorKeypair,

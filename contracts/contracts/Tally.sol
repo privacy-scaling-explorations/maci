@@ -102,7 +102,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs {
   /// @notice Check if all ballots are tallied
   /// @return tallied whether all ballots are tallied
   function isTallied() public view returns (bool tallied) {
-    (uint8 intStateTreeDepth, , , ) = poll.treeDepths();
+    (uint8 intStateTreeDepth, ) = poll.treeDepths();
     (uint256 numSignUps, ) = poll.numSignUpsAndMessages();
 
     // Require that there are untallied ballots left
@@ -150,7 +150,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs {
     updateSbCommitment();
 
     // get the batch size and start index
-    (uint8 intStateTreeDepth, , , ) = poll.treeDepths();
+    (uint8 intStateTreeDepth, ) = poll.treeDepths();
     uint256 tallyBatchSize = TREE_ARITY ** intStateTreeDepth;
     uint256 batchStartIndex = tallyBatchNum * tallyBatchSize;
 
@@ -190,9 +190,9 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs {
     uint256 _tallyBatchSize,
     uint256 _newTallyCommitment
   ) public view returns (bool isValid) {
-    (uint8 intStateTreeDepth, , , uint8 voteOptionTreeDepth) = poll.treeDepths();
+    (uint8 intStateTreeDepth, uint8 voteOptionTreeDepth) = poll.treeDepths();
 
-    (IMACI maci, ) = poll.extContracts();
+    IMACI maci = poll.extContracts();
 
     // Get the verifying key
     VerifyingKey memory vk = vkRegistry.getTallyVk(maci.stateTreeDepth(), intStateTreeDepth, voteOptionTreeDepth, mode);

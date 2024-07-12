@@ -28,7 +28,6 @@ deployment.deployTask("full:deploy-vk-registry", "Deploy Vk Registry and set key
 
     const stateTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "stateTreeDepth");
     const intStateTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "intStateTreeDepth");
-    const messageTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageTreeDepth");
     const messageBatchDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageBatchDepth");
     const voteOptionTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "voteOptionTreeDepth");
     const processMessagesZkeyPathQv = deployment.getDeployConfigField<string>(
@@ -91,7 +90,6 @@ deployment.deployTask("full:deploy-vk-registry", "Deploy Vk Registry and set key
       .setVerifyingKeysBatch(
         stateTreeDepth,
         intStateTreeDepth,
-        messageTreeDepth,
         voteOptionTreeDepth,
         5 ** messageBatchDepth,
         modes,

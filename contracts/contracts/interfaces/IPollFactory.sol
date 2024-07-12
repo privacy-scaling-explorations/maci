@@ -7,17 +7,19 @@ import { DomainObjs } from "../utilities/DomainObjs.sol";
 /// @title IPollFactory
 /// @notice PollFactory interface
 interface IPollFactory {
-  /// @notice Deploy a new Poll contract and AccQueue contract for messages.
+  /// @notice Deploy a new Poll contract
   /// @param _duration The duration of the poll
-  /// @param _maxValues The max values for the poll
+  /// @param _maxVoteOptions The max vote options for the poll
   /// @param _treeDepths The depths of the merkle trees
+  /// @param _messageBatchSize The size of message batch
   /// @param _coordinatorPubKey The coordinator's public key
   /// @param _maci The MACI contract interface reference
   /// @return The deployed Poll contract
   function deploy(
     uint256 _duration,
-    Params.MaxValues memory _maxValues,
+    uint256 _maxVoteOptions,
     Params.TreeDepths memory _treeDepths,
+    uint8 _messageBatchSize,
     DomainObjs.PubKey memory _coordinatorPubKey,
     address _maci
   ) external returns (address);

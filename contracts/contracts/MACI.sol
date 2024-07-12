@@ -24,8 +24,8 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
   /// if we change the state tree depth!
   uint8 public immutable stateTreeDepth;
 
-  uint8 internal constant TREE_ARITY = 2;
-  uint8 internal constant MESSAGE_TREE_ARITY = 5;
+  uint8 internal constant STATE_TREE_ARITY = 2;
+  uint8 internal constant VOTE_TREE_ARITY = 5;
 
   /// @notice The hash of a blank state leaf
   uint256 internal constant BLANK_STATE_LEAF_HASH =
@@ -119,8 +119,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
 
   /// @notice Allows any eligible user sign up. The sign-up gatekeeper should prevent
   /// double sign-ups or ineligible users from doing so.  This function will
-  /// only succeed if the sign-up deadline has not passed. It also enqueues a
-  /// fresh state leaf into the state AccQueue.
+  /// only succeed if the sign-up deadline has not passed.
   /// @param _pubKey The user's desired public key.
   /// @param _signUpGatekeeperData Data to pass to the sign-up gatekeeper's
   ///     register() function. For instance, the POAPGatekeeper or
@@ -135,7 +134,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
     bytes memory _initialVoiceCreditProxyData
   ) public virtual {
     // ensure we do not have more signups than what the circuits support
-    if (lazyIMTData.numberOfLeaves >= uint256(TREE_ARITY) ** uint256(stateTreeDepth)) revert TooManySignups();
+    if (lazyIMTData.numberOfLeaves >= uint256(STATE_TREE_ARITY) ** uint256(stateTreeDepth)) revert TooManySignups();
 
     // ensure that the public key is on the baby jubjub curve
     if (!CurveBabyJubJub.isOnCurve(_pubKey.x, _pubKey.y)) {
@@ -161,6 +160,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
   /// @notice Deploy a new Poll contract.
   /// @param _duration How long should the Poll last for
   /// @param _treeDepths The depth of the Merkle trees
+  /// @param _messageBatchSize The message batch size
   /// @param _coordinatorPubKey The coordinator's public key
   /// @param _verifier The Verifier Contract
   /// @param _vkRegistry The VkRegistry Contract
@@ -169,6 +169,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
   function deployPoll(
     uint256 _duration,
     TreeDepths memory _treeDepths,
+    uint8 _messageBatchSize,
     PubKey memory _coordinatorPubKey,
     address _verifier,
     address _vkRegistry,
@@ -188,15 +189,19 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
       revert InvalidPubKey();
     }
 
-    MaxValues memory maxValues = MaxValues({
-      maxMessages: uint256(MESSAGE_TREE_ARITY) ** _treeDepths.messageTreeDepth,
-      maxVoteOptions: uint256(MESSAGE_TREE_ARITY) ** _treeDepths.voteOptionTreeDepth
-    });
+    uint256 maxVoteOptions = VOTE_TREE_ARITY ** _treeDepths.voteOptionTreeDepth;
 
     // the owner of the message processor and tally contract will be the msg.sender
     address _msgSender = msg.sender;
 
-    address p = pollFactory.deploy(_duration, maxValues, _treeDepths, _coordinatorPubKey, address(this));
+    address p = pollFactory.deploy(
+      _duration,
+      maxVoteOptions,
+      _treeDepths,
+      _messageBatchSize,
+      _coordinatorPubKey,
+      address(this)
+    );
 
     address mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p, _msgSender, _mode);
     address tally = tallyFactory.deploy(_verifier, _vkRegistry, p, mp, _msgSender, _mode);

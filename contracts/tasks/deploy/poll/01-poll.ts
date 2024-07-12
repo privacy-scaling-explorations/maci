@@ -40,8 +40,7 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").then((task) =>
     const coordinatorPubkey = deployment.getDeployConfigField<string>(EContracts.Poll, "coordinatorPubkey");
     const pollDuration = deployment.getDeployConfigField<number>(EContracts.Poll, "pollDuration");
     const intStateTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "intStateTreeDepth");
-    const messageTreeSubDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageBatchDepth");
-    const messageTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageTreeDepth");
+    const messageBatchSize = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageBatchSize");
     const voteOptionTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "voteOptionTreeDepth");
 
     const useQuadraticVoting =
@@ -54,10 +53,9 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").then((task) =>
         pollDuration,
         {
           intStateTreeDepth,
-          messageTreeSubDepth,
-          messageTreeDepth,
           voteOptionTreeDepth,
         },
+        messageBatchSize,
         unserializedKey.asContractParam(),
         verifierContractAddress,
         vkRegistryContractAddress,
@@ -68,10 +66,9 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").then((task) =>
       pollDuration,
       {
         intStateTreeDepth,
-        messageTreeSubDepth,
-        messageTreeDepth,
         voteOptionTreeDepth,
       },
+      messageBatchSize,
       unserializedKey.asContractParam(),
       verifierContractAddress,
       vkRegistryContractAddress,
@@ -85,7 +82,10 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").then((task) =>
     }
 
     const pollContract = await deployment.getContract<Poll>({ name: EContracts.Poll, address: pollContractAddress });
-    const [maxValues, extContracts] = await Promise.all([pollContract.maxValues(), pollContract.extContracts()]);
+    const [maxVoteOptions, extContracts] = await Promise.all([
+      pollContract.maxVoteOptions(),
+      pollContract.extContracts(),
+    ]);
 
     const messageProcessorContract = await deployment.getContract({
       name: EContracts.MessageProcessor,
@@ -97,11 +97,6 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").then((task) =>
       address: tallyContractAddress,
     });
 
-    const messageAccQueueContract = await deployment.getContract({
-      name: EContracts.AccQueueQuinaryMaci,
-      address: extContracts[1],
-    });
-
     await Promise.all([
       storage.register({
         id: EContracts.Poll,
@@ -109,12 +104,13 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").then((task) =>
         contract: pollContract,
         args: [
           pollDuration,
-          maxValues.map((value) => value.toString()),
+          maxVoteOptions,
           {
             intStateTreeDepth,
-            messageTreeSubDepth,
-            messageTreeDepth,
             voteOptionTreeDepth,
+          },
+          {
+            messageBatchSize,
           },
           unserializedKey.asContractParam(),
           extContracts,
@@ -141,15 +137,6 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").then((task) =>
           messageProcessorContractAddress,
           mode,
         ],
-        network: hre.network.name,
-      }),
-
-      storage.register({
-        id: EContracts.AccQueueQuinaryMaci,
-        key: `poll-${pollId}`,
-        name: "contracts/trees/AccQueueQuinaryMaci.sol:AccQueueQuinaryMaci",
-        contract: messageAccQueueContract,
-        args: [messageTreeSubDepth],
         network: hre.network.name,
       }),
     ]);

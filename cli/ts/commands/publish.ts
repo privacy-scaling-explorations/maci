@@ -86,9 +86,8 @@ export const publish = async ({
 
   const pollContract = PollFactory.connect(pollAddress, signer);
 
-  const maxValues = await pollContract.maxValues();
+  const maxVoteOptions = Number(await pollContract.maxVoteOptions());
   const coordinatorPubKeyResult = await pollContract.coordinatorPubKey();
-  const maxVoteOptions = Number(maxValues.maxVoteOptions);
 
   // validate the vote options index against the max leaf index on-chain
   if (maxVoteOptions < voteOptionIndex) {
@@ -172,11 +171,11 @@ export const publishBatch = async ({
 
   const pollContract = PollFactory.connect(pollAddress, signer);
 
-  const [maxValues, coordinatorPubKeyResult] = await Promise.all([
-    pollContract.maxValues(),
+  const [onChainMaxVoteOptions, coordinatorPubKeyResult] = await Promise.all([
+    pollContract.maxVoteOptions(),
     pollContract.coordinatorPubKey(),
   ]);
-  const maxVoteOptions = Number(maxValues.maxVoteOptions);
+  const maxVoteOptions = Number(onChainMaxVoteOptions);
 
   // validate the vote options index against the max leaf index on-chain
   messages.forEach(({ stateIndex, voteOptionIndex, salt, nonce }) => {

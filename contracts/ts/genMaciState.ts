@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { type Provider } from "ethers";
-import { MaciState, MESSAGE_TREE_ARITY, STATE_TREE_ARITY } from "maci-core";
+import { MaciState } from "maci-core";
 import { type Keypair, PubKey, Message } from "maci-domainobjs";
 
 import assert from "assert";
@@ -113,47 +113,33 @@ export const genMaciStateFromContract = async (
   const pollContractAddress = pollContractAddresses.get(pollId)!;
   const pollContract = PollFactory.connect(pollContractAddress, provider);
 
-  const [coordinatorPubKeyOnChain, [deployTime, duration], onChainMaxValues, onChainTreeDepths] = await Promise.all([
-    pollContract.coordinatorPubKey(),
-    pollContract.getDeployTimeAndDuration().then((values) => values.map(Number)),
-    pollContract.maxValues(),
-    pollContract.treeDepths(),
-  ]);
+  const [coordinatorPubKeyOnChain, [deployTime, duration], onChainMaxVoteOptions, onChainTreeDepths, msgBatchSize] =
+    await Promise.all([
+      pollContract.coordinatorPubKey(),
+      pollContract.getDeployTimeAndDuration().then((values) => values.map(Number)),
+      pollContract.maxVoteOptions(),
+      pollContract.treeDepths(),
+      pollContract.messageBatchSize(),
+    ]);
 
   assert(coordinatorPubKeyOnChain[0].toString() === coordinatorKeypair.pubKey.rawPubKey[0].toString());
   assert(coordinatorPubKeyOnChain[1].toString() === coordinatorKeypair.pubKey.rawPubKey[1].toString());
 
-  const maxValues = {
-    maxMessages: Number(onChainMaxValues.maxMessages),
-    maxVoteOptions: Number(onChainMaxValues.maxVoteOptions),
-  };
+  const maxVoteOptions = Number(onChainMaxVoteOptions);
 
   const treeDepths = {
     intStateTreeDepth: Number(onChainTreeDepths.intStateTreeDepth),
-    messageTreeDepth: Number(onChainTreeDepths.messageTreeDepth),
-    messageTreeSubDepth: Number(onChainTreeDepths.messageTreeSubDepth),
     voteOptionTreeDepth: Number(onChainTreeDepths.voteOptionTreeDepth),
   };
 
-  const batchSizes = {
-    tallyBatchSize: STATE_TREE_ARITY ** Number(onChainTreeDepths.intStateTreeDepth),
-    messageBatchSize: MESSAGE_TREE_ARITY ** Number(onChainTreeDepths.messageTreeSubDepth),
-  };
+  const messageBatchSize = Number(msgBatchSize);
 
   // fetch poll contract logs
   for (let i = fromBlock; i <= lastBlock; i += blocksPerRequest + 1) {
     const toBlock = i + blocksPerRequest >= lastBlock ? lastBlock : i + blocksPerRequest;
 
-    const [
-      publishMessageLogs,
-      mergeMessageAqSubRootsLogs,
-      mergeMessageAqLogs,
-      // eslint-disable-next-line no-await-in-loop
-    ] = await Promise.all([
-      pollContract.queryFilter(pollContract.filters.PublishMessage(), i, toBlock),
-      pollContract.queryFilter(pollContract.filters.MergeMessageAqSubRoots(), i, toBlock),
-      pollContract.queryFilter(pollContract.filters.MergeMessageAq(), i, toBlock),
-    ]);
+    // eslint-disable-next-line no-await-in-loop
+    const publishMessageLogs = await pollContract.queryFilter(pollContract.filters.PublishMessage(), i, toBlock);
 
     publishMessageLogs.forEach((event) => {
       assert(!!event);
@@ -170,32 +156,6 @@ export const genMaciStateFromContract = async (
           message,
           encPubKey,
         },
-      });
-    });
-
-    mergeMessageAqSubRootsLogs.forEach((event) => {
-      assert(!!event);
-
-      const numSrQueueOps = Number(event.args._numSrQueueOps);
-      actions.push({
-        type: "MergeMessageAqSubRoots",
-        blockNumber: event.blockNumber,
-        transactionIndex: event.transactionIndex,
-        data: {
-          numSrQueueOps,
-        },
-      });
-    });
-
-    mergeMessageAqLogs.forEach((event) => {
-      assert(!!event);
-
-      const messageRoot = BigInt((event.args as unknown as { _messageRoot: string })._messageRoot);
-      actions.push({
-        type: "MergeMessageAq",
-        blockNumber: event.blockNumber,
-        transactionIndex: event.transactionIndex,
-        data: { messageRoot },
       });
     });
 
@@ -218,9 +178,9 @@ export const genMaciStateFromContract = async (
       case action.type === "DeployPoll" && action.data.pollId?.toString() === pollId.toString(): {
         maciState.deployPoll(
           BigInt(deployTime + duration),
-          maxValues,
+          maxVoteOptions,
           treeDepths,
-          batchSizes.messageBatchSize,
+          messageBatchSize,
           coordinatorKeypair,
         );
         break;
@@ -234,12 +194,6 @@ export const genMaciStateFromContract = async (
       case action.type === "PublishMessage": {
         const { encPubKey, message } = action.data;
         maciState.polls.get(pollId)?.publishMessage(message!, encPubKey!);
-        break;
-      }
-
-      // ensure that the message root is correct (i.e. all messages have been published offchain)
-      case action.type === "MergeMessageAq": {
-        assert(maciState.polls.get(pollId)?.messageTree.root.toString() === action.data.messageRoot?.toString());
         break;
       }
 

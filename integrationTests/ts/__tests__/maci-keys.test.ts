@@ -11,8 +11,7 @@ import {
   VOTE_OPTION_TREE_DEPTH,
   duration,
   initialVoiceCredits,
-  messageBatchDepth,
-  messageTreeDepth,
+  MESSAGE_BATCH_SIZE,
 } from "./utils/constants";
 import { deployTestContracts } from "./utils/utils";
 
@@ -85,10 +84,9 @@ describe("integration tests private/public/keypair", () => {
         BigInt(duration),
         {
           intStateTreeDepth: INT_STATE_TREE_DEPTH,
-          messageTreeDepth,
-          messageTreeSubDepth: messageBatchDepth,
           voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
         },
+        MESSAGE_BATCH_SIZE,
         coordinatorKeypair.pubKey.asContractParam(),
         verifier,
         vkRegistry,

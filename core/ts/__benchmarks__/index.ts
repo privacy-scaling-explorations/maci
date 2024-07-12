@@ -35,7 +35,7 @@ export default function runCore(): void {
 
       const pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + DURATION),
-        MAX_VALUES,
+        MAX_VALUES.maxVoteOptions,
         TREE_DEPTHS,
         MESSAGE_BATCH_SIZE,
         COORDINATOR_KEYPAIR,

@@ -14,7 +14,7 @@ import {
   STATE_TREE_DEPTH,
   duration,
   initialVoiceCreditBalance,
-  maxValues,
+  maxVoteOptions,
   messageBatchSize,
   treeDepths,
 } from "./constants";
@@ -219,6 +219,7 @@ describe("MACI", function test() {
       const tx = await maciContract.deployPoll(
         duration,
         treeDepths,
+        messageBatchSize,
         coordinator.pubKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
         verifierContract,
         vkRegistryContract,
@@ -240,7 +241,7 @@ describe("MACI", function test() {
 
       const p = maciState.deployPoll(
         BigInt(deployTime + duration),
-        maxValues,
+        maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinator,
@@ -264,6 +265,7 @@ describe("MACI", function test() {
       const tx = await maciContract.deployPoll(
         duration,
         treeDepths,
+        messageBatchSize,
         coordinator.pubKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
         verifierContract,
         vkRegistryContract,
@@ -282,6 +284,7 @@ describe("MACI", function test() {
         .deployPoll(
           duration,
           treeDepths,
+          messageBatchSize,
           users[0].pubKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
           verifierContract,
           vkRegistryContract,

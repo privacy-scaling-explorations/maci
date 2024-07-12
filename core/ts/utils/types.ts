@@ -21,14 +21,10 @@ export type CircuitInputs = Record<string, string | bigint | bigint[] | bigint[]
 /**
  * This interface defines the tree depths.
  * @property intStateTreeDepth - The depth of the intermediate state tree.
- * @property messageTreeDepth - The depth of the message tree.
- * @property messageTreeSubDepth - The depth of the message tree sub.
  * @property voteOptionTreeDepth - The depth of the vote option tree.
  */
 export interface TreeDepths {
   intStateTreeDepth: number;
-  messageTreeDepth: number;
-  messageTreeSubDepth: number;
   voteOptionTreeDepth: number;
 }
 
@@ -61,7 +57,7 @@ export interface IMaciState {
   // This method is used for deploying poll.
   deployPoll(
     pollEndTimestamp: bigint,
-    maxValues: MaxValues,
+    maxVoteOptions: number,
     treeDepths: TreeDepths,
     messageBatchSize: number,
     coordinatorKeypair: Keypair,
@@ -90,6 +86,8 @@ export interface IPoll {
   equals(p: Poll): boolean;
   toJSON(): IJsonPoll;
   setCoordinatorKeypair(serializedPrivateKey: string): void;
+  updateChainHash(messageHash: bigint): void;
+  padLastBatch(): void;
 }
 
 /**
@@ -99,7 +97,7 @@ export interface IJsonPoll {
   pollEndTimestamp: string;
   treeDepths: TreeDepths;
   batchSizes: BatchSizes;
-  maxValues: MaxValues;
+  maxVoteOptions: number;
   messages: unknown[];
   commands: IJsonPCommand[];
   ballots: IJsonBallot[];
@@ -109,6 +107,8 @@ export interface IJsonPoll {
   results: string[];
   numBatchesProcessed: number;
   numSignups: string;
+  chainHash: string;
+  batchHashes: string[];
 }
 
 /**
@@ -146,9 +146,9 @@ export interface IProcessMessagesCircuitInputs {
   actualStateTreeDepth: string;
   pollEndTimestamp: string;
   packedVals: string;
-  msgRoot: string;
+  inputBatchHash: string;
+  outputBatchHash: string;
   msgs: string[];
-  msgSubrootPathElements: string[][];
   coordPrivKey: string;
   coordPubKey: string;
   encPubKeys: string[];

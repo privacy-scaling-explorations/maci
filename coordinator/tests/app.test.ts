@@ -12,7 +12,6 @@ import {
   signup,
   publish,
   timeTravel,
-  mergeMessages,
   mergeSignups,
 } from "maci-cli";
 import { Keypair } from "maci-domainobjs";
@@ -30,9 +29,8 @@ import { FileModule } from "../ts/file/file.module";
 
 const STATE_TREE_DEPTH = 10;
 const INT_STATE_TREE_DEPTH = 1;
-const MSG_TREE_DEPTH = 2;
 const VOTE_OPTION_TREE_DEPTH = 2;
-const MSG_BATCH_DEPTH = 1;
+const MESSAGE_BATCH_SIZE = 20;
 
 describe("AppController (e2e)", () => {
   const coordinatorKeypair = new Keypair();
@@ -60,12 +58,11 @@ describe("AppController (e2e)", () => {
       quiet: true,
       stateTreeDepth: STATE_TREE_DEPTH,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
-      messageTreeDepth: MSG_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
-      messageBatchDepth: MSG_BATCH_DEPTH,
+      messageBatchSize: MESSAGE_BATCH_SIZE,
       processMessagesZkeyPathNonQv: path.resolve(
         __dirname,
-        "../zkeys/ProcessMessagesNonQv_10-2-1-2_test/ProcessMessagesNonQv_10-2-1-2_test.0.zkey",
+        "../zkeys/ProcessMessagesNonQv_10-20-2_test/ProcessMessagesNonQv_10-20-2_test.0.zkey",
       ),
       tallyVotesZkeyPathNonQv: path.resolve(
         __dirname,
@@ -80,8 +77,7 @@ describe("AppController (e2e)", () => {
     pollContracts = await deployPoll({
       pollDuration: 30,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
-      messageTreeSubDepth: MSG_BATCH_DEPTH,
-      messageTreeDepth: MSG_TREE_DEPTH,
+      messageBatchSize: MESSAGE_BATCH_SIZE,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       coordinatorPubkey: coordinatorKeypair.pubKey.serialize(),
       useQuadraticVoting: false,
@@ -290,34 +286,9 @@ describe("AppController (e2e)", () => {
       });
     });
 
-    test("should throw an error if messages are not merged", async () => {
+    test("should throw an error if coordinator key decryption is failed", async () => {
       await timeTravel({ seconds: 30, signer });
       await mergeSignups({ pollId: 0n, signer });
-
-      const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
-      const encryptedCoordinatorPrivateKey = cryptoService.encrypt(publicKey, coordinatorKeypair.privKey.serialize());
-      const encryptedHeader = await getAuthorizationHeader();
-
-      const result = await request(app.getHttpServer() as App)
-        .post("/v1/proof/generate")
-        .set("Authorization", encryptedHeader)
-        .send({
-          poll: 0,
-          encryptedCoordinatorPrivateKey,
-          maciContractAddress: maciAddresses.maciAddress,
-          tallyContractAddress: pollContracts.tally,
-          useQuadraticVoting: false,
-        })
-        .expect(400);
-
-      expect(result.body).toStrictEqual({
-        statusCode: HttpStatus.BAD_REQUEST,
-        message: ErrorCodes.NOT_MERGED_MESSAGE_TREE,
-      });
-    });
-
-    test("should throw an error if coordinator key decryption is failed", async () => {
-      await mergeMessages({ pollId: 0n, signer });
 
       const encryptedHeader = await getAuthorizationHeader();
 

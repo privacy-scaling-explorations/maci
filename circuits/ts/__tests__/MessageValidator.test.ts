@@ -27,8 +27,6 @@ describe("MessageValidator circuit", function test() {
         "currentVoiceCreditBalance",
         "currentVotesForOption",
         "voteWeight",
-        "slTimestamp",
-        "pollEndTimestamp",
       ],
       ["isValid"]
     >;
@@ -70,8 +68,6 @@ describe("MessageValidator circuit", function test() {
         currentVoiceCreditBalance: 100n,
         currentVotesForOption: 0n,
         voteWeight: 9n,
-        slTimestamp: 1n,
-        pollEndTimestamp: 2n,
       };
     });
 
@@ -144,15 +140,6 @@ describe("MessageValidator circuit", function test() {
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");
     });
-
-    it("should be invalid if the state leaf timestamp is too high", async () => {
-      const circuitInputs2 = circuitInputs;
-      circuitInputs2.slTimestamp = 3n;
-      const witness = await circuit.calculateWitness(circuitInputs2);
-      await circuit.expectConstraintPass(witness);
-      const isValid = await getSignal(circuit, witness, "isValid");
-      expect(isValid.toString()).to.be.eq("0");
-    });
   });
 
   describe("MessageValidatorNonQV", () => {
@@ -173,8 +160,6 @@ describe("MessageValidator circuit", function test() {
         "currentVoiceCreditBalance",
         "currentVotesForOption",
         "voteWeight",
-        "slTimestamp",
-        "pollEndTimestamp",
       ],
       ["isValid"]
     >;
@@ -216,8 +201,6 @@ describe("MessageValidator circuit", function test() {
         currentVoiceCreditBalance: 100n,
         currentVotesForOption: 0n,
         voteWeight: 9n,
-        slTimestamp: 1n,
-        pollEndTimestamp: 2n,
       };
     });
 
@@ -285,15 +268,6 @@ describe("MessageValidator circuit", function test() {
     it("should be invalid if the vote option index is invalid", async () => {
       const circuitInputs2 = circuitInputs;
       circuitInputs2.voteOptionIndex = 6049261729n;
-      const witness = await circuit.calculateWitness(circuitInputs2);
-      await circuit.expectConstraintPass(witness);
-      const isValid = await getSignal(circuit, witness, "isValid");
-      expect(isValid.toString()).to.be.eq("0");
-    });
-
-    it("should be invalid if the state leaf timestamp is too high", async () => {
-      const circuitInputs2 = circuitInputs;
-      circuitInputs2.slTimestamp = 3n;
       const witness = await circuit.calculateWitness(circuitInputs2);
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");

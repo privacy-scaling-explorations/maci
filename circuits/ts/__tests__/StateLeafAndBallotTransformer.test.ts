@@ -26,8 +26,6 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
   const slVoiceCreditBalance = BigInt(100);
   const ballotNonce = BigInt(0);
   const ballotCurrentVotesForOption = BigInt(0);
-  const slTimestamp = 1n;
-  const pollEndTimestamp = 2n;
 
   const command: PCommand = new PCommand(stateIndex, newPubKey, voteOptionIndex, newVoteWeight, nonce, pollId, salt);
 
@@ -39,8 +37,6 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
       "maxVoteOptions",
       "slPubKey",
       "slVoiceCreditBalance",
-      "slTimestamp",
-      "pollEndTimestamp",
       "ballotNonce",
       "ballotCurrentVotesForOption",
       "cmdStateIndex",
@@ -63,8 +59,6 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
       "maxVoteOptions",
       "slPubKey",
       "slVoiceCreditBalance",
-      "slTimestamp",
-      "pollEndTimestamp",
       "ballotNonce",
       "ballotCurrentVotesForOption",
       "cmdStateIndex",
@@ -99,8 +93,6 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
       maxVoteOptions,
       slPubKey: slPubKey.asCircuitInputs() as unknown as [bigint, bigint],
       slVoiceCreditBalance,
-      slTimestamp,
-      pollEndTimestamp,
       ballotNonce,
       ballotCurrentVotesForOption,
       cmdStateIndex: command.stateIndex,
@@ -136,8 +128,6 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
       maxVoteOptions,
       slPubKey: slPubKey.asCircuitInputs() as unknown as [bigint, bigint],
       slVoiceCreditBalance,
-      slTimestamp,
-      pollEndTimestamp,
       ballotNonce,
       ballotCurrentVotesForOption,
       cmdStateIndex: command.stateIndex,
@@ -173,8 +163,6 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
       maxVoteOptions,
       slPubKey: slPubKey.asCircuitInputs() as unknown as [bigint, bigint],
       slVoiceCreditBalance,
-      slTimestamp,
-      pollEndTimestamp,
       ballotNonce,
       ballotCurrentVotesForOption,
       cmdStateIndex: command.stateIndex,
@@ -210,8 +198,6 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
       maxVoteOptions,
       slPubKey: slPubKey.asCircuitInputs() as unknown as [bigint, bigint],
       slVoiceCreditBalance,
-      slTimestamp,
-      pollEndTimestamp,
       ballotNonce,
       ballotCurrentVotesForOption,
       cmdStateIndex: command.stateIndex,

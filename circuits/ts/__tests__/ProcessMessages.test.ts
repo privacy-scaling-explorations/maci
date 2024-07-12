@@ -17,17 +17,16 @@ import {
 import { getSignal, circomkitInstance } from "./utils/utils";
 
 describe("ProcessMessage circuit", function test() {
-  this.timeout(900000);
+  this.timeout(9000000);
 
   const coordinatorKeypair = new Keypair();
 
   type ProcessMessageCircuitInputs = [
     "inputHash",
     "packedVals",
-    "pollEndTimestamp",
-    "msgRoot",
+    "inputBatchHash",
+    "outputBatchHash",
     "msgs",
-    "msgSubrootPathElements",
     "coordPrivKey",
     "coordPubKey",
     "encPubKeys",
@@ -50,7 +49,7 @@ describe("ProcessMessage circuit", function test() {
   let circuitNonQv: WitnessTester<ProcessMessageCircuitInputs>;
 
   let hasherCircuit: WitnessTester<
-    ["packedVals", "coordPubKey", "msgRoot", "currentSbCommitment", "newSbCommitment", "pollEndTimestamp"],
+    ["packedVals", "coordPubKey", "outputBatchHash", "currentSbCommitment", "newSbCommitment", "actualStateTreeDepth"],
     ["maxVoteOptions", "numSignUps", "batchStartIndex", "batchEndIndex", "hash"]
   >;
 
@@ -58,13 +57,13 @@ describe("ProcessMessage circuit", function test() {
     circuit = await circomkitInstance.WitnessTester("processMessages", {
       file: "./core/qv/processMessages",
       template: "ProcessMessages",
-      params: [10, 2, 1, 2],
+      params: [10, 20, 2],
     });
 
     circuitNonQv = await circomkitInstance.WitnessTester("processMessagesNonQv", {
       file: "./core/non-qv/processMessages",
       template: "ProcessMessagesNonQv",
-      params: [10, 2, 1, 2],
+      params: [10, 20, 2],
     });
 
     hasherCircuit = await circomkitInstance.WitnessTester("ProcessMessagesInputHasher", {
@@ -73,7 +72,7 @@ describe("ProcessMessage circuit", function test() {
     });
   });
 
-  describe("5 users, 1 messages", () => {
+  describe("1) 5 users, 1 messages", () => {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     const voteWeight = BigInt(9);
     const voteOptionIndex = BigInt(1);
@@ -92,7 +91,7 @@ describe("ProcessMessage circuit", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues,
+        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -151,7 +150,7 @@ describe("ProcessMessage circuit", function test() {
     });
   });
 
-  describe("1 user, 2 messages (non-quadratic voting)", () => {
+  describe("2) 1 user, 2 messages (non-quadratic voting)", () => {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     const voteWeight = BigInt(9);
     const voteOptionIndex = BigInt(0);
@@ -170,7 +169,7 @@ describe("ProcessMessage circuit", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues,
+        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -220,7 +219,7 @@ describe("ProcessMessage circuit", function test() {
 
     it("should produce the correct state root and ballot root", async () => {
       // The current roots
-      const emptyBallot = new Ballot(poll.maxValues.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
+      const emptyBallot = new Ballot(poll.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
       const emptyBallotHash = emptyBallot.hash();
       const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash2);
 
@@ -258,10 +257,9 @@ describe("ProcessMessage circuit", function test() {
       const hasherCircuitInputs = {
         packedVals,
         coordPubKey: inputs.coordPubKey,
-        msgRoot: inputs.msgRoot,
+        outputBatchHash: inputs.outputBatchHash,
         currentSbCommitment: inputs.currentSbCommitment,
         newSbCommitment: inputs.newSbCommitment,
-        pollEndTimestamp: inputs.pollEndTimestamp,
         actualStateTreeDepth: inputs.actualStateTreeDepth,
       };
 
@@ -272,7 +270,7 @@ describe("ProcessMessage circuit", function test() {
     });
   });
 
-  describe("2 users, 1 message", () => {
+  describe("3) 2 users, 1 message", () => {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     let pollId: bigint;
     let poll: Poll;
@@ -297,7 +295,7 @@ describe("ProcessMessage circuit", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(2 + duration), // BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues,
+        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -329,7 +327,7 @@ describe("ProcessMessage circuit", function test() {
 
     it("should produce the correct state root and ballot root", async () => {
       // The current roots
-      const emptyBallot = new Ballot(poll.maxValues.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
+      const emptyBallot = new Ballot(poll.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
       const emptyBallotHash = emptyBallot.hash();
       const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash2);
 
@@ -357,7 +355,7 @@ describe("ProcessMessage circuit", function test() {
     });
   });
 
-  describe("1 user, key-change", () => {
+  describe("4) 1 user, key-change", () => {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     const voteWeight = BigInt(9);
     let stateIndex: number;
@@ -365,8 +363,6 @@ describe("ProcessMessage circuit", function test() {
     let poll: Poll;
     const messages: Message[] = [];
     const commands: PCommand[] = [];
-
-    const NUM_BATCHES = 2;
 
     before(() => {
       // Sign up and publish
@@ -381,7 +377,7 @@ describe("ProcessMessage circuit", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(2 + duration), // BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues,
+        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -449,57 +445,93 @@ describe("ProcessMessage circuit", function test() {
       poll.publishMessage(message3, ecdhKeypair3.pubKey);
     });
 
-    describe(`1 user, ${messageBatchSize * NUM_BATCHES} messages`, () => {
-      it("should produce the correct state root and ballot root", async () => {
-        const state = new MaciState(STATE_TREE_DEPTH);
-        const userKeypair = new Keypair();
-        const index = state.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+    it("should produce the correct state root and ballot root", async () => {
+      // The current roots
+      const emptyBallot = new Ballot(poll.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
+      const emptyBallotHash = emptyBallot.hash();
+      const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash2);
 
-        // Sign up and publish
-        const id = state.deployPoll(
-          BigInt(Math.floor(Date.now() / 1000) + duration),
-          maxValues,
-          treeDepths,
-          messageBatchSize,
-          coordinatorKeypair,
-        );
+      ballotTree.insert(emptyBallot.hash());
 
-        const selectedPoll = state.polls.get(id);
-
-        selectedPoll?.updatePoll(BigInt(state.stateLeaves.length));
-
-        // Second batch is not a full batch
-        const numMessages = messageBatchSize * NUM_BATCHES - 1;
-        for (let i = 0; i < numMessages; i += 1) {
-          const command = new PCommand(
-            BigInt(index),
-            userKeypair.pubKey,
-            BigInt(i), // vote option index
-            BigInt(1), // vote weight
-            BigInt(numMessages - i), // nonce
-            BigInt(id),
-          );
-
-          const signature = command.sign(userKeypair.privKey);
-
-          const ecdhKeypair = new Keypair();
-          const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
-          const message = command.encrypt(signature, sharedKey);
-          selectedPoll?.publishMessage(message, ecdhKeypair.pubKey);
-        }
-
-        for (let i = 0; i < 2; i += 1) {
-          const inputs = selectedPoll?.processMessages(id) as unknown as IProcessMessagesInputs;
-          // eslint-disable-next-line no-await-in-loop
-          const witness = await circuit.calculateWitness(inputs);
-          // eslint-disable-next-line no-await-in-loop
-          await circuit.expectConstraintPass(witness);
-        }
+      poll.stateLeaves.forEach(() => {
+        ballotTree.insert(emptyBallotHash);
       });
+
+      const currentStateRoot = poll.stateTree?.root;
+      const currentBallotRoot = ballotTree.root;
+
+      const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
+      // Calculate the witness
+      const witness = await circuit.calculateWitness(inputs);
+      await circuit.expectConstraintPass(witness);
+
+      // The new roots, which should differ, since at least one of the
+      // messages modified a Ballot or State Leaf
+      const newStateRoot = poll.stateTree?.root;
+      const newBallotRoot = poll.ballotTree?.root;
+
+      expect(newStateRoot?.toString()).not.to.be.eq(currentStateRoot?.toString());
+      expect(newBallotRoot?.toString()).not.to.be.eq(currentBallotRoot.toString());
     });
   });
 
-  describe("1 user, 2 messages", () => {
+  const NUM_BATCHES = 2;
+  describe(`5) 1 user, ${messageBatchSize * NUM_BATCHES - 1} messages`, () => {
+    const maciState = new MaciState(STATE_TREE_DEPTH);
+    let stateIndex: number;
+    let pollId: bigint;
+    let poll: Poll;
+
+    before(() => {
+      const userKeypair = new Keypair(new PrivKey(BigInt(1)));
+      stateIndex = maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+
+      // Sign up and publish
+      pollId = maciState.deployPoll(
+        BigInt(Math.floor(Date.now() / 1000) + duration),
+        maxValues.maxVoteOptions,
+        treeDepths,
+        messageBatchSize,
+        coordinatorKeypair,
+      );
+
+      poll = maciState.polls.get(pollId)!;
+
+      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+
+      // Second batch is not a full batch
+      const numMessages = messageBatchSize * NUM_BATCHES - 1;
+      for (let i = 0; i < numMessages; i += 1) {
+        const command = new PCommand(
+          BigInt(stateIndex),
+          userKeypair.pubKey,
+          BigInt(i), // vote option index
+          BigInt(1), // vote weight
+          BigInt(numMessages - i), // nonce
+          BigInt(pollId),
+        );
+
+        const signature = command.sign(userKeypair.privKey);
+
+        const ecdhKeypair = new Keypair();
+        const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+        const message = command.encrypt(signature, sharedKey);
+        poll.publishMessage(message, ecdhKeypair.pubKey);
+      }
+    });
+
+    it("should produce a proof", async () => {
+      for (let i = 0; i < NUM_BATCHES; i += 1) {
+        const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
+        // eslint-disable-next-line no-await-in-loop
+        const witness = await circuit.calculateWitness(inputs);
+        // eslint-disable-next-line no-await-in-loop
+        await circuit.expectConstraintPass(witness);
+      }
+    });
+  });
+
+  describe("6) 1 user, 2 messages", () => {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     const voteOptionIndex = 1n;
     let stateIndex: bigint;
@@ -517,7 +549,7 @@ describe("ProcessMessage circuit", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues,
+        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -587,7 +619,7 @@ describe("ProcessMessage circuit", function test() {
 
     it("should produce the correct state root and ballot root", async () => {
       // The current roots
-      const emptyBallot = new Ballot(poll.maxValues.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
+      const emptyBallot = new Ballot(poll.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
       const emptyBallotHash = emptyBallot.hash();
       const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash2);
 
@@ -616,7 +648,7 @@ describe("ProcessMessage circuit", function test() {
     });
   });
 
-  describe("1 user, 2 messages in different batches", () => {
+  describe("7) 1 user, 2 messages in different batches", () => {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     const voteOptionIndex = 1n;
     let stateIndex: bigint;
@@ -634,7 +666,7 @@ describe("ProcessMessage circuit", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues,
+        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -709,7 +741,7 @@ describe("ProcessMessage circuit", function test() {
 
     it("should produce the correct state root and ballot root", async () => {
       // The current roots
-      const emptyBallot = new Ballot(poll.maxValues.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
+      const emptyBallot = new Ballot(poll.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
       const emptyBallotHash = emptyBallot.hash();
       const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash2);
 
@@ -741,7 +773,7 @@ describe("ProcessMessage circuit", function test() {
     });
   });
 
-  describe("1 user, 3 messages in different batches", () => {
+  describe("8) 1 user, 3 messages in different batches", () => {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     const voteOptionIndex = 1n;
     let stateIndex: bigint;
@@ -759,7 +791,7 @@ describe("ProcessMessage circuit", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues,
+        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -853,7 +885,7 @@ describe("ProcessMessage circuit", function test() {
 
     it("should produce the correct state root and ballot root", async () => {
       // The current roots
-      const emptyBallot = new Ballot(poll.maxValues.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
+      const emptyBallot = new Ballot(poll.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
       const emptyBallotHash = emptyBallot.hash();
       const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash2);
 

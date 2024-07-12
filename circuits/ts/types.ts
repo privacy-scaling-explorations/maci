@@ -48,9 +48,9 @@ export interface IProcessMessagesInputs {
   inputHash: bigint;
   packedVals: bigint;
   pollEndTimestamp: bigint;
-  msgRoot: bigint;
+  inputBatchHash: bigint;
+  outputBatchHash: bigint;
   msgs: bigint[];
-  msgSubrootPathElements: bigint[][];
   coordPrivKey: bigint;
   coordPubKey: [bigint, bigint];
   encPubKeys: bigint[];

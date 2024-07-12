@@ -1,5 +1,3 @@
-export { AccQueue } from "./AccQueue";
-
 export { calcDepthFromNumLeaves, genTreeCommitment, genTreeProof } from "./utils";
 
 export { IncrementalQuinTree } from "./quinTree";

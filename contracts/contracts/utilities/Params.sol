@@ -2,7 +2,6 @@
 pragma solidity ^0.8.20;
 
 import { IMACI } from "../interfaces/IMACI.sol";
-import { AccQueue } from "../trees/AccQueue.sol";
 
 /// @title Params
 /// @notice This contracts contains a number of structures
@@ -13,15 +12,7 @@ contract Params {
   /// @notice A struct holding the depths of the merkle trees
   struct TreeDepths {
     uint8 intStateTreeDepth;
-    uint8 messageTreeSubDepth;
-    uint8 messageTreeDepth;
     uint8 voteOptionTreeDepth;
-  }
-
-  /// @notice A struct holding the max values for the poll
-  struct MaxValues {
-    uint256 maxMessages;
-    uint256 maxVoteOptions;
   }
 
   /// @notice A struct holding the external contracts
@@ -29,6 +20,5 @@ contract Params {
   /// deployment
   struct ExtContracts {
     IMACI maci;
-    AccQueue messageAq;
   }
 }

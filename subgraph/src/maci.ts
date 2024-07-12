@@ -14,15 +14,14 @@ export function handleDeployPoll(event: DeployPollEvent): void {
 
   const poll = new Poll(event.params.pollAddr.poll);
   const contract = PollContract.bind(event.params.pollAddr.poll);
-  const maxValues = contract.maxValues();
+  const maxVoteOptions = contract.maxVoteOptions();
   const treeDepths = contract.treeDepths();
   const durations = contract.getDeployTimeAndDuration();
 
   poll.pollId = event.params._pollId;
   poll.messageProcessor = event.params.pollAddr.messageProcessor;
   poll.tally = event.params.pollAddr.tally;
-  poll.maxMessages = maxValues.value0;
-  poll.maxVoteOption = maxValues.value1;
+  poll.maxVoteOption = maxVoteOptions;
   poll.treeDepth = GraphBN.fromI32(treeDepths.value0);
   poll.duration = durations.value1;
   poll.mode = GraphBN.fromI32(event.params._mode);

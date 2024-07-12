@@ -21,8 +21,7 @@ import {
 export const deployPoll = async ({
   pollDuration,
   intStateTreeDepth,
-  messageTreeSubDepth,
-  messageTreeDepth,
+  messageBatchSize,
   voteOptionTreeDepth,
   coordinatorPubkey,
   maciAddress,
@@ -59,13 +58,10 @@ export const deployPoll = async ({
   if (intStateTreeDepth <= 0) {
     logError("Int state tree depth cannot be <= 0");
   }
-  // required arg -> message tree sub depth
-  if (messageTreeSubDepth <= 0) {
-    logError("Message tree sub depth cannot be <= 0");
-  }
+
   // required arg -> message tree depth
-  if (messageTreeDepth <= 0) {
-    logError("Message tree depth cannot be <= 0");
+  if (messageBatchSize <= 0) {
+    logError("Message batch size cannot be <= 0");
   }
   // required arg -> vote option tree depth
   if (voteOptionTreeDepth <= 0) {
@@ -100,10 +96,9 @@ export const deployPoll = async ({
       pollDuration,
       {
         intStateTreeDepth,
-        messageTreeSubDepth,
-        messageTreeDepth,
         voteOptionTreeDepth,
       },
+      messageBatchSize,
       unserializedKey.asContractParam(),
       verifierContractAddress,
       vkRegistry,

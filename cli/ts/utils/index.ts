@@ -28,7 +28,6 @@ export type {
   SignupArgs,
   ISignupData,
   SetVerifyingKeysArgs,
-  MergeMessagesArgs,
   MergeSignupsArgs,
   ProveOnChainArgs,
   PublishArgs,

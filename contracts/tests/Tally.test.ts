@@ -31,7 +31,7 @@ import {
   STATE_TREE_DEPTH,
   duration,
   initialVoiceCreditBalance,
-  maxValues,
+  maxVoteOptions,
   messageBatchSize,
   tallyBatchSize,
   testProcessVk,
@@ -75,6 +75,7 @@ describe("TallyVotes", () => {
     const tx = await maciContract.deployPoll(
       duration,
       treeDepths,
+      messageBatchSize,
       coordinator.pubKey.asContractParam(),
       verifierContract,
       vkRegistryContract,
@@ -112,7 +113,13 @@ describe("TallyVotes", () => {
     tallyContract = TallyFactory.connect(event.args.pollAddr.tally, signer);
 
     // deploy local poll
-    const p = maciState.deployPoll(BigInt(deployTime + duration), maxValues, treeDepths, messageBatchSize, coordinator);
+    const p = maciState.deployPoll(
+      BigInt(deployTime + duration),
+      maxVoteOptions,
+      treeDepths,
+      messageBatchSize,
+      coordinator,
+    );
     expect(p.toString()).to.eq(pollId.toString());
     // publish the NOTHING_UP_MY_SLEEVE message
     const messageData = [NOTHING_UP_MY_SLEEVE];
@@ -140,7 +147,6 @@ describe("TallyVotes", () => {
     await vkRegistryContract.setVerifyingKeys(
       STATE_TREE_DEPTH,
       treeDepths.intStateTreeDepth,
-      treeDepths.messageTreeDepth,
       treeDepths.voteOptionTreeDepth,
       messageBatchSize,
       EMode.QV,
@@ -180,13 +186,11 @@ describe("TallyVotes", () => {
     );
   });
 
-  describe("after merging acc queues", () => {
+  describe("after messages processing", () => {
     let tallyGeneratedInputs: ITallyCircuitInputs;
     before(async () => {
       await pollContract.mergeMaciState();
 
-      await pollContract.mergeMessageAqSubRoots(0);
-      await pollContract.mergeMessageAq();
       tallyGeneratedInputs = poll.tallyVotes();
     });
 
@@ -256,6 +260,7 @@ describe("TallyVotes", () => {
           ...treeDepths,
           intStateTreeDepth,
         },
+        messageBatchSize,
         coordinator.pubKey.asContractParam(),
         verifierContract,
         vkRegistryContract,
@@ -295,7 +300,7 @@ describe("TallyVotes", () => {
       // deploy local poll
       const p = maciState.deployPoll(
         BigInt(deployTime + updatedDuration),
-        maxValues,
+        maxVoteOptions,
         {
           ...treeDepths,
           intStateTreeDepth,
@@ -327,7 +332,6 @@ describe("TallyVotes", () => {
       await vkRegistryContract.setVerifyingKeys(
         STATE_TREE_DEPTH,
         intStateTreeDepth,
-        treeDepths.messageTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
         EMode.QV,
@@ -338,9 +342,6 @@ describe("TallyVotes", () => {
 
       await timeTravel(signer.provider! as unknown as EthereumProvider, updatedDuration);
       await pollContract.mergeMaciState();
-
-      await pollContract.mergeMessageAqSubRoots(0);
-      await pollContract.mergeMessageAq();
 
       const processMessagesInputs = poll.processMessages(pollId);
       await mpContract.processMessages(processMessagesInputs.newSbCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);
@@ -401,6 +402,7 @@ describe("TallyVotes", () => {
           ...treeDepths,
           intStateTreeDepth,
         },
+        messageBatchSize,
         coordinator.pubKey.asContractParam(),
         verifierContract,
         vkRegistryContract,
@@ -440,7 +442,7 @@ describe("TallyVotes", () => {
       // deploy local poll
       const p = maciState.deployPoll(
         BigInt(deployTime + updatedDuration),
-        maxValues,
+        maxVoteOptions,
         {
           ...treeDepths,
           intStateTreeDepth,
@@ -472,7 +474,6 @@ describe("TallyVotes", () => {
       await vkRegistryContract.setVerifyingKeys(
         STATE_TREE_DEPTH,
         intStateTreeDepth,
-        treeDepths.messageTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
         EMode.QV,
@@ -483,9 +484,6 @@ describe("TallyVotes", () => {
 
       await timeTravel(signer.provider! as unknown as EthereumProvider, updatedDuration);
       await pollContract.mergeMaciState();
-
-      await pollContract.mergeMessageAqSubRoots(0);
-      await pollContract.mergeMessageAq();
 
       const processMessagesInputs = poll.processMessages(pollId);
       await mpContract.processMessages(processMessagesInputs.newSbCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);
