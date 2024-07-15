@@ -6,6 +6,4 @@ subgraph.yaml
 schema.graphql
 tests/.bin/
 tests/.latest.json
-config/*.json
-!config/[network].json
 

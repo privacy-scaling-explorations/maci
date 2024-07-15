@@ -11,3 +11,33 @@
    Make sure you set `COORDINATOR_ADDRESSES` env variable and sign any message with the addresses from your application (see [AccountSignatureGuard](./ts/auth/AccountSignatureGuard.service.ts)).
 7. Proofs can be generated with `POST v1/proof/generate` API method or with Websockets (see [dto spec](./ts/proof/dto.ts), [controller](./ts/app.controller.ts) and [wsgateway](./ts/events/events.gateway.ts)).
 8. [Swagger documentation for API methods](https://maci-coordinator.pse.dev/api)
+
+## Subgraph deployment
+
+It is possible to deploy subgraph using coordinator service.
+
+First, you need to setup subgraph and create a project. [Subgraph dashboard](https://thegraph.com/studio/).
+
+Then, set env variables:
+
+```
+# Subgraph name
+SUBGRAPH_NAME="maci-subgraph"
+
+# Subgraph provider url
+SUBGRAPH_PROVIDER_URL=https://api.studio.thegraph.com/deploy/
+
+# Subgraph deploy key
+SUBGRAPH_DEPLOY_KEY=*******
+
+# Subgraph project folder
+SUBGRAPH_FOLDER=../subgraph
+```
+
+After deployment, subgraph url will be available in studio dashboard and you can use this type of url to get latest deployed version in your application:
+
+```
+https://api.studio.thegraph.com/.../{SUBGRAPH_NAME}/version/latest
+```
+
+API method Details are available [here](https://maci-coordinator.pse.dev/api)

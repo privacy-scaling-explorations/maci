@@ -1,11 +1,11 @@
 import { Module } from "@nestjs/common";
 import { ThrottlerModule } from "@nestjs/throttler";
 
-import { AppController } from "./app.controller";
 import { CryptoModule } from "./crypto/crypto.module";
 import { EventsModule } from "./events/events.module";
 import { FileModule } from "./file/file.module";
-import { ProofGeneratorService } from "./proof/proof.service";
+import { ProofModule } from "./proof/proof.module";
+import { SubgraphModule } from "./subgraph/subgraph.module";
 
 @Module({
   imports: [
@@ -18,8 +18,8 @@ import { ProofGeneratorService } from "./proof/proof.service";
     FileModule,
     CryptoModule,
     EventsModule,
+    SubgraphModule,
+    ProofModule,
   ],
-  controllers: [AppController],
-  providers: [ProofGeneratorService],
 })
 export class AppModule {}

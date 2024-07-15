@@ -45,6 +45,8 @@ circuit.json
 input.json
 *.proof.json
 *.publicSignals.json
+subgraph/config/*.json
+!subgraph/config/network.json
 
 .vscode/
 
