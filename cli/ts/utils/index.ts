@@ -47,7 +47,8 @@ export type {
   IParseSignupEventsArgs,
   IGetGatekeeperTraitArgs,
   ISemaphoreGatekeeperData,
-  IGetSemaphoreGatekeeperDataArgs,
+  IGetGatekeeperDataArgs,
+  IZupassGatekeeperData,
 } from "./interfaces";
 export { GatekeeperTrait } from "./interfaces";
 export { compareVks } from "./vks";
