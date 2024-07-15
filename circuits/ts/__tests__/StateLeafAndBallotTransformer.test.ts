@@ -54,7 +54,7 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
       "cmdSigS",
       "packedCommand",
     ],
-    ["newSlPubKey", "newBallotNonce", "isValid"]
+    ["newSlPubKey", "newBallotNonce", "isValid", "isStateLeafIndexValid", "isVoteOptionIndexValid"]
   >;
 
   let circuitNonQv: WitnessTester<
@@ -78,7 +78,7 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
       "cmdSigS",
       "packedCommand",
     ],
-    ["newSlPubKey", "newBallotNonce", "isValid"]
+    ["newSlPubKey", "newBallotNonce", "isValid", "isStateLeafIndexValid", "isVoteOptionIndexValid"]
   >;
 
   before(async () => {

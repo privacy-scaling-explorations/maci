@@ -350,7 +350,6 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
     // Timestamp.
     var STATE_LEAF_TIMESTAMP_IDX = 3;
-    var N_BITS = 252;
 
     // Inputs representing the message and the current state.
     signal input numSignUps;
@@ -402,8 +401,8 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
 
     // 1. Transform a state leaf and a ballot with a command.
     // The result is a new state leaf, a new ballot, and an isValid signal (0 or 1).
-    var computedNewSlPubKey[2], computedNewBallotNonce, computedIsValid;
-    (computedNewSlPubKey, computedNewBallotNonce, computedIsValid) = StateLeafAndBallotTransformerNonQv()(
+    var computedNewSlPubKey[2], computedNewBallotNonce, computedIsValid, computedIsStateLeafIndexValid, computedIsVoteOptionIndexValid;
+    (computedNewSlPubKey, computedNewBallotNonce, computedIsValid, computedIsStateLeafIndexValid, computedIsVoteOptionIndexValid) = StateLeafAndBallotTransformerNonQv()(
         numSignUps,
         maxVoteOptions,
         [stateLeaf[STATE_LEAF_PUB_X_IDX], stateLeaf[STATE_LEAF_PUB_Y_IDX]],
@@ -424,10 +423,9 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
         packedCmd
     );
 
-    // 2. If isValid is equal to zero, generate indices for leaf zero.
+    // 2. If computedIsStateLeafIndexValid is equal to zero, generate indices for leaf zero.
     // Otherwise, generate indices for command.stateIndex.
-    var stateLeafIndexValid = SafeLessThan(N_BITS)([cmdStateIndex, numSignUps]);
-    var stateIndexMux = Mux1()([0, cmdStateIndex], stateLeafIndexValid);
+    var stateIndexMux = Mux1()([0, cmdStateIndex], computedIsStateLeafIndexValid);
     var computedStateLeafPathIndices[stateTreeDepth] = MerkleGeneratePathIndices(stateTreeDepth)(stateIndexMux);
 
     // 3. Verify that the original state leaf exists in the given state root.
@@ -460,14 +458,7 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     b <== currentVoteWeight;
     c <== cmdNewVoteWeight;
 
-    var voiceCreditAmountValid = SafeGreaterEqThan(252)([
-        stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + b,
-        c
-    ]);
-
-    var computedIsMessageEqual = IsEqual()([2, computedIsValid + voiceCreditAmountValid]);
-    var voteOptionIndexValid = SafeLessThan(N_BITS)([cmdVoteOptionIndex, maxVoteOptions]);
-    var cmdVoteOptionIndexMux = Mux1()([0, cmdVoteOptionIndex], voteOptionIndexValid);
+    var cmdVoteOptionIndexMux = Mux1()([0, cmdVoteOptionIndex], computedIsVoteOptionIndexValid);
     var computedCurrentVoteWeightPathIndices[voteOptionTreeDepth] = QuinGeneratePathIndices(voteOptionTreeDepth)(cmdVoteOptionIndexMux);
 
     var computedCurrentVoteWeightQip = QuinTreeInclusionProof(voteOptionTreeDepth)(
@@ -478,20 +469,13 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
 
     computedCurrentVoteWeightQip === ballot[BALLOT_VO_ROOT_IDX];
 
-    var voteWeightMux = Mux1()([currentVoteWeight, cmdNewVoteWeight], computedIsMessageEqual);
-    var newSlVoiceCreditBalanceMux = Mux1()(
+    var voteWeightMux = Mux1()([currentVoteWeight, cmdNewVoteWeight], computedIsValid);
+    var voiceCreditBalanceMux = Mux1()(
         [
             stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX],
             stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + b - c
         ],
-        voiceCreditAmountValid
-    );
-    var voiceCreditBalanceMux = Mux1()(
-        [
-            stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX],
-            newSlVoiceCreditBalanceMux
-        ],
-        computedIsMessageEqual
+        computedIsValid
     );
 
     // 5.1. Update the ballot's vote option root with the new vote weight.
@@ -504,7 +488,7 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     // The new vote option root in the ballot
     var newBallotVoRootMux = Mux1()(
         [ballot[BALLOT_VO_ROOT_IDX], computedNewVoteOptionTreeQip],
-        computedIsMessageEqual
+        computedIsValid
     );
 
     newBallotVoRoot <== newBallotVoRootMux;
@@ -527,8 +511,7 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     newStateRoot <== computedNewStateLeafQip;
  
     // 7. Generate a new ballot root.    
-    var newBallotNonceMux = Mux1()([ballot[BALLOT_NONCE_IDX], computedNewBallotNonce], computedIsMessageEqual);
-    var computedNewBallot = PoseidonHasher(2)([newBallotNonceMux, newBallotVoRoot]);
+    var computedNewBallot = PoseidonHasher(2)([computedNewBallotNonce, newBallotVoRoot]);
     var computedNewBallotQip = MerkleTreeInclusionProof(stateTreeDepth)(
         computedNewBallot,
         computedStateLeafPathIndices,
