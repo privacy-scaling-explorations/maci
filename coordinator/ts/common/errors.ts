@@ -9,4 +9,5 @@ export enum ErrorCodes {
   DECRYPTION = "4",
   ENCRYPTION = "5",
   FILE_NOT_FOUND = "6",
+  SUBGRAPH_DEPLOY = "7",
 }

@@ -10,7 +10,7 @@
   "scripts": {
     "precodegen": "rm -rf ./generated && pnpm generate:schema && pnpm generate:yaml",
     "codegen": "graph codegen",
-    "generate:yaml": "mustache ./config/${NETWORK:-optimism-sepolia}.json ./templates/subgraph.template.yaml > subgraph.yaml",
+    "generate:yaml": "mustache ./config/${NETWORK:-network}.json ./templates/subgraph.template.yaml > subgraph.yaml",
     "generate:schema": "cp ./schemas/schema.${VERSION:-v1}.graphql schema.graphql",
     "prebuild": "pnpm codegen",
     "build": "graph build",

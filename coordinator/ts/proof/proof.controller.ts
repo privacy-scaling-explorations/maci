@@ -1,26 +1,27 @@
 import { Body, Controller, Get, HttpException, HttpStatus, Logger, Post, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiBody, ApiResponse, ApiTags } from "@nestjs/swagger";
 
-import type { IGetPublicKeyData } from "./file/types";
-import type { IGenerateData } from "./proof/types";
+import type { IGenerateData } from "./types";
+import type { IGetPublicKeyData } from "../file/types";
 
-import { AccountSignatureGuard, Public } from "./auth/AccountSignatureGuard.service";
-import { FileService } from "./file/file.service";
-import { GenerateProofDto } from "./proof/dto";
-import { ProofGeneratorService } from "./proof/proof.service";
+import { AccountSignatureGuard, Public } from "../auth/AccountSignatureGuard.service";
+import { FileService } from "../file/file.service";
+
+import { GenerateProofDto } from "./dto";
+import { ProofGeneratorService } from "./proof.service";
 
 @ApiTags("v1/proof")
 @ApiBearerAuth()
 @Controller("v1/proof")
 @UseGuards(AccountSignatureGuard)
-export class AppController {
+export class ProofController {
   /**
    * Logger
    */
-  private readonly logger = new Logger(AppController.name);
+  private readonly logger = new Logger(ProofController.name);
 
   /**
-   * Initialize AppController
+   * Initialize ProofController
    *
    * @param proofGeneratorService - proof generator service
    * @param fileService - file service

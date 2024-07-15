@@ -48,7 +48,7 @@ template ProcessMessagesInputHasher() {
     // 2. Hash coordPubKey.
     var computedPubKey = PoseidonHasher(2)(coordPubKey);
 
-    // 3. Hash the 6 inputs with SHA256.
+    // 3. Hash the 7 inputs with SHA256.
     hash <== Sha256Hasher(7)([
         packedVals,
         computedPubKey,
