@@ -28,11 +28,11 @@ import path from "path";
 import type { App } from "supertest/types";
 
 import { AppModule } from "../ts/app.module";
-import { ErrorCodes } from "../ts/common";
+import { ErrorCodes, ESupportedNetworks } from "../ts/common";
 import { CryptoService } from "../ts/crypto/crypto.service";
-import { EProofGenerationEvents } from "../ts/events/types";
 import { FileModule } from "../ts/file/file.module";
-import { IGenerateArgs } from "../ts/proof/types";
+import { EProofGenerationEvents, IGenerateArgs } from "../ts/proof/types";
+import { ESubgraphEvents, IDeploySubgraphArgs } from "../ts/subgraph/types";
 
 const STATE_TREE_DEPTH = 10;
 const INT_STATE_TREE_DEPTH = 1;
@@ -338,6 +338,177 @@ describe("e2e", () => {
       });
 
       expect(result.isEthereumAddress).toBe("tallyContractAddress must be an Ethereum address");
+    });
+  });
+
+  describe("validation /v1/subgraph/deploy POST", () => {
+    test("should throw an error if network is invalid", async () => {
+      const encryptedHeader = await getAuthorizationHeader();
+
+      const result = await request(app.getHttpServer() as App)
+        .post("/v1/subgraph/deploy")
+        .set("Authorization", encryptedHeader)
+        .send({
+          network: "unknown",
+          maciContractAddress: maciAddresses.maciAddress,
+          startBlock: 0,
+          name: "subgraph",
+          tag: "v0.0.1",
+        })
+        .expect(400);
+
+      expect(result.body).toStrictEqual({
+        error: "Bad Request",
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: [`network must be one of the following values: ${Object.values(ESupportedNetworks).join(", ")}`],
+      });
+    });
+
+    test("should throw an error if network is invalid (ws)", async () => {
+      const args: IDeploySubgraphArgs = {
+        network: "unknown" as ESupportedNetworks,
+        maciContractAddress: maciAddresses.maciAddress,
+        startBlock: 0,
+        name: "subgraph",
+        tag: "v0.0.1",
+      };
+
+      const result = await new Promise<{ network?: string }>((resolve) => {
+        socket.emit(ESubgraphEvents.START, args).on(ESubgraphEvents.ERROR, (errors: ValidationError[]) => {
+          const error = errors[0]?.constraints;
+
+          resolve({ network: error?.isEnum });
+        });
+      });
+
+      expect(result.network).toBe(
+        `network must be one of the following values: ${Object.values(ESupportedNetworks).join(", ")}`,
+      );
+    });
+
+    test("should throw an error if maci contract is invalid", async () => {
+      const encryptedHeader = await getAuthorizationHeader();
+
+      const result = await request(app.getHttpServer() as App)
+        .post("/v1/subgraph/deploy")
+        .set("Authorization", encryptedHeader)
+        .send({
+          network: ESupportedNetworks.OPTIMISM_SEPOLIA,
+          maciContractAddress: "unknown",
+          startBlock: 0,
+          name: "subgraph",
+          tag: "v0.0.1",
+        })
+        .expect(400);
+
+      expect(result.body).toStrictEqual({
+        error: "Bad Request",
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: ["maciContractAddress must be an Ethereum address"],
+      });
+    });
+
+    test("should throw an error if maci contract is invalid (ws)", async () => {
+      const args: IDeploySubgraphArgs = {
+        network: ESupportedNetworks.OPTIMISM_SEPOLIA,
+        maciContractAddress: "unknown",
+        startBlock: 0,
+        name: "subgraph",
+        tag: "v0.0.1",
+      };
+
+      const result = await new Promise<{ contract?: string }>((resolve) => {
+        socket.emit(ESubgraphEvents.START, args).on(ESubgraphEvents.ERROR, (errors: ValidationError[]) => {
+          const error = errors[0]?.constraints;
+
+          resolve({ contract: error?.isEthereumAddress });
+        });
+      });
+
+      expect(result.contract).toBe("maciContractAddress must be an Ethereum address");
+    });
+
+    test("should throw an error if tag is invalid", async () => {
+      const encryptedHeader = await getAuthorizationHeader();
+
+      const result = await request(app.getHttpServer() as App)
+        .post("/v1/subgraph/deploy")
+        .set("Authorization", encryptedHeader)
+        .send({
+          network: ESupportedNetworks.OPTIMISM_SEPOLIA,
+          maciContractAddress: maciAddresses.maciAddress,
+          startBlock: 0,
+          name: "subgraph",
+          tag: "unknown",
+        })
+        .expect(400);
+
+      expect(result.body).toStrictEqual({
+        error: "Bad Request",
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: ["tag must match /^v\\d+\\.\\d+\\.\\d+$/ regular expression"],
+      });
+    });
+
+    test("should throw an error if tag is invalid (ws)", async () => {
+      const args: IDeploySubgraphArgs = {
+        network: ESupportedNetworks.OPTIMISM_SEPOLIA,
+        maciContractAddress: maciAddresses.maciAddress,
+        startBlock: 0,
+        name: "subgraph",
+        tag: "unknown",
+      };
+
+      const result = await new Promise<{ tag?: string }>((resolve) => {
+        socket.emit(ESubgraphEvents.START, args).on(ESubgraphEvents.ERROR, (errors: ValidationError[]) => {
+          const error = errors[0]?.constraints;
+
+          resolve({ tag: error?.matches });
+        });
+      });
+
+      expect(result.tag).toBe("tag must match /^v\\d+\\.\\d+\\.\\d+$/ regular expression");
+    });
+  });
+
+  describe("/v1/subgraph/deploy POST", () => {
+    test("should throw an error if there is no authorization header", async () => {
+      const result = await request(app.getHttpServer() as App)
+        .post("/v1/proof/generate")
+        .send({
+          network: ESupportedNetworks.OPTIMISM_SEPOLIA,
+          maciContractAddress: maciAddresses.maciAddress,
+          startBlock: 0,
+          name: "subgraph",
+          tag: "v0.0.1",
+        })
+        .expect(403);
+
+      expect(result.body).toStrictEqual({
+        error: "Forbidden",
+        message: "Forbidden resource",
+        statusCode: HttpStatus.FORBIDDEN,
+      });
+    });
+
+    test("should throw an error if there is no authorization header (ws)", async () => {
+      const args: IDeploySubgraphArgs = {
+        network: ESupportedNetworks.OPTIMISM_SEPOLIA,
+        maciContractAddress: maciAddresses.maciAddress,
+        startBlock: 0,
+        name: "subgraph",
+        tag: "v0.0.1",
+      };
+
+      const unauthorizedSocket = io(await app.getUrl());
+
+      const result = await new Promise<Error>((resolve) => {
+        unauthorizedSocket.emit(ESubgraphEvents.START, args).on(ESubgraphEvents.ERROR, (error: Error) => {
+          resolve(error);
+        });
+      }).finally(() => unauthorizedSocket.disconnect());
+
+      expect(result.message).toBe("Forbidden resource");
     });
   });
 

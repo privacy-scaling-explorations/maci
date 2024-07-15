@@ -5,22 +5,25 @@ import { IGenerateProofsBatchData, type Proof, type TallyData } from "maci-contr
 import type { Server } from "socket.io";
 
 import { AccountSignatureGuard } from "../auth/AccountSignatureGuard.service";
-import { GenerateProofDto } from "../proof/dto";
-import { ProofGeneratorService } from "../proof/proof.service";
 
+import { GenerateProofDto } from "./dto";
+import { ProofGeneratorService } from "./proof.service";
 import { EProofGenerationEvents } from "./types";
 
+/**
+ * ProofGateway is responsible for websockets integration between client and ProofGeneratorService.
+ */
 @WebSocketGateway({
   cors: {
     origin: process.env.COORDINATOR_ALLOWED_ORIGINS?.split(","),
   },
 })
 @UseGuards(AccountSignatureGuard)
-export class EventsGateway {
+export class ProofGateway {
   /**
    * Logger
    */
-  private readonly logger = new Logger(EventsGateway.name);
+  private readonly logger = new Logger(ProofGateway.name);
 
   /**
    * Websocket server
@@ -29,7 +32,7 @@ export class EventsGateway {
   server!: Server;
 
   /**
-   * Initialize EventsGateway
+   * Initialize ProofGateway
    *
    * @param proofGeneratorService - proof generator service
    */

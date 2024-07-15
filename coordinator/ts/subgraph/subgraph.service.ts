@@ -5,9 +5,15 @@ import fs from "fs";
 import path from "path";
 import { promisify } from "util";
 
-import type { IDeploySubgraphArgs, IDeploySubgraphReturn } from "./types";
-
 import { ErrorCodes, ESupportedNetworks } from "../common";
+
+import {
+  EProgressStep,
+  TOTAL_STEPS,
+  type IDeploySubgraphArgs,
+  type IDeploySubgraphReturn,
+  type ISubgraphWsHooks,
+} from "./types";
 
 const execFile = promisify(childProcess.execFile);
 
@@ -27,10 +33,11 @@ export class SubgraphService {
    * Generate proofs for message processing and tally
    *
    * @param args - deploy subgraph arguments
+   * @param options - ws hooks
    * @returns - deployed subgraph url
    * @throws error if deploy is not successful
    */
-  async deploy(args: IDeploySubgraphArgs): Promise<IDeploySubgraphReturn> {
+  async deploy(args: IDeploySubgraphArgs, options?: ISubgraphWsHooks): Promise<IDeploySubgraphReturn> {
     try {
       if (!Object.values(ESupportedNetworks).includes(args.network)) {
         throw new Error("Invalid network");
@@ -42,6 +49,8 @@ export class SubgraphService {
         path.resolve(process.env.SUBGRAPH_FOLDER!, "schemas/schema.v1.graphql"),
         path.resolve(process.env.SUBGRAPH_FOLDER!, "schema.graphql"),
       ]);
+
+      options?.onProgress({ current: EProgressStep.SCHEMA, total: TOTAL_STEPS });
 
       await fs.promises.writeFile(
         path.resolve(process.env.SUBGRAPH_FOLDER!, `config/${args.network}.json`),
@@ -57,11 +66,15 @@ export class SubgraphService {
         { flag: "w+" },
       );
 
+      options?.onProgress({ current: EProgressStep.NETWORK, total: TOTAL_STEPS });
+
       const mustacheOutput = await execFile("mustache", [
         path.resolve(process.env.SUBGRAPH_FOLDER!, `config/${args.network}.json`),
         path.resolve(process.env.SUBGRAPH_FOLDER!, "templates/subgraph.template.yaml"),
       ]);
       await fs.promises.writeFile(subgraphManifestPath, mustacheOutput.stdout, { flag: "w+" });
+
+      options?.onProgress({ current: EProgressStep.TEMPLATE, total: TOTAL_STEPS });
 
       await execFile("graph", [
         "codegen",
@@ -69,12 +82,17 @@ export class SubgraphService {
         "--output-dir",
         path.resolve(process.env.SUBGRAPH_FOLDER!, "generated"),
       ]);
+
+      options?.onProgress({ current: EProgressStep.CODEGEN, total: TOTAL_STEPS });
+
       await execFile("graph", [
         "build",
         subgraphManifestPath,
         "--output-dir",
         path.resolve(process.env.SUBGRAPH_FOLDER!, "build"),
       ]);
+
+      options?.onProgress({ current: EProgressStep.BUILD, total: TOTAL_STEPS });
 
       const deployOutput = await execFile("graph", [
         "deploy",
@@ -87,6 +105,7 @@ export class SubgraphService {
         "--version-label",
         args.tag,
       ]);
+      options?.onProgress({ current: EProgressStep.DEPLOY, total: TOTAL_STEPS });
       this.logger.log(deployOutput.stdout);
 
       const url = deployOutput.stdout.match(URL_REGEX)?.[1]?.trim().replace("\u001b[0m", "");
@@ -95,9 +114,12 @@ export class SubgraphService {
         throw new Error(ErrorCodes.SUBGRAPH_DEPLOY);
       }
 
+      options?.onSuccess(url);
+
       return { url };
     } catch (error) {
       this.logger.error("Error: ", error);
+      options?.onFail(error as Error);
       throw new Error(ErrorCodes.SUBGRAPH_DEPLOY);
     }
   }
