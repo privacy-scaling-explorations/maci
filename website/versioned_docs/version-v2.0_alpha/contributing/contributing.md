@@ -19,6 +19,10 @@ We're really glad you're reading this, because we need volunteer developers to h
 
 The best way to contribute to our projects is by opening a [new issue](https://github.com/privacy-scaling-explorations/maci/issues) or tackling one of the issues listed [here](https://github.com/privacy-scaling-explorations/maci/contribute).
 
+:::info
+If you pick up an issue and are assigned to it by the maintaining team, please be advised that from time to time the team will reach out to check on the progress of the work. If you are working on the issue you are assigned but need more time or help, please let us know and we will be happy to assist you. We understand that contributors have other commitments too, and we appreciate every contribution, no matter the pace. If you fail to respond after 2 weeks, we will gently remind you to provide an update. If there is still no activity after that, we may reassign the issue to ensure project momentum, but we also welcome you to reengage with the project at any time when you are more available.
+:::
+
 ## Pull Requests
 
 Pull requests are great if you want to add a feature or fix a bug. Here's a quick guide:
