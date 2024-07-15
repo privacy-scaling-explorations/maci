@@ -5,6 +5,10 @@ sidebar_label: MACI
 sidebar_position: 1
 ---
 
+:::info
+Code location: [MACI.sol](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/MACI.sol)
+:::
+
 `MACI.sol` is the core contract of the project, as it provides the base layer for user signups and Polls to be created.
 
 The constructor shown below accepts several arguments:

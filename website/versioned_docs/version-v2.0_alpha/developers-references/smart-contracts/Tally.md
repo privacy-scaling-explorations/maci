@@ -5,6 +5,10 @@ sidebar_label: Tally
 sidebar_position: 5
 ---
 
+:::info
+Code location: [Tally.sol](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/Tally.sol)
+:::
+
 The `Tally` contract is used by the coordinator to submit commitments to the tally results via the `tallyVotes` function. This is done in batches and the final commitment can be used by the users to verify the validity of the results.
 
 This contract should be deployed alongside a `Poll` and ownership assigned to the coordinator.

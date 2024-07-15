@@ -5,6 +5,10 @@ sidebar_label: PollFactory
 sidebar_position: 3
 ---
 
+:::info
+Code location: [PollFactory.sol](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/PollFactory.sol)
+:::
+
 `PollFactory` is a smart contract that is used to deploy new Polls. This is used by MACI inside the `deployPoll` function.
 
 ```ts

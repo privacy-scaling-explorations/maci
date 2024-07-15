@@ -5,6 +5,10 @@ sidebar_label: AccQueue
 sidebar_position: 1
 ---
 
+:::info
+Code location: [AccQueue.sol](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/trees/AccQueue.sol)
+:::
+
 The AccQueue contract represents a Merkle Tree where each leaf insertion only updates a subtree. To obtain the main tree root, the subtrees must be merged together by the contract owner. This requires at least two operations, a `mergeSubRoots` and a `merge`.
 
 The contract can be initialized to work as a traditional Merkle Tree (2 leaves per node) or a Quinary Tree (5 leaves per node). This can be achieved by passing either two or five as parameter to the constructor (`_hashLength`). Any other values should not be accepted.
