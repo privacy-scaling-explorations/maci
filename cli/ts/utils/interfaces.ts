@@ -1147,9 +1147,9 @@ export enum GatekeeperTrait {
 }
 
 /**
- * Interface for the arguments to the get semaphore gatekeeper data command
+ * Interface for the arguments to the get a gatekeeper's data command
  */
-export interface IGetSemaphoreGatekeeperDataArgs {
+export interface IGetGatekeeperDataArgs {
   /**
    * The address of the MACI contract
    */
@@ -1174,4 +1174,21 @@ export interface ISemaphoreGatekeeperData {
    * The group ID
    */
   groupId: string;
+}
+
+export interface IZupassGatekeeperData {
+  /**
+   * The event ID
+   */
+  eventId: string;
+
+  /**
+   * The first signer
+   */
+  signer1: string;
+
+  /**
+   * The second signer
+   */
+  signer2: string;
 }

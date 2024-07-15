@@ -10,7 +10,13 @@ export { publish, publishBatch } from "./publish";
 export { setVerifyingKeys } from "./setVerifyingKeys";
 export { showContracts } from "./showContracts";
 export { timeTravel } from "./timeTravel";
-export { signup, isRegisteredUser, getGatekeeperTrait, getSemaphoreGatekeeperData } from "./signup";
+export {
+  signup,
+  isRegisteredUser,
+  getGatekeeperTrait,
+  getSemaphoreGatekeeperData,
+  getZupassGatekeeperData,
+} from "./signup";
 export { verify } from "./verify";
 export { genProofs } from "./genProofs";
 export { fundWallet } from "./fundWallet";

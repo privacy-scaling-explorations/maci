@@ -3,6 +3,7 @@ import {
   MACI__factory as MACIFactory,
   SignUpGatekeeper__factory as SignUpGatekeeperFactory,
   SemaphoreGatekeeper__factory as SemaphoreGatekeeperFactory,
+  ZupassGatekeeper__factory as ZupassGatekeeperFactory,
 } from "maci-contracts/typechain-types";
 import { PubKey } from "maci-domainobjs";
 
@@ -12,8 +13,9 @@ import type {
   IRegisteredUserArgs,
   ISignupData,
   SignupArgs,
-  IGetSemaphoreGatekeeperDataArgs,
+  IGetGatekeeperDataArgs,
   ISemaphoreGatekeeperData,
+  IZupassGatekeeperData,
 } from "../utils/interfaces";
 
 import { banner } from "../utils/banner";
@@ -191,7 +193,7 @@ export const getGatekeeperTrait = async ({
 export const getSemaphoreGatekeeperData = async ({
   maciAddress,
   signer,
-}: IGetSemaphoreGatekeeperDataArgs): Promise<ISemaphoreGatekeeperData> => {
+}: IGetGatekeeperDataArgs): Promise<ISemaphoreGatekeeperData> => {
   const maciContract = MACIFactory.connect(maciAddress, signer);
 
   // get the address of the signup gatekeeper
@@ -208,5 +210,34 @@ export const getSemaphoreGatekeeperData = async ({
   return {
     address: semaphoreContractAddress,
     groupId: groupId.toString(),
+  };
+};
+
+/**
+ * Get the zupass gatekeeper data
+ * @param IGetGatekeeperDataArgs - The arguments for the get zupass gatekeeper data command
+ * @returns The zupass gatekeeper data
+ */
+export const getZupassGatekeeperData = async ({
+  maciAddress,
+  signer,
+}: IGetGatekeeperDataArgs): Promise<IZupassGatekeeperData> => {
+  const maciContract = MACIFactory.connect(maciAddress, signer);
+
+  // get the address of the signup gatekeeper
+  const gatekeeperContractAddress = await maciContract.signUpGatekeeper();
+
+  const gatekeeperContract = ZupassGatekeeperFactory.connect(gatekeeperContractAddress, signer);
+
+  const [validEventId, validSigner1, validSigner2] = await Promise.all([
+    gatekeeperContract.validEventId(),
+    gatekeeperContract.validSigner1(),
+    gatekeeperContract.validSigner2(),
+  ]);
+
+  return {
+    eventId: validEventId.toString(),
+    signer1: validSigner1.toString(),
+    signer2: validSigner2.toString(),
   };
 };
