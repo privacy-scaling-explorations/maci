@@ -5,6 +5,10 @@ sidebar_label: VkRegistry
 sidebar_position: 8
 ---
 
+:::info
+Code location: [VkRegistry.sol](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/VkRegistry.sol)
+:::
+
 The VkRegistry is a contract that holds the verifying keys for the zk-SNARK circuits. It holds two different sets of keys:
 
 - `processVks` - The keys for the processMessages circuit
