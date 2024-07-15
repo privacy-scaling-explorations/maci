@@ -106,7 +106,7 @@ export class Deployment {
       console.log("======================================================================");
       console.log("====================    ATTENTION! INCREMENTAL MODE    ===============");
       console.log("======================================================================");
-      console.log("=========== Delete 'deployed-contracts.json' to start a new ==========");
+      console.log("====== Delete 'deployed-contracts.json' to start a new deployment ====");
       console.log("======================================================================");
       console.log("======================================================================");
     } else {
