@@ -145,8 +145,8 @@ importers:
         specifier: ^7.1.2
         version: 7.1.2(chai@4.4.1)
       fast-check:
-        specifier: ^3.18.0
-        version: 3.19.0
+        specifier: ^3.20.0
+        version: 3.20.0
       mocha:
         specifier: ^10.6.0
         version: 10.6.0
@@ -424,8 +424,8 @@ importers:
         specifier: ^6.0.0
         version: 6.0.2
       fast-check:
-        specifier: ^3.19.0
-        version: 3.19.0
+        specifier: ^3.20.0
+        version: 3.20.0
       jest:
         specifier: ^29.5.0
         version: 29.7.0(@types/node@20.14.10)(ts-node@10.9.2(@types/node@20.14.10)(typescript@5.5.2))
@@ -5651,8 +5651,8 @@ packages:
     resolution: {integrity: sha512-GipyPsXO1anza0AOZdy69Im7hGFCNB7Y/NGjDlZGJ3GJJLtwNSb2vrzYrTYJRrRloVx7pl+bhUaTB8yiccPvFQ==}
     engines: {node: '> 0.1.90'}
 
-  fast-check@3.19.0:
-    resolution: {integrity: sha512-CO2JX/8/PT9bDGO1iXa5h5ey1skaKI1dvecERyhH4pp3PGjwd3KIjMAXEg79Ps9nclsdt4oPbfqiAnLU0EwrAQ==}
+  fast-check@3.20.0:
+    resolution: {integrity: sha512-pZIjqLpOZgdSLecec4GKC3Zq5702MZ34upMKxojnNVSWA0K64V3pXOBT1Wdsrc3AphLtzRBbsi8bRWF4TUGmUg==}
     engines: {node: '>=8.0.0'}
 
   fast-decode-uri-component@1.0.1:
@@ -18306,7 +18306,7 @@ snapshots:
 
   eyes@0.1.8: {}
 
-  fast-check@3.19.0:
+  fast-check@3.20.0:
     dependencies:
       pure-rand: 6.1.0
 
