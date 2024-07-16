@@ -2,15 +2,15 @@ import { Test } from "@nestjs/testing";
 import { IGenerateProofsOptions } from "maci-contracts";
 import { Server } from "socket.io";
 
-import type { IGenerateArgs, IGenerateData } from "../../proof/types";
+import type { IGenerateArgs, IGenerateData } from "../types";
 import type { TallyData } from "maci-cli";
 
-import { ProofGeneratorService } from "../../proof/proof.service";
-import { EventsGateway } from "../events.gateway";
+import { ProofGateway } from "../proof.gateway";
+import { ProofGeneratorService } from "../proof.service";
 import { EProofGenerationEvents } from "../types";
 
-describe("EventsGateway", () => {
-  let gateway: EventsGateway;
+describe("ProofGateway", () => {
+  let gateway: ProofGateway;
 
   const defaultProofGeneratorArgs: IGenerateArgs = {
     poll: 0,
@@ -34,7 +34,7 @@ describe("EventsGateway", () => {
   const mockEmit = jest.fn();
 
   beforeEach(async () => {
-    const testModule = await Test.createTestingModule({ providers: [EventsGateway] })
+    const testModule = await Test.createTestingModule({ providers: [ProofGateway] })
       .useMocker((token) => {
         if (token === ProofGeneratorService) {
           mockGeneratorService.generate.mockImplementation((_, options?: IGenerateProofsOptions) => {
@@ -53,7 +53,7 @@ describe("EventsGateway", () => {
       })
       .compile();
 
-    gateway = testModule.get<EventsGateway>(EventsGateway);
+    gateway = testModule.get<ProofGateway>(ProofGateway);
 
     gateway.server = { emit: mockEmit } as unknown as Server;
   });

@@ -2,6 +2,16 @@ import type { TallyData } from "maci-cli";
 import type { Proof } from "maci-contracts";
 
 /**
+ * WS events for proof generation
+ */
+export enum EProofGenerationEvents {
+  START = "start-generation",
+  PROGRESS = "progress-generation",
+  FINISH = "finish-generation",
+  ERROR = "exception",
+}
+
+/**
  * Interface that represents generate proofs arguments
  */
 export interface IGenerateArgs {
