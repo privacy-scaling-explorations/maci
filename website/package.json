@@ -36,7 +36,7 @@
     "@docusaurus/module-type-aliases": "^3.4.0",
     "@docusaurus/tsconfig": "^3.4.0",
     "@docusaurus/types": "^3.4.0",
-    "@types/node": "^20.14.8",
+    "@types/node": "^20.14.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.2"
   },
