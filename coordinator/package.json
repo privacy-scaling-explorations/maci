@@ -21,7 +21,7 @@
     "generate-keypair": "ts-node ./scripts/generateKeypair.ts"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "^0.76.0",
+    "@graphprotocol/graph-cli": "^0.78.0",
     "@nestjs/common": "^10.3.10",
     "@nestjs/core": "^10.3.10",
     "@nestjs/platform-express": "^10.3.10",
