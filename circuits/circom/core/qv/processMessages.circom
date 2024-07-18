@@ -236,11 +236,6 @@ template ProcessMessages(
     var computedCommandsPackedCommandOut[batchSize][PACKED_CMD_LENGTH];
 
     for (var i = 0; i < batchSize; i++) {
-        var message[MSG_LENGTH];
-        for (var j = 0; j < MSG_LENGTH; j++) {
-            message[j] = msgs[i][j];
-        }
-
         (
             computedCommandsStateIndex[i],
             computedCommandsNewPubKey[i],
@@ -252,7 +247,7 @@ template ProcessMessages(
             computedCommandsSigR8[i],
             computedCommandsSigS[i],
             computedCommandsPackedCommandOut[i]
-        ) = MessageToCommand()(message, coordPrivKey, encPubKeys[i]);
+        ) = MessageToCommand()(msgs[i], coordPrivKey, encPubKeys[i]);
     }
 
     // Process messages in reverse order.
