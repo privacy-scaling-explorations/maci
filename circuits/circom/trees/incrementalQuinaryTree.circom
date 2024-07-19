@@ -93,6 +93,13 @@ template Splicer(numItems) {
     // The output signal from the QuinSelector is <item from in> and gets
     // wired to Mux1 (as above).
 
+    var inputs[NUM_OUTPUT_ITEMS];
+
+    for (var i = 0; i < numItems; i++) {
+        inputs[i] = in[i];
+    }
+    inputs[NUM_OUTPUT_ITEMS - 1] = 0;
+
     for (var i = 0; i < NUM_OUTPUT_ITEMS; i++) {
         // Determines if current index is greater than the insertion index.
         var computedIsIndexAfterInsertPoint = SafeGreaterThan(3)([i, index]);
@@ -101,7 +108,7 @@ template Splicer(numItems) {
         var computedAdjustedIndex = i - computedIsIndexAfterInsertPoint;
 
         // Selects item from the original array or the leaf for insertion.
-        var computedQuinSelected = QuinSelector(NUM_OUTPUT_ITEMS)([in[0], in[1], in[2], in[3], 0], computedAdjustedIndex);
+        var computedQuinSelected = QuinSelector(NUM_OUTPUT_ITEMS)(inputs, computedAdjustedIndex);
         var computedIsIndexEqual = IsEqual()([index, i]);
         var mux = Mux1()([computedQuinSelected, leaf], computedIsIndexEqual);
 
@@ -129,8 +136,14 @@ template QuinTreeInclusionProof(levels) {
 
     // Iteratively hash each level of path_elements with the leaf or previous hash
     for (var i = 0; i < levels; i++) {
+        var elements[LEAVES_PER_PATH_LEVEL];
+
+        for (var j = 0; j < LEAVES_PER_PATH_LEVEL; j++) {
+            elements[j] = path_elements[i][j];
+        }
+
         var computedSplicedLeaf[LEAVES_PER_NODE] = Splicer(LEAVES_PER_PATH_LEVEL)(
-            [path_elements[i][0], path_elements[i][1], path_elements[i][2], path_elements[i][3]], 
+            elements, 
             currentLeaf, 
             path_index[i]
         );
