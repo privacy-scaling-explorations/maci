@@ -32,10 +32,7 @@ template EdDSAPoseidonVerifier_patched() {
     // convert the signature scalar S into its binary representation.
     var computedNum2Bits[254] = Num2Bits(254)(S);
 
-    var computedCompConstantIn[254];
-    for (var i=0; i<253; i++) {
-        computedCompConstantIn[i] = computedNum2Bits[i];
-    }
+    var computedCompConstantIn[254] = computedNum2Bits;
     computedCompConstantIn[253] = 0;
 
     // A component that ensures S is within a valid range, 
