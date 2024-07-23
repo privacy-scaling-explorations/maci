@@ -81,8 +81,8 @@ importers:
         specifier: ^5.0.1
         version: 5.0.1(typescript@5.5.4)
       tar:
-        specifier: ^7.4.0
-        version: 7.4.0
+        specifier: ^7.4.1
+        version: 7.4.1
       ts-node:
         specifier: ^10.9.1
         version: 10.9.2(@types/node@20.14.11)(typescript@5.5.4)
@@ -399,8 +399,8 @@ importers:
         specifier: ^4.7.5
         version: 4.7.5
       tar:
-        specifier: ^7.4.0
-        version: 7.4.0
+        specifier: ^7.4.1
+        version: 7.4.1
     devDependencies:
       '@nestjs/cli':
         specifier: ^10.4.2
@@ -10149,8 +10149,8 @@ packages:
     resolution: {integrity: sha512-DZ4yORTwrbTj/7MZYq2w+/ZFdI6OZ/f9SFHR+71gIVUZhOQPHzVCLpvRnPgyaMpfWxxk/4ONva3GQSyNIKRv6A==}
     engines: {node: '>=10'}
 
-  tar@7.4.0:
-    resolution: {integrity: sha512-XQs0S8fuAkQWuqhDeCdMlJXDX80D7EOVLDPVFkna9yQfzS+PHKgfxcei0jf6/+QAWcjqrnC8uM3fSAnrQl+XYg==}
+  tar@7.4.1:
+    resolution: {integrity: sha512-dDJzpQf7Nud96mCs3wtw+XUiWGpi9WHxytSusrg0lYlj/Kr11DnB5hfw5bNDQNzx52JJ2Vy+7l8AFivp6H7ETA==}
     engines: {node: '>=18'}
 
   temp-dir@1.0.0:
@@ -24267,7 +24267,7 @@ snapshots:
       mkdirp: 1.0.4
       yallist: 4.0.0
 
-  tar@7.4.0:
+  tar@7.4.1:
     dependencies:
       '@isaacs/fs-minipass': 4.0.1
       chownr: 3.0.0
