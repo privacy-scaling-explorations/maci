@@ -45,7 +45,7 @@
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "socket.io": "^4.7.5",
-    "tar": "^7.4.0"
+    "tar": "^7.4.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.4.2",
