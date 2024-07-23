@@ -250,9 +250,6 @@ importers:
       '@openzeppelin/contracts':
         specifier: ^5.0.2
         version: 5.0.2
-      '@zk-kit/imt.sol':
-        specifier: 2.0.0-beta.12
-        version: 2.0.0-beta.12
       circomlibjs:
         specifier: ^0.1.7
         version: 0.1.7
@@ -3453,9 +3450,6 @@ packages:
 
   '@zk-kit/eddsa-poseidon@1.0.2':
     resolution: {integrity: sha512-3ON/6LFHjSqrK+ndIYPJoevzXUkqNGrpVHgfZbYX6x1CoCHHxQG83HH7EBhdWRQsMjcIiw5GVL8h6Xa6irNOYw==}
-
-  '@zk-kit/imt.sol@2.0.0-beta.12':
-    resolution: {integrity: sha512-kKgopVO6zlfSiQgv3X9WykaCeyb8jGtthWGqdo1ZD7fY1bH8A7BWhhWxtoCuU5mPEgRbamw1cAoUynuLoEULsg==}
 
   '@zk-kit/poseidon-cipher@0.3.1':
     resolution: {integrity: sha512-3plpr4Dk0EADSRPJ0NLNt7x+QG8zlJhT264zVGRxgl4yhraE2C/wAxrclUx1mcw8I04hYoXf1BTd0noAIwd5/A==}
@@ -8670,9 +8664,6 @@ packages:
   pluralize@8.0.0:
     resolution: {integrity: sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA==}
     engines: {node: '>=4'}
-
-  poseidon-solidity@0.0.5:
-    resolution: {integrity: sha512-NzrvSwHzvZgT4hvg2GyGqeR+UOU/eLSEt4wAoXEua+VaR7NTKKwx1X9bPlh1VMBEVEno+IWvkRBbidFGzTeAqQ==}
 
   possible-typed-array-names@1.0.0:
     resolution: {integrity: sha512-d7Uw+eZoloe0EHDIYoe+bQ5WXnGMOpmiZFTuMWCwpjzzkL2nTjcKiAk4hh8TjnGye2TwWOk3UXucZ+3rbmBa8Q==}
@@ -15555,10 +15546,6 @@ snapshots:
       '@zk-kit/baby-jubjub': 1.0.1
       '@zk-kit/utils': 1.0.0
       buffer: 6.0.3
-
-  '@zk-kit/imt.sol@2.0.0-beta.12':
-    dependencies:
-      poseidon-solidity: 0.0.5
 
   '@zk-kit/poseidon-cipher@0.3.1':
     dependencies:
@@ -22449,8 +22436,6 @@ snapshots:
   platform@1.3.6: {}
 
   pluralize@8.0.0: {}
-
-  poseidon-solidity@0.0.5: {}
 
   possible-typed-array-names@1.0.0: {}
 

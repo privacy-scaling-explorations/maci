@@ -2,16 +2,19 @@ import { expect } from "chai";
 import { BaseContract, Signer, ZeroAddress } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
-import { deployPollFactory, getDefaultSigner } from "../ts";
+import { deployPollFactory, genEmptyBallotRoots, getDefaultSigner } from "../ts";
 import { PollFactory } from "../typechain-types";
 
-import { maxValues, treeDepths } from "./constants";
+import { maxValues, STATE_TREE_DEPTH, treeDepths } from "./constants";
 
 describe("pollFactory", () => {
   let pollFactory: PollFactory;
   let signer: Signer;
 
   const { pubKey: coordinatorPubKey } = new Keypair();
+
+  const emptyBallotRoots = genEmptyBallotRoots(STATE_TREE_DEPTH);
+  const emptyBallotRoot = emptyBallotRoots[treeDepths.voteOptionTreeDepth];
 
   before(async () => {
     signer = await getDefaultSigner();
@@ -26,6 +29,7 @@ describe("pollFactory", () => {
         treeDepths,
         coordinatorPubKey.asContractParam(),
         ZeroAddress,
+        emptyBallotRoot,
       );
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
@@ -42,6 +46,7 @@ describe("pollFactory", () => {
           treeDepths,
           coordinatorPubKey.asContractParam(),
           ZeroAddress,
+          emptyBallotRoot,
         ),
       ).to.be.revertedWithCustomError(pollFactory, "InvalidMaxValues");
     });

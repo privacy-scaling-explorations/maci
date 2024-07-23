@@ -13,12 +13,14 @@ interface IPollFactory {
   /// @param _treeDepths The depths of the merkle trees
   /// @param _coordinatorPubKey The coordinator's public key
   /// @param _maci The MACI contract interface reference
+  /// @param _emptyBallotRoot The root of the empty ballot tree
   /// @return The deployed Poll contract
   function deploy(
     uint256 _duration,
     Params.MaxValues memory _maxValues,
     Params.TreeDepths memory _treeDepths,
     DomainObjs.PubKey memory _coordinatorPubKey,
-    address _maci
+    address _maci,
+    uint256 _emptyBallotRoot
   ) external returns (address);
 }

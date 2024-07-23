@@ -3,7 +3,6 @@ pragma solidity ^0.8.20;
 
 import { Params } from "./utilities/Params.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
-import { EmptyBallotRoots } from "./trees/EmptyBallotRoots.sol";
 import { IPoll } from "./interfaces/IPoll.sol";
 import { Utilities } from "./utilities/Utilities.sol";
 import { CurveBabyJubJub } from "./crypto/BabyJubJub.sol";
@@ -13,7 +12,7 @@ import { CurveBabyJubJub } from "./crypto/BabyJubJub.sol";
 /// which can be either votes or key change messages.
 /// @dev Do not deploy this directly. Use PollFactory.deploy() which performs some
 /// checks on the Poll constructor arguments.
-contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
+contract Poll is Params, Utilities, SnarkCommon, IPoll {
   /// @notice Whether the Poll has been initialized
   bool internal isInit;
 
@@ -31,6 +30,9 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
 
   // The duration of the polling period, in seconds
   uint256 internal immutable duration;
+
+  /// @notice The root of the empty ballot tree at a given voteOptionTree depth
+  uint256 public immutable emptyBallotRoot;
 
   /// @notice Whether the MACI contract's stateAq has been merged by this contract
   bool public stateMerged;
@@ -89,7 +91,8 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     MaxValues memory _maxValues,
     TreeDepths memory _treeDepths,
     PubKey memory _coordinatorPubKey,
-    ExtContracts memory _extContracts
+    ExtContracts memory _extContracts,
+    uint256 _emptyBallotRoot
   ) payable {
     // check that the coordinator public key is valid
     if (!CurveBabyJubJub.isOnCurve(_coordinatorPubKey.x, _coordinatorPubKey.y)) {
@@ -110,6 +113,8 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     treeDepths = _treeDepths;
     // Record the current timestamp
     deployTime = block.timestamp;
+    // store the empty ballot root
+    emptyBallotRoot = _emptyBallotRoot;
   }
 
   /// @notice A modifier that causes the function to revert if the voting period is
@@ -207,7 +212,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     // Set currentSbCommitment
     uint256[3] memory sb;
     sb[0] = _mergedStateRoot;
-    sb[1] = emptyBallotRoots[treeDepths.voteOptionTreeDepth - 1];
+    sb[1] = emptyBallotRoot;
     sb[2] = uint256(0);
 
     currentSbCommitment = hash3(sb);

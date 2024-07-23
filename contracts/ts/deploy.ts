@@ -33,6 +33,7 @@ import {
   SemaphoreGatekeeper,
 } from "../typechain-types";
 
+import { genEmptyBallotRoots } from "./genEmptyBallotRoots";
 import { log } from "./utils";
 
 /**
@@ -271,6 +272,8 @@ export const deployMaci = async ({
   stateTreeDepth = 10,
   quiet = true,
 }: IDeployMaciArgs): Promise<IDeployedMaci> => {
+  const emptyBallotRoots = genEmptyBallotRoots(stateTreeDepth);
+
   const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } =
     await deployPoseidonContracts(signer, poseidonAddresses, quiet);
 
@@ -328,6 +331,7 @@ export const deployMaci = async ({
     signUpTokenGatekeeperContractAddress,
     initialVoiceCreditBalanceAddress,
     stateTreeDepth,
+    emptyBallotRoots,
   );
 
   return {
