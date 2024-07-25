@@ -6,6 +6,7 @@ import type {
   SemaphoreGatekeeper,
 } from "../../../typechain-types";
 
+import { genEmptyBallotRoots } from "../../../ts/genEmptyBallotRoots";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
 import { EContracts, IDeployParams } from "../../helpers/types";
@@ -62,6 +63,8 @@ deployment.deployTask("full:deploy-maci", "Deploy MACI contract").then((task) =>
     const stateTreeDepth =
       deployment.getDeployConfigField<number | null>(EContracts.MACI, "stateTreeDepth") ?? DEFAULT_STATE_TREE_DEPTH;
 
+    const emptyBallotRoots = genEmptyBallotRoots(stateTreeDepth);
+
     const maciContract = await deployment.deployContractWithLinkedLibraries<MACI>(
       { contractFactory: maciContractFactory },
       pollFactoryContractAddress,
@@ -70,6 +73,7 @@ deployment.deployTask("full:deploy-maci", "Deploy MACI contract").then((task) =>
       gatekeeperContractAddress,
       constantInitialVoiceCreditProxyContractAddress,
       stateTreeDepth,
+      emptyBallotRoots,
     );
 
     if (gatekeeper === EContracts.EASGatekeeper) {
@@ -115,6 +119,7 @@ deployment.deployTask("full:deploy-maci", "Deploy MACI contract").then((task) =>
         gatekeeperContractAddress,
         constantInitialVoiceCreditProxyContractAddress,
         stateTreeDepth,
+        emptyBallotRoots,
       ],
       network: hre.network.name,
     });

@@ -26,7 +26,8 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
     MaxValues calldata _maxValues,
     TreeDepths calldata _treeDepths,
     PubKey calldata _coordinatorPubKey,
-    address _maci
+    address _maci,
+    uint256 _emptyBallotRoot
   ) public virtual returns (address pollAddr) {
     /// @notice Validate _maxValues
     /// maxVoteOptions must be less than 2 ** 50 due to circuit limitations;
@@ -43,7 +44,7 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
     ExtContracts memory extContracts = ExtContracts({ maci: IMACI(_maci), messageAq: messageAq });
 
     // deploy the poll
-    Poll poll = new Poll(_duration, _maxValues, _treeDepths, _coordinatorPubKey, extContracts);
+    Poll poll = new Poll(_duration, _maxValues, _treeDepths, _coordinatorPubKey, extContracts, _emptyBallotRoot);
 
     // Make the Poll contract own the messageAq contract, so only it can
     // run enqueue/merge

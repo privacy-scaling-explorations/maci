@@ -4,7 +4,6 @@ import fs from "fs";
 import path from "path";
 
 import { buildPoseidonT3, buildPoseidonT4, buildPoseidonT5, buildPoseidonT6 } from "../ts/buildPoseidon";
-import { genEmptyBallotRootsContract } from "../ts/genEmptyBallotRootsContract";
 import { genZerosContract } from "../ts/genZerosContract";
 
 const PATHS = [
@@ -73,10 +72,6 @@ async function main(): Promise<void> {
         fs.promises.writeFile(path.resolve(__dirname, "..", "contracts/trees/zeros", `${name}.sol`), `${text}\n`),
       ),
     ),
-  );
-
-  await genEmptyBallotRootsContract().then((text) =>
-    fs.promises.writeFile(path.resolve(__dirname, "..", "contracts/trees/EmptyBallotRoots.sol"), `${text}\n`),
   );
 
   await hre.run("compile");

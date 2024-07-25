@@ -33,6 +33,9 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
   uint256 internal constant BLANK_STATE_LEAF_HASH =
     uint256(6769006970205099520508948723718471724660867171122235270773600567925038008762);
 
+  /// @notice The roots of the empty ballot trees
+  uint256[5] public emptyBallotRoots;
+
   /// @notice Each poll has an incrementing ID
   uint256 public nextPollId;
 
@@ -96,13 +99,15 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
   /// @param _signUpGatekeeper The SignUpGatekeeper contract
   /// @param _initialVoiceCreditProxy The InitialVoiceCreditProxy contract
   /// @param _stateTreeDepth The depth of the state tree
+  /// @param _emptyBallotRoots The roots of the empty ballot trees
   constructor(
     IPollFactory _pollFactory,
     IMessageProcessorFactory _messageProcessorFactory,
     ITallyFactory _tallyFactory,
     SignUpGatekeeper _signUpGatekeeper,
     InitialVoiceCreditProxy _initialVoiceCreditProxy,
-    uint8 _stateTreeDepth
+    uint8 _stateTreeDepth,
+    uint256[5] memory _emptyBallotRoots
   ) payable {
     // initialize and insert the blank leaf
     InternalLazyIMT._init(lazyIMTData, _stateTreeDepth);
@@ -115,6 +120,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
     initialVoiceCreditProxy = _initialVoiceCreditProxy;
     stateTreeDepth = _stateTreeDepth;
     maxSignups = uint256(TREE_ARITY) ** uint256(_stateTreeDepth);
+    emptyBallotRoots = _emptyBallotRoots;
 
     // Verify linked poseidon libraries
     if (hash2([uint256(1), uint256(1)]) == 0) revert PoseidonHashLibrariesNotLinked();
@@ -191,18 +197,24 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
       revert InvalidPubKey();
     }
 
+    uint256 voteOptionTreeDepth = _treeDepths.voteOptionTreeDepth;
+
     MaxValues memory maxValues = MaxValues({
       maxMessages: uint256(MESSAGE_TREE_ARITY) ** _treeDepths.messageTreeDepth,
-      maxVoteOptions: uint256(MESSAGE_TREE_ARITY) ** _treeDepths.voteOptionTreeDepth
+      maxVoteOptions: uint256(MESSAGE_TREE_ARITY) ** voteOptionTreeDepth
     });
 
-    // the owner of the message processor and tally contract will be the msg.sender
-    address _msgSender = msg.sender;
+    address p = pollFactory.deploy(
+      _duration,
+      maxValues,
+      _treeDepths,
+      _coordinatorPubKey,
+      address(this),
+      emptyBallotRoots[voteOptionTreeDepth - 1]
+    );
 
-    address p = pollFactory.deploy(_duration, maxValues, _treeDepths, _coordinatorPubKey, address(this));
-
-    address mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p, _msgSender, _mode);
-    address tally = tallyFactory.deploy(_verifier, _vkRegistry, p, mp, _msgSender, _mode);
+    address mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p, msg.sender, _mode);
+    address tally = tallyFactory.deploy(_verifier, _vkRegistry, p, mp, msg.sender, _mode);
 
     polls[pollId] = p;
 

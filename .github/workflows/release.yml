@@ -4,9 +4,6 @@ on:
   push:
     tags: ["*"]
 
-env:
-  STATE_TREE_DEPTH: ${{ vars.STATE_TREE_DEPTH }}
-
 jobs:
   draft-release:
     runs-on: ubuntu-22.04
