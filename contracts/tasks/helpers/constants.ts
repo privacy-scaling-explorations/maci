@@ -28,32 +28,7 @@ export enum EChainId {
   Coverage = 1337,
 }
 
-const GWEI = 1e9;
-
 export const STATE_TREE_ARITY = 5;
-
-/**
- * Convert gas price from gweguari to wei
- *
- * @param value - gas price in gwei
- * @returns gas price in wei
- */
-const gasPrice = (value: number) => value * GWEI;
-
-/**
- * Gas price settings for supported network
- */
-export const NETWORKS_DEFAULT_GAS: Record<ESupportedChains, number | "auto"> = {
-  [ESupportedChains.Sepolia]: gasPrice(1),
-  [ESupportedChains.Optimism]: gasPrice(1),
-  [ESupportedChains.OptimismSepolia]: gasPrice(1),
-  [ESupportedChains.Scroll]: gasPrice(1),
-  [ESupportedChains.ScrollSepolia]: gasPrice(1),
-  [ESupportedChains.Coverage]: gasPrice(1),
-  [ESupportedChains.Hardhat]: gasPrice(1),
-  [ESupportedChains.Arbitrum]: gasPrice(1),
-  [ESupportedChains.ArbitrumSepolia]: gasPrice(1),
-};
 
 /**
  * Get network rpc urls object
