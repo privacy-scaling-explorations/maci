@@ -4,6 +4,7 @@ import {
   SignUpGatekeeper__factory as SignUpGatekeeperFactory,
   SemaphoreGatekeeper__factory as SemaphoreGatekeeperFactory,
   ZupassGatekeeper__factory as ZupassGatekeeperFactory,
+  EASGatekeeper__factory as EASGatekeeperFactory,
 } from "maci-contracts/typechain-types";
 import { PubKey } from "maci-domainobjs";
 
@@ -16,6 +17,7 @@ import type {
   IGetGatekeeperDataArgs,
   ISemaphoreGatekeeperData,
   IZupassGatekeeperData,
+  IEASGatekeeperData,
 } from "../utils/interfaces";
 
 import { banner } from "../utils/banner";
@@ -239,5 +241,33 @@ export const getZupassGatekeeperData = async ({
     eventId: validEventId.toString(),
     signer1: validSigner1.toString(),
     signer2: validSigner2.toString(),
+  };
+};
+
+/**
+ * Get the EAS gatekeeper data
+ * @param IGetGatekeeperDataArgs - The arguments for the get eas gatekeeper data command
+ * @returns The eas gatekeeper data
+ */
+export const getEASGatekeeperData = async ({
+  maciAddress,
+  signer,
+}: IGetGatekeeperDataArgs): Promise<IEASGatekeeperData> => {
+  const maciContract = MACIFactory.connect(maciAddress, signer);
+
+  const gatekeeperContractAddress = await maciContract.signUpGatekeeper();
+
+  const gatekeeperContract = EASGatekeeperFactory.connect(gatekeeperContractAddress, signer);
+
+  const [eas, schema, attester] = await Promise.all([
+    gatekeeperContract.eas(),
+    gatekeeperContract.schema(),
+    gatekeeperContract.attester(),
+  ]);
+
+  return {
+    eas: eas.toString(),
+    schema: schema.toString(),
+    attester: attester.toString(),
   };
 };

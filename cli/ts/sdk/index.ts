@@ -11,6 +11,7 @@ import {
   getGatekeeperTrait,
   getSemaphoreGatekeeperData,
   getZupassGatekeeperData,
+  getEASGatekeeperData,
 } from "../commands/signup";
 import { verify } from "../commands/verify";
 
@@ -29,6 +30,7 @@ export {
   getGatekeeperTrait,
   getSemaphoreGatekeeperData,
   getZupassGatekeeperData,
+  getEASGatekeeperData,
 };
 
 export type { ISnarkJSVerificationKey } from "maci-circuits";

@@ -1176,6 +1176,9 @@ export interface ISemaphoreGatekeeperData {
   groupId: string;
 }
 
+/**
+ * Interface for the zupass gatekeeper data
+ */
 export interface IZupassGatekeeperData {
   /**
    * The event ID
@@ -1191,4 +1194,24 @@ export interface IZupassGatekeeperData {
    * The second signer
    */
   signer2: string;
+}
+
+/**
+ * Interface for the EAS gatekeeper data
+ */
+export interface IEASGatekeeperData {
+  /**
+   * The EAS
+   */
+  eas: string;
+
+  /**
+   * The schema
+   */
+  schema: string;
+
+  /**
+   * The attester
+   */
+  attester: string;
 }
