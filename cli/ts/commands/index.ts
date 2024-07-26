@@ -16,6 +16,7 @@ export {
   getGatekeeperTrait,
   getSemaphoreGatekeeperData,
   getZupassGatekeeperData,
+  getEASGatekeeperData,
 } from "./signup";
 export { verify } from "./verify";
 export { genProofs } from "./genProofs";

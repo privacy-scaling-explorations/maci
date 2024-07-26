@@ -49,6 +49,7 @@ export type {
   ISemaphoreGatekeeperData,
   IGetGatekeeperDataArgs,
   IZupassGatekeeperData,
+  IEASGatekeeperData,
 } from "./interfaces";
 export { GatekeeperTrait } from "./interfaces";
 export { compareVks } from "./vks";
