@@ -9,13 +9,7 @@ import type { HardhatUserConfig } from "hardhat/config";
 
 // Don't forget to import new tasks here
 import "./tasks/deploy";
-import {
-  EChainId,
-  ESupportedChains,
-  NETWORKS_DEFAULT_GAS,
-  getEtherscanApiKeys,
-  getNetworkRpcUrls,
-} from "./tasks/helpers/constants";
+import { EChainId, ESupportedChains, getEtherscanApiKeys, getNetworkRpcUrls } from "./tasks/helpers/constants";
 import "./tasks/runner/deployFull";
 import "./tasks/runner/deployPoll";
 import "./tasks/runner/merge";
@@ -28,13 +22,14 @@ const DEFAULT_BLOCK_GAS_LIMIT = 30_000_000;
 const DEFAULT_GAS_MUL = 2;
 const TEST_MNEMONIC = "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
 const NETWORKS_RPC_URL = getNetworkRpcUrls();
+const GAS_PRICE: number | "auto" = process.env.GAS_PRICE ? Number(process.env.GAS_PRICE) : "auto";
 const ETHERSCAN_API_KEYS = getEtherscanApiKeys();
 
 const getCommonNetworkConfig = (networkName: ESupportedChains, chainId: number, mnemonic?: string) => ({
   url: NETWORKS_RPC_URL[networkName],
   blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
   gasMultiplier: DEFAULT_GAS_MUL,
-  gasPrice: process.env.GAS_PRICE ? Number(process.env.GAS_PRICE) : NETWORKS_DEFAULT_GAS[networkName],
+  gasPrice: GAS_PRICE,
   saveDeployments: true,
   chainId,
   accounts: {
@@ -72,7 +67,7 @@ const config: HardhatUserConfig = {
     hardhat: {
       blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
       gasMultiplier: DEFAULT_GAS_MUL,
-      gasPrice: NETWORKS_DEFAULT_GAS[ESupportedChains.Hardhat],
+      gasPrice: "auto",
       chainId: EChainId.Hardhat,
       accounts: {
         mnemonic: TEST_MNEMONIC,
