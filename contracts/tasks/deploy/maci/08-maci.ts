@@ -119,7 +119,7 @@ deployment.deployTask("full:deploy-maci", "Deploy MACI contract").then((task) =>
         gatekeeperContractAddress,
         constantInitialVoiceCreditProxyContractAddress,
         stateTreeDepth,
-        emptyBallotRoots,
+        emptyBallotRoots.toString(),
       ],
       network: hre.network.name,
     });
