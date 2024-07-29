@@ -102,7 +102,7 @@
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@openzeppelin/contracts": "^5.0.2",
     "circomlibjs": "^0.1.7",
-    "ethers": "^6.13.1",
+    "ethers": "^6.13.2",
     "hardhat": "^2.22.6",
     "lowdb": "^1.0.0",
     "maci-circuits": "2.0.0-alpha",
