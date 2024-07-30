@@ -73,14 +73,17 @@ export class ProofGeneratorService {
         address: maciContractAddress,
       });
 
-      const [signer, pollAddress] = await Promise.all([this.deployment.getDeployer(), maciContract.polls(poll)]);
+      const [signer, pollContracts] = await Promise.all([this.deployment.getDeployer(), maciContract.polls(poll)]);
 
-      if (pollAddress.toLowerCase() === ZeroAddress.toLowerCase()) {
+      if (pollContracts.poll.toLowerCase() === ZeroAddress.toLowerCase()) {
         this.logger.error(`Error: ${ErrorCodes.POLL_NOT_FOUND}, Poll ${poll} not found`);
         throw new Error(ErrorCodes.POLL_NOT_FOUND);
       }
 
-      const pollContract = await this.deployment.getContract<Poll>({ name: EContracts.Poll, address: pollAddress });
+      const pollContract = await this.deployment.getContract<Poll>({
+        name: EContracts.Poll,
+        address: pollContracts.poll,
+      });
       const [{ messageAq: messageAqAddress }, coordinatorPublicKey, isStateAqMerged, messageTreeDepth] =
         await Promise.all([
           pollContract.extContracts(),
