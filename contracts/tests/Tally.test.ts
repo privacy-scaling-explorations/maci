@@ -106,8 +106,8 @@ describe("TallyVotes", () => {
 
     pollId = event.args._pollId;
 
-    const pollContractAddress = await maciContract.getPoll(pollId);
-    pollContract = PollFactory.connect(pollContractAddress, signer);
+    const pollContracts = await maciContract.getPoll(pollId);
+    pollContract = PollFactory.connect(pollContracts.poll, signer);
     mpContract = MessageProcessorFactory.connect(event.args.pollAddr.messageProcessor, signer);
     tallyContract = TallyFactory.connect(event.args.pollAddr.tally, signer);
 
@@ -287,8 +287,8 @@ describe("TallyVotes", () => {
 
       pollId = event.args._pollId;
 
-      const pollContractAddress = await maciContract.getPoll(pollId);
-      pollContract = PollFactory.connect(pollContractAddress, signer);
+      const pollContracts = await maciContract.getPoll(pollId);
+      pollContract = PollFactory.connect(pollContracts.poll, signer);
       mpContract = MessageProcessorFactory.connect(event.args.pollAddr.messageProcessor, signer);
       tallyContract = TallyFactory.connect(event.args.pollAddr.tally, signer);
 
@@ -432,8 +432,8 @@ describe("TallyVotes", () => {
 
       pollId = event.args._pollId;
 
-      const pollContractAddress = await maciContract.getPoll(pollId);
-      pollContract = PollFactory.connect(pollContractAddress, signer);
+      const pollContracts = await maciContract.getPoll(pollId);
+      pollContract = PollFactory.connect(pollContracts.poll, signer);
       mpContract = MessageProcessorFactory.connect(event.args.pollAddr.messageProcessor, signer);
       tallyContract = TallyFactory.connect(event.args.pollAddr.tally, signer);
 

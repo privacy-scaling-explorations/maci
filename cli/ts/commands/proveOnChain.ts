@@ -41,8 +41,6 @@ export const proveOnChain = async ({
   pollId,
   proofDir,
   maciAddress,
-  messageProcessorAddress,
-  tallyAddress,
   signer,
   quiet = true,
 }: ProveOnChainArgs): Promise<void> => {
@@ -53,43 +51,26 @@ export const proveOnChain = async ({
   if (!readContractAddress("MACI", network?.name) && !maciAddress) {
     logError("MACI contract address is empty");
   }
-  if (!readContractAddress(`MessageProcessor-${pollId}`, network?.name) && !messageProcessorAddress) {
-    logError("MessageProcessor contract address is empty");
-  }
-  if (!readContractAddress(`Tally-${pollId}`, network?.name) && !tallyAddress) {
-    logError("Tally contract address is empty");
-  }
 
   // check validity of contract addresses
   const maciContractAddress = maciAddress || readContractAddress("MACI", network?.name);
-  const messageProcessorContractAddress =
-    messageProcessorAddress || readContractAddress(`MessageProcessor-${pollId}`, network?.name);
-  const tallyContractAddress = tallyAddress || readContractAddress(`Tally-${pollId}`, network?.name);
 
   // check contracts are deployed on chain
   if (!(await contractExists(signer.provider!, maciContractAddress))) {
     logError("MACI contract does not exist");
   }
 
-  if (!(await contractExists(signer.provider!, messageProcessorContractAddress))) {
-    logError("MessageProcessor contract does not exist");
-  }
-
-  if (!(await contractExists(signer.provider!, tallyContractAddress))) {
-    logError("Tally contract does not exist");
-  }
-
   const maciContract = MACIFactory.connect(maciContractAddress, signer);
-  const pollAddr = await maciContract.polls(pollId);
+  const pollContracts = await maciContract.polls(pollId);
 
-  if (!(await contractExists(signer.provider!, pollAddr))) {
+  if (!(await contractExists(signer.provider!, pollContracts.poll))) {
     logError("There is no Poll contract with this poll ID linked to the specified MACI contract.");
   }
 
-  const pollContract = PollFactory.connect(pollAddr, signer);
+  const pollContract = PollFactory.connect(pollContracts.poll, signer);
 
-  const mpContract = MessageProcessorFactory.connect(messageProcessorContractAddress, signer);
-  const tallyContract = TallyFactory.connect(tallyContractAddress, signer);
+  const mpContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
+  const tallyContract = TallyFactory.connect(pollContracts.tally, signer);
 
   const messageAqContractAddress = (await pollContract.extContracts()).messageAq;
 

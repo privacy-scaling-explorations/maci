@@ -73,7 +73,9 @@ describe("ProofGeneratorService", () => {
 
   beforeEach(() => {
     mockContract = {
-      polls: jest.fn(() => Promise.resolve(ZeroAddress.replace("0x0", "0x1"))),
+      polls: jest.fn(() =>
+        Promise.resolve({ poll: ZeroAddress.replace("0x0", "0x1"), messageProcessor: ZeroAddress, tally: ZeroAddress }),
+      ),
       getMainRoot: jest.fn(() => Promise.resolve(1n)),
       treeDepths: jest.fn(() => Promise.resolve([1, 2, 3])),
       extContracts: jest.fn(() => Promise.resolve({ messageAq: ZeroAddress })),
@@ -144,7 +146,7 @@ describe("ProofGeneratorService", () => {
   });
 
   test("should throw error if poll is not found in maci contract", async () => {
-    mockContract.polls.mockResolvedValue(ZeroAddress);
+    mockContract.polls.mockResolvedValue({ poll: ZeroAddress });
     const service = new ProofGeneratorService(defaultCryptoService, fileService);
 
     await expect(service.generate({ ...defaultArgs, poll: 2 })).rejects.toThrow(ErrorCodes.POLL_NOT_FOUND);

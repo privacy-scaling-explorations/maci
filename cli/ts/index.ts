@@ -500,7 +500,6 @@ program
     "the tally file with results, per vote option spent credits, spent voice credits total",
   )
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
-  .option("-tc, --tally-contract <tallyContract>", "the tally contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
@@ -516,14 +515,11 @@ program
       const tallyData = JSON.parse(fs.readFileSync(cmdObj.tallyFile, { encoding: "utf8" })) as TallyData;
 
       const maciAddress = tallyData.maci || cmdObj.maciAddress || readContractAddress("MACI", network?.name);
-      const tallyAddress =
-        tallyData.tallyAddress || cmdObj.tallyContract || readContractAddress(`Tally-${cmdObj.pollId}`, network?.name);
 
       await verify({
         tallyData,
         pollId: cmdObj.pollId,
         maciAddress,
-        tallyAddress,
         quiet: cmdObj.quiet,
         signer,
       });
@@ -541,7 +537,6 @@ program
     "-t, --tally-file <tallyFile>",
     "the tally file with results, per vote option spent credits, spent voice credits total",
   )
-  .option("-ta, --tally-address <tallyAddress>", "the tally contract address")
   .option("-r, --rapidsnark <rapidsnark>", "the path to the rapidsnark binary")
   .option("-wp, --process-witnessgen <processWitnessgen>", "the path to the process witness generation binary")
   .option("-pd, --process-witnessdat <processWitnessdat>", "the path to the process witness dat file")
@@ -591,7 +586,6 @@ program
         startBlock: cmdObj.startBlock,
         endBlock: cmdObj.endBlock,
         blocksPerBatch: cmdObj.blocksPerBatch,
-        tallyAddress: cmdObj.tallyAddress,
         useQuadraticVoting: cmdObj.useQuadraticVoting,
         quiet: cmdObj.quiet,
         signer,
@@ -643,8 +637,6 @@ program
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
-  .option("-p, --message-processor-address <messageProcessorAddress>", "the message processor contract address")
-  .option("-t, --tally-contract <tallyContract>", "the tally contract address")
   .requiredOption("-f, --proof-dir <proofDir>", "the proof output directory from the genProofs subcommand")
   .action(async (cmdObj) => {
     try {
@@ -654,8 +646,6 @@ program
         pollId: cmdObj.pollId,
         proofDir: cmdObj.proofDir,
         maciAddress: cmdObj.maciAddress,
-        messageProcessorAddress: cmdObj.messageProcessorAddress,
-        tallyAddress: cmdObj.tallyContract,
         quiet: cmdObj.quiet,
         signer,
       });

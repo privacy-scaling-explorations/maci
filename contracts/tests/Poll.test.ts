@@ -76,8 +76,8 @@ describe("Poll", () => {
       };
       pollId = event.args._pollId;
 
-      const pollContractAddress = await maciContract.getPoll(pollId);
-      pollContract = PollFactory.connect(pollContractAddress, signer);
+      const pollContracts = await maciContract.getPoll(pollId);
+      pollContract = PollFactory.connect(pollContracts.poll, signer);
 
       // deploy local poll
       const p = maciState.deployPoll(

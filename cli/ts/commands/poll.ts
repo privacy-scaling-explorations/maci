@@ -32,7 +32,7 @@ export const getPoll = async ({
     logError(`Invalid poll id ${id}`);
   }
 
-  const pollAddress = await maciContract.polls(id);
+  const { poll: pollAddress } = await maciContract.polls(id);
 
   if (pollAddress === ZeroAddress) {
     logError(`MACI contract doesn't have any deployed poll ${id}`);

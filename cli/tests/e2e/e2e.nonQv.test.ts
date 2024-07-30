@@ -125,7 +125,6 @@ describe("e2e tests with non quadratic voting", function test() {
         ...verifyArgs(),
         tallyData: tallyFileData,
         maciAddress: tallyFileData.maci,
-        tallyAddress: tallyFileData.tallyAddress,
         signer,
       });
     });

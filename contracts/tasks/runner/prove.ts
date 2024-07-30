@@ -72,8 +72,8 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
       const vkRegistryContract = await deployment.getContract<VkRegistry>({ name: EContracts.VkRegistry });
       const verifierContract = await deployment.getContract<Verifier>({ name: EContracts.Verifier });
 
-      const pollAddress = await maciContract.polls(poll);
-      const pollContract = await deployment.getContract<Poll>({ name: EContracts.Poll, address: pollAddress });
+      const pollContracts = await maciContract.polls(poll);
+      const pollContract = await deployment.getContract<Poll>({ name: EContracts.Poll, address: pollContracts.poll });
       const messageAqAddress = await pollContract.extContracts().then((contracts) => contracts.messageAq);
       const messageAq = await deployment.getContract<AccQueue>({
         name: EContracts.AccQueue,
@@ -126,16 +126,15 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
       }
 
       const mpContract = await deployment.getContract<MessageProcessor>({
-        name: EContracts.MessageProcessor,
-        key: `poll-${poll.toString()}`,
+        name: EContracts.Poll,
+        address: pollContracts.messageProcessor,
       });
 
       // get the tally contract based on the useQuadraticVoting flag
       const tallyContract = await deployment.getContract<Tally>({
         name: EContracts.Tally,
-        key: `poll-${poll.toString()}`,
+        address: pollContracts.tally,
       });
-      const tallyContractAddress = await tallyContract.getAddress();
       const useQuadraticVoting =
         deployment.getDeployConfigField<boolean | null>(EContracts.Poll, "useQuadraticVoting") ?? false;
       const mode = useQuadraticVoting ? "qv" : "nonQv";
@@ -158,7 +157,7 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
       const proofGenerator = new ProofGenerator({
         poll: foundPoll,
         maciContractAddress,
-        tallyContractAddress,
+        tallyContractAddress: pollContracts.tally,
         rapidsnark,
         tally: {
           zkey: tallyZkey,

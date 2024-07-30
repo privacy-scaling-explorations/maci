@@ -59,7 +59,6 @@ export const genProofs = async ({
   blocksPerBatch,
   endBlock,
   signer,
-  tallyAddress,
   useQuadraticVoting = true,
   quiet = true,
 }: GenProofsArgs): Promise<TallyData> => {
@@ -144,12 +143,12 @@ export const genProofs = async ({
   }
 
   const maciContract = MACIFactory.connect(maciContractAddress, signer);
-  const pollAddr = await maciContract.polls(pollId);
+  const pollContracts = await maciContract.polls(pollId);
 
-  if (!(await contractExists(signer.provider!, pollAddr))) {
+  if (!(await contractExists(signer.provider!, pollContracts.poll))) {
     logError("Poll contract does not exist");
   }
-  const pollContract = PollFactory.connect(pollAddr, signer);
+  const pollContract = PollFactory.connect(pollContracts.poll, signer);
 
   const extContracts = await pollContract.extContracts();
   const messageAqContractAddr = extContracts.messageAq;
@@ -356,9 +355,6 @@ export const genProofs = async ({
     BigInt(asHex(tallyCircuitInputs!.newSpentVoiceCreditSubtotalSalt as BigNumberish)),
   );
 
-  // get the tally contract address
-  const tallyContractAddress = tallyAddress || readContractAddress(`Tally-${pollId}`, network?.name);
-
   let newPerVOSpentVoiceCreditsCommitment: bigint | undefined;
   let newTallyCommitment: bigint;
 
@@ -369,7 +365,7 @@ export const genProofs = async ({
     network: network?.name,
     chainId: network?.chainId.toString(),
     isQuadratic: useQuadraticVoting,
-    tallyAddress: tallyContractAddress,
+    tallyAddress: pollContracts.tally,
     newTallyCommitment: asHex(tallyCircuitInputs!.newTallyCommitment as BigNumberish),
     results: {
       tally: poll.tallyResult.map((x) => x.toString()),

@@ -509,11 +509,6 @@ export interface GenProofsArgs {
    * Whether to use quadratic voting or not
    */
   useQuadraticVoting?: boolean;
-
-  /**
-   * The address of the Tally contract
-   */
-  tallyAddress?: string;
 }
 
 /**
@@ -599,16 +594,6 @@ export interface ProveOnChainArgs {
    * The address of the MACI contract
    */
   maciAddress?: string;
-
-  /**
-   * The address of the MessageProcessor contract
-   */
-  messageProcessorAddress?: string;
-
-  /**
-   * The address of the Tally contract
-   */
-  tallyAddress?: string;
 
   /**
    * Whether to log the output
@@ -979,11 +964,6 @@ export interface VerifyArgs {
    * The address of the MACI contract
    */
   maciAddress: string;
-
-  /**
-   * The address of the Tally contract
-   */
-  tallyAddress: string;
 
   /**
    * Whether to log the output

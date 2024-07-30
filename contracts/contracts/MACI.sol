@@ -40,7 +40,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
   uint256 public nextPollId;
 
   /// @notice A mapping of poll IDs to Poll contracts.
-  mapping(uint256 => address) public polls;
+  mapping(uint256 => PollContracts) public polls;
 
   /// @notice Factory contract that deploy a Poll contract
   IPollFactory public immutable pollFactory;
@@ -216,10 +216,10 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
     address mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p, msg.sender, _mode);
     address tally = tallyFactory.deploy(_verifier, _vkRegistry, p, mp, msg.sender, _mode);
 
-    polls[pollId] = p;
-
     // store the addresses in a struct so they can be returned
     pollAddr = PollContracts({ poll: p, messageProcessor: mp, tally: tally });
+
+    polls[pollId] = pollAddr;
 
     emit DeployPoll(pollId, _coordinatorPubKey.x, _coordinatorPubKey.y, pollAddr, _mode);
   }
@@ -231,10 +231,10 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
 
   /// @notice Get the Poll details
   /// @param _pollId The identifier of the Poll to retrieve
-  /// @return poll The Poll contract object
-  function getPoll(uint256 _pollId) public view returns (address poll) {
+  /// @return pollContracts The Poll contract object
+  function getPoll(uint256 _pollId) public view returns (PollContracts memory pollContracts) {
     if (_pollId >= nextPollId) revert PollDoesNotExist(_pollId);
-    poll = polls[_pollId];
+    pollContracts = polls[_pollId];
   }
 
   /// @inheritdoc IMACI

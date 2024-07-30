@@ -25,7 +25,7 @@ import {
   isRegisteredUser,
   getGatekeeperTrait,
 } from "../../ts/commands";
-import { DeployedContracts, GatekeeperTrait, GenProofsArgs, PollContracts } from "../../ts/utils";
+import { DeployedContracts, GatekeeperTrait, GenProofsArgs } from "../../ts/utils";
 import {
   deployPollArgs,
   checkVerifyingKeysArgs,
@@ -68,7 +68,6 @@ describe("e2e tests", function test() {
   this.timeout(900000);
 
   let maciAddresses: DeployedContracts;
-  let pollAddresses: PollContracts;
   let signer: Signer;
 
   const genProofsArgs: Omit<GenProofsArgs, "signer"> = {
@@ -110,7 +109,7 @@ describe("e2e tests", function test() {
       // deploy the smart contracts
       maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
-      pollAddresses = await deployPoll({ ...deployPollArgs, signer, useQuadraticVoting: true });
+      await deployPoll({ ...deployPollArgs, signer, useQuadraticVoting: true });
     });
 
     it("should get the correct gatekeeper trait", async () => {
@@ -162,7 +161,7 @@ describe("e2e tests", function test() {
       // deploy the smart contracts
       maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
-      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
+      await deployPoll({ ...deployPollArgs, signer });
     });
 
     it("should signup one user", async () => {
@@ -195,7 +194,6 @@ describe("e2e tests", function test() {
         ...verifyArgs(),
         tallyData: tallyFileData,
         maciAddress: tallyFileData.maci,
-        tallyAddress: tallyFileData.tallyAddress,
         signer,
       });
     });
@@ -212,7 +210,7 @@ describe("e2e tests", function test() {
       // deploy the smart contracts
       maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
-      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
+      await deployPoll({ ...deployPollArgs, signer });
     });
 
     it("should signup four users", async () => {
@@ -353,7 +351,7 @@ describe("e2e tests", function test() {
       // deploy the smart contracts
       maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
-      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
+      await deployPoll({ ...deployPollArgs, signer });
     });
 
     it("should signup nine users", async () => {
@@ -400,7 +398,7 @@ describe("e2e tests", function test() {
       // deploy the smart contracts
       maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
-      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
+      await deployPoll({ ...deployPollArgs, signer });
     });
 
     it("should signup eight users (same pub key)", async () => {
@@ -449,7 +447,7 @@ describe("e2e tests", function test() {
       // deploy the smart contracts
       maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
-      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
+      await deployPoll({ ...deployPollArgs, signer });
     });
 
     it("should signup thirty users", async () => {
@@ -546,7 +544,7 @@ describe("e2e tests", function test() {
       // deploy the smart contracts
       maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
-      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
+      await deployPoll({ ...deployPollArgs, signer });
       // signup
       await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer });
       // publish
@@ -574,7 +572,7 @@ describe("e2e tests", function test() {
     });
 
     it("should deploy a new poll", async () => {
-      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
+      await deployPoll({ ...deployPollArgs, signer });
     });
 
     it("should publish a new message", async () => {
@@ -613,7 +611,7 @@ describe("e2e tests", function test() {
       // deploy the smart contracts
       maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
-      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
+      await deployPoll({ ...deployPollArgs, signer });
       // signup
       await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[0].pubKey.serialize(), signer });
       // publish
@@ -644,7 +642,7 @@ describe("e2e tests", function test() {
     });
 
     it("should deploy a new poll", async () => {
-      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
+      await deployPoll({ ...deployPollArgs, signer });
     });
 
     it("should signup four new users", async () => {
@@ -705,8 +703,6 @@ describe("e2e tests", function test() {
       new Keypair(),
     ];
 
-    let secondPollAddresses: PollContracts;
-
     after(() => {
       clean();
     });
@@ -718,7 +714,7 @@ describe("e2e tests", function test() {
 
     it("should run the first poll", async () => {
       // deploy a poll contract
-      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
+      await deployPoll({ ...deployPollArgs, signer });
 
       // signup
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
@@ -764,8 +760,8 @@ describe("e2e tests", function test() {
 
     it("should deploy two more polls", async () => {
       // deploy a poll contract
-      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
-      secondPollAddresses = await deployPoll({ ...deployPollArgs, signer });
+      await deployPoll({ ...deployPollArgs, signer });
+      await deployPoll({ ...deployPollArgs, signer });
     });
 
     it("should publish messages to the second poll", async () => {
@@ -859,8 +855,6 @@ describe("e2e tests", function test() {
         ...proveOnChainArgs,
         pollId: 1n,
         maciAddress: maciAddresses.maciAddress,
-        messageProcessorAddress: pollAddresses.messageProcessor,
-        tallyAddress: pollAddresses.tally,
         signer,
       });
       await verify({
@@ -868,7 +862,6 @@ describe("e2e tests", function test() {
         pollId: 1n,
         tallyData,
         maciAddress: maciAddresses.maciAddress,
-        tallyAddress: pollAddresses.tally,
         signer,
       });
       clean();
@@ -882,8 +875,6 @@ describe("e2e tests", function test() {
         ...proveOnChainArgs,
         pollId: 2n,
         maciAddress: maciAddresses.maciAddress,
-        messageProcessorAddress: secondPollAddresses.messageProcessor,
-        tallyAddress: secondPollAddresses.tally,
         signer,
       });
       await verify({
@@ -891,7 +882,6 @@ describe("e2e tests", function test() {
         pollId: 2n,
         tallyData,
         maciAddress: maciAddresses.maciAddress,
-        tallyAddress: secondPollAddresses.tally,
         signer,
       });
     });
@@ -914,7 +904,7 @@ describe("e2e tests", function test() {
       // deploy the smart contracts
       maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
-      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
+      await deployPoll({ ...deployPollArgs, signer });
     });
 
     it("should signup one user", async () => {
