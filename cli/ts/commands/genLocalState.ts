@@ -65,12 +65,12 @@ export const genLocalState = async ({
   const coordinatorKeypair = new Keypair(coordinatorMaciPrivKey);
 
   const maciContract = MACIFactory.connect(maciContractAddress, signer);
-  const pollAddr = await maciContract.polls(pollId);
+  const pollContracts = await maciContract.polls(pollId);
 
-  if (!(await contractExists(signer.provider!, pollAddr))) {
+  if (!(await contractExists(signer.provider!, pollContracts.poll))) {
     logError("Poll contract does not exist");
   }
-  const pollContract = PollFactory.connect(pollAddr, signer);
+  const pollContract = PollFactory.connect(pollContracts.poll, signer);
 
   const [{ messageAq }, { messageTreeDepth }] = await Promise.all([
     pollContract.extContracts(),

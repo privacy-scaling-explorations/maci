@@ -291,7 +291,6 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
           ...verifyArgs(),
           tallyData: tallyFileData,
           maciAddress: tallyFileData.maci,
-          tallyAddress: tallyFileData.tallyAddress,
           signer,
         });
       });
@@ -348,7 +347,6 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
           ...verifyArgs(),
           tallyData: tallyFileData,
           maciAddress: tallyFileData.maci,
-          tallyAddress: tallyFileData.tallyAddress,
           signer,
         });
       });

@@ -16,7 +16,6 @@ import {
   timeTravel,
   verify,
   DeployedContracts,
-  PollContracts,
 } from "maci-cli";
 import { getDefaultSigner } from "maci-contracts";
 import { MaciState, MaxValues, TreeDepths } from "maci-core";
@@ -61,7 +60,6 @@ describe("Integration tests", function test() {
   // global variables we need shared between tests
   let maciState: MaciState;
   let contracts: DeployedContracts;
-  let pollContracts: PollContracts;
   let pollId: bigint;
   let signer: Signer;
   const coordinatorKeypair = new Keypair();
@@ -113,7 +111,7 @@ describe("Integration tests", function test() {
     };
 
     // 4. create a poll
-    pollContracts = await deployPoll({
+    await deployPoll({
       pollDuration: duration,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       messageTreeSubDepth: MSG_BATCH_DEPTH,
@@ -314,8 +312,6 @@ describe("Integration tests", function test() {
           pollId,
           proofDir: path.resolve(__dirname, "../../../cli/proofs"),
           maciAddress: contracts.maciAddress,
-          messageProcessorAddress: pollContracts.messageProcessor,
-          tallyAddress: pollContracts.tally,
           signer,
         }),
       ).to.not.be.rejected;
@@ -326,7 +322,6 @@ describe("Integration tests", function test() {
           pollId,
           tallyData,
           maciAddress: contracts.maciAddress,
-          tallyAddress: pollContracts.tally,
           signer,
         }),
       ).to.not.be.rejected;

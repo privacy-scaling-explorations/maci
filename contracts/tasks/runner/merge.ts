@@ -26,8 +26,8 @@ task("merge", "Merge signups and messages")
 
     const maciContract = await deployment.getContract<MACI>({ name: EContracts.MACI });
 
-    const pollContractAddress = await maciContract.polls(poll);
-    const pollContract = await deployment.getContract<Poll>({ name: EContracts.Poll, address: pollContractAddress });
+    const pollContracts = await maciContract.polls(poll);
+    const pollContract = await deployment.getContract<Poll>({ name: EContracts.Poll, address: pollContracts.poll });
     const [, messageAccQueueContractAddress] = await pollContract.extContracts();
 
     const messageAccQueueContract = await deployment.getContract<AccQueue>({
@@ -35,7 +35,7 @@ task("merge", "Merge signups and messages")
       address: messageAccQueueContractAddress,
     });
 
-    if (!pollContractAddress || pollContractAddress === ZeroAddress) {
+    if (pollContracts.poll === ZeroAddress) {
       throw new Error(`No poll ${poll} found`);
     }
 

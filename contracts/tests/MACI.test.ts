@@ -298,8 +298,8 @@ describe("MACI", function test() {
     let pollContract: PollContract;
 
     before(async () => {
-      const pollContractAddress = await maciContract.getPoll(pollId);
-      pollContract = PollFactory.connect(pollContractAddress, signer);
+      const pollContracts = await maciContract.getPoll(pollId);
+      pollContract = PollFactory.connect(pollContracts.poll, signer);
     });
 
     it("should allow a Poll contract to merge the state tree (calculate the state root)", async () => {
