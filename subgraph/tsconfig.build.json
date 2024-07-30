@@ -1,0 +1,10 @@
+{
+  "extend": "./node_modules/@graphprotocol/graph-ts/tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./build",
+    "strictNullChecks": true,
+    "skipLibCheck": true,
+    "typeRoots": ["./src/@types/global.d.ts"]
+  },
+  "include": ["./src", "./generated"]
+}
