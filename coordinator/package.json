@@ -41,6 +41,7 @@
     "maci-cli": "2.0.0-alpha",
     "maci-contracts": "2.0.0-alpha",
     "maci-domainobjs": "2.0.0-alpha",
+    "maci-subgraph": "2.0.0-alpha",
     "mustache": "^4.2.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
