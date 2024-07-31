@@ -14,7 +14,6 @@
     "commit": "git cz",
     "download-zkeys:test": "ts-node ./.github/scripts/downloadZkeys.ts test ./cli/zkeys",
     "download-zkeys:ceremony": "ts-node ./.github/scripts/downloadZkeys.ts prod ./cli/zkeys",
-    "download-zkeys-coordinator:test": "ts-node ./.github/scripts/downloadZkeys.ts test ./coordinator/zkeys",
     "prettier": "prettier -c .",
     "prettier:fix": "prettier -w .",
     "lint:ts": "eslint './**/**/*.ts' './**/**/*.tsx'",
@@ -24,7 +23,7 @@
     "test:cli": "lerna run test --scope \"maci-cli\"",
     "test:cli-ceremony": "lerna run test:ceremony --scope \"maci-cli\"",
     "test:integration": "lerna run test --scope \"maci-integrationtests\"",
-    "test": "lerna run test --ignore maci-integrationtests --ignore maci-cli --ignore maci-coordinator",
+    "test": "lerna run test --ignore maci-integrationtests --ignore maci-cli",
     "types": "lerna run types",
     "docs": "lerna run docs",
     "prepare": "is-ci || husky"
