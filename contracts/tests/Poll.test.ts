@@ -59,9 +59,6 @@ describe("Poll", () => {
         verifierContract,
         vkRegistryContract,
         EMode.QV,
-        {
-          gasLimit: 10000000,
-        },
       );
       const receipt = await tx.wait();
 
@@ -69,12 +66,8 @@ describe("Poll", () => {
       deployTime = block!.timestamp;
 
       expect(receipt?.status).to.eq(1);
-      const iface = maciContract.interface;
-      const logs = receipt!.logs[receipt!.logs.length - 1];
-      const event = iface.parseLog(logs as unknown as { topics: string[]; data: string }) as unknown as {
-        args: { _pollId: bigint };
-      };
-      pollId = event.args._pollId;
+
+      pollId = (await maciContract.nextPollId()) - 1n;
 
       const pollContracts = await maciContract.getPoll(pollId);
       pollContract = PollFactory.connect(pollContracts.poll, signer);
@@ -154,9 +147,6 @@ describe("Poll", () => {
           r.mockVerifierContract as Verifier,
           r.vkRegistryContract,
           EMode.QV,
-          {
-            gasLimit: 10000000,
-          },
         ),
       ).to.be.revertedWithCustomError(testMaciContract, "InvalidPubKey");
     });
@@ -275,13 +265,11 @@ describe("Poll", () => {
     });
 
     it("should allow to merge the message AccQueue", async () => {
-      let tx = await pollContract.mergeMessageAqSubRoots(0, {
-        gasLimit: 3000000,
-      });
+      let tx = await pollContract.mergeMessageAqSubRoots(0);
       let receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
 
-      tx = await pollContract.mergeMessageAq({ gasLimit: 4000000 });
+      tx = await pollContract.mergeMessageAq();
       receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
     });

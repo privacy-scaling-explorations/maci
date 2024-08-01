@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from "chai";
-import { AbiCoder, BigNumberish, Signer } from "ethers";
+import { AbiCoder, BigNumberish, Signer, ZeroAddress } from "ethers";
 import { EthereumProvider } from "hardhat/types";
 import { MaciState } from "maci-core";
 import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
@@ -34,7 +34,6 @@ describe("MACI", function test() {
   let signer: Signer;
 
   const maciState = new MaciState(STATE_TREE_DEPTH);
-  const signUpTxOpts = { gasLimit: 400000 };
 
   describe("Deployment", () => {
     before(async () => {
@@ -80,7 +79,6 @@ describe("MACI", function test() {
           user.pubKey.asContractParam(),
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
           AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
-          signUpTxOpts,
         );
         // eslint-disable-next-line no-await-in-loop
         const receipt = await tx.wait();
@@ -115,7 +113,6 @@ describe("MACI", function test() {
           },
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
           AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
-          signUpTxOpts,
         ),
       ).to.be.revertedWithCustomError(maciContract, "InvalidPubKey");
     });
@@ -129,7 +126,6 @@ describe("MACI", function test() {
           },
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
           AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
-          signUpTxOpts,
         ),
       ).to.be.revertedWithCustomError(maciContract, "InvalidPubKey");
     });
@@ -143,7 +139,6 @@ describe("MACI", function test() {
           },
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
           AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
-          signUpTxOpts,
         ),
       ).to.be.revertedWithCustomError(maciContract, "InvalidPubKey");
     });
@@ -157,7 +152,6 @@ describe("MACI", function test() {
           },
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
           AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
-          signUpTxOpts,
         ),
       ).to.be.revertedWithCustomError(maciContract, "InvalidPubKey");
     });
@@ -223,7 +217,6 @@ describe("MACI", function test() {
         verifierContract,
         vkRegistryContract,
         EMode.QV,
-        { gasLimit: 10000000 },
       );
       const receipt = await tx.wait();
 
@@ -231,12 +224,7 @@ describe("MACI", function test() {
       deployTime = block!.timestamp;
 
       expect(receipt?.status).to.eq(1);
-      const iface = maciContract.interface;
-      const logs = receipt!.logs[receipt!.logs.length - 1];
-      const event = iface.parseLog(logs as unknown as { topics: string[]; data: string }) as unknown as {
-        args: { _pollId: bigint };
-      };
-      pollId = event.args._pollId;
+      pollId = (await maciContract.nextPollId()) - 1n;
 
       const p = maciState.deployPoll(
         BigInt(deployTime + duration),
@@ -268,7 +256,6 @@ describe("MACI", function test() {
         verifierContract,
         vkRegistryContract,
         EMode.QV,
-        { gasLimit: 10000000 },
       );
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
@@ -286,7 +273,6 @@ describe("MACI", function test() {
           verifierContract,
           vkRegistryContract,
           EMode.QV,
-          { gasLimit: 10000000 },
         );
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
@@ -305,9 +291,7 @@ describe("MACI", function test() {
     it("should allow a Poll contract to merge the state tree (calculate the state root)", async () => {
       await timeTravel(signer.provider as unknown as EthereumProvider, Number(duration) + 1);
 
-      const tx = await pollContract.mergeMaciState({
-        gasLimit: 3000000,
-      });
+      const tx = await pollContract.mergeMaciState();
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
     });
@@ -327,7 +311,6 @@ describe("MACI", function test() {
         users[0].pubKey.asContractParam(),
         AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
         AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
-        signUpTxOpts,
       );
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
@@ -353,8 +336,11 @@ describe("MACI", function test() {
   });
 
   describe("getPoll", () => {
-    it("should return an address for a valid id", async () => {
-      expect(await maciContract.getPoll(pollId)).to.not.eq(0);
+    it("should return an object for a valid id", async () => {
+      const pollContracts = await maciContract.getPoll(pollId);
+      expect(pollContracts.poll).to.not.eq(ZeroAddress);
+      expect(pollContracts.messageProcessor).to.not.eq(ZeroAddress);
+      expect(pollContracts.tally).to.not.eq(ZeroAddress);
     });
 
     it("should throw when given an invalid poll id", async () => {

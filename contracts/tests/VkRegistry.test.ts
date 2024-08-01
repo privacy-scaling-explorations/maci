@@ -42,7 +42,6 @@ describe("VkRegistry", () => {
         EMode.QV,
         testProcessVk.asContractParam() as IVerifyingKeyStruct,
         testTallyVk.asContractParam() as IVerifyingKeyStruct,
-        { gasLimit: 1000000 },
       );
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
@@ -59,7 +58,6 @@ describe("VkRegistry", () => {
           EMode.QV,
           testProcessVk.asContractParam() as IVerifyingKeyStruct,
           testTallyVk.asContractParam() as IVerifyingKeyStruct,
-          { gasLimit: 1000000 },
         ),
       ).to.be.revertedWithCustomError(vkRegistryContract, "ProcessVkAlreadySet");
     });
@@ -74,7 +72,6 @@ describe("VkRegistry", () => {
         EMode.QV,
         testProcessVk.asContractParam() as IVerifyingKeyStruct,
         testTallyVk.asContractParam() as IVerifyingKeyStruct,
-        { gasLimit: 1000000 },
       );
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
@@ -90,7 +87,6 @@ describe("VkRegistry", () => {
         EMode.NON_QV,
         testProcessVk.asContractParam() as IVerifyingKeyStruct,
         testTallyVk.asContractParam() as IVerifyingKeyStruct,
-        { gasLimit: 1000000 },
       );
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
@@ -108,7 +104,6 @@ describe("VkRegistry", () => {
         [EMode.NON_QV],
         [testProcessVkNonQv.asContractParam() as IVerifyingKeyStruct],
         [testTallyVkNonQv.asContractParam() as IVerifyingKeyStruct],
-        { gasLimit: 1000000 },
       );
 
       const receipt = await tx.wait();
@@ -129,7 +124,6 @@ describe("VkRegistry", () => {
             testProcessVkNonQv.asContractParam() as IVerifyingKeyStruct,
           ],
           [testTallyVk.asContractParam() as IVerifyingKeyStruct],
-          { gasLimit: 1000000 },
         ),
       ).to.be.revertedWithCustomError(vkRegistryContract, "InvalidKeysParams");
     });

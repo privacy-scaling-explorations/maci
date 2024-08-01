@@ -79,9 +79,6 @@ describe("TallyVotes", () => {
       verifierContract,
       vkRegistryContract,
       EMode.QV,
-      {
-        gasLimit: 10000000,
-      },
     );
     const receipt = await tx.wait();
 
@@ -89,27 +86,13 @@ describe("TallyVotes", () => {
     const deployTime = block!.timestamp;
 
     expect(receipt?.status).to.eq(1);
-    const iface = maciContract.interface;
-    const logs = receipt!.logs[receipt!.logs.length - 1];
-    const event = iface.parseLog(logs as unknown as { topics: string[]; data: string }) as unknown as {
-      args: {
-        _pollId: bigint;
-        pollAddr: {
-          poll: string;
-          messageProcessor: string;
-          tally: string;
-        };
-      };
-      name: string;
-    };
-    expect(event.name).to.eq("DeployPoll");
 
-    pollId = event.args._pollId;
+    pollId = (await maciContract.nextPollId()) - 1n;
 
     const pollContracts = await maciContract.getPoll(pollId);
     pollContract = PollFactory.connect(pollContracts.poll, signer);
-    mpContract = MessageProcessorFactory.connect(event.args.pollAddr.messageProcessor, signer);
-    tallyContract = TallyFactory.connect(event.args.pollAddr.tally, signer);
+    mpContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
+    tallyContract = TallyFactory.connect(pollContracts.tally, signer);
 
     // deploy local poll
     const p = maciState.deployPoll(BigInt(deployTime + duration), maxValues, treeDepths, messageBatchSize, coordinator);
@@ -146,7 +129,6 @@ describe("TallyVotes", () => {
       EMode.QV,
       testProcessVk.asContractParam() as IVerifyingKeyStruct,
       testTallyVk.asContractParam() as IVerifyingKeyStruct,
-      { gasLimit: 1000000 },
     );
   });
 
@@ -260,9 +242,6 @@ describe("TallyVotes", () => {
         verifierContract,
         vkRegistryContract,
         EMode.QV,
-        {
-          gasLimit: 10000000,
-        },
       );
       const receipt = await tx.wait();
 
@@ -270,27 +249,13 @@ describe("TallyVotes", () => {
       const deployTime = block!.timestamp;
 
       expect(receipt?.status).to.eq(1);
-      const iface = maciContract.interface;
-      const logs = receipt!.logs[receipt!.logs.length - 1];
-      const event = iface.parseLog(logs as unknown as { topics: string[]; data: string }) as unknown as {
-        args: {
-          _pollId: bigint;
-          pollAddr: {
-            poll: string;
-            messageProcessor: string;
-            tally: string;
-          };
-        };
-        name: string;
-      };
-      expect(event.name).to.eq("DeployPoll");
 
-      pollId = event.args._pollId;
+      pollId = (await maciContract.nextPollId()) - 1n;
 
       const pollContracts = await maciContract.getPoll(pollId);
       pollContract = PollFactory.connect(pollContracts.poll, signer);
-      mpContract = MessageProcessorFactory.connect(event.args.pollAddr.messageProcessor, signer);
-      tallyContract = TallyFactory.connect(event.args.pollAddr.tally, signer);
+      mpContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
+      tallyContract = TallyFactory.connect(pollContracts.tally, signer);
 
       // deploy local poll
       const p = maciState.deployPoll(
@@ -333,7 +298,6 @@ describe("TallyVotes", () => {
         EMode.QV,
         testProcessVk.asContractParam() as IVerifyingKeyStruct,
         testTallyVk.asContractParam() as IVerifyingKeyStruct,
-        { gasLimit: 1000000 },
       );
 
       await timeTravel(signer.provider! as unknown as EthereumProvider, updatedDuration);
@@ -405,9 +369,6 @@ describe("TallyVotes", () => {
         verifierContract,
         vkRegistryContract,
         EMode.QV,
-        {
-          gasLimit: 10000000,
-        },
       );
       const receipt = await tx.wait();
 
@@ -415,27 +376,13 @@ describe("TallyVotes", () => {
       const deployTime = block!.timestamp;
 
       expect(receipt?.status).to.eq(1);
-      const iface = maciContract.interface;
-      const logs = receipt!.logs[receipt!.logs.length - 1];
-      const event = iface.parseLog(logs as unknown as { topics: string[]; data: string }) as unknown as {
-        args: {
-          _pollId: bigint;
-          pollAddr: {
-            poll: string;
-            messageProcessor: string;
-            tally: string;
-          };
-        };
-        name: string;
-      };
-      expect(event.name).to.eq("DeployPoll");
 
-      pollId = event.args._pollId;
+      pollId = (await maciContract.nextPollId()) - 1n;
 
       const pollContracts = await maciContract.getPoll(pollId);
       pollContract = PollFactory.connect(pollContracts.poll, signer);
-      mpContract = MessageProcessorFactory.connect(event.args.pollAddr.messageProcessor, signer);
-      tallyContract = TallyFactory.connect(event.args.pollAddr.tally, signer);
+      mpContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
+      tallyContract = TallyFactory.connect(pollContracts.tally, signer);
 
       // deploy local poll
       const p = maciState.deployPoll(
@@ -478,7 +425,6 @@ describe("TallyVotes", () => {
         EMode.QV,
         testProcessVk.asContractParam() as IVerifyingKeyStruct,
         testTallyVk.asContractParam() as IVerifyingKeyStruct,
-        { gasLimit: 1000000 },
       );
 
       await timeTravel(signer.provider! as unknown as EthereumProvider, updatedDuration);

@@ -35,8 +35,9 @@ describe("EAS Gatekeeper", () => {
   });
 
   describe("Deployment", () => {
-    it("The gatekeeper should be deployed correctly", () => {
+    it("The gatekeeper should be deployed correctly", async () => {
       expect(easGatekeeper).to.not.eq(undefined);
+      expect(await easGatekeeper.getAddress()).to.not.eq(ZeroAddress);
     });
 
     it("should fail to deploy when the eas contract address is not valid", async () => {
