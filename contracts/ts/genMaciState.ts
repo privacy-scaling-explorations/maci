@@ -32,6 +32,7 @@ export const genMaciStateFromContract = async (
   blocksPerRequest = 50,
   endBlock: number | undefined = undefined,
   sleepAmount: number | undefined = undefined,
+  userSideOnly: boolean | undefined = undefined,
 ): Promise<MaciState> => {
   // ensure the pollId is valid
   assert(pollId >= 0);
@@ -78,6 +79,7 @@ export const genMaciStateFromContract = async (
           pubKey: new PubKey([BigInt(event.args._userPubKeyX), BigInt(event.args._userPubKeyY)]),
           voiceCreditBalance: Number(event.args._voiceCreditBalance),
           timestamp: Number(event.args._timestamp),
+          stateLeaf: BigInt(event.args._stateLeaf),
         },
       });
     });
@@ -122,8 +124,10 @@ export const genMaciStateFromContract = async (
       pollContract.messageBatchSize(),
     ]);
 
-  assert(coordinatorPubKeyOnChain[0].toString() === coordinatorKeypair.pubKey.rawPubKey[0].toString());
-  assert(coordinatorPubKeyOnChain[1].toString() === coordinatorKeypair.pubKey.rawPubKey[1].toString());
+  if (!userSideOnly) {
+    assert(coordinatorPubKeyOnChain[0].toString() === coordinatorKeypair.pubKey.rawPubKey[0].toString());
+    assert(coordinatorPubKeyOnChain[1].toString() === coordinatorKeypair.pubKey.rawPubKey[1].toString());
+  }
 
   const maxVoteOptions = Number(onChainMaxVoteOptions);
 
@@ -140,6 +144,35 @@ export const genMaciStateFromContract = async (
 
     // eslint-disable-next-line no-await-in-loop
     const publishMessageLogs = await pollContract.queryFilter(pollContract.filters.PublishMessage(), i, toBlock);
+
+    const [
+      joinPollLogs,
+      // eslint-disable-next-line no-await-in-loop
+    ] = await Promise.all([pollContract.queryFilter(pollContract.filters.PollJoined(), i, toBlock)]);
+
+    joinPollLogs.forEach((event) => {
+      assert(!!event);
+
+      const nullifier = BigInt(event.args._nullifier);
+
+      const pubKeyX = BigInt(event.args._pollPubKeyX);
+      const pubKeyY = BigInt(event.args._pollPubKeyY);
+      const timestamp = Number(event.args._timestamp);
+
+      const newVoiceCreditBalance = BigInt(event.args._newVoiceCreditBalance);
+
+      actions.push({
+        type: "PollJoined",
+        blockNumber: event.blockNumber,
+        transactionIndex: event.transactionIndex,
+        data: {
+          pubKey: new PubKey([pubKeyX, pubKeyY]),
+          newVoiceCreditBalance,
+          timestamp,
+          nullifier,
+        },
+      });
+    });
 
     publishMessageLogs.forEach((event) => {
       assert(!!event);
@@ -169,9 +202,9 @@ export const genMaciStateFromContract = async (
   sortActions(actions).forEach((action) => {
     switch (true) {
       case action.type === "SignUp": {
-        const { pubKey, voiceCreditBalance, timestamp } = action.data;
+        const { pubKey, voiceCreditBalance, timestamp, stateLeaf } = action.data;
 
-        maciState.signUp(pubKey!, BigInt(voiceCreditBalance!), BigInt(timestamp!));
+        maciState.signUp(pubKey!, BigInt(voiceCreditBalance!), BigInt(timestamp!), stateLeaf);
         break;
       }
 
@@ -197,6 +230,12 @@ export const genMaciStateFromContract = async (
         break;
       }
 
+      case action.type === "PollJoined": {
+        const { pubKey, newVoiceCreditBalance, timestamp, nullifier } = action.data;
+        maciState.polls.get(pollId)?.joinPoll(nullifier!, pubKey!, newVoiceCreditBalance!, BigInt(timestamp!));
+        break;
+      }
+
       default:
         break;
     }
@@ -211,9 +250,6 @@ export const genMaciStateFromContract = async (
   assert(Number(numSignUpsAndMessages[1]) === poll?.messages.length);
   // set the number of signups
   poll.updatePoll(numSignUpsAndMessages[0]);
-
-  // we need to ensure that the stateRoot is correct
-  assert(poll.stateTree?.root.toString() === (await pollContract.mergedStateRoot()).toString());
 
   maciState.polls.set(pollId, poll);
 

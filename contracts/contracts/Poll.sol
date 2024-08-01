@@ -5,6 +5,7 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Params } from "./utilities/Params.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { EmptyBallotRoots } from "./trees/EmptyBallotRoots.sol";
+import { LazyIMTData, InternalLazyIMT } from "./trees/LazyIMT.sol";
 import { IPoll } from "./interfaces/IPoll.sol";
 import { Utilities } from "./utilities/Utilities.sol";
 import { CurveBabyJubJub } from "./crypto/BabyJubJub.sol";
@@ -76,6 +77,15 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
 
   ///  @notice flag for batch padding
   bool public isBatchHashesPadded;
+  /// @notice Poll state tree for anonymous joining
+  LazyIMTData public pollStateTree;
+
+  /// @notice The hash of a blank state leaf
+  uint256 internal constant BLANK_STATE_LEAF_HASH =
+    uint256(6769006970205099520508948723718471724660867171122235270773600567925038008762);
+
+  /// @notice Poll voting nullifier
+  mapping(uint256 => bool) private pollNullifier;
 
   error VotingPeriodOver();
   error VotingPeriodNotOver();
@@ -85,9 +95,19 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   error StateAlreadyMerged();
   error InvalidBatchLength();
   error BatchHashesAlreadyPadded();
+  error UserAlreadyJoined();
+  error InvalidPollProof();
 
   event PublishMessage(Message _message, PubKey _encPubKey);
   event MergeMaciState(uint256 indexed _stateRoot, uint256 indexed _numSignups);
+  event PollJoined(
+    uint256 indexed _pollPubKeyX,
+    uint256 indexed _pollPubKeyY,
+    uint256 _newVoiceCreditBalance,
+    uint256 _timestamp,
+    uint256 _nullifier,
+    uint256 _pollStateIndex
+  );
 
   /// @notice Each MACI instance can have multiple Polls.
   /// When a Poll is deployed, its voting period starts immediately.
@@ -171,6 +191,9 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     batchHashes.push(NOTHING_UP_MY_SLEEVE);
     updateChainHash(placeholderLeaf);
 
+    InternalLazyIMT._init(pollStateTree, extContracts.maci.stateTreeDepth());
+    InternalLazyIMT._insert(pollStateTree, BLANK_STATE_LEAF_HASH);
+
     emit PublishMessage(_message, _padKey);
   }
 
@@ -238,6 +261,74 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     }
   }
 
+  /// @notice Join the poll for voting
+  /// @param _nullifier Hashed user's private key to check whether user has already voted
+  /// @param _pubKey Poll user's public key
+  /// @param _newVoiceCreditBalance User's credit balance for voting within this poll
+  /// @param _stateRootIndex Index of the MACI's stateRootOnSignUp when the user signed up
+  /// @param _proof The zk-SNARK proof
+  function joinPoll(
+    uint256 _nullifier,
+    PubKey memory _pubKey,
+    uint256 _newVoiceCreditBalance,
+    uint256 _stateRootIndex,
+    uint256[8] memory _proof
+  ) external {
+    // Whether the user has already joined
+    if (pollNullifier[_nullifier]) {
+      revert UserAlreadyJoined();
+    }
+
+    // Verify user's proof
+    if (!verifyPollProof(_nullifier, _newVoiceCreditBalance, _stateRootIndex, _pubKey, _proof)) {
+      revert InvalidPollProof();
+    }
+
+    // Store user in the pollStateTree
+    uint256 timestamp = block.timestamp;
+    uint256 stateLeaf = hashStateLeaf(StateLeaf(_pubKey, _newVoiceCreditBalance, timestamp));
+    InternalLazyIMT._insert(pollStateTree, stateLeaf);
+
+    // Set nullifier for user's private key
+    pollNullifier[_nullifier] = true;
+
+    uint256 pollStateIndex = pollStateTree.numberOfLeaves - 1;
+    emit PollJoined(_pubKey.x, _pubKey.y, _newVoiceCreditBalance, timestamp, _nullifier, pollStateIndex);
+  }
+
+  /// @notice Verify the proof for Poll
+  /// @param _nullifier Hashed user's private key to check whether user has already voted
+  /// @param _voiceCreditBalance User's credit balance for voting
+  /// @param _index Index of the MACI's stateRootOnSignUp when the user signed up
+  /// @param _pubKey Poll user's public key
+  /// @param _proof The zk-SNARK proof
+  /// @return isValid Whether the proof is valid
+  function verifyPollProof(
+    uint256 _nullifier,
+    uint256 _voiceCreditBalance,
+    uint256 _index,
+    PubKey memory _pubKey,
+    uint256[8] memory _proof
+  ) internal returns (bool isValid) {
+    // Get the verifying key from the VkRegistry
+    VerifyingKey memory vk = extContracts.maci.getVkRegistry().getPollVk(
+      extContracts.maci.stateTreeDepth(),
+      treeDepths.voteOptionTreeDepth,
+      extContracts.maci.getMode()
+    );
+
+    // Generate the circuit public input
+    uint256[] memory input = new uint256[](5);
+    input[0] = _nullifier;
+    input[1] = _voiceCreditBalance;
+    input[2] = extContracts.maci.getStateRootOnIndexedSignUp(_index);
+    input[3] = _pubKey.x;
+    input[4] = _pubKey.y;
+    uint256 publicInputHash = sha256Hash(input);
+
+    isValid = extContracts.maci.getVerifier().verify(_proof, vk, publicInputHash);
+  }
+
   /// @inheritdoc IPoll
   function mergeMaciState() public isAfterVotingDeadline {
     // This function can only be called once per Poll after the voting
@@ -247,7 +338,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     // set merged to true so it cannot be called again
     stateMerged = true;
 
-    mergedStateRoot = extContracts.maci.getStateTreeRoot();
+    mergedStateRoot = InternalLazyIMT._root(pollStateTree);
 
     // Set currentSbCommitment
     uint256[3] memory sb;

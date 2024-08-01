@@ -34,6 +34,7 @@ import {
   maxVoteOptions,
   messageBatchSize,
   tallyBatchSize,
+  testPollVk,
   testProcessVk,
   testTallyVk,
   treeDepths,
@@ -150,9 +151,10 @@ describe("TallyVotes", () => {
       treeDepths.voteOptionTreeDepth,
       messageBatchSize,
       EMode.QV,
+      testPollVk.asContractParam() as IVerifyingKeyStruct,
       testProcessVk.asContractParam() as IVerifyingKeyStruct,
       testTallyVk.asContractParam() as IVerifyingKeyStruct,
-      { gasLimit: 1000000 },
+      { gasLimit: 2000000 },
     );
   });
 
@@ -335,9 +337,10 @@ describe("TallyVotes", () => {
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
         EMode.QV,
+        testPollVk.asContractParam() as IVerifyingKeyStruct,
         testProcessVk.asContractParam() as IVerifyingKeyStruct,
         testTallyVk.asContractParam() as IVerifyingKeyStruct,
-        { gasLimit: 1000000 },
+        { gasLimit: 2000000 },
       );
 
       await timeTravel(signer.provider! as unknown as EthereumProvider, updatedDuration);
@@ -477,9 +480,10 @@ describe("TallyVotes", () => {
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
         EMode.QV,
+        testPollVk.asContractParam() as IVerifyingKeyStruct,
         testProcessVk.asContractParam() as IVerifyingKeyStruct,
         testTallyVk.asContractParam() as IVerifyingKeyStruct,
-        { gasLimit: 1000000 },
+        { gasLimit: 2000000 },
       );
 
       await timeTravel(signer.provider! as unknown as EthereumProvider, updatedDuration);

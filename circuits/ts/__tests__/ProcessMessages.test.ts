@@ -229,7 +229,7 @@ describe("ProcessMessage circuit", function test() {
         ballotTree.insert(emptyBallotHash);
       });
 
-      const currentStateRoot = poll.stateTree?.root;
+      const currentStateRoot = poll.pollStateTree?.root;
       const currentBallotRoot = ballotTree.root;
 
       const inputs = poll.processMessages(pollId, false) as unknown as IProcessMessagesInputs;
@@ -240,7 +240,7 @@ describe("ProcessMessage circuit", function test() {
 
       // The new roots, which should differ, since at least one of the
       // messages modified a Ballot or State Leaf
-      const newStateRoot = poll.stateTree?.root;
+      const newStateRoot = poll.pollStateTree?.root;
       const newBallotRoot = poll.ballotTree?.root;
 
       expect(newStateRoot?.toString()).not.to.be.eq(currentStateRoot?.toString());
@@ -337,7 +337,7 @@ describe("ProcessMessage circuit", function test() {
         ballotTree.insert(emptyBallotHash);
       });
 
-      const currentStateRoot = poll.stateTree?.root;
+      const currentStateRoot = poll.pollStateTree?.root;
       const currentBallotRoot = ballotTree.root;
 
       const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
@@ -347,7 +347,7 @@ describe("ProcessMessage circuit", function test() {
 
       // The new roots, which should differ, since at least one of the
       // messages modified a Ballot or State Leaf
-      const newStateRoot = poll.stateTree?.root;
+      const newStateRoot = poll.pollStateTree?.root;
       const newBallotRoot = poll.ballotTree?.root;
 
       expect(newStateRoot?.toString()).not.to.be.eq(currentStateRoot?.toString());
@@ -457,7 +457,7 @@ describe("ProcessMessage circuit", function test() {
         ballotTree.insert(emptyBallotHash);
       });
 
-      const currentStateRoot = poll.stateTree?.root;
+      const currentStateRoot = poll.pollStateTree?.root;
       const currentBallotRoot = ballotTree.root;
 
       const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
@@ -467,7 +467,7 @@ describe("ProcessMessage circuit", function test() {
 
       // The new roots, which should differ, since at least one of the
       // messages modified a Ballot or State Leaf
-      const newStateRoot = poll.stateTree?.root;
+      const newStateRoot = poll.pollStateTree?.root;
       const newBallotRoot = poll.ballotTree?.root;
 
       expect(newStateRoot?.toString()).not.to.be.eq(currentStateRoot?.toString());
@@ -629,7 +629,7 @@ describe("ProcessMessage circuit", function test() {
         ballotTree.insert(emptyBallotHash);
       });
 
-      const currentStateRoot = poll.stateTree?.root;
+      const currentStateRoot = poll.pollStateTree?.root;
       const currentBallotRoot = ballotTree.root;
 
       const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
@@ -640,7 +640,7 @@ describe("ProcessMessage circuit", function test() {
 
       // The new roots, which should differ, since at least one of the
       // messages modified a Ballot or State Leaf
-      const newStateRoot = poll.stateTree?.root;
+      const newStateRoot = poll.pollStateTree?.root;
       const newBallotRoot = poll.ballotTree?.root;
 
       expect(newStateRoot?.toString()).not.to.be.eq(currentStateRoot?.toString());
@@ -752,7 +752,7 @@ describe("ProcessMessage circuit", function test() {
       });
 
       while (poll.hasUnprocessedMessages()) {
-        const currentStateRoot = poll.stateTree?.root;
+        const currentStateRoot = poll.pollStateTree?.root;
         const currentBallotRoot = ballotTree.root;
         const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
 
@@ -764,7 +764,7 @@ describe("ProcessMessage circuit", function test() {
 
         // The new roots, which should differ, since at least one of the
         // messages modified a Ballot or State Leaf
-        const newStateRoot = poll.stateTree?.root;
+        const newStateRoot = poll.pollStateTree?.root;
         const newBallotRoot = poll.ballotTree?.root;
 
         expect(newStateRoot?.toString()).not.to.be.eq(currentStateRoot?.toString());
@@ -896,7 +896,7 @@ describe("ProcessMessage circuit", function test() {
       });
 
       while (poll.hasUnprocessedMessages()) {
-        const currentStateRoot = poll.stateTree?.root;
+        const currentStateRoot = poll.pollStateTree?.root;
         const currentBallotRoot = ballotTree.root;
         const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
 
@@ -908,7 +908,7 @@ describe("ProcessMessage circuit", function test() {
 
         // The new roots, which should differ, since at least one of the
         // messages modified a Ballot or State Leaf
-        const newStateRoot = poll.stateTree?.root;
+        const newStateRoot = poll.pollStateTree?.root;
         const newBallotRoot = poll.ballotTree?.root;
 
         expect(newStateRoot?.toString()).not.to.be.eq(currentStateRoot?.toString());

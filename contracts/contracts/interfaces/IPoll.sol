@@ -7,6 +7,15 @@ import { IMACI } from "./IMACI.sol";
 /// @title IPoll
 /// @notice Poll interface
 interface IPoll {
+  /// @notice Join the poll
+  function joinPoll(
+    uint256 _nullifier,
+    DomainObjs.PubKey memory _pubKey,
+    uint256 _newVoiceCreditBalance,
+    uint256 _stateRootIndex,
+    uint256[8] memory _proof
+  ) external;
+
   /// @notice The number of messages which have been processed and the number of signups
   /// @return numSignups The number of signups
   /// @return numMsgs The number of messages sent by voters

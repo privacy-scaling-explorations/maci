@@ -33,6 +33,7 @@ import {
   maxVoteOptions,
   messageBatchSize,
   tallyBatchSize,
+  testPollVk,
   testProcessVk,
   testTallyVk,
   treeDepths,
@@ -149,9 +150,10 @@ describe("TallyVotesNonQv", () => {
       treeDepths.voteOptionTreeDepth,
       messageBatchSize,
       EMode.NON_QV,
+      testPollVk.asContractParam() as IVerifyingKeyStruct,
       testProcessVk.asContractParam() as IVerifyingKeyStruct,
       testTallyVk.asContractParam() as IVerifyingKeyStruct,
-      { gasLimit: 1000000 },
+      { gasLimit: 2000000 },
     );
   });
 

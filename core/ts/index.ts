@@ -3,6 +3,7 @@ export { MaciState } from "./MaciState";
 export { Poll } from "./Poll";
 
 export {
+  genPollVkSig,
   genProcessVkSig,
   genTallyVkSig,
   packProcessMessageSmallVals,

@@ -17,7 +17,9 @@ import {
 import { DeployedContracts, IPublishBatchArgs, IPublishMessage, PollContracts } from "../../ts/utils";
 import { deployPollArgs, setVerifyingKeysArgs, deployArgs } from "../constants";
 
-describe("publish", () => {
+describe("publish", function test() {
+  this.timeout(900000);
+
   let maciAddresses: DeployedContracts;
   let pollAddresses: PollContracts;
   let signer: Signer;

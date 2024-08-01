@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { expect } from "chai";
 import { Signer } from "ethers";
 
@@ -6,6 +7,7 @@ import { EMode } from "../ts/constants";
 
 import {
   messageBatchSize,
+  testPollVk,
   testProcessVk,
   testProcessVkNonQv,
   testTallyVk,
@@ -32,16 +34,17 @@ describe("VkRegistry", () => {
   });
 
   describe("setVerifyingKeys", () => {
-    it("should set the process and tally vks", async () => {
+    it("should set the process, tally and poll vks", async () => {
       const tx = await vkRegistryContract.setVerifyingKeys(
         stateTreeDepth,
         treeDepths.intStateTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
         EMode.QV,
+        testPollVk.asContractParam() as IVerifyingKeyStruct,
         testProcessVk.asContractParam() as IVerifyingKeyStruct,
         testTallyVk.asContractParam() as IVerifyingKeyStruct,
-        { gasLimit: 1000000 },
+        { gasLimit: 2000000 },
       );
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
@@ -55,9 +58,10 @@ describe("VkRegistry", () => {
           treeDepths.voteOptionTreeDepth,
           messageBatchSize,
           EMode.QV,
+          testPollVk.asContractParam() as IVerifyingKeyStruct,
           testProcessVk.asContractParam() as IVerifyingKeyStruct,
           testTallyVk.asContractParam() as IVerifyingKeyStruct,
-          { gasLimit: 1000000 },
+          { gasLimit: 2000000 },
         ),
       ).to.be.revertedWithCustomError(vkRegistryContract, "ProcessVkAlreadySet");
     });
@@ -69,9 +73,10 @@ describe("VkRegistry", () => {
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
         EMode.QV,
+        testPollVk.asContractParam() as IVerifyingKeyStruct,
         testProcessVk.asContractParam() as IVerifyingKeyStruct,
         testTallyVk.asContractParam() as IVerifyingKeyStruct,
-        { gasLimit: 1000000 },
+        { gasLimit: 2000000 },
       );
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
@@ -84,9 +89,10 @@ describe("VkRegistry", () => {
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
         EMode.NON_QV,
+        testPollVk.asContractParam() as IVerifyingKeyStruct,
         testProcessVk.asContractParam() as IVerifyingKeyStruct,
         testTallyVk.asContractParam() as IVerifyingKeyStruct,
-        { gasLimit: 1000000 },
+        { gasLimit: 2000000 },
       );
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
@@ -94,6 +100,7 @@ describe("VkRegistry", () => {
   });
 
   describe("setVerifyingKeysBatch", () => {
+    // TODO: change corresponding to the contract function
     it("should set the process and tally vks", async () => {
       const tx = await vkRegistryContract.setVerifyingKeysBatch(
         stateTreeDepth,
@@ -101,9 +108,10 @@ describe("VkRegistry", () => {
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
         [EMode.NON_QV],
+        testPollVk.asContractParam() as IVerifyingKeyStruct,
         [testProcessVkNonQv.asContractParam() as IVerifyingKeyStruct],
         [testTallyVkNonQv.asContractParam() as IVerifyingKeyStruct],
-        { gasLimit: 1000000 },
+        { gasLimit: 2000000 },
       );
 
       const receipt = await tx.wait();
@@ -118,6 +126,7 @@ describe("VkRegistry", () => {
           treeDepths.voteOptionTreeDepth,
           messageBatchSize,
           [EMode.QV],
+          testPollVk.asContractParam() as IVerifyingKeyStruct,
           [
             testProcessVk.asContractParam() as IVerifyingKeyStruct,
             testProcessVkNonQv.asContractParam() as IVerifyingKeyStruct,
@@ -130,6 +139,20 @@ describe("VkRegistry", () => {
   });
 
   describe("hasVks", () => {
+    describe("hasPollVk", () => {
+      it("should return true for the process vk", async () => {
+        expect(await vkRegistryContract.hasPollVk(stateTreeDepth, treeDepths.voteOptionTreeDepth, EMode.QV)).to.eq(
+          true,
+        );
+      });
+
+      it("should return false for a non-existing vk", async () => {
+        expect(await vkRegistryContract.hasPollVk(stateTreeDepth + 2, treeDepths.voteOptionTreeDepth, EMode.QV)).to.eq(
+          false,
+        );
+      });
+    });
+
     describe("hasProcessVk", () => {
       it("should return true for the process vk", async () => {
         expect(
@@ -180,6 +203,14 @@ describe("VkRegistry", () => {
   });
 
   describe("genSignatures", () => {
+    describe("genPollVkSig", () => {
+      it("should generate a valid signature", async () => {
+        const sig = await vkRegistryContract.genPollVkSig(stateTreeDepth, treeDepths.voteOptionTreeDepth);
+        const vk = await vkRegistryContract.getPollVkBySig(sig, EMode.QV);
+        compareVks(testPollVk, vk);
+      });
+    });
+
     describe("genProcessVkSig", () => {
       it("should generate a valid signature", async () => {
         const sig = await vkRegistryContract.genProcessVkSig(

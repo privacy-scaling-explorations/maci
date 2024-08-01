@@ -1,3 +1,4 @@
+import { type BigNumberish } from "ethers";
 import { extractVk, genProof, verifyProof } from "maci-circuits";
 import { MACI__factory as MACIFactory, Poll__factory as PollFactory, genMaciStateFromContract } from "maci-contracts";
 import { type CircuitInputs, type IJsonMaciState, MaciState } from "maci-core";
@@ -6,8 +7,6 @@ import { Keypair, PrivKey } from "maci-domainobjs";
 
 import fs from "fs";
 import path from "path";
-
-import type { BigNumberish } from "ethers";
 
 import {
   asHex,

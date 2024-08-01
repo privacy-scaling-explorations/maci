@@ -2,7 +2,7 @@ import { MACI } from "maci-contracts/typechain-types";
 import { PubKey } from "maci-domainobjs";
 
 import type { Provider, Signer } from "ethers";
-import type { SnarkProof } from "maci-contracts";
+import type { Poll, SnarkProof } from "maci-contracts";
 import type { CircuitInputs } from "maci-core";
 import type { IMessageContractParams } from "maci-domainobjs";
 import type { Groth16Proof, PublicSignals } from "snarkjs";
@@ -175,6 +175,11 @@ export interface CheckVerifyingKeysArgs {
   messageBatchSize: number;
 
   /**
+   * The path to the poll zkey
+   */
+  pollJoiningZkeyPath: string;
+
+  /**
    * The path to the process messages zkey
    */
   processMessagesZkeyPath: string;
@@ -313,6 +318,86 @@ export interface DeployPollArgs {
    * Whether to use quadratic voting or not
    */
   useQuadraticVoting?: boolean;
+}
+
+export interface IJoinedUserArgs {
+  maciAddress: string;
+  pollId: bigint;
+  pollPubKey: string;
+  signer: Signer;
+  startBlock: number;
+  quiet: boolean;
+}
+
+export interface IJoinPollArgs {
+  signer: Signer;
+
+  privateKey: string;
+
+  newVoiceCreditBalance: bigint;
+
+  pollId: bigint;
+
+  stateIndex: bigint;
+
+  quiet: boolean;
+
+  stateFile?: string;
+
+  /**
+   * The address of the MACI contract
+   */
+  maciAddress: string;
+
+  /**
+   * The end block number
+   */
+  endBlock?: number;
+
+  /**
+   * The start block number
+   */
+  startBlock?: number;
+
+  /**
+   * The number of blocks to fetch per batch
+   */
+  blocksPerBatch?: number;
+
+  /**
+   * The transaction hash of the first transaction
+   */
+  transactionHash?: string;
+
+  /**
+   * The path to the poll zkey file
+   */
+  pollJoiningZkey: string;
+
+  /**
+   * Whether to use wasm or rapidsnark
+   */
+  useWasm?: boolean;
+
+  /**
+   * The path to the rapidsnark binary
+   */
+  rapidsnark?: string;
+
+  /**
+   * The path to the poll witnessgen binary
+   */
+  pollWitgen?: string;
+
+  /**
+   * The path to the poll wasm file
+   */
+  pollWasm?: string;
+
+  /**
+   * Poll private key for the poll
+   */
+  pollPrivKey: string;
 }
 
 /**
@@ -726,6 +811,11 @@ export interface SetVerifyingKeysArgs {
   messageBatchSize: number;
 
   /**
+   * The path to the poll zkey
+   */
+  pollJoiningZkeyPath?: string;
+
+  /**
    * The path to the process messages qv zkey
    */
   processMessagesZkeyPathQv?: string;
@@ -1023,6 +1113,11 @@ export interface DeployVkRegistryArgs {
 
 export interface ExtractVkToFileArgs {
   /**
+   * File path for poll zkey
+   */
+  pollJoiningZkeyPath: string;
+
+  /**
    * File path for processMessagesQv zkey
    */
   processMessagesZkeyPathQv: string;
@@ -1046,6 +1141,31 @@ export interface ExtractVkToFileArgs {
    * Output file path of extracted vkeys
    */
   outputFilePath: string;
+}
+
+/**
+ * Interface for the arguments to the parsePollJoinEvents function
+ */
+export interface IParsePollJoinEventsArgs {
+  /**
+   * The MACI contract
+   */
+  pollContract: Poll;
+
+  /**
+   * The start block
+   */
+  startBlock: number;
+
+  /**
+   * The current block
+   */
+  currentBlock: number;
+
+  /**
+   * The public key
+   */
+  pollPublicKey: PubKey;
 }
 
 /**

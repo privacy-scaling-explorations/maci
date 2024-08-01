@@ -94,11 +94,13 @@ export interface Action {
     message: Message;
     voiceCreditBalance: number;
     timestamp: number;
+    nullifier: bigint;
+    newVoiceCreditBalance: bigint;
     stateIndex: number;
     numSrQueueOps: number;
     pollId: bigint;
     pollAddr: string;
-    stateRoot: bigint;
+    stateLeaf: bigint;
     messageRoot: bigint;
   }>;
   blockNumber: number;

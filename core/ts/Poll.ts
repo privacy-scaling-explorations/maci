@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   IncrementalQuinTree,
   genRandomSalt,
@@ -11,6 +12,7 @@ import {
   genTreeCommitment,
   hash2,
 } from "maci-crypto";
+import { poseidon } from "maci-crypto/build/ts/hashing";
 import {
   PCommand,
   Keypair,
@@ -18,8 +20,8 @@ import {
   PubKey,
   PrivKey,
   Message,
+  StateLeaf,
   blankStateLeaf,
-  type StateLeaf,
   type IMessageContractParams,
   type IJsonPCommand,
   blankStateLeafHash,
@@ -37,6 +39,7 @@ import type {
   IProcessMessagesOutput,
   ITallyCircuitInputs,
   IProcessMessagesCircuitInputs,
+  IPollJoiningCircuitInputs,
 } from "./utils/types";
 import type { PathElements } from "maci-crypto";
 
@@ -120,6 +123,15 @@ export class Poll implements IPoll {
   // batch chain hashes
   batchHashes = [NOTHING_UP_MY_SLEEVE];
 
+  // Poll state tree leaves
+  pollStateLeaves: StateLeaf[] = [blankStateLeaf];
+
+  // Poll state tree
+  pollStateTree?: IncrementalQuinTree;
+
+  // Poll voting nullifier
+  pollNullifiers: Map<bigint, boolean>;
+
   // how many users signed up
   private numSignups = 0n;
 
@@ -151,6 +163,8 @@ export class Poll implements IPoll {
     this.actualStateTreeDepth = maciStateRef.stateTreeDepth;
     this.currentMessageBatchIndex = 0;
 
+    this.pollNullifiers = new Map<bigint, boolean>();
+
     this.tallyResult = new Array(this.maxVoteOptions).fill(0n) as bigint[];
     this.perVOSpentVoiceCredits = new Array(this.maxVoteOptions).fill(0n) as bigint[];
 
@@ -158,6 +172,29 @@ export class Poll implements IPoll {
     this.emptyBallot = Ballot.genBlankBallot(this.maxVoteOptions, treeDepths.voteOptionTreeDepth);
     this.ballots.push(this.emptyBallot);
   }
+
+  /**
+   * Check if user has already joined the poll by checking if the nullifier is registered
+   */
+  hasJoined = (nullifier: bigint): boolean => this.pollNullifiers.get(nullifier) != null;
+
+  /**
+   * Join the anonymous user to the Poll (to the tree)
+   * @param nullifier - Hashed private key used as nullifier
+   * @param pubKey - The public key of the user.
+   * @param newVoiceCreditBalance - New voice credit balance of the user.
+   * @param timestamp - The timestamp of the sign-up.
+   * @returns The index of added state leaf
+   */
+  joinPoll = (nullifier: bigint, pubKey: PubKey, newVoiceCreditBalance: bigint, timestamp: bigint): number => {
+    const stateLeaf = new StateLeaf(pubKey, newVoiceCreditBalance, timestamp);
+    this.pollNullifiers.set(nullifier, true);
+    this.pollStateLeaves.push(stateLeaf.copy());
+    this.pollStateTree?.insert(stateLeaf.hash());
+
+    const index = this.pollStateLeaves.length - 1;
+    return index;
+  };
 
   /**
    * Update a Poll with data from MaciState.
@@ -186,6 +223,14 @@ export class Poll implements IPoll {
     this.stateLeaves.forEach((stateLeaf) => {
       this.stateTree?.insert(stateLeaf.hash());
     });
+
+    // create a poll state tree
+    this.pollStateTree = new IncrementalQuinTree(
+      this.actualStateTreeDepth,
+      blankStateLeafHash,
+      STATE_TREE_ARITY,
+      hash2,
+    );
 
     // Create as many ballots as state leaves
     this.emptyBallotHash = this.emptyBallot.hash();
@@ -220,13 +265,13 @@ export class Poll implements IPoll {
       if (
         stateLeafIndex >= BigInt(this.ballots.length) ||
         stateLeafIndex < 1n ||
-        stateLeafIndex >= BigInt(this.stateTree?.nextIndex || -1)
+        stateLeafIndex >= BigInt(this.pollStateTree?.nextIndex || -1)
       ) {
         throw new ProcessMessageError(ProcessMessageErrors.InvalidStateLeafIndex);
       }
 
       // The user to update (or not)
-      const stateLeaf = this.stateLeaves[Number(stateLeafIndex)];
+      const stateLeaf = this.pollStateLeaves[Number(stateLeafIndex)];
 
       // The ballot to update (or not)
       const ballot = this.ballots[Number(stateLeafIndex)];
@@ -285,7 +330,7 @@ export class Poll implements IPoll {
       // calculate the path elements for the state tree given the original state tree (before any changes)
       // changes could effectively be made by this new vote - either a key change or vote change
       // would result in a different state leaf
-      const originalStateLeafPathElements = this.stateTree?.genProof(Number(stateLeafIndex)).pathElements;
+      const originalStateLeafPathElements = this.pollStateTree?.genProof(Number(stateLeafIndex)).pathElements;
       // calculate the path elements for the ballot tree given the original ballot tree (before any changes)
       // changes could effectively be made by this new ballot
       const originalBallotPathElements = this.ballotTree?.genProof(Number(stateLeafIndex)).pathElements;
@@ -372,6 +417,61 @@ export class Poll implements IPoll {
       this.batchHashes.push(this.chainHash);
       this.currentMessageBatchIndex += 1;
     }
+  };
+
+  joiningCircuitInputs = (
+    maciPrivateKey: PrivKey,
+    stateLeafIndex: bigint,
+    credits: bigint,
+    pollPrivateKey: PrivKey,
+    pollPubKey: PubKey,
+  ): IPollJoiningCircuitInputs => {
+    // Get the state leaf on the index position
+    const stateLeaf = this.stateLeaves[Number(stateLeafIndex)];
+    const { pubKey, voiceCreditBalance, timestamp } = stateLeaf;
+    const pubKeyX = pubKey.asArray()[0];
+    const pubKeyY = pubKey.asArray()[1];
+    const stateLeafArray = [pubKeyX, pubKeyY, voiceCreditBalance, timestamp];
+    const pollPubKeyArray = pollPubKey.asArray();
+
+    // calculate the path elements for the state tree given the original state tree
+    const { pathElements: siblings, pathIndices, root: stateRoot } = this.stateTree!.genProof(Number(stateLeafIndex));
+    const indices = pathIndices.map((num) => BigInt(num));
+
+    // Fill the indices and siblings with the missed values (zeroes) for circuit inputs
+    for (let i = indices.length; i < this.stateTreeDepth; i += 1) {
+      indices.push(BigInt(0));
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      siblings.push(Array(STATE_TREE_ARITY - 1).fill(BigInt(0)));
+    }
+
+    // Create nullifier from private key
+    const inputNullifier = BigInt(maciPrivateKey.asCircuitInputs());
+    const nullifier = poseidon([inputNullifier]);
+
+    assert(credits <= voiceCreditBalance, "Credits must be lower than signed up credits");
+
+    // Convert actualStateTreeDepth to BigInt
+    const actualStateTreeDepth = BigInt(this.actualStateTreeDepth);
+
+    // Calculate public input hash from nullifier, credits and current root
+    const inputHash = sha256Hash([nullifier, credits, stateRoot, pollPubKeyArray[0], pollPubKeyArray[1]]);
+
+    const circuitInputs = {
+      privKey: maciPrivateKey.asCircuitInputs(),
+      pollPrivKey: pollPrivateKey.asCircuitInputs(),
+      pollPubKey: pollPubKey.asCircuitInputs(),
+      stateLeaf: stateLeafArray,
+      siblings,
+      indices,
+      nullifier,
+      credits,
+      stateRoot,
+      actualStateTreeDepth,
+      inputHash,
+    };
+
+    return stringifyBigInts(circuitInputs) as unknown as IPollJoiningCircuitInputs;
   };
 
   /**
@@ -499,7 +599,7 @@ export class Poll implements IPoll {
           this.stateLeaves[index] = r.newStateLeaf!.copy();
 
           // we also update the state tree with the hash of the new state leaf
-          this.stateTree?.update(index, r.newStateLeaf!.hash());
+          this.pollStateTree?.update(index, r.newStateLeaf!.hash());
 
           // store the new ballot
           this.ballots[index] = r.newBallot!;
@@ -534,9 +634,9 @@ export class Poll implements IPoll {
             const stateLeafIndex = command.stateIndex;
 
             // if the state leaf index is valid then use it
-            if (stateLeafIndex < this.stateLeaves.length) {
-              currentStateLeaves.unshift(this.stateLeaves[Number(stateLeafIndex)].copy());
-              currentStateLeavesPathElements.unshift(this.stateTree!.genProof(Number(stateLeafIndex)).pathElements);
+            if (stateLeafIndex < this.pollStateLeaves.length) {
+              currentStateLeaves.unshift(this.pollStateLeaves[Number(stateLeafIndex)].copy());
+              currentStateLeavesPathElements.unshift(this.pollStateTree!.genProof(Number(stateLeafIndex)).pathElements);
 
               // copy the ballot
               const ballot = this.ballots[Number(stateLeafIndex)].copy();
@@ -586,8 +686,8 @@ export class Poll implements IPoll {
               }
             } else {
               // just use state leaf index 0
-              currentStateLeaves.unshift(this.stateLeaves[0].copy());
-              currentStateLeavesPathElements.unshift(this.stateTree!.genProof(0).pathElements);
+              currentStateLeaves.unshift(this.pollStateLeaves[0].copy());
+              currentStateLeavesPathElements.unshift(this.pollStateTree!.genProof(0).pathElements);
               currentBallots.unshift(this.ballots[0].copy());
               currentBallotsPathElements.unshift(this.ballotTree!.genProof(0).pathElements);
 
@@ -612,7 +712,7 @@ export class Poll implements IPoll {
       } else {
         // Since we don't have a command at that position, use a blank state leaf
         currentStateLeaves.unshift(this.stateLeaves[0].copy());
-        currentStateLeavesPathElements.unshift(this.stateTree!.genProof(0).pathElements);
+        currentStateLeavesPathElements.unshift(this.pollStateTree!.genProof(0).pathElements);
         // since the command is invliad we use the blank ballot
         currentBallots.unshift(this.ballots[0].copy());
         currentBallotsPathElements.unshift(this.ballotTree!.genProof(0).pathElements);
@@ -661,7 +761,7 @@ export class Poll implements IPoll {
 
     // store the salt in the circuit inputs
     circuitInputs.newSbSalt = newSbSalt;
-    const newStateRoot = this.stateTree!.root;
+    const newStateRoot = this.pollStateTree!.root;
     const newBallotRoot = this.ballotTree!.root;
     // create a commitment to the state and ballot tree roots
     // this will be the hash of the roots with a salt
@@ -749,7 +849,7 @@ export class Poll implements IPoll {
     encPubKeys = encPubKeys.slice((index - 1) * messageBatchSize, index * messageBatchSize);
 
     // cache tree roots
-    const currentStateRoot = this.stateTree!.root;
+    const currentStateRoot = this.pollStateTree!.root;
     const currentBallotRoot = this.ballotTree!.root;
     // calculate the current state and ballot root
     // commitment which is the hash of the state tree
@@ -950,7 +1050,7 @@ export class Poll implements IPoll {
     ]);
 
     // cache vars
-    const stateRoot = this.stateTree!.root;
+    const stateRoot = this.pollStateTree!.root;
     const ballotRoot = this.ballotTree!.root;
     const sbSalt = this.sbSalts[this.currentMessageBatchIndex];
     const sbCommitment = hash3([stateRoot, ballotRoot, sbSalt]);
@@ -1090,7 +1190,7 @@ export class Poll implements IPoll {
     const newTallyCommitment = hashLeftRight(newResultsCommitment, newSpentVoiceCreditsCommitment);
 
     // cache vars
-    const stateRoot = this.stateTree!.root;
+    const stateRoot = this.pollStateTree!.root;
     const ballotRoot = this.ballotTree!.root;
     const sbSalt = this.sbSalts[this.currentMessageBatchIndex];
     const sbCommitment = hash3([stateRoot, ballotRoot, sbSalt]);
