@@ -145,7 +145,10 @@ export interface IProcessMessagesOutput {
 export interface IProcessMessagesCircuitInputs {
   actualStateTreeDepth: string;
   pollEndTimestamp: string;
-  packedVals: string;
+  numSignUps: string;
+  batchEndIndex: string;
+  index: string;
+  maxVoteOptions: string;
   msgRoot: string;
   msgs: string[];
   msgSubrootPathElements: string[][];
@@ -162,7 +165,6 @@ export interface IProcessMessagesCircuitInputs {
   currentBallotsPathElements: string[][];
   currentVoteWeights: string[];
   currentVoteWeightsPathElements: string[][];
-  inputHash: string;
   newSbSalt: string;
   newSbCommitment: string;
 }
@@ -175,10 +177,10 @@ export interface ITallyCircuitInputs {
   ballotRoot: string;
   sbSalt: string;
   sbCommitment: string;
+  index: bigint;
   currentTallyCommitment: string;
   newTallyCommitment: string;
-  packedVals: string;
-  inputHash: string;
+  numSignUps: bigint;
   ballots: string[];
   ballotPathElements: PathElements;
   votes: string[][];

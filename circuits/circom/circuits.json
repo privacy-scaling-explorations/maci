@@ -3,24 +3,42 @@
     "file": "./core/qv/processMessages",
     "template": "ProcessMessages",
     "params": [10, 2, 1, 2],
-    "pubs": ["inputHash"]
+    "pubs": [
+      "numSignUps",
+      "index",
+      "batchEndIndex",
+      "msgRoot",
+      "currentSbCommitment",
+      "newSbCommitment",
+      "pollEndTimestamp",
+      "actualStateTreeDepth"
+    ]
   },
   "ProcessMessagesNonQv_10-2-1-2_test": {
     "file": "./core/non-qv/processMessages",
     "template": "ProcessMessagesNonQv",
     "params": [10, 2, 1, 2],
-    "pubs": ["inputHash"]
+    "pubs": [
+      "numSignUps",
+      "index",
+      "batchEndIndex",
+      "msgRoot",
+      "currentSbCommitment",
+      "newSbCommitment",
+      "pollEndTimestamp",
+      "actualStateTreeDepth"
+    ]
   },
   "TallyVotes_10-1-2_test": {
     "file": "./core/qv/tallyVotes",
     "template": "TallyVotes",
     "params": [10, 1, 2],
-    "pubs": ["inputHash"]
+    "pubs": ["index", "numSignUps", "sbCommitment", "currentTallyCommitment", "newTallyCommitment"]
   },
   "TallyVotesNonQv_10-1-2_test": {
     "file": "./core/non-qv/tallyVotes",
     "template": "TallyVotesNonQv",
     "params": [10, 1, 2],
-    "pubs": ["inputHash"]
+    "pubs": ["index", "numSignUps", "sbCommitment", "currentTallyCommitment", "newTallyCommitment"]
   }
 }

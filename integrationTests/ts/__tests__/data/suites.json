@@ -34,39 +34,39 @@
       "numVotesPerUser": 1,
       "votes": {
         "0": {
-            "0": { "voteOptionIndex": 0, "voteWeight": 5 }
+          "0": { "voteOptionIndex": 0, "voteWeight": 5 }
         },
         "1": {
-            "0": { "voteOptionIndex": 0, "voteWeight": 9 }
+          "0": { "voteOptionIndex": 0, "voteWeight": 9 }
         },
         "2": {
-            "0": { "voteOptionIndex": 5, "voteWeight": 3 }
+          "0": { "voteOptionIndex": 5, "voteWeight": 3 }
         },
         "3": {
-            "0": { "voteOptionIndex": 3, "voteWeight": 2 }
+          "0": { "voteOptionIndex": 3, "voteWeight": 2 }
         },
         "4": {
-            "0": { "voteOptionIndex": 0, "voteWeight": 1 }
+          "0": { "voteOptionIndex": 0, "voteWeight": 1 }
         },
         "5": {
-            "0": { "voteOptionIndex": 9, "voteWeight": 1 }
+          "0": { "voteOptionIndex": 9, "voteWeight": 1 }
         },
         "6": {
-            "0": { "voteOptionIndex": 4, "voteWeight": 7 }
+          "0": { "voteOptionIndex": 4, "voteWeight": 7 }
         },
         "7": {
-            "0": { "voteOptionIndex": 7, "voteWeight": 5 }
+          "0": { "voteOptionIndex": 7, "voteWeight": 5 }
         },
         "8": {
-            "0": { "voteOptionIndex": 3, "voteWeight": 10 }
+          "0": { "voteOptionIndex": 3, "voteWeight": 10 }
         },
         "9": {
-            "0": { "voteOptionIndex": 8, "voteWeight": 2 }
+          "0": { "voteOptionIndex": 8, "voteWeight": 2 }
         }
       },
-    "expectedTally": [15, 0, 0, 12, 7, 3, 0, 5, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-    "expectedSpentVoiceCredits": [107, 0, 0, 104, 49, 9, 0, 25, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    "expectedTotalSpentVoiceCredits": 299
+      "expectedTally": [15, 0, 0, 12, 7, 3, 0, 5, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+      "expectedSpentVoiceCredits": [107, 0, 0, 104, 49, 9, 0, 25, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      "expectedTotalSpentVoiceCredits": 299
     },
     {
       "name": "Reverse processing",

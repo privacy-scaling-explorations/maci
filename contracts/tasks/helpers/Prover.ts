@@ -6,7 +6,7 @@ import type { IVerifyingKeyStruct, Proof } from "../../ts/types";
 import type { AccQueue, MACI, MessageProcessor, Poll, Tally, Verifier, VkRegistry } from "../../typechain-types";
 import type { BigNumberish } from "ethers";
 
-import { formatProofForVerifierContract, asHex } from "../../ts/utils";
+import { asHex, formatProofForVerifierContract } from "../../ts/utils";
 
 import { STATE_TREE_ARITY } from "./constants";
 import { IProverParams } from "./types";
@@ -91,7 +91,6 @@ export class Prover {
         this.mpContract.mode(),
       ]);
 
-    const numSignUps = Number(numSignUpsAndMessages[0]);
     const numMessages = Number(numSignUpsAndMessages[1]);
     const messageBatchSize = STATE_TREE_ARITY ** Number(treeDepths[1]);
     let totalMessageBatches = numMessages <= messageBatchSize ? 1 : Math.floor(numMessages / messageBatchSize);
@@ -167,32 +166,13 @@ export class Prover {
         throw new Error("coordPubKey mismatch.");
       }
 
-      const packedValsOnChain = BigInt(
-        await this.mpContract.genProcessMessagesPackedVals(
-          currentMessageBatchIndex,
-          numSignUps,
-          numMessages,
-          treeDepths.messageTreeSubDepth,
-          treeDepths.voteOptionTreeDepth,
-        ),
-      ).toString();
-      this.validatePackedValues(circuitInputs.packedVals as BigNumberish, packedValsOnChain);
-
       const formattedProof = formatProofForVerifierContract(proof);
 
-      const publicInputHashOnChain = BigInt(
-        await this.mpContract.genProcessMessagesPublicInputHash(
-          currentMessageBatchIndex,
-          messageRootOnChain.toString(),
-          numSignUps,
-          numMessages,
-          circuitInputs.currentSbCommitment as BigNumberish,
-          circuitInputs.newSbCommitment as BigNumberish,
-          treeDepths.messageTreeSubDepth,
-          treeDepths.voteOptionTreeDepth,
-        ),
+      const publicInputsOnChain = await this.mpContract.getPublicCircuitInputs(
+        currentMessageBatchIndex,
+        asHex(circuitInputs.newSbCommitment as BigNumberish),
       );
-      this.validatePublicInput(publicInputs[0] as BigNumberish, publicInputHashOnChain);
+      this.validatePublicInput(publicInputs, publicInputsOnChain);
 
       const vk = new VerifyingKey(
         new G1Point(onChainProcessVk.alpha1[0], onChainProcessVk.alpha1[1]),
@@ -207,7 +187,7 @@ export class Prover {
       const isValidOnChain = await this.verifierContract.verify(
         formattedProof,
         vk.asContractParam() as IVerifyingKeyStruct,
-        publicInputHashOnChain.toString(),
+        publicInputsOnChain,
       );
 
       if (!isValidOnChain) {
@@ -216,7 +196,6 @@ export class Prover {
 
       try {
         // validate process messaging proof and store the new state and ballot root commitment
-
         const receipt = await this.mpContract
           .processMessages(asHex(circuitInputs.newSbCommitment as BigNumberish), formattedProof)
           .then((tx) => tx.wait());
@@ -248,11 +227,20 @@ export class Prover {
    * @param proofs tally proofs
    */
   async proveTally(proofs: Proof[]): Promise<void> {
-    const [treeDepths, numSignUpsAndMessages, tallyBatchNumber] = await Promise.all([
+    const [treeDepths, numSignUpsAndMessages, tallyBatchNumber, mode, stateTreeDepth] = await Promise.all([
       this.pollContract.treeDepths(),
       this.pollContract.numSignUpsAndMessages(),
       this.tallyContract.tallyBatchNum().then(Number),
+      this.tallyContract.mode(),
+      this.maciContract.stateTreeDepth().then(Number),
     ]);
+
+    const onChainTallyVk = await this.vkRegistryContract.getTallyVk(
+      stateTreeDepth,
+      treeDepths.intStateTreeDepth,
+      treeDepths.voteOptionTreeDepth,
+      mode,
+    );
 
     const numSignUps = Number(numSignUpsAndMessages[0]);
     const tallyBatchSize = STATE_TREE_ARITY ** Number(treeDepths.intStateTreeDepth);
@@ -280,25 +268,36 @@ export class Prover {
       const currentTallyCommitmentOnChain = await this.tallyContract.tallyCommitment();
       this.validateCommitment(circuitInputs.currentTallyCommitment as BigNumberish, currentTallyCommitmentOnChain);
 
-      const packedValsOnChain = BigInt(
-        await this.tallyContract.genTallyVotesPackedVals(numSignUps, batchStartIndex, tallyBatchSize),
-      );
-      this.validatePackedValues(circuitInputs.packedVals as BigNumberish, packedValsOnChain);
-
       const currentSbCommitmentOnChain = await this.mpContract.sbCommitment();
       console.log(currentSbCommitmentOnChain, circuitInputs);
       this.validateCommitment(circuitInputs.sbCommitment as BigNumberish, currentSbCommitmentOnChain);
 
-      const publicInputHashOnChain = await this.tallyContract.genTallyVotesPublicInputHash(
-        numSignUps,
+      const publicInputsOnChain = await this.tallyContract.getPublicCircuitInputs(
         batchStartIndex,
-        tallyBatchSize,
-        circuitInputs.newTallyCommitment as BigNumberish,
+        asHex(circuitInputs.newTallyCommitment as BigNumberish),
       );
-      this.validatePublicInput(publicInputs[0] as BigNumberish, publicInputHashOnChain);
+      this.validatePublicInput(publicInputs, publicInputsOnChain);
 
       // format the tally proof so it can be verified on chain
       const formattedProof = formatProofForVerifierContract(proof);
+
+      const vk = new VerifyingKey(
+        new G1Point(onChainTallyVk.alpha1[0], onChainTallyVk.alpha1[1]),
+        new G2Point(onChainTallyVk.beta2[0], onChainTallyVk.beta2[1]),
+        new G2Point(onChainTallyVk.gamma2[0], onChainTallyVk.gamma2[1]),
+        new G2Point(onChainTallyVk.delta2[0], onChainTallyVk.delta2[1]),
+        onChainTallyVk.ic.map(([x, y]) => new G1Point(x, y)),
+      );
+
+      const isValidOnChain = await this.verifierContract.verify(
+        formattedProof,
+        vk.asContractParam() as IVerifyingKeyStruct,
+        publicInputsOnChain,
+      );
+
+      if (!isValidOnChain) {
+        throw new Error("The verifier contract found the proof invalid.");
+      }
 
       // verify the proof on chain
       const receipt = await this.tallyContract
@@ -360,27 +359,14 @@ export class Prover {
   }
 
   /**
-   * Validate packed values
-   *
-   * @param packedVals - off-chain packed values
-   * @param packedValsOnChain - on-chain packed values
-   * @throws error if packed values don't match
-   */
-  private validatePackedValues(packedVals: BigNumberish, packedValsOnChain: BigNumberish) {
-    if (packedVals.toString() !== packedValsOnChain.toString()) {
-      throw new Error("packedVals mismatch.");
-    }
-  }
-
-  /**
    * Validate public input hash
    *
-   * @param publicInputHash - off-chain public input hash
-   * @param publicInputHashOnChain - on-chain public input hash
+   * @param publicInputs - off-chain public input hash
+   * @param publicInputsOnChain - on-chain public input hash
    * @throws error if public input hashes don't match
    */
-  private validatePublicInput(publicInputHash: BigNumberish, publicInputHashOnChain: BigNumberish) {
-    if (publicInputHashOnChain.toString() !== publicInputHash.toString()) {
+  private validatePublicInput(publicInputs: BigNumberish[], publicInputsOnChain: BigNumberish[]) {
+    if (!publicInputsOnChain.every((value, index) => value.toString() === publicInputs[index].toString())) {
       throw new Error("public input mismatch.");
     }
   }

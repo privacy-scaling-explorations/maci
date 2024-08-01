@@ -224,36 +224,11 @@ export const proveOnChain = async ({
       logError("coordPubKey mismatch.");
     }
 
-    const packedValsOnChain = BigInt(
-      await mpContract.genProcessMessagesPackedVals(
-        currentMessageBatchIndex,
-        numSignUps,
-        numMessages,
-        treeDepths.messageTreeSubDepth,
-        treeDepths.voteOptionTreeDepth,
-      ),
-    ).toString();
+    const publicInputsOnChain = await mpContract
+      .getPublicCircuitInputs(currentMessageBatchIndex, asHex(circuitInputs.newSbCommitment as BigNumberish))
+      .then((value) => [...value]);
 
-    if (circuitInputs.packedVals !== packedValsOnChain) {
-      logError("packedVals mismatch.");
-    }
-
-    const formattedProof = formatProofForVerifierContract(proof);
-
-    const publicInputHashOnChain = BigInt(
-      await mpContract.genProcessMessagesPublicInputHash(
-        currentMessageBatchIndex,
-        messageRootOnChain.toString(),
-        numSignUps,
-        numMessages,
-        circuitInputs.currentSbCommitment as BigNumberish,
-        circuitInputs.newSbCommitment as BigNumberish,
-        treeDepths.messageTreeSubDepth,
-        treeDepths.voteOptionTreeDepth,
-      ),
-    );
-
-    if (publicInputHashOnChain.toString() !== publicInputs[0].toString()) {
+    if (!publicInputsOnChain.every((value, index) => value.toString() === publicInputs[index].toString())) {
       logError("Public input mismatch.");
     }
 
@@ -265,12 +240,12 @@ export const proveOnChain = async ({
       onChainProcessVk.ic.map(([x, y]) => new G1Point(x, y)),
     );
 
-    // verify the proof onchain using the verifier contract
+    const formattedProof = formatProofForVerifierContract(proof);
 
     const isValidOnChain = await verifierContract.verify(
       formattedProof,
       vk.asContractParam() as IVerifyingKeyStruct,
-      publicInputHashOnChain.toString(),
+      publicInputsOnChain,
     );
 
     if (!isValidOnChain) {
@@ -326,38 +301,52 @@ export const proveOnChain = async ({
       logError("currentTallyCommitment mismatch.");
     }
 
-    const packedValsOnChain = BigInt(
-      await tallyContract.genTallyVotesPackedVals(numSignUps, batchStartIndex, tallyBatchSize),
-    );
-
-    if (circuitInputs.packedVals !== packedValsOnChain.toString()) {
-      logError("packedVals mismatch.");
-    }
-
     const currentSbCommitmentOnChain = await mpContract.sbCommitment();
 
     if (currentSbCommitmentOnChain.toString() !== circuitInputs.sbCommitment) {
       logError("currentSbCommitment mismatch.");
     }
 
-    const publicInputHashOnChain = await tallyContract.genTallyVotesPublicInputHash(
-      numSignUps,
-      batchStartIndex,
-      tallyBatchSize,
-      circuitInputs.newTallyCommitment as BigNumberish,
-    );
+    const publicInputsOnChain = await tallyContract
+      .getPublicCircuitInputs(batchStartIndex, asHex(circuitInputs.newTallyCommitment as BigNumberish))
+      .then((value) => [...value]);
 
-    if (publicInputHashOnChain.toString() !== publicInputs[0]) {
+    if (!publicInputsOnChain.every((value, index) => value.toString() === publicInputs[index].toString())) {
       logError(
-        `public input mismatch. tallyBatchNum=${i}, onchain=${publicInputHashOnChain.toString()}, offchain=${publicInputs[0].toString()}`,
+        `public input mismatch. tallyBatchNum=${i}, onchain=${publicInputsOnChain.toString()}, offchain=${publicInputs.toString()}`,
       );
     }
 
+    const onChainTallyVk = await vkRegistryContract.getTallyVk(
+      stateTreeDepth,
+      treeDepths.intStateTreeDepth,
+      treeDepths.voteOptionTreeDepth,
+      tallyMode,
+    );
+
+    const vk = new VerifyingKey(
+      new G1Point(onChainTallyVk.alpha1[0], onChainTallyVk.alpha1[1]),
+      new G2Point(onChainTallyVk.beta2[0], onChainTallyVk.beta2[1]),
+      new G2Point(onChainTallyVk.gamma2[0], onChainTallyVk.gamma2[1]),
+      new G2Point(onChainTallyVk.delta2[0], onChainTallyVk.delta2[1]),
+      onChainTallyVk.ic.map(([x, y]) => new G1Point(x, y)),
+    );
+
     // format the tally proof so it can be verified on chain
     const formattedProof = formatProofForVerifierContract(proof);
+
+    const isValidOnChain = await verifierContract.verify(
+      formattedProof,
+      vk.asContractParam() as IVerifyingKeyStruct,
+      publicInputsOnChain,
+    );
+
+    if (!isValidOnChain) {
+      logError("The verifier contract found the proof invalid.");
+    }
+
     try {
       // verify the proof on chain
-
       const tx = await tallyContract.tallyVotes(
         asHex(circuitInputs.newTallyCommitment as BigNumberish),
         formattedProof,

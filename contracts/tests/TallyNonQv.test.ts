@@ -2,13 +2,7 @@
 import { expect } from "chai";
 import { Signer } from "ethers";
 import { EthereumProvider } from "hardhat/types";
-import {
-  MaciState,
-  Poll,
-  packTallyVotesSmallVals,
-  IProcessMessagesCircuitInputs,
-  ITallyCircuitInputs,
-} from "maci-core";
+import { MaciState, Poll, IProcessMessagesCircuitInputs, ITallyCircuitInputs } from "maci-core";
 import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, Message, PubKey } from "maci-domainobjs";
 
@@ -32,7 +26,6 @@ import {
   duration,
   maxValues,
   messageBatchSize,
-  tallyBatchSize,
   testProcessVk,
   testTallyVk,
   treeDepths,
@@ -49,7 +42,6 @@ describe("TallyVotesNonQv", () => {
   let vkRegistryContract: VkRegistry;
 
   const coordinator = new Keypair();
-  let users: Keypair[];
   let maciState: MaciState;
 
   let pollId: bigint;
@@ -59,8 +51,6 @@ describe("TallyVotesNonQv", () => {
 
   before(async () => {
     maciState = new MaciState(STATE_TREE_DEPTH);
-
-    users = [new Keypair(), new Keypair()];
 
     signer = await getDefaultSigner();
 
@@ -132,16 +122,10 @@ describe("TallyVotesNonQv", () => {
   });
 
   it("should not be possible to tally votes before the poll has ended", async () => {
-    await expect(tallyContract.tallyVotes(0, [0, 0, 0, 0, 0, 0, 0, 0])).to.be.revertedWithCustomError(
+    await expect(tallyContract.tallyVotes(0n, [0, 0, 0, 0, 0, 0, 0, 0])).to.be.revertedWithCustomError(
       tallyContract,
       "VotingPeriodNotPassed",
     );
-  });
-
-  it("genTallyVotesPackedVals() should generate the correct value", async () => {
-    const onChainPackedVals = BigInt(await tallyContract.genTallyVotesPackedVals(users.length, 0, tallyBatchSize));
-    const packedVals = packTallyVotesSmallVals(0, tallyBatchSize, users.length);
-    expect(onChainPackedVals.toString()).to.eq(packedVals.toString());
   });
 
   it("updateSbCommitment() should revert when the messages have not been processed yet", async () => {
@@ -155,7 +139,7 @@ describe("TallyVotesNonQv", () => {
   });
 
   it("tallyVotes() should fail as the messages have not been processed yet", async () => {
-    await expect(tallyContract.tallyVotes(0, [0, 0, 0, 0, 0, 0, 0, 0])).to.be.revertedWithCustomError(
+    await expect(tallyContract.tallyVotes(0n, [0, 0, 0, 0, 0, 0, 0, 0])).to.be.revertedWithCustomError(
       tallyContract,
       "ProcessingNotComplete",
     );
@@ -177,10 +161,9 @@ describe("TallyVotesNonQv", () => {
     });
 
     it("tallyVotes() should update the tally commitment", async () => {
-      // do the processing on the message processor contract
-      await mpContract.processMessages(generatedInputs.newSbCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);
+      await mpContract.processMessages(BigInt(generatedInputs.newSbCommitment), [0, 0, 0, 0, 0, 0, 0, 0]);
 
-      await tallyContract.tallyVotes(tallyGeneratedInputs.newTallyCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);
+      await tallyContract.tallyVotes(BigInt(tallyGeneratedInputs.newTallyCommitment), [0, 0, 0, 0, 0, 0, 0, 0]);
 
       const onChainNewTallyCommitment = await tallyContract.tallyCommitment();
       expect(tallyGeneratedInputs.newTallyCommitment).to.eq(onChainNewTallyCommitment.toString());
@@ -200,7 +183,7 @@ describe("TallyVotesNonQv", () => {
 
     it("tallyVotes() should revert when votes have already been tallied", async () => {
       await expect(
-        tallyContract.tallyVotes(tallyGeneratedInputs.newTallyCommitment, [0, 0, 0, 0, 0, 0, 0, 0]),
+        tallyContract.tallyVotes(BigInt(tallyGeneratedInputs.newTallyCommitment), [0, 0, 0, 0, 0, 0, 0, 0]),
       ).to.be.revertedWithCustomError(tallyContract, "AllBallotsTallied");
     });
   });

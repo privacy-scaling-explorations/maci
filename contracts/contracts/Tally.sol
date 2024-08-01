@@ -82,23 +82,6 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs {
     mode = _mode;
   }
 
-  /// @notice Pack the batch start index and number of signups into a 100-bit value.
-  /// @param _numSignUps: number of signups
-  /// @param _batchStartIndex: the start index of given batch
-  /// @param _tallyBatchSize: size of batch
-  /// @return result an uint256 representing the 3 inputs packed together
-  function genTallyVotesPackedVals(
-    uint256 _numSignUps,
-    uint256 _batchStartIndex,
-    uint256 _tallyBatchSize
-  ) public pure returns (uint256 result) {
-    if (_numSignUps >= 2 ** 50) revert NumSignUpsTooLarge();
-    if (_batchStartIndex >= 2 ** 50) revert BatchStartIndexTooLarge();
-    if (_tallyBatchSize >= 2 ** 50) revert TallyBatchSizeTooLarge();
-
-    result = (_batchStartIndex / _tallyBatchSize) + (_numSignUps << uint256(50));
-  }
-
   /// @notice Check if all ballots are tallied
   /// @return tallied whether all ballots are tallied
   function isTallied() public view returns (bool tallied) {
@@ -107,27 +90,6 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs {
 
     // Require that there are untallied ballots left
     tallied = tallyBatchNum * (TREE_ARITY ** intStateTreeDepth) >= numSignUps;
-  }
-
-  /// @notice generate hash of public inputs for tally circuit
-  /// @param _numSignUps: number of signups
-  /// @param _batchStartIndex: the start index of given batch
-  /// @param _tallyBatchSize: size of batch
-  /// @param _newTallyCommitment: the new tally commitment to be updated
-  /// @return inputHash hash of public inputs
-  function genTallyVotesPublicInputHash(
-    uint256 _numSignUps,
-    uint256 _batchStartIndex,
-    uint256 _tallyBatchSize,
-    uint256 _newTallyCommitment
-  ) public view returns (uint256 inputHash) {
-    uint256 packedVals = genTallyVotesPackedVals(_numSignUps, _batchStartIndex, _tallyBatchSize);
-    uint256[] memory input = new uint256[](4);
-    input[0] = packedVals;
-    input[1] = sbCommitment;
-    input[2] = tallyCommitment;
-    input[3] = _newTallyCommitment;
-    inputHash = sha256Hash(input);
   }
 
   /// @notice Update the state and ballot root commitment
@@ -154,11 +116,6 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs {
     uint256 tallyBatchSize = TREE_ARITY ** intStateTreeDepth;
     uint256 batchStartIndex = tallyBatchNum * tallyBatchSize;
 
-    // save some gas because we won't overflow uint256
-    unchecked {
-      tallyBatchNum++;
-    }
-
     (uint256 numSignUps, ) = poll.numSignUpsAndMessages();
 
     // Require that there are untallied ballots left
@@ -166,9 +123,12 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs {
       revert AllBallotsTallied();
     }
 
-    bool isValid = verifyTallyProof(_proof, numSignUps, batchStartIndex, tallyBatchSize, _newTallyCommitment);
+    // save some gas because we won't overflow uint256
+    unchecked {
+      tallyBatchNum++;
+    }
 
-    if (!isValid) {
+    if (!verifyTallyProof(batchStartIndex, _newTallyCommitment, _proof)) {
       revert InvalidTallyVotesProof();
     }
 
@@ -176,37 +136,42 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs {
     tallyCommitment = _newTallyCommitment;
   }
 
+  /// @notice Get public circuit inputs.
+  /// @param _batchStartIndex the batch start index
+  /// @param _newTallyCommitment the new tally commitment to be verified
+  /// @return publicInputs public circuit inputs
+  function getPublicCircuitInputs(
+    uint256 _batchStartIndex,
+    uint256 _newTallyCommitment
+  ) public view returns (uint256[] memory publicInputs) {
+    (uint256 numSignUps, ) = poll.numSignUpsAndMessages();
+
+    publicInputs = new uint256[](5);
+    publicInputs[0] = sbCommitment;
+    publicInputs[1] = tallyCommitment;
+    publicInputs[2] = _newTallyCommitment;
+    publicInputs[3] = _batchStartIndex;
+    publicInputs[4] = numSignUps;
+  }
+
   /// @notice Verify the tally proof using the verifying key
+  /// @param _batchStartIndex the batch start index
+  /// @param _newTallyCommitment the new tally commitment to be verified
   /// @param _proof the proof generated after processing all messages
-  /// @param _numSignUps number of signups for a given poll
-  /// @param _batchStartIndex the number of batches multiplied by the size of the batch
-  /// @param _tallyBatchSize batch size for the tally
-  /// @param _newTallyCommitment the tally commitment to be verified at a given batch index
   /// @return isValid whether the proof is valid
   function verifyTallyProof(
-    uint256[8] calldata _proof,
-    uint256 _numSignUps,
     uint256 _batchStartIndex,
-    uint256 _tallyBatchSize,
-    uint256 _newTallyCommitment
+    uint256 _newTallyCommitment,
+    uint256[8] calldata _proof
   ) public view returns (bool isValid) {
     (uint8 intStateTreeDepth, , , uint8 voteOptionTreeDepth) = poll.treeDepths();
-
     (IMACI maci, ) = poll.extContracts();
+    uint256[] memory circuitPublicInputs = getPublicCircuitInputs(_batchStartIndex, _newTallyCommitment);
 
     // Get the verifying key
     VerifyingKey memory vk = vkRegistry.getTallyVk(maci.stateTreeDepth(), intStateTreeDepth, voteOptionTreeDepth, mode);
-
-    // Get the public inputs
-    uint256 publicInputHash = genTallyVotesPublicInputHash(
-      _numSignUps,
-      _batchStartIndex,
-      _tallyBatchSize,
-      _newTallyCommitment
-    );
-
     // Verify the proof
-    isValid = verifier.verify(_proof, vk, publicInputHash);
+    isValid = verifier.verify(_proof, vk, circuitPublicInputs);
   }
 
   /// @notice Compute the merkle root from the path elements

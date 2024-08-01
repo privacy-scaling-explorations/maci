@@ -2,14 +2,7 @@ export { MaciState } from "./MaciState";
 
 export { Poll } from "./Poll";
 
-export {
-  genProcessVkSig,
-  genTallyVkSig,
-  packProcessMessageSmallVals,
-  unpackProcessMessageSmallVals,
-  packTallyVotesSmallVals,
-  unpackTallyVotesSmallVals,
-} from "./utils/utils";
+export { genProcessVkSig, genTallyVkSig } from "./utils/utils";
 
 export type {
   ITallyCircuitInputs,

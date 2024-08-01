@@ -6,7 +6,6 @@ import {
   hashLeftRight,
   hash3,
   hash5,
-  sha256Hash,
   stringifyBigInts,
   genTreeCommitment,
   hash2,
@@ -43,7 +42,6 @@ import type { PathElements } from "maci-crypto";
 
 import { STATE_TREE_ARITY, MESSAGE_TREE_ARITY } from "./utils/constants";
 import { ProcessMessageErrors, ProcessMessageError } from "./utils/errors";
-import { packTallyVotesSmallVals } from "./utils/utils";
 
 /**
  * A representation of the Poll contract.
@@ -648,18 +646,7 @@ export class Poll implements IPoll {
 
     // here is important that a user validates it matches the one in the
     // smart contract
-    const coordPubKeyHash = this.coordinatorKeypair.pubKey.hash();
-    // create the input hash which is the only public input to the
-    // process messages circuit
-    circuitInputs.inputHash = sha256Hash([
-      circuitInputs.packedVals as bigint,
-      coordPubKeyHash,
-      circuitInputs.msgRoot as bigint,
-      circuitInputs.currentSbCommitment as bigint,
-      circuitInputs.newSbCommitment,
-      this.pollEndTimestamp,
-      BigInt(this.actualStateTreeDepth),
-    ]);
+    circuitInputs.pollEndTimestamp = this.pollEndTimestamp;
 
     // If this is the last batch, release the lock
     if (this.numBatchesProcessed * batchSize >= this.messages.length) {
@@ -751,18 +738,11 @@ export class Poll implements IPoll {
       this.sbSalts[this.currentMessageBatchIndex!],
     ]);
 
-    // Generate a SHA256 hash of inputs which the contract provides
-    /* eslint-disable no-bitwise */
-    const packedVals =
-      BigInt(this.maxValues.maxVoteOptions) +
-      (BigInt(this.numSignups) << 50n) +
-      (BigInt(index) << 100n) +
-      (BigInt(batchEndIndex) << 150n);
-    /* eslint-enable no-bitwise */
-
     return stringifyBigInts({
       pollEndTimestamp: this.pollEndTimestamp,
-      packedVals,
+      numSignUps: BigInt(this.numSignups),
+      batchEndIndex: BigInt(batchEndIndex),
+      index: BigInt(index),
       msgRoot,
       msgs,
       msgSubrootPathElements: messageSubrootPath.pathElements,
@@ -944,9 +924,6 @@ export class Poll implements IPoll {
     const sbSalt = this.sbSalts[this.currentMessageBatchIndex!];
     const sbCommitment = hash3([stateRoot, ballotRoot, sbSalt]);
 
-    const packedVals = packTallyVotesSmallVals(batchStartIndex, batchSize, Number(this.numSignups));
-    const inputHash = sha256Hash([packedVals, sbCommitment, currentTallyCommitment, newTallyCommitment]);
-
     const ballotSubrootProof = this.ballotTree?.genSubrootProof(batchStartIndex, batchStartIndex + batchSize);
 
     const votes = ballots.map((x) => x.votes);
@@ -955,11 +932,11 @@ export class Poll implements IPoll {
       stateRoot,
       ballotRoot,
       sbSalt,
-      packedVals, // contains numSignUps and batchStartIndex
+      index: BigInt(batchStartIndex),
+      numSignUps: BigInt(this.numSignups),
       sbCommitment,
       currentTallyCommitment,
       newTallyCommitment,
-      inputHash,
       ballots: ballots.map((x) => x.asCircuitInputs()),
       ballotPathElements: ballotSubrootProof!.pathElements,
       votes,
@@ -1084,9 +1061,6 @@ export class Poll implements IPoll {
     const sbSalt = this.sbSalts[this.currentMessageBatchIndex!];
     const sbCommitment = hash3([stateRoot, ballotRoot, sbSalt]);
 
-    const packedVals = packTallyVotesSmallVals(batchStartIndex, batchSize, Number(this.numSignups));
-    const inputHash = sha256Hash([packedVals, sbCommitment, currentTallyCommitment, newTallyCommitment]);
-
     const ballotSubrootProof = this.ballotTree?.genSubrootProof(batchStartIndex, batchStartIndex + batchSize);
 
     const votes = ballots.map((x) => x.votes);
@@ -1095,11 +1069,11 @@ export class Poll implements IPoll {
       stateRoot,
       ballotRoot,
       sbSalt,
-      packedVals, // contains numSignUps and batchStartIndex
+      index: BigInt(batchStartIndex),
+      numSignUps: BigInt(this.numSignups),
       sbCommitment,
       currentTallyCommitment,
       newTallyCommitment,
-      inputHash,
       ballots: ballots.map((x) => x.asCircuitInputs()),
       ballotPathElements: ballotSubrootProof!.pathElements,
       votes,

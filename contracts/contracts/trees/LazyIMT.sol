@@ -119,7 +119,7 @@ library InternalLazyIMT {
   /// @return The index for the element
   function _indexForElement(uint8 level, uint40 index) internal pure returns (uint40) {
     // store the elements sparsely
-    return MAX_INDEX * level + index;
+    return (uint40(level) << 32) - level + index;
   }
 
   /// @notice Inserts a leaf into the LazyIMT
@@ -153,7 +153,7 @@ library InternalLazyIMT {
     uint40 numberOfLeaves = self.numberOfLeaves;
     // dynamically determine a depth
     uint8 depth = 1;
-    while (uint40(2) ** uint40(depth) < numberOfLeaves) {
+    while (uint40(1 << depth) < numberOfLeaves) {
       depth++;
     }
     return _root(self, numberOfLeaves, depth);

@@ -26,7 +26,7 @@ contract Verifier is IVerifier, SnarkConstants, SnarkCommon {
   /// @notice Verify a zk-SNARK proof
   /// @param _proof The proof
   /// @param vk The verifying key
-  /// @param input The public inputs to the circuit
+  /// @param inputs The public inputs to the circuit
   /// @return isValid Whether the proof is valid given the verifying key and public
   ///          input. Note that this function only supports one public input.
   ///          Refer to the Semaphore source code for a verifier that supports
@@ -34,7 +34,7 @@ contract Verifier is IVerifier, SnarkConstants, SnarkCommon {
   function verify(
     uint256[8] memory _proof,
     VerifyingKey memory vk,
-    uint256 input
+    uint256[] calldata inputs
   ) public view override returns (bool isValid) {
     Proof memory proof;
     proof.a = Pairing.G1Point(_proof[0], _proof[1]);
@@ -51,15 +51,25 @@ contract Verifier is IVerifier, SnarkConstants, SnarkCommon {
     checkPoint(proof.c.x);
     checkPoint(proof.c.y);
 
-    // Make sure that the input is less than the snark scalar field
-    if (input >= SNARK_SCALAR_FIELD) {
-      revert InvalidInputVal();
-    }
-
     // Compute the linear combination vk_x
     Pairing.G1Point memory vkX = Pairing.G1Point(0, 0);
 
-    vkX = Pairing.plus(vkX, Pairing.scalarMul(vk.ic[1], input));
+    uint256 inputsLength = inputs.length;
+
+    for (uint256 i = 0; i < inputsLength; ) {
+      uint256 input = inputs[i];
+
+      // Make sure that the input is less than the snark scalar field
+      if (input >= SNARK_SCALAR_FIELD) {
+        revert InvalidInputVal();
+      }
+
+      vkX = Pairing.plus(vkX, Pairing.scalarMul(vk.ic[i + 1], input));
+
+      unchecked {
+        i++;
+      }
+    }
 
     vkX = Pairing.plus(vkX, vk.ic[0]);
 

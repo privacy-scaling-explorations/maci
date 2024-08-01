@@ -2,13 +2,7 @@
 import { expect } from "chai";
 import { AbiCoder, Signer } from "ethers";
 import { EthereumProvider } from "hardhat/types";
-import {
-  MaciState,
-  Poll,
-  packTallyVotesSmallVals,
-  IProcessMessagesCircuitInputs,
-  ITallyCircuitInputs,
-} from "maci-core";
+import { MaciState, Poll, IProcessMessagesCircuitInputs, ITallyCircuitInputs } from "maci-core";
 import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, Message, PubKey } from "maci-domainobjs";
 
@@ -33,7 +27,6 @@ import {
   initialVoiceCreditBalance,
   maxValues,
   messageBatchSize,
-  tallyBatchSize,
   testProcessVk,
   testTallyVk,
   treeDepths,
@@ -133,16 +126,10 @@ describe("TallyVotes", () => {
   });
 
   it("should not be possible to tally votes before the poll has ended", async () => {
-    await expect(tallyContract.tallyVotes(0, [0, 0, 0, 0, 0, 0, 0, 0])).to.be.revertedWithCustomError(
+    await expect(tallyContract.tallyVotes(0n, [0, 0, 0, 0, 0, 0, 0, 0])).to.be.revertedWithCustomError(
       tallyContract,
       "VotingPeriodNotPassed",
     );
-  });
-
-  it("genTallyVotesPackedVals() should generate the correct value", async () => {
-    const onChainPackedVals = BigInt(await tallyContract.genTallyVotesPackedVals(users.length, 0, tallyBatchSize));
-    const packedVals = packTallyVotesSmallVals(0, tallyBatchSize, users.length);
-    expect(onChainPackedVals.toString()).to.eq(packedVals.toString());
   });
 
   it("updateSbCommitment() should revert when the messages have not been processed yet", async () => {
@@ -156,7 +143,7 @@ describe("TallyVotes", () => {
   });
 
   it("tallyVotes() should fail as the messages have not been processed yet", async () => {
-    await expect(tallyContract.tallyVotes(0, [0, 0, 0, 0, 0, 0, 0, 0])).to.be.revertedWithCustomError(
+    await expect(tallyContract.tallyVotes(0n, [0, 0, 0, 0, 0, 0, 0, 0])).to.be.revertedWithCustomError(
       tallyContract,
       "ProcessingNotComplete",
     );
@@ -164,6 +151,7 @@ describe("TallyVotes", () => {
 
   describe("after merging acc queues", () => {
     let tallyGeneratedInputs: ITallyCircuitInputs;
+
     before(async () => {
       await pollContract.mergeMaciState();
 
@@ -179,9 +167,9 @@ describe("TallyVotes", () => {
 
     it("tallyVotes() should update the tally commitment", async () => {
       // do the processing on the message processor contract
-      await mpContract.processMessages(generatedInputs.newSbCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);
+      await mpContract.processMessages(BigInt(generatedInputs.newSbCommitment), [0, 0, 0, 0, 0, 0, 0, 0]);
 
-      await tallyContract.tallyVotes(tallyGeneratedInputs.newTallyCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);
+      await tallyContract.tallyVotes(BigInt(tallyGeneratedInputs.newTallyCommitment), [0, 0, 0, 0, 0, 0, 0, 0]);
 
       const onChainNewTallyCommitment = await tallyContract.tallyCommitment();
       expect(tallyGeneratedInputs.newTallyCommitment).to.eq(onChainNewTallyCommitment.toString());
@@ -194,7 +182,7 @@ describe("TallyVotes", () => {
 
     it("tallyVotes() should revert when votes have already been tallied", async () => {
       await expect(
-        tallyContract.tallyVotes(tallyGeneratedInputs.newTallyCommitment, [0, 0, 0, 0, 0, 0, 0, 0]),
+        tallyContract.tallyVotes(BigInt(tallyGeneratedInputs.newTallyCommitment), [0, 0, 0, 0, 0, 0, 0, 0]),
       ).to.be.revertedWithCustomError(tallyContract, "AllBallotsTallied");
     });
   });
@@ -307,15 +295,17 @@ describe("TallyVotes", () => {
       await pollContract.mergeMessageAq();
 
       const processMessagesInputs = poll.processMessages(pollId);
-      await mpContract.processMessages(processMessagesInputs.newSbCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);
+
+      await mpContract.processMessages(BigInt(processMessagesInputs.newSbCommitment), [0, 0, 0, 0, 0, 0, 0, 0]);
     });
 
     it("should tally votes correctly", async () => {
       let tallyGeneratedInputs: ITallyCircuitInputs;
+
       while (poll.hasUntalliedBallots()) {
         tallyGeneratedInputs = poll.tallyVotes();
         // eslint-disable-next-line no-await-in-loop
-        await tallyContract.tallyVotes(tallyGeneratedInputs.newTallyCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);
+        await tallyContract.tallyVotes(BigInt(tallyGeneratedInputs.newTallyCommitment), [0, 0, 0, 0, 0, 0, 0, 0]);
       }
 
       const onChainNewTallyCommitment = await tallyContract.tallyCommitment();
@@ -434,14 +424,15 @@ describe("TallyVotes", () => {
       await pollContract.mergeMessageAq();
 
       const processMessagesInputs = poll.processMessages(pollId);
-      await mpContract.processMessages(processMessagesInputs.newSbCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);
+
+      await mpContract.processMessages(BigInt(processMessagesInputs.newSbCommitment), [0, 0, 0, 0, 0, 0, 0, 0]);
     });
 
     it("should tally votes correctly", async () => {
       // tally first batch
       let tallyGeneratedInputs = poll.tallyVotes();
 
-      await tallyContract.tallyVotes(tallyGeneratedInputs.newTallyCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);
+      await tallyContract.tallyVotes(BigInt(tallyGeneratedInputs.newTallyCommitment), [0, 0, 0, 0, 0, 0, 0, 0]);
 
       // check commitment
       const onChainNewTallyCommitment = await tallyContract.tallyCommitment();
@@ -450,18 +441,18 @@ describe("TallyVotes", () => {
       // tally second batch
       tallyGeneratedInputs = poll.tallyVotes();
 
-      await tallyContract.tallyVotes(tallyGeneratedInputs.newTallyCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);
+      await tallyContract.tallyVotes(BigInt(tallyGeneratedInputs.newTallyCommitment), [0, 0, 0, 0, 0, 0, 0, 0]);
 
       // tally everything else
       while (poll.hasUntalliedBallots()) {
         tallyGeneratedInputs = poll.tallyVotes();
         // eslint-disable-next-line no-await-in-loop
-        await tallyContract.tallyVotes(tallyGeneratedInputs.newTallyCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);
+        await tallyContract.tallyVotes(BigInt(tallyGeneratedInputs.newTallyCommitment), [0, 0, 0, 0, 0, 0, 0, 0]);
       }
 
       // check that it fails to tally again
       await expect(
-        tallyContract.tallyVotes(tallyGeneratedInputs.newTallyCommitment, [0, 0, 0, 0, 0, 0, 0, 0]),
+        tallyContract.tallyVotes(BigInt(tallyGeneratedInputs.newTallyCommitment), [0, 0, 0, 0, 0, 0, 0, 0]),
       ).to.be.revertedWithCustomError(tallyContract, "AllBallotsTallied");
     });
   });

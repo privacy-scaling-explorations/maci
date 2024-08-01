@@ -45,9 +45,11 @@ export interface IGenProofOptions {
  */
 export interface IProcessMessagesInputs {
   actualStateTreeDepth: bigint;
-  inputHash: bigint;
-  packedVals: bigint;
   pollEndTimestamp: bigint;
+  numSignUps: bigint;
+  batchEndIndex: bigint;
+  index: bigint;
+  maxVoteOptions: bigint;
   msgRoot: bigint;
   msgs: bigint[];
   msgSubrootPathElements: bigint[][];
@@ -75,11 +77,11 @@ export interface ITallyVotesInputs {
   stateRoot: bigint;
   ballotRoot: bigint;
   sbSalt: bigint;
-  packedVals: bigint;
+  index: bigint;
+  numSignUps: bigint;
   sbCommitment: bigint;
   currentTallyCommitment: bigint;
   newTallyCommitment: bigint;
-  inputHash: bigint;
   ballots: bigint[];
   ballotPathElements: bigint[];
   votes: bigint[][];

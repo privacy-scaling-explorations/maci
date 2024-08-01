@@ -103,7 +103,7 @@
     "@openzeppelin/contracts": "^5.0.2",
     "circomlibjs": "^0.1.7",
     "ethers": "^6.13.2",
-    "hardhat": "^2.22.6",
+    "hardhat": "^2.22.7",
     "lowdb": "^1.0.0",
     "maci-circuits": "2.0.0-alpha",
     "maci-core": "2.0.0-alpha",

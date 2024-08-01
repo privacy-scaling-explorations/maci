@@ -8,7 +8,6 @@ include "./safe-comparators.circom";
 include "../../utils/hashers.circom";
 include "../../utils/messageToCommand.circom";
 include "../../utils/privToPubKey.circom";
-include "../../utils/processMessagesInputHasher.circom";
 include "../../utils/qv/stateLeafAndBallotTransformer.circom";
 include "../../trees/incrementalQuinaryTree.circom";
 include "../../trees/incrementalMerkleTree.circom";
@@ -36,6 +35,7 @@ template ProcessMessages(
     // Default for binary trees.
     var STATE_TREE_ARITY = 2;
     var batchSize = MESSAGE_TREE_ARITY ** msgBatchDepth;
+    var maxVoteOptions = MESSAGE_TREE_ARITY ** voteOptionTreeDepth;
     var MSG_LENGTH = 10;
     var PACKED_CMD_LENGTH = 4;
     var STATE_LEAF_LENGTH = 4;
@@ -47,18 +47,9 @@ template ProcessMessages(
     var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
     var STATE_LEAF_TIMESTAMP_IDX = 3;
     var msgTreeZeroValue = 8370432830353022751713833565135785980866757267633941821328460903436894336785;
-
-    // nb. The usage of SHA-256 hash is necessary to save some gas costs at verification time
-    // at the cost of more constraints for the prover.
-    // Basically, some values from the contract are passed as private inputs and the hash as a public input.
-
-    // The SHA-256 hash of values provided by the contract.
-    signal input inputHash;
-    signal input packedVals;
-    // Number of users that have completed the sign up.
-    signal numSignUps;
-    // Number of options for this poll.
-    signal maxVoteOptions;
+    
+    // Number of users that signup
+    signal input numSignUps;
     // Time when the poll ends.
     signal input pollEndTimestamp;
     // The existing message tree root.
@@ -79,6 +70,10 @@ template ProcessMessages(
     // @note it is a public input to ensure fair processing from 
     // the coordinator (no censoring)
     signal input actualStateTreeDepth;
+    // The last batch index
+    signal input batchEndIndex;
+    // The batch index of current message batch
+    signal input index;
 
     // The state leaves upon which messages are applied.
     //    transform(currentStateLeaf[4], message5) => newStateLeaf4
@@ -110,14 +105,6 @@ template ProcessMessages(
     // Therefore, the index of the first message to process does not match the index of the
     // first message (e.g., [msg1, msg2, msg3] => first message to process has index 3).
 
-    // The index of the first message leaf in the batch, inclusive.
-    signal batchStartIndex;
-    
-    // The index of the last message leaf in the batch to process, exclusive.
-    // This value may be less than batchStartIndex + batchSize if this batch is
-    // the last batch and the total number of messages is not a multiple of the batch size.
-    signal batchEndIndex;
-
     // The history of state and ballot roots and temporary intermediate
     // signals (for processing purposes).
     signal stateRoots[batchSize + 1];
@@ -126,31 +113,6 @@ template ProcessMessages(
     // Must verify the current sb commitment.
     var computedCurrentSbCommitment = PoseidonHasher(3)([currentStateRoot, currentBallotRoot, currentSbSalt]);
     computedCurrentSbCommitment === currentSbCommitment;
-
-    // Verify public inputs and assign unpacked values.
-    var (
-        computedMaxVoteOptions, 
-        computedNumSignUps, 
-        computedBatchStartIndex, 
-        computedBatchEndIndex, 
-        computedHash
-    ) = ProcessMessagesInputHasher()(
-        packedVals,
-        coordPubKey,
-        msgRoot,
-        currentSbCommitment,
-        newSbCommitment,
-        pollEndTimestamp,
-        actualStateTreeDepth
-    );
-
-    // The unpacked values from packedVals.
-    computedMaxVoteOptions ==> maxVoteOptions;
-    computedNumSignUps ==> numSignUps;
-    computedBatchStartIndex ==> batchStartIndex;
-    computedBatchEndIndex ==> batchEndIndex;
-    // Matching constraints.
-    computedHash === inputHash;
 
     // 0. Ensure that the maximum vote options signal is valid and if
     // the maximum users signal is valid.
@@ -168,7 +130,7 @@ template ProcessMessages(
         computedMessageHashers[i] = MessageHasher()(msgs[i], encPubKeys[i]);
     }
 
-    // If batchEndIndex - batchStartIndex < batchSize, the remaining
+    // If endIndex - startIndex < batchSize, the remaining
     // message hashes should be the zero value.
     // e.g. [m, z, z, z, z] if there is only 1 real message in the batch
     // This makes possible to have a batch of messages which is only partially full.
@@ -177,7 +139,7 @@ template ProcessMessages(
     var computedPathIndex[msgTreeDepth - msgBatchDepth];
 
     for (var i = 0; i < batchSize; i++) {
-        var batchStartIndexValid = SafeLessThan(32)([batchStartIndex + i, batchEndIndex]);
+        var batchStartIndexValid = SafeLessThan(32)([index + i, batchEndIndex]);
         computedLeaves[i] = Mux1()([msgTreeZeroValue, computedMessageHashers[i]], batchStartIndexValid);
     }
 
@@ -190,8 +152,8 @@ template ProcessMessages(
     // Computing the path_index values. Since msgBatchLeavesExists tests
     // the existence of a subroot, the length of the proof correspond to the last 
     // n elements of a proof from the root to a leaf, where n = msgTreeDepth - msgBatchDepth.
-    // e.g. if batchStartIndex = 25, msgTreeDepth = 4, msgBatchDepth = 2, then path_index = [1, 0].
-    var computedMsgBatchPathIndices[msgTreeDepth] = QuinGeneratePathIndices(msgTreeDepth)(batchStartIndex);
+    // e.g. if startIndex = 25, msgTreeDepth = 4, msgBatchDepth = 2, then path_index = [1, 0].
+    var computedMsgBatchPathIndices[msgTreeDepth] = QuinGeneratePathIndices(msgTreeDepth)(index);
 
     for (var i = msgBatchDepth; i < msgTreeDepth; i++) {
         computedPathIndex[i - msgBatchDepth] = computedMsgBatchPathIndices[i];
@@ -281,7 +243,6 @@ template ProcessMessages(
         
         (computedNewVoteStateRoot[i], computedNewVoteBallotRoot[i]) = ProcessOne(stateTreeDepth, voteOptionTreeDepth)(
             numSignUps,
-            maxVoteOptions,
             pollEndTimestamp,
             stateRoots[i + 1],
             ballotRoots[i + 1],
@@ -332,6 +293,9 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     // Ballot vote option (VO) root index.
     var BALLOT_VO_ROOT_IDX = 1;
 
+    // Number of options for this poll.
+    var maxVoteOptions = MESSAGE_TREE_ARITY ** voteOptionTreeDepth;
+
     // Indices for elements within a state leaf.
     // Public key.
     var STATE_LEAF_PUB_X_IDX = 0;
@@ -341,11 +305,10 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     // Timestamp.
     var STATE_LEAF_TIMESTAMP_IDX = 3;
 
-    // Inputs representing the message and the current state.
+    // Number of users that have completed the sign up.
     signal input numSignUps;
-    signal input maxVoteOptions;
+    // Time when the poll ends.
     signal input pollEndTimestamp;
-
     // The current value of the state tree root.
     signal input currentStateRoot;
     // The current value of the ballot tree root.

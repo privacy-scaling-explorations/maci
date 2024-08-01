@@ -1,12 +1,12 @@
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
-import { MaciState, Poll, packProcessMessageSmallVals, STATE_TREE_ARITY, MESSAGE_TREE_ARITY } from "maci-core";
+import { MaciState, Poll, STATE_TREE_ARITY, MESSAGE_TREE_ARITY } from "maci-core";
 import { hash5, IncrementalQuinTree } from "maci-crypto";
 import { PrivKey, Keypair, PCommand, Message, Ballot } from "maci-domainobjs";
 
 import { IProcessMessagesInputs, ITallyVotesInputs } from "../types";
 
-import { generateRandomIndex, getSignal, circomkitInstance } from "./utils/utils";
+import { generateRandomIndex, circomkitInstance } from "./utils/utils";
 
 describe("Ceremony param tests", () => {
   const params = {
@@ -47,8 +47,10 @@ describe("Ceremony param tests", () => {
 
     let circuit: WitnessTester<
       [
-        "inputHash",
-        "packedVals",
+        "numSignUps",
+        "batchEndIndex",
+        "index",
+        "maxVoteOptions",
         "pollEndTimestamp",
         "msgRoot",
         "msgs",
@@ -71,21 +73,11 @@ describe("Ceremony param tests", () => {
       ]
     >;
 
-    let hasherCircuit: WitnessTester<
-      ["packedVals", "coordPubKey", "msgRoot", "currentSbCommitment", "newSbCommitment", "pollEndTimestamp"],
-      ["maxVoteOptions", "numSignUps", "batchStartIndex", "batchEndIndex", "hash"]
-    >;
-
     before(async () => {
       circuit = await circomkitInstance.WitnessTester("processMessages", {
         file: "./core/qv/processMessages",
         template: "ProcessMessages",
         params: [6, 9, 2, 3],
-      });
-
-      hasherCircuit = await circomkitInstance.WitnessTester("processMessageInputHasher", {
-        file: "./utils/processMessagesInputHasher",
-        template: "ProcessMessagesInputHasher",
       });
     });
 
@@ -185,29 +177,6 @@ describe("Ceremony param tests", () => {
 
         expect(newStateRoot?.toString()).not.to.be.eq(currentStateRoot?.toString());
         expect(newBallotRoot?.toString()).not.to.be.eq(currentBallotRoot.toString());
-
-        const packedVals = packProcessMessageSmallVals(
-          BigInt(maxValues.maxVoteOptions),
-          BigInt(poll.maciStateRef.numSignUps),
-          0,
-          2,
-        );
-
-        // Test the ProcessMessagesInputHasher circuit
-        const hasherCircuitInputs = {
-          packedVals,
-          coordPubKey: inputs.coordPubKey,
-          msgRoot: inputs.msgRoot,
-          currentSbCommitment: inputs.currentSbCommitment,
-          newSbCommitment: inputs.newSbCommitment,
-          pollEndTimestamp: inputs.pollEndTimestamp,
-          actualStateTreeDepth: inputs.actualStateTreeDepth,
-        };
-
-        const hasherWitness = await hasherCircuit.calculateWitness(hasherCircuitInputs);
-        await hasherCircuit.expectConstraintPass(hasherWitness);
-        const hash = await getSignal(hasherCircuit, hasherWitness, "hash");
-        expect(hash.toString()).to.be.eq(inputs.inputHash.toString());
       });
     });
 
@@ -219,11 +188,11 @@ describe("Ceremony param tests", () => {
           "stateRoot",
           "ballotRoot",
           "sbSalt",
-          "packedVals",
           "sbCommitment",
+          "index",
+          "numSignUps",
           "currentTallyCommitment",
           "newTallyCommitment",
-          "inputHash",
           "ballots",
           "ballotPathElements",
           "votes",

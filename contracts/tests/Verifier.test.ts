@@ -83,19 +83,16 @@ describe("DomainObjs", () => {
     });
 
     it("should correctly verify a proof", async () => {
-      const isValid = await verifierContract.verify(
-        proof,
-        vk.asContractParam() as IVerifyingKeyStruct,
-        publicInputs[0],
-      );
+      const isValid = await verifierContract.verify(proof, vk.asContractParam() as IVerifyingKeyStruct, publicInputs);
 
       expect(isValid).to.eq(true);
     });
+
     it("should return false for a proof that is not valid", async () => {
       const isValid = await verifierContract.verify(
         proof,
         vk.asContractParam() as IVerifyingKeyStruct,
-        BigInt(publicInputs[0]) + BigInt(1),
+        publicInputs.slice(0, -1).concat(BigInt(1)),
       );
 
       expect(isValid).to.eq(false);
