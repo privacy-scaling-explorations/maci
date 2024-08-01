@@ -8,7 +8,6 @@
     "domainobjs",
     "integrationTests",
     "website",
-    "coordinator",
     "subgraph"
   ],
   "version": "2.0.0-alpha",
