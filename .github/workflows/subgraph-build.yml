@@ -35,4 +35,4 @@ jobs:
 
       - name: Test
         run: pnpm run test
-        working-directory: subgraph
+        working-directory: apps/subgraph

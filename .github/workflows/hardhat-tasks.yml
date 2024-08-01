@@ -31,7 +31,7 @@ jobs:
 
       - name: Run hardhat fork
         run: |
-          cd contracts
+          cd packages/contracts
           pnpm run hardhat &
           sleep 5
 
@@ -41,10 +41,10 @@ jobs:
 
       - name: hardhat tasks
         run: |
-          cd contracts
           cp ./deploy-config-example.json ./deploy-config.json
           pnpm deploy:localhost
           pnpm deploy-poll:localhost
+        working-directory: packages/contracts
 
       - name: Stop Hardhat
         if: always()

@@ -5,4 +5,4 @@ build
 typechain-types
 .eslintrc.js
 commitlint.config.js
-subgraph/generated
+apps/subgraph/generated

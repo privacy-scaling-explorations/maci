@@ -24,6 +24,7 @@ Below you can find a list of the packages included in this repository.
 | [maci-crypto][crypto-package]                     | [![NPM Package][crypto-npm-badge]][crypto-npm-link]                     | [![Actions Status][crypto-actions-badge]][crypto-actions-link]                     |
 | [maci-domainobjs][domainobjs-package]             | [![NPM Package][domainobjs-npm-badge]][domainobjs-npm-link]             | [![Actions Status][domainobjs-actions-badge]][domainobjs-actions-link]             |
 | [maci-integrationTests][integrationTests-package] | [![NPM Package][integrationTests-npm-badge]][integrationTests-npm-link] | [![Actions Status][integrationTests-actions-badge]][integrationTests-actions-link] |
+| [maci-subgraph][subgraph-package]                 | [![NPM Package][subgraph-npm-badge]][subgraph-npm-link]                 | [![Actions Status][subgraph-actions-badge]][subgraph-actions-link]                 |
 
 ## Development and testing
 

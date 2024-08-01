@@ -36,4 +36,4 @@ jobs:
       - name: Test
         run: |
           pnpm run test
-        working-directory: domainobjs
+        working-directory: packages/domainobjs
