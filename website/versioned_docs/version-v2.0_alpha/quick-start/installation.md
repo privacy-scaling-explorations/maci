@@ -180,7 +180,7 @@ pnpm download-zkeys:test
 **Download ceremony artifacts**
 
 :::info
-Currently, the ceremony artifacts work with MACI version up to 1.2.2.
+Currently, the ceremony artifacts work with MACI version up to 1.2.5.
 :::
 
 ```bash
