@@ -9,7 +9,6 @@ include "../../trees/incrementalMerkleTree.circom";
 include "../../trees/incrementalQuinaryTree.circom";
 include "../../utils/calculateTotal.circom";
 include "../../utils/hashers.circom";
-include "../../utils/tallyVotesInputHasher.circom";
 
 /**
  * Processes batches of votes and verifies their validity in a Merkle tree structure.
@@ -51,70 +50,40 @@ template TallyVotesNonQv(
     signal input ballotRoot;
     // Salt used in commitment to secure the ballot data.
     signal input sbSalt;
-
-    // Inputs combined into a hash to verify the integrity and authenticity of the data.
-    signal input packedVals;
     // Commitment to the state and ballots.
     signal input sbCommitment;
     // Commitment to the current tally before this batch.
     signal input currentTallyCommitment;
     // Commitment to the new tally after processing this batch.
     signal input newTallyCommitment;
-    
-    // A tally commitment is the hash of the following salted values:
-    //   - the vote results,
-    //   - the number of voice credits spent per vote option,
-    //   - the total number of spent voice credits.
-
-    // Hash of all inputs to ensure they are unchanged and authentic.
-    signal input inputHash;
-    
+    // Start index of given batch
+    signal input index;
+    // Number of users that signup
+    signal input numSignUps;
     // Ballots and their corresponding path elements for verification in the tree.
     signal input ballots[batchSize][BALLOT_LENGTH];
     signal input ballotPathElements[k][BALLOT_TREE_ARITY - 1];
     signal input votes[batchSize][numVoteOptions];
-
     // Current results for each vote option.
     signal input currentResults[numVoteOptions];
     // Salt for the root of the current results.
     signal input currentResultsRootSalt;
-    
     // Total voice credits spent so far.
     signal input currentSpentVoiceCreditSubtotal;
     // Salt for the total spent voice credits.
     signal input currentSpentVoiceCreditSubtotalSalt;
-
     // Salt for the root of the new results.
     signal input newResultsRootSalt;
     // Salt for the new total spent voice credits root. 
     signal input newSpentVoiceCreditSubtotalSalt;
-    // The number of total registrations, used to validate the batch index.
-    signal numSignUps;
-    // Index of the first ballot in this batch.
-    signal batchStartIndex;
 
     // Verify sbCommitment.
     var computedSbCommitment = PoseidonHasher(3)([stateRoot, ballotRoot, sbSalt]);
     computedSbCommitment === sbCommitment;
 
-    // Verify inputHash.
-    var (
-        computedNumSignUps,
-        computedBatchNum,
-        computedHash
-    ) = TallyVotesInputHasher()(
-        sbCommitment,
-        currentTallyCommitment,
-        newTallyCommitment,
-        packedVals
-    );
 
-    inputHash === computedHash;
-    numSignUps <== computedNumSignUps;
-    batchStartIndex <== computedBatchNum * batchSize;
-
-    // Validates that the batchStartIndex is within the valid range of sign-ups.
-    var numSignUpsValid = LessEqThan(50)([batchStartIndex, numSignUps]);
+    // Validates that the index is within the valid range of sign-ups.
+    var numSignUpsValid = LessEqThan(50)([index, numSignUps]);
     numSignUpsValid === 1;
 
     // Hashes each ballot for subroot generation, and checks the existence of the leaf in the Merkle tree.    
@@ -125,7 +94,7 @@ template TallyVotesNonQv(
     }
 
     var computedBallotSubroot = CheckRoot(intStateTreeDepth)(computedBallotHashers);
-    var computedBallotPathIndices[k] = MerkleGeneratePathIndices(k)(computedBatchNum);
+    var computedBallotPathIndices[k] = MerkleGeneratePathIndices(k)(index / batchSize);
 
     // Verifies each ballot's existence within the ballot tree.
     LeafExists(k)(
@@ -143,7 +112,7 @@ template TallyVotesNonQv(
     }
 
     // Calculates new results and spent voice credits based on the current and incoming votes.
-    var computedIsFirstBatch = IsZero()(batchStartIndex);
+    var computedIsFirstBatch = IsZero()(index);
     var computedIsZero = IsZero()(computedIsFirstBatch);
 
     // Tally the new results.

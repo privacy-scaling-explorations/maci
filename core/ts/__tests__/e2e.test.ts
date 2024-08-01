@@ -5,7 +5,6 @@ import { PCommand, Keypair, StateLeaf, blankStateLeafHash } from "maci-domainobj
 import { MaciState } from "../MaciState";
 import { Poll } from "../Poll";
 import { STATE_TREE_DEPTH, STATE_TREE_ARITY, MESSAGE_TREE_ARITY } from "../utils/constants";
-import { packProcessMessageSmallVals, unpackProcessMessageSmallVals } from "../utils/utils";
 
 import {
   coordinatorKeypair,
@@ -422,20 +421,6 @@ describe("MaciState/Poll e2e", function test() {
       accumulatorQueue.merge(treeDepths.messageTreeDepth);
 
       expect(accumulatorQueue.getRoot(treeDepths.messageTreeDepth)?.toString()).to.eq(poll.messageTree.root.toString());
-    });
-
-    it("packProcessMessageSmallVals and unpackProcessMessageSmallVals", () => {
-      const maxVoteOptions = 1n;
-      const numUsers = 2n;
-      const batchStartIndex = 5;
-      const batchEndIndex = 10;
-      const packedVals = packProcessMessageSmallVals(maxVoteOptions, numUsers, batchStartIndex, batchEndIndex);
-
-      const unpacked = unpackProcessMessageSmallVals(packedVals);
-      expect(unpacked.maxVoteOptions.toString()).to.eq(maxVoteOptions.toString());
-      expect(unpacked.numUsers.toString()).to.eq(numUsers.toString());
-      expect(unpacked.batchStartIndex.toString()).to.eq(batchStartIndex.toString());
-      expect(unpacked.batchEndIndex.toString()).to.eq(batchEndIndex.toString());
     });
 
     it("Process a batch of messages (though only 1 message is in the batch)", () => {

@@ -61,12 +61,6 @@ jobs:
         run: |
           pnpm run build
 
-      - name: Run hardhat fork
-        run: |
-          cd contracts
-          pnpm run hardhat &
-          sleep 5
-
       - name: Download rapidsnark (1c137)
         run: |
           mkdir -p ~/rapidsnark/build
@@ -89,6 +83,12 @@ jobs:
         if: ${{ env.CHANGED == 'false' }}
         run: |
           pnpm download-zkeys:test
+
+      - name: Run hardhat fork
+        run: |
+          pnpm run hardhat &
+          sleep 5
+        working-directory: contracts
 
       - name: ${{ matrix.command }}
         run: pnpm run ${{ matrix.command }}

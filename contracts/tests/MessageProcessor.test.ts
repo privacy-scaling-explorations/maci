@@ -2,7 +2,7 @@
 import { expect } from "chai";
 import { Signer } from "ethers";
 import { EthereumProvider } from "hardhat/types";
-import { MaciState, Poll, packProcessMessageSmallVals, IProcessMessagesCircuitInputs } from "maci-core";
+import { MaciState, Poll, IProcessMessagesCircuitInputs } from "maci-core";
 import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, Message, PubKey } from "maci-domainobjs";
 
@@ -48,8 +48,6 @@ describe("MessageProcessor", () => {
   let signer: Signer;
   let generatedInputs: IProcessMessagesCircuitInputs;
   const coordinator = new Keypair();
-
-  const users = [new Keypair(), new Keypair()];
 
   before(async () => {
     signer = await getDefaultSigner();
@@ -129,10 +127,9 @@ describe("MessageProcessor", () => {
     });
 
     it("processMessages() should fail if the state AQ has not been merged", async () => {
-      await expect(mpContract.processMessages(0, [0, 0, 0, 0, 0, 0, 0, 0])).to.be.revertedWithCustomError(
-        mpContract,
-        "StateNotMerged",
-      );
+      await expect(
+        mpContract.processMessages(BigInt(generatedInputs.newSbCommitment), [0, 0, 0, 0, 0, 0, 0, 0]),
+      ).to.be.revertedWithCustomError(mpContract, "StateNotMerged");
     });
   });
 
@@ -144,28 +141,9 @@ describe("MessageProcessor", () => {
       await pollContract.mergeMessageAq();
     });
 
-    it("genProcessMessagesPackedVals() should generate the correct value", async () => {
-      const packedVals = packProcessMessageSmallVals(
-        BigInt(maxValues.maxVoteOptions),
-        BigInt(users.length),
-        0,
-        poll.messages.length,
-      );
-      const onChainPackedVals = BigInt(
-        await mpContract.genProcessMessagesPackedVals(
-          0,
-          users.length,
-          poll.messages.length,
-          treeDepths.messageTreeSubDepth,
-          treeDepths.voteOptionTreeDepth,
-        ),
-      );
-      expect(packedVals.toString()).to.eq(onChainPackedVals.toString());
-    });
-
     it("processMessages() should update the state and ballot root commitment", async () => {
       // Submit the proof
-      const tx = await mpContract.processMessages(generatedInputs.newSbCommitment, [0, 0, 0, 0, 0, 0, 0, 0]);
+      const tx = await mpContract.processMessages(BigInt(generatedInputs.newSbCommitment), [0, 0, 0, 0, 0, 0, 0, 0]);
 
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);

@@ -73,7 +73,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
   /// @param _newSbCommitment The new state root and ballot root commitment
   ///                         after all messages are processed
   /// @param _proof The zk-SNARK proof
-  function processMessages(uint256 _newSbCommitment, uint256[8] memory _proof) external onlyOwner {
+  function processMessages(uint256 _newSbCommitment, uint256[8] calldata _proof) external onlyOwner {
     // ensure the voting period is over
     _votingPeriodOver(poll);
 
@@ -88,7 +88,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
     }
 
     // Retrieve stored vals
-    (, uint8 messageTreeSubDepth, uint8 messageTreeDepth, uint8 voteOptionTreeDepth) = poll.treeDepths();
+    (, uint8 messageTreeSubDepth, uint8 messageTreeDepth, ) = poll.treeDepths();
     // calculate the message batch size from the message tree subdepth
     uint256 messageBatchSize = TREE_ARITY ** messageTreeSubDepth;
 
@@ -119,18 +119,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
       }
     }
 
-    if (
-      !verifyProcessProof(
-        currentMessageBatchIndex,
-        messageRoot,
-        sbCommitment,
-        _newSbCommitment,
-        messageTreeSubDepth,
-        messageTreeDepth,
-        voteOptionTreeDepth,
-        _proof
-      )
-    ) {
+    if (!verifyProcessProof(currentMessageBatchIndex, _newSbCommitment, _proof)) {
       revert InvalidProcessMessageProof();
     }
 
@@ -150,141 +139,60 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
     }
   }
 
+  /// @inheritdoc IMessageProcessor
+  function getPublicCircuitInputs(
+    uint256 _currentMessageBatchIndex,
+    uint256 _newSbCommitment
+  ) public view override returns (uint256[] memory publicInputs) {
+    (, uint8 messageTreeSubDepth, uint8 messageTreeDepth, uint8 voteOptionTreeDepth) = poll.treeDepths();
+    (, AccQueue messageAq) = poll.extContracts();
+    uint256 messageBatchSize = TREE_ARITY ** messageTreeSubDepth;
+    (uint256 numSignUps, uint256 numMessages) = poll.numSignUpsAndMessages();
+    (uint256 deployTime, uint256 duration) = poll.getDeployTimeAndDuration();
+    uint256 batchEndIndex = _currentMessageBatchIndex + messageBatchSize;
+
+    if (batchEndIndex > numMessages) {
+      batchEndIndex = numMessages;
+    }
+
+    publicInputs = new uint256[](8);
+    publicInputs[0] = numSignUps;
+    publicInputs[1] = deployTime + duration;
+    publicInputs[2] = messageAq.getMainRoot(messageTreeDepth);
+    publicInputs[3] = poll.actualStateTreeDepth();
+    publicInputs[4] = batchEndIndex;
+    publicInputs[5] = _currentMessageBatchIndex;
+    publicInputs[6] = (sbCommitment == 0 ? poll.currentSbCommitment() : sbCommitment);
+    publicInputs[7] = _newSbCommitment;
+  }
+
   /// @notice Verify the proof for processMessage
   /// @dev used to update the sbCommitment
-  /// @param _currentMessageBatchIndex The batch index of current message batch
-  /// @param _messageRoot The message tree root
-  /// @param _currentSbCommitment The current sbCommitment (state and ballot)
-  /// @param _newSbCommitment The new sbCommitment after we update this message batch
-  /// @param _messageTreeSubDepth The message tree subdepth
-  /// @param _messageTreeDepth The message tree depth
-  /// @param _voteOptionTreeDepth The vote option tree depth
+  /// @param _currentMessageBatchIndex The current message batch index
+  /// @param _newSbCommitment The new state root and ballot root commitment
+  ///                         after all messages are processed
   /// @param _proof The zk-SNARK proof
   /// @return isValid Whether the proof is valid
   function verifyProcessProof(
     uint256 _currentMessageBatchIndex,
-    uint256 _messageRoot,
-    uint256 _currentSbCommitment,
     uint256 _newSbCommitment,
-    uint8 _messageTreeSubDepth,
-    uint8 _messageTreeDepth,
-    uint8 _voteOptionTreeDepth,
-    uint256[8] memory _proof
-  ) internal view returns (bool isValid) {
+    uint256[8] calldata _proof
+  ) public view returns (bool isValid) {
     // get the tree depths
-    // get the message batch size from the message tree subdepth
-    // get the number of signups
-    (uint256 numSignUps, uint256 numMessages) = poll.numSignUpsAndMessages();
+    (, uint8 messageTreeSubDepth, uint8 messageTreeDepth, uint8 voteOptionTreeDepth) = poll.treeDepths();
     (IMACI maci, ) = poll.extContracts();
-
-    // Calculate the public input hash (a SHA256 hash of several values)
-    uint256 publicInputHash = genProcessMessagesPublicInputHash(
-      _currentMessageBatchIndex,
-      _messageRoot,
-      numSignUps,
-      numMessages,
-      _currentSbCommitment,
-      _newSbCommitment,
-      _messageTreeSubDepth,
-      _voteOptionTreeDepth
-    );
+    uint256[] memory publicCircuitInputs = getPublicCircuitInputs(_currentMessageBatchIndex, _newSbCommitment);
 
     // Get the verifying key from the VkRegistry
     VerifyingKey memory vk = vkRegistry.getProcessVk(
       maci.stateTreeDepth(),
-      _messageTreeDepth,
-      _voteOptionTreeDepth,
-      TREE_ARITY ** _messageTreeSubDepth,
+      messageTreeDepth,
+      voteOptionTreeDepth,
+      TREE_ARITY ** messageTreeSubDepth,
       mode
     );
 
-    isValid = verifier.verify(_proof, vk, publicInputHash);
-  }
-
-  /// @notice Returns the SHA256 hash of the packed values (see
-  /// genProcessMessagesPackedVals), the hash of the coordinator's public key,
-  /// the message root, and the commitment to the current state root and
-  /// ballot root. By passing the SHA256 hash of these values to the circuit
-  /// as a single public input and the preimage as private inputs, we reduce
-  /// its verification gas cost though the number of constraints will be
-  /// higher and proving time will be longer.
-  /// @param _currentMessageBatchIndex The batch index of current message batch
-  /// @param _numSignUps The number of users that signup
-  /// @param _numMessages The number of messages
-  /// @param _currentSbCommitment The current sbCommitment (state and ballot root)
-  /// @param _newSbCommitment The new sbCommitment after we update this message batch
-  /// @param _messageTreeSubDepth The message tree subdepth
-  /// @return inputHash Returns the SHA256 hash of the packed values
-  function genProcessMessagesPublicInputHash(
-    uint256 _currentMessageBatchIndex,
-    uint256 _messageRoot,
-    uint256 _numSignUps,
-    uint256 _numMessages,
-    uint256 _currentSbCommitment,
-    uint256 _newSbCommitment,
-    uint8 _messageTreeSubDepth,
-    uint8 _voteOptionTreeDepth
-  ) public view returns (uint256 inputHash) {
-    uint256 coordinatorPubKeyHash = poll.coordinatorPubKeyHash();
-
-    uint8 actualStateTreeDepth = poll.actualStateTreeDepth();
-
-    // pack the values
-    uint256 packedVals = genProcessMessagesPackedVals(
-      _currentMessageBatchIndex,
-      _numSignUps,
-      _numMessages,
-      _messageTreeSubDepth,
-      _voteOptionTreeDepth
-    );
-
-    (uint256 deployTime, uint256 duration) = poll.getDeployTimeAndDuration();
-
-    // generate the circuit only public input
-    uint256[] memory input = new uint256[](7);
-    input[0] = packedVals;
-    input[1] = coordinatorPubKeyHash;
-    input[2] = _messageRoot;
-    input[3] = _currentSbCommitment;
-    input[4] = _newSbCommitment;
-    input[5] = deployTime + duration;
-    input[6] = actualStateTreeDepth;
-    inputHash = sha256Hash(input);
-  }
-
-  /// @notice One of the inputs to the ProcessMessages circuit is a 250-bit
-  /// representation of four 50-bit values. This function generates this
-  /// 250-bit value, which consists of the maximum number of vote options, the
-  /// number of signups, the current message batch index, and the end index of
-  /// the current batch.
-  /// @param _currentMessageBatchIndex batch index of current message batch
-  /// @param _numSignUps number of users that signup
-  /// @param _numMessages number of messages
-  /// @param _messageTreeSubDepth message tree subdepth
-  /// @param _voteOptionTreeDepth vote option tree depth
-  /// @return result The packed value
-  function genProcessMessagesPackedVals(
-    uint256 _currentMessageBatchIndex,
-    uint256 _numSignUps,
-    uint256 _numMessages,
-    uint8 _messageTreeSubDepth,
-    uint8 _voteOptionTreeDepth
-  ) public pure returns (uint256 result) {
-    uint256 maxVoteOptions = TREE_ARITY ** _voteOptionTreeDepth;
-
-    // calculate the message batch size from the message tree subdepth
-    uint256 messageBatchSize = TREE_ARITY ** _messageTreeSubDepth;
-    uint256 batchEndIndex = _currentMessageBatchIndex + messageBatchSize;
-    if (batchEndIndex > _numMessages) {
-      batchEndIndex = _numMessages;
-    }
-
-    if (maxVoteOptions >= 2 ** 50) revert MaxVoteOptionsTooLarge();
-    if (_numSignUps >= 2 ** 50) revert NumSignUpsTooLarge();
-    if (_currentMessageBatchIndex >= 2 ** 50) revert CurrentMessageBatchIndexTooLarge();
-    if (batchEndIndex >= 2 ** 50) revert BatchEndIndexTooLarge();
-
-    result = maxVoteOptions + (_numSignUps << 50) + (_currentMessageBatchIndex << 100) + (batchEndIndex << 150);
+    isValid = verifier.verify(_proof, vk, publicCircuitInputs);
   }
 
   /// @notice update message processing state variables

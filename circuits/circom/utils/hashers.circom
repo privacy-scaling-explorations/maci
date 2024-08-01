@@ -1,47 +1,7 @@
 pragma circom 2.0.0;
 
-// circomlib import
-include "./sha256/sha256.circom"; 
-include "./bitify.circom";
 // zk-kit imports
 include "./poseidon-cipher.circom";
-
-/**
- * Computes the SHA-256 hash of an array of input signals. Each input is first
- * converted to a 256-bit representation, then these are concatenated and passed
- * to the SHA-256 hash function. The output is the 256 hash value of the inputs bits
- * converted back to numbers.
- */
-template Sha256Hasher(length) {
-    var SHA_LENGTH = 256;
-    var inBits = SHA_LENGTH * length;
-
-    signal input in[length];
-    signal output hash;
-
-    // Array to store all bits of inputs for SHA-256 input.
-    var computedBits[inBits];
-
-    // Convert each input into bits and store them in the `bits` array.
-    for (var i = 0; i < length; i++) {
-        var computedBitsInput[SHA_LENGTH] = Num2Bits(SHA_LENGTH)(in[i]);
-        for (var j = 0; j < SHA_LENGTH; j++) {
-            computedBits[(i * SHA_LENGTH) + (SHA_LENGTH - 1) - j] = computedBitsInput[j];
-        }
-    }
-
-    // SHA-256 hash computation.
-    var computedSha256Bits[SHA_LENGTH] = Sha256(inBits)(computedBits);
-
-    // Convert SHA-256 output back to number.
-    var computedBitsToNumInput[SHA_LENGTH];
-    for (var i = 0; i < SHA_LENGTH; i++) {
-        computedBitsToNumInput[i] = computedSha256Bits[(SHA_LENGTH - 1) - i];
-    }
-    var computedSha256Number = Bits2Num(256)(computedBitsToNumInput); 
-
-    hash <== computedSha256Number;
-}
 
 /**
  * Computes the Poseidon hash for an array of n inputs, including a default initial state 

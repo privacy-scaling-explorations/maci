@@ -1,15 +1,18 @@
 import { stringifyBigInts } from "maci-crypto";
 import { zKey, groth16, type PublicSignals, type Groth16Proof } from "snarkjs";
 
-import { execFileSync } from "child_process";
+import childProcess from "child_process";
 import fs from "fs";
 import { tmpdir } from "os";
 import path from "path";
+import { promisify } from "util";
 
 import type { IGenProofOptions, ISnarkJSVerificationKey, FullProveResult } from "./types";
 import type { IVkObjectParams } from "maci-domainobjs";
 
 import { cleanThreads, isArm } from "./utils";
+
+const execFile = promisify(childProcess.execFile);
 
 /**
  * Generate a zk-SNARK proof
@@ -32,7 +35,6 @@ export const genProof = async ({
   rapidsnarkExePath,
   witnessExePath,
   wasmPath,
-  silent = false,
 }: IGenProofOptions): Promise<FullProveResult> => {
   // if we want to use a wasm witness we use snarkjs
   if (useWasm) {
@@ -67,16 +69,14 @@ export const genProof = async ({
   fs.writeFileSync(inputJsonPath, jsonData);
 
   // Generate the witness
-  execFileSync(witnessExePath!, [inputJsonPath, outputWtnsPath], { stdio: silent ? "ignore" : "pipe" });
+  await execFile(witnessExePath!, [inputJsonPath, outputWtnsPath]);
 
   if (!fs.existsSync(outputWtnsPath)) {
     throw new Error(`Error executing ${witnessExePath} ${inputJsonPath} ${outputWtnsPath}`);
   }
 
   // Generate the proof
-  execFileSync(rapidsnarkExePath!, [zkeyPath, outputWtnsPath, proofJsonPath, publicJsonPath], {
-    stdio: silent ? "ignore" : "pipe",
-  });
+  await execFile(rapidsnarkExePath!, [zkeyPath, outputWtnsPath, proofJsonPath, publicJsonPath]);
 
   if (!fs.existsSync(proofJsonPath)) {
     throw new Error(
