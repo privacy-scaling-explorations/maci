@@ -68,32 +68,18 @@ describe("MessageProcessor", () => {
       verifierContract,
       vkRegistryContract,
       EMode.QV,
-      {
-        gasLimit: 10000000,
-      },
     );
     let receipt = await tx.wait();
 
     // extract poll id
     expect(receipt?.status).to.eq(1);
-    const iface = maciContract.interface;
-    const logs = receipt!.logs[receipt!.logs.length - 1];
-    const event = iface.parseLog(logs as unknown as { topics: string[]; data: string }) as unknown as {
-      args: {
-        _pollId: bigint;
-        pollAddr: {
-          poll: string;
-          messageProcessor: string;
-          tally: string;
-        };
-      };
-    };
-    pollId = event.args._pollId;
+
+    pollId = (await maciContract.nextPollId()) - 1n;
 
     const pollContracts = await maciContract.getPoll(pollId);
     pollContract = PollFactory.connect(pollContracts.poll, signer);
 
-    mpContract = MessageProcessorFactory.connect(event.args.pollAddr.messageProcessor, signer);
+    mpContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
 
     const block = await signer.provider!.getBlock(receipt!.blockHash);
     const deployTime = block!.timestamp;
@@ -132,7 +118,6 @@ describe("MessageProcessor", () => {
       EMode.QV,
       testProcessVk.asContractParam() as IVerifyingKeyStruct,
       testTallyVk.asContractParam() as IVerifyingKeyStruct,
-      { gasLimit: 1000000 },
     );
     receipt = await tx.wait();
     expect(receipt?.status).to.eq(1);

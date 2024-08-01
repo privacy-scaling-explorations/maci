@@ -87,7 +87,6 @@ describe("DomainObjs", () => {
         proof,
         vk.asContractParam() as IVerifyingKeyStruct,
         publicInputs[0],
-        { gasLimit: 1000000 },
       );
 
       expect(isValid).to.eq(true);
@@ -97,7 +96,6 @@ describe("DomainObjs", () => {
         proof,
         vk.asContractParam() as IVerifyingKeyStruct,
         BigInt(publicInputs[0]) + BigInt(1),
-        { gasLimit: 1000000 },
       );
 
       expect(isValid).to.eq(false);

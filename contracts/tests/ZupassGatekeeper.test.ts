@@ -46,8 +46,9 @@ describe("Zupass Gatekeeper", () => {
   });
 
   describe("Deployment", () => {
-    it("The gatekeeper should be deployed correctly", () => {
+    it("The gatekeeper should be deployed correctly", async () => {
       expect(zupassGatekeeper).to.not.eq(undefined);
+      expect(await zupassGatekeeper.getAddress()).to.not.eq(ZeroAddress);
     });
   });
 
