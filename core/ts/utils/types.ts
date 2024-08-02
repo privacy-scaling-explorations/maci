@@ -106,6 +106,7 @@ export interface IJsonPoll {
   encPubKeys: string[];
   currentMessageBatchIndex: number;
   stateLeaves: IJsonStateLeaf[];
+  pollStateLeaves: IJsonStateLeaf[];
   results: string[];
   numBatchesProcessed: number;
   numSignups: string;

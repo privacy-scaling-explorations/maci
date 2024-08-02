@@ -232,6 +232,10 @@ export class Poll implements IPoll {
       hash2,
     );
 
+    this.pollStateLeaves.forEach((stateLeaf) => {
+      this.pollStateTree?.insert(stateLeaf.hash());
+    });
+
     // Create as many ballots as state leaves
     this.emptyBallotHash = this.emptyBallot.hash();
     this.ballotTree = new IncrementalQuinTree(this.stateTreeDepth, this.emptyBallotHash, STATE_TREE_ARITY, hash2);
@@ -596,7 +600,7 @@ export class Poll implements IPoll {
           currentBallotsPathElements.unshift(r.originalBallotPathElements!);
 
           // update the state leaves with the new state leaf (result of processing the message)
-          this.stateLeaves[index] = r.newStateLeaf!.copy();
+          this.pollStateLeaves[index] = r.newStateLeaf!.copy();
 
           // we also update the state tree with the hash of the new state leaf
           this.pollStateTree?.update(index, r.newStateLeaf!.hash());
@@ -711,7 +715,7 @@ export class Poll implements IPoll {
         }
       } else {
         // Since we don't have a command at that position, use a blank state leaf
-        currentStateLeaves.unshift(this.stateLeaves[0].copy());
+        currentStateLeaves.unshift(this.pollStateLeaves[0].copy());
         currentStateLeavesPathElements.unshift(this.pollStateTree!.genProof(0).pathElements);
         // since the command is invliad we use the blank ballot
         currentBallots.unshift(this.ballots[0].copy());
@@ -894,7 +898,7 @@ export class Poll implements IPoll {
    * @returns The state leaves and ballots of the poll
    */
   processAllMessages = (): { stateLeaves: StateLeaf[]; ballots: Ballot[] } => {
-    const stateLeaves = this.stateLeaves.map((x) => x.copy());
+    const stateLeaves = this.pollStateLeaves.map((x) => x.copy());
     const ballots = this.ballots.map((x) => x.copy());
 
     // process all messages in one go (batch by batch but without manual intervention)
@@ -1307,6 +1311,7 @@ export class Poll implements IPoll {
     );
 
     copied.stateLeaves = this.stateLeaves.map((x) => x.copy());
+    copied.pollStateLeaves = this.pollStateLeaves.map((x) => x.copy());
     copied.messages = this.messages.map((x) => x.copy());
     copied.commands = this.commands.map((x) => x.copy());
     copied.ballots = this.ballots.map((x) => x.copy());
@@ -1403,6 +1408,7 @@ export class Poll implements IPoll {
       encPubKeys: this.encPubKeys.map((encPubKey) => encPubKey.serialize()),
       currentMessageBatchIndex: this.currentMessageBatchIndex,
       stateLeaves: this.stateLeaves.map((leaf) => leaf.toJSON()),
+      pollStateLeaves: this.pollStateLeaves.map((leaf) => leaf.toJSON()),
       results: this.tallyResult.map((result) => result.toString()),
       numBatchesProcessed: this.numBatchesProcessed,
       numSignups: this.numSignups.toString(),

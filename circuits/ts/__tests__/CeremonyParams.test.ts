@@ -3,6 +3,7 @@ import { type WitnessTester } from "circomkit";
 import { MaciState, Poll, packProcessMessageSmallVals, STATE_TREE_ARITY } from "maci-core";
 import { MESSAGE_BATCH_SIZE, VOTE_OPTION_TREE_ARITY } from "maci-core/build/ts/utils/constants";
 import { hash5, IncrementalQuinTree } from "maci-crypto";
+import { poseidon } from "maci-crypto/build/ts/hashing";
 import { PrivKey, Keypair, PCommand, Message, Ballot } from "maci-domainobjs";
 
 import { IProcessMessagesInputs, ITallyVotesInputs } from "../types";
@@ -100,9 +101,7 @@ describe("Ceremony param tests", () => {
       before(() => {
         // Sign up and publish
         const userKeypair = new Keypair(new PrivKey(BigInt(1)));
-        stateIndex = BigInt(
-          maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000))),
-        );
+        maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
 
         pollId = maciState.deployPoll(
           BigInt(Math.floor(Date.now() / 1000) + duration),
@@ -117,17 +116,27 @@ describe("Ceremony param tests", () => {
         // update the state
         poll.updatePoll(BigInt(maciState.stateLeaves.length));
 
+        // Join the poll
+        const { privKey } = userKeypair;
+        const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
+
+        const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
+        // const newVoiceCreditBalance = 10n;
+        const timestamp = BigInt(Math.floor(Date.now() / 1000));
+
+        stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp));
+
         // First command (valid)
         const command = new PCommand(
           stateIndex, // BigInt(1),
-          userKeypair.pubKey,
+          pollPubKey,
           voteOptionIndex, // voteOptionIndex,
           voteWeight, // vote weight
           BigInt(2), // nonce
           BigInt(pollId),
         );
 
-        const signature = command.sign(userKeypair.privKey);
+        const signature = command.sign(pollPrivKey);
 
         const ecdhKeypair = new Keypair();
         const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
@@ -140,13 +149,13 @@ describe("Ceremony param tests", () => {
         // Second command (valid)
         const command2 = new PCommand(
           stateIndex,
-          userKeypair.pubKey,
+          pollPubKey,
           voteOptionIndex, // voteOptionIndex,
           BigInt(1), // vote weight
           BigInt(1), // nonce
           BigInt(pollId),
         );
-        const signature2 = command2.sign(userKeypair.privKey);
+        const signature2 = command2.sign(pollPrivKey);
 
         const ecdhKeypair2 = new Keypair();
         const sharedKey2 = Keypair.genEcdhSharedKey(ecdhKeypair2.privKey, coordinatorKeypair.pubKey);
@@ -163,11 +172,10 @@ describe("Ceremony param tests", () => {
         const ballotTree = new IncrementalQuinTree(params.stateTreeDepth, emptyBallot.hash(), STATE_TREE_ARITY, hash5);
         ballotTree.insert(emptyBallot.hash());
 
-        poll.stateLeaves.forEach(() => {
+        poll.pollStateLeaves.forEach(() => {
           ballotTree.insert(emptyBallotHash);
         });
-
-        const currentStateRoot = poll.stateTree?.root;
+        const currentStateRoot = poll.pollStateTree?.root;
         const currentBallotRoot = ballotTree.root;
 
         const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
@@ -178,7 +186,7 @@ describe("Ceremony param tests", () => {
 
         // The new roots, which should differ, since at least one of the
         // messages modified a Ballot or State Leaf
-        const newStateRoot = poll.stateTree?.root;
+        const newStateRoot = poll.pollStateTree?.root;
         const newBallotRoot = poll.ballotTree?.root;
 
         expect(newStateRoot?.toString()).not.to.be.eq(currentStateRoot?.toString());
@@ -258,10 +266,7 @@ describe("Ceremony param tests", () => {
           const commands: PCommand[] = [];
           // Sign up and publish
           const userKeypair = new Keypair();
-          stateIndex = BigInt(
-            maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000))),
-          );
-
+          maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
           pollId = maciState.deployPoll(
             BigInt(Math.floor(Date.now() / 1000) + duration),
             maxValues.maxVoteOptions,
@@ -275,17 +280,27 @@ describe("Ceremony param tests", () => {
           // update the state
           poll.updatePoll(BigInt(maciState.stateLeaves.length));
 
+          // Join the poll
+          const { privKey } = userKeypair;
+          const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
+
+          const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
+          // const newVoiceCreditBalance = 10n;
+          const timestamp = BigInt(Math.floor(Date.now() / 1000));
+
+          stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp));
+
           // First command (valid)
           const command = new PCommand(
             stateIndex,
-            userKeypair.pubKey,
+            pollPubKey,
             voteOptionIndex, // voteOptionIndex,
             voteWeight, // vote weight
             BigInt(1), // nonce
             BigInt(pollId),
           );
 
-          const signature = command.sign(userKeypair.privKey);
+          const signature = command.sign(pollPrivKey);
 
           const ecdhKeypair = new Keypair();
           const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
