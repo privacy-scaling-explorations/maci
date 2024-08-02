@@ -121,7 +121,6 @@ describe("Ceremony param tests", () => {
         const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
 
         const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-        // const newVoiceCreditBalance = 10n;
         const timestamp = BigInt(Math.floor(Date.now() / 1000));
 
         stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp));
@@ -285,7 +284,6 @@ describe("Ceremony param tests", () => {
           const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
 
           const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-          // const newVoiceCreditBalance = 10n;
           const timestamp = BigInt(Math.floor(Date.now() / 1000));
 
           stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp));
