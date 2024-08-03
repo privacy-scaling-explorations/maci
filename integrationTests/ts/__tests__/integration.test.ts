@@ -18,7 +18,7 @@ import {
   DeployedContracts,
 } from "maci-cli";
 import { getDefaultSigner } from "maci-contracts";
-import { MaciState, MaxValues, TreeDepths } from "maci-core";
+import { MaciState, TreeDepths } from "maci-core";
 import { genPubKey, genRandomSalt } from "maci-crypto";
 import { Keypair, PCommand, PrivKey, PubKey } from "maci-domainobjs";
 
@@ -105,11 +105,6 @@ describe("Integration tests", function test() {
     // 3. deploy maci
     contracts = await deploy({ stateTreeDepth: STATE_TREE_DEPTH, initialVoiceCredits, signer });
 
-    const maxValues: MaxValues = {
-      maxMessages: 25,
-      maxVoteOptions: 25,
-    };
-
     // 4. create a poll
     await deployPoll({
       pollDuration: duration,
@@ -134,7 +129,6 @@ describe("Integration tests", function test() {
 
     pollId = maciState.deployPoll(
       BigInt(Date.now() + duration * 60000),
-      maxValues,
       treeDepths,
       messageBatchSize,
       coordinatorKeypair,

@@ -121,15 +121,10 @@ function deployPoll(
       revert InvalidPubKey();
     }
 
-    MaxValues memory maxValues = MaxValues({
-      maxMessages: uint256(MESSAGE_TREE_ARITY) ** _treeDepths.messageTreeDepth,
-      maxVoteOptions: uint256(MESSAGE_TREE_ARITY) ** _treeDepths.voteOptionTreeDepth
-    });
-
     // the owner of the message processor and tally contract will be the msg.sender
     address _msgSender = msg.sender;
 
-    address p = pollFactory.deploy(_duration, maxValues, _treeDepths, _coordinatorPubKey, address(this));
+    address p = pollFactory.deploy(_duration, _treeDepths, _coordinatorPubKey, address(this));
 
     address mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p, _msgSender, _mode);
     address tally = tallyFactory.deploy(_verifier, _vkRegistry, p, mp, _msgSender, _mode);

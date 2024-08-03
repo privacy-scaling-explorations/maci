@@ -1,11 +1,6 @@
 export const STATE_TREE_DEPTH = 10;
 export const voiceCreditBalance = BigInt(100);
 export const duration = 30;
-export const maxValues = {
-  maxUsers: 25,
-  maxMessages: 25,
-  maxVoteOptions: 25,
-};
 export const treeDepths = {
   intStateTreeDepth: 5,
   messageTreeDepth: 2,

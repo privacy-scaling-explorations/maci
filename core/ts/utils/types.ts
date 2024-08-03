@@ -43,16 +43,6 @@ export interface BatchSizes {
 }
 
 /**
- * This interface defines the maximum values that the circuit can handle.
- * @property maxMessages - The maximum number of messages.
- * @property maxVoteOptions - The maximum number of vote options.
- */
-export interface MaxValues {
-  maxMessages: number;
-  maxVoteOptions: number;
-}
-
-/**
  * Represents the public API of the MaciState class.
  */
 export interface IMaciState {
@@ -61,7 +51,6 @@ export interface IMaciState {
   // This method is used for deploying poll.
   deployPoll(
     pollEndTimestamp: bigint,
-    maxValues: MaxValues,
     treeDepths: TreeDepths,
     messageBatchSize: number,
     coordinatorKeypair: Keypair,
@@ -99,7 +88,6 @@ export interface IJsonPoll {
   pollEndTimestamp: string;
   treeDepths: TreeDepths;
   batchSizes: BatchSizes;
-  maxValues: MaxValues;
   messages: unknown[];
   commands: IJsonPCommand[];
   ballots: IJsonBallot[];

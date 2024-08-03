@@ -57,14 +57,17 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   /// to be used as public input for the circuit
   uint8 public actualStateTreeDepth;
 
-  /// @notice Max values for the poll
-  MaxValues public maxValues;
-
   /// @notice Depths of the merkle trees
   TreeDepths public treeDepths;
 
   /// @notice The contracts used by the Poll
   ExtContracts public extContracts;
+
+  /// @notice The max number of messages
+  uint256 public immutable maxMessages;
+
+  /// @notice The number of children per node in the merkle trees
+  uint256 internal constant TREE_ARITY = 5;
 
   error VotingPeriodOver();
   error VotingPeriodNotOver();
@@ -82,13 +85,11 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   /// @notice Each MACI instance can have multiple Polls.
   /// When a Poll is deployed, its voting period starts immediately.
   /// @param _duration The duration of the voting period, in seconds
-  /// @param _maxValues The maximum number of messages and vote options
   /// @param _treeDepths The depths of the merkle trees
   /// @param _coordinatorPubKey The coordinator's public key
   /// @param _extContracts The external contracts
   constructor(
     uint256 _duration,
-    MaxValues memory _maxValues,
     TreeDepths memory _treeDepths,
     PubKey memory _coordinatorPubKey,
     ExtContracts memory _extContracts,
@@ -107,14 +108,14 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     extContracts = _extContracts;
     // store duration of the poll
     duration = _duration;
-    // store max values
-    maxValues = _maxValues;
     // store tree depth
     treeDepths = _treeDepths;
     // Record the current timestamp
     deployTime = block.timestamp;
     // store the empty ballot root
     emptyBallotRoot = _emptyBallotRoot;
+    // store max messages
+    maxMessages = TREE_ARITY ** _treeDepths.messageTreeDepth;
   }
 
   /// @notice A modifier that causes the function to revert if the voting period is
@@ -159,7 +160,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   /// @inheritdoc IPoll
   function publishMessage(Message memory _message, PubKey calldata _encPubKey) public virtual isWithinVotingDeadline {
     // we check that we do not exceed the max number of messages
-    if (numMessages >= maxValues.maxMessages) revert TooManyMessages();
+    if (numMessages >= maxMessages) revert TooManyMessages();
 
     // check if the public key is on the curve
     if (!CurveBabyJubJub.isOnCurve(_encPubKey.x, _encPubKey.y)) {
@@ -223,7 +224,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
 
     // dynamically determine the actual depth of the state tree
     uint8 depth = 1;
-    while (uint40(2) ** uint40(depth) < _numSignups) {
+    while (uint40(1 << depth) < _numSignups) {
       depth++;
     }
 

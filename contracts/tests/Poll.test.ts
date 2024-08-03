@@ -23,7 +23,6 @@ import {
   STATE_TREE_DEPTH,
   duration,
   initialVoiceCreditBalance,
-  maxValues,
   messageBatchSize,
   treeDepths,
 } from "./constants";
@@ -73,13 +72,7 @@ describe("Poll", () => {
       pollContract = PollFactory.connect(pollContracts.poll, signer);
 
       // deploy local poll
-      const p = maciState.deployPoll(
-        BigInt(deployTime + duration),
-        maxValues,
-        treeDepths,
-        messageBatchSize,
-        coordinator,
-      );
+      const p = maciState.deployPoll(BigInt(deployTime + duration), treeDepths, messageBatchSize, coordinator);
       expect(p.toString()).to.eq(pollId.toString());
       // publish the NOTHING_UP_MY_SLEEVE message
       const messageData = [NOTHING_UP_MY_SLEEVE];
@@ -110,12 +103,6 @@ describe("Poll", () => {
     it("should have the correct duration set", async () => {
       const dd = await pollContract.getDeployTimeAndDuration();
       expect(dd[1].toString()).to.eq(duration.toString());
-    });
-
-    it("should have the correct max values set", async () => {
-      const mv = await pollContract.maxValues();
-      expect(mv[0].toString()).to.eq(maxValues.maxMessages.toString());
-      expect(mv[1].toString()).to.eq(maxValues.maxVoteOptions.toString());
     });
 
     it("should have the correct tree depths set", async () => {

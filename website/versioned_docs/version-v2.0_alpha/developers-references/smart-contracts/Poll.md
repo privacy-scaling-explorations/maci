@@ -24,7 +24,7 @@ The `publishMessage` function looks as follows:
 ```js
 function publishMessage(Message memory _message, PubKey calldata _encPubKey) public virtual isWithinVotingDeadline {
     // we check that we do not exceed the max number of messages
-    if (numMessages >= maxValues.maxMessages) revert TooManyMessages();
+    if (numMessages >= maxMessages) revert TooManyMessages();
 
     // check if the public key is on the curve
     if (!CurveBabyJubJub.isOnCurve(_encPubKey.x, _encPubKey.y)) {
@@ -72,7 +72,7 @@ function mergeMaciState() public isAfterVotingDeadline {
 
     // dynamically determine the actual depth of the state tree
     uint8 depth = 1;
-    while (uint40(2) ** uint40(depth) < _numSignups) {
+    while (uint40(1 << depth) < numberOfLeaves) {
       depth++;
     }
 

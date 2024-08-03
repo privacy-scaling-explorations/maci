@@ -22,12 +22,6 @@ describe("Ceremony param tests", () => {
     stateLeafBatchDepth: 2,
   };
 
-  const maxValues = {
-    maxUsers: STATE_TREE_ARITY ** params.stateTreeDepth,
-    maxMessages: MESSAGE_TREE_ARITY ** params.messageTreeDepth,
-    maxVoteOptions: MESSAGE_TREE_ARITY ** params.voteOptionTreeDepth,
-  };
-
   const treeDepths = {
     intStateTreeDepth: params.messageBatchTreeDepth,
     messageTreeDepth: params.messageTreeDepth,
@@ -100,7 +94,6 @@ describe("Ceremony param tests", () => {
 
         pollId = maciState.deployPoll(
           BigInt(Math.floor(Date.now() / 1000) + duration),
-          maxValues,
           treeDepths,
           messageBatchSize,
           coordinatorKeypair,
@@ -152,7 +145,10 @@ describe("Ceremony param tests", () => {
 
       it("should produce the correct state root and ballot root", async () => {
         // The current roots
-        const emptyBallot = new Ballot(poll.maxValues.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
+        const emptyBallot = new Ballot(
+          MESSAGE_TREE_ARITY ** poll.treeDepths.voteOptionTreeDepth,
+          poll.treeDepths.voteOptionTreeDepth,
+        );
         const emptyBallotHash = emptyBallot.hash();
         const ballotTree = new IncrementalQuinTree(params.stateTreeDepth, emptyBallot.hash(), STATE_TREE_ARITY, hash5);
         ballotTree.insert(emptyBallot.hash());
@@ -236,7 +232,6 @@ describe("Ceremony param tests", () => {
 
           pollId = maciState.deployPoll(
             BigInt(Math.floor(Date.now() / 1000) + duration),
-            maxValues,
             treeDepths,
             messageBatchSize,
             coordinatorKeypair,

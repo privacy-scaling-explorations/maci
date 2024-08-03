@@ -14,19 +14,10 @@ Code location: [PollFactory.sol](https://github.com/privacy-scaling-explorations
 ```ts
 function deploy(
     _duration,
-    MaxValues calldata _maxValues,
     TreeDepths calldata _treeDepths,
     PubKey calldata _coordinatorPubKey,
     address _maci
 ) public virtual returns (address pollAddr) {
-    /// @notice Validate _maxValues
-    /// maxVoteOptions must be less than 2 ** 50 due to circuit limitations;
-    /// it will be packed as a 50-bit value along with other values as one
-    /// of the inputs (aka packedVal)
-    if (_maxValues.maxVoteOptions >= (2 ** 50)) {
-      revert InvalidMaxValues();
-    }
-
     /// @notice deploy a new AccQueue contract to store messages
     AccQueue messageAq = new AccQueueQuinaryMaci(_treeDepths.messageTreeSubDepth);
 
@@ -34,7 +25,7 @@ function deploy(
     ExtContracts memory extContracts = ExtContracts({ maci: IMACI(_maci), messageAq: messageAq });
 
     // deploy the poll
-    Poll poll = new Poll(_duration, _maxValues, _treeDepths, _coordinatorPubKey, extContracts);
+    Poll poll = new Poll(_duration, _treeDepths, _coordinatorPubKey, extContracts);
 
     // Make the Poll contract own the messageAq contract, so only it can
     // run enqueue/merge

@@ -113,20 +113,14 @@ export const genMaciStateFromContract = async (
   const pollContractAddress = pollContractAddresses.get(pollId)!;
   const pollContract = PollFactory.connect(pollContractAddress, provider);
 
-  const [coordinatorPubKeyOnChain, [deployTime, duration], onChainMaxValues, onChainTreeDepths] = await Promise.all([
+  const [coordinatorPubKeyOnChain, [deployTime, duration], onChainTreeDepths] = await Promise.all([
     pollContract.coordinatorPubKey(),
     pollContract.getDeployTimeAndDuration().then((values) => values.map(Number)),
-    pollContract.maxValues(),
     pollContract.treeDepths(),
   ]);
 
   assert(coordinatorPubKeyOnChain[0].toString() === coordinatorKeypair.pubKey.rawPubKey[0].toString());
   assert(coordinatorPubKeyOnChain[1].toString() === coordinatorKeypair.pubKey.rawPubKey[1].toString());
-
-  const maxValues = {
-    maxMessages: Number(onChainMaxValues.maxMessages),
-    maxVoteOptions: Number(onChainMaxValues.maxVoteOptions),
-  };
 
   const treeDepths = {
     intStateTreeDepth: Number(onChainTreeDepths.intStateTreeDepth),
@@ -218,7 +212,6 @@ export const genMaciStateFromContract = async (
       case action.type === "DeployPoll" && action.data.pollId?.toString() === pollId.toString(): {
         maciState.deployPoll(
           BigInt(deployTime + duration),
-          maxValues,
           treeDepths,
           batchSizes.messageBatchSize,
           coordinatorKeypair,

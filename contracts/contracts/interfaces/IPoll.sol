@@ -54,11 +54,6 @@ interface IPoll {
     view
     returns (uint8 intStateTreeDepth, uint8 messageTreeSubDepth, uint8 messageTreeDepth, uint8 voteOptionTreeDepth);
 
-  /// @notice Get the max values for the poll
-  /// @return maxMessages The maximum number of messages
-  /// @return maxVoteOptions The maximum number of vote options
-  function maxValues() external view returns (uint256 maxMessages, uint256 maxVoteOptions);
-
   /// @notice Get the external contracts
   /// @return maci The IMACI contract
   /// @return messageAq The AccQueue contract

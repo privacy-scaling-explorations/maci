@@ -7,14 +7,7 @@ import { MaciState } from "../MaciState";
 import { STATE_TREE_DEPTH } from "../utils/constants";
 import { IJsonMaciState } from "../utils/types";
 
-import {
-  coordinatorKeypair,
-  duration,
-  maxValues,
-  messageBatchSize,
-  treeDepths,
-  voiceCreditBalance,
-} from "./utils/constants";
+import { coordinatorKeypair, duration, messageBatchSize, treeDepths, voiceCreditBalance } from "./utils/constants";
 
 describe("MaciState", function test() {
   this.timeout(100000);
@@ -36,7 +29,6 @@ describe("MaciState", function test() {
       m1.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
       pollId = m1.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -106,12 +98,12 @@ describe("MaciState", function test() {
 
       // modify poll.maxValues.maxMessages
       const m16 = m1.copy();
-      m16.polls.get(pollId)!.maxValues.maxMessages += 1;
+      m16.polls.get(pollId)!.maxMessages += 1;
       expect(m1.equals(m16)).not.to.eq(true);
 
       // modify poll.maxValues.maxVoteOptions
       const m17 = m1.copy();
-      m17.polls.get(pollId)!.maxValues.maxVoteOptions += 1;
+      m17.polls.get(pollId)!.maxVoteOptions += 1;
       expect(m1.equals(m17)).not.to.eq(true);
 
       // modify poll.messages
