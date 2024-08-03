@@ -5,7 +5,7 @@ import { Keypair } from "maci-domainobjs";
 import { deployPollFactory, genEmptyBallotRoots, getDefaultSigner } from "../ts";
 import { PollFactory } from "../typechain-types";
 
-import { maxValues, STATE_TREE_DEPTH, treeDepths } from "./constants";
+import { STATE_TREE_DEPTH, treeDepths } from "./constants";
 
 describe("pollFactory", () => {
   let pollFactory: PollFactory;
@@ -25,7 +25,6 @@ describe("pollFactory", () => {
     it("should allow anyone to deploy a new poll", async () => {
       const tx = await pollFactory.deploy(
         "100",
-        maxValues,
         treeDepths,
         coordinatorPubKey.asContractParam(),
         ZeroAddress,
@@ -33,22 +32,6 @@ describe("pollFactory", () => {
       );
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
-    });
-
-    it("should revert when called with an invalid param for max values", async () => {
-      await expect(
-        pollFactory.deploy(
-          "100",
-          {
-            maxMessages: maxValues.maxMessages,
-            maxVoteOptions: 2 ** 50,
-          },
-          treeDepths,
-          coordinatorPubKey.asContractParam(),
-          ZeroAddress,
-          emptyBallotRoot,
-        ),
-      ).to.be.revertedWithCustomError(pollFactory, "InvalidMaxValues");
     });
   });
 });

@@ -6,14 +6,7 @@ import { MaciState } from "../MaciState";
 import { Poll } from "../Poll";
 import { STATE_TREE_DEPTH, STATE_TREE_ARITY, MESSAGE_TREE_ARITY } from "../utils/constants";
 
-import {
-  coordinatorKeypair,
-  duration,
-  maxValues,
-  messageBatchSize,
-  treeDepths,
-  voiceCreditBalance,
-} from "./utils/constants";
+import { coordinatorKeypair, duration, messageBatchSize, treeDepths, voiceCreditBalance } from "./utils/constants";
 import { TestHarness, calculateTotal } from "./utils/utils";
 
 describe("MaciState/Poll e2e", function test() {
@@ -53,7 +46,6 @@ describe("MaciState/Poll e2e", function test() {
         // deploy a poll
         pollId = maciState.deployPoll(
           BigInt(Math.floor(Date.now() / 1000) + duration),
-          maxValues,
           treeDepths,
           messageBatchSize,
           coordinatorKeypair,
@@ -156,7 +148,6 @@ describe("MaciState/Poll e2e", function test() {
         // deploy a poll
         pollId = maciState.deployPoll(
           BigInt(Math.floor(Date.now() / 1000) + duration),
-          maxValues,
           treeDepths,
           messageBatchSize,
           coordinatorKeypair,
@@ -269,7 +260,6 @@ describe("MaciState/Poll e2e", function test() {
         // deploy a poll
         pollId = maciState.deployPoll(
           BigInt(Math.floor(Date.now() / 1000) + duration),
-          maxValues,
           treeDepths,
           messageBatchSize,
           coordinatorKeypair,
@@ -365,7 +355,6 @@ describe("MaciState/Poll e2e", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -467,7 +456,6 @@ describe("MaciState/Poll e2e", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -477,7 +465,7 @@ describe("MaciState/Poll e2e", function test() {
     });
 
     it("should process votes correctly", () => {
-      // 24 valid votes
+      // 4 valid votes
       for (let i = 0; i < messageBatchSize - 1; i += 1) {
         const userKeypair = users[i];
 
@@ -500,7 +488,7 @@ describe("MaciState/Poll e2e", function test() {
 
       expect(poll.messages.length).to.eq(messageBatchSize - 1);
 
-      // 24 invalid votes
+      // 4 invalid votes
       for (let i = 0; i < messageBatchSize - 1; i += 1) {
         const userKeypair = users[i];
         const command = new PCommand(
@@ -576,8 +564,12 @@ describe("MaciState/Poll e2e", function test() {
 
       // Recall that each user `i` cast the same number of votes for
       // their option `i`
-      for (let i = 0; i < poll.tallyResult.length - 1; i += 1) {
+      for (let i = 0; i < messageBatchSize - 1; i += 1) {
         expect(poll.tallyResult[i].toString()).to.eq(voteWeight.toString());
+      }
+
+      for (let i = messageBatchSize; i < poll.tallyResult.length - 1; i += 1) {
+        expect(poll.tallyResult[i].toString()).to.eq("0");
       }
 
       expect(poll.hasUntalliedBallots()).to.eq(false);
@@ -607,7 +599,6 @@ describe("MaciState/Poll e2e", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,

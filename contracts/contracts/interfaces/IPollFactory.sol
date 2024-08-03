@@ -9,7 +9,6 @@ import { DomainObjs } from "../utilities/DomainObjs.sol";
 interface IPollFactory {
   /// @notice Deploy a new Poll contract and AccQueue contract for messages.
   /// @param _duration The duration of the poll
-  /// @param _maxValues The max values for the poll
   /// @param _treeDepths The depths of the merkle trees
   /// @param _coordinatorPubKey The coordinator's public key
   /// @param _maci The MACI contract interface reference
@@ -17,7 +16,6 @@ interface IPollFactory {
   /// @return The deployed Poll contract
   function deploy(
     uint256 _duration,
-    Params.MaxValues memory _maxValues,
     Params.TreeDepths memory _treeDepths,
     DomainObjs.PubKey memory _coordinatorPubKey,
     address _maci,

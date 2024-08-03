@@ -85,7 +85,6 @@ user2StateIndex = maciState.signUp(user2Keypair.pubKey, voiceCreditBalance, BigI
 pollId = maciState.deployPoll(
   duration,
   BigInt(Math.floor(Date.now() / 1000) + duration),
-  maxValues,
   treeDepths,
   messageBatchSize,
   coordinatorKeypair,

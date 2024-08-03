@@ -25,7 +25,6 @@ import {
   STATE_TREE_DEPTH,
   duration,
   initialVoiceCreditBalance,
-  maxValues,
   messageBatchSize,
   testProcessVk,
   testTallyVk,
@@ -88,7 +87,7 @@ describe("TallyVotes", () => {
     tallyContract = TallyFactory.connect(pollContracts.tally, signer);
 
     // deploy local poll
-    const p = maciState.deployPoll(BigInt(deployTime + duration), maxValues, treeDepths, messageBatchSize, coordinator);
+    const p = maciState.deployPoll(BigInt(deployTime + duration), treeDepths, messageBatchSize, coordinator);
     expect(p.toString()).to.eq(pollId.toString());
     // publish the NOTHING_UP_MY_SLEEVE message
     const messageData = [NOTHING_UP_MY_SLEEVE];
@@ -248,7 +247,6 @@ describe("TallyVotes", () => {
       // deploy local poll
       const p = maciState.deployPoll(
         BigInt(deployTime + updatedDuration),
-        maxValues,
         {
           ...treeDepths,
           intStateTreeDepth,
@@ -377,7 +375,6 @@ describe("TallyVotes", () => {
       // deploy local poll
       const p = maciState.deployPoll(
         BigInt(deployTime + updatedDuration),
-        maxValues,
         {
           ...treeDepths,
           intStateTreeDepth,

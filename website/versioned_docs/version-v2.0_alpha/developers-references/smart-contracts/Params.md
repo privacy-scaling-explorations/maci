@@ -20,12 +20,6 @@ struct TreeDepths {
   uint8 voteOptionTreeDepth;
 }
 
-/// @notice A struct holding the max values for the poll
-struct MaxValues {
-  uint256 maxMessages;
-  uint256 maxVoteOptions;
-}
-
 /// @notice A struct holding the external contracts
 /// that are to be passed to a Poll contract on
 /// deployment

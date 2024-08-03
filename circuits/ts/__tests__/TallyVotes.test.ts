@@ -4,7 +4,7 @@ import { Keypair, PCommand, Message } from "maci-domainobjs";
 
 import { ITallyVotesInputs } from "../types";
 
-import { STATE_TREE_DEPTH, duration, maxValues, messageBatchSize, voiceCreditBalance } from "./utils/constants";
+import { STATE_TREE_DEPTH, duration, messageBatchSize, voiceCreditBalance } from "./utils/constants";
 import { generateRandomIndex, circomkitInstance } from "./utils/utils";
 
 describe("TallyVotes circuit", function test() {
@@ -80,7 +80,6 @@ describe("TallyVotes circuit", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -154,7 +153,6 @@ describe("TallyVotes circuit", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -224,7 +222,6 @@ describe("TallyVotes circuit", function test() {
 
       const pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,

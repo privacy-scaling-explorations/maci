@@ -199,14 +199,8 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
 
     uint256 voteOptionTreeDepth = _treeDepths.voteOptionTreeDepth;
 
-    MaxValues memory maxValues = MaxValues({
-      maxMessages: uint256(MESSAGE_TREE_ARITY) ** _treeDepths.messageTreeDepth,
-      maxVoteOptions: uint256(MESSAGE_TREE_ARITY) ** voteOptionTreeDepth
-    });
-
     address p = pollFactory.deploy(
       _duration,
-      maxValues,
       _treeDepths,
       _coordinatorPubKey,
       address(this),

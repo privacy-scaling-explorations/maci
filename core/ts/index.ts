@@ -8,7 +8,6 @@ export type {
   ITallyCircuitInputs,
   IProcessMessagesCircuitInputs,
   CircuitInputs,
-  MaxValues,
   TreeDepths,
   BatchSizes,
   IJsonMaciState,

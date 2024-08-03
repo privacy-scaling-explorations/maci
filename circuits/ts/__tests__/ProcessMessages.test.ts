@@ -1,19 +1,12 @@
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
-import { MaciState, Poll, STATE_TREE_ARITY } from "maci-core";
+import { MaciState, MESSAGE_TREE_ARITY, Poll, STATE_TREE_ARITY } from "maci-core";
 import { IncrementalQuinTree, hash2 } from "maci-crypto";
 import { PrivKey, Keypair, PCommand, Message, Ballot, PubKey } from "maci-domainobjs";
 
 import { IProcessMessagesInputs } from "../types";
 
-import {
-  STATE_TREE_DEPTH,
-  duration,
-  maxValues,
-  messageBatchSize,
-  treeDepths,
-  voiceCreditBalance,
-} from "./utils/constants";
+import { STATE_TREE_DEPTH, duration, messageBatchSize, treeDepths, voiceCreditBalance } from "./utils/constants";
 import { circomkitInstance } from "./utils/utils";
 
 describe("ProcessMessage circuit", function test() {
@@ -84,7 +77,6 @@ describe("ProcessMessage circuit", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -162,7 +154,6 @@ describe("ProcessMessage circuit", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -212,7 +203,10 @@ describe("ProcessMessage circuit", function test() {
 
     it("should produce the correct state root and ballot root", async () => {
       // The current roots
-      const emptyBallot = new Ballot(poll.maxValues.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
+      const emptyBallot = new Ballot(
+        MESSAGE_TREE_ARITY ** poll.treeDepths.voteOptionTreeDepth,
+        poll.treeDepths.voteOptionTreeDepth,
+      );
       const emptyBallotHash = emptyBallot.hash();
       const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash2);
 
@@ -266,7 +260,6 @@ describe("ProcessMessage circuit", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(2 + duration), // BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -298,7 +291,10 @@ describe("ProcessMessage circuit", function test() {
 
     it("should produce the correct state root and ballot root", async () => {
       // The current roots
-      const emptyBallot = new Ballot(poll.maxValues.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
+      const emptyBallot = new Ballot(
+        MESSAGE_TREE_ARITY ** poll.treeDepths.voteOptionTreeDepth,
+        poll.treeDepths.voteOptionTreeDepth,
+      );
       const emptyBallotHash = emptyBallot.hash();
       const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash2);
 
@@ -350,7 +346,6 @@ describe("ProcessMessage circuit", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(2 + duration), // BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -427,7 +422,6 @@ describe("ProcessMessage circuit", function test() {
         // Sign up and publish
         const id = state.deployPoll(
           BigInt(Math.floor(Date.now() / 1000) + duration),
-          maxValues,
           treeDepths,
           messageBatchSize,
           coordinatorKeypair,
@@ -486,7 +480,6 @@ describe("ProcessMessage circuit", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -556,7 +549,10 @@ describe("ProcessMessage circuit", function test() {
 
     it("should produce the correct state root and ballot root", async () => {
       // The current roots
-      const emptyBallot = new Ballot(poll.maxValues.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
+      const emptyBallot = new Ballot(
+        MESSAGE_TREE_ARITY ** poll.treeDepths.voteOptionTreeDepth,
+        poll.treeDepths.voteOptionTreeDepth,
+      );
       const emptyBallotHash = emptyBallot.hash();
       const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash2);
 
@@ -603,7 +599,6 @@ describe("ProcessMessage circuit", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -678,7 +673,10 @@ describe("ProcessMessage circuit", function test() {
 
     it("should produce the correct state root and ballot root", async () => {
       // The current roots
-      const emptyBallot = new Ballot(poll.maxValues.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
+      const emptyBallot = new Ballot(
+        MESSAGE_TREE_ARITY ** poll.treeDepths.voteOptionTreeDepth,
+        poll.treeDepths.voteOptionTreeDepth,
+      );
       const emptyBallotHash = emptyBallot.hash();
       const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash2);
 
@@ -728,7 +726,6 @@ describe("ProcessMessage circuit", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -822,7 +819,10 @@ describe("ProcessMessage circuit", function test() {
 
     it("should produce the correct state root and ballot root", async () => {
       // The current roots
-      const emptyBallot = new Ballot(poll.maxValues.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
+      const emptyBallot = new Ballot(
+        MESSAGE_TREE_ARITY ** poll.treeDepths.voteOptionTreeDepth,
+        poll.treeDepths.voteOptionTreeDepth,
+      );
       const emptyBallotHash = emptyBallot.hash();
       const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash2);
 
