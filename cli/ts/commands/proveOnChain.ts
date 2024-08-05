@@ -48,12 +48,11 @@ export const proveOnChain = async ({
   const network = await signer.provider?.getNetwork();
 
   // check existence of contract addresses
-  if (!readContractAddress("MACI", network?.name) && !maciAddress) {
+  const maciContractAddress = maciAddress || (await readContractAddress("MACI", network?.name));
+
+  if (!maciContractAddress) {
     logError("MACI contract address is empty");
   }
-
-  // check validity of contract addresses
-  const maciContractAddress = maciAddress || readContractAddress("MACI", network?.name);
 
   // check contracts are deployed on chain
   if (!(await contractExists(signer.provider!, maciContractAddress))) {
@@ -102,21 +101,25 @@ export const proveOnChain = async ({
   let numProcessProofs = 0;
 
   // read the proof directory
-  const filenames = fs.readdirSync(proofDir);
+  const filenames = await fs.promises.readdir(proofDir);
+  const proofs = await Promise.all(
+    filenames.map((filepath) =>
+      fs.promises.readFile(path.resolve(proofDir, filepath)).then((res) => JSON.parse(res.toString()) as Proof),
+    ),
+  );
   // extract all the proofs data
-  filenames.forEach((filename) => {
-    const filepath = path.resolve(proofDir, filename);
+  filenames.forEach((filename, index) => {
     let match = filename.match(/process_(\d+)/);
 
     if (match) {
-      data.processProofs[Number(match[1])] = JSON.parse(fs.readFileSync(filepath).toString()) as Proof;
+      data.processProofs[Number(match[1])] = proofs[index];
       numProcessProofs += 1;
       return;
     }
 
     match = filename.match(/tally_(\d+)/);
     if (match) {
-      data.tallyProofs[Number(match[1])] = JSON.parse(fs.readFileSync(filepath).toString()) as Proof;
+      data.tallyProofs[Number(match[1])] = proofs[index];
     }
   });
 

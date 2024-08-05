@@ -83,8 +83,8 @@ describe("e2e tests with non quadratic voting", function test() {
   });
 
   describe("1 signup, 1 message", () => {
-    after(() => {
-      clean();
+    after(async () => {
+      await clean();
     });
 
     const user = new Keypair();
@@ -122,7 +122,7 @@ describe("e2e tests with non quadratic voting", function test() {
       const tallyFileData = await genProofs({ ...genProofsArgs, signer, useQuadraticVoting: false });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({
-        ...verifyArgs(),
+        ...(await verifyArgs()),
         tallyData: tallyFileData,
         maciAddress: tallyFileData.maci,
         signer,

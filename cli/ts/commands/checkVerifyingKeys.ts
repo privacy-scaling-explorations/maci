@@ -41,11 +41,11 @@ export const checkVerifyingKeys = async ({
   const network = await signer.provider?.getNetwork();
 
   // ensure we have the contract addresses that we need
-  if (!readContractAddress("VkRegistry", network?.name) && !vkRegistry) {
+  const vkContractAddress = vkRegistry || (await readContractAddress("VkRegistry", network?.name));
+
+  if (!vkContractAddress) {
     logError("Please provide a VkRegistry contract address");
   }
-
-  const vkContractAddress = vkRegistry || readContractAddress("VkRegistry", network?.name);
 
   if (!(await contractExists(signer.provider!, vkContractAddress))) {
     logError("The VkRegistry contract does not exist");
@@ -54,11 +54,15 @@ export const checkVerifyingKeys = async ({
   const vkRegistryContractInstance = VkRegistryFactory.connect(vkContractAddress, signer);
 
   // we need to ensure that the zkey files exist
-  if (!fs.existsSync(processMessagesZkeyPath)) {
+  const isProcessMessagesZkeyPathExists = fs.existsSync(processMessagesZkeyPath);
+
+  if (!isProcessMessagesZkeyPathExists) {
     logError("The provided Process messages zkey does not exist");
   }
 
-  if (!fs.existsSync(tallyVotesZkeyPath)) {
+  const isTallyVotesZkeyPathExists = fs.existsSync(tallyVotesZkeyPath);
+
+  if (!isTallyVotesZkeyPathExists) {
     logError("The provided Tally votes zkey does not exist");
   }
 

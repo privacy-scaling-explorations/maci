@@ -136,8 +136,8 @@ export const proveOnChainArgs: Omit<ProveOnChainArgs, "signer"> = {
   proofDir: testProofsDirPath,
 };
 
-export const verifyArgs = (): Omit<VerifyArgs, "signer"> => {
-  const tallyData = readJSONFile(testTallyFilePath) as unknown as TallyData;
+export const verifyArgs = async (): Promise<Omit<VerifyArgs, "signer">> => {
+  const tallyData = (await readJSONFile(testTallyFilePath)) as unknown as TallyData;
 
   return {
     pollId: 0n,

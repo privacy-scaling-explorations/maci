@@ -85,12 +85,16 @@ export class ProofGenerator {
     outputDir,
     options: { transactionHash, stateFile, startBlock, endBlock, blocksPerBatch },
   }: IPrepareStateParams): Promise<MaciState> {
-    if (!fs.existsSync(path.resolve(outputDir))) {
-      fs.mkdirSync(path.resolve(outputDir));
+    const isOutputDirExists = fs.existsSync(path.resolve(outputDir));
+
+    if (!isOutputDirExists) {
+      await fs.promises.mkdir(path.resolve(outputDir));
     }
 
     if (stateFile) {
-      const content = JSON.parse(fs.readFileSync(stateFile).toString()) as unknown as IJsonMaciState;
+      const content = await fs.promises
+        .readFile(stateFile)
+        .then((res) => JSON.parse(res.toString()) as unknown as IJsonMaciState);
       const serializedPrivateKey = maciPrivateKey.serialize();
 
       const maciState = MaciState.fromJSON(content);
@@ -347,7 +351,7 @@ export class ProofGenerator {
         newTallyCommitment = hashLeftRight(newResultsCommitment, newSpentVoiceCreditsCommitment);
       }
 
-      fs.writeFileSync(this.tallyOutputFile, JSON.stringify(tallyFileData, null, 4));
+      await fs.promises.writeFile(this.tallyOutputFile, JSON.stringify(tallyFileData, null, 4));
 
       console.log(`Tally file:\n${JSON.stringify(tallyFileData, null, 4)}\n`);
 

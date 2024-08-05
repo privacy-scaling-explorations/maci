@@ -136,9 +136,9 @@ describe("Integration tests", function test() {
   });
 
   // after each test we need to cleanup some files
-  afterEach(() => {
+  afterEach(async () => {
     if (fs.existsSync(path.resolve(__dirname, "../../../cli/tally.json"))) {
-      fs.unlinkSync(path.resolve(__dirname, "../../../cli/tally.json"));
+      await fs.promises.unlink(path.resolve(__dirname, "../../../cli/tally.json"));
     }
 
     const directory = path.resolve(__dirname, "../../../cli/proofs/");
@@ -147,15 +147,9 @@ describe("Integration tests", function test() {
       return;
     }
 
-    fs.readdir(directory, (err, files) => {
-      if (err) {
-        throw err;
-      }
+    const files = await fs.promises.readdir(directory);
 
-      files.forEach((file) => {
-        fs.unlinkSync(path.resolve(directory, file));
-      });
-    });
+    await Promise.all(files.map((file) => fs.promises.unlink(path.resolve(directory, file))));
   });
 
   // read the test suite data

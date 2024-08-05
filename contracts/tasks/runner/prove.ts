@@ -52,9 +52,11 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
       deployment.setHre(hre);
       const storage = ContractStorage.getInstance();
       // if we do not have the output directory just create it
-      if (!fs.existsSync(outputDir)) {
+      const isOutputDirExists = fs.existsSync(outputDir);
+
+      if (!isOutputDirExists) {
         // Create the directory
-        fs.mkdirSync(outputDir);
+        await fs.promises.mkdir(outputDir);
       }
 
       const maciPrivateKey = PrivKey.deserialize(coordinatorPrivateKey);

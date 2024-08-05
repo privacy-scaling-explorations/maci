@@ -65,9 +65,11 @@ export const genProofs = async ({
   banner(quiet);
 
   // if we do not have the output directory just create it
-  if (!fs.existsSync(outputDir)) {
+  const isOutputDirExists = fs.existsSync(outputDir);
+
+  if (!isOutputDirExists) {
     // Create the directory
-    fs.mkdirSync(outputDir);
+    await fs.promises.mkdir(outputDir);
   }
 
   // differentiate whether we are using wasm or rapidsnark
@@ -129,10 +131,11 @@ export const genProofs = async ({
   const network = await signer.provider?.getNetwork();
 
   // contracts
-  if (!readContractAddress("MACI", network?.name) && !maciAddress) {
+  const maciContractAddress = maciAddress || (await readContractAddress("MACI", network?.name));
+
+  if (!maciContractAddress) {
     logError("MACI contract address is empty");
   }
-  const maciContractAddress = maciAddress || readContractAddress("MACI", network?.name);
 
   if (!(await contractExists(signer.provider!, maciContractAddress))) {
     logError("MACI contract does not exist");
@@ -169,7 +172,9 @@ export const genProofs = async ({
 
   let maciState: MaciState | undefined;
   if (stateFile) {
-    const content = JSON.parse(fs.readFileSync(stateFile).toString()) as unknown as IJsonMaciState;
+    const content = JSON.parse(
+      await fs.promises.readFile(stateFile).then((res) => res.toString()),
+    ) as unknown as IJsonMaciState;
     const serializedPrivateKey = maciPrivKey.serialize();
 
     try {
@@ -268,7 +273,8 @@ export const genProofs = async ({
       };
       // save the proof
       processProofs.push(thisProof);
-      fs.writeFileSync(
+      // eslint-disable-next-line no-await-in-loop
+      await fs.promises.writeFile(
         path.resolve(outputDir, `process_${poll.numBatchesProcessed - 1}.json`),
         JSON.stringify(thisProof, null, 4),
       );
@@ -330,7 +336,8 @@ export const genProofs = async ({
 
       // save it
       tallyProofs.push(thisProof);
-      fs.writeFileSync(
+      // eslint-disable-next-line no-await-in-loop
+      await fs.promises.writeFile(
         path.resolve(outputDir, `tally_${poll.numBatchesTallied - 1}.json`),
         JSON.stringify(thisProof, null, 4),
       );
@@ -404,7 +411,7 @@ export const genProofs = async ({
     newTallyCommitment = hashLeftRight(newResultsCommitment, newSpentVoiceCreditsCommitment);
   }
 
-  fs.writeFileSync(tallyFile, JSON.stringify(tallyFileData, null, 4));
+  await fs.promises.writeFile(tallyFile, JSON.stringify(tallyFileData, null, 4));
 
   logYellow(quiet, info(`Tally file:\n${JSON.stringify(tallyFileData, null, 4)}\n`));
 

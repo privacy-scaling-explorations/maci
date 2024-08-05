@@ -84,8 +84,8 @@ describe("keyChange tests", function test() {
   });
 
   describe("keyChange and new vote (new vote has same nonce)", () => {
-    after(() => {
-      clean();
+    after(async () => {
+      await clean();
     });
 
     const keypair1 = new Keypair();
@@ -143,19 +143,21 @@ describe("keyChange tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, signer });
       await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...verifyArgs(), signer });
+      await verify({ ...(await verifyArgs()), signer });
     });
 
-    it("should confirm the tally is correct", () => {
-      const tallyData = JSON.parse(fs.readFileSync(testTallyFilePath).toString()) as TallyData;
+    it("should confirm the tally is correct", async () => {
+      const tallyData = JSON.parse(
+        await fs.promises.readFile(testTallyFilePath).then((res) => res.toString()),
+      ) as TallyData;
       expect(tallyData.results.tally[0]).to.equal(expectedTally.toString());
       expect(tallyData.perVOSpentVoiceCredits?.tally[0]).to.equal(expectedPerVoteOptionTally.toString());
     });
   });
 
   describe("keyChange and new vote (new vote has greater nonce and different vote option)", () => {
-    after(() => {
-      clean();
+    after(async () => {
+      await clean();
     });
 
     const keypair1 = new Keypair();
@@ -213,19 +215,21 @@ describe("keyChange tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, signer });
       await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...verifyArgs(), signer });
+      await verify({ ...(await verifyArgs()), signer });
     });
 
-    it("should confirm the tally is correct", () => {
-      const tallyData = JSON.parse(fs.readFileSync(testTallyFilePath).toString()) as TallyData;
+    it("should confirm the tally is correct", async () => {
+      const tallyData = JSON.parse(
+        await fs.promises.readFile(testTallyFilePath).then((res) => res.toString()),
+      ) as TallyData;
       expect(tallyData.results.tally[0]).to.equal(expectedTally.toString());
       expect(tallyData.perVOSpentVoiceCredits?.tally[0]).to.equal(expectedPerVoteOptionTally.toString());
     });
   });
 
   describe("keyChange and new vote (new vote has same nonce and different vote option)", () => {
-    after(() => {
-      clean();
+    after(async () => {
+      await clean();
     });
 
     const keypair1 = new Keypair();
@@ -283,11 +287,13 @@ describe("keyChange tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, signer });
       await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...verifyArgs(), signer });
+      await verify({ ...(await verifyArgs()), signer });
     });
 
-    it("should confirm the tally is correct", () => {
-      const tallyData = JSON.parse(fs.readFileSync(testTallyFilePath).toString()) as TallyData;
+    it("should confirm the tally is correct", async () => {
+      const tallyData = JSON.parse(
+        await fs.promises.readFile(testTallyFilePath).then((res) => res.toString()),
+      ) as TallyData;
       expect(tallyData.results.tally[2]).to.equal(expectedTally.toString());
       expect(tallyData.perVOSpentVoiceCredits?.tally[2]).to.equal(expectedPerVoteOptionTally.toString());
     });

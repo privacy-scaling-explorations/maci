@@ -36,14 +36,14 @@ export const deployPoll = async ({
   const network = await signer.provider?.getNetwork();
 
   // check if we have a vkRegistry already deployed or passed as arg
-  const vkRegistryContractAddress = readContractAddress("VkRegistry", network?.name);
+  const vkRegistryContractAddress = await readContractAddress("VkRegistry", network?.name);
   if (!vkRegistryContractAddress && !vkRegistryAddress) {
     logError("Please provide a VkRegistry contract address");
   }
 
   const vkRegistry = vkRegistryAddress || vkRegistryContractAddress;
 
-  const maciContractAddress = readContractAddress("MACI", network?.name);
+  const maciContractAddress = await readContractAddress("MACI", network?.name);
   if (!maciContractAddress && !maciAddress) {
     logError("Please provide a MACI contract address");
   }
@@ -85,7 +85,7 @@ export const deployPoll = async ({
   const unserializedKey = PubKey.deserialize(coordinatorPubkey);
 
   // get the verifier contract
-  const verifierContractAddress = readContractAddress("Verifier", network?.name);
+  const verifierContractAddress = await readContractAddress("Verifier", network?.name);
 
   const maciContract = MACIFactory.connect(maci, signer);
 
@@ -147,9 +147,9 @@ export const deployPoll = async ({
     logGreen(quiet, info(`Tally contract: ${tallyContractAddress}`));
 
     // store the address
-    storeContractAddress(`MessageProcessor-${pollId.toString()}`, messageProcessorContractAddress, network?.name);
-    storeContractAddress(`Tally-${pollId.toString()}`, tallyContractAddress, network?.name);
-    storeContractAddress(`Poll-${pollId.toString()}`, pollAddr, network?.name);
+    await storeContractAddress(`MessageProcessor-${pollId.toString()}`, messageProcessorContractAddress, network?.name);
+    await storeContractAddress(`Tally-${pollId.toString()}`, tallyContractAddress, network?.name);
+    await storeContractAddress(`Poll-${pollId.toString()}`, pollAddr, network?.name);
   } catch (error) {
     logError((error as Error).message);
   }

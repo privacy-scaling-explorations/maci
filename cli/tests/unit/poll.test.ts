@@ -33,8 +33,8 @@ describe("poll", () => {
   });
 
   describe("check deploy and get poll", () => {
-    after(() => {
-      clean();
+    after(async () => {
+      await clean();
     });
 
     before(async () => {

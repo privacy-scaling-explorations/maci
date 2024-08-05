@@ -17,12 +17,11 @@ import { cleanThreads } from "./utils";
 export const generateZkeys = async (outputPath?: string): Promise<void> => {
   // read circomkit config files
   const configFilePath = path.resolve(__dirname, "..", "circomkit.json");
-  const circomKitConfig = JSON.parse(fs.readFileSync(configFilePath, "utf-8")) as CircomkitConfig;
+  const circomKitConfig = JSON.parse(await fs.promises.readFile(configFilePath, "utf-8")) as CircomkitConfig;
   const circuitsConfigPath = path.resolve(__dirname, "..", "circom", "circuits.json");
-  const circuitsConfigContent = JSON.parse(fs.readFileSync(circuitsConfigPath, "utf-8")) as unknown as Record<
-    string,
-    CircuitConfig
-  >;
+  const circuitsConfigContent = JSON.parse(
+    await fs.promises.readFile(circuitsConfigPath, "utf-8"),
+  ) as unknown as Record<string, CircuitConfig>;
   const circuitsConfigs: CircuitConfigWithName[] = Object.entries(circuitsConfigContent).map(([name, config]) => ({
     name,
     ...config,
@@ -52,7 +51,8 @@ export const generateZkeys = async (outputPath?: string): Promise<void> => {
     const { proverKeyPath } = await circomkitInstance.setup(circuit.name);
     // rename the zkey
     const zkeyPath = path.resolve(circomKitConfig.dirBuild, circuit.name, `${circuit.name}.0.zkey`);
-    fs.renameSync(proverKeyPath, zkeyPath);
+    // eslint-disable-next-line no-await-in-loop
+    await fs.promises.rename(proverKeyPath, zkeyPath);
   }
 
   // clean up the threads so we can exit
