@@ -99,8 +99,8 @@ describe("e2e tests", function test() {
   });
 
   describe("1 signup, 1 message", () => {
-    after(() => {
-      clean();
+    after(async () => {
+      await clean();
     });
 
     const user = new Keypair();
@@ -143,7 +143,7 @@ describe("e2e tests", function test() {
       const tallyFileData = await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({
-        ...verifyArgs(),
+        ...(await verifyArgs()),
         tallyData: tallyFileData,
         signer,
       });
@@ -151,8 +151,8 @@ describe("e2e tests", function test() {
   });
 
   describe("2 signups (1 after stateAq is merged and logs are fetched), 1 message", () => {
-    after(() => {
-      clean();
+    after(async () => {
+      await clean();
     });
 
     const user = new Keypair();
@@ -191,7 +191,7 @@ describe("e2e tests", function test() {
       await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({
-        ...verifyArgs(),
+        ...(await verifyArgs()),
         tallyData: tallyFileData,
         maciAddress: tallyFileData.maci,
         signer,
@@ -200,8 +200,8 @@ describe("e2e tests", function test() {
   });
 
   describe("4 signups, 8 messages", () => {
-    after(() => {
-      clean();
+    after(async () => {
+      await clean();
     });
 
     const users = [new Keypair(), new Keypair(), new Keypair(), new Keypair()];
@@ -326,13 +326,13 @@ describe("e2e tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, signer });
       await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...verifyArgs(), signer });
+      await verify({ ...(await verifyArgs()), signer });
     });
   });
 
   describe("5 signups, 1 message", () => {
-    after(() => {
-      clean();
+    after(async () => {
+      await clean();
     });
 
     const users = [
@@ -383,13 +383,13 @@ describe("e2e tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, signer });
       const tallyFileData = await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...verifyArgs(), tallyData: tallyFileData, signer });
+      await verify({ ...(await verifyArgs()), tallyData: tallyFileData, signer });
     });
   });
 
   describe("8 signups (same key), 12 messages (same message)", () => {
-    after(() => {
-      clean();
+    after(async () => {
+      await clean();
     });
 
     const user = new Keypair();
@@ -432,13 +432,13 @@ describe("e2e tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, signer });
       await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...verifyArgs(), signer });
+      await verify({ ...(await verifyArgs()), signer });
     });
   });
 
   describe("30 signups (31 ballots), 4 messages", () => {
-    after(() => {
-      clean();
+    after(async () => {
+      await clean();
     });
 
     const users = Array.from({ length: 30 }, () => new Keypair());
@@ -519,7 +519,7 @@ describe("e2e tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, signer });
       const tallyFileData = await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...verifyArgs(), tallyData: tallyFileData, signer });
+      await verify({ ...(await verifyArgs()), tallyData: tallyFileData, signer });
     });
   });
 
@@ -534,8 +534,8 @@ describe("e2e tests", function test() {
   });
 
   describe("multiplePolls1", () => {
-    after(() => {
-      clean();
+    after(async () => {
+      await clean();
     });
 
     const user = new Keypair();
@@ -567,8 +567,8 @@ describe("e2e tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, signer });
       const tallyFileData = await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...verifyArgs(), tallyData: tallyFileData, signer });
-      clean();
+      await verify({ ...(await verifyArgs()), tallyData: tallyFileData, signer });
+      await clean();
     });
 
     it("should deploy a new poll", async () => {
@@ -596,13 +596,13 @@ describe("e2e tests", function test() {
       await mergeSignups({ pollId: 1n, signer });
       await genProofs({ ...genProofsArgs, pollId: 1n, signer });
       await proveOnChain({ ...proveOnChainArgs, pollId: 1n, signer });
-      await verify({ ...verifyArgs(), pollId: 1n, signer });
+      await verify({ ...(await verifyArgs()), pollId: 1n, signer });
     });
   });
 
   describe("multiplePolls with new signups", () => {
-    after(() => {
-      clean();
+    after(async () => {
+      await clean();
     });
 
     const users = Array.from({ length: 4 }, () => new Keypair());
@@ -637,8 +637,8 @@ describe("e2e tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, signer });
       const tallyFileData = await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...verifyArgs(), tallyData: tallyFileData, signer });
-      clean();
+      await verify({ ...(await verifyArgs()), tallyData: tallyFileData, signer });
+      await clean();
     });
 
     it("should deploy a new poll", async () => {
@@ -688,7 +688,7 @@ describe("e2e tests", function test() {
       await mergeSignups({ pollId: 1n, signer });
       await genProofs({ ...genProofsArgs, pollId: 1n, signer });
       await proveOnChain({ ...proveOnChainArgs, pollId: 1n, signer });
-      await verify({ ...verifyArgs(), pollId: 1n, signer });
+      await verify({ ...(await verifyArgs()), pollId: 1n, signer });
     });
   });
 
@@ -703,8 +703,8 @@ describe("e2e tests", function test() {
       new Keypair(),
     ];
 
-    after(() => {
-      clean();
+    after(async () => {
+      await clean();
     });
 
     before(async () => {
@@ -754,8 +754,8 @@ describe("e2e tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, signer });
       await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...verifyArgs(), signer });
-      clean();
+      await verify({ ...(await verifyArgs()), signer });
+      await clean();
     });
 
     it("should deploy two more polls", async () => {
@@ -858,13 +858,13 @@ describe("e2e tests", function test() {
         signer,
       });
       await verify({
-        ...verifyArgs(),
+        ...(await verifyArgs()),
         pollId: 1n,
         tallyData,
         maciAddress: maciAddresses.maciAddress,
         signer,
       });
-      clean();
+      await clean();
     });
 
     it("should complete the third poll", async () => {
@@ -878,7 +878,7 @@ describe("e2e tests", function test() {
         signer,
       });
       await verify({
-        ...verifyArgs(),
+        ...(await verifyArgs()),
         pollId: 2n,
         tallyData,
         maciAddress: maciAddresses.maciAddress,
@@ -892,11 +892,11 @@ describe("e2e tests", function test() {
 
     const user = new Keypair();
 
-    after(() => {
-      clean();
+    after(async () => {
+      await clean();
 
       if (fs.existsSync(stateOutPath)) {
-        fs.unlinkSync(stateOutPath);
+        await fs.promises.unlink(stateOutPath);
       }
     });
 
@@ -943,7 +943,7 @@ describe("e2e tests", function test() {
         signer,
       });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...verifyArgs(), signer });
+      await verify({ ...(await verifyArgs()), signer });
     });
   });
 });

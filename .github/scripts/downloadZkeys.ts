@@ -18,7 +18,9 @@ export async function downloadZkeys(): Promise<void> {
     throw new Error(`${type} doesn't exist`);
   }
 
-  if (!fs.existsSync(ZKEY_PATH)) {
+  const isExists = fs.existsSync(ZKEY_PATH);
+
+  if (!isExists) {
     await fs.promises.mkdir(ZKEY_PATH);
   }
 

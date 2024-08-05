@@ -6,15 +6,13 @@ import path from "path";
  * Test utility to clean up the proofs directory
  * and the tally.json file
  */
-export const clean = (): void => {
-  const files = fs.readdirSync("./proofs");
+export const clean = async (): Promise<void> => {
+  const files = await fs.promises.readdir("./proofs");
 
-  files.forEach((file) => {
-    fs.rmSync(path.resolve("./proofs", file));
-  });
+  await Promise.all(files.map((file) => fs.promises.rm(path.resolve("./proofs", file))));
 
   if (fs.existsSync("./tally.json")) {
-    fs.rmSync("./tally.json");
+    await fs.promises.rm("./tally.json");
   }
 };
 

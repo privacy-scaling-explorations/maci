@@ -287,7 +287,7 @@ program
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
 
-      const maciAddress = cmdObj.maciAddress || readContractAddress("MACI", network?.name);
+      const maciAddress = cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
       const privateKey = cmdObj.privkey || (await promptSensitiveValue("Insert your MACI private key"));
 
       await publish({
@@ -415,7 +415,7 @@ program
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
 
-      const maciAddress = cmdObj.maciAddress || readContractAddress("MACI", network?.name);
+      const maciAddress = cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
 
       await signup({
         maciPubKey: cmdObj.pubkey,
@@ -440,7 +440,7 @@ program
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
 
-      const maciAddress = cmdObj.maciAddress || readContractAddress("MACI", network?.name);
+      const maciAddress = cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
 
       await isRegisteredUser({
         maciPubKey: cmdObj.pubkey,
@@ -463,7 +463,7 @@ program
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
 
-      const maciAddress = cmdObj.maciAddress || readContractAddress("MACI", network?.name);
+      const maciAddress = cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
 
       await getPoll({
         pollId: cmdObj.poll,
@@ -508,13 +508,14 @@ program
       const network = await signer.provider?.getNetwork();
 
       // read the tally file
-      if (!cmdObj.tallyFile || !fs.existsSync(cmdObj.tallyFile)) {
+      const isTallyFileExists = fs.existsSync(cmdObj.tallyFile);
+      if (!cmdObj.tallyFile || !isTallyFileExists) {
         logError(`Unable to open ${cmdObj.tallyFile}`);
       }
 
-      const tallyData = JSON.parse(fs.readFileSync(cmdObj.tallyFile, { encoding: "utf8" })) as TallyData;
+      const tallyData = JSON.parse(await fs.promises.readFile(cmdObj.tallyFile, { encoding: "utf8" })) as TallyData;
 
-      const maciAddress = tallyData.maci || cmdObj.maciAddress || readContractAddress("MACI", network?.name);
+      const maciAddress = tallyData.maci || cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
 
       await verify({
         tallyData,

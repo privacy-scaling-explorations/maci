@@ -8,12 +8,17 @@ import { logError } from "./theme";
  * @param path - the path of the file
  * @returns the JSON object
  */
-export const readJSONFile = (path: string): Record<string, Record<string, string> | undefined> => {
-  if (!fs.existsSync(path)) {
+export const readJSONFile = async (path: string): Promise<Record<string, Record<string, string> | undefined>> => {
+  const isExists = fs.existsSync(path);
+
+  if (!isExists) {
     logError(`File ${path} does not exist`);
   }
 
-  return JSON.parse(fs.readFileSync(path).toString()) as Record<string, Record<string, string> | undefined>;
+  return JSON.parse(await fs.promises.readFile(path).then((res) => res.toString())) as Record<
+    string,
+    Record<string, string> | undefined
+  >;
 };
 
 /**
@@ -21,20 +26,26 @@ export const readJSONFile = (path: string): Record<string, Record<string, string
  * @param contractName - the name of the contract
  * @param address - the address of the contract
  */
-export const storeContractAddress = (contractName: string, address: string, network = "default"): void => {
+export const storeContractAddress = async (
+  contractName: string,
+  address: string,
+  network = "default",
+): Promise<void> => {
   // if it does not exist yet, then create it
-  if (!fs.existsSync(contractAddressesStore)) {
-    fs.writeFileSync(contractAddressesStore, "{}");
+  const isContractAddressesStoreExists = fs.existsSync(contractAddressesStore);
+
+  if (!isContractAddressesStoreExists) {
+    await fs.promises.writeFile(contractAddressesStore, "{}");
   }
 
-  const contractAddrs = readJSONFile(contractAddressesStore);
+  const contractAddrs = await readJSONFile(contractAddressesStore);
 
   if (!contractAddrs[network]) {
     contractAddrs[network] = {};
   }
 
   contractAddrs[network][contractName] = address;
-  fs.writeFileSync(contractAddressesStore, JSON.stringify(contractAddrs, null, 4));
+  await fs.promises.writeFile(contractAddressesStore, JSON.stringify(contractAddrs, null, 4));
 };
 
 /**
@@ -42,9 +53,11 @@ export const storeContractAddress = (contractName: string, address: string, netw
  * @param contractName - the name of the contract
  * @returns the contract address or a undefined if it does not exist
  */
-export const readContractAddress = (contractName: string, network = "default"): string => {
+export const readContractAddress = async (contractName: string, network = "default"): Promise<string> => {
   try {
-    return readJSONFile(contractAddressesStore)[network]?.[contractName] || "";
+    const result = await readJSONFile(contractAddressesStore);
+
+    return result[network]?.[contractName] || "";
   } catch (error) {
     return "";
   }
@@ -53,8 +66,8 @@ export const readContractAddress = (contractName: string, network = "default"): 
 /**
  * Delete the content of the contract address file
  */
-export const resetContractAddresses = (): void => {
-  fs.writeFileSync(contractAddressesStore, JSON.stringify({}, null, 4));
+export const resetContractAddresses = async (): Promise<void> => {
+  await fs.promises.writeFile(contractAddressesStore, JSON.stringify({}, null, 4));
 };
 
 /**

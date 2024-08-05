@@ -44,26 +44,38 @@ export const setVerifyingKeys = async ({
   const network = await signer.provider?.getNetwork();
 
   // we must either have the contract as param or stored to file
-  if (!readContractAddress("VkRegistry", network?.name) && !vkRegistry) {
+  const vkRegistryAddress = vkRegistry || (await readContractAddress("VkRegistry", network?.name));
+
+  if (!vkRegistryAddress) {
     logError("vkRegistry contract address is empty");
   }
 
-  const vkRegistryAddress = vkRegistry || readContractAddress("VkRegistry", network?.name);
-
   // check if zKey files exist
-  if (useQuadraticVoting && processMessagesZkeyPathQv && !fs.existsSync(processMessagesZkeyPathQv)) {
+  const isProcessMessagesZkeyPathQvExists = processMessagesZkeyPathQv
+    ? fs.existsSync(processMessagesZkeyPathQv)
+    : false;
+
+  if (useQuadraticVoting && processMessagesZkeyPathQv && !isProcessMessagesZkeyPathQvExists) {
     logError(`${processMessagesZkeyPathQv} does not exist.`);
   }
 
-  if (useQuadraticVoting && tallyVotesZkeyPathQv && !fs.existsSync(tallyVotesZkeyPathQv)) {
+  const isTallyVotesZkeyPathQvExists = tallyVotesZkeyPathQv ? fs.existsSync(tallyVotesZkeyPathQv) : false;
+
+  if (useQuadraticVoting && tallyVotesZkeyPathQv && !isTallyVotesZkeyPathQvExists) {
     logError(`${tallyVotesZkeyPathQv} does not exist.`);
   }
 
-  if (!useQuadraticVoting && processMessagesZkeyPathNonQv && !fs.existsSync(processMessagesZkeyPathNonQv)) {
+  const isProcessMessagesZkeyPathNonQvExists = processMessagesZkeyPathNonQv
+    ? fs.existsSync(processMessagesZkeyPathNonQv)
+    : false;
+
+  if (!useQuadraticVoting && processMessagesZkeyPathNonQv && !isProcessMessagesZkeyPathNonQvExists) {
     logError(`${processMessagesZkeyPathNonQv} does not exist.`);
   }
 
-  if (!useQuadraticVoting && tallyVotesZkeyPathNonQv && !fs.existsSync(tallyVotesZkeyPathNonQv)) {
+  const isTallyVotesZkeyPathNonQvExists = tallyVotesZkeyPathNonQv ? fs.existsSync(tallyVotesZkeyPathNonQv) : false;
+
+  if (!useQuadraticVoting && tallyVotesZkeyPathNonQv && !isTallyVotesZkeyPathNonQvExists) {
     logError(`${tallyVotesZkeyPathNonQv} does not exist.`);
   }
 

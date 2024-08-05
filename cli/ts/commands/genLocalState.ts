@@ -45,11 +45,11 @@ export const genLocalState = async ({
   const network = await signer.provider?.getNetwork();
 
   // validation of the maci contract address
-  if (!readContractAddress("MACI", network?.name) && !maciAddress) {
+  const maciContractAddress = maciAddress || (await readContractAddress("MACI", network?.name));
+
+  if (!maciContractAddress) {
     logError("MACI contract address is empty");
   }
-
-  const maciContractAddress = maciAddress || readContractAddress("MACI", network?.name);
 
   if (!(await contractExists(signer.provider!, maciContractAddress))) {
     logError("MACI contract does not exist");
@@ -132,7 +132,7 @@ export const genLocalState = async ({
 
   // write the state to a file
   const serializedState = maciState.toJSON();
-  fs.writeFileSync(outputPath, JSON.stringify(serializedState, null, 4));
+  await fs.promises.writeFile(outputPath, JSON.stringify(serializedState, null, 4));
 
   logGreen(quiet, success(`The state has been written to ${outputPath}`));
 };

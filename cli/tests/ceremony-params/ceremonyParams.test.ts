@@ -123,8 +123,8 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
     });
 
     describe("1 user, 2 messages", () => {
-      after(() => {
-        clean();
+      after(async () => {
+        await clean();
       });
 
       before(async () => {
@@ -165,13 +165,13 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
         await mergeSignups({ ...mergeSignupsArgs, signer });
         await genProofs({ ...genProofsCeremonyArgs, signer });
         await proveOnChain({ ...proveOnChainArgs, signer });
-        await verify({ ...verifyArgs(), signer });
+        await verify({ ...(await verifyArgs()), signer });
       });
     });
 
     describe("25 signups, 100 messages", () => {
-      after(() => {
-        clean();
+      after(async () => {
+        await clean();
       });
 
       before(async () => {
@@ -216,7 +216,7 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
         await mergeSignups({ ...mergeSignupsArgs, signer });
         await genProofs({ ...genProofsCeremonyArgs, signer });
         await proveOnChain({ ...proveOnChainArgs, signer });
-        await verify({ ...verifyArgs(), signer });
+        await verify({ ...(await verifyArgs()), signer });
       });
     });
   });
@@ -251,8 +251,8 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
     });
 
     describe("1 signup, 1 message", () => {
-      after(() => {
-        clean();
+      after(async () => {
+        await clean();
       });
 
       before(async () => {
@@ -288,7 +288,7 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
         const tallyFileData = await genProofs({ ...genProofsArgs, signer, useQuadraticVoting: false });
         await proveOnChain({ ...proveOnChainArgs, signer });
         await verify({
-          ...verifyArgs(),
+          ...(await verifyArgs()),
           tallyData: tallyFileData,
           maciAddress: tallyFileData.maci,
           signer,
@@ -297,8 +297,8 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
     });
 
     describe("25 signups, 100 messages", () => {
-      after(() => {
-        clean();
+      after(async () => {
+        await clean();
       });
 
       before(async () => {
@@ -344,7 +344,7 @@ describe("Stress tests with ceremony params (6,9,2,3)", function test() {
         const tallyFileData = await genProofs({ ...genProofsArgs, signer, useQuadraticVoting: false });
         await proveOnChain({ ...proveOnChainArgs, signer });
         await verify({
-          ...verifyArgs(),
+          ...(await verifyArgs()),
           tallyData: tallyFileData,
           maciAddress: tallyFileData.maci,
           signer,

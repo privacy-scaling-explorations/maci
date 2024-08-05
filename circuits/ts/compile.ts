@@ -1,10 +1,13 @@
 import { type CircomkitConfig, type CircuitConfig, Circomkit } from "circomkit";
 
-import { execFileSync } from "child_process";
+import childProcess from "child_process";
 import fs from "fs";
 import path from "path";
+import { promisify } from "util";
 
 import type { CircuitConfigWithName } from "./types";
+
+const execFile = promisify(childProcess.execFile);
 
 /**
  * Compile MACI's circuits using circomkit
@@ -17,12 +20,11 @@ import type { CircuitConfigWithName } from "./types";
 export const compileCircuits = async (cWitness?: boolean, outputPath?: string): Promise<string> => {
   // read circomkit config files
   const configFilePath = path.resolve(__dirname, "..", "circomkit.json");
-  const circomKitConfig = JSON.parse(fs.readFileSync(configFilePath, "utf-8")) as CircomkitConfig;
+  const circomKitConfig = JSON.parse(await fs.promises.readFile(configFilePath, "utf-8")) as CircomkitConfig;
   const circuitsConfigPath = path.resolve(__dirname, "..", "circom", "circuits.json");
-  const circuitsConfigContent = JSON.parse(fs.readFileSync(circuitsConfigPath, "utf-8")) as unknown as Record<
-    string,
-    CircuitConfig
-  >;
+  const circuitsConfigContent = JSON.parse(
+    await fs.promises.readFile(circuitsConfigPath, "utf-8"),
+  ) as unknown as Record<string, CircuitConfig>;
   const circuitsConfigs: CircuitConfigWithName[] = Object.entries(circuitsConfigContent).map(([name, config]) => ({
     name,
     ...config,
@@ -63,7 +65,8 @@ export const compileCircuits = async (cWitness?: boolean, outputPath?: string): 
     if (cWitness) {
       try {
         // build
-        execFileSync("bash", ["-c", `cd ${outPath}/${circuit.name}_cpp && make`]);
+        // eslint-disable-next-line no-await-in-loop
+        await execFile("bash", ["-c", `cd ${outPath}/${circuit.name}_cpp && make`]);
       } catch (error) {
         throw new Error(`Failed to compile the c witness for ${circuit.name}`);
       }

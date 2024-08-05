@@ -42,7 +42,9 @@ export const genProof = async ({
       throw new Error("wasmPath must be specified");
     }
 
-    if (!fs.existsSync(wasmPath)) {
+    const isWasmExists = fs.existsSync(wasmPath);
+
+    if (!isWasmExists) {
       throw new Error(`wasmPath ${wasmPath} does not exist`);
     }
 
@@ -57,7 +59,7 @@ export const genProof = async ({
   // intel chip flow (use rapidnsark)
   // Create tmp directory
   const tmpPath = path.resolve(tmpdir(), `tmp-${Date.now()}`);
-  fs.mkdirSync(tmpPath, { recursive: true });
+  await fs.promises.mkdir(tmpPath, { recursive: true });
 
   const inputJsonPath = path.resolve(tmpPath, "input.json");
   const outputWtnsPath = path.resolve(tmpPath, "output.wtns");
@@ -66,40 +68,50 @@ export const genProof = async ({
 
   // Write input.json
   const jsonData = JSON.stringify(stringifyBigInts(inputs));
-  fs.writeFileSync(inputJsonPath, jsonData);
+  await fs.promises.writeFile(inputJsonPath, jsonData);
 
   // Generate the witness
   await execFile(witnessExePath!, [inputJsonPath, outputWtnsPath]);
 
-  if (!fs.existsSync(outputWtnsPath)) {
+  const isOutputWtnsExists = fs.existsSync(outputWtnsPath);
+
+  if (!isOutputWtnsExists) {
     throw new Error(`Error executing ${witnessExePath} ${inputJsonPath} ${outputWtnsPath}`);
   }
 
   // Generate the proof
   await execFile(rapidsnarkExePath!, [zkeyPath, outputWtnsPath, proofJsonPath, publicJsonPath]);
 
-  if (!fs.existsSync(proofJsonPath)) {
+  const isProofJsonPathExists = fs.existsSync(proofJsonPath);
+
+  if (!isProofJsonPathExists) {
     throw new Error(
       `Error executing ${rapidsnarkExePath} ${zkeyPath} ${outputWtnsPath} ${proofJsonPath} ${publicJsonPath}`,
     );
   }
 
   // Read the proof and public inputs
-  const proof = JSON.parse(fs.readFileSync(proofJsonPath).toString()) as Groth16Proof;
-  const publicSignals = JSON.parse(fs.readFileSync(publicJsonPath).toString()) as PublicSignals;
+  const proof = JSON.parse(await fs.promises.readFile(proofJsonPath).then((res) => res.toString())) as Groth16Proof;
+  const publicSignals = JSON.parse(
+    await fs.promises.readFile(publicJsonPath).then((res) => res.toString()),
+  ) as PublicSignals;
 
   // remove all artifacts
-  [proofJsonPath, publicJsonPath, inputJsonPath, outputWtnsPath].forEach((f) => {
-    if (fs.existsSync(f)) {
-      fs.unlinkSync(f);
-    }
-  });
+  await Promise.all([proofJsonPath, publicJsonPath, inputJsonPath, outputWtnsPath].map(unlinkFile));
 
   // remove tmp directory
-  fs.rmdirSync(tmpPath);
+  await fs.promises.rmdir(tmpPath);
 
   return { proof, publicSignals };
 };
+
+async function unlinkFile(filepath: string): Promise<void> {
+  const isFileExists = fs.existsSync(filepath);
+
+  if (isFileExists) {
+    await fs.promises.unlink(filepath);
+  }
+}
 
 /**
  * Verify a zk-SNARK proof using snarkjs

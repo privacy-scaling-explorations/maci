@@ -42,14 +42,14 @@ export const deploy = async ({
 
   const network = await signer.provider?.getNetwork();
 
-  const poseidonT3 = poseidonT3Address || readContractAddress("PoseidonT3", network?.name);
-  const poseidonT4 = poseidonT4Address || readContractAddress("PoseidonT4", network?.name);
-  const poseidonT5 = poseidonT5Address || readContractAddress("PoseidonT5", network?.name);
-  const poseidonT6 = poseidonT6Address || readContractAddress("PoseidonT6", network?.name);
+  const poseidonT3 = poseidonT3Address || (await readContractAddress("PoseidonT3", network?.name));
+  const poseidonT4 = poseidonT4Address || (await readContractAddress("PoseidonT4", network?.name));
+  const poseidonT5 = poseidonT5Address || (await readContractAddress("PoseidonT5", network?.name));
+  const poseidonT6 = poseidonT6Address || (await readContractAddress("PoseidonT6", network?.name));
 
   // if we did not deploy it before, then deploy it now
   let initialVoiceCreditProxyContractAddress: string | undefined =
-    initialVoiceCreditsProxyAddress || readContractAddress("InitialVoiceCreditProxy", network?.name);
+    initialVoiceCreditsProxyAddress || (await readContractAddress("InitialVoiceCreditProxy", network?.name));
 
   if (!initialVoiceCreditsProxyAddress) {
     const contract = await deployConstantInitialVoiceCreditProxy(
@@ -63,7 +63,7 @@ export const deploy = async ({
 
   // check if we have a signupGatekeeper already deployed or passed as arg
   let signupGatekeeperContractAddress =
-    signupGatekeeperAddress || readContractAddress("SignUpGatekeeper", network?.name);
+    signupGatekeeperAddress || (await readContractAddress("SignUpGatekeeper", network?.name));
 
   if (!signupGatekeeperContractAddress) {
     const contract = await deployFreeForAllSignUpGatekeeper(signer, true);
@@ -96,15 +96,15 @@ export const deploy = async ({
   ]);
 
   // save to the JSON File
-  storeContractAddress("InitialVoiceCreditProxy", initialVoiceCreditProxyContractAddress, network?.name);
-  storeContractAddress("SignUpGatekeeper", signupGatekeeperContractAddress, network?.name);
-  storeContractAddress("Verifier", verifierContractAddress, network?.name);
-  storeContractAddress("MACI", maciContractAddress, network?.name);
-  storeContractAddress("PollFactory", pollFactoryContractAddress, network?.name);
-  storeContractAddress("PoseidonT3", poseidonAddrs.poseidonT3, network?.name);
-  storeContractAddress("PoseidonT4", poseidonAddrs.poseidonT4, network?.name);
-  storeContractAddress("PoseidonT5", poseidonAddrs.poseidonT5, network?.name);
-  storeContractAddress("PoseidonT6", poseidonAddrs.poseidonT6, network?.name);
+  await storeContractAddress("InitialVoiceCreditProxy", initialVoiceCreditProxyContractAddress, network?.name);
+  await storeContractAddress("SignUpGatekeeper", signupGatekeeperContractAddress, network?.name);
+  await storeContractAddress("Verifier", verifierContractAddress, network?.name);
+  await storeContractAddress("MACI", maciContractAddress, network?.name);
+  await storeContractAddress("PollFactory", pollFactoryContractAddress, network?.name);
+  await storeContractAddress("PoseidonT3", poseidonAddrs.poseidonT3, network?.name);
+  await storeContractAddress("PoseidonT4", poseidonAddrs.poseidonT4, network?.name);
+  await storeContractAddress("PoseidonT5", poseidonAddrs.poseidonT5, network?.name);
+  await storeContractAddress("PoseidonT6", poseidonAddrs.poseidonT6, network?.name);
 
   logGreen(quiet, success(`MACI deployed at:  ${maciContractAddress}`));
 

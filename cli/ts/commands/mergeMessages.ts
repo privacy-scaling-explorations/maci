@@ -27,10 +27,12 @@ export const mergeMessages = async ({
   const network = await signer.provider?.getNetwork();
 
   // maci contract validation
-  if (!readContractAddress("MACI", network?.name) && !maciAddress) {
+  const maciContractAddress = maciAddress || (await readContractAddress("MACI", network?.name));
+
+  if (!maciContractAddress) {
     logError("Could not read contracts");
   }
-  const maciContractAddress = maciAddress || readContractAddress("MACI", network?.name);
+
   if (!(await contractExists(signer.provider!, maciContractAddress))) {
     logError("MACI contract does not exist");
   }
