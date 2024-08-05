@@ -113,14 +113,13 @@ export const genMaciStateFromContract = async (
   const pollContractAddress = pollContractAddresses.get(pollId)!;
   const pollContract = PollFactory.connect(pollContractAddress, provider);
 
-  const [coordinatorPubKeyOnChain, [deployTime, duration], onChainTreeDepths] = await Promise.all([
-    pollContract.coordinatorPubKey(),
+  const [coordinatorPubKeyHashOnChain, [deployTime, duration], onChainTreeDepths] = await Promise.all([
+    pollContract.coordinatorPubKeyHash(),
     pollContract.getDeployTimeAndDuration().then((values) => values.map(Number)),
     pollContract.treeDepths(),
   ]);
 
-  assert(coordinatorPubKeyOnChain[0].toString() === coordinatorKeypair.pubKey.rawPubKey[0].toString());
-  assert(coordinatorPubKeyOnChain[1].toString() === coordinatorKeypair.pubKey.rawPubKey[1].toString());
+  assert(coordinatorKeypair.pubKey.hash().toString() === coordinatorPubKeyHashOnChain.toString());
 
   const treeDepths = {
     intStateTreeDepth: Number(onChainTreeDepths.intStateTreeDepth),

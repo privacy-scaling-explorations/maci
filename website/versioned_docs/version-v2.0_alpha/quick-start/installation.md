@@ -101,25 +101,45 @@ Edit `circuits/circom/circuits` to include the circuits you would like to compil
     "file": "processMessages",
     "template": "ProcessMessages",
     "params": [10, 2, 1, 2],
-    "pubs": ["inputHash"]
+    "pubs": [
+      "numSignUps",
+      "index",
+      "batchEndIndex",
+      "msgRoot",
+      "currentSbCommitment",
+      "newSbCommitment",
+      "pollEndTimestamp",
+      "actualStateTreeDepth",
+      "coordinatorPublicKeyHash"
+    ]
   },
   "ProcessMessagesNonQv_10-2-1-2_test": {
     "file": "processMessagesNonQv",
     "template": "ProcessMessagesNonQv",
     "params": [10, 2, 1, 2],
-    "pubs": ["inputHash"]
+    "pubs": [
+      "numSignUps",
+      "index",
+      "batchEndIndex",
+      "msgRoot",
+      "currentSbCommitment",
+      "newSbCommitment",
+      "pollEndTimestamp",
+      "actualStateTreeDepth",
+      "coordinatorPublicKeyHash"
+    ]
   },
   "TallyVotes_10-1-2_test": {
     "file": "tallyVotes",
     "template": "TallyVotes",
     "params": [10, 1, 2],
-    "pubs": ["inputHash"]
+    "pubs": ["index", "numSignUps", "sbCommitment", "currentTallyCommitment", "newTallyCommitment"]
   },
   "TallyVotesNonQv_10-1-2_test": {
     "file": "tallyVotesNonQv",
     "template": "TallyVotesNonQv",
     "params": [10, 1, 2],
-    "pubs": ["inputHash"]
+    "pubs": ["index", "numSignUps", "sbCommitment", "currentTallyCommitment", "newTallyCommitment"]
   }
 }
 ```

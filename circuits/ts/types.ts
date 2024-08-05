@@ -54,7 +54,7 @@ export interface IProcessMessagesInputs {
   msgs: bigint[];
   msgSubrootPathElements: bigint[][];
   coordPrivKey: bigint;
-  coordPubKey: [bigint, bigint];
+  coordinatorPublicKeyHash: bigint;
   encPubKeys: bigint[];
   currentStateRoot: bigint;
   currentStateLeaves: bigint[];

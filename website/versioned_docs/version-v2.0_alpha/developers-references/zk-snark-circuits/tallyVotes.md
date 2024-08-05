@@ -25,8 +25,8 @@ A version working with non quadratic voting (non-qv) is also [available](https:/
 
 | Input signal                            | Description                                                      |
 | --------------------------------------- | ---------------------------------------------------------------- |
-| `inputHash`                             | The SHA256 hash of inputs supplied by the contract               |
-| `packedVals`                            | Described below                                                  |
+| `numSignUps`                            | The number of users that signup                                  |
+| `index`                                 | Start index of given batch                                       |
 | `sbCommitment`                          | Described below                                                  |
 | `currentTallyCommitment`                | Described below                                                  |
 | `newTallyCommitment`                    | Described below                                                  |
@@ -45,35 +45,6 @@ A version working with non quadratic voting (non-qv) is also [available](https:/
 | `newResultsRootSalt`                    | A random value                                                   |
 | `newPerVOSpentVoiceCreditsRootSalt`     | A random value                                                   |
 | `newSpentVoiceCreditSubtotalSalt`       | A random value                                                   |
-
-##### `inputHash`
-
-All inputs to this circuit are private except for `inputHash`. To save gas during verification, the `Tally` contract hashes the following values using SHA256 and uses the hash as the sole element of $ic$:
-
-1. `packedVals`
-2. `sbCommitment`
-3. `currentTallyCommitment`
-4. `newTallyCommitment`
-
-The hash is computed using the `sha256` Solidity function and is then subject to modulo $p$.
-
-##### `packedVals`
-
-`packedVals` is the following values represented as one field element. Consider that a field element is roughly 253 bits. The big-endian bit-representation is as such:
-
-| Bits        | Value             |
-| ----------- | ----------------- |
-| 1st 53 bits | `0`               |
-| 2nd 50 bits | `0`               |
-| 3rd 50 bits | `0`               |
-| 4th 50 bits | `numSignUps`      |
-| 5th 50 bits | `batchStartIndex` |
-
-`numSignUps`, a value provided by the contract, is the number of users who have signed up. This is one less than the number of leaves inserted in the state tree (since the 0th state leaf is a [blank state leaf](/docs/core-concepts/state-leaf)). `batchStartIndex` is the ballot tree index at which the batch begins.
-
-For instance, if `numSignUps` is 25 and the batch index is `5`, and all other values are 0, the following is the `packedVals` representation in hexadecimal:
-
-`64000000000005`
 
 ##### `sbCommitment`
 
@@ -101,9 +72,8 @@ $poseidon_3([tc_r, tc_t, tc_p])$
 #### Statements that the circuit proves
 
 1. That the coordinator knows the preimage of `sbCommitment`
-2. That the coordinator knows the preimage of `inputHash`
-3. That `batchStartIndex` is less than or equal to `numSignUps`
-4. That each ballot in `ballots` is in a member of the ballot tree with the Merkle root `ballotRoot` at indices `batchStartIndex` to `batchStartIndex + (5 ** intStateTreeDepth)`
-5. That each set of votes (`votes[i]`) has the Merkle root $blt_r$ whose value equals `ballots[i][1]`
-6. That the tally is valid, which is:
+2. That `index` is less than or equal to `numSignUps`
+3. That each ballot in `ballots` is in a member of the ballot tree with the Merkle root `ballotRoot` at indices `batchStartIndex` to `batchStartIndex + (5 ** intStateTreeDepth)`
+4. That each set of votes (`votes[i]`) has the Merkle root $blt_r$ whose value equals `ballots[i][1]`
+5. That the tally is valid, which is:
    - That the sum of votes per vote option is correct

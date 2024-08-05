@@ -146,6 +146,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
   ) public view override returns (uint256[] memory publicInputs) {
     (, uint8 messageTreeSubDepth, uint8 messageTreeDepth, uint8 voteOptionTreeDepth) = poll.treeDepths();
     (, AccQueue messageAq) = poll.extContracts();
+    uint256 coordinatorPubKeyHash = poll.coordinatorPubKeyHash();
     uint256 messageBatchSize = TREE_ARITY ** messageTreeSubDepth;
     (uint256 numSignUps, uint256 numMessages) = poll.numSignUpsAndMessages();
     (uint256 deployTime, uint256 duration) = poll.getDeployTimeAndDuration();
@@ -155,15 +156,16 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
       batchEndIndex = numMessages;
     }
 
-    publicInputs = new uint256[](8);
+    publicInputs = new uint256[](9);
     publicInputs[0] = numSignUps;
     publicInputs[1] = deployTime + duration;
     publicInputs[2] = messageAq.getMainRoot(messageTreeDepth);
     publicInputs[3] = poll.actualStateTreeDepth();
     publicInputs[4] = batchEndIndex;
     publicInputs[5] = _currentMessageBatchIndex;
-    publicInputs[6] = (sbCommitment == 0 ? poll.currentSbCommitment() : sbCommitment);
-    publicInputs[7] = _newSbCommitment;
+    publicInputs[6] = coordinatorPubKeyHash;
+    publicInputs[7] = (sbCommitment == 0 ? poll.currentSbCommitment() : sbCommitment);
+    publicInputs[8] = _newSbCommitment;
   }
 
   /// @notice Verify the proof for processMessage

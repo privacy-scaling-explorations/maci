@@ -138,10 +138,10 @@ export interface IProcessMessagesCircuitInputs {
   index: string;
   maxVoteOptions: string;
   msgRoot: string;
+  coordinatorPublicKeyHash: string;
   msgs: string[];
   msgSubrootPathElements: string[][];
   coordPrivKey: string;
-  coordPubKey: string;
   encPubKeys: string[];
   currentStateRoot: string;
   currentBallotRoot: string;

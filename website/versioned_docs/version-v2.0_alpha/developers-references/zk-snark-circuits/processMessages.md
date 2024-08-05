@@ -37,58 +37,29 @@ A version working with non quadratic voting (non-qv) is also [available](https:/
 
 | Input signal                     | Description                                                                             |
 | -------------------------------- | --------------------------------------------------------------------------------------- |
-| `inputHash`                      | The SHA256 hash of inputs supplied by the contract                                      |
-| `packedVals`                     | Described below                                                                         |
+| `numSignUps`                     | Number of users that have completed the sign up                                         |
+| `index`                          | The batch index of current message batch                                                |
 | `pollEndTimestamp`               | The Unix timestamp at which the poll ends                                               |
 | `msgRoot`                        | The root of the message tree                                                            |
 | `msgs`                           | The batch of messages as an array of arrays                                             |
-| `msgSubrootPathElements`         | Described below                                                                         |
-| `coordinatorPubKeyHash`          | $poseidon_2([cPk_x, cPk_y])$                                                            |
-| `newSbCommitment`                | Described below                                                                         |
+| `msgSubrootPathElements`         | As described below                                                                      |
+| `coordinatorPublicKeyHash`       | $\mathsf{poseidon_2}([cPk_x, cPk_y])$                                                   |
+| `newSbCommitment`                | As described below                                                                      |
 | `coordPrivKey`                   | The coordinator's private key                                                           |
-| `coordPubKey`                    | The coordinator's public key                                                            |
+| `batchEndIndex`                  | The last batch index                                                                    |
 | `encPubKeys`                     | The public keys used to generate shared ECDH encryption keys to encrypt the messages    |
 | `currentStateRoot`               | The state root before the commands are applied                                          |
 | `currentStateLeaves`             | The state leaves upon which messages are applied                                        |
 | `currentStateLeavesPathElements` | The Merkle path to each incremental state root                                          |
-| `currentSbCommitment`            | Described below                                                                         |
-| `currentSbSalt`                  | Described below                                                                         |
-| `newSbCommitment`                | Described below                                                                         |
-| `newSbSalt`                      | Described below                                                                         |
+| `currentSbCommitment`            | As described below                                                                      |
+| `currentSbSalt`                  | As described below                                                                      |
+| `newSbCommitment`                | As described below                                                                      |
+| `newSbSalt`                      | As described below                                                                      |
 | `currentBallotRoot`              | The root of the ballot tree before messages are applied                                 |
 | `currentBallots`                 | The ballots upon which ballots are applied                                              |
 | `currentBallotsPathElements`     | The Merkle path to each incremental ballot root                                         |
 | `currentVoteWeights`             | The existing vote weight for the vote option in the ballot which each command refers to |
 | `currentVoteWeightsPathElements` | The Merkle path from each vote weight to the vote option root in its ballot             |
-
-##### `inputHash`
-
-All inputs to this circuit are private except for `inputHash`. To save gas during verification, the `MessageProcessor` contract hashes the following values using SHA256 and uses the hash as the sole element of $ic$:
-
-1. `packedVals`
-2. `coordinatorPubKeyHash`
-3. `msgRoot`
-4. `currentSbCommitment`
-5. `newSbCommitment`
-6. `pollEndTimestamp`
-
-The hash is computed using the `sha256` Solidity function and is then subject to modulo $p$.
-
-##### `packedVals`
-
-`packedVals` is the following values represented as one field element. Consider that a field element is roughly 253 bits. The big-endian bit-representation is as such:
-
-| Bits        | Value                      |
-| ----------- | -------------------------- |
-| 1st 53 bits | `0`                        |
-| 2nd 50 bits | `batchEndIndex`            |
-| 3rd 50 bits | `currentMessageBatchIndex` |
-| 4th 50 bits | `numSignUps`               |
-| 5th 50 bits | `maxVoteOptions`           |
-
-For instance, if `maxVoteOptions` is 25 and `batchEndIndex` is `5`, and all other values are 0, the following is the `packedVals` representation in hexadecimal:
-
-`140000000000000000000000000000000000019`
 
 ##### `currentSbCommitment` and `newSbCommitment`
 
@@ -128,11 +99,9 @@ This method requires fewer circuit constraints than if we verified a Merkle proo
 
 #### Statements that the circuit proves
 
-1. That the prover knows the preimage to `inputHash` (see above)
-2. That the prover knows the preimage to `currentSbCommitment` (that is, the state root, ballot root, and `currentSbSalt`)
-3. That `maxVoteOptions <= (5 ^ voteOptionTreeDepth)`
-4. That `numSignUps <= (2 ^ stateTreeDepth)`
-5. That `coordPubKey` is correctly derived from `coordPrivKey`
-6. That `coordPubKey` is the preimage to the Poseidon hash of `coordPubKey` (provided by the contract)
-7. That each message in `msgs` exists in the message tree
-8. That after decrypting and applying each message, in reverse order, to the corresponding state and ballot leaves, the new state root, new ballot root, and `newSbSalt` are the preimage to `newSbCommitment`
+1. That the prover knows the preimage to `currentSbCommitment` (that is, the state root, ballot root, and `currentSbSalt`)
+2. That `maxVoteOptions <= (5 ^ voteOptionTreeDepth)`
+3. That `numSignUps <= (2 ^ stateTreeDepth)`
+4. That `coordinatorPublicKeyHash` is a hash of public key that is correctly derived from `coordPrivKey`
+5. That each message in `msgs` exists in the message tree
+6. That after decrypting and applying each message, in reverse order, to the corresponding state and ballot leaves, the new state root, new ballot root, and `newSbSalt` are the preimage to `newSbCommitment`
