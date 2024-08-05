@@ -521,8 +521,8 @@ importers:
         specifier: ^4.2.0
         version: 4.2.0
       wabt:
-        specifier: ^1.0.35
-        version: 1.0.35
+        specifier: ^1.0.36
+        version: 1.0.36
 
   website:
     dependencies:
@@ -9880,8 +9880,8 @@ packages:
     resolution: {integrity: sha512-8l7sIOd3i5GWfTWciPL0+ff/FK/deVK2Q6FN+MPz4vfUcD78i2M/49XJTwF6aml91uIiuXJEsLKWMB2cw/mtKg==}
     hasBin: true
 
-  wabt@1.0.35:
-    resolution: {integrity: sha512-FnN+VAnm25RseQIDelVxNLielzB9jTUgpVm2rYC24YcP3tMI4+1ZD/CGqunwv8lCIXWhdyiTc5kItKBiXKssWw==}
+  wabt@1.0.36:
+    resolution: {integrity: sha512-GAfEcFyvYRZ51xIZKeeCmIKytTz3ejCeEU9uevGNhEnqt9qXp3a8Q2O4ByZr6rKWcd8jV/Oj5cbDJFtmTYdchg==}
     hasBin: true
 
   walk-up-path@3.0.1:
@@ -22739,7 +22739,7 @@ snapshots:
 
   wabt@1.0.24: {}
 
-  wabt@1.0.35: {}
+  wabt@1.0.36: {}
 
   walk-up-path@3.0.1: {}
 
