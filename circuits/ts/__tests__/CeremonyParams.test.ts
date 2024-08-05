@@ -50,7 +50,7 @@ describe("Ceremony param tests", () => {
         "msgs",
         "msgSubrootPathElements",
         "coordPrivKey",
-        "coordPubKey",
+        "coordinatorPublicKeyHash",
         "encPubKeys",
         "currentStateRoot",
         "currentStateLeaves",

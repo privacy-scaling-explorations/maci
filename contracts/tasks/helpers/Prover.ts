@@ -1,5 +1,5 @@
 /* eslint-disable no-console, no-await-in-loop */
-import { G1Point, G2Point, hashLeftRight } from "maci-crypto";
+import { G1Point, G2Point } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
 
 import type { IVerifyingKeyStruct, Proof } from "../../ts/types";
@@ -156,13 +156,7 @@ export class Prover {
 
       this.validateCommitment(circuitInputs.currentSbCommitment as BigNumberish, currentSbCommitmentOnChain);
 
-      const coordPubKeyHashOnChain = BigInt(coordinatorPubKeyHash);
-      const coordPubKeyHashOffChain = hashLeftRight(
-        BigInt((circuitInputs.coordPubKey as BigNumberish[])[0]),
-        BigInt((circuitInputs.coordPubKey as BigNumberish[])[1]),
-      ).toString();
-
-      if (coordPubKeyHashOffChain !== coordPubKeyHashOnChain.toString()) {
+      if (circuitInputs.coordinatorPublicKeyHash.toString() !== coordinatorPubKeyHash.toString()) {
         throw new Error("coordPubKey mismatch.");
       }
 

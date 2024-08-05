@@ -11,7 +11,7 @@ import {
   Verifier__factory as VerifierFactory,
 } from "maci-contracts/typechain-types";
 import { MESSAGE_TREE_ARITY, STATE_TREE_ARITY } from "maci-core";
-import { G1Point, G2Point, hashLeftRight } from "maci-crypto";
+import { G1Point, G2Point } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
 
 import fs from "fs";
@@ -214,13 +214,9 @@ export const proveOnChain = async ({
       logError("currentSbCommitment mismatch.");
     }
 
-    const coordPubKeyHashOnChain = BigInt(await pollContract.coordinatorPubKeyHash());
-    if (
-      hashLeftRight(
-        BigInt((circuitInputs.coordPubKey as BigNumberish[])[0]),
-        BigInt((circuitInputs.coordPubKey as BigNumberish[])[1]),
-      ).toString() !== coordPubKeyHashOnChain.toString()
-    ) {
+    const coordPubKeyHashOnChain = await pollContract.coordinatorPubKeyHash();
+
+    if (circuitInputs.coordinatorPublicKeyHash.toString() !== coordPubKeyHashOnChain.toString()) {
       logError("coordPubKey mismatch.");
     }
 

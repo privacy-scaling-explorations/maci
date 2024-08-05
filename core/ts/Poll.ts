@@ -655,6 +655,7 @@ export class Poll implements IPoll {
 
     // ensure we pass the dynamic tree depth
     circuitInputs.actualStateTreeDepth = this.actualStateTreeDepth.toString();
+    circuitInputs.coordinatorPublicKeyHash = this.coordinatorKeypair.pubKey.hash();
 
     return stringifyBigInts(circuitInputs) as unknown as IProcessMessagesCircuitInputs;
   };
@@ -747,7 +748,6 @@ export class Poll implements IPoll {
       msgs,
       msgSubrootPathElements: messageSubrootPath.pathElements,
       coordPrivKey: this.coordinatorKeypair.privKey.asCircuitInputs(),
-      coordPubKey: this.coordinatorKeypair.pubKey.asCircuitInputs(),
       encPubKeys: encPubKeys.map((x) => x.asCircuitInputs()),
       currentStateRoot,
       currentBallotRoot,

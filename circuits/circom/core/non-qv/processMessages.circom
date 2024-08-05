@@ -60,8 +60,6 @@ include "../../trees/incrementalQuinaryTree.circom";
     signal input msgSubrootPathElements[msgTreeDepth - msgBatchDepth][MESSAGE_TREE_ARITY - 1];
     // The coordinator's private key.
     signal input coordPrivKey;
-    // The cooordinator's public key (derived from the contract).
-    signal input coordPubKey[2];
     // The ECDH public key per message.
     signal input encPubKeys[batchSize][2];
     // The current state root (before the processing).
@@ -74,6 +72,8 @@ include "../../trees/incrementalQuinaryTree.circom";
     signal input batchEndIndex;
     // The batch index of current message batch
     signal input index;
+    // The coordinator public key hash
+    signal input coordinatorPublicKeyHash;
 
     // The state leaves upon which messages are applied.
     //    transform(currentStateLeaf[4], message5) => newStateLeaf4
@@ -185,7 +185,8 @@ include "../../trees/incrementalQuinaryTree.circom";
     // based on the given private key - that is, the prover knows the
     // coordinator's private key.
     var derivedPubKey[2] = PrivToPubKey()(coordPrivKey);
-    derivedPubKey === coordPubKey;
+    var derivedPubKeyHash = PoseidonHasher(2)(derivedPubKey);
+    derivedPubKeyHash === coordinatorPublicKeyHash;
 
     // Decrypt each Message into a Command.
     // The command i-th is composed by the following fields.

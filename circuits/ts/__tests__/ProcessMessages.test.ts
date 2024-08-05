@@ -24,7 +24,7 @@ describe("ProcessMessage circuit", function test() {
     "msgs",
     "msgSubrootPathElements",
     "coordPrivKey",
-    "coordPubKey",
+    "coordinatorPublicKeyHash",
     "encPubKeys",
     "currentStateRoot",
     "currentStateLeaves",

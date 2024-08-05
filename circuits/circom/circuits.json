@@ -11,7 +11,8 @@
       "currentSbCommitment",
       "newSbCommitment",
       "pollEndTimestamp",
-      "actualStateTreeDepth"
+      "actualStateTreeDepth",
+      "coordinatorPublicKeyHash"
     ]
   },
   "ProcessMessagesNonQv_10-2-1-2_test": {
@@ -26,7 +27,8 @@
       "currentSbCommitment",
       "newSbCommitment",
       "pollEndTimestamp",
-      "actualStateTreeDepth"
+      "actualStateTreeDepth",
+      "coordinatorPublicKeyHash"
     ]
   },
   "TallyVotes_10-1-2_test": {
