@@ -1,7 +1,8 @@
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
 import { MaciState, Poll } from "maci-core";
-import { Keypair } from "maci-domainobjs";
+import { poseidon } from "maci-crypto/build/ts/hashing";
+import { Keypair, Message, PCommand } from "maci-domainobjs";
 
 import { IPollJoiningInputs } from "../types";
 
@@ -50,7 +51,9 @@ describe("Poll Joining circuit", function test() {
     let pollId: bigint;
     let poll: Poll;
     let users: Keypair[];
-    const pollKey = new Keypair();
+    const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
+    const messages: Message[] = [];
+    const commands: PCommand[] = [];
 
     before(() => {
       // Sign up
@@ -70,6 +73,37 @@ describe("Poll Joining circuit", function test() {
 
       poll = maciState.polls.get(pollId)!;
       poll.updatePoll(BigInt(maciState.stateLeaves.length));
+
+      // Join the poll
+      const { privKey } = users[0];
+
+      const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
+      const timestamp = BigInt(Math.floor(Date.now() / 1000));
+
+      const stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp));
+
+      // First command (valid)
+      const command = new PCommand(
+        stateIndex,
+        pollPubKey,
+        BigInt(0), // voteOptionIndex,
+        BigInt(9), // vote weight
+        BigInt(1), // nonce
+        BigInt(pollId),
+      );
+
+      const signature = command.sign(pollPrivKey);
+
+      const ecdhKeypair = new Keypair();
+      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+      const message = command.encrypt(signature, sharedKey);
+      messages.push(message);
+      commands.push(command);
+
+      poll.publishMessage(message, ecdhKeypair.pubKey);
+
+      // Process messages
+      poll.processMessages(pollId);
     });
 
     it("should produce a proof", async () => {
@@ -81,8 +115,8 @@ describe("Poll Joining circuit", function test() {
         privateKey,
         stateLeafIndex,
         credits,
-        pollKey.privKey,
-        pollKey.pubKey,
+        pollPrivKey,
+        pollPubKey,
       ) as unknown as IPollJoiningInputs;
       const witness = await circuit.calculateWitness(inputs);
       await circuit.expectConstraintPass(witness);
@@ -97,8 +131,8 @@ describe("Poll Joining circuit", function test() {
         privateKey,
         stateLeafIndex,
         credits,
-        pollKey.privKey,
-        pollKey.pubKey,
+        pollPrivKey,
+        pollPubKey,
       ) as unknown as IPollJoiningInputs;
       const witness = await circuit.calculateWitness(inputs);
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -110,9 +144,9 @@ describe("Poll Joining circuit", function test() {
       const stateLeafIndex = BigInt(1);
       const credits = BigInt(105);
 
-      expect(() =>
-        poll.joiningCircuitInputs(privateKey, stateLeafIndex, credits, pollKey.privKey, pollKey.pubKey),
-      ).to.throw("Credits must be lower than signed up credits");
+      expect(() => poll.joiningCircuitInputs(privateKey, stateLeafIndex, credits, pollPrivKey, pollPubKey)).to.throw(
+        "Credits must be lower than signed up credits",
+      );
     });
   });
 });
