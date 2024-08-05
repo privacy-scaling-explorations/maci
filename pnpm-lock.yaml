@@ -78,8 +78,8 @@ importers:
         specifier: ^1.3.1
         version: 1.3.1(prettier@3.3.3)
       solhint:
-        specifier: ^5.0.2
-        version: 5.0.2(typescript@5.5.4)
+        specifier: ^5.0.3
+        version: 5.0.3(typescript@5.5.4)
       tar:
         specifier: ^7.4.3
         version: 7.4.3
@@ -9034,8 +9034,8 @@ packages:
     engines: {node: '>=10.0.0'}
     hasBin: true
 
-  solhint@5.0.2:
-    resolution: {integrity: sha512-fDoflGz1jztGRqEDiLI25wSvpjGu0fIqeRXXYKYt4qBOA0EJi8RZwlM11+K2ZAcGFW2K8bevJ2A/wtZ0lDi/bw==}
+  solhint@5.0.3:
+    resolution: {integrity: sha512-OLCH6qm/mZTCpplTXzXTJGId1zrtNuDYP5c2e6snIv/hdRVxPfBBz/bAlL91bY/Accavkayp2Zp2BaDSrLVXTQ==}
     hasBin: true
 
   solidity-ast@0.4.56:
@@ -21766,7 +21766,7 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  solhint@5.0.2(typescript@5.5.4):
+  solhint@5.0.3(typescript@5.5.4):
     dependencies:
       '@solidity-parser/parser': 0.18.0
       ajv: 6.12.6
