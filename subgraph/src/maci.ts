@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { Address, BigInt as GraphBN } from "@graphprotocol/graph-ts";
 
-import { DeployPoll as DeployPollEvent, SignUp as SignUpEvent } from "../generated/MACI/MACI";
+import { DeployPoll as DeployPollEvent, SignUp as SignUpEvent, MACI as MaciContract } from "../generated/MACI/MACI";
 import { Poll } from "../generated/schema";
 import { Poll as PollTemplate } from "../generated/templates";
 import { Poll as PollContract } from "../generated/templates/Poll/Poll";
@@ -12,14 +12,18 @@ import { createOrLoadMACI, createOrLoadUser, createOrLoadAccount } from "./utils
 export function handleDeployPoll(event: DeployPollEvent): void {
   const maci = createOrLoadMACI(event);
 
-  const poll = new Poll(event.params.pollAddr.poll);
-  const contract = PollContract.bind(event.params.pollAddr.poll);
+  const id = event.params._pollId;
+
+  const maciContract = MaciContract.bind(Address.fromBytes(maci.id));
+  const contracts = maciContract.getPoll(id);
+  const poll = new Poll(contracts.poll);
+  const contract = PollContract.bind(contracts.poll);
   const treeDepths = contract.treeDepths();
   const durations = contract.getDeployTimeAndDuration();
 
-  poll.pollId = event.params._pollId;
-  poll.messageProcessor = event.params.pollAddr.messageProcessor;
-  poll.tally = event.params.pollAddr.tally;
+  poll.pollId = id;
+  poll.messageProcessor = contracts.messageProcessor;
+  poll.tally = contracts.tally;
   poll.maxMessages = GraphBN.fromI32(MESSAGE_TREE_ARITY ** treeDepths.getMessageTreeDepth());
   poll.maxVoteOption = GraphBN.fromI32(MESSAGE_TREE_ARITY ** treeDepths.getVoteOptionTreeDepth());
   poll.treeDepth = GraphBN.fromI32(treeDepths.value0);
