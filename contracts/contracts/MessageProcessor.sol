@@ -144,7 +144,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
     uint256 _currentMessageBatchIndex,
     uint256 _newSbCommitment
   ) public view override returns (uint256[] memory publicInputs) {
-    (, uint8 messageTreeSubDepth, uint8 messageTreeDepth, uint8 voteOptionTreeDepth) = poll.treeDepths();
+    (, uint8 messageTreeSubDepth, uint8 messageTreeDepth, ) = poll.treeDepths();
     (, AccQueue messageAq) = poll.extContracts();
     uint256 coordinatorPubKeyHash = poll.coordinatorPubKeyHash();
     uint256 messageBatchSize = TREE_ARITY ** messageTreeSubDepth;

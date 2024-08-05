@@ -82,24 +82,27 @@ export const genMaciStateFromContract = async (
       });
     });
 
-    deployPollLogs.forEach((event) => {
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
+    for (let j = 0; j < deployPollLogs.length; j += 1) {
+      const event = deployPollLogs[j];
       assert(!!event);
 
       const id = event.args._pollId;
 
       const pubKey = new PubKey([BigInt(event.args._coordinatorPubKeyX), BigInt(event.args._coordinatorPubKeyY)]);
-      const pollAddr = event.args.pollAddr.poll;
+      // eslint-disable-next-line no-await-in-loop
+      const pollContracts = await maciContract.getPoll(id);
 
       actions.push({
         type: "DeployPoll",
         blockNumber: event.blockNumber,
         transactionIndex: event.transactionIndex,
-        data: { pollId: id, pollAddr, pubKey },
+        data: { pollId: id, pollAddr: pollContracts.poll, pubKey },
       });
 
       foundPollIds.add(Number(id));
-      pollContractAddresses.set(BigInt(id), pollAddr);
-    });
+      pollContractAddresses.set(BigInt(id), pollContracts.poll);
+    }
 
     if (sleepAmount) {
       // eslint-disable-next-line no-await-in-loop
@@ -139,12 +142,10 @@ export const genMaciStateFromContract = async (
 
     const [
       publishMessageLogs,
-      mergeMessageAqSubRootsLogs,
       mergeMessageAqLogs,
       // eslint-disable-next-line no-await-in-loop
     ] = await Promise.all([
       pollContract.queryFilter(pollContract.filters.PublishMessage(), i, toBlock),
-      pollContract.queryFilter(pollContract.filters.MergeMessageAqSubRoots(), i, toBlock),
       pollContract.queryFilter(pollContract.filters.MergeMessageAq(), i, toBlock),
     ]);
 
@@ -162,20 +163,6 @@ export const genMaciStateFromContract = async (
         data: {
           message,
           encPubKey,
-        },
-      });
-    });
-
-    mergeMessageAqSubRootsLogs.forEach((event) => {
-      assert(!!event);
-
-      const numSrQueueOps = Number(event.args._numSrQueueOps);
-      actions.push({
-        type: "MergeMessageAqSubRoots",
-        blockNumber: event.blockNumber,
-        transactionIndex: event.transactionIndex,
-        data: {
-          numSrQueueOps,
         },
       });
     });

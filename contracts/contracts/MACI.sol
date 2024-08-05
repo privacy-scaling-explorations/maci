@@ -27,7 +27,6 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
   uint256 public immutable maxSignups;
 
   uint8 internal constant TREE_ARITY = 2;
-  uint8 internal constant MESSAGE_TREE_ARITY = 5;
 
   /// @notice The hash of a blank state leaf
   uint256 internal constant BLANK_STATE_LEAF_HASH =
@@ -82,7 +81,6 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
     uint256 _pollId,
     uint256 indexed _coordinatorPubKeyX,
     uint256 indexed _coordinatorPubKeyY,
-    PollContracts pollAddr,
     Mode _mode
   );
 
@@ -174,7 +172,6 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
   /// @param _verifier The Verifier Contract
   /// @param _vkRegistry The VkRegistry Contract
   /// @param _mode Voting mode
-  /// @return pollAddr a new Poll contract address
   function deployPoll(
     uint256 _duration,
     TreeDepths memory _treeDepths,
@@ -182,7 +179,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
     address _verifier,
     address _vkRegistry,
     Mode _mode
-  ) public virtual returns (PollContracts memory pollAddr) {
+  ) public virtual {
     // cache the poll to a local variable so we can increment it
     uint256 pollId = nextPollId;
 
@@ -211,11 +208,11 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
     address tally = tallyFactory.deploy(_verifier, _vkRegistry, p, mp, msg.sender, _mode);
 
     // store the addresses in a struct so they can be returned
-    pollAddr = PollContracts({ poll: p, messageProcessor: mp, tally: tally });
+    PollContracts memory pollAddr = PollContracts({ poll: p, messageProcessor: mp, tally: tally });
 
     polls[pollId] = pollAddr;
 
-    emit DeployPoll(pollId, _coordinatorPubKey.x, _coordinatorPubKey.y, pollAddr, _mode);
+    emit DeployPoll(pollId, _coordinatorPubKey.x, _coordinatorPubKey.y, _mode);
   }
 
   /// @inheritdoc IMACI
