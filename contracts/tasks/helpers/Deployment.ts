@@ -199,7 +199,7 @@ export class Deployment {
 
     if (!success) {
       console.log("\nDeployment has failed");
-      await import("process").then(({ exit }) => exit(1));
+      await import("process").then((m) => m.exit(1));
     }
 
     console.log("\nDeployment has finished");
