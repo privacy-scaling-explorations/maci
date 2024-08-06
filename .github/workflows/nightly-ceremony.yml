@@ -46,7 +46,7 @@ jobs:
 
       - name: Run hardhat fork
         run: |
-          cd contracts
+          cd packages/contracts
           pnpm run hardhat &
 
       - name: Download rapidsnark (1c137)

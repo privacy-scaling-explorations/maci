@@ -1,15 +1,5 @@
 {
-  "packages": [
-    "circuits",
-    "cli",
-    "contracts",
-    "core",
-    "crypto",
-    "domainobjs",
-    "integrationTests",
-    "website",
-    "subgraph"
-  ],
+  "packages": ["packages/*", "apps/*"],
   "version": "2.0.0",
   "npmClient": "pnpm",
   "changelogPreset": {

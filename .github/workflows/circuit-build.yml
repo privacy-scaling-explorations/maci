@@ -51,8 +51,8 @@ jobs:
 
       - name: Build circuits
         run: pnpm run build-test-circuits-wasm
-        working-directory: circuits
+        working-directory: packages/circuits
 
       - name: Test circuits
         run: pnpm run test
-        working-directory: circuits
+        working-directory: packages/circuits

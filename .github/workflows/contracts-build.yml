@@ -35,6 +35,4 @@ jobs:
 
       - name: Test
         run: pnpm run test
-        working-directory: contracts
-        env:
-          OP_RPC_URL: ${{ secrets.OP_RPC_URL }}
+        working-directory: packages/contracts

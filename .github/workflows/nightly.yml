@@ -47,7 +47,7 @@ jobs:
 
       - name: Run hardhat fork
         run: |
-          cd contracts
+          cd packages/contracts
           pnpm run hardhat &
 
       - name: Download rapidsnark (1c137)
@@ -64,7 +64,7 @@ jobs:
 
       - name: Create zkeys folder
         run: |
-          cd cli
+          cd packages/cli
           mkdir -p zkeys
 
       - name: Compile Circuits And Generate zkeys

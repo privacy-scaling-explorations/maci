@@ -1,8 +1,8 @@
-circuits/params/*
-cli/proofs
-cli/proofs.json
-cli/zkeys
-cli/maci_keys.tar.gz
+packages/circuits/params/*
+packages/cli/proofs
+packages/cli/proofs.json
+packages/cli/zkeys
+packages/cli/maci_keys.tar.gz
 *.zkey
 *.r1cs
 *.sym
@@ -10,23 +10,24 @@ cli/maci_keys.tar.gz
 
 solc
 *.ptau
-cli/tally.json
+packages/cli/tally.json
 **/test_tally.json
 **/tally.json
-integrationTests/test_tally.json
-integrationTests/artifacts/**
+packages/integrationTests/test_tally.json
+packages/integrationTests/artifacts/**
 deployedAddresses.json
 .etherlime-store
 **/build/
-circuits/build
-circuits/circom/test.bak
+packages/circuits/build
+packages/circuits/circom/test.bak
 
-cli/artifacts
-contracts/artifacts
-contracts/compiled
-cli/cache
-contracts/cache
-typechain-types/
+packages/cli/artifacts
+packages/contracts/artifacts
+packages/contracts/compiled
+packages/cli/cache
+packages/contracts/cache
+packages/contracts/typechain-types/
+**/cache
 
 node_modules
 blake2sdef.json
@@ -144,15 +145,12 @@ typings/
 
 # docker related
 **/data/
-cli/output.json
-cli/processinput.json
-cli/tallyinput.json
-cli/contractAddresses.json
-cli/contractAddresses.old.json
+packages/cli/output.json
+packages/cli/processinput.json
+packages/cli/tallyinput.json
+packages/cli/contractAddresses.json
+packages/cli/contractAddresses.old.json
 
-circuits/circom/test
-
-# mdBook rendered files
-publish
+packages/circuits/circom/test
 
 **/ts/__benchmarks__/results/**
