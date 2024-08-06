@@ -40,7 +40,7 @@ To contribute to MACI, create feature/fix branches, then open PRs into `dev`. [L
 
 For installation and local development instructions, please see our [installation docs](https://maci.pse.dev/docs/quick-start/installation/).
 
-This repository is organized as Lerna submodules. Each submodule contains its
+This repository is organized as pnpm workspace. Each package contains its
 own unit tests.
 
 - `crypto`: low-level cryptographic operations.
@@ -55,6 +55,8 @@ own unit tests.
   an instance of MACI.
 - `integrationTests`: Integration tests which use the command-line interface
   to perform end-to-end tests.
+- `subgraph`: The subgraph for the MACI contracts.
+- `website`: The documentation website.
 
 ### Testing
 
@@ -66,38 +68,43 @@ CI pipeline ensures that we have automated tests that constantly validate. For m
 
 [telegram-badge]: https://badges.aleen42.com/src/telegram.svg
 [telegram-link]: https://t.me/joinchat/LUgOpE7J2gstRcZqdERyvw
-[circuits-package]: ./circuits
+[circuits-package]: ./packages/circuits
 [circuits-npm-badge]: https://img.shields.io/npm/v/maci-circuits.svg
 [circuits-npm-link]: https://www.npmjs.com/package/maci-circuits
 [circuits-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/circuit-build.yml/badge.svg
 [circuits-actions-link]: https://github.com/privacy-scaling-explorations/maci/actions?query=workflow%3ACircuit
-[cli-package]: ./cli
+[cli-package]: ./packages/cli
 [cli-npm-badge]: https://img.shields.io/npm/v/maci-cli.svg
 [cli-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/e2e.yml/badge.svg
 [cli-npm-link]: https://www.npmjs.com/package/maci-cli
 [cli-actions-link]: https://github.com/privacy-scaling-explorations/maci/actions?query=workflow%3ACI
-[contracts-package]: ./contracts
+[contracts-package]: ./packages/contracts
 [contracts-npm-badge]: https://img.shields.io/npm/v/maci-contracts.svg
 [contracts-npm-link]: https://www.npmjs.com/package/maci-contracts
 [contracts-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/contracts-build.yml/badge.svg
 [contracts-actions-link]: https://github.com/privacy-scaling-explorations/maci/actions?query=workflow%3Acontracts
-[core-package]: ./core
+[core-package]: ./packages/core
 [core-npm-badge]: https://img.shields.io/npm/v/maci-core.svg
 [core-npm-link]: https://www.npmjs.com/package/maci-core
 [core-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/core-build.yml/badge.svg
 [core-actions-link]: https://github.com/privacy-scaling-explorations/maci/actions?query=workflow%3Acore
-[crypto-package]: ./crypto
+[crypto-package]: ./packages/crypto
 [crypto-npm-badge]: https://img.shields.io/npm/v/maci-crypto.svg
 [crypto-npm-link]: https://www.npmjs.com/package/maci-crypto
 [crypto-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/crypto-build.yml/badge.svg
 [crypto-actions-link]: https://github.com/privacy-scaling-explorations/maci/actions?query=workflow%3Acrypto
-[domainobjs-package]: ./domainobjs
+[domainobjs-package]: ./packages/domainobjs
 [domainobjs-npm-badge]: https://img.shields.io/npm/v/maci-domainobjs.svg
 [domainobjs-npm-link]: https://www.npmjs.com/package/maci-domainobjs
 [domainobjs-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/domainobjs-build.yml/badge.svg
 [domainobjs-actions-link]: https://github.com/privacy-scaling-explorations/maci/actions?query=workflow%3Adomainobjs
-[integrationTests-package]: ./integrationTests
+[integrationTests-package]: ./packages/integrationTests
 [integrationTests-npm-badge]: https://img.shields.io/npm/v/maci-integrationtests.svg
 [integrationTests-npm-link]: https://www.npmjs.com/package/maci-integrationtests
 [integrationTests-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/e2e.yml/badge.svg
 [integrationTests-actions-link]: https://github.com/privacy-scaling-explorations/maci/actions?query=workflow%3ACI
+[subgraph-package]: ./apps/subgraph
+[subgraph-npm-badge]: https://img.shields.io/npm/v/maci-subgraph.svg
+[subgraph-npm-link]: https://www.npmjs.com/package/maci-subgraph
+[subgraph-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/subgraph-build.yml/badge.svg
+[subgraph-actions-link]: https://github.com/privacy-scaling-explorations/maci/actions?query=workflow%3Asubgraph
