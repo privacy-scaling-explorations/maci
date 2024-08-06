@@ -3,11 +3,79 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.0](https://github.com/privacy-scaling-explorations/maci/compare/v1.2.0...v2.0.0) (2024-08-06)
 
 
-**Note:** Version bump only for package maci-crypto
+### ⚠ BREAKING CHANGES
+
+* **topup:** No more topups
+
+### Features
+
+* export merge function and modify package version ([#1584](https://github.com/privacy-scaling-explorations/maci/issues/1584)) ([f6ae34a](https://github.com/privacy-scaling-explorations/maci/commit/f6ae34a3f9ea375cd5dac8f0ce8618e33509f8ad))
+* **multiple-polls:** allow concurrent polls ([14e89ba](https://github.com/privacy-scaling-explorations/maci/commit/14e89baea1ede9bc9bad79fafb5c362d6a6a81e9))
 
 
+### Bug Fixes
+
+* do not accept invalid maci keys ([9f9e858](https://github.com/privacy-scaling-explorations/maci/commit/9f9e858755a3e064f854675a678ef2fb18041fab))
+* minor type issue for @zk-kit/eddsa-poseidon ([ee81309](https://github.com/privacy-scaling-explorations/maci/commit/ee8130924433a040a2d53b00b654f611b3b3e9c4))
+* publish proof onchain ([e813174](https://github.com/privacy-scaling-explorations/maci/commit/e8131741b3fb5059572822c04cb61b1cbae9599d))
+
+
+### Code Refactoring
+
+* enhance MACI circuits readability  ([#1337](https://github.com/privacy-scaling-explorations/maci/issues/1337)) ([3770a2a](https://github.com/privacy-scaling-explorations/maci/commit/3770a2ab6626c4beffb71e7b2d9dce595e5e9f53))
+* **topup:** remove the topup feature ([67711d4](https://github.com/privacy-scaling-explorations/maci/commit/67711d44058831302d4556f12d1972ffacede653))
+
+
+### Miscellaneous
+
+* bump to 1.2.2 ([e63278f](https://github.com/privacy-scaling-explorations/maci/commit/e63278f71937a1fa908ec8f4be2d43114701c134))
+* **contracts:** add typedoc script for contracts package ([43459a0](https://github.com/privacy-scaling-explorations/maci/commit/43459a02301f102e80a709a0a722dd591e8e00ef))
+* **crypto:** add unit test for `copy` and `insertSubTree` method  in AccQueue ([#1321](https://github.com/privacy-scaling-explorations/maci/issues/1321)) ([aec05bb](https://github.com/privacy-scaling-explorations/maci/commit/aec05bb3bd99cd351e2e556ca99fddb310c10043))
+* **crypto:** minor type fix ([e85f20d](https://github.com/privacy-scaling-explorations/maci/commit/e85f20df139286f37c899a7c76d3b5731ac62648))
+* **deps-dev:** bump @types/mocha from 10.0.6 to 10.0.7 ([07c3480](https://github.com/privacy-scaling-explorations/maci/commit/07c3480efc40ad1d3f651b78cd7c3aaeee8d7f8a))
+* **deps-dev:** bump @types/node from 20.11.20 to 20.11.24 ([c575eca](https://github.com/privacy-scaling-explorations/maci/commit/c575eca7c54c262764ce794a919f3b1d58d7d8e7))
+* **deps-dev:** bump @types/node from 20.11.24 to 20.11.25 ([5eb49f9](https://github.com/privacy-scaling-explorations/maci/commit/5eb49f9090fc6db3a80ad2d63548d93430ff7645))
+* **deps-dev:** bump @types/node from 20.11.25 to 20.11.28 ([81bebaa](https://github.com/privacy-scaling-explorations/maci/commit/81bebaa880cbc15b8c8445d412b9fc9d89580e67))
+* **deps-dev:** bump @types/node from 20.11.28 to 20.11.30 ([5ef4420](https://github.com/privacy-scaling-explorations/maci/commit/5ef44209d16cd441067fb67201daa61cf968382d))
+* **deps-dev:** bump @types/node from 20.11.30 to 20.12.2 ([e7c32d0](https://github.com/privacy-scaling-explorations/maci/commit/e7c32d0ddd506727f229d950239a116961bbe1a0))
+* **deps-dev:** bump @types/node from 20.12.10 to 20.12.11 ([3019c66](https://github.com/privacy-scaling-explorations/maci/commit/3019c66eb70e54b376e9464417e073bd98d96b6a))
+* **deps-dev:** bump @types/node from 20.12.11 to 20.12.12 ([bd0a0a5](https://github.com/privacy-scaling-explorations/maci/commit/bd0a0a5a1ec685542c2af4f6962186176d5453ba))
+* **deps-dev:** bump @types/node from 20.12.2 to 20.12.5 ([588392f](https://github.com/privacy-scaling-explorations/maci/commit/588392f2f773addce0204f236fc26981ead1f7bb))
+* **deps-dev:** bump @types/node from 20.12.5 to 20.12.7 ([f1b00de](https://github.com/privacy-scaling-explorations/maci/commit/f1b00deb29788e390dcecd5b1741339f96f06f73))
+* **deps-dev:** bump @types/node from 20.12.7 to 20.12.10 ([cf5026a](https://github.com/privacy-scaling-explorations/maci/commit/cf5026a42a41c0078467fb477fdd51a2afb31e1f))
+* **deps-dev:** bump @types/node from 20.14.10 to 20.14.11 ([01564c0](https://github.com/privacy-scaling-explorations/maci/commit/01564c0503379ca65ce90ea77fdc5ebcd9ae81c5))
+* **deps-dev:** bump @types/node from 20.14.11 to 22.1.0 ([#1732](https://github.com/privacy-scaling-explorations/maci/issues/1732)) ([3c4b9d9](https://github.com/privacy-scaling-explorations/maci/commit/3c4b9d9c9eb7439c4ea9791e4388ff586530be50))
+* **deps-dev:** bump @types/node from 20.14.2 to 20.14.8 ([636ac22](https://github.com/privacy-scaling-explorations/maci/commit/636ac22bd29d12e5af7f69c7dd639d0223595992))
+* **deps-dev:** bump @types/node from 20.14.8 to 20.14.10 ([add0ce4](https://github.com/privacy-scaling-explorations/maci/commit/add0ce4e406fea4bfe2b839facc6a0a33b3fe3bf))
+* **deps-dev:** bump mocha from 10.3.0 to 10.4.0 ([7bf5afe](https://github.com/privacy-scaling-explorations/maci/commit/7bf5afe954bcb6b34dbe7f109c9c7e8d5396f1b2))
+* **deps-dev:** bump mocha from 10.4.0 to 10.5.0 ([e5c14cf](https://github.com/privacy-scaling-explorations/maci/commit/e5c14cf01e9b5beb6232e80345121dbb47190fd0))
+* **deps-dev:** bump mocha from 10.5.0 to 10.6.0 ([6847bb3](https://github.com/privacy-scaling-explorations/maci/commit/6847bb374893672bf7e809fc80d124e2d874b784))
+* **deps-dev:** bump mocha from 10.6.0 to 10.7.0 ([#1687](https://github.com/privacy-scaling-explorations/maci/issues/1687)) ([2cad35b](https://github.com/privacy-scaling-explorations/maci/commit/2cad35bab133af79f77ea9c19098d3561ba06f69))
+* **deps-dev:** bump nyc from 15.1.0 to 17.0.0 ([c7f4414](https://github.com/privacy-scaling-explorations/maci/commit/c7f441417d7c7ec8019867801b77e7b5c07c2307))
+* **deps-dev:** bump typescript from 5.3.3 to 5.4.2 ([591c767](https://github.com/privacy-scaling-explorations/maci/commit/591c767308f746fbfc32a9f184192912895f080c))
+* **deps-dev:** bump typescript from 5.4.2 to 5.4.3 ([a2f5c8a](https://github.com/privacy-scaling-explorations/maci/commit/a2f5c8ac32394fc7672051d5342baf7e6f9567ce))
+* **deps-dev:** bump typescript from 5.4.3 to 5.4.4 ([5e047ea](https://github.com/privacy-scaling-explorations/maci/commit/5e047eaa96d508addf34e35764ddaf4deb221593))
+* **deps-dev:** bump typescript from 5.4.4 to 5.4.5 ([ea6339d](https://github.com/privacy-scaling-explorations/maci/commit/ea6339da96dda38a931cb6d39615c9267ca45b81))
+* **deps-dev:** bump typescript from 5.4.5 to 5.5.2 ([e2b4d45](https://github.com/privacy-scaling-explorations/maci/commit/e2b4d45235c82bba349d959a164442cae90ad97f))
+* **deps-dev:** bump typescript from 5.5.2 to 5.5.3 ([c979188](https://github.com/privacy-scaling-explorations/maci/commit/c979188358becfc4b434a2f73331e640ce595846))
+* **deps-dev:** bump typescript from 5.5.3 to 5.5.4 ([8ed2e2b](https://github.com/privacy-scaling-explorations/maci/commit/8ed2e2b109a950137dd289aa7d3eca4268079272))
+* **deps:** bump @zk-kit/baby-jubjub from 0.1.1 to 0.2.0 ([8335e87](https://github.com/privacy-scaling-explorations/maci/commit/8335e8706920da9a75f5d64f179b41fab8a9286d))
+* **deps:** bump @zk-kit/baby-jubjub from 0.2.0 to 0.3.0 ([0cc028a](https://github.com/privacy-scaling-explorations/maci/commit/0cc028aaccbd532268f68f816cc941a30be03532))
+* **deps:** bump @zk-kit/baby-jubjub from 0.3.0 to 1.0.1 ([0c7a045](https://github.com/privacy-scaling-explorations/maci/commit/0c7a0452a0ee3e7235cc81f4294e097e7d754dab))
+* **deps:** bump @zk-kit/eddsa-poseidon from 0.5.1 to 0.11.0 ([cca4446](https://github.com/privacy-scaling-explorations/maci/commit/cca4446e2baa3404dddcdbdd699ea3738463512f))
+* **deps:** bump @zk-kit/eddsa-poseidon from 0.5.1 to 0.6.0 ([8d0704e](https://github.com/privacy-scaling-explorations/maci/commit/8d0704e89745447c68c4c925c919fda19f19f1e4))
+* **deps:** bump @zk-kit/eddsa-poseidon from 1.0.1 to 1.0.2 ([f577ee4](https://github.com/privacy-scaling-explorations/maci/commit/f577ee42a286dbeeb06b8ab272f8f815425a0e48))
+* **deps:** bump @zk-kit/poseidon-cipher from 0.2.1 to 0.3.0 ([a4f023e](https://github.com/privacy-scaling-explorations/maci/commit/a4f023eaa31c0ec822288f76cd5a7b712b09c3b6))
+* **deps:** bump ethers from 6.11.1 to 6.12.0 ([9db5a93](https://github.com/privacy-scaling-explorations/maci/commit/9db5a93d32396d80b76e2d20d1af529e6a97292a))
+* **deps:** bump ethers from 6.12.0 to 6.12.1 ([16b4615](https://github.com/privacy-scaling-explorations/maci/commit/16b46159a132abb82b4659c424a065bb418bd31e))
+* **deps:** bump ethers from 6.13.0 to 6.13.1 ([b32694d](https://github.com/privacy-scaling-explorations/maci/commit/b32694da7aa60e0215daa56d2b64ed5e5f8d9d45))
+* **deps:** bump ethers from 6.13.1 to 6.13.2 ([#1709](https://github.com/privacy-scaling-explorations/maci/issues/1709)) ([c9de72e](https://github.com/privacy-scaling-explorations/maci/commit/c9de72eead282027cc9dcab0edd9170a0fbe5a2e))
+* **release:** publish 1.2.1 ([93564f8](https://github.com/privacy-scaling-explorations/maci/commit/93564f8a98baa0fee65db16e2e40209d9ac1b3ae))
+* **release:** publish 2.0.0 ([04e647d](https://github.com/privacy-scaling-explorations/maci/commit/04e647d231df34952569ad6ff802e0b2333eb658))
+* update zk-kit compatible packages ([928c032](https://github.com/privacy-scaling-explorations/maci/commit/928c032b83b6cbea6a0fa137171c6b9c7edc591d))
 
 
 

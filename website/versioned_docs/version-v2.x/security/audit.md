@@ -9,11 +9,18 @@ sidebar_position: 1
 
 ## Full reports
 
+- Audit by PSE Audit 2024/07 [report](/audit_reports/20240731_PSE_Audit_audit_report.pdf)
 - Audit by PSE Audit 2024/02 [report](/audit_reports/20240223_PSE_Audit_audit_report.pdf)
 - Audit by HashCloak 2022/09 [report](/audit_reports/202220930_Hashcloak_audit_report.pdf)
 - Audit by HashCloak 2021/09 [report](/audit_reports/20210922_Hashcloak_audit_report.pdf)
 
-## PSE audit 2024
+## PSE audit 2024/07
+
+In July 2024 the PSE Audit team audited the MACI codebase with a focus on the smart contracts, TypeScript core, and Circom circuits. Nothing serious was found but we made some optimizations to the codebase.
+
+Please see the [PSE Audit report](/audit_reports/20240731_PSE_Audit_audit_report.pdf) for details.
+
+## PSE audit 2024/02
 
 In February 2024 the PSE Audit team audited the MACI codebase with a focus on the smart contracts, TypeScript core, and Circom circuits Three critical bugs were found: two within the Circom circuits and one in the smart contracts. All three of these have been fixed.
 
