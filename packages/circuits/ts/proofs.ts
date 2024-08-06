@@ -5,14 +5,11 @@ import childProcess from "child_process";
 import fs from "fs";
 import { tmpdir } from "os";
 import path from "path";
-import { promisify } from "util";
 
 import type { IGenProofOptions, ISnarkJSVerificationKey, FullProveResult } from "./types";
 import type { IVkObjectParams } from "maci-domainobjs";
 
 import { cleanThreads, isArm } from "./utils";
-
-const execFile = promisify(childProcess.execFile);
 
 /**
  * Generate a zk-SNARK proof
@@ -69,6 +66,9 @@ export const genProof = async ({
   // Write input.json
   const jsonData = JSON.stringify(stringifyBigInts(inputs));
   await fs.promises.writeFile(inputJsonPath, jsonData);
+
+  const { promisify } = await import("util");
+  const execFile = promisify(childProcess.execFile);
 
   // Generate the witness
   await execFile(witnessExePath!, [inputJsonPath, outputWtnsPath]);
