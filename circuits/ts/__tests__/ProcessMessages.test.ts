@@ -385,11 +385,9 @@ describe("ProcessMessage circuit", function test() {
     });
   });
 
-  // TODO: Do we have enabled key change?
   describe("4) 1 user, key-change", () => {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     const voteWeight = BigInt(9);
-    let stateIndex: number;
     let pollId: bigint;
     let poll: Poll;
     const messages: Message[] = [];
@@ -398,9 +396,8 @@ describe("ProcessMessage circuit", function test() {
     before(() => {
       // Sign up and publish
       const userKeypair = new Keypair(new PrivKey(BigInt(123)));
-      const userKeypair2 = new Keypair(new PrivKey(BigInt(456)));
 
-      stateIndex = maciState.signUp(
+      maciState.signUp(
         userKeypair.pubKey,
         voiceCreditBalance,
         BigInt(1), // BigInt(Math.floor(Date.now() / 1000)),
@@ -418,17 +415,27 @@ describe("ProcessMessage circuit", function test() {
 
       poll.updatePoll(BigInt(maciState.stateLeaves.length));
 
+      const { privKey } = userKeypair;
+      const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
+
+      const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
+      const timestamp = BigInt(1);
+
+      const stateIndex = poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp);
+
+      const { privKey: pollPrivKey2, pubKey: pollPubKey2 } = new Keypair();
+
       // Vote for option 0
       const command = new PCommand(
         BigInt(stateIndex), // BigInt(1),
-        userKeypair.pubKey,
+        pollPubKey,
         BigInt(0), // voteOptionIndex,
         voteWeight, // vote weight
         BigInt(1), // nonce
         BigInt(pollId),
       );
 
-      const signature = command.sign(userKeypair.privKey);
+      const signature = command.sign(pollPrivKey);
 
       const ecdhKeypair = new Keypair();
       const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
@@ -441,13 +448,13 @@ describe("ProcessMessage circuit", function test() {
       // Vote for option 1
       const command2 = new PCommand(
         BigInt(stateIndex),
-        userKeypair2.pubKey,
+        pollPubKey,
         BigInt(1), // voteOptionIndex,
         voteWeight, // vote weight
         BigInt(2), // nonce
         BigInt(pollId),
       );
-      const signature2 = command2.sign(userKeypair2.privKey);
+      const signature2 = command2.sign(pollPrivKey);
 
       const ecdhKeypair2 = new Keypair();
       const sharedKey2 = Keypair.genEcdhSharedKey(ecdhKeypair2.privKey, coordinatorKeypair.pubKey);
@@ -459,14 +466,14 @@ describe("ProcessMessage circuit", function test() {
       // Change key
       const command3 = new PCommand(
         BigInt(stateIndex), // BigInt(1),
-        userKeypair2.pubKey,
+        pollPubKey2,
         BigInt(1), // voteOptionIndex,
         BigInt(0), // vote weight
         BigInt(1), // nonce
         BigInt(pollId),
       );
 
-      const signature3 = command3.sign(userKeypair.privKey);
+      const signature3 = command3.sign(pollPrivKey2);
 
       const ecdhKeypair3 = new Keypair();
       const sharedKey3 = Keypair.genEcdhSharedKey(ecdhKeypair3.privKey, coordinatorKeypair.pubKey);
