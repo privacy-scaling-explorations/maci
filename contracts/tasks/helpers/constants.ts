@@ -9,6 +9,8 @@ export enum ESupportedChains {
   ScrollSepolia = "scroll_sepolia",
   Arbitrum = "arbitrum",
   ArbitrumSepolia = "arbitrum_sepolia",
+  Base = "base",
+  BaseSepolia = "base_sepolia",
   Coverage = "coverage",
   Hardhat = "hardhat",
 }
@@ -25,6 +27,8 @@ export enum EChainId {
   ScrollSepolia = 534351,
   Arbitrum = 42161,
   ArbitrumSepolia = 421614,
+  Base = 8453,
+  BaseSepolia = 84532,
   Coverage = 1337,
 }
 
@@ -43,6 +47,8 @@ export const getNetworkRpcUrls = (): Record<ESupportedChains, string> => {
   const SCROLL_SEPOLIA_RPC_URL = process.env.SCROLL_SEPOLIA_RPC_URL ?? "";
   const ARB_RPC_URL = process.env.ARB_RPC_URL ?? "";
   const ARB_SEPOLIA_RPC_URL = process.env.ARB_SEPOLIA_RPC_URL ?? "";
+  const BASE_RPC_URL = process.env.BASE_RPC_URL ?? "";
+  const BASE_SEPOLIA_RPC_URL = process.env.BASE_SEPOLIA_RPC_URL ?? "";
 
   return {
     [ESupportedChains.Sepolia]: SEPOLIA_RPC_URL,
@@ -52,6 +58,8 @@ export const getNetworkRpcUrls = (): Record<ESupportedChains, string> => {
     [ESupportedChains.ScrollSepolia]: SCROLL_SEPOLIA_RPC_URL,
     [ESupportedChains.Arbitrum]: ARB_RPC_URL,
     [ESupportedChains.ArbitrumSepolia]: ARB_SEPOLIA_RPC_URL,
+    [ESupportedChains.Base]: BASE_RPC_URL,
+    [ESupportedChains.BaseSepolia]: BASE_SEPOLIA_RPC_URL,
     [ESupportedChains.Coverage]: "http://localhost:8555",
     [ESupportedChains.Hardhat]: "http://localhost:8545",
   };
@@ -64,7 +72,9 @@ export const getEtherscanApiKeys = (): Record<ESupportedChains, string | undefin
   [ESupportedChains.Scroll]: process.env.SCROLL_ETHERSCAN_API_KEY,
   [ESupportedChains.ScrollSepolia]: process.env.SCROLL_ETHERSCAN_API_KEY,
   [ESupportedChains.Arbitrum]: process.env.ARB_ETHERSCAN_API_KEY,
-  [ESupportedChains.ArbitrumSepolia]: process.env.ARB_SEPOLIA_ETHERSCAN_API_KEY,
+  [ESupportedChains.ArbitrumSepolia]: process.env.ARB_ETHERSCAN_API_KEY,
+  [ESupportedChains.Base]: process.env.BASE_ETHERSCAN_API_KEY,
+  [ESupportedChains.BaseSepolia]: process.env.BASE_ETHERSCAN_API_KEY,
   [ESupportedChains.Coverage]: undefined,
   [ESupportedChains.Hardhat]: undefined,
 });

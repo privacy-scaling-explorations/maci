@@ -1,122 +1,3 @@
----
-title: Deployed MACI Smart Contracts
-description: Deployed MACI Smart Contracts
-sidebar_label: Deployed MACI Smart Contracts
-sidebar_position: 10
----
-
-There are a number of MACI's smart contracts which can be re-used by different deployments. These are the following:
-
-- [VkRegistry](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/VkRegistry.sol)
-- [PoseidonHashers](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/crypto/Hasher.sol)
-- [PollFactory](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/PollFactory.sol)
-- [MessageProcessorFactory](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/MessageProcessorFactory.sol)
-- [TallyFactory](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/TallyFactory.sol)
-- [Verifier](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/crypto/Verifier.sol)
-- [FreeForAllGatekeeper](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/gatekeepers/FreeForAllGatekeeper.sol)
-- [ConstantInitialVoiceCreditProxy](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/initialVoiceCreditProxy/ConstantInitialVoiceCreditProxy.sol) - if you are happy to work with a fixed amount of credits
-
-VkRegistries can be re-used by different protocols to share the same set of verifying keys. Please be advised that you should be verifying that those verifying keys are the ones that have undergone a trusted setup ceremony.
-
-In order to verify you will need the following:
-
-- configure the cli (`cd cli && cp .env.example .env` and set the correct env vars)
-- download the keys (`pnpm download-zkeys:ceremony` from the monorepo root)
-- run checkVerifyingKeys with the cli (see below)
-
-```bash
-cd cli && node build/ts/index.js checkVerifyingKeys -q false -vk 0x74569d524a193daC0D3Df17B9E207C916174745b -s 6 -i 2 -m 9 -v 3 -b 2 -p ./zkeys/ProcessMessages_6-9-2-3/processMessages_6-9-2-3.zkey -t ./zkeys/TallyVotes_6-2-3/tallyVotes_6-2-3.zkey
-```
-
-:::info
-You should change the -vk parameter to the VkRegistry address for the chain you are deploying to. Also you might need to modify the parameters based on the circuit configuration. Please refer to the [circuits page](/docs/developers-references/zk-snark-circuits/setup) for more information. Also you can add `-uq false` if you want to check non quadratic voting keys.
-:::
-
-## Contract Addresses
-
-### Arbitrum Sepolia
-
-| Contract                                     | Address                                                                                                                      |
-| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ---------------- |
-| ConstantInitialVoiceCreditProxy (99 Credits) | [0x41a29A58A63A998c9Edde6883Bcec2d89835a8e9](https://sepolia.arbiscan.io/address/0x41a29A58A63A998c9Edde6883Bcec2d89835a8e9) | Arbitrum Sepolia |
-| FreeForAllGatekeeper                         | [0x9e98cAA76492338627BAD0e5a6AA2762d827E169](https://sepolia.arbiscan.io/address/0x9e98cAA76492338627BAD0e5a6AA2762d827E169) |
-| Verifier                                     | [0xB400794f463d90ce5f462A43d8E6f9155656d02d](https://sepolia.arbiscan.io/address/0xB400794f463d90ce5f462A43d8E6f9155656d02d) |
-| PollFactory                                  | [0xBa350B0cF67a0dEDa103A5d0d297bd120bF87E39](https://sepolia.arbiscan.io/address/0xBa350B0cF67a0dEDa103A5d0d297bd120bF87E39) |
-| MessageProcessorFactory                      | [0x96FD5e4E40671Bf8d5f1d0E3F3402488680B8376](https://sepolia.arbiscan.io/address/0x96FD5e4E40671Bf8d5f1d0E3F3402488680B8376) |
-| TallyFactory                                 | [0xEEBc671e15B3f1c7483161F866d76ad84645d7C8](https://sepolia.arbiscan.io/address/0xEEBc671e15B3f1c7483161F866d76ad84645d7C8) |
-| MACI (stateTreeDepth = 10)                   | [0x1446a1a1af027e58C8Bd29e231C01dB35b2F485E](https://sepolia.arbiscan.io/address/0x1446a1a1af027e58C8Bd29e231C01dB35b2F485E) |
-| VkRegistry (10-2-1-2 and 10-1-2)             | [0xE21F9Ea298b62032B3C2206955cd12c4Ab0a046b](https://sepolia.arbiscan.io/address/0xE21F9Ea298b62032B3C2206955cd12c4Ab0a046b) |
-| PoseidonT3                                   | [0xa0e0aC07c211D329ebA2D6ec552F4dC1B230A89A](https://sepolia.arbiscan.io/address/0xa0e0aC07c211D329ebA2D6ec552F4dC1B230A89A) |
-| PoseidonT4                                   | [0x4f02c99df5731C8C69f6baa62Aa4C9f99C529CE2](https://sepolia.arbiscan.io/address/0x0CC8B7Aed7d79a8B948636242706265548D0B10a) |
-| PoseidonT5                                   | [0x43B519FF023757508311518AC41B5fA1CfD57181](https://sepolia.arbiscan.io/address/0x43B519FF023757508311518AC41B5fA1CfD57181) |
-| PoseidonT6                                   | [0xb123798B1b21082100D289BeA24bFF0F8dfcbEe1](https://sepolia.arbiscan.io/address/0xb123798B1b21082100D289BeA24bFF0F8dfcbEe1) |
-
-### Arbitrum Mainnet
-
-| Contract   | Address                                                                                                              |
-| ---------- | -------------------------------------------------------------------------------------------------------------------- |
-| VkRegistry | [0x74569d524a193daC0D3Df17B9E207C916174745b](https://arbiscan.io/address/0x74569d524a193dac0d3df17b9e207c916174745b) |
-| PoseidonT3 | [0xc8640cD00E00192949386E5be0c0b46C29CE8991](https://arbiscan.io/address/0xc8640cd00e00192949386e5be0c0b46c29ce891)  |
-| PoseidonT4 | [0x4f02c99df5731C8C69f6baa62Aa4C9f99C529CE2](https://arbiscan.io/address/0x4f02c99df5731C8C69f6baa62Aa4C9f99C529CE2) |
-| PoseidonT5 | [0x89d4597b619598E3fe1Bf3E9b94e22ab8f931AdA](https://arbiscan.io/address/0x89d4597b619598E3fe1Bf3E9b94e22ab8f931AdA) |
-| PoseidonT6 | [0xabf4B6395146719e8daCce6dd5f604993C7649E0](https://arbiscan.io/address/0xabf4B6395146719e8daCce6dd5f604993C7649E0) |
-
-### Optimism Sepolia
-
-| Contract                                     | Address                                                                                                                                |
-| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| ConstantInitialVoiceCreditProxy (99 Credits) | [0x4473aC3e68ad78D67757336ABaAa2Dced08cfcdF](https://sepolia-optimism.etherscan.io/address/0x4473aC3e68ad78D67757336ABaAa2Dced08cfcdF) |
-| FreeForAllGatekeeper                         | [0xa4fF6765C207C84AbeFCe0226b24204f9ceBAB45](https://sepolia-optimism.etherscan.io/address/0xa4fF6765C207C84AbeFCe0226b24204f9ceBAB45) |
-| Verifier                                     | [0xB1abb44291ff487f96636758b07Ccd9881f64c9A](https://sepolia-optimism.etherscan.io/address/0xB1abb44291ff487f96636758b07Ccd9881f64c9A) |
-| PollFactory                                  | [0xad844a9567ada5996FFC0D2DeC78b3767a1c0501](https://sepolia-optimism.etherscan.io/address/0xad844a9567ada5996FFC0D2DeC78b3767a1c0501) |
-| MessageProcessorFactory                      | [0xbBb6f1B4232F993e5a026217a3D596B332062CB3](https://sepolia-optimism.etherscan.io/address/0xbBb6f1B4232F993e5a026217a3D596B332062CB3) |
-| TallyFactory                                 | [0x1356f05179cdcAD2D8708B539A75de082118de92](https://sepolia-optimism.etherscan.io/address/0x1356f05179cdcAD2D8708B539A75de082118de92) |
-| MACI (stateTreeDepth = 10)                   | [0x94f29E6d14A01c1330CE8f7421Db489Fe5A14976](https://sepolia-optimism.etherscan.io/address/0x94f29E6d14A01c1330CE8f7421Db489Fe5A14976) |
-| VkRegistry (10-2-1-2 and 10-1-2)             | [0x42B1AB3d98B8235204E75112e5d9E974cE7531cC](https://sepolia-optimism.etherscan.io/address/0x42B1AB3d98B8235204E75112e5d9E974cE7531cC) |
-| PoseidonT3                                   | [0x07490eba00dc4ACA6721D052Fa4C5002Aa077233](https://sepolia-optimism.etherscan.io/address/0x07490eba00dc4ACA6721D052Fa4C5002Aa077233) |
-| PoseidonT4                                   | [0xbb0e724CE02e5E7eDd31e632dc6e59F229a1126d](https://sepolia-optimism.etherscan.io/address/0xbb0e724CE02e5E7eDd31e632dc6e59F229a1126d) |
-| PoseidonT5                                   | [0xE0398F7DFAC494c530F6404AfEaC8669ABeD2679](https://sepolia-optimism.etherscan.io/address/0xE0398F7DFAC494c530F6404AfEaC8669ABeD2679) |
-| PoseidonT6                                   | [0xfD77833F10a29c76A6a0ede235Eb651D744d0E2F](https://sepolia-optimism.etherscan.io/address/0xfD77833F10a29c76A6a0ede235Eb651D744d0E2F) |
-
-### Scroll Sepolia
-
-| Contract                                     | Address                                                                                                                         |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| ConstantInitialVoiceCreditProxy (99 Credits) | [0xB486cce9B4507A67Db147B0802D5673774C8D278](https://sepolia.scrollscan.com/address/0xB486cce9B4507A67Db147B0802D5673774C8D278) |
-| FreeForAllGatekeeper                         | [0x83dD551541C580e338206f1f677835D427C92dE2](https://sepolia.scrollscan.com/address/0x83dD551541C580e338206f1f677835D427C92dE2) |
-| Verifier                                     | [0xD5C41106db85EDd0298279AcFCE5A722060cc5f9](https://sepolia.scrollscan.com/address/0xD5C41106db85EDd0298279AcFCE5A722060cc5f9) |
-| PollFactory                                  | [0x982530673Ce9e5Efa02438c694d48327Aa4fB592](https://sepolia.scrollscan.com/address/0x982530673Ce9e5Efa02438c694d48327Aa4fB592) |
-| MessageProcessorFactory                      | [0x50045B05cb1C76410783D8A3e5625a99d5729339](https://sepolia.scrollscan.com/address/0x50045B05cb1C76410783D8A3e5625a99d5729339) |
-| TallyFactory                                 | [0xbB28555E989799478442483CD1f2D370a14e2C42](https://sepolia.scrollscan.com/address/0xbB28555E989799478442483CD1f2D370a14e2C42) |
-| MACI (stateTreeDepth = 10)                   | [0xdA10b22B81eb8EA6BC04aa9b86d3f9d969CD49F0](https://sepolia.scrollscan.com/address/0xdA10b22B81eb8EA6BC04aa9b86d3f9d969CD49F0) |
-| VkRegistry (10-2-1-2 and 10-1-2)             | [0x3D4C58074DCD8E6526885F465ab5F311b6B290B5](https://sepolia.scrollscan.com/address/0x3D4C58074DCD8E6526885F465ab5F311b6B290B5) |
-| PoseidonT3                                   | [0x88C2c6A7535463962A34757FE63cc4F296381aba](https://sepolia.scrollscan.com/address/0x88C2c6A7535463962A34757FE63cc4F296381aba) |
-| PoseidonT4                                   | [0x0a0D66baFDa8c8838281084d9C3d68Dd9a6Fc274](https://sepolia.scrollscan.com/address/0x0a0D66baFDa8c8838281084d9C3d68Dd9a6Fc274) |
-| PoseidonT5                                   | [0xE0398F7DFAC494c530F6404AfEaC8669ABeD2679](https://sepolia.scrollscan.com/address/0xE0398F7DFAC494c530F6404AfEaC8669ABeD2679) |
-| PoseidonT6                                   | [0xD2F6c828606Ad8e985008Cd825012f269B50CD58](https://sepolia.scrollscan.com/address/0xD2F6c828606Ad8e985008Cd825012f269B50CD58) |
-
-### Base Sepolia
-
-| Contract                                     | Address                                                                                                                       |
-| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| ConstantInitialVoiceCreditProxy (99 Credits) | [0x16FC13edD59D4b9F788Fb11A70eA022E1Bb1B856](https://sepolia.basescan.org/address/0x16FC13edD59D4b9F788Fb11A70eA022E1Bb1B856) |
-| FreeForAllGatekeeper                         | [0x8BA83Dd6E0E448417C519A38c90Ee570A4CA3e9f](https://sepolia.basescan.org/address/0x8BA83Dd6E0E448417C519A38c90Ee570A4CA3e9f) |
-| Verifier                                     | [0x2427Ab201488Ac81Bec421F179B1Be23c55ebC27](https://sepolia.basescan.org/address/0x2427Ab201488Ac81Bec421F179B1Be23c55ebC27) |
-| PollFactory                                  | [0x2F1A5B4F8F3B7348C66A1522622b1DB712261607](https://sepolia.basescan.org/address/0x2F1A5B4F8F3B7348C66A1522622b1DB712261607) |
-| MessageProcessorFactory                      | [0xE4c9d4248F1371C5C61d406A9859f9FE667567a5](https://sepolia.basescan.org/address/0xE4c9d4248F1371C5C61d406A9859f9FE667567a5) |
-| TallyFactory                                 | [0x57034389Dbe3DE1D1C14763f55B77A2279D6d43C](https://sepolia.basescan.org/address/0x57034389Dbe3DE1D1C14763f55B77A2279D6d43C) |
-| MACI (stateTreeDepth = 10)                   | [0x78c3bF1b2Bc3A5512e274cA8407D2339Bb859761](https://sepolia.basescan.org/address/0x78c3bF1b2Bc3A5512e274cA8407D2339Bb859761) |
-| VkRegistry (10-2-1-2 and 10-1-2)             | [0x6aA5baD99aC44bB008930c68CE2249549Cf10944](https://sepolia.basescan.org/address/0x6aA5baD99aC44bB008930c68CE2249549Cf10944) |
-| PoseidonT3                                   | [0x2F1398ab5E322d357dF8CdD2e7ba73122c5FDDA4](https://sepolia.basescan.org/address/0x2F1398ab5E322d357dF8CdD2e7ba73122c5FDDA4) |
-| PoseidonT4                                   | [0x8778dA47eF619f56341fE95514e95fa0FF3B77C6](https://sepolia.basescan.org/address/0x8778dA47eF619f56341fE95514e95fa0FF3B77C6) |
-| PoseidonT5                                   | [0xB8Bc2c7cF71441fF7E6F111D3457e3d61c564968](https://sepolia.basescan.org/address/0xB8Bc2c7cF71441fF7E6F111D3457e3d61c564968) |
-| PoseidonT6                                   | [0x37282fEde56aa1d7266Ecb12DC3b342D12044e2E](https://sepolia.basescan.org/address/0x37282fEde56aa1d7266Ecb12DC3b342D12044e2E) |
-
-## Raw JSON with deployed contracts and tx hashes
-
-**packages/contracts/deployed-contracts.json**
-
-```json
 {
   "optimism_sepolia": {
     "instance": {
@@ -203,17 +84,30 @@ You should change the -vk parameter to the VkRegistry address for the chain you 
         "verify": {
           "args": "[]"
         }
+      },
+      "0x6f9F7Fef2FF7F5D1Ff8966F751EC154146d8f431": {
+        "id": "ConstantInitialVoiceCreditProxy",
+        "deploymentTxHash": "0xe5b6ce84a95af89c64cff82901bc26b96d67bf4ffb18d4e82ebfcbc19c4392f2",
+        "verify": {
+          "args": "[\"99\"]"
+        }
+      },
+      "0x6b414ff158581Ac940797463a44221d0ba6A0B9C": {
+        "id": "FreeForAllGatekeeper",
+        "deploymentTxHash": "0x5f7640018acb7155aa510e05cca92ad40003327dfe75fcab7d61bd21fefdea67",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x7a65434FA0A87B7132DAFAd9732fA7e5516851BC": {
+        "id": "MACI",
+        "deploymentTxHash": "0xd5bbab2d0a4c583d108b4b75661fb215ea477aa4cc0943982576863177a29cdb",
+        "verify": {
+          "args": "[\"0xad844a9567ada5996FFC0D2DeC78b3767a1c0501\",\"0xbBb6f1B4232F993e5a026217a3D596B332062CB3\",\"0x1356f05179cdcAD2D8708B539A75de082118de92\",\"0x6b414ff158581Ac940797463a44221d0ba6A0B9C\",\"0x6f9F7Fef2FF7F5D1Ff8966F751EC154146d8f431\",10,\"16015576667038038422103932363190100635991292382181099511410843174865570503661,166510078825589460025300915201657086611944528317298994959376081297530246971,10057734083972610459557695472359628128485394923403014377687504571662791937025,4904828619307091008204672239231377290495002626534171783829482835985709082773,18694062287284245784028624966421731916526814537891066525886866373016385890569\"]"
+        }
       }
     },
     "named": {
-      "ConstantInitialVoiceCreditProxy": {
-        "address": "0x4473aC3e68ad78D67757336ABaAa2Dced08cfcdF",
-        "count": 1
-      },
-      "FreeForAllGatekeeper": {
-        "address": "0xa4fF6765C207C84AbeFCe0226b24204f9ceBAB45",
-        "count": 1
-      },
       "Verifier": {
         "address": "0xB1abb44291ff487f96636758b07Ccd9881f64c9A",
         "count": 1
@@ -246,12 +140,20 @@ You should change the -vk parameter to the VkRegistry address for the chain you 
         "address": "0x1356f05179cdcAD2D8708B539A75de082118de92",
         "count": 1
       },
-      "MACI": {
-        "address": "0x94f29E6d14A01c1330CE8f7421Db489Fe5A14976",
-        "count": 1
-      },
       "VkRegistry": {
         "address": "0x42B1AB3d98B8235204E75112e5d9E974cE7531cC",
+        "count": 1
+      },
+      "ConstantInitialVoiceCreditProxy": {
+        "address": "0x6f9F7Fef2FF7F5D1Ff8966F751EC154146d8f431",
+        "count": 1
+      },
+      "FreeForAllGatekeeper": {
+        "address": "0x6b414ff158581Ac940797463a44221d0ba6A0B9C",
+        "count": 1
+      },
+      "MACI": {
+        "address": "0x7a65434FA0A87B7132DAFAd9732fA7e5516851BC",
         "count": 1
       }
     }
@@ -671,4 +573,3 @@ You should change the -vk parameter to the VkRegistry address for the chain you 
     }
   }
 }
-```
