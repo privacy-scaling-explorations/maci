@@ -21,8 +21,8 @@ importers:
         specifier: ^7.18.0
         version: 7.18.0(eslint@8.57.0)(typescript@5.5.4)
       conventional-changelog-conventionalcommits:
-        specifier: ^8.0.0
-        version: 8.0.0
+        specifier: ^7.0.0
+        version: 7.0.2
       cz-conventional-changelog:
         specifier: ^3.3.0
         version: 3.3.0(@types/node@22.1.0)(typescript@5.5.4)
@@ -108,13 +108,13 @@ importers:
         specifier: ^2.0.5
         version: 2.0.5
       maci-core:
-        specifier: 2.0.0-alpha
+        specifier: ^2.0.0
         version: link:../core
       maci-crypto:
-        specifier: 2.0.0-alpha
+        specifier: ^2.0.0
         version: link:../crypto
       maci-domainobjs:
-        specifier: 2.0.0-alpha
+        specifier: ^2.0.0
         version: link:../domainobjs
       snarkjs:
         specifier: ^0.7.4
@@ -181,19 +181,19 @@ importers:
         specifier: ^2.22.7
         version: 2.22.7(ts-node@10.9.2(@types/node@22.1.0)(typescript@5.5.4))(typescript@5.5.4)
       maci-circuits:
-        specifier: 2.0.0-alpha
+        specifier: ^2.0.0
         version: link:../circuits
       maci-contracts:
-        specifier: 2.0.0-alpha
+        specifier: ^2.0.0
         version: link:../contracts
       maci-core:
-        specifier: 2.0.0-alpha
+        specifier: ^2.0.0
         version: link:../core
       maci-crypto:
-        specifier: 2.0.0-alpha
+        specifier: ^2.0.0
         version: link:../crypto
       maci-domainobjs:
-        specifier: 2.0.0-alpha
+        specifier: ^2.0.0
         version: link:../domainobjs
       prompt:
         specifier: ^1.3.0
@@ -263,16 +263,16 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       maci-circuits:
-        specifier: 2.0.0-alpha
+        specifier: ^2.0.0
         version: link:../circuits
       maci-core:
-        specifier: 2.0.0-alpha
+        specifier: ^2.0.0
         version: link:../core
       maci-crypto:
-        specifier: 2.0.0-alpha
+        specifier: ^2.0.0
         version: link:../crypto
       maci-domainobjs:
-        specifier: 2.0.0-alpha
+        specifier: ^2.0.0
         version: link:../domainobjs
       solidity-docgen:
         specifier: ^0.6.0-beta.36
@@ -324,10 +324,10 @@ importers:
   core:
     dependencies:
       maci-crypto:
-        specifier: 2.0.0-alpha
+        specifier: ^2.0.0
         version: link:../crypto
       maci-domainobjs:
-        specifier: 2.0.0-alpha
+        specifier: ^2.0.0
         version: link:../domainobjs
     devDependencies:
       '@types/chai':
@@ -410,7 +410,7 @@ importers:
   domainobjs:
     dependencies:
       maci-crypto:
-        specifier: 2.0.0-alpha
+        specifier: ^2.0.0
         version: link:../crypto
     devDependencies:
       '@types/chai':
@@ -444,22 +444,22 @@ importers:
         specifier: ^6.13.2
         version: 6.13.2
       maci-circuits:
-        specifier: 2.0.0-alpha
+        specifier: ^2.0.0
         version: link:../circuits
       maci-cli:
-        specifier: 2.0.0-alpha
+        specifier: ^2.0.0
         version: link:../cli
       maci-contracts:
-        specifier: 2.0.0-alpha
+        specifier: ^2.0.0
         version: link:../contracts
       maci-core:
-        specifier: 2.0.0-alpha
+        specifier: ^2.0.0
         version: link:../core
       maci-crypto:
-        specifier: 2.0.0-alpha
+        specifier: ^2.0.0
         version: link:../crypto
       maci-domainobjs:
-        specifier: 2.0.0-alpha
+        specifier: ^2.0.0
         version: link:../domainobjs
     devDependencies:
       '@types/chai':
@@ -508,7 +508,7 @@ importers:
         specifier: ^0.35.1
         version: 0.35.1
       maci-contracts:
-        specifier: 2.0.0-alpha
+        specifier: ^2.0.0
         version: link:../contracts
     devDependencies:
       assemblyscript:
@@ -4091,10 +4091,6 @@ packages:
   conventional-changelog-conventionalcommits@7.0.2:
     resolution: {integrity: sha512-NKXYmMR/Hr1DevQegFB4MwfM5Vv0m4UIxKZTTYuD98lpTknaZlSRrDOG4X7wIXpGkfsYxZTghUN+Qq+T0YQI7w==}
     engines: {node: '>=16'}
-
-  conventional-changelog-conventionalcommits@8.0.0:
-    resolution: {integrity: sha512-eOvlTO6OcySPyyyk8pKz2dP4jjElYunj9hn9/s0OB+gapTO8zwS9UQWrZ1pmF2hFs3vw1xhonOLGcGjy/zgsuA==}
-    engines: {node: '>=18'}
 
   conventional-changelog-core@5.0.1:
     resolution: {integrity: sha512-Rvi5pH+LvgsqGwZPZ3Cq/tz4ty7mjijhr3qR4m9IBXNbxGGYgTVVO+duXzz9aArmHxFtwZ+LRkrNIMDQzgoY4A==}
@@ -15414,10 +15410,6 @@ snapshots:
       compare-func: 2.0.0
 
   conventional-changelog-conventionalcommits@7.0.2:
-    dependencies:
-      compare-func: 2.0.0
-
-  conventional-changelog-conventionalcommits@8.0.0:
     dependencies:
       compare-func: 2.0.0
 

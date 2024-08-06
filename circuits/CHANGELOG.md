@@ -3,11 +3,89 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.0](https://github.com/privacy-scaling-explorations/maci/compare/v1.2.0...v2.0.0) (2024-08-06)
 
 
-**Note:** Version bump only for package maci-circuits
+### ⚠ BREAKING CHANGES
+
+* **topup:** No more topups
+
+### Features
+
+* **coordinator:** deploy subgraph from coordinator service ([d04d82c](https://github.com/privacy-scaling-explorations/maci/commit/d04d82cb4a3e022471726f87b24b2ee14b8ae0a2))
+* **coordinator:** update authorization ([47ef8ab](https://github.com/privacy-scaling-explorations/maci/commit/47ef8abf3c433f3992feddcced3a9ac5e1cb2cc4))
+* export merge function and modify package version ([#1584](https://github.com/privacy-scaling-explorations/maci/issues/1584)) ([f6ae34a](https://github.com/privacy-scaling-explorations/maci/commit/f6ae34a3f9ea375cd5dac8f0ce8618e33509f8ad))
+* **multiple-polls:** allow concurrent polls ([14e89ba](https://github.com/privacy-scaling-explorations/maci/commit/14e89baea1ede9bc9bad79fafb5c362d6a6a81e9))
 
 
+### Bug Fixes
+
+* add coordinator public key hash public input ([9766bbf](https://github.com/privacy-scaling-explorations/maci/commit/9766bbfcecd41bd0f39c1422978d959705b1b500))
+* **circuits:** ensure we check index < numSignups ([adeb6b8](https://github.com/privacy-scaling-explorations/maci/commit/adeb6b8fbcca01fdc73168cd73b66301f5268eaf))
+* **circuits:** remove only for circuits tests ([6b6e82b](https://github.com/privacy-scaling-explorations/maci/commit/6b6e82bb026947cf099e70a01f3e6f0fb823222d))
+* typos workflow ([b36898c](https://github.com/privacy-scaling-explorations/maci/commit/b36898c1e5aad05ff77fdf91f0660055ff428fa9))
+
+
+### Code Refactoring
+
+* **circuits:** remove duplicate constraints ([#1644](https://github.com/privacy-scaling-explorations/maci/issues/1644)) ([cd7ea49](https://github.com/privacy-scaling-explorations/maci/commit/cd7ea492aaace4c0aaa0c50ce0449a35eb8013d1))
+* **circuits:** simplify generatePathIndices templates ([2ee32f4](https://github.com/privacy-scaling-explorations/maci/commit/2ee32f470fb8d2dbb02bdea2769166754c480706))
+* enhance MACI circuits readability  ([#1337](https://github.com/privacy-scaling-explorations/maci/issues/1337)) ([3770a2a](https://github.com/privacy-scaling-explorations/maci/commit/3770a2ab6626c4beffb71e7b2d9dce595e5e9f53))
+* **maci:** remove subsidy feature to simplify further protocol improvements ([52fc7c5](https://github.com/privacy-scaling-explorations/maci/commit/52fc7c5b8f2d389868bca6171ffd15a94b1d1659))
+* **topup:** remove the topup feature ([67711d4](https://github.com/privacy-scaling-explorations/maci/commit/67711d44058831302d4556f12d1972ffacede653))
+
+
+### Miscellaneous
+
+* add @types/snarkjs package ([57bf0ed](https://github.com/privacy-scaling-explorations/maci/commit/57bf0edf4453d18c7c154ae928c30899b6996ebd))
+* add doc entries for new maci version (currently being developed) ([c72a130](https://github.com/privacy-scaling-explorations/maci/commit/c72a130cf6dcd4e8e5e59b374d8a63c1cfaae8cd))
+* bump to 1.2.2 ([e63278f](https://github.com/privacy-scaling-explorations/maci/commit/e63278f71937a1fa908ec8f4be2d43114701c134))
+* **ceremony:** update ceremony params tests ([b78830d](https://github.com/privacy-scaling-explorations/maci/commit/b78830d921d39952fbbca0fe7529340ee47ca59f))
+* **circuits:** add fuzz tests for incremental quinary tree ([#1520](https://github.com/privacy-scaling-explorations/maci/issues/1520)) ([7a812ef](https://github.com/privacy-scaling-explorations/maci/commit/7a812efc13250cf98754341f772f87ed00da3d09))
+* **circuits:** optimize converting message to command ([#1681](https://github.com/privacy-scaling-explorations/maci/issues/1681)) ([be7a659](https://github.com/privacy-scaling-explorations/maci/commit/be7a6598b7aeab2e11717bea509c697d61b556db))
+* **circuits:** optimize message to command ([#1682](https://github.com/privacy-scaling-explorations/maci/issues/1682)) ([ad04340](https://github.com/privacy-scaling-explorations/maci/commit/ad04340972f3d35a8d4915227d15c5502af7fe63))
+* cleanup circuits folder and update docs ([122c1f7](https://github.com/privacy-scaling-explorations/maci/commit/122c1f72fb3ce309a51479669e8d819a463cb956))
+* **cleanup:** remove references to topup ([1cda690](https://github.com/privacy-scaling-explorations/maci/commit/1cda690ceaaac49525e02fffcbaa11bad77541e8))
+* **deps-dev:** bump @types/mocha from 10.0.6 to 10.0.7 ([07c3480](https://github.com/privacy-scaling-explorations/maci/commit/07c3480efc40ad1d3f651b78cd7c3aaeee8d7f8a))
+* **deps-dev:** bump @types/node from 20.11.20 to 20.11.24 ([c575eca](https://github.com/privacy-scaling-explorations/maci/commit/c575eca7c54c262764ce794a919f3b1d58d7d8e7))
+* **deps-dev:** bump @types/node from 20.11.24 to 20.11.25 ([5eb49f9](https://github.com/privacy-scaling-explorations/maci/commit/5eb49f9090fc6db3a80ad2d63548d93430ff7645))
+* **deps-dev:** bump @types/node from 20.11.25 to 20.11.28 ([81bebaa](https://github.com/privacy-scaling-explorations/maci/commit/81bebaa880cbc15b8c8445d412b9fc9d89580e67))
+* **deps-dev:** bump @types/node from 20.11.28 to 20.11.30 ([5ef4420](https://github.com/privacy-scaling-explorations/maci/commit/5ef44209d16cd441067fb67201daa61cf968382d))
+* **deps-dev:** bump @types/node from 20.11.30 to 20.12.2 ([e7c32d0](https://github.com/privacy-scaling-explorations/maci/commit/e7c32d0ddd506727f229d950239a116961bbe1a0))
+* **deps-dev:** bump @types/node from 20.12.10 to 20.12.11 ([3019c66](https://github.com/privacy-scaling-explorations/maci/commit/3019c66eb70e54b376e9464417e073bd98d96b6a))
+* **deps-dev:** bump @types/node from 20.12.11 to 20.12.12 ([bd0a0a5](https://github.com/privacy-scaling-explorations/maci/commit/bd0a0a5a1ec685542c2af4f6962186176d5453ba))
+* **deps-dev:** bump @types/node from 20.12.2 to 20.12.5 ([588392f](https://github.com/privacy-scaling-explorations/maci/commit/588392f2f773addce0204f236fc26981ead1f7bb))
+* **deps-dev:** bump @types/node from 20.12.5 to 20.12.7 ([f1b00de](https://github.com/privacy-scaling-explorations/maci/commit/f1b00deb29788e390dcecd5b1741339f96f06f73))
+* **deps-dev:** bump @types/node from 20.12.7 to 20.12.10 ([cf5026a](https://github.com/privacy-scaling-explorations/maci/commit/cf5026a42a41c0078467fb477fdd51a2afb31e1f))
+* **deps-dev:** bump @types/node from 20.14.10 to 20.14.11 ([01564c0](https://github.com/privacy-scaling-explorations/maci/commit/01564c0503379ca65ce90ea77fdc5ebcd9ae81c5))
+* **deps-dev:** bump @types/node from 20.14.11 to 22.1.0 ([#1732](https://github.com/privacy-scaling-explorations/maci/issues/1732)) ([3c4b9d9](https://github.com/privacy-scaling-explorations/maci/commit/3c4b9d9c9eb7439c4ea9791e4388ff586530be50))
+* **deps-dev:** bump @types/node from 20.14.2 to 20.14.8 ([636ac22](https://github.com/privacy-scaling-explorations/maci/commit/636ac22bd29d12e5af7f69c7dd639d0223595992))
+* **deps-dev:** bump @types/node from 20.14.8 to 20.14.10 ([add0ce4](https://github.com/privacy-scaling-explorations/maci/commit/add0ce4e406fea4bfe2b839facc6a0a33b3fe3bf))
+* **deps-dev:** bump chai-as-promised from 7.1.1 to 7.1.2 ([6930a1c](https://github.com/privacy-scaling-explorations/maci/commit/6930a1c6590f0b8d9971ac38bf06d44f90b88760))
+* **deps-dev:** bump fast-check from 3.19.0 to 3.20.0 ([5e0796b](https://github.com/privacy-scaling-explorations/maci/commit/5e0796bac212e78a4ebc01b4a78cc4cf66309d8e))
+* **deps-dev:** bump mocha from 10.3.0 to 10.4.0 ([7bf5afe](https://github.com/privacy-scaling-explorations/maci/commit/7bf5afe954bcb6b34dbe7f109c9c7e8d5396f1b2))
+* **deps-dev:** bump mocha from 10.4.0 to 10.5.0 ([e5c14cf](https://github.com/privacy-scaling-explorations/maci/commit/e5c14cf01e9b5beb6232e80345121dbb47190fd0))
+* **deps-dev:** bump mocha from 10.5.0 to 10.6.0 ([6847bb3](https://github.com/privacy-scaling-explorations/maci/commit/6847bb374893672bf7e809fc80d124e2d874b784))
+* **deps-dev:** bump mocha from 10.6.0 to 10.7.0 ([#1687](https://github.com/privacy-scaling-explorations/maci/issues/1687)) ([2cad35b](https://github.com/privacy-scaling-explorations/maci/commit/2cad35bab133af79f77ea9c19098d3561ba06f69))
+* **deps-dev:** bump typescript from 5.3.3 to 5.4.2 ([591c767](https://github.com/privacy-scaling-explorations/maci/commit/591c767308f746fbfc32a9f184192912895f080c))
+* **deps-dev:** bump typescript from 5.4.2 to 5.4.3 ([a2f5c8a](https://github.com/privacy-scaling-explorations/maci/commit/a2f5c8ac32394fc7672051d5342baf7e6f9567ce))
+* **deps-dev:** bump typescript from 5.4.3 to 5.4.4 ([5e047ea](https://github.com/privacy-scaling-explorations/maci/commit/5e047eaa96d508addf34e35764ddaf4deb221593))
+* **deps-dev:** bump typescript from 5.4.4 to 5.4.5 ([ea6339d](https://github.com/privacy-scaling-explorations/maci/commit/ea6339da96dda38a931cb6d39615c9267ca45b81))
+* **deps-dev:** bump typescript from 5.4.5 to 5.5.2 ([e2b4d45](https://github.com/privacy-scaling-explorations/maci/commit/e2b4d45235c82bba349d959a164442cae90ad97f))
+* **deps-dev:** bump typescript from 5.5.2 to 5.5.3 ([c979188](https://github.com/privacy-scaling-explorations/maci/commit/c979188358becfc4b434a2f73331e640ce595846))
+* **deps-dev:** bump typescript from 5.5.3 to 5.5.4 ([8ed2e2b](https://github.com/privacy-scaling-explorations/maci/commit/8ed2e2b109a950137dd289aa7d3eca4268079272))
+* **deps:** bump @zk-kit/circuits from 0.3.0 to 0.4.0 ([49f098f](https://github.com/privacy-scaling-explorations/maci/commit/49f098fcce122589bc9a07cbfd1863878939df2a))
+* **deps:** bump circomkit from 0.0.24 to 0.0.25 ([b3eccf8](https://github.com/privacy-scaling-explorations/maci/commit/b3eccf86587edd9b2f4193894c0608f1a2aec677))
+* **deps:** bump circomkit from 0.0.25 to 0.1.0 ([09a1ccf](https://github.com/privacy-scaling-explorations/maci/commit/09a1ccf3b33b3377d4abc38cb345d2927ff9fc79))
+* **deps:** bump circomkit from 0.1.0 to 0.2.1 ([#1480](https://github.com/privacy-scaling-explorations/maci/issues/1480)) ([9cb775f](https://github.com/privacy-scaling-explorations/maci/commit/9cb775fab5ee8a04e17bcbef533a1ab8d2414446))
+* **deps:** bump snarkjs from 0.7.3 to 0.7.4 ([50642af](https://github.com/privacy-scaling-explorations/maci/commit/50642afa368a91c47ebe32089f4bdb4a159ac1cd))
+* **docs:** fixed broken links ([#1585](https://github.com/privacy-scaling-explorations/maci/issues/1585)) ([4b2012e](https://github.com/privacy-scaling-explorations/maci/commit/4b2012eb3827611e8a7fb0d441e6fd1da8df478e))
+* fuzz testing for circuits ([429bd12](https://github.com/privacy-scaling-explorations/maci/commit/429bd126a73094a6e54f78a3c3817b3fab704be3))
+* optimize message processor and tally ([d75b244](https://github.com/privacy-scaling-explorations/maci/commit/d75b2446c2ee012d146afe8d7bc423f5b94e4579))
+* **release:** publish 1.2.1 ([93564f8](https://github.com/privacy-scaling-explorations/maci/commit/93564f8a98baa0fee65db16e2e40209d9ac1b3ae))
+* **release:** publish 2.0.0 ([04e647d](https://github.com/privacy-scaling-explorations/maci/commit/04e647d231df34952569ad6ff802e0b2333eb658))
+* remove max values ([8f951b0](https://github.com/privacy-scaling-explorations/maci/commit/8f951b0fcc73212d99d3ddc962fbaa9788471fb6))
+* use async fs instead of sync version ([fb8317e](https://github.com/privacy-scaling-explorations/maci/commit/fb8317ef3943a8434083de6e1b0f9469f15dd113))
 
 
 
