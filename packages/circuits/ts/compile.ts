@@ -3,11 +3,8 @@ import { type CircomkitConfig, type CircuitConfig, Circomkit } from "circomkit";
 import childProcess from "child_process";
 import fs from "fs";
 import path from "path";
-import { promisify } from "util";
 
 import type { CircuitConfigWithName } from "./types";
-
-const execFile = promisify(childProcess.execFile);
 
 /**
  * Compile MACI's circuits using circomkit
@@ -50,6 +47,9 @@ export const compileCircuits = async (cWitness?: boolean, outputPath?: string): 
     ...circomKitConfig,
     verbose: false,
   });
+
+  const { promisify } = await import("util");
+  const execFile = promisify(childProcess.execFile);
 
   // loop through each circuit config and compile them
   // eslint-disable-next-line @typescript-eslint/prefer-for-of
