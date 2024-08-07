@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.1.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.0.0...v2.1.0) (2024-08-07)
+
+**Note:** Version bump only for package maci-subgraph
+
+
+
+
+
 ## [2.0.0](https://github.com/privacy-scaling-explorations/maci/compare/v1.2.0...v2.0.0) (2024-08-06)
 
 
@@ -39,4 +47,3 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 * **release:** publish 2.0.0 ([04e647d](https://github.com/privacy-scaling-explorations/maci/commit/04e647d231df34952569ad6ff802e0b2333eb658))
 * remove max values ([8f951b0](https://github.com/privacy-scaling-explorations/maci/commit/8f951b0fcc73212d99d3ddc962fbaa9788471fb6))
 * **subgraph:** configure maci-subgraph to be a public npm package ([#1712](https://github.com/privacy-scaling-explorations/maci/issues/1712)) ([03f7713](https://github.com/privacy-scaling-explorations/maci/commit/03f7713a7a534e24584796cdfcc132adc739aad6))
-
