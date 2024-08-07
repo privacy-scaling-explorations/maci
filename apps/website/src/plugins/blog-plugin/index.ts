@@ -38,35 +38,42 @@ async function loadContent(): Promise<BlogPost[]> {
   const blogDir = path.join(__dirname, "..", "..", "..", "blog");
   const files = await getAllFiles(blogDir);
 
-  return Promise.all(
-    files.map(async (filePath): Promise<BlogPost | null> => {
-      const fileContent = await fs.promises.readFile(filePath, "utf-8");
-      const { data } = matter(fileContent);
+  const posts = (
+    await Promise.all(
+      files.map(async (filePath): Promise<BlogPost | null> => {
+        const fileContent = await fs.promises.readFile(filePath, "utf-8");
+        const { data } = matter(fileContent);
 
-      if (!data.title) {
-        return null;
-      }
+        if (!data.title) {
+          return null;
+        }
 
-      const filename = path.basename(filePath);
-      const match = filename.match(/^(\d{4}-\d{2}-\d{2})/);
-      if (!match) {
-        return null;
-      }
+        const filename = path.basename(filePath);
+        const match = filename.match(/^(\d{4}-\d{2}-\d{2})/);
+        if (!match) {
+          return null;
+        }
 
-      const date = match[1];
-      const authorName = ((data.authors as Record<string, unknown> | undefined)?.name as string) || "";
+        const date = match[1];
+        const authorName = ((data.authors as Record<string, unknown> | undefined)?.name as string) || "";
 
-      return {
-        title: data.title as string,
-        description: data.description ? (data.description as string) : "",
-        date,
-        slug: data.slug ? (data.slug as string) : filename.replace(/\.md$/, ""), // Use slug from front matter if available
-        authorName,
-        tags: data.tags ? (data.tags as string[]) : [],
-        excerpt: data.excerpt ? (data.excerpt as string) : "",
-      };
-    }),
-  ).then((posts) => posts.filter((post): post is BlogPost => post !== null));
+        return {
+          title: data.title as string,
+          description: data.description ? (data.description as string) : "",
+          date,
+          slug: data.slug ? (data.slug as string) : filename.replace(/\.md$/, ""), // Use slug from front matter if available
+          authorName,
+          tags: data.tags ? (data.tags as string[]) : [],
+          excerpt: data.excerpt ? (data.excerpt as string) : "",
+        };
+      }),
+    )
+  ).filter((post): post is BlogPost => post !== null);
+
+  // Sort posts by date in descending order (newest first)
+  posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  return posts;
 }
 
 export { loadContent };
