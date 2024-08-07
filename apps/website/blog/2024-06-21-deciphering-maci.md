@@ -8,6 +8,7 @@ authors:
   url: https://github.com/Vee-18
   image_url: /img/pse-logo-round.png
 tags: [maci, voting, history]
+excerpt: "Welcome to the intriguing world of blockchain! This guide delves into Minimal Anti-Collusion Infrastructure (MACI), essential for those exploring secure, private voting on the blockchain."
 ---
 
 Welcome to the intriguing world of blockchain! This guide delves into Minimal Anti-Collusion Infrastructure (MACI), essential for those exploring secure, private voting on the blockchain.
