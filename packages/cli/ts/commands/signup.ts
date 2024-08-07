@@ -5,6 +5,7 @@ import {
   SemaphoreGatekeeper__factory as SemaphoreGatekeeperFactory,
   ZupassGatekeeper__factory as ZupassGatekeeperFactory,
   EASGatekeeper__factory as EASGatekeeperFactory,
+  HatsGatekeeperSingle__factory as HatsSingleGatekeeperFactory,
 } from "maci-contracts/typechain-types";
 import { PubKey } from "maci-domainobjs";
 
@@ -18,6 +19,7 @@ import type {
   ISemaphoreGatekeeperData,
   IZupassGatekeeperData,
   IEASGatekeeperData,
+  IHatsGatekeeperData,
 } from "../utils/interfaces";
 
 import { banner } from "../utils/banner";
@@ -269,5 +271,31 @@ export const getEASGatekeeperData = async ({
     eas: eas.toString(),
     schema: schema.toString(),
     attester: attester.toString(),
+  };
+};
+
+/**
+ * Get the hats single gatekeeper data
+ * @param IGetGatekeeperDataArgs - The arguments for the get hats single gatekeeper data command
+ * @returns The hats single gatekeeper data
+ */
+export const getHatsSingleGatekeeperData = async ({
+  maciAddress,
+  signer,
+}: IGetGatekeeperDataArgs): Promise<IHatsGatekeeperData> => {
+  const maciContract = MACIFactory.connect(maciAddress, signer);
+
+  const gatekeeperContractAddress = await maciContract.signUpGatekeeper();
+
+  const gatekeeperContract = HatsSingleGatekeeperFactory.connect(gatekeeperContractAddress, signer);
+
+  const [criterionHat, hatsContract] = await Promise.all([
+    gatekeeperContract.criterionHat(),
+    gatekeeperContract.hats(),
+  ]);
+
+  return {
+    criterionHat: [criterionHat.toString()],
+    hatsContract: hatsContract.toString(),
   };
 };

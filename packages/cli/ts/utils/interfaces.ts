@@ -1195,3 +1195,18 @@ export interface IEASGatekeeperData {
    */
   attester: string;
 }
+
+/**
+ * Interface for the Hats gatekeeper data
+ */
+export interface IHatsGatekeeperData {
+  /**
+   * The criterion hat(s)
+   */
+  criterionHat: string[];
+
+  /**
+   * The hats contract
+   */
+  hatsContract: string;
+}
