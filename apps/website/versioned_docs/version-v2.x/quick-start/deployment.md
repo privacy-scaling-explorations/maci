@@ -40,6 +40,17 @@ MACI uses a "gatekeeper" contract to configure and enforce the eligibility crite
 
 It's necessary to define which gatekeeper you are going to use before deploying, please refer to the [gatekeepers section](/docs/developers-references/smart-contracts/Gatekeepers) for more information on the supported Gatekeepers.
 
+### Coordinator Key
+
+Before deploying a Poll, make sure you have set the coordinator public to which you own the private key. You can generate a new one using `maci-cli` by running the following commands inside MACI's repo:
+
+```bash
+cd packages/cli && \
+node build/ts/index.js genMaciKeyPair
+```
+
+Make sure you store this safely.
+
 ### Deployment using `maci-contracts` hardhat tasks
 
 1. Take the `deploy-config-example.json` file and copy it over to `deploy-config.json`
