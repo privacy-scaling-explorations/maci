@@ -92,6 +92,9 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").then((task) =>
       address: extContracts[1],
     });
 
+    // get the empty ballot root
+    const emptyBallotRoot = await pollContract.emptyBallotRoot();
+
     await Promise.all([
       storage.register({
         id: EContracts.Poll,
@@ -107,6 +110,7 @@ deployment.deployTask("poll:deploy-poll", "Deploy poll").then((task) =>
           },
           unserializedKey.asContractParam(),
           extContracts,
+          emptyBallotRoot.toString(),
         ],
         network: hre.network.name,
       }),
