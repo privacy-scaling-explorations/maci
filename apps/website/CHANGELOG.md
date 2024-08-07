@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.1.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.0.0...v2.1.0) (2024-08-07)
+
+
+### Miscellaneous
+
+* **blog:** add v2 blog post ([068f207](https://github.com/privacy-scaling-explorations/maci/commit/068f20705694e05d09df0ead66e5e8d47541a8b2))
+* **blog:** fix audit link in v2 blog ([9012d1d](https://github.com/privacy-scaling-explorations/maci/commit/9012d1da5fc98a65a7b87e28af3dbec7eaf67ba1))
+* **deployment:** ensure user is aware of chanding the coordinator key ([14317d3](https://github.com/privacy-scaling-explorations/maci/commit/14317d3de125f01fa74e5e48d0c51d09bba1bf89))
+
+
+
 ## [2.0.0](https://github.com/privacy-scaling-explorations/maci/compare/v1.2.0...v2.0.0) (2024-08-06)
 
 

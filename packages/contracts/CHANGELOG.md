@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.1.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.0.0...v2.1.0) (2024-08-07)
+
+
+### Bug Fixes
+
+* contract verification for maci ([#1747](https://github.com/privacy-scaling-explorations/maci/issues/1747)) ([08a83b6](https://github.com/privacy-scaling-explorations/maci/commit/08a83b6d2749c2c5f08147eeb1184bada8c23062))
+* ensure we store all constructor args for the poll contract ([#1748](https://github.com/privacy-scaling-explorations/maci/issues/1748)) ([18dbda3](https://github.com/privacy-scaling-explorations/maci/commit/18dbda319f226e0e7653307a97541e08c86ae63b))
+
+
+
 ## [2.0.0](https://github.com/privacy-scaling-explorations/maci/compare/v1.2.0...v2.0.0) (2024-08-06)
 
 

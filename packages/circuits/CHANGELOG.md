@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.1.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.0.0...v2.1.0) (2024-08-07)
+
+
+### Bug Fixes
+
+* **circuits:** use dynamic imports for promisify ([d5c2d11](https://github.com/privacy-scaling-explorations/maci/commit/d5c2d1127bb26f2abb5079dc4afe62f2d491f21c))
+
+
+### Miscellaneous
+
+* **circuits:** add constraint info print script ([a9cc93e](https://github.com/privacy-scaling-explorations/maci/commit/a9cc93e975b845419a366a07573c27aabdc1bf35))
+
+
+
 ## [2.0.0](https://github.com/privacy-scaling-explorations/maci/compare/v1.2.0...v2.0.0) (2024-08-06)
 
 

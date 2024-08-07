@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.1.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.0.0...v2.1.0) (2024-08-07)
+
+
+### Features
+
+* **sdk:** get hats gatekeeper data ([a06fa6b](https://github.com/privacy-scaling-explorations/maci/commit/a06fa6b9a400192ea96c98441ba489f4c23e56e6))
+
+
+
 ## [2.0.0](https://github.com/privacy-scaling-explorations/maci/compare/v1.2.0...v2.0.0) (2024-08-06)
 
 
