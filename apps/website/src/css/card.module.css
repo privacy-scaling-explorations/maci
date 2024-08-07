@@ -88,7 +88,7 @@
   margin-bottom: 10px;
   -webkit-line-clamp: 2;
   line-clamp: 2;
-  -webkit-box-orient: horizontal;
+  -webkit-box-orient: vertical;
   display: -webkit-box;
   overflow: hidden;
 }
