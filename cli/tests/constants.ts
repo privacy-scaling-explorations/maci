@@ -22,6 +22,7 @@ export const MESSAGE_BATCH_SIZE = 20;
 const coordinatorKeypair = new Keypair();
 export const coordinatorPubKey = coordinatorKeypair.pubKey.serialize();
 export const coordinatorPrivKey = coordinatorKeypair.privKey.serialize();
+
 export const pollJoiningTestZkeyPath = "./zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey";
 export const processMessageTestZkeyPath = "./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey";
 export const tallyVotesTestZkeyPath = "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey";

@@ -77,6 +77,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
 
   ///  @notice flag for batch padding
   bool public isBatchHashesPadded;
+
   /// @notice Poll state tree for anonymous joining
   LazyIMTData public pollStateTree;
 

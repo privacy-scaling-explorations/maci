@@ -505,6 +505,7 @@ describe("ProcessMessage circuit", function test() {
 
       // The new roots, which should differ, since at least one of the
       // messages modified a Ballot or State Leaf
+
       const newStateRoot = poll.pollStateTree?.root;
       const newBallotRoot = poll.ballotTree?.root;
 
