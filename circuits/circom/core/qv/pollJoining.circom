@@ -66,7 +66,7 @@ template PollJoining(stateTreeDepth) {
     derivedPollPubKey[0] === pollPubKey[0];
     derivedPollPubKey[1] === pollPubKey[1];
 
-    // Inlcusion proof  
+    // Inclusion proof  
     var stateLeafHash = PoseidonHasher(4)(stateLeaf);
     var stateLeafQip = BinaryMerkleRoot(stateTreeDepth)(
         stateLeafHash,
