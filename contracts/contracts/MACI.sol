@@ -64,9 +64,11 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
   /// For the N'th sign up, the state tree root will be stored at the index N
   uint256[] public stateRootsOnSignUp;
 
-  // TODO: they are declared in other files as immutable
+  // @notice Verifier contract
   IVerifier private verifier;
+  // @notice VkRegistry contract
   IVkRegistry private vkRegistry;
+  // @notice QV or Non-QV
   Mode private mode;
 
   /// @notice A struct holding the addresses of poll, mp and tally

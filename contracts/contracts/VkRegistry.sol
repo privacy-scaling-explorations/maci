@@ -116,9 +116,7 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
     }
 
     uint256 length = _modes.length;
-    //TODO: add pollVks instead of _processVks
-    // change this fucntion not to use arrays
-    // create better approach, it's used in test files
+
     for (uint256 index = 0; index < length; ) {
       setVerifyingKeys(
         _stateTreeDepth,
