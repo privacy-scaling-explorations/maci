@@ -11,8 +11,8 @@ import { DomainObjs } from "./utilities/DomainObjs.sol";
 /// Each circuit has a signature which is its compile-time constants represented
 /// as a uint256.
 contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry {
-  mapping(Mode => mapping(uint256 => VerifyingKey)) public processVks;
-  mapping(Mode => mapping(uint256 => bool)) public processVkSet;
+  mapping(Mode => mapping(uint256 => VerifyingKey)) internal processVks;
+  mapping(Mode => mapping(uint256 => bool)) internal processVkSet;
 
   mapping(Mode => mapping(uint256 => VerifyingKey)) internal tallyVks;
   mapping(Mode => mapping(uint256 => bool)) internal tallyVkSet;
@@ -298,21 +298,6 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
     uint256 sig = genTallyVkSig(_stateTreeDepth, _intStateTreeDepth, _voteOptionTreeDepth);
 
     vk = getTallyVkBySig(sig, _mode);
-  }
-
-  /// @notice Get the poll verifying key
-  /// @param _stateTreeDepth The state tree depth
-  /// @param _voteOptionTreeDepth The vote option tree depth
-  /// @param _mode QV or Non-QV
-  /// @return isSet whether the verifying key is set
-  function hasPollVk(
-    uint256 _stateTreeDepth,
-    uint256 _voteOptionTreeDepth,
-    Mode _mode
-  ) public view returns (bool isSet) {
-    uint256 sig = genPollVkSig(_stateTreeDepth, _voteOptionTreeDepth);
-
-    isSet = pollVkSet[_mode][sig];
   }
 
   /// @notice Get the poll verifying key by signature

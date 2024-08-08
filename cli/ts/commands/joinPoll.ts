@@ -2,7 +2,7 @@ import { extractVk, genProof, verifyProof } from "maci-circuits";
 import { formatProofForVerifierContract, genMaciStateFromContract } from "maci-contracts";
 import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts/typechain-types";
 import { CircuitInputs, IJsonMaciState, MaciState } from "maci-core";
-import { poseidon } from "maci-crypto/build/ts/hashing";
+import { poseidon } from "maci-crypto";
 import { Keypair, PrivKey, PubKey } from "maci-domainobjs";
 
 import fs from "fs";

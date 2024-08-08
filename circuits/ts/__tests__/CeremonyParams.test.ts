@@ -2,8 +2,7 @@ import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
 import { MaciState, Poll, packProcessMessageSmallVals, STATE_TREE_ARITY } from "maci-core";
 import { MESSAGE_BATCH_SIZE, VOTE_OPTION_TREE_ARITY } from "maci-core/build/ts/utils/constants";
-import { hash5, IncrementalQuinTree } from "maci-crypto";
-import { poseidon } from "maci-crypto/build/ts/hashing";
+import { hash5, IncrementalQuinTree, poseidon } from "maci-crypto";
 import { PrivKey, Keypair, PCommand, Message, Ballot } from "maci-domainobjs";
 
 import { IProcessMessagesInputs, ITallyVotesInputs } from "../types";

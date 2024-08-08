@@ -1,6 +1,6 @@
 import { type WitnessTester } from "circomkit";
 import { MaciState, Poll } from "maci-core";
-import { poseidon } from "maci-crypto/build/ts/hashing";
+import { poseidon } from "maci-crypto";
 import { Keypair, PCommand, Message } from "maci-domainobjs";
 
 import { ITallyVotesInputs } from "../types";

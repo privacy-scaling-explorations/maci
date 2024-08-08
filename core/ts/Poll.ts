@@ -11,8 +11,8 @@ import {
   stringifyBigInts,
   genTreeCommitment,
   hash2,
+  poseidon,
 } from "maci-crypto";
-import { poseidon } from "maci-crypto/build/ts/hashing";
 import {
   PCommand,
   Keypair,
@@ -188,6 +188,11 @@ export class Poll implements IPoll {
    */
   joinPoll = (nullifier: bigint, pubKey: PubKey, newVoiceCreditBalance: bigint, timestamp: bigint): number => {
     const stateLeaf = new StateLeaf(pubKey, newVoiceCreditBalance, timestamp);
+
+    if (this.hasJoined(nullifier)) {
+      throw new Error("UserAlreadyJoined");
+    }
+
     this.pollNullifiers.set(nullifier, true);
     this.pollStateLeaves.push(stateLeaf.copy());
     this.pollStateTree?.insert(stateLeaf.hash());
@@ -422,6 +427,15 @@ export class Poll implements IPoll {
       this.currentMessageBatchIndex += 1;
     }
   };
+
+  /**
+   * @param maciPrivateKey User's private key for signing up
+   * @param stateLeafIndex Index where the user is stored in the state leaves
+   * @param credits Credits for voting
+   * @param pollPrivateKey Poll's private key for the poll joining
+   * @param pollPubKey Poll's public key for the poll joining
+   * @returns stringified circuit inputs
+   */
 
   joiningCircuitInputs = (
     maciPrivateKey: PrivKey,

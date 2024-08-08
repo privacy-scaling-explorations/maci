@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
 import { MaciState, Poll } from "maci-core";
-import { poseidon } from "maci-crypto/build/ts/hashing";
+import { poseidon } from "maci-crypto";
 import { Keypair, Message, PCommand } from "maci-domainobjs";
 
 import { IPollJoiningInputs } from "../types";
@@ -122,7 +122,7 @@ describe("Poll Joining circuit", function test() {
       await circuit.expectConstraintPass(witness);
     });
 
-    it("should fail for planted witness", async () => {
+    it("should fail for fake witness", async () => {
       const privateKey = users[0].privKey;
       const stateLeafIndex = BigInt(1);
       const credits = BigInt(10);

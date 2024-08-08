@@ -1,6 +1,5 @@
 import { expect } from "chai";
-import { hash5, IncrementalQuinTree, hash2 } from "maci-crypto";
-import { poseidon } from "maci-crypto/build/ts/hashing";
+import { hash5, IncrementalQuinTree, hash2, poseidon } from "maci-crypto";
 import { PCommand, Keypair, StateLeaf, blankStateLeafHash } from "maci-domainobjs";
 
 import { MaciState } from "../MaciState";

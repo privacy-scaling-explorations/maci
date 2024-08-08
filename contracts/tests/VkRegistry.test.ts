@@ -100,7 +100,6 @@ describe("VkRegistry", () => {
   });
 
   describe("setVerifyingKeysBatch", () => {
-    // TODO: change corresponding to the contract function
     it("should set the process and tally vks", async () => {
       const tx = await vkRegistryContract.setVerifyingKeysBatch(
         stateTreeDepth,
@@ -139,20 +138,6 @@ describe("VkRegistry", () => {
   });
 
   describe("hasVks", () => {
-    describe("hasPollVk", () => {
-      it("should return true for the process vk", async () => {
-        expect(await vkRegistryContract.hasPollVk(stateTreeDepth, treeDepths.voteOptionTreeDepth, EMode.QV)).to.eq(
-          true,
-        );
-      });
-
-      it("should return false for a non-existing vk", async () => {
-        expect(await vkRegistryContract.hasPollVk(stateTreeDepth + 2, treeDepths.voteOptionTreeDepth, EMode.QV)).to.eq(
-          false,
-        );
-      });
-    });
-
     describe("hasProcessVk", () => {
       it("should return true for the process vk", async () => {
         expect(

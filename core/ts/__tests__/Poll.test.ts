@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { poseidon } from "maci-crypto/build/ts/hashing";
+import { poseidon } from "maci-crypto";
 import { PCommand, Keypair, StateLeaf, PrivKey, Ballot } from "maci-domainobjs";
 
 import { MaciState } from "../MaciState";

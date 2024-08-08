@@ -25,8 +25,6 @@ template PollJoining(stateTreeDepth) {
     var STATE_LEAF_PUB_Y_IDX = 1;
     // Voice Credit balance id
     var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
-    // Timestamp id
-    var STATE_LEAF_TIMESTAMP_IDX = 3;
     var N_BITS = 252;
 
     // User's private key

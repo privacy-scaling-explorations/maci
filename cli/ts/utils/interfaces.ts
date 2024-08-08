@@ -321,27 +321,71 @@ export interface DeployPollArgs {
 }
 
 export interface IJoinedUserArgs {
+  /**
+   * The address of the MACI contract
+   */
   maciAddress: string;
+
+  /**
+   * The id of the poll
+   */
   pollId: bigint;
+
+  /**
+   * Poll public key for the poll
+   */
   pollPubKey: string;
+
+  /**
+   * A signer object
+   */
   signer: Signer;
+
+  /**
+   * The start block number
+   */
   startBlock: number;
+
+  /**
+   * Whether to log the output
+   */
   quiet: boolean;
 }
 
 export interface IJoinPollArgs {
+  /**
+   * A signer object
+   */
   signer: Signer;
 
+  /**
+   * The private key of the user
+   */
   privateKey: string;
 
+  /**
+   * User's credit balance for voting within this poll
+   */
   newVoiceCreditBalance: bigint;
 
+  /**
+   * The id of the poll
+   */
   pollId: bigint;
 
+  /**
+   * The index of the state leaf
+   */
   stateIndex: bigint;
 
+  /**
+   * Whether to log the output
+   */
   quiet: boolean;
 
+  /**
+   * Path to the state file with MACI state
+   */
   stateFile?: string;
 
   /**
