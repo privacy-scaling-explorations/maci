@@ -38,7 +38,7 @@ abstract contract AccQueue is Ownable(msg.sender), Hasher {
   uint256 internal immutable subTreeCapacity;
 
   // True hashLength == 2, false if hashLength == 5
-  bool internal isBinary;
+  bool internal immutable isBinary;
 
   // The index of the current subtree. e.g. the first subtree has index 0, the
   // second has 1, and so on

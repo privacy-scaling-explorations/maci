@@ -8,7 +8,7 @@ import { InitialVoiceCreditProxy } from "./InitialVoiceCreditProxy.sol";
 /// for MACI's voters.
 contract ConstantInitialVoiceCreditProxy is InitialVoiceCreditProxy {
   /// @notice the balance to be returned by getVoiceCredits
-  uint256 internal balance;
+  uint256 internal immutable balance;
 
   /// @notice creates a new ConstantInitialVoiceCreditProxy
   /// @param _balance the balance to be returned by getVoiceCredits

@@ -2,16 +2,17 @@
 pragma solidity ^0.8.20;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { ERC721 } from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 import { SignUpGatekeeper } from "./SignUpGatekeeper.sol";
-import { SignUpToken } from "../SignUpToken.sol";
 
 /// @title SignUpTokenGatekeeper
 /// @notice This contract allows to gatekeep MACI signups
 /// by requiring new voters to own a certain ERC721 token
 contract SignUpTokenGatekeeper is SignUpGatekeeper, Ownable(msg.sender) {
   /// @notice the reference to the SignUpToken contract
-  SignUpToken public token;
+  ERC721 public immutable token;
+
   /// @notice the reference to the MACI contract
   address public maci;
 
@@ -24,9 +25,9 @@ contract SignUpTokenGatekeeper is SignUpGatekeeper, Ownable(msg.sender) {
   error OnlyMACI();
 
   /// @notice creates a new SignUpTokenGatekeeper
-  /// @param _token the address of the SignUpToken contract
-  constructor(SignUpToken _token) payable {
-    token = _token;
+  /// @param _token the address of the ERC20 contract
+  constructor(address _token) payable {
+    token = ERC721(_token);
   }
 
   /// @notice Adds an uninitialised MACI instance to allow for token signups
