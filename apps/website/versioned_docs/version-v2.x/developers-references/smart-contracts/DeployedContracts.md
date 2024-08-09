@@ -48,18 +48,42 @@ You should change the -vk parameter to the VkRegistry address for the chain you 
 | VkRegistry (10-2-1-2 and 10-1-2)             | [0xE21F9Ea298b62032B3C2206955cd12c4Ab0a046b](https://sepolia.arbiscan.io/address/0xE21F9Ea298b62032B3C2206955cd12c4Ab0a046b) |
 | PoseidonT3                                   | [0xa0e0aC07c211D329ebA2D6ec552F4dC1B230A89A](https://sepolia.arbiscan.io/address/0xa0e0aC07c211D329ebA2D6ec552F4dC1B230A89A) |
 | PoseidonT4                                   | [0x4f02c99df5731C8C69f6baa62Aa4C9f99C529CE2](https://sepolia.arbiscan.io/address/0x0CC8B7Aed7d79a8B948636242706265548D0B10a) |
-| PoseidonT5                                   | [0x43B519FF023757508311518AC41B5fA1CfD57181](https://sepolia.arbiscan.io/address/0x43B519FF023757508311518AC41B5fA1CfD57181) |
-| PoseidonT6                                   | [0xb123798B1b21082100D289BeA24bFF0F8dfcbEe1](https://sepolia.arbiscan.io/address/0xb123798B1b21082100D289BeA24bFF0F8dfcbEe1) |
+| PoseidonT5                                   | [0xB8Bc2c7cF71441fF7E6F111D3457e3d61c564968](https://sepolia.arbiscan.io/address/0xB8Bc2c7cF71441fF7E6F111D3457e3d61c564968) |
+| PoseidonT6                                   | [0x37282fEde56aa1d7266Ecb12DC3b342D12044e2E](https://sepolia.arbiscan.io/address/0x37282fEde56aa1d7266Ecb12DC3b342D12044e2E) |
 
 ### Arbitrum Mainnet
 
-| Contract   | Address                                                                                                              |
-| ---------- | -------------------------------------------------------------------------------------------------------------------- |
-| VkRegistry | [0x74569d524a193daC0D3Df17B9E207C916174745b](https://arbiscan.io/address/0x74569d524a193dac0d3df17b9e207c916174745b) |
-| PoseidonT3 | [0xc8640cD00E00192949386E5be0c0b46C29CE8991](https://arbiscan.io/address/0xc8640cd00e00192949386e5be0c0b46c29ce891)  |
-| PoseidonT4 | [0x4f02c99df5731C8C69f6baa62Aa4C9f99C529CE2](https://arbiscan.io/address/0x4f02c99df5731C8C69f6baa62Aa4C9f99C529CE2) |
-| PoseidonT5 | [0x89d4597b619598E3fe1Bf3E9b94e22ab8f931AdA](https://arbiscan.io/address/0x89d4597b619598E3fe1Bf3E9b94e22ab8f931AdA) |
-| PoseidonT6 | [0xabf4B6395146719e8daCce6dd5f604993C7649E0](https://arbiscan.io/address/0xabf4B6395146719e8daCce6dd5f604993C7649E0) |
+| Contract                                      | Address                                                                                                              |
+| --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| ConstantInitialVoiceCreditProxy (200 Credits) | [0x16FC13edD59D4b9F788Fb11A70eA022E1Bb1B856](https://arbiscan.io/address/0x16FC13edD59D4b9F788Fb11A70eA022E1Bb1B856) |
+| FreeForAllGatekeeper                          | [0x8BA83Dd6E0E448417C519A38c90Ee570A4CA3e9f](https://arbiscan.io/address/0x8BA83Dd6E0E448417C519A38c90Ee570A4CA3e9f) |
+| Verifier                                      | [0x2427Ab201488Ac81Bec421F179B1Be23c55ebC27](https://arbiscan.io/address/0x2427Ab201488Ac81Bec421F179B1Be23c55ebC27) |
+| PollFactory                                   | [0x2F1A5B4F8F3B7348C66A1522622b1DB712261607](https://arbiscan.io/address/0x2F1A5B4F8F3B7348C66A1522622b1DB712261607) |
+| MessageProcessorFactory                       | [0xE4c9d4248F1371C5C61d406A9859f9FE667567a5](https://arbiscan.io/address/0xE4c9d4248F1371C5C61d406A9859f9FE667567a5) |
+| TallyFactory                                  | [0x57034389Dbe3DE1D1C14763f55B77A2279D6d43C](https://arbiscan.io/address/0x57034389Dbe3DE1D1C14763f55B77A2279D6d43C) |
+| MACI (stateTreeDepth = 14)                    | [0x78c3bF1b2Bc3A5512e274cA8407D2339Bb859761](https://arbiscan.io/address/0x78c3bF1b2Bc3A5512e274cA8407D2339Bb859761) |
+| VkRegistry (14-9-2-3 and 14-2-3)              | [0x6aA5baD99aC44bB008930c68CE2249549Cf10944](https://arbiscan.io/address/0x6aA5baD99aC44bB008930c68CE2249549Cf10944) |
+| PoseidonT3                                    | [0x2F1398ab5E322d357dF8CdD2e7ba73122c5FDDA4](https://arbiscan.io/address/0x2F1398ab5E322d357dF8CdD2e7ba73122c5FDDA4) |
+| PoseidonT4                                    | [0x8778dA47eF619f56341fE95514e95fa0FF3B77C6](https://arbiscan.io/address/0x8778dA47eF619f56341fE95514e95fa0FF3B77C6) |
+| PoseidonT5                                    | [0x43B519FF023757508311518AC41B5fA1CfD57181](https://arbiscan.io/address/0x43B519FF023757508311518AC41B5fA1CfD57181) |
+| PoseidonT6                                    | [0xb123798B1b21082100D289BeA24bFF0F8dfcbEe1](https://arbiscan.io/address/0xb123798B1b21082100D289BeA24bFF0F8dfcbEe1) |
+
+### Optimism
+
+| Contract                                      | Address                                                                                                                          |
+| --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| ConstantInitialVoiceCreditProxy (200 Credits) | [0x83dD551541C580e338206f1f677835D427C92dE2](https://optimistic.etherscan.io/address/0x83dD551541C580e338206f1f677835D427C92dE2) |
+| FreeForAllGatekeeper                          | [0xD5C41106db85EDd0298279AcFCE5A722060cc5f9](https://optimistic.etherscan.io/address/0xD5C41106db85EDd0298279AcFCE5A722060cc5f9) |
+| Verifier                                      | [0x88C2c6A7535463962A34757FE63cc4F296381aba](https://optimistic.etherscan.io/address/0x88C2c6A7535463962A34757FE63cc4F296381aba) |
+| PollFactory                                   | [0x50045B05cb1C76410783D8A3e5625a99d5729339](https://optimistic.etherscan.io/address/0x50045B05cb1C76410783D8A3e5625a99d5729339) |
+| MessageProcessorFactory                       | [0xbB28555E989799478442483CD1f2D370a14e2C42](https://optimistic.etherscan.io/address/0xbB28555E989799478442483CD1f2D370a14e2C42) |
+| TallyFactory                                  | [0xdA10b22B81eb8EA6BC04aa9b86d3f9d969CD49F0](https://optimistic.etherscan.io/address/0xdA10b22B81eb8EA6BC04aa9b86d3f9d969CD49F0) |
+| MACI (stateTreeDepth = 14)                    | [0x3D4C58074DCD8E6526885F465ab5F311b6B290B5](https://optimistic.etherscan.io/address/0x3D4C58074DCD8E6526885F465ab5F311b6B290B5) |
+| VkRegistry (14-9-2-3 and 14-2-3)              | [0x7E16271EaE58F52a0431F87Ee7E40c978178C63F](https://optimistic.etherscan.io/address/0x7E16271EaE58F52a0431F87Ee7E40c978178C63F) |
+| PoseidonT3                                    | [0xF8E637e5c9EC3A8d8fa8843A6dF833348E1F1E66](https://optimistic.etherscan.io/address/0xF8E637e5c9EC3A8d8fa8843A6dF833348E1F1E66) |
+| PoseidonT4                                    | [0x0a0D66baFDa8c8838281084d9C3d68Dd9a6Fc274](https://optimistic.etherscan.io/address/0x0a0D66baFDa8c8838281084d9C3d68Dd9a6Fc274) |
+| PoseidonT5                                    | [0xD2F6c828606Ad8e985008Cd825012f269B50CD58](https://optimistic.etherscan.io/address/0xD2F6c828606Ad8e985008Cd825012f269B50CD58) |
+| PoseidonT6                                    | [0x982530673Ce9e5Efa02438c694d48327Aa4fB592](https://optimistic.etherscan.io/address/0x982530673Ce9e5Efa02438c694d48327Aa4fB592) |
 
 ### Optimism Sepolia
 
@@ -94,6 +118,23 @@ You should change the -vk parameter to the VkRegistry address for the chain you 
 | PoseidonT4                                   | [0x0a0D66baFDa8c8838281084d9C3d68Dd9a6Fc274](https://sepolia.scrollscan.com/address/0x0a0D66baFDa8c8838281084d9C3d68Dd9a6Fc274) |
 | PoseidonT5                                   | [0xE0398F7DFAC494c530F6404AfEaC8669ABeD2679](https://sepolia.scrollscan.com/address/0xE0398F7DFAC494c530F6404AfEaC8669ABeD2679) |
 | PoseidonT6                                   | [0xD2F6c828606Ad8e985008Cd825012f269B50CD58](https://sepolia.scrollscan.com/address/0xD2F6c828606Ad8e985008Cd825012f269B50CD58) |
+
+### Base
+
+| Contract                                      | Address                                                                                                               |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| ConstantInitialVoiceCreditProxy (200 Credits) | [0x16FC13edD59D4b9F788Fb11A70eA022E1Bb1B856](https://basescan.org/address/0x16FC13edD59D4b9F788Fb11A70eA022E1Bb1B856) |
+| FreeForAllGatekeeper                          | [0x8BA83Dd6E0E448417C519A38c90Ee570A4CA3e9f](https://basescan.org/address/0x8BA83Dd6E0E448417C519A38c90Ee570A4CA3e9f) |
+| Verifier                                      | [0x2427Ab201488Ac81Bec421F179B1Be23c55ebC27](https://basescan.org/address/0x2427Ab201488Ac81Bec421F179B1Be23c55ebC27) |
+| PollFactory                                   | [0x2F1A5B4F8F3B7348C66A1522622b1DB712261607](https://basescan.org/address/0x2F1A5B4F8F3B7348C66A1522622b1DB712261607) |
+| MessageProcessorFactory                       | [0xE4c9d4248F1371C5C61d406A9859f9FE667567a5](https://basescan.org/address/0xE4c9d4248F1371C5C61d406A9859f9FE667567a5) |
+| TallyFactory                                  | [0x57034389Dbe3DE1D1C14763f55B77A2279D6d43C](https://basescan.org/address/0x57034389Dbe3DE1D1C14763f55B77A2279D6d43C) |
+| MACI (stateTreeDepth = 14)                    | [0xe98D62574B1b780b8C13B1917700001dc5FEc68a](https://basescan.org/address/0xe98D62574B1b780b8C13B1917700001dc5FEc68a) |
+| VkRegistry (14-9-2-3 and 14-2-3)              | [0x6aA5baD99aC44bB008930c68CE2249549Cf10944](https://basescan.org/address/0x6aA5baD99aC44bB008930c68CE2249549Cf10944) |
+| PoseidonT3                                    | [0x2F1398ab5E322d357dF8CdD2e7ba73122c5FDDA4](https://basescan.org/address/0x2F1398ab5E322d357dF8CdD2e7ba73122c5FDDA4) |
+| PoseidonT4                                    | [0x8778dA47eF619f56341fE95514e95fa0FF3B77C6](https://basescan.org/address/0x8778dA47eF619f56341fE95514e95fa0FF3B77C6) |
+| PoseidonT5                                    | [0xB8Bc2c7cF71441fF7E6F111D3457e3d61c564968](https://basescan.org/address/0xB8Bc2c7cF71441fF7E6F111D3457e3d61c564968) |
+| PoseidonT6                                    | [0x37282fEde56aa1d7266Ecb12DC3b342D12044e2E](https://basescan.org/address/0x37282fEde56aa1d7266Ecb12DC3b342D12044e2E) |
 
 ### Base Sepolia
 
@@ -190,30 +231,29 @@ You should change the -vk parameter to the VkRegistry address for the chain you 
           "args": "[]"
         }
       },
-      "0x94f29E6d14A01c1330CE8f7421Db489Fe5A14976": {
-        "id": "MACI",
-        "deploymentTxHash": "0x2d6b3a6227101b91aabe847b9849a778332570ea77f6e33f51218b024af49798",
-        "verify": {
-          "args": "[\"0xad844a9567ada5996FFC0D2DeC78b3767a1c0501\",\"0xbBb6f1B4232F993e5a026217a3D596B332062CB3\",\"0x1356f05179cdcAD2D8708B539A75de082118de92\",\"0xa4fF6765C207C84AbeFCe0226b24204f9ceBAB45\",\"0x4473aC3e68ad78D67757336ABaAa2Dced08cfcdF\",10,\"16015576667038038422103932363190100635991292382181099511410843174865570503661,166510078825589460025300915201657086611944528317298994959376081297530246971,10057734083972610459557695472359628128485394923403014377687504571662791937025,4904828619307091008204672239231377290495002626534171783829482835985709082773,18694062287284245784028624966421731916526814537891066525886866373016385890569\"]"
-        }
-      },
       "0x42B1AB3d98B8235204E75112e5d9E974cE7531cC": {
         "id": "VkRegistry",
         "deploymentTxHash": "0x1b05a22de2735ed74b58532303e7af01659b066206e696f4c8e6df61bc97f442",
         "verify": {
           "args": "[]"
         }
+      },
+      "0x6f9F7Fef2FF7F5D1Ff8966F751EC154146d8f431": {
+        "id": "ConstantInitialVoiceCreditProxy",
+        "deploymentTxHash": "0xe5b6ce84a95af89c64cff82901bc26b96d67bf4ffb18d4e82ebfcbc19c4392f2",
+        "verify": {
+          "args": "[\"99\"]"
+        }
+      },
+      "0x6b414ff158581Ac940797463a44221d0ba6A0B9C": {
+        "id": "FreeForAllGatekeeper",
+        "deploymentTxHash": "0x5f7640018acb7155aa510e05cca92ad40003327dfe75fcab7d61bd21fefdea67",
+        "verify": {
+          "args": "[]"
+        }
       }
     },
     "named": {
-      "ConstantInitialVoiceCreditProxy": {
-        "address": "0x4473aC3e68ad78D67757336ABaAa2Dced08cfcdF",
-        "count": 1
-      },
-      "FreeForAllGatekeeper": {
-        "address": "0xa4fF6765C207C84AbeFCe0226b24204f9ceBAB45",
-        "count": 1
-      },
       "Verifier": {
         "address": "0xB1abb44291ff487f96636758b07Ccd9881f64c9A",
         "count": 1
@@ -246,12 +286,16 @@ You should change the -vk parameter to the VkRegistry address for the chain you 
         "address": "0x1356f05179cdcAD2D8708B539A75de082118de92",
         "count": 1
       },
-      "MACI": {
-        "address": "0x94f29E6d14A01c1330CE8f7421Db489Fe5A14976",
-        "count": 1
-      },
       "VkRegistry": {
         "address": "0x42B1AB3d98B8235204E75112e5d9E974cE7531cC",
+        "count": 1
+      },
+      "ConstantInitialVoiceCreditProxy": {
+        "address": "0x6f9F7Fef2FF7F5D1Ff8966F751EC154146d8f431",
+        "count": 1
+      },
+      "FreeForAllGatekeeper": {
+        "address": "0x6b414ff158581Ac940797463a44221d0ba6A0B9C",
         "count": 1
       }
     }
@@ -328,13 +372,6 @@ You should change the -vk parameter to the VkRegistry address for the chain you 
           "args": "[]"
         }
       },
-      "0x1446a1a1af027e58C8Bd29e231C01dB35b2F485E": {
-        "id": "MACI",
-        "deploymentTxHash": "0xa54de8b23459983b9f8f30064d9a5de5b24873dee6b9839f989d02c100320e64",
-        "verify": {
-          "args": "[\"0xBa350B0cF67a0dEDa103A5d0d297bd120bF87E39\",\"0x96FD5e4E40671Bf8d5f1d0E3F3402488680B8376\",\"0xEEBc671e15B3f1c7483161F866d76ad84645d7C8\",\"0x9e98cAA76492338627BAD0e5a6AA2762d827E169\",\"0x41a29A58A63A998c9Edde6883Bcec2d89835a8e9\",10,\"16015576667038038422103932363190100635991292382181099511410843174865570503661,166510078825589460025300915201657086611944528317298994959376081297530246971,10057734083972610459557695472359628128485394923403014377687504571662791937025,4904828619307091008204672239231377290495002626534171783829482835985709082773,18694062287284245784028624966421731916526814537891066525886866373016385890569\"]"
-        }
-      },
       "0xE21F9Ea298b62032B3C2206955cd12c4Ab0a046b": {
         "id": "VkRegistry",
         "deploymentTxHash": "0x2216dc97941a301e817d630a1a5ec31a7997f0d3ea5bcf5581defd374d8ab8aa",
@@ -382,10 +419,6 @@ You should change the -vk parameter to the VkRegistry address for the chain you 
       },
       "TallyFactory": {
         "address": "0xEEBc671e15B3f1c7483161F866d76ad84645d7C8",
-        "count": 1
-      },
-      "MACI": {
-        "address": "0x1446a1a1af027e58C8Bd29e231C01dB35b2F485E",
         "count": 1
       },
       "VkRegistry": {
@@ -466,13 +499,6 @@ You should change the -vk parameter to the VkRegistry address for the chain you 
           "args": "[]"
         }
       },
-      "0x78c3bF1b2Bc3A5512e274cA8407D2339Bb859761": {
-        "id": "MACI",
-        "deploymentTxHash": "0x8b6459ea14a920c61b17a8252ac37ebd5591f674128cb7abf3ba48e4e12b0419",
-        "verify": {
-          "args": "[\"0x2F1A5B4F8F3B7348C66A1522622b1DB712261607\",\"0xE4c9d4248F1371C5C61d406A9859f9FE667567a5\",\"0x57034389Dbe3DE1D1C14763f55B77A2279D6d43C\",\"0x8BA83Dd6E0E448417C519A38c90Ee570A4CA3e9f\",\"0x16FC13edD59D4b9F788Fb11A70eA022E1Bb1B856\",10,\"16015576667038038422103932363190100635991292382181099511410843174865570503661,166510078825589460025300915201657086611944528317298994959376081297530246971,10057734083972610459557695472359628128485394923403014377687504571662791937025,4904828619307091008204672239231377290495002626534171783829482835985709082773,18694062287284245784028624966421731916526814537891066525886866373016385890569\"]"
-        }
-      },
       "0x6aA5baD99aC44bB008930c68CE2249549Cf10944": {
         "id": "VkRegistry",
         "deploymentTxHash": "0xdb1cbc7acc63c814dc238177adbf4012a1ccf743be3b2ef8ac2bde66177fe3a1",
@@ -520,10 +546,6 @@ You should change the -vk parameter to the VkRegistry address for the chain you 
       },
       "TallyFactory": {
         "address": "0x57034389Dbe3DE1D1C14763f55B77A2279D6d43C",
-        "count": 1
-      },
-      "MACI": {
-        "address": "0x78c3bF1b2Bc3A5512e274cA8407D2339Bb859761",
         "count": 1
       },
       "VkRegistry": {
@@ -604,18 +626,18 @@ You should change the -vk parameter to the VkRegistry address for the chain you 
           "args": "[]"
         }
       },
-      "0xdA10b22B81eb8EA6BC04aa9b86d3f9d969CD49F0": {
-        "id": "MACI",
-        "deploymentTxHash": "0x21ae94c2db74f83216aac20bfc437e3a74a46a997a8979af373dde683dc4feb9",
-        "verify": {
-          "args": "[\"0x982530673Ce9e5Efa02438c694d48327Aa4fB592\",\"0x50045B05cb1C76410783D8A3e5625a99d5729339\",\"0xbB28555E989799478442483CD1f2D370a14e2C42\",\"0x83dD551541C580e338206f1f677835D427C92dE2\",\"0xB486cce9B4507A67Db147B0802D5673774C8D278\",10,\"16015576667038038422103932363190100635991292382181099511410843174865570503661,166510078825589460025300915201657086611944528317298994959376081297530246971,10057734083972610459557695472359628128485394923403014377687504571662791937025,4904828619307091008204672239231377290495002626534171783829482835985709082773,18694062287284245784028624966421731916526814537891066525886866373016385890569\"]"
-        }
-      },
       "0x3D4C58074DCD8E6526885F465ab5F311b6B290B5": {
         "id": "VkRegistry",
         "deploymentTxHash": "0x147fe06bd640870ef3e4dca188c89d8c75b35e3ce30bc9b972e0eae573658537",
         "verify": {
           "args": "[]"
+        }
+      },
+      "0x33Cc5e8b6f158B9ee3600EcD3f3DE76c6B7765a7": {
+        "id": "ZupassGatekeeper",
+        "deploymentTxHash": "0xe6954597b9079895f6facc122e2a0bd9af00bc0401bf6f61d9d7824aed534754",
+        "verify": {
+          "args": "[\"280209352117126055869169359893920931853\",\"13908133709081944902758389525983124100292637002438232157513257158004852609027\",\"7654374482676219729919246464135900991450848628968334062174564799457623790084\",\"0xd81aB9859e1d423aC51170256BedD0Aa00e4eD5A\"]"
         }
       }
     },
@@ -660,14 +682,426 @@ You should change the -vk parameter to the VkRegistry address for the chain you 
         "address": "0xbB28555E989799478442483CD1f2D370a14e2C42",
         "count": 1
       },
+      "VkRegistry": {
+        "address": "0x3D4C58074DCD8E6526885F465ab5F311b6B290B5",
+        "count": 1
+      },
+      "ZupassGatekeeper": {
+        "address": "0x33Cc5e8b6f158B9ee3600EcD3f3DE76c6B7765a7",
+        "count": 1
+      }
+    }
+  },
+  "base": {
+    "instance": {
+      "0x16FC13edD59D4b9F788Fb11A70eA022E1Bb1B856": {
+        "id": "ConstantInitialVoiceCreditProxy",
+        "deploymentTxHash": "0x242651353bbceb375246239a73005c9d9359754e5739d354ad9f90b76e80be0c",
+        "verify": {
+          "args": "[\"200\"]"
+        }
+      },
+      "0x8BA83Dd6E0E448417C519A38c90Ee570A4CA3e9f": {
+        "id": "FreeForAllGatekeeper",
+        "deploymentTxHash": "0x9bd1a8595f8ab33fac82958a02dd8bfc59756d367c74a0c9d87718fdcf973060",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x2427Ab201488Ac81Bec421F179B1Be23c55ebC27": {
+        "id": "Verifier",
+        "deploymentTxHash": "0x6eedd506c4339c14df939a98bd15b6e503eecc4e3a693dcb313a56a14ca7d8f9",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x2F1398ab5E322d357dF8CdD2e7ba73122c5FDDA4": {
+        "id": "PoseidonT3",
+        "deploymentTxHash": "0x0908efdd06741443bd38d57eab6d07daaa15f782a2eba0d485116580da21785d",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x8778dA47eF619f56341fE95514e95fa0FF3B77C6": {
+        "id": "PoseidonT4",
+        "deploymentTxHash": "0x4551ba77ad63c28cbf4910e2a3db99b6b8eb1a94e0d902c2366b08a8324b8819",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xB8Bc2c7cF71441fF7E6F111D3457e3d61c564968": {
+        "id": "PoseidonT5",
+        "deploymentTxHash": "0x2dea3913d068f5c365b88da011b542f8c86daa78bff60b0239dfbc1284d8c6ef",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x37282fEde56aa1d7266Ecb12DC3b342D12044e2E": {
+        "id": "PoseidonT6",
+        "deploymentTxHash": "0x56974c8cae477fba1c16ecebcf2bc929a112471e25e1779cdad3da43b45a6cd2",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x2F1A5B4F8F3B7348C66A1522622b1DB712261607": {
+        "id": "PollFactory",
+        "deploymentTxHash": "0x9a9640ccb8a938f97729bfc78e891161082de511c10ab0b62b0e18edd514a017",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xE4c9d4248F1371C5C61d406A9859f9FE667567a5": {
+        "id": "MessageProcessorFactory",
+        "deploymentTxHash": "0x1a23828d513579f09360065323b553de620ae8ce7dfa487dc43397d30700f8fb",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x57034389Dbe3DE1D1C14763f55B77A2279D6d43C": {
+        "id": "TallyFactory",
+        "deploymentTxHash": "0xa9afd6b34776d392bdeb5a8eea1c4d6692a2c0b000e131b9eecb4b5e0fc2bff6",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x6aA5baD99aC44bB008930c68CE2249549Cf10944": {
+        "id": "VkRegistry",
+        "deploymentTxHash": "0x15fd66ac9c193eae37b2b447621ff1d7603a4b55c54c73e0468f900136fc37cb",
+        "verify": {
+          "args": "[]"
+        }
+      }
+    },
+    "named": {
+      "ConstantInitialVoiceCreditProxy": {
+        "address": "0x16FC13edD59D4b9F788Fb11A70eA022E1Bb1B856",
+        "count": 1
+      },
+      "FreeForAllGatekeeper": {
+        "address": "0x8BA83Dd6E0E448417C519A38c90Ee570A4CA3e9f",
+        "count": 1
+      },
+      "Verifier": {
+        "address": "0x2427Ab201488Ac81Bec421F179B1Be23c55ebC27",
+        "count": 1
+      },
+      "PoseidonT3": {
+        "address": "0x2F1398ab5E322d357dF8CdD2e7ba73122c5FDDA4",
+        "count": 1
+      },
+      "PoseidonT4": {
+        "address": "0x8778dA47eF619f56341fE95514e95fa0FF3B77C6",
+        "count": 1
+      },
+      "PoseidonT5": {
+        "address": "0xB8Bc2c7cF71441fF7E6F111D3457e3d61c564968",
+        "count": 1
+      },
+      "PoseidonT6": {
+        "address": "0x37282fEde56aa1d7266Ecb12DC3b342D12044e2E",
+        "count": 1
+      },
+      "PollFactory": {
+        "address": "0x2F1A5B4F8F3B7348C66A1522622b1DB712261607",
+        "count": 1
+      },
+      "MessageProcessorFactory": {
+        "address": "0xE4c9d4248F1371C5C61d406A9859f9FE667567a5",
+        "count": 1
+      },
+      "TallyFactory": {
+        "address": "0x57034389Dbe3DE1D1C14763f55B77A2279D6d43C",
+        "count": 1
+      },
+      "VkRegistry": {
+        "address": "0x6aA5baD99aC44bB008930c68CE2249549Cf10944",
+        "count": 1
+      },
       "MACI": {
+        "address": "0xe98D62574B1b780b8C13B1917700001dc5FEc68a",
+        "count": 1
+      },
+      "Poll": {
+        "poll-0": {
+          "address": "0xcc82063FAA821060AF76DDb7f4205AE370624d6b",
+          "count": 1
+        }
+      },
+      "MessageProcessor": {
+        "poll-0": {
+          "address": "0xaA2eAf2389B41Fd5B292C872352CbaC18BaD3bfD",
+          "count": 1
+        }
+      },
+      "Tally": {
+        "poll-0": {
+          "address": "0x989194c53be04Bd90BcbF2142e7050d011dCF048",
+          "count": 1
+        }
+      },
+      "AccQueueQuinaryMaci": {
+        "poll-0": {
+          "address": "0x688b36aa55B94Ff843C819ddd2fEE0e21c2Dc4e7",
+          "count": 1
+        }
+      }
+    }
+  },
+  "arbitrum": {
+    "instance": {
+      "0x16FC13edD59D4b9F788Fb11A70eA022E1Bb1B856": {
+        "id": "ConstantInitialVoiceCreditProxy",
+        "deploymentTxHash": "0x72ef6fcc655bcd8bbc1d545b2a51ab44ce5291bb4fa548259c42de1325145952",
+        "verify": {
+          "args": "[\"200\"]"
+        }
+      },
+      "0x8BA83Dd6E0E448417C519A38c90Ee570A4CA3e9f": {
+        "id": "FreeForAllGatekeeper",
+        "deploymentTxHash": "0x9c0775b0288898a94f27865d46e5bd8872492b5df65cd177b150806aab7560a7",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x2427Ab201488Ac81Bec421F179B1Be23c55ebC27": {
+        "id": "Verifier",
+        "deploymentTxHash": "0x4a1a77469dff336b80ed4ef8e7482b3a77b9e1c76e92e9bb0c3f3f3229b2ee4c",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x2F1398ab5E322d357dF8CdD2e7ba73122c5FDDA4": {
+        "id": "PoseidonT3",
+        "deploymentTxHash": "0x1479f77d3c9ccb71d3050097f9caa7c24632814282e1a530d8eefe7e34ab2949",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x8778dA47eF619f56341fE95514e95fa0FF3B77C6": {
+        "id": "PoseidonT4",
+        "deploymentTxHash": "0x3d203b3236acec539b1da934f43184924aef0cba84f375febe0919921fbea803",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xB8Bc2c7cF71441fF7E6F111D3457e3d61c564968": {
+        "id": "PoseidonT5",
+        "deploymentTxHash": "0x7a4c8f1809958494685511cf25a70d4e2906bd074843b56ccf5ce5fd96e6f2f9",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x37282fEde56aa1d7266Ecb12DC3b342D12044e2E": {
+        "id": "PoseidonT6",
+        "deploymentTxHash": "0x75853fcc0e430fdd3c4a7971d4e555161affdf93a7f5a4eaaa93c83c4c1ce94f",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x2F1A5B4F8F3B7348C66A1522622b1DB712261607": {
+        "id": "PollFactory",
+        "deploymentTxHash": "0x8315c48647621fa0cee54314ea49bcc851223eabd1f7dc9f3efcf307924ebd69",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xE4c9d4248F1371C5C61d406A9859f9FE667567a5": {
+        "id": "MessageProcessorFactory",
+        "deploymentTxHash": "0x1a30587862f43b3f2cb764cc18e4fbd09a55880bc059471998793ff4e92b6469",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x57034389Dbe3DE1D1C14763f55B77A2279D6d43C": {
+        "id": "TallyFactory",
+        "deploymentTxHash": "0x960ed63cbea915e39b7dec78d22e83f3d2c710b902262217f2444202356d0880",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x6aA5baD99aC44bB008930c68CE2249549Cf10944": {
+        "id": "VkRegistry",
+        "deploymentTxHash": "0xfeaaff43b313214986c4d1f3d3b610f5715be2c17bc10849e3cae776a505bd09",
+        "verify": {
+          "args": "[]"
+        }
+      }
+    },
+    "named": {
+      "ConstantInitialVoiceCreditProxy": {
+        "address": "0x16FC13edD59D4b9F788Fb11A70eA022E1Bb1B856",
+        "count": 1
+      },
+      "FreeForAllGatekeeper": {
+        "address": "0x8BA83Dd6E0E448417C519A38c90Ee570A4CA3e9f",
+        "count": 1
+      },
+      "Verifier": {
+        "address": "0x2427Ab201488Ac81Bec421F179B1Be23c55ebC27",
+        "count": 1
+      },
+      "PoseidonT3": {
+        "address": "0x2F1398ab5E322d357dF8CdD2e7ba73122c5FDDA4",
+        "count": 1
+      },
+      "PoseidonT4": {
+        "address": "0x8778dA47eF619f56341fE95514e95fa0FF3B77C6",
+        "count": 1
+      },
+      "PoseidonT5": {
+        "address": "0xB8Bc2c7cF71441fF7E6F111D3457e3d61c564968",
+        "count": 1
+      },
+      "PoseidonT6": {
+        "address": "0x37282fEde56aa1d7266Ecb12DC3b342D12044e2E",
+        "count": 1
+      },
+      "PollFactory": {
+        "address": "0x2F1A5B4F8F3B7348C66A1522622b1DB712261607",
+        "count": 1
+      },
+      "MessageProcessorFactory": {
+        "address": "0xE4c9d4248F1371C5C61d406A9859f9FE667567a5",
+        "count": 1
+      },
+      "TallyFactory": {
+        "address": "0x57034389Dbe3DE1D1C14763f55B77A2279D6d43C",
+        "count": 1
+      },
+      "VkRegistry": {
+        "address": "0x6aA5baD99aC44bB008930c68CE2249549Cf10944",
+        "count": 1
+      }
+    }
+  },
+  "optimism": {
+    "instance": {
+      "0x83dD551541C580e338206f1f677835D427C92dE2": {
+        "id": "ConstantInitialVoiceCreditProxy",
+        "deploymentTxHash": "0x44b638a8e359b5014ed77492755ade1d59cf6f5f72f39110c325e7fa463dad6a",
+        "verify": {
+          "args": "[\"200\"]"
+        }
+      },
+      "0xD5C41106db85EDd0298279AcFCE5A722060cc5f9": {
+        "id": "FreeForAllGatekeeper",
+        "deploymentTxHash": "0x69c745b040908eb98e63065b1f5635d7d5176d0e331d37321c564ed1b6658a5c",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x88C2c6A7535463962A34757FE63cc4F296381aba": {
+        "id": "Verifier",
+        "deploymentTxHash": "0x7f25d693564a17029b9bdfc0850a4c8ea30797e2096961558c5e05df4aa8175d",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xF8E637e5c9EC3A8d8fa8843A6dF833348E1F1E66": {
+        "id": "PoseidonT3",
+        "deploymentTxHash": "0x25e4abb71a79528f8c76bcb83a1163597c80177091667ccb2fd2eb57af84b254",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x0a0D66baFDa8c8838281084d9C3d68Dd9a6Fc274": {
+        "id": "PoseidonT4",
+        "deploymentTxHash": "0xff394431d7f8985936fc81009a461aa176b4e97a540b031771387e2b3a058ef5",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xD2F6c828606Ad8e985008Cd825012f269B50CD58": {
+        "id": "PoseidonT5",
+        "deploymentTxHash": "0x64b18ed067fcd5aa9061255cace422992b0c02207d09a4f78e7182143bb05d88",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x982530673Ce9e5Efa02438c694d48327Aa4fB592": {
+        "id": "PoseidonT6",
+        "deploymentTxHash": "0xbb20d4bdc02536ae1435cfcd4b07914161f028063d8cbf66cb8f79b2e2097929",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x50045B05cb1C76410783D8A3e5625a99d5729339": {
+        "id": "PollFactory",
+        "deploymentTxHash": "0x65d63100f9eeea80513d6f8513af97e51dca6caf138488eb849f5ae600d2b5b1",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xbB28555E989799478442483CD1f2D370a14e2C42": {
+        "id": "MessageProcessorFactory",
+        "deploymentTxHash": "0x74384358e8fba869c0d4be06e562a93d5020a0685ab428dbbab94068af5a6d4d",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xdA10b22B81eb8EA6BC04aa9b86d3f9d969CD49F0": {
+        "id": "TallyFactory",
+        "deploymentTxHash": "0x918e20d6b1c39d921efec9bf8ebcf46ff20449750633350b8a0b9281bb621cd2",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x7E16271EaE58F52a0431F87Ee7E40c978178C63F": {
+        "id": "VkRegistry",
+        "deploymentTxHash": "0x197b6b3cc28fda77c36a2b14d44c24f5b8aeff4d009939d200166476656ac521",
+        "verify": {
+          "args": "[]"
+        }
+      }
+    },
+    "named": {
+      "ConstantInitialVoiceCreditProxy": {
+        "address": "0x83dD551541C580e338206f1f677835D427C92dE2",
+        "count": 1
+      },
+      "FreeForAllGatekeeper": {
+        "address": "0xD5C41106db85EDd0298279AcFCE5A722060cc5f9",
+        "count": 1
+      },
+      "Verifier": {
+        "address": "0x88C2c6A7535463962A34757FE63cc4F296381aba",
+        "count": 1
+      },
+      "PoseidonT3": {
+        "address": "0xF8E637e5c9EC3A8d8fa8843A6dF833348E1F1E66",
+        "count": 1
+      },
+      "PoseidonT4": {
+        "address": "0x0a0D66baFDa8c8838281084d9C3d68Dd9a6Fc274",
+        "count": 1
+      },
+      "PoseidonT5": {
+        "address": "0xD2F6c828606Ad8e985008Cd825012f269B50CD58",
+        "count": 1
+      },
+      "PoseidonT6": {
+        "address": "0x982530673Ce9e5Efa02438c694d48327Aa4fB592",
+        "count": 1
+      },
+      "PollFactory": {
+        "address": "0x50045B05cb1C76410783D8A3e5625a99d5729339",
+        "count": 1
+      },
+      "MessageProcessorFactory": {
+        "address": "0xbB28555E989799478442483CD1f2D370a14e2C42",
+        "count": 1
+      },
+      "TallyFactory": {
         "address": "0xdA10b22B81eb8EA6BC04aa9b86d3f9d969CD49F0",
         "count": 1
       },
       "VkRegistry": {
-        "address": "0x3D4C58074DCD8E6526885F465ab5F311b6B290B5",
+        "address": "0x7E16271EaE58F52a0431F87Ee7E40c978178C63F",
         "count": 1
       }
+    },
+    "verified": {
+      "0x83dD551541C580e338206f1f677835D427C92dE2": true
     }
   }
 }

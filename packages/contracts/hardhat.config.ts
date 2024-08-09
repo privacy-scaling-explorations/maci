@@ -10,6 +10,7 @@ import type { HardhatUserConfig } from "hardhat/config";
 // Don't forget to import new tasks here
 import "./tasks/deploy";
 import { EChainId, ESupportedChains, getEtherscanApiKeys, getNetworkRpcUrls } from "./tasks/helpers/constants";
+import "./tasks/runner/benchmarks";
 import "./tasks/runner/deployFull";
 import "./tasks/runner/deployPoll";
 import "./tasks/runner/merge";

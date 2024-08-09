@@ -59,6 +59,7 @@
     "verify": "hardhat verify-full",
     "merge": "hardhat merge",
     "prove": "hardhat prove",
+    "benchmark": "hardhat benchmark",
     "deploy:localhost": "pnpm run deploy",
     "deploy:sepolia": "pnpm run deploy --network sepolia",
     "deploy:optimism-sepolia": "pnpm run deploy --network optimism_sepolia",
@@ -107,7 +108,16 @@
     "verify:arbitrum": "pnpm run verify --network arbitrum",
     "verify:arbitrum-sepolia": "pnpm run verify --network arbitrum_sepolia",
     "verify:base": "pnpm run verify --network base",
-    "verify:base-sepolia": "pnpm run verify --network base_sepolia"
+    "verify:base-sepolia": "pnpm run verify --network base_sepolia",
+    "benchmark:sepolia": "hardhat benchmark --network sepolia",
+    "benchmark:optimism-sepolia": "hardhat benchmark --network optimism_sepolia",
+    "benchmark:optimism": "pnpm run benchmark --network optimism",
+    "benchmark:scroll": "pnpm run benchmark --network scroll",
+    "benchmark:scroll-sepolia": "pnpm run benchmark --network scroll_sepolia",
+    "benchmark:arbitrum": "pnpm run benchmark --network arbitrum",
+    "benchmark:arbitrum-sepolia": "pnpm run benchmark --network arbitrum_sepolia",
+    "benchmark:base": "pnpm run benchmark --network base",
+    "benchmark:base-sepolia": "pnpm run benchmark --network base_sepolia"
   },
   "dependencies": {
     "@nomicfoundation/hardhat-ethers": "^3.0.6",
