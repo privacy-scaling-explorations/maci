@@ -71,9 +71,9 @@ export const joinPoll = async ({
 
   let maciState: MaciState | undefined;
   if (stateFile) {
-    const content = JSON.parse(fs.readFileSync(stateFile).toString()) as unknown as IJsonMaciState;
-
     try {
+      const file = await fs.promises.readFile(stateFile);
+      const content = JSON.parse(file.toString()) as unknown as IJsonMaciState;
       maciState = MaciState.fromJSON(content);
     } catch (error) {
       logError((error as Error).message);
