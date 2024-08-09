@@ -9,6 +9,16 @@ import { MACI__factory as MACIFactory } from "../typechain-types";
 
 import { sleep } from "./utils";
 
+/**
+ * Generate a State tree object from the events of a MACI smart contracts
+ * @param provider - the ethereum provider
+ * @param address - the address of the MACI contract
+ * @param fromBlock - the block number from which to start fetching events
+ * @param blocksPerRequest - the number of blocks to fetch in each request
+ * @param endBlock - the block number at which to stop fetching events
+ * @param sleepAmount - the amount of time to sleep between each request
+ * @returns State tree
+ */
 export const genSignUpTree = async (
   provider: Provider,
   address: string,
