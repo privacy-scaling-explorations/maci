@@ -1,4 +1,3 @@
-import { Provider } from "ethers";
 import { STATE_TREE_ARITY, STATE_TREE_DEPTH } from "maci-core/build/ts/utils/constants";
 import { hash2, IncrementalQuinTree } from "maci-crypto";
 import { blankStateLeafHash } from "maci-domainobjs";
@@ -7,6 +6,7 @@ import { assert } from "console";
 
 import { MACI__factory as MACIFactory } from "../typechain-types";
 
+import { IGenSignUpTreeArgs } from "./types";
 import { sleep } from "./utils";
 
 /**
@@ -19,14 +19,14 @@ import { sleep } from "./utils";
  * @param sleepAmount - the amount of time to sleep between each request
  * @returns State tree
  */
-export const genSignUpTree = async (
-  provider: Provider,
-  address: string,
+export const genSignUpTree = async ({
+  provider,
+  address,
   fromBlock = 0,
   blocksPerRequest = 50,
-  endBlock: number | undefined = undefined,
-  sleepAmount: number | undefined = undefined,
-): Promise<IncrementalQuinTree> => {
+  endBlock,
+  sleepAmount,
+}: IGenSignUpTreeArgs): Promise<IncrementalQuinTree> => {
   const lastBlock = endBlock || (await provider.getBlockNumber());
 
   const maciContract = MACIFactory.connect(address, provider);
