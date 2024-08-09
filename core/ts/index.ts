@@ -13,8 +13,13 @@ export {
 } from "./utils/utils";
 
 export type {
+  IJoiningCircuitArgs,
+  IPollJoiningCircuitInputs,
   ITallyCircuitInputs,
   IProcessMessagesCircuitInputs,
+  IPoll,
+  IJsonPoll,
+  IProcessMessagesOutput,
   CircuitInputs,
   MaxValues,
   TreeDepths,

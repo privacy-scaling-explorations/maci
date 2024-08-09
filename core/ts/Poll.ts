@@ -28,7 +28,6 @@ import {
 
 import assert from "assert";
 
-import type { MaciState } from "./MaciState";
 import type {
   CircuitInputs,
   TreeDepths,
@@ -39,7 +38,9 @@ import type {
   ITallyCircuitInputs,
   IProcessMessagesCircuitInputs,
   IPollJoiningCircuitInputs,
-} from "./utils/types";
+  IJoiningCircuitArgs,
+} from "./index";
+import type { MaciState } from "./MaciState";
 import type { PathElements } from "maci-crypto";
 
 import { STATE_TREE_ARITY, VOTE_OPTION_TREE_ARITY } from "./utils/constants";
@@ -427,21 +428,21 @@ export class Poll implements IPoll {
   };
 
   /**
-   * @param maciPrivateKey User's private key for signing up
+   * @param maciPrivKey User's private key for signing up
    * @param stateLeafIndex Index where the user is stored in the state leaves
    * @param credits Credits for voting
-   * @param pollPrivateKey Poll's private key for the poll joining
+   * @param pollPrivKey Poll's private key for the poll joining
    * @param pollPubKey Poll's public key for the poll joining
    * @returns stringified circuit inputs
    */
 
-  joiningCircuitInputs = (
-    maciPrivateKey: PrivKey,
-    stateLeafIndex: bigint,
-    credits: bigint,
-    pollPrivateKey: PrivKey,
-    pollPubKey: PubKey,
-  ): IPollJoiningCircuitInputs => {
+  joiningCircuitInputs = ({
+    maciPrivKey,
+    stateLeafIndex,
+    credits,
+    pollPrivKey,
+    pollPubKey,
+  }: IJoiningCircuitArgs): IPollJoiningCircuitInputs => {
     // Get the state leaf on the index position
     const stateLeaf = this.stateLeaves[Number(stateLeafIndex)];
     const { pubKey, voiceCreditBalance, timestamp } = stateLeaf;
@@ -462,7 +463,7 @@ export class Poll implements IPoll {
     }
 
     // Create nullifier from private key
-    const inputNullifier = BigInt(maciPrivateKey.asCircuitInputs());
+    const inputNullifier = BigInt(maciPrivKey.asCircuitInputs());
     const nullifier = poseidon([inputNullifier]);
 
     assert(credits <= voiceCreditBalance, "Credits must be lower than signed up credits");
@@ -474,8 +475,8 @@ export class Poll implements IPoll {
     const inputHash = sha256Hash([nullifier, credits, stateRoot, pollPubKeyArray[0], pollPubKeyArray[1]]);
 
     const circuitInputs = {
-      privKey: maciPrivateKey.asCircuitInputs(),
-      pollPrivKey: pollPrivateKey.asCircuitInputs(),
+      privKey: maciPrivKey.asCircuitInputs(),
+      pollPrivKey: pollPrivKey.asCircuitInputs(),
       pollPubKey: pollPubKey.asCircuitInputs(),
       stateLeaf: stateLeafArray,
       siblings,

@@ -111,13 +111,13 @@ describe("Poll Joining circuit", function test() {
       const stateLeafIndex = BigInt(1);
       const credits = BigInt(10);
 
-      const inputs = poll.joiningCircuitInputs(
-        privateKey,
+      const inputs = poll.joiningCircuitInputs({
+        maciPrivKey: privateKey,
         stateLeafIndex,
         credits,
         pollPrivKey,
         pollPubKey,
-      ) as unknown as IPollJoiningInputs;
+      }) as unknown as IPollJoiningInputs;
       const witness = await circuit.calculateWitness(inputs);
       await circuit.expectConstraintPass(witness);
     });
@@ -127,13 +127,13 @@ describe("Poll Joining circuit", function test() {
       const stateLeafIndex = BigInt(1);
       const credits = BigInt(10);
 
-      const inputs = poll.joiningCircuitInputs(
-        privateKey,
+      const inputs = poll.joiningCircuitInputs({
+        maciPrivKey: privateKey,
         stateLeafIndex,
         credits,
         pollPrivKey,
         pollPubKey,
-      ) as unknown as IPollJoiningInputs;
+      }) as unknown as IPollJoiningInputs;
       const witness = await circuit.calculateWitness(inputs);
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       await circuit.expectConstraintFail(Array(witness.length).fill(1n));
@@ -144,9 +144,9 @@ describe("Poll Joining circuit", function test() {
       const stateLeafIndex = BigInt(1);
       const credits = BigInt(105);
 
-      expect(() => poll.joiningCircuitInputs(privateKey, stateLeafIndex, credits, pollPrivKey, pollPubKey)).to.throw(
-        "Credits must be lower than signed up credits",
-      );
+      expect(() =>
+        poll.joiningCircuitInputs({ maciPrivKey: privateKey, stateLeafIndex, credits, pollPrivKey, pollPubKey }),
+      ).to.throw("Credits must be lower than signed up credits");
     });
   });
 });

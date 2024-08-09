@@ -126,13 +126,13 @@ export const joinPoll = async ({
   const currentStateRootIndex = poll.maciStateRef.numSignUps - 1;
   poll.updatePoll(BigInt(maciState!.stateLeaves.length));
 
-  const circuitInputs = poll.joiningCircuitInputs(
-    userMaciPrivKey,
-    stateIndex,
-    newVoiceCreditBalance,
-    pollPrivKeyDeserialized,
+  const circuitInputs = poll.joiningCircuitInputs({
+    maciPrivKey: userMaciPrivKey,
+    stateLeafIndex: stateIndex,
+    credits: newVoiceCreditBalance,
+    pollPrivKey: pollPrivKeyDeserialized,
     pollPubKey,
-  ) as unknown as CircuitInputs;
+  }) as unknown as CircuitInputs;
 
   const pollVk = await extractVk(pollJoiningZkey);
 

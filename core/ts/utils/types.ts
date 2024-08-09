@@ -9,6 +9,7 @@ import type {
   Keypair,
   Message,
   PCommand,
+  PrivKey,
   PubKey,
   StateLeaf,
 } from "maci-domainobjs";
@@ -140,6 +141,17 @@ export interface IProcessMessagesOutput {
   originalBallot?: Ballot;
   originalBallotPathElements?: PathElements;
   command?: PCommand;
+}
+
+/**
+ * An interface describing the joiningCircuitInputs function arguments
+ */
+export interface IJoiningCircuitArgs {
+  maciPrivKey: PrivKey;
+  stateLeafIndex: bigint;
+  credits: bigint;
+  pollPrivKey: PrivKey;
+  pollPubKey: PubKey;
 }
 /**
  * An interface describing the circuit inputs to the PollJoining circuit
