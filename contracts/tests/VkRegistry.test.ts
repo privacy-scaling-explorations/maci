@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { expect } from "chai";
 import { Signer } from "ethers";
 

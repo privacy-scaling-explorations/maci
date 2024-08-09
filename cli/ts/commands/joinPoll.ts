@@ -104,7 +104,6 @@ export const joinPoll = async ({
 
     logYellow(quiet, info(`starting to fetch logs from block ${fromBlock}`));
     // TODO: create genPollStateTree ?
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     maciState = await genMaciStateFromContract(
       signer.provider!,
       await maciContract.getAddress(),
@@ -168,7 +167,6 @@ export const joinPoll = async ({
     );
     const receipt = await tx.wait();
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (receipt?.status !== 1) {
       logError("Transaction failed");
     }

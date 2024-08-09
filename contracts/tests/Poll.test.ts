@@ -1,6 +1,4 @@
 /* eslint-disable no-await-in-loop */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable no-underscore-dangle */
 import { expect } from "chai";
 import { AbiCoder, Signer } from "ethers";
