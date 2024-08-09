@@ -197,8 +197,7 @@ export class Poll implements IPoll {
     this.pollStateLeaves.push(stateLeaf.copy());
     this.pollStateTree?.insert(stateLeaf.hash());
 
-    const index = this.pollStateLeaves.length - 1;
-    return index;
+    return this.pollStateLeaves.length - 1;
   };
 
   /**
