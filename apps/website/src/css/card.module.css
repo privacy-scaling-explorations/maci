@@ -48,12 +48,20 @@
   font-weight: bold;
   margin-bottom: 10px;
   color: #0a2540;
+  max-height: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .blogDescription {
   font-size: 16px;
   margin-bottom: 10px;
   color: #666666;
+  max-height: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .blogDate {
