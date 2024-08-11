@@ -1,6 +1,7 @@
 ---
 slug: maci-1-0-technical-introduction
 title: A Technical Introduction to MACI 1.0
+description: "Discover MACI 1.0: A groundbreaking solution for secure, collusion-resistant on-chain voting, powered by zk-SNARKs, ensuring transparency and integrity in every vote."
 authors:
   name: Kyle Charbonnet
   title: Privacy and Scaling Explorations (PSE)
