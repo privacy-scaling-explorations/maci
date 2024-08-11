@@ -8,7 +8,7 @@ authors:
   url: https://x.com/ctrlc03
   image_url: https://avatars.githubusercontent.com/u/93448202?v=4
 tags: [voting, security, anonymity, roadmap, grants]
-excerpt: "Minimal Anti-Collusion Infrastructure (MACI), is making waves in the world of private, digital voting. But where did this technology originate? Vitalik Buterin is the mind that thought of MACI. In this post, we’ll dive into his vision for a more secure and private digital voting system."
+excerpt: "Minimal Anti Collusion Infrastructure (MACI) is a public good that allows one to run secure, private, on-chain voting polls."
 ---
 
 Minimal Anti Collusion Infrastructure ([MACI](https://github.com/privacy-scaling-explorations/maci)) is a public good that allows one to run secure, private, on-chain voting polls.
