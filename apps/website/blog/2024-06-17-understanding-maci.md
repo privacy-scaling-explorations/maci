@@ -8,6 +8,7 @@ authors:
   url: https://github.com/Vee-18
   image_url: /img/pse-logo-round.png
 tags: [maci, voting, history, vitalik]
+excerpt: "In this blog post, we’ll give a high-level, beginner friendly introduction of what Minimal Anti-Collusion Infrastructure (MACI) is, and how it could be used in a real-world context. We’ll take you through the essentials of MACI, making complex concepts accessible regardless of your background in the blockchain space."
 ---
 
 Hey Anon!

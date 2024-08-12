@@ -8,6 +8,7 @@ authors:
   url: https://github.com/Vee-18
   image_url: /img/pse-logo-round.png
 tags: [maci, voting, history]
+excerpt: "Public goods are services or products that are available for everyone to consume, regardless of whether they contribute to their creation. Examples include clean air, public parks, and open-source software. These goods are essential for community welfare but often face funding challenges due to their non-excludable and non-rivalrous nature. This is where blockchain technology steps in, offering a decentralised approach to funding these vital initiatives. Through blockchain, transparency and community participation in funding decisions are greatly enhanced."
 ---
 
 ### What are Public Goods?

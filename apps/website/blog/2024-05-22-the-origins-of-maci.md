@@ -8,6 +8,7 @@ authors:
   url: https://github.com/Vee-18
   image_url: /img/pse-logo-round.png
 tags: [maci, voting, history, vitalik]
+excerpt: "Minimal Anti-Collusion Infrastructure (MACI), is making waves in the world of private, digital voting. But where did this technology originate? Vitalik Buterin is the mind that thought of MACI. In this post, we’ll dive into his vision for a more secure and private digital voting system."
 ---
 
 Minimal Anti-Collusion Infrastructure (MACI), is making waves in the world of private, digital voting. But where did this technology originate? Vitalik Buterin is the mind that thought of MACI. In this post, we’ll dive into his vision for a more secure and private digital voting system.

@@ -1,12 +1,14 @@
 ---
 slug: maci-1-0-technical-introduction
 title: A Technical Introduction to MACI 1.0
+description: "Discover MACI 1.0: A groundbreaking solution for secure, collusion-resistant on-chain voting, powered by zk-SNARKs, ensuring transparency and integrity in every vote."
 authors:
   name: Kyle Charbonnet
   title: Privacy and Scaling Explorations (PSE)
   url: https://github.com/kcharbo3
   image_url: https://avatars.githubusercontent.com/u/30647178?v=4
 tags: [zk, maci, release, voting, security]
+excerpt: "MACI, which stands for Minimal Anti-Collusion Infrastructure, is an application that allows users to have an on-chain voting process with greatly increased collusion resistance. A common problem among today’s on-chain voting processes is how easy it is to bribe voters into voting for a particular option. Oftentimes this bribery takes the form of “join our pool (vote our way) and we will give you a cut of the rewards (the bribe)”. Since all transactions on the blockchain are public, without MACI, voters can easily prove to the briber which option they voted for and therefore receive the bribe rewards."
 ---
 
 # A Technical Introduction to MACI 1.0
