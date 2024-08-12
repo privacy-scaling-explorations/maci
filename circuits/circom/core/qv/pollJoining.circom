@@ -7,16 +7,12 @@ include "./mux1.circom";
 include "./safe-comparators.circom";
 // local imports
 include "../../utils/hashers.circom";
-include "../../utils/messageToCommand.circom";
 include "../../utils/privToPubKey.circom";
-include "../../utils/processMessagesInputHasher.circom";
-include "../../utils/qv/stateLeafAndBallotTransformer.circom";
-include "../../trees/incrementalQuinaryTree.circom";
 include "../../trees/incrementalMerkleTree.circom";
 
 template PollJoining(stateTreeDepth) {
 
-    // Constants defining the structure and size of state and ballots.
+    // Constants defining the structure and size of state.
     var STATE_LEAF_LENGTH = 4;
     var STATE_TREE_ARITY = 2;
 
