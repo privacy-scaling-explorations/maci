@@ -36,11 +36,9 @@ interface IVkRegistry {
   /// @notice Get the poll verifying key
   /// @param _stateTreeDepth The state tree depth
   /// @param _voteOptionTreeDepth The vote option tree depth
-  /// @param _mode QV or Non-QV
   /// @return The verifying key
   function getPollVk(
     uint256 _stateTreeDepth,
-    uint256 _voteOptionTreeDepth,
-    DomainObjs.Mode _mode
+    uint256 _voteOptionTreeDepth
   ) external view returns (SnarkCommon.VerifyingKey memory);
 }

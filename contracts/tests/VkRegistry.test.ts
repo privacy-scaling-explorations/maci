@@ -190,7 +190,7 @@ describe("VkRegistry", () => {
     describe("genPollVkSig", () => {
       it("should generate a valid signature", async () => {
         const sig = await vkRegistryContract.genPollVkSig(stateTreeDepth, treeDepths.voteOptionTreeDepth);
-        const vk = await vkRegistryContract.getPollVkBySig(sig, EMode.QV);
+        const vk = await vkRegistryContract.getPollVkBySig(sig);
         compareVks(testPollVk, vk);
       });
     });

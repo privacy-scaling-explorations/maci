@@ -116,7 +116,7 @@ export const setVerifyingKeys = async ({
 
   // check if the poll vk was already set
   const pollVkSig = genPollVkSig(stateTreeDepth, voteOptionTreeDepth);
-  if (await vkRegistryContract.isPollVkSet(pollVkSig, EMode.QV)) {
+  if (await vkRegistryContract.isPollVkSet(pollVkSig)) {
     logError("This poll verifying key is already set in the contract");
   }
 
@@ -185,7 +185,7 @@ export const setVerifyingKeys = async ({
 
     // confirm that they were actually set correctly
     if (useQuadraticVoting) {
-      const pollVkOnChain = await vkRegistryContract.getPollVk(stateTreeDepth, voteOptionTreeDepth, EMode.QV);
+      const pollVkOnChain = await vkRegistryContract.getPollVk(stateTreeDepth, voteOptionTreeDepth);
 
       const processVkOnChain = await vkRegistryContract.getProcessVk(
         stateTreeDepth,
@@ -213,7 +213,7 @@ export const setVerifyingKeys = async ({
         logError("tallyVk mismatch");
       }
     } else {
-      const pollVkOnChain = await vkRegistryContract.getPollVk(stateTreeDepth, voteOptionTreeDepth, EMode.NON_QV);
+      const pollVkOnChain = await vkRegistryContract.getPollVk(stateTreeDepth, voteOptionTreeDepth);
 
       const processVkOnChain = await vkRegistryContract.getProcessVk(
         stateTreeDepth,

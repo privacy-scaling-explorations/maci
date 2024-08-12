@@ -314,8 +314,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     // Get the verifying key from the VkRegistry
     VerifyingKey memory vk = extContracts.maci.getVkRegistry().getPollVk(
       extContracts.maci.stateTreeDepth(),
-      treeDepths.voteOptionTreeDepth,
-      extContracts.maci.getMode()
+      treeDepths.voteOptionTreeDepth
     );
 
     // Generate the circuit public input

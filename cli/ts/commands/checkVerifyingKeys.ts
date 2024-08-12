@@ -71,11 +71,7 @@ export const checkVerifyingKeys = async ({
     logYellow(quiet, info("Retrieving verifying keys from the contract..."));
     // retrieve the verifying keys from the contract
 
-    const pollVkOnChain = await vkRegistryContractInstance.getPollVk(
-      stateTreeDepth,
-      voteOptionTreeDepth,
-      useQuadraticVoting ? EMode.QV : EMode.NON_QV,
-    );
+    const pollVkOnChain = await vkRegistryContractInstance.getPollVk(stateTreeDepth, voteOptionTreeDepth);
 
     const processVkOnChain = await vkRegistryContractInstance.getProcessVk(
       stateTreeDepth,

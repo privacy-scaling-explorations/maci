@@ -17,10 +17,10 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
   mapping(Mode => mapping(uint256 => VerifyingKey)) internal tallyVks;
   mapping(Mode => mapping(uint256 => bool)) internal tallyVkSet;
 
-  mapping(Mode => mapping(uint256 => VerifyingKey)) internal pollVks;
-  mapping(Mode => mapping(uint256 => bool)) internal pollVkSet;
+  mapping(uint256 => VerifyingKey) internal pollVks;
+  mapping(uint256 => bool) internal pollVkSet;
 
-  event PollVkSet(uint256 _sig, Mode _mode);
+  event PollVkSet(uint256 _sig);
   event ProcessVkSet(uint256 _sig, Mode _mode);
   event TallyVkSet(uint256 _sig, Mode _mode);
 
@@ -39,10 +39,9 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
 
   /// @notice Check if the poll verifying key is set
   /// @param _sig The signature
-  /// @param _mode QV or Non-QV
   /// @return isSet whether the verifying key is set
-  function isPollVkSet(uint256 _sig, Mode _mode) public view returns (bool isSet) {
-    isSet = pollVkSet[_mode][_sig];
+  function isPollVkSet(uint256 _sig) public view returns (bool isSet) {
+    isSet = pollVkSet[_sig];
   }
   /// @notice Check if the process verifying key is set
   /// @param _sig The signature
@@ -98,7 +97,7 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
   /// @param _voteOptionTreeDepth The vote option tree depth
   /// @param _messageBatchSize The message batch size
   /// @param _modes Array of QV or Non-QV modes (must have the same length as process and tally keys)
-  /// @param _pollVks The poll verifying key
+  /// @param _pollVk The poll verifying key
   /// @param _processVks The process verifying keys (must have the same length as modes)
   /// @param _tallyVks The tally verifying keys (must have the same length as modes)
   function setVerifyingKeysBatch(
@@ -107,7 +106,7 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
     uint256 _voteOptionTreeDepth,
     uint8 _messageBatchSize,
     Mode[] calldata _modes,
-    VerifyingKey calldata _pollVks,
+    VerifyingKey calldata _pollVk,
     VerifyingKey[] calldata _processVks,
     VerifyingKey[] calldata _tallyVks
   ) public onlyOwner {
@@ -124,7 +123,7 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
         _voteOptionTreeDepth,
         _messageBatchSize,
         _modes[index],
-        _pollVks,
+        _pollVk,
         _processVks[index],
         _tallyVks[index]
       );
@@ -165,9 +164,7 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
 
     uint256 pollVkSig = genPollVkSig(_stateTreeDepth, _voteOptionTreeDepth);
 
-    if (pollVkSet[_mode][pollVkSig]) revert PollVkAlreadySet();
-
-    VerifyingKey storage pollVk = pollVks[_mode][pollVkSig];
+    VerifyingKey storage pollVk = pollVks[pollVkSig];
     pollVk.alpha1 = _pollVk.alpha1;
     pollVk.beta2 = _pollVk.beta2;
     pollVk.gamma2 = _pollVk.gamma2;
@@ -182,7 +179,7 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
       }
     }
 
-    pollVkSet[_mode][pollVkSig] = true;
+    pollVkSet[pollVkSig] = true;
 
     VerifyingKey storage processVk = processVks[_mode][processVkSig];
     processVk.alpha1 = _processVk.alpha1;
@@ -220,7 +217,7 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
 
     emit TallyVkSet(tallyVkSig, _mode);
     emit ProcessVkSet(processVkSig, _mode);
-    emit PollVkSet(pollVkSig, _mode);
+    emit PollVkSet(pollVkSig);
   }
 
   /// @notice Check if the process verifying key is set
@@ -302,22 +299,20 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
 
   /// @notice Get the poll verifying key by signature
   /// @param _sig The signature
-  /// @param _mode QV or Non-QV
   /// @return vk The verifying key
-  function getPollVkBySig(uint256 _sig, Mode _mode) public view returns (VerifyingKey memory vk) {
-    if (!pollVkSet[_mode][_sig]) revert PollVkNotSet();
+  function getPollVkBySig(uint256 _sig) public view returns (VerifyingKey memory vk) {
+    if (!pollVkSet[_sig]) revert PollVkNotSet();
 
-    vk = pollVks[_mode][_sig];
+    vk = pollVks[_sig];
   }
 
   /// @inheritdoc IVkRegistry
   function getPollVk(
     uint256 _stateTreeDepth,
-    uint256 _voteOptionTreeDepth,
-    Mode _mode
+    uint256 _voteOptionTreeDepth
   ) public view returns (VerifyingKey memory vk) {
     uint256 sig = genPollVkSig(_stateTreeDepth, _voteOptionTreeDepth);
 
-    vk = getPollVkBySig(sig, _mode);
+    vk = getPollVkBySig(sig);
   }
 }
