@@ -100,3 +100,31 @@
   display: -webkit-box;
   overflow: hidden;
 }
+
+[data-theme="dark"] .blogContainer {
+  background-color: black;
+}
+
+[data-theme="dark"] .blogCard {
+  background-color: #212121;
+  border: 1px solid #888888;
+}
+
+[data-theme="dark"] .blogTitle,
+.blogReadMoreButton {
+  color: #ffffff;
+}
+
+[data-theme="dark"] .blogDescription {
+  color: #cdcdcd;
+}
+
+[data-theme="dark"] .blogDate,
+.blogAuthors,
+.blogExcerpt {
+  color: #888888;
+}
+
+[data-theme="dark"] .blogReadMoreButton {
+  background-color: #1b2b50;
+}
