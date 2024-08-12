@@ -58,7 +58,7 @@ abstract contract HatsGatekeeperBase is SignUpGatekeeper, Ownable(msg.sender) {
 
   /// @notice Get the trait of the gatekeeper
   /// @return The type of the gatekeeper
-  function getTrait() public pure override returns (string memory) {
+  function getTrait() public pure virtual override returns (string memory) {
     return "Hats";
   }
 }

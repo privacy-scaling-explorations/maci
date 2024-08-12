@@ -1,3 +1,4 @@
+import { HatsGatekeeperBase } from "../../../typechain-types";
 import { ESupportedChains } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
@@ -17,6 +18,7 @@ deployment.deployTask("full:deploy-gatekeepers", "Deploy gatekeepers").then((tas
 
     const freeForAllGatekeeperContractAddress = storage.getAddress(EContracts.FreeForAllGatekeeper, hre.network.name);
     const easGatekeeperContractAddress = storage.getAddress(EContracts.EASGatekeeper, hre.network.name);
+    const hatsGatekeeperContractAddress = storage.getAddress(EContracts.HatsGatekeeper, hre.network.name);
     const gitcoinGatekeeperContractAddress = storage.getAddress(EContracts.GitcoinPassportGatekeeper, hre.network.name);
     const zupassGatekeeperContractAddress = storage.getAddress(EContracts.ZupassGatekeeper, hre.network.name);
     const semaphoreGatekeeperContractAddress = storage.getAddress(EContracts.SemaphoreGatekeeper, hre.network.name);
@@ -25,12 +27,14 @@ deployment.deployTask("full:deploy-gatekeepers", "Deploy gatekeepers").then((tas
     const deployGitcoinGatekeeper = deployment.getDeployConfigField(EContracts.GitcoinPassportGatekeeper, "deploy");
     const deployZupassGatekeeper = deployment.getDeployConfigField(EContracts.ZupassGatekeeper, "deploy");
     const deploySemaphoreGatekeeper = deployment.getDeployConfigField(EContracts.SemaphoreGatekeeper, "deploy");
+    const deployHatsSingleGatekeeper = deployment.getDeployConfigField(EContracts.HatsGatekeeper, "deploy");
 
     const skipDeployFreeForAllGatekeeper = deployFreeForAllGatekeeper !== true;
     const skipDeployEASGatekeeper = deployEASGatekeeper !== true;
     const skipDeployGitcoinGatekeeper = deployGitcoinGatekeeper !== true;
     const skipDeployZupassGatekeeper = deployZupassGatekeeper !== true;
     const skipDeploySemaphoreGatekeeper = deploySemaphoreGatekeeper !== true;
+    const skipDeployHatsGatekeeper = deployHatsSingleGatekeeper !== true;
 
     const canSkipDeploy =
       incremental &&
@@ -39,11 +43,13 @@ deployment.deployTask("full:deploy-gatekeepers", "Deploy gatekeepers").then((tas
       (gitcoinGatekeeperContractAddress || skipDeployGitcoinGatekeeper) &&
       (zupassGatekeeperContractAddress || skipDeployZupassGatekeeper) &&
       (semaphoreGatekeeperContractAddress || skipDeploySemaphoreGatekeeper) &&
+      (hatsGatekeeperContractAddress || skipDeployHatsGatekeeper) &&
       (!skipDeployFreeForAllGatekeeper ||
         !skipDeployEASGatekeeper ||
         !skipDeployGitcoinGatekeeper ||
         !skipDeployZupassGatekeeper ||
-        !skipDeploySemaphoreGatekeeper);
+        !skipDeploySemaphoreGatekeeper ||
+        !skipDeployHatsGatekeeper);
 
     if (canSkipDeploy) {
       return;
@@ -178,6 +184,45 @@ deployment.deployTask("full:deploy-gatekeepers", "Deploy gatekeepers").then((tas
         id: EContracts.SemaphoreGatekeeper,
         contract: semaphoreGatekeeperContract,
         args: [semaphoreContractAddress, groupId.toString()],
+        network: hre.network.name,
+      });
+    }
+
+    if (!skipDeployHatsGatekeeper) {
+      // get args
+      const criterionHats = deployment.getDeployConfigField<string[]>(EContracts.HatsGatekeeper, "criterionHats", true);
+      const hatsProtocolAddress = deployment.getDeployConfigField<string>(
+        EContracts.HatsGatekeeper,
+        "hatsProtocolAddress",
+        true,
+      );
+
+      let hatsGatekeeperContract: HatsGatekeeperBase;
+      // if we have one we use the single gatekeeper
+      if (criterionHats.length === 1) {
+        hatsGatekeeperContract = await deployment.deployContract(
+          {
+            name: EContracts.HatsGatekeeperSingle,
+            signer: deployer,
+          },
+          hatsProtocolAddress,
+          criterionHats[0],
+        );
+      } else {
+        hatsGatekeeperContract = await deployment.deployContract(
+          {
+            name: EContracts.HatsGatekeeperMultiple,
+            signer: deployer,
+          },
+          hatsProtocolAddress,
+          criterionHats,
+        );
+      }
+
+      await storage.register({
+        id: EContracts.HatsGatekeeper,
+        contract: hatsGatekeeperContract,
+        args: [hatsProtocolAddress, criterionHats.length === 1 ? criterionHats[0] : criterionHats],
         network: hre.network.name,
       });
     }

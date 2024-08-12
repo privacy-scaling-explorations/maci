@@ -4,6 +4,7 @@ import type {
   ZupassGatekeeper,
   MACI,
   SemaphoreGatekeeper,
+  HatsGatekeeperBase,
 } from "../../../typechain-types";
 
 import { genEmptyBallotRoots } from "../../../ts/genEmptyBallotRoots";
@@ -102,6 +103,14 @@ deployment.deployTask("full:deploy-maci", "Deploy MACI contract").then((task) =>
     } else if (gatekeeper === EContracts.SemaphoreGatekeeper) {
       const gatekeeperContract = await deployment.getContract<SemaphoreGatekeeper>({
         name: EContracts.SemaphoreGatekeeper,
+        address: gatekeeperContractAddress,
+      });
+
+      const maciInstanceAddress = await maciContract.getAddress();
+      await gatekeeperContract.setMaciInstance(maciInstanceAddress).then((tx) => tx.wait());
+    } else if (gatekeeper === EContracts.HatsGatekeeper) {
+      const gatekeeperContract = await deployment.getContract<HatsGatekeeperBase>({
+        name: EContracts.HatsGatekeeper,
         address: gatekeeperContractAddress,
       });
 
