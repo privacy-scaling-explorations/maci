@@ -59,4 +59,10 @@ contract HatsGatekeeperMultiple is HatsGatekeeperBase {
     // _user must be wearing the criterion hat
     if (!hats.isWearerOfHat(_user, hat)) revert NotWearingCriterionHat();
   }
+
+  /// @notice Get the trait of the gatekeeper
+  /// @return The type of the gatekeeper
+  function getTrait() public pure override returns (string memory) {
+    return "HatsMultiple";
+  }
 }
