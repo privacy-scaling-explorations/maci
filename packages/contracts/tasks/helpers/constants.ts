@@ -32,8 +32,6 @@ export enum EChainId {
   Coverage = 1337,
 }
 
-export const STATE_TREE_ARITY = 5;
-
 /**
  * Get network rpc urls object
  *

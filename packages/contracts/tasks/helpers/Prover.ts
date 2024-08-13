@@ -1,4 +1,5 @@
 /* eslint-disable no-console, no-await-in-loop */
+import { STATE_TREE_ARITY, MESSAGE_TREE_ARITY } from "maci-core";
 import { G1Point, G2Point } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
 
@@ -8,7 +9,6 @@ import type { BigNumberish } from "ethers";
 
 import { asHex, formatProofForVerifierContract } from "../../ts/utils";
 
-import { STATE_TREE_ARITY } from "./constants";
 import { IProverParams } from "./types";
 
 /**
@@ -92,7 +92,7 @@ export class Prover {
       ]);
 
     const numMessages = Number(numSignUpsAndMessages[1]);
-    const messageBatchSize = STATE_TREE_ARITY ** Number(treeDepths[1]);
+    const messageBatchSize = MESSAGE_TREE_ARITY ** Number(treeDepths[1]);
     let totalMessageBatches = numMessages <= messageBatchSize ? 1 : Math.floor(numMessages / messageBatchSize);
     let numberBatchesProcessed = numBatchesProcessed;
 
