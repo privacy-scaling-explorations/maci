@@ -116,17 +116,11 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
 
     uint256 length = _modes.length;
 
+    setPollVkKey(_stateTreeDepth, _stateTreeDepth, _pollVk);
+
     for (uint256 index = 0; index < length; ) {
-      setVerifyingKeys(
-        _stateTreeDepth,
-        _intStateTreeDepth,
-        _voteOptionTreeDepth,
-        _messageBatchSize,
-        _modes[index],
-        _pollVk,
-        _processVks[index],
-        _tallyVks[index]
-      );
+      setProcessVkKey(_stateTreeDepth, _voteOptionTreeDepth, _messageBatchSize, _modes[index], _processVks[index]);
+      setTallyVkKey(_stateTreeDepth, _intStateTreeDepth, _voteOptionTreeDepth, _modes[index], _tallyVks[index]);
 
       unchecked {
         index++;
@@ -154,32 +148,27 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
     VerifyingKey calldata _processVk,
     VerifyingKey calldata _tallyVk
   ) public onlyOwner {
+    setProcessVkKey(_stateTreeDepth, _voteOptionTreeDepth, _messageBatchSize, _mode, _processVk);
+    setTallyVkKey(_stateTreeDepth, _intStateTreeDepth, _voteOptionTreeDepth, _mode, _tallyVk);
+    setPollVkKey(_stateTreeDepth, _voteOptionTreeDepth, _pollVk);
+  }
+
+  /// @notice Set the process verifying key for a certain combination of parameters
+  /// @param _stateTreeDepth The state tree depth
+  /// @param _voteOptionTreeDepth The vote option tree depth
+  /// @param _messageBatchSize The message batch size
+  /// @param _mode QV or Non-QV
+  /// @param _processVk The process verifying key
+  function setProcessVkKey(
+    uint256 _stateTreeDepth,
+    uint256 _voteOptionTreeDepth,
+    uint8 _messageBatchSize,
+    Mode _mode,
+    VerifyingKey calldata _processVk
+  ) public onlyOwner {
     uint256 processVkSig = genProcessVkSig(_stateTreeDepth, _voteOptionTreeDepth, _messageBatchSize);
 
     if (processVkSet[_mode][processVkSig]) revert ProcessVkAlreadySet();
-
-    uint256 tallyVkSig = genTallyVkSig(_stateTreeDepth, _intStateTreeDepth, _voteOptionTreeDepth);
-
-    if (tallyVkSet[_mode][tallyVkSig]) revert TallyVkAlreadySet();
-
-    uint256 pollVkSig = genPollVkSig(_stateTreeDepth, _voteOptionTreeDepth);
-
-    VerifyingKey storage pollVk = pollVks[pollVkSig];
-    pollVk.alpha1 = _pollVk.alpha1;
-    pollVk.beta2 = _pollVk.beta2;
-    pollVk.gamma2 = _pollVk.gamma2;
-    pollVk.delta2 = _pollVk.delta2;
-
-    uint256 pollIcLength = _pollVk.ic.length;
-    for (uint256 i = 0; i < pollIcLength; ) {
-      pollVk.ic.push(_pollVk.ic[i]);
-
-      unchecked {
-        i++;
-      }
-    }
-
-    pollVkSet[pollVkSig] = true;
 
     VerifyingKey storage processVk = processVks[_mode][processVkSig];
     processVk.alpha1 = _processVk.alpha1;
@@ -197,6 +186,26 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
     }
 
     processVkSet[_mode][processVkSig] = true;
+
+    emit ProcessVkSet(processVkSig, _mode);
+  }
+
+  /// @notice Set the tally verifying key for a certain combination of parameters
+  /// @param _stateTreeDepth The state tree depth
+  /// @param _intStateTreeDepth The intermediate state tree depth
+  /// @param _voteOptionTreeDepth The vote option tree depth
+  /// @param _mode QV or Non-QV
+  /// @param _tallyVk The tally verifying key
+  function setTallyVkKey(
+    uint256 _stateTreeDepth,
+    uint256 _intStateTreeDepth,
+    uint256 _voteOptionTreeDepth,
+    Mode _mode,
+    VerifyingKey calldata _tallyVk
+  ) public onlyOwner {
+    uint256 tallyVkSig = genTallyVkSig(_stateTreeDepth, _intStateTreeDepth, _voteOptionTreeDepth);
+
+    if (tallyVkSet[_mode][tallyVkSig]) revert TallyVkAlreadySet();
 
     VerifyingKey storage tallyVk = tallyVks[_mode][tallyVkSig];
     tallyVk.alpha1 = _tallyVk.alpha1;
@@ -216,7 +225,38 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
     tallyVkSet[_mode][tallyVkSig] = true;
 
     emit TallyVkSet(tallyVkSig, _mode);
-    emit ProcessVkSet(processVkSig, _mode);
+  }
+
+  /// @notice Set the poll verifying key for a certain combination of parameters
+  /// @param _stateTreeDepth The state tree depth
+  /// @param _voteOptionTreeDepth The vote option tree depth
+  /// @param _pollVk The poll verifying key
+  function setPollVkKey(
+    uint256 _stateTreeDepth,
+    uint256 _voteOptionTreeDepth,
+    VerifyingKey calldata _pollVk
+  ) public onlyOwner {
+    uint256 pollVkSig = genPollVkSig(_stateTreeDepth, _voteOptionTreeDepth);
+
+    if (pollVkSet[pollVkSig]) revert PollVkAlreadySet();
+
+    VerifyingKey storage pollVk = pollVks[pollVkSig];
+    pollVk.alpha1 = _pollVk.alpha1;
+    pollVk.beta2 = _pollVk.beta2;
+    pollVk.gamma2 = _pollVk.gamma2;
+    pollVk.delta2 = _pollVk.delta2;
+
+    uint256 pollIcLength = _pollVk.ic.length;
+    for (uint256 i = 0; i < pollIcLength; ) {
+      pollVk.ic.push(_pollVk.ic[i]);
+
+      unchecked {
+        i++;
+      }
+    }
+
+    pollVkSet[pollVkSig] = true;
+
     emit PollVkSet(pollVkSig);
   }
 
