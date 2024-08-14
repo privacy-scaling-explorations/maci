@@ -116,7 +116,7 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
 
     uint256 length = _modes.length;
 
-    setPollVkKey(_stateTreeDepth, _stateTreeDepth, _pollVk);
+    setPollVkKey(_stateTreeDepth, _voteOptionTreeDepth, _pollVk);
 
     for (uint256 index = 0; index < length; ) {
       setProcessVkKey(_stateTreeDepth, _voteOptionTreeDepth, _messageBatchSize, _modes[index], _processVks[index]);
@@ -129,13 +129,11 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
   }
 
   /// @notice Set the process and tally verifying keys for a certain combination
-  /// of parameters
   /// @param _stateTreeDepth The state tree depth
   /// @param _intStateTreeDepth The intermediate state tree depth
   /// @param _voteOptionTreeDepth The vote option tree depth
   /// @param _messageBatchSize The message batch size
   /// @param _mode QV or Non-QV
-  /// @param _pollVk The poll verifying key
   /// @param _processVk The process verifying key
   /// @param _tallyVk The tally verifying key
   function setVerifyingKeys(
@@ -144,13 +142,11 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
     uint256 _voteOptionTreeDepth,
     uint8 _messageBatchSize,
     Mode _mode,
-    VerifyingKey calldata _pollVk,
     VerifyingKey calldata _processVk,
     VerifyingKey calldata _tallyVk
   ) public onlyOwner {
     setProcessVkKey(_stateTreeDepth, _voteOptionTreeDepth, _messageBatchSize, _mode, _processVk);
     setTallyVkKey(_stateTreeDepth, _intStateTreeDepth, _voteOptionTreeDepth, _mode, _tallyVk);
-    setPollVkKey(_stateTreeDepth, _voteOptionTreeDepth, _pollVk);
   }
 
   /// @notice Set the process verifying key for a certain combination of parameters

@@ -32,15 +32,38 @@ describe("VkRegistry", () => {
     });
   });
 
+  describe("setPollVkKey", () => {
+    it("should set the poll vk", async () => {
+      const tx = await vkRegistryContract.setPollVkKey(
+        stateTreeDepth + 1,
+        treeDepths.voteOptionTreeDepth,
+        testPollVk.asContractParam() as IVerifyingKeyStruct,
+        { gasLimit: 1000000 },
+      );
+      const receipt = await tx.wait();
+      expect(receipt?.status).to.eq(1);
+    });
+
+    it("should throw when trying to set another vk for the same params", async () => {
+      await expect(
+        vkRegistryContract.setPollVkKey(
+          stateTreeDepth + 1,
+          treeDepths.voteOptionTreeDepth,
+          testPollVk.asContractParam() as IVerifyingKeyStruct,
+          { gasLimit: 1000000 },
+        ),
+      ).to.be.revertedWithCustomError(vkRegistryContract, "PollVkAlreadySet");
+    });
+  });
+
   describe("setVerifyingKeys", () => {
-    it("should set the process, tally and poll vks", async () => {
+    it("should set the process, tally vks", async () => {
       const tx = await vkRegistryContract.setVerifyingKeys(
         stateTreeDepth,
         treeDepths.intStateTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
         EMode.QV,
-        testPollVk.asContractParam() as IVerifyingKeyStruct,
         testProcessVk.asContractParam() as IVerifyingKeyStruct,
         testTallyVk.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 2000000 },
@@ -57,7 +80,6 @@ describe("VkRegistry", () => {
           treeDepths.voteOptionTreeDepth,
           messageBatchSize,
           EMode.QV,
-          testPollVk.asContractParam() as IVerifyingKeyStruct,
           testProcessVk.asContractParam() as IVerifyingKeyStruct,
           testTallyVk.asContractParam() as IVerifyingKeyStruct,
           { gasLimit: 2000000 },
@@ -72,7 +94,6 @@ describe("VkRegistry", () => {
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
         EMode.QV,
-        testPollVk.asContractParam() as IVerifyingKeyStruct,
         testProcessVk.asContractParam() as IVerifyingKeyStruct,
         testTallyVk.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 2000000 },
@@ -88,7 +109,6 @@ describe("VkRegistry", () => {
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
         EMode.NON_QV,
-        testPollVk.asContractParam() as IVerifyingKeyStruct,
         testProcessVk.asContractParam() as IVerifyingKeyStruct,
         testTallyVk.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 2000000 },
@@ -99,7 +119,7 @@ describe("VkRegistry", () => {
   });
 
   describe("setVerifyingKeysBatch", () => {
-    it("should set the process and tally vks", async () => {
+    it("should set the process, tally, poll vks", async () => {
       const tx = await vkRegistryContract.setVerifyingKeysBatch(
         stateTreeDepth,
         treeDepths.intStateTreeDepth,
