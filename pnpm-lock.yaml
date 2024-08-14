@@ -150,6 +150,9 @@ importers:
       docusaurus-plugin-image-zoom:
         specifier: ^2.0.0
         version: 2.0.0(@docusaurus/theme-classic@3.5.1(@types/react@18.3.3)(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4))
+      docusaurus-plugin-matomo:
+        specifier: ^0.0.8
+        version: 0.0.8(@docusaurus/core@3.5.1(@docusaurus/types@3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4))
       gray-matter:
         specifier: ^4.0.3
         version: 4.0.3
@@ -4603,6 +4606,12 @@ packages:
     resolution: {integrity: sha512-TWHQZeoiged+95CESlZk++lihzl3pqw34n0/fbexx2AocmFhbo9K2scYDgYB8amki4/X6mUCLTPZE1pQvT+00Q==}
     peerDependencies:
       '@docusaurus/theme-classic': '>=3.0.0'
+
+  docusaurus-plugin-matomo@0.0.8:
+    resolution: {integrity: sha512-YSaDdjxI7uN1FuNLSGrQy4BmDEXwwyL6vac7GfmS7wFBLck/Ias5jHqENPBHXe36m2cYzyesGPQL1EsS9vanwA==}
+    engines: {node: '>=12.13.0'}
+    peerDependencies:
+      '@docusaurus/core': ^2.0.0-alpha.56 || ^3.0.0
 
   dom-converter@0.2.0:
     resolution: {integrity: sha512-gd3ypIPfOMr9h5jIKq8E3sHOTCjeirnl0WK5ZdS1AW0Odt0b1PaWaHdJ4Qk4klv+YB9aJBS7mESXjFoDQPu6DA==}
@@ -15947,6 +15956,10 @@ snapshots:
       '@docusaurus/theme-classic': 3.5.1(@types/react@18.3.3)(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       medium-zoom: 1.1.0
       validate-peer-dependencies: 2.2.0
+
+  docusaurus-plugin-matomo@0.0.8(@docusaurus/core@3.5.1(@docusaurus/types@3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)):
+    dependencies:
+      '@docusaurus/core': 3.5.1(@docusaurus/types@3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(debug@4.3.6)(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
 
   dom-converter@0.2.0:
     dependencies:

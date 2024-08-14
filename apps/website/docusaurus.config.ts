@@ -82,6 +82,7 @@ async function getConfig(): Promise<Config> {
         },
       ],
       "docusaurus-plugin-image-zoom",
+      "docusaurus-plugin-matomo",
     ],
     stylesheets: [
       {
@@ -186,6 +187,12 @@ async function getConfig(): Promise<Config> {
         copyright: `Copyright © ${new Date().getFullYear().toString()} Privacy and Scaling Explorations`,
       },
       zoom: {},
+      matomo: {
+        matomoUrl: "https://psedev.matomo.cloud/",
+        siteId: "18",
+        phpLoader: "matomo.php",
+        jsLoader: "matomo.js",
+      },
     } satisfies Preset.ThemeConfig,
   };
 
