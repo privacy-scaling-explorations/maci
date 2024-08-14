@@ -137,7 +137,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   /// @notice The initialization function.
   /// @dev Should be called immediately after Poll creation
   /// and messageAq ownership transferred
-  function init() public {
+  function init() public virtual {
     if (isInit) revert PollAlreadyInit();
     // set to true so it cannot be called again
     isInit = true;
