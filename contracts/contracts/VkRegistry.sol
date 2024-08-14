@@ -119,8 +119,15 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
     setPollVkKey(_stateTreeDepth, _voteOptionTreeDepth, _pollVk);
 
     for (uint256 index = 0; index < length; ) {
-      setProcessVkKey(_stateTreeDepth, _voteOptionTreeDepth, _messageBatchSize, _modes[index], _processVks[index]);
-      setTallyVkKey(_stateTreeDepth, _intStateTreeDepth, _voteOptionTreeDepth, _modes[index], _tallyVks[index]);
+      setVerifyingKeys(
+        _stateTreeDepth,
+        _intStateTreeDepth,
+        _voteOptionTreeDepth,
+        _messageBatchSize,
+        _modes[index],
+        _processVks[index],
+        _tallyVks[index]
+      );
 
       unchecked {
         index++;
