@@ -18,7 +18,7 @@ describe("pollFactory", () => {
 
   before(async () => {
     signer = await getDefaultSigner();
-    pollFactory = (await deployPollFactory(signer, true)) as BaseContract as PollFactory;
+    pollFactory = (await deployPollFactory(signer, undefined, true)) as BaseContract as PollFactory;
   });
 
   describe("deployment", () => {

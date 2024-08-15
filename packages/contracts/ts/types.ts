@@ -2,12 +2,16 @@ import type {
   ConstantInitialVoiceCreditProxy,
   FreeForAllGatekeeper,
   MACI,
+  MACI__factory as MACIFactory,
+  MessageProcessorFactory__factory as MessageProcessorFactoryFactory,
   MockVerifier,
   PollFactory,
+  PollFactory__factory as PollFactoryFactory,
   PoseidonT3,
   PoseidonT4,
   PoseidonT5,
   PoseidonT6,
+  TallyFactory__factory as TallyFactoryFactory,
   VkRegistry,
 } from "../typechain-types";
 import type { BigNumberish, Signer } from "ethers";
@@ -143,6 +147,16 @@ export interface IDeployMaciArgs {
     poseidonT5: string;
     poseidonT6: string;
   }>;
+
+  /**
+   * Custom user defined factories
+   */
+  factories?: [
+    typeof MACIFactory,
+    typeof PollFactoryFactory,
+    typeof MessageProcessorFactoryFactory,
+    typeof TallyFactoryFactory,
+  ];
 
   /**
    * The depth of the state tree

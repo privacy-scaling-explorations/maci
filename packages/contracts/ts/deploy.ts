@@ -236,7 +236,11 @@ export const deployContractWithLinkedLibraries = async <T extends BaseContract>(
  * @param quiet - whether to suppress console output
  * @returns the deployed Poll Factory contract
  */
-export const deployPollFactory = async (signer: Signer, quiet = false): Promise<PollFactory> => {
+export const deployPollFactory = async (
+  signer: Signer,
+  factory: typeof PollFactoryFactory | undefined,
+  quiet = false,
+): Promise<PollFactory> => {
   const poseidonContracts = await deployPoseidonContracts(signer, {}, quiet);
   const [poseidonT3Contract, poseidonT4Contract, poseidonT5Contract, poseidonT6Contract] = await Promise.all([
     poseidonContracts.PoseidonT3Contract.getAddress(),
@@ -245,9 +249,11 @@ export const deployPollFactory = async (signer: Signer, quiet = false): Promise<
     poseidonContracts.PoseidonT6Contract.getAddress(),
   ]);
 
+  const pollFactory = factory || PollFactoryFactory;
+
   const contractFactory = await createContractFactory(
-    PollFactoryFactory.abi,
-    PollFactoryFactory.linkBytecode({
+    pollFactory.abi,
+    pollFactory.linkBytecode({
       "contracts/crypto/PoseidonT3.sol:PoseidonT3": poseidonT3Contract,
       "contracts/crypto/PoseidonT4.sol:PoseidonT4": poseidonT4Contract,
       "contracts/crypto/PoseidonT5.sol:PoseidonT5": poseidonT5Contract,
@@ -270,6 +276,7 @@ export const deployMaci = async ({
   signer,
   poseidonAddresses,
   stateTreeDepth = 10,
+  factories,
   quiet = true,
 }: IDeployMaciArgs): Promise<IDeployedMaci> => {
   const emptyBallotRoots = genEmptyBallotRoots(stateTreeDepth);
@@ -289,7 +296,12 @@ export const deployMaci = async ({
     poseidonT6,
   }));
 
-  const contractsToLink = [MACIFactory, PollFactoryFactory, MessageProcessorFactoryFactory, TallyFactoryFactory];
+  const contractsToLink = factories || [
+    MACIFactory,
+    PollFactoryFactory,
+    MessageProcessorFactoryFactory,
+    TallyFactoryFactory,
+  ];
 
   // Link Poseidon contracts to MACI
   const linkedContractFactories = await Promise.all(
