@@ -69,6 +69,7 @@ export const signup = async ({
   const maciContract = MACIFactory.connect(maciAddress, signer);
 
   let stateIndex = "";
+  let voiceCredits = "";
   let receipt: ContractTransactionReceipt | null = null;
 
   try {
@@ -88,7 +89,7 @@ export const signup = async ({
     if (receipt?.logs) {
       const [log] = receipt.logs;
       const { args } = iface.parseLog(log as unknown as { topics: string[]; data: string }) || { args: [] };
-      [stateIndex] = args;
+      [stateIndex, , , voiceCredits] = args;
       logGreen(quiet, success(`State index: ${stateIndex.toString()}`));
     } else {
       logError("Unable to retrieve the transaction receipt");
@@ -99,6 +100,7 @@ export const signup = async ({
 
   return {
     stateIndex: stateIndex ? stateIndex.toString() : "",
+    voiceCredits: voiceCredits ? Number.parseInt(voiceCredits, 10) : 0,
     hash: receipt!.hash,
   };
 };

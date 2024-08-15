@@ -841,6 +841,11 @@ export interface ISignupData {
   stateIndex: string;
 
   /**
+   * The voice credits of the user
+   */
+  voiceCredits: number;
+
+  /**
    * The signup transaction hash
    */
   hash: string;
