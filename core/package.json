@@ -22,6 +22,7 @@
     "docs": "typedoc --plugin typedoc-plugin-markdown --options ./typedoc.json"
   },
   "dependencies": {
+    "@zk-kit/lean-imt": "^2.1.0",
     "maci-crypto": "2.0.0-alpha",
     "maci-domainobjs": "2.0.0-alpha"
   },

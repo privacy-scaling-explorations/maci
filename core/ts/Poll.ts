@@ -1,3 +1,4 @@
+import { LeanIMT } from "@zk-kit/lean-imt";
 import {
   IncrementalQuinTree,
   genRandomSalt,
@@ -12,6 +13,7 @@ import {
   hash2,
   poseidon,
 } from "maci-crypto";
+import { hashLeanIMT } from "maci-crypto/build/ts/hashing";
 import {
   PCommand,
   Keypair,
@@ -83,7 +85,7 @@ export class Poll implements IPoll {
 
   stateLeaves: StateLeaf[] = [blankStateLeaf];
 
-  stateTree?: IncrementalQuinTree;
+  stateTree?: LeanIMT;
 
   // For message processing
   numBatchesProcessed = 0;
@@ -221,8 +223,7 @@ export class Poll implements IPoll {
     // ensure we have the correct actual state tree depth value
     this.actualStateTreeDepth = Math.max(1, Math.ceil(Math.log2(Number(this.numSignups))));
 
-    // create a new state tree
-    this.stateTree = new IncrementalQuinTree(this.actualStateTreeDepth, blankStateLeafHash, STATE_TREE_ARITY, hash2);
+    this.stateTree = new LeanIMT(hashLeanIMT);
     // add all leaves
     this.stateLeaves.forEach((stateLeaf) => {
       this.stateTree?.insert(stateLeaf.hash());
@@ -451,22 +452,33 @@ export class Poll implements IPoll {
     const stateLeafArray = [pubKeyX, pubKeyY, voiceCreditBalance, timestamp];
     const pollPubKeyArray = pollPubKey.asArray();
 
-    // calculate the path elements for the state tree given the original state tree
-    const { pathElements: siblings, pathIndices, root: stateRoot } = this.stateTree!.genProof(Number(stateLeafIndex));
-    const indices = pathIndices.map((num) => BigInt(num));
+    assert(credits <= voiceCreditBalance, "Credits must be lower than signed up credits");
 
-    // Fill the indices and siblings with the missed values (zeroes) for circuit inputs
-    for (let i = indices.length; i < this.stateTreeDepth; i += 1) {
-      indices.push(BigInt(0));
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      siblings.push(Array(STATE_TREE_ARITY - 1).fill(BigInt(0)));
+    // calculate the path elements for the state tree given the original state tree
+    const { siblings, index } = this.stateTree!.generateProof(Number(stateLeafIndex));
+    const depth = siblings.length;
+
+    // The index must be converted to a list of indices, 1 for each tree level.
+    // The circuit tree depth is this.stateTreeDepth, so the number of siblings must be this.stateTreeDepth,
+    // even if the tree depth is actually 3. The missing siblings can be set to 0, as they
+    // won't be used to calculate the root in the circuit.
+    const indices: bigint[] = [];
+
+    for (let i = 0; i < this.stateTreeDepth; i += 1) {
+      // eslint-disable-next-line no-bitwise
+      indices.push(BigInt((index >> i) & 1));
+
+      if (i >= depth) {
+        siblings[i] = BigInt(0);
+      }
     }
 
     // Create nullifier from private key
     const inputNullifier = BigInt(maciPrivKey.asCircuitInputs());
     const nullifier = poseidon([inputNullifier]);
 
-    assert(credits <= voiceCreditBalance, "Credits must be lower than signed up credits");
+    // Get pll state tree's root
+    const stateRoot = this.stateTree!.root;
 
     // Convert actualStateTreeDepth to BigInt
     const actualStateTreeDepth = BigInt(this.actualStateTreeDepth);
