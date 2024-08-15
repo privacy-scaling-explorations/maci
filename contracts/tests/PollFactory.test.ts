@@ -5,13 +5,21 @@ import { Keypair } from "maci-domainobjs";
 import { deployPollFactory, getDefaultSigner } from "../ts";
 import { MACI, PollFactory, Verifier, VkRegistry } from "../typechain-types";
 
-import { messageBatchSize, initialVoiceCreditBalance, maxVoteOptions, STATE_TREE_DEPTH, treeDepths } from "./constants";
+import {
+  messageBatchSize,
+  initialVoiceCreditBalance,
+  maxVoteOptions,
+  STATE_TREE_DEPTH,
+  treeDepths,
+  ExtContractsStruct,
+} from "./constants";
 import { deployTestContracts } from "./utils";
 
 describe("pollFactory", () => {
   let maciContract: MACI;
   let verifierContract: Verifier;
   let vkRegistryContract: VkRegistry;
+  let extContracts: ExtContractsStruct;
   let pollFactory: PollFactory;
   let signer: Signer;
 
@@ -23,6 +31,7 @@ describe("pollFactory", () => {
     maciContract = r.maciContract;
     verifierContract = r.mockVerifierContract as Verifier;
     vkRegistryContract = r.vkRegistryContract;
+    extContracts = { maci: maciContract, verifier: verifierContract, vkRegistry: vkRegistryContract };
 
     pollFactory = (await deployPollFactory(signer, true)) as BaseContract as PollFactory;
   });
@@ -30,14 +39,12 @@ describe("pollFactory", () => {
   describe("deployment", () => {
     it("should allow anyone to deploy a new poll", async () => {
       const tx = await pollFactory.deploy(
-        verifierContract,
-        vkRegistryContract,
         "100",
         maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorPubKey.asContractParam(),
-        maciContract,
+        extContracts,
       );
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
@@ -47,14 +54,12 @@ describe("pollFactory", () => {
       const maxVoteOptionsInvalid = 2 ** 50;
       await expect(
         pollFactory.deploy(
-          verifierContract,
-          vkRegistryContract,
           "100",
           maxVoteOptionsInvalid,
           treeDepths,
           messageBatchSize,
           coordinatorPubKey.asContractParam(),
-          maciContract,
+          extContracts,
         ),
       ).to.be.revertedWithCustomError(pollFactory, "InvalidMaxVoteOptions");
     });

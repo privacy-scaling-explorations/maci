@@ -83,5 +83,5 @@ interface IPoll {
 
   /// @notice Get the external contracts
   /// @return maci The IMACI contract
-  function extContracts() external view returns (IMACI maci);
+  function getMaciContract() external view returns (IMACI maci);
 }

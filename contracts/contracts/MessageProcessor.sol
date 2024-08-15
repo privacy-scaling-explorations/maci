@@ -145,7 +145,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
     // get the message batch size from the message tree subdepth
     // get the number of signups
     (uint256 numSignUps, uint256 numMessages) = poll.numSignUpsAndMessages();
-    IMACI maci = poll.extContracts();
+    IMACI maci = poll.getMaciContract();
 
     // Calculate the public input hash (a SHA256 hash of several values)
     uint256 publicInputHash = genProcessMessagesPublicInputHash(

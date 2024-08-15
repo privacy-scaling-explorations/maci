@@ -8,23 +8,19 @@ import { DomainObjs } from "../utilities/DomainObjs.sol";
 /// @notice PollFactory interface
 interface IPollFactory {
   /// @notice Deploy a new Poll contract
-  /// @param _verifier Verifier contract
-  /// @param _vkRegistry VkRegistry contract
   /// @param _duration The duration of the poll
   /// @param _maxVoteOptions The max vote options for the poll
   /// @param _treeDepths The depths of the merkle trees
   /// @param _messageBatchSize The size of message batch
   /// @param _coordinatorPubKey The coordinator's public key
-  /// @param _maci The MACI contract interface reference
+  /// @param _extContract The external contract interface references
   /// @return The deployed Poll contract
   function deploy(
-    address _verifier,
-    address _vkRegistry,
     uint256 _duration,
     uint256 _maxVoteOptions,
     Params.TreeDepths memory _treeDepths,
     uint8 _messageBatchSize,
     DomainObjs.PubKey memory _coordinatorPubKey,
-    address _maci
+    Params.ExtContracts calldata _extContract
   ) external returns (address);
 }

@@ -205,15 +205,19 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
     // the owner of the message processor and tally contract will be the msg.sender
     address _msgSender = msg.sender;
 
+    ExtContracts memory extContracts = ExtContracts({
+      maci: IMACI(address(this)),
+      verifier: IVerifier(_verifier),
+      vkRegistry: IVkRegistry(_vkRegistry)
+    });
+
     address p = pollFactory.deploy(
-      _verifier,
-      _vkRegistry,
       _duration,
       maxVoteOptions,
       _treeDepths,
       _messageBatchSize,
       _coordinatorPubKey,
-      address(this)
+      extContracts
     );
 
     address mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p, _msgSender, _mode);
