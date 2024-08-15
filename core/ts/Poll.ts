@@ -1,4 +1,4 @@
-import { LeanIMT } from "@zk-kit/lean-imt";
+import { LeanIMT, LeanIMTHashFunction } from "@zk-kit/lean-imt";
 import {
   IncrementalQuinTree,
   genRandomSalt,
@@ -12,8 +12,8 @@ import {
   genTreeCommitment,
   hash2,
   poseidon,
+  hashLeanIMT,
 } from "maci-crypto";
-import { hashLeanIMT } from "maci-crypto/build/ts/hashing";
 import {
   PCommand,
   Keypair,
@@ -223,7 +223,7 @@ export class Poll implements IPoll {
     // ensure we have the correct actual state tree depth value
     this.actualStateTreeDepth = Math.max(1, Math.ceil(Math.log2(Number(this.numSignups))));
 
-    this.stateTree = new LeanIMT(hashLeanIMT);
+    this.stateTree = new LeanIMT(hashLeanIMT as LeanIMTHashFunction);
     // add all leaves
     this.stateLeaves.forEach((stateLeaf) => {
       this.stateTree?.insert(stateLeaf.hash());
