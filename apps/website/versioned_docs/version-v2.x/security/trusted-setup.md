@@ -22,7 +22,61 @@ which are available and accessible on
 [p0tion's website](https://ceremony.pse.dev/).
 For more info on trusted setup ceremonies please refer to p0tion's [docs](https://p0tion.super.site/).
 
-## Maci v1.2 Trusted Setup Ceremony (most recent)
+## Maci v2.0 Trusted Setup Ceremony (most recent)
+
+:::info
+Maci v2.0 Trusted Setup Ceremony is ongoing and the circuits cannot be yet used in production.
+:::
+
+To participate in the ceremony please head over to [p0tion's website](https://ceremony.pse.dev/).
+
+This page will be updated once the ceremony is complete.
+
+For this release, we plan to run two ceremonies, one with smaller size circuits (more accessible to contributors) due to smaller batch sizes for proving on chain, and one with larger circuits and large batch sizes for proving. Smaller size artifacts can be used for smaller rounds or for operators that want to run everything on a local computer vs using a beefy server. On the other hand, we plan to use the artifacts with larger batch sizes for large rounds and solely on a server.
+
+### Small Batch Size Ceremony
+
+Here are the **maximum** values supported by these artifacts:
+
+**_ProcessMessages_**
+
+- users: $2^14 = 16384$
+- votes: $5^9 = 1953125$
+- batch size for proving: $5^2 = 25$
+- vote options: $5^3 = 125$
+
+**_TallyVotes_**
+
+- users (ballots): $2^14 = 16384$
+- batch size for proving: $2^5 = 32$
+- vote options: $5^3 = 125$
+
+### Large Batch Size Ceremony
+
+:::info
+Please note that this ceremony has not started yet. We will inform when it will start and when the artifacts are available for use.
+:::
+
+Here are the **maximum** values supported by these artifacts:
+
+**_ProcessMessages_**
+
+- users: $2^14 = 16384$
+- votes: $5^9 = 1953125$
+- batch size for proving: $5^3 = 125$
+- vote options: $5^3 = 125$
+
+**_TallyVotes_**
+
+- users (ballots): $2^14 = 16384$
+- batch size for proving: $2^7 = 128$
+- vote options: $5^3 = 125$
+
+## Maci v1.2 Trusted Setup Ceremony
+
+:::danger
+Please be advised that you will not be able to use these artifacts with MACI v2.
+:::
 
 :::info
 You can download all of the artifacts using the following command from maci's monorepo root:
