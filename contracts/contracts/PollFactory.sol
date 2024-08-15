@@ -20,6 +20,8 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
 
   /// @inheritdoc IPollFactory
   function deploy(
+    address _verifier,
+    address _vkRegistry,
     uint256 _duration,
     uint256 _maxVoteOptions,
     TreeDepths calldata _treeDepths,
@@ -39,7 +41,16 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
     ExtContracts memory extContracts = ExtContracts({ maci: IMACI(_maci) });
 
     // deploy the poll
-    Poll poll = new Poll(_duration, _maxVoteOptions, _treeDepths, _messageBatchSize, _coordinatorPubKey, extContracts);
+    Poll poll = new Poll(
+      _verifier,
+      _vkRegistry,
+      _duration,
+      _maxVoteOptions,
+      _treeDepths,
+      _messageBatchSize,
+      _coordinatorPubKey,
+      extContracts
+    );
 
     // init Poll
     poll.init();

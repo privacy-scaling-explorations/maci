@@ -7,6 +7,8 @@ import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { EmptyBallotRoots } from "./trees/EmptyBallotRoots.sol";
 import { LazyIMTData, InternalLazyIMT } from "./trees/LazyIMT.sol";
 import { IPoll } from "./interfaces/IPoll.sol";
+import { IVerifier } from "./interfaces/IVerifier.sol";
+import { IVkRegistry } from "./interfaces/IVkRegistry.sol";
 import { Utilities } from "./utilities/Utilities.sol";
 import { CurveBabyJubJub } from "./crypto/BabyJubJub.sol";
 
@@ -69,6 +71,11 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   /// @notice The contracts used by the Poll
   ExtContracts public extContracts;
 
+  /// @notice The verifier
+  IVerifier public immutable verifier;
+  /// @notice The verification registry
+  IVkRegistry public immutable vkRegistry;
+
   /// @notice The array for chain hash checkpoints
   uint256[] public batchHashes;
 
@@ -120,6 +127,8 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   /// @param _extContracts The external contracts
 
   constructor(
+    address _verifier,
+    address _vkRegistry,
     uint256 _duration,
     uint256 _maxVoteOptions,
     TreeDepths memory _treeDepths,
@@ -132,6 +141,10 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
       revert InvalidPubKey();
     }
 
+    // store verifier
+    verifier = IVerifier(_verifier);
+    // store vkRegistry
+    vkRegistry = IVkRegistry(_vkRegistry);
     // store the pub key as object then calculate the hash
     coordinatorPubKey = _coordinatorPubKey;
     // we hash it ourselves to ensure we store the correct value
@@ -312,10 +325,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     uint256[8] memory _proof
   ) internal returns (bool isValid) {
     // Get the verifying key from the VkRegistry
-    VerifyingKey memory vk = extContracts.maci.getVkRegistry().getPollVk(
-      extContracts.maci.stateTreeDepth(),
-      treeDepths.voteOptionTreeDepth
-    );
+    VerifyingKey memory vk = vkRegistry.getPollVk(extContracts.maci.stateTreeDepth(), treeDepths.voteOptionTreeDepth);
 
     // Generate the circuit public input
     uint256[] memory input = new uint256[](5);
@@ -326,7 +336,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     input[4] = _pubKey.y;
     uint256 publicInputHash = sha256Hash(input);
 
-    isValid = extContracts.maci.getVerifier().verify(_proof, vk, publicInputHash);
+    isValid = verifier.verify(_proof, vk, publicInputHash);
   }
 
   /// @inheritdoc IPoll

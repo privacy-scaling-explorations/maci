@@ -3,13 +3,15 @@ import { BaseContract, Signer } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
 import { deployPollFactory, getDefaultSigner } from "../ts";
-import { MACI, PollFactory } from "../typechain-types";
+import { MACI, PollFactory, Verifier, VkRegistry } from "../typechain-types";
 
 import { messageBatchSize, initialVoiceCreditBalance, maxVoteOptions, STATE_TREE_DEPTH, treeDepths } from "./constants";
 import { deployTestContracts } from "./utils";
 
 describe("pollFactory", () => {
   let maciContract: MACI;
+  let verifierContract: Verifier;
+  let vkRegistryContract: VkRegistry;
   let pollFactory: PollFactory;
   let signer: Signer;
 
@@ -19,6 +21,8 @@ describe("pollFactory", () => {
     signer = await getDefaultSigner();
     const r = await deployTestContracts(initialVoiceCreditBalance, STATE_TREE_DEPTH, signer, true);
     maciContract = r.maciContract;
+    verifierContract = r.mockVerifierContract as Verifier;
+    vkRegistryContract = r.vkRegistryContract;
 
     pollFactory = (await deployPollFactory(signer, true)) as BaseContract as PollFactory;
   });
@@ -26,6 +30,8 @@ describe("pollFactory", () => {
   describe("deployment", () => {
     it("should allow anyone to deploy a new poll", async () => {
       const tx = await pollFactory.deploy(
+        verifierContract,
+        vkRegistryContract,
         "100",
         maxVoteOptions,
         treeDepths,
@@ -41,6 +47,8 @@ describe("pollFactory", () => {
       const maxVoteOptionsInvalid = 2 ** 50;
       await expect(
         pollFactory.deploy(
+          verifierContract,
+          vkRegistryContract,
           "100",
           maxVoteOptionsInvalid,
           treeDepths,

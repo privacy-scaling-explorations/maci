@@ -64,13 +64,6 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
   /// For the N'th sign up, the state tree root will be stored at the index N
   uint256[] public stateRootsOnSignUp;
 
-  // @notice Verifier contract
-  IVerifier private verifier;
-  // @notice VkRegistry contract
-  IVkRegistry private vkRegistry;
-  // @notice QV or Non-QV
-  Mode private mode;
-
   /// @notice A struct holding the addresses of poll, mp and tally
   struct PollContracts {
     address poll;
@@ -207,15 +200,14 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
       revert InvalidPubKey();
     }
 
-    verifier = IVerifier(_verifier);
-    vkRegistry = IVkRegistry(_vkRegistry);
-    mode = _mode;
     uint256 maxVoteOptions = VOTE_TREE_ARITY ** _treeDepths.voteOptionTreeDepth;
 
     // the owner of the message processor and tally contract will be the msg.sender
     address _msgSender = msg.sender;
 
     address p = pollFactory.deploy(
+      _verifier,
+      _vkRegistry,
       _duration,
       maxVoteOptions,
       _treeDepths,
@@ -246,21 +238,6 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
   function getPoll(uint256 _pollId) public view returns (address poll) {
     if (_pollId >= nextPollId) revert PollDoesNotExist(_pollId);
     poll = polls[_pollId];
-  }
-
-  /// @inheritdoc IMACI
-  function getVerifier() external view returns (IVerifier) {
-    return verifier;
-  }
-
-  /// @inheritdoc IMACI
-  function getVkRegistry() external view returns (IVkRegistry) {
-    return vkRegistry;
-  }
-
-  /// @inheritdoc IMACI
-  function getMode() external view returns (Mode) {
-    return mode;
   }
 
   /// @inheritdoc IMACI
