@@ -669,7 +669,7 @@ describe("MaciState/Poll e2e", function test() {
     });
   });
 
-  describe.only("Sanity checks", () => {
+  describe("Sanity checks", () => {
     let testHarness: TestHarness;
     let poll: Poll;
 
