@@ -1,6 +1,13 @@
+import { AddressLike } from "ethers";
 import { TreeDepths, STATE_TREE_ARITY } from "maci-core";
 import { G1Point, G2Point } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
+
+export interface ExtContractsStruct {
+  maci: AddressLike;
+  verifier: AddressLike;
+  vkRegistry: AddressLike;
+}
 
 export const duration = 2_000;
 
