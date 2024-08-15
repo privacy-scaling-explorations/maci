@@ -669,7 +669,7 @@ describe("MaciState/Poll e2e", function test() {
     });
   });
 
-  describe("Sanity checks", () => {
+  describe.only("Sanity checks", () => {
     let testHarness: TestHarness;
     let poll: Poll;
 
@@ -859,13 +859,13 @@ describe("MaciState/Poll e2e", function test() {
 
       const { command } = testHarness.createCommand(pollKeypair1, pollStateIndex1, voteOptionIndex, voteWeight, nonce);
 
-      const { privKey: privKey2 } = users[0];
+      const { privKey: privKey2 } = users[1];
       const pollKeypair2 = new Keypair();
 
       const nullifier2 = poseidon([BigInt(privKey2.rawPrivKey.toString())]);
       const timestamp2 = BigInt(1);
 
-      testHarness.joinPoll(nullifier2, pollKeypair1.pubKey, voiceCreditBalance, timestamp2);
+      testHarness.joinPoll(nullifier2, pollKeypair2.pubKey, voiceCreditBalance, timestamp2);
 
       // create an invalid signature
       const { signature: invalidSignature } = testHarness.createCommand(
