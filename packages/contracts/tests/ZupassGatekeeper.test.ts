@@ -56,7 +56,12 @@ describe("Zupass Gatekeeper", () => {
     let maciContract: MACI;
 
     before(async () => {
-      const r = await deployTestContracts(initialVoiceCreditBalance, STATE_TREE_DEPTH, signer, true, zupassGatekeeper);
+      const r = await deployTestContracts({
+        initialVoiceCreditBalance,
+        stateTreeDepth: STATE_TREE_DEPTH,
+        signer,
+        gatekeeper: zupassGatekeeper,
+      });
 
       maciContract = r.maciContract;
     });

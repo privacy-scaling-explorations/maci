@@ -47,13 +47,12 @@ describe("HatsProtocol Gatekeeper", () => {
 
   describe("hatsGatekeeperSingle", () => {
     before(async () => {
-      const r = await deployTestContracts(
+      const r = await deployTestContracts({
         initialVoiceCreditBalance,
-        STATE_TREE_DEPTH,
+        stateTreeDepth: STATE_TREE_DEPTH,
         signer,
-        true,
-        hatsGatekeeperSingle,
-      );
+        gatekeeper: hatsGatekeeperSingle,
+      });
 
       maciContract = r.maciContract;
     });
@@ -137,13 +136,12 @@ describe("HatsProtocol Gatekeeper", () => {
 
   describe("HatsGatekeeperMultiple", () => {
     before(async () => {
-      const r = await deployTestContracts(
+      const r = await deployTestContracts({
         initialVoiceCreditBalance,
-        STATE_TREE_DEPTH,
+        stateTreeDepth: STATE_TREE_DEPTH,
         signer,
-        true,
-        hatsGatekeeperMultiple,
-      );
+        gatekeeper: hatsGatekeeperMultiple,
+      });
 
       maciContract = r.maciContract;
     });

@@ -30,7 +30,12 @@ describe("GitcoinPassport Gatekeeper", () => {
     decoderAddress = await mockDecoder.getAddress();
     gitcoinGatekeeper = await deployContract("GitcoinPassportGatekeeper", signer, true, decoderAddress, passingScore);
 
-    const r = await deployTestContracts(initialVoiceCreditBalance, STATE_TREE_DEPTH, signer, true, gitcoinGatekeeper);
+    const r = await deployTestContracts({
+      initialVoiceCreditBalance,
+      stateTreeDepth: STATE_TREE_DEPTH,
+      signer,
+      gatekeeper: gitcoinGatekeeper,
+    });
     maciContract = r.maciContract;
   });
 

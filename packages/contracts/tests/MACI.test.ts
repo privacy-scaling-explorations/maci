@@ -31,7 +31,11 @@ describe("MACI", function test() {
   describe("Deployment", () => {
     before(async () => {
       signer = await getDefaultSigner();
-      const r = await deployTestContracts(initialVoiceCreditBalance, STATE_TREE_DEPTH, signer, true);
+      const r = await deployTestContracts({
+        initialVoiceCreditBalance,
+        stateTreeDepth: STATE_TREE_DEPTH,
+        signer,
+      });
 
       maciContract = r.maciContract;
       vkRegistryContract = r.vkRegistryContract;
@@ -45,12 +49,11 @@ describe("MACI", function test() {
 
     it("should be possible to deploy Maci contracts with different state tree depth values", async () => {
       const checkStateTreeDepth = async (stateTreeDepthTest: number): Promise<void> => {
-        const { maciContract: testMaci } = await deployTestContracts(
+        const { maciContract: testMaci } = await deployTestContracts({
           initialVoiceCreditBalance,
-          stateTreeDepthTest,
+          stateTreeDepth: stateTreeDepthTest,
           signer,
-          true,
-        );
+        });
         expect(await testMaci.stateTreeDepth()).to.eq(stateTreeDepthTest);
       };
 
@@ -152,8 +155,13 @@ describe("MACI", function test() {
     it("should not allow to sign up more than the supported amount of users (2 ** stateTreeDepth)", async () => {
       const stateTreeDepthTest = 1;
       const maxUsers = 2 ** stateTreeDepthTest;
-      const maci = (await deployTestContracts(initialVoiceCreditBalance, stateTreeDepthTest, signer, true))
-        .maciContract;
+      const maci = (
+        await deployTestContracts({
+          initialVoiceCreditBalance,
+          stateTreeDepth: stateTreeDepthTest,
+          signer,
+        })
+      ).maciContract;
       const keypair = new Keypair();
       // start from one as we already have one signup (blank state leaf)
       for (let i = 1; i < maxUsers; i += 1) {
@@ -178,12 +186,11 @@ describe("MACI", function test() {
     it("should signup 2 ** 10 users", async () => {
       const stateTreeDepthTest = 10;
       const maxUsers = 2 ** stateTreeDepthTest;
-      const { maciContract: maci } = await deployTestContracts(
+      const { maciContract: maci } = await deployTestContracts({
         initialVoiceCreditBalance,
-        stateTreeDepthTest,
+        stateTreeDepth: stateTreeDepthTest,
         signer,
-        true,
-      );
+      });
 
       const keypair = new Keypair();
       // start from one as we already have one signup (blank state leaf)

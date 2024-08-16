@@ -1,9 +1,10 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { expect } from "chai";
-import { BaseContract, Signer } from "ethers";
+import { BaseContract } from "ethers";
 import { IncrementalQuinTree, AccQueue, calcDepthFromNumLeaves, hash2, hash5 } from "maci-crypto";
 import { IVkContractParams, VerifyingKey } from "maci-domainobjs";
 
+import type { IDeployedTestContracts, IDeployedTestContractsArgs } from "../ts/types";
 import type { EthereumProvider } from "hardhat/types";
 
 import { linkPoseidonLibraries } from "../tasks/helpers/abi";
@@ -17,14 +18,12 @@ import {
   deployVkRegistry,
   createContractFactory,
 } from "../ts/deploy";
-import { IDeployedTestContracts } from "../ts/types";
 import {
   AccQueueBinary0__factory as AccQueueBinary0Factory,
   AccQueueBinaryMaci__factory as AccQueueBinaryMaciFactory,
   AccQueue as AccQueueContract,
   AccQueueQuinary0__factory as AccQueueQuinary0Factory,
   AccQueueQuinaryMaci__factory as AccQueueQuinaryMaciFactory,
-  FreeForAllGatekeeper,
 } from "../typechain-types";
 
 export const insertSubTreeGasLimit = { gasLimit: 300000 };
@@ -498,13 +497,14 @@ export const testMergeAgain = async (aq: AccQueue, aqContract: AccQueueContract,
  * @param gatekeeper - the gatekeeper contract to use
  * @returns the deployed contracts
  */
-export const deployTestContracts = async (
-  initialVoiceCreditBalance: number,
-  stateTreeDepth: number,
-  signer?: Signer,
+export const deployTestContracts = async ({
+  initialVoiceCreditBalance,
+  stateTreeDepth,
+  signer,
   quiet = true,
-  gatekeeper: FreeForAllGatekeeper | undefined = undefined,
-): Promise<IDeployedTestContracts> => {
+  factories,
+  gatekeeper,
+}: IDeployedTestContractsArgs): Promise<IDeployedTestContracts> => {
   const mockVerifierContract = await deployMockVerifier(signer, true);
 
   let gatekeeperContract = gatekeeper;
@@ -530,6 +530,7 @@ export const deployTestContracts = async (
     initialVoiceCreditBalanceAddress: constantInitialVoiceCreditProxyContractAddress,
     signer,
     stateTreeDepth,
+    factories,
     quiet,
   });
 

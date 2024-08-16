@@ -2,19 +2,15 @@ import type {
   ConstantInitialVoiceCreditProxy,
   FreeForAllGatekeeper,
   MACI,
-  MACI__factory as MACIFactory,
-  MessageProcessorFactory__factory as MessageProcessorFactoryFactory,
   MockVerifier,
   PollFactory,
-  PollFactory__factory as PollFactoryFactory,
   PoseidonT3,
   PoseidonT4,
   PoseidonT5,
   PoseidonT6,
-  TallyFactory__factory as TallyFactoryFactory,
   VkRegistry,
 } from "../typechain-types";
-import type { BigNumberish, Signer } from "ethers";
+import type { BigNumberish, ContractFactory, Signer } from "ethers";
 import type { CircuitInputs } from "maci-core";
 import type { Message, PubKey } from "maci-domainobjs";
 import type { PublicSignals } from "snarkjs";
@@ -72,6 +68,18 @@ export interface Proof {
   proof: SnarkProof | Groth16Proof;
   circuitInputs: CircuitInputs;
   publicInputs: PublicSignals;
+}
+
+/**
+ * An interface that represents argument for deployment test contracts
+ */
+export interface IDeployedTestContractsArgs {
+  initialVoiceCreditBalance: number;
+  stateTreeDepth: number;
+  signer?: Signer;
+  quiet?: boolean;
+  gatekeeper?: FreeForAllGatekeeper;
+  factories?: [ContractFactory, ContractFactory, ContractFactory, ContractFactory];
 }
 
 /**
@@ -151,12 +159,7 @@ export interface IDeployMaciArgs {
   /**
    * Custom user defined factories
    */
-  factories?: [
-    typeof MACIFactory,
-    typeof PollFactoryFactory,
-    typeof MessageProcessorFactoryFactory,
-    typeof TallyFactoryFactory,
-  ];
+  factories?: [ContractFactory, ContractFactory, ContractFactory, ContractFactory];
 
   /**
    * The depth of the state tree
