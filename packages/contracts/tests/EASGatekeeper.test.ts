@@ -57,7 +57,12 @@ describe("EAS Gatekeeper", () => {
     let maciContract: MACI;
 
     before(async () => {
-      const r = await deployTestContracts(initialVoiceCreditBalance, STATE_TREE_DEPTH, signer, true, easGatekeeper);
+      const r = await deployTestContracts({
+        initialVoiceCreditBalance,
+        stateTreeDepth: STATE_TREE_DEPTH,
+        signer,
+        gatekeeper: easGatekeeper,
+      });
 
       maciContract = r.maciContract;
     });

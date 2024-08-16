@@ -51,7 +51,11 @@ describe("MessageProcessor", () => {
   before(async () => {
     signer = await getDefaultSigner();
     // deploy test contracts
-    const r = await deployTestContracts(initialVoiceCreditBalance, STATE_TREE_DEPTH, signer, true);
+    const r = await deployTestContracts({
+      initialVoiceCreditBalance,
+      stateTreeDepth: STATE_TREE_DEPTH,
+      signer,
+    });
     maciContract = r.maciContract;
     signer = await getDefaultSigner();
     verifierContract = r.mockVerifierContract as Verifier;

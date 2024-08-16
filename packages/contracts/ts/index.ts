@@ -30,6 +30,7 @@ export {
   type TallyData,
 } from "../tasks/helpers/types";
 export { linkPoseidonLibraries } from "../tasks/helpers/abi";
+export { buildPoseidonT3, buildPoseidonT4, buildPoseidonT5, buildPoseidonT6 } from "./buildPoseidon";
 
 export type { IVerifyingKeyStruct, SnarkProof, Groth16Proof, Proof } from "./types";
 export * from "../typechain-types";

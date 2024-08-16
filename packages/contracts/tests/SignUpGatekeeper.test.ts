@@ -41,13 +41,12 @@ describe("SignUpGatekeeper", () => {
       signUpToken = await deploySignupToken(signer, true);
       signUpTokenGatekeeperContract = await deploySignupTokenGatekeeper(await signUpToken.getAddress(), signer, true);
 
-      const r = await deployTestContracts(
+      const r = await deployTestContracts({
         initialVoiceCreditBalance,
-        STATE_TREE_DEPTH,
+        stateTreeDepth: STATE_TREE_DEPTH,
         signer,
-        true,
-        signUpTokenGatekeeperContract,
-      );
+        gatekeeper: signUpTokenGatekeeperContract,
+      });
 
       maciContract = r.maciContract;
     });

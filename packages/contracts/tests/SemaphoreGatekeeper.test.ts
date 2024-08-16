@@ -78,13 +78,12 @@ describe("Semaphore Gatekeeper", () => {
     let maciContract: MACI;
 
     before(async () => {
-      const r = await deployTestContracts(
+      const r = await deployTestContracts({
         initialVoiceCreditBalance,
-        STATE_TREE_DEPTH,
+        stateTreeDepth: STATE_TREE_DEPTH,
         signer,
-        true,
-        semaphoreGatekeeper,
-      );
+        gatekeeper: semaphoreGatekeeper,
+      });
 
       maciContract = r.maciContract;
     });

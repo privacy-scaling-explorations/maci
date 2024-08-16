@@ -45,7 +45,11 @@ describe("Poll", () => {
   describe("deployment", () => {
     before(async () => {
       signer = await getDefaultSigner();
-      const r = await deployTestContracts(initialVoiceCreditBalance, STATE_TREE_DEPTH, signer, true);
+      const r = await deployTestContracts({
+        initialVoiceCreditBalance,
+        stateTreeDepth: STATE_TREE_DEPTH,
+        signer,
+      });
       maciContract = r.maciContract;
       verifierContract = r.mockVerifierContract as Verifier;
       vkRegistryContract = r.vkRegistryContract;
@@ -119,7 +123,11 @@ describe("Poll", () => {
     });
 
     it("should fail when passing an invalid coordinator public key", async () => {
-      const r = await deployTestContracts(initialVoiceCreditBalance, STATE_TREE_DEPTH, signer, true);
+      const r = await deployTestContracts({
+        initialVoiceCreditBalance,
+        stateTreeDepth: STATE_TREE_DEPTH,
+        signer,
+      });
       const testMaciContract = r.maciContract;
 
       // deploy on chain poll

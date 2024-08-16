@@ -296,31 +296,28 @@ export const deployMaci = async ({
     poseidonT6,
   }));
 
-  const contractsToLink = factories || [
-    MACIFactory,
-    PollFactoryFactory,
-    MessageProcessorFactoryFactory,
-    TallyFactoryFactory,
-  ];
+  const contractsToLink = [MACIFactory, PollFactoryFactory, MessageProcessorFactoryFactory, TallyFactoryFactory];
 
   // Link Poseidon contracts to MACI
-  const linkedContractFactories = await Promise.all(
-    contractsToLink.map(async (factory) =>
-      createContractFactory(
-        factory.abi,
-        factory.linkBytecode({
-          "contracts/crypto/PoseidonT3.sol:PoseidonT3": poseidonAddrs.poseidonT3,
-          "contracts/crypto/PoseidonT4.sol:PoseidonT4": poseidonAddrs.poseidonT4,
-          "contracts/crypto/PoseidonT5.sol:PoseidonT5": poseidonAddrs.poseidonT5,
-          "contracts/crypto/PoseidonT6.sol:PoseidonT6": poseidonAddrs.poseidonT6,
-        }),
-        signer,
+  const linkedContractFactories =
+    factories ||
+    (await Promise.all(
+      contractsToLink.map(async (factory) =>
+        createContractFactory(
+          factory.abi,
+          factory.linkBytecode({
+            "contracts/crypto/PoseidonT3.sol:PoseidonT3": poseidonAddrs.poseidonT3,
+            "contracts/crypto/PoseidonT4.sol:PoseidonT4": poseidonAddrs.poseidonT4,
+            "contracts/crypto/PoseidonT5.sol:PoseidonT5": poseidonAddrs.poseidonT5,
+            "contracts/crypto/PoseidonT6.sol:PoseidonT6": poseidonAddrs.poseidonT6,
+          }),
+          signer,
+        ),
       ),
-    ),
-  );
+    ));
 
   const [maciContractFactory, pollFactoryContractFactory, messageProcessorFactory, tallyFactory] =
-    await Promise.all(linkedContractFactories);
+    linkedContractFactories;
 
   const pollFactoryContract = await deployContractWithLinkedLibraries<PollFactory>(pollFactoryContractFactory);
 
