@@ -32,7 +32,6 @@ export const genMaciStateFromContract = async (
   blocksPerRequest = 50,
   endBlock: number | undefined = undefined,
   sleepAmount: number | undefined = undefined,
-  userSideOnly: boolean | undefined = undefined,
 ): Promise<MaciState> => {
   // ensure the pollId is valid
   assert(pollId >= 0);
@@ -124,10 +123,8 @@ export const genMaciStateFromContract = async (
       pollContract.messageBatchSize(),
     ]);
 
-  if (!userSideOnly) {
-    assert(coordinatorPubKeyOnChain[0].toString() === coordinatorKeypair.pubKey.rawPubKey[0].toString());
-    assert(coordinatorPubKeyOnChain[1].toString() === coordinatorKeypair.pubKey.rawPubKey[1].toString());
-  }
+  assert(coordinatorPubKeyOnChain[0].toString() === coordinatorKeypair.pubKey.rawPubKey[0].toString());
+  assert(coordinatorPubKeyOnChain[1].toString() === coordinatorKeypair.pubKey.rawPubKey[1].toString());
 
   const maxVoteOptions = Number(onChainMaxVoteOptions);
 

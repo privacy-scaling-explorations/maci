@@ -25,5 +25,5 @@ export { Prover } from "../tasks/helpers/Prover";
 export { EContracts } from "../tasks/helpers/types";
 export { linkPoseidonLibraries } from "../tasks/helpers/abi";
 
-export type { IVerifyingKeyStruct, SnarkProof, Groth16Proof, Proof } from "./types";
+export type { IVerifyingKeyStruct, SnarkProof, Groth16Proof, Proof, IGenSignUpTree } from "./types";
 export * from "../typechain-types";

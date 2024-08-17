@@ -1,12 +1,13 @@
-import { STATE_TREE_ARITY, STATE_TREE_DEPTH } from "maci-core/build/ts/utils/constants";
-import { hash2, IncrementalQuinTree } from "maci-crypto";
-import { blankStateLeafHash } from "maci-domainobjs";
+/* eslint-disable no-underscore-dangle */
+import { LeanIMT, LeanIMTHashFunction } from "@zk-kit/lean-imt";
+import { hashLeanIMT } from "maci-crypto";
+import { PubKey, StateLeaf, blankStateLeaf, blankStateLeafHash } from "maci-domainobjs";
 
 import { assert } from "console";
 
 import { MACI__factory as MACIFactory } from "../typechain-types";
 
-import { IGenSignUpTreeArgs } from "./types";
+import { IGenSignUpTreeArgs, IGenSignUpTree } from "./types";
 import { sleep } from "./utils";
 
 /**
@@ -26,12 +27,13 @@ export const genSignUpTree = async ({
   blocksPerRequest = 50,
   endBlock,
   sleepAmount,
-}: IGenSignUpTreeArgs): Promise<IncrementalQuinTree> => {
+}: IGenSignUpTreeArgs): Promise<IGenSignUpTree> => {
   const lastBlock = endBlock || (await provider.getBlockNumber());
 
   const maciContract = MACIFactory.connect(address, provider);
-  const signUpTree = new IncrementalQuinTree(STATE_TREE_DEPTH, blankStateLeafHash, STATE_TREE_ARITY, hash2);
+  const signUpTree = new LeanIMT(hashLeanIMT as LeanIMTHashFunction);
   signUpTree.insert(blankStateLeafHash);
+  const stateLeaves: StateLeaf[] = [blankStateLeaf];
 
   // Fetch event logs in batches (lastBlock inclusive)
   for (let i = fromBlock; i <= lastBlock; i += blocksPerRequest + 1) {
@@ -45,7 +47,15 @@ export const genSignUpTree = async ({
     ] = await Promise.all([maciContract.queryFilter(maciContract.filters.SignUp(), i, toBlock)]);
     signUpLogs.forEach((event) => {
       assert(!!event);
-      // eslint-disable-next-line no-underscore-dangle
+      const pubKeyX = event.args._userPubKeyX;
+      const pubKeyY = event.args._userPubKeyY;
+      const voiceCreditBalance = event.args._voiceCreditBalance;
+      const timestamp = event.args._timestamp;
+
+      const pubKey = new PubKey([pubKeyX, pubKeyY]);
+      const stateLeaf = new StateLeaf(pubKey, voiceCreditBalance, timestamp);
+
+      stateLeaves.push(stateLeaf);
       signUpTree.insert(event.args._stateLeaf);
     });
 
@@ -54,5 +64,8 @@ export const genSignUpTree = async ({
       await sleep(sleepAmount);
     }
   }
-  return signUpTree;
+  return {
+    signUpTree,
+    stateLeaves,
+  };
 };

@@ -1,16 +1,97 @@
 import { extractVk, genProof, verifyProof } from "maci-circuits";
-import { formatProofForVerifierContract, genMaciStateFromContract } from "maci-contracts";
+import { formatProofForVerifierContract, genSignUpTree, IGenSignUpTree } from "maci-contracts";
 import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts/typechain-types";
-import { CircuitInputs, IJsonMaciState, MaciState } from "maci-core";
-import { poseidon } from "maci-crypto";
+import { CircuitInputs, IJsonMaciState, MaciState, IPollJoiningCircuitInputs } from "maci-core";
+import { poseidon, sha256Hash, stringifyBigInts } from "maci-crypto";
 import { Keypair, PrivKey, PubKey } from "maci-domainobjs";
 
+import assert from "assert";
 import fs from "fs";
 
 import type { IJoinPollArgs, IJoinedUserArgs, IParsePollJoinEventsArgs } from "../utils/interfaces";
 
 import { contractExists, logError, logYellow, info, logGreen, success } from "../utils";
 import { banner } from "../utils/banner";
+
+/**
+ * Create circuit input for pollJoining
+ * @param signUpData Sign up tree and state leaves
+ * @param stateTreeDepth Maci state tree depth
+ * @param maciPrivKey User's private key for signing up
+ * @param stateLeafIndex Index where the user is stored in the state leaves
+ * @param credits Credits for voting
+ * @param pollPrivKey Poll's private key for the poll joining
+ * @param pollPubKey Poll's public key for the poll joining
+ * @returns stringified circuit inputs
+ */
+const joiningCircuitInputs = (
+  signUpData: IGenSignUpTree,
+  stateTreeDepth: bigint,
+  maciPrivKey: PrivKey,
+  stateLeafIndex: bigint,
+  credits: bigint,
+  pollPrivKey: PrivKey,
+  pollPubKey: PubKey,
+): IPollJoiningCircuitInputs => {
+  // Get the state leaf on the index position
+  const { signUpTree: stateTree, stateLeaves } = signUpData;
+  const stateLeaf = stateLeaves[Number(stateLeafIndex)];
+  const { pubKey, voiceCreditBalance, timestamp } = stateLeaf;
+  const pubKeyX = pubKey.asArray()[0];
+  const pubKeyY = pubKey.asArray()[1];
+  const stateLeafArray = [pubKeyX, pubKeyY, voiceCreditBalance, timestamp];
+  const pollPubKeyArray = pollPubKey.asArray();
+
+  assert(credits <= voiceCreditBalance, "Credits must be lower than signed up credits");
+
+  // calculate the path elements for the state tree given the original state tree
+  const { siblings, index } = stateTree.generateProof(Number(stateLeafIndex));
+  const depth = siblings.length;
+
+  // The index must be converted to a list of indices, 1 for each tree level.
+  // The circuit tree depth is this.stateTreeDepth, so the number of siblings must be this.stateTreeDepth,
+  // even if the tree depth is actually 3. The missing siblings can be set to 0, as they
+  // won't be used to calculate the root in the circuit.
+  const indices: bigint[] = [];
+
+  for (let i = 0; i < stateTreeDepth; i += 1) {
+    // eslint-disable-next-line no-bitwise
+    indices.push(BigInt((index >> i) & 1));
+
+    if (i >= depth) {
+      siblings[i] = BigInt(0);
+    }
+  }
+
+  // Create nullifier from private key
+  const inputNullifier = BigInt(maciPrivKey.asCircuitInputs());
+  const nullifier = poseidon([inputNullifier]);
+
+  // Get pll state tree's root
+  const stateRoot = stateTree.root;
+
+  // Convert actualStateTreeDepth to BigInt
+  const actualStateTreeDepth = BigInt(stateTree.depth);
+
+  // Calculate public input hash from nullifier, credits and current root
+  const inputHash = sha256Hash([nullifier, credits, stateRoot, pollPubKeyArray[0], pollPubKeyArray[1]]);
+
+  const circuitInputs = {
+    privKey: maciPrivKey.asCircuitInputs(),
+    pollPrivKey: pollPrivKey.asCircuitInputs(),
+    pollPubKey: pollPubKey.asCircuitInputs(),
+    stateLeaf: stateLeafArray,
+    siblings,
+    indices,
+    nullifier,
+    credits,
+    stateRoot,
+    actualStateTreeDepth,
+    inputHash,
+  };
+
+  return stringifyBigInts(circuitInputs) as unknown as IPollJoiningCircuitInputs;
+};
 
 export const joinPoll = async ({
   maciAddress,
@@ -33,7 +114,6 @@ export const joinPoll = async ({
   quiet = true,
 }: IJoinPollArgs): Promise<number> => {
   banner(quiet);
-  const userSideOnly = true;
 
   if (!(await contractExists(signer.provider!, maciAddress))) {
     logError("MACI contract does not exist");
@@ -70,6 +150,9 @@ export const joinPoll = async ({
   const pollContract = PollFactory.connect(pollAddress, signer);
 
   let maciState: MaciState | undefined;
+  let signUpData: IGenSignUpTree | undefined;
+  let currentStateRootIndex: number;
+  let circuitInputs: CircuitInputs;
   if (stateFile) {
     try {
       const file = await fs.promises.readFile(stateFile);
@@ -78,24 +161,35 @@ export const joinPoll = async ({
     } catch (error) {
       logError((error as Error).message);
     }
+    const poll = maciState!.polls.get(pollId)!;
+
+    if (poll.hasJoined(nullifier)) {
+      throw new Error("User the given nullifier has already joined");
+    }
+
+    currentStateRootIndex = poll.maciStateRef.numSignUps - 1;
+
+    poll.updatePoll(BigInt(maciState!.stateLeaves.length));
+
+    circuitInputs = poll.joiningCircuitInputs({
+      maciPrivKey: userMaciPrivKey,
+      stateLeafIndex: stateIndex,
+      credits: newVoiceCreditBalance,
+      pollPrivKey: pollPrivKeyDeserialized,
+      pollPubKey,
+    }) as unknown as CircuitInputs;
   } else {
     // build an off-chain representation of the MACI contract using data in the contract storage
-    const [defaultStartBlockSignup, defaultStartBlockPoll, stateRoot, numSignups] = await Promise.all([
+    const [defaultStartBlockSignup, defaultStartBlockPoll, stateTreeDepth, numSignups] = await Promise.all([
       maciContract.queryFilter(maciContract.filters.SignUp(), startBlock).then((events) => events[0]?.blockNumber ?? 0),
       maciContract
         .queryFilter(maciContract.filters.DeployPoll(), startBlock)
         .then((events) => events[0]?.blockNumber ?? 0),
-      maciContract.getStateTreeRoot(),
+      maciContract.stateTreeDepth(),
       maciContract.numSignUps(),
     ]);
     const defaultStartBlock = Math.min(defaultStartBlockPoll, defaultStartBlockSignup);
     let fromBlock = startBlock ? Number(startBlock) : defaultStartBlock;
-
-    const defaultEndBlock = await Promise.all([
-      pollContract
-        .queryFilter(pollContract.filters.MergeMaciState(stateRoot, numSignups), fromBlock)
-        .then((events) => events[events.length - 1]?.blockNumber),
-    ]).then((blocks) => Math.max(...blocks));
 
     if (transactionHash) {
       const tx = await signer.provider!.getTransaction(transactionHash);
@@ -103,36 +197,28 @@ export const joinPoll = async ({
     }
 
     logYellow(quiet, info(`starting to fetch logs from block ${fromBlock}`));
-    // TODO: create genPollStateTree ?
-    maciState = await genMaciStateFromContract(
-      signer.provider!,
-      await maciContract.getAddress(),
-      new Keypair(), // Not important in this context
-      pollId,
+
+    signUpData = await genSignUpTree({
+      provider: signer.provider!,
+      address: await maciContract.getAddress(),
+      blocksPerRequest: blocksPerBatch || 50,
       fromBlock,
-      blocksPerBatch,
-      endBlock || defaultEndBlock,
-      0,
-      userSideOnly,
-    );
+      endBlock,
+      sleepAmount: 0,
+    });
+
+    currentStateRootIndex = Number(numSignups) - 1;
+
+    circuitInputs = joiningCircuitInputs(
+      signUpData,
+      stateTreeDepth,
+      userMaciPrivKey,
+      stateIndex,
+      newVoiceCreditBalance,
+      pollPrivKeyDeserialized,
+      pollPubKey,
+    ) as unknown as CircuitInputs;
   }
-
-  const poll = maciState!.polls.get(pollId)!;
-
-  if (poll.hasJoined(nullifier)) {
-    throw new Error("User the given nullifier has already joined");
-  }
-
-  const currentStateRootIndex = poll.maciStateRef.numSignUps - 1;
-  poll.updatePoll(BigInt(maciState!.stateLeaves.length));
-
-  const circuitInputs = poll.joiningCircuitInputs({
-    maciPrivKey: userMaciPrivKey,
-    stateLeafIndex: stateIndex,
-    credits: newVoiceCreditBalance,
-    pollPrivKey: pollPrivKeyDeserialized,
-    pollPubKey,
-  }) as unknown as CircuitInputs;
 
   const pollVk = await extractVk(pollJoiningZkey);
 

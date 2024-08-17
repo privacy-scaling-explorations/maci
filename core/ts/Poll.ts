@@ -429,6 +429,7 @@ export class Poll implements IPoll {
   };
 
   /**
+   * Create circuit input for pollJoining
    * @param maciPrivKey User's private key for signing up
    * @param stateLeafIndex Index where the user is stored in the state leaves
    * @param credits Credits for voting
@@ -436,7 +437,6 @@ export class Poll implements IPoll {
    * @param pollPubKey Poll's public key for the poll joining
    * @returns stringified circuit inputs
    */
-
   joiningCircuitInputs = ({
     maciPrivKey,
     stateLeafIndex,

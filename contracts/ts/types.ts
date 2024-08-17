@@ -1,3 +1,5 @@
+import { LeanIMT } from "@zk-kit/lean-imt";
+
 import type {
   ConstantInitialVoiceCreditProxy,
   FreeForAllGatekeeper,
@@ -12,7 +14,7 @@ import type {
 } from "../typechain-types";
 import type { BigNumberish, Provider, Signer } from "ethers";
 import type { CircuitInputs } from "maci-core";
-import type { Message, PubKey } from "maci-domainobjs";
+import type { Message, PubKey, StateLeaf } from "maci-domainobjs";
 import type { PublicSignals } from "snarkjs";
 
 /**
@@ -171,6 +173,9 @@ export interface IDeployedMaci {
   };
 }
 
+/**
+ * An interface that represents arguments of generation sign up tree and state leaves
+ */
 export interface IGenSignUpTreeArgs {
   /**
    * The etherum provider
@@ -201,4 +206,19 @@ export interface IGenSignUpTreeArgs {
    * The amount of time to sleep between each request
    */
   sleepAmount?: number;
+}
+
+/**
+ * An interface that represents sign up tree and state leaves
+ */
+export interface IGenSignUpTree {
+  /**
+   * Sign up tree
+   */
+  signUpTree: LeanIMT;
+
+  /**
+   * State leaves
+   */
+  stateLeaves: StateLeaf[];
 }

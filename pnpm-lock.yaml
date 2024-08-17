@@ -253,6 +253,9 @@ importers:
       '@zk-kit/imt.sol':
         specifier: 2.0.0-beta.12
         version: 2.0.0-beta.12
+      '@zk-kit/lean-imt':
+        specifier: ^2.1.0
+        version: 2.1.0
       circomlibjs:
         specifier: ^0.1.7
         version: 0.1.7
