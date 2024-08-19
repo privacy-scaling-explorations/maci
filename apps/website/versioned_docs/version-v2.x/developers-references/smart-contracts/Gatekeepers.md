@@ -15,7 +15,7 @@ MACI uses a "gatekeeper" contract, which is used to configure and enforce the el
 
 The MACI repository comes with several out-of-the-box options:
 
-- `FreeForAllSignUpGatekeeper` - This allows anyone to signup on MACI.
+- `FreeForAllGatekeeper` - This allows anyone to signup on MACI.
 - `SignUpTokenGatekeeper` - This restricts signups only to holders of a specific ERC721 token.
 - `EASGatekeeper` - This restricts signups only to users who have received an attestation of a specific schema from a trusted attester.
 - `HatsGatekeeper` - This allows gatekeeping signups to only users who have a specific [Hat](https://www.hatsprotocol.xyz/).

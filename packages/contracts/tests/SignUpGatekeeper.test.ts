@@ -91,7 +91,7 @@ describe("SignUpGatekeeper", () => {
     });
   });
 
-  describe("FreeForAllSignUpGatekeeper", () => {
+  describe("FreeForAllGatekeeper", () => {
     it("should always complete successfully", async () => {
       const tx = await freeForAllContract.register(ZeroAddress, AbiCoder.defaultAbiCoder().encode(["uint256"], [1]));
       const receipt = await tx.wait();

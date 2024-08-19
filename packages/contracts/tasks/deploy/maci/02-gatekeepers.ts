@@ -1,5 +1,5 @@
 import { HatsGatekeeperBase } from "../../../typechain-types";
-import { ESupportedChains } from "../../helpers/constants";
+import { EDeploySteps, ESupportedChains } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
 import { uuidToBigInt } from "../../helpers/numericParser";
@@ -11,7 +11,7 @@ const storage = ContractStorage.getInstance();
 /**
  * Deploy step registration and task itself
  */
-deployment.deployTask("full:deploy-gatekeepers", "Deploy gatekeepers").then((task) =>
+deployment.deployTask(EDeploySteps.Gatekeepers, "Deploy gatekeepers").then((task) =>
   task.setAction(async ({ incremental }: IDeployParams, hre) => {
     deployment.setHre(hre);
     const deployer = await deployment.getDeployer();

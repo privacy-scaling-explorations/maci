@@ -19,6 +19,7 @@ export { genMaciStateFromContract } from "./genMaciState";
 export { genEmptyBallotRoots } from "./genEmptyBallotRoots";
 export { formatProofForVerifierContract, getDefaultSigner, getDefaultNetwork, getSigners } from "./utils";
 export { EMode } from "./constants";
+export { EDeploySteps } from "../tasks/helpers/constants";
 export { Deployment } from "../tasks/helpers/Deployment";
 export { ContractStorage } from "../tasks/helpers/ContractStorage";
 export { ProofGenerator } from "../tasks/helpers/ProofGenerator";

@@ -1,3 +1,4 @@
+import { EDeploySteps } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
 import { EContracts, IDeployParams } from "../../helpers/types";
@@ -11,7 +12,7 @@ const storage = ContractStorage.getInstance();
  * Deploy step registration and task itself
  */
 deployment
-  .deployTask("full:deploy-constant-initial-voice-credit-proxy", "Deploy constant initial voice credit proxy")
+  .deployTask(EDeploySteps.ConstantInitialVoiceCreditProxy, "Deploy constant initial voice credit proxy")
   .then((task) =>
     task.setAction(async ({ incremental }: IDeployParams, hre) => {
       deployment.setHre(hre);

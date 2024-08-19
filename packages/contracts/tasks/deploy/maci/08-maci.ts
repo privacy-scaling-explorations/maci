@@ -8,6 +8,7 @@ import type {
 } from "../../../typechain-types";
 
 import { genEmptyBallotRoots } from "../../../ts/genEmptyBallotRoots";
+import { EDeploySteps } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
 import { EContracts, IDeployParams } from "../../helpers/types";
@@ -20,7 +21,7 @@ const DEFAULT_STATE_TREE_DEPTH = 10;
 /**
  * Deploy step registration and task itself
  */
-deployment.deployTask("full:deploy-maci", "Deploy MACI contract").then((task) =>
+deployment.deployTask(EDeploySteps.Maci, "Deploy MACI contract").then((task) =>
   task.setAction(async ({ incremental }: IDeployParams, hre) => {
     deployment.setHre(hre);
     const deployer = await deployment.getDeployer();

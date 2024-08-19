@@ -1,4 +1,20 @@
 /**
+ * Deploy steps
+ */
+export enum EDeploySteps {
+  ConstantInitialVoiceCreditProxy = "full:deploy-constant-initial-voice-credit-proxy",
+  Gatekeepers = "full:deploy-gatekeepers",
+  Verifier = "full:deploy-verifier",
+  Poseidon = "full:deploy-poseidon",
+  PollFactory = "full:deploy-poll-factory",
+  MessageProcessorFactory = "full:deploy-message-processor-factory",
+  TallyFactory = "full:deploy-tally-factory",
+  Maci = "full:deploy-maci",
+  VkRegistry = "full:deploy-vk-registry",
+  Poll = "poll:deploy-poll",
+}
+
+/**
  * Supported networks for deployment and task running
  */
 export enum ESupportedChains {
