@@ -18,9 +18,9 @@
     "types": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@docusaurus/core": "^3.5.1",
-    "@docusaurus/preset-classic": "^3.5.1",
-    "@docusaurus/theme-classic": "^3.5.1",
+    "@docusaurus/core": "^3.5.2",
+    "@docusaurus/preset-classic": "^3.5.2",
+    "@docusaurus/theme-classic": "^3.5.2",
     "@docusaurus/theme-common": "^3.5.2",
     "@docusaurus/types": "^3.5.2",
     "@easyops-cn/docusaurus-search-local": "^0.44.5",
