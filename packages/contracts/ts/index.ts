@@ -31,6 +31,7 @@ export {
   type IGenerateProofsOptions,
   type IGenerateProofsBatchData,
   type TallyData,
+  type IDeployParams,
 } from "../tasks/helpers/types";
 export { linkPoseidonLibraries } from "../tasks/helpers/abi";
 export { buildPoseidonT3, buildPoseidonT4, buildPoseidonT5, buildPoseidonT6 } from "./buildPoseidon";
