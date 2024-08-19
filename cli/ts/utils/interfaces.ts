@@ -366,7 +366,7 @@ export interface IJoinPollArgs {
   /**
    * User's credit balance for voting within this poll
    */
-  newVoiceCreditBalance: bigint;
+  newVoiceCreditBalance: bigint | null;
 
   /**
    * The id of the poll
@@ -376,7 +376,7 @@ export interface IJoinPollArgs {
   /**
    * The index of the state leaf
    */
-  stateIndex: bigint;
+  stateIndex: bigint | null;
 
   /**
    * Whether to log the output

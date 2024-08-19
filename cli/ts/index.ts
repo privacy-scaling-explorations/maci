@@ -215,9 +215,9 @@ program
   .command("joinPoll")
   .description("join the poll")
   .requiredOption("-sk, --priv-key <privKey>", "the private key")
-  .requiredOption("-i, --state-index <stateIndex>", "the user's state index", BigInt)
+  .option("-i, --state-index <stateIndex>", "the user's state index", BigInt)
   .requiredOption("-esk, --poll-priv-key <pollPrivKey>", "the user ephemeral private key for the poll")
-  .requiredOption(
+  .option(
     "-nv, --new-voice-credit-balance <newVoiceCreditBalance>",
     "the voice credit balance of the user for the poll",
     BigInt,
@@ -250,8 +250,8 @@ program
         maciAddress,
         privateKey,
         pollPrivKey: cmdObj.pollPrivKey,
-        stateIndex: cmdObj.stateIndex,
-        newVoiceCreditBalance: cmdObj.newVoiceCreditBalance,
+        stateIndex: cmdObj.stateIndex || null,
+        newVoiceCreditBalance: cmdObj.newVoiceCreditBalance || null,
         stateFile: cmdObj.stateFile,
         pollId: cmdObj.pollId,
         signer,
