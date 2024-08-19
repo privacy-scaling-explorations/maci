@@ -60,6 +60,7 @@ describe("AppController (e2e)", () => {
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
+      pollJoiningZkeyPath: path.resolve(__dirname, "../zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey"),
       processMessagesZkeyPathNonQv: path.resolve(
         __dirname,
         "../zkeys/ProcessMessagesNonQv_10-20-2_test/ProcessMessagesNonQv_10-20-2_test.0.zkey",
