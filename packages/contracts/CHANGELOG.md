@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.2.1](https://github.com/privacy-scaling-explorations/maci/compare/v2.2.0...v2.2.1) (2024-08-19)
+
+
+### Bug Fixes
+
+* **contracts:** remove poseidon builders from exports ([8890da5](https://github.com/privacy-scaling-explorations/maci/commit/8890da549d121e1b108371ffcdb0f9a161940991))
+
+
+### Miscellaneous
+
+* **contracts:** add deploy params type ([74252cb](https://github.com/privacy-scaling-explorations/maci/commit/74252cbaa74add4a6b5c9014af7d226f88caf3c1))
+* **contracts:** move poseidon creation to compile script ([1e9f790](https://github.com/privacy-scaling-explorations/maci/commit/1e9f7906ef28e1c484115c4484733c475c81f8b4))
+
+
+
 ## [2.2.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.1.0...v2.2.0) (2024-08-19)
 
 

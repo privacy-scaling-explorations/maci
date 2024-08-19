@@ -105,7 +105,7 @@ importers:
         specifier: ^0.35.1
         version: 0.35.1
       maci-contracts:
-        specifier: ^2.2.0
+        specifier: ^2.2.1
         version: link:../../packages/contracts
     devDependencies:
       assemblyscript:
@@ -282,7 +282,7 @@ importers:
         specifier: ^2.2.0
         version: link:../circuits
       maci-contracts:
-        specifier: ^2.2.0
+        specifier: ^2.2.1
         version: link:../contracts
       maci-core:
         specifier: ^2.2.0
@@ -545,10 +545,10 @@ importers:
         specifier: ^2.2.0
         version: link:../circuits
       maci-cli:
-        specifier: ^2.2.0
+        specifier: ^2.2.1
         version: link:../cli
       maci-contracts:
-        specifier: ^2.2.0
+        specifier: ^2.2.1
         version: link:../contracts
       maci-core:
         specifier: ^2.2.0
