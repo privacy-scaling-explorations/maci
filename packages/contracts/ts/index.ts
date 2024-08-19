@@ -26,6 +26,8 @@ export { ProofGenerator } from "../tasks/helpers/ProofGenerator";
 export { Prover } from "../tasks/helpers/Prover";
 export {
   EContracts,
+  EGatekeepers,
+  EInitialVoiceCreditProxies,
   type IGenerateProofsOptions,
   type IGenerateProofsBatchData,
   type TallyData,

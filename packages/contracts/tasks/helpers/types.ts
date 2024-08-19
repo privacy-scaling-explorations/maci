@@ -536,6 +536,27 @@ export interface IRegisterContract {
 }
 
 /**
+ * Enum represents gatekeeper types
+ */
+export enum EGatekeepers {
+  FreeForAll = "FreeForAllGatekeeper",
+  EAS = "EASGatekeeper",
+  GitcoinPassport = "GitcoinPassportGatekeeper",
+  Hats = "HatsGatekeeper",
+  HatsSingle = "HatsGatekeeperSingle",
+  HatsMultiple = "HatsGatekeeperMultiple",
+  Zupass = "ZupassGatekeeper",
+  Semaphore = "SemaphoreGatekeeper",
+}
+
+/**
+ * Enum represents initial voice credit proxies
+ */
+export enum EInitialVoiceCreditProxies {
+  Constant = "ConstantInitialVoiceCreditProxy",
+}
+
+/**
  * Enum represents deployed contracts
  */
 export enum EContracts {
