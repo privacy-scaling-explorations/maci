@@ -1,6 +1,6 @@
 {
   "name": "maci-cli",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "CLI utilities for MACI",
   "main": "build/ts/index.js",
   "exports": {
@@ -49,7 +49,7 @@
     "ethers": "^6.13.2",
     "hardhat": "^2.22.8",
     "maci-circuits": "^2.2.0",
-    "maci-contracts": "^2.2.0",
+    "maci-contracts": "^2.2.1",
     "maci-core": "^2.2.0",
     "maci-crypto": "^2.2.0",
     "maci-domainobjs": "^2.2.0",
