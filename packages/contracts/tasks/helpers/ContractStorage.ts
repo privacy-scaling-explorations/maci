@@ -40,22 +40,23 @@ export class ContractStorage {
   /**
    * Initialize class properties only once
    */
-  private constructor() {
+  private constructor(storagePath?: string) {
     this.db = low(
       typeof window !== "undefined"
         ? new LocalStorageSync<TStorage>("deployed-contracts")
-        : new FileSync<TStorage>(path.resolve(__dirname, "..", "..", "./deployed-contracts.json")),
+        : new FileSync<TStorage>(storagePath ?? path.resolve(__dirname, "..", "..", "./deployed-contracts.json")),
     );
   }
 
   /**
    * Get singleton object
    *
+   * @param storagePath - path to the storage file
    * @returns {ContractStorage} singleton object
    */
-  static getInstance(): ContractStorage {
+  static getInstance(storagePath?: string): ContractStorage {
     if (!ContractStorage.INSTANCE) {
-      ContractStorage.INSTANCE = new ContractStorage();
+      ContractStorage.INSTANCE = new ContractStorage(storagePath);
     }
 
     return ContractStorage.INSTANCE;
@@ -145,6 +146,27 @@ export class ContractStorage {
   setVerified = (address: string, network: string, verified: boolean): void => {
     this.db.set(`${network}.verified.${address}`, verified).write();
   };
+
+  /**
+   * Get deployment arguments from the json file
+   *
+   * @param id - contract name
+   * @param network - selected network
+   * @param key - contract key
+   * @returns deployment arguments
+   */
+  getContractArgs(id: EContracts, network: string, key?: string): string[] | undefined {
+    const address = this.getAddress(id, network, key);
+
+    const collection = this.db.get(`${network}.instance.${address}`);
+    const instanceEntry = collection.value() as IStorageInstanceEntry | undefined;
+
+    if (!instanceEntry?.verify?.args) {
+      return undefined;
+    }
+
+    return JSON.parse(instanceEntry.verify.args) as string[];
+  }
 
   /**
    * Get contract address by name from the json file
