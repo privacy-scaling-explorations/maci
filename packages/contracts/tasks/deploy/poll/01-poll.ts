@@ -4,6 +4,7 @@ import { PubKey } from "maci-domainobjs";
 import type { MACI, Poll } from "../../../typechain-types";
 
 import { EMode } from "../../../ts/constants";
+import { EDeploySteps } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
 import { EContracts } from "../../helpers/types";
@@ -14,7 +15,7 @@ const storage = ContractStorage.getInstance();
 /**
  * Deploy step registration and task itself
  */
-deployment.deployTask("poll:deploy-poll", "Deploy poll").then((task) =>
+deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
   task.setAction(async (_, hre) => {
     deployment.setHre(hre);
 

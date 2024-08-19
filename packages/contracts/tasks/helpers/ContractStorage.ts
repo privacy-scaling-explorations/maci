@@ -44,7 +44,7 @@ export class ContractStorage {
     this.db = low(
       typeof window !== "undefined"
         ? new LocalStorageSync<TStorage>("deployed-contracts")
-        : new FileSync<TStorage>(storagePath ?? path.resolve(__dirname, "..", "..", "./deployed-contracts.json")),
+        : new FileSync<TStorage>(storagePath ?? path.resolve(process.cwd(), "./deployed-contracts.json")),
     );
   }
 

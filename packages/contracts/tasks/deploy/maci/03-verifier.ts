@@ -1,3 +1,4 @@
+import { EDeploySteps } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
 import { EContracts, IDeployParams } from "../../helpers/types";
@@ -8,7 +9,7 @@ const storage = ContractStorage.getInstance();
 /**
  * Deploy step registration and task itself
  */
-deployment.deployTask("full:deploy-verifier", "Deploy verifier").then((task) =>
+deployment.deployTask(EDeploySteps.Verifier, "Deploy verifier").then((task) =>
   task.setAction(async ({ incremental }: IDeployParams, hre) => {
     deployment.setHre(hre);
     const deployer = await deployment.getDeployer();

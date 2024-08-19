@@ -349,7 +349,7 @@ This contract can be used by the `SignUpGateKeeper` to determine whether a user 
 
 MACI requires a signup gatekeeper to ensure that only designed users register. It is up to MACI's deployer how they wish to allow sign-ups, therefore they can implement their own GateKeeper. The repository comes with different options:
 
-- `FreeForAllSignUpGatekeeper` - This allows anyone to signup on MACI.
+- `FreeForAllGatekeeper` - This allows anyone to signup on MACI.
 - `SignUpTokenGatekeeper` - This makes use of a ERC721 token to gatekeep the signup function.
 - `EASGatekeeper` - This allows gatekeeping signups to only users who have a specific EAS attestation.
 

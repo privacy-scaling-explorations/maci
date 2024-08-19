@@ -44,7 +44,7 @@ export class Deployment {
   /**
    * Step catalog to create sequential tasks
    */
-  private stepCatalog: Map<string, IDeployStepCatalog[]>;
+  private stepCatalog: Map<string, Record<string, IDeployStepCatalog>>;
 
   /**
    * Json file database instance
@@ -61,14 +61,14 @@ export class Deployment {
    */
   private constructor(hre?: HardhatRuntimeEnvironment) {
     this.stepCatalog = new Map([
-      ["full", []],
-      ["poll", []],
+      ["full", {}],
+      ["poll", {}],
     ]);
     this.hre = hre;
     this.config = low(
       typeof window !== "undefined"
         ? new LocalStorageSync<TConfig>("deploy-config")
-        : new FileSync<TConfig>(path.resolve(__dirname, "..", "..", "./deploy-config.json")),
+        : new FileSync<TConfig>(path.resolve(process.cwd(), "./deploy-config.json")),
     );
     this.storage = ContractStorage.getInstance();
   }
@@ -270,7 +270,7 @@ export class Deployment {
       throw new Error(`Unknown deploy type: ${deployType}`);
     }
 
-    steps.push({ name, taskName, paramsFn });
+    steps[taskName] = { name, taskName, paramsFn };
   }
 
   /**
@@ -296,11 +296,13 @@ export class Deployment {
       throw new Error(`Unknown deploy type: ${deployType}`);
     }
 
-    return Promise.all(stepList.map(({ paramsFn }) => paramsFn(params))).then((stepArgs) =>
+    const steps = Object.values(stepList);
+
+    return Promise.all(steps.map(({ paramsFn }) => paramsFn(params))).then((stepArgs) =>
       stepArgs.map((args, index) => ({
         id: index + 1,
-        name: stepList[index].name,
-        taskName: stepList[index].taskName,
+        name: steps[index].name,
+        taskName: steps[index].taskName,
         args: args as unknown,
       })),
     );

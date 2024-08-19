@@ -11,7 +11,14 @@
     "./typechain-types": {
       "types": "./build/typechain-types/index.d.ts",
       "default": "./build/typechain-types/index.js"
-    }
+    },
+    "./tasks/deploy": {
+      "types": "./build/tasks/deploy/index.d.ts",
+      "default": "./build/tasks/deploy/index.js"
+    },
+    "./tasks/deploy/maci/*": "./build/tasks/deploy/maci/*.js",
+    "./tasks/deploy/poll/*": "./build/tasks/deploy/poll/*.js",
+    "./tasks/runner/*": "./build/tasks/runner/*.js"
   },
   "bin": {
     "maci-contracts": "./build/ts/index.js"

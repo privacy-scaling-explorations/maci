@@ -9,7 +9,11 @@ import path from "path";
 
   if (fs.existsSync(tasksPath)) {
     fs.readdirSync(tasksPath)
-      .filter((p) => p.includes(".ts") && !p.includes("index.ts"))
+      .filter(
+        (p) =>
+          (p.endsWith(".ts") && !p.endsWith("index.ts") && !p.endsWith("d.ts")) ||
+          (p.endsWith(".js") && !p.endsWith("index.js")),
+      )
       .forEach((task) => {
         import(`${tasksPath}/${task}`);
       });
