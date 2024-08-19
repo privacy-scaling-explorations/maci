@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.2.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.1.0...v2.2.0) (2024-08-19)
+
+
+### Features
+
+* add matomo plugin ([#1769](https://github.com/privacy-scaling-explorations/maci/issues/1769)) ([5ed30d3](https://github.com/privacy-scaling-explorations/maci/commit/5ed30d3dcadc02fdd1b285ce0d544883bd36c64e))
+* implement cards for the blog ([#1752](https://github.com/privacy-scaling-explorations/maci/issues/1752)) ([6ba623a](https://github.com/privacy-scaling-explorations/maci/commit/6ba623a233f5ab4fa162bdca2cb63270447ca652))
+* **website:** add darkmode for blog cards ([#1753](https://github.com/privacy-scaling-explorations/maci/issues/1753)) ([bdba94e](https://github.com/privacy-scaling-explorations/maci/commit/bdba94ee7b6fd0e00113cc1896c3b90338c2ffae))
+
+
+### Miscellaneous
+
+* bump [@docusaurus](https://github.com/docusaurus) packages to v3.5.1 ([7000013](https://github.com/privacy-scaling-explorations/maci/commit/70000139dec38b99d80c6200e19d56ef3d43e207))
+* **contracts:** deploy contracts to L2s, store addresses and benchmark message batch size ([#1751](https://github.com/privacy-scaling-explorations/maci/issues/1751)) ([9e771a0](https://github.com/privacy-scaling-explorations/maci/commit/9e771a09b8f5de8c47ad89f5bb53b542aed6db05))
+* **contracts:** use cwd path for contract storage and config ([a78408d](https://github.com/privacy-scaling-explorations/maci/commit/a78408dd597106a712fbc0a4dfd6451fd270bc45))
+* **deps-dev:** bump @docusaurus/tsconfig from 3.5.1 to 3.5.2 ([#1780](https://github.com/privacy-scaling-explorations/maci/issues/1780)) ([94cd505](https://github.com/privacy-scaling-explorations/maci/commit/94cd50514dc030e08a69ac8e435dcd9dba5b0d18))
+* **deps-dev:** bump @types/node from 22.1.0 to 22.2.0 ([ac18985](https://github.com/privacy-scaling-explorations/maci/commit/ac189852bf6abb787736c474ad87927afaa5163c))
+* **deps-dev:** bump @types/node from 22.2.0 to 22.4.1 ([#1779](https://github.com/privacy-scaling-explorations/maci/issues/1779)) ([4a929e0](https://github.com/privacy-scaling-explorations/maci/commit/4a929e0b9a5c4de5ac0345e742668a3400798867))
+* **deps:** bump @docusaurus/theme-classic from 3.4.0 to 3.5.1 ([aa03eae](https://github.com/privacy-scaling-explorations/maci/commit/aa03eae0d59bb8ab236562746d9716bbcf91f846))
+* **deps:** bump @docusaurus/types from 3.4.0 to 3.5.1 ([51029f2](https://github.com/privacy-scaling-explorations/maci/commit/51029f24e69077be067f077df17a912f4b67a61c))
+* **deps:** bump @easyops-cn/docusaurus-search-local ([#1760](https://github.com/privacy-scaling-explorations/maci/issues/1760)) ([6a2a7cb](https://github.com/privacy-scaling-explorations/maci/commit/6a2a7cb24250d54493e32a2d1bde08db6fb4dbd3))
+* update trusted setup docs ([5fa7640](https://github.com/privacy-scaling-explorations/maci/commit/5fa7640543a572ba295fc0ae9c3bb63a3b6eba07))
+
+
+
 ## [2.1.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.0.0...v2.1.0) (2024-08-07)
 
 

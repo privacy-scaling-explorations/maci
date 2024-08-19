@@ -3,6 +3,40 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.2.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.1.0...v2.2.0) (2024-08-19)
+
+
+### Features
+
+* **contracts:** add first registry and payout extensions ([d75164b](https://github.com/privacy-scaling-explorations/maci/commit/d75164b364a126e4e39c385942b65037f3ae7b9a))
+* **contracts:** add virtual modifiers ([#1770](https://github.com/privacy-scaling-explorations/maci/issues/1770)) ([7b98e58](https://github.com/privacy-scaling-explorations/maci/commit/7b98e5830f4cca74d893a427c072563b98a9b766))
+* **contracts:** support custom factories for maci test deployment ([156f523](https://github.com/privacy-scaling-explorations/maci/commit/156f5235def5f9a929a3ad4c6cbdc5785c1feb13))
+* **hats:** add hats gatekeeper deployment steps ([2a8ac1a](https://github.com/privacy-scaling-explorations/maci/commit/2a8ac1a4d8ce12be1d1dfc133334a8d73903194e))
+* **storage:** add storage path and function to get deployment args ([46b7350](https://github.com/privacy-scaling-explorations/maci/commit/46b7350cf09e1bd626f0e4bc369ed723c76ebfba))
+
+
+### Bug Fixes
+
+* use state_tree_depth for tally batch size and import from maci-core ([#1768](https://github.com/privacy-scaling-explorations/maci/issues/1768)) ([4401ae0](https://github.com/privacy-scaling-explorations/maci/commit/4401ae0755a8a00bb1312df3ffc139d419ff015e))
+
+
+### Code Refactoring
+
+* **contracts:** use custom factories for maci test deploys ([2e8fbca](https://github.com/privacy-scaling-explorations/maci/commit/2e8fbca2a6ac3bb3935dbfdee1c18831e6464f8d))
+
+
+### Miscellaneous
+
+* add enum for gatekeepers and voice credits proxy ([#1782](https://github.com/privacy-scaling-explorations/maci/issues/1782)) ([9afb27d](https://github.com/privacy-scaling-explorations/maci/commit/9afb27ddf79c2ba179754e9a55c4d3b24ecd2eb5))
+* **contracts:** deploy contracts to L2s, store addresses and benchmark message batch size ([#1751](https://github.com/privacy-scaling-explorations/maci/issues/1751)) ([9e771a0](https://github.com/privacy-scaling-explorations/maci/commit/9e771a09b8f5de8c47ad89f5bb53b542aed6db05))
+* **contracts:** use cwd path for contract storage and config ([a78408d](https://github.com/privacy-scaling-explorations/maci/commit/a78408dd597106a712fbc0a4dfd6451fd270bc45))
+* **deps-dev:** bump @types/node from 22.1.0 to 22.2.0 ([ac18985](https://github.com/privacy-scaling-explorations/maci/commit/ac189852bf6abb787736c474ad87927afaa5163c))
+* **deps-dev:** bump @types/node from 22.2.0 to 22.4.1 ([#1779](https://github.com/privacy-scaling-explorations/maci/issues/1779)) ([4a929e0](https://github.com/privacy-scaling-explorations/maci/commit/4a929e0b9a5c4de5ac0345e742668a3400798867))
+* **deps:** bump hardhat from 2.22.7 to 2.22.8 ([#1755](https://github.com/privacy-scaling-explorations/maci/issues/1755)) ([92b30af](https://github.com/privacy-scaling-explorations/maci/commit/92b30af1c18f8261235c26f61de6004287107351))
+* remove simple payout ([049bab7](https://github.com/privacy-scaling-explorations/maci/commit/049bab7112e4b88e47a56f32d01ab6235ebbb751))
+
+
+
 ## [2.1.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.0.0...v2.1.0) (2024-08-07)
 
 
