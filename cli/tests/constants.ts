@@ -108,6 +108,7 @@ export const setVerifyingKeysNonQvArgs: Omit<SetVerifyingKeysArgs, "signer"> = {
   intStateTreeDepth: INT_STATE_TREE_DEPTH,
   voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
   messageBatchSize: MESSAGE_BATCH_SIZE,
+  pollJoiningZkeyPath: pollJoiningTestZkeyPath,
   processMessagesZkeyPathNonQv: processMessageTestNonQvZkeyPath,
   tallyVotesZkeyPathNonQv: tallyVotesTestNonQvZkeyPath,
 };

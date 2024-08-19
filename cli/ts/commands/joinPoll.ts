@@ -12,7 +12,6 @@ import type { IJoinPollArgs, IJoinedUserArgs, IParsePollJoinEventsArgs } from ".
 
 import { contractExists, logError, logYellow, info, logGreen, success } from "../utils";
 import { banner } from "../utils/banner";
-import { error } from "console";
 
 /**
  * Create circuit input for pollJoining
@@ -133,13 +132,6 @@ export const joinPoll = async ({
   const pollKeyPair = new Keypair(pollPrivKeyDeserialized);
   const pollPubKey = pollKeyPair.pubKey;
 
-
-  // let loadedStateLeafIndex = stateLeafIndex;
-
-  // if (stateLeafIndex == null) {
-  //   loadedStateLeafIndex = BigInt(stateLeaves.findIndex(leaf => leaf.pubKey.equals());
-  // }
-
   if (pollId < 0) {
     logError("Invalid poll id");
   }
@@ -152,7 +144,7 @@ export const joinPoll = async ({
   }
 
   const pollContract = PollFactory.connect(pollAddress, signer);
-  
+
   let loadedStateIndex = stateIndex;
   let loadedCreditBalance = newVoiceCreditBalance;
 
@@ -174,12 +166,12 @@ export const joinPoll = async ({
       throw new Error("User the given nullifier has already joined");
     }
 
-    if (stateIndex == null) {
-      const index = maciState?.stateLeaves.findIndex(leaf => leaf.pubKey.equals(userMaciPubKey));
-      if (index != null) {
+    if (stateIndex) {
+      const index = maciState?.stateLeaves.findIndex((leaf) => leaf.pubKey.equals(userMaciPubKey));
+      if (index) {
         loadedStateIndex = BigInt(index);
       } else {
-        error('State leaf not found');
+        logError("State leaf not found");
         process.exit();
       }
     }
@@ -193,8 +185,14 @@ export const joinPoll = async ({
 
     poll.updatePoll(BigInt(maciState!.stateLeaves.length));
 
-    if (newVoiceCreditBalance == null) {
-      loadedCreditBalance = maciState?.stateLeaves[Number(loadedStateIndex!)].voiceCreditBalance!;
+    if (newVoiceCreditBalance) {
+      const balance = maciState?.stateLeaves[Number(loadedStateIndex!)].voiceCreditBalance;
+      if (balance) {
+        loadedCreditBalance = balance;
+      } else {
+        logError("Voice credit balance not found");
+        process.exit();
+      }
     }
 
     circuitInputs = poll.joiningCircuitInputs({
@@ -235,12 +233,12 @@ export const joinPoll = async ({
 
     currentStateRootIndex = Number(numSignups) - 1;
 
-    if (stateIndex == null) {
-      const index = signUpData.stateLeaves.findIndex(leaf => leaf.pubKey.equals(userMaciPubKey));
-      if (index != null) {
+    if (!stateIndex) {
+      const index = signUpData.stateLeaves.findIndex((leaf) => leaf.pubKey.equals(userMaciPubKey));
+      if (index) {
         loadedStateIndex = BigInt(index);
       } else {
-        error('State leaf not found');
+        logError("State leaf not found");
         process.exit();
       }
     }
@@ -250,7 +248,7 @@ export const joinPoll = async ({
       logError("Invalid state index");
     }
 
-    if (newVoiceCreditBalance == null) {
+    if (!newVoiceCreditBalance) {
       loadedCreditBalance = signUpData.stateLeaves[Number(loadedStateIndex!)].voiceCreditBalance!;
     }
 

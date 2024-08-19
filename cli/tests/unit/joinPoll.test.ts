@@ -33,7 +33,7 @@ describe("joinPoll", function test() {
   const { privKey: pollPrivateKey, pubKey: pollPublicKey } = new Keypair();
   const mockNewVoiceCreditBalance = 10n;
   const mockStateIndex = 1n;
-  const mockPollId = 1n;
+  const mockPollId = 9000n;
 
   this.timeout(900000);
   // before all tests we deploy the vk registry contract and set the verifying keys
@@ -88,6 +88,22 @@ describe("joinPoll", function test() {
     expect(BigInt(registeredUserData.pollStateIndex!)).to.eq(1);
   });
 
+  it("should throw error if poll does not exist", async () => {
+    await expect(
+      joinPoll({
+        maciAddress: maciAddresses.maciAddress,
+        privateKey: userPrivateKey,
+        stateIndex: mockStateIndex,
+        signer,
+        pollId: mockPollId,
+        pollPrivKey: pollPrivateKey.serialize(),
+        pollJoiningZkey: pollJoiningTestZkeyPath,
+        newVoiceCreditBalance: mockNewVoiceCreditBalance,
+        quiet: true,
+      }),
+    ).eventually.rejectedWith("PollDoesNotExist(9000)");
+  });
+
   it("should throw error if state index is invalid", async () => {
     await expect(
       joinPoll({
@@ -95,7 +111,7 @@ describe("joinPoll", function test() {
         privateKey: userPrivateKey,
         stateIndex: -1n,
         signer,
-        pollId: mockPollId,
+        pollId: 0n,
         pollPrivKey: pollPrivateKey.serialize(),
         pollJoiningZkey: pollJoiningTestZkeyPath,
         newVoiceCreditBalance: mockNewVoiceCreditBalance,
