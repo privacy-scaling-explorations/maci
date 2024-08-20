@@ -456,7 +456,7 @@ export class Poll implements IPoll {
 
     // calculate the path elements for the state tree given the original state tree
     const { siblings, index } = this.stateTree!.generateProof(Number(stateLeafIndex));
-    const depth = siblings.length;
+    const siblingsLength = siblings.length;
 
     // The index must be converted to a list of indices, 1 for each tree level.
     // The circuit tree depth is this.stateTreeDepth, so the number of siblings must be this.stateTreeDepth,
@@ -468,10 +468,11 @@ export class Poll implements IPoll {
       // eslint-disable-next-line no-bitwise
       indices.push(BigInt((index >> i) & 1));
 
-      if (i >= depth) {
+      if (i >= siblingsLength) {
         siblings[i] = BigInt(0);
       }
     }
+    const siblingsArray = siblings.map((sibling) => [sibling]);
 
     // Create nullifier from private key
     const inputNullifier = BigInt(maciPrivKey.asCircuitInputs());
@@ -480,8 +481,8 @@ export class Poll implements IPoll {
     // Get pll state tree's root
     const stateRoot = this.stateTree!.root;
 
-    // Convert actualStateTreeDepth to BigInt
-    const actualStateTreeDepth = BigInt(this.actualStateTreeDepth);
+    // Set actualStateTreeDepth as number of initial siblings length
+    const actualStateTreeDepth = BigInt(siblingsLength);
 
     // Calculate public input hash from nullifier, credits and current root
     const inputHash = sha256Hash([nullifier, credits, stateRoot, pollPubKeyArray[0], pollPubKeyArray[1]]);
@@ -491,7 +492,7 @@ export class Poll implements IPoll {
       pollPrivKey: pollPrivKey.asCircuitInputs(),
       pollPubKey: pollPubKey.asCircuitInputs(),
       stateLeaf: stateLeafArray,
-      siblings,
+      siblings: siblingsArray,
       indices,
       nullifier,
       credits,

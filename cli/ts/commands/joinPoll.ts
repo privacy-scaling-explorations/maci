@@ -46,7 +46,7 @@ const joiningCircuitInputs = (
 
   // calculate the path elements for the state tree given the original state tree
   const { siblings, index } = stateTree.generateProof(Number(stateLeafIndex));
-  const depth = siblings.length;
+  const siblingsLength = siblings.length;
 
   // The index must be converted to a list of indices, 1 for each tree level.
   // The circuit tree depth is this.stateTreeDepth, so the number of siblings must be this.stateTreeDepth,
@@ -58,10 +58,12 @@ const joiningCircuitInputs = (
     // eslint-disable-next-line no-bitwise
     indices.push(BigInt((index >> i) & 1));
 
-    if (i >= depth) {
+    if (i >= siblingsLength) {
       siblings[i] = BigInt(0);
     }
   }
+
+  const siblingsArray = siblings.map((sibling) => [sibling]);
 
   // Create nullifier from private key
   const inputNullifier = BigInt(maciPrivKey.asCircuitInputs());
@@ -70,8 +72,8 @@ const joiningCircuitInputs = (
   // Get pll state tree's root
   const stateRoot = stateTree.root;
 
-  // Convert actualStateTreeDepth to BigInt
-  const actualStateTreeDepth = BigInt(stateTree.depth);
+  // Set actualStateTreeDepth as number of initial siblings length
+  const actualStateTreeDepth = BigInt(siblingsLength);
 
   // Calculate public input hash from nullifier, credits and current root
   const inputHash = sha256Hash([nullifier, credits, stateRoot, pollPubKeyArray[0], pollPubKeyArray[1]]);
@@ -81,7 +83,7 @@ const joiningCircuitInputs = (
     pollPrivKey: pollPrivKey.asCircuitInputs(),
     pollPubKey: pollPubKey.asCircuitInputs(),
     stateLeaf: stateLeafArray,
-    siblings,
+    siblings: siblingsArray,
     indices,
     nullifier,
     credits,
