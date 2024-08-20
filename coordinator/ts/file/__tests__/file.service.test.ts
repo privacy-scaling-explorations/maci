@@ -28,6 +28,16 @@ describe("FileService", () => {
     expect(privateKey).toBeDefined();
   });
 
+  test("should return zkey filepaths for poll properly", () => {
+    const service = new FileService();
+
+    const { zkey, wasm, witgen } = service.getZkeyFilePaths(process.env.COORDINATOR_POLL_ZKEY_NAME!, true);
+
+    expect(zkey).toBeDefined();
+    expect(wasm).toBeDefined();
+    expect(witgen).toBeDefined();
+  });
+
   test("should return zkey filepaths for tally qv properly", () => {
     const service = new FileService();
 

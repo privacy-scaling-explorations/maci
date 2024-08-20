@@ -13,11 +13,13 @@ import {
   publish,
   timeTravel,
   mergeSignups,
+  joinPoll,
 } from "maci-cli";
 import { Keypair } from "maci-domainobjs";
 import request from "supertest";
 
 import fs from "fs";
+import { homedir } from "os";
 import path from "path";
 
 import type { App } from "supertest/types";
@@ -99,10 +101,29 @@ describe("AppController (e2e)", () => {
   describe("validation /v1/proof/generate POST", () => {
     beforeAll(async () => {
       const user = new Keypair();
+      const pollKeys = new Keypair();
 
       await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer });
+      await joinPoll({
+        maciAddress: maciAddresses.maciAddress,
+        privateKey: user.privKey.serialize(),
+        pollPrivKey: pollKeys.privKey.serialize(),
+        stateIndex: 1n,
+        pollId: 0n,
+        pollJoiningZkey: path.resolve(__dirname, "../zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey"),
+        useWasm: true,
+        pollWasm: path.resolve(
+          __dirname,
+          "../zkeys/PollJoining_10_test/PollJoining_10_test_js/PollJoining_10_test.wasm",
+        ),
+        pollWitgen: path.resolve(__dirname, "../zkeys/PollJoining_10_test/PollJoining_10_test_cpp/PollJoining_10_test"),
+        rapidsnark: `${homedir()}/rapidsnark/build/prover`,
+        signer,
+        newVoiceCreditBalance: 10n,
+        quiet: true,
+      });
       await publish({
-        pubkey: user.pubKey.serialize(),
+        pubkey: pollKeys.pubKey.serialize(),
         stateIndex: 1n,
         voteOptionIndex: 0n,
         nonce: 1n,
@@ -110,7 +131,7 @@ describe("AppController (e2e)", () => {
         newVoteWeight: 9n,
         maciAddress: maciAddresses.maciAddress,
         salt: 0n,
-        privateKey: user.privKey.serialize(),
+        privateKey: pollKeys.privKey.serialize(),
         signer,
       });
     });
@@ -225,10 +246,29 @@ describe("AppController (e2e)", () => {
   describe("/v1/proof/generate POST", () => {
     beforeAll(async () => {
       const user = new Keypair();
+      const pollKeys = new Keypair();
 
       await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer });
+      await joinPoll({
+        maciAddress: maciAddresses.maciAddress,
+        privateKey: user.privKey.serialize(),
+        pollPrivKey: pollKeys.privKey.serialize(),
+        stateIndex: 2n,
+        pollId: 0n,
+        pollJoiningZkey: path.resolve(__dirname, "../zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey"),
+        useWasm: true,
+        pollWasm: path.resolve(
+          __dirname,
+          "../zkeys/PollJoining_10_test/PollJoining_10_test_js/PollJoining_10_test.wasm",
+        ),
+        pollWitgen: path.resolve(__dirname, "../zkeys/PollJoining_10_test/PollJoining_10_test_cpp/PollJoining_10_test"),
+        rapidsnark: `${homedir()}/rapidsnark/build/prover`,
+        signer,
+        newVoiceCreditBalance: 10n,
+        quiet: true,
+      });
       await publish({
-        pubkey: user.pubKey.serialize(),
+        pubkey: pollKeys.pubKey.serialize(),
         stateIndex: 1n,
         voteOptionIndex: 0n,
         nonce: 1n,
@@ -236,7 +276,7 @@ describe("AppController (e2e)", () => {
         newVoteWeight: 9n,
         maciAddress: maciAddresses.maciAddress,
         salt: 0n,
-        privateKey: user.privKey.serialize(),
+        privateKey: pollKeys.privKey.serialize(),
         signer,
       });
     });
