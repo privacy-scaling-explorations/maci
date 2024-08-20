@@ -183,7 +183,7 @@ export class Poll implements IPoll {
   /**
    * Join the anonymous user to the Poll (to the tree)
    * @param nullifier - Hashed private key used as nullifier
-   * @param pubKey - The public key of the user.
+   * @param pubKey - The poll public key.
    * @param newVoiceCreditBalance - New voice credit balance of the user.
    * @param timestamp - The timestamp of the sign-up.
    * @returns The index of added state leaf
