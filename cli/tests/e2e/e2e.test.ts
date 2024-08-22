@@ -22,6 +22,8 @@ import {
   timeTravel,
   verify,
   isRegisteredUser,
+  joinPoll,
+  isJoinedUser,
 } from "../../ts/commands";
 import { DeployedContracts, GenProofsArgs, PollContracts } from "../../ts/utils";
 import {
@@ -32,10 +34,13 @@ import {
   proveOnChainArgs,
   verifyArgs,
   mergeSignupsArgs,
+  pollJoiningTestZkeyPath,
   processMessageTestZkeyPath,
   setVerifyingKeysArgs,
   tallyVotesTestZkeyPath,
+  testPollJoiningWasmPath,
   testProcessMessagesWasmPath,
+  testPollJoiningWitnessPath,
   testProcessMessagesWitnessDatPath,
   testProcessMessagesWitnessPath,
   testProofsDirPath,
@@ -102,6 +107,7 @@ describe("e2e tests", function test() {
     });
 
     const user = new Keypair();
+    const pollKeys = new Keypair();
 
     before(async () => {
       // deploy the smart contracts
@@ -114,9 +120,27 @@ describe("e2e tests", function test() {
       await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer });
     });
 
+    it("should join one user", async () => {
+      await joinPoll({
+        maciAddress: maciAddresses.maciAddress,
+        privateKey: user.privKey.serialize(),
+        pollPrivKey: pollKeys.privKey.serialize(),
+        stateIndex: 1n,
+        pollId: 0n,
+        pollJoiningZkey: pollJoiningTestZkeyPath,
+        useWasm: true,
+        pollWasm: testPollJoiningWasmPath,
+        pollWitgen: testPollJoiningWitnessPath,
+        rapidsnark: testRapidsnarkPath,
+        signer,
+        newVoiceCreditBalance: 10n,
+        quiet: true,
+      });
+    });
+
     it("should publish one message", async () => {
       await publish({
-        pubkey: user.pubKey.serialize(),
+        pubkey: pollKeys.pubKey.serialize(),
         stateIndex: 1n,
         voteOptionIndex: 0n,
         nonce: 1n,
@@ -124,7 +148,7 @@ describe("e2e tests", function test() {
         newVoteWeight: 9n,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: user.privKey.serialize(),
+        privateKey: pollKeys.privKey.serialize(),
         signer,
       });
     });
@@ -148,6 +172,7 @@ describe("e2e tests", function test() {
     });
 
     const user = new Keypair();
+    const pollKeys = new Keypair();
 
     before(async () => {
       // deploy the smart contracts
@@ -160,9 +185,27 @@ describe("e2e tests", function test() {
       await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer });
     });
 
+    it("should join one user", async () => {
+      await joinPoll({
+        maciAddress: maciAddresses.maciAddress,
+        privateKey: user.privKey.serialize(),
+        pollPrivKey: pollKeys.privKey.serialize(),
+        stateIndex: 1n,
+        pollId: 0n,
+        pollJoiningZkey: pollJoiningTestZkeyPath,
+        useWasm: true,
+        pollWasm: testPollJoiningWasmPath,
+        pollWitgen: testPollJoiningWitnessPath,
+        rapidsnark: testRapidsnarkPath,
+        signer,
+        newVoiceCreditBalance: 10n,
+        quiet: true,
+      });
+    });
+
     it("should publish one message", async () => {
       await publish({
-        pubkey: user.pubKey.serialize(),
+        pubkey: pollKeys.pubKey.serialize(),
         stateIndex: 1n,
         voteOptionIndex: 0n,
         nonce: 1n,
@@ -170,7 +213,7 @@ describe("e2e tests", function test() {
         newVoteWeight: 9n,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: user.privKey.serialize(),
+        privateKey: pollKeys.privKey.serialize(),
         signer,
       });
     });
@@ -197,6 +240,7 @@ describe("e2e tests", function test() {
     });
 
     const users = [new Keypair(), new Keypair(), new Keypair(), new Keypair()];
+    const pollKeys = [new Keypair(), new Keypair(), new Keypair(), new Keypair()];
 
     before(async () => {
       // deploy the smart contracts
@@ -213,9 +257,31 @@ describe("e2e tests", function test() {
       }
     });
 
+    it("should join four users", async () => {
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < users.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await joinPoll({
+          maciAddress: maciAddresses.maciAddress,
+          privateKey: users[i].privKey.serialize(),
+          pollPrivKey: pollKeys[i].privKey.serialize(),
+          stateIndex: BigInt(i + 1),
+          pollId: 0n,
+          pollJoiningZkey: pollJoiningTestZkeyPath,
+          useWasm: true,
+          pollWasm: testPollJoiningWasmPath,
+          pollWitgen: testPollJoiningWitnessPath,
+          rapidsnark: testRapidsnarkPath,
+          signer,
+          newVoiceCreditBalance: 1n,
+          quiet: true,
+        });
+      }
+    });
+
     it("should publish eight messages", async () => {
       await publish({
-        pubkey: users[0].pubKey.serialize(),
+        pubkey: pollKeys[0].pubKey.serialize(),
         stateIndex: 1n,
         voteOptionIndex: 0n,
         nonce: 2n,
@@ -223,11 +289,11 @@ describe("e2e tests", function test() {
         newVoteWeight: 4n,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: users[0].privKey.serialize(),
+        privateKey: pollKeys[0].privKey.serialize(),
         signer,
       });
       await publish({
-        pubkey: users[0].pubKey.serialize(),
+        pubkey: pollKeys[0].pubKey.serialize(),
         stateIndex: 1n,
         voteOptionIndex: 0n,
         nonce: 2n,
@@ -235,11 +301,11 @@ describe("e2e tests", function test() {
         newVoteWeight: 3n,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: users[0].privKey.serialize(),
+        privateKey: pollKeys[0].privKey.serialize(),
         signer,
       });
       await publish({
-        pubkey: users[0].pubKey.serialize(),
+        pubkey: pollKeys[0].pubKey.serialize(),
         stateIndex: 1n,
         voteOptionIndex: 0n,
         nonce: 1n,
@@ -247,11 +313,11 @@ describe("e2e tests", function test() {
         newVoteWeight: 9n,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: users[0].privKey.serialize(),
+        privateKey: pollKeys[0].privKey.serialize(),
         signer,
       });
       await publish({
-        pubkey: users[1].pubKey.serialize(),
+        pubkey: pollKeys[1].pubKey.serialize(),
         stateIndex: 2n,
         voteOptionIndex: 2n,
         nonce: 1n,
@@ -259,11 +325,11 @@ describe("e2e tests", function test() {
         newVoteWeight: 9n,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: users[1].privKey.serialize(),
+        privateKey: pollKeys[1].privKey.serialize(),
         signer,
       });
       await publish({
-        pubkey: users[2].pubKey.serialize(),
+        pubkey: pollKeys[2].pubKey.serialize(),
         stateIndex: 3n,
         voteOptionIndex: 2n,
         nonce: 1n,
@@ -271,11 +337,11 @@ describe("e2e tests", function test() {
         newVoteWeight: 9n,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: users[2].privKey.serialize(),
+        privateKey: pollKeys[2].privKey.serialize(),
         signer,
       });
       await publish({
-        pubkey: users[3].pubKey.serialize(),
+        pubkey: pollKeys[3].pubKey.serialize(),
         stateIndex: 4n,
         voteOptionIndex: 2n,
         nonce: 3n,
@@ -283,11 +349,11 @@ describe("e2e tests", function test() {
         newVoteWeight: 3n,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: users[3].privKey.serialize(),
+        privateKey: pollKeys[3].privKey.serialize(),
         signer,
       });
       await publish({
-        pubkey: users[3].pubKey.serialize(),
+        pubkey: pollKeys[3].pubKey.serialize(),
         stateIndex: 4n,
         voteOptionIndex: 2n,
         nonce: 2n,
@@ -295,11 +361,11 @@ describe("e2e tests", function test() {
         newVoteWeight: 2n,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: users[3].privKey.serialize(),
+        privateKey: pollKeys[3].privKey.serialize(),
         signer,
       });
       await publish({
-        pubkey: users[3].pubKey.serialize(),
+        pubkey: pollKeys[3].pubKey.serialize(),
         stateIndex: 4n,
         voteOptionIndex: 1n,
         nonce: 1n,
@@ -307,7 +373,7 @@ describe("e2e tests", function test() {
         newVoteWeight: 9n,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: users[3].privKey.serialize(),
+        privateKey: pollKeys[3].privKey.serialize(),
         signer,
       });
     });
@@ -321,12 +387,24 @@ describe("e2e tests", function test() {
     });
   });
 
-  describe("5 signups, 1 message", () => {
+  describe("9 signups, 1 message", () => {
     after(() => {
       clean();
     });
 
     const users = [
+      new Keypair(),
+      new Keypair(),
+      new Keypair(),
+      new Keypair(),
+      new Keypair(),
+      new Keypair(),
+      new Keypair(),
+      new Keypair(),
+      new Keypair(),
+    ];
+
+    const pollKeys = [
       new Keypair(),
       new Keypair(),
       new Keypair(),
@@ -353,9 +431,31 @@ describe("e2e tests", function test() {
       }
     });
 
+    it("should join nine users", async () => {
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < users.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await joinPoll({
+          maciAddress: maciAddresses.maciAddress,
+          privateKey: users[i].privKey.serialize(),
+          pollPrivKey: pollKeys[i].privKey.serialize(),
+          stateIndex: BigInt(i + 1),
+          pollId: 0n,
+          pollJoiningZkey: pollJoiningTestZkeyPath,
+          useWasm: true,
+          pollWasm: testPollJoiningWasmPath,
+          pollWitgen: testPollJoiningWitnessPath,
+          rapidsnark: testRapidsnarkPath,
+          signer,
+          newVoiceCreditBalance: 1n,
+          quiet: true,
+        });
+      }
+    });
+
     it("should publish one message", async () => {
       await publish({
-        pubkey: users[0].pubKey.serialize(),
+        pubkey: pollKeys[0].pubKey.serialize(),
         stateIndex: 1n,
         voteOptionIndex: 0n,
         nonce: 1n,
@@ -363,7 +463,7 @@ describe("e2e tests", function test() {
         newVoteWeight: 9n,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: users[0].privKey.serialize(),
+        privateKey: pollKeys[0].privKey.serialize(),
         signer,
       });
     });
@@ -383,6 +483,7 @@ describe("e2e tests", function test() {
     });
 
     const user = new Keypair();
+    const pollKeys = new Keypair();
 
     before(async () => {
       // deploy the smart contracts
@@ -398,11 +499,30 @@ describe("e2e tests", function test() {
       }
     });
 
+    it("should join user", async () => {
+      // eslint-disable-next-line no-await-in-loop
+      await joinPoll({
+        maciAddress: maciAddresses.maciAddress,
+        privateKey: user.privKey.serialize(),
+        pollPrivKey: pollKeys.privKey.serialize(),
+        stateIndex: 1n,
+        pollId: 0n,
+        pollJoiningZkey: pollJoiningTestZkeyPath,
+        useWasm: true,
+        pollWasm: testPollJoiningWasmPath,
+        pollWitgen: testPollJoiningWitnessPath,
+        rapidsnark: testRapidsnarkPath,
+        signer,
+        newVoiceCreditBalance: 1n,
+        quiet: true,
+      });
+    });
+
     it("should publish 12 messages with the same nonce", async () => {
       for (let i = 0; i < 12; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         await publish({
-          pubkey: user.pubKey.serialize(),
+          pubkey: pollKeys.pubKey.serialize(),
           stateIndex: 1n,
           voteOptionIndex: 0n,
           nonce: 1n,
@@ -410,7 +530,7 @@ describe("e2e tests", function test() {
           newVoteWeight: 9n,
           maciAddress: maciAddresses.maciAddress,
           salt: genRandomSalt(),
-          privateKey: user.privKey.serialize(),
+          privateKey: pollKeys.privKey.serialize(),
           signer,
         });
       }
@@ -431,6 +551,7 @@ describe("e2e tests", function test() {
     });
 
     const users = Array.from({ length: 30 }, () => new Keypair());
+    const pollKeys = Array.from({ length: 30 }, () => new Keypair());
 
     before(async () => {
       // deploy the smart contracts
@@ -447,57 +568,79 @@ describe("e2e tests", function test() {
       }
     });
 
+    it("should join thirty users", async () => {
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < users.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await joinPoll({
+          maciAddress: maciAddresses.maciAddress,
+          privateKey: users[i].privKey.serialize(),
+          pollPrivKey: pollKeys[i].privKey.serialize(),
+          stateIndex: BigInt(i + 1),
+          pollId: 0n,
+          pollJoiningZkey: pollJoiningTestZkeyPath,
+          useWasm: true,
+          pollWasm: testPollJoiningWasmPath,
+          pollWitgen: testPollJoiningWitnessPath,
+          rapidsnark: testRapidsnarkPath,
+          signer,
+          newVoiceCreditBalance: 1n,
+          quiet: true,
+        });
+      }
+    });
+
     it("should publish 4 messages", async () => {
       // publish four different messages
       await publish({
         maciAddress: maciAddresses.maciAddress,
-        pubkey: users[0].pubKey.serialize(),
+        pubkey: pollKeys[0].pubKey.serialize(),
         stateIndex: 1n,
         voteOptionIndex: 0n,
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
         salt: genRandomSalt(),
-        privateKey: users[0].privKey.serialize(),
+        privateKey: pollKeys[0].privKey.serialize(),
         signer,
       });
 
       await publish({
         maciAddress: maciAddresses.maciAddress,
-        pubkey: users[1].pubKey.serialize(),
+        pubkey: pollKeys[1].pubKey.serialize(),
         stateIndex: 2n,
         voteOptionIndex: 1n,
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
         salt: genRandomSalt(),
-        privateKey: users[1].privKey.serialize(),
+        privateKey: pollKeys[1].privKey.serialize(),
         signer,
       });
 
       await publish({
         maciAddress: maciAddresses.maciAddress,
-        pubkey: users[2].pubKey.serialize(),
+        pubkey: pollKeys[2].pubKey.serialize(),
         stateIndex: 3n,
         voteOptionIndex: 2n,
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
         salt: genRandomSalt(),
-        privateKey: users[2].privKey.serialize(),
+        privateKey: pollKeys[2].privKey.serialize(),
         signer,
       });
 
       await publish({
         maciAddress: maciAddresses.maciAddress,
-        pubkey: users[3].pubKey.serialize(),
+        pubkey: pollKeys[3].pubKey.serialize(),
         stateIndex: 4n,
         voteOptionIndex: 3n,
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
         salt: genRandomSalt(),
-        privateKey: users[3].privKey.serialize(),
+        privateKey: pollKeys[3].privKey.serialize(),
         signer,
       });
     });
@@ -527,6 +670,7 @@ describe("e2e tests", function test() {
     });
 
     const user = new Keypair();
+    const pollKeys = new Keypair();
 
     before(async () => {
       // deploy the smart contracts
@@ -535,6 +679,22 @@ describe("e2e tests", function test() {
       pollAddresses = await deployPoll({ ...deployPollArgs, signer });
       // signup
       await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer });
+      // joinPoll
+      await joinPoll({
+        maciAddress: maciAddresses.maciAddress,
+        privateKey: user.privKey.serialize(),
+        pollPrivKey: pollKeys.privKey.serialize(),
+        stateIndex: 1n,
+        pollId: 0n,
+        pollJoiningZkey: pollJoiningTestZkeyPath,
+        useWasm: true,
+        pollWasm: testPollJoiningWasmPath,
+        pollWitgen: testPollJoiningWitnessPath,
+        rapidsnark: testRapidsnarkPath,
+        signer,
+        newVoiceCreditBalance: 1n,
+        quiet: true,
+      });
       // publish
       await publish({
         pubkey: user.pubKey.serialize(),
@@ -562,9 +722,28 @@ describe("e2e tests", function test() {
       pollAddresses = await deployPoll({ ...deployPollArgs, signer });
     });
 
+    it("should join to new poll", async () => {
+      // joinPoll
+      await joinPoll({
+        maciAddress: maciAddresses.maciAddress,
+        privateKey: user.privKey.serialize(),
+        pollPrivKey: pollKeys.privKey.serialize(),
+        stateIndex: 1n,
+        pollId: 1n,
+        pollJoiningZkey: pollJoiningTestZkeyPath,
+        useWasm: true,
+        pollWasm: testPollJoiningWasmPath,
+        pollWitgen: testPollJoiningWitnessPath,
+        rapidsnark: testRapidsnarkPath,
+        signer,
+        newVoiceCreditBalance: 1n,
+        quiet: true,
+      });
+    });
+
     it("should publish a new message", async () => {
       await publish({
-        pubkey: user.pubKey.serialize(),
+        pubkey: pollKeys.pubKey.serialize(),
         stateIndex: 1n,
         voteOptionIndex: 0n,
         nonce: 1n,
@@ -572,7 +751,7 @@ describe("e2e tests", function test() {
         newVoteWeight: 7n,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: user.privKey.serialize(),
+        privateKey: pollKeys.privKey.serialize(),
         signer,
       });
     });
@@ -592,6 +771,7 @@ describe("e2e tests", function test() {
     });
 
     const users = Array.from({ length: 4 }, () => new Keypair());
+    const pollKeys = Array.from({ length: 4 }, () => new Keypair());
 
     before(async () => {
       // deploy the smart contracts
@@ -600,9 +780,26 @@ describe("e2e tests", function test() {
       pollAddresses = await deployPoll({ ...deployPollArgs, signer });
       // signup
       await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[0].pubKey.serialize(), signer });
+      // joinPoll
+      await joinPoll({
+        maciAddress: maciAddresses.maciAddress,
+        privateKey: users[0].privKey.serialize(),
+        pollPrivKey: pollKeys[0].privKey.serialize(),
+        stateIndex: 1n,
+        pollId: 0n,
+        pollJoiningZkey: pollJoiningTestZkeyPath,
+        useWasm: true,
+        pollWasm: testPollJoiningWasmPath,
+        pollWitgen: testPollJoiningWitnessPath,
+        rapidsnark: testRapidsnarkPath,
+        signer,
+        newVoiceCreditBalance: 1n,
+        quiet: true,
+      });
+
       // publish
       await publish({
-        pubkey: users[0].pubKey.serialize(),
+        pubkey: pollKeys[0].pubKey.serialize(),
         stateIndex: 1n,
         voteOptionIndex: 0n,
         nonce: 1n,
@@ -610,11 +807,30 @@ describe("e2e tests", function test() {
         newVoteWeight: 9n,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: users[0].privKey.serialize(),
+        privateKey: pollKeys[0].privKey.serialize(),
         signer,
       });
+
       await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[1].pubKey.serialize(), signer });
+
       await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[1].pubKey.serialize(), signer });
+
+      // joinPoll
+      await joinPoll({
+        maciAddress: maciAddresses.maciAddress,
+        privateKey: users[1].privKey.serialize(),
+        pollPrivKey: pollKeys[1].privKey.serialize(),
+        stateIndex: 2n,
+        pollId: 0n,
+        pollJoiningZkey: pollJoiningTestZkeyPath,
+        useWasm: true,
+        pollWasm: testPollJoiningWasmPath,
+        pollWitgen: testPollJoiningWitnessPath,
+        rapidsnark: testRapidsnarkPath,
+        signer,
+        newVoiceCreditBalance: 1n,
+        quiet: true,
+      });
 
       // time travel
       await timeTravel({ ...timeTravelArgs, signer });
@@ -637,9 +853,44 @@ describe("e2e tests", function test() {
       await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[3].pubKey.serialize(), signer });
     });
 
+    it("should join users", async () => {
+      // joinPoll
+      await joinPoll({
+        maciAddress: maciAddresses.maciAddress,
+        privateKey: users[2].privKey.serialize(),
+        pollPrivKey: pollKeys[2].privKey.serialize(),
+        stateIndex: 4n,
+        pollId: 1n,
+        pollJoiningZkey: pollJoiningTestZkeyPath,
+        useWasm: true,
+        pollWasm: testPollJoiningWasmPath,
+        pollWitgen: testPollJoiningWitnessPath,
+        rapidsnark: testRapidsnarkPath,
+        signer,
+        newVoiceCreditBalance: 1n,
+        quiet: true,
+      });
+      // joinPoll
+      await joinPoll({
+        maciAddress: maciAddresses.maciAddress,
+        privateKey: users[3].privKey.serialize(),
+        pollPrivKey: pollKeys[3].privKey.serialize(),
+        stateIndex: 5n,
+        pollId: 1n,
+        pollJoiningZkey: pollJoiningTestZkeyPath,
+        useWasm: true,
+        pollWasm: testPollJoiningWasmPath,
+        pollWitgen: testPollJoiningWitnessPath,
+        rapidsnark: testRapidsnarkPath,
+        signer,
+        newVoiceCreditBalance: 1n,
+        quiet: true,
+      });
+    });
+
     it("should publish a new message from the first poll voter", async () => {
       await publish({
-        pubkey: users[0].pubKey.serialize(),
+        pubkey: pollKeys[0].pubKey.serialize(),
         stateIndex: 1n,
         voteOptionIndex: 0n,
         nonce: 1n,
@@ -647,14 +898,14 @@ describe("e2e tests", function test() {
         newVoteWeight: 7n,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: users[0].privKey.serialize(),
+        privateKey: pollKeys[0].privKey.serialize(),
         signer,
       });
     });
 
     it("should publish a new message by the new poll voters", async () => {
       await publish({
-        pubkey: users[1].pubKey.serialize(),
+        pubkey: pollKeys[1].pubKey.serialize(),
         stateIndex: 1n,
         voteOptionIndex: 0n,
         nonce: 1n,
@@ -662,7 +913,7 @@ describe("e2e tests", function test() {
         newVoteWeight: 7n,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: users[1].privKey.serialize(),
+        privateKey: pollKeys[1].privKey.serialize(),
         signer,
       });
     });
@@ -678,6 +929,15 @@ describe("e2e tests", function test() {
 
   describe("multiplePolls2", () => {
     const users = [
+      new Keypair(),
+      new Keypair(),
+      new Keypair(),
+      new Keypair(),
+      new Keypair(),
+      new Keypair(),
+      new Keypair(),
+    ];
+    const pollKeys = [
       new Keypair(),
       new Keypair(),
       new Keypair(),
@@ -719,9 +979,42 @@ describe("e2e tests", function test() {
         expect(stateIndex).to.not.eq(undefined);
       }
 
+      // join the first poll
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < users.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await joinPoll({
+          maciAddress: maciAddresses.maciAddress,
+          privateKey: users[i].privKey.serialize(),
+          pollPrivKey: pollKeys[i].privKey.serialize(),
+          stateIndex: BigInt(i + 1),
+          pollId: 0n,
+          pollJoiningZkey: pollJoiningTestZkeyPath,
+          useWasm: true,
+          pollWasm: testPollJoiningWasmPath,
+          pollWitgen: testPollJoiningWitnessPath,
+          rapidsnark: testRapidsnarkPath,
+          signer,
+          newVoiceCreditBalance: 1n,
+          quiet: true,
+        });
+        // eslint-disable-next-line no-await-in-loop
+        const { isJoined, pollStateIndex } = await isJoinedUser({
+          maciAddress: maciAddresses.maciAddress,
+          pollId: 0n,
+          pollPubKey: pollKeys[i].pubKey.serialize(),
+          signer,
+          startBlock: 0,
+          quiet: true,
+        });
+
+        expect(isJoined).to.eq(true);
+        expect(pollStateIndex).to.not.eq(undefined);
+      }
+
       // publish
       await publish({
-        pubkey: users[0].pubKey.serialize(),
+        pubkey: pollKeys[0].pubKey.serialize(),
         stateIndex: 1n,
         voteOptionIndex: 0n,
         nonce: 1n,
@@ -729,7 +1022,7 @@ describe("e2e tests", function test() {
         newVoteWeight: 9n,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: users[0].privKey.serialize(),
+        privateKey: pollKeys[0].privKey.serialize(),
         signer,
       });
 
@@ -749,9 +1042,45 @@ describe("e2e tests", function test() {
       secondPollAddresses = await deployPoll({ ...deployPollArgs, signer });
     });
 
+    it("join the second and third polls", async () => {
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let p = 1; p <= 2; p += 1) {
+        for (let i = 0; i < users.length; i += 1) {
+          // eslint-disable-next-line no-await-in-loop
+          await joinPoll({
+            maciAddress: maciAddresses.maciAddress,
+            privateKey: users[i].privKey.serialize(),
+            pollPrivKey: pollKeys[i].privKey.serialize(),
+            stateIndex: BigInt(i + 1),
+            pollId: BigInt(p),
+            pollJoiningZkey: pollJoiningTestZkeyPath,
+            useWasm: true,
+            pollWasm: testPollJoiningWasmPath,
+            pollWitgen: testPollJoiningWitnessPath,
+            rapidsnark: testRapidsnarkPath,
+            signer,
+            newVoiceCreditBalance: 1n,
+            quiet: true,
+          });
+          // eslint-disable-next-line no-await-in-loop
+          const { isJoined, pollStateIndex } = await isJoinedUser({
+            maciAddress: maciAddresses.maciAddress,
+            pollId: BigInt(p),
+            pollPubKey: pollKeys[i].pubKey.serialize(),
+            signer,
+            startBlock: 0,
+            quiet: true,
+          });
+
+          expect(isJoined).to.eq(true);
+          expect(pollStateIndex).to.not.eq(undefined);
+        }
+      }
+    });
+
     it("should publish messages to the second poll", async () => {
       await publish({
-        pubkey: users[0].pubKey.serialize(),
+        pubkey: pollKeys[0].pubKey.serialize(),
         stateIndex: 1n,
         voteOptionIndex: 0n,
         nonce: 1n,
@@ -759,12 +1088,12 @@ describe("e2e tests", function test() {
         newVoteWeight: 9n,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: users[0].privKey.serialize(),
+        privateKey: pollKeys[0].privKey.serialize(),
         signer,
       });
 
       await publish({
-        pubkey: users[1].pubKey.serialize(),
+        pubkey: pollKeys[1].pubKey.serialize(),
         stateIndex: 2n,
         voteOptionIndex: 3n,
         nonce: 1n,
@@ -772,12 +1101,12 @@ describe("e2e tests", function test() {
         newVoteWeight: 1n,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: users[1].privKey.serialize(),
+        privateKey: pollKeys[1].privKey.serialize(),
         signer,
       });
 
       await publish({
-        pubkey: users[2].pubKey.serialize(),
+        pubkey: pollKeys[2].pubKey.serialize(),
         stateIndex: 3n,
         voteOptionIndex: 5n,
         nonce: 1n,
@@ -785,14 +1114,14 @@ describe("e2e tests", function test() {
         newVoteWeight: 3n,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: users[2].privKey.serialize(),
+        privateKey: pollKeys[2].privKey.serialize(),
         signer,
       });
     });
 
     it("should publish messages to the third poll", async () => {
       await publish({
-        pubkey: users[3].pubKey.serialize(),
+        pubkey: pollKeys[3].pubKey.serialize(),
         stateIndex: 3n,
         voteOptionIndex: 5n,
         nonce: 1n,
@@ -800,12 +1129,12 @@ describe("e2e tests", function test() {
         newVoteWeight: 3n,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: users[3].privKey.serialize(),
+        privateKey: pollKeys[3].privKey.serialize(),
         signer,
       });
 
       await publish({
-        pubkey: users[4].pubKey.serialize(),
+        pubkey: pollKeys[4].pubKey.serialize(),
         stateIndex: 4n,
         voteOptionIndex: 7n,
         nonce: 1n,
@@ -813,12 +1142,12 @@ describe("e2e tests", function test() {
         newVoteWeight: 2n,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: users[4].privKey.serialize(),
+        privateKey: pollKeys[4].privKey.serialize(),
         signer,
       });
 
       await publish({
-        pubkey: users[5].pubKey.serialize(),
+        pubkey: pollKeys[5].pubKey.serialize(),
         stateIndex: 5n,
         voteOptionIndex: 5n,
         nonce: 1n,
@@ -826,7 +1155,7 @@ describe("e2e tests", function test() {
         newVoteWeight: 9n,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: users[5].privKey.serialize(),
+        privateKey: pollKeys[5].privKey.serialize(),
         signer,
       });
     });
@@ -880,6 +1209,7 @@ describe("e2e tests", function test() {
     const stateOutPath = "./state.json";
 
     const user = new Keypair();
+    const pollKeys = new Keypair();
 
     after(() => {
       clean();
@@ -900,9 +1230,28 @@ describe("e2e tests", function test() {
       await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer });
     });
 
+    it("should join one user", async () => {
+      // joinPoll
+      await joinPoll({
+        maciAddress: maciAddresses.maciAddress,
+        privateKey: user.privKey.serialize(),
+        pollPrivKey: pollKeys.privKey.serialize(),
+        stateIndex: 1n,
+        pollId: 0n,
+        pollJoiningZkey: pollJoiningTestZkeyPath,
+        useWasm: true,
+        pollWasm: testPollJoiningWasmPath,
+        pollWitgen: testPollJoiningWitnessPath,
+        rapidsnark: testRapidsnarkPath,
+        signer,
+        newVoiceCreditBalance: 1n,
+        quiet: true,
+      });
+    });
+
     it("should publish one message", async () => {
       await publish({
-        pubkey: user.pubKey.serialize(),
+        pubkey: pollKeys.pubKey.serialize(),
         stateIndex: 1n,
         voteOptionIndex: 5n,
         nonce: 1n,
@@ -910,7 +1259,7 @@ describe("e2e tests", function test() {
         newVoteWeight: 3n,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: user.privKey.serialize(),
+        privateKey: pollKeys.privKey.serialize(),
         signer,
       });
     });

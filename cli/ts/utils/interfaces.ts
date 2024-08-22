@@ -710,12 +710,12 @@ export interface ProveOnChainArgs {
  */
 export interface PublishArgs extends IPublishMessage {
   /**
-   * The public key of the user
+   * The poll public key
    */
   pubkey: string;
 
   /**
-   * The private key of the user
+   * The poll private key
    */
   privateKey: string;
 

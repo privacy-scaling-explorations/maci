@@ -1460,6 +1460,7 @@ export class Poll implements IPoll {
     );
 
     // set all properties
+    poll.pollStateLeaves = json.pollStateLeaves.map((leaf) => StateLeaf.fromJSON(leaf));
     poll.ballots = json.ballots.map((ballot) => Ballot.fromJSON(ballot));
     poll.encPubKeys = json.encPubKeys.map((key: string) => PubKey.deserialize(key));
     poll.messages = json.messages.map((message) => Message.fromJSON(message as IMessageContractParams));

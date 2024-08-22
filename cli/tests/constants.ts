@@ -87,7 +87,7 @@ export const testProcessMessagesNonQvWasmPath =
 export const testTallyVotesNonQvWasmPath =
   "./zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test_js/TallyVotesNonQv_10-1-2_test.wasm";
 
-export const pollDuration = 90;
+export const pollDuration = 2000;
 export const maxMessages = 25;
 export const maxVoteOptions = 25;
 
