@@ -348,7 +348,7 @@ describe("Poll", () => {
       expect(size).to.eq(maciState.polls.get(pollId)?.pollStateLeaves.length);
     });
 
-    it("The first user has been rejected for the second vote", async () => {
+    it("The first user has been rejected for the second join", async () => {
       const mockNullifier = AbiCoder.defaultAbiCoder().encode(["uint256"], [0]);
       const pubkey = keypair.pubKey.asContractParam();
       const voiceCreditBalance = AbiCoder.defaultAbiCoder().encode(["uint256"], [0]);
@@ -357,6 +357,28 @@ describe("Poll", () => {
       await expect(
         pollContract.joinPoll(mockNullifier, pubkey, voiceCreditBalance, 0, mockProof),
       ).to.be.revertedWithCustomError(pollContract, "UserAlreadyJoined");
+    });
+
+    it("should allow a Poll contract to merge the state tree (calculate the state root)", async () => {
+      await timeTravel(signer.provider as unknown as EthereumProvider, Number(duration) + 1);
+
+      const tx = await pollContract.mergeState({
+        gasLimit: 3000000,
+      });
+
+      const receipt = await tx.wait();
+      expect(receipt?.status).to.eq(1);
+    });
+
+    it("should get the correct numSignUps", async () => {
+      const numSignUps = await pollContract.numSignups();
+      expect(numSignUps).to.be.eq(maciState.polls.get(pollId)?.pollStateLeaves.length);
+      maciState.polls.get(pollId)?.updatePoll(numSignUps);
+    });
+
+    it("should get the correct mergedStateRoot", async () => {
+      const mergedStateRoot = await pollContract.mergedStateRoot();
+      expect(mergedStateRoot.toString()).to.eq(maciState.polls.get(pollId)?.pollStateTree?.root.toString());
     });
   });
 });

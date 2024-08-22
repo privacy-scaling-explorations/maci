@@ -104,7 +104,7 @@ export class ProofGenerator {
 
     const defaultEndBlock = await Promise.all([
       pollContract
-        .queryFilter(pollContract.filters.MergeMaciState(stateRoot, numSignups), fromBlock)
+        .queryFilter(pollContract.filters.MergeState(stateRoot, numSignups), fromBlock)
         .then((events) => events[events.length - 1]?.blockNumber),
     ]).then((blocks) => Math.max(...blocks));
 

@@ -103,7 +103,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   error InvalidPollProof();
 
   event PublishMessage(Message _message, PubKey _encPubKey);
-  event MergeMaciState(uint256 indexed _stateRoot, uint256 indexed _numSignups);
+  event MergeState(uint256 indexed _stateRoot, uint256 indexed _numSignups);
   event PollJoined(
     uint256 indexed _pollPubKeyX,
     uint256 indexed _pollPubKeyY,
@@ -333,7 +333,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   }
 
   /// @inheritdoc IPoll
-  function mergeMaciState() public isAfterVotingDeadline {
+  function mergeState() public isAfterVotingDeadline {
     // This function can only be called once per Poll after the voting
     // deadline
     if (stateMerged) revert StateAlreadyMerged();
@@ -351,8 +351,8 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
 
     currentSbCommitment = hash3(sb);
 
-    // get number of signups and cache in a var for later use
-    uint256 _numSignups = extContracts.maci.numSignUps();
+    // get number of joined users and cache in a var for later use
+    uint256 _numSignups = pollStateTree.numberOfLeaves;
     numSignups = _numSignups;
 
     // dynamically determine the actual depth of the state tree
@@ -363,7 +363,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
 
     actualStateTreeDepth = depth;
 
-    emit MergeMaciState(mergedStateRoot, numSignups);
+    emit MergeState(mergedStateRoot, numSignups);
   }
 
   /// @inheritdoc IPoll

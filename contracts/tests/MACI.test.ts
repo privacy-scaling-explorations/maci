@@ -308,21 +308,11 @@ describe("MACI", function test() {
     it("should allow a Poll contract to merge the state tree (calculate the state root)", async () => {
       await timeTravel(signer.provider as unknown as EthereumProvider, Number(duration) + 1);
 
-      const tx = await pollContract.mergeMaciState({
+      const tx = await pollContract.mergeState({
         gasLimit: 3000000,
       });
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
-    });
-
-    it("should have the correct state root on chain after calculating the root on chain", async () => {
-      maciState.polls.get(pollId)?.updatePoll(await pollContract.numSignups());
-      expect(await maciContract.getStateTreeRoot()).to.eq(maciState.polls.get(pollId)?.stateTree?.root.toString());
-    });
-
-    it("should get the correct state root with getStateTreeRoot", async () => {
-      const onChainStateRoot = await maciContract.getStateTreeRoot();
-      expect(onChainStateRoot.toString()).to.eq(maciState.polls.get(pollId)?.stateTree?.root.toString());
     });
 
     it("should allow a user to signup after the state tree root was calculated", async () => {

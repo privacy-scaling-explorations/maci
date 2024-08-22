@@ -36,10 +36,10 @@ interface IPoll {
   /// to encrypt the message.
   function publishMessage(DomainObjs.Message memory _message, DomainObjs.PubKey calldata _encPubKey) external;
 
-  /// @notice The second step of merging the MACI state. This allows the
+  /// @notice The second step of merging the poll state. This allows the
   /// ProcessMessages circuit to access the latest state tree and ballots via
   /// currentSbCommitment.
-  function mergeMaciState() external;
+  function mergeState() external;
 
   /// @notice Returns the Poll's deploy time and duration
   /// @return _deployTime The deployment timestamp

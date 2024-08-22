@@ -188,7 +188,7 @@ describe("TallyVotesNonQv", () => {
   describe("after messages processing", () => {
     let tallyGeneratedInputs: ITallyCircuitInputs;
     before(async () => {
-      await pollContract.mergeMaciState();
+      await pollContract.mergeState();
 
       tallyGeneratedInputs = poll.tallyVotes();
     });

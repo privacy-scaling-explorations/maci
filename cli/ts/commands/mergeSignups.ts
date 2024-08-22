@@ -51,7 +51,7 @@ export const mergeSignups = async ({ pollId, maciAddress, signer, quiet = true }
   if (!(await pollContract.stateMerged())) {
     // go and merge the state tree
     logYellow(quiet, info("Calculating root and storing on Poll..."));
-    const tx = await pollContract.mergeMaciState();
+    const tx = await pollContract.mergeState();
     const receipt = await tx.wait();
 
     if (receipt?.status !== 1) {
