@@ -42,8 +42,7 @@ jobs:
       - name: hardhat tasks
         run: |
           cp ./deploy-config-example.json ./deploy-config.json
-          pnpm deploy:localhost
-          pnpm deploy-poll:localhost
+          bash ./testScriptLocalhost.sh
         working-directory: packages/contracts
 
       - name: Stop Hardhat
