@@ -67,12 +67,13 @@ export class ContractStorage {
    *
    * @param {IRegisterContract} args - register arguments
    */
-  async register({ id, key, contract, network, args, name }: IRegisterContract): Promise<void> {
+  async register<ID = EContracts>({ id, key, contract, network, args, name }: IRegisterContract<ID>): Promise<void> {
     const contractAddress = await contract.getAddress();
 
     const deploymentTx = contract.deploymentTransaction();
+    const contractId = String(id);
 
-    console.log(`*** ${id} ***\n`);
+    console.log(`*** ${contractId} ***\n`);
     console.log(`Network: ${network}`);
     console.log(`contract address: ${contractAddress}`);
 
@@ -87,7 +88,7 @@ export class ContractStorage {
     console.log();
 
     const logEntry: IStorageInstanceEntry = {
-      id,
+      id: contractId,
       deploymentTxHash: deploymentTx?.hash,
     };
 
@@ -100,12 +101,12 @@ export class ContractStorage {
 
     this.db.set(`${network}.instance.${contractAddress}`, logEntry).write();
 
-    const namedEntry = this.db.get(`${network}.named.${id}${key !== undefined ? `.${key}` : ""}`).value() as
+    const namedEntry = this.db.get(`${network}.named.${contractId}${key !== undefined ? `.${key}` : ""}`).value() as
       | IStorageNamedEntry
       | undefined;
     const count = namedEntry?.count ?? 0;
     this.db
-      .set(`${network}.named.${id}${key !== undefined ? `.${key}` : ""}`, {
+      .set(`${network}.named.${contractId}${key !== undefined ? `.${key}` : ""}`, {
         address: contractAddress,
         count: count + 1,
       })
@@ -155,7 +156,7 @@ export class ContractStorage {
    * @param key - contract key
    * @returns deployment arguments
    */
-  getContractArgs(id: EContracts, network: string, key?: string): string[] | undefined {
+  getContractArgs<ID extends string = EContracts>(id: ID, network: string, key?: string): string[] | undefined {
     const address = this.getAddress(id, network, key);
 
     const collection = this.db.get(`${network}.instance.${address}`);
@@ -175,7 +176,7 @@ export class ContractStorage {
    * @param network - selected network
    * @returns contract address
    */
-  getAddress(id: EContracts, network: string, key?: string): string | undefined {
+  getAddress<ID extends string = EContracts>(id: ID, network: string, key?: string): string | undefined {
     const collection = this.db.get(`${network}.named.${id}${key !== undefined ? `.${key}` : ""}`);
     const namedEntry = collection.value() as IStorageNamedEntry | undefined;
 
@@ -190,7 +191,7 @@ export class ContractStorage {
    * @throws {Error} if there is no address the error will be thrown
    * @returns contract address
    */
-  mustGetAddress(id: EContracts, network: string, key?: string): string {
+  mustGetAddress<ID extends string = EContracts>(id: ID, network: string, key?: string): string {
     const address = this.getAddress(id, network, key);
 
     if (!address) {
@@ -203,7 +204,7 @@ export class ContractStorage {
   /**
    * Get Contract Deployment Transaction Hash
    */
-  getDeploymentTxHash(id: EContracts, network: string, address: string): string | undefined {
+  getDeploymentTxHash<ID extends string = EContracts>(id: ID, network: string, address: string): string | undefined {
     const collection = this.db.get(`${network}.instance.${address}`);
     const instanceEntry = collection.value() as IStorageInstanceEntry | undefined;
 

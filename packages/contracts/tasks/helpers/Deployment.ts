@@ -315,15 +315,15 @@ export class Deployment {
    * @param args - constructor arguments
    * @returns deployed contract
    */
-  async deployContract<T extends BaseContract>(
-    { name, abi, bytecode, signer }: IDeployContractParams,
+  async deployContract<T extends BaseContract, ID = EContracts>(
+    { name, abi, bytecode, signer }: IDeployContractParams<ID>,
     ...args: unknown[]
   ): Promise<T> {
     const deployer = signer || (await this.getDeployer());
     const contractFactory =
       abi && bytecode
         ? new ContractFactory(abi, bytecode, deployer)
-        : await import("hardhat").then(({ ethers }) => ethers.getContractFactory(name, deployer));
+        : await import("hardhat").then(({ ethers }) => ethers.getContractFactory(String(name), deployer));
     const feeData = await deployer.provider?.getFeeData();
 
     const contract = await contractFactory.deploy(...args, {
@@ -380,7 +380,11 @@ export class Deployment {
    * @param field - config field key
    * @returns config field value or null
    */
-  getDeployConfigField<T = string | number | boolean>(id: EContracts, field: string, mustGet = false): T {
+  getDeployConfigField<T = string | number | boolean, ID extends string = EContracts>(
+    id: ID,
+    field: string,
+    mustGet = false,
+  ): T {
     this.checkHre();
 
     const value = this.config.get(`${this.hre!.network.name}.${id}.${field}`).value() as T;
