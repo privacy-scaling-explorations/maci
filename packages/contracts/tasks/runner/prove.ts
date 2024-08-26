@@ -128,7 +128,7 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
       }
 
       const mpContract = await deployment.getContract<MessageProcessor>({
-        name: EContracts.Poll,
+        name: EContracts.MessageProcessor,
         address: pollContracts.messageProcessor,
       });
 

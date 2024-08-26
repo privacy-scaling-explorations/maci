@@ -176,12 +176,11 @@ export class Prover {
         onChainProcessVk.ic.map(([x, y]) => new G1Point(x, y)),
       );
 
-      // verify the proof onchain using the verifier contract
-
+      // verify the proof on chain using the verifier contract
       const isValidOnChain = await this.verifierContract.verify(
         formattedProof,
         vk.asContractParam() as IVerifyingKeyStruct,
-        publicInputsOnChain,
+        [...publicInputsOnChain],
       );
 
       if (!isValidOnChain) {
@@ -286,7 +285,7 @@ export class Prover {
       const isValidOnChain = await this.verifierContract.verify(
         formattedProof,
         vk.asContractParam() as IVerifyingKeyStruct,
-        publicInputsOnChain,
+        [...publicInputsOnChain],
       );
 
       if (!isValidOnChain) {
