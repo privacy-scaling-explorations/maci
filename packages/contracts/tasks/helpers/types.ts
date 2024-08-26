@@ -503,11 +503,11 @@ export interface IStorageInstanceEntry {
 /**
  * Interface that represents register contract arguments
  */
-export interface IRegisterContract {
+export interface IRegisterContract<ID = EContracts> {
   /**
    * Contract enum identifier
    */
-  id: EContracts;
+  id: ID;
 
   /**
    * Contract instance
@@ -749,11 +749,11 @@ export type TAbi = string | readonly (string | Fragment | JsonFragment)[];
 /**
  * Interface that represents deploy params
  */
-export interface IDeployContractParams {
+export interface IDeployContractParams<ID = EContracts> {
   /**
    * Contract name
    */
-  name: EContracts;
+  name: ID;
 
   /**
    * Contract abi
