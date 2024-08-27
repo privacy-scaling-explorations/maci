@@ -2,7 +2,7 @@
 title: MACI Utility Circuits
 description: Introduction to the core zk-SNARK circuits of MACI
 sidebar_label: Utility Circuits
-sidebar_position: 5
+sidebar_position: 6
 ---
 
 #### Process Messages Input Hasher
@@ -14,11 +14,11 @@ A utility circuit used by the main `processMessages` circuit to hash its inputs.
 It outputs one field element, which is the SHA256 hash of the following inputs:
 
 1. `packedVals`
-2. `pollEndTimestamp`
-3. `msgRoot`
-4. `coordinatorPubKeyHash`
+2. `coordinatorPubKeyHash`
+3. `outputBatchHash`
+4. `currentSbCommitment`
 5. `newSbCommitment`
-6. `currentSbCommitment`
+6. `actualStateTreeDepth`
 
 #### Tally Votes Input Hasher
 

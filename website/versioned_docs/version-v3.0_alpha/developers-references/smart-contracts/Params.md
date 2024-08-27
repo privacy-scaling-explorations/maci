@@ -27,7 +27,6 @@ struct MaxValues {
 /// deployment
 struct ExtContracts {
   IMACI maci;
-  AccQueue messageAq;
 }
 ```
 

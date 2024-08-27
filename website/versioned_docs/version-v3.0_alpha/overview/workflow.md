@@ -25,7 +25,8 @@ A "User" is any voter in a MACI poll.
 In order to participate in a MACI poll, a user will perform at least 2 on-chain transactions:
 
 1. Sign up with MACI
-2. Vote on a poll
+2. Join a poll
+3. Vote on a poll
 
 <!-- TODO: add flowchart that demonstrates this (but show happy path, not key switching) -->
 <!-- https://miro.medium.com/v2/resize:fit:1400/format:webp/0*whHfC8-xxAwSyaaO -->
@@ -73,7 +74,7 @@ The MACI contract is responsible for registering user signups by recording the i
 
 ### Poll.sol
 
-The Poll contract is where users submit their votes (via the [`publishMessage` function](/docs/developers-references/smart-contracts/solidity-docs/Poll#publishmessage)). One MACI contract can be used for multiple Poll contracts. In other words, a user that signed up to the MACI contract can vote on multiple issues, with each issue represented by a distinct Poll contract.
+The Poll contract is where users join (via the [`publishMessage` function](/docs/developers-references/smart-contracts/solidity-docs/Poll#joinPoll)) and submit their votes (via the [`publishMessage` function](/docs/developers-references/smart-contracts/solidity-docs/Poll#publishmessage)). One MACI contract can be used for multiple Poll contracts. In other words, a user that signed up to the MACI contract can vote on multiple issues, with each issue represented by a distinct Poll contract.
 
 ### MessageProcessor.sol and Tally.sol
 
@@ -81,7 +82,7 @@ The MessageProcessor and Tally contracts are used by the coordinator to process 
 
 ## Poll lifecycle
 
-As described above, a core contract of MACI is a Poll. Coordinators can deploy polls and add vote options to polls, which users can then vote on. Although each instance of MACI can deploy multiple Polls, only one Poll can be active at a time.
+As described above, a core contract of MACI is a Poll. Coordinators can deploy polls and add vote options to polls, which users can then vote on.
 
 In essence, each MACI Poll is a state machine which has 3 stages:
 
@@ -101,6 +102,10 @@ Before a user can cast a vote, they must sign up by generating a MACI keypair an
 
 This registration process is necessary to fortify MACI against Sybil attacks. The particular criteria used to allow user signups is customizable, and can be configured using any [SignUpGatekeeper contract](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/gatekeepers/SignUpGatekeeper.sol). This contract dictates the criteria a user must pass in order to participate in a poll. For example, a user might need to prove ownership of a certain NFT, or that they've received some attestation on EAS, or prove that they have passed some sort of proof-of-personhood verification. Note that MACI presumes an identity system where each legitimate member
 controls a unique private key - MACI does not specifically solve for this, but allows for customization on how this is configured.
+
+#### Join
+
+To be able to vote, user has to explicitly join the poll. The user submits a new poll public key, new credit balance and a nullifier with ZK proof that the joining is allowed for the user. The nullifier testifies that the user hasn't join the poll yet. The specifics of the verification process are explained in [pollJoining](/docs/developers-references/zk-snark-circuits/pollJoining) circuit documentation.
 
 #### Vote
 

@@ -42,8 +42,9 @@ A version working with non quadratic voting (non-qv) is also [available](https:/
 | `pollEndTimestamp`               | The Unix timestamp at which the poll ends                                               |
 | `msgRoot`                        | The root of the message tree                                                            |
 | `msgs`                           | The batch of messages as an array of arrays                                             |
-| `msgSubrootPathElements`         | Described below                                                                         |
 | `coordinatorPubKeyHash`          | $poseidon_2([cPk_x, cPk_y])$                                                            |
+| `inputBatchHash`                           | The value of $chainHash$ at the beginning of batch                                             |
+| `outputBatchHash`                           | The value of $chainHash$ at the end of batch                                             |
 | `newSbCommitment`                | Described below                                                                         |
 | `coordPrivKey`                   | The coordinator's private key                                                           |
 | `coordPubKey`                    | The coordinator's public key                                                            |
@@ -67,10 +68,10 @@ All inputs to this circuit are private except for `inputHash`. To save gas durin
 
 1. `packedVals`
 2. `coordinatorPubKeyHash`
-3. `msgRoot`
+3. `outputBatchHash`
 4. `currentSbCommitment`
 5. `newSbCommitment`
-6. `pollEndTimestamp`
+6. `actualStateTreeDepth`
 
 The hash is computed using the `sha256` Solidity function and is then subject to modulo $p$.
 
@@ -104,28 +105,6 @@ The salt used to produce `currentSbCommitment` (see above).
 
 The salt used to produce `newSbCommitment` (see above).
 
-##### `msgSubrootPathElements`
-
-The index of each message in `msgs` is consecutive. As such, in order to prove that each message in `msgs` is indeed a leaf of the message tree, we compute the subtree root of `msgs`, and then verify that the subtree root is indeed a subroot of `msgRoot`.
-
-A simplified example using a tree of arity 2:
-
-```
-             r
-           /  \
-          s    ...
-       /    \
-      o     o
-     / \   / \
-   a   b  c  d
-```
-
-To prove that `a...d` are leaves of the tree with root `r`, we prove that the leaves have the subroot `s` with depth 2, and _then_ prove that `s` is a member of `r` at depth 1.
-
-The implementation for this is in the `QuinBatchLeavesExists` circuit in `https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/trees/incrementalQuinTree.circom`.
-
-This method requires fewer circuit constraints than if we verified a Merkle proof for each leaf.
-
 #### Statements that the circuit proves
 
 1. That the prover knows the preimage to `inputHash` (see above)
@@ -136,3 +115,4 @@ This method requires fewer circuit constraints than if we verified a Merkle proo
 6. That `coordPubKey` is the preimage to the Poseidon hash of `coordPubKey` (provided by the contract)
 7. That each message in `msgs` exists in the message tree
 8. That after decrypting and applying each message, in reverse order, to the corresponding state and ballot leaves, the new state root, new ballot root, and `newSbSalt` are the preimage to `newSbCommitment`
+9. That the starting and ending message chain hashes match input and output batch chain hashes

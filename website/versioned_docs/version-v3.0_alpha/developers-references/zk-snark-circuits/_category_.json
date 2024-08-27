@@ -1,0 +1,8 @@
+{
+  "label": "zk-SNARK Circuits",
+  "position": 3,
+  "link": {
+    "type": "generated-index",
+    "description": "MACI uses zk-SNARKs to essentially hide how each person voted while still revealing the final vote result. This gives voters privacy and helps reduce bribery while still ensuring that the final results were tallied correctly off-chain."
+  }
+}

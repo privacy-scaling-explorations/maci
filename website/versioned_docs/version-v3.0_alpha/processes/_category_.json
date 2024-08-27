@@ -1,0 +1,8 @@
+{
+  "label": "Processes",
+  "position": 11,
+  "link": {
+    "type": "generated-index",
+    "description": "Understand releasing and MACI's CI/CD pipeline."
+  }
+}
