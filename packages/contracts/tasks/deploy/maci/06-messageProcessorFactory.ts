@@ -20,6 +20,8 @@ deployment.deployTask(EDeploySteps.MessageProcessorFactory, "Deploy message proc
     );
 
     if (incremental && messageProcessorFactoryContractAddress) {
+      // eslint-disable-next-line no-console
+      console.log(`Skipping deployment of the ${EContracts.MessageProcessorFactory} contract`);
       return;
     }
 

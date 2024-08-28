@@ -17,6 +17,8 @@ deployment.deployTask(EDeploySteps.TallyFactory, "Deploy tally factory").then((t
     const tallyFactoryContractAddress = storage.getAddress(EContracts.TallyFactory, hre.network.name);
 
     if (incremental && tallyFactoryContractAddress) {
+      // eslint-disable-next-line no-console
+      console.log(`Skipping deployment of the ${EContracts.TallyFactory} contract`);
       return;
     }
 

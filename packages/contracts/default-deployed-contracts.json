@@ -943,5 +943,132 @@
     "verified": {
       "0x83dD551541C580e338206f1f677835D427C92dE2": true
     }
+  },
+  "sepolia": {
+    "instance": {
+      "0x88C2c6A7535463962A34757FE63cc4F296381aba": {
+        "id": "ConstantInitialVoiceCreditProxy",
+        "deploymentTxHash": "0xde7be5b9db31e80d77254630c55cc770a232e02c949fa6636c16fb4301f26ff9",
+        "verify": {
+          "args": "[\"99\"]"
+        }
+      },
+      "0xF8E637e5c9EC3A8d8fa8843A6dF833348E1F1E66": {
+        "id": "FreeForAllGatekeeper",
+        "deploymentTxHash": "0x7da5cd7a2c15edc4f8da4d1706995cba1ad77f72f3cfaa74fcbcb5716e0c6aea",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x0a0D66baFDa8c8838281084d9C3d68Dd9a6Fc274": {
+        "id": "Verifier",
+        "deploymentTxHash": "0x95a162dcc11a4ea83253c7879005f8881532ea47a0c53e6e17f99fab144d2a7c",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xD2F6c828606Ad8e985008Cd825012f269B50CD58": {
+        "id": "PoseidonT3",
+        "deploymentTxHash": "0x73a9516529253bab26fdbcb3a07a7e95502a7dbed400ffb31e105ac9af7effbf",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x982530673Ce9e5Efa02438c694d48327Aa4fB592": {
+        "id": "PoseidonT4",
+        "deploymentTxHash": "0x3ace926b65edf3a1feed864cc31ebf6eacdf89856c4106d1a613b3a1bcca2172",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x50045B05cb1C76410783D8A3e5625a99d5729339": {
+        "id": "PoseidonT5",
+        "deploymentTxHash": "0xdab1329e39d4bb433128c443680c4e37315e3d401e476df99af4a9665c8acd87",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xbB28555E989799478442483CD1f2D370a14e2C42": {
+        "id": "PoseidonT6",
+        "deploymentTxHash": "0xf25f2dec66584f9edb29fc66ec1f487c258f557c843fe294c2b997a1d19a310c",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xdA10b22B81eb8EA6BC04aa9b86d3f9d969CD49F0": {
+        "id": "PollFactory",
+        "deploymentTxHash": "0x6051c605989e782aa466442ab0f6cf33a02b854137506d1ad69433335a5fe119",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x3D4C58074DCD8E6526885F465ab5F311b6B290B5": {
+        "id": "MessageProcessorFactory",
+        "deploymentTxHash": "0xc31ca730ab1f011dd98b3e16e60b364770f5dbe8fd2f87473fc54d0cae8505a3",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x7E16271EaE58F52a0431F87Ee7E40c978178C63F": {
+        "id": "TallyFactory",
+        "deploymentTxHash": "0xdb2cdbb2a4eb1725cfd200b15c865b74bdf03743eea4cb79984f07f139662d9b",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x33Cc5e8b6f158B9ee3600EcD3f3DE76c6B7765a7": {
+        "id": "VkRegistry",
+        "deploymentTxHash": "0xdb5367f5d5bdaaaffa7f52f26af384ba44bb3edd6975471d6f313eb02c34fe56",
+        "verify": {
+          "args": "[]"
+        }
+      }
+    },
+    "named": {
+      "ConstantInitialVoiceCreditProxy": {
+        "address": "0x88C2c6A7535463962A34757FE63cc4F296381aba",
+        "count": 1
+      },
+      "FreeForAllGatekeeper": {
+        "address": "0xF8E637e5c9EC3A8d8fa8843A6dF833348E1F1E66",
+        "count": 1
+      },
+      "Verifier": {
+        "address": "0x0a0D66baFDa8c8838281084d9C3d68Dd9a6Fc274",
+        "count": 1
+      },
+      "PoseidonT3": {
+        "address": "0xD2F6c828606Ad8e985008Cd825012f269B50CD58",
+        "count": 1
+      },
+      "PoseidonT4": {
+        "address": "0x982530673Ce9e5Efa02438c694d48327Aa4fB592",
+        "count": 1
+      },
+      "PoseidonT5": {
+        "address": "0x50045B05cb1C76410783D8A3e5625a99d5729339",
+        "count": 1
+      },
+      "PoseidonT6": {
+        "address": "0xbB28555E989799478442483CD1f2D370a14e2C42",
+        "count": 1
+      },
+      "PollFactory": {
+        "address": "0xdA10b22B81eb8EA6BC04aa9b86d3f9d969CD49F0",
+        "count": 1
+      },
+      "MessageProcessorFactory": {
+        "address": "0x3D4C58074DCD8E6526885F465ab5F311b6B290B5",
+        "count": 1
+      },
+      "TallyFactory": {
+        "address": "0x7E16271EaE58F52a0431F87Ee7E40c978178C63F",
+        "count": 1
+      },
+      "VkRegistry": {
+        "address": "0x33Cc5e8b6f158B9ee3600EcD3f3DE76c6B7765a7",
+        "count": 1
+      }
+    }
   }
 }

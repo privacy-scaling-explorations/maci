@@ -17,6 +17,8 @@ deployment.deployTask(EDeploySteps.Verifier, "Deploy verifier").then((task) =>
     const verifierContractAddress = storage.getAddress(EContracts.Verifier, hre.network.name);
 
     if (incremental && verifierContractAddress) {
+      // eslint-disable-next-line no-console
+      console.log(`Skipping deployment of the ${EContracts.Verifier} contract`);
       return;
     }
 

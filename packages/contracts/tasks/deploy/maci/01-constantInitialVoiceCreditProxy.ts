@@ -30,6 +30,8 @@ deployment
       );
 
       if (incremental && constantInitialVoiceCreditProxyContractAddress) {
+        // eslint-disable-next-line no-console
+        console.log(`Skipping deployment of the ${EContracts.ConstantInitialVoiceCreditProxy} contract`);
         return;
       }
 

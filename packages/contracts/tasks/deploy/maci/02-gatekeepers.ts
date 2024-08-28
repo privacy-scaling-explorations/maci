@@ -52,6 +52,8 @@ deployment.deployTask(EDeploySteps.Gatekeepers, "Deploy gatekeepers").then((task
         !skipDeployHatsGatekeeper);
 
     if (canSkipDeploy) {
+      // eslint-disable-next-line no-console
+      console.log(`Skipping deployment of the Gatekeeper contract`);
       return;
     }
 

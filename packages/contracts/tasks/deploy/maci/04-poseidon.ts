@@ -26,6 +26,8 @@ deployment.deployTask(EDeploySteps.Poseidon, "Deploy poseidon contracts").then((
       poseidonT5ContractAddress &&
       poseidonT6ContractAddress
     ) {
+      // eslint-disable-next-line no-console
+      console.log(`Skipping deployment of the Poseidon contracts`);
       return;
     }
 

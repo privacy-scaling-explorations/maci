@@ -24,6 +24,8 @@ deployment.deployTask(EDeploySteps.VkRegistry, "Deploy Vk Registry and set keys"
     const vkRegistryContractAddress = storage.getAddress(EContracts.VkRegistry, hre.network.name);
 
     if (incremental && vkRegistryContractAddress) {
+      // eslint-disable-next-line no-console
+      console.log(`Skipping deployment of the ${EContracts.VkRegistry} contract`);
       return;
     }
 
