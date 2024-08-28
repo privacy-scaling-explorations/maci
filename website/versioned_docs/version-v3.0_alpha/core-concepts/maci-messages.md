@@ -11,12 +11,12 @@ A command represents an action that a user may take, such as casting a vote in a
 
 | Symbol       | Name                    | Size | Description                                                                                         |
 | ------------ | ----------------------- | ---- | --------------------------------------------------------------------------------------------------- |
-| $cm_i$       | Poll state index             | 50   | Poll state leaf index where the signing key is located                                                   |
-| $cm_{p_{x}}$ | Public key x-coordinate | 253  | If no change is necessary this parameter should reflect the current poll public key's x-coordinate       |
-| $cm_{p_{y}}$ | Public key y-coordinate | 253  | If no change is necessary this parameter should reflect the current poll public key's y-coordinate       |
+| $cm_i$       | Poll state index        | 50   | Poll state leaf index where the signing key is located                                              |
+| $cm_{p_{x}}$ | Public key x-coordinate | 253  | If no change is necessary this parameter should reflect the current poll public key's x-coordinate  |
+| $cm_{p_{y}}$ | Public key y-coordinate | 253  | If no change is necessary this parameter should reflect the current poll public key's y-coordinate  |
 | $cm_{i_{v}}$ | Vote option index       | 50   | Option state leaf index of preference to assign the vote for                                        |
 | $cm_w$       | Voting weight           | 50   | Voice credit balance allocation, this is an arbitrary value dependent on a user's available credits |
-| $cm_n$       | Nonce                   | 50   | Poll state leaf's index of actions committed plus one                                                    |
+| $cm_n$       | Nonce                   | 50   | Poll state leaf's index of actions committed plus one                                               |
 | $cm_{id}$    | Poll id                 | 50   | The poll's identifier to cast in regard to                                                          |
 | $cm_s$       | Salt                    | 253  | An entropy value to inhibit brute force attacks                                                     |
 

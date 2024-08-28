@@ -10,6 +10,7 @@ sidebar_position: 5
 [**Repo link**](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/core)
 
 The [`pollJoining`](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/core/qv/pollJoining.circom) circuit allows the users to prove that they are allowed to join the Poll based on their MACI key. The circuit checks:
+
 - That the Poll joining nullifier nullifier is correctly computed as a hash of a MACI private key associated with a leaf of the MACI state tree.
 - That the MACI public key, derived from the private key, is included in the MACI state tree
 - The knowledge of a private key associated with the new poll public key
@@ -19,9 +20,9 @@ The nullifier is computed as a Poseidon hash of the user's MACI private key.
 
 #### Parameters
 
-| #   | Parameter                | Description                                          |
-| --- | ------------------------ | ---------------------------------------------------- |
-| 0   | State tree depth         | Allows $(2^{n})$ joins.                            |
+| #   | Parameter        | Description             |
+| --- | ---------------- | ----------------------- |
+| 0   | State tree depth | Allows $(2^{n})$ joins. |
 
 #### Inputs
 
@@ -42,20 +43,20 @@ The nullifier is computed as a Poseidon hash of the user's MACI private key.
     // Public input hash (nullifier, credits, stateRoot)
     signal input inputHash;
 
-| Input signal                     | Description                                                                             |
-| -------------------------------- | --------------------------------------------------------------------------------------- |
-| `privKey`                     | User's MACI private key                                                                         |
-| `pollPrivKey`                      | The new Poll private key                   |
-| `pollPubKey`                     | User's MACI private key                                                                         |
-| `stateLeaf`                     | The value of the leaf associated with the user int the MACI State tree                                                                        |
-| `siblings`                     | The Merkle path siblings in the MACI State tree                                                                        |
-| `indices`                     | The Merkle path indices in the MACI State tree                                                                        |
-| `nullifier`                     | Hash of user's MACI private key                                                                        |
-| `credits`                     | User's new credit balance in the Poll state leaf                                                                        |
-| `stateRoot`                     | MACI State tree root 
-hash                                                                        |
-| `actualStateTreeDepth`                     | Actual MACI state tree depth (related to Lazy Merkle Tree optimization)                                                                        |
-| `inputHash`                     | he SHA256 hash of inputs supplied by the contract                                                                        |
+| Input signal           | Description                                                             |
+| ---------------------- | ----------------------------------------------------------------------- |
+| `privKey`              | User's MACI private key                                                 |
+| `pollPrivKey`          | The new Poll private key                                                |
+| `pollPubKey`           | User's MACI private key                                                 |
+| `stateLeaf`            | The value of the leaf associated with the user int the MACI State tree  |
+| `siblings`             | The Merkle path siblings in the MACI State tree                         |
+| `indices`              | The Merkle path indices in the MACI State tree                          |
+| `nullifier`            | Hash of user's MACI private key                                         |
+| `credits`              | User's new credit balance in the Poll state leaf                        |
+| `stateRoot`            | MACI State tree root                                                    |
+| hash                   |
+| `actualStateTreeDepth` | Actual MACI state tree depth (related to Lazy Merkle Tree optimization) |
+| `inputHash`            | he SHA256 hash of inputs supplied by the contract                       |
 
 ##### `inputHash`
 

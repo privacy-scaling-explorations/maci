@@ -195,5 +195,3 @@ We see that is important that we set the final message (the one with the new vot
 :::info
 Tests related to key changes have been added to the [core package](https://github.com/privacy-scaling-explorations/maci/blob/dev/core/ts/__tests__/) and to the [cli package](https://github.com/privacy-scaling-explorations/maci/blob/dev/cli/tests/).
 :::
-
-

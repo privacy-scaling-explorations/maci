@@ -135,8 +135,9 @@ describe("Poll Joining circuit", function test() {
         pollPubKey,
       }) as unknown as IPollJoiningInputs;
       const witness = await circuit.calculateWitness(inputs);
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      await circuit.expectConstraintFail(Array(witness.length).fill(1n));
+
+      const fakeWitness = Array(witness.length).fill(1n) as bigint[];
+      await circuit.expectConstraintFail(fakeWitness);
     });
 
     it("should fail for improper credits", () => {

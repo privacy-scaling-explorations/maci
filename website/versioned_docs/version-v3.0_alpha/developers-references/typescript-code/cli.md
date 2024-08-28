@@ -51,10 +51,10 @@ maci-cli <command> --help
 | `publish`            | Publish a new message to a MACI Poll contract                      |
 | `timeTravel`         | Fast-forward the time (only works for local hardhat testing)       |
 | `extractVkToFile`    | Extract verification keys (vKey) from zKey files                   |
-| `signup`             | Sign up to a MACI contract                                   
-| `joinPoll`             | Join to a specific MACI Poll                                         |
+| `signup`             | Sign up to a MACI contract                                         |
+| `joinPoll`           | Join to a specific MACI Poll                                       |
 | `isRegisteredUser`   | Checks if user is registered with public key                       |
-| `isJoinedUser`   | Checks if user is joined to a poll with poll public key                       |
+| `isJoinedUser`       | Checks if user is joined to a poll with poll public key            |
 | `fundWallet`         | Fund a wallet with Ether                                           |
 | `verify`             | Verify the results of a poll on-chain                              |
 | `genProofs`          | Generate the proofs for a poll                                     |

@@ -41,10 +41,8 @@ export const genSignUpTree = async ({
     // or the end block if it is set
     const toBlock = i + blocksPerRequest >= lastBlock ? lastBlock : i + blocksPerRequest;
 
-    const [
-      signUpLogs,
-      // eslint-disable-next-line no-await-in-loop
-    ] = await Promise.all([maciContract.queryFilter(maciContract.filters.SignUp(), i, toBlock)]);
+    // eslint-disable-next-line no-await-in-loop
+    const signUpLogs = await maciContract.queryFilter(maciContract.filters.SignUp(), i, toBlock);
     signUpLogs.forEach((event) => {
       assert(!!event);
       const pubKeyX = event.args._userPubKeyX;

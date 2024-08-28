@@ -142,10 +142,8 @@ export const genMaciStateFromContract = async (
     // eslint-disable-next-line no-await-in-loop
     const publishMessageLogs = await pollContract.queryFilter(pollContract.filters.PublishMessage(), i, toBlock);
 
-    const [
-      joinPollLogs,
-      // eslint-disable-next-line no-await-in-loop
-    ] = await Promise.all([pollContract.queryFilter(pollContract.filters.PollJoined(), i, toBlock)]);
+    // eslint-disable-next-line no-await-in-loop
+    const joinPollLogs = await pollContract.queryFilter(pollContract.filters.PollJoined(), i, toBlock);
 
     joinPollLogs.forEach((event) => {
       assert(!!event);

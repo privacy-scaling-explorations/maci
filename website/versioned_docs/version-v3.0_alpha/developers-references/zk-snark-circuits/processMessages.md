@@ -43,8 +43,8 @@ A version working with non quadratic voting (non-qv) is also [available](https:/
 | `msgRoot`                        | The root of the message tree                                                            |
 | `msgs`                           | The batch of messages as an array of arrays                                             |
 | `coordinatorPubKeyHash`          | $poseidon_2([cPk_x, cPk_y])$                                                            |
-| `inputBatchHash`                           | The value of $chainHash$ at the beginning of batch                                             |
-| `outputBatchHash`                           | The value of $chainHash$ at the end of batch                                             |
+| `inputBatchHash`                 | The value of $chainHash$ at the beginning of batch                                      |
+| `outputBatchHash`                | The value of $chainHash$ at the end of batch                                            |
 | `newSbCommitment`                | Described below                                                                         |
 | `coordPrivKey`                   | The coordinator's private key                                                           |
 | `coordPubKey`                    | The coordinator's public key                                                            |
