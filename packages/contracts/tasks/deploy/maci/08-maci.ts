@@ -29,6 +29,8 @@ deployment.deployTask(EDeploySteps.Maci, "Deploy MACI contract").then((task) =>
     const maciContractAddress = storage.getAddress(EContracts.MACI, hre.network.name);
 
     if (incremental && maciContractAddress) {
+      // eslint-disable-next-line no-console
+      console.log(`Skipping deployment of the ${EContracts.MACI} contract`);
       return;
     }
 

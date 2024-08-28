@@ -17,6 +17,8 @@ deployment.deployTask(EDeploySteps.PollFactory, "Deploy poll factory").then((tas
     const pollFactoryContractAddress = storage.getAddress(EContracts.PollFactory, hre.network.name);
 
     if (incremental && pollFactoryContractAddress) {
+      // eslint-disable-next-line no-console
+      console.log(`Skipping deployment of the ${EContracts.PollFactory} contract`);
       return;
     }
 
