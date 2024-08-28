@@ -320,6 +320,9 @@ export interface DeployPollArgs {
   useQuadraticVoting?: boolean;
 }
 
+/**
+ * Interface for the arguments to the isJoinedUser command
+ */
 export interface IJoinedUserArgs {
   /**
    * The address of the MACI contract
@@ -351,7 +354,9 @@ export interface IJoinedUserArgs {
    */
   quiet: boolean;
 }
-
+/**
+ * Interface for the arguments to the joinPoll command
+ */
 export interface IJoinPollArgs {
   /**
    * A signer object
@@ -442,6 +447,21 @@ export interface IJoinPollArgs {
    * Poll private key for the poll
    */
   pollPrivKey: string;
+}
+
+/**
+ * Interface for the return data to the joinPoll command
+ */
+export interface IJoinPollData {
+  /**
+   * The poll state index of the joined user
+   */
+  pollStateIndex: string;
+
+  /**
+   * The join poll transaction hash
+   */
+  hash: string;
 }
 
 /**

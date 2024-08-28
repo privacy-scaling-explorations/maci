@@ -1,17 +1,97 @@
+import { type ContractTransactionReceipt } from "ethers";
 import { extractVk, genProof, verifyProof } from "maci-circuits";
 import { formatProofForVerifierContract, genSignUpTree, IGenSignUpTree } from "maci-contracts";
 import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts/typechain-types";
 import { CircuitInputs, IJsonMaciState, MaciState, IPollJoiningCircuitInputs } from "maci-core";
 import { poseidon, sha256Hash, stringifyBigInts } from "maci-crypto";
-import { Keypair, PrivKey, PubKey } from "maci-domainobjs";
+import { IVkObjectParams, Keypair, PrivKey, PubKey, StateLeaf } from "maci-domainobjs";
 
 import assert from "assert";
 import fs from "fs";
 
-import type { IJoinPollArgs, IJoinedUserArgs, IParsePollJoinEventsArgs } from "../utils/interfaces";
+import type { IJoinPollArgs, IJoinedUserArgs, IParsePollJoinEventsArgs, IJoinPollData } from "../utils";
 
 import { contractExists, logError, logYellow, info, logGreen, success } from "../utils";
 import { banner } from "../utils/banner";
+
+/**
+ * Get state index and credit balance
+ * either from command line or
+ * from maci state leaves or from sign up leaves
+ * @param stateIndex State index from the command
+ * @param newVoiceCreditBalance Credit balance from the command
+ * @param stateLeaves State leaves from maci state or sign up tree
+ * @param userMaciPubKey Public key of the maci user
+ * @returns State index and credit balance
+ */
+const getStateIndexAndCreditBalance = (
+  stateIndex: bigint | null,
+  newVoiceCreditBalance: bigint | null,
+  stateLeaves: StateLeaf[],
+  userMaciPubKey: PubKey,
+) => {
+  let loadedStateIndex = stateIndex;
+  let loadedCreditBalance = newVoiceCreditBalance;
+
+  if (!stateIndex) {
+    const index = stateLeaves.findIndex((leaf) => leaf.pubKey.equals(userMaciPubKey));
+    if (index) {
+      loadedStateIndex = BigInt(index);
+    } else {
+      logError("State leaf not found");
+      process.exit();
+    }
+  }
+  if (!newVoiceCreditBalance) {
+    const balance = stateLeaves[Number(loadedStateIndex!)].voiceCreditBalance;
+    if (balance) {
+      loadedCreditBalance = balance;
+    } else {
+      logError("Voice credit balance not found");
+      process.exit();
+    }
+  }
+
+  return [loadedStateIndex, loadedCreditBalance];
+};
+
+/**
+ * Generate and verify poll proof
+ * @param inputs - the inputs to the circuit
+ * @param zkeyPath - the path to the zkey
+ * @param useWasm - whether we want to use the wasm witness or not
+ * @param rapidsnarkExePath - the path to the rapidnsark binary
+ * @param witnessExePath - the path to the compiled witness binary
+ * @param wasmPath - the path to the wasm witness
+ * @param pollVk - Poll verifying key
+ * @returns proof - an array of strings
+ */
+const generateAndVerifyProof = async (
+  inputs: CircuitInputs,
+  zkeyPath: string,
+  useWasm: boolean | undefined,
+  rapidsnarkExePath: string | undefined,
+  witnessExePath: string | undefined,
+  wasmPath: string | undefined,
+  pollVk: IVkObjectParams,
+) => {
+  const r = await genProof({
+    inputs,
+    zkeyPath,
+    useWasm,
+    rapidsnarkExePath,
+    witnessExePath,
+    wasmPath,
+  });
+
+  // verify it
+  const isValid = await verifyProof(r.publicSignals, r.proof, pollVk);
+  if (!isValid) {
+    throw new Error("Generated an invalid proof");
+  }
+
+  return formatProofForVerifierContract(r.proof);
+};
 
 /**
  * Create circuit input for pollJoining
@@ -95,6 +175,11 @@ const joiningCircuitInputs = (
   return stringifyBigInts(circuitInputs) as unknown as IPollJoiningCircuitInputs;
 };
 
+/**
+ * Join Poll user to the Poll contract
+ * @param {IJoinPollArgs} args - The arguments for the join poll command
+ * @returns {IJoinPollData} The poll state index of the joined user and transaction hash
+ */
 export const joinPoll = async ({
   maciAddress,
   privateKey,
@@ -114,7 +199,7 @@ export const joinPoll = async ({
   pollWitgen,
   pollWasm,
   quiet = true,
-}: IJoinPollArgs): Promise<number> => {
+}: IJoinPollArgs): Promise<IJoinPollData> => {
   banner(quiet);
 
   if (!(await contractExists(signer.provider!, maciAddress))) {
@@ -147,9 +232,8 @@ export const joinPoll = async ({
 
   const pollContract = PollFactory.connect(pollAddress, signer);
 
-  let loadedStateIndex = stateIndex;
-  let loadedCreditBalance = newVoiceCreditBalance;
-
+  let loadedStateIndex: bigint | null;
+  let loadedCreditBalance: bigint | null;
   let maciState: MaciState | undefined;
   let signUpData: IGenSignUpTree | undefined;
   let currentStateRootIndex: number;
@@ -168,15 +252,12 @@ export const joinPoll = async ({
       throw new Error("User the given nullifier has already joined");
     }
 
-    if (stateIndex) {
-      const index = maciState?.stateLeaves.findIndex((leaf) => leaf.pubKey.equals(userMaciPubKey));
-      if (index) {
-        loadedStateIndex = BigInt(index);
-      } else {
-        logError("State leaf not found");
-        process.exit();
-      }
-    }
+    [loadedStateIndex, loadedCreditBalance] = getStateIndexAndCreditBalance(
+      stateIndex,
+      newVoiceCreditBalance,
+      maciState!.stateLeaves,
+      userMaciPubKey,
+    );
 
     // check < 1 cause index zero is a blank state leaf
     if (loadedStateIndex! < 1) {
@@ -186,16 +267,6 @@ export const joinPoll = async ({
     currentStateRootIndex = poll.maciStateRef.numSignUps - 1;
 
     poll.updatePoll(BigInt(maciState!.stateLeaves.length));
-
-    if (newVoiceCreditBalance) {
-      const balance = maciState?.stateLeaves[Number(loadedStateIndex!)].voiceCreditBalance;
-      if (balance) {
-        loadedCreditBalance = balance;
-      } else {
-        logError("Voice credit balance not found");
-        process.exit();
-      }
-    }
 
     circuitInputs = poll.joiningCircuitInputs({
       maciPrivKey: userMaciPrivKey,
@@ -235,23 +306,16 @@ export const joinPoll = async ({
 
     currentStateRootIndex = Number(numSignups) - 1;
 
-    if (!stateIndex) {
-      const index = signUpData.stateLeaves.findIndex((leaf) => leaf.pubKey.equals(userMaciPubKey));
-      if (index) {
-        loadedStateIndex = BigInt(index);
-      } else {
-        logError("State leaf not found");
-        process.exit();
-      }
-    }
+    [loadedStateIndex, loadedCreditBalance] = getStateIndexAndCreditBalance(
+      stateIndex,
+      newVoiceCreditBalance,
+      signUpData.stateLeaves,
+      userMaciPubKey,
+    );
 
     // check < 1 cause index zero is a blank state leaf
     if (loadedStateIndex! < 1) {
       logError("Invalid state index");
-    }
-
-    if (!newVoiceCreditBalance) {
-      loadedCreditBalance = signUpData.stateLeaves[Number(loadedStateIndex!)].voiceCreditBalance!;
     }
 
     circuitInputs = joiningCircuitInputs(
@@ -267,26 +331,20 @@ export const joinPoll = async ({
 
   const pollVk = await extractVk(pollJoiningZkey);
 
+  let pollStateIndex = "";
+  let receipt: ContractTransactionReceipt | null = null;
+
   try {
     // generate the proof for this batch
-    // eslint-disable-next-line no-await-in-loop
-    const r = await genProof({
-      inputs: circuitInputs,
-      zkeyPath: pollJoiningZkey,
+    const proof = await generateAndVerifyProof(
+      circuitInputs,
+      pollJoiningZkey,
       useWasm,
-      rapidsnarkExePath: rapidsnark,
-      witnessExePath: pollWitgen,
-      wasmPath: pollWasm,
-    });
-
-    // verify it
-    // eslint-disable-next-line no-await-in-loop
-    const isValid = await verifyProof(r.publicSignals, r.proof, pollVk);
-    if (!isValid) {
-      throw new Error("Generated an invalid proof");
-    }
-
-    const proof = formatProofForVerifierContract(r.proof);
+      rapidsnark,
+      pollWitgen,
+      pollWasm,
+      pollVk,
+    );
 
     // submit the message onchain as well as the encryption public key
     const tx = await pollContract.joinPoll(
@@ -296,20 +354,32 @@ export const joinPoll = async ({
       currentStateRootIndex,
       proof,
     );
-    const receipt = await tx.wait();
+    receipt = await tx.wait();
+    logYellow(quiet, info(`Transaction hash: ${receipt!.hash}`));
 
     if (receipt?.status !== 1) {
       logError("Transaction failed");
     }
 
-    logYellow(quiet, info(`Transaction hash: ${receipt!.hash}`));
+    const iface = pollContract.interface;
 
-    return 0;
+    // get state index from the event
+    if (receipt?.logs) {
+      const [log] = receipt.logs;
+      const { args } = iface.parseLog(log as unknown as { topics: string[]; data: string }) || { args: [] };
+      [, , , , , pollStateIndex] = args;
+      logGreen(quiet, success(`State index: ${pollStateIndex.toString()}`));
+    } else {
+      logError("Unable to retrieve the transaction receipt");
+    }
   } catch (error) {
     logError((error as Error).message);
   }
 
-  return -1;
+  return {
+    pollStateIndex: pollStateIndex ? pollStateIndex.toString() : "",
+    hash: receipt!.hash,
+  };
 };
 
 /**
@@ -348,6 +418,11 @@ const parsePollJoinEvents = async ({
   };
 };
 
+/**
+ * Checks if user is joined with the public key
+ * @param {IJoinedUserArgs} - The arguments for the join check command
+ * @returns user joined or not and poll state index, voice credit balance
+ */
 export const isJoinedUser = async ({
   maciAddress,
   pollId,
