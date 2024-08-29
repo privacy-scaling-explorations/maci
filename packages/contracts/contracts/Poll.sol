@@ -120,7 +120,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
 
   /// @notice A modifier that causes the function to revert if the voting period is
   /// not over.
-  modifier isAfterVotingDeadline() {
+  modifier isAfterVotingDeadline() virtual {
     uint256 secondsPassed = block.timestamp - deployTime;
     if (secondsPassed <= duration) revert VotingPeriodNotOver();
     _;
@@ -128,7 +128,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
 
   /// @notice A modifier that causes the function to revert if the voting period is
   /// over
-  modifier isWithinVotingDeadline() {
+  modifier isWithinVotingDeadline() virtual {
     uint256 secondsPassed = block.timestamp - deployTime;
     if (secondsPassed >= duration) revert VotingPeriodOver();
     _;
