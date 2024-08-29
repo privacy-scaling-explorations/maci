@@ -45,4 +45,4 @@ We removed the entire message accumulator data structure that had exponential sp
 We are not stopping here, more interesting protocol upgrades are on the way that would improve the security of the protocol even further and eliminate another significant concern. Be patient, and enjoy the privacy!
 
 ### Who are we?
-Visit 3327.io and find out.
+Visit 3327.io and find out. Special kudos to our [Mihailo Radojević](https://github.com/radojevicMihailo) and [Boris Cvitak](https://github.com/djanluka) who did a lot of heavy lifting so these cool features could be here today!
