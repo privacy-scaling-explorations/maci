@@ -35,40 +35,30 @@ export async function publishBatch(
   const messageBatch = Array.from({ length: batchSize }, () => message.asContractParam());
   const pubKeyBatch = Array.from({ length: batchSize }, () => keypair.pubKey.asContractParam());
 
-  let low = 1;
-  let high = batchSize;
-  let optimalBatchSize = 0;
+  let optimalBatchSize = batchSize;
 
-  while (low <= high) {
-    const mid = Math.floor((low + high) / 2);
-    const testMessageBatch = messageBatch.slice(0, mid);
-    const testPubKeyBatch = pubKeyBatch.slice(0, mid);
-
-    try {
-      // eslint-disable-next-line no-await-in-loop
-      await pollContract.publishMessageBatch.estimateGas(testMessageBatch, testPubKeyBatch);
-      optimalBatchSize = mid;
-      low = mid + 1;
-    } catch (error) {
-      high = mid - 1;
-    }
-  }
-
-  if (optimalBatchSize > 0) {
+  while (optimalBatchSize > 0) {
     const finalMessageBatch = messageBatch.slice(0, optimalBatchSize);
     const finalPubKeyBatch = pubKeyBatch.slice(0, optimalBatchSize);
 
     try {
+      // eslint-disable-next-line no-await-in-loop
       const tx = await pollContract.publishMessageBatch(finalMessageBatch, finalPubKeyBatch);
+      // eslint-disable-next-line no-await-in-loop
       const receipt = await tx.wait();
-      console.log(`Gas used: ${receipt?.gasUsed.toString()} wei\n`);
-      console.log(`Tx: ${tx.hash}\n`);
-
-      console.log(`Submitted a batch of ${optimalBatchSize} messages\n`);
-    } catch (err) {
-      console.error(`Failed to submit a batch of ${optimalBatchSize} messages\n`);
+      console.log(`Successfully published batch of ${optimalBatchSize} messages`);
+      console.log(`Gas used: ${receipt?.gasUsed.toString()} wei`);
+      console.log(`Tx: ${tx.hash}`);
+      break; // If successful, we've found the largest working batch size
+    } catch (error) {
+      // If this size doesn't work, reduce by 1 and try again
+      optimalBatchSize -= 1;
     }
+  }
+
+  if (optimalBatchSize > 0) {
+    console.log(`Found optimal batch size: ${optimalBatchSize}`);
   } else {
-    console.error("Unable to submit even a single message\n");
+    console.error("Unable to publish even a single message");
   }
 }

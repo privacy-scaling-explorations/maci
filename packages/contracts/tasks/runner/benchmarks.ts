@@ -3,6 +3,7 @@ import { task } from "hardhat/config";
 import { Keypair, PCommand } from "maci-domainobjs";
 
 import { Deployment } from "../helpers/Deployment";
+import { EContracts } from "../helpers/types";
 
 task("benchmark", "Run benchmarks").setAction(async (_, hre) => {
   const deployment = Deployment.getInstance(hre);
@@ -15,8 +16,14 @@ task("benchmark", "Run benchmarks").setAction(async (_, hre) => {
   await deployment.runSteps(steps, 0);
 
   // deploy a Poll
+  // get original tree depth
+  const messageTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageTreeDepth");
+  // update it
+  deployment.updateDeployConfig(EContracts.VkRegistry, "messageTreeDepth", 3);
   const pollSteps = await deployment.start("poll", { incremental: true, verify: false });
   await deployment.runSteps(pollSteps, 0);
+  // restore it
+  deployment.updateDeployConfig(EContracts.VkRegistry, "messageTreeDepth", messageTreeDepth);
 
   try {
     const startBalance = await deployer.provider.getBalance(deployer);
