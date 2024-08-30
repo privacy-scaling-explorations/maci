@@ -5,6 +5,10 @@ sidebar_label: Introduction
 sidebar_position: 1
 ---
 
+:::info
+For a more secure and stable protocol, please refer to MACI v2.x
+:::
+
 # Welcome to MACI
 
 ![MACI card](/img/maci-card.png)

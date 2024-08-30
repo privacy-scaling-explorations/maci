@@ -50,6 +50,11 @@ async function getConfig(): Promise<Config> {
             remarkPlugins: [remarkMath],
             rehypePlugins: [rehypeKatex],
             includeCurrentVersion: false,
+            versions: {
+              "v1.2": {
+                banner: "none",
+              },
+            },
           },
           blog: {
             showReadingTime: true,
