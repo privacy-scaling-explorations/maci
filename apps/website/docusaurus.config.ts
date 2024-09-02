@@ -60,6 +60,8 @@ async function getConfig(): Promise<Config> {
             showReadingTime: true,
 
             editUrl: ({ blogDirPath, blogPath }) => `${GITHUB_URL}/edit/dev/website/${blogDirPath}/${blogPath}`,
+            remarkPlugins: [remarkMath],
+            rehypePlugins: [rehypeKatex],
           },
           theme: {
             customCss: "./src/css/custom.css",

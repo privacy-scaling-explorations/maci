@@ -1,9 +1,5 @@
 import { ZeroAddress } from "ethers";
-import {
-  MACI__factory as MACIFactory,
-  Poll__factory as PollFactory,
-  Tally__factory as TallyFactory,
-} from "maci-contracts/typechain-types";
+import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts/typechain-types";
 
 import type { IGetPollArgs, IGetPollData } from "../utils/interfaces";
 
@@ -36,9 +32,9 @@ export const getPoll = async ({
     logError(`Invalid poll id ${id}`);
   }
 
-  const { poll: pollAddress, tally: tallyAddress } = await maciContract.polls(id);
+  const { poll: pollAddress } = await maciContract.polls(id);
 
-  if (pollAddress === ZeroAddress || tallyAddress === ZeroAddress) {
+  if (pollAddress === ZeroAddress) {
     logError(`MACI contract doesn't have any deployed poll ${id}`);
   }
 
@@ -51,10 +47,6 @@ export const getPoll = async ({
   const isMerged = mergedStateRoot !== BigInt(0);
   const numSignups = await (isMerged ? pollContract.numSignups() : maciContract.numSignUps());
 
-  // get the poll mode
-  const tallyContract = TallyFactory.connect(tallyAddress, signer ?? provider);
-  const mode = await tallyContract.mode();
-
   logGreen(
     quiet,
     success(
@@ -64,7 +56,6 @@ export const getPoll = async ({
         `End time: ${new Date(Number(deployTime + duration) * 1000).toString()}`,
         `Number of signups ${numSignups}`,
         `State tree merged: ${mergedStateRoot}`,
-        `Mode: ${mode === 0n ? "Quadratic Voting" : "Non-Quadratic Voting"}`,
       ].join("\n"),
     ),
   );
@@ -76,6 +67,5 @@ export const getPoll = async ({
     duration,
     numSignups,
     isMerged,
-    mode,
   };
 };

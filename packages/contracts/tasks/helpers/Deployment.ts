@@ -397,22 +397,6 @@ export class Deployment {
   }
 
   /**
-   * Update deploy config field (see deploy-config.json)
-   * @param id - contract name
-   * @param field - config field key
-   * @param value - config field value
-   */
-  updateDeployConfig<T = string | number | boolean, ID extends string = EContracts>(
-    id: ID,
-    field: string,
-    value: T,
-  ): void {
-    this.checkHre();
-
-    this.config.set(`${this.hre!.network.name}.${id}.${field}`, value).write();
-  }
-
-  /**
    * Get contract by name and group key
    *
    * @param {IGetContractParams} params - params

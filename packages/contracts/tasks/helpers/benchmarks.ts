@@ -35,30 +35,40 @@ export async function publishBatch(
   const messageBatch = Array.from({ length: batchSize }, () => message.asContractParam());
   const pubKeyBatch = Array.from({ length: batchSize }, () => keypair.pubKey.asContractParam());
 
-  let optimalBatchSize = batchSize;
+  let low = 1;
+  let high = batchSize;
+  let optimalBatchSize = 0;
 
-  while (optimalBatchSize > 0) {
-    const finalMessageBatch = messageBatch.slice(0, optimalBatchSize);
-    const finalPubKeyBatch = pubKeyBatch.slice(0, optimalBatchSize);
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    const testMessageBatch = messageBatch.slice(0, mid);
+    const testPubKeyBatch = pubKeyBatch.slice(0, mid);
 
     try {
       // eslint-disable-next-line no-await-in-loop
-      const tx = await pollContract.publishMessageBatch(finalMessageBatch, finalPubKeyBatch);
-      // eslint-disable-next-line no-await-in-loop
-      const receipt = await tx.wait();
-      console.log(`Successfully published batch of ${optimalBatchSize} messages`);
-      console.log(`Gas used: ${receipt?.gasUsed.toString()} wei`);
-      console.log(`Tx: ${tx.hash}`);
-      break; // If successful, we've found the largest working batch size
+      await pollContract.publishMessageBatch.estimateGas(testMessageBatch, testPubKeyBatch);
+      optimalBatchSize = mid;
+      low = mid + 1;
     } catch (error) {
-      // If this size doesn't work, reduce by 1 and try again
-      optimalBatchSize -= 1;
+      high = mid - 1;
     }
   }
 
   if (optimalBatchSize > 0) {
-    console.log(`Found optimal batch size: ${optimalBatchSize}`);
+    const finalMessageBatch = messageBatch.slice(0, optimalBatchSize);
+    const finalPubKeyBatch = pubKeyBatch.slice(0, optimalBatchSize);
+
+    try {
+      const tx = await pollContract.publishMessageBatch(finalMessageBatch, finalPubKeyBatch);
+      const receipt = await tx.wait();
+      console.log(`Gas used: ${receipt?.gasUsed.toString()} wei\n`);
+      console.log(`Tx: ${tx.hash}\n`);
+
+      console.log(`Submitted a batch of ${optimalBatchSize} messages\n`);
+    } catch (err) {
+      console.error(`Failed to submit a batch of ${optimalBatchSize} messages\n`);
+    }
   } else {
-    console.error("Unable to publish even a single message");
+    console.error("Unable to submit even a single message\n");
   }
 }
