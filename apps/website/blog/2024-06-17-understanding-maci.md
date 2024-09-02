@@ -48,7 +48,7 @@ If you’re interested in more of the technical details, check out the MACI docu
 
 ## Real-World Applications and Limitations
 
-Imagine a world where funding for public goods, like community projects or open-source software, is decided through fair and transparent voting. This is where MACI shows its true potential. [Quadratic funding](https://qf.pse.dev/quadratic-funding) is already harnessing MACI's capabilities to enhance user privacy and discourage any form of collusion in funding decisions.
+Imagine a world where funding for public goods, like community projects or open-source software, is decided through fair and transparent voting. This is where MACI shows its true potential. [Quadratic funding](/docs/use-cases/public-goods-funding/quadratic-funding) is already harnessing MACI's capabilities to enhance user privacy and discourage any form of collusion in funding decisions.
 
 However, like any system, MACI isn't perfect. Its effectiveness hinges on the honesty of the coordinator – the entity or person overseeing the voting process and tallying the results. A dishonest coordinator could pose risks, but thankfully, MACI is designed to minimise even this possibility, maintaining a high level of integrity in the voting process.
 
@@ -58,6 +58,6 @@ As we've explored, Minimal Anti-Collusion Infrastructure (MACI) stands as a test
 
 Blockchain technology is continually evolving, and with tools like MACI, it's becoming more accessible and trustworthy. Whether you're a blockchain enthusiast, a developer, or someone just starting to explore this exciting field, MACI represents a significant step forward in creating a more democratic and transparent digital world.
 
-We encourage you to delve deeper into MACI and the broader world of blockchain by reading through our [documentation](https://maci.pse.dev/docs/introduction) and installing MACI. Join us too on our [Discord](https://discord.com/invite/sF5CT5rzrR) to report any bugs or to chat with our team. Your involvement can help shape a future where digital voting is not just secure, but also truly representative of the people's voice.
+We encourage you to delve deeper into MACI and the broader world of blockchain by reading through our [documentation](/docs/introduction) and installing MACI. Join us too on our [Discord](https://discord.com/invite/sF5CT5rzrR) to report any bugs or to chat with our team. Your involvement can help shape a future where digital voting is not just secure, but also truly representative of the people's voice.
 
 Together, let's embrace these advancements and contribute to a fairer, more transparent digital voting landscape.
