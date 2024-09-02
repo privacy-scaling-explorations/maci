@@ -944,6 +944,11 @@ export interface IGetPollData {
    * Whether the MACI contract's state root has been merged
    */
   isMerged: boolean;
+
+  /**
+   * Mode of the poll
+   */
+  mode: BigNumberish;
 }
 
 /**
