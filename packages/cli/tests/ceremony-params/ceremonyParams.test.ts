@@ -48,12 +48,12 @@ import {
 } from "../constants";
 import { clean, isArm } from "../utils";
 
-describe("Stress tests with ceremony params (6,9,2,3)", function test() {
+describe("Stress tests with ceremony params (14,9,2,3)", function test() {
   const messageTreeDepth = 9;
-  const stateTreeDepth = 6;
+  const stateTreeDepth = 14;
   const voteOptionTreeDepth = 3;
   const messageBatchDepth = 2;
-  const intStateTreeDepth = 2;
+  const intStateTreeDepth = 5;
 
   const pollDuration = 60000;
 

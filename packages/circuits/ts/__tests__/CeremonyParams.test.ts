@@ -11,7 +11,7 @@ import { generateRandomIndex, circomkitInstance } from "./utils/utils";
 describe("Ceremony param tests", () => {
   const params = {
     // processMessages and Tally
-    stateTreeDepth: 6,
+    stateTreeDepth: 14,
     // processMessages
     messageTreeDepth: 9,
     // processMessages
@@ -19,11 +19,11 @@ describe("Ceremony param tests", () => {
     // processMessages and Tally
     voteOptionTreeDepth: 3,
     // Tally
-    stateLeafBatchDepth: 2,
+    stateLeafBatchDepth: 5,
   };
 
   const treeDepths = {
-    intStateTreeDepth: params.messageBatchTreeDepth,
+    intStateTreeDepth: params.stateLeafBatchDepth,
     messageTreeDepth: params.messageTreeDepth,
     messageTreeSubDepth: params.messageBatchTreeDepth,
     voteOptionTreeDepth: params.voteOptionTreeDepth,
@@ -71,7 +71,7 @@ describe("Ceremony param tests", () => {
       circuit = await circomkitInstance.WitnessTester("processMessages", {
         file: "./core/qv/processMessages",
         template: "ProcessMessages",
-        params: [6, 9, 2, 3],
+        params: [14, 9, 2, 3],
       });
     });
 
@@ -175,117 +175,117 @@ describe("Ceremony param tests", () => {
         expect(newBallotRoot?.toString()).not.to.be.eq(currentBallotRoot.toString());
       });
     });
+  });
 
-    describe("TallyVotes circuit", function test() {
-      this.timeout(900000);
+  describe("TallyVotes circuit", function test() {
+    this.timeout(900000);
 
-      let testCircuit: WitnessTester<
-        [
-          "stateRoot",
-          "ballotRoot",
-          "sbSalt",
-          "sbCommitment",
-          "index",
-          "numSignUps",
-          "currentTallyCommitment",
-          "newTallyCommitment",
-          "ballots",
-          "ballotPathElements",
-          "votes",
-          "currentResults",
-          "currentResultsRootSalt",
-          "currentSpentVoiceCreditSubtotal",
-          "currentSpentVoiceCreditSubtotalSalt",
-          "currentPerVOSpentVoiceCredits",
-          "currentPerVOSpentVoiceCreditsRootSalt",
-          "newResultsRootSalt",
-          "newPerVOSpentVoiceCreditsRootSalt",
-          "newSpentVoiceCreditSubtotalSalt",
-        ]
-      >;
+    let testCircuit: WitnessTester<
+      [
+        "stateRoot",
+        "ballotRoot",
+        "sbSalt",
+        "sbCommitment",
+        "index",
+        "numSignUps",
+        "currentTallyCommitment",
+        "newTallyCommitment",
+        "ballots",
+        "ballotPathElements",
+        "votes",
+        "currentResults",
+        "currentResultsRootSalt",
+        "currentSpentVoiceCreditSubtotal",
+        "currentSpentVoiceCreditSubtotalSalt",
+        "currentPerVOSpentVoiceCredits",
+        "currentPerVOSpentVoiceCreditsRootSalt",
+        "newResultsRootSalt",
+        "newPerVOSpentVoiceCreditsRootSalt",
+        "newSpentVoiceCreditSubtotalSalt",
+      ]
+    >;
 
-      before(async () => {
-        testCircuit = await circomkitInstance.WitnessTester("tallyVotes", {
-          file: "./core/qv/tallyVotes",
-          template: "TallyVotes",
-          params: [6, 2, 3],
-        });
+    before(async () => {
+      testCircuit = await circomkitInstance.WitnessTester("tallyVotes", {
+        file: "./core/qv/tallyVotes",
+        template: "TallyVotes",
+        params: [14, 5, 3],
+      });
+    });
+
+    describe("1 user, 2 messages", () => {
+      let stateIndex: bigint;
+      let pollId: bigint;
+      let poll: Poll;
+      let maciState: MaciState;
+      const voteWeight = BigInt(9);
+      const voteOptionIndex = BigInt(0);
+
+      beforeEach(() => {
+        maciState = new MaciState(params.stateTreeDepth);
+        const messages: Message[] = [];
+        const commands: PCommand[] = [];
+        // Sign up and publish
+        const userKeypair = new Keypair();
+        stateIndex = BigInt(
+          maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000))),
+        );
+
+        pollId = maciState.deployPoll(
+          BigInt(Math.floor(Date.now() / 1000) + duration),
+          treeDepths,
+          messageBatchSize,
+          coordinatorKeypair,
+        );
+
+        poll = maciState.polls.get(pollId)!;
+
+        // update the state
+        poll.updatePoll(BigInt(maciState.stateLeaves.length));
+
+        // First command (valid)
+        const command = new PCommand(
+          stateIndex,
+          userKeypair.pubKey,
+          voteOptionIndex, // voteOptionIndex,
+          voteWeight, // vote weight
+          BigInt(1), // nonce
+          BigInt(pollId),
+        );
+
+        const signature = command.sign(userKeypair.privKey);
+
+        const ecdhKeypair = new Keypair();
+        const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+        const message = command.encrypt(signature, sharedKey);
+        messages.push(message);
+        commands.push(command);
+
+        poll.publishMessage(message, ecdhKeypair.pubKey);
+
+        // Process messages
+        poll.processMessages(pollId);
       });
 
-      describe("1 user, 2 messages", () => {
-        let stateIndex: bigint;
-        let pollId: bigint;
-        let poll: Poll;
-        let maciState: MaciState;
-        const voteWeight = BigInt(9);
-        const voteOptionIndex = BigInt(0);
+      it("should produce the correct result commitments", async () => {
+        const generatedInputs = poll.tallyVotes() as unknown as ITallyVotesInputs;
+        const witness = await testCircuit.calculateWitness(generatedInputs);
+        await testCircuit.expectConstraintPass(witness);
+      });
 
-        beforeEach(() => {
-          maciState = new MaciState(params.stateTreeDepth);
-          const messages: Message[] = [];
-          const commands: PCommand[] = [];
-          // Sign up and publish
-          const userKeypair = new Keypair();
-          stateIndex = BigInt(
-            maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000))),
-          );
+      it("should produce the correct result if the initial tally is not zero", async () => {
+        const generatedInputs = poll.tallyVotes() as unknown as ITallyVotesInputs;
 
-          pollId = maciState.deployPoll(
-            BigInt(Math.floor(Date.now() / 1000) + duration),
-            treeDepths,
-            messageBatchSize,
-            coordinatorKeypair,
-          );
+        // Start the tally from non-zero value
+        let randIdx = generateRandomIndex(Object.keys(generatedInputs).length);
+        while (randIdx === 0) {
+          randIdx = generateRandomIndex(Object.keys(generatedInputs).length);
+        }
 
-          poll = maciState.polls.get(pollId)!;
+        generatedInputs.currentResults[randIdx] = 1n;
 
-          // update the state
-          poll.updatePoll(BigInt(maciState.stateLeaves.length));
-
-          // First command (valid)
-          const command = new PCommand(
-            stateIndex,
-            userKeypair.pubKey,
-            voteOptionIndex, // voteOptionIndex,
-            voteWeight, // vote weight
-            BigInt(1), // nonce
-            BigInt(pollId),
-          );
-
-          const signature = command.sign(userKeypair.privKey);
-
-          const ecdhKeypair = new Keypair();
-          const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
-          const message = command.encrypt(signature, sharedKey);
-          messages.push(message);
-          commands.push(command);
-
-          poll.publishMessage(message, ecdhKeypair.pubKey);
-
-          // Process messages
-          poll.processMessages(pollId);
-        });
-
-        it("should produce the correct result commitments", async () => {
-          const generatedInputs = poll.tallyVotes() as unknown as ITallyVotesInputs;
-          const witness = await testCircuit.calculateWitness(generatedInputs);
-          await testCircuit.expectConstraintPass(witness);
-        });
-
-        it("should produce the correct result if the initial tally is not zero", async () => {
-          const generatedInputs = poll.tallyVotes() as unknown as ITallyVotesInputs;
-
-          // Start the tally from non-zero value
-          let randIdx = generateRandomIndex(Object.keys(generatedInputs).length);
-          while (randIdx === 0) {
-            randIdx = generateRandomIndex(Object.keys(generatedInputs).length);
-          }
-
-          generatedInputs.currentResults[randIdx] = 1n;
-
-          const witness = await testCircuit.calculateWitness(generatedInputs);
-          await testCircuit.expectConstraintPass(witness);
-        });
+        const witness = await testCircuit.calculateWitness(generatedInputs);
+        await testCircuit.expectConstraintPass(witness);
       });
     });
   });
