@@ -118,25 +118,34 @@ async function unlinkFile(filepath: string): Promise<void> {
  * @param publicInputs - the public inputs to the circuit
  * @param proof - the proof
  * @param vk - the verification key
+ * @param cleanup - whether to cleanup the threads or not
  * @returns whether the proof is valid or not
  */
 export const verifyProof = async (
   publicInputs: PublicSignals,
   proof: Groth16Proof,
   vk: ISnarkJSVerificationKey,
+  cleanup = true,
 ): Promise<boolean> => {
   const isValid = await groth16.verify(vk, publicInputs, proof);
-  await cleanThreads();
+  if (cleanup) {
+    await cleanThreads();
+  }
   return isValid;
 };
 
 /**
  * Extract the Verification Key from a zKey
  * @param zkeyPath - the path to the zKey
+ * @param cleanup - whether to cleanup the threads or not
  * @returns the verification key
  */
-export const extractVk = async (zkeyPath: string): Promise<IVkObjectParams> =>
+export const extractVk = async (zkeyPath: string, cleanup = true): Promise<IVkObjectParams> =>
   zKey
     .exportVerificationKey(zkeyPath)
     .then((vk) => vk as IVkObjectParams)
-    .finally(() => cleanThreads());
+    .finally(() => {
+      if (cleanup) {
+        cleanThreads();
+      }
+    });
