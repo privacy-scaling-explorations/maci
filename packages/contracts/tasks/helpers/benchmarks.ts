@@ -38,9 +38,9 @@ export async function publishBatch(
   let optimalBatchSize = batchSize;
 
   while (optimalBatchSize > 0) {
+    console.log(`Attempting to publish batch of ${optimalBatchSize} messages`);
     const finalMessageBatch = messageBatch.slice(0, optimalBatchSize);
     const finalPubKeyBatch = pubKeyBatch.slice(0, optimalBatchSize);
-
     try {
       // eslint-disable-next-line no-await-in-loop
       const tx = await pollContract.publishMessageBatch(finalMessageBatch, finalPubKeyBatch);
