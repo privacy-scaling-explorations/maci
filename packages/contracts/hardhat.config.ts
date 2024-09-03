@@ -62,6 +62,10 @@ const config: HardhatUserConfig = {
     arbitrum_sepolia: getCommonNetworkConfig(ESupportedChains.ArbitrumSepolia, EChainId.ArbitrumSepolia),
     base: getCommonNetworkConfig(ESupportedChains.Base, EChainId.Base),
     base_sepolia: getCommonNetworkConfig(ESupportedChains.BaseSepolia, EChainId.BaseSepolia),
+    gnosis: getCommonNetworkConfig(ESupportedChains.Gnosis, EChainId.Gnosis),
+    gnosis_chiado: getCommonNetworkConfig(ESupportedChains.GnosisChiado, EChainId.GnosisChiado),
+    polygon: getCommonNetworkConfig(ESupportedChains.Polygon, EChainId.Polygon),
+    polygon_amoy: getCommonNetworkConfig(ESupportedChains.PolygonAmoy, EChainId.PolygonAmoy),
     coverage: getCommonNetworkConfig(ESupportedChains.Coverage, EChainId.Coverage, TEST_MNEMONIC),
     localhost: {
       url: "http://localhost:8545",
@@ -111,6 +115,10 @@ const config: HardhatUserConfig = {
       [ESupportedChains.ArbitrumSepolia]: ETHERSCAN_API_KEYS[ESupportedChains.ArbitrumSepolia]!,
       [ESupportedChains.Base]: ETHERSCAN_API_KEYS[ESupportedChains.Base]!,
       [ESupportedChains.BaseSepolia]: ETHERSCAN_API_KEYS[ESupportedChains.BaseSepolia]!,
+      [ESupportedChains.Gnosis]: ETHERSCAN_API_KEYS[ESupportedChains.Gnosis]!,
+      [ESupportedChains.GnosisChiado]: ETHERSCAN_API_KEYS[ESupportedChains.GnosisChiado]!,
+      [ESupportedChains.Polygon]: ETHERSCAN_API_KEYS[ESupportedChains.Polygon]!,
+      [ESupportedChains.PolygonAmoy]: ETHERSCAN_API_KEYS[ESupportedChains.PolygonAmoy]!,
     },
     customChains: [
       {
@@ -175,6 +183,38 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: "https://api-sepolia.basescan.org/api",
           browserURL: "https://sepolia.basescan.org/",
+        },
+      },
+      {
+        network: ESupportedChains.Gnosis,
+        chainId: EChainId.Gnosis,
+        urls: {
+          apiURL: "https://api.gnosisscan.io/api",
+          browserURL: "https://gnosisscan.io/",
+        },
+      },
+      {
+        network: ESupportedChains.GnosisChiado,
+        chainId: EChainId.GnosisChiado,
+        urls: {
+          apiURL: "https://gnosis-chiado.blockscout.com/api",
+          browserURL: "https://gnosis-chiado.blockscout.com/",
+        },
+      },
+      {
+        network: ESupportedChains.Polygon,
+        chainId: EChainId.Polygon,
+        urls: {
+          apiURL: "https://polygonscan.com/api",
+          browserURL: "https://polygonscan.com/",
+        },
+      },
+      {
+        network: ESupportedChains.PolygonAmoy,
+        chainId: EChainId.PolygonAmoy,
+        urls: {
+          apiURL: "https://amoy.polygonscan.com/api",
+          browserURL: "https://amoy.polygonscan.com/",
         },
       },
     ],

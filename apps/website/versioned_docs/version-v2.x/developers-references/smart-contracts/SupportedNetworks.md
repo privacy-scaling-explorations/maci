@@ -13,6 +13,10 @@ MACI has been tested on the following EVM networks:
 - Arbitrum Sepolia
 - Base
 - Base Sepolia
+- Gnosis
+- Gnosis Chiado
+- Polygon
+- Polygon Amoy
 
 We recommend using either Optimism, Arbitrum or Base. Please open an issue/PR if you intend to use other EVM networks and would like to contribute to this record of deployed and verified contracts as well as benchmarks, that would be greatly appreciated.
 
@@ -27,7 +31,11 @@ For better UX, MACI clients should be sending votes (messages) in batches. Depen
 | Arbitrum         | 98             | 31017545 | 0.00031017545 ETH ($0.80)                       |
 | Arbitrum Sepolia | 98             | 31115404 | 0.0031115404 ETH ($8.06)                        |
 | Base             | 89             | 28165467 | 0.000591851649982612 ETH ($1.54)                |
-| Base Sepolia     | 89             | 28190232 | 0.002072926785842714 ETH ($0.000000)            |
+| Base Sepolia     | 89             | 28190232 | 0.002072926785842714 ETH ($5.18)                |
+| Gnosis           | 50             | 15921153 | 0.0000124615 ETH ($0.03)                        |
+| Gnosis Chiado    | 50             | 15921753 | 0.0000188313 ETH ($0.05)                        |
+| Polygon          | 85             | 26915773 | 0.0002193417259598 ETH ($0.54)                  |
+| Polygon Amoy     | 89             | 28192368 | 0.00017069180975304 ETH ($0.43)                 |
 
 ## Test yourself
 

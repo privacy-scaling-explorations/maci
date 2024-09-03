@@ -27,6 +27,10 @@ export enum ESupportedChains {
   ArbitrumSepolia = "arbitrum_sepolia",
   Base = "base",
   BaseSepolia = "base_sepolia",
+  Gnosis = "gnosis",
+  GnosisChiado = "gnosis_chiado",
+  Polygon = "polygon",
+  PolygonAmoy = "polygon_amoy",
   Coverage = "coverage",
   Hardhat = "hardhat",
 }
@@ -45,6 +49,10 @@ export enum EChainId {
   ArbitrumSepolia = 421614,
   Base = 8453,
   BaseSepolia = 84532,
+  Gnosis = 100,
+  GnosisChiado = 10200,
+  Polygon = 137,
+  PolygonAmoy = 80002,
   Coverage = 1337,
 }
 
@@ -63,6 +71,10 @@ export const getNetworkRpcUrls = (): Record<ESupportedChains, string> => {
   const ARB_SEPOLIA_RPC_URL = process.env.ARB_SEPOLIA_RPC_URL ?? "";
   const BASE_RPC_URL = process.env.BASE_RPC_URL ?? "";
   const BASE_SEPOLIA_RPC_URL = process.env.BASE_SEPOLIA_RPC_URL ?? "";
+  const GNOSIS_RPC_URL = process.env.GNOSIS_RPC_URL ?? "";
+  const GNOSIS_CHIADO_RPC_URL = process.env.GNOSIS_CHIADO_RPC_URL ?? "";
+  const POLYGON_RPC_URL = process.env.POLYGON_RPC_URL ?? "";
+  const POLYGON_AMOY_RPC_URL = process.env.POLYGON_AMOY_RPC_URL ?? "";
 
   return {
     [ESupportedChains.Sepolia]: SEPOLIA_RPC_URL,
@@ -74,6 +86,10 @@ export const getNetworkRpcUrls = (): Record<ESupportedChains, string> => {
     [ESupportedChains.ArbitrumSepolia]: ARB_SEPOLIA_RPC_URL,
     [ESupportedChains.Base]: BASE_RPC_URL,
     [ESupportedChains.BaseSepolia]: BASE_SEPOLIA_RPC_URL,
+    [ESupportedChains.Gnosis]: GNOSIS_RPC_URL,
+    [ESupportedChains.GnosisChiado]: GNOSIS_CHIADO_RPC_URL,
+    [ESupportedChains.Polygon]: POLYGON_RPC_URL,
+    [ESupportedChains.PolygonAmoy]: POLYGON_AMOY_RPC_URL,
     [ESupportedChains.Coverage]: "http://localhost:8555",
     [ESupportedChains.Hardhat]: "http://localhost:8545",
   };
@@ -89,6 +105,10 @@ export const getEtherscanApiKeys = (): Record<ESupportedChains, string | undefin
   [ESupportedChains.ArbitrumSepolia]: process.env.ARB_ETHERSCAN_API_KEY,
   [ESupportedChains.Base]: process.env.BASE_ETHERSCAN_API_KEY,
   [ESupportedChains.BaseSepolia]: process.env.BASE_ETHERSCAN_API_KEY,
+  [ESupportedChains.Gnosis]: process.env.GNOSIS_ETHERSCAN_API_KEY,
+  [ESupportedChains.GnosisChiado]: process.env.GNOSIS_ETHERSCAN_API_KEY,
+  [ESupportedChains.Polygon]: process.env.POLYGON_ETHERSCAN_API_KEY,
+  [ESupportedChains.PolygonAmoy]: process.env.POLYGON_ETHERSCAN_API_KEY,
   [ESupportedChains.Coverage]: undefined,
   [ESupportedChains.Hardhat]: undefined,
 });
