@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { Network } from "hardhat/types";
-import { extractVk, genProof, verifyProof } from "maci-circuits";
+import { cleanThreads, extractVk, genProof, verifyProof } from "maci-circuits";
 import { CircuitInputs, IJsonMaciState, MaciState, Poll } from "maci-core";
 import { genTreeCommitment, hash3, hashLeftRight } from "maci-crypto";
 
@@ -16,6 +16,7 @@ import type {
 } from "./types";
 import type { Proof } from "../../ts/types";
 import type { BigNumberish } from "ethers";
+import type { IVkObjectParams } from "maci-domainobjs";
 
 import { asHex } from "../../ts/utils";
 
@@ -217,9 +218,11 @@ export class ProofGenerator {
 
       console.log("Wait until proof generation is finished");
 
+      const processZkey = await extractVk(this.mp.zkey, false);
+
       const proofs = await Promise.all(
         inputs.map((circuitInputs, index) =>
-          this.generateProofs(circuitInputs, this.mp, `process_${index}.json`).then((data) => {
+          this.generateProofs(circuitInputs, this.mp, `process_${index}.json`, processZkey).then((data) => {
             options?.onBatchComplete?.({ current: index, total: totalMessageBatches, proofs: data });
             return data;
           }),
@@ -227,6 +230,9 @@ export class ProofGenerator {
       ).then((data) => data.reduce((acc, x) => acc.concat(x), []));
 
       console.log("Proof generation is finished");
+
+      // cleanup threads
+      await cleanThreads();
 
       performance.mark("mp-proofs-end");
       performance.measure("Generate message processor proofs", "mp-proofs-start", "mp-proofs-end");
@@ -277,9 +283,11 @@ export class ProofGenerator {
 
       console.log("Wait until proof generation is finished");
 
+      const tallyVk = await extractVk(this.tally.zkey, false);
+
       const proofs = await Promise.all(
         inputs.map((circuitInputs, index) =>
-          this.generateProofs(circuitInputs, this.tally, `tally_${index}.json`).then((data) => {
+          this.generateProofs(circuitInputs, this.tally, `tally_${index}.json`, tallyVk).then((data) => {
             options?.onBatchComplete?.({ current: index, total: totalTallyBatches, proofs: data });
             return data;
           }),
@@ -287,6 +295,9 @@ export class ProofGenerator {
       ).then((data) => data.reduce((acc, x) => acc.concat(x), []));
 
       console.log("Proof generation is finished");
+
+      // cleanup threads
+      await cleanThreads();
 
       // verify the results
       // Compute newResultsCommitment
@@ -387,6 +398,7 @@ export class ProofGenerator {
     circuitInputs: CircuitInputs,
     circuitFiles: ICircuitFiles,
     outputFile: string,
+    vk: IVkObjectParams,
   ): Promise<Proof[]> {
     const proofs: Proof[] = [];
 
@@ -399,11 +411,9 @@ export class ProofGenerator {
       wasmPath: circuitFiles.wasm,
     });
 
-    // eslint-disable-next-line no-await-in-loop
-    const vk = await extractVk(circuitFiles.zkey);
     // verify it
     // eslint-disable-next-line no-await-in-loop
-    const isValid = await verifyProof(publicSignals, proof, vk);
+    const isValid = await verifyProof(publicSignals, proof, vk, false);
 
     if (!isValid) {
       throw new Error("Error: generated an invalid proof");
