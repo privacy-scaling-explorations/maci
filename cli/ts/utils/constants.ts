@@ -8,3 +8,5 @@ export const oldContractAddressStoreName = "contractAddresses.old.json";
 export const contractAddressesStore = path.resolve(__dirname, "..", "..", contractAddressStoreName);
 // local file path where we are storing a previous deployment's contract addresses
 export const oldContractAddressesStore = path.resolve(__dirname, "..", "..", oldContractAddressStoreName);
+
+export const BLOCKS_STEP = 1000;

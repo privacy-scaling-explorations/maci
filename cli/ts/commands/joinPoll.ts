@@ -11,7 +11,7 @@ import fs from "fs";
 
 import type { IJoinPollArgs, IJoinedUserArgs, IParsePollJoinEventsArgs, IJoinPollData } from "../utils";
 
-import { contractExists, logError, logYellow, info, logGreen, success } from "../utils";
+import { contractExists, logError, logYellow, info, logGreen, success, BLOCKS_STEP } from "../utils";
 import { banner } from "../utils/banner";
 
 /**
@@ -35,7 +35,7 @@ const getStateIndexAndCreditBalance = (
 
   if (!stateIndex) {
     const index = stateLeaves.findIndex((leaf) => leaf.pubKey.equals(userMaciPubKey));
-    if (index) {
+    if (index > 0) {
       loadedStateIndex = BigInt(index);
     } else {
       logError("State leaf not found");
@@ -392,8 +392,8 @@ const parsePollJoinEvents = async ({
   pollPublicKey,
 }: IParsePollJoinEventsArgs) => {
   // 1000 blocks at a time
-  for (let block = startBlock; block <= currentBlock; block += 1000) {
-    const toBlock = Math.min(block + 999, currentBlock);
+  for (let block = startBlock; block <= currentBlock; block += BLOCKS_STEP) {
+    const toBlock = Math.min(block + BLOCKS_STEP - 1, currentBlock);
     const pubKey = pollPublicKey.asArray();
     // eslint-disable-next-line no-await-in-loop
     const newEvents = await pollContract.queryFilter(

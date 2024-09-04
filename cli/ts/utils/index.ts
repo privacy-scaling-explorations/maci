@@ -4,6 +4,7 @@ export {
   oldContractAddressStoreName,
   contractAddressesStore,
   oldContractAddressesStore,
+  BLOCKS_STEP,
 } from "./constants";
 export { contractExists, currentBlockTimestamp } from "./contracts";
 export {
