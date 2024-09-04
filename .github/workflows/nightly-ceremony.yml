@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: v1.2.2
+          ref: dev
 
       - uses: pnpm/action-setup@v4
         with:
