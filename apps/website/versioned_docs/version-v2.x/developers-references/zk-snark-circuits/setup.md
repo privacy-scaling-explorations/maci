@@ -20,7 +20,7 @@ pnpm build-test-circuits-c -- --out-path $OUT_PATH
 pnpm build-test-circuits-wasm -- --out-path $OUT_PATH
 ```
 
-Please note that the circuits are configured with testing purpose parameters, which means it can only handle a limited amount of messages (up to 25 messages). For more information on the parameters and how to configure them, please refer to the individual circuit documentation within this page. Also, within the [configure-circomkit](https://maci.pse.dev/docs/installation#configure-circomkit) section of the `installation` page, you'll see how you can update the config file with new params.
+Please note that the circuits are configured with testing purpose parameters, which means it can only handle a limited amount of messages (up to 25 messages). For more information on the parameters and how to configure them, please refer to the individual circuit documentation within this page. Also, within the [configure-circomkit](/docs/quick-start/installation#configure-circomkit) section of the `installation` page, you'll see how you can update the config file with new params.
 
 To compile a single circuit, you can run:
 

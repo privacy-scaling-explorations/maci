@@ -25,16 +25,21 @@ For more info on trusted setup ceremonies please refer to p0tion's [docs](https:
 ## Maci v2.0 Trusted Setup Ceremony (most recent)
 
 :::info
-Maci v2.0 Trusted Setup Ceremony is ongoing and the circuits cannot be yet used in production.
+Maci v2.0 Trusted Setup Ceremony is now completed and the circuits can be used in production.
 :::
-
-To participate in the ceremony please head over to [p0tion's website](https://ceremony.pse.dev/).
-
-This page will be updated once the ceremony is complete.
 
 For this release, we plan to run two ceremonies, one with smaller size circuits (more accessible to contributors) due to smaller batch sizes for proving on chain, and one with larger circuits and large batch sizes for proving. Smaller size artifacts can be used for smaller rounds or for operators that want to run everything on a local computer vs using a beefy server. On the other hand, we plan to use the artifacts with larger batch sizes for large rounds and solely on a server.
 
 ### Small Batch Size Ceremony
+
+:::info
+To download the artifacts, please run the following command from within MACI monorepo's root directory:
+
+```bash
+pnpm download-zkeys:ceremony
+```
+
+:::
 
 Here are the **maximum** values supported by these artifacts:
 
@@ -79,9 +84,10 @@ Please be advised that you will not be able to use these artifacts with MACI v2.
 :::
 
 :::info
-You can download all of the artifacts using the following command from maci's monorepo root:
+MACI v1.2 artifacts are stored on [Amazon S3](https://maci-develop-fra.s3.eu-central-1.amazonaws.com/v1.2.0/maci_artifacts_6-9-2-3_prod.tar.gz). Please either download directly, or checkout any of the maci v1.2 tags to access the artifacts using the following commands:
 
 ```bash
+git checkout v1.2.5
 download:ceremony-zkeys
 ```
 
