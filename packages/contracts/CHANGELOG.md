@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.3.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.2.1...v2.3.0) (2024-09-05)
+
+
+### Features
+
+* **contracts:** make poll modifiers virtual ([b4af027](https://github.com/privacy-scaling-explorations/maci/commit/b4af027ca8bc14ecd849030559c9d1129b475264))
+
+
+### Bug Fixes
+
+* do not cleanup thread all the time while doing parallel proof gen ([#1808](https://github.com/privacy-scaling-explorations/maci/issues/1808)) ([d683cb3](https://github.com/privacy-scaling-explorations/maci/commit/d683cb35e3b1fb54df05e200be85386fb7328de5))
+* ensure prove task works ([#1789](https://github.com/privacy-scaling-explorations/maci/issues/1789)) ([87762e0](https://github.com/privacy-scaling-explorations/maci/commit/87762e021f279852ab3c019a720782b017af80ab))
+
+
+### Miscellaneous
+
+* added polygon and gnosis to supported networks and benchmark ([0a4ead0](https://github.com/privacy-scaling-explorations/maci/commit/0a4ead0aa9b00244206687d5a13bbdd35628c30c))
+* **contracts:** extend ids for contract storage and deployment ([f711ba9](https://github.com/privacy-scaling-explorations/maci/commit/f711ba90e0cf8f45a800193ca146fda93451e8c6))
+* deploy to sepolia and store contracts ([1de2d9a](https://github.com/privacy-scaling-explorations/maci/commit/1de2d9ae2bc69da694a77f3967b8425174345318))
+* update message tree depth programmatically in benchmarks ([#1799](https://github.com/privacy-scaling-explorations/maci/issues/1799)) ([eb1ce58](https://github.com/privacy-scaling-explorations/maci/commit/eb1ce58d70a2d5e5cf4567d403bbd2ec57e97e2d))
+
+
+
 ## [2.2.1](https://github.com/privacy-scaling-explorations/maci/compare/v2.2.0...v2.2.1) (2024-08-19)
 
 

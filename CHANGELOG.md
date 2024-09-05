@@ -3,6 +3,42 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.3.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.2.1...v2.3.0) (2024-09-05)
+
+
+### Features
+
+* **contracts:** make poll modifiers virtual ([b4af027](https://github.com/privacy-scaling-explorations/maci/commit/b4af027ca8bc14ecd849030559c9d1129b475264))
+
+
+### Bug Fixes
+
+* do not cleanup thread all the time while doing parallel proof gen ([#1808](https://github.com/privacy-scaling-explorations/maci/issues/1808)) ([d683cb3](https://github.com/privacy-scaling-explorations/maci/commit/d683cb35e3b1fb54df05e200be85386fb7328de5))
+* ensure prove task works ([#1789](https://github.com/privacy-scaling-explorations/maci/issues/1789)) ([87762e0](https://github.com/privacy-scaling-explorations/maci/commit/87762e021f279852ab3c019a720782b017af80ab))
+
+
+### Miscellaneous
+
+* added polygon and gnosis to supported networks and benchmark ([0a4ead0](https://github.com/privacy-scaling-explorations/maci/commit/0a4ead0aa9b00244206687d5a13bbdd35628c30c))
+* **blog:** anonymous poll joining ([#1805](https://github.com/privacy-scaling-explorations/maci/issues/1805)) ([1c34f5b](https://github.com/privacy-scaling-explorations/maci/commit/1c34f5bc9865f7f59547240454d27b88c58fd390))
+* **ceremony:** update ceremony tests to work with v2 params and keys ([#1807](https://github.com/privacy-scaling-explorations/maci/issues/1807)) ([6bf1ffb](https://github.com/privacy-scaling-explorations/maci/commit/6bf1ffb42e4537dba52fb25b1fc7e370e9a39d76))
+* **contracts:** extend ids for contract storage and deployment ([f711ba9](https://github.com/privacy-scaling-explorations/maci/commit/f711ba90e0cf8f45a800193ca146fda93451e8c6))
+* deploy to sepolia and store contracts ([1de2d9a](https://github.com/privacy-scaling-explorations/maci/commit/1de2d9ae2bc69da694a77f3967b8425174345318))
+* **deps-dev:** bump @commitlint/config-conventional ([#1802](https://github.com/privacy-scaling-explorations/maci/issues/1802)) ([b7861de](https://github.com/privacy-scaling-explorations/maci/commit/b7861de973715513bae9724286e6dcb429c74f12))
+* **deps-dev:** bump @docusaurus/module-type-aliases ([90ecec9](https://github.com/privacy-scaling-explorations/maci/commit/90ecec92210f1ddeaf67b7bf1570a0de0b1b8777))
+* **deps-dev:** bump eslint-import-resolver-typescript ([#1801](https://github.com/privacy-scaling-explorations/maci/issues/1801)) ([6bd155b](https://github.com/privacy-scaling-explorations/maci/commit/6bd155bf3516ceb0bb8930a60de4c2955c8a70fb))
+* **deps-dev:** bump prettier-plugin-solidity from 1.3.1 to 1.4.1 ([#1803](https://github.com/privacy-scaling-explorations/maci/issues/1803)) ([5aaf22e](https://github.com/privacy-scaling-explorations/maci/commit/5aaf22e20f5a746d2424e9cd7351bef322cbd8da))
+* **deps-dev:** bump typedoc-plugin-markdown from 4.2.3 to 4.2.6 ([e79e01f](https://github.com/privacy-scaling-explorations/maci/commit/e79e01f5d604b2f6c53f01ad27253730790def50))
+* **deps:** bump crate-ci/typos from 1.23.6 to 1.24.1 ([f63f9c4](https://github.com/privacy-scaling-explorations/maci/commit/f63f9c43b9696351b00d7e74c154a176bf1a078c))
+* **deps:** bump crate-ci/typos from 1.24.1 to 1.24.3 ([#1804](https://github.com/privacy-scaling-explorations/maci/issues/1804)) ([d071f07](https://github.com/privacy-scaling-explorations/maci/commit/d071f078b415dc401c7ea00513c2ae68a5812499))
+* **deps:** bump rehype-katex from 7.0.0 to 7.0.1 ([6091223](https://github.com/privacy-scaling-explorations/maci/commit/6091223e0be470b421407231dd3c6786b3d8da39))
+* **docs:** remove version banner in v1.2 ([#1797](https://github.com/privacy-scaling-explorations/maci/issues/1797)) ([a97f395](https://github.com/privacy-scaling-explorations/maci/commit/a97f3956b75edf457f61e8792744cb33da202419))
+* get poll mode within sdk ([#1800](https://github.com/privacy-scaling-explorations/maci/issues/1800)) ([71545c1](https://github.com/privacy-scaling-explorations/maci/commit/71545c1ceb3b082c812081639eb2c0c15a58113f))
+* update message tree depth programmatically in benchmarks ([#1799](https://github.com/privacy-scaling-explorations/maci/issues/1799)) ([eb1ce58](https://github.com/privacy-scaling-explorations/maci/commit/eb1ce58d70a2d5e5cf4567d403bbd2ec57e97e2d))
+* update trusted setup docs and fix links ([#1806](https://github.com/privacy-scaling-explorations/maci/issues/1806)) ([3154f1a](https://github.com/privacy-scaling-explorations/maci/commit/3154f1aade391f25853e556628c42c706de66e66))
+
+
+
 ## [2.2.1](https://github.com/privacy-scaling-explorations/maci/compare/v2.2.0...v2.2.1) (2024-08-19)
 
 
