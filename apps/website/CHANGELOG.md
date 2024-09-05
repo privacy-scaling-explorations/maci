@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.3.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.2.1...v2.3.0) (2024-09-05)
+
+
+### Miscellaneous
+
+* added polygon and gnosis to supported networks and benchmark ([0a4ead0](https://github.com/privacy-scaling-explorations/maci/commit/0a4ead0aa9b00244206687d5a13bbdd35628c30c))
+* **blog:** anonymous poll joining ([#1805](https://github.com/privacy-scaling-explorations/maci/issues/1805)) ([1c34f5b](https://github.com/privacy-scaling-explorations/maci/commit/1c34f5bc9865f7f59547240454d27b88c58fd390))
+* **deps-dev:** bump @docusaurus/module-type-aliases ([90ecec9](https://github.com/privacy-scaling-explorations/maci/commit/90ecec92210f1ddeaf67b7bf1570a0de0b1b8777))
+* **deps:** bump rehype-katex from 7.0.0 to 7.0.1 ([6091223](https://github.com/privacy-scaling-explorations/maci/commit/6091223e0be470b421407231dd3c6786b3d8da39))
+* **docs:** remove version banner in v1.2 ([#1797](https://github.com/privacy-scaling-explorations/maci/issues/1797)) ([a97f395](https://github.com/privacy-scaling-explorations/maci/commit/a97f3956b75edf457f61e8792744cb33da202419))
+* update trusted setup docs and fix links ([#1806](https://github.com/privacy-scaling-explorations/maci/issues/1806)) ([3154f1a](https://github.com/privacy-scaling-explorations/maci/commit/3154f1aade391f25853e556628c42c706de66e66))
+
+
+
 ## [2.2.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.1.0...v2.2.0) (2024-08-19)
 
 
