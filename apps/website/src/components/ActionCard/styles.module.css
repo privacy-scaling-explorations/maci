@@ -1,0 +1,96 @@
+.actionCard {
+  background-color: #1a202c; /* darkBlue */
+  color: white;
+  border-radius: 24px;
+  width: 100%;
+  padding: 64px 32px;
+}
+
+.actionCardBody {
+  padding: 0;
+}
+
+.actionCardContent {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+}
+
+.actionCardText {
+  width: 100%;
+}
+
+.actionCardTitle {
+  font-size: 30px;
+  line-height: 44px;
+  font-weight: normal;
+  color: white;
+}
+
+.actionCardDescription {
+  margin-top: 1rem;
+  font-size: 16px;
+  line-height: 25px;
+  font-weight: normal;
+  color: #a0aec0; /* text.400 */
+}
+
+.actionCardButtonContainer {
+  width: 100%;
+}
+
+.actionCardButton {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background-color: #3182ce; /* primary */
+  color: white;
+  text-decoration: none;
+  border-radius: 0.25rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .actionCardContent {
+    flex-direction: row;
+    gap: 0;
+  }
+
+  .actionCardText {
+    width: 522px;
+  }
+
+  .actionCardTitle {
+    font-size: 40px;
+  }
+
+  .actionCardDescription {
+    font-size: 20px;
+    line-height: 32px;
+  }
+
+  .actionCardButtonContainer {
+    width: auto;
+  }
+
+  .actionCardButton {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.125rem;
+    border-radius: 30px;
+  }
+}
+
+@media (min-width: 992px) {
+  .actionCard {
+    padding: 41px 80px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .actionCard {
+    width: 1110px;
+  }
+}

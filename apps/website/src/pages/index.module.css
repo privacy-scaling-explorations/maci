@@ -60,6 +60,76 @@
   margin-bottom: 1rem;
 }
 
+.projectsPage {
+  width: 100%;
+}
+
+.heroSection {
+  padding-top: 170px;
+  padding-bottom: 56px;
+  width: 100%;
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+}
+
+.backgroundImage {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100vw;
+  height: 100%;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.backgroundImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.heroContent {
+  padding-bottom: 64px;
+}
+
+.heroContent h1 {
+  font-size: 72px;
+  margin-bottom: 16px;
+}
+
+.heroContent p {
+  font-size: 20px;
+}
+
+.actionSection {
+  margin-top: 128px;
+  margin-bottom: 128px;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .heroContent h1 {
+    font-size: 46px;
+  }
+
+  .heroContent p {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .heroContent h1 {
+    font-size: 40px;
+  }
+
+  .heroContent p {
+    font-size: 16px;
+  }
+}
+
 @media screen and (max-width: 996px) {
   .heroBanner {
     padding: 1.5rem;
