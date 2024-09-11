@@ -70,6 +70,9 @@ export class TestHarness {
     return stateIndex;
   };
 
+  joinPoll = (nullifier: bigint, pubKey: PubKey, newVoiceCreditBalance: bigint, timestamp: bigint): number =>
+    this.poll.joinPoll(nullifier, pubKey, newVoiceCreditBalance, timestamp);
+
   /**
    * Publishes a message to the MACI poll instance.
    * @param user - The keypair of the user.

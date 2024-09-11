@@ -169,6 +169,8 @@
     "@openzeppelin/contracts": "^5.1.0",
     "@openzeppelin/merkle-tree": "^1.0.7",
     "@pcd/util": "^0.8.0",
+    "@zk-kit/imt.sol": "2.0.0-beta.12",
+    "@zk-kit/lean-imt": "^2.1.0",
     "circomlibjs": "^0.1.7",
     "ethers": "^6.13.4",
     "hardhat": "^2.22.15",

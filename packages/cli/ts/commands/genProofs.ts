@@ -1,3 +1,4 @@
+import { type BigNumberish } from "ethers";
 import { extractVk, genProof, verifyProof } from "maci-circuits";
 import { MACI__factory as MACIFactory, Poll__factory as PollFactory, genMaciStateFromContract } from "maci-contracts";
 import { type CircuitInputs, type IJsonMaciState, MaciState } from "maci-core";
@@ -6,8 +7,6 @@ import { Keypair, PrivKey } from "maci-domainobjs";
 
 import fs from "fs";
 import path from "path";
-
-import type { BigNumberish } from "ethers";
 
 import {
   asHex,
@@ -184,7 +183,7 @@ export const genProofs = async ({
 
     const defaultEndBlock = await Promise.all([
       pollContract
-        .queryFilter(pollContract.filters.MergeMaciState(stateRoot, numSignups), fromBlock)
+        .queryFilter(pollContract.filters.MergeState(stateRoot, numSignups), fromBlock)
         .then((events) => events[events.length - 1]?.blockNumber),
     ]).then((blocks) => Math.max(...blocks));
 

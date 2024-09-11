@@ -16,7 +16,9 @@ import { DeployedContracts, PollContracts } from "../../ts/utils";
 import { deployPollArgs, setVerifyingKeysArgs, deployArgs } from "../constants";
 import { clean } from "../utils";
 
-describe("poll", () => {
+describe("poll", function test() {
+  this.timeout(900000);
+
   let maciAddresses: DeployedContracts;
   let pollAddresses: PollContracts;
   let signer: Signer;

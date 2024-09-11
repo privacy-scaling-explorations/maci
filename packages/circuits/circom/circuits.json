@@ -1,4 +1,10 @@
 {
+  "PollJoining_10_test": {
+    "file": "./core/qv/pollJoining",
+    "template": "PollJoining",
+    "params": [10],
+    "pubs": ["inputHash"]
+  },
   "ProcessMessages_10-20-2_test": {
     "file": "./core/qv/processMessages",
     "template": "ProcessMessages",

@@ -7,6 +7,15 @@ import { IMACI } from "./IMACI.sol";
 /// @title IPoll
 /// @notice Poll interface
 interface IPoll {
+  /// @notice Join the poll
+  function joinPoll(
+    uint256 _nullifier,
+    DomainObjs.PubKey memory _pubKey,
+    uint256 _newVoiceCreditBalance,
+    uint256 _stateRootIndex,
+    uint256[8] memory _proof
+  ) external;
+
   /// @notice The number of messages which have been processed and the number of signups
   /// @return numSignups The number of signups
   /// @return numMsgs The number of messages sent by voters
@@ -27,10 +36,10 @@ interface IPoll {
   /// to encrypt the message.
   function publishMessage(DomainObjs.Message memory _message, DomainObjs.PubKey calldata _encPubKey) external;
 
-  /// @notice The second step of merging the MACI state. This allows the
+  /// @notice The second step of merging the poll state. This allows the
   /// ProcessMessages circuit to access the latest state tree and ballots via
   /// currentSbCommitment.
-  function mergeMaciState() external;
+  function mergeState() external;
 
   /// @notice Returns the Poll's deploy time and duration
   /// @return _deployTime The deployment timestamp

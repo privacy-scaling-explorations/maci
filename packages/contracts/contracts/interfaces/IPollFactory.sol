@@ -13,7 +13,7 @@ interface IPollFactory {
   /// @param _treeDepths The depths of the merkle trees
   /// @param _messageBatchSize The size of message batch
   /// @param _coordinatorPubKey The coordinator's public key
-  /// @param _extContracts The external contract interface references
+  /// @param _extContracts The external contracts interface references
   /// @return The deployed Poll contract
   function deploy(
     uint256 _duration,

@@ -32,4 +32,13 @@ interface IVkRegistry {
     uint8 _messageBatchSize,
     DomainObjs.Mode _mode
   ) external view returns (SnarkCommon.VerifyingKey memory);
+
+  /// @notice Get the poll verifying key
+  /// @param _stateTreeDepth The state tree depth
+  /// @param _voteOptionTreeDepth The vote option tree depth
+  /// @return The verifying key
+  function getPollVk(
+    uint256 _stateTreeDepth,
+    uint256 _voteOptionTreeDepth
+  ) external view returns (SnarkCommon.VerifyingKey memory);
 }

@@ -27,6 +27,7 @@ import {
   initialVoiceCreditBalance,
   maxVoteOptions,
   messageBatchSize,
+  testPollVk,
   testProcessVk,
   testTallyVk,
   treeDepths,
@@ -44,6 +45,7 @@ describe("TallyVotes", () => {
 
   const coordinator = new Keypair();
   let users: Keypair[];
+  let pollKeys: Keypair[];
   let maciState: MaciState;
 
   let pollId: bigint;
@@ -174,7 +176,7 @@ describe("TallyVotes", () => {
     let tallyGeneratedInputs: ITallyCircuitInputs;
 
     before(async () => {
-      await pollContract.mergeMaciState();
+      await pollContract.mergeState();
 
       tallyGeneratedInputs = poll.tallyVotes();
     });
@@ -210,6 +212,7 @@ describe("TallyVotes", () => {
     before(async () => {
       // create 24 users (total 25 - 24 + 1 nothing up my sleeve)
       users = Array.from({ length: 24 }, () => new Keypair());
+      pollKeys = Array.from({ length: 24 }, () => new Keypair());
       maciState = new MaciState(STATE_TREE_DEPTH);
 
       const updatedDuration = 5000000;
@@ -311,7 +314,13 @@ describe("TallyVotes", () => {
       // update the poll state
       poll.updatePoll(BigInt(maciState.stateLeaves.length));
 
-      // set the verification keys on the vk smart contract
+      await vkRegistryContract.setPollVkKey(
+        STATE_TREE_DEPTH,
+        treeDepths.voteOptionTreeDepth,
+        testPollVk.asContractParam() as IVerifyingKeyStruct,
+        { gasLimit: 10000000 },
+      );
+
       await vkRegistryContract.setVerifyingKeys(
         STATE_TREE_DEPTH,
         intStateTreeDepth,
@@ -322,8 +331,26 @@ describe("TallyVotes", () => {
         testTallyVk.asContractParam() as IVerifyingKeyStruct,
       );
 
+      // join all user to the Poll
+      for (let i = 0; i < users.length; i += 1) {
+        const timestamp = Math.floor(Date.now() / 1000);
+        // join locally
+        const nullifier = poseidon([BigInt(users[i].privKey.rawPrivKey)]);
+        poll.joinPoll(nullifier, pollKeys[i].pubKey, BigInt(initialVoiceCreditBalance), BigInt(timestamp));
+
+        // join on chain
+        // eslint-disable-next-line no-await-in-loop
+        await pollContract.joinPoll(
+          nullifier,
+          pollKeys[i].pubKey.asContractParam(),
+          BigInt(initialVoiceCreditBalance),
+          i,
+          [0, 0, 0, 0, 0, 0, 0, 0],
+        );
+      }
+
       await timeTravel(signer.provider! as unknown as EthereumProvider, updatedDuration);
-      await pollContract.mergeMaciState();
+      await pollContract.mergeState();
 
       const processMessagesInputs = poll.processMessages(pollId);
 
@@ -507,6 +534,8 @@ describe("TallyVotes", () => {
     before(async () => {
       // create 25 users (and thus 26 ballots) (total 26 - 25 + 1 nothing up my sleeve)
       users = Array.from({ length: 25 }, () => new Keypair());
+      pollKeys = Array.from({ length: 25 }, () => new Keypair());
+
       maciState = new MaciState(STATE_TREE_DEPTH);
 
       const updatedDuration = 5000000;
@@ -609,6 +638,13 @@ describe("TallyVotes", () => {
       poll.updatePoll(BigInt(maciState.stateLeaves.length));
 
       // set the verification keys on the vk smart contract
+      await vkRegistryContract.setPollVkKey(
+        STATE_TREE_DEPTH,
+        treeDepths.voteOptionTreeDepth,
+        testPollVk.asContractParam() as IVerifyingKeyStruct,
+        { gasLimit: 10000000 },
+      );
+
       await vkRegistryContract.setVerifyingKeys(
         STATE_TREE_DEPTH,
         intStateTreeDepth,
@@ -619,8 +655,26 @@ describe("TallyVotes", () => {
         testTallyVk.asContractParam() as IVerifyingKeyStruct,
       );
 
+      // join all user to the Poll
+      for (let i = 0; i < users.length; i += 1) {
+        const timestamp = Math.floor(Date.now() / 1000);
+        // join locally
+        const nullifier = poseidon([BigInt(users[i].privKey.rawPrivKey)]);
+        poll.joinPoll(nullifier, pollKeys[i].pubKey, BigInt(initialVoiceCreditBalance), BigInt(timestamp));
+
+        // join on chain
+        // eslint-disable-next-line no-await-in-loop
+        await pollContract.joinPoll(
+          nullifier,
+          pollKeys[i].pubKey.asContractParam(),
+          BigInt(initialVoiceCreditBalance),
+          i,
+          [0, 0, 0, 0, 0, 0, 0, 0],
+        );
+      }
+
       await timeTravel(signer.provider! as unknown as EthereumProvider, updatedDuration);
-      await pollContract.mergeMaciState();
+      await pollContract.mergeState();
 
       const processMessagesInputs = poll.processMessages(pollId);
 

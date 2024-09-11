@@ -43,6 +43,7 @@ import {
   ceremonyTallyVotesNonQvZkeyPath,
   ceremonyProcessMessagesNonQvWasmPath,
   ceremonyTallyVotesNonQvWasmPath,
+  ceremonyPollJoiningZkeyPath,
 } from "../constants";
 import { clean, isArm } from "../utils";
 
@@ -66,6 +67,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
     intStateTreeDepth,
     voteOptionTreeDepth,
     messageBatchSize,
+    pollJoiningZkeyPath: ceremonyPollJoiningZkeyPath,
     processMessagesZkeyPathQv: ceremonyProcessMessagesZkeyPath,
     tallyVotesZkeyPathQv: ceremonyTallyVotesZkeyPath,
     processMessagesZkeyPathNonQv: ceremonyProcessMessagesNonQvZkeyPath,

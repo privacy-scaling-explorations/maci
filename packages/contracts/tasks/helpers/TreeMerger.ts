@@ -55,7 +55,7 @@ export class TreeMerger {
     if (!(await this.pollContract.stateMerged())) {
       // go and merge the state tree
       console.log("Merging subroots to a main state root...");
-      const receipt = await this.pollContract.mergeMaciState().then((tx) => tx.wait());
+      const receipt = await this.pollContract.mergeState().then((tx) => tx.wait());
 
       if (receipt?.status !== 1) {
         throw new Error("Error merging signup state subroots");

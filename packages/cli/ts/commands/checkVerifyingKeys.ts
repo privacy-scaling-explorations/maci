@@ -31,6 +31,7 @@ export const checkVerifyingKeys = async ({
   messageBatchSize,
   processMessagesZkeyPath,
   tallyVotesZkeyPath,
+  pollJoiningZkeyPath,
   vkRegistry,
   signer,
   useQuadraticVoting = true,
@@ -68,10 +69,13 @@ export const checkVerifyingKeys = async ({
   // extract the verification keys from the zkey files
   const processVk = VerifyingKey.fromObj(await extractVk(processMessagesZkeyPath));
   const tallyVk = VerifyingKey.fromObj(await extractVk(tallyVotesZkeyPath));
+  const pollVk = VerifyingKey.fromObj(await extractVk(pollJoiningZkeyPath));
 
   try {
     logYellow(quiet, info("Retrieving verifying keys from the contract..."));
     // retrieve the verifying keys from the contract
+
+    const pollVkOnChain = await vkRegistryContractInstance.getPollVk(stateTreeDepth, voteOptionTreeDepth);
 
     const processVkOnChain = await vkRegistryContractInstance.getProcessVk(
       stateTreeDepth,
@@ -88,6 +92,10 @@ export const checkVerifyingKeys = async ({
     );
 
     // do the actual validation
+    if (!compareVks(pollVk, pollVkOnChain)) {
+      logError("Poll verifying keys do not match");
+    }
+
     if (!compareVks(processVk, processVkOnChain)) {
       logError("Process verifying keys do not match");
     }

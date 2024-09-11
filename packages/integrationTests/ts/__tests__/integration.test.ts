@@ -15,10 +15,12 @@ import {
   timeTravel,
   verify,
   DeployedContracts,
+  PollContracts,
+  joinPoll,
 } from "maci-cli";
 import { getDefaultSigner } from "maci-contracts";
 import { MaciState, TreeDepths } from "maci-core";
-import { genPubKey, genRandomSalt } from "maci-crypto";
+import { genPubKey, genRandomSalt, poseidon } from "maci-crypto";
 import { Keypair, PCommand, PrivKey, PubKey } from "maci-domainobjs";
 
 import fs from "fs";
@@ -72,6 +74,7 @@ describe("Integration tests", function test() {
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
+      pollJoiningZkeyPath: path.resolve(__dirname, "../../../cli/zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey"),
       processMessagesZkeyPathQv: path.resolve(
         __dirname,
         "../../../cli/zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey",
@@ -124,10 +127,7 @@ describe("Integration tests", function test() {
 
     pollId = maciState.deployPoll(
       BigInt(Date.now() + duration * 60000),
-<<<<<<< HEAD:packages/integrationTests/ts/__tests__/integration.test.ts
-=======
       maxVoteOptions,
->>>>>>> e84f61047 (feat: anonymous poll joining milestone 1 (#1625)):integrationTests/ts/__tests__/integration.test.ts
       treeDepths,
       messageBatchSize,
       coordinatorKeypair,
@@ -159,10 +159,12 @@ describe("Integration tests", function test() {
   data.suites.forEach((testCase) => {
     it(testCase.description, async () => {
       const users = genTestUserCommands(testCase.numUsers, testCase.numVotesPerUser, testCase.bribers, testCase.votes);
+      const pollKeys: Keypair[] = Array.from({ length: testCase.numUsers }, () => new Keypair());
 
       // loop through all users and generate keypair + signup
       for (let i = 0; i < users.length; i += 1) {
         const user = users[i];
+        const pollKey = pollKeys[i];
         const timestamp = Date.now();
         // signup
         const stateIndex = BigInt(
@@ -175,8 +177,36 @@ describe("Integration tests", function test() {
           }).then((result) => result.stateIndex),
         );
 
+        await joinPoll({
+          maciAddress: contracts.maciAddress,
+          privateKey: user.keypair.privKey.serialize(),
+          pollPrivKey: pollKey.privKey.serialize(),
+          stateIndex,
+          pollId,
+          pollJoiningZkey: path.resolve(__dirname, "../../../cli/zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey"),
+          useWasm: true,
+          pollWasm: path.resolve(
+            __dirname,
+            "../../../cli/zkeys/PollJoining_10_test/PollJoining_10_test_js/PollJoining_10_test.wasm",
+          ),
+          pollWitgen: path.resolve(
+            __dirname,
+            "../../../cli/zkeys/PollJoining_10_test/PollJoining_10_test_cpp/PollJoining_10_test",
+          ),
+          rapidsnark: `${homedir()}/rapidsnark/build/prover`,
+          signer,
+          newVoiceCreditBalance: BigInt(initialVoiceCredits),
+          quiet: true,
+        });
+
         // signup on local maci state
         maciState.signUp(user.keypair.pubKey, BigInt(initialVoiceCredits), BigInt(timestamp));
+
+        // join the poll on local
+        const inputNullifier = BigInt(user.keypair.privKey.asCircuitInputs());
+        const nullifier = poseidon([inputNullifier]);
+        const poll = maciState.polls.get(pollId);
+        poll?.joinPoll(nullifier, pollKey.pubKey, BigInt(initialVoiceCredits), BigInt(timestamp));
 
         // publish messages
         for (let j = 0; j < user.votes.length; j += 1) {
@@ -197,7 +227,7 @@ describe("Integration tests", function test() {
 
           // actually publish it
           const encryptionKey = await publish({
-            pubkey: user.keypair.pubKey.serialize(),
+            pubkey: pollKey.pubKey.serialize(),
             stateIndex,
             voteOptionIndex: voteOptionIndex!,
             nonce,
@@ -206,7 +236,7 @@ describe("Integration tests", function test() {
             maciAddress: contracts.maciAddress,
             salt,
             // if it's a key change command, then we pass the old private key otherwise just pass the current
-            privateKey: isKeyChange ? oldKeypair.privKey.serialize() : user.keypair.privKey.serialize(),
+            privateKey: isKeyChange ? oldKeypair.privKey.serialize() : pollKey.privKey.serialize(),
             signer,
           });
 
@@ -216,14 +246,14 @@ describe("Integration tests", function test() {
           // create the command to add to the local state
           const command = new PCommand(
             stateIndex,
-            user.keypair.pubKey,
+            pollKey.pubKey,
             voteOptionIndex!,
             newVoteWeight!,
             nonce,
             pollId,
             salt,
           );
-          const signature = command.sign(isKeyChange ? oldKeypair.privKey : user.keypair.privKey);
+          const signature = command.sign(isKeyChange ? oldKeypair.privKey : pollKey.privKey);
           const message = command.encrypt(signature, Keypair.genEcdhSharedKey(encPrivKey, coordinatorKeypair.pubKey));
           maciState.polls.get(pollId)?.publishMessage(message, encPubKey);
         }

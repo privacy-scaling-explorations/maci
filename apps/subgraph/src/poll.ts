@@ -1,14 +1,11 @@
 /* eslint-disable no-underscore-dangle */
 
 import { Poll, Vote, MACI } from "../generated/schema";
-import {
-  MergeMaciState as MergeMaciStateEvent,
-  PublishMessage as PublishMessageEvent,
-} from "../generated/templates/Poll/Poll";
+import { MergeState as MergeStateEvent, PublishMessage as PublishMessageEvent } from "../generated/templates/Poll/Poll";
 
 import { ONE_BIG_INT } from "./utils/constants";
 
-export function handleMergeMaciState(event: MergeMaciStateEvent): void {
+export function handleMergeState(event: MergeStateEvent): void {
   const poll = Poll.load(event.address);
 
   if (poll) {

@@ -129,7 +129,7 @@ describe("MessageProcessor", () => {
     generatedInputs = poll.processMessages(pollId);
 
     // set the verification keys on the vk smart contract
-    vkRegistryContract.setVerifyingKeys(
+    await vkRegistryContract.setVerifyingKeys(
       STATE_TREE_DEPTH,
       treeDepths.intStateTreeDepth,
       treeDepths.voteOptionTreeDepth,

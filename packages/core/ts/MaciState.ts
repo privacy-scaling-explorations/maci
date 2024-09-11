@@ -1,3 +1,4 @@
+import { hash4, IncrementalQuinTree } from "maci-crypto";
 import { type PubKey, type Keypair, StateLeaf, blankStateLeaf } from "maci-domainobjs";
 
 import type { IJsonMaciState, IJsonPoll, IMaciState, TreeDepths } from "./utils/types";
@@ -17,6 +18,9 @@ export class MaciState implements IMaciState {
 
   // how deep the state tree is
   stateTreeDepth: number;
+
+  // state tree
+  stateTree?: IncrementalQuinTree;
 
   numSignUps = 0;
 
@@ -44,13 +48,18 @@ export class MaciState implements IMaciState {
    * @param pubKey - The public key of the user.
    * @param initialVoiceCreditBalance - The initial voice credit balance of the user.
    * @param timestamp - The timestamp of the sign-up.
+   * @param stateLeaf - The hash state leaf.
    * @returns The index of the newly signed-up user in the state tree.
    */
-  signUp(pubKey: PubKey, initialVoiceCreditBalance: bigint, timestamp: bigint): number {
+  signUp(pubKey: PubKey, initialVoiceCreditBalance: bigint, timestamp: bigint, stateLeaf?: bigint): number {
     this.numSignUps += 1;
-    const stateLeaf = new StateLeaf(pubKey, initialVoiceCreditBalance, timestamp);
+    const stateLeafObj = new StateLeaf(pubKey, initialVoiceCreditBalance, timestamp);
 
-    return this.stateLeaves.push(stateLeaf.copy()) - 1;
+    const pubKeyAsArray = pubKey.asArray();
+    const stateLeafHash =
+      stateLeaf || hash4([pubKeyAsArray[0], pubKeyAsArray[1], initialVoiceCreditBalance, timestamp]);
+    this.stateTree?.insert(stateLeafHash);
+    return this.stateLeaves.push(stateLeafObj.copy()) - 1;
   }
 
   /**

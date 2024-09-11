@@ -1,3 +1,5 @@
+import { LeanIMT } from "@zk-kit/lean-imt";
+
 import type {
   ConstantInitialVoiceCreditProxy,
   FreeForAllGatekeeper,
@@ -10,9 +12,9 @@ import type {
   PoseidonT6,
   VkRegistry,
 } from "../typechain-types";
-import type { BigNumberish, ContractFactory, Signer } from "ethers";
+import type { BigNumberish, Provider, Signer, ContractFactory } from "ethers";
 import type { CircuitInputs } from "maci-core";
-import type { Message, PubKey } from "maci-domainobjs";
+import type { Message, PubKey, StateLeaf } from "maci-domainobjs";
 import type { PublicSignals } from "snarkjs";
 
 /**
@@ -106,11 +108,13 @@ export interface Action {
     message: Message;
     voiceCreditBalance: number;
     timestamp: number;
+    nullifier: bigint;
+    newVoiceCreditBalance: bigint;
     stateIndex: number;
     numSrQueueOps: number;
     pollId: bigint;
     pollAddr: string;
-    stateRoot: bigint;
+    stateLeaf: bigint;
     messageRoot: bigint;
   }>;
   blockNumber: number;
@@ -184,4 +188,54 @@ export interface IDeployedMaci {
     poseidonT5: string;
     poseidonT6: string;
   };
+}
+
+/**
+ * An interface that represents arguments of generation sign up tree and state leaves
+ */
+export interface IGenSignUpTreeArgs {
+  /**
+   * The etherum provider
+   */
+  provider: Provider;
+
+  /**
+   * The address of MACI contract
+   */
+  address: string;
+
+  /**
+   * The block number from which to start fetching events
+   */
+  fromBlock?: number;
+
+  /**
+   * The number of blocks to fetch in each request
+   */
+  blocksPerRequest?: number;
+
+  /**
+   * The block number at which to stop fetching events
+   */
+  endBlock?: number;
+
+  /**
+   * The amount of time to sleep between each request
+   */
+  sleepAmount?: number;
+}
+
+/**
+ * An interface that represents sign up tree and state leaves
+ */
+export interface IGenSignUpTree {
+  /**
+   * Sign up tree
+   */
+  signUpTree: LeanIMT;
+
+  /**
+   * State leaves
+   */
+  stateLeaves: StateLeaf[];
 }

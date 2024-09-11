@@ -41,7 +41,7 @@ export const publish = async ({
     logError("invalid MACI public key");
   }
   // deserialize
-  const userMaciPubKey = PubKey.deserialize(pubkey);
+  const pollPubKey = PubKey.deserialize(pubkey);
 
   if (!(await contractExists(signer.provider!, maciAddress))) {
     logError("MACI contract does not exist");
@@ -51,7 +51,7 @@ export const publish = async ({
     logError("Invalid MACI private key");
   }
 
-  const userMaciPrivKey = PrivKey.deserialize(privateKey);
+  const pollPrivKey = PrivKey.deserialize(privateKey);
 
   // validate args
   if (voteOptionIndex < 0) {
@@ -104,7 +104,7 @@ export const publish = async ({
   // create the command object
   const command: PCommand = new PCommand(
     stateIndex,
-    userMaciPubKey,
+    pollPubKey,
     voteOptionIndex,
     newVoteWeight,
     nonce,
@@ -112,8 +112,8 @@ export const publish = async ({
     userSalt,
   );
 
-  // sign the command with the user private key
-  const signature = command.sign(userMaciPrivKey);
+  // sign the command with the poll private key
+  const signature = command.sign(pollPrivKey);
   // encrypt the command using a shared key between the user and the coordinator
   const message = command.encrypt(signature, Keypair.genEcdhSharedKey(encKeypair.privKey, coordinatorPubKey));
 

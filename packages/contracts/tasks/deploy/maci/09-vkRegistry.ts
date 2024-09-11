@@ -33,6 +33,7 @@ deployment.deployTask(EDeploySteps.VkRegistry, "Deploy Vk Registry and set keys"
     const intStateTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "intStateTreeDepth");
     const messageBatchDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageBatchDepth");
     const voteOptionTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "voteOptionTreeDepth");
+    const pollJoiningTestZkeyPath = deployment.getDeployConfigField<string>(EContracts.VkRegistry, "zkeys.pollZkey");
     const processMessagesZkeyPathQv = deployment.getDeployConfigField<string>(
       EContracts.VkRegistry,
       "zkeys.qv.processMessagesZkey",
@@ -60,11 +61,12 @@ deployment.deployTask(EDeploySteps.VkRegistry, "Deploy Vk Registry and set keys"
       throw new Error("Non-QV zkeys are not set");
     }
 
-    const [qvProcessVk, qvTallyVk, nonQvProcessVk, nonQvTallyQv] = await Promise.all([
+    const [qvProcessVk, qvTallyVk, nonQvProcessVk, nonQvTallyQv, pollVk] = await Promise.all([
       processMessagesZkeyPathQv && extractVk(processMessagesZkeyPathQv),
       tallyVotesZkeyPathQv && extractVk(tallyVotesZkeyPathQv),
       processMessagesZkeyPathNonQv && extractVk(processMessagesZkeyPathNonQv),
       tallyVotesZkeyPathNonQv && extractVk(tallyVotesZkeyPathNonQv),
+      pollJoiningTestZkeyPath && extractVk(pollJoiningTestZkeyPath),
     ]).then((vks) =>
       vks.map(
         (vk: IVkObjectParams | "" | undefined) =>
@@ -77,6 +79,7 @@ deployment.deployTask(EDeploySteps.VkRegistry, "Deploy Vk Registry and set keys"
       signer: deployer,
     });
 
+    const pollZkeys = pollVk as IVerifyingKeyStruct;
     const processZkeys = [qvProcessVk, nonQvProcessVk].filter(Boolean) as IVerifyingKeyStruct[];
     const tallyZkeys = [qvTallyVk, nonQvTallyQv].filter(Boolean) as IVerifyingKeyStruct[];
     const modes: EMode[] = [];
@@ -96,6 +99,7 @@ deployment.deployTask(EDeploySteps.VkRegistry, "Deploy Vk Registry and set keys"
         voteOptionTreeDepth,
         5 ** messageBatchDepth,
         modes,
+        pollZkeys,
         processZkeys,
         tallyZkeys,
       )

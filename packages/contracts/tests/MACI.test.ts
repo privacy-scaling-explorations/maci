@@ -306,16 +306,6 @@ describe("MACI", function test() {
       expect(receipt?.status).to.eq(1);
     });
 
-    it("should have the correct state root on chain after calculating the root on chain", async () => {
-      maciState.polls.get(pollId)?.updatePoll(await pollContract.numSignups());
-      expect(await maciContract.getStateTreeRoot()).to.eq(maciState.polls.get(pollId)?.stateTree?.root.toString());
-    });
-
-    it("should get the correct state root with getStateTreeRoot", async () => {
-      const onChainStateRoot = await maciContract.getStateTreeRoot();
-      expect(onChainStateRoot.toString()).to.eq(maciState.polls.get(pollId)?.stateTree?.root.toString());
-    });
-
     it("should allow a user to signup after the state tree root was calculated", async () => {
       const tx = await maciContract.signUp(
         users[0].pubKey.asContractParam(),

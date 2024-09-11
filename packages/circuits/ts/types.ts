@@ -41,6 +41,23 @@ export interface IGenProofOptions {
 }
 
 /**
+ * Inputs for circuit PollJoining
+ */
+export interface IPollJoiningInputs {
+  privKey: bigint;
+  pollPrivKey: bigint;
+  pollPubKey: bigint[][];
+  stateLeaf: bigint[];
+  siblings: bigint[][];
+  indices: bigint[];
+  nullifier: bigint;
+  credits: bigint;
+  stateRoot: bigint;
+  actualStateTreeDepth: bigint;
+  inputHash: bigint;
+}
+
+/**
  * Inputs for circuit ProcessMessages
  */
 export interface IProcessMessagesInputs {

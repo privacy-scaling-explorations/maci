@@ -13,7 +13,9 @@ import {
 } from "../../ts";
 import { deployArgs, setVerifyingKeysArgs } from "../constants";
 
-describe("signup", () => {
+describe("signup", function test() {
+  this.timeout(900000);
+
   let signer: Signer;
   let maciAddresses: DeployedContracts;
   const user = new Keypair();

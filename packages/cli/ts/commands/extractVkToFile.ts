@@ -16,14 +16,19 @@ export const extractVkToFile = async ({
   tallyVotesZkeyPathQv,
   processMessagesZkeyPathNonQv,
   tallyVotesZkeyPathNonQv,
+  pollJoiningZkeyPath,
   outputFilePath,
 }: ExtractVkToFileArgs): Promise<void> => {
-  const [processVkQv, tallyVkQv, processVkNonQv, tallyVkNonQv] = await Promise.all([
+  const [processVkQv, tallyVkQv, processVkNonQv, tallyVkNonQv, pollVk] = await Promise.all([
     extractVk(processMessagesZkeyPathQv),
     extractVk(tallyVotesZkeyPathQv),
     extractVk(processMessagesZkeyPathNonQv),
     extractVk(tallyVotesZkeyPathNonQv),
+    extractVk(pollJoiningZkeyPath),
   ]);
 
-  await fs.promises.writeFile(outputFilePath, JSON.stringify({ processVkQv, tallyVkQv, processVkNonQv, tallyVkNonQv }));
+  await fs.promises.writeFile(
+    outputFilePath,
+    JSON.stringify({ processVkQv, tallyVkQv, processVkNonQv, tallyVkNonQv, pollVk }),
+  );
 };

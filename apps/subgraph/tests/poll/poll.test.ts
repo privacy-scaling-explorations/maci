@@ -4,13 +4,13 @@ import { test, describe, afterEach, clearStore, assert, beforeEach } from "match
 
 import { MACI, Poll } from "../../generated/schema";
 import { handleDeployPoll } from "../../src/maci";
-import { handleMergeMaciState, handlePublishMessage } from "../../src/poll";
+import { handleMergeState, handlePublishMessage } from "../../src/poll";
 import { DEFAULT_POLL_ADDRESS, mockPollContract } from "../common";
 import { createDeployPollEvent } from "../maci/utils";
 
-import { createMergeMaciStateEvent, createPublishMessageEvent } from "./utils";
+import { createMergeStateEvent, createPublishMessageEvent } from "./utils";
 
-export { handleMergeMaciState, handlePublishMessage };
+export { handleMergeState, handlePublishMessage };
 
 describe("Poll", () => {
   beforeEach(() => {
@@ -27,9 +27,9 @@ describe("Poll", () => {
   });
 
   test("should handle merge maci state properly", () => {
-    const event = createMergeMaciStateEvent(DEFAULT_POLL_ADDRESS, BigInt.fromI32(1), BigInt.fromI32(3));
+    const event = createMergeStateEvent(DEFAULT_POLL_ADDRESS, BigInt.fromI32(1), BigInt.fromI32(3));
 
-    handleMergeMaciState(event);
+    handleMergeState(event);
 
     const poll = Poll.load(event.address)!;
     const maci = MACI.load(poll.maci)!;
