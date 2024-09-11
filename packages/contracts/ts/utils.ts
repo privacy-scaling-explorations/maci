@@ -1,3 +1,5 @@
+import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
+
 import type { Action, SnarkProof, Groth16Proof } from "./types";
 import type { Ownable } from "../typechain-types";
 import type { BigNumberish, FeeData, Network, Signer } from "ethers";
@@ -142,4 +144,8 @@ export const transferOwnership = async <T extends Ownable>(
  */
 export function asHex(value: BigNumberish): string {
   return `0x${BigInt(value).toString(16)}`;
+}
+
+export function generateMerkleTree(elements: string[][]): StandardMerkleTree<string[]> {
+  return StandardMerkleTree.of(elements, ["address"]);
 }
