@@ -547,6 +547,7 @@ export enum EGatekeepers {
   HatsMultiple = "HatsGatekeeperMultiple",
   Zupass = "ZupassGatekeeper",
   Semaphore = "SemaphoreGatekeeper",
+  MerkleProof = "MerkleProofGatekeeper",
 }
 
 /**
@@ -570,6 +571,7 @@ export enum EContracts {
   ZupassGatekeeper = "ZupassGatekeeper",
   ZupassGroth16Verifier = "ZupassGroth16Verifier",
   SemaphoreGatekeeper = "SemaphoreGatekeeper",
+  MerkleProofGatekeeper = "MerkleProofGatekeeper",
   Verifier = "Verifier",
   MACI = "MACI",
   StateAq = "StateAq",

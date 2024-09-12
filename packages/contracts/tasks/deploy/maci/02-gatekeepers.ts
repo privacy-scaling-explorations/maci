@@ -22,12 +22,14 @@ deployment.deployTask(EDeploySteps.Gatekeepers, "Deploy gatekeepers").then((task
     const gitcoinGatekeeperContractAddress = storage.getAddress(EContracts.GitcoinPassportGatekeeper, hre.network.name);
     const zupassGatekeeperContractAddress = storage.getAddress(EContracts.ZupassGatekeeper, hre.network.name);
     const semaphoreGatekeeperContractAddress = storage.getAddress(EContracts.SemaphoreGatekeeper, hre.network.name);
+    const merkleProofGatekeeperContractAddress = storage.getAddress(EContracts.MerkleProofGatekeeper, hre.network.name);
     const deployFreeForAllGatekeeper = deployment.getDeployConfigField(EContracts.FreeForAllGatekeeper, "deploy");
     const deployEASGatekeeper = deployment.getDeployConfigField(EContracts.EASGatekeeper, "deploy");
     const deployGitcoinGatekeeper = deployment.getDeployConfigField(EContracts.GitcoinPassportGatekeeper, "deploy");
     const deployZupassGatekeeper = deployment.getDeployConfigField(EContracts.ZupassGatekeeper, "deploy");
     const deploySemaphoreGatekeeper = deployment.getDeployConfigField(EContracts.SemaphoreGatekeeper, "deploy");
     const deployHatsSingleGatekeeper = deployment.getDeployConfigField(EContracts.HatsGatekeeper, "deploy");
+    const deployMerkleGateekeper = deployment.getDeployConfigField(EContracts.MerkleProofGatekeeper, "deploy");
 
     const skipDeployFreeForAllGatekeeper = deployFreeForAllGatekeeper !== true;
     const skipDeployEASGatekeeper = deployEASGatekeeper !== true;
@@ -35,6 +37,7 @@ deployment.deployTask(EDeploySteps.Gatekeepers, "Deploy gatekeepers").then((task
     const skipDeployZupassGatekeeper = deployZupassGatekeeper !== true;
     const skipDeploySemaphoreGatekeeper = deploySemaphoreGatekeeper !== true;
     const skipDeployHatsGatekeeper = deployHatsSingleGatekeeper !== true;
+    const skipDeployMerkleProofGatekeeper = deployMerkleGateekeper !== true;
 
     const canSkipDeploy =
       incremental &&
@@ -44,12 +47,14 @@ deployment.deployTask(EDeploySteps.Gatekeepers, "Deploy gatekeepers").then((task
       (zupassGatekeeperContractAddress || skipDeployZupassGatekeeper) &&
       (semaphoreGatekeeperContractAddress || skipDeploySemaphoreGatekeeper) &&
       (hatsGatekeeperContractAddress || skipDeployHatsGatekeeper) &&
+      (merkleProofGatekeeperContractAddress || skipDeployMerkleProofGatekeeper) &&
       (!skipDeployFreeForAllGatekeeper ||
         !skipDeployEASGatekeeper ||
         !skipDeployGitcoinGatekeeper ||
         !skipDeployZupassGatekeeper ||
         !skipDeploySemaphoreGatekeeper ||
-        !skipDeployHatsGatekeeper);
+        !skipDeployHatsGatekeeper ||
+        !skipDeployMerkleProofGatekeeper);
 
     if (canSkipDeploy) {
       // eslint-disable-next-line no-console
@@ -225,6 +230,24 @@ deployment.deployTask(EDeploySteps.Gatekeepers, "Deploy gatekeepers").then((task
         id: EContracts.HatsGatekeeper,
         contract: hatsGatekeeperContract,
         args: [hatsProtocolAddress, criterionHats.length === 1 ? criterionHats[0] : criterionHats],
+        network: hre.network.name,
+      });
+    }
+
+    if (!skipDeployMerkleProofGatekeeper) {
+      const root = deployment.getDeployConfigField<string>(EContracts.MerkleProofGatekeeper, "root", true);
+
+      const MerkleProofGatekeeperContract = await deployment.deployContract(
+        {
+          name: EContracts.MerkleProofGatekeeper,
+          signer: deployer,
+        },
+        root,
+      );
+      await storage.register({
+        id: EContracts.MerkleProofGatekeeper,
+        contract: MerkleProofGatekeeperContract,
+        args: [root],
         network: hre.network.name,
       });
     }

@@ -7,6 +7,10 @@
     "FreeForAllGatekeeper": {
       "deploy": false
     },
+    "MerkleProofGatekeeper": {
+      "deploy": false,
+      "root": "0x2461fcc4c0965cb7f482dd28f1ca8057b7a62a35e8b7a86bb3ad6523f4bb21c0"
+    },
     "EASGatekeeper": {
       "deploy": true,
       "easAddress": "0xC2679fBD37d54388Ce493F1DB75320D236e1815e",
@@ -69,6 +73,10 @@
     "FreeForAllGatekeeper": {
       "deploy": false
     },
+    "MerkleProofGatekeeper": {
+      "deploy": false,
+      "root": "0x2461fcc4c0965cb7f482dd28f1ca8057b7a62a35e8b7a86bb3ad6523f4bb21c0"
+    },
     "EASGatekeeper": {
       "deploy": false,
       "easAddress": "0xaEF4103A04090071165F78D45D83A0C0782c2B2a",
@@ -129,6 +137,10 @@
     },
     "FreeForAllGatekeeper": {
       "deploy": false
+    },
+    "MerkleProofGatekeeper": {
+      "deploy": false,
+      "root": "0x2461fcc4c0965cb7f482dd28f1ca8057b7a62a35e8b7a86bb3ad6523f4bb21c0"
     },
     "EASGatekeeper": {
       "deploy": true,
@@ -192,6 +204,10 @@
     "FreeForAllGatekeeper": {
       "deploy": true
     },
+    "MerkleProofGatekeeper": {
+      "deploy": false,
+      "root": "0x2461fcc4c0965cb7f482dd28f1ca8057b7a62a35e8b7a86bb3ad6523f4bb21c0"
+    },
     "EASGatekeeper": {
       "deploy": false,
       "easAddress": "0xC2679fBD37d54388Ce493F1DB75320D236e1815e",
@@ -253,6 +269,10 @@
     },
     "FreeForAllGatekeeper": {
       "deploy": true
+    },
+    "MerkleProofGatekeeper": {
+      "deploy": false,
+      "root": "0x2461fcc4c0965cb7f482dd28f1ca8057b7a62a35e8b7a86bb3ad6523f4bb21c0"
     },
     "EASGatekeeper": {
       "deploy": false,
@@ -316,6 +336,10 @@
     "FreeForAllGatekeeper": {
       "deploy": true
     },
+    "MerkleProofGatekeeper": {
+      "deploy": false,
+      "root": "0x2461fcc4c0965cb7f482dd28f1ca8057b7a62a35e8b7a86bb3ad6523f4bb21c0"
+    },
     "EASGatekeeper": {
       "deploy": false,
       "easAddress": "0x4200000000000000000000000000000000000021",
@@ -377,6 +401,10 @@
     },
     "FreeForAllGatekeeper": {
       "deploy": true
+    },
+    "MerkleProofGatekeeper": {
+      "deploy": false,
+      "root": "0x2461fcc4c0965cb7f482dd28f1ca8057b7a62a35e8b7a86bb3ad6523f4bb21c0"
     },
     "HatsGatekeeper": {
       "deploy": false,
@@ -445,6 +473,10 @@
     "FreeForAllGatekeeper": {
       "deploy": true
     },
+    "MerkleProofGatekeeper": {
+      "deploy": false,
+      "root": "0x2461fcc4c0965cb7f482dd28f1ca8057b7a62a35e8b7a86bb3ad6523f4bb21c0"
+    },
     "HatsGatekeeper": {
       "deploy": false,
       "criterionHats": ["26960358043289970096177553829315270011263390106506980876069447401472"],
@@ -511,6 +543,10 @@
     },
     "FreeForAllGatekeeper": {
       "deploy": true
+    },
+    "MerkleProofGatekeeper": {
+      "deploy": false,
+      "root": "0x2461fcc4c0965cb7f482dd28f1ca8057b7a62a35e8b7a86bb3ad6523f4bb21c0"
     },
     "HatsGatekeeper": {
       "deploy": false,
@@ -579,6 +615,10 @@
     "FreeForAllGatekeeper": {
       "deploy": true
     },
+    "MerkleProofGatekeeper": {
+      "deploy": false,
+      "root": "0x2461fcc4c0965cb7f482dd28f1ca8057b7a62a35e8b7a86bb3ad6523f4bb21c0"
+    },
     "HatsGatekeeper": {
       "deploy": false,
       "criterionHats": ["26960358043289970096177553829315270011263390106506980876069447401472"],
@@ -645,6 +685,10 @@
     },
     "FreeForAllGatekeeper": {
       "deploy": true
+    },
+    "MerkleProofGatekeeper": {
+      "deploy": false,
+      "root": "0x2461fcc4c0965cb7f482dd28f1ca8057b7a62a35e8b7a86bb3ad6523f4bb21c0"
     },
     "HatsGatekeeper": {
       "deploy": false,
