@@ -1,0 +1,159 @@
+[
+  {
+    "name": "clr.fund",
+    "description": "a protocol for efficiently allocating funds to public goods that benefit the Ethereum Network.",
+    "hackathon": null,
+    "status": "Production",
+    "links": {
+      "website": "https://clr.fund/",
+      "github": "https://github.com/clrfund/monorepo/",
+      "discord": "https://discord.com/invite/ZnsYPV6dCv"
+    }
+  },
+  {
+    "name": "MACI_QF in Allo",
+    "description": "a MACI Quadratic Funding strategy to be used within Gitcoin's Allo Protocol.",
+    "hackathon": null,
+    "status": "Production",
+    "links": {
+      "github": "https://github.com/gitcoinco/MACI_QF"
+    }
+  },
+  {
+    "name": "MACI Platform",
+    "description": "a platform that allows to run different types of vote and funding rounds using MACI.",
+    "hackathon": null,
+    "status": "Production",
+    "links": {
+      "github": "https://github.com/privacy-scaling-explorations/maci-platform",
+      "website": "https://maci-platform.vercel.app/"
+    }
+  },
+  {
+    "name": "MACI Starter Kit",
+    "description": "a starter kit for quickly prototyping applications with MACI.",
+    "hackathon": null,
+    "status": "Utility",
+    "links": {
+      "github": "https://github.com/yashgo0018/maci-wrapper"
+    }
+  },
+  {
+    "name": "Voto",
+    "description": "Voto is an on-chain censorship-resistant anonymous voting solution built on decentralised identities.",
+    "hackathon": "ETHBerlin 2024",
+    "status": "Hackathon",
+    "links": {
+      "website": "https://projects.ethberlin.org/submissions/334",
+      "github": "https://github.com/Vote-tech/voto-tech"
+    }
+  },
+  {
+    "name": "0xFeedback",
+    "description": "A privacy preserving B2C Survey Platform.",
+    "hackathon": "ETHDam 2024",
+    "status": "Hackathon",
+    "links": {
+      "website": "https://taikai.network/cryptocanal/hackathons/ethdam2024/projects/cluyuw0j200y3yz01yjjd4rap/idea"
+    }
+  },
+  {
+    "name": "StealthAlloc",
+    "description": "MACI as an Allo protocol Quadratic Funding Strategy for collusion-resistant, privacy-protecting allocations.",
+    "hackathon": "ETHDam 2024",
+    "status": "Hackathon",
+    "links": {
+      "website": "https://taikai.network/cryptocanal/hackathons/ethdam2024/projects/cluxse8cz00pjz3010wbq3thf/idea",
+      "github": "https://github.com/tse-lao/ethdam24"
+    }
+  },
+  {
+    "name": "NEVO",
+    "description": "MACI's anti-collusion voting system with Near Protocol's Cross-Chain Signatures.",
+    "hackathon": "ETHDam 2024",
+    "status": "Hackathon",
+    "links": {
+      "website": "https://taikai.network/cryptocanal/hackathons/ethdam2024/projects/cluz9746q01c2z301tupriiuq/idea",
+      "github": "https://github.com/atahanyild/NEVO"
+    }
+  },
+  {
+    "name": "EtherTale",
+    "description": "a decentralized, interactive fiction platform powered by AI.",
+    "hackathon": "ETHTaipei 2024",
+    "status": "Hackathon",
+    "links": {
+      "website": "https://taikai.network/ethtaipei/hackathons/hackathon-2024/projects/clu501yr50l1ey501e65jj8nr",
+      "github": "https://github.com/saurabhchalke/EtherTale"
+    }
+  },
+  {
+    "name": "Demokratia",
+    "description": "Offers infrastructure to create and seamlessly integrate personalised AI agents for DAO voting.",
+    "hackathon": "ETHGlobal London 2024",
+    "status": "Hackathon",
+    "links": {
+      "website": "https://ethglobal.com/showcase/demokratia-c7bab",
+      "github": "https://github.com/ConfidentiDemokratia"
+    }
+  },
+  {
+    "name": "SkaffoldMACI+ZkOSIOS",
+    "description": "User-friendly voting system UI (powered by Skaffold) for sports fans using MACI for enhanced security and privacy.",
+    "hackathon": "ETHGlobal London 2024",
+    "status": "Hackathon",
+    "links": {
+      "website": "https://ethglobal.com/showcase/skaffoldmaci-zkosios-2no6q",
+      "github": "https://github.com/GaetanoMondelli/ETH-GLOBAL-LONDON"
+    }
+  },
+  {
+    "name": "Vota Protocol",
+    "description": "a privacy-preserved fair and trustless election Voting System on Blockchain programmable for global constituencies.",
+    "hackathon": "ETHGlobal London 2024",
+    "status": "Hackathon",
+    "links": {
+      "website": "https://ethglobal.com/showcase/vota-protocol-qxf3z",
+      "github": "https://github.com/Vota-Protocol"
+    }
+  },
+  {
+    "name": "Votelik Pollerin",
+    "description": "Sybil- and bribery-resistant polling on Farcaster, utilizing World ID and MACI.",
+    "hackathon": "ETHGlobal London 2024",
+    "status": "Hackathon",
+    "links": {
+      "website": "https://ethglobal.com/showcase/votelik-pollerin-u0dcs",
+      "github": "https://github.com/pauldev20/farcaster-frames-polls"
+    }
+  },
+  {
+    "name": "Anon Vote",
+    "description": "an on-chain anonymous voting solution with guaranteed proof of personhood.",
+    "hackathon": "ETHGlobal London 2024",
+    "status": "Hackathon",
+    "links": {
+      "website": "https://ethglobal.com/showcase/anonvote-uc7w0",
+      "github": "https://github.com/gasperpre/veripoll"
+    }
+  },
+  {
+    "name": "MACI Subgraph",
+    "description": "a subgraph to index data from MACI protocol to serve as data layer for frontend integration",
+    "hackathon": "ETHGlobal Circuit Breaker 2024",
+    "status": "Hackathon",
+    "links": {
+      "website": "https://ethglobal.com/showcase/maci-subgraph-89h7c"
+    }
+  },
+  {
+    "name": "Quadratic Dollar Homepage",
+    "description": "The Quadratic Dollar Homepage is a spin on the Million Dollar Homepage.",
+    "hackathon": null,
+    "status": "Unmaintained",
+    "links": {
+      "github": "https://github.com/privacy-scaling-explorations/qdh",
+      "website": "https://quadratic.page/"
+    }
+  }
+]
