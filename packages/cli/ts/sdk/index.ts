@@ -13,6 +13,7 @@ import {
   getZupassGatekeeperData,
   getEASGatekeeperData,
   getHatsSingleGatekeeperData,
+  getMerkleProofGatekeeperData,
 } from "../commands/signup";
 import { verify } from "../commands/verify";
 
@@ -33,6 +34,7 @@ export {
   getZupassGatekeeperData,
   getEASGatekeeperData,
   getHatsSingleGatekeeperData,
+  getMerkleProofGatekeeperData,
 };
 
 export type { ISnarkJSVerificationKey } from "maci-circuits";
@@ -69,4 +71,5 @@ export type {
   ISemaphoreGatekeeperData,
   IZupassGatekeeperData,
   IHatsGatekeeperData,
+  IMerkleProofGatekeeperData,
 } from "../utils";

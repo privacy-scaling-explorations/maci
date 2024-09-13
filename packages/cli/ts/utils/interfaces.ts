@@ -1134,6 +1134,7 @@ export enum GatekeeperTrait {
   Semaphore = "Semaphore",
   Token = "Token",
   Zupass = "Zupass",
+  MerkleProof = "MerkleProof",
 }
 
 /**
@@ -1219,4 +1220,14 @@ export interface IHatsGatekeeperData {
    * The hats contract
    */
   hatsContract: string;
+}
+
+/**
+ * Interface for the MerkleProof gatekeeper data
+ */
+export interface IMerkleProofGatekeeperData {
+  /**
+   * The merkle tree root
+   */
+  root: string;
 }

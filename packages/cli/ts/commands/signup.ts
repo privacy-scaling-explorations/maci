@@ -6,6 +6,7 @@ import {
   ZupassGatekeeper__factory as ZupassGatekeeperFactory,
   EASGatekeeper__factory as EASGatekeeperFactory,
   HatsGatekeeperSingle__factory as HatsSingleGatekeeperFactory,
+  MerkleProofGatekeeper__factory as MerkleProofGatekeeperFactory,
 } from "maci-contracts/typechain-types";
 import { PubKey } from "maci-domainobjs";
 
@@ -20,6 +21,7 @@ import type {
   IZupassGatekeeperData,
   IEASGatekeeperData,
   IHatsGatekeeperData,
+  IMerkleProofGatekeeperData,
 } from "../utils/interfaces";
 
 import { banner } from "../utils/banner";
@@ -299,5 +301,28 @@ export const getHatsSingleGatekeeperData = async ({
   return {
     criterionHat: [criterionHat.toString()],
     hatsContract: hatsContract.toString(),
+  };
+};
+
+/**
+ * Get the merkleproof gatekeeper data
+ * @param IGetGatekeeperDataArgs - The arguments for the get merkleproof gatekeeper data command
+ * @returns The merkleproof gatekeeper data
+ */
+export const getMerkleProofGatekeeperData = async ({
+  maciAddress,
+  signer,
+}: IGetGatekeeperDataArgs): Promise<IMerkleProofGatekeeperData> => {
+  const maciContract = MACIFactory.connect(maciAddress, signer);
+
+  // get the address of the signup gatekeeper
+  const gatekeeperContractAddress = await maciContract.signUpGatekeeper();
+
+  const gatekeeperContract = MerkleProofGatekeeperFactory.connect(gatekeeperContractAddress, signer);
+
+  const [validRoot] = await Promise.all([gatekeeperContract.root()]);
+
+  return {
+    root: validRoot.toString(),
   };
 };
