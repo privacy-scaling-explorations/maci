@@ -310,8 +310,8 @@ importers:
         specifier: ^22.4.1
         version: 22.4.1
       '@types/prompt':
-        specifier: ^1.1.8
-        version: 1.1.8
+        specifier: ^1.1.9
+        version: 1.1.9
       '@types/snarkjs':
         specifier: ^0.7.8
         version: 0.7.8
@@ -2890,8 +2890,8 @@ packages:
   '@types/prismjs@1.26.4':
     resolution: {integrity: sha512-rlAnzkW2sZOjbqZ743IHUhFcvzaGbqijwOu8QZnZCjfQzBqFE3s4lOTJEsxikImav9uzz/42I+O7YUs1mWgMlg==}
 
-  '@types/prompt@1.1.8':
-    resolution: {integrity: sha512-CF39wIJrSUJ291/M3rXyjQ7gWZfY8qyGw/zraQmFyq72CaJXRWBeQ2BS5FueFRGy38JhaBM08+Nlk/qcqSm72w==}
+  '@types/prompt@1.1.9':
+    resolution: {integrity: sha512-Yl0hzOWGDNCo2JHA8s7g7e9higzonlP/MssTMAIAwYmA7GugrB5WZ1DmrfrpJyJY8Y5UHFr8uaXDlxiyHt2jbg==}
 
   '@types/prop-types@15.7.12':
     resolution: {integrity: sha512-5zvhXYtRNRluoE/jAp4GVsSduVUzNWKkOZrCDBWYtE7biZywwdC2AcEzg+cSMLFRfVgeAFqpfNabiPjxFddV1Q==}
@@ -14069,7 +14069,7 @@ snapshots:
 
   '@types/prismjs@1.26.4': {}
 
-  '@types/prompt@1.1.8':
+  '@types/prompt@1.1.9':
     dependencies:
       '@types/node': 22.4.1
       '@types/revalidator': 0.3.12
