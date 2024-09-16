@@ -51,6 +51,7 @@ export type {
   IZupassGatekeeperData,
   IEASGatekeeperData,
   IHatsGatekeeperData,
+  IMerkleProofGatekeeperData,
 } from "./interfaces";
 export { GatekeeperTrait } from "./interfaces";
 export { compareVks } from "./vks";
