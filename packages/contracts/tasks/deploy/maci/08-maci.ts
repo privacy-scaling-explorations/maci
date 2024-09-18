@@ -1,11 +1,4 @@
-import type {
-  EASGatekeeper,
-  GitcoinPassportGatekeeper,
-  ZupassGatekeeper,
-  MACI,
-  SemaphoreGatekeeper,
-  HatsGatekeeperBase,
-} from "../../../typechain-types";
+import type { SignUpGatekeeper, MACI } from "../../../typechain-types";
 
 import { genEmptyBallotRoots } from "../../../ts/genEmptyBallotRoots";
 import { EDeploySteps } from "../../helpers/constants";
@@ -80,43 +73,11 @@ deployment.deployTask(EDeploySteps.Maci, "Deploy MACI contract").then((task) =>
       emptyBallotRoots,
     );
 
-    if (gatekeeper === EContracts.EASGatekeeper) {
-      const gatekeeperContract = await deployment.getContract<EASGatekeeper>({
-        name: EContracts.EASGatekeeper,
+    if (gatekeeper !== EContracts.FreeForAllGatekeeper) {
+      const gatekeeperContract = await deployment.getContract<SignUpGatekeeper>({
+        name: EContracts.SignUpGatekeeper,
         address: gatekeeperContractAddress,
       });
-      const maciInstanceAddress = await maciContract.getAddress();
-
-      await gatekeeperContract.setMaciInstance(maciInstanceAddress).then((tx) => tx.wait());
-    } else if (gatekeeper === EContracts.GitcoinPassportGatekeeper) {
-      const gatekeeperContract = await deployment.getContract<GitcoinPassportGatekeeper>({
-        name: EContracts.GitcoinPassportGatekeeper,
-        address: gatekeeperContractAddress,
-      });
-      const maciInstanceAddress = await maciContract.getAddress();
-
-      await gatekeeperContract.setMaciInstance(maciInstanceAddress).then((tx) => tx.wait());
-    } else if (gatekeeper === EContracts.ZupassGatekeeper) {
-      const gatekeeperContract = await deployment.getContract<ZupassGatekeeper>({
-        name: EContracts.ZupassGatekeeper,
-        address: gatekeeperContractAddress,
-      });
-      const maciInstanceAddress = await maciContract.getAddress();
-      await gatekeeperContract.setMaciInstance(maciInstanceAddress).then((tx) => tx.wait());
-    } else if (gatekeeper === EContracts.SemaphoreGatekeeper) {
-      const gatekeeperContract = await deployment.getContract<SemaphoreGatekeeper>({
-        name: EContracts.SemaphoreGatekeeper,
-        address: gatekeeperContractAddress,
-      });
-
-      const maciInstanceAddress = await maciContract.getAddress();
-      await gatekeeperContract.setMaciInstance(maciInstanceAddress).then((tx) => tx.wait());
-    } else if (gatekeeper === EContracts.HatsGatekeeper) {
-      const gatekeeperContract = await deployment.getContract<HatsGatekeeperBase>({
-        name: EContracts.HatsGatekeeper,
-        address: gatekeeperContractAddress,
-      });
-
       const maciInstanceAddress = await maciContract.getAddress();
       await gatekeeperContract.setMaciInstance(maciInstanceAddress).then((tx) => tx.wait());
     }
