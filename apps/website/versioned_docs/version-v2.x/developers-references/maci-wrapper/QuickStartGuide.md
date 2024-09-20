@@ -90,8 +90,6 @@ In a fourth terminal window, clone the MACI repository:
 
 ```bash
 git clone git@github.com:privacy-scaling-explorations/maci.git
-cd maci
-git reset --hard ee3e2a6
 ```
 
 Copy the zkeys generated from the maci-wrapper repo to the CLI directory of the MACI repo:
