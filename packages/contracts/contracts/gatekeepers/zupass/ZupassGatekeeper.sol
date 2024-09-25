@@ -74,8 +74,8 @@ contract ZupassGatekeeper is SignUpGatekeeper, Ownable(msg.sender) {
     // Verify proof
     if (!verifier.verifyProof(_pA, _pB, _pC, _pubSignals)) revert InvalidProof();
 
-    // Event id is stored at index 15
-    if (_pubSignals[15] != validEventId) revert InvalidEventId();
+    // Event id is stored at index 1
+    if (_pubSignals[1] != validEventId) revert InvalidEventId();
 
     // Signers are stored at index 13 and 14
     if (_pubSignals[13] != validSigner1 || _pubSignals[14] != validSigner2) revert InvalidSigners();
