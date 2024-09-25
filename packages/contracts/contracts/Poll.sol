@@ -182,7 +182,10 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   /// @dev Can only be submitted before the voting deadline
   /// @param _messages the messages
   /// @param _encPubKeys the encrypted public keys
-  function publishMessageBatch(Message[] calldata _messages, PubKey[] calldata _encPubKeys) external {
+  function publishMessageBatch(
+    Message[] calldata _messages,
+    PubKey[] calldata _encPubKeys
+  ) public virtual isWithinVotingDeadline {
     if (_messages.length != _encPubKeys.length) {
       revert InvalidBatchLength();
     }
