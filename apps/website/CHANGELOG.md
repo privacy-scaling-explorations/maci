@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.4.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.3.0...v2.4.0) (2024-09-30)
+
+
+### Code Refactoring
+
+* redesigned projects built with MACI page ([#1813](https://github.com/privacy-scaling-explorations/maci/issues/1813)) ([f730dd7](https://github.com/privacy-scaling-explorations/maci/commit/f730dd7e87689edbbc276b1cf170cbc17e580a3c))
+
+
+### Miscellaneous
+
+* **deps:** bump prism-react-renderer from 2.3.1 to 2.4.0 ([#1816](https://github.com/privacy-scaling-explorations/maci/issues/1816)) ([79dc24e](https://github.com/privacy-scaling-explorations/maci/commit/79dc24eb936d4ef9adbd873fda96214e1d449a75))
+* **docs:** update link for AccQueue contract ([#1824](https://github.com/privacy-scaling-explorations/maci/issues/1824)) ([80db080](https://github.com/privacy-scaling-explorations/maci/commit/80db080da7dab83c7b283c60e8e659164d507aec))
+* **maci-wrapper-guide:** updated maciwrapper guide ([#1831](https://github.com/privacy-scaling-explorations/maci/issues/1831)) ([f9ac844](https://github.com/privacy-scaling-explorations/maci/commit/f9ac8444f2e85adfd0023df66d0419774ec91ea5))
+
+
+
 ## [2.3.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.2.1...v2.3.0) (2024-09-05)
 
 

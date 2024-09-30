@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.4.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.3.0...v2.4.0) (2024-09-30)
+
+
+### Features
+
+* **contracts:** add virtual modifiers for poll ([0c4806f](https://github.com/privacy-scaling-explorations/maci/commit/0c4806f18fe2f3f3bf44233799a7d127a88dd9c1))
+* **merkleroot-gatekeeper:** added deploy scripts and config ([#1822](https://github.com/privacy-scaling-explorations/maci/issues/1822)) ([0a55bbc](https://github.com/privacy-scaling-explorations/maci/commit/0a55bbc38e690d876cf920709f13e973dd844267))
+* **merkleroot-gatekeeper:** adds a gatekeeper that uses merkle tree ([#1821](https://github.com/privacy-scaling-explorations/maci/issues/1821)) ([1cce59a](https://github.com/privacy-scaling-explorations/maci/commit/1cce59ab1eb8aafd37a374a8eb70cff77a07e99c))
+
+
+### Bug Fixes
+
+* **deploy-maci:** sets the maci instance of any gatekeeper ([4d5ae24](https://github.com/privacy-scaling-explorations/maci/commit/4d5ae24c8401f21d8c2fed82ca3599963c5e1301))
+* **zupass-gatekeeper:** event id was stored at the wrong index ([#1836](https://github.com/privacy-scaling-explorations/maci/issues/1836)) ([d5bc146](https://github.com/privacy-scaling-explorations/maci/commit/d5bc146d67dde8bb8a20c6799024a4d3da08d1fc))
+
+
+### Miscellaneous
+
+* **deps-dev:** bump @types/mocha from 10.0.7 to 10.0.8 ([#1827](https://github.com/privacy-scaling-explorations/maci/issues/1827)) ([4deae8b](https://github.com/privacy-scaling-explorations/maci/commit/4deae8bb3a4ea5cf1b4ad16018186a593142adb8))
+
+
+
 ## [2.3.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.2.1...v2.3.0) (2024-09-05)
 
 

@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.4.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.3.0...v2.4.0) (2024-09-30)
+
+
+### Miscellaneous
+
+* **deps-dev:** bump @types/mocha from 10.0.7 to 10.0.8 ([#1827](https://github.com/privacy-scaling-explorations/maci/issues/1827)) ([4deae8b](https://github.com/privacy-scaling-explorations/maci/commit/4deae8bb3a4ea5cf1b4ad16018186a593142adb8))
+* **deps:** bump @zk-kit/baby-jubjub from 1.0.1 to 1.0.3 ([#1825](https://github.com/privacy-scaling-explorations/maci/issues/1825)) ([071806d](https://github.com/privacy-scaling-explorations/maci/commit/071806d43e49db9f9c57f36b4ca80aea8afa29d5))
+
+
+
 ## [2.3.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.2.1...v2.3.0) (2024-09-05)
 
 
