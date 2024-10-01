@@ -17,7 +17,7 @@ MACI is an Ethereum application that provides privacy and collusion resistance f
 
 MACI counters this problem by using encryption and zero-knowledge proofs (zk-SNARKs) to hide how each person voted while still publicly revealing the final result. User’s cannot prove which option they voted for, and therefore bribers cannot reliably trust that a user voted for their preferred option. For example, a voter can tell a briber that they are voting for option A, but in reality they voted for option B. There is no reliable way to prove which option the voter actually voted for, so the briber has less incentive to pay voters to vote their way.
 
-Applications like [clr.fund](https://clr.fund/) build atop MACI to increase
+Applications like [clr.fund](https://clr.fund/) or protocols like [Allo](https://github.com/gitcoinco/MACI_QF) build atop MACI to increase
 user privacy and discourage collusion or bribery for public goods funding.
 
 ## Features
@@ -44,7 +44,7 @@ The participants of a MACI voting process are: 1) the voters and 2) a trusted co
 Note that MACI presumes an identity system where each legitimate member
 controls a unique Ethereum private key.
 
-For information on MACI's latest features, please check out our [MACI v1.2.0 release post](/blog/maci-v1-2-0-release).
+For information on MACI's latest features, please check out our [MACI v2.0.0 release post](/blog/2024-v2).
 
 ## Background
 

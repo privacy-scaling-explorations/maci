@@ -7,7 +7,7 @@ sidebar_position: 9
 
 MACI allows to conduct polls in both a quadratic voting and non quadratic voting fashion. One should be aware that the only distinction between the two happens when messages are processed and votes tallied. On top of that, the Tally smart contract has been split into two different ones, with the non quadratic voting version one being slightly smaller, due to the need of one less function.
 
-This document will explain how to use each of these options.
+This document will explain how to use each of these options. Hardhat tasks are the currently recommended way to deploy contracts and run polls but you can also use the MACI cli.
 
 ## Quadratic Voting
 
@@ -15,7 +15,27 @@ MACI has always worked with quadratic voting. Users signing up to MACI are assig
 
 To run a poll with quadratic voting, the coordinator must deploy the Poll with the mode set to quadratic voting.
 
-Using MACI's cli, one can create a MACI instance with quadratic voting by running the following command:
+### Using Hardhat tasks
+
+In the deploy-config.json file set the `useQuadraticVoting` value to **true**.
+
+```json
+"Poll": {
+    "pollDuration": 604800,
+    "coordinatorPubkey": "macipk",
+    "useQuadraticVoting": true
+}
+```
+
+Then run the task to create a poll:
+
+```bash
+pnpm deploy-poll:NETWORK
+```
+
+### Using MACI's cli
+
+One can create a MACI instance with quadratic voting by running the following command:
 
 ```bash
 maci-cli create -uq true $OTHER_PARAMETERS
@@ -43,7 +63,27 @@ The non quadratic voting option is a new feature that has been added to MACI wit
 
 To run a poll with non quadratic voting, the coordinator must set the `useQuadraticVoting` parameter to `false` when creating the MACI instance. This will make the MACI instance use the `TallyNonQv` smart contract, which is a smaller version of the `Tally` smart contract, as it does not require the checks for the quadratic voting mechanism.
 
-Using MACI's cli, one can create a MACI instance with non quadratic voting by running the following command:
+### Using Hardhat tasks
+
+In the deploy-config.json file set the `useQuadraticVoting` value to **false**.
+
+```json
+"Poll": {
+    "pollDuration": 604800,
+    "coordinatorPubkey": "macipk",
+    "useQuadraticVoting": false
+}
+```
+
+Then run the task to create a poll:
+
+```bash
+pnpm deploy-poll:NETWORK
+```
+
+### Using MACI's cli
+
+One can create a MACI instance with non quadratic voting by running the following command:
 
 ```bash
 maci-cli create -uq false $OTHER_PARAMETERS

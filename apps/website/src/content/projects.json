@@ -20,6 +20,16 @@
     }
   },
   {
+    "name": "DoraHacks Light-Weight MACI",
+    "description": "DoraHacks MACI is a light-weight implementation of MACI.",
+    "hackathon": null,
+    "status": "Production",
+    "links": {
+      "github": "https://github.com/dorahacksglobal/qf-maci",
+      "website": "https://dorahacks.io/blog/guides/maci-qv-guide/"
+    }
+  },
+  {
     "name": "MACI Platform",
     "description": "a platform that allows to run different types of vote and funding rounds using MACI.",
     "hackathon": null,
