@@ -1,6 +1,6 @@
 /* eslint-disable no-await-in-loop */
 import { type BigNumberish } from "ethers";
-import { type IVerifyingKeyStruct, formatProofForVerifierContract } from "maci-contracts";
+import { type IVerifyingKeyStruct, TallyData, formatProofForVerifierContract } from "maci-contracts";
 import {
   MACI__factory as MACIFactory,
   AccQueue__factory as AccQueueFactory,
@@ -11,7 +11,7 @@ import {
   Verifier__factory as VerifierFactory,
 } from "maci-contracts/typechain-types";
 import { MESSAGE_TREE_ARITY, STATE_TREE_ARITY } from "maci-core";
-import { G1Point, G2Point } from "maci-crypto";
+import { G1Point, G2Point, genTreeProof } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
 
 import fs from "fs";
@@ -42,6 +42,7 @@ export const proveOnChain = async ({
   proofDir,
   maciAddress,
   signer,
+  tallyFile,
   quiet = true,
 }: ProveOnChainArgs): Promise<void> => {
   banner(quiet);
@@ -367,5 +368,25 @@ export const proveOnChain = async ({
 
   if (tallyBatchNum === totalTallyBatches) {
     logGreen(quiet, success("All vote tallying proofs have been submitted."));
+  }
+
+  if (tallyFile) {
+    const tallyData = await fs.promises.readFile(tallyFile).then((res) => JSON.parse(res.toString()) as TallyData);
+
+    const tallyResults = tallyData.results.tally.map((t) => BigInt(t));
+    const tallyResultProofs = tallyData.results.tally.map((_, index) =>
+      genTreeProof(index, tallyResults, Number(treeDepths.voteOptionTreeDepth)),
+    );
+
+    await tallyContract
+      .addTallyResults(
+        tallyData.results.tally.map((_, index) => index),
+        tallyResults,
+        tallyResultProofs,
+        tallyData.results.salt,
+        tallyData.totalSpentVoiceCredits.commitment,
+        tallyData.perVOSpentVoiceCredits?.commitment ?? 0n,
+      )
+      .then((tx) => tx.wait());
   }
 };

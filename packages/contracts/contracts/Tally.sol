@@ -52,6 +52,12 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
   IMessageProcessor public immutable messageProcessor;
   Mode public immutable mode;
 
+  // The tally results
+  mapping(uint256 => uint256) public tallyResults;
+
+  // The total tally results number
+  uint256 public totalTallyResults;
+
   /// @notice custom errors
   error ProcessingNotComplete();
   error InvalidTallyVotesProof();
@@ -60,6 +66,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
   error BatchStartIndexTooLarge();
   error TallyBatchSizeTooLarge();
   error NotSupported();
+  error VotesNotTallied();
 
   /// @notice Create a new Tally contract
   /// @param _verifier The Verifier contract
@@ -343,5 +350,84 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
 
       isValid = hash2(tally) == tallyCommitment;
     }
+  }
+
+  /**
+   * @notice Add and verify tally results by batch.
+   * @param _voteOptionIndices Vote option index.
+   * @param _tallyResults The results of vote tally for the recipients.
+   * @param _tallyResultProofs Proofs of correctness of the vote tally results.
+   * @param _tallyResultSalt the respective salt in the results object in the tally.json
+   * @param _spentVoiceCreditsHashes hashLeftRight(number of spent voice credits, spent salt)
+   * @param _perVOSpentVoiceCreditsHashes hashLeftRight(merkle root of the no spent voice credits per vote option, perVOSpentVoiceCredits salt)
+   */
+  function addTallyResults(
+    uint256[] calldata _voteOptionIndices,
+    uint256[] calldata _tallyResults,
+    uint256[][][] calldata _tallyResultProofs,
+    uint256 _tallyResultSalt,
+    uint256 _spentVoiceCreditsHashes,
+    uint256 _perVOSpentVoiceCreditsHashes
+  ) public virtual onlyOwner {
+    if (!isTallied()) {
+      revert VotesNotTallied();
+    }
+
+    (, , , uint8 voteOptionTreeDepth) = poll.treeDepths();
+    uint256 voteOptionsLength = _voteOptionIndices.length;
+
+    for (uint256 i = 0; i < voteOptionsLength; ) {
+      addTallyResult(
+        _voteOptionIndices[i],
+        _tallyResults[i],
+        _tallyResultProofs[i],
+        _tallyResultSalt,
+        _spentVoiceCreditsHashes,
+        _perVOSpentVoiceCreditsHashes,
+        voteOptionTreeDepth
+      );
+
+      unchecked {
+        i++;
+      }
+    }
+
+    totalTallyResults += voteOptionsLength;
+  }
+
+  /**
+   * @dev Add and verify tally votes and calculate sum of tally squares for alpha calculation.
+   * @param _voteOptionIndex Vote option index.
+   * @param _tallyResult The results of vote tally for the recipients.
+   * @param _tallyResultProof Proofs of correctness of the vote tally results.
+   * @param _tallyResultSalt the respective salt in the results object in the tally.json
+   * @param _spentVoiceCreditsHash hashLeftRight(number of spent voice credits, spent salt)
+   * @param _perVOSpentVoiceCreditsHash hashLeftRight(merkle root of the no spent voice credits per vote option, perVOSpentVoiceCredits salt)
+   * @param _voteOptionTreeDepth vote option tree depth
+   */
+  function addTallyResult(
+    uint256 _voteOptionIndex,
+    uint256 _tallyResult,
+    uint256[][] calldata _tallyResultProof,
+    uint256 _tallyResultSalt,
+    uint256 _spentVoiceCreditsHash,
+    uint256 _perVOSpentVoiceCreditsHash,
+    uint8 _voteOptionTreeDepth
+  ) internal virtual {
+    bool isValid = verifyTallyResult(
+      _voteOptionIndex,
+      _tallyResult,
+      _tallyResultProof,
+      _tallyResultSalt,
+      _voteOptionTreeDepth,
+      _spentVoiceCreditsHash,
+      _perVOSpentVoiceCreditsHash
+    );
+
+    if (!isValid) {
+      revert InvalidTallyVotesProof();
+    }
+
+    tallyResults[_voteOptionIndex] = _tallyResult;
   }
 }

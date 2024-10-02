@@ -1,6 +1,6 @@
 /* eslint-disable no-console, no-await-in-loop */
 import { STATE_TREE_ARITY, MESSAGE_TREE_ARITY } from "maci-core";
-import { G1Point, G2Point } from "maci-crypto";
+import { G1Point, G2Point, genTreeProof } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
 
 import type { IVerifyingKeyStruct, Proof } from "../../ts/types";
@@ -9,7 +9,7 @@ import type { BigNumberish } from "ethers";
 
 import { asHex, formatProofForVerifierContract } from "../../ts/utils";
 
-import { IProverParams } from "./types";
+import { IProverParams, TallyData } from "./types";
 
 /**
  * Prover class is designed to prove message processing and tally proofs on-chain.
@@ -219,7 +219,7 @@ export class Prover {
    *
    * @param proofs tally proofs
    */
-  async proveTally(proofs: Proof[]): Promise<void> {
+  async proveTally(proofs: Proof[], tallyData: TallyData): Promise<void> {
     const [treeDepths, numSignUpsAndMessages, tallyBatchNumber, mode, stateTreeDepth] = await Promise.all([
       this.pollContract.treeDepths(),
       this.pollContract.numSignUpsAndMessages(),
@@ -310,6 +310,22 @@ export class Prover {
     if (tallyBatchNum === totalTallyBatches) {
       console.log("All vote tallying proofs have been submitted.");
     }
+
+    const tallyResults = tallyData.results.tally.map((t) => BigInt(t));
+    const tallyResultProofs = tallyData.results.tally.map((_, index) =>
+      genTreeProof(index, tallyResults, Number(treeDepths.voteOptionTreeDepth)),
+    );
+
+    await this.tallyContract
+      .addTallyResults(
+        tallyData.results.tally.map((_, index) => index),
+        tallyResults,
+        tallyResultProofs,
+        tallyData.results.salt,
+        tallyData.totalSpentVoiceCredits.commitment,
+        tallyData.perVOSpentVoiceCredits?.commitment ?? 0n,
+      )
+      .then((tx) => tx.wait());
   }
 
   /**

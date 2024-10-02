@@ -591,6 +591,11 @@ export interface ProveOnChainArgs {
   signer: Signer;
 
   /**
+   * The tally file with results, per vote option spent credits, spent voice credits total
+   */
+  tallyFile?: string;
+
+  /**
    * The address of the MACI contract
    */
   maciAddress?: string;

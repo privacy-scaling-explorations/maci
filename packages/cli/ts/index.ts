@@ -635,6 +635,10 @@ program
   .command("proveOnChain")
   .description("prove the results of a poll on chain")
   .requiredOption("-o, --poll-id <pollId>", "the poll id", BigInt)
+  .option(
+    "-t, --tally-file <tallyFile>",
+    "the tally file with results, per vote option spent credits, spent voice credits total",
+  )
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
@@ -645,6 +649,7 @@ program
 
       await proveOnChain({
         pollId: cmdObj.pollId,
+        tallyFile: cmdObj.tallyFile,
         proofDir: cmdObj.proofDir,
         maciAddress: cmdObj.maciAddress,
         quiet: cmdObj.quiet,
