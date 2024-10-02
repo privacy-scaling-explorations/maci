@@ -131,6 +131,7 @@ export const mergeSignupsArgs: Omit<MergeSignupsArgs, "signer"> = {
 
 export const proveOnChainArgs: Omit<ProveOnChainArgs, "signer"> = {
   pollId: 0n,
+  tallyFile: testTallyFilePath,
   proofDir: testProofsDirPath,
 };
 

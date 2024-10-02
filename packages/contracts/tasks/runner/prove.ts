@@ -194,8 +194,9 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
       data.processProofs = await proofGenerator.generateMpProofs();
       await prover.proveMessageProcessing(data.processProofs);
 
-      data.tallyProofs = await proofGenerator.generateTallyProofs(network).then(({ proofs }) => proofs);
-      await prover.proveTally(data.tallyProofs);
+      const { proofs: tallyProofs, tallyData } = await proofGenerator.generateTallyProofs(network);
+      data.tallyProofs = tallyProofs;
+      await prover.proveTally(data.tallyProofs, tallyData);
 
       const endBalance = await signer.provider.getBalance(signer);
 

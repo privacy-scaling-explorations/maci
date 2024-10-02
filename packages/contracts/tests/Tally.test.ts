@@ -1,14 +1,14 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from "chai";
-import { AbiCoder, Signer } from "ethers";
+import { AbiCoder, BigNumberish, Signer } from "ethers";
 import { EthereumProvider } from "hardhat/types";
 import { MaciState, Poll, IProcessMessagesCircuitInputs, ITallyCircuitInputs } from "maci-core";
-import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
+import { genTreeCommitment, genTreeProof, hashLeftRight, NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, Message, PubKey } from "maci-domainobjs";
 
 import { EMode } from "../ts/constants";
 import { IVerifyingKeyStruct } from "../ts/types";
-import { getDefaultSigner } from "../ts/utils";
+import { asHex, getDefaultSigner } from "../ts/utils";
 import {
   Tally,
   MACI,
@@ -297,6 +297,36 @@ describe("TallyVotes", () => {
       await mpContract.processMessages(BigInt(processMessagesInputs.newSbCommitment), [0, 0, 0, 0, 0, 0, 0, 0]);
     });
 
+    it("should not add tally results if there are no results", async () => {
+      const tallyData = {
+        results: {
+          tally: poll.tallyResult.map((x) => BigInt(x)),
+          salt: 0n,
+          commitment: 0n,
+        },
+        totalSpentVoiceCredits: {
+          spent: poll.totalSpentVoiceCredits.toString(),
+          salt: 0n,
+          commitment: 0n,
+        },
+      };
+
+      const tallyResultProofs = tallyData.results.tally.map((_, index) =>
+        genTreeProof(index, tallyData.results.tally, Number(treeDepths.voteOptionTreeDepth)),
+      );
+
+      await expect(
+        tallyContract.addTallyResults(
+          tallyData.results.tally.map((_, index) => index),
+          tallyData.results.tally,
+          tallyResultProofs,
+          tallyData.results.salt,
+          tallyData.totalSpentVoiceCredits.commitment,
+          0n,
+        ),
+      ).to.be.revertedWithCustomError(tallyContract, "VotesNotTallied");
+    });
+
     it("should tally votes correctly", async () => {
       let tallyGeneratedInputs: ITallyCircuitInputs;
 
@@ -306,11 +336,94 @@ describe("TallyVotes", () => {
         await tallyContract.tallyVotes(BigInt(tallyGeneratedInputs.newTallyCommitment), [0, 0, 0, 0, 0, 0, 0, 0]);
       }
 
+      const newResultsCommitment = genTreeCommitment(
+        poll.tallyResult,
+        BigInt(asHex(tallyGeneratedInputs!.newResultsRootSalt as BigNumberish)),
+        treeDepths.voteOptionTreeDepth,
+      );
+
+      const newSpentVoiceCreditsCommitment = hashLeftRight(
+        poll.totalSpentVoiceCredits,
+        BigInt(asHex(tallyGeneratedInputs!.newSpentVoiceCreditSubtotalSalt as BigNumberish)),
+      );
+
+      const newPerVOSpentVoiceCreditsCommitment = genTreeCommitment(
+        poll.perVOSpentVoiceCredits,
+        BigInt(asHex(tallyGeneratedInputs!.newPerVOSpentVoiceCreditsRootSalt as BigNumberish)),
+        treeDepths.voteOptionTreeDepth,
+      );
+
+      const tallyData = {
+        results: {
+          tally: poll.tallyResult.map((x) => BigInt(x)),
+          salt: asHex(tallyGeneratedInputs!.newResultsRootSalt as BigNumberish),
+          commitment: asHex(newResultsCommitment),
+        },
+        totalSpentVoiceCredits: {
+          spent: poll.totalSpentVoiceCredits.toString(),
+          salt: asHex(tallyGeneratedInputs!.newSpentVoiceCreditSubtotalSalt as BigNumberish),
+          commitment: asHex(newSpentVoiceCreditsCommitment),
+        },
+      };
+
+      const tallyResultProofs = tallyData.results.tally.map((_, index) =>
+        genTreeProof(index, tallyData.results.tally, Number(treeDepths.voteOptionTreeDepth)),
+      );
+
+      const indices = tallyData.results.tally.map((_, index) => index);
+
+      await tallyContract
+        .addTallyResults(
+          indices,
+          tallyData.results.tally,
+          tallyResultProofs,
+          tallyData.results.salt,
+          tallyData.totalSpentVoiceCredits.commitment,
+          newPerVOSpentVoiceCreditsCommitment,
+        )
+        .then((tx) => tx.wait());
+
+      const results = await Promise.all(indices.map((index) => tallyContract.tallyResults(index)));
+      const totalResults = await tallyContract.totalTallyResults();
+
+      expect(totalResults).to.equal(tallyData.results.tally.length);
+      expect(results).to.deep.equal(tallyData.results.tally);
+
       const onChainNewTallyCommitment = await tallyContract.tallyCommitment();
       expect(tallyGeneratedInputs!.newTallyCommitment).to.eq(onChainNewTallyCommitment.toString());
       await expect(
         tallyContract.tallyVotes(tallyGeneratedInputs!.newTallyCommitment, [0, 0, 0, 0, 0, 0, 0, 0]),
       ).to.be.revertedWithCustomError(tallyContract, "AllBallotsTallied");
+    });
+
+    it("should not add tally results if there are some invalid proofs", async () => {
+      const tallyData = {
+        results: {
+          tally: poll.tallyResult.map((x) => BigInt(x)),
+          salt: 0n,
+          commitment: 0n,
+        },
+        totalSpentVoiceCredits: {
+          spent: poll.totalSpentVoiceCredits.toString(),
+          salt: 0n,
+          commitment: 0n,
+        },
+      };
+
+      const tallyResultProofs = tallyData.results.tally.map((_, index) =>
+        genTreeProof(index, tallyData.results.tally, Number(treeDepths.voteOptionTreeDepth)),
+      );
+
+      await expect(
+        tallyContract.addTallyResults(
+          tallyData.results.tally.map((_, index) => index),
+          tallyData.results.tally,
+          tallyResultProofs,
+          tallyData.results.salt,
+          tallyData.totalSpentVoiceCredits.commitment,
+          0n,
+        ),
+      ).to.be.revertedWithCustomError(tallyContract, "InvalidTallyVotesProof");
     });
   });
 

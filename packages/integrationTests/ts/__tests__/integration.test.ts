@@ -298,6 +298,7 @@ describe("Integration tests", function test() {
       await expect(
         proveOnChain({
           pollId,
+          tallyFile: path.resolve(__dirname, "../../../cli/tally.json"),
           proofDir: path.resolve(__dirname, "../../../cli/proofs"),
           maciAddress: contracts.maciAddress,
           signer,
