@@ -265,7 +265,7 @@ importers:
         version: 12.1.0(commander@12.1.0)
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
-        version: 5.0.0(e4r46vb6ixj6ubcatmuvc52thi)
+        version: 5.0.0(usbjnsicv3icgli3xlq2ekex4a)
       commander:
         specifier: ^12.1.0
         version: 12.1.0
@@ -340,11 +340,11 @@ importers:
   packages/contracts:
     dependencies:
       '@nomicfoundation/hardhat-ethers':
-        specifier: ^3.0.6
-        version: 3.0.6(ethers@6.13.2)(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4))
+        specifier: ^3.0.8
+        version: 3.0.8(ethers@6.13.2)(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4))
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
-        version: 5.0.0(e4r46vb6ixj6ubcatmuvc52thi)
+        version: 5.0.0(usbjnsicv3icgli3xlq2ekex4a)
       '@openzeppelin/contracts':
         specifier: ^5.0.2
         version: 5.0.2
@@ -540,7 +540,7 @@ importers:
     dependencies:
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
-        version: 5.0.0(e4r46vb6ixj6ubcatmuvc52thi)
+        version: 5.0.0(usbjnsicv3icgli3xlq2ekex4a)
       ethers:
         specifier: ^6.13.2
         version: 6.13.2
@@ -2094,8 +2094,8 @@ packages:
       ethers: ^6.1.0
       hardhat: ^2.9.4
 
-  '@nomicfoundation/hardhat-ethers@3.0.6':
-    resolution: {integrity: sha512-/xzkFQAaHQhmIAYOQmvHBPwL+NkwLzT9gRZBsgWUYeV+E6pzXsBQsHfRYbAZ3XEYare+T7S+5Tg/1KDJgepSkA==}
+  '@nomicfoundation/hardhat-ethers@3.0.8':
+    resolution: {integrity: sha512-zhOZ4hdRORls31DTOqg+GmEZM0ujly8GGIuRY7t7szEk2zW/arY1qDug/py8AEktT00v5K+b6RvbVog+va51IA==}
     peerDependencies:
       ethers: ^6.1.0
       hardhat: ^2.0.0
@@ -11687,7 +11687,7 @@ snapshots:
       '@docusaurus/core': 3.5.1(@docusaurus/types@3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(debug@4.3.6)(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       '@docusaurus/logger': 3.5.1
       '@docusaurus/mdx-loader': 3.5.1(@docusaurus/types@3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
-      '@docusaurus/plugin-content-docs': 3.5.1(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+      '@docusaurus/plugin-content-docs': 3.5.1(debug@4.3.6)(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       '@docusaurus/theme-common': 3.5.1(@docusaurus/plugin-content-docs@3.5.1(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4))(@docusaurus/types@3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       '@docusaurus/types': 3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@docusaurus/utils': 3.5.1(@docusaurus/types@3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.5.4)
@@ -11724,45 +11724,6 @@ snapshots:
       - webpack-cli
 
   '@docusaurus/plugin-content-docs@3.5.1(debug@4.3.6)(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)':
-    dependencies:
-      '@docusaurus/core': 3.5.1(@docusaurus/types@3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(debug@4.3.6)(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
-      '@docusaurus/logger': 3.5.1
-      '@docusaurus/mdx-loader': 3.5.1(@docusaurus/types@3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
-      '@docusaurus/module-type-aliases': 3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@docusaurus/theme-common': 3.5.1(@docusaurus/plugin-content-docs@3.5.1(debug@4.3.6)(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4))(@docusaurus/types@3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
-      '@docusaurus/types': 3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@docusaurus/utils': 3.5.1(@docusaurus/types@3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.5.4)
-      '@docusaurus/utils-common': 3.5.1(@docusaurus/types@3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
-      '@docusaurus/utils-validation': 3.5.1(@docusaurus/types@3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.5.4)
-      '@types/react-router-config': 5.0.11
-      combine-promises: 1.2.0
-      fs-extra: 11.2.0
-      js-yaml: 4.1.0
-      lodash: 4.17.21
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-      tslib: 2.6.3
-      utility-types: 3.11.0
-      webpack: 5.92.1
-    transitivePeerDependencies:
-      - '@parcel/css'
-      - '@rspack/core'
-      - '@swc/core'
-      - '@swc/css'
-      - bufferutil
-      - csso
-      - debug
-      - esbuild
-      - eslint
-      - lightningcss
-      - supports-color
-      - typescript
-      - uglify-js
-      - utf-8-validate
-      - vue-template-compiler
-      - webpack-cli
-
-  '@docusaurus/plugin-content-docs@3.5.1(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)':
     dependencies:
       '@docusaurus/core': 3.5.1(@docusaurus/types@3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(debug@4.3.6)(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       '@docusaurus/logger': 3.5.1
@@ -11973,7 +11934,7 @@ snapshots:
     dependencies:
       '@docusaurus/core': 3.5.1(@docusaurus/types@3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(debug@4.3.6)(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       '@docusaurus/plugin-content-blog': 3.5.1(@docusaurus/plugin-content-docs@3.5.1(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4))(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
-      '@docusaurus/plugin-content-docs': 3.5.1(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+      '@docusaurus/plugin-content-docs': 3.5.1(debug@4.3.6)(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       '@docusaurus/plugin-content-pages': 3.5.1(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       '@docusaurus/plugin-debug': 3.5.1(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       '@docusaurus/plugin-google-analytics': 3.5.1(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
@@ -12018,7 +11979,7 @@ snapshots:
       '@docusaurus/mdx-loader': 3.5.1(@docusaurus/types@3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       '@docusaurus/module-type-aliases': 3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@docusaurus/plugin-content-blog': 3.5.1(@docusaurus/plugin-content-docs@3.5.1(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4))(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
-      '@docusaurus/plugin-content-docs': 3.5.1(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+      '@docusaurus/plugin-content-docs': 3.5.1(debug@4.3.6)(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       '@docusaurus/plugin-content-pages': 3.5.1(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       '@docusaurus/theme-common': 3.5.1(@docusaurus/plugin-content-docs@3.5.1(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4))(@docusaurus/types@3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       '@docusaurus/theme-translations': 3.5.1
@@ -12060,37 +12021,11 @@ snapshots:
       - vue-template-compiler
       - webpack-cli
 
-  '@docusaurus/theme-common@3.5.1(@docusaurus/plugin-content-docs@3.5.1(debug@4.3.6)(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4))(@docusaurus/types@3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)':
-    dependencies:
-      '@docusaurus/mdx-loader': 3.5.1(@docusaurus/types@3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
-      '@docusaurus/module-type-aliases': 3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@docusaurus/plugin-content-docs': 3.5.1(debug@4.3.6)(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
-      '@docusaurus/utils': 3.5.1(@docusaurus/types@3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.5.4)
-      '@docusaurus/utils-common': 3.5.1(@docusaurus/types@3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
-      '@types/history': 4.7.11
-      '@types/react': 18.3.3
-      '@types/react-router-config': 5.0.11
-      clsx: 2.1.1
-      parse-numeric-range: 1.3.0
-      prism-react-renderer: 2.4.0(react@18.3.1)
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-      tslib: 2.6.3
-      utility-types: 3.11.0
-    transitivePeerDependencies:
-      - '@docusaurus/types'
-      - '@swc/core'
-      - esbuild
-      - supports-color
-      - typescript
-      - uglify-js
-      - webpack-cli
-
   '@docusaurus/theme-common@3.5.1(@docusaurus/plugin-content-docs@3.5.1(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4))(@docusaurus/types@3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)':
     dependencies:
       '@docusaurus/mdx-loader': 3.5.1(@docusaurus/types@3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       '@docusaurus/module-type-aliases': 3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@docusaurus/plugin-content-docs': 3.5.1(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+      '@docusaurus/plugin-content-docs': 3.5.1(debug@4.3.6)(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       '@docusaurus/utils': 3.5.1(@docusaurus/types@3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.5.4)
       '@docusaurus/utils-common': 3.5.1(@docusaurus/types@3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@types/history': 4.7.11
@@ -12117,7 +12052,7 @@ snapshots:
       '@docsearch/react': 3.6.0(@algolia/client-search@4.23.3)(@types/react@18.3.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(search-insights@2.14.0)
       '@docusaurus/core': 3.5.1(@docusaurus/types@3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(debug@4.3.6)(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       '@docusaurus/logger': 3.5.1
-      '@docusaurus/plugin-content-docs': 3.5.1(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
+      '@docusaurus/plugin-content-docs': 3.5.1(debug@4.3.6)(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       '@docusaurus/theme-common': 3.5.1(@docusaurus/plugin-content-docs@3.5.1(eslint@8.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4))(@docusaurus/types@3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.5.4)
       '@docusaurus/theme-translations': 3.5.1
       '@docusaurus/utils': 3.5.1(@docusaurus/types@3.5.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.5.4)
@@ -13060,9 +12995,9 @@ snapshots:
       '@nomicfoundation/ethereumjs-rlp': 5.0.4
       ethereum-cryptography: 0.1.3
 
-  '@nomicfoundation/hardhat-chai-matchers@2.0.7(@nomicfoundation/hardhat-ethers@3.0.6(ethers@6.13.2)(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4)))(chai@4.4.1)(ethers@6.13.2)(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4))':
+  '@nomicfoundation/hardhat-chai-matchers@2.0.7(@nomicfoundation/hardhat-ethers@3.0.8(ethers@6.13.2)(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4)))(chai@4.4.1)(ethers@6.13.2)(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4))':
     dependencies:
-      '@nomicfoundation/hardhat-ethers': 3.0.6(ethers@6.13.2)(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4))
+      '@nomicfoundation/hardhat-ethers': 3.0.8(ethers@6.13.2)(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4))
       '@types/chai-as-promised': 7.1.8
       chai: 4.4.1
       chai-as-promised: 7.1.2(chai@4.4.1)
@@ -13071,7 +13006,7 @@ snapshots:
       hardhat: 2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4)
       ordinal: 1.0.3
 
-  '@nomicfoundation/hardhat-ethers@3.0.6(ethers@6.13.2)(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4))':
+  '@nomicfoundation/hardhat-ethers@3.0.8(ethers@6.13.2)(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4))':
     dependencies:
       debug: 4.3.6(supports-color@8.1.1)
       ethers: 6.13.2
@@ -13080,9 +13015,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@nomicfoundation/hardhat-ignition-ethers@0.15.4(@nomicfoundation/hardhat-ethers@3.0.6(ethers@6.13.2)(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4)))(@nomicfoundation/hardhat-ignition@0.15.4(@nomicfoundation/hardhat-verify@2.0.8(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4)))(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4)))(@nomicfoundation/ignition-core@0.15.4)(ethers@6.13.2)(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4))':
+  '@nomicfoundation/hardhat-ignition-ethers@0.15.4(@nomicfoundation/hardhat-ethers@3.0.8(ethers@6.13.2)(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4)))(@nomicfoundation/hardhat-ignition@0.15.4(@nomicfoundation/hardhat-verify@2.0.8(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4)))(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4)))(@nomicfoundation/ignition-core@0.15.4)(ethers@6.13.2)(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4))':
     dependencies:
-      '@nomicfoundation/hardhat-ethers': 3.0.6(ethers@6.13.2)(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4))
+      '@nomicfoundation/hardhat-ethers': 3.0.8(ethers@6.13.2)(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4))
       '@nomicfoundation/hardhat-ignition': 0.15.4(@nomicfoundation/hardhat-verify@2.0.8(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4)))(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4))
       '@nomicfoundation/ignition-core': 0.15.4
       ethers: 6.13.2
@@ -13108,11 +13043,11 @@ snapshots:
       ethereumjs-util: 7.1.5
       hardhat: 2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4)
 
-  '@nomicfoundation/hardhat-toolbox@5.0.0(e4r46vb6ixj6ubcatmuvc52thi)':
+  '@nomicfoundation/hardhat-toolbox@5.0.0(usbjnsicv3icgli3xlq2ekex4a)':
     dependencies:
-      '@nomicfoundation/hardhat-chai-matchers': 2.0.7(@nomicfoundation/hardhat-ethers@3.0.6(ethers@6.13.2)(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4)))(chai@4.4.1)(ethers@6.13.2)(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4))
-      '@nomicfoundation/hardhat-ethers': 3.0.6(ethers@6.13.2)(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4))
-      '@nomicfoundation/hardhat-ignition-ethers': 0.15.4(@nomicfoundation/hardhat-ethers@3.0.6(ethers@6.13.2)(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4)))(@nomicfoundation/hardhat-ignition@0.15.4(@nomicfoundation/hardhat-verify@2.0.8(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4)))(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4)))(@nomicfoundation/ignition-core@0.15.4)(ethers@6.13.2)(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4))
+      '@nomicfoundation/hardhat-chai-matchers': 2.0.7(@nomicfoundation/hardhat-ethers@3.0.8(ethers@6.13.2)(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4)))(chai@4.4.1)(ethers@6.13.2)(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4))
+      '@nomicfoundation/hardhat-ethers': 3.0.8(ethers@6.13.2)(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4))
+      '@nomicfoundation/hardhat-ignition-ethers': 0.15.4(@nomicfoundation/hardhat-ethers@3.0.8(ethers@6.13.2)(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4)))(@nomicfoundation/hardhat-ignition@0.15.4(@nomicfoundation/hardhat-verify@2.0.8(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4)))(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4)))(@nomicfoundation/ignition-core@0.15.4)(ethers@6.13.2)(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4))
       '@nomicfoundation/hardhat-network-helpers': 1.0.11(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4))
       '@nomicfoundation/hardhat-verify': 2.0.8(hardhat@2.22.8(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4))
       '@typechain/ethers-v6': 0.5.1(ethers@6.13.2)(typechain@8.3.2(typescript@5.5.4))(typescript@5.5.4)

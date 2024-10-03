@@ -20,6 +20,14 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
   uint256 internal constant TREE_ARITY = 2;
   uint256 internal constant VOTE_OPTION_TREE_ARITY = 5;
 
+  /// @notice Tally results
+  struct TallyResult {
+    /// Tally results value from tally.json
+    uint256 value;
+    /// Flag that this value was set and initialized
+    bool flag;
+  }
+
   /// @notice The commitment to the tally results. Its initial value is 0, but after
   /// the tally of each batch is proven on-chain via a zk-SNARK, it should be
   /// updated to:
@@ -53,7 +61,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
   Mode public immutable mode;
 
   // The tally results
-  mapping(uint256 => uint256) public tallyResults;
+  mapping(uint256 => TallyResult) public tallyResults;
 
   // The total tally results number
   uint256 public totalTallyResults;
@@ -391,8 +399,6 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
         i++;
       }
     }
-
-    totalTallyResults += voteOptionsLength;
   }
 
   /**
@@ -428,6 +434,13 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
       revert InvalidTallyVotesProof();
     }
 
-    tallyResults[_voteOptionIndex] = _tallyResult;
+    TallyResult storage previous = tallyResults[_voteOptionIndex];
+
+    if (!previous.flag) {
+      totalTallyResults++;
+    }
+
+    previous.flag = true;
+    previous.value = _tallyResult;
   }
 }
