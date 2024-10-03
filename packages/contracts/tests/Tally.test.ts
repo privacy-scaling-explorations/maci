@@ -383,11 +383,28 @@ describe("TallyVotes", () => {
         )
         .then((tx) => tx.wait());
 
+      const initialResults = await Promise.all(indices.map((index) => tallyContract.tallyResults(index)));
+      const initialTotalResults = await tallyContract.totalTallyResults();
+
+      expect(initialTotalResults).to.equal(tallyData.results.tally.length);
+      expect(initialResults.map((result) => result.value)).to.deep.equal(tallyData.results.tally);
+
+      await tallyContract
+        .addTallyResults(
+          indices,
+          tallyData.results.tally,
+          tallyResultProofs,
+          tallyData.results.salt,
+          tallyData.totalSpentVoiceCredits.commitment,
+          newPerVOSpentVoiceCreditsCommitment,
+        )
+        .then((tx) => tx.wait());
+
       const results = await Promise.all(indices.map((index) => tallyContract.tallyResults(index)));
       const totalResults = await tallyContract.totalTallyResults();
 
-      expect(totalResults).to.equal(tallyData.results.tally.length);
-      expect(results).to.deep.equal(tallyData.results.tally);
+      expect(initialTotalResults).to.equal(totalResults);
+      expect(initialResults).to.deep.equal(results);
 
       const onChainNewTallyCommitment = await tallyContract.tallyCommitment();
       expect(tallyGeneratedInputs!.newTallyCommitment).to.eq(onChainNewTallyCommitment.toString());
