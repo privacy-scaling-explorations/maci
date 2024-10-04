@@ -249,7 +249,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   }
 
   /// @inheritdoc IPoll
-  function getDeployTimeAndDuration() public view returns (uint256 pollDeployTime, uint256 pollDuration) {
+  function getDeployTimeAndDuration() public view virtual returns (uint256 pollDeployTime, uint256 pollDuration) {
     pollDeployTime = deployTime;
     pollDuration = duration;
   }
