@@ -197,8 +197,8 @@ importers:
         specifier: ^0.4.0
         version: 0.4.0
       circomkit:
-        specifier: ^0.2.1
-        version: 0.2.1(@types/snarkjs@0.7.8)(snarkjs@0.7.4)
+        specifier: ^0.3.1
+        version: 0.3.1(@types/snarkjs@0.7.8)(snarkjs@0.7.4)
       circomlib:
         specifier: ^2.0.5
         version: 2.0.5
@@ -3881,8 +3881,8 @@ packages:
   circom_tester@0.0.19:
     resolution: {integrity: sha512-SNHaBsGxcBH6XsVWfsRbRPA7NF8m8AMKJI9dtJJCFGUtOTT2+zsoIqAwi50z6XCnO4TtjyXq7AeXa1PLHqT0tw==}
 
-  circomkit@0.2.1:
-    resolution: {integrity: sha512-7O8QsOLUq2QvwGMimvWxwdg7OgV33OT7ZBND+81dv3JrVp8ove93yV16jF3TW6XBncSY92/Aka8F4CAi/H9VQw==}
+  circomkit@0.3.1:
+    resolution: {integrity: sha512-beZ3yB7ymcf1VqFt5JmdjQGZku/rwpJKY/EpEhCRJPFH+ThhZajiJO1k/wFwwUl4VyGBme8iNCC2a3CIoqnaEQ==}
     engines: {node: '>=12.0.0'}
     hasBin: true
     peerDependencies:
@@ -15294,7 +15294,7 @@ snapshots:
       tmp-promise: 3.0.3
       util: 0.12.5
 
-  circomkit@0.2.1(@types/snarkjs@0.7.8)(snarkjs@0.7.4):
+  circomkit@0.3.1(@types/snarkjs@0.7.8)(snarkjs@0.7.4):
     dependencies:
       '@types/snarkjs': 0.7.8
       circom_tester: 0.0.19
