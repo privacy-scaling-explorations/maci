@@ -39,7 +39,7 @@
     "@docusaurus/module-type-aliases": "^3.5.2",
     "@docusaurus/tsconfig": "^3.5.2",
     "@types/node": "^22.4.1",
-    "@types/react": "^18.3.3",
+    "@types/react": "^18.3.11",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4"
   },
