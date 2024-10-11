@@ -2,7 +2,7 @@
 title: Hashing and Encryption
 description: A short introduction of the main primitives used by MACI
 sidebar_label: Hashing and Encryption
-sidebar_position: 2
+sidebar_position: 3
 ---
 
 ### Hash Functions
