@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@zk-kit/baby-jubjub": "^1.0.3",
-    "@zk-kit/eddsa-poseidon": "^1.0.2",
+    "@zk-kit/eddsa-poseidon": "^1.0.3",
     "@zk-kit/poseidon-cipher": "^0.3.2",
     "ethers": "^6.13.2"
   },
