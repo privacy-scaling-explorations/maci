@@ -468,8 +468,8 @@ importers:
         specifier: ^1.0.3
         version: 1.0.3
       '@zk-kit/eddsa-poseidon':
-        specifier: ^1.0.2
-        version: 1.0.2
+        specifier: ^1.0.3
+        version: 1.0.3
       '@zk-kit/poseidon-cipher':
         specifier: ^0.3.2
         version: 0.3.2
@@ -3102,23 +3102,17 @@ packages:
     resolution: {integrity: sha512-aiATs7pSutzda/rq8fnuPwTglyVwjM22bNnK2ZgjrpAjQHSSl3lztd2f9evst1W/qnC58DRz7T7QndUDumAR4Q==}
     engines: {node: '>=14.15.0'}
 
-  '@zk-kit/baby-jubjub@1.0.1':
-    resolution: {integrity: sha512-ADQd4nI71uZLd9mMLHm5u97QS9zwUBOIxK8776Og1gHHrIdsku8q8X1Xi54QAsbidvRBC5FDIQnP7QMUWJK/hQ==}
-
   '@zk-kit/baby-jubjub@1.0.3':
     resolution: {integrity: sha512-Wl+QfV6XGOMk1yU2JTqHXeKWfJVXp83is0+dtqfj9wx4wsAPpb+qzYvwAxW5PBx5/Nu71Bh7jp/5vM+6QgHSwA==}
 
   '@zk-kit/circuits@0.4.0':
     resolution: {integrity: sha512-Di7mokhwBS3qxVeCfHxGeNIpDg1kTnr1JXmsWiQMZLkRTn3Hugh6Tl07J394rWD0pIWRwPQsinaMVL2sB4F8yQ==}
 
-  '@zk-kit/eddsa-poseidon@1.0.2':
-    resolution: {integrity: sha512-3ON/6LFHjSqrK+ndIYPJoevzXUkqNGrpVHgfZbYX6x1CoCHHxQG83HH7EBhdWRQsMjcIiw5GVL8h6Xa6irNOYw==}
+  '@zk-kit/eddsa-poseidon@1.0.3':
+    resolution: {integrity: sha512-VyTu5jXHDqno3MBDWhoIwGz0vO/HB1X/2wqwope4JRvS4V8S9sYTwH3paf7ynImrJV7L/zK61RHxpGKbNemYRQ==}
 
   '@zk-kit/poseidon-cipher@0.3.2':
     resolution: {integrity: sha512-Ezz1e0mj/GRDlHdU5m0uhj5iHY72zWJU0BP8DsCCvPubU7LPI2tVaPpxrAjT4JQqatbVRQHLIhixW7F7BPzaFg==}
-
-  '@zk-kit/utils@1.0.0':
-    resolution: {integrity: sha512-v5UjrZiaRNAN2UJmTFHvlMktaA2Efc2qN1Mwd4060ExX12yRhY8ZhzdlDODhnuHkvW5zPukuBHgQhHMScNP3Pg==}
 
   '@zk-kit/utils@1.2.1':
     resolution: {integrity: sha512-H2nTsyWdicVOyvqC5AjgU7tsTgmR6PDrruFJNmlmdhKp7RxEia/E1B1swMZjaasYa2QMp4Zc6oB7cWchty7B2Q==}
@@ -14389,10 +14383,6 @@ snapshots:
       js-yaml: 3.14.1
       tslib: 2.6.3
 
-  '@zk-kit/baby-jubjub@1.0.1':
-    dependencies:
-      '@zk-kit/utils': 1.0.0
-
   '@zk-kit/baby-jubjub@1.0.3':
     dependencies:
       '@zk-kit/utils': 1.2.1
@@ -14401,20 +14391,16 @@ snapshots:
     dependencies:
       circomlib: 2.0.5
 
-  '@zk-kit/eddsa-poseidon@1.0.2':
+  '@zk-kit/eddsa-poseidon@1.0.3':
     dependencies:
-      '@zk-kit/baby-jubjub': 1.0.1
-      '@zk-kit/utils': 1.0.0
+      '@zk-kit/baby-jubjub': 1.0.3
+      '@zk-kit/utils': 1.2.1
       buffer: 6.0.3
 
   '@zk-kit/poseidon-cipher@0.3.2':
     dependencies:
       '@zk-kit/baby-jubjub': 1.0.3
       '@zk-kit/utils': 1.2.1
-
-  '@zk-kit/utils@1.0.0':
-    dependencies:
-      buffer: 6.0.3
 
   '@zk-kit/utils@1.2.1':
     dependencies:
