@@ -31,6 +31,7 @@ import {
   TallyFactory__factory as TallyFactoryFactory,
   GitcoinPassportGatekeeper,
   SemaphoreGatekeeper,
+  AnonAadhaarGatekeeper,
 } from "../typechain-types";
 
 import { genEmptyBallotRoots } from "./genEmptyBallotRoots";
@@ -184,6 +185,27 @@ export const deploySemaphoreGatekeeper = async (
   quiet = false,
 ): Promise<SemaphoreGatekeeper> =>
   deployContract<SemaphoreGatekeeper>("SemaphoreGatekeeper", signer, quiet, semaphoreAddress, groupId.toString());
+
+/**
+ * Deploy an AnonAadhaarGatekeeper contract
+ * @param verifierAddress - the address of the Verifier contract
+ * @param proofValidTime - the time in seconds that a proof is valid for
+ * @returns the deployed AnonAadhaarGatekeeper contract
+ */
+
+export const deployAnonAadhaarGatekeeper = async (
+  verifierAddress: string,
+  proofValidTime: number,
+  signer?: Signer,
+  quiet = false,
+): Promise<AnonAadhaarGatekeeper> =>
+  deployContract<AnonAadhaarGatekeeper>(
+    "AnonAadhaarGatekeeper",
+    signer,
+    quiet,
+    verifierAddress,
+    proofValidTime.toString(),
+  );
 
 /**
  * Deploy Poseidon contracts
