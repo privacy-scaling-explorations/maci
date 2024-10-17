@@ -9,7 +9,7 @@ MACI uses different types of merkle trees to store and manage data. On chain, a 
 
 ## Accumulator queue
 
-This contract holds [messages](/docs/developers-references/smart-contracts/Poll#publishmessage) sent by users. When a leaf is inserted into the `AccQueue`, the merkle root is not updated yet, instead the leaf is updated or the root of a subtree is re-computed. The smart contract exposes three functions:
+This contract holds [messages](/docs/technical-references/smart-contracts/Poll#publishmessage) sent by users. When a leaf is inserted into the `AccQueue`, the merkle root is not updated yet, instead the leaf is updated or the root of a subtree is re-computed. The smart contract exposes three functions:
 
 - `enqueue(leaf)`: Enqueues a leaf into a subtree
   four out of five times it is invoked, an enqueue operation may or may not require the contract to perform a hash function. When it does, only up to $t_d$ required number of hashes need to be computed
@@ -20,4 +20,4 @@ This contract holds [messages](/docs/developers-references/smart-contracts/Poll#
 
 ## LazyIMT
 
-A LazyIMT is a Merkle tree that is updated lazily. It is used to [store the state leaves](/docs/developers-references/smart-contracts/MACI#signup) of the users. The "lazy" tree performs the minimum number of hashes necessary to insert elements in a tree. This means if there is only a left element the parent hash is not calculated until a corresponding right element exists, to avoid having an intermediate hash that will change in the future. This tree is designed for roots that are infrequently accessed onchain.
+A LazyIMT is a Merkle tree that is updated lazily. It is used to [store the state leaves](/docs/technical-references/smart-contracts/MACI#signup) of the users. The "lazy" tree performs the minimum number of hashes necessary to insert elements in a tree. This means if there is only a left element the parent hash is not calculated until a corresponding right element exists, to avoid having an intermediate hash that will change in the future. This tree is designed for roots that are infrequently accessed onchain.

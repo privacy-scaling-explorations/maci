@@ -82,12 +82,12 @@ function defineTargetDirectory() {
       const versionContentJson = JSON.parse(versionContent) as string[];
       return path.resolve(
         __dirname,
-        `../../versioned_docs/version-${versionContentJson[0]}/developers-references/typescript-code/typedoc`,
+        `../../versioned_docs/version-${versionContentJson[0]}/technical-references/typescript-code/typedoc`,
       );
     }
   }
 
-  return path.resolve(__dirname, "../../docs/developers-references/typescript-code/typedoc");
+  return path.resolve(__dirname, "../../docs/technical-references/typescript-code/typedoc");
 }
 
 if (fs.existsSync(TYPEDOC_DIR)) {

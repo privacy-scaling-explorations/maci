@@ -2,7 +2,7 @@
 title: MACI Keys
 description: A short introduction of MACI's keys
 sidebar_label: Maci Keys
-sidebar_position: 1
+sidebar_position: 2
 ---
 
 ## Elliptic Curves

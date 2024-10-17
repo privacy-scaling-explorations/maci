@@ -1,8 +1,4 @@
 {
   "label": "Quadratic Funding",
-  "position": 1,
-  "link": {
-    "type": "generated-index",
-    "description": "An overview of Quadratic Funding and how MACI fits in."
-  }
+  "position": 2
 }

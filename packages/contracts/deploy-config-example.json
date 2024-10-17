@@ -435,7 +435,7 @@
       "groupId": 0
     },
     "MACI": {
-      "stateTreeDepth": 14,
+      "stateTreeDepth": 10,
       "gatekeeper": "FreeForAllGatekeeper"
     },
     "VkRegistry": {

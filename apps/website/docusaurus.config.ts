@@ -103,6 +103,9 @@ async function getConfig(): Promise<Config> {
       blogPosts: Array.isArray(blogPosts) ? blogPosts : [],
     },
     themeConfig: {
+      prism: {
+        additionalLanguages: ["bash"],
+      },
       image: "img/maci-card.png",
       navbar: {
         title: "MACI",
