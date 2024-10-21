@@ -320,7 +320,10 @@ describe("TallyVotes", () => {
           tallyData.results.tally.map((_, index) => index),
           tallyData.results.tally,
           tallyResultProofs,
+          tallyData.totalSpentVoiceCredits.spent,
+          tallyData.totalSpentVoiceCredits.salt,
           tallyData.results.salt,
+          tallyData.results.commitment,
           tallyData.totalSpentVoiceCredits.commitment,
           0n,
         ),
@@ -372,12 +375,29 @@ describe("TallyVotes", () => {
 
       const indices = tallyData.results.tally.map((_, index) => index);
 
+      await expect(
+        tallyContract.addTallyResults(
+          indices,
+          tallyData.results.tally,
+          tallyResultProofs,
+          0n,
+          0n,
+          tallyData.results.salt,
+          0n,
+          tallyData.totalSpentVoiceCredits.commitment,
+          newPerVOSpentVoiceCreditsCommitment,
+        ),
+      ).to.be.revertedWithCustomError(tallyContract, "IncorrectSpentVoiceCredits");
+
       await tallyContract
         .addTallyResults(
           indices,
           tallyData.results.tally,
           tallyResultProofs,
+          tallyData.totalSpentVoiceCredits.spent,
+          tallyData.totalSpentVoiceCredits.salt,
           tallyData.results.salt,
+          tallyData.results.commitment,
           tallyData.totalSpentVoiceCredits.commitment,
           newPerVOSpentVoiceCreditsCommitment,
         )
@@ -394,7 +414,10 @@ describe("TallyVotes", () => {
           indices,
           tallyData.results.tally,
           tallyResultProofs,
+          tallyData.totalSpentVoiceCredits.spent,
+          tallyData.totalSpentVoiceCredits.salt,
           tallyData.results.salt,
+          tallyData.results.commitment,
           tallyData.totalSpentVoiceCredits.commitment,
           newPerVOSpentVoiceCreditsCommitment,
         )
@@ -436,7 +459,10 @@ describe("TallyVotes", () => {
           tallyData.results.tally.map((_, index) => index),
           tallyData.results.tally,
           tallyResultProofs,
+          tallyData.totalSpentVoiceCredits.spent,
+          tallyData.totalSpentVoiceCredits.salt,
           tallyData.results.salt,
+          tallyData.results.commitment,
           tallyData.totalSpentVoiceCredits.commitment,
           0n,
         ),

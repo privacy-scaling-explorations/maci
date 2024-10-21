@@ -66,6 +66,9 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
   // The total tally results number
   uint256 public totalTallyResults;
 
+  // spent field retrieved in the totalSpentVoiceCredits object
+  uint256 public totalSpent;
+
   /// @notice custom errors
   error ProcessingNotComplete();
   error InvalidTallyVotesProof();
@@ -75,6 +78,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
   error TallyBatchSizeTooLarge();
   error NotSupported();
   error VotesNotTallied();
+  error IncorrectSpentVoiceCredits();
 
   /// @notice Create a new Tally contract
   /// @param _verifier The Verifier contract
@@ -365,17 +369,22 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
    * @param _voteOptionIndices Vote option index.
    * @param _tallyResults The results of vote tally for the recipients.
    * @param _tallyResultProofs Proofs of correctness of the vote tally results.
+   * @param _totalSpent spent field retrieved in the totalSpentVoiceCredits object
    * @param _tallyResultSalt the respective salt in the results object in the tally.json
-   * @param _spentVoiceCreditsHashes hashLeftRight(number of spent voice credits, spent salt)
-   * @param _perVOSpentVoiceCreditsHashes hashLeftRight(merkle root of the no spent voice credits per vote option, perVOSpentVoiceCredits salt)
+   * @param _newResultsCommitment The salted commitment of the vote tally for this batch of leaves plus the vote tally from currentResults
+   * @param _spentVoiceCreditsHash hashLeftRight(number of spent voice credits, spent salt)
+   * @param _perVOSpentVoiceCreditsHash hashLeftRight(merkle root of the no spent voice credits per vote option, perVOSpentVoiceCredits salt)
    */
   function addTallyResults(
     uint256[] calldata _voteOptionIndices,
     uint256[] calldata _tallyResults,
     uint256[][][] calldata _tallyResultProofs,
+    uint256 _totalSpent,
+    uint256 _totalSpentSalt,
     uint256 _tallyResultSalt,
-    uint256 _spentVoiceCreditsHashes,
-    uint256 _perVOSpentVoiceCreditsHashes
+    uint256 _newResultsCommitment,
+    uint256 _spentVoiceCreditsHash,
+    uint256 _perVOSpentVoiceCreditsHash
   ) public virtual onlyOwner {
     if (!isTallied()) {
       revert VotesNotTallied();
@@ -390,8 +399,8 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
         _tallyResults[i],
         _tallyResultProofs[i],
         _tallyResultSalt,
-        _spentVoiceCreditsHashes,
-        _perVOSpentVoiceCreditsHashes,
+        _spentVoiceCreditsHash,
+        _perVOSpentVoiceCreditsHash,
         voteOptionTreeDepth
       );
 
@@ -399,6 +408,19 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
         i++;
       }
     }
+
+    bool verified = verifySpentVoiceCredits(
+      _totalSpent,
+      _totalSpentSalt,
+      _newResultsCommitment,
+      _perVOSpentVoiceCreditsHash
+    );
+
+    if (!verified) {
+      revert IncorrectSpentVoiceCredits();
+    }
+
+    totalSpent = _totalSpent;
   }
 
   /**
