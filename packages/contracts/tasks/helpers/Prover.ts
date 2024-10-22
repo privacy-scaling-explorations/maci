@@ -321,7 +321,10 @@ export class Prover {
         tallyData.results.tally.map((_, index) => index),
         tallyResults,
         tallyResultProofs,
+        tallyData.totalSpentVoiceCredits.spent,
+        tallyData.totalSpentVoiceCredits.salt,
         tallyData.results.salt,
+        tallyData.results.commitment,
         tallyData.totalSpentVoiceCredits.commitment,
         tallyData.perVOSpentVoiceCredits?.commitment ?? 0n,
       )
