@@ -316,17 +316,17 @@ describe("TallyVotes", () => {
       );
 
       await expect(
-        tallyContract.addTallyResults(
-          tallyData.results.tally.map((_, index) => index),
-          tallyData.results.tally,
+        tallyContract.addTallyResults({
+          voteOptionIndices: tallyData.results.tally.map((_, index) => index),
+          tallyResults: tallyData.results.tally,
           tallyResultProofs,
-          tallyData.totalSpentVoiceCredits.spent,
-          tallyData.totalSpentVoiceCredits.salt,
-          tallyData.results.salt,
-          tallyData.results.commitment,
-          tallyData.totalSpentVoiceCredits.commitment,
-          0n,
-        ),
+          totalSpent: tallyData.totalSpentVoiceCredits.spent,
+          totalSpentSalt: tallyData.totalSpentVoiceCredits.salt,
+          tallyResultSalt: tallyData.results.salt,
+          newResultsCommitment: tallyData.results.commitment,
+          spentVoiceCreditsHash: tallyData.totalSpentVoiceCredits.commitment,
+          perVOSpentVoiceCreditsHash: 0n,
+        }),
       ).to.be.revertedWithCustomError(tallyContract, "VotesNotTallied");
     });
 
@@ -376,31 +376,31 @@ describe("TallyVotes", () => {
       const indices = tallyData.results.tally.map((_, index) => index);
 
       await expect(
-        tallyContract.addTallyResults(
-          indices,
-          tallyData.results.tally,
+        tallyContract.addTallyResults({
+          voteOptionIndices: indices,
+          tallyResults: tallyData.results.tally,
           tallyResultProofs,
-          0n,
-          0n,
-          tallyData.results.salt,
-          0n,
-          tallyData.totalSpentVoiceCredits.commitment,
-          newPerVOSpentVoiceCreditsCommitment,
-        ),
+          totalSpent: 0n,
+          totalSpentSalt: 0n,
+          tallyResultSalt: tallyData.results.salt,
+          newResultsCommitment: 0n,
+          spentVoiceCreditsHash: tallyData.totalSpentVoiceCredits.commitment,
+          perVOSpentVoiceCreditsHash: newPerVOSpentVoiceCreditsCommitment,
+        }),
       ).to.be.revertedWithCustomError(tallyContract, "IncorrectSpentVoiceCredits");
 
       await tallyContract
-        .addTallyResults(
-          indices,
-          tallyData.results.tally,
+        .addTallyResults({
+          voteOptionIndices: indices,
+          tallyResults: tallyData.results.tally,
           tallyResultProofs,
-          tallyData.totalSpentVoiceCredits.spent,
-          tallyData.totalSpentVoiceCredits.salt,
-          tallyData.results.salt,
-          tallyData.results.commitment,
-          tallyData.totalSpentVoiceCredits.commitment,
-          newPerVOSpentVoiceCreditsCommitment,
-        )
+          totalSpent: tallyData.totalSpentVoiceCredits.spent,
+          totalSpentSalt: tallyData.totalSpentVoiceCredits.salt,
+          tallyResultSalt: tallyData.results.salt,
+          newResultsCommitment: tallyData.results.commitment,
+          spentVoiceCreditsHash: tallyData.totalSpentVoiceCredits.commitment,
+          perVOSpentVoiceCreditsHash: newPerVOSpentVoiceCreditsCommitment,
+        })
         .then((tx) => tx.wait());
 
       const initialResults = await Promise.all(indices.map((index) => tallyContract.tallyResults(index)));
@@ -410,17 +410,17 @@ describe("TallyVotes", () => {
       expect(initialResults.map((result) => result.value)).to.deep.equal(tallyData.results.tally);
 
       await tallyContract
-        .addTallyResults(
-          indices,
-          tallyData.results.tally,
+        .addTallyResults({
+          voteOptionIndices: indices,
+          tallyResults: tallyData.results.tally,
           tallyResultProofs,
-          tallyData.totalSpentVoiceCredits.spent,
-          tallyData.totalSpentVoiceCredits.salt,
-          tallyData.results.salt,
-          tallyData.results.commitment,
-          tallyData.totalSpentVoiceCredits.commitment,
-          newPerVOSpentVoiceCreditsCommitment,
-        )
+          totalSpent: tallyData.totalSpentVoiceCredits.spent,
+          totalSpentSalt: tallyData.totalSpentVoiceCredits.salt,
+          tallyResultSalt: tallyData.results.salt,
+          newResultsCommitment: tallyData.results.commitment,
+          spentVoiceCreditsHash: tallyData.totalSpentVoiceCredits.commitment,
+          perVOSpentVoiceCreditsHash: newPerVOSpentVoiceCreditsCommitment,
+        })
         .then((tx) => tx.wait());
 
       const results = await Promise.all(indices.map((index) => tallyContract.tallyResults(index)));
@@ -455,17 +455,17 @@ describe("TallyVotes", () => {
       );
 
       await expect(
-        tallyContract.addTallyResults(
-          tallyData.results.tally.map((_, index) => index),
-          tallyData.results.tally,
+        tallyContract.addTallyResults({
+          voteOptionIndices: tallyData.results.tally.map((_, index) => index),
+          tallyResults: tallyData.results.tally,
           tallyResultProofs,
-          tallyData.totalSpentVoiceCredits.spent,
-          tallyData.totalSpentVoiceCredits.salt,
-          tallyData.results.salt,
-          tallyData.results.commitment,
-          tallyData.totalSpentVoiceCredits.commitment,
-          0n,
-        ),
+          totalSpent: tallyData.totalSpentVoiceCredits.spent,
+          totalSpentSalt: tallyData.totalSpentVoiceCredits.salt,
+          tallyResultSalt: tallyData.results.salt,
+          newResultsCommitment: tallyData.results.commitment,
+          spentVoiceCreditsHash: tallyData.totalSpentVoiceCredits.commitment,
+          perVOSpentVoiceCreditsHash: 0n,
+        }),
       ).to.be.revertedWithCustomError(tallyContract, "InvalidTallyVotesProof");
     });
   });
