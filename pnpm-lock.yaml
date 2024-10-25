@@ -222,8 +222,8 @@ importers:
         specifier: ^7.1.8
         version: 7.1.8
       '@types/mocha':
-        specifier: ^10.0.8
-        version: 10.0.8
+        specifier: ^10.0.9
+        version: 10.0.9
       '@types/node':
         specifier: ^22.4.1
         version: 22.4.1
@@ -265,7 +265,7 @@ importers:
         version: 12.1.0(commander@12.1.0)
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
-        version: 5.0.0(6nopfxtgi6wapc73qvt56tnvta)
+        version: 5.0.0(ssx64coqesciyp2xvnfi2frkie)
       commander:
         specifier: ^12.1.0
         version: 12.1.0
@@ -304,8 +304,8 @@ importers:
         specifier: ^7.1.8
         version: 7.1.8
       '@types/mocha':
-        specifier: ^10.0.8
-        version: 10.0.8
+        specifier: ^10.0.9
+        version: 10.0.9
       '@types/node':
         specifier: ^22.4.1
         version: 22.4.1
@@ -344,7 +344,7 @@ importers:
         version: 3.0.8(ethers@6.13.2)(hardhat@2.22.13(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4))
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
-        version: 5.0.0(6nopfxtgi6wapc73qvt56tnvta)
+        version: 5.0.0(ssx64coqesciyp2xvnfi2frkie)
       '@openzeppelin/contracts':
         specifier: ^5.0.2
         version: 5.0.2
@@ -392,8 +392,8 @@ importers:
         specifier: ^1.0.15
         version: 1.0.15
       '@types/mocha':
-        specifier: ^10.0.8
-        version: 10.0.8
+        specifier: ^10.0.9
+        version: 10.0.9
       '@types/node':
         specifier: ^22.4.1
         version: 22.4.1
@@ -435,8 +435,8 @@ importers:
         specifier: ^4.3.11
         version: 4.3.16
       '@types/mocha':
-        specifier: ^10.0.8
-        version: 10.0.8
+        specifier: ^10.0.9
+        version: 10.0.9
       '@types/node':
         specifier: ^22.4.1
         version: 22.4.1
@@ -481,8 +481,8 @@ importers:
         specifier: ^4.3.11
         version: 4.3.16
       '@types/mocha':
-        specifier: ^10.0.8
-        version: 10.0.8
+        specifier: ^10.0.9
+        version: 10.0.9
       '@types/node':
         specifier: ^22.4.1
         version: 22.4.1
@@ -518,8 +518,8 @@ importers:
         specifier: ^4.3.11
         version: 4.3.16
       '@types/mocha':
-        specifier: ^10.0.8
-        version: 10.0.8
+        specifier: ^10.0.9
+        version: 10.0.9
       '@types/node':
         specifier: ^22.4.1
         version: 22.4.1
@@ -540,7 +540,7 @@ importers:
     dependencies:
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
-        version: 5.0.0(6nopfxtgi6wapc73qvt56tnvta)
+        version: 5.0.0(ssx64coqesciyp2xvnfi2frkie)
       ethers:
         specifier: ^6.13.2
         version: 6.13.2
@@ -570,8 +570,8 @@ importers:
         specifier: ^7.1.8
         version: 7.1.8
       '@types/mocha':
-        specifier: ^10.0.8
-        version: 10.0.8
+        specifier: ^10.0.9
+        version: 10.0.9
       '@types/node':
         specifier: ^22.4.1
         version: 22.4.1
@@ -2860,8 +2860,8 @@ packages:
   '@types/minimist@1.2.5':
     resolution: {integrity: sha512-hov8bUuiLiyFPGyFPE1lwWhmzYbirOXQNNo40+y3zow8aFVTeyn3VWL0VFFfdNddA8S4Vf0Tc062rzyNr7Paag==}
 
-  '@types/mocha@10.0.8':
-    resolution: {integrity: sha512-HfMcUmy9hTMJh66VNcmeC9iVErIZJli2bszuXc6julh5YGuRb/W5OnkHjwLNYdFlMis0sY3If5SEAp+PktdJjw==}
+  '@types/mocha@10.0.9':
+    resolution: {integrity: sha512-sicdRoWtYevwxjOHNMPTl3vSfJM6oyW8o1wXeI7uww6b6xHg8eBznQDNSGBCDJmsE8UMxP05JgZRtsKbTqt//Q==}
 
   '@types/ms@0.7.34':
     resolution: {integrity: sha512-nG96G3Wp6acyAgJqGasjODb+acrI7KltPiRxzHPXnP3NgI28bpQDRv53olbqGXbfcgF5aiiHmO3xpwEpS5Ld9g==}
@@ -13115,7 +13115,7 @@ snapshots:
       ethereumjs-util: 7.1.5
       hardhat: 2.22.13(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4)
 
-  '@nomicfoundation/hardhat-toolbox@5.0.0(6nopfxtgi6wapc73qvt56tnvta)':
+  '@nomicfoundation/hardhat-toolbox@5.0.0(ssx64coqesciyp2xvnfi2frkie)':
     dependencies:
       '@nomicfoundation/hardhat-chai-matchers': 2.0.7(@nomicfoundation/hardhat-ethers@3.0.8(ethers@6.13.2)(hardhat@2.22.13(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4)))(chai@4.4.1)(ethers@6.13.2)(hardhat@2.22.13(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4))
       '@nomicfoundation/hardhat-ethers': 3.0.8(ethers@6.13.2)(hardhat@2.22.13(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4))
@@ -13125,7 +13125,7 @@ snapshots:
       '@typechain/ethers-v6': 0.5.1(ethers@6.13.2)(typechain@8.3.2(typescript@5.5.4))(typescript@5.5.4)
       '@typechain/hardhat': 9.1.0(@typechain/ethers-v6@0.5.1(ethers@6.13.2)(typechain@8.3.2(typescript@5.5.4))(typescript@5.5.4))(ethers@6.13.2)(hardhat@2.22.13(ts-node@10.9.2(@types/node@22.4.1)(typescript@5.5.4))(typescript@5.5.4))(typechain@8.3.2(typescript@5.5.4))
       '@types/chai': 4.3.16
-      '@types/mocha': 10.0.8
+      '@types/mocha': 10.0.9
       '@types/node': 22.4.1
       chai: 4.4.1
       ethers: 6.13.2
@@ -14075,7 +14075,7 @@ snapshots:
 
   '@types/minimist@1.2.5': {}
 
-  '@types/mocha@10.0.8': {}
+  '@types/mocha@10.0.9': {}
 
   '@types/ms@0.7.34': {}
 
