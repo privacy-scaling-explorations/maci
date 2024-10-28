@@ -28,28 +28,6 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
     bool flag;
   }
 
-  /// @notice tally result args
-  struct AddTallyResultsArgs {
-    /// @param voteOptionIndices Vote option index.
-    uint256[] voteOptionIndices;
-    /// @param tallyResults The results of vote tally for the recipients.
-    uint256[] tallyResults;
-    /// @param tallyResultProofs Proofs of correctness of the vote tally results.
-    uint256[][][] tallyResultProofs;
-    /// @param totalSpent spent field retrieved in the totalSpentVoiceCredits object
-    uint256 totalSpent;
-    /// @param totalSpentSalt spent salt
-    uint256 totalSpentSalt;
-    /// @param tallyResultSalt the respective salt in the results object in the tally.json
-    uint256 tallyResultSalt;
-    /// @param newResultsCommitment The salted commitment of the vote tally for this batch of leaves plus the vote tally from currentResults
-    uint256 newResultsCommitment;
-    /// @param spentVoiceCreditsHash hashLeftRight(number of spent voice credits, spent salt)
-    uint256 spentVoiceCreditsHash;
-    /// @param perVOSpentVoiceCreditsHash hashLeftRight(merkle root of the no spent voice credits per vote option, perVOSpentVoiceCredits salt)
-    uint256 perVOSpentVoiceCreditsHash;
-  }
-
   /// @notice The commitment to the tally results. Its initial value is 0, but after
   /// the tally of each batch is proven on-chain via a zk-SNARK, it should be
   /// updated to:
@@ -390,7 +368,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
    * @notice Add and verify tally results by batch.
    * @param args add tally result args
    */
-  function addTallyResults(AddTallyResultsArgs calldata args) public virtual onlyOwner {
+  function addTallyResults(ITally.AddTallyResultsArgs calldata args) public virtual onlyOwner {
     if (!isTallied()) {
       revert VotesNotTallied();
     }
