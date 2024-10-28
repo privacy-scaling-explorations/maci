@@ -27,7 +27,7 @@
     "types": "lerna run types",
     "docs": "lerna run docs",
     "prepare": "is-ci || husky",
-    "generate-maci-keys": "node scripts/generateMaciKeys.js"
+    "generate-maci-keys": "ts-node scripts/generateMaciKeys.ts"
   },
   "author": "PSE",
   "devDependencies": {
