@@ -4,6 +4,28 @@ pragma solidity ^0.8.10;
 /// @title ITally
 /// @notice Tally interface
 interface ITally {
+  /// @notice tally result args
+  struct AddTallyResultsArgs {
+    /// @param voteOptionIndices Vote option index.
+    uint256[] voteOptionIndices;
+    /// @param tallyResults The results of vote tally for the recipients.
+    uint256[] tallyResults;
+    /// @param tallyResultProofs Proofs of correctness of the vote tally results.
+    uint256[][][] tallyResultProofs;
+    /// @param totalSpent spent field retrieved in the totalSpentVoiceCredits object
+    uint256 totalSpent;
+    /// @param totalSpentSalt spent salt
+    uint256 totalSpentSalt;
+    /// @param tallyResultSalt the respective salt in the results object in the tally.json
+    uint256 tallyResultSalt;
+    /// @param newResultsCommitment The salted commitment of the vote tally for this batch of leaves plus the vote tally from currentResults
+    uint256 newResultsCommitment;
+    /// @param spentVoiceCreditsHash hashLeftRight(number of spent voice credits, spent salt)
+    uint256 spentVoiceCreditsHash;
+    /// @param perVOSpentVoiceCreditsHash hashLeftRight(merkle root of the no spent voice credits per vote option, perVOSpentVoiceCredits salt)
+    uint256 perVOSpentVoiceCreditsHash;
+  }
+
   /// @notice Verify the number of spent voice credits per vote option from the tally.json
   /// @param _voteOptionIndex the index of the vote option where credits were spent
   /// @param _spent the spent voice credits for a given vote option index
