@@ -317,17 +317,17 @@ export class Prover {
     );
 
     await this.tallyContract
-      .addTallyResults(
-        tallyData.results.tally.map((_, index) => index),
+      .addTallyResults({
+        voteOptionIndices: tallyData.results.tally.map((_, index) => index),
         tallyResults,
         tallyResultProofs,
-        tallyData.totalSpentVoiceCredits.spent,
-        tallyData.totalSpentVoiceCredits.salt,
-        tallyData.results.salt,
-        tallyData.results.commitment,
-        tallyData.totalSpentVoiceCredits.commitment,
-        tallyData.perVOSpentVoiceCredits?.commitment ?? 0n,
-      )
+        totalSpent: tallyData.totalSpentVoiceCredits.spent,
+        totalSpentSalt: tallyData.totalSpentVoiceCredits.salt,
+        tallyResultSalt: tallyData.results.salt,
+        newResultsCommitment: tallyData.results.commitment,
+        spentVoiceCreditsHash: tallyData.totalSpentVoiceCredits.commitment,
+        perVOSpentVoiceCreditsHash: tallyData.perVOSpentVoiceCredits?.commitment ?? 0n,
+      })
       .then((tx) => tx.wait());
   }
 

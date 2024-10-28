@@ -28,6 +28,28 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
     bool flag;
   }
 
+  /// @notice tally result args
+  struct AddTallyResultsArgs {
+    /// @param voteOptionIndices Vote option index.
+    uint256[] voteOptionIndices;
+    /// @param tallyResults The results of vote tally for the recipients.
+    uint256[] tallyResults;
+    /// @param tallyResultProofs Proofs of correctness of the vote tally results.
+    uint256[][][] tallyResultProofs;
+    /// @param totalSpent spent field retrieved in the totalSpentVoiceCredits object
+    uint256 totalSpent;
+    /// @param totalSpentSalt spent salt
+    uint256 totalSpentSalt;
+    /// @param tallyResultSalt the respective salt in the results object in the tally.json
+    uint256 tallyResultSalt;
+    /// @param newResultsCommitment The salted commitment of the vote tally for this batch of leaves plus the vote tally from currentResults
+    uint256 newResultsCommitment;
+    /// @param spentVoiceCreditsHash hashLeftRight(number of spent voice credits, spent salt)
+    uint256 spentVoiceCreditsHash;
+    /// @param perVOSpentVoiceCreditsHash hashLeftRight(merkle root of the no spent voice credits per vote option, perVOSpentVoiceCredits salt)
+    uint256 perVOSpentVoiceCreditsHash;
+  }
+
   /// @notice The commitment to the tally results. Its initial value is 0, but after
   /// the tally of each batch is proven on-chain via a zk-SNARK, it should be
   /// updated to:
@@ -366,41 +388,24 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
 
   /**
    * @notice Add and verify tally results by batch.
-   * @param _voteOptionIndices Vote option index.
-   * @param _tallyResults The results of vote tally for the recipients.
-   * @param _tallyResultProofs Proofs of correctness of the vote tally results.
-   * @param _totalSpent spent field retrieved in the totalSpentVoiceCredits object
-   * @param _tallyResultSalt the respective salt in the results object in the tally.json
-   * @param _newResultsCommitment The salted commitment of the vote tally for this batch of leaves plus the vote tally from currentResults
-   * @param _spentVoiceCreditsHash hashLeftRight(number of spent voice credits, spent salt)
-   * @param _perVOSpentVoiceCreditsHash hashLeftRight(merkle root of the no spent voice credits per vote option, perVOSpentVoiceCredits salt)
+   * @param args add tally result args
    */
-  function addTallyResults(
-    uint256[] calldata _voteOptionIndices,
-    uint256[] calldata _tallyResults,
-    uint256[][][] calldata _tallyResultProofs,
-    uint256 _totalSpent,
-    uint256 _totalSpentSalt,
-    uint256 _tallyResultSalt,
-    uint256 _newResultsCommitment,
-    uint256 _spentVoiceCreditsHash,
-    uint256 _perVOSpentVoiceCreditsHash
-  ) public virtual onlyOwner {
+  function addTallyResults(AddTallyResultsArgs calldata args) public virtual onlyOwner {
     if (!isTallied()) {
       revert VotesNotTallied();
     }
 
     (, , , uint8 voteOptionTreeDepth) = poll.treeDepths();
-    uint256 voteOptionsLength = _voteOptionIndices.length;
+    uint256 voteOptionsLength = args.voteOptionIndices.length;
 
     for (uint256 i = 0; i < voteOptionsLength; ) {
       addTallyResult(
-        _voteOptionIndices[i],
-        _tallyResults[i],
-        _tallyResultProofs[i],
-        _tallyResultSalt,
-        _spentVoiceCreditsHash,
-        _perVOSpentVoiceCreditsHash,
+        args.voteOptionIndices[i],
+        args.tallyResults[i],
+        args.tallyResultProofs[i],
+        args.tallyResultSalt,
+        args.spentVoiceCreditsHash,
+        args.perVOSpentVoiceCreditsHash,
         voteOptionTreeDepth
       );
 
@@ -410,17 +415,17 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
     }
 
     bool verified = verifySpentVoiceCredits(
-      _totalSpent,
-      _totalSpentSalt,
-      _newResultsCommitment,
-      _perVOSpentVoiceCreditsHash
+      args.totalSpent,
+      args.totalSpentSalt,
+      args.newResultsCommitment,
+      args.perVOSpentVoiceCreditsHash
     );
 
     if (!verified) {
       revert IncorrectSpentVoiceCredits();
     }
 
-    totalSpent = _totalSpent;
+    totalSpent = args.totalSpent;
   }
 
   /**

@@ -172,7 +172,7 @@
     "@types/circomlibjs": "^0.1.6",
     "@types/lowdb": "^1.0.15",
     "@types/mocha": "^10.0.8",
-    "@types/node": "^22.4.1",
+    "@types/node": "^22.8.1",
     "@types/snarkjs": "^0.7.8",
     "@types/uuid": "^10.0.0",
     "chai": "^4.3.10",
