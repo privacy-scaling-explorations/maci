@@ -165,5 +165,53 @@
       "github": "https://github.com/privacy-scaling-explorations/qdh",
       "website": "https://quadratic.page/"
     }
+  },
+  {
+    "name": "PriVote",
+    "description": "An open-source, decentralized voting platform that uses MACI for privacy and offers various authentication methods for secure, private polling.",
+    "hackathon": "ETHGlobal Singapore 2024",
+    "status": "Hackathon",
+    "links": {
+      "github": "https://github.com/Privote-project"
+    }
+  },
+  {
+    "name": "PolyVote",
+    "description": "An end-to-end private voting service using MPC, ZK and AI to recommend and process votes.",
+    "hackathon": "ETHGlobal Singapore 2024",
+    "status": "Hackathon",
+    "links": {
+      "github": "https://github.com/ElectionZap/eth-singapore"
+    }
+  },
+  {
+    "name": "ChillVille",
+    "description": "A private onchain voting system with sybil resistance by combining MACI and zkTLS.",
+    "hackathon": "ETHGlobal Singapore 2024",
+    "status": "Hackathon",
+    "links": {
+      "website": "https://eth-sg.vercel.app/",
+      "github": "https://github.com/wasabijiro/ChillVille"
+    }
+  },
+  {
+    "name": "MACPI",
+    "description": "A reliable DAO voting infrastructure for next billion users",
+    "hackathon": "ETHGlobal Singapore 2024",
+    "status": "Hackathon",
+    "links": {
+      "website": "https://maci-tap.vercel.app/",
+      "github": "https://github.com/0xhardman/tap-maci"
+    }
+  },
+  {
+    "name": "Silent Wars",
+    "description": "A telegram mini-app guild based game with resource collection and voting.",
+    "hackathon": "ETHGlobal Singapore 2024",
+    "status": "Hackathon",
+    "links": {
+      "website": "https://2024-eth-singapore-5k28.vercel.app/",
+      "github": "https://github.com/taijusanagi/2024-eth-singapore"
+    }
   }
 ]
