@@ -22,3 +22,5 @@ yarn-error.log*
 
 versioned_docs/version-v2.x/developers-references/typescript-code/typedoc/
 versioned_docs/version-v2.x/developers-references/smart-contracts/solidity-docs/
+versioned_docs/version-v2.x/technical-references/typescript-code/typedoc/
+versioned_docs/version-v2.x/technical-references/smart-contracts/solidity-docs/

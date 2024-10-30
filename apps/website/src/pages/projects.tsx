@@ -1,4 +1,5 @@
 import Layout from "@theme/Layout";
+import LayoutProvider from "@theme/Layout/Provider";
 import clsx from "clsx";
 
 import ProjectsList from "../components/ProjectList";
@@ -23,19 +24,21 @@ const ProjectspageHeader = ({ tagline, title }: ProjectspageHeaderProps) => (
 );
 
 const Projects: React.FC = () => (
-  <Layout description="A list of projects built with the MACI protocol" title="Projects built with MACI">
-    <div>
-      <ProjectspageHeader tagline="Explore the projects built by the MACI community" title="Projects" />
-    </div>
+  <LayoutProvider>
+    <Layout description="A list of projects built with the MACI protocol" title="Projects built with MACI">
+      <div>
+        <ProjectspageHeader tagline="Explore the projects built by the MACI community" title="Projects" />
+      </div>
 
-    <main>
-      <section className={styles.introduction}>
-        <div className="container">
-          <ProjectsList />
-        </div>
-      </section>
-    </main>
-  </Layout>
+      <main>
+        <section className={styles.introduction}>
+          <div className="container">
+            <ProjectsList />
+          </div>
+        </section>
+      </main>
+    </Layout>
+  </LayoutProvider>
 );
 
 export default Projects;
