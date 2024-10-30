@@ -1,5 +1,6 @@
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import Layout from "@theme/Layout";
+import LayoutProvider from "@theme/Layout/Provider";
 import React from "react";
 
 import styles from "../css/card.module.css";
@@ -28,27 +29,29 @@ const BlogPage: React.FC = () => {
   }
 
   return (
-    <Layout title="Blog">
-      <div className={styles.blogContainer}>
-        <div className={styles.blogList}>
-          {blogPosts.map((post: BlogPost) => (
-            <a key={post.slug} className={styles.blogCard} href={`/blog/${post.slug}`}>
-              <h2 className={styles.blogTitle}>{post.title}</h2>
+    <LayoutProvider>
+      <Layout title="Blog">
+        <div className={styles.blogContainer}>
+          <div className={styles.blogList}>
+            {blogPosts.map((post: BlogPost) => (
+              <a key={post.slug} className={styles.blogCard} href={`/blog/${post.slug}`}>
+                <h2 className={styles.blogTitle}>{post.title}</h2>
 
-              <p className={styles.blogDescription}>{post.description}</p>
+                <p className={styles.blogDescription}>{post.description}</p>
 
-              <p className={styles.blogDate}>{post.date}</p>
+                <p className={styles.blogDate}>{post.date}</p>
 
-              <p className={styles.blogAuthors}>By {post.authorName}</p>
+                <p className={styles.blogAuthors}>By {post.authorName}</p>
 
-              <p className={styles.blogExcerpt}>{post.excerpt}</p>
+                <p className={styles.blogExcerpt}>{post.excerpt}</p>
 
-              <span className={styles.blogReadMoreButton}>Read More</span>
-            </a>
-          ))}
+                <span className={styles.blogReadMoreButton}>Read More</span>
+              </a>
+            ))}
+          </div>
         </div>
-      </div>
-    </Layout>
+      </Layout>
+    </LayoutProvider>
   );
 };
 

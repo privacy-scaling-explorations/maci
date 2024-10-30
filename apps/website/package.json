@@ -18,12 +18,11 @@
     "types": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@docusaurus/core": "^3.5.1",
-    "@docusaurus/preset-classic": "^3.5.1",
-    "@docusaurus/theme-classic": "^3.5.1",
+    "@docusaurus/core": "^3.5.2",
+    "@docusaurus/preset-classic": "^3.5.2",
+    "@docusaurus/theme-classic": "^3.5.2",
     "@docusaurus/theme-common": "^3.5.2",
-    "@docusaurus/types": "^3.5.1",
-    "@easyops-cn/docusaurus-search-local": "^0.44.5",
+    "@easyops-cn/docusaurus-search-local": "^0.45.0",
     "@mdx-js/react": "^3.0.1",
     "clsx": "^2.1.1",
     "docusaurus-plugin-image-zoom": "^2.0.0",
@@ -38,6 +37,7 @@
   "devDependencies": {
     "@docusaurus/module-type-aliases": "^3.5.2",
     "@docusaurus/tsconfig": "^3.5.2",
+    "@docusaurus/types": "^3.5.2",
     "@types/node": "^22.8.1",
     "@types/react": "^18.3.11",
     "ts-node": "^10.9.2",

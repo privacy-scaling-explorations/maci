@@ -1,8 +1,9 @@
-import { Plugin as DocusaurusPlugin } from "@docusaurus/types";
 import matter from "gray-matter";
 
 import fs from "fs";
 import path from "path";
+
+import type { Plugin as DocusaurusPlugin } from "@docusaurus/types";
 
 interface BlogPost {
   title: string;
