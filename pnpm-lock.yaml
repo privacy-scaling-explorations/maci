@@ -198,7 +198,7 @@ importers:
         version: 0.4.0
       circomkit:
         specifier: ^0.3.1
-        version: 0.3.1(@types/snarkjs@0.7.8)(snarkjs@0.7.4)
+        version: 0.3.1(@types/snarkjs@0.7.8)(snarkjs@0.7.5)
       circomlib:
         specifier: ^2.0.5
         version: 2.0.5
@@ -212,8 +212,8 @@ importers:
         specifier: ^2.4.0
         version: link:../domainobjs
       snarkjs:
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
     devDependencies:
       '@types/chai':
         specifier: ^4.3.11
@@ -328,8 +328,8 @@ importers:
         specifier: ^17.0.0
         version: 17.0.0
       snarkjs:
-        specifier: ^0.7.4
-        version: 0.7.4
+        specifier: ^0.7.5
+        version: 0.7.5
       ts-mocha:
         specifier: ^10.0.0
         version: 10.0.0(mocha@10.7.3)
@@ -3861,8 +3861,8 @@ packages:
     resolution: {integrity: sha512-qTkud630B/GK8y76hnOaaS1aNuF6prfV0dTrkeRsiJKnlP1ryQbP2FWLgDOPqn6aKyaPlam+Z+DTbBhkEzh8dA==}
     hasBin: true
 
-  circom_runtime@0.1.25:
-    resolution: {integrity: sha512-xBGsBFF5Uv6AKvbpgExYqpHfmfawH2HKe+LyjfKSRevqEV8u63i9KGHVIILsbJNW+0c5bm/66f0PUYQ7qZSkJA==}
+  circom_runtime@0.1.28:
+    resolution: {integrity: sha512-ACagpQ7zBRLKDl5xRZ4KpmYIcZDUjOiNRuxvXLqhnnlLSVY1Dbvh73TI853nqoR0oEbihtWmMSjgc5f+pXf/jQ==}
     hasBin: true
 
   circom_tester@0.0.19:
@@ -5125,6 +5125,7 @@ packages:
 
   ethereumjs-abi@0.6.8:
     resolution: {integrity: sha512-Tx0r/iXI6r+lRsdvkFDlut0N08jWMnKRZ6Gkq+Nmw75lZe4e6o3EkSnkaBP5NF6+m5PTGAr9JP43N3LyeoglsA==}
+    deprecated: This library has been deprecated and usage is discouraged.
 
   ethereumjs-util@6.2.1:
     resolution: {integrity: sha512-W2Ktez4L01Vexijrm5EB6w7dg4n/TgpoYU4avuT5T3Vmnw/eCRtiBrJfQYS/DCSvDIOLn2k57GcHdeBcgVxAqw==}
@@ -5271,6 +5272,9 @@ packages:
 
   ffjavascript@0.3.0:
     resolution: {integrity: sha512-l7sR5kmU3gRwDy8g0Z2tYBXy5ttmafRPFOqY7S6af5cq51JqJWt5eQ/lSR/rs2wQNbDYaYlQr5O+OSUf/oMLoQ==}
+
+  ffjavascript@0.3.1:
+    resolution: {integrity: sha512-4PbK1WYodQtuF47D4pRI5KUg3Q392vuP5WjE1THSnceHdXwU3ijaoS0OqxTzLknCtz4Z2TtABzkBdBdMn3B/Aw==}
 
   figures@3.2.0:
     resolution: {integrity: sha512-yaduQFRKLXYOGgEn6AZau90j3ggSOyiqXU0F9JZfeXYhNa+Jk4X+s45A2zg5jns87GAFa34BBm2kXw4XpNcbdg==}
@@ -9111,8 +9115,8 @@ packages:
     resolution: {integrity: sha512-KWz8mZ2Y+6wvn6GGkQo6/ZlKwETdAGohd40Lzpwp5TUZCn6N6O4Az1SuX1rw/qREGL6Im+ycb19suCFE8/xaKA==}
     hasBin: true
 
-  snarkjs@0.7.4:
-    resolution: {integrity: sha512-x4cOCR4YXSyBlLtfnUUwfbZrw8wFd/Y0lk83eexJzKwZB8ELdpH+10ts8YtDsm2/a3WK7c7p514bbE8NpqxW8w==}
+  snarkjs@0.7.5:
+    resolution: {integrity: sha512-h+3c4rXZKLhLuHk4LHydZCk/h5GcNvk5GjVKRRkHmfb6Ntf8gHOA9zea3g656iclRuhqQ3iKDWFgiD9ypLrKiA==}
     hasBin: true
 
   sockjs@0.3.24:
@@ -12679,7 +12683,7 @@ snapshots:
   '@iden3/binfileutils@0.0.12':
     dependencies:
       fastfile: 0.0.20
-      ffjavascript: 0.3.0
+      ffjavascript: 0.3.1
 
   '@ipld/dag-cbor@7.0.3':
     dependencies:
@@ -15245,9 +15249,9 @@ snapshots:
     dependencies:
       ffjavascript: 0.2.56
 
-  circom_runtime@0.1.25:
+  circom_runtime@0.1.28:
     dependencies:
-      ffjavascript: 0.3.0
+      ffjavascript: 0.3.1
 
   circom_tester@0.0.19:
     dependencies:
@@ -15260,13 +15264,13 @@ snapshots:
       tmp-promise: 3.0.3
       util: 0.12.5
 
-  circomkit@0.3.1(@types/snarkjs@0.7.8)(snarkjs@0.7.4):
+  circomkit@0.3.1(@types/snarkjs@0.7.8)(snarkjs@0.7.5):
     dependencies:
       '@types/snarkjs': 0.7.8
       circom_tester: 0.0.19
       commander: 12.1.0
       loglevel: 1.9.1
-      snarkjs: 0.7.4
+      snarkjs: 0.7.5
 
   circomlib@2.0.5: {}
 
@@ -16990,6 +16994,12 @@ snapshots:
       web-worker: 1.2.0
 
   ffjavascript@0.3.0:
+    dependencies:
+      wasmbuilder: 0.0.16
+      wasmcurves: 0.2.2
+      web-worker: 1.2.0
+
+  ffjavascript@0.3.1:
     dependencies:
       wasmbuilder: 0.0.16
       wasmcurves: 0.2.2
@@ -21834,15 +21844,15 @@ snapshots:
       logplease: 1.2.15
       r1csfile: 0.0.41
 
-  snarkjs@0.7.4:
+  snarkjs@0.7.5:
     dependencies:
       '@iden3/binfileutils': 0.0.12
       bfj: 7.1.0
       blake2b-wasm: 2.4.0
-      circom_runtime: 0.1.25
+      circom_runtime: 0.1.28
       ejs: 3.1.10
       fastfile: 0.0.20
-      ffjavascript: 0.3.0
+      ffjavascript: 0.3.1
       js-sha3: 0.8.0
       logplease: 1.2.15
       r1csfile: 0.0.48
