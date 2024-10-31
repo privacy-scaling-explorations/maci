@@ -373,14 +373,27 @@ export const proveOnChain = async ({
   if (tallyFile) {
     const tallyData = await fs.promises.readFile(tallyFile).then((res) => JSON.parse(res.toString()) as TallyData);
 
-    const tallyResults = tallyData.results.tally.map((t) => BigInt(t));
-    const tallyResultProofs = tallyData.results.tally.map((_, index) =>
-      genTreeProof(index, tallyResults, Number(treeDepths.voteOptionTreeDepth)),
-    );
+    const voteOptionIndices = tallyData.results.tally
+      .map((_, index) => index)
+      .filter((index) => BigInt(tallyData.results.tally[index]) !== 0n);
+    const indicesMap = voteOptionIndices.reduce<Record<number, boolean>>((acc, x) => {
+      acc[x] = true;
+      return acc;
+    }, {});
+    const tallyResults = tallyData.results.tally.filter((_, index) => indicesMap[index]).map((t) => BigInt(t));
+    const tallyResultProofs = tallyData.results.tally
+      .filter((_, index) => indicesMap[index])
+      .map((_, index) =>
+        genTreeProof(
+          voteOptionIndices[index],
+          tallyData.results.tally.map((t) => BigInt(t)),
+          Number(treeDepths.voteOptionTreeDepth),
+        ),
+      );
 
     await tallyContract
       .addTallyResults({
-        voteOptionIndices: tallyData.results.tally.map((_, index) => index),
+        voteOptionIndices,
         tallyResults,
         tallyResultProofs,
         totalSpent: tallyData.totalSpentVoiceCredits.spent,
