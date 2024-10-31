@@ -15,7 +15,7 @@ task("deploy-poll", "Deploy poll")
   .addFlag("verify", "Verify contracts at Etherscan")
   .addOptionalParam("skip", "Skip steps with less or equal index", 0, types.int)
   .setAction(async ({ strict, verify, skip = 0 }: IDeployParams, hre) => {
-    const deployment = Deployment.getInstance(hre);
+    const deployment = Deployment.getInstance({ hre });
 
     deployment.setHre(hre);
 

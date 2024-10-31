@@ -57,14 +57,20 @@ export class Deployment {
   private storage: ContractStorage;
 
   /**
+   * Contracts name mapping
+   */
+  private contractNames: Record<EContracts, string>;
+
+  /**
    * Initialize class properties only once
    */
-  private constructor(hre?: HardhatRuntimeEnvironment) {
+  private constructor(contractNames: Record<EContracts, string>, hre?: HardhatRuntimeEnvironment) {
     this.stepCatalog = new Map([
       ["full", {}],
       ["poll", {}],
     ]);
     this.hre = hre;
+    this.contractNames = contractNames;
     this.config = low(
       typeof window !== "undefined"
         ? new LocalStorageSync<TConfig>("deploy-config")
@@ -78,9 +84,12 @@ export class Deployment {
    *
    * @returns {ContractStorage} singleton object
    */
-  static getInstance(hre?: HardhatRuntimeEnvironment): Deployment {
+  static getInstance({
+    contractNames = EContracts,
+    hre = undefined,
+  }: { contractNames?: Record<EContracts, string>; hre?: HardhatRuntimeEnvironment } = {}): Deployment {
     if (!Deployment.INSTANCE) {
-      Deployment.INSTANCE = new Deployment(hre);
+      Deployment.INSTANCE = new Deployment(contractNames, hre);
     }
 
     return Deployment.INSTANCE;
@@ -228,6 +237,15 @@ export class Deployment {
   }
 
   /**
+   * Set contract names
+   *
+   * @param contractNames - contract names
+   */
+  setContractNames(contractNames: Record<EContracts, string>): void {
+    this.contractNames = contractNames;
+  }
+
+  /**
    * Check if hardhat runtime environment is set
    *
    * @throws {Error} error if there is no hardhat runtime environment set
@@ -323,7 +341,9 @@ export class Deployment {
     const contractFactory =
       abi && bytecode
         ? new ContractFactory(abi, bytecode, deployer)
-        : await import("hardhat").then(({ ethers }) => ethers.getContractFactory(String(name), deployer));
+        : await import("hardhat").then(({ ethers }) =>
+            ethers.getContractFactory(this.contractNames[name as EContracts] || (name as EContracts), deployer),
+          );
     const feeData = await deployer.provider?.getFeeData();
 
     const contract = await contractFactory.deploy(...args, {
@@ -387,7 +407,9 @@ export class Deployment {
   ): T {
     this.checkHre();
 
-    const value = this.config.get(`${this.hre!.network.name}.${id}.${field}`).value() as T;
+    const value = this.config
+      .get(`${this.hre!.network.name}.${this.contractNames[id as EContracts]}.${field}`)
+      .value() as T;
 
     if (mustGet && (value === null || value === undefined)) {
       throw new Error(`Can't find ${this.hre!.network.name}.${id}.${field}`);
@@ -409,7 +431,7 @@ export class Deployment {
   ): void {
     this.checkHre();
 
-    this.config.set(`${this.hre!.network.name}.${id}.${field}`, value).write();
+    this.config.set(`${this.hre!.network.name}.${this.contractNames[id as EContracts]}.${field}`, value).write();
   }
 
   /**

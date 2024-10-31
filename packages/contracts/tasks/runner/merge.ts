@@ -18,7 +18,7 @@ task("merge", "Merge signups and messages")
   .addOptionalParam("queueOps", "The number of queue operations to perform", DEFAULT_SR_QUEUE_OPS, types.int)
   .addOptionalParam("prove", "Run prove command after merging", false, types.boolean)
   .setAction(async ({ poll, prove, queueOps = DEFAULT_SR_QUEUE_OPS }: IMergeParams, hre) => {
-    const deployment = Deployment.getInstance(hre);
+    const deployment = Deployment.getInstance({ hre });
 
     deployment.setHre(hre);
 
