@@ -6,7 +6,7 @@ import { Deployment } from "../helpers/Deployment";
 import { EContracts } from "../helpers/types";
 
 task("benchmark", "Run benchmarks").setAction(async (_, hre) => {
-  const deployment = Deployment.getInstance(hre);
+  const deployment = Deployment.getInstance({ hre });
   deployment.setHre(hre);
 
   const deployer = await deployment.getDeployer();

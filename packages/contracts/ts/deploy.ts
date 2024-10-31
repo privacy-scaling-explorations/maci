@@ -47,7 +47,7 @@ import { log } from "./utils";
  */
 export const createContractFactory = async (abi: TAbi, bytecode: string, signer?: Signer): Promise<ContractFactory> => {
   const hre = await import("hardhat");
-  const deployment = Deployment.getInstance(hre);
+  const deployment = Deployment.getInstance({ hre });
   deployment.setHre(hre);
   const deployer = signer || (await deployment.getDeployer());
 
@@ -69,7 +69,7 @@ export const deployContract = async <T extends BaseContract>(
 ): Promise<T> => {
   log(`Deploying ${contractName}`, quiet);
   const hre = await import("hardhat");
-  const deployment = Deployment.getInstance(hre);
+  const deployment = Deployment.getInstance({ hre });
   deployment.setHre(hre);
 
   return deployment.deployContract({ name: contractName as EContracts, signer }, ...args);
@@ -246,7 +246,7 @@ export const deployContractWithLinkedLibraries = async <T extends BaseContract>(
   ...args: unknown[]
 ): Promise<T> => {
   const hre = await import("hardhat");
-  const deployment = Deployment.getInstance(hre);
+  const deployment = Deployment.getInstance({ hre });
   deployment.setHre(hre);
 
   return deployment.deployContractWithLinkedLibraries({ contractFactory }, ...args);
