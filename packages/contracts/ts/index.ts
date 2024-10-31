@@ -23,6 +23,7 @@ export { EDeploySteps } from "../tasks/helpers/constants";
 export { Deployment } from "../tasks/helpers/Deployment";
 export { ContractStorage } from "../tasks/helpers/ContractStorage";
 export { ProofGenerator } from "../tasks/helpers/ProofGenerator";
+export { TreeMerger } from "../tasks/helpers/TreeMerger";
 export { Prover } from "../tasks/helpers/Prover";
 export {
   EContracts,
@@ -32,6 +33,8 @@ export {
   type IGenerateProofsBatchData,
   type TallyData,
   type IDeployParams,
+  type IMergeParams,
+  type IProveParams,
 } from "../tasks/helpers/types";
 export { linkPoseidonLibraries } from "../tasks/helpers/abi";
 
