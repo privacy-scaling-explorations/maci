@@ -38,7 +38,7 @@ To contribute to MACI, create feature/fix branches, then open PRs into `dev`. [L
 
 ### Local development
 
-For installation and local development instructions, please see our [installation docs](https://maci.pse.dev/docs/quick-start/installation/).
+For installation and local development instructions, please see our [installation docs](https://maci.pse.dev/docs/guides/compile-circuits#installation).
 
 This repository is organized as pnpm workspace. Each package contains its
 own unit tests.
@@ -60,7 +60,7 @@ own unit tests.
 
 ### Testing
 
-Please refer to the [testing documentation](https://maci.pse.dev/docs/testing) for more information.
+Please refer to the [testing documentation](https://maci.pse.dev/docs/guides/testing/testing-in-detail) for more information.
 
 ### CI pipeline
 
