@@ -165,5 +165,120 @@
       "github": "https://github.com/privacy-scaling-explorations/qdh",
       "website": "https://quadratic.page/"
     }
+  },
+  {
+    "name": "PriVote",
+    "description": "An open-source, decentralized voting platform that uses MACI for privacy and offers various authentication methods for secure, private polling.",
+    "hackathon": "ETHGlobal Singapore 2024",
+    "status": "Hackathon",
+    "links": {
+      "github": "https://github.com/Privote-project"
+    }
+  },
+  {
+    "name": "PolyVote",
+    "description": "An end-to-end private voting service using MPC, ZK and AI to recommend and process votes.",
+    "hackathon": "ETHGlobal Singapore 2024",
+    "status": "Hackathon",
+    "links": {
+      "github": "https://github.com/ElectionZap/eth-singapore"
+    }
+  },
+  {
+    "name": "ChillVille",
+    "description": "A private onchain voting system with sybil resistance by combining MACI and zkTLS.",
+    "hackathon": "ETHGlobal Singapore 2024",
+    "status": "Hackathon",
+    "links": {
+      "website": "https://eth-sg.vercel.app/",
+      "github": "https://github.com/wasabijiro/ChillVille"
+    }
+  },
+  {
+    "name": "MACPI",
+    "description": "A reliable DAO voting infrastructure for next billion users",
+    "hackathon": "ETHGlobal Singapore 2024",
+    "status": "Hackathon",
+    "links": {
+      "website": "https://maci-tap.vercel.app/",
+      "github": "https://github.com/0xhardman/tap-maci"
+    }
+  },
+  {
+    "name": "Silent Wars",
+    "description": "A telegram mini-app guild based game with resource collection and voting.",
+    "hackathon": "ETHGlobal Singapore 2024",
+    "status": "Hackathon",
+    "links": {
+      "website": "https://2024-eth-singapore-5k28.vercel.app/",
+      "github": "https://github.com/taijusanagi/2024-eth-singapore"
+    }
+  },
+  {
+    "name": "Judg3",
+    "description": "A next-generation voting system that leverages the power of consensus over your conscious mind.",
+    "hackathon": "ETHGlobal Singapore 2024",
+    "status": "Hackathon",
+    "links": {
+      "github": "https://github.com/team-somehow/judg3"
+    }
+  },
+  {
+    "name": "EZKPoll",
+    "description": "A polling system utilizing MACI to empower ZK on polling and A/B testing.",
+    "hackathon": "ETHGlobal Singapore 2024",
+    "status": "Hackathon",
+    "links": {
+      "website": "https://ezkpoll.onrender.com/",
+      "github": "https://github.com/abcd5251/EzkPoll"
+    }
+  },
+  {
+    "name": "Geist",
+    "description": "A Decentralized Autonomous Website (DAW) builder that enables censorship-resistant, trustless deployments and governance for DAOs through private previews, zk-proof-based deployments, and anti-collusion voting.",
+    "hackathon": "ETHGlobal Singapore 2024",
+    "status": "Hackathon",
+    "links": {
+      "website": "https://gateway.geist.network/",
+      "github": "https://github.com/debuggingfuture/geist"
+    }
+  },
+  {
+    "name": "Sniper",
+    "description": "An AI companion designed to improve personal productivity and growth.",
+    "hackathon": "ETHGlobal Singapore 2024",
+    "status": "Hackathon",
+    "links": {
+      "github": "https://github.com/MusubiLabs/sniper"
+    }
+  },
+  {
+    "name": "zkElect",
+    "description": "A blockchain-based platform using zk-SNARKs and MACI for secure, anonymous, and transparent voting, preventing tampering, coercion, and bribery.",
+    "hackathon": "ETHGlobal Singapore 2024",
+    "status": "Hackathon",
+    "links": {
+      "github": "https://github.com/anvats/zkElect"
+    }
+  },
+  {
+    "name": "clr.wiki",
+    "description": "Collusion-resistant information dispute resolution tool using MACI.",
+    "hackathon": "ETHGlobal Singapore 2024",
+    "status": "Hackathon",
+    "links": {
+      "website": "https://www.cl3r.wiki/",
+      "github": "https://github.com/seigneur/clr-wiki"
+    }
+  },
+  {
+    "name": "DAOTown",
+    "description": "The project streamlines DAO activities, governance, and tokenomics with decentralized infrastructure.",
+    "hackathon": "ETHGlobal Singapore 2024",
+    "status": "Hackathon",
+    "links": {
+      "website": "https://eth-global-sg.vercel.app/",
+      "github": "https://github.com/MukulKolpe/ETHGlobalSG"
+    }
   }
 ]
