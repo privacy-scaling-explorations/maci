@@ -15,6 +15,7 @@ import "./tasks/runner/deployFull";
 import "./tasks/runner/deployPoll";
 import "./tasks/runner/merge";
 import "./tasks/runner/prove";
+import "./tasks/runner/submitOnChain";
 import "./tasks/runner/verifyFull";
 
 dotenv.config();

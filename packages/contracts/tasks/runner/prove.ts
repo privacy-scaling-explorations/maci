@@ -5,19 +5,17 @@ import { Keypair, PrivKey } from "maci-domainobjs";
 
 import fs from "fs";
 
-import type { Proof } from "../../ts/types";
-import type { VkRegistry, Verifier, MACI, Poll, AccQueue, MessageProcessor, Tally } from "../../typechain-types";
+import type { MACI, Poll, AccQueue } from "../../typechain-types";
 
 import { ContractStorage } from "../helpers/ContractStorage";
 import { Deployment } from "../helpers/Deployment";
 import { ProofGenerator } from "../helpers/ProofGenerator";
-import { Prover } from "../helpers/Prover";
 import { EContracts, type IProveParams } from "../helpers/types";
 
 /**
  * Prove hardhat task for generating off-chain proofs and sending them on-chain
  */
-task("prove", "Command to generate proof and prove the result of a poll on-chain")
+task("prove", "Command to generate proofs")
   .addParam("poll", "The poll id", undefined, types.string)
   .addParam("outputDir", "Output directory for proofs", undefined, types.string)
   .addParam("coordinatorPrivateKey", "Coordinator maci private key", undefined, types.string)
@@ -71,8 +69,6 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
 
       const maciContractAddress = storage.mustGetAddress(EContracts.MACI, network.name);
       const maciContract = await deployment.getContract<MACI>({ name: EContracts.MACI, address: maciContractAddress });
-      const vkRegistryContract = await deployment.getContract<VkRegistry>({ name: EContracts.VkRegistry });
-      const verifierContract = await deployment.getContract<Verifier>({ name: EContracts.Verifier });
 
       const pollContracts = await maciContract.polls(poll);
       const pollContract = await deployment.getContract<Poll>({ name: EContracts.Poll, address: pollContracts.poll });
@@ -127,16 +123,6 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
         throw new Error(`Poll ${poll} not found`);
       }
 
-      const mpContract = await deployment.getContract<MessageProcessor>({
-        name: EContracts.MessageProcessor,
-        address: pollContracts.messageProcessor,
-      });
-
-      // get the tally contract based on the useQuadraticVoting flag
-      const tallyContract = await deployment.getContract<Tally>({
-        name: EContracts.Tally,
-        address: pollContracts.tally,
-      });
       const useQuadraticVoting =
         deployment.getDeployConfigField<boolean | null>(EContracts.Poll, "useQuadraticVoting") ?? false;
       const mode = useQuadraticVoting ? "qv" : "nonQv";
@@ -176,31 +162,16 @@ task("prove", "Command to generate proof and prove the result of a poll on-chain
         useQuadraticVoting,
       });
 
-      const data = {
-        processProofs: [] as Proof[],
-        tallyProofs: [] as Proof[],
-      };
-
-      const prover = new Prover({
-        maciContract,
-        messageAqContract,
-        mpContract,
-        pollContract,
-        vkRegistryContract,
-        verifierContract,
-        tallyContract,
-      });
-
-      data.processProofs = await proofGenerator.generateMpProofs();
-      await prover.proveMessageProcessing(data.processProofs);
-
-      const { proofs: tallyProofs, tallyData } = await proofGenerator.generateTallyProofs(network);
-      data.tallyProofs = tallyProofs;
-      await prover.proveTally(data.tallyProofs, tallyData);
+      await proofGenerator.generateMpProofs();
+      await proofGenerator.generateTallyProofs(network);
 
       const endBalance = await signer.provider.getBalance(signer);
 
       console.log("End balance: ", Number(endBalance / 10n ** 12n) / 1e6);
       console.log("Prove expenses: ", Number((startBalance - endBalance) / 10n ** 12n) / 1e6);
+
+      console.log(
+        "Please make sure that you do not delete the proofs from the proof directory until they are all submitted on-chain.\nRegenerating proofs will result in overwriting the existing proofs and commitments which will be different due to the use of random salts.",
+      );
     },
   );
