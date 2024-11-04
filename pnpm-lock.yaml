@@ -99,8 +99,8 @@ importers:
   apps/subgraph:
     dependencies:
       '@graphprotocol/graph-cli':
-        specifier: ^0.80.0
-        version: 0.80.0(@types/node@22.8.1)(encoding@0.1.13)(node-fetch@2.7.0(encoding@0.1.13))(typescript@5.5.4)
+        specifier: ^0.87.0
+        version: 0.87.0(@types/node@22.8.1)(encoding@0.1.13)(node-fetch@2.7.0(encoding@0.1.13))(typescript@5.5.4)
       '@graphprotocol/graph-ts':
         specifier: ^0.35.1
         version: 0.35.1
@@ -1767,8 +1767,8 @@ packages:
     resolution: {integrity: sha512-yZ0H5e3EpAYKokX/AbtplzlvSxEJY7ZfpvQyDzyODkks0hakAAlDG6fQu1SlDJMWorY7bbq1j7fCiFeTWci6TA==}
     hasBin: true
 
-  '@graphprotocol/graph-cli@0.80.0':
-    resolution: {integrity: sha512-vO0pSdqYZUTSFkIVNFo5/6ZfwVrMZ/XYCpg/zcKgnQH3pezR3YUV4krSV4fwKriJglbF1QC7+QWRr7h0akLe5w==}
+  '@graphprotocol/graph-cli@0.87.0':
+    resolution: {integrity: sha512-SilWVtSSh00pw7k0gc0kLHOErwtBNPEHoKvvCxw14ixlFZeWuiJP6+sEuQA256wBxZJo80rEQnB3rknRsgGBEg==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -12608,7 +12608,7 @@ snapshots:
       graphql-import-node: 0.0.5(graphql@16.8.1)
       js-yaml: 4.1.0
 
-  '@graphprotocol/graph-cli@0.80.0(@types/node@22.8.1)(encoding@0.1.13)(node-fetch@2.7.0(encoding@0.1.13))(typescript@5.5.4)':
+  '@graphprotocol/graph-cli@0.87.0(@types/node@22.8.1)(encoding@0.1.13)(node-fetch@2.7.0(encoding@0.1.13))(typescript@5.5.4)':
     dependencies:
       '@float-capital/float-subgraph-uncrashable': 0.0.0-internal-testing.5
       '@oclif/core': 2.8.6(@types/node@22.8.1)(typescript@5.5.4)
