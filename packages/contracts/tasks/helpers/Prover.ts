@@ -219,7 +219,7 @@ export class Prover {
    *
    * @param proofs tally proofs
    */
-  async proveTally(proofs: Proof[], tallyData: TallyData): Promise<void> {
+  async proveTally(proofs: Proof[]): Promise<void> {
     const [treeDepths, numSignUpsAndMessages, tallyBatchNumber, mode, stateTreeDepth] = await Promise.all([
       this.pollContract.treeDepths(),
       this.pollContract.numSignUpsAndMessages(),
@@ -310,11 +310,25 @@ export class Prover {
     if (tallyBatchNum === totalTallyBatches) {
       console.log("All vote tallying proofs have been submitted.");
     }
+  }
+
+  /**
+   * Submit tally results on chain
+   *
+   * @param tallyData - tally data
+   * @param recipients - number of recipients
+   */
+  async submitResults(tallyData: TallyData, recipients?: number): Promise<void> {
+    console.log("Submitting results...");
 
     const tallyResults = tallyData.results.tally.map((t) => BigInt(t));
-    const tallyResultProofs = tallyData.results.tally.map((_, index) =>
-      genTreeProof(index, tallyResults, Number(treeDepths.voteOptionTreeDepth)),
-    );
+
+    const [treeDepths] = await Promise.all([this.pollContract.treeDepths()]);
+
+    const resultLength = recipients ?? tallyResults.length;
+    const tallyResultProofs = tallyResults
+      .slice(0, resultLength)
+      .map((_, index) => genTreeProof(index, tallyResults, Number(treeDepths.voteOptionTreeDepth)));
 
     await this.tallyContract
       .addTallyResults({
@@ -329,6 +343,8 @@ export class Prover {
         perVOSpentVoiceCreditsHash: tallyData.perVOSpentVoiceCredits?.commitment ?? 0n,
       })
       .then((tx) => tx.wait());
+
+    console.log("Results have been submitted.");
   }
 
   /**

@@ -151,6 +151,26 @@ export interface IProveParams {
 }
 
 /**
+ * Interface that represents task submitOnChain params
+ */
+export interface ISubmitOnChainParams {
+  /**
+   * The poll id
+   */
+  poll: BigNumberish;
+
+  /**
+   * The directory where proofs are stored
+   */
+  outputDir: string;
+
+  /**
+   * The file to store the tally proof
+   */
+  tallyFile: string;
+}
+
+/**
  * Interface that represents prove generator params
  */
 export interface IProofGeneratorParams {
