@@ -86,7 +86,7 @@ task("submitOnChain", "Command to prove the result of a poll on-chain")
     };
 
     // read the proofs from the output directory
-    const files = fs.readdirSync(outputDir);
+    const files = await fs.promises.readdir(outputDir);
 
     // Read process proofs
     const processProofFiles = files.filter((f) => f.startsWith("process_") && f.endsWith(".json"));
