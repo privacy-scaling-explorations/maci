@@ -322,18 +322,21 @@ export class Prover {
     console.log("Submitting results...");
 
     const tallyResults = tallyData.results.tally.map((t) => BigInt(t));
+    const resultLength = recipients ?? tallyResults.length;
+
+    // slice in case we are submitting partial results
+    const partialResults = tallyResults.slice(0, resultLength);
 
     const [treeDepths] = await Promise.all([this.pollContract.treeDepths()]);
 
-    const resultLength = recipients ?? tallyResults.length;
-    const tallyResultProofs = tallyResults
-      .slice(0, resultLength)
-      .map((_, index) => genTreeProof(index, tallyResults, Number(treeDepths.voteOptionTreeDepth)));
+    const tallyResultProofs = partialResults.map((_, index) =>
+      genTreeProof(index, tallyResults, Number(treeDepths.voteOptionTreeDepth)),
+    );
 
     await this.tallyContract
       .addTallyResults({
-        voteOptionIndices: tallyData.results.tally.map((_, index) => index),
-        tallyResults,
+        voteOptionIndices: partialResults.map((_, index) => index),
+        tallyResults: partialResults,
         tallyResultProofs,
         totalSpent: tallyData.totalSpentVoiceCredits.spent,
         totalSpentSalt: tallyData.totalSpentVoiceCredits.salt,
