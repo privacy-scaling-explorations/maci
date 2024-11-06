@@ -55,7 +55,7 @@
     "@zk-kit/baby-jubjub": "^1.0.3",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.2",
-    "fast-check": "^3.21.0",
+    "fast-check": "^3.23.1",
     "glob": "^11.0.0",
     "mocha": "^10.7.3",
     "ts-mocha": "^10.0.0",
