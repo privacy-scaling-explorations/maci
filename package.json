@@ -47,7 +47,7 @@
     "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-unused-imports": "^4.1.4",
-    "husky": "^9.1.5",
+    "husky": "^9.1.6",
     "is-ci": "^3.0.1",
     "lerna": "^8.1.8",
     "lint-staged": "^15.2.9",
