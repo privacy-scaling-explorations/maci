@@ -26,11 +26,11 @@
     "maci-domainobjs": "^2.4.0"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.11",
+    "@types/chai": "^5.0.1",
     "@types/mocha": "^10.0.8",
     "@types/node": "^22.9.0",
     "benny": "^3.7.1",
-    "chai": "^4.3.10",
+    "chai": "^5.1.2",
     "mocha": "^10.7.3",
     "nyc": "^17.0.0",
     "ts-mocha": "^10.0.0",
