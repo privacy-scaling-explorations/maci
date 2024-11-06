@@ -168,7 +168,7 @@
   "dependencies": {
     "@nomicfoundation/hardhat-ethers": "^3.0.8",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
-    "@openzeppelin/contracts": "^5.0.2",
+    "@openzeppelin/contracts": "^5.1.0",
     "@openzeppelin/merkle-tree": "^1.0.7",
     "circomlibjs": "^0.1.7",
     "ethers": "^6.13.2",
