@@ -500,7 +500,7 @@ export interface IStorageNamedEntry {
  */
 export interface IStorageInstanceEntry {
   /**
-   * Entry identificator
+   * Entry id
    */
   id: string;
 
