@@ -468,8 +468,8 @@ importers:
         specifier: ^1.0.3
         version: 1.0.3
       '@zk-kit/eddsa-poseidon':
-        specifier: ^1.0.3
-        version: 1.0.3
+        specifier: ^1.1.0
+        version: 1.1.0
       '@zk-kit/poseidon-cipher':
         specifier: ^0.3.2
         version: 0.3.2
@@ -3105,8 +3105,8 @@ packages:
   '@zk-kit/circuits@0.4.0':
     resolution: {integrity: sha512-Di7mokhwBS3qxVeCfHxGeNIpDg1kTnr1JXmsWiQMZLkRTn3Hugh6Tl07J394rWD0pIWRwPQsinaMVL2sB4F8yQ==}
 
-  '@zk-kit/eddsa-poseidon@1.0.3':
-    resolution: {integrity: sha512-VyTu5jXHDqno3MBDWhoIwGz0vO/HB1X/2wqwope4JRvS4V8S9sYTwH3paf7ynImrJV7L/zK61RHxpGKbNemYRQ==}
+  '@zk-kit/eddsa-poseidon@1.1.0':
+    resolution: {integrity: sha512-Djc+zOZjd73FpLLf32/XeVZi8GX4ShPQJGS4Iig1QMAR/2CggEi++6Jrkr9N2FM3M4MRCH1qxz2u22DjOLtASg==}
 
   '@zk-kit/poseidon-cipher@0.3.2':
     resolution: {integrity: sha512-Ezz1e0mj/GRDlHdU5m0uhj5iHY72zWJU0BP8DsCCvPubU7LPI2tVaPpxrAjT4JQqatbVRQHLIhixW7F7BPzaFg==}
@@ -8092,6 +8092,9 @@ packages:
   pluralize@8.0.0:
     resolution: {integrity: sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA==}
     engines: {node: '>=4'}
+
+  poseidon-lite@0.3.0:
+    resolution: {integrity: sha512-ilJj4MIve4uBEG7SrtPqUUNkvpJ/pLVbndxa0WvebcQqeIhe+h72JR4g0EvwchUzm9sOQDlOjiDNmRAgxNZl4A==}
 
   possible-typed-array-names@1.0.0:
     resolution: {integrity: sha512-d7Uw+eZoloe0EHDIYoe+bQ5WXnGMOpmiZFTuMWCwpjzzkL2nTjcKiAk4hh8TjnGye2TwWOk3UXucZ+3rbmBa8Q==}
@@ -14421,11 +14424,13 @@ snapshots:
     dependencies:
       circomlib: 2.0.5
 
-  '@zk-kit/eddsa-poseidon@1.0.3':
+  '@zk-kit/eddsa-poseidon@1.1.0':
     dependencies:
       '@zk-kit/baby-jubjub': 1.0.3
       '@zk-kit/utils': 1.2.1
+      blakejs: 1.2.1
       buffer: 6.0.3
+      poseidon-lite: 0.3.0
 
   '@zk-kit/poseidon-cipher@0.3.2':
     dependencies:
@@ -20717,6 +20722,8 @@ snapshots:
   platform@1.3.6: {}
 
   pluralize@8.0.0: {}
+
+  poseidon-lite@0.3.0: {}
 
   possible-typed-array-names@1.0.0: {}
 
