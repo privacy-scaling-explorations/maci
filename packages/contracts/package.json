@@ -171,7 +171,7 @@
     "@openzeppelin/contracts": "^5.1.0",
     "@openzeppelin/merkle-tree": "^1.0.7",
     "circomlibjs": "^0.1.7",
-    "ethers": "^6.13.2",
+    "ethers": "^6.13.4",
     "hardhat": "^2.22.8",
     "lowdb": "^1.0.0",
     "maci-circuits": "^2.4.0",
