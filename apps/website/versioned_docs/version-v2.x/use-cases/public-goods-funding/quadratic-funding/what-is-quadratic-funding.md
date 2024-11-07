@@ -66,7 +66,7 @@ Compared to 1-person-1-vote, quadratic funding lets the person who lives in Flor
 
 ## Quadratic Funding Resources
 
-- [Quadratic Payments: A Primer](https://vitalik.ca/general/2019/12/07/quadratic.html)
+- [Quadratic Payments: A Primer](https://vitalik.eth.limo/general/2019/12/07/quadratic.html)
 - [Liberal Radicalism: A Flexible Design For Philanthropic Matching Funds](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3243656)
 - [Quadratic Voting](https://www.radicalxchange.org/concepts/plural-voting/)
 
