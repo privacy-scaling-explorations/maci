@@ -8,7 +8,7 @@ sidebar_position: 5
 
 Quadratic voting is one of many types of vote tallying mechanisms. We chose it for the first version of MACI due to the high amount of interest that the community has shown for it.
 
-Quadratic voting allows users to express the strength of their preferences when they vote for options. Since users are allocated a limited number of _voice credits_, and the number of tallied votes per option is the square root of the number of voice credits spent on said option, quadratic voting [over-privileges neither concentrated nor diffuse interests](https://www.vitalik.ca/general/2019/12/07/quadratic.html).
+Quadratic voting allows users to express the strength of their preferences when they vote for options. Since users are allocated a limited number of _voice credits_, and the number of tallied votes per option is the square root of the number of voice credits spent on said option, quadratic voting [over-privileges neither concentrated nor diffuse interests](https://vitalik.eth.limo/general/2019/12/07/quadratic.html).
 
 For instance, if a user has 99 voice credits, they may spend them this way (each row represents a command):
 
