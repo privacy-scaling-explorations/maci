@@ -103,5 +103,5 @@ For more details about testing please refer to the [tests documentation](https:/
 ## Directory Structure
 
 - `ts/`: The home for our core classes, `MaciState` and `Poll`
-- `ts/utls/`: Contains supporting utilities
+- `ts/utils/`: Contains supporting utilities
 - `ts/__tests__/`: A dedicated test suite directory
