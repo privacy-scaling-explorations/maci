@@ -4,7 +4,7 @@
 [![Actions Status][cli-actions-badge]][cli-actions-link]
 
 Please refer to the [documentation for the
-CLI](https://maci.pse.dev/docs/developers-references/typescript-code/cli).
+CLI](https://maci.pse.dev/docs/technical-references/typescript-code/cli).
 
 [cli-npm-badge]: https://img.shields.io/npm/v/maci-cli.svg
 [cli-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/e2e.yml/badge.svg
