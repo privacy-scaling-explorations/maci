@@ -172,7 +172,7 @@
     "@openzeppelin/merkle-tree": "^1.0.7",
     "circomlibjs": "^0.1.7",
     "ethers": "^6.13.4",
-    "hardhat": "^2.22.8",
+    "hardhat": "^2.22.15",
     "lowdb": "^1.0.0",
     "maci-circuits": "^2.4.0",
     "maci-core": "^2.4.0",
