@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.5.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.4.0...v2.5.0) (2024-11-20)
+
+
+### Features
+
+* **contracts:** add tally results ([5d8a720](https://github.com/privacy-scaling-explorations/maci/commit/5d8a7203f9eb300f86cca5e83a3858571081e333))
+
+
+### Miscellaneous
+
+* **deps-dev:** bump @types/node from 22.4.1 to 22.8.1 ([#1873](https://github.com/privacy-scaling-explorations/maci/issues/1873)) ([c1b9c0e](https://github.com/privacy-scaling-explorations/maci/commit/c1b9c0ed18eb3fae5e189dff952a8ab9dfb2f9b1))
+* **deps-dev:** bump @types/node from 22.8.1 to 22.9.0 ([0e11e5d](https://github.com/privacy-scaling-explorations/maci/commit/0e11e5d668fed2e2168de56e87981b0edcca8cd9))
+* **deps-dev:** bump typescript from 5.5.4 to 5.6.3 ([8058c5d](https://github.com/privacy-scaling-explorations/maci/commit/8058c5de1d865317c79a00508b672091cd7b1eb0))
+* **deps:** bump ethers from 6.13.2 to 6.13.4 ([b698a03](https://github.com/privacy-scaling-explorations/maci/commit/b698a036d3fa008a7a47327f343a1a312129fead))
+* **deps:** bump hardhat from 2.22.8 to 2.22.13 ([f8a139a](https://github.com/privacy-scaling-explorations/maci/commit/f8a139a0f0c836851a93bb6051213927df1faa2a))
+
+
+
 ## [2.4.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.3.0...v2.4.0) (2024-09-30)
 
 

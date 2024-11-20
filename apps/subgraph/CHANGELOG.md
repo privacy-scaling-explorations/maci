@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.5.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.4.0...v2.5.0) (2024-11-20)
+
+
+### Miscellaneous
+
+* **deps:** bump @graphprotocol/graph-cli from 0.80.0 to 0.88.0 ([a8124ae](https://github.com/privacy-scaling-explorations/maci/commit/a8124aede8850d61cbf927399582ef7bc31f5eba))
+
+
+
 ## [2.4.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.3.0...v2.4.0) (2024-09-30)
 
 **Note:** Version bump only for package maci-subgraph

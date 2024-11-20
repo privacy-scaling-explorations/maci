@@ -1,6 +1,6 @@
 {
   "name": "maci-core",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "",
   "main": "build/ts/index.js",
   "types": "build/ts/index.d.ts",
@@ -22,8 +22,8 @@
     "docs": "typedoc --plugin typedoc-plugin-markdown --options ./typedoc.json"
   },
   "dependencies": {
-    "maci-crypto": "^2.4.0",
-    "maci-domainobjs": "^2.4.0"
+    "maci-crypto": "^2.5.0",
+    "maci-domainobjs": "^2.5.0"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",

@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.5.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.4.0...v2.5.0) (2024-11-20)
+
+
+### Bug Fixes
+
+* **website:** website build ([0ee4865](https://github.com/privacy-scaling-explorations/maci/commit/0ee4865b72569912d61b6b770f83dce236ef7ae7))
+
+
+### Miscellaneous
+
+* add ethglobal singapore projects ([#1879](https://github.com/privacy-scaling-explorations/maci/issues/1879)) ([822f1ff](https://github.com/privacy-scaling-explorations/maci/commit/822f1ffa5e86299e1c704e95adeb67bd0b66c8ad))
+* **deps-dev:** bump @types/node from 22.4.1 to 22.8.1 ([#1873](https://github.com/privacy-scaling-explorations/maci/issues/1873)) ([c1b9c0e](https://github.com/privacy-scaling-explorations/maci/commit/c1b9c0ed18eb3fae5e189dff952a8ab9dfb2f9b1))
+* **deps-dev:** bump @types/node from 22.8.1 to 22.9.0 ([0e11e5d](https://github.com/privacy-scaling-explorations/maci/commit/0e11e5d668fed2e2168de56e87981b0edcca8cd9))
+* **deps-dev:** bump @types/react from 18.3.11 to 18.3.12 ([369aac3](https://github.com/privacy-scaling-explorations/maci/commit/369aac395247d5aa8f64d3eed15505c90f073d92))
+* **deps-dev:** bump @types/react from 18.3.3 to 18.3.11 ([6d85934](https://github.com/privacy-scaling-explorations/maci/commit/6d8593400b2b9d75d44781a7d6f235c80fa48394))
+* **deps-dev:** bump typescript from 5.5.4 to 5.6.3 ([8058c5d](https://github.com/privacy-scaling-explorations/maci/commit/8058c5de1d865317c79a00508b672091cd7b1eb0))
+* **deps:** bump @docusaurus/theme-common from 3.5.1 to 3.5.2 ([#1875](https://github.com/privacy-scaling-explorations/maci/issues/1875)) ([ae7fdaa](https://github.com/privacy-scaling-explorations/maci/commit/ae7fdaa83792c49ce918c23d566acfa492fcc93f))
+* **deps:** bump @mdx-js/react from 3.0.1 to 3.1.0 ([5235f5c](https://github.com/privacy-scaling-explorations/maci/commit/5235f5c1a425b942f155b3b1dbcb1f75d6d4b820))
+* **deps:** bump @mdx-js/react from 3.0.1 to 3.1.0 ([#1862](https://github.com/privacy-scaling-explorations/maci/issues/1862)) ([d90e786](https://github.com/privacy-scaling-explorations/maci/commit/d90e786fde9c3663c783b26d258a8f2c0f7f8937))
+* **docs:** improved docs, added resources ([#1843](https://github.com/privacy-scaling-explorations/maci/issues/1843)) ([6d08c1a](https://github.com/privacy-scaling-explorations/maci/commit/6d08c1af562057066c4f3078dcbceb6c5bf709f6))
+* **documentation:** added guides and improved overall docs ([cebf302](https://github.com/privacy-scaling-explorations/maci/commit/cebf3022ab07a2380efcec95c5ae58d3f3f95089))
+* q3 in review blogpost ([#1878](https://github.com/privacy-scaling-explorations/maci/issues/1878)) ([b40f489](https://github.com/privacy-scaling-explorations/maci/commit/b40f489992c2e38ed90cd634ded6d960eb8dfe8f))
+* update vitalik blog link ([#1923](https://github.com/privacy-scaling-explorations/maci/issues/1923)) ([6bdb342](https://github.com/privacy-scaling-explorations/maci/commit/6bdb342d55c8445dd4807deb033e7f40e0e1528e))
+
+
+
 ## [2.4.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.3.0...v2.4.0) (2024-09-30)
 
 
