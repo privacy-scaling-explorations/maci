@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.5.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.4.0...v2.5.0) (2024-11-20)
+
+
+### Miscellaneous
+
+* **deps-dev:** bump @types/node from 22.4.1 to 22.8.1 ([#1873](https://github.com/privacy-scaling-explorations/maci/issues/1873)) ([c1b9c0e](https://github.com/privacy-scaling-explorations/maci/commit/c1b9c0ed18eb3fae5e189dff952a8ab9dfb2f9b1))
+* **deps-dev:** bump @types/node from 22.8.1 to 22.9.0 ([0e11e5d](https://github.com/privacy-scaling-explorations/maci/commit/0e11e5d668fed2e2168de56e87981b0edcca8cd9))
+* **deps-dev:** bump nyc from 17.0.0 to 17.1.0 ([3dce47c](https://github.com/privacy-scaling-explorations/maci/commit/3dce47c8c2a016765ae68b48ebd38b36226b9709))
+* **deps-dev:** bump typescript from 5.5.4 to 5.6.3 ([8058c5d](https://github.com/privacy-scaling-explorations/maci/commit/8058c5de1d865317c79a00508b672091cd7b1eb0))
+* **deps:** bump @zk-kit/eddsa-poseidon from 1.0.2 to 1.0.3 ([e9bb863](https://github.com/privacy-scaling-explorations/maci/commit/e9bb8634b3890c6a1738942d6e4eb02898333d5d))
+* **deps:** bump @zk-kit/eddsa-poseidon from 1.0.3 to 1.1.0 ([54a8b7f](https://github.com/privacy-scaling-explorations/maci/commit/54a8b7f70497d85838cb5050d72f86a853b7f4e0))
+* **deps:** bump @zk-kit/poseidon-cipher from 0.3.1 to 0.3.2 ([6f57fac](https://github.com/privacy-scaling-explorations/maci/commit/6f57fac1f11c3997ae6474f63a8ffa20b6b00d41))
+* **deps:** bump ethers from 6.13.2 to 6.13.4 ([b698a03](https://github.com/privacy-scaling-explorations/maci/commit/b698a036d3fa008a7a47327f343a1a312129fead))
+
+
+
 ## [2.4.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.3.0...v2.4.0) (2024-09-30)
 
 

@@ -105,7 +105,7 @@ importers:
         specifier: ^0.35.1
         version: 0.35.1
       maci-contracts:
-        specifier: ^2.4.0
+        specifier: ^2.5.0
         version: link:../../packages/contracts
     devDependencies:
       assemblyscript:
@@ -203,13 +203,13 @@ importers:
         specifier: ^2.0.5
         version: 2.0.5
       maci-core:
-        specifier: ^2.4.0
+        specifier: ^2.5.0
         version: link:../core
       maci-crypto:
-        specifier: ^2.4.0
+        specifier: ^2.5.0
         version: link:../crypto
       maci-domainobjs:
-        specifier: ^2.4.0
+        specifier: ^2.5.0
         version: link:../domainobjs
       snarkjs:
         specifier: ^0.7.5
@@ -279,19 +279,19 @@ importers:
         specifier: ^2.22.8
         version: 2.22.15(ts-node@10.9.2(@types/node@22.9.0)(typescript@5.6.3))(typescript@5.6.3)
       maci-circuits:
-        specifier: ^2.4.0
+        specifier: ^2.5.0
         version: link:../circuits
       maci-contracts:
-        specifier: ^2.4.0
+        specifier: ^2.5.0
         version: link:../contracts
       maci-core:
-        specifier: ^2.4.0
+        specifier: ^2.5.0
         version: link:../core
       maci-crypto:
-        specifier: ^2.4.0
+        specifier: ^2.5.0
         version: link:../crypto
       maci-domainobjs:
-        specifier: ^2.4.0
+        specifier: ^2.5.0
         version: link:../domainobjs
       prompt:
         specifier: ^1.3.0
@@ -364,16 +364,16 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       maci-circuits:
-        specifier: ^2.4.0
+        specifier: ^2.5.0
         version: link:../circuits
       maci-core:
-        specifier: ^2.4.0
+        specifier: ^2.5.0
         version: link:../core
       maci-crypto:
-        specifier: ^2.4.0
+        specifier: ^2.5.0
         version: link:../crypto
       maci-domainobjs:
-        specifier: ^2.4.0
+        specifier: ^2.5.0
         version: link:../domainobjs
       solidity-docgen:
         specifier: ^0.6.0-beta.36
@@ -425,10 +425,10 @@ importers:
   packages/core:
     dependencies:
       maci-crypto:
-        specifier: ^2.4.0
+        specifier: ^2.5.0
         version: link:../crypto
       maci-domainobjs:
-        specifier: ^2.4.0
+        specifier: ^2.5.0
         version: link:../domainobjs
     devDependencies:
       '@types/chai':
@@ -511,7 +511,7 @@ importers:
   packages/domainobjs:
     dependencies:
       maci-crypto:
-        specifier: ^2.4.0
+        specifier: ^2.5.0
         version: link:../crypto
     devDependencies:
       '@types/chai':
@@ -545,22 +545,22 @@ importers:
         specifier: ^6.13.4
         version: 6.13.4
       maci-circuits:
-        specifier: ^2.4.0
+        specifier: ^2.5.0
         version: link:../circuits
       maci-cli:
-        specifier: ^2.4.0
+        specifier: ^2.5.0
         version: link:../cli
       maci-contracts:
-        specifier: ^2.4.0
+        specifier: ^2.5.0
         version: link:../contracts
       maci-core:
-        specifier: ^2.4.0
+        specifier: ^2.5.0
         version: link:../core
       maci-crypto:
-        specifier: ^2.4.0
+        specifier: ^2.5.0
         version: link:../crypto
       maci-domainobjs:
-        specifier: ^2.4.0
+        specifier: ^2.5.0
         version: link:../domainobjs
     devDependencies:
       '@types/chai':

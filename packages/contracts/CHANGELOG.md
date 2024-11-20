@@ -3,6 +3,48 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.5.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.4.0...v2.5.0) (2024-11-20)
+
+
+### Features
+
+* **contracts:** add tally results ([5d8a720](https://github.com/privacy-scaling-explorations/maci/commit/5d8a7203f9eb300f86cca5e83a3858571081e333))
+* **contracts:** add total spent to tally ([ac206f3](https://github.com/privacy-scaling-explorations/maci/commit/ac206f37c0c3f546408a9b996324fc2cf1bc5ba8))
+* **contracts:** add virtual modifier for getDeployTimeAndDuration ([679198f](https://github.com/privacy-scaling-explorations/maci/commit/679198f1995aff06f54a699e0465fd32fd5dde7c))
+* **contracts:** implement anon aadhaar gatekeeper ([#1846](https://github.com/privacy-scaling-explorations/maci/issues/1846)) ([095ad87](https://github.com/privacy-scaling-explorations/maci/commit/095ad8798d958a85b7728e392834c1ff706d40ff))
+* **contracts:** use contract names for deployment service ([935fa23](https://github.com/privacy-scaling-explorations/maci/commit/935fa23149e554a937439bec7506beba5bb9a23e))
+* separate gen proofs and submit tasks ([#1888](https://github.com/privacy-scaling-explorations/maci/issues/1888)) ([6007edf](https://github.com/privacy-scaling-explorations/maci/commit/6007edffffc41937f80d90bb132099e0de1302e6))
+
+
+### Bug Fixes
+
+* **contracts:** prevent adding additional tally results ([a7f9b9e](https://github.com/privacy-scaling-explorations/maci/commit/a7f9b9ece29ddcecaab9ea75b9ebc02f01f5d2ae))
+* ensure we pass the correct data to add tally results ([#1896](https://github.com/privacy-scaling-explorations/maci/issues/1896)) ([bc0961f](https://github.com/privacy-scaling-explorations/maci/commit/bc0961fc01a9b8c45c4056e2c188a1b3b61ccc45))
+* use async fs ([#1897](https://github.com/privacy-scaling-explorations/maci/issues/1897)) ([be1abd1](https://github.com/privacy-scaling-explorations/maci/commit/be1abd1f93b94bd42601b9ab4dde1f9fdb7ab3a3))
+
+
+### Code Refactoring
+
+* **contracts:** improve submit onchain task ([cf71ccc](https://github.com/privacy-scaling-explorations/maci/commit/cf71ccc1c49a2ae68616aec7f67dca458ffb9a6a))
+
+
+### Miscellaneous
+
+* **contracts:** add missing exports ([be071a8](https://github.com/privacy-scaling-explorations/maci/commit/be071a88afbc6f18428cac110ef7bb31351ab249))
+* **contracts:** add struct for add tally results args ([45eb28d](https://github.com/privacy-scaling-explorations/maci/commit/45eb28d698df9e68f0a9538f3cb03d0956ed372d))
+* **deps-dev:** bump @types/node from 22.4.1 to 22.8.1 ([#1873](https://github.com/privacy-scaling-explorations/maci/issues/1873)) ([c1b9c0e](https://github.com/privacy-scaling-explorations/maci/commit/c1b9c0ed18eb3fae5e189dff952a8ab9dfb2f9b1))
+* **deps-dev:** bump @types/node from 22.8.1 to 22.9.0 ([0e11e5d](https://github.com/privacy-scaling-explorations/maci/commit/0e11e5d668fed2e2168de56e87981b0edcca8cd9))
+* **deps-dev:** bump typescript from 5.5.4 to 5.6.3 ([8058c5d](https://github.com/privacy-scaling-explorations/maci/commit/8058c5de1d865317c79a00508b672091cd7b1eb0))
+* **deps:** bump @openzeppelin/contracts from 5.0.2 to 5.1.0 ([09386ad](https://github.com/privacy-scaling-explorations/maci/commit/09386ad7819d384d9eb6ad607d2d34abd9d97982))
+* **deps:** bump ethers from 6.13.2 to 6.13.4 ([b698a03](https://github.com/privacy-scaling-explorations/maci/commit/b698a036d3fa008a7a47327f343a1a312129fead))
+* **deps:** bump hardhat from 2.22.8 to 2.22.13 ([f8a139a](https://github.com/privacy-scaling-explorations/maci/commit/f8a139a0f0c836851a93bb6051213927df1faa2a))
+* **deps:** bump uuid from 10.0.0 to 11.0.2 ([66d55e3](https://github.com/privacy-scaling-explorations/maci/commit/66d55e39c6d432feff25ec4c6d79cc4313d346a7))
+* **documentation:** added guides and improved overall docs ([cebf302](https://github.com/privacy-scaling-explorations/maci/commit/cebf3022ab07a2380efcec95c5ae58d3f3f95089))
+* fix minor typo ([265403d](https://github.com/privacy-scaling-explorations/maci/commit/265403d39b07956f29c99dad1e70a2b4975e39b1))
+* move add tally results args struct to interface ([8370f78](https://github.com/privacy-scaling-explorations/maci/commit/8370f781d167c8489adf89f3c37127233e0f53f1))
+
+
+
 ## [2.4.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.3.0...v2.4.0) (2024-09-30)
 
 

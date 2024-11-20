@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.5.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.4.0...v2.5.0) (2024-11-20)
+
+
+### Miscellaneous
+
+* **deps-dev:** bump @types/node from 22.4.1 to 22.8.1 ([#1873](https://github.com/privacy-scaling-explorations/maci/issues/1873)) ([c1b9c0e](https://github.com/privacy-scaling-explorations/maci/commit/c1b9c0ed18eb3fae5e189dff952a8ab9dfb2f9b1))
+* **deps-dev:** bump @types/node from 22.8.1 to 22.9.0 ([0e11e5d](https://github.com/privacy-scaling-explorations/maci/commit/0e11e5d668fed2e2168de56e87981b0edcca8cd9))
+* **deps-dev:** bump fast-check from 3.21.0 to 3.23.1 ([fc2ebf9](https://github.com/privacy-scaling-explorations/maci/commit/fc2ebf91a1d70dd13d7b7728bae336b583909ae3))
+* **deps-dev:** bump typescript from 5.5.4 to 5.6.3 ([8058c5d](https://github.com/privacy-scaling-explorations/maci/commit/8058c5de1d865317c79a00508b672091cd7b1eb0))
+* **deps:** bump circomkit from 0.2.1 to 0.3.1 ([222ea35](https://github.com/privacy-scaling-explorations/maci/commit/222ea351d7d70cda2260623bb0c4fde808407ec1))
+* **deps:** bump snarkjs from 0.7.4 to 0.7.5 ([5f5ffa6](https://github.com/privacy-scaling-explorations/maci/commit/5f5ffa67d3448dc25b11ba5ffd111e644662d194))
+
+
+
 ## [2.4.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.3.0...v2.4.0) (2024-09-30)
 
 

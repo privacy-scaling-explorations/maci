@@ -1,6 +1,6 @@
 {
   "name": "maci-domainobjs",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "",
   "main": "build/ts/index.js",
   "files": [
@@ -25,7 +25,7 @@
     "ts-mocha": "^10.0.0"
   },
   "dependencies": {
-    "maci-crypto": "^2.4.0"
+    "maci-crypto": "^2.5.0"
   },
   "nyc": {
     "reporter": [
