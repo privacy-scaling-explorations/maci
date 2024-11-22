@@ -43,9 +43,9 @@ include "../../trees/incrementalQuinaryTree.circom";
     var msgTreeZeroValue = 8370432830353022751713833565135785980866757267633941821328460903436894336785;
 
     // Number of users that have completed the sign up.
-    signal numSignUps;
+    signal input numSignUps;
     // Number of options for this poll.
-    signal maxVoteOptions;
+    signal input maxVoteOptions;
     // Value of chainHash at beginning of batch
     signal input inputBatchHash;
     // Value of chainHash at end of batch
@@ -62,10 +62,6 @@ include "../../trees/incrementalQuinaryTree.circom";
     // @note it is a public input to ensure fair processing from 
     // the coordinator (no censoring)
     signal input actualStateTreeDepth;
-    // The last batch index
-    signal input batchEndIndex;
-    // The batch index of current message batch
-    signal input index;
     // The coordinator public key hash
     signal input coordinatorPublicKeyHash;
 
@@ -100,12 +96,12 @@ include "../../trees/incrementalQuinaryTree.circom";
     // first message (e.g., [msg1, msg2, msg3] => first message to process has index 3).
 
     // The index of the first message in the batch, inclusive.
-    signal batchStartIndex;
+    signal input index;
     
     // The index of the last message in the batch to process, exclusive.
-    // This value may be less than batchStartIndex + batchSize if this batch is
+    // This value may be less than index + batchSize if this batch is
     // the last batch and the total number of messages is not a multiple of the batch size.
-    signal batchEndIndex;
+    signal input batchEndIndex;
 
     // The history of state and ballot roots and temporary intermediate
     // signals (for processing purposes).
@@ -140,14 +136,14 @@ include "../../trees/incrementalQuinaryTree.circom";
         // calculate message hash
         computedMessageHashers[i] = MessageHasher()(msgs[i], encPubKeys[i]);
         // check if message is valid or not (if index of message is less than index of last valid message in batch)
-        var batchStartIndexValid = SafeLessThan(32)([batchStartIndex + i, batchEndIndex]);
+        var batchStartIndexValid = SafeLessThan(32)([index + i, batchEndIndex]);
         // calculate chain hash if message is valid
         computedChainHashes[i] = PoseidonHasher(2)([chainHash[i], computedMessageHashers[i]]);
         // choose between old chain hash value and new chain hash value depending if message is valid or not
         chainHash[i + 1] = Mux1()([chainHash[i], computedChainHashes[i]], batchStartIndexValid);
     }
 
-    // If batchEndIndex < batchStartIndex + i, the remaining
+    // If batchEndIndex < index + i, the remaining
     // message hashes should be the zero value.
     // e.g. [m, z, z, z, z] if there is only 1 real message in the batch
     // This makes possible to have a batch of messages which is only partially full.
@@ -183,6 +179,11 @@ include "../../trees/incrementalQuinaryTree.circom";
     var computedCommandsPackedCommandOut[batchSize][PACKED_CMD_LENGTH];
 
     for (var i = 0; i < batchSize; i++) {
+        var message[MSG_LENGTH];
+        for (var j = 0; j < MSG_LENGTH; j++) {
+            message[j] = msgs[i][j];
+        }
+
         (
             computedCommandsStateIndex[i],
             computedCommandsNewPubKey[i],
@@ -194,7 +195,7 @@ include "../../trees/incrementalQuinaryTree.circom";
             computedCommandsSigR8[i],
             computedCommandsSigS[i],
             computedCommandsPackedCommandOut[i]
-        ) = MessageToCommand()(msgs[i], coordPrivKey, encPubKeys[i]);
+        ) = MessageToCommand()(message, coordPrivKey, encPubKeys[i]);
     }
 
     // Process messages in reverse order.
@@ -277,7 +278,6 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     var BALLOT_NONCE_IDX = 0;
     // Ballot vote option (VO) root index.
     var BALLOT_VO_ROOT_IDX = 1;
-    var maxVoteOptions = MESSAGE_TREE_ARITY ** voteOptionTreeDepth;
 
     // Indices for elements within a state leaf.
     // Public key.
@@ -287,10 +287,10 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
     // Timestamp.
     var STATE_LEAF_TIMESTAMP_IDX = 3;
+    var N_BITS = 252;
 
     // Inputs representing the message and the current state.
     signal input numSignUps;
-
     signal input maxVoteOptions;
 
     // The current value of the state tree root.
@@ -338,8 +338,8 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
 
     // 1. Transform a state leaf and a ballot with a command.
     // The result is a new state leaf, a new ballot, and an isValid signal (0 or 1).
-    var computedNewSlPubKey[2], computedNewBallotNonce, computedIsValid, computedIsStateLeafIndexValid, computedIsVoteOptionIndexValid;
-    (computedNewSlPubKey, computedNewBallotNonce, computedIsValid, computedIsStateLeafIndexValid, computedIsVoteOptionIndexValid) = StateLeafAndBallotTransformerNonQv()(
+    var computedNewSlPubKey[2], computedNewBallotNonce, computedIsValid;
+    (computedNewSlPubKey, computedNewBallotNonce, computedIsValid) = StateLeafAndBallotTransformerNonQv()(
         numSignUps,
         maxVoteOptions,
         [stateLeaf[STATE_LEAF_PUB_X_IDX], stateLeaf[STATE_LEAF_PUB_Y_IDX]],
@@ -359,9 +359,10 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
         packedCmd
     );
 
-    // 2. If computedIsStateLeafIndexValid is equal to zero, generate indices for leaf zero.
+    // 2. If isValid is equal to zero, generate indices for leaf zero.
     // Otherwise, generate indices for command.stateIndex.
-    var stateIndexMux = Mux1()([0, cmdStateIndex], computedIsStateLeafIndexValid);
+    var stateLeafIndexValid = SafeLessThan(N_BITS)([cmdStateIndex, numSignUps]);
+    var stateIndexMux = Mux1()([0, cmdStateIndex], stateLeafIndexValid);
     var computedStateLeafPathIndices[stateTreeDepth] = MerkleGeneratePathIndices(stateTreeDepth)(stateIndexMux);
 
     // 3. Verify that the original state leaf exists in the given state root.
@@ -394,7 +395,14 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     b <== currentVoteWeight;
     c <== cmdNewVoteWeight;
 
-    var cmdVoteOptionIndexMux = Mux1()([0, cmdVoteOptionIndex], computedIsVoteOptionIndexValid);
+    var voiceCreditAmountValid = SafeGreaterEqThan(252)([
+        stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + b,
+        c
+    ]);
+
+    var computedIsMessageEqual = IsEqual()([2, computedIsValid + voiceCreditAmountValid]);
+    var voteOptionIndexValid = SafeLessThan(N_BITS)([cmdVoteOptionIndex, maxVoteOptions]);
+    var cmdVoteOptionIndexMux = Mux1()([0, cmdVoteOptionIndex], voteOptionIndexValid);
     var computedCurrentVoteWeightPathIndices[voteOptionTreeDepth] = QuinGeneratePathIndices(voteOptionTreeDepth)(cmdVoteOptionIndexMux);
 
     var computedCurrentVoteWeightQip = QuinTreeInclusionProof(voteOptionTreeDepth)(
@@ -405,13 +413,20 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
 
     computedCurrentVoteWeightQip === ballot[BALLOT_VO_ROOT_IDX];
 
-    var voteWeightMux = Mux1()([currentVoteWeight, cmdNewVoteWeight], computedIsValid);
-    var voiceCreditBalanceMux = Mux1()(
+    var voteWeightMux = Mux1()([currentVoteWeight, cmdNewVoteWeight], computedIsMessageEqual);
+    var newSlVoiceCreditBalanceMux = Mux1()(
         [
             stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX],
             stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + b - c
         ],
-        computedIsValid
+        voiceCreditAmountValid
+    );
+    var voiceCreditBalanceMux = Mux1()(
+        [
+            stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX],
+            newSlVoiceCreditBalanceMux
+        ],
+        computedIsMessageEqual
     );
 
     // 5.1. Update the ballot's vote option root with the new vote weight.
@@ -424,7 +439,7 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     // The new vote option root in the ballot
     var newBallotVoRootMux = Mux1()(
         [ballot[BALLOT_VO_ROOT_IDX], computedNewVoteOptionTreeQip],
-        computedIsValid
+        computedIsMessageEqual
     );
 
     newBallotVoRoot <== newBallotVoRootMux;
@@ -447,7 +462,8 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     newStateRoot <== computedNewStateLeafQip;
  
     // 7. Generate a new ballot root.    
-    var computedNewBallot = PoseidonHasher(2)([computedNewBallotNonce, newBallotVoRoot]);
+    var newBallotNonceMux = Mux1()([ballot[BALLOT_NONCE_IDX], computedNewBallotNonce], computedIsMessageEqual);
+    var computedNewBallot = PoseidonHasher(2)([newBallotNonceMux, newBallotVoRoot]);
     var computedNewBallotQip = MerkleTreeInclusionProof(stateTreeDepth)(
         computedNewBallot,
         computedStateLeafPathIndices,

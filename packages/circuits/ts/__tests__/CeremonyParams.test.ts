@@ -24,8 +24,7 @@ describe("Ceremony param tests", () => {
   };
 
   const treeDepths = {
-    // can be 1
-    intStateTreeDepth: params.stateLeafBatchDepth,
+    intStateTreeDepth: 1,
     voteOptionTreeDepth: params.voteOptionTreeDepth,
   };
 
@@ -159,7 +158,7 @@ describe("Ceremony param tests", () => {
           ballotTree.insert(emptyBallotHash);
         });
 
-        const currentStateRoot = poll.pollStateLeaves?.root;
+        const currentStateRoot = poll.pollStateTree?.root;
         const currentBallotRoot = ballotTree.root;
 
         const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
@@ -170,7 +169,7 @@ describe("Ceremony param tests", () => {
 
         // The new roots, which should differ, since at least one of the
         // messages modified a Ballot or State Leaf
-        const newStateRoot = poll.pollStateLeaves?.root;
+        const newStateRoot = poll.pollStateTree?.root;
         const newBallotRoot = poll.ballotTree?.root;
 
         expect(newStateRoot?.toString()).not.to.be.eq(currentStateRoot?.toString());

@@ -3,7 +3,7 @@ import { expect } from "chai";
 import { AbiCoder, BigNumberish, Signer } from "ethers";
 import { EthereumProvider } from "hardhat/types";
 import { MaciState, Poll, IProcessMessagesCircuitInputs, ITallyCircuitInputs } from "maci-core";
-import { genTreeCommitment, genTreeProof, hashLeftRight, NOTHING_UP_MY_SLEEVE } from "maci-crypto";
+import { genTreeCommitment, genTreeProof, hashLeftRight, NOTHING_UP_MY_SLEEVE, poseidon } from "maci-crypto";
 import { Keypair, Message, PubKey } from "maci-domainobjs";
 
 import { EMode } from "../ts/constants";

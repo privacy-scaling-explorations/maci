@@ -81,7 +81,7 @@ export const deployPoll = async ({
   const unserializedKey = PubKey.deserialize(coordinatorPubkey);
 
   // get the verifier contract
-  const verifierContractAddress = await readContractAddress("Verifier", network?.name);
+  const verifierContractAddress = readContractAddress("Verifier", network?.name);
 
   const maciContract = MACIFactory.connect(maci, signer);
 
@@ -119,6 +119,11 @@ export const deployPoll = async ({
     const log = iface.parseLog(receiptLog as unknown as { topics: string[]; data: string }) as unknown as {
       args: {
         _pollId: bigint;
+        pollAddr: {
+          poll: string;
+          messageProcessor: string;
+          tally: string;
+        };
       };
       name: string;
     };
@@ -131,10 +136,9 @@ export const deployPoll = async ({
 
     // eslint-disable-next-line no-underscore-dangle
     const pollId = log.args._pollId;
-    const pollContracts = await maciContract.getPoll(pollId);
-    pollAddr = pollContracts.poll;
-    messageProcessorContractAddress = pollContracts.messageProcessor;
-    tallyContractAddress = pollContracts.tally;
+    pollAddr = log.args.pollAddr.poll;
+    messageProcessorContractAddress = log.args.pollAddr.messageProcessor;
+    tallyContractAddress = log.args.pollAddr.tally;
 
     logGreen(quiet, info(`Poll ID: ${pollId.toString()}`));
     logGreen(quiet, info(`Poll contract: ${pollAddr}`));
@@ -142,9 +146,9 @@ export const deployPoll = async ({
     logGreen(quiet, info(`Tally contract: ${tallyContractAddress}`));
 
     // store the address
-    await storeContractAddress(`MessageProcessor-${pollId.toString()}`, messageProcessorContractAddress, network?.name);
-    await storeContractAddress(`Tally-${pollId.toString()}`, tallyContractAddress, network?.name);
-    await storeContractAddress(`Poll-${pollId.toString()}`, pollAddr, network?.name);
+    storeContractAddress(`MessageProcessor-${pollId.toString()}`, messageProcessorContractAddress, network?.name);
+    storeContractAddress(`Tally-${pollId.toString()}`, tallyContractAddress, network?.name);
+    storeContractAddress(`Poll-${pollId.toString()}`, pollAddr, network?.name);
   } catch (error) {
     logError((error as Error).message);
   }

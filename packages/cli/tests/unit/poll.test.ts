@@ -46,20 +46,37 @@ describe("poll", function test() {
     });
 
     it("should get current poll properly", async () => {
-      const pollData = await getPoll({ maciAddress: maciAddresses.maciAddress, signer });
-      const samePollData = await getPoll({ maciAddress: maciAddresses.maciAddress, pollId: pollData.id, signer });
+      const pollData = await getPoll({
+        maciAddress: maciAddresses.maciAddress,
+        tallyAddress: pollAddresses.tally,
+        signer,
+      });
+      const samePollData = await getPoll({
+        maciAddress: maciAddresses.maciAddress,
+        tallyAddress: pollAddresses.tally,
+        pollId: pollData.id,
+        signer,
+      });
 
       expect(pollData.address).to.eq(pollAddresses.poll);
       expect(pollData).to.deep.eq(samePollData);
     });
 
     it("should get finished poll properly", async () => {
-      const pollData = await getPoll({ maciAddress: maciAddresses.maciAddress, provider: signer.provider! });
+      const pollData = await getPoll({
+        maciAddress: maciAddresses.maciAddress,
+        tallyAddress: pollAddresses.tally,
+        provider: signer.provider!,
+      });
 
       await timeTravel({ seconds: Number(pollData.duration), signer });
-      await mergeSignups({ pollId: BigInt(pollData.id), signer });
+      await mergeSignups({ pollId: BigInt(pollData.id), maciAddress: maciAddresses.maciAddress, signer });
 
-      const finishedPollData = await getPoll({ maciAddress: maciAddresses.maciAddress, signer });
+      const finishedPollData = await getPoll({
+        maciAddress: maciAddresses.maciAddress,
+        tallyAddress: pollAddresses.tally,
+        signer,
+      });
 
       expect(pollData.id).to.eq(finishedPollData.id);
       expect(pollData.address).to.eq(finishedPollData.address);
@@ -67,21 +84,21 @@ describe("poll", function test() {
     });
 
     it("should throw error if there are no signer and provider", async () => {
-      await expect(getPoll({ maciAddress: maciAddresses.maciAddress, pollId: -1n })).eventually.rejectedWith(
-        "No signer and provider are provided",
-      );
+      await expect(
+        getPoll({ maciAddress: maciAddresses.maciAddress, tallyAddress: pollAddresses.tally, pollId: -1n }),
+      ).eventually.rejectedWith("No signer and provider are provided");
     });
 
     it("should throw error if current poll id is invalid", async () => {
-      await expect(getPoll({ maciAddress: maciAddresses.maciAddress, pollId: -1n, signer })).eventually.rejectedWith(
-        "Invalid poll id -1",
-      );
+      await expect(
+        getPoll({ maciAddress: maciAddresses.maciAddress, tallyAddress: pollAddresses.tally, pollId: -1n, signer }),
+      ).eventually.rejectedWith("Invalid poll id -1");
     });
 
     it("should throw error if current poll is not deployed", async () => {
-      await expect(getPoll({ maciAddress: maciAddresses.maciAddress, pollId: 9000n, signer })).eventually.rejectedWith(
-        "MACI contract doesn't have any deployed poll 9000",
-      );
+      await expect(
+        getPoll({ maciAddress: maciAddresses.maciAddress, tallyAddress: pollAddresses.tally, pollId: 9000n, signer }),
+      ).eventually.rejectedWith("MACI contract doesn't have any deployed poll 9000");
     });
   });
 });

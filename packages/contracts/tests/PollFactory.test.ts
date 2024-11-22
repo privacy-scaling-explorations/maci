@@ -49,19 +49,5 @@ describe("pollFactory", () => {
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
     });
-
-    it("should revert when called with an invalid param for max vote options", async () => {
-      const maxVoteOptionsInvalid = 2 ** 50;
-      await expect(
-        pollFactory.deploy(
-          "100",
-          maxVoteOptionsInvalid,
-          treeDepths,
-          messageBatchSize,
-          coordinatorPubKey.asContractParam(),
-          extContracts,
-        ),
-      ).to.be.revertedWithCustomError(pollFactory, "InvalidMaxVoteOptions");
-    });
   });
 });

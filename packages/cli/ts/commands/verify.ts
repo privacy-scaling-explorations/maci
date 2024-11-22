@@ -16,11 +16,29 @@ import { verifyPerVOSpentVoiceCredits, verifyTallyResults } from "../utils/verif
  * Verify the results of a poll on-chain
  * @param VerifyArgs - The arguments for the verify command
  */
-export const verify = async ({ pollId, tallyData, maciAddress, signer, quiet = true }: VerifyArgs): Promise<void> => {
+export const verify = async ({
+  pollId,
+  tallyData,
+  maciAddress,
+  tallyAddress,
+  signer,
+  quiet = true,
+}: VerifyArgs): Promise<void> => {
   banner(quiet);
 
   const tallyResults = tallyData;
   const useQv = tallyResults.isQuadratic;
+
+  // we prioritize the tally file data
+  const tallyContractAddress = tallyResults.tallyAddress || tallyAddress;
+
+  if (!tallyContractAddress) {
+    logError("Tally contract address is empty");
+  }
+
+  if (!(await contractExists(signer.provider!, tallyContractAddress))) {
+    logError(`Error: there is no Tally contract deployed at ${tallyContractAddress}.`);
+  }
 
   // prioritize the tally file data
   const maciContractAddress = tallyResults.maci || maciAddress;
@@ -36,11 +54,11 @@ export const verify = async ({ pollId, tallyData, maciAddress, signer, quiet = t
 
   // get the contract objects
   const maciContract = MACIFactory.connect(maciContractAddress, signer);
-  const pollContracts = await maciContract.polls(pollId);
+  const pollAddr = await maciContract.polls(pollId);
 
-  const pollContract = PollFactory.connect(pollContracts.poll, signer);
+  const pollContract = PollFactory.connect(pollAddr, signer);
 
-  const tallyContract = TallyFactory.connect(pollContracts.tally, signer);
+  const tallyContract = TallyFactory.connect(tallyContractAddress, signer);
 
   // verification
   const onChainTallyCommitment = BigInt(await tallyContract.tallyCommitment());

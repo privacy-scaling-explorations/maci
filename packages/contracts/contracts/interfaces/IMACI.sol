@@ -1,10 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import { IVerifier } from "./IVerifier.sol";
-import { IVkRegistry } from "./IVkRegistry.sol";
-import { DomainObjs } from "../utilities/DomainObjs.sol";
-
 /// @title IMACI
 /// @notice MACI interface
 interface IMACI {

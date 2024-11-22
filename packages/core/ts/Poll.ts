@@ -448,7 +448,6 @@ export class Poll implements IPoll {
     const pubKeyX = pubKey.asArray()[0];
     const pubKeyY = pubKey.asArray()[1];
     const stateLeafArray = [pubKeyX, pubKeyY, voiceCreditBalance, timestamp];
-    const pollPubKeyArray = pollPubKey.asArray();
 
     assert(credits <= voiceCreditBalance, "Credits must be lower than signed up credits");
 
@@ -482,9 +481,6 @@ export class Poll implements IPoll {
     // Set actualStateTreeDepth as number of initial siblings length
     const actualStateTreeDepth = BigInt(siblingsLength);
 
-    // Calculate public input hash from nullifier, credits and current root
-    const inputHash = sha256Hash([nullifier, credits, stateRoot, pollPubKeyArray[0], pollPubKeyArray[1]]);
-
     const circuitInputs = {
       privKey: maciPrivKey.asCircuitInputs(),
       pollPrivKey: pollPrivKey.asCircuitInputs(),
@@ -496,7 +492,6 @@ export class Poll implements IPoll {
       credits,
       stateRoot,
       actualStateTreeDepth,
-      inputHash,
     };
 
     return stringifyBigInts(circuitInputs) as unknown as IPollJoiningCircuitInputs;
@@ -795,6 +790,8 @@ export class Poll implements IPoll {
     // this will be the hash of the roots with a salt
     circuitInputs.newSbCommitment = hash3([newStateRoot, newBallotRoot, newSbSalt]);
 
+    const coordinatorPublicKeyHash = this.coordinatorKeypair.pubKey.hash();
+
     // If this is the last batch, release the lock
     if (this.numBatchesProcessed * batchSize >= this.messages.length) {
       this.maciStateRef.pollBeingProcessed = false;
@@ -802,9 +799,12 @@ export class Poll implements IPoll {
 
     // ensure we pass the dynamic tree depth
     circuitInputs.actualStateTreeDepth = this.actualStateTreeDepth.toString();
-    circuitInputs.coordinatorPublicKeyHash = this.coordinatorKeypair.pubKey.hash();
 
-    return stringifyBigInts(circuitInputs) as unknown as IProcessMessagesCircuitInputs;
+    return stringifyBigInts({
+      ...circuitInputs,
+      coordinatorPublicKeyHash,
+      maxVoteOptions: BigInt(this.maxVoteOptions),
+    }) as unknown as IProcessMessagesCircuitInputs;
   };
 
   /**
@@ -881,10 +881,11 @@ export class Poll implements IPoll {
     return stringifyBigInts({
       numSignUps: BigInt(this.numSignups),
       batchEndIndex: BigInt(batchEndIndex),
-      index: BigInt(index),
+      index: BigInt(0),
       inputBatchHash,
       outputBatchHash,
       msgs,
+      actualStateTreeDepth: BigInt(this.actualStateTreeDepth),
       coordPrivKey: this.coordinatorKeypair.privKey.asCircuitInputs(),
       encPubKeys: encPubKeys.map((x) => x.asCircuitInputs()),
       currentStateRoot,

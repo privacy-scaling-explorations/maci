@@ -43,12 +43,9 @@ template PollJoining(stateTreeDepth) {
     signal input stateRoot;
     // The actual tree depth (might be <= stateTreeDepth) Used in BinaryMerkleRoot
     signal input actualStateTreeDepth;
-    // Public input hash (nullifier, credits, stateRoot)
-    signal input inputHash;
 
-    // Check public input hash
-    var computedInputHash = Sha256Hasher(5)([nullifier, credits, stateRoot, pollPubKey[0], pollPubKey[1]]);
-    inputHash === computedInputHash;
+    var computedNullifier = PoseidonHasher(1)([privKey]);
+    nullifier === computedNullifier;
 
     // User private to public key
     var derivedPubKey[2] = PrivToPubKey()(privKey);

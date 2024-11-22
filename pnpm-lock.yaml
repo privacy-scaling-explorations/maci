@@ -352,8 +352,8 @@ importers:
         specifier: ^1.0.7
         version: 1.0.7
       '@pcd/util':
-        specifier: ^0.8.0
-        version: 0.8.0
+        specifier: ^0.9.0
+        version: 0.9.0
       '@zk-kit/imt.sol':
         specifier: 2.0.0-beta.12
         version: 2.0.0-beta.12
@@ -2438,8 +2438,8 @@ packages:
   '@openzeppelin/merkle-tree@1.0.7':
     resolution: {integrity: sha512-i93t0YYv6ZxTCYU3CdO5Q+DXK0JH10A4dCBOMlzYbX+ujTXm+k1lXiEyVqmf94t3sqmv8sm/XT5zTa0+efnPgQ==}
 
-  '@pcd/util@0.8.0':
-    resolution: {integrity: sha512-KG1V8O+o8Awr9iHH9I1eVeqHGlm3F6zqzvOJzXKe/bViE8A31DuiZoeHCVPFRA5+03d+qY4tWQJKOxYGQL6Kww==}
+  '@pcd/util@0.9.0':
+    resolution: {integrity: sha512-PI9XR9DY7Okn8AJyOfFPhSihewh5VVTyFf5Hm+qaH09t0MlV8ZbMAo9hbiyB5NtHJo7fEEM5BHTRCPpMeVEJcA==}
 
   '@peculiar/asn1-schema@2.3.8':
     resolution: {integrity: sha512-ULB1XqHKx1WBU/tTFIA+uARuRoBVZ4pNdOA878RDrRbBfBGcSzi5HBkdScC6ZbHn8z7L8gmKCgPC1LHRrP46tA==}
@@ -13653,7 +13653,7 @@ snapshots:
       '@ethersproject/constants': 5.7.0
       '@ethersproject/keccak256': 5.7.0
 
-  '@pcd/util@0.8.0':
+  '@pcd/util@0.9.0':
     dependencies:
       buffer: 6.0.3
       email-validator: 2.0.4

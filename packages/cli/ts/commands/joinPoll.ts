@@ -3,7 +3,7 @@ import { extractVk, genProof, verifyProof } from "maci-circuits";
 import { formatProofForVerifierContract, genSignUpTree, IGenSignUpTree } from "maci-contracts";
 import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts/typechain-types";
 import { CircuitInputs, IJsonMaciState, MaciState, IPollJoiningCircuitInputs } from "maci-core";
-import { poseidon, sha256Hash, stringifyBigInts } from "maci-crypto";
+import { poseidon, stringifyBigInts } from "maci-crypto";
 import { IVkObjectParams, Keypair, PrivKey, PubKey, StateLeaf } from "maci-domainobjs";
 
 import assert from "assert";
@@ -120,7 +120,6 @@ const joiningCircuitInputs = (
   const pubKeyX = pubKey.asArray()[0];
   const pubKeyY = pubKey.asArray()[1];
   const stateLeafArray = [pubKeyX, pubKeyY, voiceCreditBalance, timestamp];
-  const pollPubKeyArray = pollPubKey.asArray();
 
   assert(credits <= voiceCreditBalance, "Credits must be lower than signed up credits");
 
@@ -156,7 +155,6 @@ const joiningCircuitInputs = (
   const actualStateTreeDepth = BigInt(siblingsLength);
 
   // Calculate public input hash from nullifier, credits and current root
-  const inputHash = sha256Hash([nullifier, credits, stateRoot, pollPubKeyArray[0], pollPubKeyArray[1]]);
 
   const circuitInputs = {
     privKey: maciPrivKey.asCircuitInputs(),
@@ -169,7 +167,6 @@ const joiningCircuitInputs = (
     credits,
     stateRoot,
     actualStateTreeDepth,
-    inputHash,
   };
 
   return stringifyBigInts(circuitInputs) as unknown as IPollJoiningCircuitInputs;

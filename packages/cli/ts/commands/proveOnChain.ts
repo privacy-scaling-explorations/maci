@@ -11,7 +11,7 @@ import {
   type IVerifyingKeyStruct,
 } from "maci-contracts";
 import { STATE_TREE_ARITY } from "maci-core";
-import { G1Point, G2Point, hashLeftRight } from "maci-crypto";
+import { G1Point, G2Point, genTreeProof } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
 
 import fs from "fs";
@@ -29,6 +29,7 @@ import {
   logYellow,
   readContractAddress,
   success,
+  type TallyData,
   type Proof,
   type ProveOnChainArgs,
 } from "../utils";
@@ -41,18 +42,33 @@ export const proveOnChain = async ({
   pollId,
   proofDir,
   maciAddress,
-  signer,
+  messageProcessorAddress,
+  tallyAddress,
   tallyFile,
+  signer,
   quiet = true,
 }: ProveOnChainArgs): Promise<void> => {
   banner(quiet);
   const network = await signer.provider?.getNetwork();
 
-  // check existence of contract addresses
   const maciContractAddress = maciAddress || (await readContractAddress("MACI", network?.name));
 
+  // check existence of contract addresses
   if (!maciContractAddress) {
     logError("MACI contract address is empty");
+  }
+
+  const messageProcessorContractAddress =
+    messageProcessorAddress || (await readContractAddress(`MessageProcessor-${pollId}`, network?.name));
+
+  if (!messageProcessorContractAddress) {
+    logError("MessageProcessor contract address is empty");
+  }
+
+  const tallyContractAddress = tallyAddress || (await readContractAddress(`Tally-${pollId}`, network?.name));
+
+  if (!tallyContractAddress) {
+    logError("Tally contract address is empty");
   }
 
   // check contracts are deployed on chain
@@ -60,17 +76,25 @@ export const proveOnChain = async ({
     logError("MACI contract does not exist");
   }
 
-  const maciContract = MACIFactory.connect(maciContractAddress, signer);
-  const pollContracts = await maciContract.polls(pollId);
+  if (!(await contractExists(signer.provider!, messageProcessorContractAddress))) {
+    logError("MessageProcessor contract does not exist");
+  }
 
-  if (!(await contractExists(signer.provider!, pollContracts.poll))) {
+  if (!(await contractExists(signer.provider!, tallyContractAddress))) {
+    logError("Tally contract does not exist");
+  }
+
+  const maciContract = MACIFactory.connect(maciContractAddress, signer);
+  const pollAddr = await maciContract.polls(pollId);
+
+  if (!(await contractExists(signer.provider!, pollAddr))) {
     logError("There is no Poll contract with this poll ID linked to the specified MACI contract.");
   }
 
-  const pollContract = PollFactory.connect(pollContracts.poll, signer);
+  const pollContract = PollFactory.connect(pollAddr, signer);
 
-  const mpContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
-  const tallyContract = TallyFactory.connect(pollContracts.tally, signer);
+  const mpContract = MessageProcessorFactory.connect(messageProcessorContractAddress, signer);
+  const tallyContract = TallyFactory.connect(tallyContractAddress, signer);
 
   const vkRegistryContractAddress = await tallyContract.vkRegistry();
 

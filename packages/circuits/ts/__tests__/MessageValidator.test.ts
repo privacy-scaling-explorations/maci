@@ -28,7 +28,7 @@ describe("MessageValidator circuit", function test() {
         "currentVotesForOption",
         "voteWeight",
       ],
-      ["isValid", "isStateLeafIndexValid", "isVoteOptionIndexValid"]
+      ["isValid"]
     >;
 
     before(async () => {
@@ -76,10 +76,6 @@ describe("MessageValidator circuit", function test() {
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("1");
-      const isStateLeafIndexValid = await getSignal(circuit, witness, "isStateLeafIndexValid");
-      expect(isStateLeafIndexValid.toString()).to.be.eq("1");
-      const isVoteOptionIndexValid = await getSignal(circuit, witness, "isVoteOptionIndexValid");
-      expect(isVoteOptionIndexValid.toString()).to.be.eq("1");
     });
 
     it("should be invalid if the signature is invalid", async () => {
@@ -89,10 +85,6 @@ describe("MessageValidator circuit", function test() {
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");
-      const isStateLeafIndexValid = await getSignal(circuit, witness, "isStateLeafIndexValid");
-      expect(isStateLeafIndexValid.toString()).to.be.eq("1");
-      const isVoteOptionIndexValid = await getSignal(circuit, witness, "isVoteOptionIndexValid");
-      expect(isVoteOptionIndexValid.toString()).to.be.eq("1");
     });
 
     it("should be invalid if the pubkey is invalid", async () => {
@@ -102,10 +94,6 @@ describe("MessageValidator circuit", function test() {
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");
-      const isStateLeafIndexValid = await getSignal(circuit, witness, "isStateLeafIndexValid");
-      expect(isStateLeafIndexValid.toString()).to.be.eq("1");
-      const isVoteOptionIndexValid = await getSignal(circuit, witness, "isVoteOptionIndexValid");
-      expect(isVoteOptionIndexValid.toString()).to.be.eq("1");
     });
 
     it("should be invalid if there are insufficient voice credits", async () => {
@@ -115,10 +103,6 @@ describe("MessageValidator circuit", function test() {
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");
-      const isStateLeafIndexValid = await getSignal(circuit, witness, "isStateLeafIndexValid");
-      expect(isStateLeafIndexValid.toString()).to.be.eq("1");
-      const isVoteOptionIndexValid = await getSignal(circuit, witness, "isVoteOptionIndexValid");
-      expect(isVoteOptionIndexValid.toString()).to.be.eq("1");
     });
 
     it("should be invalid if the nonce is invalid", async () => {
@@ -128,10 +112,6 @@ describe("MessageValidator circuit", function test() {
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");
-      const isStateLeafIndexValid = await getSignal(circuit, witness, "isStateLeafIndexValid");
-      expect(isStateLeafIndexValid.toString()).to.be.eq("1");
-      const isVoteOptionIndexValid = await getSignal(circuit, witness, "isVoteOptionIndexValid");
-      expect(isVoteOptionIndexValid.toString()).to.be.eq("1");
     });
 
     it("should be invalid if the state leaf index is invalid", async () => {
@@ -141,10 +121,6 @@ describe("MessageValidator circuit", function test() {
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");
-      const isStateLeafIndexValid = await getSignal(circuit, witness, "isStateLeafIndexValid");
-      expect(isStateLeafIndexValid.toString()).to.be.eq("0");
-      const isVoteOptionIndexValid = await getSignal(circuit, witness, "isVoteOptionIndexValid");
-      expect(isVoteOptionIndexValid.toString()).to.be.eq("1");
     });
 
     it("should be invalid if the vote option index is invalid", async () => {
@@ -154,10 +130,6 @@ describe("MessageValidator circuit", function test() {
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");
-      const isStateLeafIndexValid = await getSignal(circuit, witness, "isStateLeafIndexValid");
-      expect(isStateLeafIndexValid.toString()).to.be.eq("0");
-      const isVoteOptionIndexValid = await getSignal(circuit, witness, "isVoteOptionIndexValid");
-      expect(isVoteOptionIndexValid.toString()).to.be.eq("0");
     });
 
     it("should be invalid if the vote option index is invalid", async () => {
@@ -167,10 +139,6 @@ describe("MessageValidator circuit", function test() {
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");
-      const isStateLeafIndexValid = await getSignal(circuit, witness, "isStateLeafIndexValid");
-      expect(isStateLeafIndexValid.toString()).to.be.eq("0");
-      const isVoteOptionIndexValid = await getSignal(circuit, witness, "isVoteOptionIndexValid");
-      expect(isVoteOptionIndexValid.toString()).to.be.eq("0");
     });
   });
 
@@ -193,7 +161,7 @@ describe("MessageValidator circuit", function test() {
         "currentVotesForOption",
         "voteWeight",
       ],
-      ["isValid", "isStateLeafIndexValid", "isVoteOptionIndexValid"]
+      ["isValid"]
     >;
 
     before(async () => {
@@ -241,10 +209,6 @@ describe("MessageValidator circuit", function test() {
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("1");
-      const isStateLeafIndexValid = await getSignal(circuit, witness, "isStateLeafIndexValid");
-      expect(isStateLeafIndexValid.toString()).to.be.eq("1");
-      const isVoteOptionIndexValid = await getSignal(circuit, witness, "isVoteOptionIndexValid");
-      expect(isVoteOptionIndexValid.toString()).to.be.eq("1");
     });
 
     it("should be invalid if the signature is invalid", async () => {
@@ -254,10 +218,6 @@ describe("MessageValidator circuit", function test() {
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");
-      const isStateLeafIndexValid = await getSignal(circuit, witness, "isStateLeafIndexValid");
-      expect(isStateLeafIndexValid.toString()).to.be.eq("1");
-      const isVoteOptionIndexValid = await getSignal(circuit, witness, "isVoteOptionIndexValid");
-      expect(isVoteOptionIndexValid.toString()).to.be.eq("1");
     });
 
     it("should be invalid if the pubkey is invalid", async () => {
@@ -267,10 +227,6 @@ describe("MessageValidator circuit", function test() {
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");
-      const isStateLeafIndexValid = await getSignal(circuit, witness, "isStateLeafIndexValid");
-      expect(isStateLeafIndexValid.toString()).to.be.eq("1");
-      const isVoteOptionIndexValid = await getSignal(circuit, witness, "isVoteOptionIndexValid");
-      expect(isVoteOptionIndexValid.toString()).to.be.eq("1");
     });
 
     it("should be invalid if there are insufficient voice credits", async () => {
@@ -280,10 +236,6 @@ describe("MessageValidator circuit", function test() {
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");
-      const isStateLeafIndexValid = await getSignal(circuit, witness, "isStateLeafIndexValid");
-      expect(isStateLeafIndexValid.toString()).to.be.eq("1");
-      const isVoteOptionIndexValid = await getSignal(circuit, witness, "isVoteOptionIndexValid");
-      expect(isVoteOptionIndexValid.toString()).to.be.eq("1");
     });
 
     it("should be invalid if the nonce is invalid", async () => {
@@ -293,10 +245,6 @@ describe("MessageValidator circuit", function test() {
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");
-      const isStateLeafIndexValid = await getSignal(circuit, witness, "isStateLeafIndexValid");
-      expect(isStateLeafIndexValid.toString()).to.be.eq("1");
-      const isVoteOptionIndexValid = await getSignal(circuit, witness, "isVoteOptionIndexValid");
-      expect(isVoteOptionIndexValid.toString()).to.be.eq("1");
     });
 
     it("should be invalid if the state leaf index is invalid", async () => {
@@ -306,10 +254,6 @@ describe("MessageValidator circuit", function test() {
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");
-      const isStateLeafIndexValid = await getSignal(circuit, witness, "isStateLeafIndexValid");
-      expect(isStateLeafIndexValid.toString()).to.be.eq("0");
-      const isVoteOptionIndexValid = await getSignal(circuit, witness, "isVoteOptionIndexValid");
-      expect(isVoteOptionIndexValid.toString()).to.be.eq("1");
     });
 
     it("should be invalid if the vote option index is invalid", async () => {
@@ -319,10 +263,6 @@ describe("MessageValidator circuit", function test() {
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");
-      const isStateLeafIndexValid = await getSignal(circuit, witness, "isStateLeafIndexValid");
-      expect(isStateLeafIndexValid.toString()).to.be.eq("0");
-      const isVoteOptionIndexValid = await getSignal(circuit, witness, "isVoteOptionIndexValid");
-      expect(isVoteOptionIndexValid.toString()).to.be.eq("0");
     });
 
     it("should be invalid if the vote option index is invalid", async () => {
@@ -332,10 +272,6 @@ describe("MessageValidator circuit", function test() {
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");
-      const isStateLeafIndexValid = await getSignal(circuit, witness, "isStateLeafIndexValid");
-      expect(isStateLeafIndexValid.toString()).to.be.eq("0");
-      const isVoteOptionIndexValid = await getSignal(circuit, witness, "isVoteOptionIndexValid");
-      expect(isVoteOptionIndexValid.toString()).to.be.eq("0");
     });
   });
 });

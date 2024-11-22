@@ -54,7 +54,6 @@ export interface IPollJoiningInputs {
   credits: bigint;
   stateRoot: bigint;
   actualStateTreeDepth: bigint;
-  inputHash: bigint;
 }
 
 /**

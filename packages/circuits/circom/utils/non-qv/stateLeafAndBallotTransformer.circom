@@ -62,13 +62,9 @@ template StateLeafAndBallotTransformerNonQv() {
     
     // True when the command is valid; otherwise false.
     signal output isValid;
-    // True if the state leaf index is valid
-    signal output isStateLeafIndexValid;
-    // True if the vote option index is valid
-    signal output isVoteOptionIndexValid;
 
     // Check if the command / message is valid.
-    var (computedMessageValidator, computedIsStateLeafIndexValid, computedIsVoteOptionIndexValid) = MessageValidatorNonQv()(
+    var computedMessageValidator = MessageValidatorNonQv()(
         cmdStateIndex,
         numSignUps,
         cmdVoteOptionIndex,
@@ -100,6 +96,4 @@ template StateLeafAndBallotTransformerNonQv() {
     newBallotNonce <== computedNewBallotNonceMux;
 
     isValid <== computedMessageValidator;
-    isStateLeafIndexValid <== computedIsStateLeafIndexValid;
-    isVoteOptionIndexValid <== computedIsVoteOptionIndexValid;
 }

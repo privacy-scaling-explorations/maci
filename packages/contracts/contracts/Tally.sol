@@ -413,7 +413,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
    * @param _tallyResultProof Proofs of correctness of the vote tally results.
    * @param _tallyResultSalt the respective salt in the results object in the tally.json
    * @param _spentVoiceCreditsHash hashLeftRight(number of spent voice credits, spent salt)
-   * @param _perVOSpentVoiceCreditsHash hashLeftRight(merkle root of the no spent voice credits per vote option, perVOSpentVoiceCredits salt)
+   * @param _perVOSpentVoiceCreditsHash hashLeftRight(root of noSpentVoiceCreditsPerVoteOption, perVOSpentVoiceCredits)
    * @param _voteOptionTreeDepth vote option tree depth
    */
   function addTallyResult(

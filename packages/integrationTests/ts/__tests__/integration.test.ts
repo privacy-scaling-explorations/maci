@@ -59,6 +59,7 @@ describe("Integration tests", function test() {
   // global variables we need shared between tests
   let maciState: MaciState;
   let contracts: DeployedContracts;
+  let pollContracts: PollContracts;
   let pollId: bigint;
   let signer: Signer;
   const coordinatorKeypair = new Keypair();
@@ -107,7 +108,7 @@ describe("Integration tests", function test() {
     const maxVoteOptions = 25;
 
     // 4. create a poll
-    await deployPoll({
+    pollContracts = await deployPoll({
       pollDuration: duration,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
@@ -325,6 +326,8 @@ describe("Integration tests", function test() {
           tallyFile: path.resolve(__dirname, "../../../cli/tally.json"),
           proofDir: path.resolve(__dirname, "../../../cli/proofs"),
           maciAddress: contracts.maciAddress,
+          messageProcessorAddress: pollContracts.messageProcessor,
+          tallyAddress: pollContracts.tally,
           signer,
         }),
       ).to.not.be.rejected;
@@ -335,6 +338,7 @@ describe("Integration tests", function test() {
           pollId,
           tallyData,
           maciAddress: contracts.maciAddress,
+          tallyAddress: pollContracts.tally,
           signer,
         }),
       ).to.not.be.rejected;

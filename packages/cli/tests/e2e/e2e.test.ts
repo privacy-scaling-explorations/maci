@@ -160,7 +160,7 @@ describe("e2e tests", function test() {
 
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel({ seconds: pollDuration, signer });
-      await mergeSignups({ ...mergeSignupsArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       const tallyFileData = await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({
@@ -225,7 +225,7 @@ describe("e2e tests", function test() {
 
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeSignups({ ...mergeSignupsArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       const tallyFileData = await genProofs({ ...genProofsArgs, signer });
       await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer });
       await proveOnChain({ ...proveOnChainArgs, signer });

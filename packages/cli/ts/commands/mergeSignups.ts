@@ -31,13 +31,13 @@ export const mergeSignups = async ({ pollId, maciAddress, signer, quiet = true }
   }
 
   const maciContract = MACIFactory.connect(maciContractAddress, signer);
-  const pollContracts = await maciContract.polls(pollId);
+  const pollAddress = await maciContract.polls(pollId);
 
-  if (!(await contractExists(signer.provider!, pollContracts.poll))) {
+  if (!(await contractExists(signer.provider!, pollAddress))) {
     logError("Poll contract does not exist");
   }
 
-  const pollContract = PollFactory.connect(pollContracts.poll, signer);
+  const pollContract = PollFactory.connect(pollAddress, signer);
 
   // check if it's time to merge the message AQ
   const dd = await pollContract.getDeployTimeAndDuration();

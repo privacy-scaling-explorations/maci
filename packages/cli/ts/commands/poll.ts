@@ -17,6 +17,7 @@ import { logError, logGreen, success } from "../utils/theme";
  */
 export const getPoll = async ({
   maciAddress,
+  tallyAddress,
   signer,
   provider,
   pollId,
@@ -36,9 +37,9 @@ export const getPoll = async ({
     logError(`Invalid poll id ${id}`);
   }
 
-  const { poll: pollAddress, tally: tallyAddress } = await maciContract.polls(id);
+  const pollAddress = await maciContract.polls(id);
 
-  if (pollAddress === ZeroAddress || tallyAddress === ZeroAddress) {
+  if (pollAddress === ZeroAddress) {
     logError(`MACI contract doesn't have any deployed poll ${id}`);
   }
 

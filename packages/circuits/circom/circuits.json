@@ -3,7 +3,7 @@
     "file": "./core/qv/pollJoining",
     "template": "PollJoining",
     "params": [10],
-    "pubs": ["inputHash"]
+    "pubs": ["nullifier", "credits", "stateRoot", "pollPubKey"]
   },
   "ProcessMessages_10-20-2_test": {
     "file": "./core/qv/processMessages",

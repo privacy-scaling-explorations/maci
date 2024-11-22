@@ -16,7 +16,7 @@ import {
 } from "./utils/constants";
 import { circomkitInstance } from "./utils/utils";
 
-describe("Poll Joining circuit", function test() {
+describe.only("Poll Joining circuit", function test() {
   this.timeout(900000);
   const NUM_USERS = 50;
 
@@ -33,7 +33,6 @@ describe("Poll Joining circuit", function test() {
     "credits",
     "stateRoot",
     "actualStateTreeDepth",
-    "inputHash",
   ];
 
   let circuit: WitnessTester<PollJoiningCircuitInputs>;

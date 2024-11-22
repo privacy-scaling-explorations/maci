@@ -151,7 +151,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
     bytes memory _initialVoiceCreditProxyData
   ) public virtual {
     // ensure we do not have more signups than what the circuits support
-    if (lazyIMTData.numberOfLeaves >= maxSignups) revert TooManySignups();
+    if (leanIMTData.size >= maxSignups) revert TooManySignups();
 
     // ensure that the public key is on the baby jubjub curve
     if (!CurveBabyJubJub.isOnCurve(_pubKey.x, _pubKey.y)) {
@@ -211,12 +211,6 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
 
     uint256 voteOptionTreeDepth = _treeDepths.voteOptionTreeDepth;
     uint256 maxVoteOptions = uint256(VOTE_TREE_ARITY) ** voteOptionTreeDepth;
-
-    ExtContracts memory extContracts = ExtContracts({
-      maci: IMACI(address(this)),
-      verifier: IVerifier(_verifier),
-      vkRegistry: IVkRegistry(_vkRegistry)
-    });
 
     ExtContracts memory extContracts = ExtContracts({
       maci: IMACI(address(this)),

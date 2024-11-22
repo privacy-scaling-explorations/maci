@@ -106,7 +106,6 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
       !verifyProcessProof(
         currentBatchIndex,
         outputBatchHash,
-        sbCommitment,
         _newSbCommitment,
         messageBatchSize,
         voteOptionTreeDepth,
@@ -153,7 +152,6 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
   /// @dev used to update the sbCommitment
   /// @param _currentBatchIndex The batch index of current message batch
   /// @param _outputBatchHash The output batch hash
-  /// @param _currentSbCommitment The current sbCommitment (state and ballot)
   /// @param _newSbCommitment The new sbCommitment after we update this message batch
   /// @param _messageBatchSize The message batch size
   /// @param _voteOptionTreeDepth The vote option tree depth
@@ -162,7 +160,6 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
   function verifyProcessProof(
     uint256 _currentBatchIndex,
     uint256 _outputBatchHash,
-    uint256 _currentSbCommitment,
     uint256 _newSbCommitment,
     uint8 _messageBatchSize,
     uint8 _voteOptionTreeDepth,
@@ -171,10 +168,13 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
     // get the tree depths
     // get the message batch size from the message tree subdepth
     // get the number of signups
-    (uint256 numSignUps, uint256 numMessages) = poll.numSignUpsAndMessages();
     IMACI maci = poll.getMaciContract();
 
-    uint256[] memory publicCircuitInputs = getPublicCircuitInputs(_currentBatchIndex, _newSbCommitment, _outputBatchHash);
+    uint256[] memory publicCircuitInputs = getPublicCircuitInputs(
+      _currentBatchIndex,
+      _newSbCommitment,
+      _outputBatchHash
+    );
 
     // Get the verifying key from the VkRegistry
     VerifyingKey memory vk = vkRegistry.getProcessVk(

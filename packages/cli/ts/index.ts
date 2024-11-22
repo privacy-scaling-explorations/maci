@@ -166,9 +166,9 @@ program
   .description("show the deployed contract addresses")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .action((cmdObj) => {
+  .action(async (cmdObj) => {
     try {
-      showContracts(cmdObj.quiet);
+      await showContracts(cmdObj.quiet);
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -243,7 +243,7 @@ program
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
 
-      const maciAddress = cmdObj.maciAddress || readContractAddress("MACI", network?.name);
+      const maciAddress = cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
       const privateKey = cmdObj.privKey || (await promptSensitiveValue("Insert your MACI private key"));
 
       await joinPoll({
@@ -514,7 +514,7 @@ program
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
 
-      const maciAddress = cmdObj.maciAddress || readContractAddress("MACI", network?.name);
+      const maciAddress = cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
 
       await isJoinedUser({
         pollPubKey: cmdObj.pubkey,
@@ -534,6 +534,7 @@ program
   .description("Get deployed poll from MACI contract")
   .option("-p, --poll <poll>", "the poll id")
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
+  .option("-ta, --tally-address <tallyAddress>", "the tally contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .action(async (cmdObj) => {
     try {
@@ -541,10 +542,12 @@ program
       const network = await signer.provider?.getNetwork();
 
       const maciAddress = cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
+      const tallyAddress = cmdObj.tallyAddress || (await readContractAddress(`Tally-${cmdObj.poll}`, network?.name));
 
       await getPoll({
         pollId: cmdObj.poll,
         maciAddress,
+        tallyAddress,
         signer,
         quiet: cmdObj.quiet,
       });
@@ -577,6 +580,7 @@ program
     "the tally file with results, per vote option spent credits, spent voice credits total",
   )
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
+  .option("-ta, --tally-address <tallyAddress>", "the tally contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
@@ -593,11 +597,16 @@ program
       const tallyData = JSON.parse(await fs.promises.readFile(cmdObj.tallyFile, { encoding: "utf8" })) as TallyData;
 
       const maciAddress = tallyData.maci || cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
+      const tallyAddress =
+        tallyData.tallyAddress ||
+        cmdObj.tallyAddress ||
+        (await readContractAddress(`Tally-${cmdObj.pollId}`, network?.name));
 
       await verify({
         tallyData,
         pollId: cmdObj.pollId,
         maciAddress,
+        tallyAddress,
         quiet: cmdObj.quiet,
         signer,
       });
@@ -610,6 +619,7 @@ program
   .description("generate the proofs for a poll")
   .option("-sk, --privkey <privkey>", "your serialized MACI private key")
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
+  .option("-ta, --tally-address <tallyAddress>", "the tally contract address")
   .requiredOption("-o, --poll-id <pollId>", "the poll id", BigInt)
   .requiredOption(
     "-t, --tally-file <tallyFile>",
@@ -657,6 +667,7 @@ program
         tallyDatFile: cmdObj.tallyWitnessdat,
         coordinatorPrivKey: cmdObj.privkey,
         maciAddress: cmdObj.maciAddress,
+        tallyAddress: cmdObj.tallyAddress,
         transactionHash: cmdObj.transactionHash,
         processWasm: cmdObj.processWasm,
         tallyWasm: cmdObj.tallyWasm,
@@ -720,6 +731,8 @@ program
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
+  .option("-p, --message-processor-address <messageProcessorAddress>", "the message processor contract address")
+  .option("-ta, --tally-contract <tallyContract>", "the tally contract address")
   .requiredOption("-f, --proof-dir <proofDir>", "the proof output directory from the genProofs subcommand")
   .action(async (cmdObj) => {
     try {
@@ -730,6 +743,8 @@ program
         tallyFile: cmdObj.tallyFile,
         proofDir: cmdObj.proofDir,
         maciAddress: cmdObj.maciAddress,
+        messageProcessorAddress: cmdObj.messageProcessorAddress,
+        tallyAddress: cmdObj.tallyContract,
         quiet: cmdObj.quiet,
         signer,
       });

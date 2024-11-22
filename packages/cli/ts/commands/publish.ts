@@ -78,13 +78,13 @@ export const publish = async ({
   }
 
   const maciContract = MACIFactory.connect(maciAddress, signer);
-  const pollContracts = await maciContract.getPoll(pollId);
+  const pollAddress = await maciContract.getPoll(pollId);
 
-  if (!(await contractExists(signer.provider!, pollContracts.poll))) {
+  if (!(await contractExists(signer.provider!, pollAddress))) {
     logError("Poll contract does not exist");
   }
 
-  const pollContract = PollFactory.connect(pollContracts.poll, signer);
+  const pollContract = PollFactory.connect(pollAddress, signer);
 
   const maxVoteOptions = Number(await pollContract.maxVoteOptions());
   const coordinatorPubKeyResult = await pollContract.coordinatorPubKey();
@@ -167,9 +167,9 @@ export const publishBatch = async ({
   const userMaciPubKey = PubKey.deserialize(publicKey);
   const userMaciPrivKey = PrivKey.deserialize(privateKey);
   const maciContract = MACIFactory.connect(maciAddress, signer);
-  const pollContracts = await maciContract.getPoll(pollId);
+  const pollAddress = await maciContract.getPoll(pollId);
 
-  const pollContract = PollFactory.connect(pollContracts.poll, signer);
+  const pollContract = PollFactory.connect(pollAddress, signer);
 
   const [maxVoteOptions, coordinatorPubKeyResult] = await Promise.all([
     pollContract.maxVoteOptions().then(Number),

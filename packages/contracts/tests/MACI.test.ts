@@ -301,7 +301,7 @@ describe("MACI", function test() {
     it("should allow a Poll contract to merge the state tree (calculate the state root)", async () => {
       await timeTravel(signer.provider as unknown as EthereumProvider, Number(duration) + 1);
 
-      const tx = await pollContract.mergeMaciState();
+      const tx = await pollContract.mergeState();
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
     });

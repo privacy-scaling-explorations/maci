@@ -168,7 +168,7 @@
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@openzeppelin/contracts": "^5.1.0",
     "@openzeppelin/merkle-tree": "^1.0.7",
-    "@pcd/util": "^0.8.0",
+    "@pcd/util": "^0.9.0",
     "@zk-kit/imt.sol": "2.0.0-beta.12",
     "@zk-kit/lean-imt": "^2.1.0",
     "circomlibjs": "^0.1.7",

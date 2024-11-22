@@ -1,4 +1,4 @@
-import { Address, ethereum, BigInt } from "@graphprotocol/graph-ts";
+import { Address, BigInt, ethereum } from "@graphprotocol/graph-ts";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { createMockedFunction } from "matchstick-as";
 
@@ -29,16 +29,10 @@ export function mockMaciContract(): void {
   createMockedFunction(
     Address.fromString("0xA16081F360e3847006dB660bae1c6d1b2e17eC2A"),
     "getPoll",
-    "getPoll(uint256):((address,address,address))",
+    "getPoll(uint256):((address))",
   )
     .withArgs([ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(1))])
     .returns([
-      ethereum.Value.fromTuple(
-        changetype<ethereum.Tuple>([
-          ethereum.Value.fromAddress(DEFAULT_POLL_ADDRESS),
-          ethereum.Value.fromAddress(DEFAULT_MESSAGE_PROCESSOR_ADDRESS),
-          ethereum.Value.fromAddress(DEFAULT_TALLY_ADDRESS),
-        ]),
-      ),
+      ethereum.Value.fromTuple(changetype<ethereum.Tuple>([ethereum.Value.fromAddress(DEFAULT_POLL_ADDRESS)])),
     ]);
 }

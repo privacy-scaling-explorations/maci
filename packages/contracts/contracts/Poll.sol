@@ -1,15 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Params } from "./utilities/Params.sol";
 import { EmptyBallotRoots } from "./trees/EmptyBallotRoots.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { LazyIMTData, InternalLazyIMT } from "./trees/LazyIMT.sol";
 import { IMACI } from "./interfaces/IMACI.sol";
 import { IPoll } from "./interfaces/IPoll.sol";
-import { IVerifier } from "./interfaces/IVerifier.sol";
-import { IVkRegistry } from "./interfaces/IVkRegistry.sol";
 import { Utilities } from "./utilities/Utilities.sol";
 import { CurveBabyJubJub } from "./crypto/BabyJubJub.sol";
 
@@ -276,10 +273,10 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   /// @param _proof The zk-SNARK proof
   function joinPoll(
     uint256 _nullifier,
-    PubKey memory _pubKey,
+    PubKey calldata _pubKey,
     uint256 _newVoiceCreditBalance,
     uint256 _stateRootIndex,
-    uint256[8] memory _proof
+    uint256[8] calldata _proof
   ) external {
     // Whether the user has already joined
     if (pollNullifier[_nullifier]) {
@@ -314,7 +311,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     uint256 _nullifier,
     uint256 _voiceCreditBalance,
     uint256 _index,
-    PubKey memory _pubKey,
+    PubKey calldata _pubKey,
     uint256[8] memory _proof
   ) internal returns (bool isValid) {
     // Get the verifying key from the VkRegistry
@@ -324,15 +321,30 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     );
 
     // Generate the circuit public input
-    uint256[] memory input = new uint256[](5);
-    input[0] = _nullifier;
-    input[1] = _voiceCreditBalance;
-    input[2] = extContracts.maci.getStateRootOnIndexedSignUp(_index);
-    input[3] = _pubKey.x;
-    input[4] = _pubKey.y;
-    uint256 publicInputHash = sha256Hash(input);
+    uint256[] memory circuitPublicInputs = getPublicCircuitInputs(_nullifier, _voiceCreditBalance, _index, _pubKey);
 
-    isValid = extContracts.verifier.verify(_proof, vk, publicInputHash);
+    isValid = extContracts.verifier.verify(_proof, vk, circuitPublicInputs);
+  }
+
+  /// @notice Get public circuit inputs for poll joining circuit
+  /// @param _nullifier Hashed user's private key to check whether user has already voted
+  /// @param _voiceCreditBalance User's credit balance for voting
+  /// @param _index Index of the MACI's stateRootOnSignUp when the user signed up
+  /// @param _pubKey Poll user's public key
+  /// @return publicInputs Public circuit inputs
+  function getPublicCircuitInputs(
+    uint256 _nullifier,
+    uint256 _voiceCreditBalance,
+    uint256 _index,
+    PubKey calldata _pubKey
+  ) public returns (uint256[] memory publicInputs) {
+    publicInputs = new uint256[](5);
+
+    publicInputs[0] = _nullifier;
+    publicInputs[1] = _voiceCreditBalance;
+    publicInputs[2] = extContracts.maci.getStateRootOnIndexedSignUp(_index);
+    publicInputs[3] = _pubKey.x;
+    publicInputs[4] = _pubKey.y;
   }
 
   /// @inheritdoc IPoll
@@ -348,7 +360,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
 
     // Set currentSbCommitment
     uint256[3] memory sb;
-    sb[0] = _mergedStateRoot;
+    sb[0] = mergedStateRoot;
     sb[1] = emptyBallotRoots[treeDepths.voteOptionTreeDepth - 1];
     sb[2] = uint256(0);
 

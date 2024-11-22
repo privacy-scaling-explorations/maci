@@ -21,7 +21,7 @@ error AmbiguousDepth();
 /// @dev A LazyIMT with Zeroes value set to the hash of
 /// a MACI Blank State Leaf
 /// @notice This implementation is taken from zk-kit
-/// https://github.com/privacy-scaling-explorations/zk-kit/blob/main/packages/imt.sol/contracts/internal/InternalLazyIMT.sol
+/// https://github.com/privacy-scaling-explorations/zk-kit/blob/main/packages/imt.sol
 /// and modified to work with MACI.
 library InternalLazyIMT {
   uint256 internal constant MAX_DEPTH = 32;

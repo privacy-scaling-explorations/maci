@@ -18,11 +18,12 @@ interface ITally {
     uint256 totalSpentSalt;
     /// @param tallyResultSalt the respective salt in the results object in the tally.json
     uint256 tallyResultSalt;
-    /// @param newResultsCommitment The salted commitment of the vote tally for this batch of leaves plus the vote tally from currentResults
+    /// @param newResultsCommitment The salted commitment of the vote tally for this batch of
+    /// leaves plus the vote tally from currentResults
     uint256 newResultsCommitment;
     /// @param spentVoiceCreditsHash hashLeftRight(number of spent voice credits, spent salt)
     uint256 spentVoiceCreditsHash;
-    /// @param perVOSpentVoiceCreditsHash hashLeftRight(merkle root of the no spent voice credits per vote option, perVOSpentVoiceCredits salt)
+    /// @param perVOSpentVoiceCreditsHash hashLeftRight(root noSpentVoiceCreditsPerVoteOption, perVOSpentVoiceCredits)
     uint256 perVOSpentVoiceCreditsHash;
   }
 
