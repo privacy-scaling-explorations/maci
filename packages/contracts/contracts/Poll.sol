@@ -340,11 +340,11 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   ) public returns (uint256[] memory publicInputs) {
     publicInputs = new uint256[](5);
 
-    publicInputs[0] = _nullifier;
-    publicInputs[1] = _voiceCreditBalance;
-    publicInputs[2] = extContracts.maci.getStateRootOnIndexedSignUp(_index);
-    publicInputs[3] = _pubKey.x;
-    publicInputs[4] = _pubKey.y;
+    publicInputs[0] = _pubKey.x;
+    publicInputs[1] = _pubKey.y;
+    publicInputs[2] = _nullifier;
+    publicInputs[3] = _voiceCreditBalance;
+    publicInputs[4] = extContracts.maci.getStateRootOnIndexedSignUp(_index);
   }
 
   /// @inheritdoc IPoll

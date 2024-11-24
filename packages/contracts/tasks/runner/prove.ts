@@ -6,12 +6,11 @@ import { Keypair, PrivKey } from "maci-domainobjs";
 import fs from "fs";
 
 import type { Proof } from "../../ts/types";
-import type { MACI, MessageProcessor, Poll, Tally, Verifier, VkRegistry } from "../../typechain-types";
+import type { MACI, Poll, Tally } from "../../typechain-types";
 
 import { ContractStorage } from "../helpers/ContractStorage";
 import { Deployment } from "../helpers/Deployment";
 import { ProofGenerator } from "../helpers/ProofGenerator";
-import { Prover } from "../helpers/Prover";
 import { EContracts, type IProveParams } from "../helpers/types";
 
 /**
@@ -71,8 +70,6 @@ task("prove", "Command to generate proofs")
 
       const maciContractAddress = storage.mustGetAddress(EContracts.MACI, network.name);
       const maciContract = await deployment.getContract<MACI>({ name: EContracts.MACI, address: maciContractAddress });
-      const vkRegistryContract = await deployment.getContract<VkRegistry>({ name: EContracts.VkRegistry });
-      const verifierContract = await deployment.getContract<Verifier>({ name: EContracts.Verifier });
 
       const pollAddress = await maciContract.polls(poll);
       const pollContract = await deployment.getContract<Poll>({ name: EContracts.Poll, address: pollAddress });
@@ -111,11 +108,6 @@ task("prove", "Command to generate proofs")
         key: `poll-${poll.toString()}`,
       });
       const tallyContractAddress = await tallyContract.getAddress();
-
-      const mpContract = await deployment.getContract<MessageProcessor>({
-        name: EContracts.MessageProcessor,
-        key: `poll-${poll.toString()}`,
-      });
 
       const useQuadraticVoting =
         deployment.getDeployConfigField<boolean | null>(EContracts.Poll, "useQuadraticVoting") ?? false;
@@ -161,20 +153,8 @@ task("prove", "Command to generate proofs")
         tallyProofs: [] as Proof[],
       };
 
-      const prover = new Prover({
-        maciContract,
-        mpContract,
-        pollContract,
-        vkRegistryContract,
-        verifierContract,
-        tallyContract,
-      });
-
       data.processProofs = await proofGenerator.generateMpProofs();
-      await prover.proveMessageProcessing(data.processProofs);
-
       data.tallyProofs = await proofGenerator.generateTallyProofs(network).then(({ proofs }) => proofs);
-      await prover.proveTally(data.tallyProofs);
 
       const endBalance = await signer.provider.getBalance(signer);
 

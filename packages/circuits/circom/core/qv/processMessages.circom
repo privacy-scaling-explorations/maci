@@ -42,10 +42,6 @@ template ProcessMessages(
     var STATE_LEAF_TIMESTAMP_IDX = 3;
     var msgTreeZeroValue = 8370432830353022751713833565135785980866757267633941821328460903436894336785;
 
-    // nb. The usage of SHA-256 hash is necessary to save some gas costs at verification time
-    // at the cost of more constraints for the prover.
-    // Basically, some values from the contract are passed as private inputs and the hash as a public input.
-
     // Number of users that have completed the sign up.
     signal input numSignUps;
     // Number of options for this poll.

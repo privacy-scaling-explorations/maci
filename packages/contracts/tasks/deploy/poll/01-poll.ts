@@ -105,7 +105,7 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
         contract: pollContract,
         args: [
           pollDuration,
-          maxVoteOptions,
+          Number(maxVoteOptions),
           {
             intStateTreeDepth,
             voteOptionTreeDepth,

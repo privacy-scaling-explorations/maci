@@ -79,27 +79,25 @@ export class Prover {
       numSignUpsAndMessages,
       numBatchesProcessed,
       stateTreeDepth,
-      dd,
       coordinatorPubKeyHash,
       mode,
+      batchHashes,
+      lastChainHash,
     ] = await Promise.all([
       this.pollContract.treeDepths(),
       this.pollContract.messageBatchSize().then(Number),
       this.pollContract.numSignUpsAndMessages(),
       this.mpContract.numBatchesProcessed().then(Number),
       this.maciContract.stateTreeDepth().then(Number),
-      this.pollContract.getDeployTimeAndDuration(),
       this.pollContract.coordinatorPubKeyHash(),
       this.mpContract.mode(),
+      this.pollContract.getBatchHashes().then((res) => [...res]),
+      this.pollContract.chainHash(),
     ]);
 
     const numMessages = Number(numSignUpsAndMessages[1]);
-    let totalMessageBatches = numMessages <= messageBatchSize ? 1 : Math.floor(numMessages / messageBatchSize);
+    const totalMessageBatches = batchHashes.length;
     let numberBatchesProcessed = numBatchesProcessed;
-
-    if (numMessages > messageBatchSize && numMessages % messageBatchSize > 0) {
-      totalMessageBatches += 1;
-    }
 
     const onChainProcessVk = await this.vkRegistryContract.getProcessVk(
       stateTreeDepth,
@@ -108,8 +106,6 @@ export class Prover {
       mode,
     );
 
-    const pollEndTimestampOnChain = BigInt(dd[0]) + BigInt(dd[1]);
-
     if (numberBatchesProcessed < totalMessageBatches) {
       console.log("Submitting proofs of message processing...");
     }
@@ -117,17 +113,18 @@ export class Prover {
     // process all batches left
     for (let i = numberBatchesProcessed; i < totalMessageBatches; i += 1) {
       let currentMessageBatchIndex: number;
-      if (numberBatchesProcessed === 0) {
-        const r = numMessages % messageBatchSize;
 
-        currentMessageBatchIndex = numMessages;
+      if (numberBatchesProcessed === 0) {
+        const chainHash = lastChainHash;
+
+        if (numMessages % messageBatchSize !== 0) {
+          batchHashes.push(chainHash);
+        }
+
+        currentMessageBatchIndex = batchHashes.length;
 
         if (currentMessageBatchIndex > 0) {
-          if (r === 0) {
-            currentMessageBatchIndex -= messageBatchSize;
-          } else {
-            currentMessageBatchIndex -= r;
-          }
+          currentMessageBatchIndex -= 1;
         }
       } else {
         currentMessageBatchIndex = (totalMessageBatches - numberBatchesProcessed) * messageBatchSize;
@@ -139,8 +136,17 @@ export class Prover {
 
       const { proof, circuitInputs, publicInputs } = proofs[i];
 
-      // validation
-      this.validatePollDuration(circuitInputs.pollEndTimestamp as BigNumberish, pollEndTimestampOnChain);
+      const inputBatchHash = batchHashes[currentMessageBatchIndex - 1];
+
+      if (BigInt(circuitInputs.inputBatchHash as BigNumberish).toString() !== inputBatchHash.toString()) {
+        throw new Error("input batch hash mismatch.");
+      }
+
+      const outputBatchHash = batchHashes[currentMessageBatchIndex];
+
+      if (BigInt(circuitInputs.outputBatchHash as BigNumberish).toString() !== outputBatchHash.toString()) {
+        throw new Error("output batch hash mismatch.");
+      }
 
       let currentSbCommitmentOnChain: bigint;
 
@@ -158,13 +164,13 @@ export class Prover {
 
       const formattedProof = formatProofForVerifierContract(proof);
 
-      const batchHashes = await this.pollContract.getBatchHashes();
-
-      const publicInputsOnChain = await this.mpContract.getPublicCircuitInputs(
-        currentMessageBatchIndex,
-        asHex(circuitInputs.newSbCommitment as BigNumberish),
-        batchHashes[currentMessageBatchIndex + 1].toString(),
-      );
+      const publicInputsOnChain = await this.mpContract
+        .getPublicCircuitInputs(
+          currentMessageBatchIndex,
+          asHex(circuitInputs.newSbCommitment as BigNumberish),
+          outputBatchHash.toString(),
+        )
+        .then((value) => [...value]);
       this.validatePublicInput(publicInputs, publicInputsOnChain);
 
       const vk = new VerifyingKey(
@@ -261,7 +267,6 @@ export class Prover {
       this.validateCommitment(circuitInputs.currentTallyCommitment as BigNumberish, currentTallyCommitmentOnChain);
 
       const currentSbCommitmentOnChain = await this.mpContract.sbCommitment();
-      console.log(currentSbCommitmentOnChain, circuitInputs);
       this.validateCommitment(circuitInputs.sbCommitment as BigNumberish, currentSbCommitmentOnChain);
 
       const publicInputsOnChain = await this.tallyContract.getPublicCircuitInputs(
@@ -347,19 +352,6 @@ export class Prover {
       .then((tx) => tx.wait());
 
     console.log("Results have been submitted.");
-  }
-
-  /**
-   * Validate poll end timestamp
-   *
-   * @param pollEndTimestamp - off-chain poll end timestamp
-   * @param pollEndTimestampOnChain - on-chain poll end timestamp
-   * @throws error if timestamps don't match
-   */
-  private validatePollDuration(pollEndTimestamp: BigNumberish, pollEndTimestampOnChain: BigNumberish) {
-    if (pollEndTimestamp.toString() !== pollEndTimestampOnChain.toString()) {
-      throw new Error("poll end timestamp mismatch");
-    }
   }
 
   /**

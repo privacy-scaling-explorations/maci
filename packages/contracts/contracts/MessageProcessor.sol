@@ -91,11 +91,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
 
       poll.padLastBatch();
       batchHashes = poll.getBatchHashes();
-      currentBatchIndex = batchHashes.length;
-
-      if (currentBatchIndex > 0) {
-        currentBatchIndex -= 1;
-      }
+      currentBatchIndex = batchHashes.length - 1;
     } else {
       batchHashes = poll.getBatchHashes();
     }
@@ -129,23 +125,23 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
     uint256 coordinatorPubKeyHash = poll.coordinatorPubKeyHash();
     uint8 messageBatchSize = poll.messageBatchSize();
     (uint256 numSignUps, uint256 numMessages) = poll.numSignUpsAndMessages();
-    (uint256 deployTime, uint256 duration) = poll.getDeployTimeAndDuration();
-    uint256 batchEndIndex = _currentMessageBatchIndex + messageBatchSize;
+    uint256 batchEndIndex = _currentMessageBatchIndex * messageBatchSize;
 
     if (batchEndIndex > numMessages) {
       batchEndIndex = numMessages;
     }
 
-    publicInputs = new uint256[](9);
+    uint256 batchStartIndex = batchEndIndex > messageBatchSize ? batchEndIndex - messageBatchSize : 0;
+
+    publicInputs = new uint256[](8);
     publicInputs[0] = numSignUps;
-    publicInputs[1] = deployTime + duration;
-    publicInputs[2] = _outputBatchHash;
-    publicInputs[3] = poll.actualStateTreeDepth();
-    publicInputs[4] = batchEndIndex;
-    publicInputs[5] = _currentMessageBatchIndex;
-    publicInputs[6] = coordinatorPubKeyHash;
-    publicInputs[7] = (sbCommitment == 0 ? poll.currentSbCommitment() : sbCommitment);
-    publicInputs[8] = _newSbCommitment;
+    publicInputs[1] = _outputBatchHash;
+    publicInputs[2] = poll.actualStateTreeDepth();
+    publicInputs[3] = coordinatorPubKeyHash;
+    publicInputs[4] = (sbCommitment == 0 ? poll.currentSbCommitment() : sbCommitment);
+    publicInputs[5] = _newSbCommitment;
+    publicInputs[6] = batchStartIndex;
+    publicInputs[7] = batchEndIndex;
   }
 
   /// @notice Verify the proof for processMessage

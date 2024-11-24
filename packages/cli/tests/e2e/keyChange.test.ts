@@ -158,7 +158,7 @@ describe("keyChange tests", function test() {
 
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeSignups({ ...mergeSignupsArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...(await verifyArgs()), signer });

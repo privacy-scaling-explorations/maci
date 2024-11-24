@@ -163,7 +163,6 @@ export interface IPollJoiningCircuitInputs {
  */
 export interface IProcessMessagesCircuitInputs {
   actualStateTreeDepth: string;
-  pollEndTimestamp: string;
   numSignUps: string;
   batchEndIndex: string;
   index: string;

@@ -550,12 +550,7 @@ export class Poll implements IPoll {
 
       this.padLastBatch();
 
-      this.currentMessageBatchIndex = this.batchHashes.length;
-
-      // if there are messages
-      if (this.currentMessageBatchIndex > 0) {
-        this.currentMessageBatchIndex -= 1;
-      }
+      this.currentMessageBatchIndex = this.batchHashes.length - 1;
 
       this.sbSalts[this.currentMessageBatchIndex] = 0n;
     }
@@ -848,9 +843,17 @@ export class Poll implements IPoll {
 
     // validate that the batch index is correct, if not fix it
     // this means that the end will be the last message
+
     let batchEndIndex = index * messageBatchSize;
+
     if (batchEndIndex > this.messages.length) {
       batchEndIndex = this.messages.length - (index - 1) * messageBatchSize;
+    }
+
+    let batchStartIndex = batchEndIndex - messageBatchSize;
+
+    if (batchStartIndex < 0) {
+      batchStartIndex = 0;
     }
 
     // copy the public keys, pad the array with the last keys if needed
@@ -869,11 +872,7 @@ export class Poll implements IPoll {
     // calculate the current state and ballot root
     // commitment which is the hash of the state tree
     // root, the ballot tree root and a salt
-    const currentSbCommitment = hash3([
-      currentStateRoot,
-      currentBallotRoot,
-      this.sbSalts[this.currentMessageBatchIndex],
-    ]);
+    const currentSbCommitment = hash3([currentStateRoot, currentBallotRoot, this.sbSalts[index]]);
 
     const inputBatchHash = this.batchHashes[index - 1];
     const outputBatchHash = this.batchHashes[index];
@@ -881,7 +880,7 @@ export class Poll implements IPoll {
     return stringifyBigInts({
       numSignUps: BigInt(this.numSignups),
       batchEndIndex: BigInt(batchEndIndex),
-      index: BigInt(0),
+      index: BigInt(batchStartIndex),
       inputBatchHash,
       outputBatchHash,
       msgs,

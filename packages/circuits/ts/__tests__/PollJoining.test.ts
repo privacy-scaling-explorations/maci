@@ -16,7 +16,7 @@ import {
 } from "./utils/constants";
 import { circomkitInstance } from "./utils/utils";
 
-describe.only("Poll Joining circuit", function test() {
+describe("Poll Joining circuit", function test() {
   this.timeout(900000);
   const NUM_USERS = 50;
 

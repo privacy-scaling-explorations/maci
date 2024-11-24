@@ -31,9 +31,12 @@ deployment.deployTask(EDeploySteps.VkRegistry, "Deploy Vk Registry and set keys"
 
     const stateTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "stateTreeDepth");
     const intStateTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "intStateTreeDepth");
-    const messageBatchDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageBatchDepth");
+    const messageBatchSize = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageBatchSize");
     const voteOptionTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "voteOptionTreeDepth");
-    const pollJoiningTestZkeyPath = deployment.getDeployConfigField<string>(EContracts.VkRegistry, "zkeys.pollZkey");
+    const pollJoiningTestZkeyPath = deployment.getDeployConfigField<string>(
+      EContracts.VkRegistry,
+      "zkeys.pollZkey.zkey",
+    );
     const processMessagesZkeyPathQv = deployment.getDeployConfigField<string>(
       EContracts.VkRegistry,
       "zkeys.qv.processMessagesZkey",
@@ -59,6 +62,10 @@ deployment.deployTask(EDeploySteps.VkRegistry, "Deploy Vk Registry and set keys"
 
     if (!useQuadraticVoting && (!tallyVotesZkeyPathNonQv || !processMessagesZkeyPathNonQv)) {
       throw new Error("Non-QV zkeys are not set");
+    }
+
+    if (!pollJoiningTestZkeyPath) {
+      throw new Error("Poll zkeys are not set");
     }
 
     const [qvProcessVk, qvTallyVk, nonQvProcessVk, nonQvTallyQv, pollVk] = await Promise.all([
@@ -97,7 +104,7 @@ deployment.deployTask(EDeploySteps.VkRegistry, "Deploy Vk Registry and set keys"
         stateTreeDepth,
         intStateTreeDepth,
         voteOptionTreeDepth,
-        5 ** messageBatchDepth,
+        messageBatchSize,
         modes,
         pollZkeys,
         processZkeys,

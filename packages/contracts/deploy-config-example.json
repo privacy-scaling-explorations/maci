@@ -55,6 +55,10 @@
           "tallyVotesZkey": "../cli/zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test.0.zkey",
           "processWasm": "../cli/zkeys/ProcessMessagesNonQv_10-20-2_test/ProcessMessagesNonQv_10-20-2_test_js/ProcessMessagesNonQv_10-20-2_test.wasm",
           "tallyWasm": "../cli/zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test_js/TallyVotesNonQv_10-1-2_test.wasm"
+        },
+        "pollZkey": {
+          "zkey": "../cli/zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey",
+          "wasm": "../cli/zkeys/PollJoining_10_test/PollJoining_10_test_js/PollJoining_10_test.wasm"
         }
       }
     },
@@ -119,6 +123,10 @@
           "tallyVotesZkey": "../cli/zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test.0.zkey",
           "processWasm": "../cli/zkeys/ProcessMessagesNonQv_10-20-2_test/ProcessMessagesNonQv_10-20-2_test_js/ProcessMessagesNonQv_10-20-2_test.wasm",
           "tallyWasm": "../cli/zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test_js/TallyVotesNonQv_10-1-2_test.wasm"
+        },
+        "pollZkey": {
+          "zkey": "../cli/zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey",
+          "wasm": "../cli/zkeys/PollJoining_10_test/PollJoining_10_test_js/PollJoining_10_test.wasm"
         }
       }
     },
@@ -171,7 +179,7 @@
       "stateTreeDepth": 6,
       "intStateTreeDepth": 2,
       "voteOptionTreeDepth": 3,
-      "messageBatchDepth": 2,
+      "messageBatchSize": 20,
       "zkeys": {
         "qv": {
           "processMessagesZkey": "../cli/zkeys/ProcessMessages_6-9-2-3/processMessages_6-9-2-3.zkey",
@@ -184,6 +192,10 @@
           "tallyVotesZkey": "../cli/zkeys/TallyVotesNonQv_6-2-3/tallyVotesNonQv_6-2-3.zkey",
           "processWasm": "../cli/zkeys/ProcessMessagesNonQv_6-9-2-3/ProcessMessagesNonQv_6-9-2-3_js/ProcessMessagesNonQv_6-9-2-3.wasm",
           "tallyWasm": "../cli/zkeys/TallyVotesNonQv_6-2-3/TallyVotesNonQv_6-2-3_js/TallyVotesNonQv_6-2-3.wasm"
+        },
+        "pollZkey": {
+          "zkey": "../cli/zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey",
+          "wasm": "../cli/zkeys/PollJoining_10_test/PollJoining_10_test_js/PollJoining_10_test.wasm"
         }
       }
     },
@@ -249,6 +261,10 @@
           "tallyVotesZkey": "../cli/zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test.0.zkey",
           "processWasm": "../cli/zkeys/ProcessMessagesNonQv_10-20-2_test/ProcessMessagesNonQv_10-20-2_test_js/ProcessMessagesNonQv_10-20-2_test.wasm",
           "tallyWasm": "../cli/zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test_js/TallyVotesNonQv_10-1-2_test.wasm"
+        },
+        "pollZkey": {
+          "zkey": "../cli/zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey",
+          "wasm": "../cli/zkeys/PollJoining_10_test/PollJoining_10_test_js/PollJoining_10_test.wasm"
         }
       }
     },
@@ -314,6 +330,10 @@
           "tallyVotesZkey": "../cli/zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test.0.zkey",
           "processWasm": "../cli/zkeys/ProcessMessagesNonQv_10-20-2_test/ProcessMessagesNonQv_10-20-2_test_js/ProcessMessagesNonQv_10-20-2_test.wasm",
           "tallyWasm": "../cli/zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test_js/TallyVotesNonQv_10-1-2_test.wasm"
+        },
+        "pollZkey": {
+          "zkey": "../cli/zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey",
+          "wasm": "../cli/zkeys/PollJoining_10_test/PollJoining_10_test_js/PollJoining_10_test.wasm"
         }
       }
     },
@@ -379,6 +399,10 @@
           "tallyVotesZkey": "../cli/zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test.0.zkey",
           "processWasm": "../cli/zkeys/ProcessMessagesNonQv_10-20-2_test/ProcessMessagesNonQv_10-20-2_test_js/ProcessMessagesNonQv_10-20-2_test.wasm",
           "tallyWasm": "../cli/zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test_js/TallyVotesNonQv_10-1-2_test.wasm"
+        },
+        "pollZkey": {
+          "zkey": "../cli/zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey",
+          "wasm": "../cli/zkeys/PollJoining_10_test/PollJoining_10_test_js/PollJoining_10_test.wasm"
         }
       }
     },
@@ -449,6 +473,10 @@
           "tallyVotesZkey": "../cli/zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test.0.zkey",
           "processWasm": "../cli/zkeys/ProcessMessagesNonQv_10-20-2_test/ProcessMessagesNonQv_10-20-2_test_js/ProcessMessagesNonQv_10-20-2_test.wasm",
           "tallyWasm": "../cli/zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test_js/TallyVotesNonQv_10-1-2_test.wasm"
+        },
+        "pollZkey": {
+          "zkey": "../cli/zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey",
+          "wasm": "../cli/zkeys/PollJoining_10_test/PollJoining_10_test_js/PollJoining_10_test.wasm"
         }
       }
     },
@@ -519,6 +547,10 @@
           "tallyVotesZkey": "../cli/zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test.0.zkey",
           "processWasm": "../cli/zkeys/ProcessMessagesNonQv_10-20-2_test/ProcessMessagesNonQv_10-20-2_test_js/ProcessMessagesNonQv_10-20-2_test.wasm",
           "tallyWasm": "../cli/zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test_js/TallyVotesNonQv_10-1-2_test.wasm"
+        },
+        "pollZkey": {
+          "zkey": "../cli/zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey",
+          "wasm": "../cli/zkeys/PollJoining_10_test/PollJoining_10_test_js/PollJoining_10_test.wasm"
         }
       }
     },
@@ -589,6 +621,10 @@
           "tallyVotesZkey": "../cli/zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test.0.zkey",
           "processWasm": "../cli/zkeys/ProcessMessagesNonQv_10-20-2_test/ProcessMessagesNonQv_10-20-2_test_js/ProcessMessagesNonQv_10-20-2_test.wasm",
           "tallyWasm": "../cli/zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test_js/TallyVotesNonQv_10-1-2_test.wasm"
+        },
+        "pollZkey": {
+          "zkey": "../cli/zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey",
+          "wasm": "../cli/zkeys/PollJoining_10_test/PollJoining_10_test_js/PollJoining_10_test.wasm"
         }
       }
     },
@@ -659,6 +695,10 @@
           "tallyVotesZkey": "../cli/zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test.0.zkey",
           "processWasm": "../cli/zkeys/ProcessMessagesNonQv_10-20-2_test/ProcessMessagesNonQv_10-20-2_test_js/ProcessMessagesNonQv_10-20-2_test.wasm",
           "tallyWasm": "../cli/zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test_js/TallyVotesNonQv_10-1-2_test.wasm"
+        },
+        "pollZkey": {
+          "zkey": "../cli/zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey",
+          "wasm": "../cli/zkeys/PollJoining_10_test/PollJoining_10_test_js/PollJoining_10_test.wasm"
         }
       }
     },
@@ -729,6 +769,10 @@
           "tallyVotesZkey": "../cli/zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test.0.zkey",
           "processWasm": "../cli/zkeys/ProcessMessagesNonQv_10-20-2_test/ProcessMessagesNonQv_10-20-2_test_js/ProcessMessagesNonQv_10-20-2_test.wasm",
           "tallyWasm": "../cli/zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test_js/TallyVotesNonQv_10-1-2_test.wasm"
+        },
+        "pollZkey": {
+          "zkey": "../cli/zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey",
+          "wasm": "../cli/zkeys/PollJoining_10_test/PollJoining_10_test_js/PollJoining_10_test.wasm"
         }
       }
     },

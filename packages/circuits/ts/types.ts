@@ -61,7 +61,6 @@ export interface IPollJoiningInputs {
  */
 export interface IProcessMessagesInputs {
   actualStateTreeDepth: bigint;
-  pollEndTimestamp: bigint;
   numSignUps: bigint;
   batchEndIndex: bigint;
   index: bigint;
