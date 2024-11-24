@@ -146,9 +146,9 @@ export const deployPoll = async ({
     logGreen(quiet, info(`Tally contract: ${tallyContractAddress}`));
 
     // store the address
-    storeContractAddress(`MessageProcessor-${pollId.toString()}`, messageProcessorContractAddress, network?.name);
-    storeContractAddress(`Tally-${pollId.toString()}`, tallyContractAddress, network?.name);
-    storeContractAddress(`Poll-${pollId.toString()}`, pollAddr, network?.name);
+    await storeContractAddress(`MessageProcessor-${pollId.toString()}`, messageProcessorContractAddress, network?.name);
+    await storeContractAddress(`Tally-${pollId.toString()}`, tallyContractAddress, network?.name);
+    await storeContractAddress(`Poll-${pollId.toString()}`, pollAddr, network?.name);
   } catch (error) {
     logError((error as Error).message);
   }

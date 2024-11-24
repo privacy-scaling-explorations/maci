@@ -233,6 +233,7 @@ describe("e2e tests", function test() {
         ...(await verifyArgs()),
         tallyData: tallyFileData,
         maciAddress: tallyFileData.maci,
+        tallyAddress: tallyFileData.tallyAddress,
         signer,
       });
     });
