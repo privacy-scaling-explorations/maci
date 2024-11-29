@@ -2,12 +2,11 @@ import { expect } from "chai";
 import { AbiCoder, Signer, ZeroAddress, toBeArray } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
-import { deployContract } from "../ts/deploy";
-import { getDefaultSigner, getSigners } from "../ts/utils";
-import { EASGatekeeper, MACI } from "../typechain-types";
-
-import { STATE_TREE_DEPTH, initialVoiceCreditBalance } from "./constants";
-import { deployTestContracts } from "./utils";
+import { deployContract } from "../../ts/deploy";
+import { getDefaultSigner, getSigners } from "../../ts/utils";
+import { EASGatekeeper, MACI } from "../../typechain-types";
+import { STATE_TREE_DEPTH, initialVoiceCreditBalance } from "../constants";
+import { deployTestContracts } from "../utils";
 
 describe("EAS Gatekeeper", () => {
   let easGatekeeper: EASGatekeeper;

@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 import { SignUpGatekeeper } from "./SignUpGatekeeper.sol";
-import { ISemaphore } from "../interfaces/ISemaphore.sol";
+import { ISemaphore } from "./interfaces/ISemaphore.sol";
 
 /// @title SemaphoreGatekeeper
 /// @notice A gatekeeper contract which allows users to sign up to MACI

@@ -442,10 +442,10 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
     TallyResult storage previous = tallyResults[_voteOptionIndex];
 
     if (!previous.flag) {
+      previous.flag = true;
       totalTallyResults++;
     }
 
-    previous.flag = true;
     previous.value = _tallyResult;
   }
 }

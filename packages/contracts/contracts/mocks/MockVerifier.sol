@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import { SnarkConstants } from "./SnarkConstants.sol";
-import { SnarkCommon } from "./SnarkCommon.sol";
+import { SnarkConstants } from "../crypto/SnarkConstants.sol";
+import { SnarkCommon } from "../crypto/SnarkCommon.sol";
 import { IVerifier } from "../interfaces/IVerifier.sol";
 
 /// @title MockVerifier

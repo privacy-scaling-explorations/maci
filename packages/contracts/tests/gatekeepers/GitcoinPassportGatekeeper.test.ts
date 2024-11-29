@@ -2,11 +2,10 @@ import { expect } from "chai";
 import { AbiCoder, Signer, ZeroAddress } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
-import { deployContract, getDefaultSigner, getSigners } from "../ts";
-import { GitcoinPassportGatekeeper, MACI, MockGitcoinPassportDecoder } from "../typechain-types";
-
-import { initialVoiceCreditBalance, STATE_TREE_DEPTH } from "./constants";
-import { deployTestContracts } from "./utils";
+import { deployContract, getDefaultSigner, getSigners } from "../../ts";
+import { GitcoinPassportGatekeeper, MACI, MockGitcoinPassportDecoder } from "../../typechain-types";
+import { initialVoiceCreditBalance, STATE_TREE_DEPTH } from "../constants";
+import { deployTestContracts } from "../utils";
 
 describe("GitcoinPassport Gatekeeper", () => {
   let gitcoinGatekeeper: GitcoinPassportGatekeeper;

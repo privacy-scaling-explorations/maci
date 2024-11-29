@@ -3,7 +3,7 @@ pragma solidity ^0.8.10;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
-import { IHats } from "../interfaces/IHats.sol";
+import { IHats } from "./interfaces/IHats.sol";
 import { SignUpGatekeeper } from "./SignUpGatekeeper.sol";
 
 /// @title HatsGatekeeperBase

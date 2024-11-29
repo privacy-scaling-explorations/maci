@@ -2,12 +2,11 @@ import { expect } from "chai";
 import { AbiCoder, Signer, ZeroAddress } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
-import { deployContract } from "../ts/deploy";
-import { getDefaultSigner, getSigners } from "../ts/utils";
-import { MACI, ZupassGatekeeper } from "../typechain-types";
-
-import { STATE_TREE_DEPTH, initialVoiceCreditBalance } from "./constants";
-import { deployTestContracts } from "./utils";
+import { deployContract } from "../../ts/deploy";
+import { getDefaultSigner, getSigners } from "../../ts/utils";
+import { MACI, ZupassGatekeeper } from "../../typechain-types";
+import { STATE_TREE_DEPTH, initialVoiceCreditBalance } from "../constants";
+import { deployTestContracts } from "../utils";
 
 describe("Zupass Gatekeeper", () => {
   let zupassGatekeeper: ZupassGatekeeper;
