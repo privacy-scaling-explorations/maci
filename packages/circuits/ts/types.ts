@@ -64,7 +64,6 @@ export interface IProcessMessagesInputs {
   numSignUps: bigint;
   batchEndIndex: bigint;
   index: bigint;
-  maxVoteOptions: bigint;
   inputBatchHash: bigint;
   outputBatchHash: bigint;
   msgs: bigint[];

@@ -7,14 +7,7 @@ import { MaciState } from "../MaciState";
 import { STATE_TREE_DEPTH } from "../utils/constants";
 import { IJsonMaciState } from "../utils/types";
 
-import {
-  coordinatorKeypair,
-  duration,
-  maxValues,
-  messageBatchSize,
-  treeDepths,
-  voiceCreditBalance,
-} from "./utils/constants";
+import { coordinatorKeypair, duration, messageBatchSize, treeDepths, voiceCreditBalance } from "./utils/constants";
 
 describe("MaciState", function test() {
   this.timeout(100000);
@@ -36,7 +29,6 @@ describe("MaciState", function test() {
       m1.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
       pollId = m1.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,

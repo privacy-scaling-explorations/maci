@@ -6,14 +6,7 @@ import { MaciState } from "../MaciState";
 import { Poll } from "../Poll";
 import { STATE_TREE_DEPTH } from "../utils/constants";
 
-import {
-  coordinatorKeypair,
-  duration,
-  maxValues,
-  messageBatchSize,
-  treeDepths,
-  voiceCreditBalance,
-} from "./utils/constants";
+import { coordinatorKeypair, duration, messageBatchSize, treeDepths, voiceCreditBalance } from "./utils/constants";
 
 describe("Poll", function test() {
   this.timeout(90000);
@@ -22,7 +15,6 @@ describe("Poll", function test() {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     const pollId = maciState.deployPoll(
       BigInt(Math.floor(Date.now() / 1000) + duration),
-      maxValues.maxVoteOptions,
       treeDepths,
       messageBatchSize,
       coordinatorKeypair,
@@ -124,10 +116,12 @@ describe("Poll", function test() {
     });
 
     it("should throw if a message has an invalid vote option index (>= max vote options)", () => {
+      const maxVoteOptions = 25n;
+
       const command = new PCommand(
         BigInt(stateIndex),
         pollPubKey,
-        BigInt(maxValues.maxVoteOptions),
+        maxVoteOptions,
         // voice credits spent would be this value ** this value
         1n,
         1n,
@@ -246,7 +240,6 @@ describe("Poll", function test() {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     const pollId = maciState.deployPoll(
       BigInt(Math.floor(Date.now() / 1000) + duration),
-      maxValues.maxVoteOptions,
       treeDepths,
       messageBatchSize,
       coordinatorKeypair,
@@ -270,7 +263,6 @@ describe("Poll", function test() {
     it("should throw if the state has not been copied prior to calling processMessages", () => {
       const tmpPoll = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -324,7 +316,6 @@ describe("Poll", function test() {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     const pollId = maciState.deployPoll(
       BigInt(Math.floor(Date.now() / 1000) + duration),
-      maxValues.maxVoteOptions,
       treeDepths,
       messageBatchSize,
       coordinatorKeypair,
@@ -418,7 +409,6 @@ describe("Poll", function test() {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     const pollId = maciState.deployPoll(
       BigInt(Math.floor(Date.now() / 1000) + duration),
-      maxValues.maxVoteOptions,
       treeDepths,
       messageBatchSize,
       coordinatorKeypair,
@@ -487,7 +477,6 @@ describe("Poll", function test() {
       // deploy a second poll
       const secondPollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -538,7 +527,6 @@ describe("Poll", function test() {
       const maciState = new MaciState(STATE_TREE_DEPTH);
       const pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -557,7 +545,6 @@ describe("Poll", function test() {
       const maciState = new MaciState(STATE_TREE_DEPTH);
       const pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -583,7 +570,6 @@ describe("Poll", function test() {
       const maciState = new MaciState(STATE_TREE_DEPTH);
       const pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,

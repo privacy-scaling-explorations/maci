@@ -105,8 +105,6 @@ describe("Integration tests", function test() {
     // 3. deploy maci
     contracts = await deploy({ stateTreeDepth: STATE_TREE_DEPTH, initialVoiceCredits, signer });
 
-    const maxVoteOptions = 25;
-
     // 4. create a poll
     pollContracts = await deployPoll({
       pollDuration: duration,
@@ -128,7 +126,6 @@ describe("Integration tests", function test() {
 
     pollId = maciState.deployPoll(
       BigInt(Date.now() + duration * 60000),
-      maxVoteOptions,
       treeDepths,
       messageBatchSize,
       coordinatorKeypair,

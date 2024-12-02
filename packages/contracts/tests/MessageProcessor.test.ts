@@ -21,7 +21,6 @@ import {
   STATE_TREE_DEPTH,
   duration,
   initialVoiceCreditBalance,
-  maxVoteOptions,
   messageBatchSize,
   testProcessVk,
   testTallyVk,
@@ -83,13 +82,7 @@ describe("MessageProcessor", () => {
     const deployTime = block!.timestamp;
 
     // deploy local poll
-    const p = maciState.deployPoll(
-      BigInt(deployTime + duration),
-      maxVoteOptions,
-      treeDepths,
-      messageBatchSize,
-      coordinator,
-    );
+    const p = maciState.deployPoll(BigInt(deployTime + duration), treeDepths, messageBatchSize, coordinator);
     expect(p.toString()).to.eq(pollId.toString());
 
     const messages = [];

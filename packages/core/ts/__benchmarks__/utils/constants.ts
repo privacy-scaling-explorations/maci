@@ -8,7 +8,6 @@ export const STATE_TREE_DEPTH = 10;
 
 export const MAX_VALUES = {
   maxUsers: 25,
-  maxVoteOptions: 25,
 };
 
 export const TREE_DEPTHS = {

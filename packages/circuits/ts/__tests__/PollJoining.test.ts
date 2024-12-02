@@ -6,14 +6,7 @@ import { Keypair, Message, PCommand } from "maci-domainobjs";
 
 import { IPollJoiningInputs } from "../types";
 
-import {
-  STATE_TREE_DEPTH,
-  duration,
-  maxValues,
-  messageBatchSize,
-  treeDepths,
-  voiceCreditBalance,
-} from "./utils/constants";
+import { STATE_TREE_DEPTH, duration, messageBatchSize, treeDepths, voiceCreditBalance } from "./utils/constants";
 import { circomkitInstance } from "./utils/utils";
 
 describe("Poll Joining circuit", function test() {
@@ -39,7 +32,7 @@ describe("Poll Joining circuit", function test() {
 
   before(async () => {
     circuit = await circomkitInstance.WitnessTester("pollJoining", {
-      file: "./core/anon/pollJoining",
+      file: "./anon/pollJoining",
       template: "PollJoining",
       params: [STATE_TREE_DEPTH],
     });
@@ -64,7 +57,6 @@ describe("Poll Joining circuit", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,

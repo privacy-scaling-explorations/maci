@@ -8,7 +8,6 @@ import { MACI, PollFactory, Verifier, VkRegistry } from "../typechain-types";
 import {
   messageBatchSize,
   initialVoiceCreditBalance,
-  maxVoteOptions,
   STATE_TREE_DEPTH,
   treeDepths,
   ExtContractsStruct,
@@ -40,7 +39,6 @@ describe("pollFactory", () => {
     it("should allow anyone to deploy a new poll", async () => {
       const tx = await pollFactory.deploy(
         "100",
-        maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorPubKey.asContractParam(),

@@ -6,14 +6,7 @@ import { PrivKey, Keypair, PCommand, Message, Ballot, PubKey } from "maci-domain
 
 import { IProcessMessagesInputs } from "../types";
 
-import {
-  STATE_TREE_DEPTH,
-  duration,
-  maxValues,
-  messageBatchSize,
-  treeDepths,
-  voiceCreditBalance,
-} from "./utils/constants";
+import { STATE_TREE_DEPTH, duration, messageBatchSize, treeDepths, voiceCreditBalance } from "./utils/constants";
 import { circomkitInstance } from "./utils/utils";
 
 describe("ProcessMessage circuit", function test() {
@@ -25,7 +18,6 @@ describe("ProcessMessage circuit", function test() {
     "numSignUps",
     "batchEndIndex",
     "index",
-    "maxVoteOptions",
     "inputBatchHash",
     "outputBatchHash",
     "msgs",
@@ -85,7 +77,6 @@ describe("ProcessMessage circuit", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -172,7 +163,6 @@ describe("ProcessMessage circuit", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -285,7 +275,6 @@ describe("ProcessMessage circuit", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(2 + duration), // BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -374,7 +363,6 @@ describe("ProcessMessage circuit", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(2 + duration), // BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -497,7 +485,6 @@ describe("ProcessMessage circuit", function test() {
       // Sign up and publish
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -563,7 +550,6 @@ describe("ProcessMessage circuit", function test() {
       maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -687,7 +673,6 @@ describe("ProcessMessage circuit", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -818,7 +803,6 @@ describe("ProcessMessage circuit", function test() {
       maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,

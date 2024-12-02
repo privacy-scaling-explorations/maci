@@ -7,7 +7,6 @@ export const coordinatorKeypair = new Keypair();
 
 export const maxValues = {
   maxUsers: 25,
-  maxVoteOptions: 25,
 };
 
 export const treeDepths = {

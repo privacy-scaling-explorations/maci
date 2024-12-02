@@ -3,7 +3,7 @@
 import { expect } from "chai";
 import { AbiCoder, Signer } from "ethers";
 import { EthereumProvider } from "hardhat/types";
-import { MaciState } from "maci-core";
+import { MaciState, VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, Message, PCommand, PubKey } from "maci-domainobjs";
 
@@ -16,7 +16,6 @@ import {
   STATE_TREE_DEPTH,
   duration,
   initialVoiceCreditBalance,
-  maxVoteOptions,
   messageBatchSize,
   testPollVk,
   testProcessVk,
@@ -89,13 +88,7 @@ describe("Poll", () => {
       pollContract = PollFactory.connect(pollContracts.poll, signer);
 
       // deploy local poll
-      const p = maciState.deployPoll(
-        BigInt(deployTime + duration),
-        maxVoteOptions,
-        treeDepths,
-        messageBatchSize,
-        coordinator,
-      );
+      const p = maciState.deployPoll(BigInt(deployTime + duration), treeDepths, messageBatchSize, coordinator);
       expect(p.toString()).to.eq(pollId.toString());
       // publish the NOTHING_UP_MY_SLEEVE message
       const messageData = [NOTHING_UP_MY_SLEEVE];
@@ -149,7 +142,7 @@ describe("Poll", () => {
 
     it("should have the correct max values set", async () => {
       const mvo = await pollContract.maxVoteOptions();
-      expect(mvo.toString()).to.eq(maxVoteOptions.toString());
+      expect(mvo.toString()).to.eq(BigInt(VOTE_OPTION_TREE_ARITY ** treeDepths.voteOptionTreeDepth).toString());
     });
 
     it("should have the correct tree depths set", async () => {

@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
-import { MaciState, Poll, STATE_TREE_ARITY, VOTE_OPTION_TREE_ARITY, MESSAGE_BATCH_SIZE } from "maci-core";
+import { MaciState, Poll, STATE_TREE_ARITY, MESSAGE_BATCH_SIZE } from "maci-core";
 import { hash5, IncrementalQuinTree, poseidon } from "maci-crypto";
 import { PrivKey, Keypair, PCommand, Message, Ballot } from "maci-domainobjs";
 
@@ -16,11 +16,6 @@ describe("Ceremony param tests", () => {
     voteOptionTreeDepth: 3,
     // Tally
     stateLeafBatchDepth: 2,
-  };
-
-  const maxValues = {
-    maxUsers: STATE_TREE_ARITY ** params.stateTreeDepth,
-    maxVoteOptions: VOTE_OPTION_TREE_ARITY ** params.voteOptionTreeDepth,
   };
 
   const treeDepths = {
@@ -41,7 +36,6 @@ describe("Ceremony param tests", () => {
         "numSignUps",
         "batchEndIndex",
         "index",
-        "maxVoteOptions",
         "inputBatchHash",
         "outputBatchHash",
         "msgs",
@@ -67,7 +61,7 @@ describe("Ceremony param tests", () => {
       circuit = await circomkitInstance.WitnessTester("processMessages", {
         file: "./core/qv/processMessages",
         template: "ProcessMessages",
-        params: [14, MESSAGE_BATCH_SIZE, 3],
+        params: [params.stateTreeDepth, MESSAGE_BATCH_SIZE, params.voteOptionTreeDepth],
       });
     });
 
@@ -88,7 +82,6 @@ describe("Ceremony param tests", () => {
 
         pollId = maciState.deployPoll(
           BigInt(Math.floor(Date.now() / 1000) + duration),
-          maxValues.maxVoteOptions,
           treeDepths,
           MESSAGE_BATCH_SIZE,
           coordinatorKeypair,
@@ -232,7 +225,6 @@ describe("Ceremony param tests", () => {
 
         pollId = maciState.deployPoll(
           BigInt(Math.floor(Date.now() / 1000) + duration),
-          maxValues.maxVoteOptions,
           treeDepths,
           MESSAGE_BATCH_SIZE,
           coordinatorKeypair,

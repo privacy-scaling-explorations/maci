@@ -48,7 +48,6 @@ export interface IMaciState {
   // This method is used for deploying poll.
   deployPoll(
     pollEndTimestamp: bigint,
-    maxVoteOptions: number,
     treeDepths: TreeDepths,
     messageBatchSize: number,
     coordinatorKeypair: Keypair,
@@ -166,7 +165,6 @@ export interface IProcessMessagesCircuitInputs {
   numSignUps: string;
   batchEndIndex: string;
   index: string;
-  maxVoteOptions: string;
   msgRoot: string;
   coordinatorPublicKeyHash: string;
   inputBatchHash: string;

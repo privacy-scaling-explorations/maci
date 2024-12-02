@@ -41,11 +41,11 @@ include "../../trees/incrementalQuinaryTree.circom";
     var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
     var STATE_LEAF_TIMESTAMP_IDX = 3;
     var msgTreeZeroValue = 8370432830353022751713833565135785980866757267633941821328460903436894336785;
+    // Number of options for this poll.
+    var maxVoteOptions = VOTE_OPTION_TREE_ARITY ** voteOptionTreeDepth;
 
     // Number of users that have completed the sign up.
     signal input numSignUps;
-    // Number of options for this poll.
-    signal input maxVoteOptions;
     // Value of chainHash at beginning of batch
     signal input inputBatchHash;
     // Value of chainHash at end of batch
@@ -229,7 +229,6 @@ include "../../trees/incrementalQuinaryTree.circom";
 
         (computedNewVoteStateRoot[i], computedNewVoteBallotRoot[i]) = ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth)(
             numSignUps,
-            maxVoteOptions,
             stateRoots[i + 1],
             ballotRoots[i + 1],
             actualStateTreeDepth,
@@ -278,6 +277,8 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     var BALLOT_NONCE_IDX = 0;
     // Ballot vote option (VO) root index.
     var BALLOT_VO_ROOT_IDX = 1;
+    // Number of options for this poll.
+    var maxVoteOptions = VOTE_OPTION_TREE_ARITY ** voteOptionTreeDepth;
 
     // Indices for elements within a state leaf.
     // Public key.
@@ -291,8 +292,6 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
 
     // Inputs representing the message and the current state.
     signal input numSignUps;
-    signal input maxVoteOptions;
-
     // The current value of the state tree root.
     signal input currentStateRoot;
     // The current value of the ballot tree root.
@@ -330,9 +329,9 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
 
     // Intermediate signals.
     // currentVoteWeight * currentVoteWeight.
-    signal b;
+    signal currentVoteWeightSquare;
     // cmdNewVoteWeight * cmdNewVoteWeight.
-    signal c;
+    signal cmdNewVoteWeightSquare;
     // equal to newBallotVoRootMux (Mux1).
     signal newBallotVoRoot;
 
@@ -390,12 +389,12 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
 
     // 5. Verify that currentVoteWeight exists in the ballot's vote option root
     // at cmdVoteOptionIndex.
-    b <== currentVoteWeight;
-    c <== cmdNewVoteWeight;
+    currentVoteWeightSquare <== currentVoteWeight;
+    cmdNewVoteWeightSquare <== cmdNewVoteWeight;
 
     var voiceCreditAmountValid = SafeGreaterEqThan(252)([
-        stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + b,
-        c
+        stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + currentVoteWeightSquare,
+        cmdNewVoteWeightSquare
     ]);
 
     var cmdVoteOptionIndexMux = Mux1()([0, cmdVoteOptionIndex], computedIsVoteOptionIndexValid);
@@ -413,7 +412,7 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     var newSlVoiceCreditBalanceMux = Mux1()(
         [
             stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX],
-            stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + b - c
+            stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + currentVoteWeightSquare - cmdNewVoteWeightSquare
         ],
         voiceCreditAmountValid
     );

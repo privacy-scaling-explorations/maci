@@ -141,7 +141,6 @@ export class Poll implements IPoll {
    * @param coordinatorKeypair - The keypair of the coordinator.
    * @param treeDepths - The depths of the trees used in the poll.
    * @param batchSizes - The sizes of the batches used in the poll.
-   * @param maxVoteOptions - The maximum vote options the MACI circuits can accept.
    * @param maciStateRef - The reference to the MACI state.
    */
   constructor(
@@ -149,14 +148,13 @@ export class Poll implements IPoll {
     coordinatorKeypair: Keypair,
     treeDepths: TreeDepths,
     batchSizes: BatchSizes,
-    maxVoteOptions: number,
     maciStateRef: MaciState,
   ) {
     this.pollEndTimestamp = pollEndTimestamp;
     this.coordinatorKeypair = coordinatorKeypair;
     this.treeDepths = treeDepths;
     this.batchSizes = batchSizes;
-    this.maxVoteOptions = maxVoteOptions;
+    this.maxVoteOptions = VOTE_OPTION_TREE_ARITY ** treeDepths.voteOptionTreeDepth;
     this.maciStateRef = maciStateRef;
     this.pollId = BigInt(maciStateRef.polls.size);
     this.stateTreeDepth = maciStateRef.stateTreeDepth;
@@ -798,7 +796,6 @@ export class Poll implements IPoll {
     return stringifyBigInts({
       ...circuitInputs,
       coordinatorPublicKeyHash,
-      maxVoteOptions: BigInt(this.maxVoteOptions),
     }) as unknown as IProcessMessagesCircuitInputs;
   };
 
@@ -1303,7 +1300,6 @@ export class Poll implements IPoll {
         tallyBatchSize: Number(this.batchSizes.tallyBatchSize.toString()),
         messageBatchSize: Number(this.batchSizes.messageBatchSize.toString()),
       },
-      this.maxVoteOptions,
       this.maciStateRef,
     );
 
@@ -1421,14 +1417,7 @@ export class Poll implements IPoll {
    * @returns a new Poll instance
    */
   static fromJSON(json: IJsonPoll, maciState: MaciState): Poll {
-    const poll = new Poll(
-      BigInt(json.pollEndTimestamp),
-      new Keypair(),
-      json.treeDepths,
-      json.batchSizes,
-      json.maxVoteOptions,
-      maciState,
-    );
+    const poll = new Poll(BigInt(json.pollEndTimestamp), new Keypair(), json.treeDepths, json.batchSizes, maciState);
 
     // set all properties
     poll.pollStateLeaves = json.pollStateLeaves.map((leaf) => StateLeaf.fromJSON(leaf));

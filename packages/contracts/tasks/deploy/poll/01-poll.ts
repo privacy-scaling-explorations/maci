@@ -74,10 +74,7 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
     const tallyContractAddress = pollContracts.tally;
 
     const pollContract = await deployment.getContract<Poll>({ name: EContracts.Poll, address: pollContractAddress });
-    const [maxVoteOptions, extContracts] = await Promise.all([
-      pollContract.maxVoteOptions(),
-      pollContract.extContracts(),
-    ]);
+    const extContracts = await pollContract.extContracts();
 
     const messageProcessorContract = await deployment.getContract({
       name: EContracts.MessageProcessor,
@@ -96,7 +93,6 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
         contract: pollContract,
         args: [
           pollDuration,
-          Number(maxVoteOptions),
           {
             intStateTreeDepth,
             voteOptionTreeDepth,

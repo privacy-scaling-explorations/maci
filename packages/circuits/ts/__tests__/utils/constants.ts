@@ -4,7 +4,6 @@ export const duration = 30;
 
 export const maxValues = {
   maxUsers: 25,
-  maxVoteOptions: 25,
 };
 
 export const treeDepths = {

@@ -17,14 +17,13 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
   /// @inheritdoc IPollFactory
   function deploy(
     uint256 _duration,
-    uint256 _maxVoteOptions,
     Params.TreeDepths calldata _treeDepths,
     uint8 _messageBatchSize,
     DomainObjs.PubKey calldata _coordinatorPubKey,
     Params.ExtContracts calldata _extContracts
   ) public virtual returns (address pollAddr) {
     // deploy the poll
-    Poll poll = new Poll(_duration, _maxVoteOptions, _treeDepths, _messageBatchSize, _coordinatorPubKey, _extContracts);
+    Poll poll = new Poll(_duration, _treeDepths, _messageBatchSize, _coordinatorPubKey, _extContracts);
 
     // init Poll
     poll.init();

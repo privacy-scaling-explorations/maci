@@ -6,14 +6,7 @@ import { MaciState } from "../MaciState";
 import { Poll } from "../Poll";
 import { STATE_TREE_DEPTH, STATE_TREE_ARITY } from "../utils/constants";
 
-import {
-  coordinatorKeypair,
-  duration,
-  maxValues,
-  messageBatchSize,
-  treeDepths,
-  voiceCreditBalance,
-} from "./utils/constants";
+import { coordinatorKeypair, duration, messageBatchSize, treeDepths, voiceCreditBalance } from "./utils/constants";
 import { TestHarness, calculateTotal } from "./utils/utils";
 
 describe("MaciState/Poll e2e", function test() {
@@ -59,7 +52,6 @@ describe("MaciState/Poll e2e", function test() {
         // deploy a poll
         pollId = maciState.deployPoll(
           BigInt(Math.floor(Date.now() / 1000) + duration),
-          maxValues.maxVoteOptions,
           treeDepths,
           messageBatchSize,
           coordinatorKeypair,
@@ -155,7 +147,6 @@ describe("MaciState/Poll e2e", function test() {
         // deploy a poll
         pollId = maciState.deployPoll(
           BigInt(Math.floor(Date.now() / 1000) + duration),
-          maxValues.maxVoteOptions,
           treeDepths,
           messageBatchSize,
           coordinatorKeypair,
@@ -266,7 +257,6 @@ describe("MaciState/Poll e2e", function test() {
         // deploy a poll
         pollId = maciState.deployPoll(
           BigInt(Math.floor(Date.now() / 1000) + duration),
-          maxValues.maxVoteOptions,
           treeDepths,
           messageBatchSize,
           coordinatorKeypair,
@@ -356,7 +346,6 @@ describe("MaciState/Poll e2e", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -450,7 +439,6 @@ describe("MaciState/Poll e2e", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
@@ -597,7 +585,6 @@ describe("MaciState/Poll e2e", function test() {
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
-        maxValues.maxVoteOptions,
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,

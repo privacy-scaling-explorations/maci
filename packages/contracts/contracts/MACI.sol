@@ -30,8 +30,6 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
 
   uint8 internal constant STATE_TREE_ARITY = 2;
 
-  uint8 internal constant VOTE_TREE_ARITY = 5;
-
   /// @notice The hash of a blank state leaf
   uint256 internal constant BLANK_STATE_LEAF_HASH =
     uint256(6769006970205099520508948723718471724660867171122235270773600567925038008762);
@@ -209,7 +207,6 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
     }
 
     uint256 voteOptionTreeDepth = _treeDepths.voteOptionTreeDepth;
-    uint256 maxVoteOptions = uint256(VOTE_TREE_ARITY) ** voteOptionTreeDepth;
 
     ExtContracts memory extContracts = ExtContracts({
       maci: IMACI(address(this)),
@@ -217,14 +214,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
       vkRegistry: IVkRegistry(_vkRegistry)
     });
 
-    address p = pollFactory.deploy(
-      _duration,
-      maxVoteOptions,
-      _treeDepths,
-      _messageBatchSize,
-      _coordinatorPubKey,
-      extContracts
-    );
+    address p = pollFactory.deploy(_duration, _treeDepths, _messageBatchSize, _coordinatorPubKey, extContracts);
 
     address mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p, msg.sender, _mode);
     address tally = tallyFactory.deploy(_verifier, _vkRegistry, p, mp, msg.sender, _mode);

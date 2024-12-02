@@ -85,6 +85,8 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   uint256 internal constant BLANK_STATE_LEAF_HASH =
     uint256(6769006970205099520508948723718471724660867171122235270773600567925038008762);
 
+  uint8 internal constant VOTE_TREE_ARITY = 5;
+
   /// @notice Poll voting nullifier
   mapping(uint256 => bool) private pollNullifier;
 
@@ -113,7 +115,6 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   /// @notice Each MACI instance can have multiple Polls.
   /// When a Poll is deployed, its voting period starts immediately.
   /// @param _duration The duration of the voting period, in seconds
-  /// @param _maxVoteOptions The maximum number of vote options
   /// @param _treeDepths The depths of the merkle trees
   /// @param _messageBatchSize The message batch size
   /// @param _coordinatorPubKey The coordinator's public key
@@ -121,7 +122,6 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
 
   constructor(
     uint256 _duration,
-    uint256 _maxVoteOptions,
     TreeDepths memory _treeDepths,
     uint8 _messageBatchSize,
     PubKey memory _coordinatorPubKey,
@@ -141,7 +141,7 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     // store duration of the poll
     duration = _duration;
     // store max vote options
-    maxVoteOptions = _maxVoteOptions;
+    maxVoteOptions = uint256(VOTE_TREE_ARITY) ** _treeDepths.voteOptionTreeDepth;
     // store message batch size
     messageBatchSize = _messageBatchSize;
     // store tree depth

@@ -10,14 +10,7 @@ import { EMode } from "../ts/constants";
 import { getDefaultSigner, getSigners } from "../ts/utils";
 import { MACI, Poll as PollContract, Poll__factory as PollFactory, Verifier, VkRegistry } from "../typechain-types";
 
-import {
-  STATE_TREE_DEPTH,
-  duration,
-  initialVoiceCreditBalance,
-  maxVoteOptions,
-  messageBatchSize,
-  treeDepths,
-} from "./constants";
+import { STATE_TREE_DEPTH, duration, initialVoiceCreditBalance, messageBatchSize, treeDepths } from "./constants";
 import { timeTravel, deployTestContracts } from "./utils";
 
 describe("MACI", function test() {
@@ -234,13 +227,7 @@ describe("MACI", function test() {
       expect(receipt?.status).to.eq(1);
       pollId = (await maciContract.nextPollId()) - 1n;
 
-      const p = maciState.deployPoll(
-        BigInt(deployTime + duration),
-        maxVoteOptions,
-        treeDepths,
-        messageBatchSize,
-        coordinator,
-      );
+      const p = maciState.deployPoll(BigInt(deployTime + duration), treeDepths, messageBatchSize, coordinator);
       expect(p.toString()).to.eq(pollId.toString());
 
       // publish the NOTHING_UP_MY_SLEEVE message
