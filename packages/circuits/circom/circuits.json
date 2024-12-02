@@ -1,6 +1,6 @@
 {
   "PollJoining_10_test": {
-    "file": "./core/qv/pollJoining",
+    "file": "./core/anon/pollJoining",
     "template": "PollJoining",
     "params": [10],
     "pubs": ["nullifier", "credits", "stateRoot", "pollPubKey"]

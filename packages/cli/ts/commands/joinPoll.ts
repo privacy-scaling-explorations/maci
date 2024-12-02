@@ -221,13 +221,13 @@ export const joinPoll = async ({
   }
 
   const maciContract = MACIFactory.connect(maciAddress, signer);
-  const pollAddress = await maciContract.getPoll(pollId);
+  const pollContracts = await maciContract.getPoll(pollId);
 
-  if (!(await contractExists(signer.provider!, pollAddress))) {
+  if (!(await contractExists(signer.provider!, pollContracts.poll))) {
     logError("Poll contract does not exist");
   }
 
-  const pollContract = PollFactory.connect(pollAddress, signer);
+  const pollContract = PollFactory.connect(pollContracts.poll, signer);
 
   let loadedStateIndex: bigint | null;
   let loadedCreditBalance: bigint | null;
@@ -431,8 +431,8 @@ export const isJoinedUser = async ({
   banner(quiet);
 
   const maciContract = MACIFactory.connect(maciAddress, signer);
-  const pollAddress = await maciContract.getPoll(pollId);
-  const pollContract = PollFactory.connect(pollAddress, signer);
+  const pollContracts = await maciContract.getPoll(pollId);
+  const pollContract = PollFactory.connect(pollContracts.poll, signer);
 
   const pollPublicKey = PubKey.deserialize(pollPubKey);
   const startBlockNumber = startBlock || 0;

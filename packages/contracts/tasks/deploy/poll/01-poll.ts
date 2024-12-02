@@ -49,20 +49,6 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
     const unserializedKey = PubKey.deserialize(coordinatorPubkey);
     const mode = useQuadraticVoting ? EMode.QV : EMode.NON_QV;
 
-    const [pollContractAddress, messageProcessorContractAddress, tallyContractAddress] =
-      await maciContract.deployPoll.staticCall(
-        pollDuration,
-        {
-          intStateTreeDepth,
-          voteOptionTreeDepth,
-        },
-        messageBatchSize,
-        unserializedKey.asContractParam(),
-        verifierContractAddress,
-        vkRegistryContractAddress,
-        mode,
-      );
-
     const tx = await maciContract.deployPoll(
       pollDuration,
       {
@@ -81,6 +67,11 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
     if (receipt?.status !== 1) {
       throw new Error("Deploy poll transaction is failed");
     }
+
+    const pollContracts = await maciContract.getPoll(pollId);
+    const pollContractAddress = pollContracts.poll;
+    const messageProcessorContractAddress = pollContracts.messageProcessor;
+    const tallyContractAddress = pollContracts.tally;
 
     const pollContract = await deployment.getContract<Poll>({ name: EContracts.Poll, address: pollContractAddress });
     const [maxVoteOptions, extContracts] = await Promise.all([

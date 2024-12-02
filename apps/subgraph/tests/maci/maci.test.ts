@@ -4,12 +4,7 @@ import { test, describe, afterEach, clearStore, assert, beforeAll } from "matchs
 
 import { Account, MACI, Poll, User } from "../../generated/schema";
 import { handleSignUp, handleDeployPoll } from "../../src/maci";
-import {
-  DEFAULT_MESSAGE_PROCESSOR_ADDRESS,
-  DEFAULT_POLL_ADDRESS,
-  DEFAULT_TALLY_ADDRESS,
-  mockPollContract,
-} from "../common";
+import { DEFAULT_POLL_ADDRESS, mockMaciContract, mockPollContract } from "../common";
 
 import { createSignUpEvent, createDeployPollEvent } from "./utils";
 
@@ -17,6 +12,7 @@ export { handleSignUp, handleDeployPoll };
 
 describe("MACI", () => {
   beforeAll(() => {
+    mockMaciContract();
     mockPollContract();
   });
 
@@ -52,15 +48,7 @@ describe("MACI", () => {
   });
 
   test("should handle deploy poll properly (qv)", () => {
-    const event = createDeployPollEvent(
-      BigInt.fromI32(1),
-      BigInt.fromI32(1),
-      BigInt.fromI32(1),
-      DEFAULT_POLL_ADDRESS,
-      DEFAULT_MESSAGE_PROCESSOR_ADDRESS,
-      DEFAULT_TALLY_ADDRESS,
-      BigInt.fromI32(0),
-    );
+    const event = createDeployPollEvent(BigInt.fromI32(1), BigInt.fromI32(1), BigInt.fromI32(1), BigInt.fromI32(0));
 
     handleDeployPoll(event);
 
@@ -77,15 +65,7 @@ describe("MACI", () => {
   });
 
   test("should handle deploy poll properly (non-qv)", () => {
-    const event = createDeployPollEvent(
-      BigInt.fromI32(1),
-      BigInt.fromI32(1),
-      BigInt.fromI32(1),
-      DEFAULT_POLL_ADDRESS,
-      DEFAULT_MESSAGE_PROCESSOR_ADDRESS,
-      DEFAULT_TALLY_ADDRESS,
-      BigInt.fromI32(1),
-    );
+    const event = createDeployPollEvent(BigInt.fromI32(1), BigInt.fromI32(1), BigInt.fromI32(1), BigInt.fromI32(1));
 
     handleDeployPoll(event);
 
@@ -106,9 +86,6 @@ describe("MACI", () => {
       BigInt.fromI32(1),
       BigInt.fromI32(1),
       BigInt.fromI32(1),
-      DEFAULT_POLL_ADDRESS,
-      DEFAULT_MESSAGE_PROCESSOR_ADDRESS,
-      DEFAULT_TALLY_ADDRESS,
       BigInt.fromI32(0),
     );
 

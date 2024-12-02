@@ -94,7 +94,8 @@ describe("integration tests private/public/keypair", () => {
       );
 
       // we know it's the first poll so id is 0
-      pollContract = PollFactory.connect(await maci.polls(0), signer);
+      const { poll } = await maci.polls(0);
+      pollContract = PollFactory.connect(poll, signer);
     });
 
     it("should have the correct coordinator pub key set on chain", async () => {

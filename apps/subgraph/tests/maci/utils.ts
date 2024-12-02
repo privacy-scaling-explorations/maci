@@ -1,4 +1,4 @@
-import { Address, BigInt as GraphBN, ethereum } from "@graphprotocol/graph-ts";
+import { BigInt as GraphBN, ethereum } from "@graphprotocol/graph-ts";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { newMockEvent } from "matchstick-as";
 
@@ -28,9 +28,6 @@ export function createDeployPollEvent(
   pollId: GraphBN,
   coordinatorPubKeyX: GraphBN,
   coordinatorPubKeyY: GraphBN,
-  poll: Address,
-  messageProcessor: Address,
-  tally: Address,
   mode: GraphBN,
 ): DeployPoll {
   const event = changetype<DeployPoll>(newMockEvent());
@@ -41,18 +38,6 @@ export function createDeployPollEvent(
   );
   event.parameters.push(
     new ethereum.EventParam("_coordinatorPubKeyY", ethereum.Value.fromUnsignedBigInt(coordinatorPubKeyY)),
-  );
-  event.parameters.push(
-    new ethereum.EventParam(
-      "pollAddr",
-      ethereum.Value.fromTuple(
-        changetype<ethereum.Tuple>([
-          ethereum.Value.fromAddress(poll),
-          ethereum.Value.fromAddress(messageProcessor),
-          ethereum.Value.fromAddress(tally),
-        ]),
-      ),
-    ),
   );
   event.parameters.push(new ethereum.EventParam("mode", ethereum.Value.fromUnsignedBigInt(mode)));
 

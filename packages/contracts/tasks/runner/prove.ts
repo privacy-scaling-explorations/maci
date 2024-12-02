@@ -71,8 +71,11 @@ task("prove", "Command to generate proofs")
       const maciContractAddress = storage.mustGetAddress(EContracts.MACI, network.name);
       const maciContract = await deployment.getContract<MACI>({ name: EContracts.MACI, address: maciContractAddress });
 
-      const pollAddress = await maciContract.polls(poll);
-      const pollContract = await deployment.getContract<Poll>({ name: EContracts.Poll, address: pollAddress });
+      const pollContracts = await maciContract.polls(poll);
+      const pollContract = await deployment.getContract<Poll>({
+        name: EContracts.Poll,
+        address: pollContracts.poll,
+      });
       const isStateAqMerged = await pollContract.stateMerged();
 
       // Check that the state and message trees have been merged for at least the first poll

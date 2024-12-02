@@ -54,9 +54,9 @@ export const verify = async ({
 
   // get the contract objects
   const maciContract = MACIFactory.connect(maciContractAddress, signer);
-  const pollAddr = await maciContract.polls(pollId);
+  const pollContracts = await maciContract.polls(pollId);
 
-  const pollContract = PollFactory.connect(pollAddr, signer);
+  const pollContract = PollFactory.connect(pollContracts.poll, signer);
 
   const tallyContract = TallyFactory.connect(tallyContractAddress, signer);
 

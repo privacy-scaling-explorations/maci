@@ -23,13 +23,16 @@ task("merge", "Merge signups")
 
     const maciContract = await deployment.getContract<MACI>({ name: EContracts.MACI });
 
-    const pollContractAddress = await maciContract.polls(poll);
+    const pollContracts = await maciContract.polls(poll);
 
-    if (pollContractAddress === ZeroAddress) {
+    if (pollContracts.poll === ZeroAddress) {
       throw new Error(`No poll ${poll} found`);
     }
 
-    const pollContract = await deployment.getContract<Poll>({ name: EContracts.Poll, address: pollContractAddress });
+    const pollContract = await deployment.getContract<Poll>({
+      name: EContracts.Poll,
+      address: pollContracts.poll,
+    });
 
     const treeMerger = new TreeMerger({
       deployer,

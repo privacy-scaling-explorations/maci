@@ -1,17 +1,15 @@
 pragma circom 2.0.0;
 
-
 // circomlib import
 include "./mux1.circom";
 // zk-kit imports
 include "./safe-comparators.circom";
 // local imports
-include "../../utils/hashers.circom";
-include "../../utils/privToPubKey.circom";
-include "../../trees/incrementalMerkleTree.circom";
+include "../utils/hashers.circom";
+include "../utils/privToPubKey.circom";
+include "../trees/incrementalMerkleTree.circom";
 
 template PollJoining(stateTreeDepth) {
-
     // Constants defining the structure and size of state.
     var STATE_LEAF_LENGTH = 4;
     var STATE_TREE_ARITY = 2;

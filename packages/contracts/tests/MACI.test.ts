@@ -294,8 +294,8 @@ describe("MACI", function test() {
     let pollContract: PollContract;
 
     before(async () => {
-      const pollContractAddress = await maciContract.getPoll(pollId);
-      pollContract = PollFactory.connect(pollContractAddress, signer);
+      const pollContracts = await maciContract.getPoll(pollId);
+      pollContract = PollFactory.connect(pollContracts.poll, signer);
     });
 
     it("should allow a Poll contract to merge the state tree (calculate the state root)", async () => {
@@ -337,8 +337,10 @@ describe("MACI", function test() {
 
   describe("getPoll", () => {
     it("should return an object for a valid id", async () => {
-      const pollContractAddress = await maciContract.getPoll(pollId);
-      expect(pollContractAddress).to.not.eq(ZeroAddress);
+      const pollContracts = await maciContract.getPoll(pollId);
+      expect(pollContracts.poll).to.not.eq(ZeroAddress);
+      expect(pollContracts.messageProcessor).to.not.eq(ZeroAddress);
+      expect(pollContracts.tally).to.not.eq(ZeroAddress);
     });
 
     it("should throw when given an invalid poll id", async () => {

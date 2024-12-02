@@ -5,12 +5,7 @@ import { test, describe, afterEach, clearStore, assert, beforeEach } from "match
 import { MACI, Poll } from "../../generated/schema";
 import { handleDeployPoll } from "../../src/maci";
 import { handleMergeState, handlePublishMessage } from "../../src/poll";
-import {
-  DEFAULT_MESSAGE_PROCESSOR_ADDRESS,
-  DEFAULT_POLL_ADDRESS,
-  DEFAULT_TALLY_ADDRESS,
-  mockPollContract,
-} from "../common";
+import { DEFAULT_POLL_ADDRESS, mockMaciContract, mockPollContract } from "../common";
 import { createDeployPollEvent } from "../maci/utils";
 
 import { createMergeStateEvent, createPublishMessageEvent } from "./utils";
@@ -19,18 +14,11 @@ export { handleMergeState, handlePublishMessage };
 
 describe("Poll", () => {
   beforeEach(() => {
+    mockMaciContract();
     mockPollContract();
 
     // mock the deploy poll event with non qv mode set
-    const event = createDeployPollEvent(
-      BigInt.fromI32(1),
-      BigInt.fromI32(1),
-      BigInt.fromI32(1),
-      DEFAULT_POLL_ADDRESS,
-      DEFAULT_MESSAGE_PROCESSOR_ADDRESS,
-      DEFAULT_TALLY_ADDRESS,
-      BigInt.fromI32(1),
-    );
+    const event = createDeployPollEvent(BigInt.fromI32(1), BigInt.fromI32(1), BigInt.fromI32(1), BigInt.fromI32(1));
 
     handleDeployPoll(event);
   });

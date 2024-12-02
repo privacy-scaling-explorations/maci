@@ -29,7 +29,7 @@ dataSources:
         - name: Poll
           file: ./node_modules/maci-contracts/build/artifacts/contracts/Poll.sol/Poll.json
       eventHandlers:
-        - event: DeployPoll(uint256,indexed uint256,indexed uint256,(address,address,address),uint8)
+        - event: DeployPoll(uint256,indexed uint256,indexed uint256,uint8)
           handler: handleDeployPoll
         - event: SignUp(uint256,indexed uint256,indexed uint256,uint256,uint256,uint256)
           handler: handleSignUp

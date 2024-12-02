@@ -141,12 +141,12 @@ export const genProofs = async ({
   }
 
   const maciContract = MACIFactory.connect(maciContractAddress, signer);
-  const pollAddr = await maciContract.polls(pollId);
+  const pollContracts = await maciContract.polls(pollId);
 
-  if (!(await contractExists(signer.provider!, pollAddr))) {
+  if (!(await contractExists(signer.provider!, pollContracts.poll))) {
     logError("Poll contract does not exist");
   }
-  const pollContract = PollFactory.connect(pollAddr, signer);
+  const pollContract = PollFactory.connect(pollContracts.poll, signer);
 
   // Check that the state and message trees have been merged
   if (!(await pollContract.stateMerged())) {

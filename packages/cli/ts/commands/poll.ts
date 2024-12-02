@@ -37,13 +37,13 @@ export const getPoll = async ({
     logError(`Invalid poll id ${id}`);
   }
 
-  const pollAddress = await maciContract.polls(id);
+  const pollContracts = await maciContract.polls(id);
 
-  if (pollAddress === ZeroAddress) {
+  if (pollContracts.poll === ZeroAddress) {
     logError(`MACI contract doesn't have any deployed poll ${id}`);
   }
 
-  const pollContract = PollFactory.connect(pollAddress, signer ?? provider);
+  const pollContract = PollFactory.connect(pollContracts.poll, signer ?? provider);
 
   const [[deployTime, duration], mergedStateRoot] = await Promise.all([
     pollContract.getDeployTimeAndDuration(),
@@ -72,7 +72,7 @@ export const getPoll = async ({
 
   return {
     id,
-    address: pollAddress,
+    address: pollContracts.poll,
     deployTime,
     duration,
     numSignups,

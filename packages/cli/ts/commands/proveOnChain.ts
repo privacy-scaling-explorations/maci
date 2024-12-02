@@ -85,13 +85,13 @@ export const proveOnChain = async ({
   }
 
   const maciContract = MACIFactory.connect(maciContractAddress, signer);
-  const pollAddr = await maciContract.polls(pollId);
+  const pollContracts = await maciContract.polls(pollId);
 
-  if (!(await contractExists(signer.provider!, pollAddr))) {
+  if (!(await contractExists(signer.provider!, pollContracts.poll))) {
     logError("There is no Poll contract with this poll ID linked to the specified MACI contract.");
   }
 
-  const pollContract = PollFactory.connect(pollAddr, signer);
+  const pollContract = PollFactory.connect(pollContracts.poll, signer);
 
   const mpContract = MessageProcessorFactory.connect(messageProcessorContractAddress, signer);
   const tallyContract = TallyFactory.connect(tallyContractAddress, signer);
