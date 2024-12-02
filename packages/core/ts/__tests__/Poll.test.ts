@@ -4,7 +4,7 @@ import { PCommand, Keypair, StateLeaf, PrivKey, Ballot } from "maci-domainobjs";
 
 import { MaciState } from "../MaciState";
 import { Poll } from "../Poll";
-import { STATE_TREE_DEPTH } from "../utils/constants";
+import { STATE_TREE_DEPTH, VOTE_OPTION_TREE_ARITY } from "../utils/constants";
 
 import { coordinatorKeypair, duration, messageBatchSize, treeDepths, voiceCreditBalance } from "./utils/constants";
 
@@ -116,12 +116,10 @@ describe("Poll", function test() {
     });
 
     it("should throw if a message has an invalid vote option index (>= max vote options)", () => {
-      const maxVoteOptions = 25n;
-
       const command = new PCommand(
         BigInt(stateIndex),
         pollPubKey,
-        maxVoteOptions,
+        BigInt(VOTE_OPTION_TREE_ARITY ** treeDepths.voteOptionTreeDepth),
         // voice credits spent would be this value ** this value
         1n,
         1n,
