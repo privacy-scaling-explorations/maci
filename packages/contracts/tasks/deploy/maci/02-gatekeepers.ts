@@ -1,8 +1,9 @@
+import { hexToBigInt, uuidToBigInt } from "@pcd/util";
+
 import { HatsGatekeeperBase } from "../../../typechain-types";
 import { EDeploySteps, ESupportedChains } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
-import { uuidToBigInt } from "../../helpers/numericParser";
 import { EContracts, IDeployParams } from "../../helpers/types";
 
 const deployment = Deployment.getInstance();
@@ -140,8 +141,10 @@ deployment.deployTask(EDeploySteps.Gatekeepers, "Deploy gatekeepers").then((task
     if (!skipDeployZupassGatekeeper) {
       const eventId = deployment.getDeployConfigField<string>(EContracts.ZupassGatekeeper, "eventId", true);
       const validEventId = uuidToBigInt(eventId);
-      const validSigner1 = deployment.getDeployConfigField<string>(EContracts.ZupassGatekeeper, "signer1", true);
-      const validSigner2 = deployment.getDeployConfigField<string>(EContracts.ZupassGatekeeper, "signer2", true);
+      const signer1 = deployment.getDeployConfigField<string>(EContracts.ZupassGatekeeper, "signer1", true);
+      const validSigner1 = hexToBigInt(signer1);
+      const signer2 = deployment.getDeployConfigField<string>(EContracts.ZupassGatekeeper, "signer2", true);
+      const validSigner2 = hexToBigInt(signer2);
       let verifier = deployment.getDeployConfigField<string | undefined>(EContracts.ZupassGatekeeper, "zupassVerifier");
 
       if (!verifier) {
@@ -165,7 +168,7 @@ deployment.deployTask(EDeploySteps.Gatekeepers, "Deploy gatekeepers").then((task
       await storage.register({
         id: EContracts.ZupassGatekeeper,
         contract: ZupassGatekeeperContract,
-        args: [validEventId.toString(), validSigner1, validSigner2, verifier],
+        args: [validEventId.toString(), validSigner1.toString(), validSigner2.toString(), verifier],
         network: hre.network.name,
       });
     }
