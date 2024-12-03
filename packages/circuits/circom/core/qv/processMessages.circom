@@ -174,8 +174,6 @@ template ProcessMessages(
     var computedCommandsPackedCommandOut[batchSize][PACKED_CMD_LENGTH];
 
     for (var i = 0; i < batchSize; i++) {
-        var message[MSG_LENGTH];
-
         for (var j = 0; j < MSG_LENGTH; j++) {
             message[j] = msgs[i][j];
         }
@@ -286,7 +284,7 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     var STATE_LEAF_TIMESTAMP_IDX = 3;
     var N_BITS = 252;
 
-    // Inputs representing the message and the current state.
+    // Number of users that have completed the sign up.
     signal input numSignUps;
     // The current value of the state tree root.
     signal input currentStateRoot;
@@ -353,7 +351,7 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
         packedCmd
     );
 
-    // 2. If isValid is equal to zero, generate indices for leaf zero.
+    // 2. If computedIsStateLeafIndexValid is equal to zero, generate indices for leaf zero.
     // Otherwise, generate indices for command.stateIndex.
     var stateIndexMux = Mux1()([0, cmdStateIndex], computedIsStateLeafIndexValid);
     var computedStateLeafPathIndices[stateTreeDepth] = MerkleGeneratePathIndices(stateTreeDepth)(stateIndexMux);

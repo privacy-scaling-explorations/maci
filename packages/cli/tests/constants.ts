@@ -144,7 +144,6 @@ export const verifyArgs = async (): Promise<Omit<VerifyArgs, "signer">> => {
     pollId: 0n,
     tallyData,
     maciAddress: tallyData.maci,
-    tallyAddress: tallyData.tallyAddress,
   };
 };
 

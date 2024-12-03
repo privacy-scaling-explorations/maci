@@ -42,8 +42,6 @@ export const proveOnChain = async ({
   pollId,
   proofDir,
   maciAddress,
-  messageProcessorAddress,
-  tallyAddress,
   tallyFile,
   signer,
   quiet = true,
@@ -58,30 +56,9 @@ export const proveOnChain = async ({
     logError("MACI contract address is empty");
   }
 
-  const messageProcessorContractAddress =
-    messageProcessorAddress || (await readContractAddress(`MessageProcessor-${pollId}`, network?.name));
-
-  if (!messageProcessorContractAddress) {
-    logError("MessageProcessor contract address is empty");
-  }
-
-  const tallyContractAddress = tallyAddress || (await readContractAddress(`Tally-${pollId}`, network?.name));
-
-  if (!tallyContractAddress) {
-    logError("Tally contract address is empty");
-  }
-
   // check contracts are deployed on chain
   if (!(await contractExists(signer.provider!, maciContractAddress))) {
     logError("MACI contract does not exist");
-  }
-
-  if (!(await contractExists(signer.provider!, messageProcessorContractAddress))) {
-    logError("MessageProcessor contract does not exist");
-  }
-
-  if (!(await contractExists(signer.provider!, tallyContractAddress))) {
-    logError("Tally contract does not exist");
   }
 
   const maciContract = MACIFactory.connect(maciContractAddress, signer);
@@ -93,8 +70,8 @@ export const proveOnChain = async ({
 
   const pollContract = PollFactory.connect(pollContracts.poll, signer);
 
-  const mpContract = MessageProcessorFactory.connect(messageProcessorContractAddress, signer);
-  const tallyContract = TallyFactory.connect(tallyContractAddress, signer);
+  const mpContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
+  const tallyContract = TallyFactory.connect(pollContracts.tally, signer);
 
   const vkRegistryContractAddress = await tallyContract.vkRegistry();
 

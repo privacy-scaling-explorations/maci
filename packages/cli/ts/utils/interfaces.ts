@@ -600,11 +600,6 @@ export interface GenProofsArgs {
   maciAddress?: string;
 
   /**
-   * The address of the Tally contract
-   */
-  tallyAddress?: string;
-
-  /**
    * The transaction hash of the first transaction
    */
   transactionHash?: string;
@@ -713,16 +708,6 @@ export interface ProveOnChainArgs {
    * The address of the MACI contract
    */
   maciAddress?: string;
-
-  /**
-   * The address of the MessageProcessor contract
-   */
-  messageProcessorAddress?: string;
-
-  /**
-   * The address of the Tally contract
-   */
-  tallyAddress?: string;
 
   /**
    * Whether to log the output
@@ -1030,11 +1015,6 @@ export interface IGetPollArgs {
   maciAddress: string;
 
   /**
-   * The address of the Tally contract
-   */
-  tallyAddress: string;
-
-  /**
    * The poll id. If not specified, latest poll id will be used
    */
   pollId?: BigNumberish;
@@ -1108,11 +1088,6 @@ export interface VerifyArgs {
    * The address of the MACI contract
    */
   maciAddress: string;
-
-  /**
-   * The address of the Tally contract
-   */
-  tallyAddress: string;
 
   /**
    * Whether to log the output

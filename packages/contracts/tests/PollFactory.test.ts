@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { BaseContract, Signer } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
-import { deployPollFactory, getDefaultSigner } from "../ts";
+import { deployPollFactory, genEmptyBallotRoots, getDefaultSigner } from "../ts";
 import { MACI, PollFactory, Verifier, VkRegistry } from "../typechain-types";
 
 import {
@@ -24,6 +24,9 @@ describe("pollFactory", () => {
 
   const { pubKey: coordinatorPubKey } = new Keypair();
 
+  const emptyBallotRoots = genEmptyBallotRoots(STATE_TREE_DEPTH);
+  const emptyBallotRoot = emptyBallotRoots[treeDepths.voteOptionTreeDepth];
+
   before(async () => {
     signer = await getDefaultSigner();
     const r = await deployTestContracts({ initialVoiceCreditBalance, stateTreeDepth: STATE_TREE_DEPTH, signer });
@@ -43,6 +46,7 @@ describe("pollFactory", () => {
         messageBatchSize,
         coordinatorPubKey.asContractParam(),
         extContracts,
+        emptyBallotRoot,
       );
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);

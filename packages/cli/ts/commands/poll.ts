@@ -17,7 +17,6 @@ import { logError, logGreen, success } from "../utils/theme";
  */
 export const getPoll = async ({
   maciAddress,
-  tallyAddress,
   signer,
   provider,
   pollId,
@@ -53,7 +52,7 @@ export const getPoll = async ({
   const numSignups = await (isMerged ? pollContract.numSignups() : maciContract.numSignUps());
 
   // get the poll mode
-  const tallyContract = TallyFactory.connect(tallyAddress, signer ?? provider);
+  const tallyContract = TallyFactory.connect(pollContracts.tally, signer ?? provider);
   const mode = await tallyContract.mode();
 
   logGreen(

@@ -53,7 +53,6 @@ export const genProofs = async ({
   blocksPerBatch,
   endBlock,
   signer,
-  tallyAddress,
   useQuadraticVoting = true,
   quiet = true,
 }: GenProofsArgs): Promise<TallyData> => {
@@ -341,9 +340,6 @@ export const genProofs = async ({
     BigInt(asHex(tallyCircuitInputs!.newSpentVoiceCreditSubtotalSalt as BigNumberish)),
   );
 
-  // get the tally contract address
-  const tallyContractAddress = tallyAddress || (await readContractAddress(`Tally-${pollId}`, network?.name));
-
   let newPerVOSpentVoiceCreditsCommitment: bigint | undefined;
   let newTallyCommitment: bigint;
 
@@ -354,7 +350,7 @@ export const genProofs = async ({
     network: network?.name,
     chainId: network?.chainId.toString(),
     isQuadratic: useQuadraticVoting,
-    tallyAddress: tallyContractAddress,
+    tallyAddress: pollContracts.tally,
     newTallyCommitment: asHex(tallyCircuitInputs!.newTallyCommitment as BigNumberish),
     results: {
       tally: poll.tallyResult.map((x) => x.toString()),

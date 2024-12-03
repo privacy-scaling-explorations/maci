@@ -179,7 +179,6 @@ include "../../trees/incrementalQuinaryTree.circom";
     var computedCommandsPackedCommandOut[batchSize][PACKED_CMD_LENGTH];
 
     for (var i = 0; i < batchSize; i++) {
-        var message[MSG_LENGTH];
         for (var j = 0; j < MSG_LENGTH; j++) {
             message[j] = msgs[i][j];
         }
@@ -290,7 +289,7 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     var STATE_LEAF_TIMESTAMP_IDX = 3;
     var N_BITS = 252;
 
-    // Inputs representing the message and the current state.
+    // Number of users that have completed the sign up.
     signal input numSignUps;
     // The current value of the state tree root.
     signal input currentStateRoot;
@@ -327,11 +326,6 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     signal output newStateRoot;
     signal output newBallotRoot;
 
-    // Intermediate signals.
-    // currentVoteWeight * currentVoteWeight.
-    signal currentVoteWeightSquare;
-    // cmdNewVoteWeight * cmdNewVoteWeight.
-    signal cmdNewVoteWeightSquare;
     // equal to newBallotVoRootMux (Mux1).
     signal newBallotVoRoot;
 
@@ -357,7 +351,7 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
         packedCmd
     );
 
-    // 2. If isValid is equal to zero, generate indices for leaf zero.
+    // 2. If computedIsStateLeafIndexValid is equal to zero, generate indices for leaf zero.
     // Otherwise, generate indices for command.stateIndex.
     var stateIndexMux = Mux1()([0, cmdStateIndex], computedIsStateLeafIndexValid);
     var computedStateLeafPathIndices[stateTreeDepth] = MerkleGeneratePathIndices(stateTreeDepth)(stateIndexMux);
@@ -389,12 +383,9 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
 
     // 5. Verify that currentVoteWeight exists in the ballot's vote option root
     // at cmdVoteOptionIndex.
-    currentVoteWeightSquare <== currentVoteWeight;
-    cmdNewVoteWeightSquare <== cmdNewVoteWeight;
-
     var voiceCreditAmountValid = SafeGreaterEqThan(252)([
-        stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + currentVoteWeightSquare,
-        cmdNewVoteWeightSquare
+        stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + currentVoteWeight,
+        cmdNewVoteWeight
     ]);
 
     var cmdVoteOptionIndexMux = Mux1()([0, cmdVoteOptionIndex], computedIsVoteOptionIndexValid);
@@ -412,7 +403,7 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     var newSlVoiceCreditBalanceMux = Mux1()(
         [
             stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX],
-            stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + currentVoteWeightSquare - cmdNewVoteWeightSquare
+            stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + currentVoteWeight - cmdNewVoteWeight
         ],
         voiceCreditAmountValid
     );

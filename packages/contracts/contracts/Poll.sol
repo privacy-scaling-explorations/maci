@@ -15,7 +15,7 @@ import { CurveBabyJubJub } from "./crypto/BabyJubJub.sol";
 /// which can be either votes or key change messages.
 /// @dev Do not deploy this directly. Use PollFactory.deploy() which performs some
 /// checks on the Poll constructor arguments.
-contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
+contract Poll is Params, Utilities, SnarkCommon, IPoll {
   /// @notice Whether the Poll has been initialized
   bool internal isInit;
 
@@ -33,6 +33,9 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
 
   // The duration of the polling period, in seconds
   uint256 internal immutable duration;
+
+  /// @notice The root of the empty ballot tree at a given voteOptionTree depth
+  uint256 public immutable emptyBallotRoot;
 
   /// @notice Whether the MACI contract's stateAq has been merged by this contract
   bool public stateMerged;
@@ -119,13 +122,14 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
   /// @param _messageBatchSize The message batch size
   /// @param _coordinatorPubKey The coordinator's public key
   /// @param _extContracts The external contracts
-
+  /// @param _emptyBallotRoot The root of the empty ballot tree
   constructor(
     uint256 _duration,
     TreeDepths memory _treeDepths,
     uint8 _messageBatchSize,
     PubKey memory _coordinatorPubKey,
-    ExtContracts memory _extContracts
+    ExtContracts memory _extContracts,
+    uint256 _emptyBallotRoot
   ) payable {
     // check that the coordinator public key is valid
     if (!CurveBabyJubJub.isOnCurve(_coordinatorPubKey.x, _coordinatorPubKey.y)) {
@@ -148,6 +152,8 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     treeDepths = _treeDepths;
     // Record the current timestamp
     deployTime = block.timestamp;
+    // store the empty ballot root
+    emptyBallotRoot = _emptyBallotRoot;
   }
 
   /// @notice A modifier that causes the function to revert if the voting period is
@@ -356,12 +362,13 @@ contract Poll is Params, Utilities, SnarkCommon, EmptyBallotRoots, IPoll {
     // set merged to true so it cannot be called again
     stateMerged = true;
 
-    mergedStateRoot = InternalLazyIMT._root(pollStateTree);
+    uint256 _mergedStateRoot = InternalLazyIMT._root(pollStateTree);
+    mergedStateRoot = _mergedStateRoot;
 
     // Set currentSbCommitment
     uint256[3] memory sb;
     sb[0] = mergedStateRoot;
-    sb[1] = emptyBallotRoots[treeDepths.voteOptionTreeDepth - 1];
+    sb[1] = emptyBallotRoot;
     sb[2] = uint256(0);
 
     currentSbCommitment = hash3(sb);

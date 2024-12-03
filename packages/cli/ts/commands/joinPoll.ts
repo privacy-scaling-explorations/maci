@@ -6,7 +6,6 @@ import { CircuitInputs, IJsonMaciState, MaciState, IPollJoiningCircuitInputs } f
 import { poseidon, stringifyBigInts } from "maci-crypto";
 import { IVkObjectParams, Keypair, PrivKey, PubKey, StateLeaf } from "maci-domainobjs";
 
-import assert from "assert";
 import fs from "fs";
 
 import type { IJoinPollArgs, IJoinedUserArgs, IParsePollJoinEventsArgs, IJoinPollData } from "../utils";
@@ -29,7 +28,7 @@ const getStateIndexAndCreditBalance = (
   newVoiceCreditBalance: bigint | null,
   stateLeaves: StateLeaf[],
   userMaciPubKey: PubKey,
-) => {
+): [bigint | null, bigint | null] => {
   let loadedStateIndex = stateIndex;
   let loadedCreditBalance = newVoiceCreditBalance;
 
@@ -41,6 +40,7 @@ const getStateIndexAndCreditBalance = (
       logError("State leaf not found");
     }
   }
+
   if (!newVoiceCreditBalance) {
     const balance = stateLeaves[Number(loadedStateIndex!)].voiceCreditBalance;
     if (balance) {
@@ -72,7 +72,7 @@ const generateAndVerifyProof = async (
   witnessExePath: string | undefined,
   wasmPath: string | undefined,
   pollVk: IVkObjectParams,
-) => {
+): Promise<string[]> => {
   const r = await genProof({
     inputs,
     zkeyPath,
@@ -119,7 +119,9 @@ const joiningCircuitInputs = (
   const [pubKeyX, pubKeyY] = pubKey.asArray();
   const stateLeafArray = [pubKeyX, pubKeyY, voiceCreditBalance, timestamp];
 
-  assert(credits <= voiceCreditBalance, "Credits must be lower than signed up credits");
+  if (credits <= voiceCreditBalance) {
+    logError("Credits must be lower than signed up credits");
+  }
 
   // calculate the path elements for the state tree given the original state tree
   const { siblings, index } = stateTree.generateProof(Number(stateLeafIndex));
@@ -386,7 +388,10 @@ const parsePollJoinEvents = async ({
   startBlock,
   currentBlock,
   pollPublicKey,
-}: IParsePollJoinEventsArgs) => {
+}: IParsePollJoinEventsArgs): Promise<{
+  pollStateIndex?: string;
+  voiceCredits?: string;
+}> => {
   // 1000 blocks at a time
   for (let block = startBlock; block <= currentBlock; block += BLOCKS_STEP) {
     const toBlock = Math.min(block + BLOCKS_STEP - 1, currentBlock);

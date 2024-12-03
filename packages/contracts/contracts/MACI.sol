@@ -214,7 +214,14 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
       vkRegistry: IVkRegistry(_vkRegistry)
     });
 
-    address p = pollFactory.deploy(_duration, _treeDepths, _messageBatchSize, _coordinatorPubKey, extContracts);
+    address p = pollFactory.deploy(
+      _duration,
+      _treeDepths,
+      _messageBatchSize,
+      _coordinatorPubKey,
+      extContracts,
+      emptyBallotRoots[voteOptionTreeDepth - 1]
+    );
 
     address mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p, msg.sender, _mode);
     address tally = tallyFactory.deploy(_verifier, _vkRegistry, p, mp, msg.sender, _mode);
@@ -246,7 +253,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
   }
 
   /// @inheritdoc IMACI
-  function getStateRootOnIndexedSignUp(uint256 _index) external view returns (uint256) {
-    return stateRootsOnSignUp[_index];
+  function getStateRootOnIndexedSignUp(uint256 _index) external view returns (uint256 stateRoot) {
+    stateRoot = stateRootsOnSignUp[_index];
   }
 }

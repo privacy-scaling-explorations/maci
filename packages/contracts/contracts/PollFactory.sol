@@ -20,10 +20,18 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
     Params.TreeDepths calldata _treeDepths,
     uint8 _messageBatchSize,
     DomainObjs.PubKey calldata _coordinatorPubKey,
-    Params.ExtContracts calldata _extContracts
+    Params.ExtContracts calldata _extContracts,
+    uint256 _emptyBallotRoot
   ) public virtual returns (address pollAddr) {
     // deploy the poll
-    Poll poll = new Poll(_duration, _treeDepths, _messageBatchSize, _coordinatorPubKey, _extContracts);
+    Poll poll = new Poll(
+      _duration,
+      _treeDepths,
+      _messageBatchSize,
+      _coordinatorPubKey,
+      _extContracts,
+      _emptyBallotRoot
+    );
 
     // init Poll
     poll.init();
