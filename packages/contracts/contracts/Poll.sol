@@ -283,7 +283,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     uint256 _newVoiceCreditBalance,
     uint256 _stateRootIndex,
     uint256[8] calldata _proof
-  ) external {
+  ) public virtual isWithinVotingDeadline {
     // Whether the user has already joined
     if (pollNullifier[_nullifier]) {
       revert UserAlreadyJoined();

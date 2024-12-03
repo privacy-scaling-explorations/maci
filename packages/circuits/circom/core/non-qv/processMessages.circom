@@ -179,10 +179,6 @@ include "../../trees/incrementalQuinaryTree.circom";
     var computedCommandsPackedCommandOut[batchSize][PACKED_CMD_LENGTH];
 
     for (var i = 0; i < batchSize; i++) {
-        for (var j = 0; j < MSG_LENGTH; j++) {
-            message[j] = msgs[i][j];
-        }
-
         (
             computedCommandsStateIndex[i],
             computedCommandsNewPubKey[i],
