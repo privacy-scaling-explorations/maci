@@ -382,11 +382,6 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     currentVoteWeightSquare <== currentVoteWeight * currentVoteWeight;
     cmdNewVoteWeightSquare <== cmdNewVoteWeight * cmdNewVoteWeight;
 
-    var voiceCreditAmountValid = SafeGreaterEqThan(252)([
-        stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + currentVoteWeightSquare,
-        cmdNewVoteWeightSquare
-    ]);
-
     var cmdVoteOptionIndexMux = Mux1()([0, cmdVoteOptionIndex], computedIsVoteOptionIndexValid);
     var computedCurrentVoteWeightPathIndices[voteOptionTreeDepth] = QuinGeneratePathIndices(voteOptionTreeDepth)(cmdVoteOptionIndexMux);
 
@@ -399,17 +394,10 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     computedCurrentVoteWeightQip === ballot[BALLOT_VO_ROOT_IDX];
 
     var voteWeightMux = Mux1()([currentVoteWeight, cmdNewVoteWeight], computedIsValid);
-    var newSlVoiceCreditBalanceMux = Mux1()(
-        [
-            stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX],
-            stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + currentVoteWeightSquare - cmdNewVoteWeightSquare
-        ],
-        voiceCreditAmountValid
-    );
     var voiceCreditBalanceMux = Mux1()(
         [
             stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX],
-            newSlVoiceCreditBalanceMux
+            stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + currentVoteWeightSquare - cmdNewVoteWeightSquare
         ],
         computedIsValid
     );

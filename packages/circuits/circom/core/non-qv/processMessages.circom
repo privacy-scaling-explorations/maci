@@ -379,11 +379,6 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
 
     // 5. Verify that currentVoteWeight exists in the ballot's vote option root
     // at cmdVoteOptionIndex.
-    var voiceCreditAmountValid = SafeGreaterEqThan(252)([
-        stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + currentVoteWeight,
-        cmdNewVoteWeight
-    ]);
-
     var cmdVoteOptionIndexMux = Mux1()([0, cmdVoteOptionIndex], computedIsVoteOptionIndexValid);
     var computedCurrentVoteWeightPathIndices[voteOptionTreeDepth] = QuinGeneratePathIndices(voteOptionTreeDepth)(cmdVoteOptionIndexMux);
 
@@ -396,17 +391,10 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     computedCurrentVoteWeightQip === ballot[BALLOT_VO_ROOT_IDX];
 
     var voteWeightMux = Mux1()([currentVoteWeight, cmdNewVoteWeight], computedIsValid);
-    var newSlVoiceCreditBalanceMux = Mux1()(
-        [
-            stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX],
-            stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + currentVoteWeight - cmdNewVoteWeight
-        ],
-        voiceCreditAmountValid
-    );
     var voiceCreditBalanceMux = Mux1()(
         [
             stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX],
-            newSlVoiceCreditBalanceMux
+            stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + currentVoteWeight - cmdNewVoteWeight
         ],
         computedIsValid
     );
