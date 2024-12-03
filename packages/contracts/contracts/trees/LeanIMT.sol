@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.20;
 
 import { PoseidonT3 } from "../crypto/PoseidonT3.sol";
 
@@ -57,7 +57,7 @@ library InternalLeanIMT {
     // A new insertion can increase a tree's depth by at most 1,
     // and only if the number of leaves supported by the current
     // depth is less than the number of leaves to be supported after insertion.
-    if (2 ** treeDepth < index + 1) {
+    if (1 << treeDepth < index + 1) {
       ++treeDepth;
     }
 
@@ -123,7 +123,7 @@ library InternalLeanIMT {
     // Calculate the depth of the tree after adding the new values.
     // Unlike the 'insert' function, we need a while here as
     // N insertions can increase the tree's depth more than once.
-    while (2 ** treeDepth < treeSize + leaves.length) {
+    while (1 << treeDepth < treeSize + leaves.length) {
       ++treeDepth;
     }
 
@@ -156,7 +156,7 @@ library InternalLeanIMT {
           leftNode = currentLevelNewNodes[(i + nextLevelStartIndex) * 2 - currentLevelStartIndex];
         }
 
-        uint256 rightNode;
+        uint256 rightNode = 0;
 
         // Assign the right node if the value exists.
         if ((i + nextLevelStartIndex) * 2 + 1 < currentLevelSize) {

@@ -39,7 +39,6 @@ const getStateIndexAndCreditBalance = (
       loadedStateIndex = BigInt(index);
     } else {
       logError("State leaf not found");
-      process.exit();
     }
   }
   if (!newVoiceCreditBalance) {
@@ -48,7 +47,6 @@ const getStateIndexAndCreditBalance = (
       loadedCreditBalance = balance;
     } else {
       logError("Voice credit balance not found");
-      process.exit();
     }
   }
 
@@ -86,6 +84,7 @@ const generateAndVerifyProof = async (
 
   // verify it
   const isValid = await verifyProof(r.publicSignals, r.proof, pollVk);
+
   if (!isValid) {
     throw new Error("Generated an invalid proof");
   }
@@ -117,8 +116,7 @@ const joiningCircuitInputs = (
   const { signUpTree: stateTree, stateLeaves } = signUpData;
   const stateLeaf = stateLeaves[Number(stateLeafIndex)];
   const { pubKey, voiceCreditBalance, timestamp } = stateLeaf;
-  const pubKeyX = pubKey.asArray()[0];
-  const pubKeyY = pubKey.asArray()[1];
+  const [pubKeyX, pubKeyY] = pubKey.asArray();
   const stateLeafArray = [pubKeyX, pubKeyY, voiceCreditBalance, timestamp];
 
   assert(credits <= voiceCreditBalance, "Credits must be lower than signed up credits");
@@ -235,6 +233,7 @@ export const joinPoll = async ({
   let signUpData: IGenSignUpTree | undefined;
   let currentStateRootIndex: number;
   let circuitInputs: CircuitInputs;
+
   if (stateFile) {
     try {
       const file = await fs.promises.readFile(stateFile);
