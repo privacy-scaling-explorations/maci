@@ -119,7 +119,7 @@ const joiningCircuitInputs = (
   const [pubKeyX, pubKeyY] = pubKey.asArray();
   const stateLeafArray = [pubKeyX, pubKeyY, voiceCreditBalance, timestamp];
 
-  if (credits <= voiceCreditBalance) {
+  if (credits > voiceCreditBalance) {
     logError("Credits must be lower than signed up credits");
   }
 

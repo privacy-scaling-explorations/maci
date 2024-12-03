@@ -182,6 +182,55 @@ describe("Poll", () => {
     });
   });
 
+  describe("Poll join", () => {
+    it("The users have joined the poll", async () => {
+      const iface = pollContract.interface;
+      const pubkey = keypair.pubKey.asContractParam();
+      const mockProof = [0, 0, 0, 0, 0, 0, 0, 0];
+
+      for (let i = 0; i < NUM_USERS; i += 1) {
+        const mockNullifier = AbiCoder.defaultAbiCoder().encode(["uint256"], [i]);
+        const voiceCreditBalance = AbiCoder.defaultAbiCoder().encode(["uint256"], [i]);
+
+        const response = await pollContract.joinPoll(mockNullifier, pubkey, voiceCreditBalance, i, mockProof);
+        const receipt = await response.wait();
+        const logs = receipt!.logs[0];
+        const event = iface.parseLog(logs as unknown as { topics: string[]; data: string }) as unknown as {
+          args: { _pollStateIndex: bigint };
+        };
+        const index = event.args._pollStateIndex;
+
+        expect(receipt!.status).to.eq(1);
+
+        const block = await signer.provider!.getBlock(receipt!.blockHash);
+        const { timestamp } = block!;
+
+        const expectedIndex = maciState.polls
+          .get(pollId)
+          ?.joinPoll(BigInt(mockNullifier), keypair.pubKey, BigInt(voiceCreditBalance), BigInt(timestamp));
+
+        expect(index).to.eq(expectedIndex);
+      }
+    });
+
+    it("Poll state tree size after user's joining", async () => {
+      const pollStateTree = await pollContract.pollStateTree();
+      const size = Number(pollStateTree.numberOfLeaves);
+      expect(size).to.eq(maciState.polls.get(pollId)?.pollStateLeaves.length);
+    });
+
+    it("The first user has been rejected for the second join", async () => {
+      const mockNullifier = AbiCoder.defaultAbiCoder().encode(["uint256"], [0]);
+      const pubkey = keypair.pubKey.asContractParam();
+      const voiceCreditBalance = AbiCoder.defaultAbiCoder().encode(["uint256"], [0]);
+      const mockProof = [0, 0, 0, 0, 0, 0, 0, 0];
+
+      await expect(
+        pollContract.joinPoll(mockNullifier, pubkey, voiceCreditBalance, 0, mockProof),
+      ).to.be.revertedWithCustomError(pollContract, "UserAlreadyJoined");
+    });
+  });
+
   describe("publishMessage", () => {
     it("should publish a message to the Poll contract", async () => {
       const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, 0n);
@@ -302,54 +351,7 @@ describe("Poll", () => {
     });
   });
 
-  describe("Poll join", () => {
-    it("The users have joined the poll", async () => {
-      const iface = pollContract.interface;
-      const pubkey = keypair.pubKey.asContractParam();
-      const mockProof = [0, 0, 0, 0, 0, 0, 0, 0];
-
-      for (let i = 0; i < NUM_USERS; i += 1) {
-        const mockNullifier = AbiCoder.defaultAbiCoder().encode(["uint256"], [i]);
-        const voiceCreditBalance = AbiCoder.defaultAbiCoder().encode(["uint256"], [i]);
-
-        const response = await pollContract.joinPoll(mockNullifier, pubkey, voiceCreditBalance, i, mockProof);
-        const receipt = await response.wait();
-        const logs = receipt!.logs[0];
-        const event = iface.parseLog(logs as unknown as { topics: string[]; data: string }) as unknown as {
-          args: { _pollStateIndex: bigint };
-        };
-        const index = event.args._pollStateIndex;
-
-        expect(receipt!.status).to.eq(1);
-
-        const block = await signer.provider!.getBlock(receipt!.blockHash);
-        const { timestamp } = block!;
-
-        const expectedIndex = maciState.polls
-          .get(pollId)
-          ?.joinPoll(BigInt(mockNullifier), keypair.pubKey, BigInt(voiceCreditBalance), BigInt(timestamp));
-
-        expect(index).to.eq(expectedIndex);
-      }
-    });
-
-    it("Poll state tree size after user's joining", async () => {
-      const pollStateTree = await pollContract.pollStateTree();
-      const size = Number(pollStateTree.numberOfLeaves);
-      expect(size).to.eq(maciState.polls.get(pollId)?.pollStateLeaves.length);
-    });
-
-    it("The first user has been rejected for the second join", async () => {
-      const mockNullifier = AbiCoder.defaultAbiCoder().encode(["uint256"], [0]);
-      const pubkey = keypair.pubKey.asContractParam();
-      const voiceCreditBalance = AbiCoder.defaultAbiCoder().encode(["uint256"], [0]);
-      const mockProof = [0, 0, 0, 0, 0, 0, 0, 0];
-
-      await expect(
-        pollContract.joinPoll(mockNullifier, pubkey, voiceCreditBalance, 0, mockProof),
-      ).to.be.revertedWithCustomError(pollContract, "UserAlreadyJoined");
-    });
-
+  describe("Merge state", () => {
     it("should allow a Poll contract to merge the state tree (calculate the state root)", async () => {
       await timeTravel(signer.provider as unknown as EthereumProvider, Number(duration) + 1);
 
