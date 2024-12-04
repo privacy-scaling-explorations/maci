@@ -1,0 +1,102 @@
+name: Nightly Macos
+
+on:
+  schedule:
+    - cron: 0 0 * * *
+
+jobs:
+  generate-proving-keys:
+    strategy:
+      fail-fast: false
+      matrix:
+        command: ["test:cli", "test:integration"]
+
+    runs-on: macos-14
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install
+        run: |
+          pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Build
+        run: |
+          pnpm run build
+
+      - name: Run hardhat fork
+        run: |
+          cd packages/contracts
+          pnpm run hardhat &
+
+      - name: Download circom Binary v2.1.6
+        run: |
+          wget -qO ${{ github.workspace }}/circom https://github.com/iden3/circom/releases/download/v2.1.6/circom-macos-amd64
+          chmod +x ${{ github.workspace }}/circom
+          echo "${{ github.workspace }}" >> $GITHUB_PATH
+
+      - name: Create zkeys folder
+        run: |
+          cd packages/cli
+          mkdir -p zkeys
+
+      - name: Compile Circuits And Generate zkeys
+        run: |
+          pnpm build:circuits-wasm -- --outPath ../cli/zkeys
+          pnpm setup:zkeys -- --outPath ../cli/zkeys
+
+      - name: ${{ matrix.command }}
+        run: pnpm run ${{ matrix.command }}
+
+      - name: Stop Hardhat
+        if: always()
+        run: kill $(lsof -t -i:8545)
+
+  unit:
+    runs-on: macos-14
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "pnpm"
+
+      - name: Download circom Binary v2.1.6
+        run: |
+          wget -qO ${{ github.workspace }}/circom https://github.com/iden3/circom/releases/download/v2.1.6/circom-macos-amd64
+          chmod +x ${{ github.workspace }}/circom
+          echo "${{ github.workspace }}" >> $GITHUB_PATH
+
+      - name: Install
+        run: |
+          pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Build
+        run: |
+          pnpm run build
+
+      - name: Test
+        run: pnpm run test
