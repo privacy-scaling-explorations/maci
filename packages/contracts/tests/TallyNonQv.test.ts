@@ -19,6 +19,7 @@ import {
   MessageProcessor__factory as MessageProcessorFactory,
   Poll__factory as PollFactory,
   Tally__factory as TallyFactory,
+  SignUpGatekeeper,
 } from "../typechain-types";
 
 import { STATE_TREE_DEPTH, duration, messageBatchSize, testProcessVk, testTallyVk, treeDepths } from "./constants";
@@ -32,6 +33,7 @@ describe("TallyVotesNonQv", () => {
   let mpContract: MessageProcessor;
   let verifierContract: Verifier;
   let vkRegistryContract: VkRegistry;
+  let gatekeeperContract: SignUpGatekeeper;
 
   const coordinator = new Keypair();
   let maciState: MaciState;
@@ -50,6 +52,7 @@ describe("TallyVotesNonQv", () => {
     maciContract = r.maciContract;
     verifierContract = r.mockVerifierContract as Verifier;
     vkRegistryContract = r.vkRegistryContract;
+    gatekeeperContract = r.gatekeeperContract;
 
     // deploy a poll
     // deploy on chain poll
@@ -61,6 +64,7 @@ describe("TallyVotesNonQv", () => {
       verifierContract,
       vkRegistryContract,
       EMode.NON_QV,
+      gatekeeperContract,
     );
     const receipt = await tx.wait();
 

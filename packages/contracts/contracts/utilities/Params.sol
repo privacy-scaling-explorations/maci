@@ -4,6 +4,7 @@ pragma solidity ^0.8.20;
 import { IMACI } from "../interfaces/IMACI.sol";
 import { IVerifier } from "../interfaces/IVerifier.sol";
 import { IVkRegistry } from "../interfaces/IVkRegistry.sol";
+import { ISignUpGatekeeper } from "../interfaces/ISignUpGatekeeper.sol";
 
 /// @title Params
 /// @notice This contracts contains a number of structures
@@ -24,5 +25,6 @@ contract Params {
     IMACI maci;
     IVerifier verifier;
     IVkRegistry vkRegistry;
+    ISignUpGatekeeper gatekeeper;
   }
 }

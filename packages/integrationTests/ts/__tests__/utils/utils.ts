@@ -198,5 +198,10 @@ export const deployTestContracts = async (
     quiet,
   });
 
-  return { maci: maciContract, verifier: mockVerifierContract as Verifier, vkRegistry: vkRegistryContract };
+  return {
+    maci: maciContract,
+    verifier: mockVerifierContract as Verifier,
+    vkRegistry: vkRegistryContract,
+    gatekeeper: gatekeeperContract,
+  };
 };

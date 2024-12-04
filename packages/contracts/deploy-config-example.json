@@ -65,7 +65,8 @@
     "Poll": {
       "pollDuration": 3600,
       "coordinatorPubkey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
-      "useQuadraticVoting": false
+      "useQuadraticVoting": false,
+      "gatekeeper": "FreeForAllGatekeeper"
     }
   },
   "scroll_sepolia": {
@@ -133,7 +134,8 @@
     "Poll": {
       "pollDuration": 10800,
       "coordinatorPubkey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
-      "useQuadraticVoting": false
+      "useQuadraticVoting": false,
+      "gatekeeper": "FreeForAllGatekeeper"
     }
   },
   "optimism": {
@@ -202,7 +204,8 @@
     "Poll": {
       "pollDuration": 3600,
       "coordinatorPubkey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
-      "useQuadraticVoting": false
+      "useQuadraticVoting": false,
+      "gatekeeper": "FreeForAllGatekeeper"
     }
   },
   "arbitrum_sepolia": {
@@ -271,7 +274,8 @@
     "Poll": {
       "pollDuration": 3600,
       "coordinatorPubkey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
-      "useQuadraticVoting": false
+      "useQuadraticVoting": false,
+      "gatekeeper": "FreeForAllGatekeeper"
     }
   },
   "localhost": {
@@ -340,7 +344,8 @@
     "Poll": {
       "pollDuration": 30,
       "coordinatorPubkey": "macipk.29add77d27341c4cdfc2fb623175ecfd6527a286e3e7ded785d9fd7afbbdf399",
-      "useQuadraticVoting": false
+      "useQuadraticVoting": false,
+      "gatekeeper": "FreeForAllGatekeeper"
     }
   },
   "base_sepolia": {
@@ -409,7 +414,8 @@
     "Poll": {
       "pollDuration": 3600,
       "coordinatorPubkey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
-      "useQuadraticVoting": false
+      "useQuadraticVoting": false,
+      "gatekeeper": "FreeForAllGatekeeper"
     }
   },
   "optimism_sepolia": {
@@ -483,7 +489,8 @@
     "Poll": {
       "pollDuration": 3600,
       "coordinatorPubkey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
-      "useQuadraticVoting": false
+      "useQuadraticVoting": false,
+      "gatekeeper": "FreeForAllGatekeeper"
     }
   },
   "gnosis_chiado": {
@@ -557,7 +564,8 @@
     "Poll": {
       "pollDuration": 3600,
       "coordinatorPubkey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
-      "useQuadraticVoting": false
+      "useQuadraticVoting": false,
+      "gatekeeper": "FreeForAllGatekeeper"
     }
   },
   "gnosis": {
@@ -631,7 +639,8 @@
     "Poll": {
       "pollDuration": 3600,
       "coordinatorPubkey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
-      "useQuadraticVoting": false
+      "useQuadraticVoting": false,
+      "gatekeeper": "FreeForAllGatekeeper"
     }
   },
   "polygon_amoy": {
@@ -705,7 +714,8 @@
     "Poll": {
       "pollDuration": 3600,
       "coordinatorPubkey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
-      "useQuadraticVoting": true
+      "useQuadraticVoting": true,
+      "gatekeeper": "FreeForAllGatekeeper"
     }
   },
   "polygon": {
@@ -779,7 +789,8 @@
     "Poll": {
       "pollDuration": 3600,
       "coordinatorPubkey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
-      "useQuadraticVoting": true
+      "useQuadraticVoting": true,
+      "gatekeeper": "FreeForAllGatekeeper"
     }
   }
 }

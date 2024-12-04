@@ -10,7 +10,7 @@ import fs from "fs";
 
 import type { IJoinPollArgs, IJoinedUserArgs, IParsePollJoinEventsArgs, IJoinPollData } from "../utils";
 
-import { contractExists, logError, logYellow, info, logGreen, success, BLOCKS_STEP } from "../utils";
+import { contractExists, logError, logYellow, info, logGreen, success, BLOCKS_STEP, DEFAULT_SG_DATA } from "../utils";
 import { banner } from "../utils/banner";
 
 /**
@@ -195,6 +195,7 @@ export const joinPoll = async ({
   rapidsnark,
   pollWitgen,
   pollWasm,
+  sgDataArg,
   quiet = true,
 }: IJoinPollArgs): Promise<IJoinPollData> => {
   banner(quiet);
@@ -332,6 +333,8 @@ export const joinPoll = async ({
   let pollStateIndex = "";
   let receipt: ContractTransactionReceipt | null = null;
 
+  const sgData = sgDataArg || DEFAULT_SG_DATA;
+
   try {
     // generate the proof for this batch
     const proof = await generateAndVerifyProof(
@@ -351,6 +354,7 @@ export const joinPoll = async ({
       loadedCreditBalance!,
       currentStateRootIndex,
       proof,
+      sgData,
     );
     receipt = await tx.wait();
     logYellow(quiet, info(`Transaction hash: ${receipt!.hash}`));

@@ -19,6 +19,7 @@ import {
   MessageProcessor__factory as MessageProcessorFactory,
   Poll__factory as PollFactory,
   Tally__factory as TallyFactory,
+  SignUpGatekeeper,
 } from "../typechain-types";
 
 import {
@@ -41,6 +42,7 @@ describe("TallyVotes", () => {
   let mpContract: MessageProcessor;
   let verifierContract: Verifier;
   let vkRegistryContract: VkRegistry;
+  let signupGatekeeperContract: SignUpGatekeeper;
 
   const coordinator = new Keypair();
   let users: Keypair[];
@@ -63,6 +65,7 @@ describe("TallyVotes", () => {
     maciContract = r.maciContract;
     verifierContract = r.mockVerifierContract as Verifier;
     vkRegistryContract = r.vkRegistryContract;
+    signupGatekeeperContract = r.gatekeeperContract;
 
     // deploy a poll
     // deploy on chain poll
@@ -74,6 +77,7 @@ describe("TallyVotes", () => {
       verifierContract,
       vkRegistryContract,
       EMode.QV,
+      signupGatekeeperContract,
     );
     const receipt = await tx.wait();
 
@@ -231,6 +235,7 @@ describe("TallyVotes", () => {
         verifierContract,
         vkRegistryContract,
         EMode.QV,
+        signupGatekeeperContract,
       );
       const receipt = await tx.wait();
 
@@ -308,6 +313,7 @@ describe("TallyVotes", () => {
           BigInt(initialVoiceCreditBalance),
           i,
           [0, 0, 0, 0, 0, 0, 0, 0],
+          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
         );
       }
 
@@ -538,6 +544,7 @@ describe("TallyVotes", () => {
         verifierContract,
         vkRegistryContract,
         EMode.QV,
+        signupGatekeeperContract,
       );
       const receipt = await tx.wait();
 
@@ -616,6 +623,7 @@ describe("TallyVotes", () => {
           BigInt(initialVoiceCreditBalance),
           i,
           [0, 0, 0, 0, 0, 0, 0, 0],
+          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
         );
       }
 

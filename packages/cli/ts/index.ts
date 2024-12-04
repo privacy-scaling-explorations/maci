@@ -216,6 +216,7 @@ program
   .description("join the poll")
   .requiredOption("-sk, --priv-key <privKey>", "the private key")
   .option("-i, --state-index <stateIndex>", "the user's state index", BigInt)
+  .requiredOption("-s, --sg-data <sgData>", "the signup gateway data")
   .requiredOption("-esk, --poll-priv-key <pollPrivKey>", "the user ephemeral private key for the poll")
   .option(
     "-nv, --new-voice-credit-balance <newVoiceCreditBalance>",
@@ -265,6 +266,7 @@ program
         useWasm: cmdObj.wasm,
         rapidsnark: cmdObj.rapidsnark,
         pollWitgen: cmdObj.pollWitnessgen,
+        sgDataArg: cmdObj.sgData,
       });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
