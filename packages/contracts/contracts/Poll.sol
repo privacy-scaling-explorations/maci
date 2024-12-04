@@ -367,7 +367,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
 
     // Set currentSbCommitment
     uint256[3] memory sb;
-    sb[0] = mergedStateRoot;
+    sb[0] = _mergedStateRoot;
     sb[1] = emptyBallotRoot;
     sb[2] = uint256(0);
 
