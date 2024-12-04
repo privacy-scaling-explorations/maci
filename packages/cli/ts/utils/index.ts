@@ -4,6 +4,7 @@ export {
   oldContractAddressStoreName,
   contractAddressesStore,
   oldContractAddressesStore,
+  BLOCKS_STEP,
 } from "./constants";
 export { contractExists, currentBlockTimestamp } from "./contracts";
 export {
@@ -27,8 +28,11 @@ export type {
   TimeTravelArgs,
   SignupArgs,
   ISignupData,
+  IJoinPollArgs,
+  IJoinPollData,
+  IJoinedUserArgs,
+  IParsePollJoinEventsArgs,
   SetVerifyingKeysArgs,
-  MergeMessagesArgs,
   MergeSignupsArgs,
   ProveOnChainArgs,
   PublishArgs,

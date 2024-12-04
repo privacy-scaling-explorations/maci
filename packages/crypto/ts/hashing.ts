@@ -116,6 +116,7 @@ export const hashN = (numElements: number, elements: Plaintext): bigint => {
 };
 
 // hash functions
+export const hashLeanIMT = (a: bigint, b: bigint): bigint => hashN(2, [a, b]);
 export const hash2 = (elements: Plaintext): bigint => hashN(2, elements);
 export const hash3 = (elements: Plaintext): bigint => hashN(3, elements);
 export const hash4 = (elements: Plaintext): bigint => hashN(4, elements);

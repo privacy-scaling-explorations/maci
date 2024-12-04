@@ -56,6 +56,7 @@ describe("TallyVotesNonQv", () => {
     const tx = await maciContract.deployPoll(
       duration,
       treeDepths,
+      messageBatchSize,
       coordinator.pubKey.asContractParam(),
       verifierContract,
       vkRegistryContract,
@@ -104,7 +105,6 @@ describe("TallyVotesNonQv", () => {
     await vkRegistryContract.setVerifyingKeys(
       STATE_TREE_DEPTH,
       treeDepths.intStateTreeDepth,
-      treeDepths.messageTreeDepth,
       treeDepths.voteOptionTreeDepth,
       messageBatchSize,
       EMode.NON_QV,
@@ -137,13 +137,11 @@ describe("TallyVotesNonQv", () => {
     );
   });
 
-  describe("after merging acc queues", () => {
+  describe("after messages processing", () => {
     let tallyGeneratedInputs: ITallyCircuitInputs;
     before(async () => {
-      await pollContract.mergeMaciState();
+      await pollContract.mergeState();
 
-      await pollContract.mergeMessageAqSubRoots(0);
-      await pollContract.mergeMessageAq();
       tallyGeneratedInputs = poll.tallyVotes();
     });
 

@@ -1,10 +1,10 @@
 /* eslint-disable no-console, no-await-in-loop */
-import { STATE_TREE_ARITY, MESSAGE_TREE_ARITY } from "maci-core";
+import { STATE_TREE_ARITY } from "maci-core";
 import { G1Point, G2Point, genTreeProof } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
 
 import type { IVerifyingKeyStruct, Proof } from "../../ts/types";
-import type { AccQueue, MACI, MessageProcessor, Poll, Tally, Verifier, VkRegistry } from "../../typechain-types";
+import type { MACI, MessageProcessor, Poll, Tally, Verifier, VkRegistry } from "../../typechain-types";
 import type { BigNumberish } from "ethers";
 
 import { asHex, formatProofForVerifierContract } from "../../ts/utils";
@@ -24,11 +24,6 @@ export class Prover {
    * MessageProcessor contract typechain wrapper
    */
   private mpContract: MessageProcessor;
-
-  /**
-   * AccQueue contract typechain wrapper (messages)
-   */
-  private messageAqContract: AccQueue;
 
   /**
    * MACI contract typechain wrapper
@@ -58,7 +53,6 @@ export class Prover {
   constructor({
     pollContract,
     mpContract,
-    messageAqContract,
     maciContract,
     vkRegistryContract,
     verifierContract,
@@ -66,7 +60,6 @@ export class Prover {
   }: IProverParams) {
     this.pollContract = pollContract;
     this.mpContract = mpContract;
-    this.messageAqContract = messageAqContract;
     this.maciContract = maciContract;
     this.vkRegistryContract = vkRegistryContract;
     this.verifierContract = verifierContract;
@@ -80,38 +73,38 @@ export class Prover {
    */
   async proveMessageProcessing(proofs: Proof[]): Promise<void> {
     // retrieve the values we need from the smart contracts
-    const [treeDepths, numSignUpsAndMessages, numBatchesProcessed, stateTreeDepth, dd, coordinatorPubKeyHash, mode] =
-      await Promise.all([
-        this.pollContract.treeDepths(),
-        this.pollContract.numSignUpsAndMessages(),
-        this.mpContract.numBatchesProcessed().then(Number),
-        this.maciContract.stateTreeDepth().then(Number),
-        this.pollContract.getDeployTimeAndDuration(),
-        this.pollContract.coordinatorPubKeyHash(),
-        this.mpContract.mode(),
-      ]);
-
-    const numMessages = Number(numSignUpsAndMessages[1]);
-    const messageBatchSize = MESSAGE_TREE_ARITY ** Number(treeDepths[1]);
-    let totalMessageBatches = numMessages <= messageBatchSize ? 1 : Math.floor(numMessages / messageBatchSize);
-    let numberBatchesProcessed = numBatchesProcessed;
-
-    if (numMessages > messageBatchSize && numMessages % messageBatchSize > 0) {
-      totalMessageBatches += 1;
-    }
-
-    const [messageRootOnChain, onChainProcessVk] = await Promise.all([
-      this.messageAqContract.getMainRoot(Number(treeDepths[2])),
-      this.vkRegistryContract.getProcessVk(
-        stateTreeDepth,
-        treeDepths.messageTreeDepth,
-        treeDepths.voteOptionTreeDepth,
-        messageBatchSize,
-        mode,
-      ),
+    const [
+      treeDepths,
+      messageBatchSize,
+      numSignUpsAndMessages,
+      numBatchesProcessed,
+      stateTreeDepth,
+      coordinatorPubKeyHash,
+      mode,
+      batchHashes,
+      lastChainHash,
+    ] = await Promise.all([
+      this.pollContract.treeDepths(),
+      this.pollContract.messageBatchSize().then(Number),
+      this.pollContract.numSignUpsAndMessages(),
+      this.mpContract.numBatchesProcessed().then(Number),
+      this.maciContract.stateTreeDepth().then(Number),
+      this.pollContract.coordinatorPubKeyHash(),
+      this.mpContract.mode(),
+      this.pollContract.getBatchHashes().then((res) => [...res]),
+      this.pollContract.chainHash(),
     ]);
 
-    const pollEndTimestampOnChain = BigInt(dd[0]) + BigInt(dd[1]);
+    const numMessages = Number(numSignUpsAndMessages[1]);
+    const totalMessageBatches = batchHashes.length;
+    let numberBatchesProcessed = numBatchesProcessed;
+
+    const onChainProcessVk = await this.vkRegistryContract.getProcessVk(
+      stateTreeDepth,
+      treeDepths.voteOptionTreeDepth,
+      messageBatchSize,
+      mode,
+    );
 
     if (numberBatchesProcessed < totalMessageBatches) {
       console.log("Submitting proofs of message processing...");
@@ -120,17 +113,18 @@ export class Prover {
     // process all batches left
     for (let i = numberBatchesProcessed; i < totalMessageBatches; i += 1) {
       let currentMessageBatchIndex: number;
-      if (numberBatchesProcessed === 0) {
-        const r = numMessages % messageBatchSize;
 
-        currentMessageBatchIndex = numMessages;
+      if (numberBatchesProcessed === 0) {
+        const chainHash = lastChainHash;
+
+        if (numMessages % messageBatchSize !== 0) {
+          batchHashes.push(chainHash);
+        }
+
+        currentMessageBatchIndex = batchHashes.length;
 
         if (currentMessageBatchIndex > 0) {
-          if (r === 0) {
-            currentMessageBatchIndex -= messageBatchSize;
-          } else {
-            currentMessageBatchIndex -= r;
-          }
+          currentMessageBatchIndex -= 1;
         }
       } else {
         currentMessageBatchIndex = (totalMessageBatches - numberBatchesProcessed) * messageBatchSize;
@@ -142,9 +136,17 @@ export class Prover {
 
       const { proof, circuitInputs, publicInputs } = proofs[i];
 
-      // validation
-      this.validatePollDuration(circuitInputs.pollEndTimestamp as BigNumberish, pollEndTimestampOnChain);
-      this.validateMessageRoot(circuitInputs.msgRoot as BigNumberish, messageRootOnChain);
+      const inputBatchHash = batchHashes[currentMessageBatchIndex - 1];
+
+      if (BigInt(circuitInputs.inputBatchHash as BigNumberish).toString() !== inputBatchHash.toString()) {
+        throw new Error("input batch hash mismatch.");
+      }
+
+      const outputBatchHash = batchHashes[currentMessageBatchIndex];
+
+      if (BigInt(circuitInputs.outputBatchHash as BigNumberish).toString() !== outputBatchHash.toString()) {
+        throw new Error("output batch hash mismatch.");
+      }
 
       let currentSbCommitmentOnChain: bigint;
 
@@ -162,10 +164,13 @@ export class Prover {
 
       const formattedProof = formatProofForVerifierContract(proof);
 
-      const publicInputsOnChain = await this.mpContract.getPublicCircuitInputs(
-        currentMessageBatchIndex,
-        asHex(circuitInputs.newSbCommitment as BigNumberish),
-      );
+      const publicInputsOnChain = await this.mpContract
+        .getPublicCircuitInputs(
+          currentMessageBatchIndex,
+          asHex(circuitInputs.newSbCommitment as BigNumberish),
+          outputBatchHash.toString(),
+        )
+        .then((value) => [...value]);
       this.validatePublicInput(publicInputs, publicInputsOnChain);
 
       const vk = new VerifyingKey(
@@ -262,7 +267,6 @@ export class Prover {
       this.validateCommitment(circuitInputs.currentTallyCommitment as BigNumberish, currentTallyCommitmentOnChain);
 
       const currentSbCommitmentOnChain = await this.mpContract.sbCommitment();
-      console.log(currentSbCommitmentOnChain, circuitInputs);
       this.validateCommitment(circuitInputs.sbCommitment as BigNumberish, currentSbCommitmentOnChain);
 
       const publicInputsOnChain = await this.tallyContract.getPublicCircuitInputs(
@@ -348,32 +352,6 @@ export class Prover {
       .then((tx) => tx.wait());
 
     console.log("Results have been submitted.");
-  }
-
-  /**
-   * Validate poll end timestamp
-   *
-   * @param pollEndTimestamp - off-chain poll end timestamp
-   * @param pollEndTimestampOnChain - on-chain poll end timestamp
-   * @throws error if timestamps don't match
-   */
-  private validatePollDuration(pollEndTimestamp: BigNumberish, pollEndTimestampOnChain: BigNumberish) {
-    if (pollEndTimestamp.toString() !== pollEndTimestampOnChain.toString()) {
-      throw new Error("poll end timestamp mismatch");
-    }
-  }
-
-  /**
-   * Validate message root
-   *
-   * @param messageRoot - off-chain message root
-   * @param messageRootOnChain - on-chain message root
-   * @throws error if roots don't match
-   */
-  private validateMessageRoot(messageRoot: BigNumberish, messageRootOnChain: BigNumberish) {
-    if (BigInt(messageRoot).toString() !== messageRootOnChain.toString()) {
-      throw new Error("message root mismatch");
-    }
   }
 
   /**

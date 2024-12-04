@@ -12,6 +12,11 @@ interface IMACI {
   /// @return The Merkle root
   function getStateTreeRoot() external view returns (uint256);
 
+  /// @notice Return the state root when the '_index' user signed up
+  /// @param _index The serial number when the user signed up
+  /// @return The Merkle root
+  function getStateRootOnIndexedSignUp(uint256 _index) external view returns (uint256);
+
   /// @notice Get the number of signups
   /// @return numsignUps The number of signups
   function numSignUps() external view returns (uint256);

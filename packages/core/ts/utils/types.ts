@@ -9,6 +9,7 @@ import type {
   Keypair,
   Message,
   PCommand,
+  PrivKey,
   PubKey,
   StateLeaf,
 } from "maci-domainobjs";
@@ -21,14 +22,10 @@ export type CircuitInputs = Record<string, string | bigint | bigint[] | bigint[]
 /**
  * This interface defines the tree depths.
  * @property intStateTreeDepth - The depth of the intermediate state tree.
- * @property messageTreeDepth - The depth of the message tree.
- * @property messageTreeSubDepth - The depth of the message tree sub.
  * @property voteOptionTreeDepth - The depth of the vote option tree.
  */
 export interface TreeDepths {
   intStateTreeDepth: number;
-  messageTreeDepth: number;
-  messageTreeSubDepth: number;
   voteOptionTreeDepth: number;
 }
 
@@ -47,7 +44,7 @@ export interface BatchSizes {
  */
 export interface IMaciState {
   // This method is used for signing up users to the state tree.
-  signUp(pubKey: PubKey, initialVoiceCreditBalance: bigint, timestamp: bigint): number;
+  signUp(pubKey: PubKey, initialVoiceCreditBalance: bigint, timestamp: bigint, stateRoot: bigint): number;
   // This method is used for deploying poll.
   deployPoll(
     pollEndTimestamp: bigint,
@@ -66,6 +63,8 @@ export interface IMaciState {
  * An interface which represents the public API of the Poll class.
  */
 export interface IPoll {
+  // Check if nullifier was already used for joining
+  hasJoined(nullifier: bigint): boolean;
   // These methods are used for sending a message to the poll from user
   publishMessage(message: Message, encPubKey: PubKey): void;
   // These methods are used to generate circuit inputs
@@ -79,6 +78,8 @@ export interface IPoll {
   equals(p: Poll): boolean;
   toJSON(): IJsonPoll;
   setCoordinatorKeypair(serializedPrivateKey: string): void;
+  updateChainHash(messageHash: bigint): void;
+  padLastBatch(): void;
 }
 
 /**
@@ -88,15 +89,19 @@ export interface IJsonPoll {
   pollEndTimestamp: string;
   treeDepths: TreeDepths;
   batchSizes: BatchSizes;
+  maxVoteOptions: number;
   messages: unknown[];
   commands: IJsonPCommand[];
   ballots: IJsonBallot[];
   encPubKeys: string[];
   currentMessageBatchIndex: number;
   stateLeaves: IJsonStateLeaf[];
+  pollStateLeaves: IJsonStateLeaf[];
   results: string[];
   numBatchesProcessed: number;
   numSignups: string;
+  chainHash: string;
+  batchHashes: string[];
 }
 
 /**
@@ -128,19 +133,43 @@ export interface IProcessMessagesOutput {
 }
 
 /**
+ * An interface describing the joiningCircuitInputs function arguments
+ */
+export interface IJoiningCircuitArgs {
+  maciPrivKey: PrivKey;
+  stateLeafIndex: bigint;
+  credits: bigint;
+  pollPrivKey: PrivKey;
+  pollPubKey: PubKey;
+}
+/**
+ * An interface describing the circuit inputs to the PollJoining circuit
+ */
+export interface IPollJoiningCircuitInputs {
+  privKey: string;
+  pollPrivKey: string;
+  pollPubKey: string[];
+  stateLeaf: string[];
+  siblings: string[][];
+  indices: string[];
+  nullifier: string;
+  credits: string;
+  stateRoot: string;
+  actualStateTreeDepth: string;
+}
+/**
  * An interface describing the circuit inputs to the ProcessMessage circuit
  */
 export interface IProcessMessagesCircuitInputs {
   actualStateTreeDepth: string;
-  pollEndTimestamp: string;
   numSignUps: string;
   batchEndIndex: string;
   index: string;
-  maxVoteOptions: string;
   msgRoot: string;
   coordinatorPublicKeyHash: string;
+  inputBatchHash: string;
+  outputBatchHash: string;
   msgs: string[];
-  msgSubrootPathElements: string[][];
   coordPrivKey: string;
   encPubKeys: string[];
   currentStateRoot: string;

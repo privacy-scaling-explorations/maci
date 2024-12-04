@@ -1,13 +1,24 @@
 import { expect } from "chai";
-import { BaseContract, Signer, ZeroAddress } from "ethers";
+import { BaseContract, Signer } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
 import { deployPollFactory, genEmptyBallotRoots, getDefaultSigner } from "../ts";
-import { PollFactory } from "../typechain-types";
+import { MACI, PollFactory, Verifier, VkRegistry } from "../typechain-types";
 
-import { STATE_TREE_DEPTH, treeDepths } from "./constants";
+import {
+  messageBatchSize,
+  initialVoiceCreditBalance,
+  STATE_TREE_DEPTH,
+  treeDepths,
+  ExtContractsStruct,
+} from "./constants";
+import { deployTestContracts } from "./utils";
 
 describe("pollFactory", () => {
+  let maciContract: MACI;
+  let verifierContract: Verifier;
+  let vkRegistryContract: VkRegistry;
+  let extContracts: ExtContractsStruct;
   let pollFactory: PollFactory;
   let signer: Signer;
 
@@ -18,6 +29,12 @@ describe("pollFactory", () => {
 
   before(async () => {
     signer = await getDefaultSigner();
+    const r = await deployTestContracts({ initialVoiceCreditBalance, stateTreeDepth: STATE_TREE_DEPTH, signer });
+    maciContract = r.maciContract;
+    verifierContract = r.mockVerifierContract as Verifier;
+    vkRegistryContract = r.vkRegistryContract;
+    extContracts = { maci: maciContract, verifier: verifierContract, vkRegistry: vkRegistryContract };
+
     pollFactory = (await deployPollFactory(signer, undefined, true)) as BaseContract as PollFactory;
   });
 
@@ -26,8 +43,9 @@ describe("pollFactory", () => {
       const tx = await pollFactory.deploy(
         "100",
         treeDepths,
+        messageBatchSize,
         coordinatorPubKey.asContractParam(),
-        ZeroAddress,
+        extContracts,
         emptyBallotRoot,
       );
       const receipt = await tx.wait();

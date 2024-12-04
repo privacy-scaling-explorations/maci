@@ -41,8 +41,7 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
     const coordinatorPubkey = deployment.getDeployConfigField<string>(EContracts.Poll, "coordinatorPubkey");
     const pollDuration = deployment.getDeployConfigField<number>(EContracts.Poll, "pollDuration");
     const intStateTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "intStateTreeDepth");
-    const messageTreeSubDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageBatchDepth");
-    const messageTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageTreeDepth");
+    const messageBatchSize = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageBatchSize");
     const voteOptionTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "voteOptionTreeDepth");
 
     const useQuadraticVoting =
@@ -54,10 +53,9 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
       pollDuration,
       {
         intStateTreeDepth,
-        messageTreeSubDepth,
-        messageTreeDepth,
         voteOptionTreeDepth,
       },
+      messageBatchSize,
       unserializedKey.asContractParam(),
       verifierContractAddress,
       vkRegistryContractAddress,
@@ -88,11 +86,6 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
       address: tallyContractAddress,
     });
 
-    const messageAccQueueContract = await deployment.getContract({
-      name: EContracts.AccQueueQuinaryMaci,
-      address: extContracts[1],
-    });
-
     // get the empty ballot root
     const emptyBallotRoot = await pollContract.emptyBallotRoot();
 
@@ -105,9 +98,10 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
           pollDuration,
           {
             intStateTreeDepth,
-            messageTreeSubDepth,
-            messageTreeDepth,
             voteOptionTreeDepth,
+          },
+          {
+            messageBatchSize,
           },
           unserializedKey.asContractParam(),
           extContracts,
@@ -135,15 +129,6 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
           messageProcessorContractAddress,
           mode,
         ],
-        network: hre.network.name,
-      }),
-
-      storage.register({
-        id: EContracts.AccQueueQuinaryMaci,
-        key: `poll-${pollId}`,
-        name: "contracts/trees/AccQueueQuinaryMaci.sol:AccQueueQuinaryMaci",
-        contract: messageAccQueueContract,
-        args: [messageTreeSubDepth],
         network: hre.network.name,
       }),
     ]);

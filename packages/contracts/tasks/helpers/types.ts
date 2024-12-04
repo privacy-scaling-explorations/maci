@@ -1,5 +1,5 @@
 import type { Proof } from "../../ts/types";
-import type { AccQueue, MACI, MessageProcessor, Poll, Tally, Verifier, VkRegistry } from "../../typechain-types";
+import type { MACI, MessageProcessor, Poll, Tally, Verifier, VkRegistry } from "../../typechain-types";
 import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import type {
   BaseContract,
@@ -255,11 +255,6 @@ export interface IPrepareStateParams {
   pollContract: Poll;
 
   /**
-   * MessageAq contract
-   */
-  messageAq: AccQueue;
-
-  /**
    * Poll id
    */
   pollId: BigNumberish;
@@ -375,11 +370,6 @@ export interface IProverParams {
    * MessageProcessor contract typechain wrapper
    */
   mpContract: MessageProcessor;
-
-  /**
-   * AccQueue contract typechain wrapper (messages)
-   */
-  messageAqContract: AccQueue;
 
   /**
    * MACI contract typechain wrapper
@@ -608,9 +598,6 @@ export enum EContracts {
   Poll = "Poll",
   Tally = "Tally",
   MessageProcessor = "MessageProcessor",
-  AccQueue = "AccQueue",
-  AccQueueQuinaryBlankSl = "AccQueueQuinaryBlankSl",
-  AccQueueQuinaryMaci = "AccQueueQuinaryMaci",
 }
 
 /**
@@ -659,11 +646,6 @@ export interface ITreeMergeParams {
    * Poll contract
    */
   pollContract: Poll;
-
-  /**
-   * Message AccQueue contract
-   */
-  messageAccQueueContract: AccQueue;
 }
 
 /**

@@ -5,7 +5,8 @@ import { Keypair, PrivKey } from "maci-domainobjs";
 
 import fs from "fs";
 
-import type { MACI, Poll, AccQueue } from "../../typechain-types";
+import type { Proof } from "../../ts/types";
+import type { MACI, Poll, Tally } from "../../typechain-types";
 
 import { ContractStorage } from "../helpers/ContractStorage";
 import { Deployment } from "../helpers/Deployment";
@@ -71,17 +72,9 @@ task("prove", "Command to generate proofs")
       const maciContract = await deployment.getContract<MACI>({ name: EContracts.MACI, address: maciContractAddress });
 
       const pollContracts = await maciContract.polls(poll);
-      const pollContract = await deployment.getContract<Poll>({ name: EContracts.Poll, address: pollContracts.poll });
-      const messageAqAddress = await pollContract.extContracts().then((contracts) => contracts.messageAq);
-      const messageAq = await deployment.getContract<AccQueue>({
-        name: EContracts.AccQueue,
-        address: messageAqAddress,
-      });
-
-      const [, messageAqContractAddress] = await pollContract.extContracts();
-      const messageAqContract = await deployment.getContract<AccQueue>({
-        name: EContracts.AccQueue,
-        address: messageAqContractAddress,
+      const pollContract = await deployment.getContract<Poll>({
+        name: EContracts.Poll,
+        address: pollContracts.poll,
       });
       const isStateAqMerged = await pollContract.stateMerged();
 
@@ -90,19 +83,9 @@ task("prove", "Command to generate proofs")
         throw new Error("The state tree has not been merged yet. Please use the mergeSignups subcommand to do so.");
       }
 
-      const messageTreeDepth = await pollContract.treeDepths().then((depths) => Number(depths[2]));
-
-      // check that the main root is set
-      const mainRoot = await messageAqContract.getMainRoot(messageTreeDepth.toString());
-
-      if (mainRoot.toString() === "0") {
-        throw new Error("The message tree has not been merged yet. Please use the mergeMessages subcommand to do so.");
-      }
-
       const maciState = await ProofGenerator.prepareState({
         maciContract,
         pollContract,
-        messageAq,
         maciPrivateKey,
         coordinatorKeypair,
         pollId: poll,
@@ -122,6 +105,12 @@ task("prove", "Command to generate proofs")
       if (!foundPoll) {
         throw new Error(`Poll ${poll} not found`);
       }
+
+      const tallyContract = await deployment.getContract<Tally>({
+        name: EContracts.Tally,
+        key: `poll-${poll.toString()}`,
+      });
+      const tallyContractAddress = await tallyContract.getAddress();
 
       const useQuadraticVoting =
         deployment.getDeployConfigField<boolean | null>(EContracts.Poll, "useQuadraticVoting") ?? false;
@@ -145,7 +134,7 @@ task("prove", "Command to generate proofs")
       const proofGenerator = new ProofGenerator({
         poll: foundPoll,
         maciContractAddress,
-        tallyContractAddress: pollContracts.tally,
+        tallyContractAddress,
         rapidsnark,
         tally: {
           zkey: tallyZkey,
@@ -162,8 +151,13 @@ task("prove", "Command to generate proofs")
         useQuadraticVoting,
       });
 
-      await proofGenerator.generateMpProofs();
-      await proofGenerator.generateTallyProofs(network);
+      const data = {
+        processProofs: [] as Proof[],
+        tallyProofs: [] as Proof[],
+      };
+
+      data.processProofs = await proofGenerator.generateMpProofs();
+      data.tallyProofs = await proofGenerator.generateTallyProofs(network).then(({ proofs }) => proofs);
 
       const endBalance = await signer.provider.getBalance(signer);
 

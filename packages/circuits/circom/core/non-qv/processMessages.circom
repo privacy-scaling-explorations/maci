@@ -14,28 +14,22 @@ include "../../trees/incrementalQuinaryTree.circom";
 
 /**
  * Proves the correctness of processing a batch of MACI messages.
- * The msgBatchDepth parameter is known as msgSubtreeDepth and indicates the depth 
- * of the shortest tree that can fit all the messages in a batch.
  * This template does not support Quadratic Voting (QV).
  */
  template ProcessMessagesNonQv(
     stateTreeDepth,
-    msgTreeDepth,
-    msgBatchDepth,
+    batchSize,
     voteOptionTreeDepth
 ) {
     // Must ensure that the trees have a valid structure.
     assert(stateTreeDepth > 0);
-    assert(msgBatchDepth > 0);
+    assert(batchSize > 0);
     assert(voteOptionTreeDepth > 0);
-    assert(msgTreeDepth >= msgBatchDepth);
 
     // Default for IQT (quinary trees).
-    var MESSAGE_TREE_ARITY = 5;
+    var VOTE_OPTION_TREE_ARITY = 5;
     // Default for Binary trees.
     var STATE_TREE_ARITY = 2;
-    var batchSize = MESSAGE_TREE_ARITY ** msgBatchDepth;
-    var maxVoteOptions = MESSAGE_TREE_ARITY ** voteOptionTreeDepth;
     var MSG_LENGTH = 10;
     var PACKED_CMD_LENGTH = 4;
     var STATE_LEAF_LENGTH = 4;
@@ -47,17 +41,17 @@ include "../../trees/incrementalQuinaryTree.circom";
     var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
     var STATE_LEAF_TIMESTAMP_IDX = 3;
     var msgTreeZeroValue = 8370432830353022751713833565135785980866757267633941821328460903436894336785;
+    // Number of options for this poll.
+    var maxVoteOptions = VOTE_OPTION_TREE_ARITY ** voteOptionTreeDepth;
 
     // Number of users that have completed the sign up.
     signal input numSignUps;
-    // Time when the poll ends.
-    signal input pollEndTimestamp;
-    // The existing message tree root.
-    signal input msgRoot;
+    // Value of chainHash at beginning of batch
+    signal input inputBatchHash;
+    // Value of chainHash at end of batch
+    signal input outputBatchHash;
     // The messages.
     signal input msgs[batchSize][MSG_LENGTH];
-    // Sibling messages.
-    signal input msgSubrootPathElements[msgTreeDepth - msgBatchDepth][MESSAGE_TREE_ARITY - 1];
     // The coordinator's private key.
     signal input coordPrivKey;
     // The ECDH public key per message.
@@ -68,10 +62,6 @@ include "../../trees/incrementalQuinaryTree.circom";
     // @note it is a public input to ensure fair processing from 
     // the coordinator (no censoring)
     signal input actualStateTreeDepth;
-    // The last batch index
-    signal input batchEndIndex;
-    // The batch index of current message batch
-    signal input index;
     // The coordinator public key hash
     signal input coordinatorPublicKeyHash;
 
@@ -99,11 +89,19 @@ include "../../trees/incrementalQuinaryTree.circom";
     signal input currentBallotsPathElements[batchSize][stateTreeDepth][STATE_TREE_ARITY - 1];
     // Intermediate vote weights.
     signal input currentVoteWeights[batchSize];
-    signal input currentVoteWeightsPathElements[batchSize][voteOptionTreeDepth][MESSAGE_TREE_ARITY - 1];
+    signal input currentVoteWeightsPathElements[batchSize][voteOptionTreeDepth][VOTE_OPTION_TREE_ARITY - 1];
 
     // nb. The messages are processed in REVERSE order.
     // Therefore, the index of the first message to process does not match the index of the
     // first message (e.g., [msg1, msg2, msg3] => first message to process has index 3).
+
+    // The index of the first message in the batch, inclusive.
+    signal input index;
+    
+    // The index of the last message in the batch to process, exclusive.
+    // This value may be less than index + batchSize if this batch is
+    // the last batch and the total number of messages is not a multiple of the batch size.
+    signal input batchEndIndex;
 
     // The history of state and ballot roots and temporary intermediate
     // signals (for processing purposes).
@@ -121,7 +119,7 @@ include "../../trees/incrementalQuinaryTree.circom";
     //  ----------------------------------------------------------------------- 
     // 0. Ensure that the maximum vote options signal is valid and if
     // the maximum users signal is valid.
-    var maxVoValid = LessEqThan(32)([maxVoteOptions, MESSAGE_TREE_ARITY ** voteOptionTreeDepth]);
+    var maxVoValid = LessEqThan(32)([maxVoteOptions, VOTE_OPTION_TREE_ARITY ** voteOptionTreeDepth]);
     maxVoValid === 1;
 
     // Check numSignUps <= the max number of users (i.e., number of state leaves
@@ -129,52 +127,29 @@ include "../../trees/incrementalQuinaryTree.circom";
     var numSignUpsValid = LessEqThan(32)([numSignUps, STATE_TREE_ARITY ** stateTreeDepth]);
     numSignUpsValid === 1;
 
-    // Hash each Message to check their existence in the Message tree.
+    // Hash each Message to check their existence in the Message chain hash.
     var computedMessageHashers[batchSize];
+    var computedChainHashes[batchSize];
+    var chainHash[batchSize + 1];
+    chainHash[0] = inputBatchHash;
     for (var i = 0; i < batchSize; i++) {
+        // calculate message hash
         computedMessageHashers[i] = MessageHasher()(msgs[i], encPubKeys[i]);
+        // check if message is valid or not (if index of message is less than index of last valid message in batch)
+        var batchStartIndexValid = SafeLessThan(32)([index + i, batchEndIndex]);
+        // calculate chain hash if message is valid
+        computedChainHashes[i] = PoseidonHasher(2)([chainHash[i], computedMessageHashers[i]]);
+        // choose between old chain hash value and new chain hash value depending if message is valid or not
+        chainHash[i + 1] = Mux1()([chainHash[i], computedChainHashes[i]], batchStartIndexValid);
     }
 
-    // If endIndex - startIndex < batchSize, the remaining
+    // If batchEndIndex < index + i, the remaining
     // message hashes should be the zero value.
     // e.g. [m, z, z, z, z] if there is only 1 real message in the batch
     // This makes possible to have a batch of messages which is only partially full.
-    var computedLeaves[batchSize];
-    var computedPathElements[msgTreeDepth - msgBatchDepth][MESSAGE_TREE_ARITY - 1];
-    var computedPathIndex[msgTreeDepth - msgBatchDepth];
 
-    for (var i = 0; i < batchSize; i++) {
-        var batchStartIndexValid = SafeLessThan(32)([index + i, batchEndIndex]);
-        computedLeaves[i] = Mux1()([msgTreeZeroValue, computedMessageHashers[i]], batchStartIndexValid);
-    }
-
-    for (var i = 0; i < msgTreeDepth - msgBatchDepth; i++) {
-        for (var j = 0; j < MESSAGE_TREE_ARITY - 1; j++) {
-            computedPathElements[i][j] = msgSubrootPathElements[i][j];
-        }
-    }
-
-    // Computing the path_index values. Since msgBatchLeavesExists tests
-    // the existence of a subroot, the length of the proof correspond to the last 
-    // n elements of a proof from the root to a leaf, where n = msgTreeDepth - msgBatchDepth.
-    // e.g. if startIndex = 25, msgTreeDepth = 4, msgBatchDepth = 2, then path_index = [1, 0].
-    var computedMsgBatchPathIndices[msgTreeDepth] = QuinGeneratePathIndices(msgTreeDepth)(index);
-
-    for (var i = msgBatchDepth; i < msgTreeDepth; i++) {
-        computedPathIndex[i - msgBatchDepth] = computedMsgBatchPathIndices[i];
-    }
-
-    // Check whether each message exists in the Message tree.
-    // Otherwise, throws (needs constraint to prevent such a proof).
-    // To save constraints, compute the subroot of the messages and check
-    // whether the subroot is a member of the message tree. This means that
-    // batchSize must be the message tree arity raised to some power (e.g. 5 ^ n).
-    QuinBatchLeavesExists(msgTreeDepth, msgBatchDepth)(
-        msgRoot,
-        computedLeaves,
-        computedPathIndex,
-        computedPathElements   
-    );
+    // Ensure that right output batch hash was sent to circuit
+    chainHash[batchSize] === outputBatchHash;
 
     // Decrypt each Message to a Command.
     // MessageToCommand derives the ECDH shared key from the coordinator's
@@ -232,7 +207,7 @@ include "../../trees/incrementalQuinaryTree.circom";
         // Process as vote type message.
         var currentStateLeavesPathElement[stateTreeDepth][STATE_TREE_ARITY - 1];
         var currentBallotPathElement[stateTreeDepth][STATE_TREE_ARITY - 1];
-        var currentVoteWeightsPathElement[voteOptionTreeDepth][MESSAGE_TREE_ARITY - 1];
+        var currentVoteWeightsPathElement[voteOptionTreeDepth][VOTE_OPTION_TREE_ARITY - 1];
         
         for (var j = 0; j < stateTreeDepth; j++) {
             for (var k = 0; k < STATE_TREE_ARITY - 1; k++) {
@@ -242,14 +217,13 @@ include "../../trees/incrementalQuinaryTree.circom";
         }
 
         for (var j = 0; j < voteOptionTreeDepth; j++) {
-            for (var k = 0; k < MESSAGE_TREE_ARITY - 1; k++) {
+            for (var k = 0; k < VOTE_OPTION_TREE_ARITY - 1; k++) {
                 currentVoteWeightsPathElement[j][k] = currentVoteWeightsPathElements[i][j][k];
             }
         }
 
         (computedNewVoteStateRoot[i], computedNewVoteBallotRoot[i]) = ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth)(
             numSignUps,
-            pollEndTimestamp,
             stateRoots[i + 1],
             ballotRoots[i + 1],
             actualStateTreeDepth,
@@ -293,12 +267,13 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     var BALLOT_LENGTH = 2;
     var MSG_LENGTH = 10;
     var PACKED_CMD_LENGTH = 4;
-    var MESSAGE_TREE_ARITY = 5;
+    var VOTE_OPTION_TREE_ARITY = 5;
     var STATE_TREE_ARITY = 2;
     var BALLOT_NONCE_IDX = 0;
     // Ballot vote option (VO) root index.
     var BALLOT_VO_ROOT_IDX = 1;
-    var maxVoteOptions = MESSAGE_TREE_ARITY ** voteOptionTreeDepth;
+    // Number of options for this poll.
+    var maxVoteOptions = VOTE_OPTION_TREE_ARITY ** voteOptionTreeDepth;
 
     // Indices for elements within a state leaf.
     // Public key.
@@ -308,11 +283,10 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
     // Timestamp.
     var STATE_LEAF_TIMESTAMP_IDX = 3;
+    var N_BITS = 252;
 
-    // Inputs representing the message and the current state.
+    // Number of users that have completed the sign up.
     signal input numSignUps;
-    signal input pollEndTimestamp;
-
     // The current value of the state tree root.
     signal input currentStateRoot;
     // The current value of the ballot tree root.
@@ -331,7 +305,7 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
 
     // The current vote weight and related path elements.
     signal input currentVoteWeight;
-    signal input currentVoteWeightsPathElements[voteOptionTreeDepth][MESSAGE_TREE_ARITY - 1];
+    signal input currentVoteWeightsPathElements[voteOptionTreeDepth][VOTE_OPTION_TREE_ARITY - 1];
 
     // Inputs related to the command being processed.
     signal input cmdStateIndex;
@@ -348,11 +322,6 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     signal output newStateRoot;
     signal output newBallotRoot;
 
-    // Intermediate signals.
-    // currentVoteWeight * currentVoteWeight.
-    signal b;
-    // cmdNewVoteWeight * cmdNewVoteWeight.
-    signal c;
     // equal to newBallotVoRootMux (Mux1).
     signal newBallotVoRoot;
 
@@ -364,8 +333,6 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
         maxVoteOptions,
         [stateLeaf[STATE_LEAF_PUB_X_IDX], stateLeaf[STATE_LEAF_PUB_Y_IDX]],
         stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX],
-        stateLeaf[STATE_LEAF_TIMESTAMP_IDX],
-        pollEndTimestamp,
         ballot[BALLOT_NONCE_IDX],
         currentVoteWeight,
         cmdStateIndex,
@@ -412,9 +379,6 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
 
     // 5. Verify that currentVoteWeight exists in the ballot's vote option root
     // at cmdVoteOptionIndex.
-    b <== currentVoteWeight;
-    c <== cmdNewVoteWeight;
-
     var cmdVoteOptionIndexMux = Mux1()([0, cmdVoteOptionIndex], computedIsVoteOptionIndexValid);
     var computedCurrentVoteWeightPathIndices[voteOptionTreeDepth] = QuinGeneratePathIndices(voteOptionTreeDepth)(cmdVoteOptionIndexMux);
 
@@ -430,7 +394,7 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     var voiceCreditBalanceMux = Mux1()(
         [
             stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX],
-            stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + b - c
+            stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + currentVoteWeight - cmdNewVoteWeight
         ],
         computedIsValid
     );

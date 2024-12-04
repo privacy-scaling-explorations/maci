@@ -9,15 +9,18 @@ import { compareVks } from "../../ts/utils";
 import { validateSalt } from "../../ts/utils/salt";
 
 describe("utils", () => {
-  const vkPath = path.resolve(__dirname, "data", "testVk.json");
-  const vk1 = VerifyingKey.fromJSON(fs.readFileSync(vkPath).toString());
-
   describe("vks", () => {
-    it("should return true for two equal VKs", () => {
+    it("should return true for two equal VKs", async () => {
+      const vkPath = path.resolve(__dirname, "data", "testVk.json");
+      const vk1 = VerifyingKey.fromJSON(await fs.promises.readFile(vkPath).then((res) => res.toString()));
+
       expect(compareVks(vk1, vk1.asContractParam())).to.eq(true);
     });
 
-    it("should return false for two unequal VKs", () => {
+    it("should return false for two unequal VKs", async () => {
+      const vkPath = path.resolve(__dirname, "data", "testVk.json");
+      const vk1 = VerifyingKey.fromJSON(await fs.promises.readFile(vkPath).then((res) => res.toString()));
+
       const vk2 = vk1.asContractParam();
       vk2.alpha1.x = 9999n;
       expect(compareVks(vk1, vk2)).to.eq(false);

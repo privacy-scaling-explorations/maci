@@ -13,8 +13,6 @@ import {
   MACI,
   MessageProcessor,
   MessageProcessor__factory as MessageProcessorFactory,
-  Poll as PollContract,
-  Poll__factory as PollFactory,
   Verifier,
   VkRegistry,
 } from "../typechain-types";
@@ -33,7 +31,6 @@ import { timeTravel, deployTestContracts } from "./utils";
 describe("MessageProcessor", () => {
   // contracts
   let maciContract: MACI;
-  let pollContract: PollContract;
   let verifierContract: Verifier;
   let vkRegistryContract: VkRegistry;
   let mpContract: MessageProcessor;
@@ -65,6 +62,7 @@ describe("MessageProcessor", () => {
     const tx = await maciContract.deployPoll(
       duration,
       treeDepths,
+      messageBatchSize,
       coordinator.pubKey.asContractParam(),
       verifierContract,
       vkRegistryContract,
@@ -78,8 +76,6 @@ describe("MessageProcessor", () => {
     pollId = (await maciContract.nextPollId()) - 1n;
 
     const pollContracts = await maciContract.getPoll(pollId);
-    pollContract = PollFactory.connect(pollContracts.poll, signer);
-
     mpContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
 
     const block = await signer.provider!.getBlock(receipt!.blockHash);
@@ -89,12 +85,14 @@ describe("MessageProcessor", () => {
     const p = maciState.deployPoll(BigInt(deployTime + duration), treeDepths, messageBatchSize, coordinator);
     expect(p.toString()).to.eq(pollId.toString());
 
-    // publish the NOTHING_UP_MY_SLEEVE message
-    const messageData = [NOTHING_UP_MY_SLEEVE];
-    for (let i = 1; i < 10; i += 1) {
-      messageData.push(BigInt(0));
+    const messages = [];
+    for (let i = 0; i <= 24; i += 1) {
+      const messageData = [NOTHING_UP_MY_SLEEVE];
+      for (let j = 1; j < 10; j += 1) {
+        messageData.push(BigInt(0));
+      }
+      messages.push(new Message(messageData));
     }
-    const message = new Message(messageData);
     const padKey = new PubKey([
       BigInt("10457101036533406547632367118273992217979173478358440826365724437999023779287"),
       BigInt("19824078218392094440610104313265183977899662750282163392862422243483260492317"),
@@ -102,7 +100,9 @@ describe("MessageProcessor", () => {
 
     poll = maciState.polls.get(pollId)!;
 
-    poll.publishMessage(message, padKey);
+    for (let i = 0; i <= 24; i += 1) {
+      poll.publishMessage(messages[i], padKey);
+    }
 
     // update the poll state
     poll.updatePoll(BigInt(maciState.stateLeaves.length));
@@ -110,10 +110,9 @@ describe("MessageProcessor", () => {
     generatedInputs = poll.processMessages(pollId);
 
     // set the verification keys on the vk smart contract
-    vkRegistryContract.setVerifyingKeys(
+    await vkRegistryContract.setVerifyingKeys(
       STATE_TREE_DEPTH,
       treeDepths.intStateTreeDepth,
-      treeDepths.messageTreeDepth,
       treeDepths.voteOptionTreeDepth,
       messageBatchSize,
       EMode.QV,
@@ -124,24 +123,9 @@ describe("MessageProcessor", () => {
     expect(receipt?.status).to.eq(1);
   });
 
-  describe("before merging acc queues", () => {
+  describe("testing with more messages", () => {
     before(async () => {
       await timeTravel(signer.provider! as unknown as EthereumProvider, duration + 1);
-    });
-
-    it("processMessages() should fail if the state AQ has not been merged", async () => {
-      await expect(
-        mpContract.processMessages(BigInt(generatedInputs.newSbCommitment), [0, 0, 0, 0, 0, 0, 0, 0]),
-      ).to.be.revertedWithCustomError(mpContract, "StateNotMerged");
-    });
-  });
-
-  describe("after merging acc queues", () => {
-    before(async () => {
-      await pollContract.mergeMaciState();
-
-      await pollContract.mergeMessageAqSubRoots(0);
-      await pollContract.mergeMessageAq();
     });
 
     it("processMessages() should update the state and ballot root commitment", async () => {

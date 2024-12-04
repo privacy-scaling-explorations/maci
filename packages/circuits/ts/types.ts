@@ -41,18 +41,32 @@ export interface IGenProofOptions {
 }
 
 /**
+ * Inputs for circuit PollJoining
+ */
+export interface IPollJoiningInputs {
+  privKey: bigint;
+  pollPrivKey: bigint;
+  pollPubKey: bigint[][];
+  stateLeaf: bigint[];
+  siblings: bigint[][];
+  indices: bigint[];
+  nullifier: bigint;
+  credits: bigint;
+  stateRoot: bigint;
+  actualStateTreeDepth: bigint;
+}
+
+/**
  * Inputs for circuit ProcessMessages
  */
 export interface IProcessMessagesInputs {
   actualStateTreeDepth: bigint;
-  pollEndTimestamp: bigint;
   numSignUps: bigint;
   batchEndIndex: bigint;
   index: bigint;
-  maxVoteOptions: bigint;
-  msgRoot: bigint;
+  inputBatchHash: bigint;
+  outputBatchHash: bigint;
   msgs: bigint[];
-  msgSubrootPathElements: bigint[][];
   coordPrivKey: bigint;
   coordinatorPublicKeyHash: bigint;
   encPubKeys: bigint[];

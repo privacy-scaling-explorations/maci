@@ -10,14 +10,15 @@ import {
   setVerifyingKeys,
   getPoll,
   timeTravel,
-  mergeMessages,
   mergeSignups,
 } from "../../ts/commands";
 import { DeployedContracts, PollContracts } from "../../ts/utils";
 import { deployPollArgs, setVerifyingKeysArgs, deployArgs } from "../constants";
 import { clean } from "../utils";
 
-describe("poll", () => {
+describe("poll", function test() {
+  this.timeout(900000);
+
   let maciAddresses: DeployedContracts;
   let pollAddresses: PollContracts;
   let signer: Signer;
@@ -45,21 +46,33 @@ describe("poll", () => {
     });
 
     it("should get current poll properly", async () => {
-      const pollData = await getPoll({ maciAddress: maciAddresses.maciAddress, signer });
-      const samePollData = await getPoll({ maciAddress: maciAddresses.maciAddress, pollId: pollData.id, signer });
+      const pollData = await getPoll({
+        maciAddress: maciAddresses.maciAddress,
+        signer,
+      });
+      const samePollData = await getPoll({
+        maciAddress: maciAddresses.maciAddress,
+        pollId: pollData.id,
+        signer,
+      });
 
       expect(pollData.address).to.eq(pollAddresses.poll);
       expect(pollData).to.deep.eq(samePollData);
     });
 
     it("should get finished poll properly", async () => {
-      const pollData = await getPoll({ maciAddress: maciAddresses.maciAddress, provider: signer.provider! });
+      const pollData = await getPoll({
+        maciAddress: maciAddresses.maciAddress,
+        provider: signer.provider!,
+      });
 
       await timeTravel({ seconds: Number(pollData.duration), signer });
-      await mergeMessages({ pollId: BigInt(pollData.id), signer });
-      await mergeSignups({ pollId: BigInt(pollData.id), signer });
+      await mergeSignups({ pollId: BigInt(pollData.id), maciAddress: maciAddresses.maciAddress, signer });
 
-      const finishedPollData = await getPoll({ maciAddress: maciAddresses.maciAddress, signer });
+      const finishedPollData = await getPoll({
+        maciAddress: maciAddresses.maciAddress,
+        signer,
+      });
 
       expect(pollData.id).to.eq(finishedPollData.id);
       expect(pollData.address).to.eq(finishedPollData.address);

@@ -8,7 +8,7 @@ node build/ts/index.js setVerifyingKeys \
     --msg-tree-depth 2 \
     --vote-option-tree-depth 2 \
     --msg-batch-depth 1 \
-    --process-messages-zkey-qv ./zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test.0.zkey \
+    --process-messages-zkey-qv ./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey \
     --tally-votes-zkey-qv ./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey
 node build/ts/index.js create -s 10
 node build/ts/index.js deployPoll \
@@ -39,16 +39,15 @@ node build/ts/index.js publish \
     --poll-id 0
 node build/ts/index.js timeTravel -s 100
 node build/ts/index.js mergeSignups --poll-id 0
-node build/ts/index.js mergeMessages --poll-id 0
 node build/ts/index.js genProofs \
     --privkey macisk.bf92af7614b07e2ba19dce65bb7fef2b93d83b84da2cf2e3af690104fbc52511 \
     --poll-id 0 \
-    --process-zkey ./zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test.0.zkey \
+    --process-zkey ./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey \
     --tally-zkey ./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey \
     --tally-file tally.json \
     --output proofs/ \
     -tw ./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm \
-    -pw ./zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test_js/ProcessMessages_10-2-1-2_test.wasm \
+    -pw ./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_js/ProcessMessages_10-20-2_test.wasm \
     -w true \
     -q false 
 node build/ts/index.js proveOnChain \

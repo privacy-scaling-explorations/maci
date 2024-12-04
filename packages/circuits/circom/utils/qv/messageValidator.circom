@@ -33,10 +33,6 @@ template MessageValidator() {
     signal input sigR8[2];
     // ECDSA signature of the command (S part).
     signal input sigS;
-    // State leaf signup timestamp.
-    signal input slTimestamp;
-    // Timestamp indicating when the poll ends.
-    signal input pollEndTimestamp;
     // State leaf current voice credit balance.
     signal input currentVoiceCreditBalance;
     // Current number of votes for specific option. 
@@ -66,15 +62,12 @@ template MessageValidator() {
     // Check (4) - The signature must be correct.    
     var computedIsSignatureValid = VerifySignature()(pubKey, sigR8, sigS, cmd);
 
-    // Check (5) - The state leaf must be inserted before the Poll period end.    
-    var computedIsTimestampValid = SafeLessEqThan(252)([slTimestamp, pollEndTimestamp]);
-
-    // Check (6) - There must be sufficient voice credits.
+    // Check (5) - There must be sufficient voice credits.
     // The check ensure that the voteWeight is < sqrt(field size)
     // so that voteWeight ^ 2 will not overflow.
     var computedIsVoteWeightValid = SafeLessEqThan(252)([voteWeight, 147946756881789319005730692170996259609]);
 
-    // Check (7) - Check the current voice credit balance.
+    // Check (6) - Check the current voice credit balance.
     // The check ensure that currentVoiceCreditBalance + (currentVotesForOption ** 2) >= (voteWeight ** 2)
     var computedAreVoiceCreditsSufficient = SafeGreaterEqThan(252)(
         [
@@ -83,16 +76,15 @@ template MessageValidator() {
         ]
     );
 
-    // When all seven checks are correct, then isValid = 1.
+    // When all six checks are correct, then isValid = 1.
     var computedIsUpdateValid = IsEqual()(
         [
-            7,
+            6,
             computedIsSignatureValid + 
             computedAreVoiceCreditsSufficient +
             computedIsVoteWeightValid +
             computedIsNonceValid +
             computedIsStateLeafIndexValid +
-            computedIsTimestampValid +
             computedIsVoteOptionIndexValid
         ]
     );
@@ -101,4 +93,3 @@ template MessageValidator() {
     isStateLeafIndexValid <== computedIsStateLeafIndexValid;
     isVoteOptionIndexValid <== computedIsVoteOptionIndexValid;
 }
-

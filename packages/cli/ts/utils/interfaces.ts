@@ -2,7 +2,7 @@ import { MACI } from "maci-contracts/typechain-types";
 import { PubKey } from "maci-domainobjs";
 
 import type { Provider, Signer } from "ethers";
-import type { SnarkProof } from "maci-contracts";
+import type { Poll, SnarkProof } from "maci-contracts";
 import type { CircuitInputs } from "maci-core";
 import type { IMessageContractParams } from "maci-domainobjs";
 import type { Groth16Proof, PublicSignals } from "snarkjs";
@@ -165,19 +165,19 @@ export interface CheckVerifyingKeysArgs {
   intStateTreeDepth: number;
 
   /**
-   * The depth of the message tree
-   */
-  messageTreeDepth: number;
-
-  /**
    * The depth of the vote option tree
    */
   voteOptionTreeDepth: number;
 
   /**
-   * The depth of the message batch tree
+   * The size of the message  batch
    */
-  messageBatchDepth: number;
+  messageBatchSize: number;
+
+  /**
+   * The path to the poll zkey
+   */
+  pollJoiningZkeyPath: string;
 
   /**
    * The path to the process messages zkey
@@ -280,14 +280,9 @@ export interface DeployPollArgs {
   intStateTreeDepth: number;
 
   /**
-   * The depth of the message tree sublevels
+   * The size of the message batch
    */
-  messageTreeSubDepth: number;
-
-  /**
-   * The depth of the message tree
-   */
-  messageTreeDepth: number;
+  messageBatchSize: number;
 
   /**
    * The depth of the vote option tree
@@ -323,6 +318,150 @@ export interface DeployPollArgs {
    * Whether to use quadratic voting or not
    */
   useQuadraticVoting?: boolean;
+}
+
+/**
+ * Interface for the arguments to the isJoinedUser command
+ */
+export interface IJoinedUserArgs {
+  /**
+   * The address of the MACI contract
+   */
+  maciAddress: string;
+
+  /**
+   * The id of the poll
+   */
+  pollId: bigint;
+
+  /**
+   * Poll public key for the poll
+   */
+  pollPubKey: string;
+
+  /**
+   * A signer object
+   */
+  signer: Signer;
+
+  /**
+   * The start block number
+   */
+  startBlock: number;
+
+  /**
+   * Whether to log the output
+   */
+  quiet: boolean;
+}
+/**
+ * Interface for the arguments to the joinPoll command
+ */
+export interface IJoinPollArgs {
+  /**
+   * A signer object
+   */
+  signer: Signer;
+
+  /**
+   * The private key of the user
+   */
+  privateKey: string;
+
+  /**
+   * User's credit balance for voting within this poll
+   */
+  newVoiceCreditBalance: bigint | null;
+
+  /**
+   * The id of the poll
+   */
+  pollId: bigint;
+
+  /**
+   * The index of the state leaf
+   */
+  stateIndex: bigint | null;
+
+  /**
+   * Whether to log the output
+   */
+  quiet: boolean;
+
+  /**
+   * Path to the state file with MACI state
+   */
+  stateFile?: string;
+
+  /**
+   * The address of the MACI contract
+   */
+  maciAddress: string;
+
+  /**
+   * The end block number
+   */
+  endBlock?: number;
+
+  /**
+   * The start block number
+   */
+  startBlock?: number;
+
+  /**
+   * The number of blocks to fetch per batch
+   */
+  blocksPerBatch?: number;
+
+  /**
+   * The transaction hash of the first transaction
+   */
+  transactionHash?: string;
+
+  /**
+   * The path to the poll zkey file
+   */
+  pollJoiningZkey: string;
+
+  /**
+   * Whether to use wasm or rapidsnark
+   */
+  useWasm?: boolean;
+
+  /**
+   * The path to the rapidsnark binary
+   */
+  rapidsnark?: string;
+
+  /**
+   * The path to the poll witnessgen binary
+   */
+  pollWitgen?: string;
+
+  /**
+   * The path to the poll wasm file
+   */
+  pollWasm?: string;
+
+  /**
+   * Poll private key for the poll
+   */
+  pollPrivKey: string;
+}
+
+/**
+ * Interface for the return data to the joinPoll command
+ */
+export interface IJoinPollData {
+  /**
+   * The poll state index of the joined user
+   */
+  pollStateIndex: string;
+
+  /**
+   * The join poll transaction hash
+   */
+  hash: string;
 }
 
 /**
@@ -512,36 +651,6 @@ export interface GenProofsArgs {
 }
 
 /**
- * Interface for the arguments to the mergeMessages command
- */
-export interface MergeMessagesArgs {
-  /**
-   * The id of the poll
-   */
-  pollId: bigint;
-
-  /**
-   * A signer object
-   */
-  signer: Signer;
-
-  /**
-   * Whether to log the output
-   */
-  quiet?: boolean;
-
-  /**
-   * The address of the MACI contract
-   */
-  maciAddress?: string;
-
-  /**
-   * The number of queue operations to merge
-   */
-  numQueueOps?: string;
-}
-
-/**
  * Interface for the arguments to the mergeSignups command
  */
 export interface MergeSignupsArgs {
@@ -611,12 +720,12 @@ export interface ProveOnChainArgs {
  */
 export interface PublishArgs extends IPublishMessage {
   /**
-   * The public key of the user
+   * The poll public key
    */
   pubkey: string;
 
   /**
-   * The private key of the user
+   * The poll private key
    */
   privateKey: string;
 
@@ -746,19 +855,19 @@ export interface SetVerifyingKeysArgs {
   intStateTreeDepth: number;
 
   /**
-   * The depth of the message tree
-   */
-  messageTreeDepth: number;
-
-  /**
    * The depth of the vote option tree
    */
   voteOptionTreeDepth: number;
 
   /**
-   * The depth of the message batch tree
+   * The size of message batch
    */
-  messageBatchDepth: number;
+  messageBatchSize: number;
+
+  /**
+   * The path to the poll zkey
+   */
+  pollJoiningZkeyPath?: string;
 
   /**
    * The path to the process messages qv zkey
@@ -1063,6 +1172,11 @@ export interface DeployVkRegistryArgs {
 
 export interface ExtractVkToFileArgs {
   /**
+   * File path for poll zkey
+   */
+  pollJoiningZkeyPath: string;
+
+  /**
    * File path for processMessagesQv zkey
    */
   processMessagesZkeyPathQv: string;
@@ -1086,6 +1200,31 @@ export interface ExtractVkToFileArgs {
    * Output file path of extracted vkeys
    */
   outputFilePath: string;
+}
+
+/**
+ * Interface for the arguments to the parsePollJoinEvents function
+ */
+export interface IParsePollJoinEventsArgs {
+  /**
+   * The MACI contract
+   */
+  pollContract: Poll;
+
+  /**
+   * The start block
+   */
+  startBlock: number;
+
+  /**
+   * The current block
+   */
+  currentBlock: number;
+
+  /**
+   * The public key
+   */
+  pollPublicKey: PubKey;
 }
 
 /**

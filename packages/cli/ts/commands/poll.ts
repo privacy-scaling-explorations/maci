@@ -36,13 +36,13 @@ export const getPoll = async ({
     logError(`Invalid poll id ${id}`);
   }
 
-  const { poll: pollAddress, tally: tallyAddress } = await maciContract.polls(id);
+  const pollContracts = await maciContract.polls(id);
 
-  if (pollAddress === ZeroAddress || tallyAddress === ZeroAddress) {
+  if (pollContracts.poll === ZeroAddress) {
     logError(`MACI contract doesn't have any deployed poll ${id}`);
   }
 
-  const pollContract = PollFactory.connect(pollAddress, signer ?? provider);
+  const pollContract = PollFactory.connect(pollContracts.poll, signer ?? provider);
 
   const [[deployTime, duration], mergedStateRoot] = await Promise.all([
     pollContract.getDeployTimeAndDuration(),
@@ -52,7 +52,7 @@ export const getPoll = async ({
   const numSignups = await (isMerged ? pollContract.numSignups() : maciContract.numSignUps());
 
   // get the poll mode
-  const tallyContract = TallyFactory.connect(tallyAddress, signer ?? provider);
+  const tallyContract = TallyFactory.connect(pollContracts.tally, signer ?? provider);
   const mode = await tallyContract.mode();
 
   logGreen(
@@ -71,7 +71,7 @@ export const getPoll = async ({
 
   return {
     id,
-    address: pollAddress,
+    address: pollContracts.poll,
     deployTime,
     duration,
     numSignups,

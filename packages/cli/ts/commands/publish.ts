@@ -1,5 +1,4 @@
 import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts/typechain-types";
-import { MESSAGE_TREE_ARITY } from "maci-core";
 import { genRandomSalt } from "maci-crypto";
 import {
   type IG1ContractParams,
@@ -42,7 +41,7 @@ export const publish = async ({
     logError("invalid MACI public key");
   }
   // deserialize
-  const userMaciPubKey = PubKey.deserialize(pubkey);
+  const pollPubKey = PubKey.deserialize(pubkey);
 
   if (!(await contractExists(signer.provider!, maciAddress))) {
     logError("MACI contract does not exist");
@@ -52,7 +51,7 @@ export const publish = async ({
     logError("Invalid MACI private key");
   }
 
-  const userMaciPrivKey = PrivKey.deserialize(privateKey);
+  const pollPrivKey = PrivKey.deserialize(privateKey);
 
   // validate args
   if (voteOptionIndex < 0) {
@@ -87,9 +86,8 @@ export const publish = async ({
 
   const pollContract = PollFactory.connect(pollContracts.poll, signer);
 
-  const treeDepths = await pollContract.treeDepths();
+  const maxVoteOptions = Number(await pollContract.maxVoteOptions());
   const coordinatorPubKeyResult = await pollContract.coordinatorPubKey();
-  const maxVoteOptions = Number(BigInt(MESSAGE_TREE_ARITY) ** treeDepths.voteOptionTreeDepth);
 
   // validate the vote options index against the max leaf index on-chain
   if (maxVoteOptions < voteOptionIndex) {
@@ -106,7 +104,7 @@ export const publish = async ({
   // create the command object
   const command: PCommand = new PCommand(
     stateIndex,
-    userMaciPubKey,
+    pollPubKey,
     voteOptionIndex,
     newVoteWeight,
     nonce,
@@ -114,8 +112,8 @@ export const publish = async ({
     userSalt,
   );
 
-  // sign the command with the user private key
-  const signature = command.sign(userMaciPrivKey);
+  // sign the command with the poll private key
+  const signature = command.sign(pollPrivKey);
   // encrypt the command using a shared key between the user and the coordinator
   const message = command.encrypt(signature, Keypair.genEcdhSharedKey(encKeypair.privKey, coordinatorPubKey));
 
@@ -173,11 +171,10 @@ export const publishBatch = async ({
 
   const pollContract = PollFactory.connect(pollContracts.poll, signer);
 
-  const [treeDepths, coordinatorPubKeyResult] = await Promise.all([
-    pollContract.treeDepths(),
+  const [maxVoteOptions, coordinatorPubKeyResult] = await Promise.all([
+    pollContract.maxVoteOptions().then(Number),
     pollContract.coordinatorPubKey(),
   ]);
-  const maxVoteOptions = Number(BigInt(MESSAGE_TREE_ARITY) ** treeDepths.voteOptionTreeDepth);
 
   // validate the vote options index against the max leaf index on-chain
   messages.forEach(({ stateIndex, voteOptionIndex, salt, nonce }) => {

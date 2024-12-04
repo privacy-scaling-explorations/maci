@@ -6,7 +6,7 @@ import { Poll } from "../generated/schema";
 import { Poll as PollTemplate } from "../generated/templates";
 import { Poll as PollContract } from "../generated/templates/Poll/Poll";
 
-import { ONE_BIG_INT, MESSAGE_TREE_ARITY } from "./utils/constants";
+import { ONE_BIG_INT } from "./utils/constants";
 import { createOrLoadMACI, createOrLoadUser, createOrLoadAccount } from "./utils/entity";
 
 export function handleDeployPoll(event: DeployPollEvent): void {
@@ -17,15 +17,15 @@ export function handleDeployPoll(event: DeployPollEvent): void {
   const maciContract = MaciContract.bind(Address.fromBytes(maci.id));
   const contracts = maciContract.getPoll(id);
   const poll = new Poll(contracts.poll);
-  const contract = PollContract.bind(contracts.poll);
-  const treeDepths = contract.treeDepths();
-  const durations = contract.getDeployTimeAndDuration();
+  const pollContract = PollContract.bind(contracts.poll);
+  const maxVoteOptions = pollContract.maxVoteOptions();
+  const treeDepths = pollContract.treeDepths();
+  const durations = pollContract.getDeployTimeAndDuration();
 
-  poll.pollId = id;
+  poll.pollId = event.params._pollId;
   poll.messageProcessor = contracts.messageProcessor;
   poll.tally = contracts.tally;
-  poll.maxMessages = GraphBN.fromI32(MESSAGE_TREE_ARITY ** treeDepths.getMessageTreeDepth());
-  poll.maxVoteOption = GraphBN.fromI32(MESSAGE_TREE_ARITY ** treeDepths.getVoteOptionTreeDepth());
+  poll.maxVoteOption = maxVoteOptions;
   poll.treeDepth = GraphBN.fromI32(treeDepths.value0);
   poll.duration = durations.value1;
   poll.mode = GraphBN.fromI32(event.params._mode);

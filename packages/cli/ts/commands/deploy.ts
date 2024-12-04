@@ -75,7 +75,7 @@ export const deploy = async ({
 
   const verifierContractAddress = await verifierContract.getAddress();
 
-  // deploy MACI, stateAq, PollFactory and poseidon
+  // deploy MACI, PollFactory and poseidon
   const { maciContract, pollFactoryContract, poseidonAddrs } = await deployMaci({
     signUpTokenGatekeeperContractAddress: signupGatekeeperContractAddress,
     initialVoiceCreditBalanceAddress: initialVoiceCreditProxyContractAddress,

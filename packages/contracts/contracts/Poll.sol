@@ -2,7 +2,10 @@
 pragma solidity ^0.8.20;
 
 import { Params } from "./utilities/Params.sol";
+import { EmptyBallotRoots } from "./trees/EmptyBallotRoots.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
+import { LazyIMTData, InternalLazyIMT } from "./trees/LazyIMT.sol";
+import { IMACI } from "./interfaces/IMACI.sol";
 import { IPoll } from "./interfaces/IPoll.sol";
 import { Utilities } from "./utilities/Utilities.sol";
 import { CurveBabyJubJub } from "./crypto/BabyJubJub.sol";
@@ -57,17 +60,38 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   /// to be used as public input for the circuit
   uint8 public actualStateTreeDepth;
 
+  /// @notice Max vote options for the poll
+  uint256 public immutable maxVoteOptions;
+
   /// @notice Depths of the merkle trees
   TreeDepths public treeDepths;
+
+  /// @notice Message batch size for the poll
+  uint8 public immutable messageBatchSize;
 
   /// @notice The contracts used by the Poll
   ExtContracts public extContracts;
 
-  /// @notice The max number of messages
-  uint256 public immutable maxMessages;
+  /// @notice The array for chain hash checkpoints
+  uint256[] public batchHashes;
 
-  /// @notice The number of children per node in the merkle trees
-  uint256 internal constant TREE_ARITY = 5;
+  /// @notice Current chain hash
+  uint256 public chainHash;
+
+  ///  @notice flag for batch padding
+  bool public isBatchHashesPadded;
+
+  /// @notice Poll state tree for anonymous joining
+  LazyIMTData public pollStateTree;
+
+  /// @notice The hash of a blank state leaf
+  uint256 internal constant BLANK_STATE_LEAF_HASH =
+    uint256(6769006970205099520508948723718471724660867171122235270773600567925038008762);
+
+  uint8 internal constant VOTE_TREE_ARITY = 5;
+
+  /// @notice Poll voting nullifier
+  mapping(uint256 => bool) private pollNullifier;
 
   error VotingPeriodOver();
   error VotingPeriodNotOver();
@@ -76,21 +100,33 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   error InvalidPubKey();
   error StateAlreadyMerged();
   error InvalidBatchLength();
+  error BatchHashesAlreadyPadded();
+  error UserAlreadyJoined();
+  error InvalidPollProof();
 
   event PublishMessage(Message _message, PubKey _encPubKey);
-  event MergeMaciState(uint256 indexed _stateRoot, uint256 indexed _numSignups);
-  event MergeMessageAqSubRoots(uint256 indexed _numSrQueueOps);
-  event MergeMessageAq(uint256 indexed _messageRoot);
+  event MergeState(uint256 indexed _stateRoot, uint256 indexed _numSignups);
+  event PollJoined(
+    uint256 indexed _pollPubKeyX,
+    uint256 indexed _pollPubKeyY,
+    uint256 _newVoiceCreditBalance,
+    uint256 _timestamp,
+    uint256 _nullifier,
+    uint256 _pollStateIndex
+  );
 
   /// @notice Each MACI instance can have multiple Polls.
   /// When a Poll is deployed, its voting period starts immediately.
   /// @param _duration The duration of the voting period, in seconds
   /// @param _treeDepths The depths of the merkle trees
+  /// @param _messageBatchSize The message batch size
   /// @param _coordinatorPubKey The coordinator's public key
   /// @param _extContracts The external contracts
+  /// @param _emptyBallotRoot The root of the empty ballot tree
   constructor(
     uint256 _duration,
     TreeDepths memory _treeDepths,
+    uint8 _messageBatchSize,
     PubKey memory _coordinatorPubKey,
     ExtContracts memory _extContracts,
     uint256 _emptyBallotRoot
@@ -108,14 +144,16 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     extContracts = _extContracts;
     // store duration of the poll
     duration = _duration;
+    // store max vote options
+    maxVoteOptions = uint256(VOTE_TREE_ARITY) ** _treeDepths.voteOptionTreeDepth;
+    // store message batch size
+    messageBatchSize = _messageBatchSize;
     // store tree depth
     treeDepths = _treeDepths;
     // Record the current timestamp
     deployTime = block.timestamp;
     // store the empty ballot root
     emptyBallotRoot = _emptyBallotRoot;
-    // store max messages
-    maxMessages = TREE_ARITY ** _treeDepths.messageTreeDepth;
   }
 
   /// @notice A modifier that causes the function to revert if the voting period is
@@ -123,6 +161,11 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   modifier isAfterVotingDeadline() virtual {
     uint256 secondsPassed = block.timestamp - deployTime;
     if (secondsPassed <= duration) revert VotingPeriodNotOver();
+    _;
+  }
+
+  modifier isNotPadded() {
+    if (isBatchHashesPadded) revert BatchHashesAlreadyPadded();
     _;
   }
 
@@ -136,7 +179,6 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
 
   /// @notice The initialization function.
   /// @dev Should be called immediately after Poll creation
-  /// and messageAq ownership transferred
   function init() public virtual {
     if (isInit) revert PollAlreadyInit();
     // set to true so it cannot be called again
@@ -146,22 +188,29 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
       numMessages++;
     }
 
-    // init messageAq here by inserting placeholderLeaf
+    // init chainHash here by inserting placeholderLeaf
     uint256[2] memory dat;
     dat[0] = NOTHING_UP_MY_SLEEVE;
     dat[1] = 0;
 
     (Message memory _message, PubKey memory _padKey, uint256 placeholderLeaf) = padAndHashMessage(dat);
-    extContracts.messageAq.enqueue(placeholderLeaf);
+    chainHash = NOTHING_UP_MY_SLEEVE;
+    batchHashes.push(NOTHING_UP_MY_SLEEVE);
+    updateChainHash(placeholderLeaf);
+
+    InternalLazyIMT._init(pollStateTree, extContracts.maci.stateTreeDepth());
+    InternalLazyIMT._insert(pollStateTree, BLANK_STATE_LEAF_HASH);
 
     emit PublishMessage(_message, _padKey);
   }
 
+  // get all batch hash array elements
+  function getBatchHashes() external view returns (uint256[] memory) {
+    return batchHashes;
+  }
+
   /// @inheritdoc IPoll
   function publishMessage(Message memory _message, PubKey calldata _encPubKey) public virtual isWithinVotingDeadline {
-    // we check that we do not exceed the max number of messages
-    if (numMessages >= maxMessages) revert TooManyMessages();
-
     // check if the public key is on the curve
     if (!CurveBabyJubJub.isOnCurve(_encPubKey.x, _encPubKey.y)) {
       revert InvalidPubKey();
@@ -172,10 +221,31 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
       numMessages++;
     }
 
-    uint256 messageLeaf = hashMessageAndEncPubKey(_message, _encPubKey);
-    extContracts.messageAq.enqueue(messageLeaf);
+    // compute current message hash
+    uint256 messageHash = hashMessageAndEncPubKey(_message, _encPubKey);
+
+    // update current message chain hash
+    updateChainHash(messageHash);
 
     emit PublishMessage(_message, _encPubKey);
+  }
+
+  /// @notice compute and update current message chain hash
+  /// @param messageHash hash of the current message
+  function updateChainHash(uint256 messageHash) internal {
+    uint256 newChainHash = hash2([chainHash, messageHash]);
+    if (numMessages % messageBatchSize == 0) {
+      batchHashes.push(newChainHash);
+    }
+    chainHash = newChainHash;
+  }
+
+  /// @notice pad last unclosed batch
+  function padLastBatch() external isAfterVotingDeadline isNotPadded {
+    if (numMessages % messageBatchSize != 0) {
+      batchHashes.push(chainHash);
+    }
+    isBatchHashesPadded = true;
   }
 
   /// @notice submit a message batch
@@ -201,8 +271,90 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     }
   }
 
+  /// @notice Join the poll for voting
+  /// @param _nullifier Hashed user's private key to check whether user has already voted
+  /// @param _pubKey Poll user's public key
+  /// @param _newVoiceCreditBalance User's credit balance for voting within this poll
+  /// @param _stateRootIndex Index of the MACI's stateRootOnSignUp when the user signed up
+  /// @param _proof The zk-SNARK proof
+  function joinPoll(
+    uint256 _nullifier,
+    PubKey calldata _pubKey,
+    uint256 _newVoiceCreditBalance,
+    uint256 _stateRootIndex,
+    uint256[8] calldata _proof
+  ) public virtual isWithinVotingDeadline {
+    // Whether the user has already joined
+    if (pollNullifier[_nullifier]) {
+      revert UserAlreadyJoined();
+    }
+
+    // Verify user's proof
+    if (!verifyPollProof(_nullifier, _newVoiceCreditBalance, _stateRootIndex, _pubKey, _proof)) {
+      revert InvalidPollProof();
+    }
+
+    // Store user in the pollStateTree
+    uint256 timestamp = block.timestamp;
+    uint256 stateLeaf = hashStateLeaf(StateLeaf(_pubKey, _newVoiceCreditBalance, timestamp));
+    InternalLazyIMT._insert(pollStateTree, stateLeaf);
+
+    // Set nullifier for user's private key
+    pollNullifier[_nullifier] = true;
+
+    uint256 pollStateIndex = pollStateTree.numberOfLeaves - 1;
+    emit PollJoined(_pubKey.x, _pubKey.y, _newVoiceCreditBalance, timestamp, _nullifier, pollStateIndex);
+  }
+
+  /// @notice Verify the proof for Poll
+  /// @param _nullifier Hashed user's private key to check whether user has already voted
+  /// @param _voiceCreditBalance User's credit balance for voting
+  /// @param _index Index of the MACI's stateRootOnSignUp when the user signed up
+  /// @param _pubKey Poll user's public key
+  /// @param _proof The zk-SNARK proof
+  /// @return isValid Whether the proof is valid
+  function verifyPollProof(
+    uint256 _nullifier,
+    uint256 _voiceCreditBalance,
+    uint256 _index,
+    PubKey calldata _pubKey,
+    uint256[8] memory _proof
+  ) internal returns (bool isValid) {
+    // Get the verifying key from the VkRegistry
+    VerifyingKey memory vk = extContracts.vkRegistry.getPollVk(
+      extContracts.maci.stateTreeDepth(),
+      treeDepths.voteOptionTreeDepth
+    );
+
+    // Generate the circuit public input
+    uint256[] memory circuitPublicInputs = getPublicCircuitInputs(_nullifier, _voiceCreditBalance, _index, _pubKey);
+
+    isValid = extContracts.verifier.verify(_proof, vk, circuitPublicInputs);
+  }
+
+  /// @notice Get public circuit inputs for poll joining circuit
+  /// @param _nullifier Hashed user's private key to check whether user has already voted
+  /// @param _voiceCreditBalance User's credit balance for voting
+  /// @param _index Index of the MACI's stateRootOnSignUp when the user signed up
+  /// @param _pubKey Poll user's public key
+  /// @return publicInputs Public circuit inputs
+  function getPublicCircuitInputs(
+    uint256 _nullifier,
+    uint256 _voiceCreditBalance,
+    uint256 _index,
+    PubKey calldata _pubKey
+  ) public returns (uint256[] memory publicInputs) {
+    publicInputs = new uint256[](5);
+
+    publicInputs[0] = _pubKey.x;
+    publicInputs[1] = _pubKey.y;
+    publicInputs[2] = _nullifier;
+    publicInputs[3] = _voiceCreditBalance;
+    publicInputs[4] = extContracts.maci.getStateRootOnIndexedSignUp(_index);
+  }
+
   /// @inheritdoc IPoll
-  function mergeMaciState() public isAfterVotingDeadline {
+  function mergeState() public isAfterVotingDeadline {
     // This function can only be called once per Poll after the voting
     // deadline
     if (stateMerged) revert StateAlreadyMerged();
@@ -210,7 +362,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     // set merged to true so it cannot be called again
     stateMerged = true;
 
-    uint256 _mergedStateRoot = extContracts.maci.getStateTreeRoot();
+    uint256 _mergedStateRoot = InternalLazyIMT._root(pollStateTree);
     mergedStateRoot = _mergedStateRoot;
 
     // Set currentSbCommitment
@@ -221,8 +373,8 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
 
     currentSbCommitment = hash3(sb);
 
-    // get number of signups and cache in a var for later use
-    uint256 _numSignups = extContracts.maci.numSignUps();
+    // get number of joined users and cache in a var for later use
+    uint256 _numSignups = pollStateTree.numberOfLeaves;
     numSignups = _numSignups;
 
     // dynamically determine the actual depth of the state tree
@@ -233,19 +385,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
 
     actualStateTreeDepth = depth;
 
-    emit MergeMaciState(_mergedStateRoot, _numSignups);
-  }
-
-  /// @inheritdoc IPoll
-  function mergeMessageAqSubRoots(uint256 _numSrQueueOps) public isAfterVotingDeadline {
-    extContracts.messageAq.mergeSubRoots(_numSrQueueOps);
-    emit MergeMessageAqSubRoots(_numSrQueueOps);
-  }
-
-  /// @inheritdoc IPoll
-  function mergeMessageAq() public isAfterVotingDeadline {
-    uint256 root = extContracts.messageAq.merge(treeDepths.messageTreeDepth);
-    emit MergeMessageAq(root);
+    emit MergeState(mergedStateRoot, numSignups);
   }
 
   /// @inheritdoc IPoll
@@ -258,5 +398,10 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   function numSignUpsAndMessages() public view returns (uint256 numSUps, uint256 numMsgs) {
     numSUps = numSignups;
     numMsgs = numMessages;
+  }
+
+  /// @inheritdoc IPoll
+  function getMaciContract() public view returns (IMACI maci) {
+    return extContracts.maci;
   }
 }

@@ -5,7 +5,9 @@ import { Keypair, PCommand, PrivKey } from "maci-domainobjs";
 
 import { circomkitInstance, getSignal } from "./utils/utils";
 
-describe("MessageToCommand circuit", () => {
+describe("MessageToCommand circuit", function test() {
+  this.timeout(900000);
+
   let circuit: WitnessTester<
     ["message", "encPubKey", "encPubKey"],
     [

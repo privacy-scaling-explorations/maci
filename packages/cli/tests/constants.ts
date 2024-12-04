@@ -6,7 +6,6 @@ import {
   CheckVerifyingKeysArgs,
   DeployArgs,
   DeployPollArgs,
-  MergeMessagesArgs,
   MergeSignupsArgs,
   ProveOnChainArgs,
   SetVerifyingKeysArgs,
@@ -18,37 +17,42 @@ import {
 
 export const STATE_TREE_DEPTH = 10;
 export const INT_STATE_TREE_DEPTH = 1;
-export const MSG_TREE_DEPTH = 2;
 export const VOTE_OPTION_TREE_DEPTH = 2;
-export const MSG_BATCH_DEPTH = 1;
+export const MESSAGE_BATCH_SIZE = 20;
 const coordinatorKeypair = new Keypair();
 export const coordinatorPubKey = coordinatorKeypair.pubKey.serialize();
 export const coordinatorPrivKey = coordinatorKeypair.privKey.serialize();
-export const processMessageTestZkeyPath = "./zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test.0.zkey";
+
+export const pollJoiningTestZkeyPath = "./zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey";
+export const processMessageTestZkeyPath = "./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey";
 export const tallyVotesTestZkeyPath = "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey";
 export const processMessageTestNonQvZkeyPath =
-  "./zkeys/ProcessMessagesNonQv_10-2-1-2_test/ProcessMessagesNonQv_10-2-1-2_test.0.zkey";
+  "./zkeys/ProcessMessagesNonQv_10-20-2_test/ProcessMessagesNonQv_10-20-2_test.0.zkey";
 export const tallyVotesTestNonQvZkeyPath = "./zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test.0.zkey";
 export const testTallyFilePath = "./tally.json";
 export const testProofsDirPath = "./proofs";
+export const testPollJoiningWitnessPath = "./zkeys/PollJoining_10_test/PollJoining_10_test_cpp/PollJoining_10_test";
 export const testProcessMessagesWitnessPath =
-  "./zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test_cpp/ProcessMessages_10-2-1-2_test";
+  "./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_cpp/ProcessMessages_10-20-2_test";
 export const testProcessMessagesWitnessDatPath =
-  "./zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test_cpp/ProcessMessages_10-2-1-2_test.dat";
+  "./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_cpp/ProcessMessages_10-20-2_test.dat";
 export const testTallyVotesWitnessPath =
   "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_cpp/TallyVotes_10-1-2_test";
 export const testTallyVotesWitnessDatPath =
   "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_cpp/TallyVotes_10-1-2_test.dat";
+export const testPollJoiningWasmPath = "./zkeys/PollJoining_10_test/PollJoining_10_test_js/PollJoining_10_test.wasm";
 export const testProcessMessagesWasmPath =
-  "./zkeys/ProcessMessages_10-2-1-2_test/ProcessMessages_10-2-1-2_test_js/ProcessMessages_10-2-1-2_test.wasm";
+  "./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_js/ProcessMessages_10-20-2_test.wasm";
 export const testTallyVotesWasmPath =
   "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm";
 export const testRapidsnarkPath = `${homedir()}/rapidsnark/build/prover`;
-export const ceremonyProcessMessagesZkeyPath = "./zkeys/ProcessMessages_14-9-2-3/processmessages_14-9-2-3.zkey";
+export const ceremonyPollJoiningZkeyPath = "./zkeys/PollJoining_10/pollJoining_10.zkey";
+export const ceremonyProcessMessagesZkeyPath = "./zkeys/ProcessMessages_6-9-2-3/processMessages_6-9-2-3.zkey";
 export const ceremonyProcessMessagesNonQvZkeyPath =
-  "./zkeys/ProcessMessagesNonQv_14-9-2-3/processmessagesnonqv_14-9-2-3.zkey";
-export const ceremonyTallyVotesZkeyPath = "./zkeys/TallyVotes_14-5-3/tallyvotes_14-5-3.zkey";
-export const ceremonyTallyVotesNonQvZkeyPath = "./zkeys/TallyVotesNonQv_14-5-3/tallyvotesnonqv_14-5-3.zkey";
+  "./zkeys/ProcessMessagesNonQv_6-9-2-3/processMessagesNonQv_6-9-2-3.zkey";
+export const ceremonyTallyVotesZkeyPath = "./zkeys/TallyVotes_6-2-3/tallyVotes_6-2-3.zkey";
+export const ceremonyTallyVotesNonQvZkeyPath = "./zkeys/TallyVotesNonQv_6-2-3/tallyVotesNonQv_6-2-3.zkey";
+export const ceremonyPollJoiningWitnessPath = "./zkeys/PollJoining/PollJoining_10_cpp/PollJoining_10";
 export const ceremonyProcessMessagesWitnessPath =
   "./zkeys/ProcessMessages_14-9-2-3/ProcessMessages_14-9-2-3_cpp/ProcessMessages_14-9-2-3";
 export const ceremonyProcessMessagesNonQvWitnessPath =
@@ -71,27 +75,29 @@ export const ceremonyTallyVotesWasmPath = "./zkeys/TallyVotes_14-5-3/TallyVotes_
 export const ceremonyTallyVotesNonQvWasmPath =
   "./zkeys/TallyVotesNonQv_14-5-3/TallyVotesNonQv_14-5-3_js/TallyVotesNonQv_14-5-3.wasm";
 export const testProcessMessagesNonQvWitnessPath =
-  "./zkeys/ProcessMessagesNonQv_10-2-1-2_test/ProcessMessagesNonQv_10-2-1-2_test_cpp/ProcessMessagesNonQv_10-2-1-2_test";
+  "./zkeys/ProcessMessagesNonQv_10-20-2_test/ProcessMessagesNonQv_10-20-2_test_cpp/ProcessMessagesNonQv_10-20-2_test";
 export const testProcessMessagesNonQvWitnessDatPath =
-  "./zkeys/ProcessMessagesNonQv_10-2-1-2_test/ProcessMessagesNonQv_10-2-1-2_test_cpp/ProcessMessagesNonQv_10-2-1-2_test.dat";
+  "./zkeys/ProcessMessagesNonQv_10-20-2_test/ProcessMessagesNonQv_10-20-2_test_cpp/ProcessMessagesNonQv_10-20-2_test.dat";
 export const testTallyVotesNonQvWitnessPath =
   "./zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test_cpp/TallyVotesNonQv_10-1-2_test";
 export const testTallyVotesNonQvWitnessDatPath =
   "./zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test_cpp/TallyVotesNonQv_10-1-2_test.dat";
 export const testProcessMessagesNonQvWasmPath =
-  "./zkeys/ProcessMessagesNonQv_10-2-1-2_test/ProcessMessagesNonQv_10-2-1-2_test_js/ProcessMessagesNonQv_10-2-1-2_test.wasm";
+  "./zkeys/ProcessMessagesNonQv_10-20-2_test/ProcessMessagesNonQv_10-20-2_test_js/ProcessMessagesNonQv_10-20-2_test.wasm";
 export const testTallyVotesNonQvWasmPath =
   "./zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test_js/TallyVotesNonQv_10-1-2_test.wasm";
 
-export const pollDuration = 90;
+export const pollDuration = 2000;
+export const maxMessages = 25;
+export const maxVoteOptions = 25;
 
 export const setVerifyingKeysArgs: Omit<SetVerifyingKeysArgs, "signer"> = {
   quiet: true,
   stateTreeDepth: STATE_TREE_DEPTH,
   intStateTreeDepth: INT_STATE_TREE_DEPTH,
-  messageTreeDepth: MSG_TREE_DEPTH,
   voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
-  messageBatchDepth: MSG_BATCH_DEPTH,
+  messageBatchSize: MESSAGE_BATCH_SIZE,
+  pollJoiningZkeyPath: pollJoiningTestZkeyPath,
   processMessagesZkeyPathQv: processMessageTestZkeyPath,
   tallyVotesZkeyPathQv: tallyVotesTestZkeyPath,
 };
@@ -100,9 +106,9 @@ export const setVerifyingKeysNonQvArgs: Omit<SetVerifyingKeysArgs, "signer"> = {
   quiet: true,
   stateTreeDepth: STATE_TREE_DEPTH,
   intStateTreeDepth: INT_STATE_TREE_DEPTH,
-  messageTreeDepth: MSG_TREE_DEPTH,
   voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
-  messageBatchDepth: MSG_BATCH_DEPTH,
+  messageBatchSize: MESSAGE_BATCH_SIZE,
+  pollJoiningZkeyPath: pollJoiningTestZkeyPath,
   processMessagesZkeyPathNonQv: processMessageTestNonQvZkeyPath,
   tallyVotesZkeyPathNonQv: tallyVotesTestNonQvZkeyPath,
 };
@@ -110,19 +116,15 @@ export const setVerifyingKeysNonQvArgs: Omit<SetVerifyingKeysArgs, "signer"> = {
 export const checkVerifyingKeysArgs: Omit<CheckVerifyingKeysArgs, "signer"> = {
   stateTreeDepth: STATE_TREE_DEPTH,
   intStateTreeDepth: INT_STATE_TREE_DEPTH,
-  messageTreeDepth: MSG_TREE_DEPTH,
   voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
-  messageBatchDepth: MSG_BATCH_DEPTH,
+  messageBatchSize: MESSAGE_BATCH_SIZE,
+  pollJoiningZkeyPath: pollJoiningTestZkeyPath,
   processMessagesZkeyPath: processMessageTestZkeyPath,
   tallyVotesZkeyPath: tallyVotesTestZkeyPath,
 };
 
 export const timeTravelArgs: Omit<TimeTravelArgs, "signer"> = {
   seconds: pollDuration,
-};
-
-export const mergeMessagesArgs: Omit<MergeMessagesArgs, "signer"> = {
-  pollId: 0n,
 };
 
 export const mergeSignupsArgs: Omit<MergeSignupsArgs, "signer"> = {
@@ -152,8 +154,7 @@ export const deployArgs: Omit<DeployArgs, "signer"> = {
 export const deployPollArgs: Omit<DeployPollArgs, "signer"> = {
   pollDuration,
   intStateTreeDepth: INT_STATE_TREE_DEPTH,
-  messageTreeSubDepth: MSG_BATCH_DEPTH,
-  messageTreeDepth: MSG_TREE_DEPTH,
+  messageBatchSize: MESSAGE_BATCH_SIZE,
   voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
   coordinatorPubkey: coordinatorPubKey,
   useQuadraticVoting: true,

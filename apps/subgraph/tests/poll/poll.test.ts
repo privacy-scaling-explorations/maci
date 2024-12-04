@@ -4,23 +4,13 @@ import { test, describe, afterEach, clearStore, assert, beforeEach } from "match
 
 import { MACI, Poll } from "../../generated/schema";
 import { handleDeployPoll } from "../../src/maci";
-import {
-  handleMergeMaciState,
-  handleMergeMessageAq,
-  handleMergeMessageAqSubRoots,
-  handlePublishMessage,
-} from "../../src/poll";
+import { handleMergeState, handlePublishMessage } from "../../src/poll";
 import { DEFAULT_POLL_ADDRESS, mockMaciContract, mockPollContract } from "../common";
 import { createDeployPollEvent } from "../maci/utils";
 
-import {
-  createMergeMaciStateEvent,
-  createMergeMessageAqEvent,
-  createMergeMessageAqSubRootsEvent,
-  createPublishMessageEvent,
-} from "./utils";
+import { createMergeStateEvent, createPublishMessageEvent } from "./utils";
 
-export { handleMergeMaciState, handleMergeMessageAq, handleMergeMessageAqSubRoots, handlePublishMessage };
+export { handleMergeState, handlePublishMessage };
 
 describe("Poll", () => {
   beforeEach(() => {
@@ -38,9 +28,9 @@ describe("Poll", () => {
   });
 
   test("should handle merge maci state properly", () => {
-    const event = createMergeMaciStateEvent(DEFAULT_POLL_ADDRESS, BigInt.fromI32(1), BigInt.fromI32(3));
+    const event = createMergeStateEvent(DEFAULT_POLL_ADDRESS, BigInt.fromI32(1), BigInt.fromI32(3));
 
-    handleMergeMaciState(event);
+    handleMergeState(event);
 
     const poll = Poll.load(event.address)!;
     const maci = MACI.load(poll.maci)!;
@@ -51,26 +41,6 @@ describe("Poll", () => {
     assert.fieldEquals("MACI", maci.id.toHexString(), "numSignUps", "3");
     assert.fieldEquals("MACI", maci.id.toHexString(), "latestPoll", poll.id.toHex());
     assert.assertTrue(maci.polls.load().length === 1);
-  });
-
-  test("should handle merge message queue properly", () => {
-    const event = createMergeMessageAqEvent(DEFAULT_POLL_ADDRESS, BigInt.fromI32(1));
-
-    handleMergeMessageAq(event);
-
-    const poll = Poll.load(DEFAULT_POLL_ADDRESS)!;
-
-    assert.fieldEquals("Poll", poll.id.toHex(), "messageRoot", "1");
-  });
-
-  test("should handle merge message queue subroots properly", () => {
-    const event = createMergeMessageAqSubRootsEvent(DEFAULT_POLL_ADDRESS, BigInt.fromI32(1));
-
-    handleMergeMessageAqSubRoots(event);
-
-    const poll = Poll.load(event.address)!;
-
-    assert.fieldEquals("Poll", poll.id.toHex(), "numSrQueueOps", "1");
   });
 
   test("should handle publish message properly", () => {

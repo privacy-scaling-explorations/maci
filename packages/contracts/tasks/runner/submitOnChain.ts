@@ -5,7 +5,7 @@ import { task, types } from "hardhat/config";
 import fs from "fs";
 
 import type { Proof } from "../../ts/types";
-import type { VkRegistry, Verifier, MACI, Poll, AccQueue, MessageProcessor, Tally } from "../../typechain-types";
+import type { VkRegistry, Verifier, MACI, Poll, MessageProcessor, Tally } from "../../typechain-types";
 
 import { ContractStorage } from "../helpers/ContractStorage";
 import { Deployment } from "../helpers/Deployment";
@@ -84,35 +84,21 @@ task("submitOnChain", "Command to prove the result of a poll on-chain")
       address: pollContracts.poll,
     });
 
-    const [[, messageAqContractAddress], isStateAqMerged, messageTreeDepth, mpContract, tallyContract] =
-      await Promise.all([
-        pollContract.extContracts(),
-        pollContract.stateMerged(),
-        pollContract.treeDepths().then((depths) => Number(depths[2])),
-        deployment.getContract<MessageProcessor>({
-          name: EContracts.MessageProcessor,
-          address: pollContracts.messageProcessor,
-        }),
-        deployment.getContract<Tally>({
-          name: EContracts.Tally,
-          address: pollContracts.tally,
-        }),
-      ]);
-    const messageAqContract = await deployment.getContract<AccQueue>({
-      name: EContracts.AccQueue,
-      address: messageAqContractAddress,
-    });
+    const [isStateAqMerged, mpContract, tallyContract] = await Promise.all([
+      pollContract.stateMerged(),
+      deployment.getContract<MessageProcessor>({
+        name: EContracts.MessageProcessor,
+        key: `poll-${poll.toString()}`,
+      }),
+      deployment.getContract<Tally>({
+        name: EContracts.Tally,
+        key: `poll-${poll.toString()}`,
+      }),
+    ]);
 
     // Check that the state and message trees have been merged for at least the first poll
     if (!isStateAqMerged && poll.toString() === "0") {
       throw new Error("The state tree has not been merged yet. Please use the mergeSignups subcommand to do so.");
-    }
-
-    // check that the main root is set
-    const mainRoot = await messageAqContract.getMainRoot(messageTreeDepth.toString());
-
-    if (mainRoot.toString() === "0") {
-      throw new Error("The message tree has not been merged yet. Please use the mergeMessages subcommand to do so.");
     }
 
     const data = {
@@ -130,7 +116,6 @@ task("submitOnChain", "Command to prove the result of a poll on-chain")
 
     const prover = new Prover({
       maciContract,
-      messageAqContract,
       mpContract,
       pollContract,
       vkRegistryContract,

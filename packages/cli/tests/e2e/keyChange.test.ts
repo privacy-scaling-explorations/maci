@@ -13,7 +13,7 @@ import {
   deployPoll,
   deployVkRegistryContract,
   genProofs,
-  mergeMessages,
+  joinPoll,
   mergeSignups,
   proveOnChain,
   publish,
@@ -28,7 +28,6 @@ import {
   deployArgs,
   deployPollArgs,
   processMessageTestZkeyPath,
-  mergeMessagesArgs,
   mergeSignupsArgs,
   setVerifyingKeysArgs,
   tallyVotesTestZkeyPath,
@@ -44,6 +43,9 @@ import {
   proveOnChainArgs,
   verifyArgs,
   timeTravelArgs,
+  pollJoiningTestZkeyPath,
+  testPollJoiningWasmPath,
+  testPollJoiningWitnessPath,
 } from "../constants";
 import { clean, isArm } from "../utils";
 
@@ -53,8 +55,6 @@ describe("keyChange tests", function test() {
 
   let maciAddresses: DeployedContracts;
   let signer: Signer;
-
-  deployPollArgs.pollDuration = 90;
 
   const genProofsArgs: Omit<GenProofsArgs, "signer"> = {
     outputDir: testProofsDirPath,
@@ -88,8 +88,10 @@ describe("keyChange tests", function test() {
       await clean();
     });
 
-    const keypair1 = new Keypair();
-    const keypair2 = new Keypair();
+    const user1Keypair = new Keypair();
+    const { privKey: pollPrivKey1, pubKey: pollPubKey1 } = new Keypair();
+    const { pubKey: pollPubKey2 } = new Keypair();
+
     const initialNonce = 1n;
     const initialVoteOption = 0n;
     const initialVoteAmount = 9n;
@@ -104,12 +106,29 @@ describe("keyChange tests", function test() {
       // deploy a poll contract
       await deployPoll({ ...deployPollArgs, signer });
       stateIndex = BigInt(
-        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: keypair1.pubKey.serialize(), signer }).then(
-          (result) => result.stateIndex,
-        ),
+        await signup({
+          maciAddress: maciAddresses.maciAddress,
+          maciPubKey: user1Keypair.pubKey.serialize(),
+          signer,
+        }).then((result) => result.stateIndex),
       );
+      await joinPoll({
+        maciAddress: maciAddresses.maciAddress,
+        privateKey: user1Keypair.privKey.serialize(),
+        pollPrivKey: pollPrivKey1.serialize(),
+        stateIndex,
+        pollId,
+        pollJoiningZkey: pollJoiningTestZkeyPath,
+        useWasm: true,
+        pollWasm: testPollJoiningWasmPath,
+        pollWitgen: testPollJoiningWitnessPath,
+        rapidsnark: testRapidsnarkPath,
+        signer,
+        newVoiceCreditBalance: 99n,
+        quiet: true,
+      });
       await publish({
-        pubkey: keypair1.pubKey.serialize(),
+        pubkey: pollPubKey1.serialize(),
         stateIndex,
         voteOptionIndex: initialVoteOption,
         nonce: initialNonce,
@@ -117,14 +136,14 @@ describe("keyChange tests", function test() {
         newVoteWeight: initialVoteAmount,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: keypair1.privKey.serialize(),
+        privateKey: pollPrivKey1.serialize(),
         signer,
       });
     });
 
-    it("should publish a message to change the user maci key and cast a new vote", async () => {
+    it("should publish a message to change the poll key and cast a new vote", async () => {
       await publish({
-        pubkey: keypair2.pubKey.serialize(),
+        pubkey: pollPubKey2.serialize(),
         stateIndex,
         voteOptionIndex: initialVoteOption,
         nonce: initialNonce,
@@ -132,15 +151,14 @@ describe("keyChange tests", function test() {
         newVoteWeight: initialVoteAmount - 1n,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: keypair1.privKey.serialize(),
+        privateKey: pollPrivKey1.serialize(),
         signer,
       });
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeMessages({ ...mergeMessagesArgs, signer });
-      await mergeSignups({ ...mergeSignupsArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...(await verifyArgs()), signer });
@@ -160,8 +178,10 @@ describe("keyChange tests", function test() {
       await clean();
     });
 
-    const keypair1 = new Keypair();
-    const keypair2 = new Keypair();
+    const user1Keypair = new Keypair();
+    const { privKey: pollPrivKey1, pubKey: pollPubKey1 } = new Keypair();
+    const { pubKey: pollPubKey2 } = new Keypair();
+
     const initialNonce = 1n;
     const initialVoteOption = 0n;
     const initialVoteAmount = 9n;
@@ -176,12 +196,29 @@ describe("keyChange tests", function test() {
       // deploy a poll contract
       await deployPoll({ ...deployPollArgs, signer });
       stateIndex = BigInt(
-        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: keypair1.pubKey.serialize(), signer }).then(
-          (result) => result.stateIndex,
-        ),
+        await signup({
+          maciAddress: maciAddresses.maciAddress,
+          maciPubKey: user1Keypair.pubKey.serialize(),
+          signer,
+        }).then((result) => result.stateIndex),
       );
+      await joinPoll({
+        maciAddress: maciAddresses.maciAddress,
+        privateKey: user1Keypair.privKey.serialize(),
+        pollPrivKey: pollPrivKey1.serialize(),
+        stateIndex,
+        pollId,
+        pollJoiningZkey: pollJoiningTestZkeyPath,
+        useWasm: true,
+        pollWasm: testPollJoiningWasmPath,
+        pollWitgen: testPollJoiningWitnessPath,
+        rapidsnark: testRapidsnarkPath,
+        signer,
+        newVoiceCreditBalance: 99n,
+        quiet: true,
+      });
       await publish({
-        pubkey: keypair1.pubKey.serialize(),
+        pubkey: pollPubKey1.serialize(),
         stateIndex,
         voteOptionIndex: initialVoteOption,
         nonce: initialNonce,
@@ -189,14 +226,14 @@ describe("keyChange tests", function test() {
         newVoteWeight: initialVoteAmount,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: keypair1.privKey.serialize(),
+        privateKey: pollPrivKey1.serialize(),
         signer,
       });
     });
 
-    it("should publish a message to change the user maci key and cast a new vote", async () => {
+    it("should publish a message to change the poll and cast a new vote", async () => {
       await publish({
-        pubkey: keypair2.pubKey.serialize(),
+        pubkey: pollPubKey2.serialize(),
         stateIndex,
         voteOptionIndex: initialVoteOption + 1n,
         nonce: initialNonce + 1n,
@@ -204,14 +241,13 @@ describe("keyChange tests", function test() {
         newVoteWeight: initialVoteAmount - 1n,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: keypair1.privKey.serialize(),
+        privateKey: pollPrivKey1.serialize(),
         signer,
       });
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeMessages({ ...mergeMessagesArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, signer });
       await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
@@ -232,8 +268,10 @@ describe("keyChange tests", function test() {
       await clean();
     });
 
-    const keypair1 = new Keypair();
-    const keypair2 = new Keypair();
+    const user1Keypair = new Keypair();
+    const { privKey: pollPrivKey1, pubKey: pollPubKey1 } = new Keypair();
+    const { pubKey: pollPubKey2 } = new Keypair();
+
     const initialNonce = 1n;
     const initialVoteOption = 0n;
     const initialVoteAmount = 9n;
@@ -248,12 +286,30 @@ describe("keyChange tests", function test() {
       // deploy a poll contract
       await deployPoll({ ...deployPollArgs, signer });
       stateIndex = BigInt(
-        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: keypair1.pubKey.serialize(), signer }).then(
-          (result) => result.stateIndex,
-        ),
+        await signup({
+          maciAddress: maciAddresses.maciAddress,
+          maciPubKey: user1Keypair.pubKey.serialize(),
+          signer,
+        }).then((result) => result.stateIndex),
       );
+      await joinPoll({
+        maciAddress: maciAddresses.maciAddress,
+        privateKey: user1Keypair.privKey.serialize(),
+        pollPrivKey: pollPrivKey1.serialize(),
+        stateIndex,
+        pollId,
+        pollJoiningZkey: pollJoiningTestZkeyPath,
+        useWasm: true,
+        pollWasm: testPollJoiningWasmPath,
+        pollWitgen: testPollJoiningWitnessPath,
+        rapidsnark: testRapidsnarkPath,
+        signer,
+        newVoiceCreditBalance: 99n,
+        quiet: true,
+      });
+
       await publish({
-        pubkey: keypair1.pubKey.serialize(),
+        pubkey: pollPubKey1.serialize(),
         stateIndex,
         voteOptionIndex: initialVoteOption,
         nonce: initialNonce,
@@ -261,14 +317,14 @@ describe("keyChange tests", function test() {
         newVoteWeight: initialVoteAmount,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: keypair1.privKey.serialize(),
+        privateKey: pollPrivKey1.serialize(),
         signer,
       });
     });
 
-    it("should publish a message to change the user maci key, and a new vote", async () => {
+    it("should publish a message to change the poll key, and a new vote", async () => {
       await publish({
-        pubkey: keypair2.pubKey.serialize(),
+        pubkey: pollPubKey2.serialize(),
         stateIndex,
         voteOptionIndex: initialVoteOption + 2n,
         nonce: initialNonce,
@@ -276,14 +332,13 @@ describe("keyChange tests", function test() {
         newVoteWeight: initialVoteAmount - 3n,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: keypair1.privKey.serialize(),
+        privateKey: pollPrivKey1.serialize(),
         signer,
       });
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeMessages({ ...mergeMessagesArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, signer });
       await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
