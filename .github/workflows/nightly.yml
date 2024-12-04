@@ -11,7 +11,7 @@ jobs:
       matrix:
         command: ["test:cli", "test:integration"]
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@v4
@@ -80,7 +80,7 @@ jobs:
         run: kill $(lsof -t -i:8545)
 
   unit:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
