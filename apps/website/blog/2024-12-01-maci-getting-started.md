@@ -1,22 +1,32 @@
 ---
-title: Getting Started
-description: Getting with MACI
-sidebar_label: Getting Started
-sidebar_position: 2
+slug: Getting Started MACI
+title: Getting Started with MACI
+description: Guide to use MACI
+authors:
+  name: Crisgarner
+  title: MACI team contributor
+  url: https://x.com/crisgarner
+  image_url: https://avatars.githubusercontent.com/u/578688?v=4
+tags: [voting, security, anonymity, roadmap, community, MACI, development]
+excerpt: "Get Started with MACI"
 ---
 
-# Getting Started
+Hey folks! We’re thrilled to kick off a series of tutorials covering everything you need to know about MACI. This guide will focus on installing MACI and deploying the contracts to a testnet. Let’s get started!
+
+## Understanding Roles
+
+MACI protocol has two main roles, User (Voter) and Coordinator. A simplified version would be to say that the coordinator is in charge of deploying the MACI smart contracts, initiating the polls, tallying the final results of a vote, and finalizing polls by publishing the final results on-chain. Usually the contract deployer is the coordinator, but this can be a separate entity.
 
 ## Requirements
 
-You need the following to use MACI:
+Let's install the required tools first:
 
 - Node.js: use a JS toolchain manager like [`nvm`](https://github.com/nvm-sh/nvm) or [`volta`](https://volta.sh/) to install Node.js. We recommend using Node 20 or above.
 - [pnpm](https://pnpm.io/installation): Fast, disk space efficient package manager.
 
 ## Installation
 
-To install MACI you need to run the following commands:
+Now you can run the following commands to install MACI locally:
 
 ```bash
 git clone https://github.com/privacy-scaling-explorations/maci.git && \
@@ -27,29 +37,24 @@ pnpm run build
 ```
 
 :::note
-We suggest you use the latest released version. You can check all the releases [here](https://github.com/privacy-scaling-explorations/maci/releases).
+Unless you are looking to contribute to the MACI codebase, we suggest you use the latest released version. You can check all the releases [here](https://github.com/privacy-scaling-explorations/maci/releases).
 :::
-
-#### Decide whether you need to compile new circuits or use the test ones
-
-If you are going to be making any changes to the circom circuits, then you can follow the [compile circuits guide](./guides/compile-circuits.md) and skip the next section.
 
 ### Download the zero knowledge artifacts
 
-MACI has two main zk-SNARK circuits, and each of them is parameterized. There should be one
-`.zkey` file for each circuit and set of parameters.
+MACI has two main zk-SNARK circuits, and each of them is parameterized. There should be one `.zkey` file for each circuit and set of parameters.
 
 Unless you wish to generate a fresh set of `.zkey` files, you should obtain
 them from someone who has performed a multi-party trusted setup for said
 circuits. For more details on which artifacts have undergone a trusted setup, please refer to the [Trusted Setup](/docs/security/trusted-setup) page.
 
 :::important
-Note the locations of the `.zkey` files cause you will need it when deploying contracts.
+Note the locations of the `.zkey` files cause you will need it when deploying contracts. (put in the deploy-config.json)
 :::
 
 #### Download test artifacts
 
-For all but production use cases, we suggest using the test artifacts, with the latest dev updates you can do it by running:
+For all but production use cases, we suggest using the test artifacts, with the latest dev code, you can download them by running:
 
 ```bash
 pnpm download-zkeys:test
@@ -69,7 +74,9 @@ Currently, the ceremony artifacts work with MACI version up to 2.x
 
 ## Deploy Contracts
 
-### Set the .env
+Before deploying the contracts we need to do some final configurations to our repository.
+
+### Set the environment variables
 
 Head to the `packages/contracts` folder and copy the `.env.example` file.
 
@@ -81,8 +88,8 @@ cp .env.example .env
 Make sure to include a mnemonic and RPC url (make sure to replace NETWORK with the network you want to use).
 
 ```js
-MNEMONIC = "your_ethereum_secret_key";
-NETWORK_RPC_URL = "the_eth_provider_url";
+MNEMONIC = "your ethereum secret key";
+NETWORK_RPC_URL = "the eth provider url";
 NETWORK_ETHERSCAN_API_KEY = "etherscan api key";
 ```
 
@@ -97,30 +104,24 @@ node build/ts/index.js genMaciKeyPair
 
 ### Set the configuration file
 
+:::note
+There are already some deployed contracts that could be reused. More information can be found in the (incremental documentation page)[docs/getting-started#deploy-maci-contracts].
+:::
+
 Head back to the contracts folder and copy the config example and update the fields as necessary:
 
 ```bash
 cd ../contracts && \
 cp deploy-config-example.json deploy-config.json
-
 ```
 
 #### ConstantInitialVoiceCreditProxy
 
-Specifies the number of credits allocated to each voter.
-
-| Property   | Description                                              |
-| ---------- | -------------------------------------------------------- |
-| **deploy** | Defines if the contract needs to be deployed.            |
-| **amount** | Defines how many vote credits each participant will get. |
+Defines how many credits will get each voter.
 
 #### Gatekeeper
 
 MACI uses a "gatekeeper" contract to configure and enforce the eligibility criteria of voters who can participate in MACI polls. In other words, it is a way to allowlist signups to the system to protect against sybil attacks. Please refer to the [gatekeeper page in the documentation](/docs/technical-references/smart-contracts/Gatekeepers) for more information on the supported Gatekeepers.
-
-| Property   | Description                                      |
-| ---------- | ------------------------------------------------ |
-| **deploy** | Defines if the contract is going to be deployed. |
 
 :::important
 For testing we suggest using the **FreeForAllGatekeeper** as it allows anyone to signup on MACI.
@@ -128,57 +129,33 @@ For testing we suggest using the **FreeForAllGatekeeper** as it allows anyone to
 
 #### MACI
 
-| Property           | Description                                 |
-| ------------------ | ------------------------------------------- |
-| **stateTreeDepth** | Defines how many users the system supports. |
-| **gatekeeper**     | Defines which gatekeeper to use.            |
+This property defines which Gatekeeper and stateTreeDepth MACI is going to use. The stateTreeDepth defines how many users the system supports.
+
+:::important
+The stateTreeDepth value for test artifacts is: **10**. For ceremony keys: **14**.
+:::
 
 #### VkRegistry
 
 The VkRegistry hold the verifying keys used to verify the proofs, on the zkeys field we define the path to the zero knowledge artifacts we downloaded in the previous steps.
 
-| Property                | Description                                                                    |
-| ----------------------- | ------------------------------------------------------------------------------ |
-| **stateTreeDepth**      | Defines how many users the system supports.                                    |
-| **intStateTreeDepth**   | Defines how many ballots can be processed per batch when tallying the results. |
-| **messageTreeDepth**    | Defines how many messages (votes) the system supports.                         |
-| **voteOptionTreeDepth** | Defines how many vote options the system supports.                             |
-| **messageBatchDepth**   | Defines how many messages in a batch can the circuit process.                  |
-| **zkeys**               | Defines the path to the zkey files for QV and Non QV keys.                     |
-
 :::important
-The recommended values for test keys are: **10-1-2-2-1**. For ceremony keys: **14-5-9-3-2**.
+The values for test keys are: **10-1-2-2-1**. For ceremony keys: **14-5-9-3-2**.
 :::
 
 #### Poll
 
-| Property               | Description                                          |
-| ---------------------- | ---------------------------------------------------- |
-| **pollDuration**       | Defines how long is going to be the poll in seconds. |
-| **coordinatorPubkey**  | Defines the coordinator public MACI key.             |
-| **useQuadraticVoting** | Defines if the poll uses quadratic voting or not.    |
+Configures the poll duration in seconds, determines whether quadratic voting is enabled, and sets the public key of the Coordinator.
 
 ### Deploy MACI Contracts
 
-To deploy the MACI contracts to a specific network you can append `:network` to the deployment commands, e.g. `pnpm deploy:sepolia` - please refer to the available networks on the package.json scripts section.
+To deploy the MACI contracts to a specific network you can append `:network` to the deployment commands, e.g. `pnpm deploy:sepolia` - please refer to the [supported networks](/docs/supported-networks/) documentation page to see all available networks.
 
 ```bash
 pnpm deploy:NETWORK
 ```
 
-There are already some deployed contracts that could be reused, copy the `default-deployed-contracts.json` file if you need them to avoid deploying redundant contracts and save your gas fee.
-
-```bash
-cp default-deployed-contracts.json deployed-contracts.json
-```
-
-Delete any contract you want to redeploy and then run the following command to save gas:
-
-```bash
-pnpm deploy:NETWORK --incremental
-```
-
-### Deploy Poll
+## Deploy Poll
 
 Before deploying a Poll, make sure you have set the coordinator MACI public key to which you own the private key. To deploy your first Poll you can run the following command:
 
@@ -198,14 +175,14 @@ As a coordinator, first you need to merge signups and messages (votes). Messages
 pnpm merge:[network] --poll [poll-id]
 ```
 
-Then you need to generate the proofs for the message processing, and tally calculations. This allows to publish the poll results on-chain and then everyone can verify the results:
+Then you need to generate the proofs with the following command:
 
 ```bash
 pnpm run prove:[network] --poll [poll-id] \
     --coordinator-private-key [coordinator-maci-private-key] \
-    --tally-file ../results/tally.json \
-    --output-dir ../results/proofs/ \
-    --start-block [block-number]
+    --tally-file ../proofs/tally.json \
+    --output-dir ../proofs/proofs/ \
+    --start-block [block-number]  \
     --blocks-per-batch [number-of-blocks]
 ```
 
@@ -223,7 +200,7 @@ pnpm submitOnChain:[network] --poll [poll-id] \
     --tally-file proofs/tally.json
 ```
 
-### Tally
+#### Tally
 
 Once the proofs are generated, and results tallied, the results (Tally) are written to a file. Let's take a look at one:
 
@@ -311,3 +288,7 @@ We observe an array named results, which holds the aggregated votes for each opt
 The `totalSpentVoiceCredits` object contains the total amount of voice credits spent in the poll. This is the sum of all voice credits spent by all voters, and in quadratic voting, is the sum of the squares of all votes.
 
 The `perVOSpentVoiceCredits` will contain the amount of voice credits spent per vote option. In this case, the first option received 81 voice credits, and every other option received 0 voice credits. This is because there was only one valid vote casted, with a weight of 9. Given the quadratic voting formula, the total amount of voice credits spent is 81.
+
+---
+
+That should be all for this tutorial, feel free to join [our discord](https://discord.gg/pse) for any questions or recommendations, and feel free to read [our documentation](https://maci.pse.dev/docs/introduction) for more in depth resources.
