@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 import { SignUpGatekeeper } from "./SignUpGatekeeper.sol";
-import { IEAS } from "../interfaces/IEAS.sol";
+import { IEAS } from "./interfaces/IEAS.sol";
 
 /// @title EASGatekeeper
 /// @notice A gatekeeper contract which allows users to sign up to MACI

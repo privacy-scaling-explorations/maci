@@ -3,12 +3,11 @@ import { expect } from "chai";
 import { AbiCoder, Signer, ZeroAddress, encodeBytes32String } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
-import { deployContract } from "../ts/deploy";
-import { getDefaultSigner, getSigners, generateMerkleTree } from "../ts/utils";
-import { MerkleProofGatekeeper, MACI } from "../typechain-types";
-
-import { STATE_TREE_DEPTH, initialVoiceCreditBalance } from "./constants";
-import { deployTestContracts } from "./utils";
+import { deployContract } from "../../ts/deploy";
+import { getDefaultSigner, getSigners, generateMerkleTree } from "../../ts/utils";
+import { MerkleProofGatekeeper, MACI } from "../../typechain-types";
+import { STATE_TREE_DEPTH, initialVoiceCreditBalance } from "../constants";
+import { deployTestContracts } from "../utils";
 
 describe("MerkleProof Gatekeeper", () => {
   let merkleProofGatekeeper: MerkleProofGatekeeper;

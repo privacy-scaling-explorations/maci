@@ -2,12 +2,11 @@ import { expect } from "chai";
 import { AbiCoder, Signer, ZeroAddress } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
-import { deployAnonAadhaarGatekeeper, deployContract } from "../ts/deploy";
-import { getDefaultSigner, getSigners } from "../ts/utils";
-import { MACI, AnonAadhaarGatekeeper, MockAnonAadhaar } from "../typechain-types";
-
-import { STATE_TREE_DEPTH, initialVoiceCreditBalance } from "./constants";
-import { deployTestContracts } from "./utils";
+import { deployAnonAadhaarGatekeeper, deployContract } from "../../ts/deploy";
+import { getDefaultSigner, getSigners } from "../../ts/utils";
+import { MACI, AnonAadhaarGatekeeper, MockAnonAadhaar } from "../../typechain-types";
+import { STATE_TREE_DEPTH, initialVoiceCreditBalance } from "../constants";
+import { deployTestContracts } from "../utils";
 
 describe("AnonAadhaar Gatekeeper", () => {
   let anonAadhaarGatekeeper: AnonAadhaarGatekeeper;

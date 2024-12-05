@@ -2,8 +2,9 @@
 pragma solidity ^0.8.20;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+
 import { SignUpGatekeeper } from "./SignUpGatekeeper.sol";
-import { IAnonAadhaar } from "../interfaces/IAnonAadhaar.sol";
+import { IAnonAadhaar } from "./interfaces/IAnonAadhaar.sol";
 
 /// @title AnonAadhaarGatekeeper
 /// @notice A gatekeeper contract which allows users to sign up to MACI

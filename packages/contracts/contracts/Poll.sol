@@ -2,7 +2,6 @@
 pragma solidity ^0.8.20;
 
 import { Params } from "./utilities/Params.sol";
-import { EmptyBallotRoots } from "./trees/EmptyBallotRoots.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { LazyIMTData, InternalLazyIMT } from "./trees/LazyIMT.sol";
 import { IMACI } from "./interfaces/IMACI.sol";
@@ -252,10 +251,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   /// @dev Can only be submitted before the voting deadline
   /// @param _messages the messages
   /// @param _encPubKeys the encrypted public keys
-  function publishMessageBatch(
-    Message[] calldata _messages,
-    PubKey[] calldata _encPubKeys
-  ) public virtual isWithinVotingDeadline {
+  function publishMessageBatch(Message[] calldata _messages, PubKey[] calldata _encPubKeys) public virtual {
     if (_messages.length != _encPubKeys.length) {
       revert InvalidBatchLength();
     }

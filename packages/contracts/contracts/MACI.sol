@@ -162,17 +162,14 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
     // Get the user's voice credit balance.
     uint256 voiceCreditBalance = initialVoiceCreditProxy.getVoiceCredits(msg.sender, _initialVoiceCreditProxyData);
 
-    uint256 timestamp = block.timestamp;
-
     // Create a state leaf and insert it into the tree.
-    uint256 stateLeaf = hashStateLeaf(StateLeaf(_pubKey, voiceCreditBalance, timestamp));
-    InternalLeanIMT._insert(leanIMTData, stateLeaf);
+    uint256 stateLeaf = hashStateLeaf(StateLeaf(_pubKey, voiceCreditBalance, block.timestamp));
+    uint256 stateRoot = InternalLeanIMT._insert(leanIMTData, stateLeaf);
 
     // Store the current state tree root in the array
-    uint256 stateRoot = InternalLeanIMT._root(leanIMTData);
     stateRootsOnSignUp.push(stateRoot);
 
-    emit SignUp(leanIMTData.size - 1, _pubKey.x, _pubKey.y, voiceCreditBalance, timestamp, stateLeaf);
+    emit SignUp(leanIMTData.size - 1, _pubKey.x, _pubKey.y, voiceCreditBalance, block.timestamp, stateLeaf);
   }
 
   /// @notice Deploy a new Poll contract.
