@@ -315,7 +315,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     uint256 _index,
     PubKey calldata _pubKey,
     uint256[8] memory _proof
-  ) internal returns (bool isValid) {
+  ) internal view returns (bool isValid) {
     // Get the verifying key from the VkRegistry
     VerifyingKey memory vk = extContracts.vkRegistry.getPollVk(
       extContracts.maci.stateTreeDepth(),
@@ -339,7 +339,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     uint256 _voiceCreditBalance,
     uint256 _index,
     PubKey calldata _pubKey
-  ) public returns (uint256[] memory publicInputs) {
+  ) public view returns (uint256[] memory publicInputs) {
     publicInputs = new uint256[](5);
 
     publicInputs[0] = _pubKey.x;
