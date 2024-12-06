@@ -17,12 +17,17 @@ Start by cloning the MACI Platform repo:
 git clone https://github.com/privacy-scaling-explorations/maci-platform
 ```
 
-Head to the folder and install the dependencies:
+Head to the folder, checkout to the v1 release and install the dependencies:
 
 ```bash
 cd maci-platform && \
+git checkout v1 && \
 pnpm install
 ```
+
+:::note
+This guide uses the v1 version of MACI Platform, for documentation related to each version head to the repository docs [here](https://github.com/privacy-scaling-explorations/maci-platform/blob/main/docs/01_setup.md).
+:::
 
 ## Configuration
 
