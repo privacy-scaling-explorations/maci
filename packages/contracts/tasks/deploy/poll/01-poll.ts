@@ -100,9 +100,7 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
             intStateTreeDepth,
             voteOptionTreeDepth,
           },
-          {
-            messageBatchSize,
-          },
+          messageBatchSize,
           unserializedKey.asContractParam(),
           extContracts,
           emptyBallotRoot.toString(),
