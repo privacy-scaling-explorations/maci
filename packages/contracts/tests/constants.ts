@@ -8,6 +8,7 @@ export interface ExtContractsStruct {
   verifier: AddressLike;
   vkRegistry: AddressLike;
   gatekeeper: AddressLike;
+  initialVoiceCreditProxy: AddressLike;
 }
 
 export const duration = 2_000;

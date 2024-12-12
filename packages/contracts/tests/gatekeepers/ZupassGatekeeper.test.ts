@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { AbiCoder, Signer, ZeroAddress } from "ethers";
+import { Signer, ZeroAddress } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
 import { deployContract } from "../../ts/deploy";
@@ -92,20 +92,12 @@ describe("Zupass Gatekeeper", () => {
       await zupassGatekeeper.setMaciInstance(await maciContract.getAddress()).then((tx) => tx.wait());
 
       await expect(
-        maciContract.signUp(
-          user.pubKey.asContractParam(),
-          dataWithInvalidWatermark,
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-        ),
+        maciContract.signUp(user.pubKey.asContractParam(), dataWithInvalidWatermark),
       ).to.be.revertedWithCustomError(zupassGatekeeper, "InvalidWatermark");
     });
 
     it("should register a user if the register function is called with the valid data", async () => {
-      const tx = await maciContract.signUp(
-        user.pubKey.asContractParam(),
-        data,
-        AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-      );
+      const tx = await maciContract.signUp(user.pubKey.asContractParam(), data);
 
       const receipt = await tx.wait();
 
@@ -113,9 +105,10 @@ describe("Zupass Gatekeeper", () => {
     });
 
     it("should prevent signing up twice", async () => {
-      await expect(
-        maciContract.signUp(user.pubKey.asContractParam(), data, AbiCoder.defaultAbiCoder().encode(["uint256"], [1])),
-      ).to.be.revertedWithCustomError(zupassGatekeeper, "AlreadyRegistered");
+      await expect(maciContract.signUp(user.pubKey.asContractParam(), data)).to.be.revertedWithCustomError(
+        zupassGatekeeper,
+        "AlreadyRegistered",
+      );
     });
   });
 });

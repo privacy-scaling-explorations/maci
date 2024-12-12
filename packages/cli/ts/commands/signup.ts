@@ -26,7 +26,7 @@ import type {
 
 import { banner } from "../utils/banner";
 import { contractExists } from "../utils/contracts";
-import { DEFAULT_IVCP_DATA, DEFAULT_SG_DATA } from "../utils/defaults";
+import { DEFAULT_SG_DATA } from "../utils/defaults";
 import { GatekeeperTrait } from "../utils/interfaces";
 import { info, logError, logGreen, logYellow, success } from "../utils/theme";
 
@@ -39,7 +39,6 @@ export const signup = async ({
   maciPubKey,
   maciAddress,
   sgDataArg,
-  ivcpDataArg,
   signer,
   quiet = true,
 }: SignupArgs): Promise<ISignupData> => {
@@ -57,15 +56,10 @@ export const signup = async ({
   }
 
   const sgData = sgDataArg || DEFAULT_SG_DATA;
-  const ivcpData = ivcpDataArg || DEFAULT_IVCP_DATA;
 
   // we validate that the signup data and voice credit data is valid
   if (!isBytesLike(sgData)) {
     logError("invalid signup gateway data");
-  }
-
-  if (!isBytesLike(ivcpData)) {
-    logError("invalid initial voice credit proxy data");
   }
 
   const maciContract = MACIFactory.connect(maciAddress, signer);
@@ -76,7 +70,7 @@ export const signup = async ({
 
   try {
     // sign up to the MACI contract
-    const tx = await maciContract.signUp(userMaciPubKey.asContractParam(), sgData, ivcpData);
+    const tx = await maciContract.signUp(userMaciPubKey.asContractParam(), sgData);
     receipt = await tx.wait();
 
     logYellow(quiet, info(`Transaction hash: ${tx.hash}`));
@@ -110,13 +104,18 @@ export const signup = async ({
 /**
  * Parse the signup events from the MACI contract
  */
-const parseSignupEvents = async ({ maciContract, startBlock, currentBlock, publicKey }: IParseSignupEventsArgs) => {
+const parseSignupEvents = async ({
+  maciContract,
+  startBlock,
+  currentBlock,
+  publicKey,
+}: IParseSignupEventsArgs): Promise<{ stateIndex?: string }> => {
   // 1000 blocks at a time
   for (let block = startBlock; block <= currentBlock; block += 1000) {
     const toBlock = Math.min(block + 999, currentBlock);
     // eslint-disable-next-line no-await-in-loop
     const newEvents = await maciContract.queryFilter(
-      maciContract.filters.SignUp(undefined, publicKey.rawPubKey[0], publicKey.rawPubKey[1]),
+      maciContract.filters.SignUp(undefined, undefined, publicKey.rawPubKey[0], publicKey.rawPubKey[1]),
       block,
       toBlock,
     );
@@ -126,14 +125,12 @@ const parseSignupEvents = async ({ maciContract, startBlock, currentBlock, publi
 
       return {
         stateIndex: event.args[0].toString(),
-        voiceCredits: event.args[3].toString(),
       };
     }
   }
 
   return {
     stateIndex: undefined,
-    voiceCredits: undefined,
   };
 };
 
@@ -148,7 +145,7 @@ export const isRegisteredUser = async ({
   signer,
   startBlock,
   quiet = true,
-}: IRegisteredUserArgs): Promise<{ isRegistered: boolean; stateIndex?: string; voiceCredits?: string }> => {
+}: IRegisteredUserArgs): Promise<{ isRegistered: boolean; stateIndex?: string }> => {
   banner(quiet);
 
   const maciContract = MACIFactory.connect(maciAddress, signer);
@@ -156,7 +153,7 @@ export const isRegisteredUser = async ({
   const startBlockNumber = startBlock || 0;
   const currentBlock = await signer.provider!.getBlockNumber();
 
-  const { stateIndex, voiceCredits } = await parseSignupEvents({
+  const { stateIndex } = await parseSignupEvents({
     maciContract,
     startBlock: startBlockNumber,
     currentBlock,
@@ -168,7 +165,6 @@ export const isRegisteredUser = async ({
   return {
     isRegistered: stateIndex !== undefined,
     stateIndex,
-    voiceCredits,
   };
 };
 

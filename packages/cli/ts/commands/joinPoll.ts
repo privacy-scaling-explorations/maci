@@ -4,53 +4,44 @@ import { formatProofForVerifierContract, genSignUpTree, IGenSignUpTree } from "m
 import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts/typechain-types";
 import { CircuitInputs, IJsonMaciState, MaciState, IPollJoiningCircuitInputs } from "maci-core";
 import { poseidon, stringifyBigInts } from "maci-crypto";
-import { IVkObjectParams, Keypair, PrivKey, PubKey, StateLeaf } from "maci-domainobjs";
+import { IVkObjectParams, Keypair, PrivKey, PubKey } from "maci-domainobjs";
 
 import fs from "fs";
 
 import type { IJoinPollArgs, IJoinedUserArgs, IParsePollJoinEventsArgs, IJoinPollData } from "../utils";
 
-import { contractExists, logError, logYellow, info, logGreen, success, BLOCKS_STEP, DEFAULT_SG_DATA } from "../utils";
+import {
+  contractExists,
+  logError,
+  logYellow,
+  info,
+  logGreen,
+  success,
+  BLOCKS_STEP,
+  DEFAULT_SG_DATA,
+  DEFAULT_IVCP_DATA,
+} from "../utils";
 import { banner } from "../utils/banner";
 
 /**
  * Get state index and credit balance
  * either from command line or
  * from maci state leaves or from sign up leaves
- * @param stateIndex State index from the command
- * @param newVoiceCreditBalance Credit balance from the command
- * @param stateLeaves State leaves from maci state or sign up tree
+ * @param pubKeys Public keys from maci state or sign up tree
  * @param userMaciPubKey Public key of the maci user
- * @returns State index and credit balance
+ * @param stateIndex State index from the command
+ * @returns State index
  */
-const getStateIndexAndCreditBalance = (
-  stateIndex: bigint | null,
-  newVoiceCreditBalance: bigint | null,
-  stateLeaves: StateLeaf[],
-  userMaciPubKey: PubKey,
-): [bigint | null, bigint | null] => {
-  let loadedStateIndex = stateIndex;
-  let loadedCreditBalance = newVoiceCreditBalance;
-
+const getStateIndex = (pubKeys: PubKey[], userMaciPubKey: PubKey, stateIndex?: bigint): bigint | undefined => {
   if (!stateIndex) {
-    const index = stateLeaves.findIndex((leaf) => leaf.pubKey.equals(userMaciPubKey));
+    const index = pubKeys.findIndex((key) => key.equals(userMaciPubKey));
     if (index > 0) {
-      loadedStateIndex = BigInt(index);
-    } else {
-      logError("State leaf not found");
+      return BigInt(index);
     }
+    logError("State leaf not found");
   }
 
-  if (!newVoiceCreditBalance) {
-    const balance = stateLeaves[Number(loadedStateIndex!)].voiceCreditBalance;
-    if (balance) {
-      loadedCreditBalance = balance;
-    } else {
-      logError("Voice credit balance not found");
-    }
-  }
-
-  return [loadedStateIndex, loadedCreditBalance];
+  return stateIndex;
 };
 
 /**
@@ -98,7 +89,6 @@ const generateAndVerifyProof = async (
  * @param stateTreeDepth Maci state tree depth
  * @param maciPrivKey User's private key for signing up
  * @param stateLeafIndex Index where the user is stored in the state leaves
- * @param credits Credits for voting
  * @param pollPrivKey Poll's private key for the poll joining
  * @param pollPubKey Poll's public key for the poll joining
  * @param pollId Poll's id
@@ -109,21 +99,12 @@ const joiningCircuitInputs = (
   stateTreeDepth: bigint,
   maciPrivKey: PrivKey,
   stateLeafIndex: bigint,
-  credits: bigint,
   pollPrivKey: PrivKey,
   pollPubKey: PubKey,
   pollId: bigint,
 ): IPollJoiningCircuitInputs => {
   // Get the state leaf on the index position
-  const { signUpTree: stateTree, stateLeaves } = signUpData;
-  const stateLeaf = stateLeaves[Number(stateLeafIndex)];
-  const { pubKey, voiceCreditBalance, timestamp } = stateLeaf;
-  const [pubKeyX, pubKeyY] = pubKey.asArray();
-  const stateLeafArray = [pubKeyX, pubKeyY, voiceCreditBalance, timestamp];
-
-  if (credits > voiceCreditBalance) {
-    logError("Credits must be lower than signed up credits");
-  }
+  const { signUpTree: stateTree } = signUpData;
 
   // calculate the path elements for the state tree given the original state tree
   const { siblings, index } = stateTree.generateProof(Number(stateLeafIndex));
@@ -162,11 +143,9 @@ const joiningCircuitInputs = (
     privKey: maciPrivKey.asCircuitInputs(),
     pollPrivKey: pollPrivKey.asCircuitInputs(),
     pollPubKey: pollPubKey.asCircuitInputs(),
-    stateLeaf: stateLeafArray,
     siblings: siblingsArray,
     indices,
     nullifier,
-    credits,
     stateRoot,
     actualStateTreeDepth,
     pollId,
@@ -185,7 +164,6 @@ export const joinPoll = async ({
   privateKey,
   pollPrivKey,
   stateIndex,
-  newVoiceCreditBalance,
   stateFile,
   pollId,
   signer,
@@ -199,6 +177,7 @@ export const joinPoll = async ({
   pollWitgen,
   pollWasm,
   sgDataArg,
+  ivcpDataArg,
   quiet = true,
 }: IJoinPollArgs): Promise<IJoinPollData> => {
   banner(quiet);
@@ -233,8 +212,7 @@ export const joinPoll = async ({
 
   const pollContract = PollFactory.connect(pollContracts.poll, signer);
 
-  let loadedStateIndex: bigint | null;
-  let loadedCreditBalance: bigint | null;
+  let loadedStateIndex: bigint | undefined;
   let maciState: MaciState | undefined;
   let signUpData: IGenSignUpTree | undefined;
   let currentStateRootIndex: number;
@@ -254,12 +232,7 @@ export const joinPoll = async ({
       throw new Error("User the given nullifier has already joined");
     }
 
-    [loadedStateIndex, loadedCreditBalance] = getStateIndexAndCreditBalance(
-      stateIndex,
-      newVoiceCreditBalance,
-      maciState!.stateLeaves,
-      userMaciPubKey,
-    );
+    loadedStateIndex = getStateIndex(maciState!.pubKeys, userMaciPubKey, stateIndex);
 
     // check < 1 cause index zero is a blank state leaf
     if (loadedStateIndex! < 1) {
@@ -268,12 +241,11 @@ export const joinPoll = async ({
 
     currentStateRootIndex = poll.maciStateRef.numSignUps - 1;
 
-    poll.updatePoll(BigInt(maciState!.stateLeaves.length));
+    poll.updatePoll(BigInt(maciState!.pubKeys.length));
 
     circuitInputs = poll.joiningCircuitInputs({
       maciPrivKey: userMaciPrivKey,
       stateLeafIndex: loadedStateIndex!,
-      credits: loadedCreditBalance!,
       pollPrivKey: pollPrivKeyDeserialized,
       pollPubKey,
     }) as unknown as CircuitInputs;
@@ -308,12 +280,7 @@ export const joinPoll = async ({
 
     currentStateRootIndex = Number(numSignups) - 1;
 
-    [loadedStateIndex, loadedCreditBalance] = getStateIndexAndCreditBalance(
-      stateIndex,
-      newVoiceCreditBalance,
-      signUpData.stateLeaves,
-      userMaciPubKey,
-    );
+    loadedStateIndex = getStateIndex(signUpData.pubKeys, userMaciPubKey, stateIndex);
 
     // check < 1 cause index zero is a blank state leaf
     if (loadedStateIndex! < 1) {
@@ -325,7 +292,6 @@ export const joinPoll = async ({
       stateTreeDepth,
       userMaciPrivKey,
       loadedStateIndex!,
-      loadedCreditBalance!,
       pollPrivKeyDeserialized,
       pollPubKey,
       pollId,
@@ -338,6 +304,7 @@ export const joinPoll = async ({
   let receipt: ContractTransactionReceipt | null = null;
 
   const sgData = sgDataArg || DEFAULT_SG_DATA;
+  const ivcpData = ivcpDataArg || DEFAULT_IVCP_DATA;
 
   try {
     // generate the proof for this batch
@@ -355,10 +322,10 @@ export const joinPoll = async ({
     const tx = await pollContract.joinPoll(
       nullifier,
       pollPubKey.asContractParam(),
-      loadedCreditBalance!,
       currentStateRootIndex,
       proof,
       sgData,
+      ivcpData,
     );
     receipt = await tx.wait();
     logYellow(quiet, info(`Transaction hash: ${receipt!.hash}`));

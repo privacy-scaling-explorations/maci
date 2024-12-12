@@ -1,5 +1,7 @@
 pragma circom 2.0.0;
 
+// zk-kit imports
+include "./safe-comparators.circom";
 // circomlib import
 include "./mux1.circom";
 include "./comparators.circom";

@@ -72,7 +72,7 @@ describe("integration tests private/public/keypair", () => {
 
     before(async () => {
       signer = await getDefaultSigner();
-      const { maci, verifier, vkRegistry, gatekeeper } = await deployTestContracts(
+      const { maci, verifier, vkRegistry, gatekeeper, initialVoiceCreditProxy } = await deployTestContracts(
         initialVoiceCredits,
         STATE_TREE_DEPTH,
         signer,
@@ -92,6 +92,7 @@ describe("integration tests private/public/keypair", () => {
         vkRegistry,
         EMode.NON_QV,
         gatekeeper,
+        initialVoiceCreditProxy,
       );
 
       // we know it's the first poll so id is 0

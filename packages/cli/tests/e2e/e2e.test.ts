@@ -138,7 +138,6 @@ describe("e2e tests", function test() {
         pollWitgen: testPollJoiningWitnessPath,
         rapidsnark: testRapidsnarkPath,
         signer,
-        newVoiceCreditBalance: 10n,
         quiet: true,
       });
     });
@@ -203,7 +202,6 @@ describe("e2e tests", function test() {
         pollWitgen: testPollJoiningWitnessPath,
         rapidsnark: testRapidsnarkPath,
         signer,
-        newVoiceCreditBalance: 10n,
         quiet: true,
       });
     });
@@ -277,7 +275,6 @@ describe("e2e tests", function test() {
           pollWitgen: testPollJoiningWitnessPath,
           rapidsnark: testRapidsnarkPath,
           signer,
-          newVoiceCreditBalance: 1n,
           quiet: true,
         });
       }
@@ -451,7 +448,6 @@ describe("e2e tests", function test() {
           pollWitgen: testPollJoiningWitnessPath,
           rapidsnark: testRapidsnarkPath,
           signer,
-          newVoiceCreditBalance: 1n,
           quiet: true,
         });
       }
@@ -517,7 +513,6 @@ describe("e2e tests", function test() {
         pollWitgen: testPollJoiningWitnessPath,
         rapidsnark: testRapidsnarkPath,
         signer,
-        newVoiceCreditBalance: 1n,
         quiet: true,
       });
     });
@@ -588,7 +583,6 @@ describe("e2e tests", function test() {
           pollWitgen: testPollJoiningWitnessPath,
           rapidsnark: testRapidsnarkPath,
           signer,
-          newVoiceCreditBalance: 1n,
           quiet: true,
         });
       }
@@ -696,7 +690,6 @@ describe("e2e tests", function test() {
         pollWitgen: testPollJoiningWitnessPath,
         rapidsnark: testRapidsnarkPath,
         signer,
-        newVoiceCreditBalance: 1n,
         quiet: true,
       });
       // publish
@@ -740,7 +733,6 @@ describe("e2e tests", function test() {
         pollWitgen: testPollJoiningWitnessPath,
         rapidsnark: testRapidsnarkPath,
         signer,
-        newVoiceCreditBalance: 1n,
         quiet: true,
       });
     });
@@ -797,7 +789,6 @@ describe("e2e tests", function test() {
         pollWitgen: testPollJoiningWitnessPath,
         rapidsnark: testRapidsnarkPath,
         signer,
-        newVoiceCreditBalance: 1n,
         quiet: true,
       });
 
@@ -832,7 +823,6 @@ describe("e2e tests", function test() {
         pollWitgen: testPollJoiningWitnessPath,
         rapidsnark: testRapidsnarkPath,
         signer,
-        newVoiceCreditBalance: 1n,
         quiet: true,
       });
 
@@ -871,7 +861,6 @@ describe("e2e tests", function test() {
         pollWitgen: testPollJoiningWitnessPath,
         rapidsnark: testRapidsnarkPath,
         signer,
-        newVoiceCreditBalance: 1n,
         quiet: true,
       });
       // joinPoll
@@ -887,7 +876,6 @@ describe("e2e tests", function test() {
         pollWitgen: testPollJoiningWitnessPath,
         rapidsnark: testRapidsnarkPath,
         signer,
-        newVoiceCreditBalance: 1n,
         quiet: true,
       });
     });
@@ -997,7 +985,6 @@ describe("e2e tests", function test() {
           pollWitgen: testPollJoiningWitnessPath,
           rapidsnark: testRapidsnarkPath,
           signer,
-          newVoiceCreditBalance: 1n,
           quiet: true,
         });
         // eslint-disable-next-line no-await-in-loop
@@ -1061,7 +1048,6 @@ describe("e2e tests", function test() {
             pollWitgen: testPollJoiningWitnessPath,
             rapidsnark: testRapidsnarkPath,
             signer,
-            newVoiceCreditBalance: 1n,
             quiet: true,
           });
           // eslint-disable-next-line no-await-in-loop
@@ -1240,7 +1226,6 @@ describe("e2e tests", function test() {
         pollWitgen: testPollJoiningWitnessPath,
         rapidsnark: testRapidsnarkPath,
         signer,
-        newVoiceCreditBalance: 1n,
         quiet: true,
       });
     });

@@ -78,7 +78,6 @@ export const deploy = async ({
   // deploy MACI, PollFactory and poseidon
   const { maciContract, pollFactoryContract, poseidonAddrs } = await deployMaci({
     signUpTokenGatekeeperContractAddress: signupGatekeeperContractAddress,
-    initialVoiceCreditBalanceAddress: initialVoiceCreditProxyContractAddress,
     poseidonAddresses: {
       poseidonT3,
       poseidonT4,

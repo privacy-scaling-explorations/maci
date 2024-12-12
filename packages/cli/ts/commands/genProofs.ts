@@ -272,7 +272,7 @@ export const genProofs = async ({
   const tallyStartTime = Date.now();
 
   const { tallyBatchSize } = poll.batchSizes;
-  const numStateLeaves = poll.stateLeaves.length;
+  const numStateLeaves = poll.pubKeys.length;
   let totalTallyBatches = numStateLeaves <= tallyBatchSize ? 1 : Math.floor(numStateLeaves / tallyBatchSize);
   if (numStateLeaves > tallyBatchSize && numStateLeaves % tallyBatchSize > 0) {
     totalTallyBatches += 1;

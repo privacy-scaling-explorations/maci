@@ -64,11 +64,7 @@ describe("SignUpGatekeeper", () => {
       await signUpToken.giveToken(await signer.getAddress(), 0);
 
       await expect(
-        maciContract.signUp(
-          user.pubKey.asContractParam(),
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
-        ),
+        maciContract.signUp(user.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [1])),
       ).to.be.revertedWithCustomError(signUpTokenGatekeeperContract, "OnlyMACI");
     });
 
@@ -82,7 +78,6 @@ describe("SignUpGatekeeper", () => {
       const tx = await maciContract.signUp(
         user.pubKey.asContractParam(),
         AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
-        AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
       );
       const receipt = await tx.wait();
 

@@ -124,7 +124,6 @@ describe("keyChange tests", function test() {
         pollWitgen: testPollJoiningWitnessPath,
         rapidsnark: testRapidsnarkPath,
         signer,
-        newVoiceCreditBalance: 99n,
         quiet: true,
       });
       await publish({
@@ -214,7 +213,6 @@ describe("keyChange tests", function test() {
         pollWitgen: testPollJoiningWitnessPath,
         rapidsnark: testRapidsnarkPath,
         signer,
-        newVoiceCreditBalance: 99n,
         quiet: true,
       });
       await publish({
@@ -304,7 +302,6 @@ describe("keyChange tests", function test() {
         pollWitgen: testPollJoiningWitnessPath,
         rapidsnark: testRapidsnarkPath,
         signer,
-        newVoiceCreditBalance: 99n,
         quiet: true,
       });
 

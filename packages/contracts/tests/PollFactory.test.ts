@@ -38,6 +38,7 @@ describe("pollFactory", () => {
       verifier: verifierContract,
       vkRegistry: vkRegistryContract,
       gatekeeper: r.gatekeeperContract,
+      initialVoiceCreditProxy: r.constantInitialVoiceCreditProxyContract,
     };
 
     pollFactory = (await deployPollFactory(signer, undefined, true)) as BaseContract as PollFactory;

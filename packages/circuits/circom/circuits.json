@@ -3,7 +3,7 @@
     "file": "./anon/pollJoining",
     "template": "PollJoining",
     "params": [10],
-    "pubs": ["nullifier", "credits", "stateRoot", "pollPubKey", "pollId"]
+    "pubs": ["nullifier", "stateRoot", "pollPubKey", "pollId"]
   },
   "ProcessMessages_10-20-2_test": {
     "file": "./core/qv/processMessages",

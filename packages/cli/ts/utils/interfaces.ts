@@ -324,6 +324,16 @@ export interface DeployPollArgs {
    * The address of the gatekeeper contract
    */
   gatekeeperAddress?: string;
+
+  /**
+   * The address of the initial voice credit proxy contract
+   */
+  voiceCreditProxyAddress?: string;
+
+  /**
+   * The initial voice credits balance
+   */
+  initialVoiceCreditsBalance?: number;
 }
 
 /**
@@ -375,19 +385,14 @@ export interface IJoinPollArgs {
   privateKey: string;
 
   /**
-   * User's credit balance for voting within this poll
-   */
-  newVoiceCreditBalance: bigint | null;
-
-  /**
    * The id of the poll
    */
   pollId: bigint;
 
   /**
-   * The index of the state leaf
+   * The index of the public key in the state tree
    */
-  stateIndex: bigint | null;
+  stateIndex?: bigint;
 
   /**
    * Whether to log the output
@@ -458,6 +463,11 @@ export interface IJoinPollArgs {
    * The signup gatekeeper data
    */
   sgDataArg?: string;
+
+  /**
+   * The initial voice credit proxy data
+   */
+  ivcpDataArg?: string;
 }
 
 /**
@@ -944,11 +954,6 @@ export interface SignupArgs {
    * The signup gateway data
    */
   sgDataArg?: string;
-
-  /**
-   * The initial voice credit proxy data
-   */
-  ivcpDataArg?: string;
 
   /**
    * Whether to log the output

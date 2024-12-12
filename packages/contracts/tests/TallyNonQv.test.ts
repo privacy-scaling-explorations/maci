@@ -20,6 +20,7 @@ import {
   Poll__factory as PollFactory,
   Tally__factory as TallyFactory,
   SignUpGatekeeper,
+  ConstantInitialVoiceCreditProxy,
 } from "../typechain-types";
 
 import { STATE_TREE_DEPTH, duration, messageBatchSize, testProcessVk, testTallyVk, treeDepths } from "./constants";
@@ -34,7 +35,7 @@ describe("TallyVotesNonQv", () => {
   let verifierContract: Verifier;
   let vkRegistryContract: VkRegistry;
   let gatekeeperContract: SignUpGatekeeper;
-
+  let initialVoiceCreditProxyContract: ConstantInitialVoiceCreditProxy;
   const coordinator = new Keypair();
   let maciState: MaciState;
 
@@ -53,6 +54,7 @@ describe("TallyVotesNonQv", () => {
     verifierContract = r.mockVerifierContract as Verifier;
     vkRegistryContract = r.vkRegistryContract;
     gatekeeperContract = r.gatekeeperContract;
+    initialVoiceCreditProxyContract = r.constantInitialVoiceCreditProxyContract;
 
     // deploy a poll
     // deploy on chain poll
@@ -65,6 +67,7 @@ describe("TallyVotesNonQv", () => {
       vkRegistryContract,
       EMode.NON_QV,
       gatekeeperContract,
+      initialVoiceCreditProxyContract,
     );
     const receipt = await tx.wait();
 
@@ -100,7 +103,7 @@ describe("TallyVotesNonQv", () => {
     poll.publishMessage(message, padKey);
 
     // update the poll state
-    poll.updatePoll(BigInt(maciState.stateLeaves.length));
+    poll.updatePoll(BigInt(maciState.pubKeys.length));
 
     // process messages locally
     generatedInputs = poll.processMessages(pollId, false);

@@ -102,7 +102,6 @@ describe("MerkleProof Gatekeeper", () => {
       const tx = await maciContract.signUp(
         user.pubKey.asContractParam(),
         AbiCoder.defaultAbiCoder().encode(["bytes32[]"], [validProof]),
-        AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
       );
 
       const receipt = await tx.wait();
@@ -115,7 +114,6 @@ describe("MerkleProof Gatekeeper", () => {
         maciContract.signUp(
           user.pubKey.asContractParam(),
           AbiCoder.defaultAbiCoder().encode(["bytes32[]"], [validProof]),
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
         ),
       ).to.be.revertedWithCustomError(merkleProofGatekeeper, "AlreadyRegistered");
     });

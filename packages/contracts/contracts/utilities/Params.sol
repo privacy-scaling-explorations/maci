@@ -5,6 +5,7 @@ import { IMACI } from "../interfaces/IMACI.sol";
 import { IVerifier } from "../interfaces/IVerifier.sol";
 import { IVkRegistry } from "../interfaces/IVkRegistry.sol";
 import { ISignUpGatekeeper } from "../interfaces/ISignUpGatekeeper.sol";
+import { IInitialVoiceCreditProxy } from "../interfaces/IInitialVoiceCreditProxy.sol";
 
 /// @title Params
 /// @notice This contracts contains a number of structures
@@ -26,5 +27,6 @@ contract Params {
     IVerifier verifier;
     IVkRegistry vkRegistry;
     ISignUpGatekeeper gatekeeper;
+    IInitialVoiceCreditProxy initialVoiceCreditProxy;
   }
 }

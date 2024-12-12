@@ -17,6 +17,7 @@ import {
   Verifier,
   VkRegistry,
   SignUpGatekeeper,
+  ConstantInitialVoiceCreditProxy,
 } from "../typechain-types";
 
 import {
@@ -38,6 +39,7 @@ describe("Poll", () => {
   let verifierContract: Verifier;
   let vkRegistryContract: VkRegistry;
   let signupGatekeeperContract: SignUpGatekeeper;
+  let initialVoiceCreditProxyContract: ConstantInitialVoiceCreditProxy;
   let signer: Signer;
   let deployTime: number;
   const coordinator = new Keypair();
@@ -46,7 +48,7 @@ describe("Poll", () => {
 
   const keypair = new Keypair();
 
-  const NUM_USERS = 2;
+  const NUM_USERS = 3;
 
   describe("deployment", () => {
     before(async () => {
@@ -60,18 +62,14 @@ describe("Poll", () => {
       verifierContract = r.mockVerifierContract as Verifier;
       vkRegistryContract = r.vkRegistryContract;
       signupGatekeeperContract = r.gatekeeperContract;
+      initialVoiceCreditProxyContract = r.constantInitialVoiceCreditProxyContract;
 
       for (let i = 0; i < NUM_USERS; i += 1) {
-        const timestamp = Math.floor(Date.now() / 1000);
         const user = new Keypair();
-        maciState.signUp(user.pubKey, BigInt(initialVoiceCreditBalance), BigInt(timestamp), BigInt(0));
+        maciState.signUp(user.pubKey);
 
         // eslint-disable-next-line no-await-in-loop
-        await maciContract.signUp(
-          user.pubKey.asContractParam(),
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
-        );
+        await maciContract.signUp(user.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [1]));
       }
 
       // deploy on chain poll
@@ -84,6 +82,7 @@ describe("Poll", () => {
         vkRegistryContract,
         EMode.QV,
         signupGatekeeperContract,
+        initialVoiceCreditProxyContract,
       );
       const receipt = await tx.wait();
 
@@ -188,35 +187,36 @@ describe("Poll", () => {
           r.vkRegistryContract,
           EMode.QV,
           signupGatekeeperContract,
+          initialVoiceCreditProxyContract,
         ),
       ).to.be.revertedWithCustomError(testMaciContract, "InvalidPubKey");
     });
   });
 
   describe("Poll join", () => {
-    it("The users have joined the poll", async () => {
+    it("should let users join the poll", async () => {
       const iface = pollContract.interface;
       const pubkey = keypair.pubKey.asContractParam();
       const mockProof = [0, 0, 0, 0, 0, 0, 0, 0];
 
       for (let i = 0; i < NUM_USERS; i += 1) {
         const mockNullifier = AbiCoder.defaultAbiCoder().encode(["uint256"], [i]);
-        const voiceCreditBalance = AbiCoder.defaultAbiCoder().encode(["uint256"], [i]);
 
         const response = await pollContract.joinPoll(
           mockNullifier,
           pubkey,
-          voiceCreditBalance,
           i,
           mockProof,
+          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
         );
         const receipt = await response.wait();
         const logs = receipt!.logs[0];
         const event = iface.parseLog(logs as unknown as { topics: string[]; data: string }) as unknown as {
-          args: { _pollStateIndex: bigint };
+          args: { _pollStateIndex: bigint; _voiceCreditBalance: bigint };
         };
         const index = event.args._pollStateIndex;
+        const voiceCredits = event.args._voiceCreditBalance;
 
         expect(receipt!.status).to.eq(1);
 
@@ -225,31 +225,30 @@ describe("Poll", () => {
 
         const expectedIndex = maciState.polls
           .get(pollId)
-          ?.joinPoll(BigInt(mockNullifier), keypair.pubKey, BigInt(voiceCreditBalance), BigInt(timestamp));
+          ?.joinPoll(BigInt(mockNullifier), keypair.pubKey, BigInt(voiceCredits), BigInt(timestamp));
 
         expect(index).to.eq(expectedIndex);
       }
     });
 
-    it("Poll state tree size after user's joining", async () => {
+    it("should have the correct tree size", async () => {
       const pollStateTree = await pollContract.pollStateTree();
       const size = Number(pollStateTree.numberOfLeaves);
       expect(size).to.eq(maciState.polls.get(pollId)?.pollStateLeaves.length);
     });
 
-    it("The first user has been rejected for the second join", async () => {
+    it("should not allow a user to join twice", async () => {
       const mockNullifier = AbiCoder.defaultAbiCoder().encode(["uint256"], [0]);
       const pubkey = keypair.pubKey.asContractParam();
-      const voiceCreditBalance = AbiCoder.defaultAbiCoder().encode(["uint256"], [0]);
       const mockProof = [0, 0, 0, 0, 0, 0, 0, 0];
 
       await expect(
         pollContract.joinPoll(
           mockNullifier,
           pubkey,
-          voiceCreditBalance,
           0,
           mockProof,
+          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
         ),
       ).to.be.revertedWithCustomError(pollContract, "UserAlreadyJoined");
@@ -380,12 +379,12 @@ describe("Poll", () => {
     it("should allow a Poll contract to merge the state tree (calculate the state root)", async () => {
       await timeTravel(signer.provider as unknown as EthereumProvider, Number(duration) + 1);
 
-      const tx = await pollContract.mergeState({
-        gasLimit: 3000000,
-      });
+      const tx = await pollContract.mergeState();
 
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
+
+      expect(await pollContract.stateMerged()).to.eq(true);
     });
 
     it("should get the correct numSignUps", async () => {
@@ -396,6 +395,7 @@ describe("Poll", () => {
 
     it("should get the correct mergedStateRoot", async () => {
       const mergedStateRoot = await pollContract.mergedStateRoot();
+
       expect(mergedStateRoot.toString()).to.eq(maciState.polls.get(pollId)?.pollStateTree?.root.toString());
     });
   });

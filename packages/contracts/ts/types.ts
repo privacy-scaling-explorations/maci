@@ -14,7 +14,7 @@ import type {
 } from "../typechain-types";
 import type { BigNumberish, Provider, Signer, ContractFactory } from "ethers";
 import type { CircuitInputs } from "maci-core";
-import type { Message, PubKey, StateLeaf } from "maci-domainobjs";
+import type { Message, PubKey } from "maci-domainobjs";
 import type { PublicSignals } from "snarkjs";
 
 /**
@@ -142,11 +142,6 @@ export interface IDeployMaciArgs {
   signUpTokenGatekeeperContractAddress: string;
 
   /**
-   * The address of the ConstantInitialVoiceCreditProxy contract
-   */
-  initialVoiceCreditBalanceAddress: string;
-
-  /**
    * The signer to use to deploy the contract
    */
   signer?: Signer;
@@ -238,5 +233,5 @@ export interface IGenSignUpTree {
   /**
    * State leaves
    */
-  stateLeaves: StateLeaf[];
+  pubKeys: PubKey[];
 }

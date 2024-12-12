@@ -51,7 +51,7 @@ export function handleDeployPoll(event: DeployPollEvent): void {
 
 export function handleSignUp(event: SignUpEvent): void {
   const user = createOrLoadUser(event.params._userPubKeyX, event.params._userPubKeyY, event);
-  createOrLoadAccount(event.params._stateIndex, event, user.id, event.params._voiceCreditBalance);
+  createOrLoadAccount(event.params._stateIndex, event, user.id);
 
   const maci = createOrLoadMACI(event);
   maci.numSignUps = maci.numSignUps.plus(ONE_BIG_INT);
