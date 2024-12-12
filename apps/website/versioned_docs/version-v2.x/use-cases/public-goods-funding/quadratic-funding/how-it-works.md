@@ -89,7 +89,7 @@ Prior to running the round, it’s important to define operational & technical r
 - Smart contract deployer
 - MACI key generator
 - Round coordinator
-- Technical workshop with QF team team to:
+- Technical workshop with QF team to:
   - Learn about tech stack (e.g. ZKPs)
   - Learn smart contract & website deployment details
 - Choose a public Ethereum chain
