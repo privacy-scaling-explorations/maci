@@ -1,22 +1,38 @@
 /* eslint-disable no-underscore-dangle, @typescript-eslint/no-unnecessary-type-assertion */
-import { BigInt } from "@graphprotocol/graph-ts";
-import { test, describe, afterEach, clearStore, assert, beforeEach } from "matchstick-as";
+import { BigInt, Bytes } from "@graphprotocol/graph-ts";
+import { test, describe, afterEach, clearStore, assert, beforeEach, mockIpfsFile, beforeAll } from "matchstick-as";
 
-import { MACI, Poll } from "../../generated/schema";
+import { ChainHash, MACI, Poll } from "../../generated/schema";
 import { handleDeployPoll } from "../../src/maci";
-import { handleMergeState, handlePublishMessage } from "../../src/poll";
+import {
+  handleMergeState,
+  handlePublishMessage,
+  handleChainHashUpdate,
+  handleIpfsHashAdded,
+  processIpfsVotes,
+} from "../../src/poll";
 import { DEFAULT_POLL_ADDRESS, mockMaciContract, mockPollContract } from "../common";
 import { createDeployPollEvent } from "../maci/utils";
 
-import { createMergeStateEvent, createPublishMessageEvent } from "./utils";
+import {
+  createChainHashUpdatedEvent,
+  createIpfsHashAddedEvent,
+  createMergeStateEvent,
+  createPublishMessageEvent,
+} from "./utils";
 
-export { handleMergeState, handlePublishMessage };
+export { handleMergeState, handlePublishMessage, handleChainHashUpdate, handleIpfsHashAdded, processIpfsVotes };
 
 describe("Poll", () => {
-  beforeEach(() => {
+  beforeAll(() => {
+    mockIpfsFile("TspRr", "tests/ipfs/batch-0.json");
+    mockIpfsFile("Tsn1k", "tests/ipfs/batch-1.json");
+
     mockMaciContract();
     mockPollContract();
+  });
 
+  beforeEach(() => {
     // mock the deploy poll event with non qv mode set
     const event = createDeployPollEvent(BigInt.fromI32(1), BigInt.fromI32(1), BigInt.fromI32(1), BigInt.fromI32(1));
 
@@ -68,5 +84,40 @@ describe("Poll", () => {
 
     assert.entityCount("Vote", 1);
     assert.fieldEquals("Poll", poll.id.toHex(), "numMessages", "1");
+  });
+
+  test("should handle chain hash update properly", () => {
+    const event = createChainHashUpdatedEvent(DEFAULT_POLL_ADDRESS, BigInt.fromI32(123443221));
+
+    handleChainHashUpdate(event);
+
+    const chainHash = ChainHash.load(event.params._chainHash.toString())!;
+
+    assert.entityCount("ChainHash", 1);
+    assert.fieldEquals("ChainHash", chainHash.id, "id", event.params._chainHash.toString());
+  });
+
+  test("should handle ipfs message processing properly", () => {
+    const expectedTotalMessages = 3;
+
+    const event = createIpfsHashAddedEvent(DEFAULT_POLL_ADDRESS, Bytes.fromHexString("0xdead"));
+
+    handleIpfsHashAdded(event);
+
+    const poll = Poll.load(event.address)!;
+
+    assert.fieldEquals("Poll", poll.id.toHex(), "numMessages", expectedTotalMessages.toString());
+    assert.entityCount("Vote", expectedTotalMessages);
+  });
+
+  test("should not add votes if there is no ipfs file", () => {
+    const event = createIpfsHashAddedEvent(DEFAULT_POLL_ADDRESS, Bytes.fromHexString("0xbeef"));
+
+    handleIpfsHashAdded(event);
+
+    const poll = Poll.load(event.address)!;
+
+    assert.fieldEquals("Poll", poll.id.toHex(), "numMessages", "0");
+    assert.entityCount("Vote", 0);
   });
 });

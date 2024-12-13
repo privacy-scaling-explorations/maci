@@ -5,6 +5,8 @@ indexerHints:
   prune: auto
 schema:
   file: ./schema.graphql
+features:
+  - ipfsOnEthereumContracts
 dataSources:
   - kind: ethereum
     name: MACI
@@ -58,4 +60,8 @@ templates:
           handler: handleMergeState
         - event: PublishMessage((uint256[10]),(uint256,uint256))
           handler: handlePublishMessage
+        - event: ChainHashUpdated(indexed uint256)
+          handler: handleChainHashUpdate
+        - event: IpfsHashAdded(indexed bytes32)
+          handler: handleIpfsHashAdded
       file: ./src/poll.ts

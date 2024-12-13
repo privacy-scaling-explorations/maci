@@ -32,7 +32,7 @@ type Poll @entity {
   pollId: BigInt! # uint256
   duration: BigInt! # uint256
   treeDepth: BigInt! # uint8
-  maxVoteOption: BigInt!
+  maxVoteOptions: BigInt!
   messageProcessor: Bytes! # address
   tally: Bytes! # address
   createdAt: BigInt!
@@ -46,11 +46,21 @@ type Poll @entity {
   owner: Bytes!
   maci: MACI!
   votes: [Vote!]! @derivedFrom(field: "poll")
+  chainHashes: [ChainHash!]! @derivedFrom(field: "poll")
 }
 
 type Vote @entity(immutable: true) {
   id: Bytes!
   data: [BigInt!]! # uint256[10]
+  timestamp: BigInt!
+  cid: String
+
+  "relations"
+  poll: Poll!
+}
+
+type ChainHash @entity(immutable: true) {
+  id: ID! # chain hash
   timestamp: BigInt!
 
   "relations"
