@@ -37,7 +37,7 @@
   "devDependencies": {
     "@docusaurus/module-type-aliases": "^3.5.2",
     "@docusaurus/tsconfig": "^3.5.2",
-    "@docusaurus/types": "^3.5.2",
+    "@docusaurus/types": "^3.6.3",
     "@types/node": "^22.9.0",
     "@types/react": "^18.3.12",
     "ts-node": "^10.9.2",
