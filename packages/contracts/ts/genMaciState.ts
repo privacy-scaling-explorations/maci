@@ -9,6 +9,7 @@ import type { Action } from "./types";
 
 import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "../typechain-types";
 
+import { IpfsService } from "./ipfs";
 import { sleep, sortActions } from "./utils";
 
 /**
@@ -36,6 +37,7 @@ export const genMaciStateFromContract = async (
   // ensure the pollId is valid
   assert(pollId >= 0);
 
+  const ipfsService = IpfsService.getInstance();
   const maciContract = MACIFactory.connect(address, provider);
 
   // Check stateTreeDepth
@@ -139,10 +141,11 @@ export const genMaciStateFromContract = async (
     const toBlock = i + blocksPerRequest >= lastBlock ? lastBlock : i + blocksPerRequest;
 
     // eslint-disable-next-line no-await-in-loop
-    const publishMessageLogs = await pollContract.queryFilter(pollContract.filters.PublishMessage(), i, toBlock);
-
-    // eslint-disable-next-line no-await-in-loop
-    const joinPollLogs = await pollContract.queryFilter(pollContract.filters.PollJoined(), i, toBlock);
+    const [publishMessageLogs, joinPollLogs, ipfsHashAddedLogs] = await Promise.all([
+      pollContract.queryFilter(pollContract.filters.PublishMessage(), i, toBlock),
+      pollContract.queryFilter(pollContract.filters.PollJoined(), i, toBlock),
+      pollContract.queryFilter(pollContract.filters.IpfsHashAdded(), i, toBlock),
+    ]);
 
     joinPollLogs.forEach((event) => {
       assert(!!event);
@@ -165,6 +168,52 @@ export const genMaciStateFromContract = async (
           timestamp,
           nullifier,
         },
+      });
+    });
+
+    // eslint-disable-next-line no-await-in-loop
+    const ipfsMessages = await Promise.all(
+      ipfsHashAddedLogs.map(async (event) => {
+        assert(!!event);
+
+        return ipfsService
+          .read<{ messages: string[][]; encPubKeys: [string, string][] }>(event.args._ipfsHash)
+          .then(({ messages, encPubKeys }) => ({
+            data: messages.map((value, index) => ({
+              message: new Message(value.map(BigInt)),
+              encPubKey: new PubKey([BigInt(encPubKeys[index][0]), BigInt(encPubKeys[index][1])]),
+            })),
+            blockNumber: event.blockNumber,
+            transactionIndex: event.transactionIndex,
+          }));
+      }),
+    );
+
+    ipfsHashAddedLogs.forEach((event) => {
+      assert(!!event);
+      const ipfsHash = event.args._ipfsHash;
+
+      actions.push({
+        type: "IpfsHashAdded",
+        blockNumber: event.blockNumber,
+        transactionIndex: event.transactionIndex,
+        data: {
+          ipfsHash,
+        },
+      });
+    });
+
+    ipfsMessages.forEach(({ data, blockNumber, transactionIndex }) => {
+      data.forEach(({ message, encPubKey }) => {
+        actions.push({
+          type: "PublishMessage",
+          blockNumber,
+          transactionIndex,
+          data: {
+            message,
+            encPubKey,
+          },
+        });
       });
     });
 

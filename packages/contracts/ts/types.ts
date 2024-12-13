@@ -116,6 +116,7 @@ export interface Action {
     pollAddr: string;
     stateLeaf: bigint;
     messageRoot: bigint;
+    ipfsHash: string;
   }>;
   blockNumber: number;
   transactionIndex: number;

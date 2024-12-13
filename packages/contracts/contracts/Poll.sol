@@ -113,6 +113,8 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     uint256 _nullifier,
     uint256 _pollStateIndex
   );
+  event ChainHashUpdated(uint256 indexed _chainHash);
+  event IpfsHashAdded(bytes32 indexed _ipfsHash);
 
   /// @notice Each MACI instance can have multiple Polls.
   /// When a Poll is deployed, its voting period starts immediately.
@@ -233,10 +235,14 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   /// @param messageHash hash of the current message
   function updateChainHash(uint256 messageHash) internal {
     uint256 newChainHash = hash2([chainHash, messageHash]);
+
     if (numMessages % messageBatchSize == 0) {
       batchHashes.push(newChainHash);
     }
+
     chainHash = newChainHash;
+
+    emit ChainHashUpdated(newChainHash);
   }
 
   /// @notice pad last unclosed batch
