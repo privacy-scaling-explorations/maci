@@ -92,6 +92,10 @@ describe("Poll", () => {
       expect(p.toString()).to.eq(pollId.toString());
       // publish the NOTHING_UP_MY_SLEEVE message
       const messageData = [NOTHING_UP_MY_SLEEVE];
+      expect(
+        NOTHING_UP_MY_SLEEVE === BigInt("8370432830353022751713833565135785980866757267633941821328460903436894336785"),
+      );
+
       for (let i = 1; i < 10; i += 1) {
         messageData.push(BigInt(0));
       }
