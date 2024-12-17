@@ -14,6 +14,7 @@ sidebar_position: 13
 - [MACI v1.1.1 Release](/blog/maci-v1-1-1-release) - ctrlc03 && chaosma 01/2023
 - [MACI v1.2.0 release post](/blog/maci-v1-2-0-release) - ctrlc03 02/2024
 - [MACI v2.0.0 release post](/blog/2024-v2) - ctrlc03 08/2024
+- [Getting Started With MACI](https://medium.com/@bbaraona/getting-started-with-maci-5cc145d00e04) - Benjamin Barahona 12/04/2024
 
 ## Videos
 
