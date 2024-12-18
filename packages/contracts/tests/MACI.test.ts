@@ -8,7 +8,14 @@ import { Keypair, PubKey, Message } from "maci-domainobjs";
 
 import { EMode } from "../ts/constants";
 import { getDefaultSigner, getSigners } from "../ts/utils";
-import { MACI, Poll as PollContract, Poll__factory as PollFactory, Verifier, VkRegistry } from "../typechain-types";
+import {
+  MACI,
+  Poll as PollContract,
+  Poll__factory as PollFactory,
+  Verifier,
+  VkRegistry,
+  SignUpGatekeeper,
+} from "../typechain-types";
 
 import { STATE_TREE_DEPTH, duration, initialVoiceCreditBalance, messageBatchSize, treeDepths } from "./constants";
 import { timeTravel, deployTestContracts } from "./utils";
@@ -19,6 +26,7 @@ describe("MACI", function test() {
   let maciContract: MACI;
   let vkRegistryContract: VkRegistry;
   let verifierContract: Verifier;
+  let signupGatekeeperContract: SignUpGatekeeper;
   let pollId: bigint;
 
   const coordinator = new Keypair();
@@ -40,6 +48,7 @@ describe("MACI", function test() {
       maciContract = r.maciContract;
       vkRegistryContract = r.vkRegistryContract;
       verifierContract = r.mockVerifierContract as Verifier;
+      signupGatekeeperContract = r.gatekeeperContract;
     });
 
     it("should have set the correct stateTreeDepth", async () => {
@@ -218,6 +227,7 @@ describe("MACI", function test() {
         verifierContract,
         vkRegistryContract,
         EMode.QV,
+        signupGatekeeperContract,
       );
       const receipt = await tx.wait();
 
@@ -252,6 +262,7 @@ describe("MACI", function test() {
         verifierContract,
         vkRegistryContract,
         EMode.QV,
+        signupGatekeeperContract,
       );
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
@@ -270,6 +281,7 @@ describe("MACI", function test() {
           verifierContract,
           vkRegistryContract,
           EMode.QV,
+          signupGatekeeperContract,
         );
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);

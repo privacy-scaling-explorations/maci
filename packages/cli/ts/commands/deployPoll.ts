@@ -1,4 +1,4 @@
-import { MACI__factory as MACIFactory, EMode } from "maci-contracts";
+import { MACI__factory as MACIFactory, EMode, deployFreeForAllSignUpGatekeeper } from "maci-contracts";
 import { PubKey } from "maci-domainobjs";
 
 import {
@@ -26,6 +26,7 @@ export const deployPoll = async ({
   coordinatorPubkey,
   maciAddress,
   vkRegistryAddress,
+  gatekeeperAddress,
   signer,
   quiet = true,
   useQuadraticVoting = false,
@@ -48,6 +49,18 @@ export const deployPoll = async ({
   }
 
   const maci = maciAddress || maciContractAddress;
+
+  const maciContract = MACIFactory.connect(maci, signer);
+  const pollId = await maciContract.nextPollId();
+
+  // check if we have a signupGatekeeper already deployed or passed as arg
+  let signupGatekeeperContractAddress =
+    gatekeeperAddress || (await readContractAddress(`SignUpGatekeeper-${pollId.toString()}`, network?.name));
+
+  if (!signupGatekeeperContractAddress) {
+    const contract = await deployFreeForAllSignUpGatekeeper(signer, true);
+    signupGatekeeperContractAddress = await contract.getAddress();
+  }
 
   // required arg -> poll duration
   if (pollDuration <= 0) {
@@ -83,8 +96,6 @@ export const deployPoll = async ({
   // get the verifier contract
   const verifierContractAddress = await readContractAddress("Verifier", network?.name);
 
-  const maciContract = MACIFactory.connect(maci, signer);
-
   // deploy the poll
   let pollAddr = "";
   let messageProcessorContractAddress = "";
@@ -103,6 +114,7 @@ export const deployPoll = async ({
       verifierContractAddress,
       vkRegistry,
       useQuadraticVoting ? EMode.QV : EMode.NON_QV,
+      signupGatekeeperContractAddress,
       { gasLimit: 10000000 },
     );
 
@@ -130,8 +142,8 @@ export const deployPoll = async ({
     }
 
     // eslint-disable-next-line no-underscore-dangle
-    const pollId = log.args._pollId;
-    const pollContracts = await maciContract.getPoll(pollId);
+    const eventPollId = log.args._pollId;
+    const pollContracts = await maciContract.getPoll(eventPollId);
     pollAddr = pollContracts.poll;
     messageProcessorContractAddress = pollContracts.messageProcessor;
     tallyContractAddress = pollContracts.tally;
@@ -142,9 +154,18 @@ export const deployPoll = async ({
     logGreen(quiet, info(`Tally contract: ${tallyContractAddress}`));
 
     // store the address
-    await storeContractAddress(`MessageProcessor-${pollId.toString()}`, messageProcessorContractAddress, network?.name);
-    await storeContractAddress(`Tally-${pollId.toString()}`, tallyContractAddress, network?.name);
-    await storeContractAddress(`Poll-${pollId.toString()}`, pollAddr, network?.name);
+    await storeContractAddress(
+      `SignUpGatekeeper-${eventPollId.toString()}`,
+      signupGatekeeperContractAddress,
+      network?.name,
+    );
+    await storeContractAddress(
+      `MessageProcessor-${eventPollId.toString()}`,
+      messageProcessorContractAddress,
+      network?.name,
+    );
+    await storeContractAddress(`Tally-${eventPollId.toString()}`, tallyContractAddress, network?.name);
+    await storeContractAddress(`Poll-${eventPollId.toString()}`, pollAddr, network?.name);
   } catch (error) {
     logError((error as Error).message);
   }
@@ -154,5 +175,6 @@ export const deployPoll = async ({
     messageProcessor: messageProcessorContractAddress,
     tally: tallyContractAddress,
     poll: pollAddr,
+    signupGatekeeper: signupGatekeeperContractAddress,
   };
 };

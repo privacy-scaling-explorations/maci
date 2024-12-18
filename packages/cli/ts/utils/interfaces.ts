@@ -23,6 +23,7 @@ export interface PollContracts {
   poll: string;
   messageProcessor: string;
   tally: string;
+  signupGatekeeper: string;
 }
 
 /**
@@ -318,6 +319,11 @@ export interface DeployPollArgs {
    * Whether to use quadratic voting or not
    */
   useQuadraticVoting?: boolean;
+
+  /**
+   * The address of the gatekeeper contract
+   */
+  gatekeeperAddress?: string;
 }
 
 /**
@@ -447,6 +453,11 @@ export interface IJoinPollArgs {
    * Poll private key for the poll
    */
   pollPrivKey: string;
+
+  /**
+   * The signup gatekeeper data
+   */
+  sgDataArg?: string;
 }
 
 /**

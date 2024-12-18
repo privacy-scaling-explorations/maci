@@ -15,6 +15,7 @@ import {
   MessageProcessor__factory as MessageProcessorFactory,
   Verifier,
   VkRegistry,
+  SignUpGatekeeper,
 } from "../typechain-types";
 
 import {
@@ -34,7 +35,7 @@ describe("MessageProcessor", () => {
   let verifierContract: Verifier;
   let vkRegistryContract: VkRegistry;
   let mpContract: MessageProcessor;
-
+  let signupGatekeeperContract: SignUpGatekeeper;
   let pollId: bigint;
 
   // local poll and maci state
@@ -57,7 +58,7 @@ describe("MessageProcessor", () => {
     signer = await getDefaultSigner();
     verifierContract = r.mockVerifierContract as Verifier;
     vkRegistryContract = r.vkRegistryContract;
-
+    signupGatekeeperContract = r.gatekeeperContract;
     // deploy on chain poll
     const tx = await maciContract.deployPoll(
       duration,
@@ -67,6 +68,7 @@ describe("MessageProcessor", () => {
       verifierContract,
       vkRegistryContract,
       EMode.QV,
+      signupGatekeeperContract,
     );
     let receipt = await tx.wait();
 

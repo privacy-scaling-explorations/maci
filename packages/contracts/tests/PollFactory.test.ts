@@ -33,7 +33,12 @@ describe("pollFactory", () => {
     maciContract = r.maciContract;
     verifierContract = r.mockVerifierContract as Verifier;
     vkRegistryContract = r.vkRegistryContract;
-    extContracts = { maci: maciContract, verifier: verifierContract, vkRegistry: vkRegistryContract };
+    extContracts = {
+      maci: maciContract,
+      verifier: verifierContract,
+      vkRegistry: vkRegistryContract,
+      gatekeeper: r.gatekeeperContract,
+    };
 
     pollFactory = (await deployPollFactory(signer, undefined, true)) as BaseContract as PollFactory;
   });

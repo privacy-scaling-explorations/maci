@@ -10,7 +10,14 @@ import { Keypair, Message, PCommand, PubKey } from "maci-domainobjs";
 import { EMode } from "../ts/constants";
 import { IVerifyingKeyStruct } from "../ts/types";
 import { getDefaultSigner } from "../ts/utils";
-import { Poll__factory as PollFactory, MACI, Poll as PollContract, Verifier, VkRegistry } from "../typechain-types";
+import {
+  Poll__factory as PollFactory,
+  MACI,
+  Poll as PollContract,
+  Verifier,
+  VkRegistry,
+  SignUpGatekeeper,
+} from "../typechain-types";
 
 import {
   STATE_TREE_DEPTH,
@@ -30,6 +37,7 @@ describe("Poll", () => {
   let pollContract: PollContract;
   let verifierContract: Verifier;
   let vkRegistryContract: VkRegistry;
+  let signupGatekeeperContract: SignUpGatekeeper;
   let signer: Signer;
   let deployTime: number;
   const coordinator = new Keypair();
@@ -51,6 +59,7 @@ describe("Poll", () => {
       maciContract = r.maciContract;
       verifierContract = r.mockVerifierContract as Verifier;
       vkRegistryContract = r.vkRegistryContract;
+      signupGatekeeperContract = r.gatekeeperContract;
 
       for (let i = 0; i < NUM_USERS; i += 1) {
         const timestamp = Math.floor(Date.now() / 1000);
@@ -74,6 +83,7 @@ describe("Poll", () => {
         verifierContract,
         vkRegistryContract,
         EMode.QV,
+        signupGatekeeperContract,
       );
       const receipt = await tx.wait();
 
@@ -177,6 +187,7 @@ describe("Poll", () => {
           r.mockVerifierContract as Verifier,
           r.vkRegistryContract,
           EMode.QV,
+          signupGatekeeperContract,
         ),
       ).to.be.revertedWithCustomError(testMaciContract, "InvalidPubKey");
     });
@@ -192,7 +203,14 @@ describe("Poll", () => {
         const mockNullifier = AbiCoder.defaultAbiCoder().encode(["uint256"], [i]);
         const voiceCreditBalance = AbiCoder.defaultAbiCoder().encode(["uint256"], [i]);
 
-        const response = await pollContract.joinPoll(mockNullifier, pubkey, voiceCreditBalance, i, mockProof);
+        const response = await pollContract.joinPoll(
+          mockNullifier,
+          pubkey,
+          voiceCreditBalance,
+          i,
+          mockProof,
+          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
+        );
         const receipt = await response.wait();
         const logs = receipt!.logs[0];
         const event = iface.parseLog(logs as unknown as { topics: string[]; data: string }) as unknown as {
@@ -226,7 +244,14 @@ describe("Poll", () => {
       const mockProof = [0, 0, 0, 0, 0, 0, 0, 0];
 
       await expect(
-        pollContract.joinPoll(mockNullifier, pubkey, voiceCreditBalance, 0, mockProof),
+        pollContract.joinPoll(
+          mockNullifier,
+          pubkey,
+          voiceCreditBalance,
+          0,
+          mockProof,
+          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
+        ),
       ).to.be.revertedWithCustomError(pollContract, "UserAlreadyJoined");
     });
   });
