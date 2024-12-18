@@ -13,7 +13,8 @@ interface IPoll {
     DomainObjs.PubKey calldata _pubKey,
     uint256 _newVoiceCreditBalance,
     uint256 _stateRootIndex,
-    uint256[8] calldata _proof
+    uint256[8] calldata _proof,
+    bytes memory _signUpGatekeeperData
   ) external;
 
   /// @notice The number of messages which have been processed and the number of signups

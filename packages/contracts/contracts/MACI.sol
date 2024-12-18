@@ -6,6 +6,7 @@ import { IMessageProcessorFactory } from "./interfaces/IMPFactory.sol";
 import { ITallyFactory } from "./interfaces/ITallyFactory.sol";
 import { IVerifier } from "./interfaces/IVerifier.sol";
 import { IVkRegistry } from "./interfaces/IVkRegistry.sol";
+import { ISignUpGatekeeper } from "./interfaces/ISignUpGatekeeper.sol";
 import { InitialVoiceCreditProxy } from "./initialVoiceCreditProxy/InitialVoiceCreditProxy.sol";
 import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
 import { IMACI } from "./interfaces/IMACI.sol";
@@ -187,7 +188,8 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
     PubKey memory _coordinatorPubKey,
     address _verifier,
     address _vkRegistry,
-    Mode _mode
+    Mode _mode,
+    address _gatekeeper
   ) public virtual {
     // cache the poll to a local variable so we can increment it
     uint256 pollId = nextPollId;
@@ -208,7 +210,8 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
     ExtContracts memory extContracts = ExtContracts({
       maci: IMACI(address(this)),
       verifier: IVerifier(_verifier),
-      vkRegistry: IVkRegistry(_vkRegistry)
+      vkRegistry: IVkRegistry(_vkRegistry),
+      gatekeeper: ISignUpGatekeeper(_gatekeeper)
     });
 
     address p = pollFactory.deploy(

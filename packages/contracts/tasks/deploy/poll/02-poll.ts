@@ -49,6 +49,11 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
     const unserializedKey = PubKey.deserialize(coordinatorPubkey);
     const mode = useQuadraticVoting ? EMode.QV : EMode.NON_QV;
 
+    const gatekeeper =
+      deployment.getDeployConfigField<EContracts | null>(EContracts.Poll, "gatekeeper") ||
+      EContracts.FreeForAllGatekeeper;
+    const gatekeeperContractAddress = storage.mustGetAddress(gatekeeper, hre.network.name, `poll-${pollId}`);
+
     const tx = await maciContract.deployPoll(
       pollDuration,
       {
@@ -60,6 +65,7 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
       verifierContractAddress,
       vkRegistryContractAddress,
       mode,
+      gatekeeperContractAddress,
     );
 
     const receipt = await tx.wait();

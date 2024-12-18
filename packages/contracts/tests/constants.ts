@@ -7,6 +7,7 @@ export interface ExtContractsStruct {
   maci: AddressLike;
   verifier: AddressLike;
   vkRegistry: AddressLike;
+  gatekeeper: AddressLike;
 }
 
 export const duration = 2_000;

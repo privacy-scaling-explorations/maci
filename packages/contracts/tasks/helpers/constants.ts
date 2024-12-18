@@ -11,6 +11,7 @@ export enum EDeploySteps {
   TallyFactory = "full:deploy-tally-factory",
   Maci = "full:deploy-maci",
   VkRegistry = "full:deploy-vk-registry",
+  PollGatekeeper = "poll:deploy-gatekeeper",
   Poll = "poll:deploy-poll",
 }
 

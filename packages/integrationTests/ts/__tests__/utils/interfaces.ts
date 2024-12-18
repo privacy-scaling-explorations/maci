@@ -1,4 +1,4 @@
-import { MACI, Verifier, VkRegistry } from "maci-contracts";
+import { MACI, Verifier, VkRegistry, FreeForAllGatekeeper } from "maci-contracts";
 
 /**
  * A util interface that represents a vote object
@@ -47,4 +47,5 @@ export interface IDeployedTestContracts {
   maci: MACI;
   verifier: Verifier;
   vkRegistry: VkRegistry;
+  gatekeeper: FreeForAllGatekeeper;
 }

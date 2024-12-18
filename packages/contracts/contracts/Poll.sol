@@ -6,6 +6,7 @@ import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { LazyIMTData, InternalLazyIMT } from "./trees/LazyIMT.sol";
 import { IMACI } from "./interfaces/IMACI.sol";
 import { IPoll } from "./interfaces/IPoll.sol";
+import { ISignUpGatekeeper } from "./interfaces/ISignUpGatekeeper.sol";
 import { Utilities } from "./utilities/Utilities.sol";
 import { CurveBabyJubJub } from "./crypto/BabyJubJub.sol";
 
@@ -284,28 +285,31 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     PubKey calldata _pubKey,
     uint256 _newVoiceCreditBalance,
     uint256 _stateRootIndex,
-    uint256[8] calldata _proof
+    uint256[8] calldata _proof,
+    bytes memory _signUpGatekeeperData
   ) public virtual isWithinVotingDeadline {
     // Whether the user has already joined
     if (pollNullifier[_nullifier]) {
       revert UserAlreadyJoined();
     }
 
+    // Set nullifier for user's private key
+    pollNullifier[_nullifier] = true;
+
     // Verify user's proof
     if (!verifyPollProof(_nullifier, _newVoiceCreditBalance, _stateRootIndex, _pubKey, _proof)) {
       revert InvalidPollProof();
     }
 
+    // Check if the user is eligible to join the poll
+    extContracts.gatekeeper.register(msg.sender, _signUpGatekeeperData);
+
     // Store user in the pollStateTree
-    uint256 timestamp = block.timestamp;
-    uint256 stateLeaf = hashStateLeaf(StateLeaf(_pubKey, _newVoiceCreditBalance, timestamp));
+    uint256 stateLeaf = hashStateLeaf(StateLeaf(_pubKey, _newVoiceCreditBalance, block.timestamp));
     InternalLazyIMT._insert(pollStateTree, stateLeaf);
 
-    // Set nullifier for user's private key
-    pollNullifier[_nullifier] = true;
-
     uint256 pollStateIndex = pollStateTree.numberOfLeaves - 1;
-    emit PollJoined(_pubKey.x, _pubKey.y, _newVoiceCreditBalance, timestamp, _nullifier, pollStateIndex);
+    emit PollJoined(_pubKey.x, _pubKey.y, _newVoiceCreditBalance, block.timestamp, _nullifier, pollStateIndex);
   }
 
   /// @notice Verify the proof for Poll
