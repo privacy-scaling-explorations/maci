@@ -2,22 +2,26 @@
 pragma solidity ^0.8.20;
 
 import { InitialVoiceCreditProxy } from "./InitialVoiceCreditProxy.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-/// @title ETHBasedInitialVoiceCreditProxy
+/// @title TokensSentInitialVoiceCreditProxy
 /// @notice This contract allows to set balances depending on the amount of ETH sent
 /// for MACI's voters.
-contract ETHBasedInitialVoiceCreditProxy is InitialVoiceCreditProxy {
+contract TokensSentInitialVoiceCreditProxy is InitialVoiceCreditProxy {
   /// @notice the address where the ETH will be sent
   address payable public immutable receiver;
+  /// @notice the ERC20 token contract
+  IERC20 public immutable token;
   /// @notice the conversion rate between ETH and voice credits
   uint256 internal immutable conversionRate;
   mapping(address => uint256) public balances;
 
-  /// @notice creates a new ETHBasedInitialVoiceCreditProxy
+  /// @notice creates a new TokensSentInitialVoiceCreditProxy
   /// @param _receiver the address where the ETH will be sent
   /// @param _conversionRate the conversion rate between ETH and voice credits
-  constructor(address payable _receiver, uint256 _conversionRate) payable {
+  constructor(address payable _receiver, IERC20 _token, uint256 _conversionRate) payable {
     receiver = _receiver;
+    token = _token;
     conversionRate = _conversionRate;
   }
 
@@ -32,10 +36,15 @@ contract ETHBasedInitialVoiceCreditProxy is InitialVoiceCreditProxy {
   /// @notice Saves the amount of voice credits for any new MACI's voter
   /// @dev The real amount is saved (no conversion here) to allow full withdrawals
   /// @param _user the address of the voter
-  function registerVoiceCredits(address _user) public payable {
+  /// @param _amount the amount of ERC-20 tokens (if ETH then the amount is passed as msg.value)
+  function registerVoiceCredits(address _user, uint256 _amount) public payable {
     // set user's balanace
     balances[_user] += msg.value;
-    // send ETH to the receiver address
-    receiver.transfer(msg.value);
+    // send tokens to the receiver address
+    if (address(token) == address(0)) {
+      receiver.transfer(msg.value);
+    } else {
+      require(token.transferFrom(msg.sender, receiver, _amount), "Transfer failed");
+    }
   }
 }
