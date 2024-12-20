@@ -54,6 +54,7 @@ export interface IPollJoiningInputs {
   credits: bigint;
   stateRoot: bigint;
   actualStateTreeDepth: bigint;
+  pollId: bigint;
 }
 
 /**

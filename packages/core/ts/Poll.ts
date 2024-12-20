@@ -142,6 +142,7 @@ export class Poll implements IPoll {
    * @param treeDepths - The depths of the trees used in the poll.
    * @param batchSizes - The sizes of the batches used in the poll.
    * @param maciStateRef - The reference to the MACI state.
+   * @param pollId - The poll id
    */
   constructor(
     pollEndTimestamp: bigint,
@@ -471,7 +472,7 @@ export class Poll implements IPoll {
 
     // Create nullifier from private key
     const inputNullifier = BigInt(maciPrivKey.asCircuitInputs());
-    const nullifier = poseidon([inputNullifier]);
+    const nullifier = poseidon([inputNullifier, this.pollId]);
 
     // Get pll state tree's root
     const stateRoot = this.stateTree!.root;
@@ -490,6 +491,7 @@ export class Poll implements IPoll {
       credits,
       stateRoot,
       actualStateTreeDepth,
+      pollId: this.pollId,
     };
 
     return stringifyBigInts(circuitInputs) as unknown as IPollJoiningCircuitInputs;

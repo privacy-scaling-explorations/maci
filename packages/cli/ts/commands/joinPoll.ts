@@ -101,6 +101,7 @@ const generateAndVerifyProof = async (
  * @param credits Credits for voting
  * @param pollPrivKey Poll's private key for the poll joining
  * @param pollPubKey Poll's public key for the poll joining
+ * @param pollId Poll's id
  * @returns stringified circuit inputs
  */
 const joiningCircuitInputs = (
@@ -111,6 +112,7 @@ const joiningCircuitInputs = (
   credits: bigint,
   pollPrivKey: PrivKey,
   pollPubKey: PubKey,
+  pollId: bigint,
 ): IPollJoiningCircuitInputs => {
   // Get the state leaf on the index position
   const { signUpTree: stateTree, stateLeaves } = signUpData;
@@ -146,7 +148,7 @@ const joiningCircuitInputs = (
 
   // Create nullifier from private key
   const inputNullifier = BigInt(maciPrivKey.asCircuitInputs());
-  const nullifier = poseidon([inputNullifier]);
+  const nullifier = poseidon([inputNullifier, pollId]);
 
   // Get pll state tree's root
   const stateRoot = stateTree.root;
@@ -167,6 +169,7 @@ const joiningCircuitInputs = (
     credits,
     stateRoot,
     actualStateTreeDepth,
+    pollId,
   };
 
   return stringifyBigInts(circuitInputs) as unknown as IPollJoiningCircuitInputs;
@@ -208,18 +211,18 @@ export const joinPoll = async ({
     logError("Invalid MACI private key");
   }
 
+  if (pollId < 0) {
+    logError("Invalid poll id");
+  }
+
   const userMaciPrivKey = PrivKey.deserialize(privateKey);
   const userMaciPubKey = new Keypair(userMaciPrivKey).pubKey;
-  const nullifier = poseidon([BigInt(userMaciPrivKey.asCircuitInputs())]);
+  const nullifier = poseidon([BigInt(userMaciPrivKey.asCircuitInputs()), pollId]);
 
   // Create poll public key from poll private key
   const pollPrivKeyDeserialized = PrivKey.deserialize(pollPrivKey);
   const pollKeyPair = new Keypair(pollPrivKeyDeserialized);
   const pollPubKey = pollKeyPair.pubKey;
-
-  if (pollId < 0) {
-    logError("Invalid poll id");
-  }
 
   const maciContract = MACIFactory.connect(maciAddress, signer);
   const pollContracts = await maciContract.getPoll(pollId);
@@ -325,6 +328,7 @@ export const joinPoll = async ({
       loadedCreditBalance!,
       pollPrivKeyDeserialized,
       pollPubKey,
+      pollId,
     ) as unknown as CircuitInputs;
   }
 

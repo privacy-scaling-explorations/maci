@@ -26,6 +26,7 @@ describe("Poll Joining circuit", function test() {
     "credits",
     "stateRoot",
     "actualStateTreeDepth",
+    "pollId",
   ];
 
   let circuit: WitnessTester<PollJoiningCircuitInputs>;

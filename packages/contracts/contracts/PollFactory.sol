@@ -21,7 +21,8 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
     uint8 _messageBatchSize,
     DomainObjs.PubKey calldata _coordinatorPubKey,
     Params.ExtContracts calldata _extContracts,
-    uint256 _emptyBallotRoot
+    uint256 _emptyBallotRoot,
+    uint256 _pollId
   ) public virtual returns (address pollAddr) {
     // deploy the poll
     Poll poll = new Poll(
@@ -30,7 +31,8 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
       _messageBatchSize,
       _coordinatorPubKey,
       _extContracts,
-      _emptyBallotRoot
+      _emptyBallotRoot,
+      _pollId
     );
 
     // init Poll
