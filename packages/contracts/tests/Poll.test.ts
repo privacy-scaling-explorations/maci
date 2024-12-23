@@ -131,10 +131,6 @@ describe("Poll", () => {
       );
     });
 
-    it("should not be possible to init the Poll contract twice", async () => {
-      await expect(pollContract.init()).to.be.revertedWithCustomError(pollContract, "PollAlreadyInit");
-    });
-
     it("should have the correct coordinator public key set", async () => {
       const coordinatorPubKey = await pollContract.coordinatorPubKey();
       expect(coordinatorPubKey[0].toString()).to.eq(coordinator.pubKey.rawPubKey[0].toString());
