@@ -93,6 +93,9 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   /// @notice Poll voting nullifier
   mapping(uint256 => bool) private pollNullifier;
 
+  /// @notice The Id of this poll
+  uint256 public immutable pollId;
+
   error VotingPeriodOver();
   error VotingPeriodNotOver();
   error PollAlreadyInit();
@@ -125,13 +128,15 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   /// @param _coordinatorPubKey The coordinator's public key
   /// @param _extContracts The external contracts
   /// @param _emptyBallotRoot The root of the empty ballot tree
+  /// @param _pollId The poll id
   constructor(
     uint256 _duration,
     TreeDepths memory _treeDepths,
     uint8 _messageBatchSize,
     PubKey memory _coordinatorPubKey,
     ExtContracts memory _extContracts,
-    uint256 _emptyBallotRoot
+    uint256 _emptyBallotRoot,
+    uint256 _pollId
   ) payable {
     // check that the coordinator public key is valid
     if (!CurveBabyJubJub.isOnCurve(_coordinatorPubKey.x, _coordinatorPubKey.y)) {
@@ -156,6 +161,8 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     deployTime = block.timestamp;
     // store the empty ballot root
     emptyBallotRoot = _emptyBallotRoot;
+    // store the poll id
+    pollId = _pollId;
   }
 
   /// @notice A modifier that causes the function to revert if the voting period is
@@ -350,13 +357,14 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     uint256 _index,
     PubKey calldata _pubKey
   ) public view returns (uint256[] memory publicInputs) {
-    publicInputs = new uint256[](5);
+    publicInputs = new uint256[](6);
 
     publicInputs[0] = _pubKey.x;
     publicInputs[1] = _pubKey.y;
     publicInputs[2] = _nullifier;
     publicInputs[3] = _voiceCreditBalance;
     publicInputs[4] = extContracts.maci.getStateRootOnIndexedSignUp(_index);
+    publicInputs[5] = pollId;
   }
 
   /// @inheritdoc IPoll

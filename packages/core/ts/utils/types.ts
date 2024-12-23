@@ -156,6 +156,7 @@ export interface IPollJoiningCircuitInputs {
   credits: string;
   stateRoot: string;
   actualStateTreeDepth: string;
+  pollId: string;
 }
 /**
  * An interface describing the circuit inputs to the ProcessMessage circuit

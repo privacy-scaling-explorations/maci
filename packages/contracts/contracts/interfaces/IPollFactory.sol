@@ -14,6 +14,7 @@ interface IPollFactory {
   /// @param _coordinatorPubKey The coordinator's public key
   /// @param _extContracts The external contracts interface references
   /// @param _emptyBallotRoot The root of the empty ballot tree
+  /// @param _pollId The poll id
   /// @return The deployed Poll contract
   function deploy(
     uint256 _duration,
@@ -21,6 +22,7 @@ interface IPollFactory {
     uint8 _messageBatchSize,
     DomainObjs.PubKey calldata _coordinatorPubKey,
     Params.ExtContracts calldata _extContracts,
-    uint256 _emptyBallotRoot
+    uint256 _emptyBallotRoot,
+    uint256 _pollId
   ) external returns (address);
 }
