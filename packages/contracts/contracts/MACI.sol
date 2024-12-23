@@ -220,7 +220,8 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
       _messageBatchSize,
       _coordinatorPubKey,
       extContracts,
-      emptyBallotRoots[voteOptionTreeDepth - 1]
+      emptyBallotRoots[voteOptionTreeDepth - 1],
+      pollId
     );
 
     address mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p, msg.sender, _mode);

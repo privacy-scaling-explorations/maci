@@ -52,6 +52,7 @@ describe("pollFactory", () => {
         coordinatorPubKey.asContractParam(),
         extContracts,
         emptyBallotRoot,
+        0n,
       );
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);

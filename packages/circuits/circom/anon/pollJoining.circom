@@ -41,8 +41,11 @@ template PollJoining(stateTreeDepth) {
     signal input stateRoot;
     // The actual tree depth (might be <= stateTreeDepth) Used in BinaryMerkleRoot
     signal input actualStateTreeDepth;
+    // The poll id
+    signal input pollId;
 
-    var computedNullifier = PoseidonHasher(1)([privKey]);
+    // Compute the nullifier (hash of private key and poll id)
+    var computedNullifier = PoseidonHasher(2)([privKey, pollId]);
     nullifier === computedNullifier;
 
     // User private to public key
@@ -69,8 +72,4 @@ template PollJoining(stateTreeDepth) {
     // Check credits
     var isCreditsValid = SafeLessEqThan(N_BITS)([credits, stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX]]);
     isCreditsValid === 1;
-
-    // Check nullifier
-    var hashedPrivKey = PoseidonHasher(1)([privKey]);
-    hashedPrivKey === nullifier;
 }
