@@ -17,7 +17,7 @@ describe("Ballot", () => {
   });
 
   describe("hash", () => {
-    it("should produce an hash of the ballot", () => {
+    it("should produce a hash of the ballot", () => {
       const b = new Ballot(0, 2);
       const h = b.hash();
       expect(h).to.not.eq(null);
