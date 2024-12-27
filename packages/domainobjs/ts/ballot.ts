@@ -30,7 +30,7 @@ export class Ballot {
   }
 
   /**
-   * Generate an hash of this ballot
+   * Generate a hash of this ballot
    * @returns The hash of the ballot
    */
   hash = (): bigint => {
