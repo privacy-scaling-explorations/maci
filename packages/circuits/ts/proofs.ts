@@ -13,7 +13,7 @@ import { cleanThreads, isArm } from "./utils";
 
 /**
  * Generate a zk-SNARK proof
- * @dev if running on a intel chip we use rapidsnark for
+ * @dev if running on an intel chip we use rapidsnark for
  * speed - on the other hand if running on ARM we need to use
  * snark and a WASM witness
  * @param inputs - the inputs to the circuit
