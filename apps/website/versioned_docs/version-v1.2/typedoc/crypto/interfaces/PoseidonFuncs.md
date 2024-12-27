@@ -3,7 +3,7 @@ title: PoseidonFuncs
 sidebar_label: PoseidonFuncs
 ---
 
-A interface for poseidon hash functions
+An interface for poseidon hash functions
 
 ## Indexable
 
