@@ -51,7 +51,7 @@ export const storeContractAddress = async (
 /**
  * Read a contract address from the local address store file
  * @param contractName - the name of the contract
- * @returns the contract address or a undefined if it does not exist
+ * @returns the contract address or an undefined if it does not exist
  */
 export const readContractAddress = async (contractName: string, network = "default"): Promise<string> => {
   try {
