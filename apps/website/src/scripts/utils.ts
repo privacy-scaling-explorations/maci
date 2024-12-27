@@ -99,7 +99,7 @@ export function generateToC(dir: string, prefix = ""): string {
 }
 
 /**
- * A function that insert a index page
+ * A function that insert an index page
  * @param dir - the directory to insert an index page
  * @param sidebarProps - including title, description, label, and position
  */
