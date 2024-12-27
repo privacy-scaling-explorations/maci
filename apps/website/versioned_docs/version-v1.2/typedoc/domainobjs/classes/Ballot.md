@@ -171,7 +171,7 @@ whether the two ballots are equal
 
 ▸ **hash**(): `bigint`
 
-Generate an hash of this ballot
+Generate a hash of this ballot
 
 #### Returns
 
