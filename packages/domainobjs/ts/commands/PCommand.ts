@@ -203,7 +203,7 @@ export class PCommand {
     const nonce = extract(p, 150);
     const pollId = extract(p, 200);
 
-    // create new public key but allow it to be invalid (as when passing an mismatched
+    // create new public key but allow it to be invalid (as when passing a mismatched
     // encPubKey, a message will not decrypt resulting in potentially invalid public keys)
     const newPubKey = new PubKey([decrypted[1], decrypted[2]], true);
     const salt = decrypted[3];
