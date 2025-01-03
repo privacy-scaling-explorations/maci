@@ -429,6 +429,9 @@ importers:
       maci-domainobjs:
         specifier: ^2.5.0
         version: link:../domainobjs
+      maci-sdk:
+        specifier: ^0.0.1
+        version: link:../sdk
       prompt:
         specifier: ^1.3.0
         version: 1.3.0
@@ -752,6 +755,70 @@ importers:
         version: 10.0.0(mocha@11.0.1)
       typescript:
         specifier: ^5.7.3
+        version: 5.7.3
+
+  packages/sdk:
+    dependencies:
+      '@commander-js/extra-typings':
+        specifier: ^12.1.0
+        version: 12.1.0(commander@12.1.0)
+      '@nomicfoundation/hardhat-toolbox':
+        specifier: ^5.0.0
+        version: 5.0.0(xxl2qhkxzbwobweo6ovit3fcve)
+      commander:
+        specifier: ^12.1.0
+        version: 12.1.0
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.4.7
+      ethers:
+        specifier: ^6.13.4
+        version: 6.13.5
+      hardhat:
+        specifier: ^2.22.8
+        version: 2.22.18(ts-node@10.9.2(@types/node@22.10.7)(typescript@5.7.3))(typescript@5.7.3)
+      maci-contracts:
+        specifier: ^2.5.0
+        version: link:../contracts
+      maci-crypto:
+        specifier: ^2.5.0
+        version: link:../crypto
+    devDependencies:
+      '@types/chai':
+        specifier: ^4.3.9
+        version: 4.3.16
+      '@types/chai-as-promised':
+        specifier: ^7.1.8
+        version: 7.1.8
+      '@types/mocha':
+        specifier: ^10.0.8
+        version: 10.0.10
+      '@types/node':
+        specifier: ^22.9.0
+        version: 22.10.7
+      '@types/snarkjs':
+        specifier: ^0.7.8
+        version: 0.7.9
+      chai:
+        specifier: ^4.3.10
+        version: 4.4.1
+      chai-as-promised:
+        specifier: ^7.1.2
+        version: 7.1.2(chai@4.4.1)
+      mocha:
+        specifier: ^10.7.3
+        version: 10.8.2
+      nyc:
+        specifier: ^17.1.0
+        version: 17.1.0
+      snarkjs:
+        specifier: ^0.7.5
+        version: 0.7.5
+      ts-mocha:
+        specifier: ^10.0.0
+        version: 10.0.0(mocha@10.8.2)
+      typescript:
+        specifier: ^5.6.3
         version: 5.7.3
 
 packages:
@@ -2095,10 +2162,6 @@ packages:
     resolution: {integrity: sha512-YXHu5lN8kJCb1LOb9PgV6pvak43X2h4HvRApcN5SdWeaItQOzfn1hgP6jasD6KWQyJDBxrVmA9o9OivlnNJK/w==}
     engines: {node: '>=6.9.0'}
 
-  '@babel/runtime@7.24.7':
-    resolution: {integrity: sha512-UwgBRMjJP+xv857DCngvqXI3Iq6J4v0wXmwc6sapg+zyhbwmQX67LUEFrkK5tbyJ30jGuG3ZvWpBiB9LCy1kWw==}
-    engines: {node: '>=6.9.0'}
-
   '@babel/runtime@7.26.0':
     resolution: {integrity: sha512-FDSOghenHTiToteC/QRlv2q3DhPZ/oOXTBoirfWNx1Cx3TMVcGWQtMMmQcSvb/JjpNeGzx8Pq/b4fKEJuWm1sw==}
     engines: {node: '>=6.9.0'}
@@ -2151,6 +2214,11 @@ packages:
   '@colors/colors@1.5.0':
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
     engines: {node: '>=0.1.90'}
+
+  '@commander-js/extra-typings@12.1.0':
+    resolution: {integrity: sha512-wf/lwQvWAA0goIghcb91dQYpkLBcyhOhQNqG/VgWhnKzgt+UOMvra7EX/2fv70arm5RW+PUHoQHHDa6/p77Eqg==}
+    peerDependencies:
+      commander: ~12.1.0
 
   '@commander-js/extra-typings@13.0.0':
     resolution: {integrity: sha512-4or44L3saI49QRBvdSzfCtzqONlFg0/qy0Cfl+LRynDaxlGs7r2KRTLCELaAoKh4oQguICxRwQfm77/Up+0wTw==}
@@ -5747,10 +5815,6 @@ packages:
   chalk@4.1.2:
     resolution: {integrity: sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==}
     engines: {node: '>=10'}
-
-  chalk@5.3.0:
-    resolution: {integrity: sha512-dLitG79d+GV1Nb/VYcCDFivJeK1hiukt9QjRNVOsUtTy1rR1YJsmpGGTZ3qJos+uw7WmWF4wUwBd9jxjocFC2w==}
-    engines: {node: ^12.17.0 || ^14.13 || >=16.0.0}
 
   chalk@5.4.1:
     resolution: {integrity: sha512-zgVZuo2WcZgfUEmsn6eO3kINexW8RAE4maiQ8QNs8CtpPCSyMiYsULR3HQYkm3w8FIA3SberyMJMSldGsW+U3w==}
@@ -16396,10 +16460,6 @@ snapshots:
       core-js-pure: 3.37.1
       regenerator-runtime: 0.14.1
 
-  '@babel/runtime@7.24.7':
-    dependencies:
-      regenerator-runtime: 0.14.1
-
   '@babel/runtime@7.26.0':
     dependencies:
       regenerator-runtime: 0.14.1
@@ -16497,6 +16557,10 @@ snapshots:
       '@chainsafe/is-ip': 2.0.2
 
   '@colors/colors@1.5.0': {}
+
+  '@commander-js/extra-typings@12.1.0(commander@12.1.0)':
+    dependencies:
+      commander: 12.1.0
 
   '@commander-js/extra-typings@13.0.0(commander@13.0.0)':
     dependencies:
@@ -16646,7 +16710,7 @@ snapshots:
   '@commitlint/types@19.5.0':
     dependencies:
       '@types/conventional-commits-parser': 5.0.0
-      chalk: 5.3.0
+      chalk: 5.4.1
 
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
@@ -22437,8 +22501,6 @@ snapshots:
       ansi-styles: 4.3.0
       supports-color: 7.2.0
 
-  chalk@5.3.0: {}
-
   chalk@5.4.1: {}
 
   char-regex@1.0.2: {}
@@ -26808,7 +26870,7 @@ snapshots:
 
   jest-diff@29.7.0:
     dependencies:
-      chalk: 4.1.0
+      chalk: 4.1.2
       diff-sequences: 29.6.3
       jest-get-type: 29.6.3
       pretty-format: 29.7.0
@@ -29027,7 +29089,7 @@ snapshots:
       '@yarnpkg/parsers': 3.0.0-rc.46
       '@zkochan/js-yaml': 0.0.7
       axios: 1.7.2
-      chalk: 4.1.0
+      chalk: 4.1.2
       cli-cursor: 3.1.0
       cli-spinners: 2.6.1
       cliui: 8.0.1
@@ -30334,7 +30396,7 @@ snapshots:
 
   react-loadable-ssr-addon-v5-slorber@1.0.1(@docusaurus/react-loadable@6.0.0(react@19.0.0))(webpack@5.97.1):
     dependencies:
-      '@babel/runtime': 7.24.7
+      '@babel/runtime': 7.26.0
       react-loadable: '@docusaurus/react-loadable@6.0.0(react@19.0.0)'
       webpack: 5.97.1
 
@@ -30407,13 +30469,13 @@ snapshots:
 
   react-router-config@5.1.1(react-router@5.3.4(react@19.0.0))(react@19.0.0):
     dependencies:
-      '@babel/runtime': 7.24.7
+      '@babel/runtime': 7.26.0
       react: 19.0.0
       react-router: 5.3.4(react@19.0.0)
 
   react-router-dom@5.3.4(react@19.0.0):
     dependencies:
-      '@babel/runtime': 7.24.7
+      '@babel/runtime': 7.26.0
       history: 4.10.1
       loose-envify: 1.4.0
       prop-types: 15.8.1
@@ -30424,7 +30486,7 @@ snapshots:
 
   react-router@5.3.4(react@19.0.0):
     dependencies:
-      '@babel/runtime': 7.24.7
+      '@babel/runtime': 7.26.0
       history: 4.10.1
       hoist-non-react-statics: 3.3.2
       loose-envify: 1.4.0
@@ -32082,6 +32144,13 @@ snapshots:
       '@jest/types': 29.6.3
       babel-jest: 29.7.0(@babel/core@7.24.7)
 
+  ts-mocha@10.0.0(mocha@10.8.2):
+    dependencies:
+      mocha: 10.8.2
+      ts-node: 7.0.1
+    optionalDependencies:
+      tsconfig-paths: 3.15.0
+
   ts-mocha@10.0.0(mocha@11.0.1):
     dependencies:
       mocha: 11.0.1
@@ -32466,7 +32535,7 @@ snapshots:
   update-notifier@6.0.2:
     dependencies:
       boxen: 7.1.1
-      chalk: 5.3.0
+      chalk: 5.4.1
       configstore: 6.0.0
       has-yarn: 3.0.0
       import-lazy: 4.0.0
