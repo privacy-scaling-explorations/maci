@@ -1,0 +1,51 @@
+name: Relayer
+
+on:
+  push:
+    branches: [dev]
+  pull_request:
+
+env:
+  RPC_URL: "http://localhost:8545"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install
+        run: |
+          pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Build
+        run: |
+          pnpm run build
+
+      - name: Run hardhat
+        run: |
+          pnpm run hardhat &
+          sleep 5
+        working-directory: apps/relayer
+
+      - name: Test
+        run: pnpm run test:coverage
+        working-directory: apps/relayer
+
+      - name: Stop Hardhat
+        if: always()
+        run: kill $(lsof -t -i:8545)
