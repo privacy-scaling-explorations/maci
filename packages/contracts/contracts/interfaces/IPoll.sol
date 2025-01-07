@@ -11,10 +11,10 @@ interface IPoll {
   function joinPoll(
     uint256 _nullifier,
     DomainObjs.PubKey calldata _pubKey,
-    uint256 _newVoiceCreditBalance,
     uint256 _stateRootIndex,
     uint256[8] calldata _proof,
-    bytes memory _signUpGatekeeperData
+    bytes memory _signUpGatekeeperData,
+    bytes memory _initialVoiceCreditProxyData
   ) external;
 
   /// @notice The number of messages which have been processed and the number of signups

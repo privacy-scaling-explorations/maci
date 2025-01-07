@@ -218,6 +218,7 @@ program
   .option("-i, --state-index <stateIndex>", "the user's state index", BigInt)
   .requiredOption("-s, --sg-data <sgData>", "the signup gateway data")
   .requiredOption("-esk, --poll-priv-key <pollPrivKey>", "the user ephemeral private key for the poll")
+  .option("-iv, --ivcp-data <ivcpData>", "the initial voice credit proxy data")
   .option(
     "-nv, --new-voice-credit-balance <newVoiceCreditBalance>",
     "the voice credit balance of the user for the poll",
@@ -251,8 +252,7 @@ program
         maciAddress,
         privateKey,
         pollPrivKey: cmdObj.pollPrivKey,
-        stateIndex: cmdObj.stateIndex || null,
-        newVoiceCreditBalance: cmdObj.newVoiceCreditBalance || null,
+        stateIndex: cmdObj.stateIndex || undefined,
         stateFile: cmdObj.stateFile,
         pollId: cmdObj.pollId,
         signer,
@@ -267,6 +267,7 @@ program
         rapidsnark: cmdObj.rapidsnark,
         pollWitgen: cmdObj.pollWitnessgen,
         sgDataArg: cmdObj.sgData,
+        ivcpDataArg: cmdObj.ivcpData,
       });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
@@ -456,7 +457,6 @@ program
   .requiredOption("-p, --pubkey <maciPubKey>", "the MACI public key")
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .option("-s, --sg-data <sgData>", "the signup gateway data")
-  .option("-i, --ivcp-data <ivcpData>", "the initial voice credit proxy data")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
@@ -470,7 +470,6 @@ program
         maciPubKey: cmdObj.pubkey,
         maciAddress,
         sgDataArg: cmdObj.sgData,
-        ivcpDataArg: cmdObj.ivcpData,
         quiet: cmdObj.quiet,
         signer,
       });

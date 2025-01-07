@@ -42,10 +42,6 @@ deployment.deployTask(EDeploySteps.Maci, "Deploy MACI contract").then((task) =>
       },
     });
 
-    const constantInitialVoiceCreditProxyContractAddress = storage.mustGetAddress(
-      EContracts.ConstantInitialVoiceCreditProxy,
-      hre.network.name,
-    );
     const gatekeeper =
       deployment.getDeployConfigField<EContracts | null>(EContracts.MACI, "gatekeeper") ||
       EContracts.FreeForAllGatekeeper;
@@ -68,7 +64,6 @@ deployment.deployTask(EDeploySteps.Maci, "Deploy MACI contract").then((task) =>
       messageProcessorFactoryContractAddress,
       tallyFactoryContractAddress,
       gatekeeperContractAddress,
-      constantInitialVoiceCreditProxyContractAddress,
       stateTreeDepth,
       emptyBallotRoots,
     );
@@ -90,7 +85,6 @@ deployment.deployTask(EDeploySteps.Maci, "Deploy MACI contract").then((task) =>
         messageProcessorFactoryContractAddress,
         tallyFactoryContractAddress,
         gatekeeperContractAddress,
-        constantInitialVoiceCreditProxyContractAddress,
         stateTreeDepth,
         emptyBallotRoots.map((root) => root.toString()),
       ],

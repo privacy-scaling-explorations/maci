@@ -24,10 +24,10 @@ describe("Poll", function test() {
 
     const user1Keypair = new Keypair();
     // signup the user
-    maciState.signUp(user1Keypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+    maciState.signUp(user1Keypair.pubKey);
 
     // copy the state from the MaciState ref
-    poll.updatePoll(BigInt(maciState.stateLeaves.length));
+    poll.updatePoll(BigInt(maciState.pubKeys.length));
 
     const { privKey } = user1Keypair;
     const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
@@ -244,11 +244,11 @@ describe("Poll", function test() {
     );
 
     const poll = maciState.polls.get(pollId)!;
-    poll.updatePoll(BigInt(maciState.stateLeaves.length));
+    poll.updatePoll(BigInt(maciState.pubKeys.length));
 
     const user1Keypair = new Keypair();
     // signup the user
-    maciState.signUp(user1Keypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+    maciState.signUp(user1Keypair.pubKey);
 
     const { privKey } = user1Keypair;
     const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
@@ -291,7 +291,7 @@ describe("Poll", function test() {
 
       poll.publishMessage(message, ecdhKeypair.pubKey);
       poll.publishMessage(message, ecdhKeypair.pubKey);
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       expect(() => {
         poll.processMessage(message, ecdhKeypair.pubKey);
@@ -323,9 +323,9 @@ describe("Poll", function test() {
 
     const user1Keypair = new Keypair();
     // signup the user
-    maciState.signUp(user1Keypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+    maciState.signUp(user1Keypair.pubKey);
 
-    poll.updatePoll(BigInt(maciState.stateLeaves.length));
+    poll.updatePoll(BigInt(maciState.pubKeys.length));
 
     const { privKey } = user1Keypair;
     const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
@@ -418,11 +418,11 @@ describe("Poll", function test() {
     const user2Keypair = new Keypair();
 
     // signup the user
-    maciState.signUp(user1Keypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+    maciState.signUp(user1Keypair.pubKey);
 
-    maciState.signUp(user2Keypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+    maciState.signUp(user2Keypair.pubKey);
 
-    poll.updatePoll(BigInt(maciState.stateLeaves.length));
+    poll.updatePoll(BigInt(maciState.pubKeys.length));
 
     const { privKey: privKey1 } = user1Keypair;
     const { privKey: pollPrivKey1, pubKey: pollPubKey1 } = new Keypair();
@@ -481,7 +481,7 @@ describe("Poll", function test() {
       );
 
       const secondPoll = maciState.polls.get(secondPollId)!;
-      secondPoll.updatePoll(BigInt(maciState.stateLeaves.length));
+      secondPoll.updatePoll(BigInt(maciState.pubKeys.length));
 
       const stateIndex2 = secondPoll.joinPoll(nullifier2, pollPubKey2, voiceCreditBalance, timestamp2);
 
@@ -548,11 +548,11 @@ describe("Poll", function test() {
         coordinatorKeypair,
       );
 
-      maciState.signUp(new Keypair().pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+      maciState.signUp(new Keypair().pubKey);
 
       const poll = maciState.polls.get(pollId)!;
 
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       expect(poll.getNumSignups()).to.eq(2n);
 

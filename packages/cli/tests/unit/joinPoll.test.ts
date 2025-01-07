@@ -31,7 +31,6 @@ describe("joinPoll", function test() {
   const userPublicKey = user.pubKey.serialize();
 
   const { privKey: pollPrivateKey, pubKey: pollPublicKey } = new Keypair();
-  const mockNewVoiceCreditBalance = 10n;
   const mockStateIndex = 1n;
   const mockPollId = 9000n;
 
@@ -71,7 +70,6 @@ describe("joinPoll", function test() {
       pollWasm: testPollJoiningWasmPath,
       pollWitgen: testPollJoiningWitnessPath,
       rapidsnark: testRapidsnarkPath,
-      newVoiceCreditBalance: mockNewVoiceCreditBalance,
       quiet: true,
     });
 
@@ -98,7 +96,6 @@ describe("joinPoll", function test() {
         pollId: mockPollId,
         pollPrivKey: pollPrivateKey.serialize(),
         pollJoiningZkey: pollJoiningTestZkeyPath,
-        newVoiceCreditBalance: mockNewVoiceCreditBalance,
         quiet: true,
       }),
     ).eventually.rejectedWith("PollDoesNotExist(9000)");
@@ -114,7 +111,6 @@ describe("joinPoll", function test() {
         pollId: 0n,
         pollPrivKey: pollPrivateKey.serialize(),
         pollJoiningZkey: pollJoiningTestZkeyPath,
-        newVoiceCreditBalance: mockNewVoiceCreditBalance,
         quiet: true,
       }),
     ).eventually.rejectedWith("Invalid state index");
@@ -130,7 +126,6 @@ describe("joinPoll", function test() {
         pollId: -1n,
         pollPrivKey: pollPrivateKey.serialize(),
         pollJoiningZkey: pollJoiningTestZkeyPath,
-        newVoiceCreditBalance: mockNewVoiceCreditBalance,
         quiet: true,
       }),
     ).eventually.rejectedWith("Invalid poll id");

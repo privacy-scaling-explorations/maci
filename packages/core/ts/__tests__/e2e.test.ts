@@ -1,6 +1,7 @@
+import { LeanIMT, LeanIMTHashFunction } from "@zk-kit/lean-imt";
 import { expect } from "chai";
-import { hash5, IncrementalQuinTree, hash2, poseidon } from "maci-crypto";
-import { PCommand, Keypair, StateLeaf, blankStateLeafHash } from "maci-domainobjs";
+import { hash5, IncrementalQuinTree, poseidon, PAD_KEY_HASH, hashLeanIMT } from "maci-crypto";
+import { PCommand, Keypair, blankStateLeafHash } from "maci-domainobjs";
 
 import { MaciState } from "../MaciState";
 import { Poll } from "../Poll";
@@ -46,8 +47,8 @@ describe("MaciState/Poll e2e", function test() {
 
       before(() => {
         // Sign up
-        maciState.signUp(user1Keypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
-        maciState.signUp(user2Keypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+        maciState.signUp(user1Keypair.pubKey);
+        maciState.signUp(user2Keypair.pubKey);
 
         // deploy a poll
         pollId = maciState.deployPoll(
@@ -57,7 +58,7 @@ describe("MaciState/Poll e2e", function test() {
           coordinatorKeypair,
         );
 
-        maciState.polls.get(pollId)?.updatePoll(BigInt(maciState.stateLeaves.length));
+        maciState.polls.get(pollId)?.updatePoll(BigInt(maciState.pubKeys.length));
       });
       it("should submit a vote for each user", () => {
         const poll = maciState.polls.get(pollId)!;
@@ -141,8 +142,8 @@ describe("MaciState/Poll e2e", function test() {
 
       before(() => {
         // Sign up
-        maciState.signUp(user1Keypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
-        maciState.signUp(user2Keypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+        maciState.signUp(user1Keypair.pubKey);
+        maciState.signUp(user2Keypair.pubKey);
 
         // deploy a poll
         pollId = maciState.deployPoll(
@@ -153,7 +154,7 @@ describe("MaciState/Poll e2e", function test() {
         );
 
         poll = maciState.polls.get(pollId)!;
-        poll.updatePoll(BigInt(maciState.stateLeaves.length));
+        poll.updatePoll(BigInt(maciState.pubKeys.length));
       });
       it("should submit a vote for each user", () => {
         user1StateIndex = poll.joinPoll(nullifier1, pollPubKey1, voiceCreditBalance, timestamp1);
@@ -252,7 +253,7 @@ describe("MaciState/Poll e2e", function test() {
 
       before(() => {
         // Sign up
-        maciState.signUp(user1Keypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+        maciState.signUp(user1Keypair.pubKey);
 
         // deploy a poll
         pollId = maciState.deployPoll(
@@ -263,7 +264,7 @@ describe("MaciState/Poll e2e", function test() {
         );
 
         poll = maciState.polls.get(pollId)!;
-        poll.updatePoll(BigInt(maciState.stateLeaves.length));
+        poll.updatePoll(BigInt(maciState.pubKeys.length));
       });
 
       it("should submit a vote for one user in one batch", () => {
@@ -357,16 +358,13 @@ describe("MaciState/Poll e2e", function test() {
     // The end result should be that option 0 gets 3 votes
     // because the user spends 9 voice credits on it
     it("the state root should be correct", () => {
-      const timestamp = BigInt(Math.floor(Date.now() / 1000));
-      const stateLeaf = new StateLeaf(userKeypair.pubKey, voiceCreditBalance, timestamp);
+      stateIndex = maciState.signUp(userKeypair.pubKey);
+      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
-      stateIndex = maciState.signUp(userKeypair.pubKey, voiceCreditBalance, timestamp);
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+      const stateTree = new LeanIMT(hashLeanIMT as LeanIMTHashFunction);
 
-      const stateTree = new IncrementalQuinTree(poll.actualStateTreeDepth, blankStateLeafHash, STATE_TREE_ARITY, hash2);
-
-      stateTree.insert(blankStateLeafHash);
-      stateTree.insert(stateLeaf.hash());
+      stateTree.insert(PAD_KEY_HASH);
+      stateTree.insert(userKeypair.pubKey.hash());
 
       expect(stateIndex.toString()).to.eq("1");
       expect(stateTree.root.toString()).to.eq(poll.stateTree?.root.toString());
@@ -434,7 +432,7 @@ describe("MaciState/Poll e2e", function test() {
         const pollKeypair = new Keypair();
         pollKeys.push(pollKeypair);
 
-        maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+        maciState.signUp(userKeypair.pubKey);
       }
 
       pollId = maciState.deployPoll(
@@ -444,7 +442,7 @@ describe("MaciState/Poll e2e", function test() {
         coordinatorKeypair,
       );
       poll = maciState.polls.get(pollId)!;
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       for (let i = 0; i < messageBatchSize - 1; i += 1) {
         const nullifier = poseidon([BigInt(pollKeys[i].privKey.rawPrivKey.toString())]);
@@ -592,14 +590,11 @@ describe("MaciState/Poll e2e", function test() {
 
       poll = maciState.polls.get(pollId)!;
 
-      const timestamp = BigInt(Math.floor(Date.now() / 1000));
-      const stateLeaf = new StateLeaf(userKeypair.pubKey, voiceCreditBalance, timestamp);
+      maciState.signUp(userKeypair.pubKey);
+      stateTree.insert(PAD_KEY_HASH);
+      stateTree.insert(userKeypair.pubKey.hash());
 
-      maciState.signUp(userKeypair.pubKey, voiceCreditBalance, timestamp);
-      stateTree.insert(blankStateLeafHash);
-      stateTree.insert(stateLeaf.hash());
-
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       const { privKey } = userKeypair;
       const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
@@ -697,7 +692,7 @@ describe("MaciState/Poll e2e", function test() {
       const pollStateIndex = testHarness.joinPoll(nullifier, pollKeypair.pubKey, voiceCreditBalance, timestamp);
       testHarness.vote(pollKeypair, pollStateIndex, voteOptionIndex, voteWeight, nonce);
 
-      poll.updatePoll(BigInt(testHarness.maciState.stateLeaves.length));
+      poll.updatePoll(BigInt(testHarness.maciState.pubKeys.length));
       poll.processMessages(testHarness.pollId);
 
       expect(() => {

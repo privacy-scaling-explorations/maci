@@ -135,4 +135,21 @@ export class PubKey {
   static fromJSON(json: IJsonPublicKey): PubKey {
     return PubKey.deserialize(json.pubKey);
   }
+
+  /**
+   * Generate a default pad key
+   * @returns a default pad key
+   */
+  static genPadKey(): PubKey {
+    // This public key is the first Pedersen base
+    // point from iden3's circomlib implementation of the Pedersen hash.
+    // Since it is generated using a hash-to-curve function, we are
+    // confident that no-one knows the private key associated with this
+    // public key. See:
+    // https://github.com/iden3/circomlib/blob/d5ed1c3ce4ca137a6b3ca48bec4ac12c1b38957a/src/pedersen_printbases.js
+    return new PubKey([
+      BigInt("10457101036533406547632367118273992217979173478358440826365724437999023779287"),
+      BigInt("19824078218392094440610104313265183977899662750282163392862422243483260492317"),
+    ]);
+  }
 }

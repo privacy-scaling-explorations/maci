@@ -112,32 +112,20 @@ describe("Semaphore Gatekeeper", () => {
       await semaphoreGatekeeper.setMaciInstance(await maciContract.getAddress()).then((tx) => tx.wait());
 
       await expect(
-        maciContract.signUp(
-          user.pubKey.asContractParam(),
-          encodedProofInvalidGroupId,
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-        ),
+        maciContract.signUp(user.pubKey.asContractParam(), encodedProofInvalidGroupId),
       ).to.be.revertedWithCustomError(semaphoreGatekeeper, "InvalidGroup");
     });
 
     it("should revert if the proof is invalid (mock)", async () => {
       await mockSemaphore.flipValid();
       await expect(
-        maciContract.signUp(
-          user.pubKey.asContractParam(),
-          encodedInvalidProof,
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-        ),
+        maciContract.signUp(user.pubKey.asContractParam(), encodedInvalidProof),
       ).to.be.revertedWithCustomError(semaphoreGatekeeper, "InvalidProof");
       await mockSemaphore.flipValid();
     });
 
     it("should register a user if the register function is called with the valid data", async () => {
-      const tx = await maciContract.signUp(
-        user.pubKey.asContractParam(),
-        encodedProof,
-        AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-      );
+      const tx = await maciContract.signUp(user.pubKey.asContractParam(), encodedProof);
 
       const receipt = await tx.wait();
 
@@ -145,13 +133,10 @@ describe("Semaphore Gatekeeper", () => {
     });
 
     it("should prevent signing up twice", async () => {
-      await expect(
-        maciContract.signUp(
-          user.pubKey.asContractParam(),
-          encodedProof,
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-        ),
-      ).to.be.revertedWithCustomError(semaphoreGatekeeper, "AlreadyRegistered");
+      await expect(maciContract.signUp(user.pubKey.asContractParam(), encodedProof)).to.be.revertedWithCustomError(
+        semaphoreGatekeeper,
+        "AlreadyRegistered",
+      );
     });
   });
 });

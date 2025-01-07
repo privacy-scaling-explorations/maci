@@ -1,4 +1,3 @@
-import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
 import { MaciState, Poll } from "maci-core";
 import { poseidon } from "maci-crypto";
@@ -23,7 +22,6 @@ describe("Poll Joining circuit", function test() {
     "siblings",
     "indices",
     "nullifier",
-    "credits",
     "stateRoot",
     "actualStateTreeDepth",
     "pollId",
@@ -53,7 +51,7 @@ describe("Poll Joining circuit", function test() {
       users = new Array(NUM_USERS).fill(0).map(() => new Keypair());
 
       users.forEach((userKeypair) => {
-        maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+        maciState.signUp(userKeypair.pubKey);
       });
 
       pollId = maciState.deployPoll(
@@ -64,7 +62,7 @@ describe("Poll Joining circuit", function test() {
       );
 
       poll = maciState.polls.get(pollId)!;
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       // Join the poll
       const { privKey } = users[0];
@@ -101,12 +99,10 @@ describe("Poll Joining circuit", function test() {
     it("should produce a proof", async () => {
       const privateKey = users[0].privKey;
       const stateLeafIndex = BigInt(1);
-      const credits = BigInt(10);
 
       const inputs = poll.joiningCircuitInputs({
         maciPrivKey: privateKey,
         stateLeafIndex,
-        credits,
         pollPrivKey,
         pollPubKey,
       }) as unknown as IPollJoiningInputs;
@@ -117,12 +113,10 @@ describe("Poll Joining circuit", function test() {
     it("should fail for fake witness", async () => {
       const privateKey = users[0].privKey;
       const stateLeafIndex = BigInt(1);
-      const credits = BigInt(10);
 
       const inputs = poll.joiningCircuitInputs({
         maciPrivKey: privateKey,
         stateLeafIndex,
-        credits,
         pollPrivKey,
         pollPubKey,
       }) as unknown as IPollJoiningInputs;
@@ -130,16 +124,6 @@ describe("Poll Joining circuit", function test() {
 
       const fakeWitness = Array(witness.length).fill(1n) as bigint[];
       await circuit.expectConstraintFail(fakeWitness);
-    });
-
-    it("should fail for improper credits", () => {
-      const privateKey = users[0].privKey;
-      const stateLeafIndex = BigInt(1);
-      const credits = BigInt(105);
-
-      expect(() =>
-        poll.joiningCircuitInputs({ maciPrivKey: privateKey, stateLeafIndex, credits, pollPrivKey, pollPubKey }),
-      ).to.throw("Credits must be lower than signed up credits");
     });
   });
 });

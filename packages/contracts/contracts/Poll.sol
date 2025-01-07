@@ -112,7 +112,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   event PollJoined(
     uint256 indexed _pollPubKeyX,
     uint256 indexed _pollPubKeyY,
-    uint256 _newVoiceCreditBalance,
+    uint256 _voiceCreditBalance,
     uint256 _timestamp,
     uint256 _nullifier,
     uint256 _pollStateIndex
@@ -284,17 +284,18 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   /// @notice Join the poll for voting
   /// @param _nullifier Hashed user's private key to check whether user has already voted
   /// @param _pubKey Poll user's public key
-  /// @param _newVoiceCreditBalance User's credit balance for voting within this poll
-  /// @param _stateRootIndex Index of the MACI's stateRootOnSignUp when the user signed up
+  /// @param _stateRootIndex Index of the MACI's stateRootOnSignUp for which the inclusion proof is generated
   /// @param _proof The zk-SNARK proof
+  /// @param _signUpGatekeeperData Data to pass to the SignUpGatekeeper
+  /// @param _initialVoiceCreditProxyData Data to pass to the InitialVoiceCreditProxy
   function joinPoll(
     uint256 _nullifier,
     PubKey calldata _pubKey,
-    uint256 _newVoiceCreditBalance,
     uint256 _stateRootIndex,
     uint256[8] calldata _proof,
-    bytes memory _signUpGatekeeperData
-  ) public virtual isWithinVotingDeadline {
+    bytes memory _signUpGatekeeperData,
+    bytes memory _initialVoiceCreditProxyData
+  ) external virtual isWithinVotingDeadline {
     // Whether the user has already joined
     if (pollNullifier[_nullifier]) {
       revert UserAlreadyJoined();
@@ -304,31 +305,35 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     pollNullifier[_nullifier] = true;
 
     // Verify user's proof
-    if (!verifyPollProof(_nullifier, _newVoiceCreditBalance, _stateRootIndex, _pubKey, _proof)) {
+    if (!verifyPollProof(_nullifier, _stateRootIndex, _pubKey, _proof)) {
       revert InvalidPollProof();
     }
 
     // Check if the user is eligible to join the poll
     extContracts.gatekeeper.register(msg.sender, _signUpGatekeeperData);
 
+    // Get the user's voice credit balance.
+    uint256 voiceCreditBalance = extContracts.initialVoiceCreditProxy.getVoiceCredits(
+      msg.sender,
+      _initialVoiceCreditProxyData
+    );
+
     // Store user in the pollStateTree
-    uint256 stateLeaf = hashStateLeaf(StateLeaf(_pubKey, _newVoiceCreditBalance, block.timestamp));
+    uint256 stateLeaf = hashStateLeaf(StateLeaf(_pubKey, voiceCreditBalance, block.timestamp));
     InternalLazyIMT._insert(pollStateTree, stateLeaf);
 
     uint256 pollStateIndex = pollStateTree.numberOfLeaves - 1;
-    emit PollJoined(_pubKey.x, _pubKey.y, _newVoiceCreditBalance, block.timestamp, _nullifier, pollStateIndex);
+    emit PollJoined(_pubKey.x, _pubKey.y, voiceCreditBalance, block.timestamp, _nullifier, pollStateIndex);
   }
 
   /// @notice Verify the proof for Poll
   /// @param _nullifier Hashed user's private key to check whether user has already voted
-  /// @param _voiceCreditBalance User's credit balance for voting
   /// @param _index Index of the MACI's stateRootOnSignUp when the user signed up
   /// @param _pubKey Poll user's public key
   /// @param _proof The zk-SNARK proof
   /// @return isValid Whether the proof is valid
   function verifyPollProof(
     uint256 _nullifier,
-    uint256 _voiceCreditBalance,
     uint256 _index,
     PubKey calldata _pubKey,
     uint256[8] memory _proof
@@ -340,31 +345,28 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     );
 
     // Generate the circuit public input
-    uint256[] memory circuitPublicInputs = getPublicCircuitInputs(_nullifier, _voiceCreditBalance, _index, _pubKey);
+    uint256[] memory circuitPublicInputs = getPublicCircuitInputs(_nullifier, _index, _pubKey);
 
     isValid = extContracts.verifier.verify(_proof, vk, circuitPublicInputs);
   }
 
   /// @notice Get public circuit inputs for poll joining circuit
   /// @param _nullifier Hashed user's private key to check whether user has already voted
-  /// @param _voiceCreditBalance User's credit balance for voting
   /// @param _index Index of the MACI's stateRootOnSignUp when the user signed up
   /// @param _pubKey Poll user's public key
   /// @return publicInputs Public circuit inputs
   function getPublicCircuitInputs(
     uint256 _nullifier,
-    uint256 _voiceCreditBalance,
     uint256 _index,
     PubKey calldata _pubKey
   ) public view returns (uint256[] memory publicInputs) {
-    publicInputs = new uint256[](6);
+    publicInputs = new uint256[](5);
 
     publicInputs[0] = _pubKey.x;
     publicInputs[1] = _pubKey.y;
     publicInputs[2] = _nullifier;
-    publicInputs[3] = _voiceCreditBalance;
-    publicInputs[4] = extContracts.maci.getStateRootOnIndexedSignUp(_index);
-    publicInputs[5] = pollId;
+    publicInputs[3] = extContracts.maci.getStateRootOnIndexedSignUp(_index);
+    publicInputs[4] = pollId;
   }
 
   /// @inheritdoc IPoll

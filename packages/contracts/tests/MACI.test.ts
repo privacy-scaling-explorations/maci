@@ -1,24 +1,16 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from "chai";
 import { AbiCoder, BigNumberish, Signer, ZeroAddress } from "ethers";
-import { EthereumProvider } from "hardhat/types";
 import { MaciState } from "maci-core";
 import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, PubKey, Message } from "maci-domainobjs";
 
 import { EMode } from "../ts/constants";
 import { getDefaultSigner, getSigners } from "../ts/utils";
-import {
-  MACI,
-  Poll as PollContract,
-  Poll__factory as PollFactory,
-  Verifier,
-  VkRegistry,
-  SignUpGatekeeper,
-} from "../typechain-types";
+import { MACI, Verifier, VkRegistry, SignUpGatekeeper, ConstantInitialVoiceCreditProxy } from "../typechain-types";
 
 import { STATE_TREE_DEPTH, duration, initialVoiceCreditBalance, messageBatchSize, treeDepths } from "./constants";
-import { timeTravel, deployTestContracts } from "./utils";
+import { deployTestContracts } from "./utils";
 
 describe("MACI", function test() {
   this.timeout(90000);
@@ -27,6 +19,7 @@ describe("MACI", function test() {
   let vkRegistryContract: VkRegistry;
   let verifierContract: Verifier;
   let signupGatekeeperContract: SignUpGatekeeper;
+  let initialVoiceCreditProxy: ConstantInitialVoiceCreditProxy;
   let pollId: bigint;
 
   const coordinator = new Keypair();
@@ -49,6 +42,7 @@ describe("MACI", function test() {
       vkRegistryContract = r.vkRegistryContract;
       verifierContract = r.mockVerifierContract as Verifier;
       signupGatekeeperContract = r.gatekeeperContract;
+      initialVoiceCreditProxy = r.constantInitialVoiceCreditProxyContract;
     });
 
     it("should have set the correct stateTreeDepth", async () => {
@@ -83,7 +77,6 @@ describe("MACI", function test() {
         const tx = await maciContract.signUp(
           user.pubKey.asContractParam(),
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
         );
         // eslint-disable-next-line no-await-in-loop
         const receipt = await tx.wait();
@@ -101,11 +94,7 @@ describe("MACI", function test() {
 
         expect(event.args._stateIndex.toString()).to.eq((index + 1).toString());
 
-        maciState.signUp(
-          user.pubKey,
-          BigInt(event.args._voiceCreditBalance.toString()),
-          BigInt(event.args._timestamp.toString()),
-        );
+        maciState.signUp(user.pubKey);
       }
     });
 
@@ -117,7 +106,6 @@ describe("MACI", function test() {
             y: "0",
           },
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
         ),
       ).to.be.revertedWithCustomError(maciContract, "InvalidPubKey");
     });
@@ -130,7 +118,6 @@ describe("MACI", function test() {
             y: "21888242871839275222246405745257275088548364400416034343698204186575808495617",
           },
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
         ),
       ).to.be.revertedWithCustomError(maciContract, "InvalidPubKey");
     });
@@ -143,7 +130,6 @@ describe("MACI", function test() {
             y: "21888242871839275222246405745257275088548364400416034343698204186575808495617",
           },
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
         ),
       ).to.be.revertedWithCustomError(maciContract, "InvalidPubKey");
     });
@@ -156,7 +142,6 @@ describe("MACI", function test() {
             y: "1",
           },
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
         ),
       ).to.be.revertedWithCustomError(maciContract, "InvalidPubKey");
     });
@@ -175,20 +160,12 @@ describe("MACI", function test() {
       // start from one as we already have one signup (blank state leaf)
       for (let i = 1; i < maxUsers; i += 1) {
         // eslint-disable-next-line no-await-in-loop
-        await maci.signUp(
-          keypair.pubKey.asContractParam(),
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
-        );
+        await maci.signUp(keypair.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [1]));
       }
 
       // the next signup should fail
       await expect(
-        maci.signUp(
-          keypair.pubKey.asContractParam(),
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
-        ),
+        maci.signUp(keypair.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [1])),
       ).to.be.revertedWithCustomError(maciContract, "TooManySignups");
     });
 
@@ -205,11 +182,7 @@ describe("MACI", function test() {
       // start from one as we already have one signup (blank state leaf)
       for (let i = 1; i < maxUsers; i += 1) {
         // eslint-disable-next-line no-await-in-loop
-        await maci.signUp(
-          keypair.pubKey.asContractParam(),
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
-        );
+        await maci.signUp(keypair.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [1]));
       }
     });
   });
@@ -228,6 +201,7 @@ describe("MACI", function test() {
         vkRegistryContract,
         EMode.QV,
         signupGatekeeperContract,
+        initialVoiceCreditProxy,
       );
       const receipt = await tx.wait();
 
@@ -263,6 +237,7 @@ describe("MACI", function test() {
         vkRegistryContract,
         EMode.QV,
         signupGatekeeperContract,
+        initialVoiceCreditProxy,
       );
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
@@ -282,55 +257,11 @@ describe("MACI", function test() {
           vkRegistryContract,
           EMode.QV,
           signupGatekeeperContract,
+          initialVoiceCreditProxy,
         );
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
       expect(await maciContract.nextPollId()).to.eq(3);
-    });
-  });
-
-  describe("Merge sign-ups", () => {
-    let pollContract: PollContract;
-
-    before(async () => {
-      const pollContracts = await maciContract.getPoll(pollId);
-      pollContract = PollFactory.connect(pollContracts.poll, signer);
-    });
-
-    it("should allow a Poll contract to merge the state tree (calculate the state root)", async () => {
-      await timeTravel(signer.provider as unknown as EthereumProvider, Number(duration) + 1);
-
-      const tx = await pollContract.mergeState();
-      const receipt = await tx.wait();
-      expect(receipt?.status).to.eq(1);
-    });
-
-    it("should allow a user to signup after the state tree root was calculated", async () => {
-      const tx = await maciContract.signUp(
-        users[0].pubKey.asContractParam(),
-        AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-        AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
-      );
-      const receipt = await tx.wait();
-      expect(receipt?.status).to.eq(1);
-
-      const iface = maciContract.interface;
-
-      // Store the state index
-      const log = receipt!.logs[receipt!.logs.length - 1];
-      const event = iface.parseLog(log as unknown as { topics: string[]; data: string }) as unknown as {
-        args: {
-          _stateIndex: BigNumberish;
-          _voiceCreditBalance: BigNumberish;
-          _timestamp: BigNumberish;
-        };
-      };
-
-      maciState.signUp(
-        users[0].pubKey,
-        BigInt(event.args._voiceCreditBalance.toString()),
-        BigInt(event.args._timestamp.toString()),
-      );
     });
   });
 

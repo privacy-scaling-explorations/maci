@@ -53,6 +53,10 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
       deployment.getDeployConfigField<EContracts | null>(EContracts.Poll, "gatekeeper") ||
       EContracts.FreeForAllGatekeeper;
     const gatekeeperContractAddress = storage.mustGetAddress(gatekeeper, hre.network.name, `poll-${pollId}`);
+    const initialVoiceCreditProxyContractAddress = storage.mustGetAddress(
+      EContracts.ConstantInitialVoiceCreditProxy,
+      hre.network.name,
+    );
 
     const tx = await maciContract.deployPoll(
       pollDuration,
@@ -66,6 +70,7 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
       vkRegistryContractAddress,
       mode,
       gatekeeperContractAddress,
+      initialVoiceCreditProxyContractAddress,
     );
 
     const receipt = await tx.wait();
@@ -110,6 +115,8 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
           unserializedKey.asContractParam(),
           extContracts,
           emptyBallotRoot.toString(),
+          gatekeeperContractAddress,
+          initialVoiceCreditProxyContractAddress,
         ],
         network: hre.network.name,
       }),

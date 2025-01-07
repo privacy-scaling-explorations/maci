@@ -16,6 +16,7 @@ import {
   Verifier,
   VkRegistry,
   SignUpGatekeeper,
+  ConstantInitialVoiceCreditProxy,
 } from "../typechain-types";
 
 import {
@@ -36,6 +37,7 @@ describe("MessageProcessor", () => {
   let vkRegistryContract: VkRegistry;
   let mpContract: MessageProcessor;
   let signupGatekeeperContract: SignUpGatekeeper;
+  let initialVoiceCreditProxyContract: ConstantInitialVoiceCreditProxy;
   let pollId: bigint;
 
   // local poll and maci state
@@ -59,6 +61,8 @@ describe("MessageProcessor", () => {
     verifierContract = r.mockVerifierContract as Verifier;
     vkRegistryContract = r.vkRegistryContract;
     signupGatekeeperContract = r.gatekeeperContract;
+    initialVoiceCreditProxyContract = r.constantInitialVoiceCreditProxyContract;
+
     // deploy on chain poll
     const tx = await maciContract.deployPoll(
       duration,
@@ -69,6 +73,7 @@ describe("MessageProcessor", () => {
       vkRegistryContract,
       EMode.QV,
       signupGatekeeperContract,
+      initialVoiceCreditProxyContract,
     );
     let receipt = await tx.wait();
 
@@ -107,7 +112,7 @@ describe("MessageProcessor", () => {
     }
 
     // update the poll state
-    poll.updatePoll(BigInt(maciState.stateLeaves.length));
+    poll.updatePoll(BigInt(maciState.pubKeys.length));
 
     generatedInputs = poll.processMessages(pollId);
 

@@ -20,6 +20,7 @@ import {
   Poll__factory as PollFactory,
   Tally__factory as TallyFactory,
   SignUpGatekeeper,
+  ConstantInitialVoiceCreditProxy,
 } from "../typechain-types";
 
 import {
@@ -43,6 +44,7 @@ describe("TallyVotes", () => {
   let verifierContract: Verifier;
   let vkRegistryContract: VkRegistry;
   let signupGatekeeperContract: SignUpGatekeeper;
+  let initialVoiceCreditProxyContract: ConstantInitialVoiceCreditProxy;
 
   const coordinator = new Keypair();
   let users: Keypair[];
@@ -66,6 +68,7 @@ describe("TallyVotes", () => {
     verifierContract = r.mockVerifierContract as Verifier;
     vkRegistryContract = r.vkRegistryContract;
     signupGatekeeperContract = r.gatekeeperContract;
+    initialVoiceCreditProxyContract = r.constantInitialVoiceCreditProxyContract;
 
     // deploy a poll
     // deploy on chain poll
@@ -78,6 +81,7 @@ describe("TallyVotes", () => {
       vkRegistryContract,
       EMode.QV,
       signupGatekeeperContract,
+      initialVoiceCreditProxyContract,
     );
     const receipt = await tx.wait();
 
@@ -113,7 +117,7 @@ describe("TallyVotes", () => {
     poll.publishMessage(message, padKey);
 
     // update the poll state
-    poll.updatePoll(BigInt(maciState.stateLeaves.length));
+    poll.updatePoll(BigInt(maciState.pubKeys.length));
 
     // process messages locally
     generatedInputs = poll.processMessages(pollId);
@@ -209,16 +213,14 @@ describe("TallyVotes", () => {
       // signup all users
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < users.length; i += 1) {
-        const timestamp = Math.floor(Date.now() / 1000);
         // signup locally
-        maciState.signUp(users[i].pubKey, BigInt(initialVoiceCreditBalance), BigInt(timestamp));
+        maciState.signUp(users[i].pubKey);
         // signup on chain
 
         // eslint-disable-next-line no-await-in-loop
         await maciContract.signUp(
           users[i].pubKey.asContractParam(),
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
         );
       }
 
@@ -236,6 +238,7 @@ describe("TallyVotes", () => {
         vkRegistryContract,
         EMode.QV,
         signupGatekeeperContract,
+        initialVoiceCreditProxyContract,
       );
       const receipt = await tx.wait();
 
@@ -279,7 +282,7 @@ describe("TallyVotes", () => {
       poll.publishMessage(message, padKey);
 
       // update the poll state
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       await vkRegistryContract.setPollVkKey(
         STATE_TREE_DEPTH,
@@ -310,10 +313,10 @@ describe("TallyVotes", () => {
         await pollContract.joinPoll(
           nullifier,
           pollKeys[i].pubKey.asContractParam(),
-          BigInt(initialVoiceCreditBalance),
           i,
           [0, 0, 0, 0, 0, 0, 0, 0],
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
+          AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
         );
       }
 
@@ -518,16 +521,14 @@ describe("TallyVotes", () => {
       // signup all users
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < users.length; i += 1) {
-        const timestamp = Math.floor(Date.now() / 1000);
         // signup locally
-        maciState.signUp(users[i].pubKey, BigInt(initialVoiceCreditBalance), BigInt(timestamp));
+        maciState.signUp(users[i].pubKey);
         // signup on chain
 
         // eslint-disable-next-line no-await-in-loop
         await maciContract.signUp(
           users[i].pubKey.asContractParam(),
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
         );
       }
 
@@ -545,6 +546,7 @@ describe("TallyVotes", () => {
         vkRegistryContract,
         EMode.QV,
         signupGatekeeperContract,
+        initialVoiceCreditProxyContract,
       );
       const receipt = await tx.wait();
 
@@ -588,7 +590,7 @@ describe("TallyVotes", () => {
       poll.publishMessage(message, padKey);
 
       // update the poll state
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       // set the verification keys on the vk smart contract
       await vkRegistryContract.setPollVkKey(
@@ -620,10 +622,10 @@ describe("TallyVotes", () => {
         await pollContract.joinPoll(
           nullifier,
           pollKeys[i].pubKey.asContractParam(),
-          BigInt(initialVoiceCreditBalance),
           i,
           [0, 0, 0, 0, 0, 0, 0, 0],
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
+          AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
         );
       }
 

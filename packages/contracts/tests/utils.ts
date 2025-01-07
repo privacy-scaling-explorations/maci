@@ -86,14 +86,10 @@ export const deployTestContracts = async ({
 
   // VkRegistry
   const vkRegistryContract = await deployVkRegistry(signer, true);
-  const [gatekeeperContractAddress, constantInitialVoiceCreditProxyContractAddress] = await Promise.all([
-    gatekeeperContract.getAddress(),
-    constantInitialVoiceCreditProxyContract.getAddress(),
-  ]);
+  const [gatekeeperContractAddress] = await Promise.all([gatekeeperContract.getAddress()]);
 
   const { maciContract } = await deployMaci({
     signUpTokenGatekeeperContractAddress: gatekeeperContractAddress,
-    initialVoiceCreditBalanceAddress: constantInitialVoiceCreditProxyContractAddress,
     signer,
     stateTreeDepth,
     factories,

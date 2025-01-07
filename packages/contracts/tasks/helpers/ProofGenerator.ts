@@ -252,7 +252,7 @@ export class ProofGenerator {
 
     console.log(`Generating proofs of vote tallying...`);
     const { tallyBatchSize } = this.poll.batchSizes;
-    const numStateLeaves = this.poll.stateLeaves.length;
+    const numStateLeaves = this.poll.pollStateLeaves.length;
     let totalTallyBatches = numStateLeaves <= tallyBatchSize ? 1 : Math.floor(numStateLeaves / tallyBatchSize);
     if (numStateLeaves > tallyBatchSize && numStateLeaves % tallyBatchSize > 0) {
       totalTallyBatches += 1;

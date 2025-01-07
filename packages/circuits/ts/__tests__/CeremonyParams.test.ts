@@ -78,7 +78,7 @@ describe("Ceremony param tests", () => {
       before(() => {
         // Sign up and publish
         const userKeypair = new Keypair(new PrivKey(BigInt(1)));
-        maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+        maciState.signUp(userKeypair.pubKey);
 
         pollId = maciState.deployPoll(
           BigInt(Math.floor(Date.now() / 1000) + duration),
@@ -90,7 +90,7 @@ describe("Ceremony param tests", () => {
         poll = maciState.polls.get(pollId)!;
 
         // update the state
-        poll.updatePoll(BigInt(maciState.stateLeaves.length));
+        poll.updatePoll(BigInt(maciState.pubKeys.length));
 
         // Join the poll
         const { privKey } = userKeypair;
@@ -221,7 +221,7 @@ describe("Ceremony param tests", () => {
         const commands: PCommand[] = [];
         // Sign up and publish
         const userKeypair = new Keypair();
-        maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+        maciState.signUp(userKeypair.pubKey);
 
         pollId = maciState.deployPoll(
           BigInt(Math.floor(Date.now() / 1000) + duration),
@@ -233,7 +233,7 @@ describe("Ceremony param tests", () => {
         poll = maciState.polls.get(pollId)!;
 
         // update the state
-        poll.updatePoll(BigInt(maciState.stateLeaves.length));
+        poll.updatePoll(BigInt(maciState.pubKeys.length));
 
         // Join the poll
         const { privKey } = userKeypair;

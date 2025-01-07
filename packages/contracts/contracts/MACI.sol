@@ -7,18 +7,18 @@ import { ITallyFactory } from "./interfaces/ITallyFactory.sol";
 import { IVerifier } from "./interfaces/IVerifier.sol";
 import { IVkRegistry } from "./interfaces/IVkRegistry.sol";
 import { ISignUpGatekeeper } from "./interfaces/ISignUpGatekeeper.sol";
-import { InitialVoiceCreditProxy } from "./initialVoiceCreditProxy/InitialVoiceCreditProxy.sol";
+import { IInitialVoiceCreditProxy } from "./interfaces/IInitialVoiceCreditProxy.sol";
 import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
 import { IMACI } from "./interfaces/IMACI.sol";
 import { Params } from "./utilities/Params.sol";
-import { Utilities } from "./utilities/Utilities.sol";
 import { DomainObjs } from "./utilities/DomainObjs.sol";
 import { CurveBabyJubJub } from "./crypto/BabyJubJub.sol";
+import { Hasher } from "./crypto/Hasher.sol";
 import { InternalLeanIMT, LeanIMTData } from "./trees/LeanIMT.sol";
 
 /// @title MACI - Minimum Anti-Collusion Infrastructure Version 1
 /// @notice A contract which allows users to sign up, and deploy new polls
-contract MACI is IMACI, DomainObjs, Params, Utilities {
+contract MACI is IMACI, DomainObjs, Params, Hasher {
   /// @notice The state tree depth is fixed. As such it should be as large as feasible
   /// so that there can be as many users as possible.  i.e. 2 ** 23 = 8388608
   /// this should also match the parameter of the circom circuits.
@@ -31,9 +31,8 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
 
   uint8 internal constant STATE_TREE_ARITY = 2;
 
-  /// @notice The hash of a blank state leaf
-  uint256 internal constant BLANK_STATE_LEAF_HASH =
-    uint256(6769006970205099520508948723718471724660867171122235270773600567925038008762);
+  /// @notice This is the poseidon hash of the pad key
+  uint256 internal constant PAD_KEY_HASH = 1309255631273308531193241901289907343161346846555918942743921933037802809814;
 
   /// @notice The roots of the empty ballot trees
   uint256[5] public emptyBallotRoots;
@@ -53,17 +52,12 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
   /// @notice Factory contract that deploy a Tally contract
   ITallyFactory public immutable tallyFactory;
 
-  /// @notice The state tree. Represents a mapping between each user's public key
-  /// and their voice credit balance.
+  /// @notice The state tree. Stores users' public keys
   LeanIMTData public leanIMTData;
 
   /// @notice Address of the SignUpGatekeeper, a contract which determines whether a
   /// user may sign up to vote
   SignUpGatekeeper public immutable signUpGatekeeper;
-
-  /// @notice The contract which provides the values of the initial voice credit
-  /// balance per user
-  InitialVoiceCreditProxy public immutable initialVoiceCreditProxy;
 
   /// @notice The array of the state tree roots for each sign up
   /// For the N'th sign up, the state tree root will be stored at the index N
@@ -77,14 +71,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
   }
 
   // Events
-  event SignUp(
-    uint256 _stateIndex,
-    uint256 indexed _userPubKeyX,
-    uint256 indexed _userPubKeyY,
-    uint256 _voiceCreditBalance,
-    uint256 _timestamp,
-    uint256 _stateLeaf
-  );
+  event SignUp(uint256 _stateIndex, uint256 _timestamp, uint256 indexed _userPubKeyX, uint256 indexed _userPubKeyY);
   event DeployPoll(
     uint256 _pollId,
     uint256 indexed _coordinatorPubKeyX,
@@ -103,7 +90,6 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
   /// @param _messageProcessorFactory The MessageProcessorFactory contract
   /// @param _tallyFactory The TallyFactory contract
   /// @param _signUpGatekeeper The SignUpGatekeeper contract
-  /// @param _initialVoiceCreditProxy The InitialVoiceCreditProxy contract
   /// @param _stateTreeDepth The depth of the state tree
   /// @param _emptyBallotRoots The roots of the empty ballot trees
   constructor(
@@ -111,19 +97,17 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
     IMessageProcessorFactory _messageProcessorFactory,
     ITallyFactory _tallyFactory,
     SignUpGatekeeper _signUpGatekeeper,
-    InitialVoiceCreditProxy _initialVoiceCreditProxy,
     uint8 _stateTreeDepth,
     uint256[5] memory _emptyBallotRoots
   ) payable {
     // initialize and insert the blank leaf
-    InternalLeanIMT._insert(leanIMTData, BLANK_STATE_LEAF_HASH);
-    stateRootsOnSignUp.push(BLANK_STATE_LEAF_HASH);
+    InternalLeanIMT._insert(leanIMTData, PAD_KEY_HASH);
+    stateRootsOnSignUp.push(PAD_KEY_HASH);
 
     pollFactory = _pollFactory;
     messageProcessorFactory = _messageProcessorFactory;
     tallyFactory = _tallyFactory;
     signUpGatekeeper = _signUpGatekeeper;
-    initialVoiceCreditProxy = _initialVoiceCreditProxy;
     stateTreeDepth = _stateTreeDepth;
     maxSignups = uint256(STATE_TREE_ARITY) ** uint256(_stateTreeDepth);
     emptyBallotRoots = _emptyBallotRoots;
@@ -140,14 +124,7 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
   ///     register() function. For instance, the POAPGatekeeper or
   ///     SignUpTokenGatekeeper requires this value to be the ABI-encoded
   ///     token ID.
-  /// @param _initialVoiceCreditProxyData Data to pass to the
-  ///     InitialVoiceCreditProxy, which allows it to determine how many voice
-  ///     credits this user should have.
-  function signUp(
-    PubKey memory _pubKey,
-    bytes memory _signUpGatekeeperData,
-    bytes memory _initialVoiceCreditProxyData
-  ) public virtual {
+  function signUp(PubKey memory _pubKey, bytes memory _signUpGatekeeperData) public virtual {
     // ensure we do not have more signups than what the circuits support
     if (leanIMTData.size >= maxSignups) revert TooManySignups();
 
@@ -160,17 +137,14 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
     // throw if the user has already registered or if ineligible to do so.
     signUpGatekeeper.register(msg.sender, _signUpGatekeeperData);
 
-    // Get the user's voice credit balance.
-    uint256 voiceCreditBalance = initialVoiceCreditProxy.getVoiceCredits(msg.sender, _initialVoiceCreditProxyData);
-
-    // Create a state leaf and insert it into the tree.
-    uint256 stateLeaf = hashStateLeaf(StateLeaf(_pubKey, voiceCreditBalance, block.timestamp));
-    uint256 stateRoot = InternalLeanIMT._insert(leanIMTData, stateLeaf);
+    // Hash the public key and insert it into the tree.
+    uint256 pubKeyHash = hashLeftRight(_pubKey.x, _pubKey.y);
+    uint256 stateRoot = InternalLeanIMT._insert(leanIMTData, pubKeyHash);
 
     // Store the current state tree root in the array
     stateRootsOnSignUp.push(stateRoot);
 
-    emit SignUp(leanIMTData.size - 1, _pubKey.x, _pubKey.y, voiceCreditBalance, block.timestamp, stateLeaf);
+    emit SignUp(leanIMTData.size - 1, block.timestamp, _pubKey.x, _pubKey.y);
   }
 
   /// @notice Deploy a new Poll contract.
@@ -181,6 +155,8 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
   /// @param _verifier The Verifier Contract
   /// @param _vkRegistry The VkRegistry Contract
   /// @param _mode Voting mode
+  /// @param _gatekeeper The gatekeeper contract
+  /// @param _initialVoiceCreditProxy The initial voice credit proxy contract
   function deployPoll(
     uint256 _duration,
     TreeDepths memory _treeDepths,
@@ -189,7 +165,8 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
     address _verifier,
     address _vkRegistry,
     Mode _mode,
-    address _gatekeeper
+    address _gatekeeper,
+    address _initialVoiceCreditProxy
   ) public virtual {
     // cache the poll to a local variable so we can increment it
     uint256 pollId = nextPollId;
@@ -211,7 +188,8 @@ contract MACI is IMACI, DomainObjs, Params, Utilities {
       maci: IMACI(address(this)),
       verifier: IVerifier(_verifier),
       vkRegistry: IVkRegistry(_vkRegistry),
-      gatekeeper: ISignUpGatekeeper(_gatekeeper)
+      gatekeeper: ISignUpGatekeeper(_gatekeeper),
+      initialVoiceCreditProxy: IInitialVoiceCreditProxy(_initialVoiceCreditProxy)
     });
 
     address p = pollFactory.deploy(
