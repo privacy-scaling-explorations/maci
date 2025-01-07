@@ -280,5 +280,15 @@
       "website": "https://eth-global-sg.vercel.app/",
       "github": "https://github.com/MukulKolpe/ETHGlobalSG"
     }
+  },
+  {
+    "name": "Pixel Game Assistant",
+    "description": "PGA is a tool that helps Pixel Game players to give community feedback on game features.",
+    "hackathon": null,
+    "status": "Production",
+    "links": {
+      "website": "https://voting.guildpal.work/",
+      "github": null
+    }
   }
 ]
