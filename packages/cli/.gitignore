@@ -4,3 +4,6 @@ contractAddress.old
 contractAddress.txt
 localState.json 
 zkeys
+state.json 
+deployed-contracts.json
+deploy-config.json 

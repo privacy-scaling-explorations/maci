@@ -71,7 +71,7 @@ describe("ProcessMessage circuit", function test() {
       const pollKeys: Keypair[] = [];
 
       users.forEach((userKeypair) => {
-        maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+        maciState.signUp(userKeypair.pubKey);
         pollKeys.push(new Keypair());
       });
 
@@ -83,7 +83,7 @@ describe("ProcessMessage circuit", function test() {
       );
 
       poll = maciState.polls.get(pollId)!;
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       // Join the poll
       for (let i = 0; i < users.length; i += 1) {
@@ -159,7 +159,7 @@ describe("ProcessMessage circuit", function test() {
     before(() => {
       // Sign up and publish
       const userKeypair = new Keypair(new PrivKey(BigInt(1)));
-      maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+      maciState.signUp(userKeypair.pubKey);
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
@@ -169,7 +169,7 @@ describe("ProcessMessage circuit", function test() {
       );
 
       poll = maciState.polls.get(pollId)!;
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       // Join the poll
       const { privKey } = userKeypair;
@@ -227,7 +227,7 @@ describe("ProcessMessage circuit", function test() {
 
       ballotTree.insert(emptyBallot.hash());
 
-      poll.stateLeaves.forEach(() => {
+      poll.pubKeys.forEach(() => {
         ballotTree.insert(emptyBallotHash);
       });
 
@@ -262,16 +262,8 @@ describe("ProcessMessage circuit", function test() {
       const userKeypair = new Keypair(new PrivKey(BigInt(123)));
       const userKeypair2 = new Keypair(new PrivKey(BigInt(456)));
 
-      maciState.signUp(
-        userKeypair.pubKey,
-        voiceCreditBalance,
-        BigInt(1), // BigInt(Math.floor(Date.now() / 1000)),
-      );
-      maciState.signUp(
-        userKeypair2.pubKey,
-        voiceCreditBalance,
-        BigInt(1), // BigInt(Math.floor(Date.now() / 1000)),
-      );
+      maciState.signUp(userKeypair.pubKey);
+      maciState.signUp(userKeypair2.pubKey);
 
       pollId = maciState.deployPoll(
         BigInt(2 + duration), // BigInt(Math.floor(Date.now() / 1000) + duration),
@@ -282,7 +274,7 @@ describe("ProcessMessage circuit", function test() {
 
       poll = maciState.polls.get(pollId)!;
 
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       // Join the poll
       const { privKey } = userKeypair;
@@ -321,7 +313,7 @@ describe("ProcessMessage circuit", function test() {
 
       ballotTree.insert(emptyBallot.hash());
 
-      poll.stateLeaves.forEach(() => {
+      poll.pubKeys.forEach(() => {
         ballotTree.insert(emptyBallotHash);
       });
 
@@ -355,11 +347,7 @@ describe("ProcessMessage circuit", function test() {
       // Sign up and publish
       const userKeypair = new Keypair(new PrivKey(BigInt(123)));
 
-      maciState.signUp(
-        userKeypair.pubKey,
-        voiceCreditBalance,
-        BigInt(1), // BigInt(Math.floor(Date.now() / 1000)),
-      );
+      maciState.signUp(userKeypair.pubKey);
 
       pollId = maciState.deployPoll(
         BigInt(2 + duration), // BigInt(Math.floor(Date.now() / 1000) + duration),
@@ -370,7 +358,7 @@ describe("ProcessMessage circuit", function test() {
 
       poll = maciState.polls.get(pollId)!;
 
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       const { privKey } = userKeypair;
       const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
@@ -448,7 +436,7 @@ describe("ProcessMessage circuit", function test() {
 
       ballotTree.insert(emptyBallot.hash());
 
-      poll.stateLeaves.forEach(() => {
+      poll.pubKeys.forEach(() => {
         ballotTree.insert(emptyBallotHash);
       });
 
@@ -480,7 +468,7 @@ describe("ProcessMessage circuit", function test() {
 
     before(() => {
       const userKeypair = new Keypair(new PrivKey(BigInt(1)));
-      maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+      maciState.signUp(userKeypair.pubKey);
 
       // Sign up and publish
       pollId = maciState.deployPoll(
@@ -492,7 +480,7 @@ describe("ProcessMessage circuit", function test() {
 
       poll = maciState.polls.get(pollId)!;
 
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       // Join the poll
       const { privKey } = userKeypair;
@@ -547,7 +535,7 @@ describe("ProcessMessage circuit", function test() {
     before(() => {
       // Sign up and publish
       const userKeypair = new Keypair(new PrivKey(BigInt(1)));
-      maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+      maciState.signUp(userKeypair.pubKey);
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
         treeDepths,
@@ -556,7 +544,7 @@ describe("ProcessMessage circuit", function test() {
       );
 
       poll = maciState.polls.get(pollId)!;
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       // Join the poll
       const { privKey } = userKeypair;
@@ -634,7 +622,7 @@ describe("ProcessMessage circuit", function test() {
 
       ballotTree.insert(emptyBallot.hash());
 
-      poll.stateLeaves.forEach(() => {
+      poll.pubKeys.forEach(() => {
         ballotTree.insert(emptyBallotHash);
       });
 
@@ -669,7 +657,7 @@ describe("ProcessMessage circuit", function test() {
     before(() => {
       // Sign up and publish
       const userKeypair = new Keypair(new PrivKey(BigInt(1)));
-      maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+      maciState.signUp(userKeypair.pubKey);
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
@@ -679,7 +667,7 @@ describe("ProcessMessage circuit", function test() {
       );
 
       poll = maciState.polls.get(pollId)!;
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       // Join the poll
       const { privKey } = userKeypair;
@@ -762,7 +750,7 @@ describe("ProcessMessage circuit", function test() {
 
       ballotTree.insert(emptyBallot.hash());
 
-      poll.stateLeaves.forEach(() => {
+      poll.pubKeys.forEach(() => {
         ballotTree.insert(emptyBallotHash);
       });
 
@@ -800,7 +788,7 @@ describe("ProcessMessage circuit", function test() {
     before(() => {
       // Sign up and publish
       const userKeypair = new Keypair(new PrivKey(BigInt(1)));
-      maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+      maciState.signUp(userKeypair.pubKey);
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
         treeDepths,
@@ -809,7 +797,7 @@ describe("ProcessMessage circuit", function test() {
       );
 
       poll = maciState.polls.get(pollId)!;
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       // Join the poll
       const { privKey } = userKeypair;
@@ -911,7 +899,7 @@ describe("ProcessMessage circuit", function test() {
 
       ballotTree.insert(emptyBallot.hash());
 
-      poll.stateLeaves.forEach(() => {
+      poll.pubKeys.forEach(() => {
         ballotTree.insert(emptyBallotHash);
       });
 

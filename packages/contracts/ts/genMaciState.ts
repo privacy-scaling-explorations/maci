@@ -78,9 +78,7 @@ export const genMaciStateFromContract = async (
         data: {
           stateIndex: Number(event.args._stateIndex),
           pubKey: new PubKey([BigInt(event.args._userPubKeyX), BigInt(event.args._userPubKeyY)]),
-          voiceCreditBalance: Number(event.args._voiceCreditBalance),
           timestamp: Number(event.args._timestamp),
-          stateLeaf: BigInt(event.args._stateLeaf),
         },
       });
     });
@@ -156,7 +154,7 @@ export const genMaciStateFromContract = async (
       const pubKeyY = BigInt(event.args._pollPubKeyY);
       const timestamp = Number(event.args._timestamp);
 
-      const newVoiceCreditBalance = BigInt(event.args._newVoiceCreditBalance);
+      const voiceCreditBalance = BigInt(event.args._voiceCreditBalance);
 
       actions.push({
         type: "PollJoined",
@@ -164,7 +162,7 @@ export const genMaciStateFromContract = async (
         transactionIndex: event.transactionIndex,
         data: {
           pubKey: new PubKey([pubKeyX, pubKeyY]),
-          newVoiceCreditBalance,
+          newVoiceCreditBalance: voiceCreditBalance,
           timestamp,
           nullifier,
         },
@@ -245,9 +243,9 @@ export const genMaciStateFromContract = async (
   sortActions(actions).forEach((action) => {
     switch (true) {
       case action.type === "SignUp": {
-        const { pubKey, voiceCreditBalance, timestamp, stateLeaf } = action.data;
+        const { pubKey } = action.data;
 
-        maciState.signUp(pubKey!, BigInt(voiceCreditBalance!), BigInt(timestamp!), stateLeaf);
+        maciState.signUp(pubKey!);
         break;
       }
 

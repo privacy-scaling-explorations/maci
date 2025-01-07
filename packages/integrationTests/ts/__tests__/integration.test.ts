@@ -34,7 +34,6 @@ import {
   VOTE_OPTION_TREE_DEPTH,
   duration,
   initialVoiceCredits,
-  ivcpData,
   maxMessages,
 } from "./utils/constants";
 import { ITestSuite } from "./utils/interfaces";
@@ -113,6 +112,7 @@ describe("Integration tests", function test() {
       maciAddress: contracts.maciAddress,
       signer,
       useQuadraticVoting: true,
+      initialVoiceCreditsBalance: initialVoiceCredits,
     });
 
     const treeDepths: TreeDepths = {
@@ -168,7 +168,6 @@ describe("Integration tests", function test() {
             maciPubKey: user.keypair.pubKey.serialize(),
             maciAddress: contracts.maciAddress,
             sgDataArg: SG_DATA,
-            ivcpDataArg: ivcpData,
             signer,
           }).then((result) => result.stateIndex),
         );
@@ -191,12 +190,11 @@ describe("Integration tests", function test() {
           ),
           rapidsnark: `${homedir()}/rapidsnark/build/prover`,
           signer,
-          newVoiceCreditBalance: BigInt(initialVoiceCredits),
           quiet: true,
         });
 
         // signup on local maci state
-        maciState.signUp(user.keypair.pubKey, BigInt(initialVoiceCredits), BigInt(timestamp));
+        maciState.signUp(user.keypair.pubKey);
 
         // join the poll on local
         const inputNullifier = BigInt(user.keypair.privKey.asCircuitInputs());

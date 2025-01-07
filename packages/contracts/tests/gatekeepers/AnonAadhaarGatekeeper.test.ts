@@ -118,11 +118,7 @@ describe("AnonAadhaar Gatekeeper", () => {
       );
 
       await expect(
-        maciContract.signUp(
-          user.pubKey.asContractParam(),
-          encodedInvalidNullifierSeedProof,
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-        ),
+        maciContract.signUp(user.pubKey.asContractParam(), encodedInvalidNullifierSeedProof),
       ).to.be.revertedWithCustomError(anonAadhaarGatekeeper, "InvalidNullifierSeed");
     });
 
@@ -139,32 +135,21 @@ describe("AnonAadhaar Gatekeeper", () => {
         ],
       );
       await expect(
-        maciContract.signUp(
-          user.pubKey.asContractParam(),
-          encodedInvalidProof,
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
-        ),
+        maciContract.signUp(user.pubKey.asContractParam(), encodedInvalidProof),
       ).to.be.revertedWithCustomError(anonAadhaarGatekeeper, "InvalidSignal");
     });
 
     it("should revert if the proof is invalid (mock)", async () => {
       await mockAnonAadhaar.flipValid();
-      await expect(
-        maciContract.signUp(
-          user.pubKey.asContractParam(),
-          encodedProof,
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-        ),
-      ).to.be.revertedWithCustomError(anonAadhaarGatekeeper, "InvalidProof");
+      await expect(maciContract.signUp(user.pubKey.asContractParam(), encodedProof)).to.be.revertedWithCustomError(
+        anonAadhaarGatekeeper,
+        "InvalidProof",
+      );
       await mockAnonAadhaar.flipValid();
     });
 
     it("should register a user if the register function is called with the valid data", async () => {
-      const tx = await maciContract.signUp(
-        user.pubKey.asContractParam(),
-        encodedProof,
-        AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-      );
+      const tx = await maciContract.signUp(user.pubKey.asContractParam(), encodedProof);
 
       const receipt = await tx.wait();
 
@@ -172,13 +157,10 @@ describe("AnonAadhaar Gatekeeper", () => {
     });
 
     it("should prevent signing up twice", async () => {
-      await expect(
-        maciContract.signUp(
-          user.pubKey.asContractParam(),
-          encodedProof,
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-        ),
-      ).to.be.revertedWithCustomError(anonAadhaarGatekeeper, "AlreadyRegistered");
+      await expect(maciContract.signUp(user.pubKey.asContractParam(), encodedProof)).to.be.revertedWithCustomError(
+        anonAadhaarGatekeeper,
+        "AlreadyRegistered",
+      );
     });
   });
 });

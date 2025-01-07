@@ -103,11 +103,7 @@ describe("GitcoinPassport Gatekeeper", () => {
 
       const tx = await maciContract
         .connect(secondSigner)
-        .signUp(
-          user.pubKey.asContractParam(),
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-        );
+        .signUp(user.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [1]));
 
       const receipt = await tx.wait();
 

@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { AbiCoder, Signer, ZeroAddress, toBeArray } from "ethers";
+import { Signer, ZeroAddress, toBeArray } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
 import { deployContract } from "../../ts/deploy";
@@ -124,11 +124,7 @@ describe("EAS Gatekeeper", () => {
       await easGatekeeper.setMaciInstance(await maciContract.getAddress()).then((tx) => tx.wait());
 
       // signup via MACI
-      const tx = await maciContract.signUp(
-        user.pubKey.asContractParam(),
-        attestation,
-        AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-      );
+      const tx = await maciContract.signUp(user.pubKey.asContractParam(), attestation);
 
       const receipt = await tx.wait();
 
@@ -136,13 +132,10 @@ describe("EAS Gatekeeper", () => {
     });
 
     it("should prevent signing up twice", async () => {
-      await expect(
-        maciContract.signUp(
-          user.pubKey.asContractParam(),
-          attestation,
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-        ),
-      ).to.be.revertedWithCustomError(easGatekeeper, "AlreadyRegistered");
+      await expect(maciContract.signUp(user.pubKey.asContractParam(), attestation)).to.be.revertedWithCustomError(
+        easGatekeeper,
+        "AlreadyRegistered",
+      );
     });
   });
 });

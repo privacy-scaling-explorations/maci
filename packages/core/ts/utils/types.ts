@@ -5,6 +5,7 @@ import type {
   Ballot,
   IJsonBallot,
   IJsonPCommand,
+  IJsonPublicKey,
   IJsonStateLeaf,
   Keypair,
   Message,
@@ -95,7 +96,7 @@ export interface IJsonPoll {
   ballots: IJsonBallot[];
   encPubKeys: string[];
   currentMessageBatchIndex: number;
-  stateLeaves: IJsonStateLeaf[];
+  pubKeys: IJsonPublicKey[];
   pollStateLeaves: IJsonStateLeaf[];
   results: string[];
   numBatchesProcessed: number;
@@ -110,7 +111,7 @@ export interface IJsonPoll {
 export interface IJsonMaciState {
   stateTreeDepth: number;
   polls: IJsonPoll[];
-  stateLeaves: IJsonStateLeaf[];
+  pubKeys: IJsonPublicKey[];
   pollBeingProcessed: boolean;
   currentPollBeingProcessed: string;
   numSignUps: number;
@@ -138,7 +139,6 @@ export interface IProcessMessagesOutput {
 export interface IJoiningCircuitArgs {
   maciPrivKey: PrivKey;
   stateLeafIndex: bigint;
-  credits: bigint;
   pollPrivKey: PrivKey;
   pollPubKey: PubKey;
 }
@@ -153,7 +153,6 @@ export interface IPollJoiningCircuitInputs {
   siblings: string[][];
   indices: string[];
   nullifier: string;
-  credits: string;
   stateRoot: string;
   actualStateTreeDepth: string;
   pollId: string;

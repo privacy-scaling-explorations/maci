@@ -94,11 +94,7 @@ describe("HatsProtocol Gatekeeper", () => {
         await expect(
           maciContract
             .connect(signer)
-            .signUp(
-              user.pubKey.asContractParam(),
-              AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-              AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-            ),
+            .signUp(user.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [1])),
         ).to.be.revertedWithCustomError(hatsGatekeeperSingle, "OnlyMACI");
       });
 
@@ -108,11 +104,7 @@ describe("HatsProtocol Gatekeeper", () => {
         // signup via MACI
         const tx = await maciContract
           .connect(voter)
-          .signUp(
-            user.pubKey.asContractParam(),
-            AbiCoder.defaultAbiCoder().encode(["uint256"], [hatId]),
-            AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-          );
+          .signUp(user.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [hatId]));
 
         const receipt = await tx.wait();
 
@@ -123,11 +115,7 @@ describe("HatsProtocol Gatekeeper", () => {
         await expect(
           maciContract
             .connect(voter)
-            .signUp(
-              user.pubKey.asContractParam(),
-              AbiCoder.defaultAbiCoder().encode(["uint256"], [hatId]),
-              AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-            ),
+            .signUp(user.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [hatId])),
         ).to.be.revertedWithCustomError(hatsGatekeeperSingle, "AlreadyRegistered");
       });
     });
@@ -186,11 +174,7 @@ describe("HatsProtocol Gatekeeper", () => {
         await expect(
           maciContract
             .connect(signer)
-            .signUp(
-              user.pubKey.asContractParam(),
-              AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-              AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-            ),
+            .signUp(user.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [1])),
         ).to.be.revertedWithCustomError(hatsGatekeeperMultiple, "OnlyMACI");
       });
 
@@ -200,11 +184,7 @@ describe("HatsProtocol Gatekeeper", () => {
         // signup via MACI
         const tx = await maciContract
           .connect(signer)
-          .signUp(
-            user.pubKey.asContractParam(),
-            AbiCoder.defaultAbiCoder().encode(["uint256"], [hatId]),
-            AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-          );
+          .signUp(user.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [hatId]));
 
         const receipt = await tx.wait();
 
@@ -215,11 +195,7 @@ describe("HatsProtocol Gatekeeper", () => {
         await expect(
           maciContract
             .connect(voter)
-            .signUp(
-              user.pubKey.asContractParam(),
-              AbiCoder.defaultAbiCoder().encode(["uint256"], [secondHatId]),
-              AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-            ),
+            .signUp(user.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [secondHatId])),
         ).to.be.revertedWithCustomError(hatsGatekeeperMultiple, "NotCriterionHat");
       });
 
@@ -230,11 +206,7 @@ describe("HatsProtocol Gatekeeper", () => {
         await expect(
           maciContract
             .connect(another)
-            .signUp(
-              user.pubKey.asContractParam(),
-              AbiCoder.defaultAbiCoder().encode(["uint256"], [thirdHatId]),
-              AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-            ),
+            .signUp(user.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [thirdHatId])),
         ).to.be.revertedWithCustomError(hatsGatekeeperMultiple, "NotWearingCriterionHat");
       });
 
@@ -242,11 +214,7 @@ describe("HatsProtocol Gatekeeper", () => {
         await expect(
           maciContract
             .connect(signer)
-            .signUp(
-              user.pubKey.asContractParam(),
-              AbiCoder.defaultAbiCoder().encode(["uint256"], [hatId]),
-              AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-            ),
+            .signUp(user.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [hatId])),
         ).to.be.revertedWithCustomError(hatsGatekeeperMultiple, "AlreadyRegistered");
       });
     });

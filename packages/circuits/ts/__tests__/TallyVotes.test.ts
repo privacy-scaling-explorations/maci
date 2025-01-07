@@ -73,7 +73,7 @@ describe("TallyVotes circuit", function test() {
       const commands: PCommand[] = [];
       // Sign up and publish
       const userKeypair = new Keypair();
-      maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+      maciState.signUp(userKeypair.pubKey);
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
@@ -83,7 +83,7 @@ describe("TallyVotes circuit", function test() {
       );
 
       poll = maciState.polls.get(pollId)!;
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       // Join the poll
       const { privKey } = userKeypair;
@@ -153,7 +153,7 @@ describe("TallyVotes circuit", function test() {
       const commands: PCommand[] = [];
       // Sign up and publish
       const userKeypair = new Keypair();
-      maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+      maciState.signUp(userKeypair.pubKey);
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
@@ -163,7 +163,7 @@ describe("TallyVotes circuit", function test() {
       );
 
       poll = maciState.polls.get(pollId)!;
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       // Join the poll
       const { privKey } = userKeypair;
@@ -234,7 +234,7 @@ describe("TallyVotes circuit", function test() {
         const k = new Keypair();
         userKeypairs.push(k);
         pollKeypairs.push(new Keypair());
-        maciState.signUp(k.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000) + duration));
+        maciState.signUp(k.pubKey);
       }
 
       // Deploy poll
@@ -246,7 +246,7 @@ describe("TallyVotes circuit", function test() {
       );
 
       const poll = maciState.polls.get(pollId)!;
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       // Join the poll
       for (let i = 0; i < x; i += 1) {

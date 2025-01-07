@@ -7,7 +7,7 @@ import { MaciState } from "../MaciState";
 import { STATE_TREE_DEPTH } from "../utils/constants";
 import { IJsonMaciState } from "../utils/types";
 
-import { coordinatorKeypair, duration, messageBatchSize, treeDepths, voiceCreditBalance } from "./utils/constants";
+import { coordinatorKeypair, duration, messageBatchSize, treeDepths } from "./utils/constants";
 
 describe("MaciState", function test() {
   this.timeout(100000);
@@ -26,7 +26,7 @@ describe("MaciState", function test() {
 
     before(() => {
       m1 = new MaciState(STATE_TREE_DEPTH);
-      m1.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+      m1.signUp(userKeypair.pubKey);
       pollId = m1.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
         treeDepths,
@@ -53,13 +53,8 @@ describe("MaciState", function test() {
 
       // modify user.pubKey
       const m3 = m1.copy();
-      m3.stateLeaves[0].pubKey = new Keypair().pubKey;
+      m3.pubKeys[0] = new Keypair().pubKey;
       expect(m1.equals(m3)).not.to.eq(true);
-
-      // modify user.voiceCreditBalance
-      const m4 = m1.copy();
-      m4.stateLeaves[0].voiceCreditBalance = BigInt(m4.stateLeaves[0].voiceCreditBalance) + 1n;
-      expect(m1.equals(m4)).not.to.eq(true);
 
       // modify poll.coordinatorKeypair
       const m6 = m1.copy();

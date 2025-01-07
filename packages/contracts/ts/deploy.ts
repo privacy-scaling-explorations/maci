@@ -294,7 +294,6 @@ export const deployPollFactory = async (
  */
 export const deployMaci = async ({
   signUpTokenGatekeeperContractAddress,
-  initialVoiceCreditBalanceAddress,
   signer,
   poseidonAddresses,
   stateTreeDepth = 10,
@@ -360,7 +359,6 @@ export const deployMaci = async ({
     messageProcessorAddress,
     tallyAddress,
     signUpTokenGatekeeperContractAddress,
-    initialVoiceCreditBalanceAddress,
     stateTreeDepth,
     emptyBallotRoots,
   );

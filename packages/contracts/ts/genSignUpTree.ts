@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { LeanIMT, LeanIMTHashFunction } from "@zk-kit/lean-imt";
-import { hashLeanIMT } from "maci-crypto";
-import { PubKey, StateLeaf, blankStateLeaf, blankStateLeafHash } from "maci-domainobjs";
+import { hashLeanIMT, hashLeftRight, PAD_KEY_HASH } from "maci-crypto";
+import { PubKey } from "maci-domainobjs";
 
 import { assert } from "console";
 
@@ -32,8 +32,8 @@ export const genSignUpTree = async ({
 
   const maciContract = MACIFactory.connect(address, provider);
   const signUpTree = new LeanIMT(hashLeanIMT as LeanIMTHashFunction);
-  signUpTree.insert(blankStateLeafHash);
-  const stateLeaves: StateLeaf[] = [blankStateLeaf];
+  signUpTree.insert(PAD_KEY_HASH);
+  const pubKeys: PubKey[] = [];
 
   // Fetch event logs in batches (lastBlock inclusive)
   for (let i = fromBlock; i <= lastBlock; i += blocksPerRequest + 1) {
@@ -47,14 +47,11 @@ export const genSignUpTree = async ({
       assert(!!event);
       const pubKeyX = event.args._userPubKeyX;
       const pubKeyY = event.args._userPubKeyY;
-      const voiceCreditBalance = event.args._voiceCreditBalance;
-      const timestamp = event.args._timestamp;
 
       const pubKey = new PubKey([pubKeyX, pubKeyY]);
-      const stateLeaf = new StateLeaf(pubKey, voiceCreditBalance, timestamp);
 
-      stateLeaves.push(stateLeaf);
-      signUpTree.insert(event.args._stateLeaf);
+      pubKeys.push(pubKey);
+      signUpTree.insert(hashLeftRight(pubKeyX, pubKeyY));
     });
 
     if (sleepAmount) {
@@ -64,6 +61,6 @@ export const genSignUpTree = async ({
   }
   return {
     signUpTree,
-    stateLeaves,
+    pubKeys,
   };
 };

@@ -1,4 +1,9 @@
-import { MACI__factory as MACIFactory, EMode, deployFreeForAllSignUpGatekeeper } from "maci-contracts";
+import {
+  MACI__factory as MACIFactory,
+  EMode,
+  deployFreeForAllSignUpGatekeeper,
+  deployConstantInitialVoiceCreditProxy,
+} from "maci-contracts";
 import { PubKey } from "maci-domainobjs";
 
 import {
@@ -11,6 +16,7 @@ import {
   logGreen,
   type DeployPollArgs,
   type PollContracts,
+  DEFAULT_INITIAL_VOICE_CREDITS,
 } from "../utils";
 
 /**
@@ -27,6 +33,8 @@ export const deployPoll = async ({
   maciAddress,
   vkRegistryAddress,
   gatekeeperAddress,
+  voiceCreditProxyAddress,
+  initialVoiceCreditsBalance,
   signer,
   quiet = true,
   useQuadraticVoting = false,
@@ -60,6 +68,17 @@ export const deployPoll = async ({
   if (!signupGatekeeperContractAddress) {
     const contract = await deployFreeForAllSignUpGatekeeper(signer, true);
     signupGatekeeperContractAddress = await contract.getAddress();
+  }
+
+  let initialVoiceCreditProxyAddress =
+    voiceCreditProxyAddress || (await readContractAddress("VoiceCreditProxy", network?.name));
+  if (!initialVoiceCreditProxyAddress) {
+    const contract = await deployConstantInitialVoiceCreditProxy(
+      initialVoiceCreditsBalance ?? DEFAULT_INITIAL_VOICE_CREDITS,
+      signer,
+      true,
+    );
+    initialVoiceCreditProxyAddress = await contract.getAddress();
   }
 
   // required arg -> poll duration
@@ -115,6 +134,7 @@ export const deployPoll = async ({
       vkRegistry,
       useQuadraticVoting ? EMode.QV : EMode.NON_QV,
       signupGatekeeperContractAddress,
+      initialVoiceCreditProxyAddress,
       { gasLimit: 10000000 },
     );
 

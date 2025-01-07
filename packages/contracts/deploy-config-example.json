@@ -66,7 +66,8 @@
       "pollDuration": 3600,
       "coordinatorPubkey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
       "useQuadraticVoting": false,
-      "gatekeeper": "FreeForAllGatekeeper"
+      "gatekeeper": "FreeForAllGatekeeper",
+      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
     }
   },
   "scroll_sepolia": {
@@ -135,7 +136,8 @@
       "pollDuration": 10800,
       "coordinatorPubkey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
       "useQuadraticVoting": false,
-      "gatekeeper": "FreeForAllGatekeeper"
+      "gatekeeper": "FreeForAllGatekeeper",
+      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
     }
   },
   "optimism": {
@@ -205,7 +207,8 @@
       "pollDuration": 3600,
       "coordinatorPubkey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
       "useQuadraticVoting": false,
-      "gatekeeper": "FreeForAllGatekeeper"
+      "gatekeeper": "FreeForAllGatekeeper",
+      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
     }
   },
   "arbitrum_sepolia": {
@@ -275,7 +278,8 @@
       "pollDuration": 3600,
       "coordinatorPubkey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
       "useQuadraticVoting": false,
-      "gatekeeper": "FreeForAllGatekeeper"
+      "gatekeeper": "FreeForAllGatekeeper",
+      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
     }
   },
   "localhost": {
@@ -345,7 +349,8 @@
       "pollDuration": 30,
       "coordinatorPubkey": "macipk.29add77d27341c4cdfc2fb623175ecfd6527a286e3e7ded785d9fd7afbbdf399",
       "useQuadraticVoting": false,
-      "gatekeeper": "FreeForAllGatekeeper"
+      "gatekeeper": "FreeForAllGatekeeper",
+      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
     }
   },
   "base_sepolia": {
@@ -415,7 +420,8 @@
       "pollDuration": 3600,
       "coordinatorPubkey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
       "useQuadraticVoting": false,
-      "gatekeeper": "FreeForAllGatekeeper"
+      "gatekeeper": "FreeForAllGatekeeper",
+      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
     }
   },
   "optimism_sepolia": {
@@ -490,7 +496,8 @@
       "pollDuration": 3600,
       "coordinatorPubkey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
       "useQuadraticVoting": false,
-      "gatekeeper": "FreeForAllGatekeeper"
+      "gatekeeper": "FreeForAllGatekeeper",
+      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
     }
   },
   "gnosis_chiado": {
@@ -565,7 +572,8 @@
       "pollDuration": 3600,
       "coordinatorPubkey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
       "useQuadraticVoting": false,
-      "gatekeeper": "FreeForAllGatekeeper"
+      "gatekeeper": "FreeForAllGatekeeper",
+      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
     }
   },
   "gnosis": {
@@ -640,7 +648,8 @@
       "pollDuration": 3600,
       "coordinatorPubkey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
       "useQuadraticVoting": false,
-      "gatekeeper": "FreeForAllGatekeeper"
+      "gatekeeper": "FreeForAllGatekeeper",
+      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
     }
   },
   "polygon_amoy": {
@@ -715,7 +724,8 @@
       "pollDuration": 3600,
       "coordinatorPubkey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
       "useQuadraticVoting": true,
-      "gatekeeper": "FreeForAllGatekeeper"
+      "gatekeeper": "FreeForAllGatekeeper",
+      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
     }
   },
   "polygon": {
@@ -790,7 +800,8 @@
       "pollDuration": 3600,
       "coordinatorPubkey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
       "useQuadraticVoting": true,
-      "gatekeeper": "FreeForAllGatekeeper"
+      "gatekeeper": "FreeForAllGatekeeper",
+      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
     }
   }
 }

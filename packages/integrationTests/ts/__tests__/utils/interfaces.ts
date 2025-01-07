@@ -1,4 +1,5 @@
 import { MACI, Verifier, VkRegistry, FreeForAllGatekeeper } from "maci-contracts";
+import { ConstantInitialVoiceCreditProxy } from "maci-contracts/typechain-types";
 
 /**
  * A util interface that represents a vote object
@@ -48,4 +49,5 @@ export interface IDeployedTestContracts {
   verifier: Verifier;
   vkRegistry: VkRegistry;
   gatekeeper: FreeForAllGatekeeper;
+  initialVoiceCreditProxy: ConstantInitialVoiceCreditProxy;
 }
