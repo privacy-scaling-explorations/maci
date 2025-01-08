@@ -41,6 +41,7 @@
     "hardhat": "^2.22.15",
     "helmet": "^8.0.0",
     "maci-contracts": "workspace:^2.5.0",
+    "maci-domainobjs": "workspace:^2.5.0",
     "mustache": "^4.2.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
