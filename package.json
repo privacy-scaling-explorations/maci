@@ -26,7 +26,8 @@
     "test": "lerna run test --ignore maci-integrationtests --ignore maci-cli",
     "types": "lerna run types",
     "docs": "lerna run docs",
-    "prepare": "is-ci || husky"
+    "prepare": "is-ci || husky",
+    "genMaciKeyPair": "node packages/cli/build/ts/index.js genMaciKeyPair"
   },
   "author": "PSE",
   "devDependencies": {
