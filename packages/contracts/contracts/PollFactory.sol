@@ -35,9 +35,6 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
       _pollId
     );
 
-    // init Poll
-    poll.init();
-
     pollAddr = address(poll);
   }
 }

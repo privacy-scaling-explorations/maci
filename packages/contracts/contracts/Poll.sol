@@ -16,9 +16,6 @@ import { CurveBabyJubJub } from "./crypto/BabyJubJub.sol";
 /// @dev Do not deploy this directly. Use PollFactory.deploy() which performs some
 /// checks on the Poll constructor arguments.
 contract Poll is Params, Utilities, SnarkCommon, IPoll {
-  /// @notice Whether the Poll has been initialized
-  bool internal isInit;
-
   /// @notice The coordinator's public key
   PubKey public coordinatorPubKey;
 
@@ -163,6 +160,25 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     emptyBallotRoot = _emptyBallotRoot;
     // store the poll id
     pollId = _pollId;
+
+    unchecked {
+      numMessages++;
+    }
+
+    // init chainHash here by inserting placeholderLeaf
+    uint256[2] memory dat;
+    dat[0] = NOTHING_UP_MY_SLEEVE;
+    dat[1] = 0;
+
+    (Message memory _message, PubKey memory _padKey, uint256 placeholderLeaf) = padAndHashMessage(dat);
+    chainHash = NOTHING_UP_MY_SLEEVE;
+    batchHashes.push(NOTHING_UP_MY_SLEEVE);
+    updateChainHash(placeholderLeaf);
+
+    InternalLazyIMT._init(pollStateTree, extContracts.maci.stateTreeDepth());
+    InternalLazyIMT._insert(pollStateTree, BLANK_STATE_LEAF_HASH);
+
+    emit PublishMessage(_message, _padKey);
   }
 
   /// @notice A modifier that causes the function to revert if the voting period is
@@ -184,33 +200,6 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     uint256 secondsPassed = block.timestamp - deployTime;
     if (secondsPassed >= duration) revert VotingPeriodOver();
     _;
-  }
-
-  /// @notice The initialization function.
-  /// @dev Should be called immediately after Poll creation
-  function init() public virtual {
-    if (isInit) revert PollAlreadyInit();
-    // set to true so it cannot be called again
-    isInit = true;
-
-    unchecked {
-      numMessages++;
-    }
-
-    // init chainHash here by inserting placeholderLeaf
-    uint256[2] memory dat;
-    dat[0] = NOTHING_UP_MY_SLEEVE;
-    dat[1] = 0;
-
-    (Message memory _message, PubKey memory _padKey, uint256 placeholderLeaf) = padAndHashMessage(dat);
-    chainHash = NOTHING_UP_MY_SLEEVE;
-    batchHashes.push(NOTHING_UP_MY_SLEEVE);
-    updateChainHash(placeholderLeaf);
-
-    InternalLazyIMT._init(pollStateTree, extContracts.maci.stateTreeDepth());
-    InternalLazyIMT._insert(pollStateTree, BLANK_STATE_LEAF_HASH);
-
-    emit PublishMessage(_message, _padKey);
   }
 
   // get all batch hash array elements
