@@ -1,6 +1,8 @@
 import { Module } from "@nestjs/common";
 import { ThrottlerModule } from "@nestjs/throttler";
 
+import { MessageModule } from "./message/message.module";
+
 @Module({
   imports: [
     ThrottlerModule.forRoot([
@@ -9,6 +11,7 @@ import { ThrottlerModule } from "@nestjs/throttler";
         limit: Number(process.env.LIMIT),
       },
     ]),
+    MessageModule,
   ],
 })
 export class AppModule {}
