@@ -6,7 +6,7 @@ import type { App } from "supertest/types";
 
 import { AppModule } from "../ts/app.module";
 
-describe("e2e", () => {
+describe("Integration", () => {
   let app: INestApplication;
 
   beforeAll(async () => {
