@@ -6,7 +6,13 @@ on:
   pull_request:
 
 env:
-  RPC_URL: "http://localhost:8545"
+  RELAYER_RPC_URL: "http://localhost:8545"
+  TTL: ${{ vars.RELAYER_TTL }}
+  LIMIT: ${{ vars.RELAYER_LIMIT }}
+  MONGO_DB_URI: ${{ secrets.RELAYER_MONGO_DB_URI }}
+  MONGODB_USER: ${{ secrets.MONGODB_USER }}
+  MONGODB_PASSWORD: ${{ secrets.MONGODB_PASSWORD }}
+  MONGODB_DATABASE: ${{ secrets.MONGODB_DATABASE }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}

@@ -3,6 +3,7 @@ import { Body, Controller, HttpException, HttpStatus, Logger, Post } from "@nest
 import { ApiBearerAuth, ApiBody, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { PublishMessagesDto } from "./dto";
+import { Message } from "./message.schema";
 import { MessageService } from "./message.service";
 
 @ApiTags("v1/messages")
@@ -17,6 +18,7 @@ export class MessageController {
   /**
    * Initialize MessageController
    *
+   * @param messageService message service
    */
   constructor(private readonly messageService: MessageService) {}
 
@@ -24,7 +26,7 @@ export class MessageController {
    * Publish user messages api method.
    * Saves messages batch and then send them onchain by calling `publishMessages` method via cron job.
    *
-   * @param args - publish messages dto
+   * @param args publish messages dto
    * @returns success or not
    */
   @ApiBody({ type: PublishMessagesDto })
@@ -32,7 +34,7 @@ export class MessageController {
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: "Forbidden" })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "BadRequest" })
   @Post("publish")
-  async publish(@Body() args: PublishMessagesDto): Promise<boolean> {
+  async publish(@Body() args: PublishMessagesDto): Promise<Message[]> {
     return this.messageService.saveMessages(args).catch((error: Error) => {
       this.logger.error(`Error:`, error);
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
