@@ -9,7 +9,7 @@ export class PublicKeyValidator implements ValidatorConstraintInterface {
   /**
    * Try to deserialize public key from text and return status of validation
    *
-   * @param text - text to validate
+   * @param text text to validate
    * @returns status of validation
    */
   validate(text: string): boolean {
