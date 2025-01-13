@@ -57,7 +57,7 @@ Pull requests are great if you want to add a feature or fix a bug. Here's a quic
 
 7. Make the test pass.
 
-8. Commit your changes. Please make sure your forked `dev` branch is synched as well feature/fix branch and there are no "temp" commits (like wip, fix typo/lint/types and etc). We recommend to squash the feature/fix branch commits before creating PR. You can use this command for it:
+8. Commit your changes. Please make sure your forked `dev` branch is synced as well feature/fix branch and there are no "temp" commits (like wip, fix typo/lint/types and etc). We recommend to squash the feature/fix branch commits before creating PR. You can use this command for it:
 
 ```bash
 git reset $(git merge-base dev $(git rev-parse --abbrev-ref HEAD))

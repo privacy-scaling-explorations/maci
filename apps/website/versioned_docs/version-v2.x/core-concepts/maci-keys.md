@@ -72,3 +72,13 @@ For instance, given a seed of `2751400778105288503616280864801989336281162831694
 ```
 
 Serialized, these will look like **macipk.0e5194a54562ea4d440ac6a0049a41d4b600e3eb0bf54486e7a5f7e27521f6ba** and **macisk.3cd46064ea59936f82efb384059dd4f5b6b8e5c7546614caf7c1c3be0daea00f**.
+
+## Generate MACI Keys
+
+After successfully [installing](../getting-started.md#installation) MACI, you can easily generate your MACI key pair by running:
+
+```bash
+pnpm run genMaciKeyPair
+```
+
+This command will create the necessary public and private keys required for running various MACI operations.
