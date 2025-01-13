@@ -7,6 +7,7 @@ export {
   deploySignupToken,
   deploySignupTokenGatekeeper,
   deployConstantInitialVoiceCreditProxy,
+  deployPerTokenVoiceCreditProxy,
   deployFreeForAllSignUpGatekeeper,
   deployGitcoinPassportGatekeeper,
   deploySemaphoreGatekeeper,

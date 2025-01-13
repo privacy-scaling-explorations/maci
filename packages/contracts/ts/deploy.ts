@@ -32,6 +32,7 @@ import {
   GitcoinPassportGatekeeper,
   SemaphoreGatekeeper,
   AnonAadhaarGatekeeper,
+  PerTokenVoiceCreditProxy,
 } from "../typechain-types";
 
 import { genEmptyBallotRoots } from "./genEmptyBallotRoots";
@@ -115,6 +116,28 @@ export const deployConstantInitialVoiceCreditProxy = async (
   quiet = false,
 ): Promise<ConstantInitialVoiceCreditProxy> =>
   deployContract<ConstantInitialVoiceCreditProxy>("ConstantInitialVoiceCreditProxy", signer, quiet, amount.toString());
+
+/**
+ * Deploy a per token initial voice credit proxy contract
+ * @param receiver - the address of the receiver of the tokens
+ * @param token - the address of the token contract
+ * @param conversionRate - the conversion rate of the token to voice credits
+ */
+export const deployPerTokenVoiceCreditProxy = async (
+  receiver: string,
+  token: string,
+  conversionRate: number,
+  signer?: Signer,
+  quiet = false,
+): Promise<PerTokenVoiceCreditProxy> =>
+  deployContract<PerTokenVoiceCreditProxy>(
+    "PerTokenInitialVoiceCreditProxy",
+    signer,
+    quiet,
+    receiver,
+    token,
+    conversionRate,
+  );
 
 /**
  * Deploy a SignUpToken contract

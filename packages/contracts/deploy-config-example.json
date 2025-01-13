@@ -4,6 +4,12 @@
       "deploy": true,
       "amount": 99
     },
+    "PerTokenVoiceCreditProxy": {
+      "deploy": false,
+      "receiver": "0xE4721A80C6e56f4ebeed6acEE91b3ee715e7dD64",
+      "token": "0x0000000000000000000000000000000000000000",
+      "conversionRate": 1
+    },
     "FreeForAllGatekeeper": {
       "deploy": false
     },
@@ -75,6 +81,12 @@
       "deploy": true,
       "amount": 99
     },
+    "PerTokenVoiceCreditProxy": {
+      "deploy": false,
+      "receiver": "0xE4721A80C6e56f4ebeed6acEE91b3ee715e7dD64",
+      "token": "0x0000000000000000000000000000000000000000",
+      "conversionRate": 1
+    },
     "FreeForAllGatekeeper": {
       "deploy": false
     },
@@ -144,6 +156,12 @@
     "ConstantInitialVoiceCreditProxy": {
       "deploy": true,
       "amount": 99
+    },
+    "PerTokenVoiceCreditProxy": {
+      "deploy": false,
+      "receiver": "0xE4721A80C6e56f4ebeed6acEE91b3ee715e7dD64",
+      "token": "0x0000000000000000000000000000000000000000",
+      "conversionRate": 1
     },
     "FreeForAllGatekeeper": {
       "deploy": false
@@ -216,6 +234,12 @@
       "deploy": true,
       "amount": 99
     },
+    "PerTokenVoiceCreditProxy": {
+      "deploy": false,
+      "receiver": "0xE4721A80C6e56f4ebeed6acEE91b3ee715e7dD64",
+      "token": "0x0000000000000000000000000000000000000000",
+      "conversionRate": 1
+    },
     "FreeForAllGatekeeper": {
       "deploy": true
     },
@@ -286,6 +310,12 @@
     "ConstantInitialVoiceCreditProxy": {
       "deploy": true,
       "amount": 99
+    },
+    "PerTokenVoiceCreditProxy": {
+      "deploy": false,
+      "receiver": "0xE4721A80C6e56f4ebeed6acEE91b3ee715e7dD64",
+      "token": "0x0000000000000000000000000000000000000000",
+      "conversionRate": 1
     },
     "FreeForAllGatekeeper": {
       "deploy": true
@@ -358,6 +388,12 @@
       "deploy": true,
       "amount": 99
     },
+    "PerTokenVoiceCreditProxy": {
+      "deploy": false,
+      "receiver": "0xE4721A80C6e56f4ebeed6acEE91b3ee715e7dD64",
+      "token": "0x0000000000000000000000000000000000000000",
+      "conversionRate": 1
+    },
     "FreeForAllGatekeeper": {
       "deploy": true
     },
@@ -428,6 +464,12 @@
     "ConstantInitialVoiceCreditProxy": {
       "deploy": true,
       "amount": 99
+    },
+    "PerTokenVoiceCreditProxy": {
+      "deploy": false,
+      "receiver": "0xE4721A80C6e56f4ebeed6acEE91b3ee715e7dD64",
+      "token": "0x0000000000000000000000000000000000000000",
+      "conversionRate": 1
     },
     "FreeForAllGatekeeper": {
       "deploy": true
@@ -505,6 +547,12 @@
       "deploy": true,
       "amount": 200
     },
+    "PerTokenVoiceCreditProxy": {
+      "deploy": false,
+      "receiver": "0xE4721A80C6e56f4ebeed6acEE91b3ee715e7dD64",
+      "token": "0x0000000000000000000000000000000000000000",
+      "conversionRate": 1
+    },
     "FreeForAllGatekeeper": {
       "deploy": true
     },
@@ -580,6 +628,12 @@
     "ConstantInitialVoiceCreditProxy": {
       "deploy": true,
       "amount": 200
+    },
+    "PerTokenVoiceCreditProxy": {
+      "deploy": false,
+      "receiver": "0xE4721A80C6e56f4ebeed6acEE91b3ee715e7dD64",
+      "token": "0x0000000000000000000000000000000000000000",
+      "conversionRate": 1
     },
     "FreeForAllGatekeeper": {
       "deploy": true
@@ -657,6 +711,12 @@
       "deploy": true,
       "amount": 200
     },
+    "PerTokenVoiceCreditProxy": {
+      "deploy": false,
+      "receiver": "0xE4721A80C6e56f4ebeed6acEE91b3ee715e7dD64",
+      "token": "0x0000000000000000000000000000000000000000",
+      "conversionRate": 1
+    },
     "FreeForAllGatekeeper": {
       "deploy": true
     },
@@ -732,6 +792,12 @@
     "ConstantInitialVoiceCreditProxy": {
       "deploy": true,
       "amount": 200
+    },
+    "PerTokenVoiceCreditProxy": {
+      "deploy": false,
+      "receiver": "0xE4721A80C6e56f4ebeed6acEE91b3ee715e7dD64",
+      "token": "0x0000000000000000000000000000000000000000",
+      "conversionRate": 1
     },
     "FreeForAllGatekeeper": {
       "deploy": true

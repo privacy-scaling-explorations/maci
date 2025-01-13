@@ -573,6 +573,7 @@ export enum EInitialVoiceCreditProxies {
  */
 export enum EContracts {
   ConstantInitialVoiceCreditProxy = "ConstantInitialVoiceCreditProxy",
+  PerTokenVoiceCreditProxy = "PerTokenVoiceCreditProxy",
   FreeForAllGatekeeper = "FreeForAllGatekeeper",
   EASGatekeeper = "EASGatekeeper",
   GitcoinPassportGatekeeper = "GitcoinPassportGatekeeper",

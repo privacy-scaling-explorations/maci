@@ -11,6 +11,7 @@ export enum EDeploySteps {
   Maci = "full:deploy-maci",
   VkRegistry = "full:deploy-vk-registry",
   ConstantInitialVoiceCreditProxy = "poll:deploy-constant-initial-voice-credit-proxy",
+  InitialVoiceCredit = "poll:deploy-initial-voice-credit",
   PollGatekeeper = "poll:deploy-gatekeeper",
   Poll = "poll:deploy-poll",
 }
