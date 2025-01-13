@@ -19,16 +19,18 @@
     "run:node": "node --import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(\"ts-node/esm\", pathToFileURL(\"./\"));'",
     "start": "pnpm run run:node ./ts/main.ts",
     "start:prod": "pnpm run run:node build/ts/main.js",
-    "test": "jest --forceExit",
-    "test:coverage": "jest --coverage --forceExit",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --forceExit",
+    "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage --forceExit",
     "types": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@helia/json": "^4.0.1",
     "@nestjs/common": "^10.4.7",
     "@nestjs/core": "^10.4.7",
     "@nestjs/mongoose": "^10.1.0",
     "@nestjs/platform-express": "^10.4.7",
     "@nestjs/platform-socket.io": "^10.3.10",
+    "@nestjs/schedule": "^4.1.2",
     "@nestjs/swagger": "^8.0.3",
     "@nestjs/throttler": "^6.3.0",
     "@nestjs/websockets": "^10.4.7",
@@ -40,16 +42,19 @@
     "dotenv": "^16.4.5",
     "ethers": "^6.13.4",
     "hardhat": "^2.22.15",
+    "helia": "^5.1.1",
     "helmet": "^8.0.0",
     "maci-contracts": "workspace:^2.5.0",
     "maci-domainobjs": "workspace:^2.5.0",
     "mongoose": "^8.9.3",
+    "multiformats": "^13.3.1",
     "mustache": "^4.2.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "ts-node": "^10.9.1"
   },
   "devDependencies": {
+    "@jest/globals": "^29.7.0",
     "@nestjs/cli": "^10.4.2",
     "@nestjs/schematics": "^10.1.2",
     "@nestjs/testing": "^10.4.15",
@@ -63,44 +68,5 @@
     "supertest": "^7.0.0",
     "ts-jest": "^29.2.5",
     "typescript": "^5.7.2"
-  },
-  "jest": {
-    "testTimeout": 900000,
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": ".",
-    "roots": [
-      "<rootDir>/ts",
-      "<rootDir>/tests"
-    ],
-    "testRegex": ".*\\.test\\.ts$",
-    "transform": {
-      "^.+\\.js$": [
-        "<rootDir>/ts/jest/transform.js",
-        {
-          "useESM": true
-        }
-      ],
-      "^.+\\.(t|j)s$": [
-        "ts-jest",
-        {
-          "useESM": true
-        }
-      ]
-    },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s",
-      "!<rootDir>/ts/main.ts",
-      "!<rootDir>/ts/jest/*.js",
-      "!<rootDir>/hardhat.config.js"
-    ],
-    "coveragePathIgnorePatterns": [
-      "<rootDir>/ts/sessionKeys/__tests__/utils.ts"
-    ],
-    "coverageDirectory": "<rootDir>/coverage",
-    "testEnvironment": "node"
   }
 }

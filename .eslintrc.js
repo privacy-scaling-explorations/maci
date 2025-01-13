@@ -101,7 +101,7 @@ module.exports = {
       "error",
       {
         builtinGlobals: true,
-        allow: ["location", "event", "history", "name", "status", "Option", "test", "expect"],
+        allow: ["location", "event", "history", "name", "status", "Option", "test", "expect", "jest"],
       },
     ],
     "@typescript-eslint/restrict-template-expressions": ["error", { allowNumber: true }],

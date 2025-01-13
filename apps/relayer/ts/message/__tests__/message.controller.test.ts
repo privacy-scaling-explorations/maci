@@ -1,3 +1,4 @@
+import { jest } from "@jest/globals";
 import { HttpException, HttpStatus } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 
@@ -20,7 +21,7 @@ describe("MessageController", () => {
     })
       .useMocker((token) => {
         if (token === MessageService) {
-          mockMessageService.saveMessages.mockResolvedValue(true);
+          mockMessageService.saveMessages.mockImplementation(() => Promise.resolve(true));
 
           return mockMessageService;
         }
@@ -45,7 +46,7 @@ describe("MessageController", () => {
 
     test("should throw an error if messages saving is failed", async () => {
       const error = new Error("error");
-      mockMessageService.saveMessages.mockRejectedValue(error);
+      mockMessageService.saveMessages.mockImplementation(() => Promise.reject(error));
 
       await expect(controller.publish(defaultSaveMessagesArgs)).rejects.toThrow(
         new HttpException(error.message, HttpStatus.BAD_REQUEST),

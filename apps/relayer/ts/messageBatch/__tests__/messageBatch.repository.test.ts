@@ -1,3 +1,4 @@
+import { jest } from "@jest/globals";
 import { Model } from "mongoose";
 
 import { MessageBatchRepository } from "../messageBatch.repository";
@@ -8,16 +9,20 @@ import { defaultMessageBatches } from "./utils";
 describe("MessageBatchRepository", () => {
   const mockMessageBatchModel = {
     find: jest.fn().mockReturnValue({
-      limit: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue([defaultMessageBatches]) }),
+      limit: jest
+        .fn()
+        .mockReturnValue({ exec: jest.fn().mockImplementation(() => Promise.resolve([defaultMessageBatches])) }),
     }),
-    insertMany: jest.fn().mockResolvedValue(defaultMessageBatches),
-  } as unknown as Model<MessageBatch>;
+    insertMany: jest.fn().mockImplementation(() => Promise.resolve(defaultMessageBatches)),
+  };
 
   beforeEach(() => {
     mockMessageBatchModel.find = jest.fn().mockReturnValue({
-      limit: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue([defaultMessageBatches]) }),
+      limit: jest
+        .fn()
+        .mockReturnValue({ exec: jest.fn().mockImplementation(() => Promise.resolve([defaultMessageBatches])) }),
     });
-    mockMessageBatchModel.insertMany = jest.fn().mockResolvedValue(defaultMessageBatches);
+    mockMessageBatchModel.insertMany = jest.fn().mockImplementation(() => Promise.resolve(defaultMessageBatches));
   });
 
   afterEach(() => {
@@ -25,7 +30,7 @@ describe("MessageBatchRepository", () => {
   });
 
   test("should create message batch properly", async () => {
-    const repository = new MessageBatchRepository(mockMessageBatchModel);
+    const repository = new MessageBatchRepository(mockMessageBatchModel as unknown as Model<MessageBatch>);
 
     const result = await repository.create(defaultMessageBatches);
 
@@ -35,15 +40,15 @@ describe("MessageBatchRepository", () => {
   test("should throw an error if creation is failed", async () => {
     const error = new Error("error");
 
-    (mockMessageBatchModel.insertMany as jest.Mock).mockRejectedValue(error);
+    (mockMessageBatchModel.insertMany as jest.Mock).mockImplementation(() => Promise.reject(error));
 
-    const repository = new MessageBatchRepository(mockMessageBatchModel);
+    const repository = new MessageBatchRepository(mockMessageBatchModel as unknown as Model<MessageBatch>);
 
     await expect(repository.create(defaultMessageBatches)).rejects.toThrow(error);
   });
 
   test("should find message batches properly", async () => {
-    const repository = new MessageBatchRepository(mockMessageBatchModel);
+    const repository = new MessageBatchRepository(mockMessageBatchModel as unknown as Model<MessageBatch>);
 
     const result = await repository.find({});
 
@@ -55,11 +60,11 @@ describe("MessageBatchRepository", () => {
 
     (mockMessageBatchModel.find as jest.Mock).mockReturnValue({
       limit: jest.fn().mockReturnValue({
-        exec: jest.fn().mockRejectedValue(error),
+        exec: jest.fn().mockImplementation(() => Promise.reject(error)),
       }),
     });
 
-    const repository = new MessageBatchRepository(mockMessageBatchModel);
+    const repository = new MessageBatchRepository(mockMessageBatchModel as unknown as Model<MessageBatch>);
 
     await expect(repository.find({})).rejects.toThrow(error);
   });

@@ -3,6 +3,8 @@ import { validate } from "class-validator";
 
 import type { MessageBatchDto } from "./dto";
 
+import { IpfsService } from "../ipfs/ipfs.service";
+
 import { MessageBatchRepository } from "./messageBatch.repository";
 import { MessageBatch } from "./messageBatch.schema";
 
@@ -19,9 +21,13 @@ export class MessageBatchService {
   /**
    * Initialize MessageBatchService
    *
+   * @param ipfsService ipfs service
    * @param messageBatchRepository message batch repository
    */
-  constructor(private readonly messageBatchRepository: MessageBatchRepository) {}
+  constructor(
+    private readonly ipfsService: IpfsService,
+    private readonly messageBatchRepository: MessageBatchRepository,
+  ) {}
 
   /**
    * Save messages batch
@@ -29,7 +35,7 @@ export class MessageBatchService {
    * @param args publish messages dto
    * @returns success or not
    */
-  async saveMessageBatches(args: MessageBatchDto[]): Promise<MessageBatch[]> {
+  async saveMessageBatches(args: Omit<MessageBatchDto, "ipfsHash">[]): Promise<MessageBatch[]> {
     const validationErrors = await Promise.all(args.map((values) => validate(values))).then((result) =>
       result.reduce((acc, errors) => {
         acc.push(...errors);
@@ -43,7 +49,12 @@ export class MessageBatchService {
       throw new Error("Validation error");
     }
 
-    return this.messageBatchRepository.create(args).catch((error) => {
+    const ipfsHash = await this.ipfsService.add(args.map(({ messages }) => messages)).catch((error) => {
+      this.logger.error(`Upload message batches to ipfs error:`, error);
+      throw error;
+    });
+
+    return this.messageBatchRepository.create(args.map(({ messages }) => ({ messages, ipfsHash }))).catch((error) => {
       this.logger.error(`Save message batch error:`, error);
       throw error;
     });
