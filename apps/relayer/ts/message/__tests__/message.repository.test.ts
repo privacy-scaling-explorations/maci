@@ -1,3 +1,4 @@
+import { jest } from "@jest/globals";
 import { ZeroAddress } from "ethers";
 import { Keypair } from "maci-domainobjs";
 import { Model } from "mongoose";
@@ -18,17 +19,17 @@ describe("MessageRepository", () => {
   ];
 
   const mockMessageModel = {
-    find: jest
-      .fn()
-      .mockReturnValue({ limit: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(defaultMessages) }) }),
-    insertMany: jest.fn().mockResolvedValue(defaultMessages),
-  } as unknown as Model<Message>;
+    find: jest.fn().mockReturnValue({
+      limit: jest.fn().mockReturnValue({ exec: jest.fn().mockImplementation(() => Promise.resolve(defaultMessages)) }),
+    }),
+    insertMany: jest.fn().mockImplementation(() => Promise.resolve(defaultMessages)),
+  };
 
   beforeEach(() => {
-    mockMessageModel.find = jest
-      .fn()
-      .mockReturnValue({ limit: jest.fn().mockReturnValue({ exec: jest.fn().mockResolvedValue(defaultMessages) }) });
-    mockMessageModel.insertMany = jest.fn().mockResolvedValue(defaultMessages);
+    mockMessageModel.find = jest.fn().mockReturnValue({
+      limit: jest.fn().mockReturnValue({ exec: jest.fn().mockImplementation(() => Promise.resolve(defaultMessages)) }),
+    });
+    mockMessageModel.insertMany = jest.fn().mockImplementation(() => Promise.resolve(defaultMessages));
   });
 
   afterEach(() => {
@@ -36,7 +37,7 @@ describe("MessageRepository", () => {
   });
 
   test("should create messages properly", async () => {
-    const repository = new MessageRepository(mockMessageModel);
+    const repository = new MessageRepository(mockMessageModel as unknown as Model<Message>);
 
     const result = await repository.create(defaultSaveMessagesArgs);
 
@@ -46,15 +47,15 @@ describe("MessageRepository", () => {
   test("should throw an error if creation is failed", async () => {
     const error = new Error("error");
 
-    (mockMessageModel.insertMany as jest.Mock).mockRejectedValue(error);
+    (mockMessageModel.insertMany as jest.Mock).mockImplementation(() => Promise.reject(error));
 
-    const repository = new MessageRepository(mockMessageModel);
+    const repository = new MessageRepository(mockMessageModel as unknown as Model<Message>);
 
     await expect(repository.create(defaultSaveMessagesArgs)).rejects.toThrow(error);
   });
 
   test("should find messages properly", async () => {
-    const repository = new MessageRepository(mockMessageModel);
+    const repository = new MessageRepository(mockMessageModel as unknown as Model<Message>);
 
     const result = await repository.find({});
 
@@ -66,11 +67,11 @@ describe("MessageRepository", () => {
 
     (mockMessageModel.find as jest.Mock).mockReturnValue({
       limit: jest.fn().mockReturnValue({
-        exec: jest.fn().mockRejectedValue(error),
+        exec: jest.fn().mockImplementation(() => Promise.reject(error)),
       }),
     });
 
-    const repository = new MessageRepository(mockMessageModel);
+    const repository = new MessageRepository(mockMessageModel as unknown as Model<Message>);
 
     await expect(repository.find({})).rejects.toThrow(error);
   });

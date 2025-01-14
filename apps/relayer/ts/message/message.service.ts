@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
+import { Cron, CronExpression } from "@nestjs/schedule";
 
 import type { PublishMessagesDto } from "./dto";
-import type { IPublishMessagesReturn } from "./types";
 
 import { MessageBatchService } from "../messageBatch/messageBatch.service";
 
@@ -48,14 +48,19 @@ export class MessageService {
    * @param args publish messages dto
    * @returns transaction and ipfs hashes
    */
-  async publishMessages(): Promise<IPublishMessagesReturn> {
+  @Cron(CronExpression.EVERY_HOUR, { name: "publishMessages" })
+  async publishMessages(): Promise<boolean> {
     const messages = await this.messageRepository.find({ messageBatch: { $exists: false } });
 
-    await this.messageBatchService.saveMessageBatches([{ messages, ipfsHash: "" }]).catch((error) => {
+    if (messages.length === 0) {
+      return false;
+    }
+
+    await this.messageBatchService.saveMessageBatches([{ messages }]).catch((error) => {
       this.logger.error(`Save message batch error:`, error);
       throw error;
     });
 
-    return Promise.resolve({ hash: "", ipfsHash: "" });
+    return true;
   }
 }

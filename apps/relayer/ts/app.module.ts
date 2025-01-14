@@ -1,7 +1,9 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
+import { ScheduleModule } from "@nestjs/schedule";
 import { ThrottlerModule } from "@nestjs/throttler";
 
+import { IpfsModule } from "./ipfs/ipfs.module";
 import { MessageModule } from "./message/message.module";
 import { MessageBatchModule } from "./messageBatch/messageBatch.module";
 
@@ -13,6 +15,7 @@ import { MessageBatchModule } from "./messageBatch/messageBatch.module";
         limit: Number(process.env.LIMIT),
       },
     ]),
+    ScheduleModule.forRoot(),
     MongooseModule.forRootAsync({
       useFactory: async () => {
         if (process.env.NODE_ENV === "test") {
@@ -31,6 +34,7 @@ import { MessageBatchModule } from "./messageBatch/messageBatch.module";
         };
       },
     }),
+    IpfsModule,
     MessageModule,
     MessageBatchModule,
   ],

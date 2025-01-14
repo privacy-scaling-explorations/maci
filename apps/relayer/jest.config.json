@@ -1,0 +1,35 @@
+{
+  "testTimeout": 900000,
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": ".",
+  "roots": ["<rootDir>/ts", "<rootDir>/tests"],
+  "testRegex": ".*\\.test\\.ts$",
+  "transform": {
+    "^.+\\.js$": [
+      "<rootDir>/ts/jest/transform.js",
+      {
+        "useESM": true
+      }
+    ],
+    "^.+\\.(t|j)s$": [
+      "ts-jest",
+      {
+        "useESM": true
+      }
+    ]
+  },
+  "preset": "ts-jest/presets/default-esm",
+  "moduleNameMapper": {
+    "^(\\.{1,2}/.*)\\.[jt]s$": "$1"
+  },
+  "extensionsToTreatAsEsm": [".ts"],
+  "collectCoverageFrom": [
+    "**/*.(t|j)s",
+    "!<rootDir>/ts/main.ts",
+    "!<rootDir>/ts/jest/*.js",
+    "!<rootDir>/hardhat.config.js"
+  ],
+  "coveragePathIgnorePatterns": ["<rootDir>/ts/sessionKeys/__tests__/utils.ts"],
+  "coverageDirectory": "<rootDir>/coverage",
+  "testEnvironment": "node"
+}
