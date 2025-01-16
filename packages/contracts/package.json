@@ -171,7 +171,7 @@
     "@zk-kit/lean-imt": "^2.1.0",
     "circomlibjs": "^0.1.7",
     "ethers": "^6.13.4",
-    "hardhat": "^2.22.15",
+    "hardhat": "^2.22.18",
     "lowdb": "^1.0.0",
     "maci-circuits": "^2.5.0",
     "maci-core": "^2.5.0",
