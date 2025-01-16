@@ -48,7 +48,7 @@
     "commander": "^12.1.0",
     "dotenv": "^16.4.5",
     "ethers": "^6.13.4",
-    "hardhat": "^2.22.8",
+    "hardhat": "^2.22.18",
     "maci-circuits": "^2.5.0",
     "maci-contracts": "^2.5.0",
     "maci-core": "^2.5.0",
