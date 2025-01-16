@@ -328,7 +328,7 @@ importers:
         version: 0.4.0
       circomkit:
         specifier: ^0.3.1
-        version: 0.3.1(@types/snarkjs@0.7.8)(snarkjs@0.7.5)
+        version: 0.3.1(@types/snarkjs@0.7.9)(snarkjs@0.7.5)
       circomlib:
         specifier: ^2.0.5
         version: 2.0.5
@@ -358,8 +358,8 @@ importers:
         specifier: ^22.9.0
         version: 22.9.0
       '@types/snarkjs':
-        specifier: ^0.7.8
-        version: 0.7.8
+        specifier: ^0.7.9
+        version: 0.7.9
       '@zk-kit/baby-jubjub':
         specifier: ^1.0.3
         version: 1.0.3
@@ -443,8 +443,8 @@ importers:
         specifier: ^1.1.9
         version: 1.1.9
       '@types/snarkjs':
-        specifier: ^0.7.8
-        version: 0.7.8
+        specifier: ^0.7.9
+        version: 0.7.9
       chai:
         specifier: ^4.3.10
         version: 4.4.1
@@ -540,8 +540,8 @@ importers:
         specifier: ^22.9.0
         version: 22.9.0
       '@types/snarkjs':
-        specifier: ^0.7.8
-        version: 0.7.8
+        specifier: ^0.7.9
+        version: 0.7.9
       '@types/uuid':
         specifier: ^10.0.0
         version: 10.0.0
@@ -4549,8 +4549,8 @@ packages:
   '@types/sinonjs__fake-timers@8.1.5':
     resolution: {integrity: sha512-mQkU2jY8jJEF7YHjHvsQO8+3ughTL1mcnn96igfhONmR+fUPSKIkefQYpSe8bsly2Ep7oQbn/6VG5/9/0qcArQ==}
 
-  '@types/snarkjs@0.7.8':
-    resolution: {integrity: sha512-x37Jsv1vx6I6RMJdfvYEmDUOLYgzYMecwlk13gniDOcN20xLVe9hy9DlQxWeCPirqpDY/jwugQSqCi2RxehU3g==}
+  '@types/snarkjs@0.7.9':
+    resolution: {integrity: sha512-pb4Bq3GI2YQOQOG0dR/YuQs/mqcuL6k/vnz68LIPtpA2frrUL3twf69a3AUK9eUmNNeW0RIKkq6scDlC75Is+g==}
 
   '@types/sockjs@0.3.36':
     resolution: {integrity: sha512-MK9V6NzAS1+Ud7JV9lJLFqW85VbC9dq3LmwZCuBe4wBDgKC0Kj/jd8Xl+nSviU+Qc3+m7umHHyHg//2KSa0a0Q==}
@@ -20789,7 +20789,7 @@ snapshots:
 
   '@types/sinonjs__fake-timers@8.1.5': {}
 
-  '@types/snarkjs@0.7.8': {}
+  '@types/snarkjs@0.7.9': {}
 
   '@types/sockjs@0.3.36':
     dependencies:
@@ -22216,9 +22216,9 @@ snapshots:
       tmp-promise: 3.0.3
       util: 0.12.5
 
-  circomkit@0.3.1(@types/snarkjs@0.7.8)(snarkjs@0.7.5):
+  circomkit@0.3.1(@types/snarkjs@0.7.9)(snarkjs@0.7.5):
     dependencies:
-      '@types/snarkjs': 0.7.8
+      '@types/snarkjs': 0.7.9
       circom_tester: 0.0.19
       commander: 12.1.0
       loglevel: 1.9.1
