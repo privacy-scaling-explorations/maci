@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from "chai";
-import { Signer } from "ethers";
+import { Signer, ZeroAddress } from "ethers";
 import { EthereumProvider } from "hardhat/types";
 import { MaciState, Poll, IProcessMessagesCircuitInputs, ITallyCircuitInputs } from "maci-core";
 import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
@@ -58,17 +58,18 @@ describe("TallyVotesNonQv", () => {
 
     // deploy a poll
     // deploy on chain poll
-    const tx = await maciContract.deployPoll(
+    const tx = await maciContract.deployPoll({
       duration,
       treeDepths,
       messageBatchSize,
-      coordinator.pubKey.asContractParam(),
-      verifierContract,
-      vkRegistryContract,
-      EMode.NON_QV,
-      gatekeeperContract,
-      initialVoiceCreditProxyContract,
-    );
+      coordinatorPubKey: coordinator.pubKey.asContractParam(),
+      verifier: verifierContract,
+      vkRegistry: vkRegistryContract,
+      mode: EMode.NON_QV,
+      gatekeeper: gatekeeperContract,
+      initialVoiceCreditProxy: initialVoiceCreditProxyContract,
+      relayers: [ZeroAddress],
+    });
     const receipt = await tx.wait();
 
     const block = await signer.provider!.getBlock(receipt!.blockHash);

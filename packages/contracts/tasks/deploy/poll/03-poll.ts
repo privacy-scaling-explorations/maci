@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+import { ZeroAddress } from "ethers";
 import { PubKey } from "maci-domainobjs";
 
 import type { MACI, Poll } from "../../../typechain-types";
@@ -43,6 +44,10 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
     const intStateTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "intStateTreeDepth");
     const messageBatchSize = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageBatchSize");
     const voteOptionTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "voteOptionTreeDepth");
+    const relayers = deployment
+      .getDeployConfigField<string | undefined>(EContracts.Poll, "relayers")
+      ?.split(",")
+      .map((value) => value.trim()) || [ZeroAddress];
 
     const useQuadraticVoting =
       deployment.getDeployConfigField<boolean | null>(EContracts.Poll, "useQuadraticVoting") ?? false;
@@ -58,20 +63,21 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
       hre.network.name,
     );
 
-    const tx = await maciContract.deployPoll(
-      pollDuration,
-      {
+    const tx = await maciContract.deployPoll({
+      duration: pollDuration,
+      treeDepths: {
         intStateTreeDepth,
         voteOptionTreeDepth,
       },
       messageBatchSize,
-      unserializedKey.asContractParam(),
-      verifierContractAddress,
-      vkRegistryContractAddress,
+      coordinatorPubKey: unserializedKey.asContractParam(),
+      verifier: verifierContractAddress,
+      vkRegistry: vkRegistryContractAddress,
       mode,
-      gatekeeperContractAddress,
-      initialVoiceCreditProxyContractAddress,
-    );
+      gatekeeper: gatekeeperContractAddress,
+      initialVoiceCreditProxy: initialVoiceCreditProxyContractAddress,
+      relayers,
+    });
 
     const receipt = await tx.wait();
 

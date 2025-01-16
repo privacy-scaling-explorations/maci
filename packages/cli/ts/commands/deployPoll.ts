@@ -35,6 +35,7 @@ export const deployPoll = async ({
   gatekeeperAddress,
   voiceCreditProxyAddress,
   initialVoiceCreditsBalance,
+  relayers = [],
   signer,
   quiet = true,
   useQuadraticVoting = false,
@@ -123,18 +124,21 @@ export const deployPoll = async ({
   try {
     // deploy the poll contract via the maci contract
     const tx = await maciContract.deployPoll(
-      pollDuration,
       {
-        intStateTreeDepth,
-        voteOptionTreeDepth,
+        duration: pollDuration,
+        treeDepths: {
+          intStateTreeDepth,
+          voteOptionTreeDepth,
+        },
+        messageBatchSize,
+        coordinatorPubKey: unserializedKey.asContractParam(),
+        verifier: verifierContractAddress,
+        vkRegistry,
+        mode: useQuadraticVoting ? EMode.QV : EMode.NON_QV,
+        gatekeeper: signupGatekeeperContractAddress,
+        initialVoiceCreditProxy: initialVoiceCreditProxyAddress,
+        relayers,
       },
-      messageBatchSize,
-      unserializedKey.asContractParam(),
-      verifierContractAddress,
-      vkRegistry,
-      useQuadraticVoting ? EMode.QV : EMode.NON_QV,
-      signupGatekeeperContractAddress,
-      initialVoiceCreditProxyAddress,
       { gasLimit: 10000000 },
     );
 

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.20;
 
 import { DomainObjs } from "../utilities/DomainObjs.sol";
 import { IMACI } from "./IMACI.sol";
@@ -36,6 +36,20 @@ interface IPoll {
   /// coordinator's private key to generate an ECDH shared key with which
   /// to encrypt the message.
   function publishMessage(DomainObjs.Message memory _message, DomainObjs.PubKey calldata _encPubKey) external;
+
+  /// @notice Submit a message batch
+  /// @dev Can only be submitted before the voting deadline
+  /// @param _messages the messages
+  /// @param _encPubKeys the encrypted public keys
+  function publishMessageBatch(
+    DomainObjs.Message[] calldata _messages,
+    DomainObjs.PubKey[] calldata _encPubKeys
+  ) external;
+
+  /// @notice Allows relayer to publish messages using IPFS.
+  /// @param _messageHashes The message hashes
+  /// @param _ipfsHash The IPFS hash of the messages batch
+  function relayMessagesBatch(uint256[] calldata _messageHashes, bytes32 _ipfsHash) external;
 
   /// @notice The second step of merging the poll state. This allows the
   /// ProcessMessages circuit to access the latest state tree and ballots via

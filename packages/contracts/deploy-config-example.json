@@ -67,6 +67,7 @@
       "coordinatorPubkey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
       "useQuadraticVoting": false,
       "gatekeeper": "FreeForAllGatekeeper",
+      "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
     }
   },
@@ -137,6 +138,7 @@
       "coordinatorPubkey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
       "useQuadraticVoting": false,
       "gatekeeper": "FreeForAllGatekeeper",
+      "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
     }
   },
@@ -208,6 +210,7 @@
       "coordinatorPubkey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
       "useQuadraticVoting": false,
       "gatekeeper": "FreeForAllGatekeeper",
+      "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
     }
   },
@@ -279,6 +282,7 @@
       "coordinatorPubkey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
       "useQuadraticVoting": false,
       "gatekeeper": "FreeForAllGatekeeper",
+      "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
     }
   },
@@ -350,6 +354,7 @@
       "coordinatorPubkey": "macipk.29add77d27341c4cdfc2fb623175ecfd6527a286e3e7ded785d9fd7afbbdf399",
       "useQuadraticVoting": false,
       "gatekeeper": "FreeForAllGatekeeper",
+      "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
     }
   },
@@ -421,6 +426,7 @@
       "coordinatorPubkey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
       "useQuadraticVoting": false,
       "gatekeeper": "FreeForAllGatekeeper",
+      "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
     }
   },
@@ -497,6 +503,7 @@
       "coordinatorPubkey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
       "useQuadraticVoting": false,
       "gatekeeper": "FreeForAllGatekeeper",
+      "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
     }
   },
@@ -573,6 +580,7 @@
       "coordinatorPubkey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
       "useQuadraticVoting": false,
       "gatekeeper": "FreeForAllGatekeeper",
+      "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
     }
   },
@@ -649,6 +657,7 @@
       "coordinatorPubkey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
       "useQuadraticVoting": false,
       "gatekeeper": "FreeForAllGatekeeper",
+      "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
     }
   },
@@ -725,6 +734,7 @@
       "coordinatorPubkey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
       "useQuadraticVoting": true,
       "gatekeeper": "FreeForAllGatekeeper",
+      "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
     }
   },
@@ -801,6 +811,7 @@
       "coordinatorPubkey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
       "useQuadraticVoting": true,
       "gatekeeper": "FreeForAllGatekeeper",
+      "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
     }
   }

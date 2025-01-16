@@ -81,6 +81,12 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   /// @notice Poll state tree for anonymous joining
   LazyIMTData public pollStateTree;
 
+  /// @notice IPFS hashes of messages batches
+  bytes32[] public ipfsHashes;
+
+  /// @notice Relayer address
+  mapping(address => bool) public relayers;
+
   /// @notice The hash of a blank state leaf
   uint256 internal constant BLANK_STATE_LEAF_HASH =
     uint256(6769006970205099520508948723718471724660867171122235270773600567925038008762);
@@ -103,6 +109,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   error BatchHashesAlreadyPadded();
   error UserAlreadyJoined();
   error InvalidPollProof();
+  error NotRelayer();
 
   event PublishMessage(Message _message, PubKey _encPubKey);
   event MergeState(uint256 indexed _stateRoot, uint256 indexed _numSignups);
@@ -133,7 +140,8 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     PubKey memory _coordinatorPubKey,
     ExtContracts memory _extContracts,
     uint256 _emptyBallotRoot,
-    uint256 _pollId
+    uint256 _pollId,
+    address[] memory _relayers
   ) payable {
     // check that the coordinator public key is valid
     if (!CurveBabyJubJub.isOnCurve(_coordinatorPubKey.x, _coordinatorPubKey.y)) {
@@ -160,6 +168,14 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     emptyBallotRoot = _emptyBallotRoot;
     // store the poll id
     pollId = _pollId;
+    // set relayers
+    for (uint256 index = 0; index < _relayers.length; ) {
+      relayers[_relayers[index]] = true;
+
+      unchecked {
+        index++;
+      }
+    }
 
     unchecked {
       numMessages++;
@@ -189,8 +205,15 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     _;
   }
 
+  /// @notice A modifier that causes the function to revert if the batch hashes is padded
   modifier isNotPadded() {
     if (isBatchHashesPadded) revert BatchHashesAlreadyPadded();
+    _;
+  }
+
+  /// @notice A modifier that causes the function to revert if the caller is not a relayer
+  modifier onlyRelayer() {
+    if (!relayers[msg.sender]) revert NotRelayer();
     _;
   }
 
@@ -228,6 +251,30 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     emit PublishMessage(_message, _encPubKey);
   }
 
+  /// @inheritdoc IPoll
+  function relayMessagesBatch(
+    uint256[] calldata _messageHashes,
+    bytes32 _ipfsHash
+  ) public virtual isWithinVotingDeadline onlyRelayer {
+    uint256 length = _messageHashes.length;
+
+    unchecked {
+      numMessages += length;
+    }
+
+    for (uint256 index = 0; index < length; ) {
+      updateChainHash(_messageHashes[index]);
+
+      unchecked {
+        index++;
+      }
+    }
+
+    ipfsHashes.push(_ipfsHash);
+
+    emit IpfsHashAdded(_ipfsHash);
+  }
+
   /// @notice compute and update current message chain hash
   /// @param messageHash hash of the current message
   function updateChainHash(uint256 messageHash) internal {
@@ -250,10 +297,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     isBatchHashesPadded = true;
   }
 
-  /// @notice submit a message batch
-  /// @dev Can only be submitted before the voting deadline
-  /// @param _messages the messages
-  /// @param _encPubKeys the encrypted public keys
+  /// @inheritdoc IPoll
   function publishMessageBatch(Message[] calldata _messages, PubKey[] calldata _encPubKeys) public virtual {
     if (_messages.length != _encPubKeys.length) {
       revert InvalidBatchLength();

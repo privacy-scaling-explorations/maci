@@ -69,6 +69,29 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
     address messageProcessor;
     address tally;
   }
+  /// @notice A struct holding the params for poll deployment
+  struct DeployPollArgs {
+    /// @param duration How long should the Poll last for
+    uint256 duration;
+    /// @param treeDepths The depth of the Merkle trees
+    TreeDepths treeDepths;
+    /// @param messageBatchSize The message batch size
+    uint8 messageBatchSize;
+    /// @param coordinatorPubKey The coordinator's public key
+    PubKey coordinatorPubKey;
+    /// @param verifier The Verifier Contract
+    address verifier;
+    /// @param vkRegistry The VkRegistry Contract
+    address vkRegistry;
+    /// @param mode Voting mode
+    Mode mode;
+    /// @param gatekeeper The gatekeeper contract
+    address gatekeeper;
+    /// @param initialVoiceCreditProxy The initial voice credit proxy contract
+    address initialVoiceCreditProxy;
+    /// @param relayer The message relayer (optional)
+    address[] relayers;
+  }
 
   // Events
   event SignUp(uint256 _stateIndex, uint256 _timestamp, uint256 indexed _userPubKeyX, uint256 indexed _userPubKeyY);
@@ -148,26 +171,8 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
   }
 
   /// @notice Deploy a new Poll contract.
-  /// @param _duration How long should the Poll last for
-  /// @param _treeDepths The depth of the Merkle trees
-  /// @param _messageBatchSize The message batch size
-  /// @param _coordinatorPubKey The coordinator's public key
-  /// @param _verifier The Verifier Contract
-  /// @param _vkRegistry The VkRegistry Contract
-  /// @param _mode Voting mode
-  /// @param _gatekeeper The gatekeeper contract
-  /// @param _initialVoiceCreditProxy The initial voice credit proxy contract
-  function deployPoll(
-    uint256 _duration,
-    TreeDepths memory _treeDepths,
-    uint8 _messageBatchSize,
-    PubKey memory _coordinatorPubKey,
-    address _verifier,
-    address _vkRegistry,
-    Mode _mode,
-    address _gatekeeper,
-    address _initialVoiceCreditProxy
-  ) public virtual {
+  /// @param args The deploy poll args
+  function deployPoll(DeployPollArgs calldata args) public virtual {
     // cache the poll to a local variable so we can increment it
     uint256 pollId = nextPollId;
 
@@ -178,39 +183,40 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
     }
 
     // check coordinator key is a valid point on the curve
-    if (!CurveBabyJubJub.isOnCurve(_coordinatorPubKey.x, _coordinatorPubKey.y)) {
+    if (!CurveBabyJubJub.isOnCurve(args.coordinatorPubKey.x, args.coordinatorPubKey.y)) {
       revert InvalidPubKey();
     }
 
-    uint256 voteOptionTreeDepth = _treeDepths.voteOptionTreeDepth;
+    uint256 voteOptionTreeDepth = args.treeDepths.voteOptionTreeDepth;
 
     ExtContracts memory extContracts = ExtContracts({
       maci: IMACI(address(this)),
-      verifier: IVerifier(_verifier),
-      vkRegistry: IVkRegistry(_vkRegistry),
-      gatekeeper: ISignUpGatekeeper(_gatekeeper),
-      initialVoiceCreditProxy: IInitialVoiceCreditProxy(_initialVoiceCreditProxy)
+      verifier: IVerifier(args.verifier),
+      vkRegistry: IVkRegistry(args.vkRegistry),
+      gatekeeper: ISignUpGatekeeper(args.gatekeeper),
+      initialVoiceCreditProxy: IInitialVoiceCreditProxy(args.initialVoiceCreditProxy)
     });
 
     address p = pollFactory.deploy(
-      _duration,
-      _treeDepths,
-      _messageBatchSize,
-      _coordinatorPubKey,
+      args.duration,
+      args.treeDepths,
+      args.messageBatchSize,
+      args.coordinatorPubKey,
       extContracts,
       emptyBallotRoots[voteOptionTreeDepth - 1],
-      pollId
+      pollId,
+      args.relayers
     );
 
-    address mp = messageProcessorFactory.deploy(_verifier, _vkRegistry, p, msg.sender, _mode);
-    address tally = tallyFactory.deploy(_verifier, _vkRegistry, p, mp, msg.sender, _mode);
+    address mp = messageProcessorFactory.deploy(args.verifier, args.vkRegistry, p, msg.sender, args.mode);
+    address tally = tallyFactory.deploy(args.verifier, args.vkRegistry, p, mp, msg.sender, args.mode);
 
     // store the addresses in a struct so they can be returned
     PollContracts memory pollAddr = PollContracts({ poll: p, messageProcessor: mp, tally: tally });
 
     polls[pollId] = pollAddr;
 
-    emit DeployPoll(pollId, _coordinatorPubKey.x, _coordinatorPubKey.y, _mode);
+    emit DeployPoll(pollId, args.coordinatorPubKey.x, args.coordinatorPubKey.y, args.mode);
   }
 
   /// @inheritdoc IMACI

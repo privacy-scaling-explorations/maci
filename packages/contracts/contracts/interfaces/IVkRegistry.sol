@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.20;
 
 import { SnarkCommon } from "../crypto/SnarkCommon.sol";
 import { DomainObjs } from "../utilities/DomainObjs.sol";
