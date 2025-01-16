@@ -192,17 +192,18 @@ describe("MACI", function test() {
 
     it("should deploy a poll", async () => {
       // Create the poll and get the poll ID from the tx event logs
-      const tx = await maciContract.deployPoll(
+      const tx = await maciContract.deployPoll({
         duration,
         treeDepths,
         messageBatchSize,
-        coordinator.pubKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
-        verifierContract,
-        vkRegistryContract,
-        EMode.QV,
-        signupGatekeeperContract,
+        coordinatorPubKey: coordinator.pubKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
+        verifier: verifierContract,
+        vkRegistry: vkRegistryContract,
+        mode: EMode.QV,
+        gatekeeper: signupGatekeeperContract,
         initialVoiceCreditProxy,
-      );
+        relayers: [ZeroAddress],
+      });
       const receipt = await tx.wait();
 
       const block = await signer.provider!.getBlock(receipt!.blockHash);
@@ -228,17 +229,18 @@ describe("MACI", function test() {
     });
 
     it("should allow to deploy a new poll even before the first one is completed", async () => {
-      const tx = await maciContract.deployPoll(
+      const tx = await maciContract.deployPoll({
         duration,
         treeDepths,
         messageBatchSize,
-        coordinator.pubKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
-        verifierContract,
-        vkRegistryContract,
-        EMode.QV,
-        signupGatekeeperContract,
+        coordinatorPubKey: coordinator.pubKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
+        verifier: verifierContract,
+        vkRegistry: vkRegistryContract,
+        mode: EMode.QV,
+        gatekeeper: signupGatekeeperContract,
         initialVoiceCreditProxy,
-      );
+        relayers: [ZeroAddress],
+      });
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
       expect(await maciContract.nextPollId()).to.eq(2);
@@ -246,19 +248,18 @@ describe("MACI", function test() {
 
     it("should allow any user to deploy a poll", async () => {
       const [, user] = await getSigners();
-      const tx = await maciContract
-        .connect(user)
-        .deployPoll(
-          duration,
-          treeDepths,
-          messageBatchSize,
-          users[0].pubKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
-          verifierContract,
-          vkRegistryContract,
-          EMode.QV,
-          signupGatekeeperContract,
-          initialVoiceCreditProxy,
-        );
+      const tx = await maciContract.connect(user).deployPoll({
+        duration,
+        treeDepths,
+        messageBatchSize,
+        coordinatorPubKey: users[0].pubKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
+        verifier: verifierContract,
+        vkRegistry: vkRegistryContract,
+        mode: EMode.QV,
+        gatekeeper: signupGatekeeperContract,
+        initialVoiceCreditProxy,
+        relayers: [ZeroAddress],
+      });
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
       expect(await maciContract.nextPollId()).to.eq(3);

@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from "chai";
-import { AbiCoder, BigNumberish, Signer } from "ethers";
+import { AbiCoder, BigNumberish, Signer, ZeroAddress } from "ethers";
 import { EthereumProvider } from "hardhat/types";
 import { MaciState, Poll, IProcessMessagesCircuitInputs, ITallyCircuitInputs } from "maci-core";
 import { genTreeCommitment, genTreeProof, hashLeftRight, NOTHING_UP_MY_SLEEVE, poseidon } from "maci-crypto";
@@ -72,17 +72,18 @@ describe("TallyVotes", () => {
 
     // deploy a poll
     // deploy on chain poll
-    const tx = await maciContract.deployPoll(
+    const tx = await maciContract.deployPoll({
       duration,
       treeDepths,
       messageBatchSize,
-      coordinator.pubKey.asContractParam(),
-      verifierContract,
-      vkRegistryContract,
-      EMode.QV,
-      signupGatekeeperContract,
-      initialVoiceCreditProxyContract,
-    );
+      coordinatorPubKey: coordinator.pubKey.asContractParam(),
+      verifier: verifierContract,
+      vkRegistry: vkRegistryContract,
+      mode: EMode.QV,
+      gatekeeper: signupGatekeeperContract,
+      initialVoiceCreditProxy: initialVoiceCreditProxyContract,
+      relayers: [ZeroAddress],
+    });
     const receipt = await tx.wait();
 
     const block = await signer.provider!.getBlock(receipt!.blockHash);
@@ -226,20 +227,21 @@ describe("TallyVotes", () => {
 
       // deploy a poll
       // deploy on chain poll
-      const tx = await maciContract.deployPoll(
-        updatedDuration,
-        {
+      const tx = await maciContract.deployPoll({
+        duration: updatedDuration,
+        treeDepths: {
           ...treeDepths,
           intStateTreeDepth,
         },
         messageBatchSize,
-        coordinator.pubKey.asContractParam(),
-        verifierContract,
-        vkRegistryContract,
-        EMode.QV,
-        signupGatekeeperContract,
-        initialVoiceCreditProxyContract,
-      );
+        coordinatorPubKey: coordinator.pubKey.asContractParam(),
+        verifier: verifierContract,
+        vkRegistry: vkRegistryContract,
+        mode: EMode.QV,
+        gatekeeper: signupGatekeeperContract,
+        initialVoiceCreditProxy: initialVoiceCreditProxyContract,
+        relayers: [ZeroAddress],
+      });
       const receipt = await tx.wait();
 
       const block = await signer.provider!.getBlock(receipt!.blockHash);
@@ -534,20 +536,21 @@ describe("TallyVotes", () => {
 
       // deploy a poll
       // deploy on chain poll
-      const tx = await maciContract.deployPoll(
-        updatedDuration,
-        {
+      const tx = await maciContract.deployPoll({
+        duration: updatedDuration,
+        treeDepths: {
           ...treeDepths,
           intStateTreeDepth,
         },
         messageBatchSize,
-        coordinator.pubKey.asContractParam(),
-        verifierContract,
-        vkRegistryContract,
-        EMode.QV,
-        signupGatekeeperContract,
-        initialVoiceCreditProxyContract,
-      );
+        coordinatorPubKey: coordinator.pubKey.asContractParam(),
+        verifier: verifierContract,
+        vkRegistry: vkRegistryContract,
+        mode: EMode.QV,
+        gatekeeper: signupGatekeeperContract,
+        initialVoiceCreditProxy: initialVoiceCreditProxyContract,
+        relayers: [ZeroAddress],
+      });
       const receipt = await tx.wait();
 
       const block = await signer.provider!.getBlock(receipt!.blockHash);

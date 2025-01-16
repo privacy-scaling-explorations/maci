@@ -189,6 +189,7 @@ program
     true,
   )
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
+  .option("-ra, --relayers <relayers>", "the relayer addresses", (value) => value.split(",").map((item) => item.trim()))
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
@@ -203,6 +204,7 @@ program
         coordinatorPubkey: cmdObj.pubkey,
         maciAddress: cmdObj.maciAddress,
         vkRegistryAddress: cmdObj.vkRegistryAddress,
+        relayers: cmdObj.relayers,
         quiet: cmdObj.quiet,
         useQuadraticVoting: cmdObj.useQuadraticVoting,
         signer,

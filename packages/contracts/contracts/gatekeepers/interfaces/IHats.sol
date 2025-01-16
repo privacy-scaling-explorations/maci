@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.20;
 
 /// @title IHats
 /// @notice Minimal interface for the Hats Protocol contract

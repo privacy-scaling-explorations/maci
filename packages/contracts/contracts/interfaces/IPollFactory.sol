@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.20;
 
 import { Params } from "../utilities/Params.sol";
 import { DomainObjs } from "../utilities/DomainObjs.sol";
@@ -15,6 +15,7 @@ interface IPollFactory {
   /// @param _extContracts The external contracts interface references
   /// @param _emptyBallotRoot The root of the empty ballot tree
   /// @param _pollId The poll id
+  /// @param _relayers The message relayers (optional)
   /// @return The deployed Poll contract
   function deploy(
     uint256 _duration,
@@ -23,6 +24,7 @@ interface IPollFactory {
     DomainObjs.PubKey calldata _coordinatorPubKey,
     Params.ExtContracts calldata _extContracts,
     uint256 _emptyBallotRoot,
-    uint256 _pollId
+    uint256 _pollId,
+    address[] calldata _relayers
   ) external returns (address);
 }

@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { BaseContract, Signer } from "ethers";
+import { BaseContract, Signer, ZeroAddress } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
 import { deployPollFactory, genEmptyBallotRoots, getDefaultSigner } from "../ts";
@@ -54,6 +54,7 @@ describe("pollFactory", () => {
         extContracts,
         emptyBallotRoot,
         0n,
+        [ZeroAddress],
       );
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);

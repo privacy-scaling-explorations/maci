@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from "chai";
-import { Signer } from "ethers";
+import { Signer, ZeroAddress } from "ethers";
 import { EthereumProvider } from "hardhat/types";
 import { MaciState, Poll, IProcessMessagesCircuitInputs } from "maci-core";
 import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
@@ -64,17 +64,18 @@ describe("MessageProcessor", () => {
     initialVoiceCreditProxyContract = r.constantInitialVoiceCreditProxyContract;
 
     // deploy on chain poll
-    const tx = await maciContract.deployPoll(
+    const tx = await maciContract.deployPoll({
       duration,
       treeDepths,
       messageBatchSize,
-      coordinator.pubKey.asContractParam(),
-      verifierContract,
-      vkRegistryContract,
-      EMode.QV,
-      signupGatekeeperContract,
-      initialVoiceCreditProxyContract,
-    );
+      coordinatorPubKey: coordinator.pubKey.asContractParam(),
+      verifier: verifierContract,
+      vkRegistry: vkRegistryContract,
+      mode: EMode.QV,
+      gatekeeper: signupGatekeeperContract,
+      initialVoiceCreditProxy: initialVoiceCreditProxyContract,
+      relayers: [ZeroAddress],
+    });
     let receipt = await tx.wait();
 
     // extract poll id

@@ -80,20 +80,21 @@ describe("integration tests private/public/keypair", () => {
       );
 
       // deploy a poll
-      await maci.deployPoll(
-        BigInt(duration),
-        {
+      await maci.deployPoll({
+        duration: BigInt(duration),
+        treeDepths: {
           intStateTreeDepth: INT_STATE_TREE_DEPTH,
           voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
         },
-        MESSAGE_BATCH_SIZE,
-        coordinatorKeypair.pubKey.asContractParam(),
+        messageBatchSize: MESSAGE_BATCH_SIZE,
+        coordinatorPubKey: coordinatorKeypair.pubKey.asContractParam(),
         verifier,
         vkRegistry,
-        EMode.NON_QV,
+        mode: EMode.NON_QV,
         gatekeeper,
         initialVoiceCreditProxy,
-      );
+        relayers: [],
+      });
 
       // we know it's the first poll so id is 0
       const { poll } = await maci.polls(0);

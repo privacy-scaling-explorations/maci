@@ -301,6 +301,11 @@ export interface DeployPollArgs {
   signer: Signer;
 
   /**
+   * The relayer addresses
+   */
+  relayers?: string[];
+
+  /**
    * The MACI contract address
    */
   maciAddress?: string;

@@ -1,7 +1,7 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-underscore-dangle */
 import { expect } from "chai";
-import { AbiCoder, Signer } from "ethers";
+import { AbiCoder, decodeBase58, encodeBase58, getBytes, hexlify, Signer, ZeroAddress } from "ethers";
 import { EthereumProvider } from "hardhat/types";
 import { MaciState, VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
@@ -9,7 +9,7 @@ import { Keypair, Message, PCommand, PubKey } from "maci-domainobjs";
 
 import { EMode } from "../ts/constants";
 import { IVerifyingKeyStruct } from "../ts/types";
-import { getDefaultSigner } from "../ts/utils";
+import { getDefaultSigner, getSigners } from "../ts/utils";
 import {
   Poll__factory as PollFactory,
   MACI,
@@ -73,17 +73,18 @@ describe("Poll", () => {
       }
 
       // deploy on chain poll
-      const tx = await maciContract.deployPoll(
+      const tx = await maciContract.deployPoll({
         duration,
         treeDepths,
         messageBatchSize,
-        coordinator.pubKey.asContractParam(),
-        verifierContract,
-        vkRegistryContract,
-        EMode.QV,
-        signupGatekeeperContract,
-        initialVoiceCreditProxyContract,
-      );
+        coordinatorPubKey: coordinator.pubKey.asContractParam(),
+        verifier: verifierContract,
+        vkRegistry: vkRegistryContract,
+        mode: EMode.QV,
+        gatekeeper: signupGatekeeperContract,
+        initialVoiceCreditProxy: initialVoiceCreditProxyContract,
+        relayers: [signer],
+      });
       const receipt = await tx.wait();
 
       const block = await signer.provider!.getBlock(receipt!.blockHash);
@@ -171,20 +172,21 @@ describe("Poll", () => {
 
       // deploy on chain poll
       await expect(
-        testMaciContract.deployPoll(
+        testMaciContract.deployPoll({
           duration,
           treeDepths,
           messageBatchSize,
-          {
+          coordinatorPubKey: {
             x: "100",
             y: "1",
           },
-          r.mockVerifierContract as Verifier,
-          r.vkRegistryContract,
-          EMode.QV,
-          signupGatekeeperContract,
-          initialVoiceCreditProxyContract,
-        ),
+          verifier: r.mockVerifierContract as Verifier,
+          vkRegistry: r.vkRegistryContract,
+          mode: EMode.QV,
+          gatekeeper: signupGatekeeperContract,
+          initialVoiceCreditProxy: initialVoiceCreditProxyContract,
+          relayers: [ZeroAddress],
+        }),
       ).to.be.revertedWithCustomError(testMaciContract, "InvalidPubKey");
     });
   });
@@ -252,6 +254,16 @@ describe("Poll", () => {
   });
 
   describe("publishMessage", () => {
+    const ipfsHash = hexlify(
+      getBytes(`0x${decodeBase58("QmXj8v1qbwTqVp9RxkQR29Xjc6g5C1KL2m2gZ9b8t8THHj").toString(16)}`).slice(2),
+    );
+
+    before(() => {
+      // check base58 to bytes32 conversion is correct
+      const array = new Uint8Array([...getBytes("0x1220"), ...getBytes(ipfsHash)]);
+      expect(encodeBase58(array)).to.eq("QmXj8v1qbwTqVp9RxkQR29Xjc6g5C1KL2m2gZ9b8t8THHj");
+    });
+
     it("should publish a message to the Poll contract", async () => {
       const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, 0n);
 
@@ -314,6 +326,48 @@ describe("Poll", () => {
       });
     });
 
+    it("should allow to relay a messages batch", async () => {
+      const messages: [Message, PubKey][] = [];
+      for (let i = 0; i < 2; i += 1) {
+        const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, BigInt(i));
+        const signature = command.sign(keypair.privKey);
+        const sharedKey = Keypair.genEcdhSharedKey(keypair.privKey, coordinator.pubKey);
+        const message = command.encrypt(signature, sharedKey);
+        messages.push([message, keypair.pubKey]);
+      }
+
+      const messageHashes = await Promise.all(
+        messages.map(([message, publicKey]) =>
+          pollContract.hashMessageAndEncPubKey(message.asContractParam(), publicKey.asContractParam()),
+        ),
+      );
+
+      const tx = await pollContract.relayMessagesBatch(messageHashes, ipfsHash);
+      const receipt = await tx.wait();
+      expect(receipt?.status).to.eq(1);
+
+      messages.forEach(([message, key]) => {
+        maciState.polls.get(pollId)?.publishMessage(message, key);
+      });
+    });
+
+    it("should throw an error if non-relayer tries to relay messages batch", async () => {
+      const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, 0n);
+      const signature = command.sign(keypair.privKey);
+      const sharedKey = Keypair.genEcdhSharedKey(keypair.privKey, coordinator.pubKey);
+      const message = command.encrypt(signature, sharedKey);
+      const messageHash = await pollContract.hashMessageAndEncPubKey(
+        message.asContractParam(),
+        keypair.pubKey.asContractParam(),
+      );
+
+      const [, user] = await getSigners();
+
+      await expect(
+        pollContract.connect(user).relayMessagesBatch([messageHash], ipfsHash),
+      ).to.be.revertedWithCustomError(pollContract, "NotRelayer");
+    });
+
     it("should throw when the message batch has messages length != encPubKeys length", async () => {
       const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, 0n);
       const signature = command.sign(keypair.privKey);
@@ -350,6 +404,22 @@ describe("Poll", () => {
       await expect(
         pollContract.publishMessageBatch([message.asContractParam()], [keypair.pubKey.asContractParam()]),
       ).to.be.revertedWithCustomError(pollContract, "VotingPeriodOver");
+    });
+
+    it("should not allow to relay a messages batch after the voting period ends", async () => {
+      const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, 0n);
+      const signature = command.sign(keypair.privKey);
+      const sharedKey = Keypair.genEcdhSharedKey(keypair.privKey, coordinator.pubKey);
+      const message = command.encrypt(signature, sharedKey);
+      const messageHash = await pollContract.hashMessageAndEncPubKey(
+        message.asContractParam(),
+        keypair.pubKey.asContractParam(),
+      );
+
+      await expect(pollContract.relayMessagesBatch([messageHash], ipfsHash)).to.be.revertedWithCustomError(
+        pollContract,
+        "VotingPeriodOver",
+      );
     });
   });
 
