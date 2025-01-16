@@ -187,7 +187,7 @@
     "@types/lowdb": "^1.0.15",
     "@types/mocha": "^10.0.8",
     "@types/node": "^22.9.0",
-    "@types/snarkjs": "^0.7.8",
+    "@types/snarkjs": "^0.7.9",
     "@types/uuid": "^10.0.0",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.2",
