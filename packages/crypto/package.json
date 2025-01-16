@@ -35,7 +35,7 @@
     "nyc": "^17.1.0",
     "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.1",
-    "typescript": "^5.6.3"
+    "typescript": "^5.7.3"
   },
   "nyc": {
     "reporter": [

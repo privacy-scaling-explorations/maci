@@ -28,7 +28,7 @@
     "hardhat-contract-sizer": "^2.0.3",
     "mocha": "^10.7.3",
     "ts-mocha": "^10.0.0",
-    "typescript": "^5.6.3"
+    "typescript": "^5.7.3"
   },
   "dependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
