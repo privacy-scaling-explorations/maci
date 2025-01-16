@@ -49,7 +49,7 @@ importers:
         version: 6.10.2(eslint@8.57.0)
       eslint-plugin-prettier:
         specifier: ^5.2.2
-        version: 5.2.2(@types/eslint@8.56.10)(eslint-config-prettier@9.1.0(eslint@8.57.0))(eslint@8.57.0)(prettier@3.3.3)
+        version: 5.2.2(@types/eslint@8.56.10)(eslint-config-prettier@9.1.0(eslint@8.57.0))(eslint@8.57.0)(prettier@3.4.2)
       eslint-plugin-react:
         specifier: ^7.37.4
         version: 7.37.4(eslint@8.57.0)
@@ -72,11 +72,11 @@ importers:
         specifier: ^15.4.1
         version: 15.4.1
       prettier:
-        specifier: ^3.3.3
-        version: 3.3.3
+        specifier: ^3.4.2
+        version: 3.4.2
       prettier-plugin-solidity:
         specifier: ^1.4.2
-        version: 1.4.2(prettier@3.3.3)
+        version: 1.4.2(prettier@3.4.2)
       solhint:
         specifier: ^5.0.3
         version: 5.0.3(typescript@5.7.3)
@@ -11365,8 +11365,8 @@ packages:
     engines: {node: '>=14'}
     hasBin: true
 
-  prettier@3.3.3:
-    resolution: {integrity: sha512-i2tDNA0O5IrMO757lfrdQZCc2jPNDVntV0m/+4whiDfWaTKfMNgR7Qz0NAeGz/nRqF4m5/6CLzbP4/liHt12Ew==}
+  prettier@3.4.2:
+    resolution: {integrity: sha512-e9MewbtFo+Fevyuxn/4rrcDAaq0IYxPGLvObpQjiZBMAzB9IGmzlnG9RZy3FFas+eBMu2vA0CszMeduow5dIuQ==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -23739,10 +23739,10 @@ snapshots:
       safe-regex-test: 1.0.3
       string.prototype.includes: 2.0.1
 
-  eslint-plugin-prettier@5.2.2(@types/eslint@8.56.10)(eslint-config-prettier@9.1.0(eslint@8.57.0))(eslint@8.57.0)(prettier@3.3.3):
+  eslint-plugin-prettier@5.2.2(@types/eslint@8.56.10)(eslint-config-prettier@9.1.0(eslint@8.57.0))(eslint@8.57.0)(prettier@3.4.2):
     dependencies:
       eslint: 8.57.0
-      prettier: 3.3.3
+      prettier: 3.4.2
       prettier-linter-helpers: 1.0.0
       synckit: 0.9.1
     optionalDependencies:
@@ -29729,17 +29729,17 @@ snapshots:
     dependencies:
       fast-diff: 1.3.0
 
-  prettier-plugin-solidity@1.4.2(prettier@3.3.3):
+  prettier-plugin-solidity@1.4.2(prettier@3.4.2):
     dependencies:
       '@solidity-parser/parser': 0.19.0
-      prettier: 3.3.3
+      prettier: 3.4.2
       semver: 7.6.3
 
   prettier@2.8.8: {}
 
   prettier@3.0.3: {}
 
-  prettier@3.3.3: {}
+  prettier@3.4.2: {}
 
   pretty-error@4.0.0:
     dependencies:
