@@ -170,7 +170,7 @@
     "@zk-kit/imt.sol": "2.0.0-beta.12",
     "@zk-kit/lean-imt": "^2.1.0",
     "circomlibjs": "^0.1.7",
-    "ethers": "^6.13.4",
+    "ethers": "^6.13.5",
     "hardhat": "^2.22.18",
     "lowdb": "^1.0.0",
     "maci-circuits": "^2.5.0",
