@@ -40,7 +40,7 @@
     "class-validator": "^0.14.1",
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.5",
-    "ethers": "^6.13.4",
+    "ethers": "^6.13.5",
     "hardhat": "^2.22.18",
     "helia": "^5.2.0",
     "helmet": "^8.0.0",
