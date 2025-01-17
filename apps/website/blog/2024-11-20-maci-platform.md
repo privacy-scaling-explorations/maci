@@ -1,5 +1,5 @@
 ---
-slug: MACI Platform
+slug: MACI-Platform
 title: The birth of MACI Platform
 description: Introducing MACI Platform
 authors:
