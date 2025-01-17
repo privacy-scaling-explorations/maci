@@ -42,7 +42,7 @@
     "dotenv": "^16.4.5",
     "ethers": "^6.13.4",
     "hardhat": "^2.22.18",
-    "helia": "^5.1.1",
+    "helia": "^5.2.0",
     "helmet": "^8.0.0",
     "maci-contracts": "workspace:^2.5.0",
     "maci-domainobjs": "workspace:^2.5.0",
