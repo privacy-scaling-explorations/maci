@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.28;
 
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
@@ -43,6 +43,7 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
   function isPollVkSet(uint256 _sig) public view returns (bool isSet) {
     isSet = pollVkSet[_sig];
   }
+
   /// @notice Check if the process verifying key is set
   /// @param _sig The signature
   /// @param _mode QV or Non-QV
@@ -65,6 +66,7 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
   function genPollVkSig(uint256 _stateTreeDepth, uint256 _voteOptionTreeDepth) public pure returns (uint256 sig) {
     sig = (_stateTreeDepth << 64) + _voteOptionTreeDepth;
   }
+
   /// @notice generate the signature for the process verifying key
   /// @param _stateTreeDepth The state tree depth
   /// @param _voteOptionTreeDepth The vote option tree depth

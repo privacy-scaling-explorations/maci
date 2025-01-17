@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.28;
 
 /// @dev A struct storing a passport credential
 struct Credential {
