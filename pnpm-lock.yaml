@@ -99,8 +99,8 @@ importers:
   apps/relayer:
     dependencies:
       '@helia/json':
-        specifier: ^4.0.1
-        version: 4.0.1
+        specifier: ^4.0.2
+        version: 4.0.2
       '@nestjs/common':
         specifier: ^11.0.1
         version: 11.0.1(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.1)
@@ -2859,14 +2859,11 @@ packages:
   '@helia/delegated-routing-v1-http-api-client@4.2.1':
     resolution: {integrity: sha512-Gc149HTv/ufhNfcrQnEN3j9cqLSY+2AXMiIzNjQM1yF+wniN05yYzSYLxCtDlPfyi2TzODgdK/Kql3mRJLnGUg==}
 
-  '@helia/interface@5.1.0':
-    resolution: {integrity: sha512-5rah5zHBfj6JRsdAtbgS6BaGXu/8pBMOCAAoAYCJntJ7TNSIAF1/Zv5dyK+NoYkgiFZW+8l4Z7cKDCpdC+78pw==}
-
   '@helia/interface@5.2.0':
     resolution: {integrity: sha512-vxe/+EA4dvHOrwYJPiFjCbRgRPURWS5AURpbMDoKpx9ldZlxXkV3YWBl4EAMp4lrRos9WjRyWu2OoDfOsC1uIg==}
 
-  '@helia/json@4.0.1':
-    resolution: {integrity: sha512-E330n5jV0NBqYCy07F8fuN9OGscaP/Gxy6qkeIX/w40eCQRJDtgF+0l4LBIj+mYr4zKar/FTh2fqHsVsVHRR8g==}
+  '@helia/json@4.0.2':
+    resolution: {integrity: sha512-sN0tGDQvHqY2DfCwfMJRrv7Yg19NLopoiWlWKIQ4cvHrDXHqcYcqzE+HNRJDAWLzGqtUWInAxd6u4WOSMwoVLQ==}
 
   '@helia/routers@3.0.0':
     resolution: {integrity: sha512-WtbH+qam4YtcJfeQpteJ9o9By4TniUeltkClouoDkXpRoshjyTT0MowzpCOBRS0hS8gK3aX+kA3h1kU3qeR35Q==}
@@ -18166,16 +18163,6 @@ snapshots:
       p-queue: 8.0.1
       uint8arrays: 5.1.0
 
-  '@helia/interface@5.1.0':
-    dependencies:
-      '@libp2p/interface': 2.4.0
-      '@multiformats/dns': 1.0.6
-      interface-blockstore: 5.3.1
-      interface-datastore: 8.3.1
-      interface-store: 6.0.2
-      multiformats: 13.3.1
-      progress-events: 1.0.1
-
   '@helia/interface@5.2.0':
     dependencies:
       '@libp2p/interface': 2.4.0
@@ -18186,9 +18173,9 @@ snapshots:
       multiformats: 13.3.1
       progress-events: 1.0.1
 
-  '@helia/json@4.0.1':
+  '@helia/json@4.0.2':
     dependencies:
-      '@helia/interface': 5.1.0
+      '@helia/interface': 5.2.0
       '@libp2p/interface': 2.4.0
       interface-blockstore: 5.3.1
       multiformats: 13.3.1
