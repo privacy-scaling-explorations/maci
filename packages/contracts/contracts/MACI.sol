@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.28;
 
 import { IPollFactory } from "./interfaces/IPollFactory.sol";
 import { IMessageProcessorFactory } from "./interfaces/IMPFactory.sol";

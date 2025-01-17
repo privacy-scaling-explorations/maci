@@ -52,10 +52,10 @@ program
     "-p, --initialVoiceCreditsProxyAddress <initialVoiceCreditsProxyAddress>",
     "the initial voice credits proxy contract address",
   )
-  .option("-ph3, --poseidonT3Address <poseidonT3Address>", "PoseidonT3 contract address")
-  .option("-ph4, --poseidonT4Address <poseidonT4Address>", "PoseidonT4 contract address")
-  .option("-ph5, --poseidonT5Address <poseidonT5Address>", "PoseidonT5 contract address")
-  .option("-ph6, --poseidonT6Address <poseidonT6Address>", "PoseidonT6 contract address")
+  .option("--poseidonT3Address <poseidonT3Address>", "PoseidonT3 contract address")
+  .option("--poseidonT4Address <poseidonT4Address>", "PoseidonT4 contract address")
+  .option("--poseidonT5Address <poseidonT5Address>", "PoseidonT5 contract address")
+  .option("--poseidonT6Address <poseidonT6Address>", "PoseidonT6 contract address")
   .option("-g, --signupGatekeeperAddress <signupGatekeeperAddress>", "the signup gatekeeper contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
@@ -84,14 +84,14 @@ program
   .command("checkVerifyingKeys")
   .description("check that the verifying keys in the contract match the local ones")
   .option(
-    "-uq, --use-quadratic-voting <useQuadraticVoting>",
+    "-u, --use-quadratic-voting <useQuadraticVoting>",
     "whether to use quadratic voting",
     (value) => value === "true",
     true,
   )
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .option("-vk, --vk-contract <vkContract>", "the VkRegistry contract address")
+  .option("-k, --vk-contract <vkContract>", "the VkRegistry contract address")
   .requiredOption("-s, --state-tree-depth <stateTreeDepth>", "the state tree depth", parseInt)
   .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the intermediate state tree depth", parseInt)
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
@@ -105,7 +105,7 @@ program
     "the tally votes zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .requiredOption(
-    "-pj, --poll-joining-zkey <pollZkeyPath>",
+    "--poll-joining-zkey <pollZkeyPath>",
     "the poll join zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .action(async (cmdOptions) => {
@@ -132,7 +132,7 @@ program
 program
   .command("genMaciPubKey")
   .description("generate a new MACI public key")
-  .requiredOption("-sk, --privkey <privkey>", "the private key")
+  .requiredOption("-k, --privkey <privkey>", "the private key")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action((cmdObj) => {
@@ -141,7 +141,7 @@ program
 program
   .command("genMaciKeyPair")
   .description("generate a new MACI key pair")
-  .option("-sp, --seed <seed>", "seed value for keypair", (value) => (value ? BigInt(value) : undefined), undefined)
+  .option("-s, --seed <seed>", "seed value for keypair", (value) => (value ? BigInt(value) : undefined), undefined)
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action((cmdObj) => {
@@ -176,20 +176,20 @@ program
 program
   .command("deployPoll")
   .description("deploy a new poll")
-  .option("-vk, --vkRegistryAddress <vkRegistryAddress>", "the vk registry contract address")
+  .option("-k, --vkRegistryAddress <vkRegistryAddress>", "the vk registry contract address")
   .requiredOption("-t, --duration <pollDuration>", "the poll duration", parseInt)
   .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the int state tree depth", parseInt)
   .requiredOption("-b, --msg-batch-size <messageBatchSize>", "the message batch size", parseInt)
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
-  .requiredOption("-pk, --pubkey <coordinatorPubkey>", "the coordinator public key")
+  .requiredOption("-p, --pubkey <coordinatorPubkey>", "the coordinator public key")
   .option(
-    "-uq, --use-quadratic-voting <useQuadraticVoting>",
+    "-u, --use-quadratic-voting <useQuadraticVoting>",
     "whether to use quadratic voting",
     (value) => value === "true",
     true,
   )
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
-  .option("-ra, --relayers <relayers>", "the relayer addresses", (value) => value.split(",").map((item) => item.trim()))
+  .option("-m, --relayers <relayers>", "the relayer addresses", (value) => value.split(",").map((item) => item.trim()))
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
@@ -216,32 +216,32 @@ program
 program
   .command("joinPoll")
   .description("join the poll")
-  .requiredOption("-sk, --priv-key <privKey>", "the private key")
+  .requiredOption("-k, --priv-key <privKey>", "the private key")
   .option("-i, --state-index <stateIndex>", "the user's state index", BigInt)
   .requiredOption("-s, --sg-data <sgData>", "the signup gateway data")
-  .requiredOption("-esk, --poll-priv-key <pollPrivKey>", "the user ephemeral private key for the poll")
-  .option("-iv, --ivcp-data <ivcpData>", "the initial voice credit proxy data")
+  .requiredOption("-e, --poll-priv-key <pollPrivKey>", "the user ephemeral private key for the poll")
+  .option("-v, --ivcp-data <ivcpData>", "the initial voice credit proxy data")
   .option(
-    "-nv, --new-voice-credit-balance <newVoiceCreditBalance>",
+    "-n, --new-voice-credit-balance <newVoiceCreditBalance>",
     "the voice credit balance of the user for the poll",
     BigInt,
   )
-  .requiredOption("-pid, --poll-id <pollId>", "the id of the poll", BigInt)
+  .requiredOption("-p, --poll-id <pollId>", "the id of the poll", BigInt)
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
-  .option("-st, --state-file <stateFile>", "the path to the state file containing the serialized maci state")
-  .option("-sb, --start-block <startBlock>", "the block number to start looking for events from", parseInt)
-  .option("-eb, --end-block <endBlock>", "the block number to end looking for events from", parseInt)
-  .option("-bb, --blocks-per-batch <blockPerBatch>", "the number of blocks to process per batch", parseInt)
-  .option("-tx, --transaction-hash <transactionHash>", "transaction hash of MACI contract creation")
-  .option("-pw, --poll-wasm <pollWasm>", "the path to the poll witness generation wasm binary")
+  .option("--state-file <stateFile>", "the path to the state file containing the serialized maci state")
+  .option("--start-block <startBlock>", "the block number to start looking for events from", parseInt)
+  .option("--end-block <endBlock>", "the block number to end looking for events from", parseInt)
+  .option("--blocks-per-batch <blockPerBatch>", "the number of blocks to process per batch", parseInt)
+  .option("--transaction-hash <transactionHash>", "transaction hash of MACI contract creation")
+  .option("--poll-wasm <pollWasm>", "the path to the poll witness generation wasm binary")
   .requiredOption(
-    "-pj, --poll-joining-zkey <pollZkeyPath>",
+    "--poll-joining-zkey <pollZkeyPath>",
     "the poll join zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .option("-w, --wasm", "whether to use the wasm binaries")
   .option("-r, --rapidsnark <rapidsnark>", "the path to the rapidsnark binary")
-  .option("-wp, --poll-witnessgen <pollWitnessgen>", "the path to the poll witness generation binary")
+  .option("-g, --poll-witnessgen <pollWitnessgen>", "the path to the poll witness generation binary")
   .action(async (cmdObj) => {
     try {
       const signer = await getSigner();
@@ -283,27 +283,27 @@ program
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
   .requiredOption("-b, --msg-batch-size <messageBatchSize>", "the message batch size", parseInt)
   .option(
-    "-pj, --poll-joining-zkey <pollZkeyPath>",
+    "--poll-joining-zkey <pollZkeyPath>",
     "the poll join zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .option(
-    "-pqv, --process-messages-zkey-qv <processMessagesZkeyPathQv>",
+    "--process-messages-zkey-qv <processMessagesZkeyPathQv>",
     "the process messages qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .option(
-    "-tqv, --tally-votes-zkey-qv <tallyVotesZkeyPathQv>",
+    "--tally-votes-zkey-qv <tallyVotesZkeyPathQv>",
     "the tally votes qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .option(
-    "-pnqv, --process-messages-zkey-non-qv <processMessagesZkeyPathNonQv>",
+    "--process-messages-zkey-non-qv <processMessagesZkeyPathNonQv>",
     "the process messages non-qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .option(
-    "-tnqv, --tally-votes-zkey-non-qv <tallyVotesZkeyPathNonQv>",
+    "--tally-votes-zkey-non-qv <tallyVotesZkeyPathNonQv>",
     "the tally votes non-qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .option(
-    "-uq, --use-quadratic-voting <useQuadraticVoting>",
+    "-u, --use-quadratic-voting <useQuadraticVoting>",
     "whether to use quadratic voting",
     (value) => value === "true",
     true,
@@ -342,7 +342,7 @@ program
     "the MACI public key which should replace the user's public key in the state tree",
   )
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
-  .option("-sk, --privkey <privkey>", "your serialized MACI private key")
+  .option("-k, --privkey <privkey>", "your serialized MACI private key")
   .requiredOption("-i, --state-index <stateIndex>", "the user's state index", BigInt)
   .requiredOption("-v, --vote-option-index <voteOptionIndex>", "the vote option index", BigInt)
   .requiredOption("-n, --nonce <nonce>", "the message nonce", BigInt)
@@ -419,23 +419,23 @@ program
   .command("extractVkToFile")
   .description("extract vkey to json file")
   .requiredOption(
-    "-pj, --poll-joining-zkey <pollZkeyPath>",
+    "--poll-joining-zkey <pollZkeyPath>",
     "the poll join zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .requiredOption(
-    "-pqv, --process-messages-zkey-qv <processMessagesZkeyPathQv>",
+    "--process-messages-zkey-qv <processMessagesZkeyPathQv>",
     "the process messages qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .requiredOption(
-    "-tqv, --tally-votes-zkey-qv <tallyVotesZkeyPathQv>",
+    "--tally-votes-zkey-qv <tallyVotesZkeyPathQv>",
     "the tally votes qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .requiredOption(
-    "-pnqv, --process-messages-zkey-non-qv <processMessagesZkeyPathNonQv>",
+    "--process-messages-zkey-non-qv <processMessagesZkeyPathNonQv>",
     "the process messages non-qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .requiredOption(
-    "-tnqv, --tally-votes-zkey-non-qv <tallyVotesZkeyPathNonQv>",
+    "--tally-votes-zkey-non-qv <tallyVotesZkeyPathNonQv>",
     "the tally votes non-qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .requiredOption("-o, --output-file <outputFile>", "the output file path of extracted vkeys")
@@ -509,9 +509,9 @@ program
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .requiredOption("-o, --poll-id <pollId>", "the poll id", BigInt)
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
-  .option("-sb, --start-block <startBlock>", "the block number to start looking for events from", parseInt)
-  .option("-eb, --end-block <endBlock>", "the block number to end looking for events from", parseInt)
-  .option("-bb, --blocks-per-batch <blockPerBatch>", "the number of blocks to process per batch", parseInt)
+  .option("--start-block <startBlock>", "the block number to start looking for events from", parseInt)
+  .option("--end-block <endBlock>", "the block number to end looking for events from", parseInt)
+  .option("--blocks-per-batch <blockPerBatch>", "the number of blocks to process per batch", parseInt)
   .action(async (cmdObj) => {
     try {
       const signer = await getSigner();
@@ -611,7 +611,7 @@ program
 program
   .command("genProofs")
   .description("generate the proofs for a poll")
-  .option("-sk, --privkey <privkey>", "your serialized MACI private key")
+  .option("-k, --privkey <privkey>", "your serialized MACI private key")
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .requiredOption("-o, --poll-id <pollId>", "the poll id", BigInt)
   .requiredOption(
@@ -619,26 +619,26 @@ program
     "the tally file with results, per vote option spent credits, spent voice credits total",
   )
   .option("-r, --rapidsnark <rapidsnark>", "the path to the rapidsnark binary")
-  .option("-wp, --process-witnessgen <processWitnessgen>", "the path to the process witness generation binary")
-  .option("-pd, --process-witnessdat <processWitnessdat>", "the path to the process witness dat file")
-  .option("-wt, --tally-witnessgen <tallyWitnessgen>", "the path to the tally witness generation binary")
-  .option("-td, --tally-witnessdat <tallyWitnessdat>", "the path to the tally witness dat file")
-  .requiredOption("-zpj, --poll-joining-zkey <processJoinZkey>", "the path to the poll join zkey")
-  .requiredOption("-zp, --process-zkey <processZkey>", "the path to the process zkey")
-  .requiredOption("-zt, --tally-zkey <tallyZkey>", "the path to the tally zkey")
+  .option("-g, --process-witnessgen <processWitnessgen>", "the path to the process witness generation binary")
+  .option("--process-witnessdat <processWitnessdat>", "the path to the process witness dat file")
+  .option("--tally-witnessgen <tallyWitnessgen>", "the path to the tally witness generation binary")
+  .option("--tally-witnessdat <tallyWitnessdat>", "the path to the tally witness dat file")
+  .requiredOption("--poll-joining-zkey <processJoinZkey>", "the path to the poll join zkey")
+  .requiredOption("--process-zkey <processZkey>", "the path to the process zkey")
+  .requiredOption("--tally-zkey <tallyZkey>", "the path to the tally zkey")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-p, --rpc-provider <provider>", "the rpc provider URL")
   .requiredOption("-f, --output <outputDir>", "the output directory for proofs")
-  .option("-tx, --transaction-hash <transactionHash>", "transaction hash of MACI contract creation")
+  .option("--transaction-hash <transactionHash>", "transaction hash of MACI contract creation")
   .option("-w, --wasm", "whether to use the wasm binaries")
-  .option("-pw, --process-wasm <processWasm>", "the path to the process witness generation wasm binary")
-  .option("-tw, --tally-wasm <tallyWasm>", "the path to the tally witness generation wasm binary")
-  .option("-st, --state-file <stateFile>", "the path to the state file containing the serialized maci state")
-  .option("-sb, --start-block <startBlock>", "the block number to start looking for events from", parseInt)
-  .option("-eb, --end-block <endBlock>", "the block number to end looking for events from", parseInt)
-  .option("-bb, --blocks-per-batch <blockPerBatch>", "the number of blocks to process per batch", parseInt)
+  .option("--process-wasm <processWasm>", "the path to the process witness generation wasm binary")
+  .option("--tally-wasm <tallyWasm>", "the path to the tally witness generation wasm binary")
+  .option("--state-file <stateFile>", "the path to the state file containing the serialized maci state")
+  .option("--start-block <startBlock>", "the block number to start looking for events from", parseInt)
+  .option("--end-block <endBlock>", "the block number to end looking for events from", parseInt)
+  .option("--blocks-per-batch <blockPerBatch>", "the number of blocks to process per batch", parseInt)
   .option(
-    "-uq, --use-quadratic-voting <useQuadraticVoting>",
+    "-u, --use-quadratic-voting <useQuadraticVoting>",
     "whether to use quadratic voting",
     (value) => value === "true",
     true,
@@ -682,11 +682,11 @@ program
   .requiredOption("-o, --output <outputPath>", "the path where to write the state")
   .requiredOption("-p, --poll-id <pollId>", "the id of the poll", BigInt)
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
-  .option("-sk, --privkey <privkey>", "your serialized MACI private key")
-  .option("-eb, --end-block <endBlock>", "the end block number", parseInt)
-  .option("-sb, --start-block <startBlock>", "the start block number", parseInt)
-  .option("-bb, --blocks-per-batch <blockPerBatch>", "the blocks per batch", parseInt)
-  .option("-tx, --transaction-hash <transactionHash>", "the transaction hash")
+  .option("-k, --privkey <privkey>", "your serialized MACI private key")
+  .option("--start-block <startBlock>", "the start block number", parseInt)
+  .option("--end-block <endBlock>", "the end block number", parseInt)
+  .option("--blocks-per-batch <blockPerBatch>", "the blocks per batch", parseInt)
+  .option("--transaction-hash <transactionHash>", "the transaction hash")
   .option("-s, --sleep <sleep>", "the sleep time between batches", parseInt)
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")

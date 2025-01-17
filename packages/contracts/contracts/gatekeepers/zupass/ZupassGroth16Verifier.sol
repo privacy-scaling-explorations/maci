@@ -18,7 +18,7 @@
     along with snarkJS. If not, see <https://www.gnu.org/licenses/>.
 */
 
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.28;
 
 contract ZupassGroth16Verifier {
   // Scalar field size

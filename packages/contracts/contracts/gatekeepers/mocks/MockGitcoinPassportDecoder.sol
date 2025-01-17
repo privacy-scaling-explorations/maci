@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.28;
 
 /// @title MockGitcoinPassportDecoder
 /// @notice A mock contract to test the GitcoinPassportDecoder gatekeeper

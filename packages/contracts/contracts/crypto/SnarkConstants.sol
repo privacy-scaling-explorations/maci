@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.28;
 
 /// @title SnarkConstants
 /// @notice This contract contains constants related to the SNARK
