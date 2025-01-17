@@ -30,7 +30,7 @@
     "@nestjs/mongoose": "^11.0.0",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/platform-socket.io": "^11.0.1",
-    "@nestjs/schedule": "^4.1.2",
+    "@nestjs/schedule": "^5.0.0",
     "@nestjs/swagger": "^11.0.2",
     "@nestjs/throttler": "^6.3.0",
     "@nestjs/websockets": "^11.0.1",
