@@ -488,8 +488,8 @@ importers:
         specifier: 2.0.0-beta.12
         version: 2.0.0-beta.12
       '@zk-kit/lean-imt':
-        specifier: ^2.1.0
-        version: 2.2.1
+        specifier: ^2.2.2
+        version: 2.2.2
       circomlibjs:
         specifier: ^0.1.7
         version: 0.1.7
@@ -570,8 +570,8 @@ importers:
   packages/core:
     dependencies:
       '@zk-kit/lean-imt':
-        specifier: ^2.2.1
-        version: 2.2.1
+        specifier: ^2.2.2
+        version: 2.2.2
       maci-crypto:
         specifier: ^2.5.0
         version: link:../crypto
@@ -4749,8 +4749,8 @@ packages:
   '@zk-kit/imt.sol@2.0.0-beta.12':
     resolution: {integrity: sha512-kKgopVO6zlfSiQgv3X9WykaCeyb8jGtthWGqdo1ZD7fY1bH8A7BWhhWxtoCuU5mPEgRbamw1cAoUynuLoEULsg==}
 
-  '@zk-kit/lean-imt@2.2.1':
-    resolution: {integrity: sha512-Zq5yunUYu+ztp9RR5nuqiG1GpK1wjUoAjC0+x/MB95sI/Ns7zCxpzxo/Om9E0gme74Y3jO9KM5UUh3f9tqU++w==}
+  '@zk-kit/lean-imt@2.2.2':
+    resolution: {integrity: sha512-rscIPEgBBcu9vP/DJ3J+3187G/ObKETl343G5enPawNT81oeQSdHx3e2ZapTC+GfrZ/AS2AHHUOpRS1FfdSwjg==}
 
   '@zk-kit/poseidon-cipher@0.3.2':
     resolution: {integrity: sha512-Ezz1e0mj/GRDlHdU5m0uhj5iHY72zWJU0BP8DsCCvPubU7LPI2tVaPpxrAjT4JQqatbVRQHLIhixW7F7BPzaFg==}
@@ -21002,7 +21002,7 @@ snapshots:
     dependencies:
       poseidon-solidity: 0.0.5
 
-  '@zk-kit/lean-imt@2.2.1':
+  '@zk-kit/lean-imt@2.2.2':
     dependencies:
       '@zk-kit/utils': 1.2.1
 

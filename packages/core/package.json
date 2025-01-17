@@ -24,7 +24,7 @@
   "dependencies": {
     "maci-crypto": "^2.5.0",
     "maci-domainobjs": "^2.5.0",
-    "@zk-kit/lean-imt": "^2.2.1"
+    "@zk-kit/lean-imt": "^2.2.2"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
