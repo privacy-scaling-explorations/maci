@@ -1,4 +1,6 @@
 import { jest } from "@jest/globals";
+import { ZeroAddress } from "ethers";
+import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts";
 
 import { IpfsService } from "../../ipfs/ipfs.service";
 import { MessageBatchDto } from "../dto";
@@ -6,6 +8,15 @@ import { MessageBatchRepository } from "../messageBatch.repository";
 import { MessageBatchService } from "../messageBatch.service";
 
 import { defaultIpfsHash, defaultMessageBatches } from "./utils";
+
+jest.mock("maci-contracts", (): unknown => ({
+  MACI__factory: {
+    connect: jest.fn(),
+  },
+  Poll__factory: {
+    connect: jest.fn(),
+  },
+}));
 
 describe("MessageBatchService", () => {
   const mockIpfsService = {
@@ -16,9 +27,23 @@ describe("MessageBatchService", () => {
     create: jest.fn().mockImplementation(() => Promise.resolve(defaultMessageBatches)),
   };
 
+  const mockMaciContract = {
+    polls: jest.fn().mockImplementation(() => Promise.resolve({ poll: ZeroAddress })),
+  };
+
+  const mockPollContract = {
+    hashMessageAndEncPubKey: jest.fn().mockImplementation(() => Promise.resolve("hash")),
+    relayMessagesBatch: jest
+      .fn()
+      .mockImplementation(() => Promise.resolve({ wait: jest.fn().mockImplementation(() => Promise.resolve()) })),
+  };
+
   beforeEach(() => {
     mockRepository.create = jest.fn().mockImplementation(() => Promise.resolve(defaultMessageBatches));
     mockIpfsService.add = jest.fn().mockImplementation(() => Promise.resolve(defaultIpfsHash));
+
+    MACIFactory.connect = jest.fn().mockImplementation(() => mockMaciContract) as typeof MACIFactory.connect;
+    PollFactory.connect = jest.fn().mockImplementation(() => mockPollContract) as typeof PollFactory.connect;
   });
 
   afterEach(() => {
@@ -34,6 +59,7 @@ describe("MessageBatchService", () => {
     const result = await service.saveMessageBatches(defaultMessageBatches);
 
     expect(result).toStrictEqual(defaultMessageBatches);
+    expect(mockPollContract.relayMessagesBatch).toHaveBeenCalledTimes(1);
   });
 
   test("should throw an error if can't save message batches", async () => {
