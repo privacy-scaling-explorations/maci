@@ -99,7 +99,6 @@ const joiningCircuitInputs = (
   stateTreeDepth: bigint,
   maciPrivKey: PrivKey,
   stateLeafIndex: bigint,
-  pollPrivKey: PrivKey,
   pollPubKey: PubKey,
   pollId: bigint,
 ): IPollJoiningCircuitInputs => {
@@ -141,7 +140,6 @@ const joiningCircuitInputs = (
 
   const circuitInputs = {
     privKey: maciPrivKey.asCircuitInputs(),
-    pollPrivKey: pollPrivKey.asCircuitInputs(),
     pollPubKey: pollPubKey.asCircuitInputs(),
     siblings: siblingsArray,
     indices,
@@ -162,7 +160,6 @@ const joiningCircuitInputs = (
 export const joinPoll = async ({
   maciAddress,
   privateKey,
-  pollPrivKey,
   stateIndex,
   stateFile,
   pollId,
@@ -197,11 +194,6 @@ export const joinPoll = async ({
   const userMaciPrivKey = PrivKey.deserialize(privateKey);
   const userMaciPubKey = new Keypair(userMaciPrivKey).pubKey;
   const nullifier = poseidon([BigInt(userMaciPrivKey.asCircuitInputs()), pollId]);
-
-  // Create poll public key from poll private key
-  const pollPrivKeyDeserialized = PrivKey.deserialize(pollPrivKey);
-  const pollKeyPair = new Keypair(pollPrivKeyDeserialized);
-  const pollPubKey = pollKeyPair.pubKey;
 
   const maciContract = MACIFactory.connect(maciAddress, signer);
   const pollContracts = await maciContract.getPoll(pollId);
@@ -246,8 +238,7 @@ export const joinPoll = async ({
     circuitInputs = poll.joiningCircuitInputs({
       maciPrivKey: userMaciPrivKey,
       stateLeafIndex: loadedStateIndex!,
-      pollPrivKey: pollPrivKeyDeserialized,
-      pollPubKey,
+      pollPubKey: userMaciPubKey,
     }) as unknown as CircuitInputs;
   } else {
     // build an off-chain representation of the MACI contract using data in the contract storage
@@ -292,8 +283,7 @@ export const joinPoll = async ({
       stateTreeDepth,
       userMaciPrivKey,
       loadedStateIndex!,
-      pollPrivKeyDeserialized,
-      pollPubKey,
+      userMaciPubKey,
       pollId,
     ) as unknown as CircuitInputs;
   }
@@ -321,7 +311,7 @@ export const joinPoll = async ({
     // submit the message onchain as well as the encryption public key
     const tx = await pollContract.joinPoll(
       nullifier,
-      pollPubKey.asContractParam(),
+      userMaciPubKey.asContractParam(),
       currentStateRootIndex,
       proof,
       sgData,

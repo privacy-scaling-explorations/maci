@@ -16,7 +16,6 @@ describe("Poll Joining circuit", function test() {
 
   type PollJoiningCircuitInputs = [
     "privKey",
-    "pollPrivKey",
     "pollPubKey",
     "stateLeaf",
     "siblings",
@@ -42,7 +41,6 @@ describe("Poll Joining circuit", function test() {
     let pollId: bigint;
     let poll: Poll;
     let users: Keypair[];
-    const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
     const messages: Message[] = [];
     const commands: PCommand[] = [];
 
@@ -65,24 +63,24 @@ describe("Poll Joining circuit", function test() {
       poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       // Join the poll
-      const { privKey } = users[0];
+      const { privKey, pubKey } = users[0];
 
       const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
       const timestamp = BigInt(Math.floor(Date.now() / 1000));
 
-      const stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp));
+      const stateIndex = BigInt(poll.joinPoll(nullifier, pubKey, voiceCreditBalance, timestamp));
 
       // First command (valid)
       const command = new PCommand(
         stateIndex,
-        pollPubKey,
+        pubKey,
         BigInt(0), // voteOptionIndex,
         BigInt(9), // vote weight
         BigInt(1), // nonce
         BigInt(pollId),
       );
 
-      const signature = command.sign(pollPrivKey);
+      const signature = command.sign(privKey);
 
       const ecdhKeypair = new Keypair();
       const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
@@ -97,13 +95,12 @@ describe("Poll Joining circuit", function test() {
     });
 
     it("should produce a proof", async () => {
-      const privateKey = users[0].privKey;
+      const { privKey: privateKey, pubKey: pollPubKey } = users[0];
       const stateLeafIndex = BigInt(1);
 
       const inputs = poll.joiningCircuitInputs({
         maciPrivKey: privateKey,
         stateLeafIndex,
-        pollPrivKey,
         pollPubKey,
       }) as unknown as IPollJoiningInputs;
       const witness = await circuit.calculateWitness(inputs);
@@ -111,13 +108,12 @@ describe("Poll Joining circuit", function test() {
     });
 
     it("should fail for fake witness", async () => {
-      const privateKey = users[0].privKey;
+      const { privKey: privateKey, pubKey: pollPubKey } = users[0];
       const stateLeafIndex = BigInt(1);
 
       const inputs = poll.joiningCircuitInputs({
         maciPrivKey: privateKey,
         stateLeafIndex,
-        pollPrivKey,
         pollPubKey,
       }) as unknown as IPollJoiningInputs;
       const witness = await circuit.calculateWitness(inputs);

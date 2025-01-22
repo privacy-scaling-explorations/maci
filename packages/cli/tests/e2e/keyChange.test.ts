@@ -89,7 +89,7 @@ describe("keyChange tests", function test() {
     });
 
     const user1Keypair = new Keypair();
-    const { privKey: pollPrivKey1, pubKey: pollPubKey1 } = new Keypair();
+    const { privKey: pollPrivKey1, pubKey: pollPubKey1 } = user1Keypair;
     const { pubKey: pollPubKey2 } = new Keypair();
 
     const initialNonce = 1n;
@@ -115,7 +115,6 @@ describe("keyChange tests", function test() {
       await joinPoll({
         maciAddress: maciAddresses.maciAddress,
         privateKey: user1Keypair.privKey.serialize(),
-        pollPrivKey: pollPrivKey1.serialize(),
         stateIndex,
         pollId,
         pollJoiningZkey: pollJoiningTestZkeyPath,
@@ -178,7 +177,6 @@ describe("keyChange tests", function test() {
     });
 
     const user1Keypair = new Keypair();
-    const { privKey: pollPrivKey1, pubKey: pollPubKey1 } = new Keypair();
     const { pubKey: pollPubKey2 } = new Keypair();
 
     const initialNonce = 1n;
@@ -204,7 +202,6 @@ describe("keyChange tests", function test() {
       await joinPoll({
         maciAddress: maciAddresses.maciAddress,
         privateKey: user1Keypair.privKey.serialize(),
-        pollPrivKey: pollPrivKey1.serialize(),
         stateIndex,
         pollId,
         pollJoiningZkey: pollJoiningTestZkeyPath,
@@ -216,7 +213,7 @@ describe("keyChange tests", function test() {
         quiet: true,
       });
       await publish({
-        pubkey: pollPubKey1.serialize(),
+        pubkey: user1Keypair.pubKey.serialize(),
         stateIndex,
         voteOptionIndex: initialVoteOption,
         nonce: initialNonce,
@@ -224,12 +221,12 @@ describe("keyChange tests", function test() {
         newVoteWeight: initialVoteAmount,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: pollPrivKey1.serialize(),
+        privateKey: user1Keypair.privKey.serialize(),
         signer,
       });
     });
 
-    it("should publish a message to change the poll and cast a new vote", async () => {
+    it("should publish a message to change the key and cast a new vote", async () => {
       await publish({
         pubkey: pollPubKey2.serialize(),
         stateIndex,
@@ -239,7 +236,7 @@ describe("keyChange tests", function test() {
         newVoteWeight: initialVoteAmount - 1n,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: pollPrivKey1.serialize(),
+        privateKey: user1Keypair.privKey.serialize(),
         signer,
       });
     });
@@ -267,8 +264,7 @@ describe("keyChange tests", function test() {
     });
 
     const user1Keypair = new Keypair();
-    const { privKey: pollPrivKey1, pubKey: pollPubKey1 } = new Keypair();
-    const { pubKey: pollPubKey2 } = new Keypair();
+    const secondKeypair = new Keypair();
 
     const initialNonce = 1n;
     const initialVoteOption = 0n;
@@ -293,7 +289,6 @@ describe("keyChange tests", function test() {
       await joinPoll({
         maciAddress: maciAddresses.maciAddress,
         privateKey: user1Keypair.privKey.serialize(),
-        pollPrivKey: pollPrivKey1.serialize(),
         stateIndex,
         pollId,
         pollJoiningZkey: pollJoiningTestZkeyPath,
@@ -306,7 +301,7 @@ describe("keyChange tests", function test() {
       });
 
       await publish({
-        pubkey: pollPubKey1.serialize(),
+        pubkey: user1Keypair.pubKey.serialize(),
         stateIndex,
         voteOptionIndex: initialVoteOption,
         nonce: initialNonce,
@@ -314,14 +309,14 @@ describe("keyChange tests", function test() {
         newVoteWeight: initialVoteAmount,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: pollPrivKey1.serialize(),
+        privateKey: user1Keypair.privKey.serialize(),
         signer,
       });
     });
 
     it("should publish a message to change the poll key, and a new vote", async () => {
       await publish({
-        pubkey: pollPubKey2.serialize(),
+        pubkey: secondKeypair.pubKey.serialize(),
         stateIndex,
         voteOptionIndex: initialVoteOption + 2n,
         nonce: initialNonce,
@@ -329,7 +324,7 @@ describe("keyChange tests", function test() {
         newVoteWeight: initialVoteAmount - 3n,
         maciAddress: maciAddresses.maciAddress,
         salt: genRandomSalt(),
-        privateKey: pollPrivKey1.serialize(),
+        privateKey: user1Keypair.privKey.serialize(),
         signer,
       });
     });

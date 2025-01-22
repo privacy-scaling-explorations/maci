@@ -139,7 +139,6 @@ export interface IProcessMessagesOutput {
 export interface IJoiningCircuitArgs {
   maciPrivKey: PrivKey;
   stateLeafIndex: bigint;
-  pollPrivKey: PrivKey;
   pollPubKey: PubKey;
 }
 /**
@@ -147,7 +146,6 @@ export interface IJoiningCircuitArgs {
  */
 export interface IPollJoiningCircuitInputs {
   privKey: string;
-  pollPrivKey: string;
   pollPubKey: string[];
   stateLeaf: string[];
   siblings: string[][];

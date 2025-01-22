@@ -11,8 +11,6 @@ template PollJoining(stateTreeDepth) {
 
     // User's private key
     signal input privKey;
-    // Poll's private key
-    signal input pollPrivKey;
     // Poll's public key
     signal input pollPubKey[2];
     // Siblings
@@ -37,18 +35,17 @@ template PollJoining(stateTreeDepth) {
     // Hash the public key
     var pubKeyHash = PoseidonHasher(2)([derivedPubKey[0], derivedPubKey[1]]);
 
-    // Poll private to public key to verify the correct one is used to join the poll (public input)
-    var derivedPollPubKey[2] = PrivToPubKey()(pollPrivKey);
-    derivedPollPubKey[0] === pollPubKey[0];
-    derivedPollPubKey[1] === pollPubKey[1];
+    // Ensure the poll public key is the same as the maci one (public input)
+    derivedPubKey[0] === pollPubKey[0];
+    derivedPubKey[1] === pollPubKey[1];
 
     // Inclusion proof  
-    var stateLeafQip = BinaryMerkleRoot(stateTreeDepth)(
+    var calculatedRoot = BinaryMerkleRoot(stateTreeDepth)(
         pubKeyHash,
         actualStateTreeDepth,
         indices,
         siblings
     );
 
-    stateLeafQip === stateRoot;
+    calculatedRoot === stateRoot;
 }
