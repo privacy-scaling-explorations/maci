@@ -39,6 +39,7 @@ export const verifyPerVOSpentVoiceCredits = async (
       newSpentVoiceCreditsCommitment,
       newResultsCommitment,
     );
+
     if (!isValid) {
       failedIndices.push(i);
     }

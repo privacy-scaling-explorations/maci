@@ -20,7 +20,8 @@ export const verify = async ({
   const useQv = tallyData.isQuadratic;
   const maciContractAddress = tallyData.maci;
 
-  if (!(await contractExists(signer.provider!, maciContractAddress))) {
+  const validContract = await contractExists(signer.provider!, maciContractAddress);
+  if (!validContract) {
     throw new Error(`There is no MACI contract deployed at ${maciContractAddress}.`);
   }
 
@@ -57,14 +58,14 @@ export const verify = async ({
   }
 
   // verify total spent voice credits on-chain
-  if (
-    !(await tallyContract.verifySpentVoiceCredits(
-      tallyData.totalSpentVoiceCredits.spent,
-      tallyData.totalSpentVoiceCredits.salt,
-      newResultsCommitment,
-      newPerVOSpentVoiceCreditsCommitment ?? 0n,
-    ))
-  ) {
+  const verified = await tallyContract.verifySpentVoiceCredits(
+    tallyData.totalSpentVoiceCredits.spent,
+    tallyData.totalSpentVoiceCredits.salt,
+    newResultsCommitment,
+    newPerVOSpentVoiceCreditsCommitment ?? 0n,
+  );
+
+  if (!verified) {
     throw new Error("The on-chain verification of total spent voice credits failed.");
   }
 
@@ -85,26 +86,28 @@ export const verify = async ({
     );
   }
 
-  if (useQv) {
-    if (tallyData.perVOSpentVoiceCredits?.tally.length !== numVoteOptions) {
-      throw new Error("Wrong number of vote options.");
-    }
-    // verify per vote option voice credits on-chain
-    const failedSpentCredits = await verifyPerVOSpentVoiceCredits(
-      tallyContract,
-      tallyData,
-      voteOptionTreeDepth,
-      newSpentVoiceCreditsCommitment,
-      newResultsCommitment,
-    );
+  if (!useQv) {
+    return true;
+  }
 
-    if (failedSpentCredits.length > 0) {
-      throw new Error(
-        `At least one tally result failed the on-chain verification. Please check your Tally data at these indexes: ${failedSpentCredits.join(
-          ", ",
-        )}`,
-      );
-    }
+  if (tallyData.perVOSpentVoiceCredits?.tally.length !== numVoteOptions) {
+    throw new Error("Wrong number of vote options.");
+  }
+  // verify per vote option voice credits on-chain
+  const failedSpentCredits = await verifyPerVOSpentVoiceCredits(
+    tallyContract,
+    tallyData,
+    voteOptionTreeDepth,
+    newSpentVoiceCreditsCommitment,
+    newResultsCommitment,
+  );
+
+  if (failedSpentCredits.length > 0) {
+    throw new Error(
+      `At least one tally result failed the on-chain verification. Please check your Tally data at these indexes: ${failedSpentCredits.join(
+        ", ",
+      )}`,
+    );
   }
 
   return true;

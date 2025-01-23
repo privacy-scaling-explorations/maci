@@ -8,5 +8,15 @@ export type {
   IGetPollParamsArgs,
   ITallyCommitments,
   IPollParams,
+  IRegisteredUserArgs,
+  IParseSignupEventsArgs,
+  ISignupData,
+  ISignupArgs,
+  IJoinedUserArgs,
+  IParsePollJoinEventsArgs,
+  IIsRegisteredUser,
+  IIsJoinedUser,
 } from "./interfaces";
 export { verifyPerVOSpentVoiceCredits, verifyTallyResults } from "./verifiers";
+export { BLOCKS_STEP } from "./constants";
+export { parsePollJoinEvents, parseSignupEvents } from "./user";

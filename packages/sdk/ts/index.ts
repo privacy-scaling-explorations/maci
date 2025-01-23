@@ -1,6 +1,7 @@
 export { getPoll, getPollParams } from "./poll";
 export { verify } from "./verify";
 export { generateTallyCommitments } from "./tallyCommitments";
+export { isUserRegistered, isJoinedUser, signup } from "./user";
 
 export {
   linkPoseidonLibraries,
@@ -13,4 +14,4 @@ export {
 
 export * from "maci-contracts/typechain-types";
 
-export type { TallyData, VerifyArgs, IGetPollArgs, IGetPollData } from "./utils";
+export type { TallyData, VerifyArgs, IGetPollArgs, IGetPollData, IIsRegisteredUser, IIsJoinedUser } from "./utils";

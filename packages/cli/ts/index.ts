@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from "@commander-js/extra-typings";
-import { generateTallyCommitments, getPollParams, verify, getPoll } from "maci-sdk";
+import { generateTallyCommitments, getPollParams, verify, getPoll, isUserRegistered, signup } from "maci-sdk";
 
 import fs from "fs";
 import path from "path";
@@ -20,8 +20,6 @@ import {
   setVerifyingKeys,
   mergeSignups,
   timeTravel,
-  signup,
-  isRegisteredUser,
   genProofs,
   fundWallet,
   proveOnChain,
@@ -31,7 +29,17 @@ import {
   joinPoll,
   isJoinedUser,
 } from "./commands";
-import { TallyData, banner, logError, logGreen, promptSensitiveValue, readContractAddress, success } from "./utils";
+import {
+  DEFAULT_SG_DATA,
+  TallyData,
+  banner,
+  logError,
+  logGreen,
+  logRed,
+  promptSensitiveValue,
+  readContractAddress,
+  success,
+} from "./utils";
 
 // set the description version and name of the cli tool
 const { description, version, name } = JSON.parse(
@@ -465,13 +473,17 @@ program
 
       const maciAddress = cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
 
-      await signup({
+      const data = await signup({
         maciPubKey: cmdObj.pubkey,
         maciAddress,
-        sgDataArg: cmdObj.sgData,
-        quiet: cmdObj.quiet,
+        sgData: cmdObj.sgData ?? DEFAULT_SG_DATA,
         signer,
       });
+
+      logGreen(
+        cmdObj.quiet,
+        success(`State index: ${data.stateIndex.toString()}\n Transaction hash: ${data.transactionHash}`),
+      );
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -489,12 +501,17 @@ program
 
       const maciAddress = cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
 
-      await isRegisteredUser({
+      const data = await isUserRegistered({
         maciPubKey: cmdObj.pubkey,
         maciAddress,
         signer,
-        quiet: cmdObj.quiet,
       });
+
+      if (data.isRegistered) {
+        logGreen(cmdObj.quiet, success(`State index: ${data.stateIndex?.toString()}`));
+      } else {
+        logRed(cmdObj.quiet, "User is not registered");
+      }
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -516,7 +533,7 @@ program
 
       const maciAddress = cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
 
-      await isJoinedUser({
+      const data = await isJoinedUser({
         pollPubKey: cmdObj.pubkey,
         startBlock: cmdObj.startBlock!,
         maciAddress,
@@ -524,6 +541,20 @@ program
         signer,
         quiet: cmdObj.quiet,
       });
+
+      if (data.isJoined) {
+        logGreen(
+          cmdObj.quiet,
+          success(
+            [
+              `Poll state index: ${data.pollStateIndex?.toString()}, registered: ${data.isJoined}`,
+              `Voice credits: ${data.voiceCredits?.toString()}`,
+            ].join("\n"),
+          ),
+        );
+      } else {
+        logRed(cmdObj.quiet, "User has not joined the poll");
+      }
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
