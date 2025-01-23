@@ -434,14 +434,12 @@ export class Poll implements IPoll {
    * Create circuit input for pollJoining
    * @param maciPrivKey User's private key for signing up
    * @param stateLeafIndex Index where the user is stored in the state leaves
-   * @param pollPrivKey Poll's private key for the poll joining
-   * @param pollPubKey Poll's public key for the poll joining
+   * @param pollPubKey Poll's public key for joining the poll
    * @returns stringified circuit inputs
    */
   joiningCircuitInputs = ({
     maciPrivKey,
     stateLeafIndex,
-    pollPrivKey,
     pollPubKey,
   }: IJoiningCircuitArgs): IPollJoiningCircuitInputs => {
     // calculate the path elements for the state tree given the original state tree
@@ -476,7 +474,6 @@ export class Poll implements IPoll {
 
     const circuitInputs = {
       privKey: maciPrivKey.asCircuitInputs(),
-      pollPrivKey: pollPrivKey.asCircuitInputs(),
       pollPubKey: pollPubKey.asCircuitInputs(),
       siblings: siblingsArray,
       indices,

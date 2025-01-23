@@ -45,7 +45,6 @@ export interface IGenProofOptions {
  */
 export interface IPollJoiningInputs {
   privKey: bigint;
-  pollPrivKey: bigint;
   pollPubKey: bigint[][];
   stateLeaf: bigint[];
   siblings: bigint[][];

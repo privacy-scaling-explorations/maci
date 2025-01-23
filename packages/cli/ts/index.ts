@@ -219,7 +219,6 @@ program
   .requiredOption("-k, --priv-key <privKey>", "the private key")
   .option("-i, --state-index <stateIndex>", "the user's state index", BigInt)
   .requiredOption("-s, --sg-data <sgData>", "the signup gateway data")
-  .requiredOption("-e, --poll-priv-key <pollPrivKey>", "the user ephemeral private key for the poll")
   .option("-v, --ivcp-data <ivcpData>", "the initial voice credit proxy data")
   .option(
     "-n, --new-voice-credit-balance <newVoiceCreditBalance>",
@@ -253,7 +252,6 @@ program
       await joinPoll({
         maciAddress,
         privateKey,
-        pollPrivKey: cmdObj.pollPrivKey,
         stateIndex: cmdObj.stateIndex || undefined,
         stateFile: cmdObj.stateFile,
         pollId: cmdObj.pollId,

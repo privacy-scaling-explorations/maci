@@ -45,6 +45,9 @@ describe("TallyVotes circuit", function test() {
 
   let circuitNonQv: WitnessTester<TallyVotesCircuitInputs>;
 
+  const userKeypair = new Keypair();
+  const { privKey, pubKey: pollPubKey } = userKeypair;
+
   before(async () => {
     circuit = await circomkitInstance.WitnessTester("tallyVotes", {
       file: "./core/qv/tallyVotes",
@@ -72,7 +75,6 @@ describe("TallyVotes circuit", function test() {
       const messages: Message[] = [];
       const commands: PCommand[] = [];
       // Sign up and publish
-      const userKeypair = new Keypair();
       maciState.signUp(userKeypair.pubKey);
 
       pollId = maciState.deployPoll(
@@ -86,10 +88,7 @@ describe("TallyVotes circuit", function test() {
       poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       // Join the poll
-      const { privKey } = userKeypair;
-      const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
-
-      const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
+      const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString()), pollId]);
       const timestamp = BigInt(Math.floor(Date.now() / 1000));
 
       stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp));
@@ -104,7 +103,7 @@ describe("TallyVotes circuit", function test() {
         BigInt(pollId),
       );
 
-      const signature = command.sign(pollPrivKey);
+      const signature = command.sign(privKey);
 
       const ecdhKeypair = new Keypair();
       const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
@@ -152,7 +151,6 @@ describe("TallyVotes circuit", function test() {
       const messages: Message[] = [];
       const commands: PCommand[] = [];
       // Sign up and publish
-      const userKeypair = new Keypair();
       maciState.signUp(userKeypair.pubKey);
 
       pollId = maciState.deployPoll(
@@ -166,10 +164,7 @@ describe("TallyVotes circuit", function test() {
       poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       // Join the poll
-      const { privKey } = userKeypair;
-      const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
-
-      const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
+      const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString()), pollId]);
       const timestamp = BigInt(Math.floor(Date.now() / 1000));
 
       stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp));
@@ -184,7 +179,7 @@ describe("TallyVotes circuit", function test() {
         BigInt(pollId),
       );
 
-      const signature = command.sign(pollPrivKey);
+      const signature = command.sign(privKey);
 
       const ecdhKeypair = new Keypair();
       const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
@@ -227,13 +222,11 @@ describe("TallyVotes circuit", function test() {
     it("should produce the correct state root and ballot root", async () => {
       const maciState = new MaciState(STATE_TREE_DEPTH);
       const userKeypairs: Keypair[] = [];
-      const pollKeypairs: Keypair[] = [];
 
       // Sign up
       for (let i = 0; i < x; i += 1) {
         const k = new Keypair();
         userKeypairs.push(k);
-        pollKeypairs.push(new Keypair());
         maciState.signUp(k.pubKey);
       }
 
@@ -249,28 +242,28 @@ describe("TallyVotes circuit", function test() {
       poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       // Join the poll
-      for (let i = 0; i < x; i += 1) {
-        const { privKey } = userKeypairs[i];
+      userKeypairs.forEach((user) => {
+        const { privKey: userPrivKey } = user;
 
-        const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
+        const nullifier = poseidon([BigInt(userPrivKey.rawPrivKey.toString())]);
         const timestamp = BigInt(Math.floor(Date.now() / 1000));
 
-        poll.joinPoll(nullifier, pollKeypairs[i].pubKey, voiceCreditBalance, timestamp);
-      }
+        poll.joinPoll(nullifier, user.pubKey, voiceCreditBalance, timestamp);
+      });
 
       // Commands
       const numMessages = messageBatchSize * NUM_BATCHES;
       for (let i = 0; i < numMessages; i += 1) {
         const command = new PCommand(
           BigInt(i),
-          pollKeypairs[i].pubKey,
+          userKeypairs[i].pubKey,
           BigInt(i), // vote option index
           BigInt(1), // vote weight
           BigInt(1), // nonce
           BigInt(pollId),
         );
 
-        const signature = command.sign(pollKeypairs[i].privKey);
+        const signature = command.sign(userKeypairs[i].privKey);
 
         const ecdhKeypair = new Keypair();
         const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);

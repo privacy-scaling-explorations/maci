@@ -460,11 +460,6 @@ export interface IJoinPollArgs {
   pollWasm?: string;
 
   /**
-   * Poll private key for the poll
-   */
-  pollPrivKey: string;
-
-  /**
    * The signup gatekeeper data
    */
   sgDataArg?: string;

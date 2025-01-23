@@ -30,7 +30,6 @@ describe("joinPoll", function test() {
   const userPrivateKey = user.privKey.serialize();
   const userPublicKey = user.pubKey.serialize();
 
-  const { privKey: pollPrivateKey, pubKey: pollPublicKey } = new Keypair();
   const mockStateIndex = 1n;
   const mockPollId = 9000n;
 
@@ -64,7 +63,6 @@ describe("joinPoll", function test() {
       stateIndex: 1n,
       signer,
       pollId: 0n,
-      pollPrivKey: pollPrivateKey.serialize(),
       pollJoiningZkey: pollJoiningTestZkeyPath,
       useWasm: true,
       pollWasm: testPollJoiningWasmPath,
@@ -76,7 +74,7 @@ describe("joinPoll", function test() {
     const registeredUserData = await isJoinedUser({
       maciAddress: maciAddresses.maciAddress,
       pollId: 0n,
-      pollPubKey: pollPublicKey.serialize(),
+      pollPubKey: user.pubKey.serialize(),
       signer,
       startBlock: startBlock || 0,
       quiet: true,
@@ -94,7 +92,6 @@ describe("joinPoll", function test() {
         stateIndex: mockStateIndex,
         signer,
         pollId: mockPollId,
-        pollPrivKey: pollPrivateKey.serialize(),
         pollJoiningZkey: pollJoiningTestZkeyPath,
         quiet: true,
       }),
@@ -109,7 +106,6 @@ describe("joinPoll", function test() {
         stateIndex: -1n,
         signer,
         pollId: 0n,
-        pollPrivKey: pollPrivateKey.serialize(),
         pollJoiningZkey: pollJoiningTestZkeyPath,
         quiet: true,
       }),
@@ -124,7 +120,6 @@ describe("joinPoll", function test() {
         stateIndex: mockStateIndex,
         signer,
         pollId: -1n,
-        pollPrivKey: pollPrivateKey.serialize(),
         pollJoiningZkey: pollJoiningTestZkeyPath,
         quiet: true,
       }),
