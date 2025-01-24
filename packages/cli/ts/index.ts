@@ -112,8 +112,12 @@ program
     "the tally votes zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .requiredOption(
-    "--poll-joining-zkey <pollZkeyPath>",
-    "the poll join zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+    "--poll-joining-zkey <pollJoiningZkey>",
+    "the poll joining zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+  )
+  .requiredOption(
+    "--poll-joined-zkey <pollJoinedZkey>",
+    "the poll joined zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .action(async (cmdOptions) => {
     try {
@@ -127,6 +131,7 @@ program
         processMessagesZkeyPath: cmdOptions.processMessagesZkey,
         tallyVotesZkeyPath: cmdOptions.tallyVotesZkey,
         pollJoiningZkeyPath: cmdOptions.pollJoiningZkey,
+        pollJoinedZkeyPath: cmdOptions.pollJoinedZkey,
         vkRegistry: cmdOptions.vkContract,
         quiet: cmdOptions.quiet,
         useQuadraticVoting: cmdOptions.useQuadraticVoting,
@@ -288,8 +293,12 @@ program
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
   .requiredOption("-b, --msg-batch-size <messageBatchSize>", "the message batch size", parseInt)
   .option(
-    "--poll-joining-zkey <pollZkeyPath>",
-    "the poll join zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+    "--poll-joining-zkey <pollJoiningZkeyPath>",
+    "the poll joining zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+  )
+  .option(
+    "--poll-joined-zkey <pollJoinedZkeyPath>",
+    "the poll joined zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .option(
     "--process-messages-zkey-qv <processMessagesZkeyPathQv>",
@@ -326,6 +335,7 @@ program
         voteOptionTreeDepth: cmdObj.voteOptionTreeDepth,
         messageBatchSize: cmdObj.msgBatchSize,
         pollJoiningZkeyPath: cmdObj.pollJoiningZkey,
+        pollJoinedZkeyPath: cmdObj.pollJoinedZkey,
         processMessagesZkeyPathQv: cmdObj.processMessagesZkeyQv,
         tallyVotesZkeyPathQv: cmdObj.tallyVotesZkeyQv,
         processMessagesZkeyPathNonQv: cmdObj.processMessagesZkeyNonQv,
@@ -424,8 +434,12 @@ program
   .command("extractVkToFile")
   .description("extract vkey to json file")
   .requiredOption(
-    "--poll-joining-zkey <pollZkeyPath>",
-    "the poll join zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+    "--poll-joining-zkey <pollJoiningZkey>",
+    "the poll joining zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+  )
+  .requiredOption(
+    "--poll-joined-zkey <pollJoinedZkey>",
+    "the poll joined zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .requiredOption(
     "--process-messages-zkey-qv <processMessagesZkeyPathQv>",
@@ -452,6 +466,7 @@ program
         processMessagesZkeyPathNonQv: cmdObj.processMessagesZkeyNonQv,
         tallyVotesZkeyPathNonQv: cmdObj.tallyVotesZkeyNonQv,
         pollJoiningZkeyPath: cmdObj.pollJoiningZkey,
+        pollJoinedZkeyPath: cmdObj.pollJoinedZkey,
         outputFilePath: cmdObj.outputFile,
       });
     } catch (error) {

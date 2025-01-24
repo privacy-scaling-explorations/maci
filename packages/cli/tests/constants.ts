@@ -24,6 +24,7 @@ export const coordinatorPubKey = coordinatorKeypair.pubKey.serialize();
 export const coordinatorPrivKey = coordinatorKeypair.privKey.serialize();
 
 export const pollJoiningTestZkeyPath = "./zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey";
+export const pollJoinedTestZkeyPath = "./zkeys/PollJoined_10_test/PollJoined_10_test.0.zkey";
 export const processMessageTestZkeyPath = "./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey";
 export const tallyVotesTestZkeyPath = "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey";
 export const processMessageTestNonQvZkeyPath =
@@ -47,6 +48,7 @@ export const testTallyVotesWasmPath =
   "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm";
 export const testRapidsnarkPath = `${homedir()}/rapidsnark/build/prover`;
 export const ceremonyPollJoiningZkeyPath = "./zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey";
+export const ceremonyPollJoinedZkeyPath = "./zkeys/PollJoined_10_test/PollJoined_10_test.0.zkey";
 export const ceremonyProcessMessagesZkeyPath = "./zkeys/ProcessMessages_6-9-2-3/processMessages_6-9-2-3.zkey";
 export const ceremonyProcessMessagesNonQvZkeyPath =
   "./zkeys/ProcessMessagesNonQv_6-9-2-3/processMessagesNonQv_6-9-2-3.zkey";
@@ -98,6 +100,7 @@ export const setVerifyingKeysArgs: Omit<SetVerifyingKeysArgs, "signer"> = {
   voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
   messageBatchSize: MESSAGE_BATCH_SIZE,
   pollJoiningZkeyPath: pollJoiningTestZkeyPath,
+  pollJoinedZkeyPath: pollJoinedTestZkeyPath,
   processMessagesZkeyPathQv: processMessageTestZkeyPath,
   tallyVotesZkeyPathQv: tallyVotesTestZkeyPath,
 };
@@ -109,6 +112,7 @@ export const setVerifyingKeysNonQvArgs: Omit<SetVerifyingKeysArgs, "signer"> = {
   voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
   messageBatchSize: MESSAGE_BATCH_SIZE,
   pollJoiningZkeyPath: pollJoiningTestZkeyPath,
+  pollJoinedZkeyPath: pollJoinedTestZkeyPath,
   processMessagesZkeyPathNonQv: processMessageTestNonQvZkeyPath,
   tallyVotesZkeyPathNonQv: tallyVotesTestNonQvZkeyPath,
 };
@@ -119,6 +123,7 @@ export const checkVerifyingKeysArgs: Omit<CheckVerifyingKeysArgs, "signer"> = {
   voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
   messageBatchSize: MESSAGE_BATCH_SIZE,
   pollJoiningZkeyPath: pollJoiningTestZkeyPath,
+  pollJoinedZkeyPath: pollJoinedTestZkeyPath,
   processMessagesZkeyPath: processMessageTestZkeyPath,
   tallyVotesZkeyPath: tallyVotesTestZkeyPath,
 };

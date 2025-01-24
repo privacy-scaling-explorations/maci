@@ -25,7 +25,8 @@ import {
   duration,
   initialVoiceCreditBalance,
   messageBatchSize,
-  testPollVk,
+  testPollJoinedVk,
+  testPollJoiningVk,
   testProcessVk,
   testTallyVk,
   treeDepths,
@@ -113,10 +114,18 @@ describe("Poll", () => {
       maciState.polls.get(pollId)?.publishMessage(message, padKey);
 
       // set the verification keys on the vk smart contract
-      await vkRegistryContract.setPollVkKey(
+      await vkRegistryContract.setPollJoiningVkKey(
         STATE_TREE_DEPTH,
         treeDepths.voteOptionTreeDepth,
-        testPollVk.asContractParam() as IVerifyingKeyStruct,
+        testPollJoiningVk.asContractParam() as IVerifyingKeyStruct,
+        { gasLimit: 10000000 },
+      );
+
+      // set the verification keys on the vk smart contract
+      await vkRegistryContract.setPollJoinedVkKey(
+        STATE_TREE_DEPTH,
+        treeDepths.voteOptionTreeDepth,
+        testPollJoinedVk.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 10000000 },
       );
 

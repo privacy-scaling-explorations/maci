@@ -141,6 +141,17 @@ export interface IJoiningCircuitArgs {
   stateLeafIndex: bigint;
   pollPubKey: PubKey;
 }
+
+/**
+ * An interface describing the joinedCircuitInputs function arguments
+ */
+export interface IJoinedCircuitArgs {
+  maciPrivKey: PrivKey;
+  stateLeafIndex: bigint;
+  voiceCreditsBalance: bigint;
+  joinTimestamp: bigint;
+}
+
 /**
  * An interface describing the circuit inputs to the PollJoining circuit
  */
@@ -155,6 +166,20 @@ export interface IPollJoiningCircuitInputs {
   actualStateTreeDepth: string;
   pollId: string;
 }
+
+/**
+ * An interface describing the circuit inputs to the PollJoined circuit
+ */
+export interface IPollJoinedCircuitInputs {
+  privKey: string;
+  voiceCreditsBalance: string;
+  joinTimestamp: string;
+  stateLeaf: string[];
+  pathElements: string[][];
+  pathIndices: string[];
+  stateRoot: string;
+}
+
 /**
  * An interface describing the circuit inputs to the ProcessMessage circuit
  */

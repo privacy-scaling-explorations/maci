@@ -73,6 +73,7 @@ describe("Integration tests", function test() {
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
       pollJoiningZkeyPath: path.resolve(__dirname, "../../../cli/zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey"),
+      pollJoinedZkeyPath: path.resolve(__dirname, "../../../cli/zkeys/PollJoined_10_test/PollJoined_10_test.0.zkey"),
       processMessagesZkeyPathQv: path.resolve(
         __dirname,
         "../../../cli/zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey",

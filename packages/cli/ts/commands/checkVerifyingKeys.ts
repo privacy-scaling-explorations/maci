@@ -32,6 +32,7 @@ export const checkVerifyingKeys = async ({
   processMessagesZkeyPath,
   tallyVotesZkeyPath,
   pollJoiningZkeyPath,
+  pollJoinedZkeyPath,
   vkRegistry,
   signer,
   useQuadraticVoting = true,
@@ -69,30 +70,28 @@ export const checkVerifyingKeys = async ({
   // extract the verification keys from the zkey files
   const processVk = VerifyingKey.fromObj(await extractVk(processMessagesZkeyPath));
   const tallyVk = VerifyingKey.fromObj(await extractVk(tallyVotesZkeyPath));
-  const pollVk = VerifyingKey.fromObj(await extractVk(pollJoiningZkeyPath));
+  const pollJoiningVk = VerifyingKey.fromObj(await extractVk(pollJoiningZkeyPath));
+  const pollJoinedVk = VerifyingKey.fromObj(await extractVk(pollJoinedZkeyPath));
 
   try {
     logYellow(quiet, info("Retrieving verifying keys from the contract..."));
     // retrieve the verifying keys from the contract
 
-    const pollVkOnChain = await vkRegistryContractInstance.getPollVk(stateTreeDepth, voteOptionTreeDepth);
+    const mode = useQuadraticVoting ? EMode.QV : EMode.NON_QV;
 
-    const processVkOnChain = await vkRegistryContractInstance.getProcessVk(
-      stateTreeDepth,
-      voteOptionTreeDepth,
-      messageBatchSize,
-      useQuadraticVoting ? EMode.QV : EMode.NON_QV,
-    );
-
-    const tallyVkOnChain = await vkRegistryContractInstance.getTallyVk(
-      stateTreeDepth,
-      intStateTreeDepth,
-      voteOptionTreeDepth,
-      useQuadraticVoting ? EMode.QV : EMode.NON_QV,
-    );
+    const [pollJoiningVkOnChain, pollJoinedVkOnChain, processVkOnChain, tallyVkOnChain] = await Promise.all([
+      vkRegistryContractInstance.getPollJoiningVk(stateTreeDepth, voteOptionTreeDepth),
+      vkRegistryContractInstance.getPollJoinedVk(stateTreeDepth, voteOptionTreeDepth),
+      vkRegistryContractInstance.getProcessVk(stateTreeDepth, voteOptionTreeDepth, messageBatchSize, mode),
+      vkRegistryContractInstance.getTallyVk(stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth, mode),
+    ]);
 
     // do the actual validation
-    if (!compareVks(pollVk, pollVkOnChain)) {
+    if (!compareVks(pollJoiningVk, pollJoiningVkOnChain)) {
+      logError("Poll verifying keys do not match");
+    }
+
+    if (!compareVks(pollJoinedVk, pollJoinedVkOnChain)) {
       logError("Poll verifying keys do not match");
     }
 

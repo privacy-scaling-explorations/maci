@@ -338,7 +338,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     pollNullifier[_nullifier] = true;
 
     // Verify user's proof
-    if (!verifyPollProof(_nullifier, _stateRootIndex, _pubKey, _proof)) {
+    if (!verifyJoiningPollProof(_nullifier, _stateRootIndex, _pubKey, _proof)) {
       revert InvalidPollProof();
     }
 
@@ -359,26 +359,48 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     emit PollJoined(_pubKey.x, _pubKey.y, voiceCreditBalance, block.timestamp, _nullifier, pollStateIndex);
   }
 
-  /// @notice Verify the proof for Poll
+  /// @notice Verify the proof for Poll joining
   /// @param _nullifier Hashed user's private key to check whether user has already voted
   /// @param _index Index of the MACI's stateRootOnSignUp when the user signed up
   /// @param _pubKey Poll user's public key
   /// @param _proof The zk-SNARK proof
   /// @return isValid Whether the proof is valid
-  function verifyPollProof(
+  function verifyJoiningPollProof(
     uint256 _nullifier,
     uint256 _index,
     PubKey calldata _pubKey,
     uint256[8] memory _proof
-  ) internal view returns (bool isValid) {
+  ) public view returns (bool isValid) {
     // Get the verifying key from the VkRegistry
-    VerifyingKey memory vk = extContracts.vkRegistry.getPollVk(
+    VerifyingKey memory vk = extContracts.vkRegistry.getPollJoiningVk(
       extContracts.maci.stateTreeDepth(),
       treeDepths.voteOptionTreeDepth
     );
 
     // Generate the circuit public input
-    uint256[] memory circuitPublicInputs = getPublicCircuitInputs(_nullifier, _index, _pubKey);
+    uint256[] memory circuitPublicInputs = getPublicJoiningCircuitInputs(_nullifier, _index, _pubKey);
+
+    isValid = extContracts.verifier.verify(_proof, vk, circuitPublicInputs);
+  }
+
+  /// @notice Verify the proof for joined Poll
+  /// @param _index Index of the MACI's stateRootOnSignUp when the user signed up
+  /// @param _pubKey Poll user's public key
+  /// @param _proof The zk-SNARK proof
+  /// @return isValid Whether the proof is valid
+  function verifyJoinedPollProof(
+    uint256 _index,
+    PubKey calldata _pubKey,
+    uint256[8] memory _proof
+  ) public view returns (bool isValid) {
+    // Get the verifying key from the VkRegistry
+    VerifyingKey memory vk = extContracts.vkRegistry.getPollJoinedVk(
+      extContracts.maci.stateTreeDepth(),
+      treeDepths.voteOptionTreeDepth
+    );
+
+    // Generate the circuit public input
+    uint256[] memory circuitPublicInputs = getPublicJoinedCircuitInputs(_index, _pubKey);
 
     isValid = extContracts.verifier.verify(_proof, vk, circuitPublicInputs);
   }
@@ -388,7 +410,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   /// @param _index Index of the MACI's stateRootOnSignUp when the user signed up
   /// @param _pubKey Poll user's public key
   /// @return publicInputs Public circuit inputs
-  function getPublicCircuitInputs(
+  function getPublicJoiningCircuitInputs(
     uint256 _nullifier,
     uint256 _index,
     PubKey calldata _pubKey
@@ -400,6 +422,22 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     publicInputs[2] = _nullifier;
     publicInputs[3] = extContracts.maci.getStateRootOnIndexedSignUp(_index);
     publicInputs[4] = pollId;
+  }
+
+  /// @notice Get public circuit inputs for poll joined circuit
+  /// @param _index Index of the MACI's stateRootOnSignUp when the user signed up
+  /// @param _pubKey Poll user's public key
+  /// @return publicInputs Public circuit inputs
+  function getPublicJoinedCircuitInputs(
+    uint256 _index,
+    PubKey calldata _pubKey
+  ) public view returns (uint256[] memory publicInputs) {
+    publicInputs = new uint256[](4);
+
+    publicInputs[0] = _pubKey.x;
+    publicInputs[1] = _pubKey.y;
+    publicInputs[2] = extContracts.maci.getStateRootOnIndexedSignUp(_index);
+    publicInputs[3] = pollId;
   }
 
   /// @inheritdoc IPoll

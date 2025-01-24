@@ -49,3 +49,35 @@ template PollJoining(stateTreeDepth) {
 
     calculatedRoot === stateRoot;
 }
+
+template PollJoined(stateTreeDepth) {
+    // Constants defining the tree structure
+    var STATE_TREE_ARITY = 2;
+
+    // User's private key
+    signal input privKey;
+    // User's voice credits balance
+    signal input voiceCreditsBalance;
+    // Poll's joined timestamp
+    signal input joinTimestamp;
+    // Path elements
+    signal input pathElements[stateTreeDepth][STATE_TREE_ARITY - 1];
+    // Path indices
+    signal input pathIndices[stateTreeDepth];
+    // Poll State tree root which proves the user is joined
+    signal input stateRoot;
+
+     // User private to public key
+    var derivedPubKey[2] = PrivToPubKey()(privKey);
+
+    var stateLeaf = PoseidonHasher(4)([derivedPubKey[0], derivedPubKey[1], voiceCreditsBalance, joinTimestamp]);
+
+    // Inclusion proof  
+    var stateLeafQip = MerkleTreeInclusionProof(stateTreeDepth)(
+        stateLeaf,
+        pathIndices,
+        pathElements
+    );
+
+    stateLeafQip === stateRoot;
+}

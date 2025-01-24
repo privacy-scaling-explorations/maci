@@ -55,7 +55,7 @@ const getStateIndex = (pubKeys: PubKey[], userMaciPubKey: PubKey, stateIndex?: b
  * @param pollVk - Poll verifying key
  * @returns proof - an array of strings
  */
-const generateAndVerifyProof = async (
+export const generateAndVerifyProof = async (
   inputs: CircuitInputs,
   zkeyPath: string,
   useWasm: boolean | undefined,
@@ -288,7 +288,7 @@ export const joinPoll = async ({
     ) as unknown as CircuitInputs;
   }
 
-  const pollVk = await extractVk(pollJoiningZkey);
+  const pollJoiningVk = await extractVk(pollJoiningZkey);
 
   let pollStateIndex = "";
   let receipt: ContractTransactionReceipt | null = null;
@@ -305,7 +305,7 @@ export const joinPoll = async ({
       rapidsnark,
       pollWitgen,
       pollWasm,
-      pollVk,
+      pollJoiningVk,
     );
 
     // submit the message onchain as well as the encryption public key
