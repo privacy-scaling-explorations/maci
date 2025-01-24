@@ -35,7 +35,8 @@
     "test:tallyVotes": "pnpm run mocha-test ts/__tests__/TallyVotes.test.ts",
     "test:ceremonyParams": "pnpm run mocha-test ts/__tests__/CeremonyParams.test.ts",
     "test:incrementalQuinaryTree": "pnpm run mocha-test ts/__tests__/IncrementalQuinaryTree.test.ts",
-    "test:pollJoining": "pnpm run mocha-test ts/__tests__/PollJoining.test.ts"
+    "test:pollJoining": "pnpm run mocha-test ts/__tests__/PollJoining.test.ts",
+    "test:pollJoined": "pnpm run mocha-test ts/__tests__/PollJoined.test.ts"
   },
   "dependencies": {
     "@zk-kit/circuits": "^0.4.0",

@@ -33,9 +33,13 @@ deployment.deployTask(EDeploySteps.VkRegistry, "Deploy Vk Registry and set keys"
     const intStateTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "intStateTreeDepth");
     const messageBatchSize = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageBatchSize");
     const voteOptionTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "voteOptionTreeDepth");
-    const pollJoiningTestZkeyPath = deployment.getDeployConfigField<string>(
+    const pollJoiningZkeyPath = deployment.getDeployConfigField<string>(
       EContracts.VkRegistry,
-      "zkeys.pollZkey.zkey",
+      "zkeys.pollJoiningZkey.zkey",
+    );
+    const pollJoinedZkeyPath = deployment.getDeployConfigField<string>(
+      EContracts.VkRegistry,
+      "zkeys.pollJoinedZkey.zkey",
     );
     const processMessagesZkeyPathQv = deployment.getDeployConfigField<string>(
       EContracts.VkRegistry,
@@ -64,16 +68,17 @@ deployment.deployTask(EDeploySteps.VkRegistry, "Deploy Vk Registry and set keys"
       throw new Error("Non-QV zkeys are not set");
     }
 
-    if (!pollJoiningTestZkeyPath) {
+    if (!pollJoiningZkeyPath) {
       throw new Error("Poll zkeys are not set");
     }
 
-    const [qvProcessVk, qvTallyVk, nonQvProcessVk, nonQvTallyQv, pollVk] = await Promise.all([
+    const [qvProcessVk, qvTallyVk, nonQvProcessVk, nonQvTallyQv, pollJoiningVk, pollJoinedVk] = await Promise.all([
       processMessagesZkeyPathQv && extractVk(processMessagesZkeyPathQv),
       tallyVotesZkeyPathQv && extractVk(tallyVotesZkeyPathQv),
       processMessagesZkeyPathNonQv && extractVk(processMessagesZkeyPathNonQv),
       tallyVotesZkeyPathNonQv && extractVk(tallyVotesZkeyPathNonQv),
-      pollJoiningTestZkeyPath && extractVk(pollJoiningTestZkeyPath),
+      pollJoiningZkeyPath && extractVk(pollJoiningZkeyPath),
+      pollJoinedZkeyPath && extractVk(pollJoinedZkeyPath),
     ]).then((vks) =>
       vks.map(
         (vk: IVkObjectParams | "" | undefined) =>
@@ -86,7 +91,6 @@ deployment.deployTask(EDeploySteps.VkRegistry, "Deploy Vk Registry and set keys"
       signer: deployer,
     });
 
-    const pollZkeys = pollVk as IVerifyingKeyStruct;
     const processZkeys = [qvProcessVk, nonQvProcessVk].filter(Boolean) as IVerifyingKeyStruct[];
     const tallyZkeys = [qvTallyVk, nonQvTallyQv].filter(Boolean) as IVerifyingKeyStruct[];
     const modes: EMode[] = [];
@@ -106,7 +110,8 @@ deployment.deployTask(EDeploySteps.VkRegistry, "Deploy Vk Registry and set keys"
         voteOptionTreeDepth,
         messageBatchSize,
         modes,
-        pollZkeys,
+        pollJoiningVk as IVerifyingKeyStruct,
+        pollJoinedVk as IVerifyingKeyStruct,
         processZkeys,
         tallyZkeys,
       )

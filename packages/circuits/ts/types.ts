@@ -57,6 +57,20 @@ export interface IPollJoiningInputs {
 }
 
 /**
+ * Inputs for circuit PollJoined
+ */
+export interface IPollJoinedInputs {
+  privKey: bigint;
+  voiceCreditsBalance: bigint;
+  joinTimestamp: bigint;
+  stateLeaf: bigint[];
+  pathElements: bigint[][];
+  pathIndices: bigint[];
+  credits: bigint;
+  stateRoot: bigint;
+}
+
+/**
  * Inputs for circuit ProcessMessages
  */
 export interface IProcessMessagesInputs {

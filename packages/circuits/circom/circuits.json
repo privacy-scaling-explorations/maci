@@ -1,9 +1,15 @@
 {
   "PollJoining_10_test": {
-    "file": "./anon/pollJoining",
+    "file": "./anon/poll",
     "template": "PollJoining",
     "params": [10],
     "pubs": ["nullifier", "stateRoot", "pollPubKey", "pollId"]
+  },
+  "PollJoined_10_test": {
+    "file": "./anon/poll",
+    "template": "PollJoined",
+    "params": [10],
+    "pubs": ["stateRoot"]
   },
   "ProcessMessages_10-20-2_test": {
     "file": "./core/qv/processMessages",

@@ -33,11 +33,20 @@ interface IVkRegistry {
     DomainObjs.Mode _mode
   ) external view returns (SnarkCommon.VerifyingKey memory);
 
-  /// @notice Get the poll verifying key
+  /// @notice Get the poll joining verifying key
   /// @param _stateTreeDepth The state tree depth
   /// @param _voteOptionTreeDepth The vote option tree depth
   /// @return The verifying key
-  function getPollVk(
+  function getPollJoiningVk(
+    uint256 _stateTreeDepth,
+    uint256 _voteOptionTreeDepth
+  ) external view returns (SnarkCommon.VerifyingKey memory);
+
+  /// @notice Get the poll joined verifying key
+  /// @param _stateTreeDepth The state tree depth
+  /// @param _voteOptionTreeDepth The vote option tree depth
+  /// @return The verifying key
+  function getPollJoinedVk(
     uint256 _stateTreeDepth,
     uint256 _voteOptionTreeDepth
   ) external view returns (SnarkCommon.VerifyingKey memory);

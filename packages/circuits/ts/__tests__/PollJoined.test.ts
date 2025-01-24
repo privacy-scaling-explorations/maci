@@ -3,35 +3,33 @@ import { MaciState, Poll } from "maci-core";
 import { poseidon } from "maci-crypto";
 import { Keypair, Message, PCommand } from "maci-domainobjs";
 
-import { IPollJoiningInputs } from "../types";
+import type { IPollJoinedInputs } from "../types";
 
 import { STATE_TREE_DEPTH, duration, messageBatchSize, treeDepths, voiceCreditBalance } from "./utils/constants";
 import { circomkitInstance } from "./utils/utils";
 
-describe("Poll Joining circuit", function test() {
+describe("Poll Joined circuit", function test() {
   this.timeout(900000);
   const NUM_USERS = 50;
 
   const coordinatorKeypair = new Keypair();
 
-  type PollJoiningCircuitInputs = [
+  type PollJoinedCircuitInputs = [
     "privKey",
-    "pollPubKey",
+    "voiceCreditsBalance",
+    "joinTimestamp",
     "stateLeaf",
-    "siblings",
-    "indices",
-    "nullifier",
+    "pathElements",
+    "pathIndices",
     "stateRoot",
-    "actualStateTreeDepth",
-    "pollId",
   ];
 
-  let circuit: WitnessTester<PollJoiningCircuitInputs>;
+  let circuit: WitnessTester<PollJoinedCircuitInputs>;
 
   before(async () => {
-    circuit = await circomkitInstance.WitnessTester("pollJoining", {
+    circuit = await circomkitInstance.WitnessTester("pollJoined", {
       file: "./anon/poll",
-      template: "PollJoining",
+      template: "PollJoined",
       params: [STATE_TREE_DEPTH],
     });
   });
@@ -44,6 +42,8 @@ describe("Poll Joining circuit", function test() {
     const messages: Message[] = [];
     const commands: PCommand[] = [];
 
+    const timestamp = BigInt(Math.floor(Date.now() / 1000));
+
     before(() => {
       // Sign up
       users = new Array(NUM_USERS).fill(0).map(() => new Keypair());
@@ -52,28 +52,22 @@ describe("Poll Joining circuit", function test() {
         maciState.signUp(userKeypair.pubKey);
       });
 
-      pollId = maciState.deployPoll(
-        BigInt(Math.floor(Date.now() / 1000) + duration),
-        treeDepths,
-        messageBatchSize,
-        coordinatorKeypair,
-      );
+      pollId = maciState.deployPoll(timestamp + BigInt(duration), treeDepths, messageBatchSize, coordinatorKeypair);
 
       poll = maciState.polls.get(pollId)!;
       poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       // Join the poll
-      const { privKey, pubKey } = users[0];
+      const { privKey, pubKey: pollPubKey } = users[0];
 
       const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-      const timestamp = BigInt(Math.floor(Date.now() / 1000));
 
-      const stateIndex = BigInt(poll.joinPoll(nullifier, pubKey, voiceCreditBalance, timestamp));
+      const stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp));
 
       // First command (valid)
       const command = new PCommand(
         stateIndex,
-        pubKey,
+        pollPubKey,
         BigInt(0), // voteOptionIndex,
         BigInt(9), // vote weight
         BigInt(1), // nonce
@@ -96,26 +90,33 @@ describe("Poll Joining circuit", function test() {
 
     it("should produce a proof", async () => {
       const { privKey: privateKey, pubKey: pollPubKey } = users[0];
-      const stateLeafIndex = BigInt(1);
+      const nullifier = poseidon([BigInt(privateKey.asCircuitInputs()), poll.pollId]);
 
-      const inputs = poll.joiningCircuitInputs({
+      const stateLeafIndex = poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp);
+
+      const inputs = poll.joinedCircuitInputs({
         maciPrivKey: privateKey,
-        stateLeafIndex,
-        pollPubKey,
-      }) as unknown as IPollJoiningInputs;
+        stateLeafIndex: BigInt(stateLeafIndex),
+        voiceCreditsBalance: voiceCreditBalance,
+        joinTimestamp: timestamp,
+      }) as unknown as IPollJoinedInputs;
+
       const witness = await circuit.calculateWitness(inputs);
       await circuit.expectConstraintPass(witness);
     });
 
     it("should fail for fake witness", async () => {
-      const { privKey: privateKey, pubKey: pollPubKey } = users[0];
-      const stateLeafIndex = BigInt(1);
+      const { privKey: privateKey, pubKey: pollPubKey } = users[1];
+      const nullifier = poseidon([BigInt(privateKey.asCircuitInputs()), poll.pollId]);
 
-      const inputs = poll.joiningCircuitInputs({
+      const stateLeafIndex = poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp);
+
+      const inputs = poll.joinedCircuitInputs({
         maciPrivKey: privateKey,
-        stateLeafIndex,
-        pollPubKey,
-      }) as unknown as IPollJoiningInputs;
+        stateLeafIndex: BigInt(stateLeafIndex),
+        voiceCreditsBalance: voiceCreditBalance,
+        joinTimestamp: timestamp,
+      }) as unknown as IPollJoinedInputs;
       const witness = await circuit.calculateWitness(inputs);
 
       const fakeWitness = Array(witness.length).fill(1n) as bigint[];

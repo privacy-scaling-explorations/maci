@@ -176,9 +176,14 @@ export interface CheckVerifyingKeysArgs {
   messageBatchSize: number;
 
   /**
-   * The path to the poll zkey
+   * The path to the poll joining zkey
    */
   pollJoiningZkeyPath: string;
+
+  /**
+   * The path to the poll joined zkey
+   */
+  pollJoinedZkeyPath: string;
 
   /**
    * The path to the process messages zkey
@@ -886,9 +891,14 @@ export interface SetVerifyingKeysArgs {
   messageBatchSize: number;
 
   /**
-   * The path to the poll zkey
+   * The path to the poll joining zkey
    */
   pollJoiningZkeyPath?: string;
+
+  /**
+   * The path to the poll joined zkey
+   */
+  pollJoinedZkeyPath?: string;
 
   /**
    * The path to the process messages qv zkey
@@ -1188,9 +1198,14 @@ export interface DeployVkRegistryArgs {
 
 export interface ExtractVkToFileArgs {
   /**
-   * File path for poll zkey
+   * File path for poll joining zkey
    */
   pollJoiningZkeyPath: string;
+
+  /**
+   * File path for poll joined zkey
+   */
+  pollJoinedZkeyPath: string;
 
   /**
    * File path for processMessagesQv zkey

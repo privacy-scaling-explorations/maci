@@ -43,6 +43,7 @@ import type {
   IJoiningCircuitArgs,
 } from "./index";
 import type { MaciState } from "./MaciState";
+import type { IJoinedCircuitArgs, IPollJoinedCircuitInputs } from "./utils/types";
 import type { PathElements } from "maci-crypto";
 
 import { STATE_TREE_ARITY, VOTE_OPTION_TREE_ARITY } from "./utils/constants";
@@ -432,9 +433,7 @@ export class Poll implements IPoll {
 
   /**
    * Create circuit input for pollJoining
-   * @param maciPrivKey User's private key for signing up
-   * @param stateLeafIndex Index where the user is stored in the state leaves
-   * @param pollPubKey Poll's public key for joining the poll
+   * @param args Poll joining circuit inputs
    * @returns stringified circuit inputs
    */
   joiningCircuitInputs = ({
@@ -466,7 +465,7 @@ export class Poll implements IPoll {
     const inputNullifier = BigInt(maciPrivKey.asCircuitInputs());
     const nullifier = poseidon([inputNullifier, this.pollId]);
 
-    // Get pll state tree's root
+    // Get state tree's root
     const stateRoot = this.stateTree!.root;
 
     // Set actualStateTreeDepth as number of initial siblings length
@@ -484,6 +483,42 @@ export class Poll implements IPoll {
     };
 
     return stringifyBigInts(circuitInputs) as unknown as IPollJoiningCircuitInputs;
+  };
+
+  /**
+   * Create circuit input for pollJoined
+   * @param args Poll joined circuit inputs
+   * @returns stringified circuit inputs
+   */
+  joinedCircuitInputs = ({
+    maciPrivKey,
+    stateLeafIndex,
+    voiceCreditsBalance,
+    joinTimestamp,
+  }: IJoinedCircuitArgs): IPollJoinedCircuitInputs => {
+    // copy a poll state tree
+    const pollStateTree = new IncrementalQuinTree(this.stateTreeDepth, blankStateLeafHash, STATE_TREE_ARITY, hash2);
+
+    this.pollStateLeaves.forEach((stateLeaf) => {
+      pollStateTree.insert(stateLeaf.hash());
+    });
+
+    // calculate the path elements for the state tree given the original state tree
+    const { pathElements, pathIndices } = pollStateTree.genProof(Number(stateLeafIndex));
+
+    // Get poll state tree's root
+    const stateRoot = pollStateTree.root;
+
+    const circuitInputs = {
+      privKey: maciPrivKey.asCircuitInputs(),
+      pathElements: pathElements.map((item) => item.toString()),
+      voiceCreditsBalance: voiceCreditsBalance.toString(),
+      joinTimestamp: joinTimestamp.toString(),
+      pathIndices: pathIndices.map((item) => item.toString()),
+      stateRoot,
+    };
+
+    return stringifyBigInts(circuitInputs) as unknown as IPollJoinedCircuitInputs;
   };
 
   /**

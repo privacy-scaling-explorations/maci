@@ -18,7 +18,15 @@ export const MESSAGE_TREE_DEPTH = 2;
 export const MESSAGE_TREE_SUBDEPTH = 1;
 export const messageBatchSize = 20;
 
-export const testPollVk = new VerifyingKey(
+export const testPollJoiningVk = new VerifyingKey(
+  new G1Point(BigInt(0), BigInt(1)),
+  new G2Point([BigInt(2), BigInt(3)], [BigInt(4), BigInt(5)]),
+  new G2Point([BigInt(6), BigInt(7)], [BigInt(8), BigInt(9)]),
+  new G2Point([BigInt(10), BigInt(11)], [BigInt(12), BigInt(13)]),
+  [new G1Point(BigInt(14), BigInt(15)), new G1Point(BigInt(16), BigInt(17))],
+);
+
+export const testPollJoinedVk = new VerifyingKey(
   new G1Point(BigInt(0), BigInt(1)),
   new G2Point([BigInt(2), BigInt(3)], [BigInt(4), BigInt(5)]),
   new G2Point([BigInt(6), BigInt(7)], [BigInt(8), BigInt(9)]),

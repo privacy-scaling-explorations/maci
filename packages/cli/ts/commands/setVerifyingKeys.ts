@@ -1,6 +1,6 @@
 import { extractVk } from "maci-circuits";
 import { type IVerifyingKeyStruct, VkRegistry__factory as VkRegistryFactory, EMode } from "maci-contracts";
-import { genPollVkSig, genProcessVkSig, genTallyVkSig } from "maci-core";
+import { genPollJoinedVkSig, genPollJoiningVkSig, genProcessVkSig, genTallyVkSig } from "maci-core";
 import { VerifyingKey } from "maci-domainobjs";
 
 import fs from "fs";
@@ -29,6 +29,7 @@ export const setVerifyingKeys = async ({
   voteOptionTreeDepth,
   messageBatchSize,
   pollJoiningZkeyPath,
+  pollJoinedZkeyPath,
   processMessagesZkeyPathQv,
   tallyVotesZkeyPathQv,
   processMessagesZkeyPathNonQv,
@@ -83,7 +84,8 @@ export const setVerifyingKeys = async ({
   }
 
   // extract the vks
-  const pollVk = pollJoiningZkeyPath && VerifyingKey.fromObj(await extractVk(pollJoiningZkeyPath));
+  const pollJoiningVk = pollJoiningZkeyPath && VerifyingKey.fromObj(await extractVk(pollJoiningZkeyPath));
+  const pollJoinedVk = pollJoinedZkeyPath && VerifyingKey.fromObj(await extractVk(pollJoinedZkeyPath));
   const processVkQv = processMessagesZkeyPathQv && VerifyingKey.fromObj(await extractVk(processMessagesZkeyPathQv));
   const tallyVkQv = tallyVotesZkeyPathQv && VerifyingKey.fromObj(await extractVk(tallyVotesZkeyPathQv));
   const processVkNonQv =
@@ -101,17 +103,9 @@ export const setVerifyingKeys = async ({
 
   checkZkeyFilepaths({
     pollJoiningZkeyPath: pollJoiningZkeyPath!,
+    pollJoinedZkeyPath: pollJoinedZkeyPath!,
     processMessagesZkeyPath: processMessagesZkeyPathQv!,
     tallyVotesZkeyPath: tallyVotesZkeyPathQv!,
-    stateTreeDepth,
-    messageBatchSize,
-    voteOptionTreeDepth,
-    intStateTreeDepth,
-  });
-
-  checkZkeyFilepaths({
-    pollJoiningZkeyPath: pollJoiningZkeyPath!,
-    tallyVotesZkeyPath: tallyVotesZkeyPathNonQv!,
     stateTreeDepth,
     messageBatchSize,
     voteOptionTreeDepth,
@@ -127,8 +121,16 @@ export const setVerifyingKeys = async ({
   const vkRegistryContract = VkRegistryFactory.connect(vkRegistryAddress, signer);
 
   // check if the poll vk was already set
-  const pollVkSig = genPollVkSig(stateTreeDepth, voteOptionTreeDepth);
-  if (await vkRegistryContract.isPollVkSet(pollVkSig)) {
+  const pollJoiningVkSig = genPollJoiningVkSig(stateTreeDepth, voteOptionTreeDepth);
+
+  if (await vkRegistryContract.isPollJoiningVkSet(pollJoiningVkSig)) {
+    logError("This poll verifying key is already set in the contract");
+  }
+
+  // check if the poll vk was already set
+  const pollJoinedVkSig = genPollJoinedVkSig(stateTreeDepth, voteOptionTreeDepth);
+
+  if (await vkRegistryContract.isPollJoinedVkSet(pollJoinedVkSig)) {
     logError("This poll verifying key is already set in the contract");
   }
 
@@ -157,7 +159,6 @@ export const setVerifyingKeys = async ({
   // actually set those values
   try {
     logYellow(quiet, info("Setting verifying keys..."));
-    const pollZkeys = (pollVk as VerifyingKey).asContractParam() as IVerifyingKeyStruct;
 
     const processZkeys = [processVkQv, processVkNonQv]
       .filter(Boolean)
@@ -182,7 +183,8 @@ export const setVerifyingKeys = async ({
       voteOptionTreeDepth,
       messageBatchSize,
       modes,
-      pollZkeys,
+      (pollJoiningVk as VerifyingKey).asContractParam() as IVerifyingKeyStruct,
+      (pollJoinedVk as VerifyingKey).asContractParam() as IVerifyingKeyStruct,
       processZkeys,
       tallyZkeys,
     );
@@ -196,62 +198,29 @@ export const setVerifyingKeys = async ({
     logYellow(quiet, info(`Transaction hash: ${receipt!.hash}`));
 
     // confirm that they were actually set correctly
-    if (useQuadraticVoting) {
-      const pollVkOnChain = await vkRegistryContract.getPollVk(stateTreeDepth, voteOptionTreeDepth);
+    const mode = useQuadraticVoting ? EMode.QV : EMode.NON_QV;
 
-      const processVkOnChain = await vkRegistryContract.getProcessVk(
-        stateTreeDepth,
-        voteOptionTreeDepth,
-        messageBatchSize,
-        EMode.QV,
-      );
+    const [pollJoiningVkOnChain, pollJoinedVkOnChain, processVkOnChain, tallyVkOnChain] = await Promise.all([
+      vkRegistryContract.getPollJoiningVk(stateTreeDepth, voteOptionTreeDepth),
+      vkRegistryContract.getPollJoinedVk(stateTreeDepth, voteOptionTreeDepth),
+      vkRegistryContract.getProcessVk(stateTreeDepth, voteOptionTreeDepth, messageBatchSize, mode),
+      vkRegistryContract.getTallyVk(stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth, mode),
+    ]);
 
-      const tallyVkOnChain = await vkRegistryContract.getTallyVk(
-        stateTreeDepth,
-        intStateTreeDepth,
-        voteOptionTreeDepth,
-        EMode.QV,
-      );
+    if (!compareVks(pollJoiningVk as VerifyingKey, pollJoiningVkOnChain)) {
+      logError("pollJoiningVk mismatch");
+    }
 
-      if (!compareVks(pollVk as VerifyingKey, pollVkOnChain)) {
-        logError("pollVk mismatch");
-      }
+    if (!compareVks(pollJoinedVk as VerifyingKey, pollJoinedVkOnChain)) {
+      logError("pollJoinedVk mismatch");
+    }
 
-      if (!compareVks(processVkQv as VerifyingKey, processVkOnChain)) {
-        logError("processVk mismatch");
-      }
+    if (!compareVks((useQuadraticVoting ? processVkQv : processVkNonQv) as VerifyingKey, processVkOnChain)) {
+      logError("processVk mismatch");
+    }
 
-      if (!compareVks(tallyVkQv as VerifyingKey, tallyVkOnChain)) {
-        logError("tallyVk mismatch");
-      }
-    } else {
-      const pollVkOnChain = await vkRegistryContract.getPollVk(stateTreeDepth, voteOptionTreeDepth);
-
-      const processVkOnChain = await vkRegistryContract.getProcessVk(
-        stateTreeDepth,
-        voteOptionTreeDepth,
-        messageBatchSize,
-        EMode.NON_QV,
-      );
-
-      const tallyVkOnChain = await vkRegistryContract.getTallyVk(
-        stateTreeDepth,
-        intStateTreeDepth,
-        voteOptionTreeDepth,
-        EMode.NON_QV,
-      );
-
-      if (!compareVks(pollVk as VerifyingKey, pollVkOnChain)) {
-        logError("pollVk mismatch");
-      }
-
-      if (!compareVks(processVkNonQv as VerifyingKey, processVkOnChain)) {
-        logError("processVk mismatch");
-      }
-
-      if (!compareVks(tallyVkNonQv as VerifyingKey, tallyVkOnChain)) {
-        logError("tallyVk mismatch");
-      }
+    if (!compareVks((useQuadraticVoting ? tallyVkQv : tallyVkNonQv) as VerifyingKey, tallyVkOnChain)) {
+      logError("tallyVk mismatch");
     }
   } catch (error) {
     logError((error as Error).message);
@@ -266,12 +235,14 @@ interface ICheckZkeyFilepathsArgs {
   voteOptionTreeDepth: number;
   intStateTreeDepth: number;
   pollJoiningZkeyPath?: string;
+  pollJoinedZkeyPath?: string;
   processMessagesZkeyPath?: string;
   tallyVotesZkeyPath?: string;
 }
 
 function checkZkeyFilepaths({
   pollJoiningZkeyPath,
+  pollJoinedZkeyPath,
   processMessagesZkeyPath,
   tallyVotesZkeyPath,
   stateTreeDepth,
@@ -279,19 +250,27 @@ function checkZkeyFilepaths({
   voteOptionTreeDepth,
   intStateTreeDepth,
 }: ICheckZkeyFilepathsArgs): void {
-  if (!pollJoiningZkeyPath || !processMessagesZkeyPath || !tallyVotesZkeyPath) {
+  if (!pollJoiningZkeyPath || !processMessagesZkeyPath || !tallyVotesZkeyPath || !pollJoinedZkeyPath) {
     return;
   }
 
   // Check the pm zkey filename against specified params
-  const pjMatch = pollJoiningZkeyPath.match(/.+_(\d+)/);
+  const pollJoiningMatch = pollJoiningZkeyPath.match(/.+_(\d+)/);
 
-  if (!pjMatch) {
+  if (!pollJoiningMatch) {
     logError(`${pollJoiningZkeyPath} has an invalid filename`);
     return;
   }
 
-  const pjStateTreeDepth = Number(pjMatch[1]);
+  const pollJoinedMatch = pollJoinedZkeyPath.match(/.+_(\d+)/);
+
+  if (!pollJoinedMatch) {
+    logError(`${pollJoinedZkeyPath} has an invalid filename`);
+    return;
+  }
+
+  const pollJoiningStateTreeDepth = Number(pollJoiningMatch[1]);
+  const pollJoinedStateTreeDepth = Number(pollJoinedMatch[1]);
 
   const pmMatch = processMessagesZkeyPath.match(/.+_(\d+)-(\d+)-(\d+)/);
 
@@ -316,7 +295,8 @@ function checkZkeyFilepaths({
   const tvVoteOptionTreeDepth = Number(tvMatch[3]);
 
   if (
-    stateTreeDepth !== pjStateTreeDepth ||
+    stateTreeDepth !== pollJoiningStateTreeDepth ||
+    stateTreeDepth !== pollJoinedStateTreeDepth ||
     stateTreeDepth !== pmStateTreeDepth ||
     messageBatchSize !== pmMsgBatchSize ||
     voteOptionTreeDepth !== pmVoteOptionTreeDepth ||
