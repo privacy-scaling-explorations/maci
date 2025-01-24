@@ -1,0 +1,71 @@
+{
+  "name": "maci-sdk",
+  "version": "0.0.1",
+  "description": "MACI's SDK",
+  "main": "build/ts/index.js",
+  "exports": {
+    ".": {
+      "types": "./build/ts/index.d.ts",
+      "default": "./build/ts/index.js"
+    },
+    "./sdk": {
+      "types": "./build/ts/sdk/index.d.ts",
+      "default": "./build/ts/sdk/index.js"
+    }
+  },
+  "bin": {
+    "maci-sdk": "./build/ts/index.js"
+  },
+  "files": [
+    "build",
+    "CHANGELOG.md",
+    "README.md"
+  ],
+  "scripts": {
+    "watch": "tsc --watch",
+    "build": "tsc -p tsconfig.build.json",
+    "postbuild": "cp package.json ./build && mkdir -p ./zkeys",
+    "types": "tsc -p tsconfig.json --noEmit",
+    "test": "nyc ts-mocha --exit tests/unit/*.test.ts",
+    "docs": "typedoc --plugin typedoc-plugin-markdown --options ./typedoc.json"
+  },
+  "dependencies": {
+    "ethers": "^6.13.4",
+    "maci-contracts": "^2.5.0",
+    "maci-crypto": "^2.5.0",
+    "maci-domainobjs": "^2.5.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.9",
+    "@types/chai-as-promised": "^7.1.8",
+    "@types/mocha": "^10.0.8",
+    "@types/node": "^22.9.0",
+    "chai": "^4.3.10",
+    "chai-as-promised": "^7.1.2",
+    "mocha": "^10.7.3",
+    "nyc": "^17.1.0",
+    "ts-mocha": "^10.0.0",
+    "typescript": "^5.6.3"
+  },
+  "nyc": {
+    "reporter": [
+      "text",
+      "lcov"
+    ],
+    "extensions": [
+      ".ts"
+    ],
+    "all": true,
+    "exclude": [
+      "**/*.js",
+      "**/*.d.ts",
+      "hardhat.config.ts",
+      "tests/**/*.ts",
+      "ts/index.ts"
+    ],
+    "branches": ">50%",
+    "lines": ">50%",
+    "functions": ">50%",
+    "statements": ">50%"
+  }
+}
