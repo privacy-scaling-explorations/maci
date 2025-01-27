@@ -18,7 +18,7 @@
   "devDependencies": {
     "@types/chai": "^4.3.11",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^22.10.7",
+    "@types/node": "^22.10.10",
     "chai": "^4.3.10",
     "mocha": "^11.0.1",
     "nyc": "^17.1.0",
