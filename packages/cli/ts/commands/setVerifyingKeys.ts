@@ -1,7 +1,7 @@
-import { extractVk } from "maci-circuits";
 import { type IVerifyingKeyStruct, VkRegistry__factory as VkRegistryFactory, EMode } from "maci-contracts";
 import { genPollJoinedVkSig, genPollJoiningVkSig, genProcessVkSig, genTallyVkSig } from "maci-core";
 import { VerifyingKey } from "maci-domainobjs";
+import { extractVk } from "maci-sdk";
 
 import fs from "fs";
 

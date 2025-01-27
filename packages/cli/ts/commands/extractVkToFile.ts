@@ -1,4 +1,4 @@
-import { extractVk } from "maci-circuits";
+import { extractVk } from "maci-sdk";
 
 import fs from "fs";
 

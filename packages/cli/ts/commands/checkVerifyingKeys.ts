@@ -1,6 +1,5 @@
 import { EMode } from "maci-contracts";
-import { extractAllVks, compareVks } from "maci-sdk";
-import { getAllOnChainVks } from "maci-sdk/build/ts/verifyingKeys";
+import { extractAllVks, compareVks, getAllOnChainVks } from "maci-sdk";
 
 import fs from "fs";
 

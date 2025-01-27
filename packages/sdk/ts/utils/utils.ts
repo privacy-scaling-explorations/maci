@@ -1,3 +1,4 @@
+import fs from "fs";
 import os from "os";
 
 declare global {
@@ -32,4 +33,16 @@ export const cleanThreads = async (): Promise<void> => {
   await Promise.all(
     curves.map((curve) => globalThis[curve as "curve_bn128" | "curve_bls12381"]?.terminate()).filter(Boolean),
   );
+};
+
+/**
+ * Remove a file
+ * @param filepath - the path to the file
+ */
+export const unlinkFile = async (filepath: string): Promise<void> => {
+  const isFileExists = fs.existsSync(filepath);
+
+  if (isFileExists) {
+    await fs.promises.unlink(filepath);
+  }
 };

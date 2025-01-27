@@ -19,6 +19,7 @@ export { genMaciStateFromContract } from "./genMaciState";
 export { genEmptyBallotRoots } from "./genEmptyBallotRoots";
 export { genSignUpTree } from "./genSignUpTree";
 export { formatProofForVerifierContract, getDefaultSigner, getDefaultNetwork, getSigners } from "./utils";
+export { extractVk, genProofRapidSnark, genProofSnarkjs, verifyProof } from "./proofs";
 export { EMode } from "./constants";
 export { EDeploySteps } from "../tasks/helpers/constants";
 export { Deployment } from "../tasks/helpers/Deployment";
@@ -39,5 +40,14 @@ export {
 } from "../tasks/helpers/types";
 export { linkPoseidonLibraries } from "../tasks/helpers/abi";
 
-export type { IVerifyingKeyStruct, SnarkProof, Groth16Proof, Proof, IGenSignUpTree } from "./types";
+export type {
+  IVerifyingKeyStruct,
+  SnarkProof,
+  Groth16Proof,
+  Proof,
+  IGenSignUpTree,
+  ISnarkJSVerificationKey,
+  FullProveResult,
+  IGenProofOptions,
+} from "./types";
 export * from "../typechain-types";

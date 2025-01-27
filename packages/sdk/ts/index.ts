@@ -2,15 +2,16 @@ export { getPoll, getPollParams } from "./poll";
 export { verify } from "./verify";
 export { generateTallyCommitments } from "./tallyCommitments";
 export { isUserRegistered, isJoinedUser, signup } from "./user";
-export { getAllOnChainVks as getAllVks, compareVks, extractAllVks, extractVk } from "./verifyingKeys";
+export { getAllOnChainVks, compareVks, extractAllVks } from "./verifyingKeys";
+export { cleanThreads, isArm, unlinkFile } from "./utils";
 
 export {
-  linkPoseidonLibraries,
-  Deployment,
-  ContractStorage,
-  EContracts,
   EMode,
-  type IVerifyingKeyStruct,
+  extractVk,
+  genProofRapidSnark,
+  genProofSnarkjs,
+  verifyProof,
+  type FullProveResult,
 } from "maci-contracts";
 
 export * from "maci-contracts/typechain-types";

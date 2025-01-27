@@ -45,14 +45,13 @@
     "maci-core": "^2.5.0",
     "maci-crypto": "^2.5.0",
     "maci-domainobjs": "^2.5.0",
-    "snarkjs": "^0.7.5"
+    "maci-sdk": "^0.0.1"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
     "@types/chai-as-promised": "^7.1.8",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.10.7",
-    "@types/snarkjs": "^0.7.9",
     "@zk-kit/baby-jubjub": "^1.0.3",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.2",

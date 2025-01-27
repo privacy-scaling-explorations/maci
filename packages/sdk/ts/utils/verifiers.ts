@@ -1,6 +1,6 @@
 import { genTreeProof } from "maci-crypto";
 
-import type { TallyData } from "./interfaces";
+import type { TallyData } from "./types";
 import type { Tally } from "maci-contracts";
 
 /**

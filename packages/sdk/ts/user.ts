@@ -3,7 +3,7 @@ import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci
 import { PubKey } from "maci-domainobjs";
 
 import { contractExists, IRegisteredUserArgs, ISignupArgs, parsePollJoinEvents, parseSignupEvents } from "./utils";
-import { IIsRegisteredUser, IJoinedUserArgs, ISignupData } from "./utils/interfaces";
+import { IIsRegisteredUser, IJoinedUserArgs, ISignupData } from "./utils/types";
 
 /**
  * Checks if user is registered with a given public key

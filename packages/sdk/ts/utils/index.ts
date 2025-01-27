@@ -21,7 +21,8 @@ export type {
   ICircuitParams,
   IExtractAllVksArgs,
   IMaciVks,
-} from "./interfaces";
+} from "./types";
 export { verifyPerVOSpentVoiceCredits, verifyTallyResults } from "./verifiers";
 export { BLOCKS_STEP } from "./constants";
 export { parsePollJoinEvents, parseSignupEvents } from "./user";
+export { cleanThreads, isArm, unlinkFile } from "./utils";
