@@ -1,7 +1,9 @@
+import { EMode } from "maci-contracts";
 import { MACI, Poll } from "maci-contracts/typechain-types";
 import { PubKey } from "maci-domainobjs";
 
 import type { Provider, Signer } from "ethers";
+import type { IVkContractParams, VerifyingKey } from "maci-domainobjs";
 
 /**
  * Interface for the tally file data.
@@ -468,4 +470,126 @@ export interface IIsJoinedUser {
    * The voice credits of the user
    */
   voiceCredits?: string;
+}
+
+/**
+ * Arguments for the getAllVks function
+ */
+export interface GetAllVksArgs {
+  /**
+   * The address of the VkRegistry contract
+   */
+  vkRegistryAddress: string;
+  /**
+   * The signer to use for the contract calls
+   */
+  signer: Signer;
+  /**
+   * The depth of the state tree
+   */
+  stateTreeDepth: number;
+  /**
+   * The depth of the vote option tree
+   */
+  voteOptionTreeDepth: number;
+  /**
+   * The batch size for the process messages
+   */
+  messageBatchSize: number;
+  /**
+   * The depth of the ballot tree
+   */
+  intStateTreeDepth: number;
+  /**
+   * The mode to use for the contract calls
+   */
+  mode: EMode;
+}
+
+/**
+ * MACI's verifying keys
+ */
+export interface MaciVerifyingKeys {
+  /**
+   * The verifying key for the poll joining circuit
+   */
+  pollJoiningVkOnChain: IVkContractParams;
+  /**
+   * The verifying key for the poll joined circuit
+   */
+  pollJoinedVkOnChain: IVkContractParams;
+  /**
+   * The verifying key for the process messages circuit
+   */
+  processVkOnChain: IVkContractParams;
+  /**
+   * The verifying key for the tally votes circuit
+   */
+  tallyVkOnChain: IVkContractParams;
+}
+
+/**
+ * Circuit parameters
+ */
+export interface ICircuitParams {
+  /**
+   * The state tree depth
+   */
+  stateTreeDepth: number;
+  /**
+   * The intermediate state tree depth (ballot tree)
+   */
+  intStateTreeDepth: number;
+  /**
+   * The vote option tree depth
+   */
+  voteOptionTreeDepth: number;
+  /**
+   * The message batch size
+   */
+  messageBatchSize: number;
+}
+
+/**
+ * Maci verifying keys
+ */
+export interface IMaciVks {
+  /**
+   * The poll joining verifying key
+   */
+  pollJoiningVk?: VerifyingKey;
+  /**
+   * The poll joined verifying key
+   */
+  pollJoinedVk?: VerifyingKey;
+  /**
+   * The message processing verifying key
+   */
+  processVk?: VerifyingKey;
+  /**
+   * The tally verifying key
+   */
+  tallyVk?: VerifyingKey;
+}
+
+/**
+ * Arguments for the extractAllVks function
+ */
+export interface IExtractAllVksArgs {
+  /**
+   * The path to the poll joining zkey
+   */
+  pollJoiningZkeyPath?: string;
+  /**
+   * The path to the poll joined zkey
+   */
+  pollJoinedZkeyPath?: string;
+  /**
+   * The path to the process messages zkey
+   */
+  processMessagesZkeyPath?: string;
+  /**
+   * The path to the tally votes zkey
+   */
+  tallyVotesZkeyPath?: string;
 }

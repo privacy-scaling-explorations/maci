@@ -771,6 +771,9 @@ importers:
       maci-domainobjs:
         specifier: ^2.5.0
         version: link:../domainobjs
+      snarkjs:
+        specifier: ^0.7.5
+        version: 0.7.5
     devDependencies:
       '@types/chai':
         specifier: ^4.3.9
@@ -784,6 +787,9 @@ importers:
       '@types/node':
         specifier: ^22.9.0
         version: 22.10.7
+      '@types/snarkjs':
+        specifier: ^0.7.9
+        version: 0.7.9
       chai:
         specifier: ^4.3.10
         version: 4.4.1

@@ -1,13 +1,12 @@
-import { extractVk } from "maci-circuits";
-import { EMode, VkRegistry__factory as VkRegistryFactory } from "maci-contracts";
-import { VerifyingKey } from "maci-domainobjs";
+import { EMode } from "maci-contracts";
+import { extractAllVks, compareVks } from "maci-sdk";
+import { getAllOnChainVks } from "maci-sdk/build/ts/verifyingKeys";
 
 import fs from "fs";
 
 import {
   CheckVerifyingKeysArgs,
   banner,
-  compareVks,
   contractExists,
   info,
   logError,
@@ -52,8 +51,6 @@ export const checkVerifyingKeys = async ({
     logError("The VkRegistry contract does not exist");
   }
 
-  const vkRegistryContractInstance = VkRegistryFactory.connect(vkContractAddress, signer);
-
   // we need to ensure that the zkey files exist
   const isProcessMessagesZkeyPathExists = fs.existsSync(processMessagesZkeyPath);
 
@@ -68,10 +65,12 @@ export const checkVerifyingKeys = async ({
   }
 
   // extract the verification keys from the zkey files
-  const processVk = VerifyingKey.fromObj(await extractVk(processMessagesZkeyPath));
-  const tallyVk = VerifyingKey.fromObj(await extractVk(tallyVotesZkeyPath));
-  const pollJoiningVk = VerifyingKey.fromObj(await extractVk(pollJoiningZkeyPath));
-  const pollJoinedVk = VerifyingKey.fromObj(await extractVk(pollJoinedZkeyPath));
+  const { pollJoiningVk, pollJoinedVk, processVk, tallyVk } = await extractAllVks({
+    processMessagesZkeyPath,
+    tallyVotesZkeyPath,
+    pollJoiningZkeyPath,
+    pollJoinedZkeyPath,
+  });
 
   try {
     logYellow(quiet, info("Retrieving verifying keys from the contract..."));
@@ -79,27 +78,30 @@ export const checkVerifyingKeys = async ({
 
     const mode = useQuadraticVoting ? EMode.QV : EMode.NON_QV;
 
-    const [pollJoiningVkOnChain, pollJoinedVkOnChain, processVkOnChain, tallyVkOnChain] = await Promise.all([
-      vkRegistryContractInstance.getPollJoiningVk(stateTreeDepth, voteOptionTreeDepth),
-      vkRegistryContractInstance.getPollJoinedVk(stateTreeDepth, voteOptionTreeDepth),
-      vkRegistryContractInstance.getProcessVk(stateTreeDepth, voteOptionTreeDepth, messageBatchSize, mode),
-      vkRegistryContractInstance.getTallyVk(stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth, mode),
-    ]);
+    const { pollJoiningVkOnChain, pollJoinedVkOnChain, processVkOnChain, tallyVkOnChain } = await getAllOnChainVks({
+      vkRegistryAddress: vkContractAddress,
+      signer,
+      stateTreeDepth,
+      voteOptionTreeDepth,
+      messageBatchSize,
+      intStateTreeDepth,
+      mode,
+    });
 
     // do the actual validation
-    if (!compareVks(pollJoiningVk, pollJoiningVkOnChain)) {
+    if (!compareVks(pollJoiningVk!, pollJoiningVkOnChain)) {
       logError("Poll verifying keys do not match");
     }
 
-    if (!compareVks(pollJoinedVk, pollJoinedVkOnChain)) {
+    if (!compareVks(pollJoinedVk!, pollJoinedVkOnChain)) {
       logError("Poll verifying keys do not match");
     }
 
-    if (!compareVks(processVk, processVkOnChain)) {
+    if (!compareVks(processVk!, processVkOnChain)) {
       logError("Process verifying keys do not match");
     }
 
-    if (!compareVks(tallyVk, tallyVkOnChain)) {
+    if (!compareVks(tallyVk!, tallyVkOnChain)) {
       logError("Tally verifying keys do not match");
     }
   } catch (error) {
