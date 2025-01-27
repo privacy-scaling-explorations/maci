@@ -16,6 +16,11 @@ export type {
   IParsePollJoinEventsArgs,
   IIsRegisteredUser,
   IIsJoinedUser,
+  IMaciVerifyingKeys,
+  GetAllVksArgs,
+  ICircuitParams,
+  IExtractAllVksArgs,
+  IMaciVks,
 } from "./interfaces";
 export { verifyPerVOSpentVoiceCredits, verifyTallyResults } from "./verifiers";
 export { BLOCKS_STEP } from "./constants";
