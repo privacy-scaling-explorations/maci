@@ -832,6 +832,7 @@ export {
   verify,
   joinPoll,
   isJoinedUser,
+  generateAndVerifyProof,
 } from "./commands";
 
 export type {

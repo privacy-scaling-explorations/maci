@@ -99,6 +99,10 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   /// @notice The Id of this poll
   uint256 public immutable pollId;
 
+  /// @notice The array of the poll state tree roots for each poll join
+  /// For the N'th poll join, the poll state tree root will be stored at the index N
+  uint256[] public pollStateRootsOnJoin;
+
   error VotingPeriodOver();
   error VotingPeriodNotOver();
   error PollAlreadyInit();
@@ -193,6 +197,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
 
     InternalLazyIMT._init(pollStateTree, extContracts.maci.stateTreeDepth());
     InternalLazyIMT._insert(pollStateTree, BLANK_STATE_LEAF_HASH);
+    pollStateRootsOnJoin.push(BLANK_STATE_LEAF_HASH);
 
     emit PublishMessage(_message, _padKey);
   }
@@ -353,7 +358,10 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
 
     // Store user in the pollStateTree
     uint256 stateLeaf = hashStateLeaf(StateLeaf(_pubKey, voiceCreditBalance, block.timestamp));
-    InternalLazyIMT._insert(pollStateTree, stateLeaf);
+    uint256 stateRoot = InternalLazyIMT._insert(pollStateTree, stateLeaf);
+
+    // Store the current state tree root in the array
+    pollStateRootsOnJoin.push(stateRoot);
 
     uint256 pollStateIndex = pollStateTree.numberOfLeaves - 1;
     emit PollJoined(_pubKey.x, _pubKey.y, voiceCreditBalance, block.timestamp, _nullifier, pollStateIndex);
@@ -385,14 +393,9 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
 
   /// @notice Verify the proof for joined Poll
   /// @param _index Index of the MACI's stateRootOnSignUp when the user signed up
-  /// @param _pubKey Poll user's public key
   /// @param _proof The zk-SNARK proof
   /// @return isValid Whether the proof is valid
-  function verifyJoinedPollProof(
-    uint256 _index,
-    PubKey calldata _pubKey,
-    uint256[8] memory _proof
-  ) public view returns (bool isValid) {
+  function verifyJoinedPollProof(uint256 _index, uint256[8] memory _proof) public view returns (bool isValid) {
     // Get the verifying key from the VkRegistry
     VerifyingKey memory vk = extContracts.vkRegistry.getPollJoinedVk(
       extContracts.maci.stateTreeDepth(),
@@ -400,7 +403,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     );
 
     // Generate the circuit public input
-    uint256[] memory circuitPublicInputs = getPublicJoinedCircuitInputs(_index, _pubKey);
+    uint256[] memory circuitPublicInputs = getPublicJoinedCircuitInputs(_index);
 
     isValid = extContracts.verifier.verify(_proof, vk, circuitPublicInputs);
   }
@@ -426,18 +429,11 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
 
   /// @notice Get public circuit inputs for poll joined circuit
   /// @param _index Index of the MACI's stateRootOnSignUp when the user signed up
-  /// @param _pubKey Poll user's public key
   /// @return publicInputs Public circuit inputs
-  function getPublicJoinedCircuitInputs(
-    uint256 _index,
-    PubKey calldata _pubKey
-  ) public view returns (uint256[] memory publicInputs) {
-    publicInputs = new uint256[](4);
+  function getPublicJoinedCircuitInputs(uint256 _index) public view returns (uint256[] memory publicInputs) {
+    publicInputs = new uint256[](1);
 
-    publicInputs[0] = _pubKey.x;
-    publicInputs[1] = _pubKey.y;
-    publicInputs[2] = extContracts.maci.getStateRootOnIndexedSignUp(_index);
-    publicInputs[3] = pollId;
+    publicInputs[0] = pollStateRootsOnJoin[_index];
   }
 
   /// @inheritdoc IPoll

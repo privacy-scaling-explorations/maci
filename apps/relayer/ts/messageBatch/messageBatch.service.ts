@@ -5,7 +5,7 @@ import uniqBy from "lodash/uniqBy";
 import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts";
 import { PubKey } from "maci-domainobjs";
 
-import type { MessageBatchDto } from "./dto";
+import type { MessageBatchDto } from "./messageBatch.dto";
 
 import { IpfsService } from "../ipfs/ipfs.service";
 

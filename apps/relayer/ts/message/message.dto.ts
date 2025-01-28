@@ -9,6 +9,8 @@ import {
   ArrayMinSize,
   ArrayMaxSize,
   ValidateNested,
+  ArrayNotEmpty,
+  IsString,
 } from "class-validator";
 import { Message } from "maci-domainobjs";
 
@@ -17,7 +19,7 @@ import { PublicKeyValidator } from "./validation";
 /**
  * Max messages per batch
  */
-const MAX_MESSAGES = 20;
+export const MAX_MESSAGES = Number(process.env.MAX_MESSAGES);
 
 /**
  * Data transfer object for user message
@@ -50,6 +52,32 @@ export class MessageContractParamsDto {
  * Data transfer object for publish messages
  */
 export class PublishMessagesDto {
+  /**
+   * State leaf index
+   */
+  @ApiProperty({
+    description: "State leaf index",
+    minimum: 0,
+    type: Number,
+  })
+  @IsInt()
+  @Min(0)
+  stateLeafIndex!: number;
+
+  /**
+   * User poll joined proof
+   */
+  @ApiProperty({
+    description: "User poll joined proof",
+    type: [String],
+  })
+  @IsArray()
+  @ArrayNotEmpty()
+  @ArrayMinSize(8)
+  @ArrayMaxSize(8)
+  @IsString({ each: true })
+  proof!: string[];
+
   /**
    * Poll id
    */
