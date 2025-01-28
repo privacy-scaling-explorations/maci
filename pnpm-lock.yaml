@@ -251,8 +251,8 @@ importers:
         version: link:../../packages/contracts
     devDependencies:
       assemblyscript:
-        specifier: 0.19.23
-        version: 0.19.23
+        specifier: 0.27.32
+        version: 0.27.32
       matchstick-as:
         specifier: ^0.6.0
         version: 0.6.0
@@ -5292,6 +5292,11 @@ packages:
     engines: {node: '>=16', npm: '>=7'}
     hasBin: true
 
+  assemblyscript@0.27.32:
+    resolution: {integrity: sha512-A8ULHwC6hp4F3moAeQWdciKoccZGZLM9Fsk4pQGywY/fd/S+tslmqBcINroFSI9tW18nO9mC8zh76bik1BkyUA==}
+    engines: {node: '>=16', npm: '>=7'}
+    hasBin: true
+
   assertion-error@1.1.0:
     resolution: {integrity: sha512-jgsaNduz+ndvGyFt3uSuWqvy4lCnIJiovtouQN5JZHOKCS2QuhEdbcQHFhVksz2N2U9hXJo8odG7ETyWlEeuDw==}
 
@@ -9632,8 +9637,8 @@ packages:
   logplease@1.2.15:
     resolution: {integrity: sha512-jLlHnlsPSJjpwUfcNyUxXCl33AYg2cHhIf9QhGL2T4iPT0XPB+xP1LRKFPgIg1M/sg9kAJvy94w9CzBNrfnstA==}
 
-  long@5.2.3:
-    resolution: {integrity: sha512-lcHwpNoggQTObv5apGNCTdJrO69eHOZMi4BNC+rTLER8iHAqGrUVeLh/irVIM7zTw2bOXA8T6uNPeujwOLg/2Q==}
+  long@5.2.4:
+    resolution: {integrity: sha512-qtzLbJE8hq7VabR3mISmVGtoXP8KGc2Z/AT8OuqlYD7JTR3oqrgwdjnk07wpj1twXxYmgDXgoKVWUG/fReSzHg==}
 
   longest-streak@3.1.0:
     resolution: {integrity: sha512-9Ri+o0JYgehTaVBBDoMqIl8GXtbWg711O3srftcHhZ0dqnETqLaoIK0x17fUw9rFSlK/0NlsKe0Ahhyl5pXE2g==}
@@ -21526,13 +21531,18 @@ snapshots:
   assemblyscript@0.19.23:
     dependencies:
       binaryen: 102.0.0-nightly.20211028
-      long: 5.2.3
+      long: 5.2.4
       source-map-support: 0.5.21
 
   assemblyscript@0.27.31:
     dependencies:
       binaryen: 116.0.0-nightly.20240114
-      long: 5.2.3
+      long: 5.2.4
+
+  assemblyscript@0.27.32:
+    dependencies:
+      binaryen: 116.0.0-nightly.20240114
+      long: 5.2.4
 
   assertion-error@1.1.0: {}
 
@@ -27178,7 +27188,7 @@ snapshots:
 
   logplease@1.2.15: {}
 
-  long@5.2.3: {}
+  long@5.2.4: {}
 
   longest-streak@3.1.0: {}
 
