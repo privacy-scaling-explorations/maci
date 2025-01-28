@@ -404,13 +404,13 @@ importers:
     dependencies:
       '@commander-js/extra-typings':
         specifier: ^13.1.0
-        version: 13.1.0(commander@13.0.0)
+        version: 13.1.0(commander@13.1.0)
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
         version: 5.0.0(uocdrnxcm6fh7w4eqnstqewxvm)
       commander:
-        specifier: ^13.0.0
-        version: 13.0.0
+        specifier: ^13.1.0
+        version: 13.1.0
       dotenv:
         specifier: ^16.4.7
         version: 16.4.7
@@ -6058,10 +6058,6 @@ packages:
 
   commander@12.1.0:
     resolution: {integrity: sha512-Vw8qHK3bZM9y/P10u3Vib8o/DdkvA2OtPtZvD871QKjy74Wj1WSKFILMPRPSdUSx5RFK1arlJzEtA4PkFgnbuA==}
-    engines: {node: '>=18'}
-
-  commander@13.0.0:
-    resolution: {integrity: sha512-oPYleIY8wmTVzkvQq10AEok6YcTC4sRUBl8F9gVuwchGVUCTbl/vhLTaQqutuuySYOsu8YTgV+OxKc/8Yvx+mQ==}
     engines: {node: '>=18'}
 
   commander@13.1.0:
@@ -16515,9 +16511,9 @@ snapshots:
 
   '@colors/colors@1.5.0': {}
 
-  '@commander-js/extra-typings@13.1.0(commander@13.0.0)':
+  '@commander-js/extra-typings@13.1.0(commander@13.1.0)':
     dependencies:
-      commander: 13.0.0
+      commander: 13.1.0
 
   '@commitlint/cli@19.6.1(@types/node@22.12.0)(typescript@5.7.3)':
     dependencies:
@@ -22483,8 +22479,6 @@ snapshots:
   commander@10.0.1: {}
 
   commander@12.1.0: {}
-
-  commander@13.0.0: {}
 
   commander@13.1.0: {}
 
