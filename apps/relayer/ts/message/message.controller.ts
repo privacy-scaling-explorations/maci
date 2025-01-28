@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/no-shadow */
-import { Body, Controller, HttpException, HttpStatus, Logger, Post } from "@nestjs/common";
-import { ApiBearerAuth, ApiBody, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { Body, Controller, HttpException, HttpStatus, Logger, Post, UseGuards } from "@nestjs/common";
+import { ApiBody, ApiResponse, ApiTags } from "@nestjs/swagger";
 
-import { PublishMessagesDto } from "./dto";
+import { PublishMessagesDto } from "./message.dto";
+import { MessageGuard } from "./message.guard";
 import { Message } from "./message.schema";
 import { MessageService } from "./message.service";
 
 @ApiTags("v1/messages")
-@ApiBearerAuth()
 @Controller("v1/messages")
+@UseGuards(MessageGuard)
 export class MessageController {
   /**
    * Logger

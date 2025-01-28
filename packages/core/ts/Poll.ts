@@ -496,18 +496,19 @@ export class Poll implements IPoll {
     voiceCreditsBalance,
     joinTimestamp,
   }: IJoinedCircuitArgs): IPollJoinedCircuitInputs => {
-    // copy a poll state tree
-    const pollStateTree = new IncrementalQuinTree(this.stateTreeDepth, blankStateLeafHash, STATE_TREE_ARITY, hash2);
-
-    this.pollStateLeaves.forEach((stateLeaf) => {
-      pollStateTree.insert(stateLeaf.hash());
-    });
-
     // calculate the path elements for the state tree given the original state tree
-    const { pathElements, pathIndices } = pollStateTree.genProof(Number(stateLeafIndex));
+    const { pathElements, pathIndices } = this.pollStateTree!.genProof(Number(stateLeafIndex));
 
     // Get poll state tree's root
-    const stateRoot = pollStateTree.root;
+    const stateRoot = this.pollStateTree!.root;
+    const elementsLength = pathIndices.length;
+
+    for (let i = 0; i < this.stateTreeDepth; i += 1) {
+      if (i >= elementsLength) {
+        pathElements[i] = [0n];
+        pathIndices[i] = 0;
+      }
+    }
 
     const circuitInputs = {
       privKey: maciPrivKey.asCircuitInputs(),
@@ -515,6 +516,7 @@ export class Poll implements IPoll {
       voiceCreditsBalance: voiceCreditsBalance.toString(),
       joinTimestamp: joinTimestamp.toString(),
       pathIndices: pathIndices.map((item) => item.toString()),
+      actualStateTreeDepth: BigInt(this.actualStateTreeDepth),
       stateRoot,
     };
 
@@ -1432,6 +1434,7 @@ export class Poll implements IPoll {
       numBatchesProcessed: this.numBatchesProcessed,
       numSignups: this.numSignups.toString(),
       chainHash: this.chainHash.toString(),
+      pollNullifiers: [...this.pollNullifiers.keys()].map((nullifier) => nullifier.toString()),
       batchHashes: this.batchHashes.map((batchHash) => batchHash.toString()),
     };
   }
@@ -1456,6 +1459,7 @@ export class Poll implements IPoll {
     poll.numBatchesProcessed = json.numBatchesProcessed;
     poll.chainHash = BigInt(json.chainHash);
     poll.batchHashes = json.batchHashes.map((batchHash: string) => BigInt(batchHash));
+    poll.pollNullifiers = new Map(json.pollNullifiers.map((nullifier) => [BigInt(nullifier), true]));
 
     // copy maci state
     poll.updatePoll(BigInt(json.numSignups));

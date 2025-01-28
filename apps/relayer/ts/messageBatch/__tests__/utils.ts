@@ -1,7 +1,7 @@
 import { ZeroAddress } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
-import { MessageBatchDto } from "../dto";
+import { MessageBatchDto } from "../messageBatch.dto";
 
 const keypair = new Keypair();
 

@@ -485,6 +485,21 @@ export interface IJoinPollData {
   pollStateIndex: string;
 
   /**
+   * Voice credits balance
+   */
+  voiceCredits: string;
+
+  /**
+   * Joining poll timestamp
+   */
+  timestamp: string;
+
+  /**
+   * Private key nullifier
+   */
+  nullifier: string;
+
+  /**
    * The join poll transaction hash
    */
   hash: string;

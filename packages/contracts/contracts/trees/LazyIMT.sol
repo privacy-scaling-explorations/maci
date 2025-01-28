@@ -125,7 +125,7 @@ library InternalLazyIMT {
   /// @notice Inserts a leaf into the LazyIMT
   /// @param self The LazyIMTData
   /// @param leaf The leaf to insert
-  function _insert(LazyIMTData storage self, uint256 leaf) internal {
+  function _insert(LazyIMTData storage self, uint256 leaf) internal returns (uint256) {
     uint40 index = self.numberOfLeaves;
 
     self.numberOfLeaves = index + 1;
@@ -143,6 +143,8 @@ library InternalLazyIMT {
         i++;
       }
     }
+
+    return hash;
   }
 
   /// @notice Returns the root of the LazyIMT

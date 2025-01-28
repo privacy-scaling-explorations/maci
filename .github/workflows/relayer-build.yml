@@ -10,6 +10,7 @@ env:
   TTL: ${{ vars.RELAYER_TTL }}
   LIMIT: ${{ vars.RELAYER_LIMIT }}
   ALLOWED_ORIGINS: ${{ vars.ALLOWED_ORIGINS }}
+  MAX_MESSAGES: ${{ vars.RELAYER_MAX_MESSAGES || 20 }}
   MONGO_DB_URI: ${{ secrets.RELAYER_MONGO_DB_URI }}
   MONGODB_USER: ${{ secrets.MONGODB_USER }}
   MONGODB_PASSWORD: ${{ secrets.MONGODB_PASSWORD }}
@@ -36,6 +37,34 @@ jobs:
           node-version: 20
           cache: "pnpm"
 
+      - name: Get changed files
+        id: get-changed-files
+        uses: jitterbit/get-changed-files@v1
+        with:
+          format: "csv"
+
+      - name: Check for changes in 'circuit' folder
+        id: check_changes
+        run: |
+          CHANGED_FILES=${{ steps.get-changed-files.outputs.all }}
+          if echo "$CHANGED_FILES" | grep -q "\.circom"; then
+            echo "CHANGED=true" >> $GITHUB_ENV
+            echo "Circuits have changes."
+          else
+            echo "CHANGED=false" >> $GITHUB_ENV
+            echo "No changes on circuits."
+          fi
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes \
+            build-essential \
+            libgmp-dev \
+            libsodium-dev \
+            nasm \
+            nlohmann-json3-dev
+
       - name: Install
         run: |
           pnpm install --frozen-lockfile --prefer-offline
@@ -43,6 +72,29 @@ jobs:
       - name: Build
         run: |
           pnpm run build
+
+      - name: Download rapidsnark (1c137)
+        run: |
+          mkdir -p ~/rapidsnark/build
+          wget -qO ~/rapidsnark/build/prover https://maci-devops-zkeys.s3.ap-northeast-2.amazonaws.com/rapidsnark-linux-amd64-1c137
+          chmod +x ~/rapidsnark/build/prover
+
+      - name: Download circom Binary v2.1.6
+        run: |
+          wget -qO ${{ github.workspace }}/circom https://github.com/iden3/circom/releases/download/v2.1.6/circom-linux-amd64
+          chmod +x ${{ github.workspace }}/circom
+          sudo mv ${{ github.workspace }}/circom /bin/circom
+
+      - name: Compile Circuits And Generate zkeys
+        if: ${{ env.CHANGED == 'true' }}
+        run: |
+          pnpm build:circuits-c -- --outPath ../../apps/relayer/zkeys
+          pnpm setup:zkeys -- --outPath ../../apps/relayer/zkeys
+
+      - name: Download zkeys
+        if: ${{ env.CHANGED == 'false' }}
+        run: |
+          pnpm download-zkeys:test:relayer
 
       - name: Run hardhat
         run: |

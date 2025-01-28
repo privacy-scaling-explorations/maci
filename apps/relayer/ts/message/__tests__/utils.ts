@@ -2,7 +2,7 @@ import { ZeroAddress } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
 import { defaultMessageBatches } from "../../messageBatch/__tests__/utils";
-import { PublishMessagesDto } from "../dto";
+import { PublishMessagesDto } from "../message.dto";
 
 const keypair = new Keypair();
 

@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, RootFilterQuery } from "mongoose";
 
-import { MessageBatchDto } from "./dto";
+import { MessageBatchDto } from "./messageBatch.dto";
 import { MESSAGE_BATCHES_LIMIT, MessageBatch } from "./messageBatch.schema";
 
 /**

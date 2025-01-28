@@ -68,6 +68,7 @@ export interface IPollJoinedInputs {
   pathIndices: bigint[];
   credits: bigint;
   stateRoot: bigint;
+  actualStateTreeDepth: bigint;
 }
 
 /**

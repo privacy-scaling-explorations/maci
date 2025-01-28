@@ -102,6 +102,7 @@ export interface IJsonPoll {
   numBatchesProcessed: number;
   numSignups: string;
   chainHash: string;
+  pollNullifiers: string[];
   batchHashes: string[];
 }
 
@@ -178,6 +179,7 @@ export interface IPollJoinedCircuitInputs {
   pathElements: string[][];
   pathIndices: string[];
   stateRoot: string;
+  actualStateTreeDepth: string;
 }
 
 /**

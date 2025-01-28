@@ -66,6 +66,8 @@ template PollJoined(stateTreeDepth) {
     signal input pathIndices[stateTreeDepth];
     // Poll State tree root which proves the user is joined
     signal input stateRoot;
+    // The actual tree depth (might be <= stateTreeDepth) Used in BinaryMerkleRoot
+    signal input actualStateTreeDepth;
 
      // User private to public key
     var derivedPubKey[2] = PrivToPubKey()(privKey);
@@ -73,8 +75,9 @@ template PollJoined(stateTreeDepth) {
     var stateLeaf = PoseidonHasher(4)([derivedPubKey[0], derivedPubKey[1], voiceCreditsBalance, joinTimestamp]);
 
     // Inclusion proof  
-    var stateLeafQip = MerkleTreeInclusionProof(stateTreeDepth)(
+    var stateLeafQip = BinaryMerkleRoot(stateTreeDepth)(
         stateLeaf,
+        actualStateTreeDepth,
         pathIndices,
         pathElements
     );

@@ -161,6 +161,12 @@ importers:
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
+      maci-circuits:
+        specifier: workspace:^2.5.0
+        version: link:../../packages/circuits
+      maci-cli:
+        specifier: workspace:^2.5.0
+        version: link:../../packages/cli
       maci-contracts:
         specifier: workspace:^2.5.0
         version: link:../../packages/contracts

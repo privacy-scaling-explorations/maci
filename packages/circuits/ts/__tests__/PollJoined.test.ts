@@ -22,6 +22,7 @@ describe("Poll Joined circuit", function test() {
     "pathElements",
     "pathIndices",
     "stateRoot",
+    "actualStateTreeDepth",
   ];
 
   let circuit: WitnessTester<PollJoinedCircuitInputs>;
@@ -55,7 +56,6 @@ describe("Poll Joined circuit", function test() {
       pollId = maciState.deployPoll(timestamp + BigInt(duration), treeDepths, messageBatchSize, coordinatorKeypair);
 
       poll = maciState.polls.get(pollId)!;
-      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       // Join the poll
       const { privKey, pubKey: pollPubKey } = users[0];
@@ -83,6 +83,8 @@ describe("Poll Joined circuit", function test() {
       commands.push(command);
 
       poll.publishMessage(message, ecdhKeypair.pubKey);
+
+      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       // Process messages
       poll.processMessages(pollId);

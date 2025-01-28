@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
 
-import type { PublishMessagesDto } from "./dto";
+import type { PublishMessagesDto } from "./message.dto";
 
 import { MessageBatchService } from "../messageBatch/messageBatch.service";
 

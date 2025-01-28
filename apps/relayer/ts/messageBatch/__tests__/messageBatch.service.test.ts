@@ -3,7 +3,7 @@ import { ZeroAddress } from "ethers";
 import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts";
 
 import { IpfsService } from "../../ipfs/ipfs.service";
-import { MessageBatchDto } from "../dto";
+import { MessageBatchDto } from "../messageBatch.dto";
 import { MessageBatchRepository } from "../messageBatch.repository";
 import { MessageBatchService } from "../messageBatch.service";
 

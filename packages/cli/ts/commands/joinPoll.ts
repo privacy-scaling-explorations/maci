@@ -291,6 +291,9 @@ export const joinPoll = async ({
   const pollJoiningVk = await extractVk(pollJoiningZkey);
 
   let pollStateIndex = "";
+  let voiceCredits = "";
+  let timestamp = "";
+  let privateKeyNullifier = "";
   let receipt: ContractTransactionReceipt | null = null;
 
   const sgData = sgDataArg || DEFAULT_SG_DATA;
@@ -330,7 +333,7 @@ export const joinPoll = async ({
     if (receipt?.logs) {
       const [log] = receipt.logs;
       const { args } = iface.parseLog(log as unknown as { topics: string[]; data: string }) || { args: [] };
-      [, , , , , pollStateIndex] = args;
+      [, , voiceCredits, timestamp, privateKeyNullifier, pollStateIndex] = args;
       logGreen(quiet, success(`State index: ${pollStateIndex.toString()}`));
     } else {
       logError("Unable to retrieve the transaction receipt");
@@ -341,6 +344,9 @@ export const joinPoll = async ({
 
   return {
     pollStateIndex: pollStateIndex ? pollStateIndex.toString() : "",
+    voiceCredits: voiceCredits ? voiceCredits.toString() : "",
+    timestamp: timestamp ? timestamp.toString() : "",
+    nullifier: privateKeyNullifier ? privateKeyNullifier.toString() : "",
     hash: receipt!.hash,
   };
 };
@@ -356,6 +362,7 @@ const parsePollJoinEvents = async ({
 }: IParsePollJoinEventsArgs): Promise<{
   pollStateIndex?: string;
   voiceCredits?: string;
+  timestamp?: string;
 }> => {
   // 1000 blocks at a time
   for (let block = startBlock; block <= currentBlock; block += BLOCKS_STEP) {
@@ -374,6 +381,7 @@ const parsePollJoinEvents = async ({
       return {
         pollStateIndex: event.args[5].toString(),
         voiceCredits: event.args[2].toString(),
+        timestamp: event.args[3].toString(),
       };
     }
   }
@@ -381,6 +389,7 @@ const parsePollJoinEvents = async ({
   return {
     pollStateIndex: undefined,
     voiceCredits: undefined,
+    timestamp: undefined,
   };
 };
 
