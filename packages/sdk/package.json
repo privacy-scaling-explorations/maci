@@ -34,7 +34,7 @@
     "maci-contracts": "^2.5.0",
     "maci-crypto": "^2.5.0",
     "maci-domainobjs": "^2.5.0",
-    "snarkjs": "^0.7.5"
+    "@zk-kit/lean-imt": "^2.2.2"
   },
   "devDependencies": {
     "@types/chai": "^4.3.9",

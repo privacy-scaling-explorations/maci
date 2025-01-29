@@ -173,10 +173,10 @@
     "ethers": "^6.13.5",
     "hardhat": "^2.22.18",
     "lowdb": "^1.0.0",
-    "maci-circuits": "^2.5.0",
     "maci-core": "^2.5.0",
     "maci-crypto": "^2.5.0",
     "maci-domainobjs": "^2.5.0",
+    "snarkjs": "^0.7.5",
     "solidity-docgen": "^0.6.0-beta.36",
     "uuid": "^11.0.5"
   },

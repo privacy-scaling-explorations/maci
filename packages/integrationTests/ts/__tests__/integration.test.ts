@@ -17,10 +17,10 @@ import {
   DeployedContracts,
   joinPoll,
 } from "maci-cli";
-import { getDefaultSigner } from "maci-contracts";
 import { MaciState, TreeDepths } from "maci-core";
 import { genPubKey, genRandomSalt, poseidon } from "maci-crypto";
 import { Keypair, PCommand, PrivKey, PubKey } from "maci-domainobjs";
+import { getDefaultSigner } from "maci-sdk";
 
 import fs from "fs";
 import { homedir } from "os";

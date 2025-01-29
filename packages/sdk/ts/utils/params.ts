@@ -1,4 +1,4 @@
-import { ICircuitParams } from "./interfaces";
+import { ICircuitParams } from "./types";
 
 /**
  * Validate the circuit parameters

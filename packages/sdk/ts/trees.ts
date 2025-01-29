@@ -1,14 +1,13 @@
 /* eslint-disable no-underscore-dangle */
 import { LeanIMT, LeanIMTHashFunction } from "@zk-kit/lean-imt";
+import { MACI__factory as MACIFactory } from "maci-contracts";
 import { hashLeanIMT, hashLeftRight, PAD_KEY_HASH } from "maci-crypto";
 import { PubKey } from "maci-domainobjs";
 
 import { assert } from "console";
 
-import { MACI__factory as MACIFactory } from "../typechain-types";
-
-import { IGenSignUpTreeArgs, IGenSignUpTree } from "./types";
-import { sleep } from "./utils";
+import { IGenSignUpTreeArgs, IGenSignUpTree } from "./utils/types";
+import { sleep } from "./utils/utils";
 
 /**
  * Generate a State tree object from the events of a MACI smart contracts

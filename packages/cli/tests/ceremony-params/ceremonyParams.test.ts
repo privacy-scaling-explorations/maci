@@ -1,6 +1,6 @@
-import { getDefaultSigner } from "maci-contracts";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
+import { getDefaultSigner } from "maci-sdk";
 
 import type { Signer } from "ethers";
 

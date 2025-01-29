@@ -1,5 +1,3 @@
-import { LeanIMT } from "@zk-kit/lean-imt";
-
 import type {
   ConstantInitialVoiceCreditProxy,
   FreeForAllGatekeeper,
@@ -12,7 +10,7 @@ import type {
   PoseidonT6,
   VkRegistry,
 } from "../typechain-types";
-import type { BigNumberish, Provider, Signer, ContractFactory } from "ethers";
+import type { BigNumberish, Signer, ContractFactory } from "ethers";
 import type { CircuitInputs } from "maci-core";
 import type { Message, PubKey } from "maci-domainobjs";
 import type { PublicSignals } from "snarkjs";
@@ -187,51 +185,37 @@ export interface IDeployedMaci {
 }
 
 /**
- * An interface that represents arguments of generation sign up tree and state leaves
+ * Interface that represents Verification key
  */
-export interface IGenSignUpTreeArgs {
-  /**
-   * The etherum provider
-   */
-  provider: Provider;
-
-  /**
-   * The address of MACI contract
-   */
-  address: string;
-
-  /**
-   * The block number from which to start fetching events
-   */
-  fromBlock?: number;
-
-  /**
-   * The number of blocks to fetch in each request
-   */
-  blocksPerRequest?: number;
-
-  /**
-   * The block number at which to stop fetching events
-   */
-  endBlock?: number;
-
-  /**
-   * The amount of time to sleep between each request
-   */
-  sleepAmount?: number;
+export interface ISnarkJSVerificationKey {
+  protocol: BigNumberish;
+  curve: BigNumberish;
+  nPublic: BigNumberish;
+  vk_alpha_1: BigNumberish[];
+  vk_beta_2: BigNumberish[][];
+  vk_gamma_2: BigNumberish[][];
+  vk_delta_2: BigNumberish[][];
+  vk_alphabeta_12: BigNumberish[][][];
+  IC: BigNumberish[][];
 }
 
 /**
- * An interface that represents sign up tree and state leaves
+ * Return type for proof generation function
  */
-export interface IGenSignUpTree {
-  /**
-   * Sign up tree
-   */
-  signUpTree: LeanIMT;
+export interface FullProveResult {
+  proof: Groth16Proof;
+  publicSignals: PublicSignals;
+}
 
-  /**
-   * State leaves
-   */
-  pubKeys: PubKey[];
+/**
+ * Parameters for the genProof function
+ */
+export interface IGenProofOptions {
+  inputs: CircuitInputs;
+  zkeyPath: string;
+  useWasm?: boolean;
+  rapidsnarkExePath?: string;
+  witnessExePath?: string;
+  wasmPath?: string;
+  silent?: boolean;
 }

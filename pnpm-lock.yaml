@@ -161,9 +161,6 @@ importers:
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
-      maci-circuits:
-        specifier: workspace:^2.5.0
-        version: link:../../packages/circuits
       maci-cli:
         specifier: workspace:^2.5.0
         version: link:../../packages/cli
@@ -173,6 +170,9 @@ importers:
       maci-domainobjs:
         specifier: workspace:^2.5.0
         version: link:../../packages/domainobjs
+      maci-sdk:
+        specifier: workspace:^0.0.1
+        version: link:../../packages/sdk
       mongoose:
         specifier: ^8.9.5
         version: 8.9.5(socks@2.8.3)
@@ -353,9 +353,9 @@ importers:
       maci-domainobjs:
         specifier: ^2.5.0
         version: link:../domainobjs
-      snarkjs:
-        specifier: ^0.7.5
-        version: 0.7.5
+      maci-sdk:
+        specifier: ^0.0.1
+        version: link:../sdk
     devDependencies:
       '@types/chai':
         specifier: ^4.3.11
@@ -517,9 +517,6 @@ importers:
       lowdb:
         specifier: ^1.0.0
         version: 1.0.0
-      maci-circuits:
-        specifier: ^2.5.0
-        version: link:../circuits
       maci-core:
         specifier: ^2.5.0
         version: link:../core
@@ -529,6 +526,9 @@ importers:
       maci-domainobjs:
         specifier: ^2.5.0
         version: link:../domainobjs
+      snarkjs:
+        specifier: ^0.7.5
+        version: 0.7.5
       solidity-docgen:
         specifier: ^0.6.0-beta.36
         version: 0.6.0-beta.36(hardhat@2.22.18(ts-node@10.9.2(@types/node@22.12.0)(typescript@5.7.3))(typescript@5.7.3))
@@ -713,9 +713,6 @@ importers:
       maci-cli:
         specifier: ^2.5.0
         version: link:../cli
-      maci-contracts:
-        specifier: ^2.5.0
-        version: link:../contracts
       maci-core:
         specifier: ^2.5.0
         version: link:../core
@@ -725,6 +722,9 @@ importers:
       maci-domainobjs:
         specifier: ^2.5.0
         version: link:../domainobjs
+      maci-sdk:
+        specifier: ^0.0.1
+        version: link:../sdk
     devDependencies:
       '@types/chai':
         specifier: ^4.3.11
@@ -765,6 +765,9 @@ importers:
 
   packages/sdk:
     dependencies:
+      '@zk-kit/lean-imt':
+        specifier: ^2.2.2
+        version: 2.2.2
       ethers:
         specifier: ^6.13.4
         version: 6.13.5
@@ -777,9 +780,6 @@ importers:
       maci-domainobjs:
         specifier: ^2.5.0
         version: link:../domainobjs
-      snarkjs:
-        specifier: ^0.7.5
-        version: 0.7.5
     devDependencies:
       '@types/chai':
         specifier: ^4.3.9

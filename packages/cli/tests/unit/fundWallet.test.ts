@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { ZeroAddress } from "ethers";
-import { getDefaultSigner } from "maci-contracts";
+import { getDefaultSigner } from "maci-sdk";
 
 import { fundWallet } from "../../ts";
 

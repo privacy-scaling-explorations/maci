@@ -1,6 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { expect } from "chai";
 import { Signer } from "ethers";
+import { Keypair } from "maci-domainobjs";
 import {
   FreeForAllGatekeeper,
   deployConstantInitialVoiceCreditProxy,
@@ -9,8 +10,7 @@ import {
   deployMockVerifier,
   deployVkRegistry,
   Verifier,
-} from "maci-contracts";
-import { Keypair } from "maci-domainobjs";
+} from "maci-sdk";
 
 import { arch } from "os";
 

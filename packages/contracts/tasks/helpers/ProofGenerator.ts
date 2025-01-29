@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 import { Network } from "hardhat/types";
-import { cleanThreads, extractVk, genProof, verifyProof } from "maci-circuits";
 import { CircuitInputs, IJsonMaciState, MaciState, Poll } from "maci-core";
 import { genTreeCommitment, hash3, hashLeftRight } from "maci-crypto";
 
@@ -18,7 +17,8 @@ import type { Proof } from "../../ts/types";
 import type { BigNumberish } from "ethers";
 import type { IVkObjectParams } from "maci-domainobjs";
 
-import { asHex } from "../../ts/utils";
+import { extractVk, genProofSnarkjs, genProofRapidSnark, verifyProof } from "../../ts/proofs";
+import { asHex, cleanThreads } from "../../ts/utils";
 
 /**
  * Proof generator class for message processing and tally.
@@ -393,14 +393,19 @@ export class ProofGenerator {
   ): Promise<Proof[]> {
     const proofs: Proof[] = [];
 
-    const { proof, publicSignals } = await genProof({
-      inputs: circuitInputs,
-      useWasm: Boolean(circuitFiles.wasm),
-      zkeyPath: circuitFiles.zkey,
-      rapidsnarkExePath: this.rapidsnark,
-      witnessExePath: circuitFiles.witgen,
-      wasmPath: circuitFiles.wasm,
-    });
+    const { proof, publicSignals } = circuitFiles.wasm
+      ? await genProofSnarkjs({
+          inputs: circuitInputs,
+          zkeyPath: circuitFiles.zkey,
+          silent: true,
+          wasmPath: circuitFiles.wasm,
+        })
+      : await genProofRapidSnark({
+          inputs: circuitInputs,
+          zkeyPath: circuitFiles.zkey,
+          rapidsnarkExePath: this.rapidsnark,
+          witnessExePath: circuitFiles.witgen,
+        });
 
     // verify it
     // eslint-disable-next-line no-await-in-loop

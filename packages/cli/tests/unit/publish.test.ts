@@ -1,8 +1,8 @@
 import { expect } from "chai";
-import { getDefaultSigner } from "maci-contracts";
 import { Poll__factory as PollFactory } from "maci-contracts/typechain-types";
 import { SNARK_FIELD_SIZE } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
+import { getDefaultSigner } from "maci-sdk";
 
 import type { Signer } from "ethers";
 

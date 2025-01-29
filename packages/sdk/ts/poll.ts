@@ -5,7 +5,7 @@ import {
   Tally__factory as TallyFactory,
 } from "maci-contracts/typechain-types";
 
-import type { IGetPollArgs, IGetPollData, IGetPollParamsArgs, IPollParams } from "./utils/interfaces";
+import type { IGetPollArgs, IGetPollData, IGetPollParamsArgs, IPollParams } from "./utils/types";
 
 /**
  * Get deployed poll from MACI contract

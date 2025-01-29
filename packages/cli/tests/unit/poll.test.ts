@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { getDefaultSigner } from "maci-contracts";
+import { getDefaultSigner } from "maci-sdk";
 
 import type { Signer } from "ethers";
 

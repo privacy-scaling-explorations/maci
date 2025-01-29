@@ -2,9 +2,9 @@ import { MACI } from "maci-contracts/typechain-types";
 import { PubKey } from "maci-domainobjs";
 
 import type { Provider, Signer } from "ethers";
-import type { Poll, SnarkProof } from "maci-contracts";
 import type { CircuitInputs } from "maci-core";
 import type { IMessageContractParams } from "maci-domainobjs";
+import type { Poll, SnarkProof } from "maci-sdk";
 import type { Groth16Proof, PublicSignals } from "snarkjs";
 
 export interface DeployedContracts {

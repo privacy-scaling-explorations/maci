@@ -2,10 +2,10 @@ import { jest } from "@jest/globals";
 import { HttpStatus, ValidationPipe, type INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import hardhat from "hardhat";
-import { genProof } from "maci-circuits";
 import { deploy, deployPoll, deployVkRegistryContract, joinPoll, setVerifyingKeys, signup } from "maci-cli";
 import { formatProofForVerifierContract, genMaciStateFromContract } from "maci-contracts";
 import { Keypair } from "maci-domainobjs";
+import { genProofSnarkjs } from "maci-sdk";
 import request from "supertest";
 
 import type { App } from "supertest/types";
@@ -22,9 +22,6 @@ import {
   processMessagesZkeyPathNonQv,
   tallyVotesZkeyPathNonQv,
   pollWasm,
-  pollWitgen,
-  rapidsnark,
-  pollJoinedWitgen,
   pollJoinedWasm,
 } from "./constants";
 
@@ -81,8 +78,6 @@ describe("Integration messages", () => {
       stateIndex: 1n,
       pollJoiningZkey,
       pollWasm,
-      pollWitgen,
-      rapidsnark,
       signer,
       useWasm: true,
       quiet: true,
@@ -156,12 +151,9 @@ describe("Integration messages", () => {
     });
 
     test("should throw an error if dto is invalid", async () => {
-      const { proof } = await genProof({
+      const { proof } = await genProofSnarkjs({
         inputs: circuitInputs,
         zkeyPath: pollJoinedZkey,
-        useWasm: true,
-        rapidsnarkExePath: rapidsnark,
-        witnessExePath: pollJoinedWitgen,
         wasmPath: pollJoinedWasm,
       });
 
@@ -189,12 +181,9 @@ describe("Integration messages", () => {
     });
 
     test("should throw an error if messages dto is invalid", async () => {
-      const { proof } = await genProof({
+      const { proof } = await genProofSnarkjs({
         inputs: circuitInputs,
         zkeyPath: pollJoinedZkey,
-        useWasm: true,
-        rapidsnarkExePath: rapidsnark,
-        witnessExePath: pollJoinedWitgen,
         wasmPath: pollJoinedWasm,
       });
 
@@ -217,12 +206,9 @@ describe("Integration messages", () => {
     });
 
     test("should publish user messages properly", async () => {
-      const { proof } = await genProof({
+      const { proof } = await genProofSnarkjs({
         inputs: circuitInputs,
         zkeyPath: pollJoinedZkey,
-        useWasm: true,
-        rapidsnarkExePath: rapidsnark,
-        witnessExePath: pollJoinedWitgen,
         wasmPath: pollJoinedWasm,
       });
 

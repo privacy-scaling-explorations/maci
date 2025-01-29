@@ -35,9 +35,9 @@
     "ethers": "^6.13.5",
     "maci-circuits": "^2.5.0",
     "maci-cli": "^2.5.0",
-    "maci-contracts": "^2.5.0",
     "maci-core": "^2.5.0",
     "maci-crypto": "^2.5.0",
-    "maci-domainobjs": "^2.5.0"
+    "maci-domainobjs": "^2.5.0",
+    "maci-sdk": "^0.0.1"
   }
 }

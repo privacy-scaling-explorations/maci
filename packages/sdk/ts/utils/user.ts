@@ -1,5 +1,5 @@
 import { BLOCKS_STEP } from "./constants";
-import { IParsePollJoinEventsArgs, IParseSignupEventsArgs } from "./interfaces";
+import { IParsePollJoinEventsArgs, IParseSignupEventsArgs } from "./types";
 
 /**
  * Parse the poll joining events from the Poll contract

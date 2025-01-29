@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { Signer } from "ethers";
-import { getDefaultSigner } from "maci-contracts";
 import { Keypair } from "maci-domainobjs";
+import { getDefaultSigner } from "maci-sdk";
 
 import {
   deploy,

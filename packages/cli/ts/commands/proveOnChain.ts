@@ -1,5 +1,8 @@
 /* eslint-disable no-await-in-loop */
 import { type BigNumberish } from "ethers";
+import { STATE_TREE_ARITY } from "maci-core";
+import { G1Point, G2Point, genTreeProof } from "maci-crypto";
+import { VerifyingKey } from "maci-domainobjs";
 import {
   MACI__factory as MACIFactory,
   Tally__factory as TallyFactory,
@@ -9,10 +12,7 @@ import {
   Verifier__factory as VerifierFactory,
   formatProofForVerifierContract,
   type IVerifyingKeyStruct,
-} from "maci-contracts";
-import { STATE_TREE_ARITY } from "maci-core";
-import { G1Point, G2Point, genTreeProof } from "maci-crypto";
-import { VerifyingKey } from "maci-domainobjs";
+} from "maci-sdk";
 
 import fs from "fs";
 import path from "path";
