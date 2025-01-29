@@ -1,10 +1,10 @@
+import { PubKey } from "maci-domainobjs";
 import {
   MACI__factory as MACIFactory,
   EMode,
   deployFreeForAllSignUpGatekeeper,
   deployConstantInitialVoiceCreditProxy,
-} from "maci-contracts";
-import { PubKey } from "maci-domainobjs";
+} from "maci-sdk";
 
 import {
   banner,

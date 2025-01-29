@@ -1,5 +1,4 @@
-import { MACI, Verifier, VkRegistry, FreeForAllGatekeeper } from "maci-contracts";
-import { ConstantInitialVoiceCreditProxy } from "maci-contracts/typechain-types";
+import { MACI, Verifier, VkRegistry, FreeForAllGatekeeper, ConstantInitialVoiceCreditProxy } from "maci-sdk";
 
 /**
  * A util interface that represents a vote object

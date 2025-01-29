@@ -2,8 +2,8 @@ import { Injectable, Logger } from "@nestjs/common";
 import { validate } from "class-validator";
 import flatten from "lodash/flatten";
 import uniqBy from "lodash/uniqBy";
-import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts";
 import { PubKey } from "maci-domainobjs";
+import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-sdk";
 
 import type { MessageBatchDto } from "./messageBatch.dto";
 

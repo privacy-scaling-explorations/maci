@@ -35,8 +35,6 @@ export {
   getMerkleProofGatekeeperData,
 };
 
-export type { ISnarkJSVerificationKey } from "maci-circuits";
-
 export {
   linkPoseidonLibraries,
   Deployment,
@@ -44,7 +42,7 @@ export {
   EContracts,
   EMode,
   type IVerifyingKeyStruct,
-} from "maci-contracts";
+} from "maci-sdk";
 
 export * from "maci-contracts/typechain-types";
 

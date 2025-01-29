@@ -1,9 +1,9 @@
 import { type BigNumberish } from "ethers";
-import { extractVk, genProof, verifyProof } from "maci-circuits";
-import { MACI__factory as MACIFactory, Poll__factory as PollFactory, genMaciStateFromContract } from "maci-contracts";
 import { type CircuitInputs, type IJsonMaciState, MaciState } from "maci-core";
 import { hash3, hashLeftRight, genTreeCommitment } from "maci-crypto";
 import { Keypair, PrivKey } from "maci-domainobjs";
+import { MACI__factory as MACIFactory, Poll__factory as PollFactory, genMaciStateFromContract } from "maci-sdk";
+import { extractVk, genProofSnarkjs, genProofRapidSnark, verifyProof, type FullProveResult } from "maci-sdk";
 
 import fs from "fs";
 import path from "path";
@@ -227,15 +227,24 @@ export const genProofs = async ({
 
     try {
       // generate the proof for this batch
-      // eslint-disable-next-line no-await-in-loop
-      const r = await genProof({
-        inputs: circuitInputs,
-        zkeyPath: processZkey,
-        useWasm,
-        rapidsnarkExePath: rapidsnark,
-        witnessExePath: processWitgen,
-        wasmPath: processWasm,
-      });
+      let r: FullProveResult;
+      if (useWasm === true || useWasm === undefined) {
+        // eslint-disable-next-line no-await-in-loop
+        r = await genProofSnarkjs({
+          inputs: circuitInputs,
+          zkeyPath: processZkey,
+          wasmPath: processWasm,
+        });
+      } else {
+        // eslint-disable-next-line no-await-in-loop
+        r = await genProofRapidSnark({
+          inputs: circuitInputs,
+          zkeyPath: processZkey,
+          rapidsnarkExePath: rapidsnark,
+          witnessExePath: processWitgen,
+          wasmPath: processWasm,
+        });
+      }
 
       // verify it
       // eslint-disable-next-line no-await-in-loop
@@ -288,15 +297,24 @@ export const genProofs = async ({
 
     try {
       // generate the proof
-      // eslint-disable-next-line no-await-in-loop
-      const r = await genProof({
-        inputs: tallyCircuitInputs,
-        zkeyPath: tallyZkey,
-        useWasm,
-        rapidsnarkExePath: rapidsnark,
-        witnessExePath: tallyWitgen,
-        wasmPath: tallyWasm,
-      });
+      let r: FullProveResult;
+      if (useWasm === true || useWasm === undefined) {
+        // eslint-disable-next-line no-await-in-loop
+        r = await genProofSnarkjs({
+          inputs: tallyCircuitInputs,
+          zkeyPath: tallyZkey,
+          wasmPath: tallyWasm,
+        });
+      } else {
+        // eslint-disable-next-line no-await-in-loop
+        r = await genProofRapidSnark({
+          inputs: tallyCircuitInputs,
+          zkeyPath: tallyZkey,
+          rapidsnarkExePath: rapidsnark,
+          witnessExePath: tallyWitgen,
+          wasmPath: tallyWasm,
+        });
+      }
 
       // verify it
       // eslint-disable-next-line no-await-in-loop

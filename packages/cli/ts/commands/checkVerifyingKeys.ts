@@ -1,5 +1,4 @@
-import { EMode } from "maci-contracts";
-import { extractAllVks, compareVks, getAllOnChainVks } from "maci-sdk";
+import { extractAllVks, compareVks, getAllOnChainVks, EMode } from "maci-sdk";
 
 import fs from "fs";
 

@@ -1,6 +1,6 @@
 import { jest } from "@jest/globals";
 import { ZeroAddress } from "ethers";
-import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts";
+import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-sdk";
 
 import { IpfsService } from "../../ipfs/ipfs.service";
 import { MessageBatchDto } from "../messageBatch.dto";

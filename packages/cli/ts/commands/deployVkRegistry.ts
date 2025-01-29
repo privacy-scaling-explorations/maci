@@ -1,4 +1,4 @@
-import { deployVkRegistry } from "maci-contracts";
+import { deployVkRegistry } from "maci-sdk";
 
 import fs from "fs";
 

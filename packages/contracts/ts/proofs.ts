@@ -1,5 +1,6 @@
 import { stringifyBigInts } from "maci-crypto";
-import { zKey, groth16, type PublicSignals, type Groth16Proof } from "snarkjs";
+import { IVkObjectParams } from "maci-domainobjs";
+import { groth16, type PublicSignals, type Groth16Proof, zKey } from "snarkjs";
 
 import childProcess from "child_process";
 import fs from "fs";
@@ -7,52 +8,45 @@ import { tmpdir } from "os";
 import path from "path";
 
 import type { IGenProofOptions, ISnarkJSVerificationKey, FullProveResult } from "./types";
-import type { IVkObjectParams } from "maci-domainobjs";
 
-import { cleanThreads, isArm } from "./utils";
+import { cleanThreads, unlinkFile } from "./utils";
 
 /**
- * Generate a zk-SNARK proof
- * @dev if running on a intel chip we use rapidsnark for
- * speed - on the other hand if running on ARM we need to use
- * snark and a WASM witness
+ * Generate a zk-SNARK proof using snarkjs
  * @param inputs - the inputs to the circuit
  * @param zkeyPath - the path to the zkey
- * @param useWasm - whether we want to use the wasm witness or not
- * @param rapidsnarkExePath - the path to the rapidnsark binary
- * @param witnessExePath - the path to the compiled witness binary
  * @param wasmPath - the path to the wasm witness
- * @param silent - whether we want to print to the console or not
  * @returns the zk-SNARK proof and public signals
  */
-export const genProof = async ({
+export const genProofSnarkjs = async ({ inputs, zkeyPath, wasmPath }: IGenProofOptions): Promise<FullProveResult> => {
+  if (!wasmPath) {
+    throw new Error("wasmPath must be specified");
+  }
+
+  const isWasmExists = fs.existsSync(wasmPath);
+
+  if (!isWasmExists) {
+    throw new Error(`wasmPath ${wasmPath} does not exist`);
+  }
+
+  const { proof, publicSignals } = await groth16.fullProve(inputs, wasmPath, zkeyPath);
+  return { proof, publicSignals };
+};
+
+/**
+ * Generate a zk-SNARK proof using rapidnsark
+ * @param inputs - the inputs to the circuit
+ * @param zkeyPath - the path to the zkey
+ * @param witnessExePath - the path to the compiled witness binary
+ * @param rapidsnarkExePath - the path to the rapidnsark binary
+ * @returns the zk-SNARK proof and public signals
+ */
+export const genProofRapidSnark = async ({
   inputs,
   zkeyPath,
-  useWasm,
-  rapidsnarkExePath,
   witnessExePath,
-  wasmPath,
+  rapidsnarkExePath,
 }: IGenProofOptions): Promise<FullProveResult> => {
-  // if we want to use a wasm witness we use snarkjs
-  if (useWasm) {
-    if (!wasmPath) {
-      throw new Error("wasmPath must be specified");
-    }
-
-    const isWasmExists = fs.existsSync(wasmPath);
-
-    if (!isWasmExists) {
-      throw new Error(`wasmPath ${wasmPath} does not exist`);
-    }
-
-    const { proof, publicSignals } = await groth16.fullProve(inputs, wasmPath, zkeyPath);
-    return { proof, publicSignals };
-  }
-
-  if (isArm()) {
-    throw new Error("To use rapidnsnark you currently need to be running on an intel chip");
-  }
-
   // intel chip flow (use rapidnsark)
   // Create tmp directory
   const tmpPath = path.resolve(tmpdir(), `tmp-${Date.now()}`);
@@ -104,14 +98,6 @@ export const genProof = async ({
 
   return { proof, publicSignals };
 };
-
-async function unlinkFile(filepath: string): Promise<void> {
-  const isFileExists = fs.existsSync(filepath);
-
-  if (isFileExists) {
-    await fs.promises.unlink(filepath);
-  }
-}
 
 /**
  * Verify a zk-SNARK proof using snarkjs

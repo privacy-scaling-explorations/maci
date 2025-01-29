@@ -1,10 +1,17 @@
 import { type ContractTransactionReceipt } from "ethers";
-import { extractVk, genProof, verifyProof } from "maci-circuits";
-import { formatProofForVerifierContract, genSignUpTree, IGenSignUpTree } from "maci-contracts";
-import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts/typechain-types";
 import { CircuitInputs, IJsonMaciState, MaciState, IPollJoiningCircuitInputs } from "maci-core";
 import { poseidon, stringifyBigInts } from "maci-crypto";
 import { IVkObjectParams, Keypair, PrivKey, PubKey } from "maci-domainobjs";
+import { formatProofForVerifierContract, genSignUpTree, IGenSignUpTree } from "maci-sdk";
+import {
+  extractVk,
+  genProofSnarkjs,
+  genProofRapidSnark,
+  verifyProof,
+  type FullProveResult,
+  MACI__factory as MACIFactory,
+  Poll__factory as PollFactory,
+} from "maci-sdk";
 
 import fs from "fs";
 
@@ -64,14 +71,21 @@ export const generateAndVerifyProof = async (
   wasmPath: string | undefined,
   pollVk: IVkObjectParams,
 ): Promise<string[]> => {
-  const r = await genProof({
-    inputs,
-    zkeyPath,
-    useWasm,
-    rapidsnarkExePath,
-    witnessExePath,
-    wasmPath,
-  });
+  let r: FullProveResult;
+  if (useWasm === true || useWasm === undefined) {
+    r = await genProofSnarkjs({
+      inputs,
+      zkeyPath,
+      wasmPath,
+    });
+  } else {
+    r = await genProofRapidSnark({
+      inputs,
+      zkeyPath,
+      rapidsnarkExePath,
+      witnessExePath,
+    });
+  }
 
   // verify it
   const isValid = await verifyProof(r.publicSignals, r.proof, pollVk);

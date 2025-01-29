@@ -21,7 +21,15 @@ export type {
   ICircuitParams,
   IExtractAllVksArgs,
   IMaciVks,
-} from "./interfaces";
+  IGenSignUpTree,
+  IGenSignUpTreeArgs,
+  IPollJoinedInputs,
+  IPollJoiningInputs,
+  IProcessMessagesInputs,
+  ISnarkJSVerificationKey,
+  ITallyVotesInputs,
+} from "./types";
 export { verifyPerVOSpentVoiceCredits, verifyTallyResults } from "./verifiers";
 export { BLOCKS_STEP } from "./constants";
 export { parsePollJoinEvents, parseSignupEvents } from "./user";
+export { isArm } from "./utils";

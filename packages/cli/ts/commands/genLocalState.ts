@@ -1,6 +1,6 @@
 import { JsonRpcProvider } from "ethers";
-import { MACI__factory as MACIFactory, Poll__factory as PollFactory, genMaciStateFromContract } from "maci-contracts";
 import { Keypair, PrivKey } from "maci-domainobjs";
+import { MACI__factory as MACIFactory, Poll__factory as PollFactory, genMaciStateFromContract } from "maci-sdk";
 
 import fs from "fs";
 

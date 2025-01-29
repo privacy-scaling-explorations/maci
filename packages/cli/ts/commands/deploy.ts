@@ -3,7 +3,7 @@ import {
   deployFreeForAllSignUpGatekeeper,
   deployVerifier,
   deployMaci,
-} from "maci-contracts";
+} from "maci-sdk";
 
 import {
   banner,

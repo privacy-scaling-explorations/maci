@@ -1,6 +1,6 @@
 import { Tally__factory as TallyFactory, MACI__factory as MACIFactory } from "maci-contracts/typechain-types";
 
-import type { VerifyArgs } from "./utils/interfaces";
+import type { VerifyArgs } from "./utils/types";
 
 import { contractExists } from "./utils/contracts";
 import { verifyPerVOSpentVoiceCredits, verifyTallyResults } from "./utils/verifiers";

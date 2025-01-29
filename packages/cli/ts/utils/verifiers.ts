@@ -1,7 +1,7 @@
 import { genTreeProof } from "maci-crypto";
 
 import type { TallyData } from "./interfaces";
-import type { Tally } from "maci-contracts";
+import type { Tally } from "maci-sdk";
 
 /**
  * Loop through each per vote option spent voice credits and verify it on-chain

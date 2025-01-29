@@ -1,10 +1,10 @@
-import { extractVk } from "maci-circuits";
 import { type IVkObjectParams, VerifyingKey } from "maci-domainobjs";
 
 import type { IVerifyingKeyStruct } from "../../../ts/types";
 import type { VkRegistry } from "../../../typechain-types";
 
 import { EMode } from "../../../ts/constants";
+import { extractVk } from "../../../ts/proofs";
 import { EDeploySteps } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";

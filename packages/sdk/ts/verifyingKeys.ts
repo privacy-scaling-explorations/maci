@@ -1,10 +1,7 @@
-import { VkRegistry__factory as VkRegistryFactory } from "maci-contracts";
-import { IVkContractParams, IVkObjectParams, VerifyingKey } from "maci-domainobjs";
-import { zKey } from "snarkjs";
+import { VkRegistry__factory as VkRegistryFactory, extractVk } from "maci-contracts";
+import { IVkContractParams, VerifyingKey } from "maci-domainobjs";
 
-import type { GetAllVksArgs, IExtractAllVksArgs, IMaciVks, IMaciVerifyingKeys } from "./utils/interfaces";
-
-import { cleanThreads } from "./utils/utils";
+import type { GetAllVksArgs, IExtractAllVksArgs, IMaciVks, IMaciVerifyingKeys } from "./utils";
 
 /**
  * Get all the verifying keys from the contract
@@ -39,8 +36,8 @@ export const getAllOnChainVks = async ({
 
 /**
  * Compare two verifying keys
- * @param vk - the local verifying key
  * @param vkOnChain - the verifying key on chain
+ * @param vk - the local verifying key
  * @returns whether they are equal or not
  */
 export const compareVks = (vkOnChain: IVkContractParams, vk?: VerifyingKey): boolean => {
@@ -71,22 +68,6 @@ export const compareVks = (vkOnChain: IVkContractParams, vk?: VerifyingKey): boo
 
   return isEqual;
 };
-
-/**
- * Extract the Verification Key from a zKey
- * @param zkeyPath - the path to the zKey
- * @param cleanup - whether to cleanup the threads or not
- * @returns the verification key
- */
-export const extractVk = async (zkeyPath: string, cleanup = true): Promise<IVkObjectParams> =>
-  zKey
-    .exportVerificationKey(zkeyPath)
-    .then((vk) => vk as IVkObjectParams)
-    .finally(() => {
-      if (cleanup) {
-        cleanThreads();
-      }
-    });
 
 /**
  * Extract all the verifying keys
