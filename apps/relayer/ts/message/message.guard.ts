@@ -15,7 +15,7 @@ import flatMap from "lodash/flatMap";
 import flatten from "lodash/flatten";
 import map from "lodash/map";
 import values from "lodash/values";
-import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts/typechain-types";
+import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-sdk";
 
 import type { Request as Req } from "express";
 

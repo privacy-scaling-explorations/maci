@@ -3,8 +3,8 @@ import { HttpException, type ExecutionContext } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import dotenv from "dotenv";
 import { ZeroAddress } from "ethers";
-import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts/typechain-types";
 import { Keypair } from "maci-domainobjs";
+import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-sdk";
 
 import { MessageGuard, PUBLIC_METADATA_KEY, Public } from "../message.guard";
 

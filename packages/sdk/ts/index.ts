@@ -5,6 +5,7 @@ export { isUserRegistered, isJoinedUser, signup } from "./user";
 export { getAllOnChainVks, compareVks, extractAllVks } from "./verifyingKeys";
 export { isArm } from "./utils";
 export { genSignUpTree } from "./trees";
+export { generateVote, getCoordinatorPubKey } from "./votes";
 
 export {
   EMode,

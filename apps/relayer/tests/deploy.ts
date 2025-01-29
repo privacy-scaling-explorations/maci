@@ -1,7 +1,7 @@
 import hardhat from "hardhat";
 import { deploy, deployPoll, deployVkRegistryContract, joinPoll, setVerifyingKeys, signup } from "maci-cli";
-import { genMaciStateFromContract } from "maci-contracts";
 import { Keypair } from "maci-domainobjs";
+import { genMaciStateFromContract } from "maci-sdk";
 
 import {
   INT_STATE_TREE_DEPTH,
