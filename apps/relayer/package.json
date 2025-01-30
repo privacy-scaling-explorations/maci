@@ -20,7 +20,7 @@
     "start": "pnpm run run:node ./ts/main.ts",
     "start:prod": "pnpm run run:node build/ts/main.js",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --forceExit",
-    "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage --forceExit",
+    "test:coverage": "pnpm run test --coverage",
     "types": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

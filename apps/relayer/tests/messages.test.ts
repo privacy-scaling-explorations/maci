@@ -1,9 +1,7 @@
 import { jest } from "@jest/globals";
 import { HttpStatus, ValidationPipe, type INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
-import hardhat from "hardhat";
-import { deploy, deployPoll, deployVkRegistryContract, joinPoll, setVerifyingKeys, signup } from "maci-cli";
-import { formatProofForVerifierContract, genMaciStateFromContract } from "maci-contracts";
+import { formatProofForVerifierContract } from "maci-contracts";
 import { Keypair } from "maci-domainobjs";
 import { genProofSnarkjs } from "maci-sdk";
 import request from "supertest";
@@ -12,18 +10,7 @@ import type { App } from "supertest/types";
 
 import { AppModule } from "../ts/app.module";
 
-import {
-  INT_STATE_TREE_DEPTH,
-  MESSAGE_BATCH_SIZE,
-  STATE_TREE_DEPTH,
-  VOTE_OPTION_TREE_DEPTH,
-  pollJoinedZkey,
-  pollJoiningZkey,
-  processMessagesZkeyPathNonQv,
-  tallyVotesZkeyPathNonQv,
-  pollWasm,
-  pollJoinedWasm,
-} from "./constants";
+import { pollJoinedWasm, pollJoinedZkey } from "./constants";
 
 jest.unmock("maci-contracts/typechain-types");
 
@@ -33,74 +20,23 @@ describe("Integration messages", () => {
   let stateLeafIndex: number;
   let maciContractAddress: string;
 
-  const coordinatorKeypair = new Keypair();
-  const user = new Keypair();
-
   beforeAll(async () => {
-    const [signer] = await hardhat.ethers.getSigners();
+    const { TestDeploy } = await import("./deploy");
+    await TestDeploy.sleep(5_000);
+    const testDeploy = await TestDeploy.getInstance();
+    const poll = testDeploy.contractsData.maciState!.polls.get(0n);
 
-    const vkRegistry = await deployVkRegistryContract({ signer });
-    await setVerifyingKeys({
-      quiet: true,
-      vkRegistry,
-      stateTreeDepth: STATE_TREE_DEPTH,
-      intStateTreeDepth: INT_STATE_TREE_DEPTH,
-      voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
-      messageBatchSize: MESSAGE_BATCH_SIZE,
-      processMessagesZkeyPathNonQv,
-      tallyVotesZkeyPathNonQv,
-      pollJoiningZkeyPath: pollJoiningZkey,
-      pollJoinedZkeyPath: pollJoinedZkey,
-      useQuadraticVoting: false,
-      signer,
-    });
+    poll!.updatePoll(BigInt(testDeploy.contractsData.maciState!.pubKeys.length));
 
-    const maciAddresses = await deploy({ stateTreeDepth: 10, signer });
+    stateLeafIndex = Number(testDeploy.contractsData.stateLeafIndex);
 
-    maciContractAddress = maciAddresses.maciAddress;
-
-    await deployPoll({
-      pollDuration: 30,
-      intStateTreeDepth: INT_STATE_TREE_DEPTH,
-      messageBatchSize: MESSAGE_BATCH_SIZE,
-      voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
-      coordinatorPubkey: coordinatorKeypair.pubKey.serialize(),
-      useQuadraticVoting: false,
-      signer,
-    });
-
-    await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer });
-
-    const { pollStateIndex, timestamp, voiceCredits } = await joinPoll({
-      maciAddress: maciAddresses.maciAddress,
-      pollId: 0n,
-      privateKey: user.privKey.serialize(),
-      stateIndex: 1n,
-      pollJoiningZkey,
-      pollWasm,
-      signer,
-      useWasm: true,
-      quiet: true,
-    });
-
-    const maciState = await genMaciStateFromContract(
-      signer.provider,
-      maciAddresses.maciAddress,
-      coordinatorKeypair,
-      0n,
-    );
-
-    const poll = maciState.polls.get(0n);
-
-    poll!.updatePoll(BigInt(maciState.pubKeys.length));
-
-    stateLeafIndex = Number(pollStateIndex);
+    maciContractAddress = testDeploy.contractsData.maciContractAddress!;
 
     circuitInputs = poll!.joinedCircuitInputs({
-      maciPrivKey: user.privKey,
-      stateLeafIndex: BigInt(pollStateIndex),
-      voiceCreditsBalance: BigInt(voiceCredits),
-      joinTimestamp: BigInt(timestamp),
+      maciPrivKey: testDeploy.contractsData.user!.privKey,
+      stateLeafIndex: BigInt(testDeploy.contractsData.stateLeafIndex!),
+      voiceCreditsBalance: BigInt(testDeploy.contractsData.voiceCredits!),
+      joinTimestamp: BigInt(testDeploy.contractsData.timestamp!),
     }) as unknown as typeof circuitInputs;
 
     const moduleFixture = await Test.createTestingModule({
@@ -109,7 +45,7 @@ describe("Integration messages", () => {
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ transform: true }));
-    await app.listen(3001);
+    await app.listen(3002);
   });
 
   afterAll(async () => {

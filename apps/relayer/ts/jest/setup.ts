@@ -1,5 +1,9 @@
+import dotenv from "dotenv";
+
 import type { HardhatEthersHelpers } from "@nomicfoundation/hardhat-ethers/types";
 import type { ethers } from "ethers";
+
+dotenv.config();
 
 declare module "hardhat/types/runtime" {
   interface HardhatRuntimeEnvironment {

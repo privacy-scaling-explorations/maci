@@ -26,6 +26,6 @@ export class IpfsHashValidator implements ValidatorConstraintInterface {
    * @returns default validation message
    */
   defaultMessage(): string {
-    return "IPFS hash ($value) is invalid";
+    return "IPFS hash is invalid";
   }
 }
