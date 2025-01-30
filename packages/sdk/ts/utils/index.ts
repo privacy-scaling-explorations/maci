@@ -28,6 +28,7 @@ export type {
   IProcessMessagesInputs,
   ISnarkJSVerificationKey,
   ITallyVotesInputs,
+  IVote,
 } from "./types";
 export { verifyPerVOSpentVoiceCredits, verifyTallyResults } from "./verifiers";
 export { BLOCKS_STEP } from "./constants";

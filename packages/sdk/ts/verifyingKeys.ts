@@ -1,7 +1,7 @@
 import { VkRegistry__factory as VkRegistryFactory, extractVk } from "maci-contracts";
 import { IVkContractParams, VerifyingKey } from "maci-domainobjs";
 
-import type { GetAllVksArgs, IExtractAllVksArgs, IMaciVks, IMaciVerifyingKeys } from "./utils";
+import type { GetAllVksArgs, IExtractAllVksArgs, IMaciVks, IMaciVerifyingKeys } from "./utils/types";
 
 /**
  * Get all the verifying keys from the contract

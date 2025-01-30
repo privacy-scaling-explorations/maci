@@ -1,9 +1,8 @@
 import { jest } from "@jest/globals";
 import { HttpStatus, ValidationPipe, type INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
-import { formatProofForVerifierContract } from "maci-contracts";
 import { Keypair } from "maci-domainobjs";
-import { genProofSnarkjs } from "maci-sdk";
+import { formatProofForVerifierContract, genProofSnarkjs } from "maci-sdk";
 import request from "supertest";
 
 import type { App } from "supertest/types";

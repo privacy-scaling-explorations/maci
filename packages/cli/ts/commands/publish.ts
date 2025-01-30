@@ -8,6 +8,7 @@ import {
   PrivKey,
   PubKey,
 } from "maci-domainobjs";
+import { generateVote, getCoordinatorPubKey } from "maci-sdk";
 
 import type { IPublishBatchArgs, IPublishBatchData, PublishArgs } from "../utils/interfaces";
 
@@ -41,7 +42,7 @@ export const publish = async ({
     logError("invalid MACI public key");
   }
   // deserialize
-  const pollPubKey = PubKey.deserialize(pubkey);
+  const votePubKey = PubKey.deserialize(pubkey);
 
   if (!(await contractExists(signer.provider!, maciAddress))) {
     logError("MACI contract does not exist");
@@ -51,31 +52,7 @@ export const publish = async ({
     logError("Invalid MACI private key");
   }
 
-  const pollPrivKey = PrivKey.deserialize(privateKey);
-
-  // validate args
-  if (voteOptionIndex < 0) {
-    logError("invalid vote option index");
-  }
-
-  // check < 1 cause index zero is a blank state leaf
-  if (stateIndex < 1) {
-    logError("invalid state index");
-  }
-
-  if (nonce < 0) {
-    logError("invalid nonce");
-  }
-
-  if (salt && !validateSalt(salt)) {
-    logError("Invalid salt");
-  }
-
-  const userSalt = salt ? BigInt(salt) : genRandomSalt();
-
-  if (pollId < 0) {
-    logError("Invalid poll id");
-  }
+  const privKey = PrivKey.deserialize(privateKey);
 
   const maciContract = MACIFactory.connect(maciAddress, signer);
   const pollContracts = await maciContract.getPoll(pollId);
@@ -86,40 +63,25 @@ export const publish = async ({
 
   const pollContract = PollFactory.connect(pollContracts.poll, signer);
 
-  const maxVoteOptions = Number(await pollContract.maxVoteOptions());
-  const coordinatorPubKeyResult = await pollContract.coordinatorPubKey();
+  const coordinatorPubKey = await getCoordinatorPubKey(pollContracts.poll, signer);
+  const maxVoteOptions = await pollContract.maxVoteOptions();
 
-  // validate the vote options index against the max leaf index on-chain
-  if (maxVoteOptions < voteOptionIndex) {
-    logError("Invalid vote option index");
-  }
-
-  const coordinatorPubKey = new PubKey([
-    BigInt(coordinatorPubKeyResult.x.toString()),
-    BigInt(coordinatorPubKeyResult.y.toString()),
-  ]);
-
-  const encKeypair = new Keypair();
-
-  // create the command object
-  const command: PCommand = new PCommand(
-    stateIndex,
-    pollPubKey,
+  const { message, ephemeralKeypair } = generateVote({
+    pollId,
     voteOptionIndex,
-    newVoteWeight,
+    salt,
     nonce,
-    BigInt(pollId),
-    userSalt,
-  );
-
-  // sign the command with the poll private key
-  const signature = command.sign(pollPrivKey);
-  // encrypt the command using a shared key between the user and the coordinator
-  const message = command.encrypt(signature, Keypair.genEcdhSharedKey(encKeypair.privKey, coordinatorPubKey));
+    privateKey: privKey,
+    stateIndex,
+    voteWeight: newVoteWeight,
+    coordinatorPubKey,
+    maxVoteOption: maxVoteOptions,
+    newPubKey: votePubKey,
+  });
 
   try {
     // submit the message onchain as well as the encryption public key
-    const tx = await pollContract.publishMessage(message.asContractParam(), encKeypair.pubKey.asContractParam());
+    const tx = await pollContract.publishMessage(message.asContractParam(), ephemeralKeypair.pubKey.asContractParam());
     const receipt = await tx.wait();
 
     if (receipt?.status !== 1) {
@@ -127,13 +89,13 @@ export const publish = async ({
     }
 
     logYellow(quiet, info(`Transaction hash: ${receipt!.hash}`));
-    logGreen(quiet, info(`Ephemeral private key: ${encKeypair.privKey.serialize()}`));
+    logGreen(quiet, info(`Ephemeral private key: ${ephemeralKeypair.privKey.serialize()}`));
   } catch (error) {
     logError((error as Error).message);
   }
 
   // we want the user to have the ephemeral private key
-  return encKeypair.privKey.serialize();
+  return ephemeralKeypair.privKey.serialize();
 };
 
 /**

@@ -1,10 +1,10 @@
 import { MACI, Poll } from "maci-contracts/typechain-types";
-import { PubKey } from "maci-domainobjs";
+import { PubKey, PrivKey } from "maci-domainobjs";
 
 import type { LeanIMT } from "@zk-kit/lean-imt";
 import type { Provider, Signer } from "ethers";
 import type { EMode } from "maci-contracts";
-import type { IVkContractParams, VerifyingKey } from "maci-domainobjs";
+import type { IVkContractParams, Keypair, Message, VerifyingKey } from "maci-domainobjs";
 
 /**
  * A circuit inputs for the circom circuit
@@ -747,4 +747,68 @@ export interface IGenSignUpTree {
    * State leaves
    */
   pubKeys: PubKey[];
+}
+
+/**
+ * Interface for the arguments for the generateVote function
+ */
+export interface IGenerateVoteArgs {
+  /**
+   * The poll id
+   */
+  pollId: bigint;
+  /**
+   * The index of the vote option
+   */
+  voteOptionIndex: bigint;
+  /**
+   * The salt for the vote
+   */
+  salt?: bigint;
+  /**
+   * The nonce for the vote
+   */
+  nonce: bigint;
+  /**
+   * The private key for the vote
+   */
+  privateKey: PrivKey;
+  /**
+   * The state index for the vote
+   */
+  stateIndex: bigint;
+  /**
+   * The weight of the vote
+   */
+  voteWeight: bigint;
+  /**
+   * The coordinator public key
+   */
+  coordinatorPubKey: PubKey;
+  /**
+   * The largest vote option index
+   */
+  maxVoteOption: bigint;
+  /**
+   * Ephemeral keypair
+   */
+  ephemeralKeypair?: Keypair;
+  /**
+   * New key in case of key change message
+   */
+  newPubKey?: PubKey;
+}
+
+/**
+ * Interface for the vote object
+ */
+export interface IVote {
+  /**
+   * The message to be sent to the contract
+   */
+  message: Message;
+  /**
+   * The ephemeral keypair used to generate the shared key for encrypting the message
+   */
+  ephemeralKeypair: Keypair;
 }
