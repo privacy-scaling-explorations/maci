@@ -40,6 +40,7 @@ export class MessageBatchRepository {
    * Find message batches with filter query
    *
    * @param filter filter query
+   * @param limit limit
    * @returns message batches
    */
   async find(filter: RootFilterQuery<MessageBatch>, limit = MESSAGE_BATCHES_LIMIT): Promise<MessageBatch[]> {

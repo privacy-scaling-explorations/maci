@@ -25,6 +25,7 @@ describe("MessageBatchService", () => {
 
   const mockRepository = {
     create: jest.fn().mockImplementation(() => Promise.resolve(defaultMessageBatches)),
+    find: jest.fn().mockImplementation(() => Promise.resolve(defaultMessageBatches)),
   };
 
   const mockMaciContract = {
@@ -40,6 +41,7 @@ describe("MessageBatchService", () => {
 
   beforeEach(() => {
     mockRepository.create = jest.fn().mockImplementation(() => Promise.resolve(defaultMessageBatches));
+    mockRepository.find = jest.fn().mockImplementation(() => Promise.resolve(defaultMessageBatches));
     mockIpfsService.add = jest.fn().mockImplementation(() => Promise.resolve(defaultIpfsHash));
 
     MACIFactory.connect = jest.fn().mockImplementation(() => mockMaciContract) as typeof MACIFactory.connect;
@@ -50,16 +52,31 @@ describe("MessageBatchService", () => {
     jest.clearAllMocks();
   });
 
-  test("should save message batches properly", async () => {
+  test("should save and find message batches properly", async () => {
     const service = new MessageBatchService(
       mockIpfsService as unknown as IpfsService,
       mockRepository as unknown as MessageBatchRepository,
     );
 
     const result = await service.saveMessageBatches(defaultMessageBatches);
+    const messageBatches = await service.findMessageBatches({});
 
     expect(result).toStrictEqual(defaultMessageBatches);
+    expect(messageBatches).toStrictEqual(defaultMessageBatches);
     expect(mockPollContract.relayMessagesBatch).toHaveBeenCalledTimes(1);
+  });
+
+  test("should throw an error if can't find message batches", async () => {
+    const error = new Error("error");
+
+    (mockRepository.find as jest.Mock).mockImplementation(() => Promise.reject(error));
+
+    const service = new MessageBatchService(
+      mockIpfsService as unknown as IpfsService,
+      mockRepository as unknown as MessageBatchRepository,
+    );
+
+    await expect(service.findMessageBatches({})).rejects.toThrow(error);
   });
 
   test("should throw an error if can't save message batches", async () => {

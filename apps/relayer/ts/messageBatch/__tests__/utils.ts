@@ -1,7 +1,7 @@
 import { ZeroAddress } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
-import { MessageBatchDto } from "../messageBatch.dto";
+import { GetMessageBatchesDto, MAX_MESSAGES, MessageBatchDto } from "../messageBatch.dto";
 
 const keypair = new Keypair();
 
@@ -19,3 +19,10 @@ defaultMessageBatch.messages = [
 defaultMessageBatch.ipfsHash = defaultIpfsHash;
 
 export const defaultMessageBatches: MessageBatchDto[] = [defaultMessageBatch];
+
+export const defaultGetMessageBatchesDto = new GetMessageBatchesDto();
+defaultGetMessageBatchesDto.limit = MAX_MESSAGES;
+defaultGetMessageBatchesDto.maciContractAddress = ZeroAddress;
+defaultGetMessageBatchesDto.poll = 0;
+defaultGetMessageBatchesDto.ipfsHashes = [defaultIpfsHash];
+defaultGetMessageBatchesDto.publicKey = keypair.pubKey.serialize();

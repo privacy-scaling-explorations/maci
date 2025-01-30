@@ -24,6 +24,6 @@ describe("IpfsHashValidator", () => {
 
     const result = validator.defaultMessage();
 
-    expect(result).toBe("IPFS hash ($value) is invalid");
+    expect(result).toBe("IPFS hash is invalid");
   });
 });

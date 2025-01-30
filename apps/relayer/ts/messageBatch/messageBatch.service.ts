@@ -5,12 +5,13 @@ import uniqBy from "lodash/uniqBy";
 import { PubKey } from "maci-domainobjs";
 import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-sdk";
 
-import type { MessageBatchDto } from "./messageBatch.dto";
+import type { MessageBatch } from "./messageBatch.schema";
+import type { RootFilterQuery } from "mongoose";
 
 import { IpfsService } from "../ipfs/ipfs.service";
 
+import { MAX_MESSAGES, type MessageBatchDto } from "./messageBatch.dto";
 import { MessageBatchRepository } from "./messageBatch.repository";
-import { MessageBatch } from "./messageBatch.schema";
 
 /**
  * MessageBatchService is responsible for saving message batches and send them to ipfs
@@ -32,6 +33,19 @@ export class MessageBatchService {
     private readonly ipfsService: IpfsService,
     private readonly messageBatchRepository: MessageBatchRepository,
   ) {}
+
+  /**
+   * Find message batches
+   *
+   * @param filter filter query
+   * @param limit limit
+   */
+  async findMessageBatches(filter: RootFilterQuery<MessageBatch>, limit = MAX_MESSAGES): Promise<MessageBatch[]> {
+    return this.messageBatchRepository.find(filter, limit).catch((error) => {
+      this.logger.error(`Find message batches error:`, error);
+      throw error;
+    });
+  }
 
   /**
    * Save messages batch
