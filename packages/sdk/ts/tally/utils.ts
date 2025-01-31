@@ -1,6 +1,6 @@
 import { genTreeProof } from "maci-crypto";
 
-import type { TallyData } from "./types";
+import type { ITallyData } from "./types";
 import type { Tally } from "maci-contracts";
 
 /**
@@ -15,7 +15,7 @@ import type { Tally } from "maci-contracts";
  */
 export const verifyPerVOSpentVoiceCredits = async (
   tallyContract: Tally,
-  tallyData: TallyData,
+  tallyData: ITallyData,
   voteOptionTreeDepth: number,
   newSpentVoiceCreditsCommitment: bigint,
   newResultsCommitment: bigint,
@@ -59,7 +59,7 @@ export const verifyPerVOSpentVoiceCredits = async (
  */
 export const verifyTallyResults = async (
   tallyContract: Tally,
-  tallyData: TallyData,
+  tallyData: ITallyData,
   voteOptionTreeDepth: number,
   newSpentVoiceCreditsCommitment: bigint,
   newPerVOSpentVoiceCreditsCommitment?: bigint,

@@ -1,5 +1,6 @@
-import { BLOCKS_STEP } from "./constants";
-import { IParsePollJoinEventsArgs, IParseSignupEventsArgs } from "./types";
+import type { IParsePollJoinEventsArgs, IParseSignupEventsArgs } from "./types";
+
+import { BLOCKS_STEP } from "../utils/constants";
 
 /**
  * Parse the poll joining events from the Poll contract
@@ -13,7 +14,6 @@ export const parsePollJoinEvents = async ({
   pollStateIndex?: string;
   voiceCredits?: string;
 }> => {
-  // 1000 blocks at a time
   for (let block = startBlock; block <= currentBlock; block += BLOCKS_STEP) {
     const toBlock = Math.min(block + BLOCKS_STEP - 1, currentBlock);
     const pubKey = pollPublicKey.asArray();
@@ -49,7 +49,6 @@ export const parseSignupEvents = async ({
   currentBlock,
   publicKey,
 }: IParseSignupEventsArgs): Promise<{ stateIndex?: string }> => {
-  // 1000 blocks at a time
   for (let block = startBlock; block <= currentBlock; block += BLOCKS_STEP) {
     const toBlock = Math.min(block + BLOCKS_STEP - 1, currentBlock);
     // eslint-disable-next-line no-await-in-loop

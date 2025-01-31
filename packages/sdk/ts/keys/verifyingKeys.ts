@@ -1,7 +1,7 @@
 import { VkRegistry__factory as VkRegistryFactory, extractVk } from "maci-contracts";
 import { IVkContractParams, VerifyingKey } from "maci-domainobjs";
 
-import type { GetAllVksArgs, IExtractAllVksArgs, IMaciVks, IMaciVerifyingKeys } from "./utils/types";
+import type { IGetAllVksArgs, IExtractAllVksArgs, IMaciVks, IMaciVerifyingKeys } from "./types";
 
 /**
  * Get all the verifying keys from the contract
@@ -16,7 +16,7 @@ export const getAllOnChainVks = async ({
   messageBatchSize,
   intStateTreeDepth,
   mode,
-}: GetAllVksArgs): Promise<IMaciVerifyingKeys> => {
+}: IGetAllVksArgs): Promise<IMaciVerifyingKeys> => {
   const vkRegistryContractInstance = VkRegistryFactory.connect(vkRegistryAddress, signer);
 
   const [pollJoiningVkOnChain, pollJoinedVkOnChain, processVkOnChain, tallyVkOnChain] = await Promise.all([

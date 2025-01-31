@@ -2,8 +2,11 @@ import { ContractTransactionReceipt, isBytesLike } from "ethers";
 import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts/typechain-types";
 import { PubKey } from "maci-domainobjs";
 
-import { contractExists, IRegisteredUserArgs, ISignupArgs, parsePollJoinEvents, parseSignupEvents } from "./utils";
-import { IIsRegisteredUser, IJoinedUserArgs, ISignupData } from "./utils/types";
+import type { IIsRegisteredUser, IJoinedUserArgs, ISignupArgs, ISignupData, IRegisteredUserArgs } from "./types";
+
+import { contractExists } from "../utils";
+
+import { parsePollJoinEvents, parseSignupEvents } from "./utils";
 
 /**
  * Checks if user is registered with a given public key
@@ -48,6 +51,7 @@ export const signup = async ({ maciPubKey, maciAddress, sgData, signer }: ISignu
   const userMaciPubKey = PubKey.deserialize(maciPubKey);
 
   const validContract = await contractExists(signer.provider!, maciAddress);
+
   if (!validContract) {
     throw new Error("There is no contract deployed at the specified address");
   }

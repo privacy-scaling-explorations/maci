@@ -2,13 +2,15 @@ import { type ContractTransactionReceipt } from "ethers";
 import { CircuitInputs, IJsonMaciState, MaciState, IPollJoiningCircuitInputs } from "maci-core";
 import { poseidon, stringifyBigInts } from "maci-crypto";
 import { IVkObjectParams, Keypair, PrivKey, PubKey } from "maci-domainobjs";
-import { formatProofForVerifierContract, genSignUpTree, IGenSignUpTree } from "maci-sdk";
 import {
+  type IGenerateSignUpTree,
+  type FullProveResult,
   extractVk,
   genProofSnarkjs,
   genProofRapidSnark,
   verifyProof,
-  type FullProveResult,
+  formatProofForVerifierContract,
+  generateSignUpTree,
   MACI__factory as MACIFactory,
   Poll__factory as PollFactory,
 } from "maci-sdk";
@@ -109,7 +111,7 @@ export const generateAndVerifyProof = async (
  * @returns stringified circuit inputs
  */
 const joiningCircuitInputs = (
-  signUpData: IGenSignUpTree,
+  signUpData: IGenerateSignUpTree,
   stateTreeDepth: bigint,
   maciPrivKey: PrivKey,
   stateLeafIndex: bigint,
@@ -220,7 +222,7 @@ export const joinPoll = async ({
 
   let loadedStateIndex: bigint | undefined;
   let maciState: MaciState | undefined;
-  let signUpData: IGenSignUpTree | undefined;
+  let signUpData: IGenerateSignUpTree | undefined;
   let currentStateRootIndex: number;
   let circuitInputs: CircuitInputs;
 
@@ -274,7 +276,7 @@ export const joinPoll = async ({
 
     logYellow(quiet, info(`starting to fetch logs from block ${fromBlock}`));
 
-    signUpData = await genSignUpTree({
+    signUpData = await generateSignUpTree({
       provider: signer.provider!,
       address: await maciContract.getAddress(),
       blocksPerRequest: blocksPerBatch || 50,
