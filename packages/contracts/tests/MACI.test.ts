@@ -187,6 +187,13 @@ describe("MACI", function test() {
     });
   });
 
+  describe("getStateIndex", () => {
+    it("should return the index of a state leaf", async () => {
+      const index = await maciContract.getStateIndex(users[0].pubKey.hash());
+      expect(index.toString()).to.eq("1");
+    });
+  });
+
   describe("Deploy a Poll", () => {
     let deployTime: number | undefined;
 

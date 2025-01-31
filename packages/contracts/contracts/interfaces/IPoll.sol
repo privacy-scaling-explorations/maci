@@ -7,7 +7,13 @@ import { IMACI } from "./IMACI.sol";
 /// @title IPoll
 /// @notice Poll interface
 interface IPoll {
-  /// @notice Join the poll
+  /// @notice Join the poll for voting
+  /// @param _nullifier Hashed user's private key to check whether user has already voted
+  /// @param _pubKey Poll user's public key
+  /// @param _stateRootIndex Index of the MACI's stateRootOnSignUp for which the inclusion proof is generated
+  /// @param _proof The zk-SNARK proof
+  /// @param _signUpGatekeeperData Data to pass to the SignUpGatekeeper
+  /// @param _initialVoiceCreditProxyData Data to pass to the InitialVoiceCreditProxy
   function joinPoll(
     uint256 _nullifier,
     DomainObjs.PubKey calldata _pubKey,
@@ -99,4 +105,9 @@ interface IPoll {
   /// @notice Get the external contracts
   /// @return maci The IMACI contract
   function getMaciContract() external view returns (IMACI maci);
+
+  /// @notice Get the index of a state leaf in the state tree
+  /// @param element The hash of thestate leaf
+  /// @return index The index of the state leaf in the state tree
+  function getStateIndex(uint256 element) external view returns (uint40);
 }
