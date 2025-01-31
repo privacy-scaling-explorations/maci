@@ -6,8 +6,9 @@ import { PubKey } from "maci-domainobjs";
 
 import { assert } from "console";
 
-import { IGenSignUpTreeArgs, IGenSignUpTree } from "./utils/types";
-import { sleep } from "./utils/utils";
+import type { IGenerateSignUpTreeArgs, IGenerateSignUpTree } from "./types";
+
+import { sleep } from "../utils/utils";
 
 /**
  * Generate a State tree object from the events of a MACI smart contracts
@@ -19,14 +20,14 @@ import { sleep } from "./utils/utils";
  * @param sleepAmount - the amount of time to sleep between each request
  * @returns State tree
  */
-export const genSignUpTree = async ({
+export const generateSignUpTree = async ({
   provider,
   address,
   fromBlock = 0,
   blocksPerRequest = 50,
   endBlock,
   sleepAmount,
-}: IGenSignUpTreeArgs): Promise<IGenSignUpTree> => {
+}: IGenerateSignUpTreeArgs): Promise<IGenerateSignUpTree> => {
   const lastBlock = endBlock || (await provider.getBlockNumber());
 
   const maciContract = MACIFactory.connect(address, provider);

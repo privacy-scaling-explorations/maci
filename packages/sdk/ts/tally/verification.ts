@@ -1,9 +1,10 @@
 import { Tally__factory as TallyFactory, MACI__factory as MACIFactory } from "maci-contracts/typechain-types";
 
-import type { VerifyArgs } from "./utils/types";
+import type { IVerifyArgs } from "./types";
 
-import { contractExists } from "./utils/contracts";
-import { verifyPerVOSpentVoiceCredits, verifyTallyResults } from "./utils/verifiers";
+import { contractExists } from "../utils/contracts";
+
+import { verifyPerVOSpentVoiceCredits, verifyTallyResults } from "./utils";
 
 /**
  * Verify the results of a poll on-chain
@@ -16,11 +17,12 @@ export const verify = async ({
   tallyCommitments,
   numVoteOptions,
   voteOptionTreeDepth,
-}: VerifyArgs): Promise<boolean> => {
+}: IVerifyArgs): Promise<boolean> => {
   const useQv = tallyData.isQuadratic;
   const maciContractAddress = tallyData.maci;
 
   const validContract = await contractExists(signer.provider!, maciContractAddress);
+
   if (!validContract) {
     throw new Error(`There is no MACI contract deployed at ${maciContractAddress}.`);
   }
@@ -93,6 +95,7 @@ export const verify = async ({
   if (tallyData.perVOSpentVoiceCredits?.tally.length !== numVoteOptions) {
     throw new Error("Wrong number of vote options.");
   }
+
   // verify per vote option voice credits on-chain
   const failedSpentCredits = await verifyPerVOSpentVoiceCredits(
     tallyContract,

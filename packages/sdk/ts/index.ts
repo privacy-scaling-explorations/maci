@@ -1,11 +1,10 @@
-export { getPoll, getPollParams } from "./poll";
-export { verify } from "./verify";
-export { generateTallyCommitments } from "./tallyCommitments";
-export { isUserRegistered, isJoinedUser, signup } from "./user";
-export { getAllOnChainVks, compareVks, extractAllVks } from "./verifyingKeys";
-export { isArm } from "./utils";
-export { genSignUpTree } from "./trees";
-export { generateVote, getCoordinatorPubKey } from "./votes";
+export * from "./keys";
+export * from "./poll";
+export * from "./tally";
+export * from "./trees";
+export * from "./vote";
+export * from "./utils";
+export * from "./user";
 
 export {
   EMode,
@@ -48,15 +47,3 @@ export type {
 } from "maci-contracts";
 
 export * from "maci-contracts/typechain-types";
-
-export type {
-  TallyData,
-  VerifyArgs,
-  IGetPollArgs,
-  IGetPollData,
-  IIsRegisteredUser,
-  IIsJoinedUser,
-  IExtractAllVksArgs,
-  IMaciVks,
-  IGenSignUpTree,
-} from "./utils";

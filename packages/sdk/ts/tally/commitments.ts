@@ -1,6 +1,6 @@
 import { genTreeCommitment, hash2, hash3, hashLeftRight } from "maci-crypto";
 
-import { IGenerateTallyCommitmentsArgs, ITallyCommitments } from "./utils/types";
+import type { IGenerateTallyCommitmentsArgs, ITallyCommitments } from "./types";
 
 /**
  * Generate the tally commitments for this current batch of proving

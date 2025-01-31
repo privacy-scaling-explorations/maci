@@ -3,9 +3,9 @@ import { Poll__factory as PollFactory } from "maci-contracts";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair, PCommand, PubKey } from "maci-domainobjs";
 
-import type { IGenerateVoteArgs, IVote } from "./utils/types";
+import type { IGenerateVoteArgs, IVote } from "./types";
 
-import { validateSalt } from "./utils/utils";
+import { validateSalt } from "./utils";
 
 /**
  * Get the coordinator public key for a poll
