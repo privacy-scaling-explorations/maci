@@ -63,36 +63,6 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
   /// For the N'th sign up, the state tree root will be stored at the index N
   uint256[] public stateRootsOnSignUp;
 
-  /// @notice A struct holding the addresses of poll, mp and tally
-  struct PollContracts {
-    address poll;
-    address messageProcessor;
-    address tally;
-  }
-  /// @notice A struct holding the params for poll deployment
-  struct DeployPollArgs {
-    /// @param duration How long should the Poll last for
-    uint256 duration;
-    /// @param treeDepths The depth of the Merkle trees
-    TreeDepths treeDepths;
-    /// @param messageBatchSize The message batch size
-    uint8 messageBatchSize;
-    /// @param coordinatorPubKey The coordinator's public key
-    PubKey coordinatorPubKey;
-    /// @param verifier The Verifier Contract
-    address verifier;
-    /// @param vkRegistry The VkRegistry Contract
-    address vkRegistry;
-    /// @param mode Voting mode
-    Mode mode;
-    /// @param gatekeeper The gatekeeper contract
-    address gatekeeper;
-    /// @param initialVoiceCreditProxy The initial voice credit proxy contract
-    address initialVoiceCreditProxy;
-    /// @param relayer The message relayer (optional)
-    address[] relayers;
-  }
-
   // Events
   event SignUp(uint256 _stateIndex, uint256 _timestamp, uint256 indexed _userPubKeyX, uint256 indexed _userPubKeyY);
   event DeployPoll(
@@ -139,14 +109,7 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
     if (hash2([uint256(1), uint256(1)]) == 0) revert PoseidonHashLibrariesNotLinked();
   }
 
-  /// @notice Allows any eligible user sign up. The sign-up gatekeeper should prevent
-  /// double sign-ups or ineligible users from doing so.  This function will
-  /// only succeed if the sign-up deadline has not passed.
-  /// @param _pubKey The user's desired public key.
-  /// @param _signUpGatekeeperData Data to pass to the sign-up gatekeeper's
-  ///     register() function. For instance, the POAPGatekeeper or
-  ///     SignUpTokenGatekeeper requires this value to be the ABI-encoded
-  ///     token ID.
+  /// @inheritdoc IMACI
   function signUp(PubKey memory _pubKey, bytes memory _signUpGatekeeperData) public virtual {
     // ensure we do not have more signups than what the circuits support
     if (leanIMTData.size >= maxSignups) revert TooManySignups();
@@ -170,9 +133,8 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
     emit SignUp(leanIMTData.size - 1, block.timestamp, _pubKey.x, _pubKey.y);
   }
 
-  /// @notice Deploy a new Poll contract.
-  /// @param args The deploy poll args
-  function deployPoll(DeployPollArgs calldata args) public virtual {
+  /// @inheritdoc IMACI
+  function deployPoll(DeployPollArgs calldata args) public virtual returns (PollContracts memory) {
     // cache the poll to a local variable so we can increment it
     uint256 pollId = nextPollId;
 
@@ -217,6 +179,8 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
     polls[pollId] = pollAddr;
 
     emit DeployPoll(pollId, args.coordinatorPubKey.x, args.coordinatorPubKey.y, args.mode);
+
+    return pollAddr;
   }
 
   /// @inheritdoc IMACI
@@ -240,5 +204,11 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
   /// @inheritdoc IMACI
   function getStateRootOnIndexedSignUp(uint256 _index) external view returns (uint256 stateRoot) {
     stateRoot = stateRootsOnSignUp[_index];
+  }
+
+  /// @inheritdoc IMACI
+  function getStateIndex(uint256 _pubKeyHash) external view returns (uint256 index) {
+    // need to subtract 1 because the index is 1 indexed due to 0 index reserved for deleted leaves
+    index = leanIMTData.leaves[_pubKeyHash] - 1;
   }
 }

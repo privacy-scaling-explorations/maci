@@ -114,6 +114,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   error UserAlreadyJoined();
   error InvalidPollProof();
   error NotRelayer();
+  error StateLeafNotFound();
 
   event PublishMessage(Message _message, PubKey _encPubKey);
   event MergeState(uint256 indexed _stateRoot, uint256 indexed _numSignups);
@@ -319,13 +320,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     }
   }
 
-  /// @notice Join the poll for voting
-  /// @param _nullifier Hashed user's private key to check whether user has already voted
-  /// @param _pubKey Poll user's public key
-  /// @param _stateRootIndex Index of the MACI's stateRootOnSignUp for which the inclusion proof is generated
-  /// @param _proof The zk-SNARK proof
-  /// @param _signUpGatekeeperData Data to pass to the SignUpGatekeeper
-  /// @param _initialVoiceCreditProxyData Data to pass to the InitialVoiceCreditProxy
+  /// @inheritdoc IPoll
   function joinPoll(
     uint256 _nullifier,
     PubKey calldata _pubKey,
@@ -358,6 +353,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
 
     // Store user in the pollStateTree
     uint256 stateLeaf = hashStateLeaf(StateLeaf(_pubKey, voiceCreditBalance, block.timestamp));
+
     uint256 stateRoot = InternalLazyIMT._insert(pollStateTree, stateLeaf);
 
     // Store the current state tree root in the array
@@ -486,5 +482,16 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   /// @inheritdoc IPoll
   function getMaciContract() public view returns (IMACI maci) {
     return extContracts.maci;
+  }
+
+  /// @inheritdoc IPoll
+  function getStateIndex(uint256 element) public view returns (uint40) {
+    for (uint40 i = 0; i <= pollStateTree.maxIndex; i++) {
+      if (pollStateTree.elements[i] == element) {
+        return i;
+      }
+    }
+
+    revert StateLeafNotFound();
   }
 }

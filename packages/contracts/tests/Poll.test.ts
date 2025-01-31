@@ -5,7 +5,7 @@ import { AbiCoder, decodeBase58, encodeBase58, getBytes, hexlify, Signer, ZeroAd
 import { EthereumProvider } from "hardhat/types";
 import { MaciState, VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
-import { Keypair, Message, PCommand, PubKey } from "maci-domainobjs";
+import { Keypair, Message, PCommand, PubKey, StateLeaf } from "maci-domainobjs";
 
 import { EMode } from "../ts/constants";
 import { IVerifyingKeyStruct } from "../ts/types";
@@ -232,9 +232,13 @@ describe("Poll", () => {
 
         const expectedIndex = maciState.polls
           .get(pollId)
-          ?.joinPoll(BigInt(mockNullifier), keypair.pubKey, BigInt(voiceCredits), BigInt(timestamp));
+          ?.joinPoll(BigInt(mockNullifier), keypair.pubKey, voiceCredits, BigInt(timestamp));
 
         expect(index).to.eq(expectedIndex);
+
+        // get the index with getStateIndex
+        const stateLeaf = new StateLeaf(keypair.pubKey, voiceCredits, BigInt(timestamp));
+        expect(await pollContract.getStateIndex(stateLeaf.hash())).to.eq(index);
       }
     });
 
