@@ -454,7 +454,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 - **maci:** amended the `signUp` function to reflect the checks-effects-interaction pattern ([d62c7c7](https://github.com/gurrpi/maci/commit/d62c7c710ba126ced713b8d32190408dbf5fa29f)), closes [#503](https://github.com/gurrpi/maci/issues/503)
 - **maci:** final fix to the tests ([51e84f8](https://github.com/gurrpi/maci/commit/51e84f81b13cd6fd56dbbb2887f541f273cd1313))
 - **maci:** implemented fixes for several audit issues ([6f1fa85](https://github.com/gurrpi/maci/commit/6f1fa85299ebbc8fe10e30691afe8f036b8c68d1)), closes [#503](https://github.com/gurrpi/maci/issues/503) [#504](https://github.com/gurrpi/maci/issues/504) [#505](https://github.com/gurrpi/maci/issues/505) [#508](https://github.com/gurrpi/maci/issues/508) [#510](https://github.com/gurrpi/maci/issues/510)
-- **maci:** removed unneded max fee calculation ([14ee2a5](https://github.com/gurrpi/maci/commit/14ee2a550c0b0dda5bf21b65ee70a38b04ece924))
+- **maci:** removed unneeded max fee calculation ([14ee2a5](https://github.com/gurrpi/maci/commit/14ee2a550c0b0dda5bf21b65ee70a38b04ece924))
 - **maci:** reverted a fix and fixed test suits ([8300cc5](https://github.com/gurrpi/maci/commit/8300cc548e954a80ab6fb39ab9d559c999e07c10))
 - **maci:** upgraded minor version and fixed bug in testnet deployment ([5ef5ed8](https://github.com/gurrpi/maci/commit/5ef5ed842360277ac823c6919e171d0c51ff5702)), closes [#551](https://github.com/gurrpi/maci/issues/551) [#552](https://github.com/gurrpi/maci/issues/552)
 - **maci:** upgraded snarkjs and other dependencies ([0ce643a](https://github.com/gurrpi/maci/commit/0ce643a18704c1a2d9245e8e85032874a11f004e))
