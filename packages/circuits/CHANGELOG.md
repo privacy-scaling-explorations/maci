@@ -174,7 +174,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 * **circuits:** fix coordinator censoring by passing currentVoteWeight = 0 ([22e091d](https://github.com/privacy-scaling-explorations/maci/commit/22e091d2941b5e86ecd7df2f228bd0e10b6c4c47))
 * **circuits:** replace execSync with execFileSync ([4c121ca](https://github.com/privacy-scaling-explorations/maci/commit/4c121ca0413495979be7af87da5474a9f0b093bf))
 * **contracts:** save numSignups after merging maciStateAq inside the Poll contract ([4985b2d](https://github.com/privacy-scaling-explorations/maci/commit/4985b2d61655f3b802186fc03c2d85a658c0f0da)), closes [#1091](https://github.com/privacy-scaling-explorations/maci/issues/1091)
-* **crypto:** get rid of potential prototype polution ([9b8a97c](https://github.com/privacy-scaling-explorations/maci/commit/9b8a97cc9661e0ee6f535cdcab19b4aa0fa98136))
+* **crypto:** get rid of potential prototype pollution ([9b8a97c](https://github.com/privacy-scaling-explorations/maci/commit/9b8a97cc9661e0ee6f535cdcab19b4aa0fa98136))
 * fixed the maci-circuit package to allow building on circom >2.0.7 ([e954f78](https://github.com/privacy-scaling-explorations/maci/commit/e954f78224d53342826bfe73b082b673e0f147c8))
 * **incrementalquintree:** remove unnecessary condition check in incrementalQuinnTree.circom ([87b3397](https://github.com/privacy-scaling-explorations/maci/commit/87b339790a5d44adb8c5bf447346e16933c48d5c))
 * **publish:** ensure we publish the correct files ([bc42724](https://github.com/privacy-scaling-explorations/maci/commit/bc42724b34cf0c047c5692fbf477ed013a102aee))
