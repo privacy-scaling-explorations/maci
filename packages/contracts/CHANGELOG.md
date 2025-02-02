@@ -130,7 +130,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 ### Miscellaneous
 
 * add enum for gatekeepers and voice credits proxy ([#1782](https://github.com/privacy-scaling-explorations/maci/issues/1782)) ([9afb27d](https://github.com/privacy-scaling-explorations/maci/commit/9afb27ddf79c2ba179754e9a55c4d3b24ecd2eb5))
-* **contracts:** deploy contracts to L2s, store addresses and benchmark message batch size ([#1751](https://github.com/privacy-scaling-explorations/maci/issues/1751)) ([9e771a0](https://github.com/privacy-scaling-explorations/maci/commit/9e771a09b8f5de8c47ad89f5bb53b542aed6db05))
+* **contracts:** deploy contracts to L2s, store addressses and benchmark message batch size ([#1751](https://github.com/privacy-scaling-explorations/maci/issues/1751)) ([9e771a0](https://github.com/privacy-scaling-explorations/maci/commit/9e771a09b8f5de8c47ad89f5bb53b542aed6db05))
 * **contracts:** use cwd path for contract storage and config ([a78408d](https://github.com/privacy-scaling-explorations/maci/commit/a78408dd597106a712fbc0a4dfd6451fd270bc45))
 * **deps-dev:** bump @types/node from 22.1.0 to 22.2.0 ([ac18985](https://github.com/privacy-scaling-explorations/maci/commit/ac189852bf6abb787736c474ad87927afaa5163c))
 * **deps-dev:** bump @types/node from 22.2.0 to 22.4.1 ([#1779](https://github.com/privacy-scaling-explorations/maci/issues/1779)) ([4a929e0](https://github.com/privacy-scaling-explorations/maci/commit/4a929e0b9a5c4de5ac0345e742668a3400798867))
@@ -165,7 +165,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 * **contracts:** add deployment code for SemaphoreGatekeeper ([#1588](https://github.com/privacy-scaling-explorations/maci/issues/1588)) ([149df59](https://github.com/privacy-scaling-explorations/maci/commit/149df599c52762d41b6708b762b64028fc1b1eb4))
 * **contracts:** add deploySemaphoreGatekeeper() ([#1628](https://github.com/privacy-scaling-explorations/maci/issues/1628)) ([e714d5a](https://github.com/privacy-scaling-explorations/maci/commit/e714d5a8b3a2860aef510d529e3e183f1e0b4f00))
 * **contracts:** add new adapter for lowdb to support browser env ([a3c2371](https://github.com/privacy-scaling-explorations/maci/commit/a3c23719f22ae2dd54e21805aa478041517adbce))
-* **contracts:** added message processor and tally addresses to the maci contract ([#1715](https://github.com/privacy-scaling-explorations/maci/issues/1715)) ([801b774](https://github.com/privacy-scaling-explorations/maci/commit/801b7747852a63885ed8d6ae43d81260dab9c76f))
+* **contracts:** added message processor and tally addressses to the maci contract ([#1715](https://github.com/privacy-scaling-explorations/maci/issues/1715)) ([801b774](https://github.com/privacy-scaling-explorations/maci/commit/801b7747852a63885ed8d6ae43d81260dab9c76f))
 * **contracts:** allow for dynamic emptyBallotRoots ([#1695](https://github.com/privacy-scaling-explorations/maci/issues/1695)) ([e7aa4dd](https://github.com/privacy-scaling-explorations/maci/commit/e7aa4dda5ddaf005d19c95342a642fbc798f5d6b))
 * **contracts:** implement semaphore gatekeeper ([#1579](https://github.com/privacy-scaling-explorations/maci/issues/1579)) ([d1f744e](https://github.com/privacy-scaling-explorations/maci/commit/d1f744e782ff09a542ef980b94bd2eb377b9e714))
 * **contracts:** tally qv and non-qv optimisations ([b0b7b38](https://github.com/privacy-scaling-explorations/maci/commit/b0b7b38bf008e8a542b550c75ada40ac21854944))
@@ -179,7 +179,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 * **gatekeepers:** implement a gitcoin passport gatekeeper ([df44f7e](https://github.com/privacy-scaling-explorations/maci/commit/df44f7ed02c220ec03393f4aec8d81deb7e3a84d))
 * **gatekeepers:** implement a Zupass gatekeeper ([3f615fd](https://github.com/privacy-scaling-explorations/maci/commit/3f615fdbb87eee9dd37138374a022178852c7d60))
 * **HatsGatekeepers:** add Hats gatekeeper contracts ([fd38a5a](https://github.com/privacy-scaling-explorations/maci/commit/fd38a5a0cc4d5e7609e9e42252f7f6cdfca18660))
-* **HatsGatekeepers:** add zero-address check to `setMaciInstance()` ([88c0bdc](https://github.com/privacy-scaling-explorations/maci/commit/88c0bdccd8e36f6acfb3d617d2d0c4d73de674c7))
+* **HatsGatekeepers:** add zero-addresss check to `setMaciInstance()` ([88c0bdc](https://github.com/privacy-scaling-explorations/maci/commit/88c0bdccd8e36f6acfb3d617d2d0c4d73de674c7))
 * **multiple-polls:** allow concurrent polls ([14e89ba](https://github.com/privacy-scaling-explorations/maci/commit/14e89baea1ede9bc9bad79fafb5c362d6a6a81e9))
 * proof parallelization ([#1627](https://github.com/privacy-scaling-explorations/maci/issues/1627)) ([4e7f9eb](https://github.com/privacy-scaling-explorations/maci/commit/4e7f9eba79b5422fc1722978cc9d0f259381df60))
 * store deployment transaction hash in contract storage and add a getter ([#1494](https://github.com/privacy-scaling-explorations/maci/issues/1494)) ([0abbebb](https://github.com/privacy-scaling-explorations/maci/commit/0abbebb094a60a7a2c956497da437b9f129f20a0))
@@ -193,7 +193,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 * add coordinator public key hash public input ([9766bbf](https://github.com/privacy-scaling-explorations/maci/commit/9766bbfcecd41bd0f39c1422978d959705b1b500))
 * **contract:** fix vkRegistryContract typo ([f4caaf0](https://github.com/privacy-scaling-explorations/maci/commit/f4caaf0a2ca8c499bb0150b3038ef1d5869c5448))
 * **contract:** gatekeeper deploy config skip ([caf65bb](https://github.com/privacy-scaling-explorations/maci/commit/caf65bbc9ddc9629386d1de3b9cbeaec9c5a405a))
-* **contracts:** address [@ctrlc03](https://github.com/ctrlc03) comments ([431a4a7](https://github.com/privacy-scaling-explorations/maci/commit/431a4a7216d4f01b8d14d2dd2fb0293fba0a6214))
+* **contracts:** addresss [@ctrlc03](https://github.com/ctrlc03) comments ([431a4a7](https://github.com/privacy-scaling-explorations/maci/commit/431a4a7216d4f01b8d14d2dd2fb0293fba0a6214))
 * **contracts:** apply small changes suggested by [@kittybest](https://github.com/kittybest) ([bb429ae](https://github.com/privacy-scaling-explorations/maci/commit/bb429aece0eed2eed5d526e2a23522722c42ba5c))
 * **contracts:** correctly deploy test contracts ([81880b3](https://github.com/privacy-scaling-explorations/maci/commit/81880b39056e5ae18da4b3218233d2ca965e9c2e))
 * **contracts:** ensure `gasPrice` has sufficient value ([#1703](https://github.com/privacy-scaling-explorations/maci/issues/1703)) ([a3d46e8](https://github.com/privacy-scaling-explorations/maci/commit/a3d46e847244ae648ea47397c81324d4ccaac874))
@@ -209,7 +209,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 ### Code Refactoring
 
 * **config-example:** added gitcoin to config example ([cbeccee](https://github.com/privacy-scaling-explorations/maci/commit/cbeccee701cd7251dcace9f882202ffdedeabb28))
-* **contracts:** do not return contract addresses on poll deploy ([43d5224](https://github.com/privacy-scaling-explorations/maci/commit/43d52240755a3371ff0f7e0454e6a0dad80ddce4))
+* **contracts:** do not return contract addressses on poll deploy ([43d5224](https://github.com/privacy-scaling-explorations/maci/commit/43d52240755a3371ff0f7e0454e6a0dad80ddce4))
 * **contracts:** optimize contract tasks and scripts ([f9f5722](https://github.com/privacy-scaling-explorations/maci/commit/f9f57227ea3e011a3b8199fdc806159bbc3d15eb))
 * **deploy-task:** fixed recommendations ([3cc00dc](https://github.com/privacy-scaling-explorations/maci/commit/3cc00dc6fcc5e79138ff1a9f9c74235607688264))
 * **deploy-task:** renamed numeric representation ([9a09a8b](https://github.com/privacy-scaling-explorations/maci/commit/9a09a8bb66477de88f34ca05ba9e50dd0f564b36))
@@ -309,7 +309,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 * **cli:** add get poll cli command ([e6e2dd3](https://github.com/privacy-scaling-explorations/maci/commit/e6e2dd3714ff4a5261a864f26aef5fb9e745ac22))
 * **cli:** improve cli integration ux ([7727ab1](https://github.com/privacy-scaling-explorations/maci/commit/7727ab1d99096b296d6c3f25956b0465d036aa4d))
 * **contracts:** made `nextPollId` public to support third-party apps more easily ([c5c6bdb](https://github.com/privacy-scaling-explorations/maci/commit/c5c6bdb3db3e4ce25d0de642e75278becc405d61))
-* **contracts:** return contract addresses when deploying the poll contract ([e94998c](https://github.com/privacy-scaling-explorations/maci/commit/e94998c12d8a5f2bde2fb54b4af384d42e35d646))
+* **contracts:** return contract addressses when deploying the poll contract ([e94998c](https://github.com/privacy-scaling-explorations/maci/commit/e94998c12d8a5f2bde2fb54b4af384d42e35d646))
 * **eas-gatekeeper:** implement an eas gatekeeper for MACI ([8b25d94](https://github.com/privacy-scaling-explorations/maci/commit/8b25d94c7a99ab1b5e5e75062d782a6dae239b34))
 * optimize deployment and tally event ([185b407](https://github.com/privacy-scaling-explorations/maci/commit/185b407df6db0484824b99286a6b0e866a7345bf))
 * **poll:** add message batch submission ([005258b](https://github.com/privacy-scaling-explorations/maci/commit/005258bad7a87f52fe2d770c55b69e4f300bcca7))
@@ -318,8 +318,8 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Bug Fixes
 
-* **address messageprocessor issues:** address and fixed PR reviews on MessageProcessor.sol ([6505fb2](https://github.com/privacy-scaling-explorations/maci/commit/6505fb2464866bf96c293dad2f3662638930cde8))
-* **address pr reviews:** address PR reviews issues for Tally.sol ([10f2c7f](https://github.com/privacy-scaling-explorations/maci/commit/10f2c7f486de115e3d2706de1a773a93854ca505))
+* **addresss messageprocessor issues:** addresss and fixed PR reviews on MessageProcessor.sol ([6505fb2](https://github.com/privacy-scaling-explorations/maci/commit/6505fb2464866bf96c293dad2f3662638930cde8))
+* **addresss pr reviews:** addresss PR reviews issues for Tally.sol ([10f2c7f](https://github.com/privacy-scaling-explorations/maci/commit/10f2c7f486de115e3d2706de1a773a93854ca505))
 * **cli:** add auto mining option for hardhat ([e5ad345](https://github.com/privacy-scaling-explorations/maci/commit/e5ad3452b77be5007b0ddbe593606a7bcd2a9fc5))
 * **constraint updatesbcommitment:** add onlyOwner modifier to updateSbCommitment ([5b8ee10](https://github.com/privacy-scaling-explorations/maci/commit/5b8ee101f40ed02a79e4bf09a9eaf946b54a8ee2))
 * **contract unit test:** fixed unit test suites error caused by contracts refactor ([0dca2c0](https://github.com/privacy-scaling-explorations/maci/commit/0dca2c07a1fb0199128bf809d35a06f71da36b74))
@@ -329,10 +329,10 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 * **contracts:** save numSignups after merging maciStateAq inside the Poll contract ([4985b2d](https://github.com/privacy-scaling-explorations/maci/commit/4985b2d61655f3b802186fc03c2d85a658c0f0da)), closes [#1091](https://github.com/privacy-scaling-explorations/maci/issues/1091)
 * **crypto:** get rid of potential prototype polution ([9b8a97c](https://github.com/privacy-scaling-explorations/maci/commit/9b8a97cc9661e0ee6f535cdcab19b4aa0fa98136))
 * **fetch:** fix bugs related to logs fetching ([7c7874e](https://github.com/privacy-scaling-explorations/maci/commit/7c7874e86ccfff35a45b33caa7587bd3c0b1cf01)), closes [#1043](https://github.com/privacy-scaling-explorations/maci/issues/1043) [#1044](https://github.com/privacy-scaling-explorations/maci/issues/1044)
-* **fix subsidy.sol issues:** address PR on Subsidy.sol ([bb68116](https://github.com/privacy-scaling-explorations/maci/commit/bb6811667f912c9ab0b3af2af083a5421a0d832b))
+* **fix subsidy.sol issues:** addresss PR on Subsidy.sol ([bb68116](https://github.com/privacy-scaling-explorations/maci/commit/bb6811667f912c9ab0b3af2af083a5421a0d832b))
 * **message-batch-index:** remove redundant check ([98c00a6](https://github.com/privacy-scaling-explorations/maci/commit/98c00a674133e020ea42ab3fee5d089a15d47920))
 * **publish:** ensure we publish the correct files ([bc42724](https://github.com/privacy-scaling-explorations/maci/commit/bc42724b34cf0c047c5692fbf477ed013a102aee))
-* return new poll addres ([acb38ba](https://github.com/privacy-scaling-explorations/maci/commit/acb38bafe3527ec5541e53c712981127246a007f))
+* return new poll address ([acb38ba](https://github.com/privacy-scaling-explorations/maci/commit/acb38bafe3527ec5541e53c712981127246a007f))
 * **signups:** ensure we account for the blank state leaf ([b1c8c97](https://github.com/privacy-scaling-explorations/maci/commit/b1c8c9719da5d47b92408f1222399c9c4acf3df9)), closes [#947](https://github.com/privacy-scaling-explorations/maci/issues/947)
 
 
