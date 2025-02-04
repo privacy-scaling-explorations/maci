@@ -2,7 +2,8 @@ import { Injectable, Logger } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, RootFilterQuery } from "mongoose";
 
-import { PublishMessagesDto } from "./message.dto";
+import type { ICreateMessages } from "./types";
+
 import { Message, MESSAGES_LIMIT } from "./message.schema";
 
 /**
@@ -28,11 +29,12 @@ export class MessageRepository {
    * @param dto publish messages dto
    * @returns inserted messages
    */
-  async create(dto: PublishMessagesDto): Promise<Message[]> {
-    const messages = dto.messages.map(({ data, publicKey }) => ({
+  async create(dto: ICreateMessages): Promise<Message[]> {
+    const messages = dto.messages.map(({ data, publicKey, hash }) => ({
       data,
       publicKey,
       maciContractAddress: dto.maciContractAddress,
+      hash,
       poll: dto.poll,
     }));
 
@@ -48,9 +50,13 @@ export class MessageRepository {
    * @param filter filter query
    * @returns messages
    */
-  async find(filter: RootFilterQuery<Message>, limit = MESSAGES_LIMIT): Promise<Message[]> {
+  async find(
+    filter: RootFilterQuery<Message>,
+    { limit = MESSAGES_LIMIT, skip = 0 }: Partial<{ limit: number; skip: number }> = {},
+  ): Promise<Message[]> {
     return this.MessageModel.find(filter)
       .limit(limit)
+      .skip(skip)
       .exec()
       .catch((error) => {
         this.logger.error(`Find messages error:`, error);

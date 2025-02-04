@@ -12,6 +12,8 @@ import {
   Min,
   IsOptional,
   IsString,
+  MaxLength,
+  MinLength,
 } from "class-validator";
 
 import { Message } from "../message/message.schema";
@@ -71,6 +73,19 @@ export class GetMessageBatchesDto {
   limit!: number;
 
   /**
+   * Skip
+   */
+  @ApiProperty({
+    description: "Limit",
+    minimum: 0,
+    maximum: MAX_MESSAGES,
+    type: Number,
+  })
+  @IsInt()
+  @Min(0)
+  skip!: number;
+
+  /**
    * Poll id
    */
   @ApiProperty({
@@ -102,6 +117,8 @@ export class GetMessageBatchesDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @MinLength(1, { each: true })
+  @MaxLength(256, { each: true })
   @ArrayMinSize(1)
   @ArrayMaxSize(MAX_MESSAGES)
   @Validate(IpfsHashValidator, { each: true })
@@ -115,6 +132,28 @@ export class GetMessageBatchesDto {
     type: String,
   })
   @IsOptional()
-  @Validate(PublicKeyValidator)
-  publicKey?: string;
+  @IsArray()
+  @IsString({ each: true })
+  @MinLength(1, { each: true })
+  @MaxLength(256, { each: true })
+  @ArrayMinSize(1)
+  @ArrayMaxSize(MAX_MESSAGES)
+  @Validate(PublicKeyValidator, { each: true })
+  publicKeys?: string[];
+
+  /**
+   * Message hashes
+   */
+  @ApiProperty({
+    description: "Message hashes",
+    type: [String],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @MinLength(1, { each: true })
+  @MaxLength(256, { each: true })
+  @ArrayMinSize(1)
+  @ArrayMaxSize(MAX_MESSAGES)
+  messageHashes?: string[];
 }

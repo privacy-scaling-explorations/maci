@@ -22,6 +22,8 @@ export function createPublishMessageEvent(
 ): PublishMessage {
   const event = changetype<PublishMessage>(newMockEvent());
 
+  const encPubKey = [ethereum.Value.fromUnsignedBigInt(encPubKeyX), ethereum.Value.fromUnsignedBigInt(encPubKeyY)];
+
   event.parameters.push(
     new ethereum.EventParam(
       "_message",
@@ -29,12 +31,7 @@ export function createPublishMessageEvent(
     ),
   );
   event.parameters.push(
-    new ethereum.EventParam(
-      "_encPubKey",
-      ethereum.Value.fromTuple(
-        changetype<ethereum.Tuple>(ethereum.Value.fromUnsignedBigIntArray([encPubKeyX, encPubKeyY])),
-      ),
-    ),
+    new ethereum.EventParam("_encPubKey", ethereum.Value.fromTuple(changetype<ethereum.Tuple>(encPubKey))),
   );
   event.address = address;
 

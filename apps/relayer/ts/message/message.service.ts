@@ -1,5 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
+import { PubKey } from "maci-domainobjs";
+import { getDefaultSigner, MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-sdk";
 
 import type { PublishMessagesDto } from "./message.dto";
 
@@ -36,7 +38,21 @@ export class MessageService {
    * @returns success or not
    */
   async saveMessages(args: PublishMessagesDto): Promise<Message[]> {
-    return this.messageRepository.create(args).catch((error) => {
+    const signer = await getDefaultSigner();
+
+    const maciContract = MACIFactory.connect(args.maciContractAddress, signer);
+    const pollAddresses = await maciContract.polls(args.poll);
+    const pollContract = PollFactory.connect(pollAddresses.poll, signer);
+
+    const hashes = await Promise.all(
+      args.messages.map(({ data, publicKey }) =>
+        pollContract.hashMessageAndEncPubKey({ data }, PubKey.deserialize(publicKey).asContractParam()),
+      ),
+    );
+
+    const messages = args.messages.map((message, index) => ({ ...message, hash: hashes[index].toString() }));
+
+    return this.messageRepository.create({ ...args, messages }).catch((error) => {
       this.logger.error(`Save messages error:`, error);
       throw error;
     });

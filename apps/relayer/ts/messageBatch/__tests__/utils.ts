@@ -1,6 +1,7 @@
 import { ZeroAddress } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
+import { Message } from "../../message/message.schema";
 import { GetMessageBatchesDto, MAX_MESSAGES, MessageBatchDto } from "../messageBatch.dto";
 
 const keypair = new Keypair();
@@ -8,14 +9,13 @@ const keypair = new Keypair();
 export const defaultIpfsHash = "QmXj8v1qbwTqVp9RxkQR29Xjc6g5C1KL2m2gZ9b8t8THHj";
 
 const defaultMessageBatch = new MessageBatchDto();
-defaultMessageBatch.messages = [
-  {
-    publicKey: keypair.pubKey.serialize(),
-    data: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
-    maciContractAddress: ZeroAddress,
-    poll: 0,
-  },
-];
+const defaultMessage = new Message();
+defaultMessage.data = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+defaultMessage.hash = "0";
+defaultMessage.publicKey = keypair.pubKey.serialize();
+defaultMessage.maciContractAddress = ZeroAddress;
+defaultMessage.poll = 0;
+defaultMessageBatch.messages = [defaultMessage];
 defaultMessageBatch.ipfsHash = defaultIpfsHash;
 
 export const defaultMessageBatches: MessageBatchDto[] = [defaultMessageBatch];
@@ -25,4 +25,5 @@ defaultGetMessageBatchesDto.limit = MAX_MESSAGES;
 defaultGetMessageBatchesDto.maciContractAddress = ZeroAddress;
 defaultGetMessageBatchesDto.poll = 0;
 defaultGetMessageBatchesDto.ipfsHashes = [defaultIpfsHash];
-defaultGetMessageBatchesDto.publicKey = keypair.pubKey.serialize();
+defaultGetMessageBatchesDto.messageHashes = ["0"];
+defaultGetMessageBatchesDto.publicKeys = [keypair.pubKey.serialize()];

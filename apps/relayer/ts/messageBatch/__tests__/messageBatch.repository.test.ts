@@ -9,18 +9,22 @@ import { defaultMessageBatches } from "./utils";
 describe("MessageBatchRepository", () => {
   const mockMessageBatchModel = {
     find: jest.fn().mockReturnValue({
-      limit: jest
-        .fn()
-        .mockReturnValue({ exec: jest.fn().mockImplementation(() => Promise.resolve([defaultMessageBatches])) }),
+      limit: jest.fn().mockReturnValue({
+        skip: jest
+          .fn()
+          .mockReturnValue({ exec: jest.fn().mockImplementation(() => Promise.resolve([defaultMessageBatches])) }),
+      }),
     }),
     insertMany: jest.fn().mockImplementation(() => Promise.resolve(defaultMessageBatches)),
   };
 
   beforeEach(() => {
     mockMessageBatchModel.find = jest.fn().mockReturnValue({
-      limit: jest
-        .fn()
-        .mockReturnValue({ exec: jest.fn().mockImplementation(() => Promise.resolve([defaultMessageBatches])) }),
+      limit: jest.fn().mockReturnValue({
+        skip: jest
+          .fn()
+          .mockReturnValue({ exec: jest.fn().mockImplementation(() => Promise.resolve([defaultMessageBatches])) }),
+      }),
     });
     mockMessageBatchModel.insertMany = jest.fn().mockImplementation(() => Promise.resolve(defaultMessageBatches));
   });
@@ -60,7 +64,7 @@ describe("MessageBatchRepository", () => {
 
     (mockMessageBatchModel.find as jest.Mock).mockReturnValue({
       limit: jest.fn().mockReturnValue({
-        exec: jest.fn().mockImplementation(() => Promise.reject(error)),
+        skip: jest.fn().mockReturnValue({ exec: jest.fn().mockImplementation(() => Promise.reject(error)) }),
       }),
     });
 

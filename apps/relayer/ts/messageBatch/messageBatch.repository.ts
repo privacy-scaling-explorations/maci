@@ -43,9 +43,13 @@ export class MessageBatchRepository {
    * @param limit limit
    * @returns message batches
    */
-  async find(filter: RootFilterQuery<MessageBatch>, limit = MESSAGE_BATCHES_LIMIT): Promise<MessageBatch[]> {
+  async find(
+    filter: RootFilterQuery<MessageBatch>,
+    { limit = MESSAGE_BATCHES_LIMIT, skip = 0 }: Partial<{ limit: number; skip: number }> = {},
+  ): Promise<MessageBatch[]> {
     return this.MessageBatchModel.find(filter)
       .limit(limit)
+      .skip(skip)
       .exec()
       .catch((error) => {
         this.logger.error(`Find message batches error:`, error);

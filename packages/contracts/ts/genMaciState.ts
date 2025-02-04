@@ -5,7 +5,7 @@ import { type Keypair, PubKey, Message } from "maci-domainobjs";
 
 import assert from "assert";
 
-import type { Action } from "./types";
+import type { Action, IIpfsMessage } from "./types";
 
 import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "../typechain-types";
 
@@ -174,16 +174,14 @@ export const genMaciStateFromContract = async (
       ipfsHashAddedLogs.map(async (event) => {
         assert(!!event);
 
-        return ipfsService
-          .read<{ messages: string[][]; encPubKeys: [string, string][] }>(event.args._ipfsHash)
-          .then(({ messages, encPubKeys }) => ({
-            data: messages.map((value, index) => ({
-              message: new Message(value.map(BigInt)),
-              encPubKey: new PubKey([BigInt(encPubKeys[index][0]), BigInt(encPubKeys[index][1])]),
-            })),
-            blockNumber: event.blockNumber,
-            transactionIndex: event.transactionIndex,
-          }));
+        return ipfsService.read<IIpfsMessage[]>(event.args._ipfsHash).then((messages) => ({
+          data: messages.map((value) => ({
+            message: new Message(value.data.map(BigInt)),
+            encPubKey: new PubKey([BigInt(value.publicKey[0]), BigInt(value.publicKey[1])]),
+          })),
+          blockNumber: event.blockNumber,
+          transactionIndex: event.transactionIndex,
+        }));
       }),
     );
 

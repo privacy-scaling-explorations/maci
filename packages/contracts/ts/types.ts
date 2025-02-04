@@ -219,3 +219,33 @@ export interface IGenProofOptions {
   wasmPath?: string;
   silent?: boolean;
 }
+
+/**
+ * Interface that represents IPFS message
+ */
+export interface IIpfsMessage {
+  /**
+   * User public key
+   */
+  publicKey: [string, string];
+
+  /**
+   * Message data
+   */
+  data: string[];
+
+  /**
+   * Message hash
+   */
+  hash: string;
+
+  /**
+   * MACI contract address
+   */
+  maciContractAddress: string;
+
+  /**
+   * Poll id
+   */
+  poll: number;
+}

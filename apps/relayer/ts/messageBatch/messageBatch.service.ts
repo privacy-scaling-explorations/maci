@@ -3,7 +3,7 @@ import { validate } from "class-validator";
 import flatten from "lodash/flatten";
 import uniqBy from "lodash/uniqBy";
 import { PubKey } from "maci-domainobjs";
-import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-sdk";
+import { getDefaultSigner, MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-sdk";
 
 import type { MessageBatch } from "./messageBatch.schema";
 import type { RootFilterQuery } from "mongoose";
@@ -40,8 +40,11 @@ export class MessageBatchService {
    * @param filter filter query
    * @param limit limit
    */
-  async findMessageBatches(filter: RootFilterQuery<MessageBatch>, limit = MAX_MESSAGES): Promise<MessageBatch[]> {
-    return this.messageBatchRepository.find(filter, limit).catch((error) => {
+  async findMessageBatches(
+    filter: RootFilterQuery<MessageBatch>,
+    { limit = MAX_MESSAGES, skip = 0 }: Partial<{ limit: number; skip: number }> = {},
+  ): Promise<MessageBatch[]> {
+    return this.messageBatchRepository.find(filter, { limit, skip }).catch((error) => {
       this.logger.error(`Find message batches error:`, error);
       throw error;
     });
@@ -67,7 +70,10 @@ export class MessageBatchService {
       throw new Error("Validation error");
     }
 
-    const allMessages = flatten(args.map((item) => item.messages));
+    const allMessages = flatten(args.map((item) => item.messages)).map((message) => ({
+      ...message,
+      publicKey: PubKey.deserialize(message.publicKey).asArray(),
+    }));
 
     const ipfsHash = await this.ipfsService.add(allMessages).catch((error) => {
       this.logger.error(`Upload message batches to ipfs error:`, error);
@@ -89,13 +95,14 @@ export class MessageBatchService {
       "maciContractAddress",
     );
 
-    const maciContract = MACIFactory.connect(maciAddress);
+    const signer = await getDefaultSigner();
+    const maciContract = MACIFactory.connect(maciAddress, signer);
     const pollAddresses = await maciContract.polls(pollId);
-    const pollContract = PollFactory.connect(pollAddresses.poll);
+    const pollContract = PollFactory.connect(pollAddresses.poll, signer);
 
     const messageHashes = await Promise.all(
       allMessages.map(({ data, publicKey }) =>
-        pollContract.hashMessageAndEncPubKey({ data }, PubKey.deserialize(publicKey).asContractParam()),
+        pollContract.hashMessageAndEncPubKey({ data }, { x: publicKey[0], y: publicKey[1] }),
       ),
     );
 

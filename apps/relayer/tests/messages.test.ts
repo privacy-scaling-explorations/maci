@@ -21,7 +21,7 @@ describe("Integration messages", () => {
 
   beforeAll(async () => {
     const { TestDeploy } = await import("./deploy");
-    await TestDeploy.sleep(5_000);
+    await TestDeploy.sleep(10_000);
     const testDeploy = await TestDeploy.getInstance();
     const poll = testDeploy.contractsData.maciState!.polls.get(0n);
 
@@ -136,7 +136,7 @@ describe("Integration messages", () => {
       expect(result.body).toStrictEqual({
         error: "Bad Request",
         statusCode: HttpStatus.BAD_REQUEST,
-        message: ["messages.0.data must contain at least 10 elements", "messages.0.Public key (invalid) is invalid"],
+        message: ["messages.0.data must contain at least 10 elements", "messages.0.Public key is invalid"],
       });
     });
 

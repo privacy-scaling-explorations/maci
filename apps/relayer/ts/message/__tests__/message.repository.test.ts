@@ -13,6 +13,7 @@ describe("MessageRepository", () => {
     {
       publicKey: new Keypair().pubKey.serialize(),
       data: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+      hash: "hash",
       maciContractAddress: ZeroAddress,
       poll: 0,
     },
@@ -20,14 +21,18 @@ describe("MessageRepository", () => {
 
   const mockMessageModel = {
     find: jest.fn().mockReturnValue({
-      limit: jest.fn().mockReturnValue({ exec: jest.fn().mockImplementation(() => Promise.resolve(defaultMessages)) }),
+      limit: jest.fn().mockReturnValue({
+        skip: jest.fn().mockReturnValue({ exec: jest.fn().mockImplementation(() => Promise.resolve(defaultMessages)) }),
+      }),
     }),
     insertMany: jest.fn().mockImplementation(() => Promise.resolve(defaultMessages)),
   };
 
   beforeEach(() => {
     mockMessageModel.find = jest.fn().mockReturnValue({
-      limit: jest.fn().mockReturnValue({ exec: jest.fn().mockImplementation(() => Promise.resolve(defaultMessages)) }),
+      limit: jest.fn().mockReturnValue({
+        skip: jest.fn().mockReturnValue({ exec: jest.fn().mockImplementation(() => Promise.resolve(defaultMessages)) }),
+      }),
     });
     mockMessageModel.insertMany = jest.fn().mockImplementation(() => Promise.resolve(defaultMessages));
   });
@@ -67,7 +72,7 @@ describe("MessageRepository", () => {
 
     (mockMessageModel.find as jest.Mock).mockReturnValue({
       limit: jest.fn().mockReturnValue({
-        exec: jest.fn().mockImplementation(() => Promise.reject(error)),
+        skip: jest.fn().mockReturnValue({ exec: jest.fn().mockImplementation(() => Promise.reject(error)) }),
       }),
     });
 
