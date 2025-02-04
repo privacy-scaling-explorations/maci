@@ -237,7 +237,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   }
 
   /// @inheritdoc IPoll
-  function publishMessage(Message memory _message, PubKey calldata _encPubKey) public virtual isWithinVotingDeadline {
+  function publishMessage(Message calldata _message, PubKey calldata _encPubKey) public virtual isWithinVotingDeadline {
     // check if the public key is on the curve
     if (!CurveBabyJubJub.isOnCurve(_encPubKey.x, _encPubKey.y)) {
       revert InvalidPubKey();
