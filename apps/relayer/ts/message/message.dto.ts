@@ -11,6 +11,8 @@ import {
   ValidateNested,
   ArrayNotEmpty,
   IsString,
+  MaxLength,
+  MinLength,
 } from "class-validator";
 import { Message } from "maci-domainobjs";
 
@@ -33,6 +35,9 @@ export class MessageContractParamsDto {
     type: [String],
   })
   @IsArray()
+  @IsString({ each: true })
+  @MinLength(1, { each: true })
+  @MaxLength(256, { each: true })
   @ArrayMinSize(Message.DATA_LENGTH)
   @ArrayMaxSize(Message.DATA_LENGTH)
   data!: string[];
@@ -76,6 +81,8 @@ export class PublishMessagesDto {
   @ArrayMinSize(8)
   @ArrayMaxSize(8)
   @IsString({ each: true })
+  @MinLength(1, { each: true })
+  @MaxLength(256, { each: true })
   proof!: string[];
 
   /**

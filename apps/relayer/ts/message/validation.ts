@@ -27,6 +27,6 @@ export class PublicKeyValidator implements ValidatorConstraintInterface {
    * @returns default validation message
    */
   defaultMessage(): string {
-    return "Public key ($value) is invalid";
+    return "Public key is invalid";
   }
 }

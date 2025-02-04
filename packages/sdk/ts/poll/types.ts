@@ -1,4 +1,5 @@
 import type { BigNumberish, Provider, Signer } from "ethers";
+import type { Poll, MessageProcessor, Tally, MACI } from "maci-contracts/typechain-types";
 
 /**
  * Interface for the arguments to the get poll command
@@ -23,6 +24,36 @@ export interface IGetPollArgs {
    * The poll id. If not specified, latest poll id will be used
    */
   pollId?: BigNumberish;
+}
+
+/**
+ * Interface that represents get poll contracts data
+ */
+export interface IGetPollContractsData {
+  /**
+   * Poll id
+   */
+  id: bigint;
+
+  /**
+   * MACI contract
+   */
+  maci: MACI;
+
+  /**
+   * Poll contract
+   */
+  poll: Poll;
+
+  /**
+   * MessageProcessor contract
+   */
+  messageProcessor: MessageProcessor;
+
+  /**
+   * Tally contract
+   */
+  tally: Tally;
 }
 
 /**

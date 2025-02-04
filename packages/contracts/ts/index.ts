@@ -45,6 +45,7 @@ export {
   type IProveParams,
 } from "../tasks/helpers/types";
 export { linkPoseidonLibraries } from "../tasks/helpers/abi";
+export { IpfsService } from "./ipfs";
 
 export type {
   IVerifyingKeyStruct,
@@ -54,5 +55,6 @@ export type {
   ISnarkJSVerificationKey,
   FullProveResult,
   IGenProofOptions,
+  IIpfsMessage,
 } from "./types";
 export * from "../typechain-types";

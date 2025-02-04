@@ -31,6 +31,12 @@ export class Message {
   data!: string[];
 
   /**
+   * Message hash
+   */
+  @Prop({ required: true })
+  hash!: string;
+
+  /**
    * MACI contract address
    */
   @Prop({ required: true })

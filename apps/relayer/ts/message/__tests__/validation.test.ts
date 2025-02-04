@@ -25,6 +25,6 @@ describe("PublicKeyValidator", () => {
 
     const result = validator.defaultMessage();
 
-    expect(result).toBe("Public key ($value) is invalid");
+    expect(result).toBe("Public key is invalid");
   });
 });

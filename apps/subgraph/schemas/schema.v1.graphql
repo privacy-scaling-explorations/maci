@@ -52,6 +52,8 @@ type Poll @entity {
 type Vote @entity(immutable: true) {
   id: Bytes!
   data: [BigInt!]! # uint256[10]
+  publicKey: [BigInt!]! # uint256[2] (x, y)
+  hash: BigInt!
   timestamp: BigInt!
   cid: String
 

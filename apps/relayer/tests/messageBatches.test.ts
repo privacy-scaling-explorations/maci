@@ -81,9 +81,10 @@ describe("Integration message batches", () => {
         .get("/v1/messageBatches/get")
         .send({
           limit: 0,
+          skip: -1,
           poll: -1,
           maciContractAddress: "invalid",
-          publicKey: "invalid",
+          publicKeys: ["invalid"],
           ipfsHashes: ["invalid1", "invalid2"],
         })
         .expect(HttpStatus.BAD_REQUEST);
@@ -93,10 +94,11 @@ describe("Integration message batches", () => {
         statusCode: HttpStatus.BAD_REQUEST,
         message: [
           "limit must be a positive number",
+          "skip must not be less than 0",
           "poll must not be less than 0",
           "maciContractAddress must be an Ethereum address",
           "IPFS hash is invalid",
-          "Public key (invalid) is invalid",
+          "Public key is invalid",
         ],
       });
     });
@@ -106,9 +108,10 @@ describe("Integration message batches", () => {
         .get("/v1/messageBatches/get")
         .send({
           limit: 10,
+          skip: 0,
           poll: 0,
           maciContractAddress,
-          publicKey: user!.pubKey.serialize(),
+          publicKeys: [user!.pubKey.serialize()],
         })
         .expect(HttpStatus.OK);
 

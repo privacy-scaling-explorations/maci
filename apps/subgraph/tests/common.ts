@@ -23,6 +23,37 @@ export function mockPollContract(): void {
     "getDeployTimeAndDuration",
     "getDeployTimeAndDuration():(uint256,uint256)",
   ).returns([ethereum.Value.fromI32(30), ethereum.Value.fromI32(40)]);
+
+  createMockedFunction(
+    DEFAULT_POLL_ADDRESS,
+    "hashMessageAndEncPubKey",
+    "hashMessageAndEncPubKey((uint256[10]),(uint256,uint256)):(uint256)",
+  )
+    .withArgs([
+      ethereum.Value.fromTuple(
+        changetype<ethereum.Tuple>([
+          ethereum.Value.fromFixedSizedArray([
+            ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(0)),
+            ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(1)),
+            ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(2)),
+            ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(3)),
+            ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(4)),
+            ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(5)),
+            ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(6)),
+            ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(7)),
+            ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(8)),
+            ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(9)),
+          ]),
+        ]),
+      ),
+      ethereum.Value.fromTuple(
+        changetype<ethereum.Tuple>([
+          ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(2)),
+          ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(3)),
+        ]),
+      ),
+    ])
+    .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(9000))]);
 }
 
 export function mockMaciContract(): void {

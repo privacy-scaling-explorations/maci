@@ -1,13 +1,16 @@
 /* eslint-disable no-underscore-dangle */
 
-import { Bytes, ipfs, log, Value, BigInt as GraphBN, JSONValue } from "@graphprotocol/graph-ts";
+import { Bytes, ipfs, Value, BigInt as GraphBN, JSONValue } from "@graphprotocol/graph-ts";
 
 import { Poll, Vote, MACI, ChainHash } from "../generated/schema";
 import {
+  Poll as PollContract,
   MergeState as MergeStateEvent,
   PublishMessage as PublishMessageEvent,
   ChainHashUpdated as ChainHashUpdatedEvent,
   IpfsHashAdded as IpfsHashAddedEvent,
+  Poll__hashMessageAndEncPubKeyInput_messageStruct as HashMessageAndEncPubKeyInputMessageStruct,
+  Poll__hashMessageAndEncPubKeyInput_encPubKeyStruct as HashMessageAndEncPubKeyInputEncPubKeyStruct,
 } from "../generated/templates/Poll/Poll";
 
 import { ONE_BIG_INT } from "./utils/constants";
@@ -33,8 +36,14 @@ export function handleMergeState(event: MergeStateEvent): void {
 
 export function handlePublishMessage(event: PublishMessageEvent): void {
   const vote = new Vote(event.transaction.hash.concatI32(event.logIndex.toI32()));
+  const pollContract = PollContract.bind(event.address);
   vote.data = event.params._message.data;
   vote.poll = event.address;
+  vote.hash = pollContract.hashMessageAndEncPubKey(
+    changetype<HashMessageAndEncPubKeyInputMessageStruct>(event.params._message),
+    changetype<HashMessageAndEncPubKeyInputEncPubKeyStruct>(event.params._encPubKey),
+  );
+  vote.publicKey = [event.params._encPubKey.x, event.params._encPubKey.y];
   vote.timestamp = event.block.timestamp;
   vote.save();
 
@@ -77,30 +86,32 @@ export function processIpfsVotes(data: JSONValue, userData: Value): void {
   const timestamp = params[2].toString();
   const pollAddress = Bytes.fromHexString(params[3].toString());
 
-  const jsonData = data.toObject();
-  const jsonMessages = jsonData.get("messages");
-
-  if (!jsonMessages) {
-    log.warning("Message batch file {} has invalid format", [cid]);
-    return;
-  }
-
-  const messages = jsonMessages.toArray();
+  const messages = data.toArray();
+  let counter = 0;
 
   for (let index = 0; index < messages.length; index += 1) {
     const vote = new Vote(Bytes.fromHexString(voteId).concatI32(index));
+    const message = messages[index].toObject();
+    const messageData = message.get("data");
+    const hash = message.get("hash");
+    const publicKey = message.get("publicKey");
 
-    vote.data = castToBigIntArray(messages[index].toArray());
-    vote.poll = pollAddress;
-    vote.cid = cid;
-    vote.timestamp = GraphBN.fromString(timestamp);
-    vote.save();
+    if (messageData && publicKey && hash) {
+      vote.data = castToBigIntArray(messageData.toArray());
+      vote.publicKey = castToBigIntArray(publicKey.toArray());
+      vote.poll = pollAddress;
+      vote.hash = GraphBN.fromString(hash.toString());
+      vote.cid = cid;
+      vote.timestamp = GraphBN.fromString(timestamp);
+      vote.save();
+      counter += 1;
+    }
   }
 
   const poll = Poll.load(pollAddress);
 
   if (poll) {
-    poll.numMessages = poll.numMessages.plus(GraphBN.fromI32(messages.length));
+    poll.numMessages = poll.numMessages.plus(GraphBN.fromI32(counter));
     poll.updatedAt = GraphBN.fromString(timestamp);
     poll.save();
   }

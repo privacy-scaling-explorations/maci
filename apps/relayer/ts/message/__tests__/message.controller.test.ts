@@ -5,7 +5,7 @@ import { Test } from "@nestjs/testing";
 import { MessageController } from "../message.controller";
 import { MessageService } from "../message.service";
 
-import { defaultSaveMessagesArgs } from "./utils";
+import { defaultSaveMessagesDto } from "./utils";
 
 describe("MessageController", () => {
   let controller: MessageController;
@@ -39,7 +39,7 @@ describe("MessageController", () => {
 
   describe("v1/messages/publish", () => {
     test("should publish user messages properly", async () => {
-      const data = await controller.publish(defaultSaveMessagesArgs);
+      const data = await controller.publish(defaultSaveMessagesDto);
 
       expect(data).toBe(true);
     });
@@ -48,7 +48,7 @@ describe("MessageController", () => {
       const error = new Error("error");
       mockMessageService.saveMessages.mockImplementation(() => Promise.reject(error));
 
-      await expect(controller.publish(defaultSaveMessagesArgs)).rejects.toThrow(
+      await expect(controller.publish(defaultSaveMessagesDto)).rejects.toThrow(
         new HttpException(error.message, HttpStatus.BAD_REQUEST),
       );
     });

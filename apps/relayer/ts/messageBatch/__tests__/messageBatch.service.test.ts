@@ -9,7 +9,7 @@ import { MessageBatchService } from "../messageBatch.service";
 
 import { defaultIpfsHash, defaultMessageBatches } from "./utils";
 
-jest.mock("maci-contracts", (): unknown => ({
+jest.mock("maci-sdk", (): unknown => ({
   MACI__factory: {
     connect: jest.fn(),
   },

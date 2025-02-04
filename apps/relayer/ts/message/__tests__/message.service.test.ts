@@ -1,13 +1,35 @@
 import { jest } from "@jest/globals";
+import { ZeroAddress } from "ethers";
+import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-sdk";
 
 import type { MessageBatchService } from "../../messageBatch/messageBatch.service";
 import type { MessageRepository } from "../message.repository";
 
 import { MessageService } from "../message.service";
 
-import { defaultMessages, defaultSaveMessagesArgs } from "./utils";
+import { defaultMessages, defaultSaveMessagesDto } from "./utils";
+
+jest.mock("maci-sdk", (): unknown => ({
+  MACI__factory: {
+    connect: jest.fn(),
+  },
+  Poll__factory: {
+    connect: jest.fn(),
+  },
+}));
 
 describe("MessageService", () => {
+  const mockMaciContract = {
+    polls: jest.fn().mockImplementation(() => Promise.resolve({ poll: ZeroAddress })),
+  };
+
+  const mockPollContract = {
+    hashMessageAndEncPubKey: jest.fn().mockImplementation(() => Promise.resolve("hash")),
+    relayMessagesBatch: jest
+      .fn()
+      .mockImplementation(() => Promise.resolve({ wait: jest.fn().mockImplementation(() => Promise.resolve()) })),
+  };
+
   const mockMessageBatchService = {
     saveMessageBatches: jest.fn().mockImplementation((args) => Promise.resolve(args)),
   };
@@ -18,6 +40,9 @@ describe("MessageService", () => {
   };
 
   beforeEach(() => {
+    MACIFactory.connect = jest.fn().mockImplementation(() => mockMaciContract) as typeof MACIFactory.connect;
+    PollFactory.connect = jest.fn().mockImplementation(() => mockPollContract) as typeof PollFactory.connect;
+
     mockMessageBatchService.saveMessageBatches = jest.fn().mockImplementation((args) => Promise.resolve(args));
 
     mockRepository.create = jest.fn().mockImplementation(() => Promise.resolve(defaultMessages));
@@ -34,7 +59,7 @@ describe("MessageService", () => {
       mockRepository as unknown as MessageRepository,
     );
 
-    const result = await service.saveMessages(defaultSaveMessagesArgs);
+    const result = await service.saveMessages(defaultSaveMessagesDto);
 
     expect(result).toStrictEqual(defaultMessages);
   });
@@ -49,7 +74,7 @@ describe("MessageService", () => {
       mockRepository as unknown as MessageRepository,
     );
 
-    await expect(service.saveMessages(defaultSaveMessagesArgs)).rejects.toThrow(error);
+    await expect(service.saveMessages(defaultSaveMessagesDto)).rejects.toThrow(error);
   });
 
   test("should publish messages properly", async () => {
