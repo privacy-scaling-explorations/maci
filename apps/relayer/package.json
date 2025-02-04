@@ -27,7 +27,7 @@
     "@helia/json": "^4.0.2",
     "@nestjs/common": "^11.0.6",
     "@nestjs/core": "^11.0.6",
-    "@nestjs/mongoose": "^11.0.0",
+    "@nestjs/mongoose": "^11.0.1",
     "@nestjs/platform-express": "^11.0.6",
     "@nestjs/platform-socket.io": "^11.0.7",
     "@nestjs/schedule": "^5.0.1",
