@@ -72,4 +72,8 @@ interface IMACI {
   /// @notice Get the number of signups
   /// @return numsignUps The number of signups
   function numSignUps() external view returns (uint256);
+
+  /// @notice Get the next poll ID
+  /// @return The next poll ID
+  function nextPollId() external view returns (uint256);
 }

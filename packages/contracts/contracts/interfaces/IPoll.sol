@@ -41,7 +41,7 @@ interface IPoll {
   /// @param _encPubKey An ephemeral public key which can be combined with the
   /// coordinator's private key to generate an ECDH shared key with which
   /// to encrypt the message.
-  function publishMessage(DomainObjs.Message memory _message, DomainObjs.PubKey calldata _encPubKey) external;
+  function publishMessage(DomainObjs.Message calldata _message, DomainObjs.PubKey calldata _encPubKey) external;
 
   /// @notice Submit a message batch
   /// @dev Can only be submitted before the voting deadline
