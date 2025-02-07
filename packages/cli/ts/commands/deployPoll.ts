@@ -25,7 +25,8 @@ import {
  * @returns The addresses of the deployed contracts
  */
 export const deployPoll = async ({
-  pollDuration,
+  pollStartDate,
+  pollEndDate,
   intStateTreeDepth,
   messageBatchSize,
   voteOptionTreeDepth,
@@ -83,8 +84,12 @@ export const deployPoll = async ({
   }
 
   // required arg -> poll duration
-  if (pollDuration <= 0) {
-    logError("Duration cannot be <= 0");
+  if (pollStartDate < Math.floor(Date.now() / 1000)) {
+    logError("Start date cannot be in the past");
+  }
+
+  if (pollEndDate <= pollStartDate) {
+    logError("End date cannot be before start date");
   }
 
   // required arg -> int state tree depth
@@ -125,7 +130,8 @@ export const deployPoll = async ({
     // deploy the poll contract via the maci contract
     const tx = await maciContract.deployPoll(
       {
-        duration: pollDuration,
+        startDate: pollStartDate,
+        endDate: pollEndDate,
         treeDepths: {
           intStateTreeDepth,
           voteOptionTreeDepth,

@@ -33,8 +33,7 @@ export class TreeMerger {
    */
   async checkPollDuration(): Promise<void> {
     // check if it's time to merge the message AQ
-    const [deployTime, duration] = await this.pollContract.getDeployTimeAndDuration();
-    const deadline = Number(deployTime) + Number(duration);
+    const deadline = await this.pollContract.endDate();
 
     const blockNum = await this.deployer.provider.getBlockNumber();
     const block = await this.deployer.provider.getBlock(blockNum);

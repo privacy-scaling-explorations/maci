@@ -15,8 +15,10 @@ interface IMACI {
   }
   /// @notice A struct holding the params for poll deployment
   struct DeployPollArgs {
-    /// @param duration How long should the Poll last for
-    uint256 duration;
+    /// @param startDate The start date of the poll
+    uint256 startDate;
+    /// @param endDate The end date of the poll
+    uint256 endDate;
     /// @param treeDepths The depth of the Merkle trees
     Params.TreeDepths treeDepths;
     /// @param messageBatchSize The message batch size

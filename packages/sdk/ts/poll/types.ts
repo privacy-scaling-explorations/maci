@@ -71,14 +71,14 @@ export interface IGetPollData {
   address: string;
 
   /**
-   * The poll deployment time
+   * The poll deployment timestamp
    */
-  deployTime: BigNumberish;
+  startDate: BigNumberish;
 
   /**
-   * The poll duration
+   * The poll end timestamp
    */
-  duration: BigNumberish;
+  endDate: BigNumberish;
 
   /**
    * The poll number of signups

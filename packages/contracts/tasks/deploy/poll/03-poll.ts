@@ -40,7 +40,8 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
     const pollId = await maciContract.nextPollId();
 
     const coordinatorPubkey = deployment.getDeployConfigField<string>(EContracts.Poll, "coordinatorPubkey");
-    const pollDuration = deployment.getDeployConfigField<number>(EContracts.Poll, "pollDuration");
+    const pollStartTimestamp = deployment.getDeployConfigField<number>(EContracts.Poll, "pollStartDate");
+    const pollEndTimestamp = deployment.getDeployConfigField<number>(EContracts.Poll, "pollEndDate");
     const intStateTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "intStateTreeDepth");
     const messageBatchSize = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageBatchSize");
     const voteOptionTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "voteOptionTreeDepth");
@@ -64,7 +65,8 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
     );
 
     const tx = await maciContract.deployPoll({
-      duration: pollDuration,
+      startDate: pollStartTimestamp,
+      endDate: pollEndTimestamp,
       treeDepths: {
         intStateTreeDepth,
         voteOptionTreeDepth,
@@ -112,7 +114,8 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
         key: `poll-${pollId}`,
         contract: pollContract,
         args: [
-          pollDuration,
+          pollStartTimestamp,
+          pollEndTimestamp,
           {
             intStateTreeDepth,
             voteOptionTreeDepth,

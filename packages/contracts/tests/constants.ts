@@ -11,7 +11,7 @@ export interface ExtContractsStruct {
   initialVoiceCreditProxy: AddressLike;
 }
 
-export const duration = 2_000;
+export const duration = 2_000_000;
 
 export const STATE_TREE_DEPTH = 10;
 export const MESSAGE_TREE_DEPTH = 2;

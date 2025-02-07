@@ -33,6 +33,7 @@ export {
   getDefaultSigner,
   cleanThreads,
   unlinkFile,
+  getBlockTimestamp,
 } from "maci-contracts";
 
 export type {

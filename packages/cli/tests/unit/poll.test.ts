@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { getDefaultSigner } from "maci-sdk";
+import { getBlockTimestamp, getDefaultSigner } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
@@ -13,7 +13,7 @@ import {
   mergeSignups,
 } from "../../ts/commands";
 import { DeployedContracts, PollContracts } from "../../ts/utils";
-import { deployPollArgs, setVerifyingKeysArgs, deployArgs } from "../constants";
+import { deployPollArgs, setVerifyingKeysArgs, deployArgs, pollDuration } from "../constants";
 import { clean } from "../utils";
 
 describe("poll", function test() {
@@ -39,10 +39,17 @@ describe("poll", function test() {
     });
 
     before(async () => {
+      const startDate = await getBlockTimestamp(signer);
+
       // deploy the smart contracts
       maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
-      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
+      pollAddresses = await deployPoll({
+        ...deployPollArgs,
+        signer,
+        pollStartDate: startDate,
+        pollEndDate: startDate + pollDuration,
+      });
     });
 
     it("should get current poll properly", async () => {
@@ -66,7 +73,7 @@ describe("poll", function test() {
         provider: signer.provider!,
       });
 
-      await timeTravel({ seconds: Number(pollData.duration), signer });
+      await timeTravel({ seconds: pollDuration, signer });
       await mergeSignups({ pollId: BigInt(pollData.id), maciAddress: maciAddresses.maciAddress, signer });
 
       const finishedPollData = await getPoll({

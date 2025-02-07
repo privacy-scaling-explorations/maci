@@ -19,8 +19,8 @@ export const getPoll = async ({ maciAddress, signer, provider, pollId }: IGetPol
     tally: tallyContract,
   } = await getPollContracts({ maciAddress, pollId, signer, provider });
 
-  const [[deployTime, duration], mergedStateRoot, pollAddress] = await Promise.all([
-    pollContract.getDeployTimeAndDuration(),
+  const [[startDate, endDate], mergedStateRoot, pollAddress] = await Promise.all([
+    pollContract.getStartAndEndDate(),
     pollContract.mergedStateRoot(),
     pollContract.getAddress(),
   ]);
@@ -33,8 +33,8 @@ export const getPoll = async ({ maciAddress, signer, provider, pollId }: IGetPol
   return {
     id,
     address: pollAddress,
-    deployTime,
-    duration,
+    startDate,
+    endDate,
     numSignups,
     isMerged,
     mode,

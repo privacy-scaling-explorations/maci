@@ -24,6 +24,11 @@ export function mockPollContract(): void {
     "getDeployTimeAndDuration():(uint256,uint256)",
   ).returns([ethereum.Value.fromI32(30), ethereum.Value.fromI32(40)]);
 
+  createMockedFunction(DEFAULT_POLL_ADDRESS, "getStartAndEndDate", "getStartAndEndDate():(uint256,uint256)").returns([
+    ethereum.Value.fromI32(30),
+    ethereum.Value.fromI32(40),
+  ]);
+
   createMockedFunction(
     DEFAULT_POLL_ADDRESS,
     "hashMessageAndEncPubKey",

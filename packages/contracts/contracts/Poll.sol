@@ -25,11 +25,10 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   /// @notice the state root of the state merkle tree
   uint256 public mergedStateRoot;
 
-  // The timestamp of the block at which the Poll was deployed
-  uint256 internal immutable deployTime;
-
-  // The duration of the polling period, in seconds
-  uint256 internal immutable duration;
+  /// @notice The start date of the poll
+  uint256 public immutable startDate;
+  /// @notice The end date of the poll
+  uint256 public immutable endDate;
 
   /// @notice The root of the empty ballot tree at a given voteOptionTree depth
   uint256 public immutable emptyBallotRoot;
@@ -105,6 +104,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
 
   error VotingPeriodOver();
   error VotingPeriodNotOver();
+  error VotingPeriodNotStarted();
   error PollAlreadyInit();
   error TooManyMessages();
   error InvalidPubKey();
@@ -131,7 +131,8 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
 
   /// @notice Each MACI instance can have multiple Polls.
   /// When a Poll is deployed, its voting period starts immediately.
-  /// @param _duration The duration of the voting period, in seconds
+  /// @param _startDate The start date of the poll
+  /// @param _endDate The end date of the poll
   /// @param _treeDepths The depths of the merkle trees
   /// @param _messageBatchSize The message batch size
   /// @param _coordinatorPubKey The coordinator's public key
@@ -139,7 +140,8 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   /// @param _emptyBallotRoot The root of the empty ballot tree
   /// @param _pollId The poll id
   constructor(
-    uint256 _duration,
+    uint256 _startDate,
+    uint256 _endDate,
     TreeDepths memory _treeDepths,
     uint8 _messageBatchSize,
     PubKey memory _coordinatorPubKey,
@@ -155,24 +157,32 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
 
     // store the pub key as object then calculate the hash
     coordinatorPubKey = _coordinatorPubKey;
+
     // we hash it ourselves to ensure we store the correct value
     coordinatorPubKeyHash = hashLeftRight(_coordinatorPubKey.x, _coordinatorPubKey.y);
+
     // store the external contracts to interact with
     extContracts = _extContracts;
+
     // store duration of the poll
-    duration = _duration;
+    startDate = _startDate;
+    endDate = _endDate;
+
     // store max vote options
     maxVoteOptions = uint256(VOTE_TREE_ARITY) ** _treeDepths.voteOptionTreeDepth;
+
     // store message batch size
     messageBatchSize = _messageBatchSize;
+
     // store tree depth
     treeDepths = _treeDepths;
-    // Record the current timestamp
-    deployTime = block.timestamp;
+
     // store the empty ballot root
     emptyBallotRoot = _emptyBallotRoot;
+
     // store the poll id
     pollId = _pollId;
+
     // set relayers
     for (uint256 index = 0; index < _relayers.length; ) {
       relayers[_relayers[index]] = true;
@@ -206,8 +216,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   /// @notice A modifier that causes the function to revert if the voting period is
   /// not over.
   modifier isAfterVotingDeadline() virtual {
-    uint256 secondsPassed = block.timestamp - deployTime;
-    if (secondsPassed <= duration) revert VotingPeriodNotOver();
+    if (block.timestamp < endDate) revert VotingPeriodNotOver();
     _;
   }
 
@@ -225,9 +234,19 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
 
   /// @notice A modifier that causes the function to revert if the voting period is
   /// over
+  /// @dev This is used to prevent users from publishing messages after the voting period has ended or
+  /// before the voting period has started
+  modifier isOpenForVoting() virtual {
+    if (block.timestamp > endDate) revert VotingPeriodOver();
+    if (block.timestamp < startDate) revert VotingPeriodNotStarted();
+    _;
+  }
+
+  /// @notice A modifier that causes the function to revert if the voting period is over
+  /// @dev This is used to prevent users from joining the poll after the voting period has ended
+  /// @dev This allows to join before the poll is open for voting
   modifier isWithinVotingDeadline() virtual {
-    uint256 secondsPassed = block.timestamp - deployTime;
-    if (secondsPassed >= duration) revert VotingPeriodOver();
+    if (block.timestamp > endDate) revert VotingPeriodOver();
     _;
   }
 
@@ -237,7 +256,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   }
 
   /// @inheritdoc IPoll
-  function publishMessage(Message calldata _message, PubKey calldata _encPubKey) public virtual isWithinVotingDeadline {
+  function publishMessage(Message calldata _message, PubKey calldata _encPubKey) public virtual isOpenForVoting {
     // check if the public key is on the curve
     if (!CurveBabyJubJub.isOnCurve(_encPubKey.x, _encPubKey.y)) {
       revert InvalidPubKey();
@@ -261,7 +280,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   function relayMessagesBatch(
     uint256[] calldata _messageHashes,
     bytes32 _ipfsHash
-  ) public virtual isWithinVotingDeadline onlyRelayer {
+  ) public virtual isOpenForVoting onlyRelayer {
     uint256 length = _messageHashes.length;
 
     unchecked {
@@ -468,9 +487,9 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   }
 
   /// @inheritdoc IPoll
-  function getDeployTimeAndDuration() public view virtual returns (uint256 pollDeployTime, uint256 pollDuration) {
-    pollDeployTime = deployTime;
-    pollDuration = duration;
+  function getStartAndEndDate() public view virtual returns (uint256 pollStartDate, uint256 pollEndDate) {
+    pollStartDate = startDate;
+    pollEndDate = endDate;
   }
 
   /// @inheritdoc IPoll

@@ -198,3 +198,13 @@ export const unlinkFile = async (filepath: string): Promise<void> => {
     await fs.promises.unlink(filepath);
   }
 };
+
+/**
+ * Get the timestamp of the current block
+ * @param signer - the signer to use
+ * @returns the start time of the current block or the current time
+ */
+export const getBlockTimestamp = async (signer: Signer): Promise<number> => {
+  const block = await signer.provider?.getBlock("latest");
+  return block?.timestamp ?? Math.floor(Date.now() / 1000);
+};

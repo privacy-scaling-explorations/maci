@@ -8,7 +8,7 @@ import { Keypair, Message, PubKey } from "maci-domainobjs";
 
 import { EMode } from "../ts/constants";
 import { IVerifyingKeyStruct } from "../ts/types";
-import { getDefaultSigner } from "../ts/utils";
+import { getDefaultSigner, getBlockTimestamp } from "../ts/utils";
 import {
   Tally,
   MACI,
@@ -49,6 +49,8 @@ describe("TallyVotesNonQv", () => {
 
     signer = await getDefaultSigner();
 
+    const startTime = await getBlockTimestamp(signer);
+
     const r = await deployTestContracts({ initialVoiceCreditBalance: 100, stateTreeDepth: STATE_TREE_DEPTH, signer });
     maciContract = r.maciContract;
     verifierContract = r.mockVerifierContract as Verifier;
@@ -59,7 +61,8 @@ describe("TallyVotesNonQv", () => {
     // deploy a poll
     // deploy on chain poll
     const tx = await maciContract.deployPoll({
-      duration,
+      startDate: startTime,
+      endDate: startTime + duration,
       treeDepths,
       messageBatchSize,
       coordinatorPubKey: coordinator.pubKey.asContractParam(),
@@ -72,9 +75,6 @@ describe("TallyVotesNonQv", () => {
     });
     const receipt = await tx.wait();
 
-    const block = await signer.provider!.getBlock(receipt!.blockHash);
-    const deployTime = block!.timestamp;
-
     expect(receipt?.status).to.eq(1);
 
     pollId = (await maciContract.nextPollId()) - 1n;
@@ -85,7 +85,7 @@ describe("TallyVotesNonQv", () => {
     tallyContract = TallyFactory.connect(pollContracts.tally, signer);
 
     // deploy local poll
-    const p = maciState.deployPoll(BigInt(deployTime + duration), treeDepths, messageBatchSize, coordinator);
+    const p = maciState.deployPoll(BigInt(startTime + duration), treeDepths, messageBatchSize, coordinator);
     expect(p.toString()).to.eq(pollId.toString());
     // publish the NOTHING_UP_MY_SLEEVE message
     const messageData = [NOTHING_UP_MY_SLEEVE];

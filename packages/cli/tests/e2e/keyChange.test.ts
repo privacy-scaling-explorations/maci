@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
-import { getDefaultSigner } from "maci-sdk";
+import { getBlockTimestamp, getDefaultSigner } from "maci-sdk";
 
 import fs from "fs";
 
@@ -46,6 +46,7 @@ import {
   pollJoiningTestZkeyPath,
   testPollJoiningWasmPath,
   testPollJoiningWitnessPath,
+  pollDuration,
 } from "../constants";
 import { clean, isArm } from "../utils";
 
@@ -103,8 +104,11 @@ describe("keyChange tests", function test() {
     before(async () => {
       // deploy the smart contracts
       maciAddresses = await deploy({ ...deployArgs, signer });
+
+      const startDate = await getBlockTimestamp(signer);
+
       // deploy a poll contract
-      await deployPoll({ ...deployPollArgs, signer });
+      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
       stateIndex = BigInt(
         await signup({
           maciAddress: maciAddresses.maciAddress,
@@ -190,8 +194,11 @@ describe("keyChange tests", function test() {
     before(async () => {
       // deploy the smart contracts
       maciAddresses = await deploy({ ...deployArgs, signer });
+
+      const startDate = await getBlockTimestamp(signer);
+
       // deploy a poll contract
-      await deployPoll({ ...deployPollArgs, signer });
+      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
       stateIndex = BigInt(
         await signup({
           maciAddress: maciAddresses.maciAddress,
@@ -277,8 +284,11 @@ describe("keyChange tests", function test() {
     before(async () => {
       // deploy the smart contracts
       maciAddresses = await deploy({ ...deployArgs, signer });
+
+      const startDate = await getBlockTimestamp(signer);
+
       // deploy a poll contract
-      await deployPoll({ ...deployPollArgs, signer });
+      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
       stateIndex = BigInt(
         await signup({
           maciAddress: maciAddresses.maciAddress,

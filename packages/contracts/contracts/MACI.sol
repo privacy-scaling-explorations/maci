@@ -160,7 +160,8 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
     });
 
     address p = pollFactory.deploy(
-      args.duration,
+      args.startDate,
+      args.endDate,
       args.treeDepths,
       args.messageBatchSize,
       args.coordinatorPubKey,

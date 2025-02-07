@@ -6,7 +6,7 @@ import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, PubKey, Message } from "maci-domainobjs";
 
 import { EMode } from "../ts/constants";
-import { getDefaultSigner, getSigners } from "../ts/utils";
+import { getDefaultSigner, getSigners, getBlockTimestamp } from "../ts/utils";
 import { MACI, Verifier, VkRegistry, SignUpGatekeeper, ConstantInitialVoiceCreditProxy } from "../typechain-types";
 
 import { STATE_TREE_DEPTH, duration, initialVoiceCreditBalance, messageBatchSize, treeDepths } from "./constants";
@@ -195,12 +195,13 @@ describe("MACI", function test() {
   });
 
   describe("Deploy a Poll", () => {
-    let deployTime: number | undefined;
-
     it("should deploy a poll", async () => {
+      const startTime = await getBlockTimestamp(signer);
+
       // Create the poll and get the poll ID from the tx event logs
       const tx = await maciContract.deployPoll({
-        duration,
+        startDate: startTime,
+        endDate: startTime + duration,
         treeDepths,
         messageBatchSize,
         coordinatorPubKey: coordinator.pubKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
@@ -213,13 +214,10 @@ describe("MACI", function test() {
       });
       const receipt = await tx.wait();
 
-      const block = await signer.provider!.getBlock(receipt!.blockHash);
-      deployTime = block!.timestamp;
-
       expect(receipt?.status).to.eq(1);
       pollId = (await maciContract.nextPollId()) - 1n;
 
-      const p = maciState.deployPoll(BigInt(deployTime + duration), treeDepths, messageBatchSize, coordinator);
+      const p = maciState.deployPoll(BigInt(startTime + duration), treeDepths, messageBatchSize, coordinator);
       expect(p.toString()).to.eq(pollId.toString());
 
       // publish the NOTHING_UP_MY_SLEEVE message
@@ -237,7 +235,8 @@ describe("MACI", function test() {
 
     it("should allow to deploy a new poll even before the first one is completed", async () => {
       const tx = await maciContract.deployPoll({
-        duration,
+        startDate: Math.floor(Date.now() / 1000),
+        endDate: Math.floor(Date.now() / 1000) + duration,
         treeDepths,
         messageBatchSize,
         coordinatorPubKey: coordinator.pubKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
@@ -256,7 +255,8 @@ describe("MACI", function test() {
     it("should allow any user to deploy a poll", async () => {
       const [, user] = await getSigners();
       const tx = await maciContract.connect(user).deployPoll({
-        duration,
+        startDate: Math.floor(Date.now() / 1000),
+        endDate: Math.floor(Date.now() / 1000) + duration,
         treeDepths,
         messageBatchSize,
         coordinatorPubKey: users[0].pubKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
