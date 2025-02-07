@@ -276,9 +276,14 @@ export interface DeployArgs {
  */
 export interface DeployPollArgs {
   /**
-   * The duration of the poll in seconds
+   * The start date of the poll
    */
-  pollDuration: number;
+  pollStartDate: number;
+
+  /**
+   * The end date of the poll
+   */
+  pollEndDate: number;
 
   /**
    * The depth of the intermediate state tree
@@ -1083,12 +1088,12 @@ export interface IGetPollData {
   /**
    * The poll deployment time
    */
-  deployTime: BigNumberish;
+  startDate: BigNumberish;
 
   /**
-   * The poll duration
+   * The poll end date
    */
-  duration: BigNumberish;
+  endDate: BigNumberish;
 
   /**
    * The poll number of signups

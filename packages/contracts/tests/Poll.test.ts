@@ -9,7 +9,7 @@ import { Keypair, Message, PCommand, PubKey, StateLeaf } from "maci-domainobjs";
 
 import { EMode } from "../ts/constants";
 import { IVerifyingKeyStruct } from "../ts/types";
-import { getDefaultSigner, getSigners } from "../ts/utils";
+import { getBlockTimestamp, getDefaultSigner, getSigners } from "../ts/utils";
 import {
   Poll__factory as PollFactory,
   MACI,
@@ -42,7 +42,7 @@ describe("Poll", () => {
   let signupGatekeeperContract: SignUpGatekeeper;
   let initialVoiceCreditProxyContract: ConstantInitialVoiceCreditProxy;
   let signer: Signer;
-  let deployTime: number;
+
   const coordinator = new Keypair();
 
   const maciState = new MaciState(STATE_TREE_DEPTH);
@@ -54,6 +54,9 @@ describe("Poll", () => {
   describe("deployment", () => {
     before(async () => {
       signer = await getDefaultSigner();
+
+      const startDate = await getBlockTimestamp(signer);
+
       const r = await deployTestContracts({
         initialVoiceCreditBalance,
         stateTreeDepth: STATE_TREE_DEPTH,
@@ -75,7 +78,8 @@ describe("Poll", () => {
 
       // deploy on chain poll
       const tx = await maciContract.deployPoll({
-        duration,
+        startDate,
+        endDate: startDate + duration,
         treeDepths,
         messageBatchSize,
         coordinatorPubKey: coordinator.pubKey.asContractParam(),
@@ -88,9 +92,6 @@ describe("Poll", () => {
       });
       const receipt = await tx.wait();
 
-      const block = await signer.provider!.getBlock(receipt!.blockHash);
-      deployTime = block!.timestamp;
-
       expect(receipt?.status).to.eq(1);
 
       pollId = (await maciContract.nextPollId()) - 1n;
@@ -99,7 +100,7 @@ describe("Poll", () => {
       pollContract = PollFactory.connect(pollContracts.poll, signer);
 
       // deploy local poll
-      const p = maciState.deployPoll(BigInt(deployTime + duration), treeDepths, messageBatchSize, coordinator);
+      const p = maciState.deployPoll(BigInt(startDate + duration), treeDepths, messageBatchSize, coordinator);
       expect(p.toString()).to.eq(pollId.toString());
       // publish the NOTHING_UP_MY_SLEEVE message
       const messageData = [NOTHING_UP_MY_SLEEVE];
@@ -150,9 +151,9 @@ describe("Poll", () => {
       expect(coordinatorPubKeyHash.toString()).to.eq(coordinator.pubKey.hash().toString());
     });
 
-    it("should have the correct duration set", async () => {
-      const dd = await pollContract.getDeployTimeAndDuration();
-      expect(dd[1].toString()).to.eq(duration.toString());
+    it("should have the correct start date and end date set", async () => {
+      const dd = await pollContract.getStartAndEndDate();
+      expect(dd[1] - dd[0]).to.eq(BigInt(duration));
     });
 
     it("should have the correct max values set", async () => {
@@ -182,7 +183,8 @@ describe("Poll", () => {
       // deploy on chain poll
       await expect(
         testMaciContract.deployPoll({
-          duration,
+          startDate: Math.floor(Date.now() / 1000),
+          endDate: Math.floor(Date.now() / 1000) + duration,
           treeDepths,
           messageBatchSize,
           coordinatorPubKey: {
@@ -395,8 +397,8 @@ describe("Poll", () => {
     });
 
     it("should not allow to publish a message after the voting period ends", async () => {
-      const dd = await pollContract.getDeployTimeAndDuration();
-      await timeTravel(signer.provider as unknown as EthereumProvider, Number(dd[0]) + 10);
+      const sd = await pollContract.startDate();
+      await timeTravel(signer.provider as unknown as EthereumProvider, Number(sd) + 10);
 
       const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, 0n);
 

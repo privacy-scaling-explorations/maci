@@ -24,6 +24,7 @@ export {
   getSigners,
   cleanThreads,
   unlinkFile,
+  getBlockTimestamp,
 } from "./utils";
 export { extractVk, genProofRapidSnark, genProofSnarkjs, verifyProof } from "./proofs";
 export { EMode } from "./constants";

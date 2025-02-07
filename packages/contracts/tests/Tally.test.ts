@@ -8,7 +8,7 @@ import { Keypair, Message, PubKey } from "maci-domainobjs";
 
 import { EMode } from "../ts/constants";
 import { IVerifyingKeyStruct } from "../ts/types";
-import { asHex, getDefaultSigner } from "../ts/utils";
+import { asHex, getDefaultSigner, getBlockTimestamp } from "../ts/utils";
 import {
   Tally,
   MACI,
@@ -64,6 +64,8 @@ describe("TallyVotes", () => {
 
     signer = await getDefaultSigner();
 
+    const startTime = await getBlockTimestamp(signer);
+
     const r = await deployTestContracts({ initialVoiceCreditBalance: 100, stateTreeDepth: STATE_TREE_DEPTH, signer });
     maciContract = r.maciContract;
     verifierContract = r.mockVerifierContract as Verifier;
@@ -74,7 +76,8 @@ describe("TallyVotes", () => {
     // deploy a poll
     // deploy on chain poll
     const tx = await maciContract.deployPoll({
-      duration,
+      startDate: startTime,
+      endDate: startTime + duration,
       treeDepths,
       messageBatchSize,
       coordinatorPubKey: coordinator.pubKey.asContractParam(),
@@ -87,9 +90,6 @@ describe("TallyVotes", () => {
     });
     const receipt = await tx.wait();
 
-    const block = await signer.provider!.getBlock(receipt!.blockHash);
-    const deployTime = block!.timestamp;
-
     expect(receipt?.status).to.eq(1);
 
     pollId = (await maciContract.nextPollId()) - 1n;
@@ -100,7 +100,7 @@ describe("TallyVotes", () => {
     tallyContract = TallyFactory.connect(pollContracts.tally, signer);
 
     // deploy local poll
-    const p = maciState.deployPoll(BigInt(deployTime + duration), treeDepths, messageBatchSize, coordinator);
+    const p = maciState.deployPoll(BigInt(startTime + duration), treeDepths, messageBatchSize, coordinator);
     expect(p.toString()).to.eq(pollId.toString());
     // publish the NOTHING_UP_MY_SLEEVE message
     const messageData = [NOTHING_UP_MY_SLEEVE];
@@ -198,6 +198,8 @@ describe("TallyVotes", () => {
 
   describe("ballots === tallyBatchSize", () => {
     before(async () => {
+      const startTime = await getBlockTimestamp(signer);
+
       // create 24 users (total 25 - 24 + 1 nothing up my sleeve)
       users = Array.from({ length: 24 }, () => new Keypair());
       pollKeys = Array.from({ length: 24 }, () => new Keypair());
@@ -229,7 +231,8 @@ describe("TallyVotes", () => {
       // deploy a poll
       // deploy on chain poll
       const tx = await maciContract.deployPoll({
-        duration: updatedDuration,
+        startDate: startTime,
+        endDate: startTime + updatedDuration,
         treeDepths: {
           ...treeDepths,
           intStateTreeDepth,
@@ -245,9 +248,6 @@ describe("TallyVotes", () => {
       });
       const receipt = await tx.wait();
 
-      const block = await signer.provider!.getBlock(receipt!.blockHash);
-      const deployTime = block!.timestamp;
-
       expect(receipt?.status).to.eq(1);
 
       pollId = (await maciContract.nextPollId()) - 1n;
@@ -259,7 +259,7 @@ describe("TallyVotes", () => {
 
       // deploy local poll
       const p = maciState.deployPoll(
-        BigInt(deployTime + updatedDuration),
+        BigInt(startTime + updatedDuration),
         {
           ...treeDepths,
           intStateTreeDepth,
@@ -513,13 +513,13 @@ describe("TallyVotes", () => {
 
   describe("ballots > tallyBatchSize", () => {
     before(async () => {
+      const startTime = await getBlockTimestamp(signer);
+
       // create 25 users (and thus 26 ballots) (total 26 - 25 + 1 nothing up my sleeve)
       users = Array.from({ length: 25 }, () => new Keypair());
       pollKeys = Array.from({ length: 25 }, () => new Keypair());
 
       maciState = new MaciState(STATE_TREE_DEPTH);
-
-      const updatedDuration = 5000000;
 
       const intStateTreeDepth = 2;
 
@@ -545,7 +545,8 @@ describe("TallyVotes", () => {
       // deploy a poll
       // deploy on chain poll
       const tx = await maciContract.deployPoll({
-        duration: updatedDuration,
+        startDate: startTime,
+        endDate: startTime + duration,
         treeDepths: {
           ...treeDepths,
           intStateTreeDepth,
@@ -561,9 +562,6 @@ describe("TallyVotes", () => {
       });
       const receipt = await tx.wait();
 
-      const block = await signer.provider!.getBlock(receipt!.blockHash);
-      const deployTime = block!.timestamp;
-
       expect(receipt?.status).to.eq(1);
 
       pollId = (await maciContract.nextPollId()) - 1n;
@@ -575,7 +573,7 @@ describe("TallyVotes", () => {
 
       // deploy local poll
       const p = maciState.deployPoll(
-        BigInt(deployTime + updatedDuration),
+        BigInt(startTime + duration),
         {
           ...treeDepths,
           intStateTreeDepth,
@@ -633,7 +631,7 @@ describe("TallyVotes", () => {
       for (let i = 0; i < users.length; i += 1) {
         const timestamp = Math.floor(Date.now() / 1000);
         // join locally
-        const nullifier = poseidon([BigInt(users[i].privKey.rawPrivKey)]);
+        const nullifier = poseidon([BigInt(users[i].privKey.rawPrivKey), pollId]);
         poll.joinPoll(nullifier, pollKeys[i].pubKey, BigInt(initialVoiceCreditBalance), BigInt(timestamp));
 
         // join on chain
@@ -648,7 +646,7 @@ describe("TallyVotes", () => {
         );
       }
 
-      await timeTravel(signer.provider! as unknown as EthereumProvider, updatedDuration);
+      await timeTravel(signer.provider! as unknown as EthereumProvider, duration);
       await pollContract.mergeState();
 
       const processMessagesInputs = poll.processMessages(pollId);

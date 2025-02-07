@@ -44,8 +44,8 @@ export const getPoll = async ({
 
   const pollContract = PollFactory.connect(pollContracts.poll, signer ?? provider);
 
-  const [[deployTime, duration], mergedStateRoot] = await Promise.all([
-    pollContract.getDeployTimeAndDuration(),
+  const [[startDate, endDate], mergedStateRoot] = await Promise.all([
+    pollContract.getStartAndEndDate(),
     pollContract.mergedStateRoot(),
   ]);
   const isMerged = mergedStateRoot !== BigInt(0);
@@ -60,8 +60,8 @@ export const getPoll = async ({
     success(
       [
         `ID: ${id}`,
-        `Deploy time: ${new Date(Number(deployTime) * 1000).toString()}`,
-        `End time: ${new Date(Number(deployTime + duration) * 1000).toString()}`,
+        `Start time: ${new Date(Number(startDate) * 1000).toString()}`,
+        `End time: ${new Date(Number(endDate) * 1000).toString()}`,
         `Number of signups ${numSignups}`,
         `State tree merged: ${mergedStateRoot}`,
         `Mode: ${mode === 0n ? "Quadratic Voting" : "Non-Quadratic Voting"}`,
@@ -72,8 +72,8 @@ export const getPoll = async ({
   return {
     id,
     address: pollContracts.poll,
-    deployTime,
-    duration,
+    startDate,
+    endDate,
     numSignups,
     isMerged,
     mode,

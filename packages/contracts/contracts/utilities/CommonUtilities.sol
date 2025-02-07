@@ -13,10 +13,9 @@ contract CommonUtilities {
   /// @notice common function for MessageProcessor, and Tally
   /// @param _poll the poll to be checked
   function _votingPeriodOver(IPoll _poll) internal view {
-    (uint256 deployTime, uint256 duration) = _poll.getDeployTimeAndDuration();
+    uint256 endDate = _poll.endDate();
     // Require that the voting period is over
-    uint256 secondsPassed = block.timestamp - deployTime;
-    if (secondsPassed <= duration) {
+    if (block.timestamp < endDate) {
       revert VotingPeriodNotPassed();
     }
   }

@@ -1,6 +1,6 @@
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
-import { getDefaultSigner } from "maci-sdk";
+import { getBlockTimestamp, getDefaultSigner } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
@@ -81,8 +81,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
     stateTreeDepth,
   };
 
-  const deployPollArgs: Omit<DeployPollArgs, "signer"> = {
-    pollDuration,
+  const deployPollArgs: Omit<DeployPollArgs, "signer" | "pollStartDate" | "pollEndDate"> = {
     intStateTreeDepth,
     messageBatchSize,
     voteOptionTreeDepth,
@@ -129,8 +128,16 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
       before(async () => {
         // deploy the smart contracts
         maciAddresses = await deploy({ ...ceremonyDeployArgs, signer });
+
+        const startDate = await getBlockTimestamp(signer);
+
         // deploy a poll contract
-        await deployPoll({ ...deployPollArgs, signer });
+        await deployPoll({
+          ...deployPollArgs,
+          signer,
+          pollStartDate: startDate,
+          pollEndDate: startDate + pollDuration,
+        });
       });
 
       it("should signup 1 user", async () => {
@@ -175,8 +182,16 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
       before(async () => {
         // deploy the smart contracts
         maciAddresses = await deploy({ ...ceremonyDeployArgs, signer });
+
+        const startDate = await getBlockTimestamp(signer);
+
         // deploy a poll contract
-        await deployPoll({ ...deployPollArgs, signer });
+        await deployPoll({
+          ...deployPollArgs,
+          signer,
+          pollStartDate: startDate,
+          pollEndDate: startDate + pollDuration,
+        });
       });
 
       it("should signup 25 users", async () => {
@@ -255,8 +270,17 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
       before(async () => {
         // deploy the smart contracts
         maciAddresses = await deploy({ ...ceremonyDeployArgs, signer });
+
+        const startDate = await getBlockTimestamp(signer);
+
         // deploy a poll contract
-        await deployPoll({ ...deployPollArgs, signer, useQuadraticVoting: false });
+        await deployPoll({
+          ...deployPollArgs,
+          signer,
+          useQuadraticVoting: false,
+          pollStartDate: startDate,
+          pollEndDate: startDate + pollDuration,
+        });
       });
 
       it("should signup one user", async () => {
@@ -300,8 +324,17 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
       before(async () => {
         // deploy the smart contracts
         maciAddresses = await deploy({ ...ceremonyDeployArgs, signer });
+
+        const startDate = await getBlockTimestamp(signer);
+
         // deploy a poll contract
-        await deployPoll({ ...deployPollArgs, signer, useQuadraticVoting: false });
+        await deployPoll({
+          ...deployPollArgs,
+          signer,
+          useQuadraticVoting: false,
+          pollStartDate: startDate,
+          pollEndDate: startDate + pollDuration,
+        });
       });
 
       it("should signup 25 users", async () => {

@@ -189,7 +189,8 @@ program
   .command("deployPoll")
   .description("deploy a new poll")
   .option("-k, --vkRegistryAddress <vkRegistryAddress>", "the vk registry contract address")
-  .requiredOption("-t, --duration <pollDuration>", "the poll duration", parseInt)
+  .requiredOption("-s, --start <pollStartDate>", "the poll start date", parseInt)
+  .requiredOption("-e, --end <pollEndDate>", "the poll end date", parseInt)
   .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the int state tree depth", parseInt)
   .requiredOption("-b, --msg-batch-size <messageBatchSize>", "the message batch size", parseInt)
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
@@ -209,7 +210,8 @@ program
       const signer = await getSigner();
 
       await deployPoll({
-        pollDuration: cmdObj.duration,
+        pollStartDate: cmdObj.start,
+        pollEndDate: cmdObj.end,
         intStateTreeDepth: cmdObj.intStateTreeDepth,
         messageBatchSize: cmdObj.msgBatchSize,
         voteOptionTreeDepth: cmdObj.voteOptionTreeDepth,
@@ -598,8 +600,8 @@ program
         success(
           [
             `ID: ${details.id}`,
-            `Deploy time: ${new Date(Number(details.deployTime) * 1000).toString()}`,
-            `End time: ${new Date(Number(details.deployTime) + Number(details.duration) * 1000).toString()}`,
+            `Start time: ${new Date(Number(details.startDate) * 1000).toString()}`,
+            `End time: ${new Date(Number(details.endDate) * 1000).toString()}`,
             `Number of signups ${details.numSignups}`,
             `State tree merged: ${details.isMerged}`,
             `Mode: ${details.mode === 0n ? "Quadratic Voting" : "Non-Quadratic Voting"}`,

@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
-import { getDefaultSigner } from "maci-sdk";
+import { getBlockTimestamp, getDefaultSigner } from "maci-sdk";
 
 import fs from "fs";
 
@@ -111,8 +111,15 @@ describe("e2e tests", function test() {
     before(async () => {
       // deploy the smart contracts
       maciAddresses = await deploy({ ...deployArgs, signer });
+      const startDate = await getBlockTimestamp(signer);
       // deploy a poll contract
-      await deployPoll({ ...deployPollArgs, signer, useQuadraticVoting: true });
+      await deployPoll({
+        ...deployPollArgs,
+        signer,
+        useQuadraticVoting: true,
+        pollStartDate: startDate,
+        pollEndDate: startDate + pollDuration,
+      });
     });
 
     it("should get the correct gatekeeper trait", async () => {
@@ -178,8 +185,11 @@ describe("e2e tests", function test() {
     before(async () => {
       // deploy the smart contracts
       maciAddresses = await deploy({ ...deployArgs, signer });
+
+      const startDate = await getBlockTimestamp(signer);
+
       // deploy a poll contract
-      await deployPoll({ ...deployPollArgs, signer });
+      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
     });
 
     it("should signup one user", async () => {
@@ -242,8 +252,11 @@ describe("e2e tests", function test() {
     before(async () => {
       // deploy the smart contracts
       maciAddresses = await deploy({ ...deployArgs, signer });
+
+      const startDate = await getBlockTimestamp(signer);
+
       // deploy a poll contract
-      await deployPoll({ ...deployPollArgs, signer });
+      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
     });
 
     it("should signup four users", async () => {
@@ -402,8 +415,11 @@ describe("e2e tests", function test() {
     before(async () => {
       // deploy the smart contracts
       maciAddresses = await deploy({ ...deployArgs, signer });
+
+      const startDate = await getBlockTimestamp(signer);
+
       // deploy a poll contract
-      await deployPoll({ ...deployPollArgs, signer });
+      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
     });
 
     it("should signup nine users", async () => {
@@ -468,8 +484,11 @@ describe("e2e tests", function test() {
     before(async () => {
       // deploy the smart contracts
       maciAddresses = await deploy({ ...deployArgs, signer });
+
+      const startDate = await getBlockTimestamp(signer);
+
       // deploy a poll contract
-      await deployPoll({ ...deployPollArgs, signer });
+      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
     });
 
     it("should signup eight users (same pub key)", async () => {
@@ -533,8 +552,11 @@ describe("e2e tests", function test() {
     before(async () => {
       // deploy the smart contracts
       maciAddresses = await deploy({ ...deployArgs, signer });
+
+      const startDate = await getBlockTimestamp(signer);
+
       // deploy a poll contract
-      await deployPoll({ ...deployPollArgs, signer });
+      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
     });
 
     it("should signup thirty users", async () => {
@@ -649,8 +671,11 @@ describe("e2e tests", function test() {
     before(async () => {
       // deploy the smart contracts
       maciAddresses = await deploy({ ...deployArgs, signer });
+
+      const startDate = await getBlockTimestamp(signer);
+
       // deploy a poll contract
-      await deployPoll({ ...deployPollArgs, signer });
+      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
       // signup
       await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer });
       // joinPoll
@@ -691,7 +716,9 @@ describe("e2e tests", function test() {
     });
 
     it("should deploy a new poll", async () => {
-      await deployPoll({ ...deployPollArgs, signer });
+      const startDate = await getBlockTimestamp(signer);
+
+      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
     });
 
     it("should join to new poll", async () => {
@@ -745,8 +772,11 @@ describe("e2e tests", function test() {
     before(async () => {
       // deploy the smart contracts
       maciAddresses = await deploy({ ...deployArgs, signer });
+
+      const startDate = await getBlockTimestamp(signer);
+
       // deploy a poll contract
-      await deployPoll({ ...deployPollArgs, signer });
+      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
       // signup
       await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[0].pubKey.serialize(), signer });
       // joinPoll
@@ -808,7 +838,9 @@ describe("e2e tests", function test() {
     });
 
     it("should deploy a new poll", async () => {
-      await deployPoll({ ...deployPollArgs, signer });
+      const startDate = await getBlockTimestamp(signer);
+
+      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
     });
 
     it("should signup four new users", async () => {
@@ -909,8 +941,10 @@ describe("e2e tests", function test() {
     });
 
     it("should run the first poll", async () => {
+      const startDate = await getBlockTimestamp(signer);
+
       // deploy a poll contract
-      await deployPoll({ ...deployPollArgs, signer });
+      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
 
       // signup
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
@@ -985,9 +1019,11 @@ describe("e2e tests", function test() {
     });
 
     it("should deploy two more polls", async () => {
+      const startDate = await getBlockTimestamp(signer);
+
       // deploy a poll contract
-      await deployPoll({ ...deployPollArgs, signer });
-      await deployPoll({ ...deployPollArgs, signer });
+      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
+      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
     });
 
     it("join the second and third polls", async () => {
@@ -1161,8 +1197,11 @@ describe("e2e tests", function test() {
     before(async () => {
       // deploy the smart contracts
       maciAddresses = await deploy({ ...deployArgs, signer });
+
+      const startDate = await getBlockTimestamp(signer);
+
       // deploy a poll contract
-      await deployPoll({ ...deployPollArgs, signer });
+      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
     });
 
     it("should signup one user", async () => {

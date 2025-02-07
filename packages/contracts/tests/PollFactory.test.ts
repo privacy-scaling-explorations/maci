@@ -47,7 +47,8 @@ describe("pollFactory", () => {
   describe("deployment", () => {
     it("should allow anyone to deploy a new poll", async () => {
       const tx = await pollFactory.deploy(
-        "100",
+        new Date().getTime(),
+        new Date().getTime() + 100,
         treeDepths,
         messageBatchSize,
         coordinatorPubKey.asContractParam(),

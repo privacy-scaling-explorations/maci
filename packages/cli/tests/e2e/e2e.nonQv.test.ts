@@ -1,6 +1,6 @@
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
-import { getDefaultSigner } from "maci-sdk";
+import { getBlockTimestamp, getDefaultSigner } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
@@ -90,8 +90,17 @@ describe("e2e tests with non quadratic voting", function test() {
     before(async () => {
       // deploy the smart contracts
       maciAddresses = await deploy({ ...deployArgs, signer });
+
+      const startDate = await getBlockTimestamp(signer);
+
       // deploy a poll contract
-      await deployPoll({ ...deployPollArgs, signer, useQuadraticVoting: false });
+      await deployPoll({
+        ...deployPollArgs,
+        signer,
+        useQuadraticVoting: false,
+        pollStartDate: startDate,
+        pollEndDate: startDate + pollDuration,
+      });
     });
 
     it("should signup one user", async () => {

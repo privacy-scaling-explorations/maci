@@ -156,8 +156,7 @@ export const deployArgs: Omit<DeployArgs, "signer"> = {
   stateTreeDepth: STATE_TREE_DEPTH,
 };
 
-export const deployPollArgs: Omit<DeployPollArgs, "signer"> = {
-  pollDuration,
+export const deployPollArgs: Omit<DeployPollArgs, "signer" | "pollStartDate" | "pollEndDate"> = {
   intStateTreeDepth: INT_STATE_TREE_DEPTH,
   messageBatchSize: MESSAGE_BATCH_SIZE,
   voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,

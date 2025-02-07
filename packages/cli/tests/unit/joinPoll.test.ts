@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { Signer } from "ethers";
 import { Keypair } from "maci-domainobjs";
-import { getDefaultSigner } from "maci-sdk";
+import { getBlockTimestamp, getDefaultSigner } from "maci-sdk";
 
 import {
   deploy,
@@ -21,6 +21,7 @@ import {
   testPollJoiningWasmPath,
   testRapidsnarkPath,
   testPollJoiningWitnessPath,
+  pollDuration,
 } from "../constants";
 
 describe("joinPoll", function test() {
@@ -38,6 +39,8 @@ describe("joinPoll", function test() {
   before(async () => {
     signer = await getDefaultSigner();
 
+    const startDate = await getBlockTimestamp(signer);
+
     // we deploy the vk registry contract
     await deployVkRegistryContract({ signer });
     // we set the verifying keys
@@ -51,7 +54,7 @@ describe("joinPoll", function test() {
       signer,
     });
 
-    await deployPoll({ ...deployPollArgs, signer });
+    await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
   });
 
   it("should allow to join the poll and return the user data", async () => {

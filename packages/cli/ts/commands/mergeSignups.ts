@@ -40,11 +40,10 @@ export const mergeSignups = async ({ pollId, maciAddress, signer, quiet = true }
   const pollContract = PollFactory.connect(pollContracts.poll, signer);
 
   // check if it's time to merge the message AQ
-  const dd = await pollContract.getDeployTimeAndDuration();
-  const deadline = Number(dd[0]) + Number(dd[1]);
+  const endDate = await pollContract.endDate();
   const now = await currentBlockTimestamp(signer.provider!);
 
-  if (now < deadline) {
+  if (now < endDate) {
     logError("Voting period is not over");
   }
 

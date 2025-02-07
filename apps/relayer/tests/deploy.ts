@@ -76,8 +76,11 @@ export class TestDeploy {
 
     const maciAddresses = await deploy({ stateTreeDepth: 10, signer });
 
+    const startDate = (await signer.provider.getBlock("latest"))?.timestamp ?? Math.floor(Date.now() / 1000);
+
     await deployPoll({
-      pollDuration: 30,
+      pollStartDate: startDate,
+      pollEndDate: startDate + 30,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,

@@ -16,7 +16,8 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
 
   /// @inheritdoc IPollFactory
   function deploy(
-    uint256 _duration,
+    uint256 _startDate,
+    uint256 _endDate,
     Params.TreeDepths calldata _treeDepths,
     uint8 _messageBatchSize,
     DomainObjs.PubKey calldata _coordinatorPubKey,
@@ -27,7 +28,8 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
   ) public virtual returns (address pollAddr) {
     // deploy the poll
     Poll poll = new Poll(
-      _duration,
+      _startDate,
+      _endDate,
       _treeDepths,
       _messageBatchSize,
       _coordinatorPubKey,

@@ -4,6 +4,8 @@ import { MaciState, Poll, STATE_TREE_ARITY } from "maci-core";
 import { IncrementalQuinTree, hash2, poseidon } from "maci-crypto";
 import { PrivKey, Keypair, PCommand, Message, Ballot, PubKey } from "maci-domainobjs";
 
+import fs from "fs";
+
 import { IProcessMessagesInputs } from "../types";
 
 import { STATE_TREE_DEPTH, duration, messageBatchSize, treeDepths, voiceCreditBalance } from "./utils/constants";
@@ -137,6 +139,8 @@ describe("ProcessMessage circuit", function test() {
 
     it("should produce a proof", async () => {
       const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
+
+      fs.writeFileSync("inputs.json", JSON.stringify(inputs, null, 2));
 
       // Calculate the witness
       const witness = await circuit.calculateWitness(inputs);

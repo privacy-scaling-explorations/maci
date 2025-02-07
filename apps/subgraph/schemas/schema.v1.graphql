@@ -30,6 +30,8 @@ type Account @entity {
 type Poll @entity {
   id: Bytes! # poll address
   pollId: BigInt! # uint256
+  startDate: BigInt! # uint256
+  endDate: BigInt! # uint256
   duration: BigInt! # uint256
   treeDepth: BigInt! # uint8
   maxVoteOptions: BigInt!

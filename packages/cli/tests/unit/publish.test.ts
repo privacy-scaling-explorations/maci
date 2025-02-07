@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { Poll__factory as PollFactory } from "maci-contracts/typechain-types";
 import { SNARK_FIELD_SIZE } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
-import { getDefaultSigner } from "maci-sdk";
+import { getBlockTimestamp, getDefaultSigner } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
@@ -15,7 +15,7 @@ import {
   signup,
 } from "../../ts/commands";
 import { DeployedContracts, IPublishBatchArgs, IPublishMessage, PollContracts } from "../../ts/utils";
-import { deployPollArgs, setVerifyingKeysArgs, deployArgs } from "../constants";
+import { deployPollArgs, setVerifyingKeysArgs, deployArgs, pollDuration } from "../constants";
 
 describe("publish", function test() {
   this.timeout(900000);
@@ -56,10 +56,17 @@ describe("publish", function test() {
     let defaultArgs: IPublishBatchArgs;
 
     before(async () => {
+      const startDate = await getBlockTimestamp(signer);
+
       // deploy the smart contracts
       maciAddresses = await deploy({ ...deployArgs, signer });
       // deploy a poll contract
-      pollAddresses = await deployPoll({ ...deployPollArgs, signer });
+      pollAddresses = await deployPoll({
+        ...deployPollArgs,
+        signer,
+        pollStartDate: startDate,
+        pollEndDate: startDate + pollDuration,
+      });
 
       defaultArgs = {
         maciAddress: maciAddresses.maciAddress,

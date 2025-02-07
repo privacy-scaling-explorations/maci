@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { genPrivKey, genPubKey } from "maci-crypto";
 import { Keypair, PrivKey, PubKey } from "maci-domainobjs";
-import { Poll__factory as PollFactory, type Poll, getDefaultSigner, EMode } from "maci-sdk";
+import { Poll__factory as PollFactory, type Poll, getDefaultSigner, EMode, getBlockTimestamp } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
@@ -9,7 +9,6 @@ import {
   INT_STATE_TREE_DEPTH,
   STATE_TREE_DEPTH,
   VOTE_OPTION_TREE_DEPTH,
-  duration,
   initialVoiceCredits,
   MESSAGE_BATCH_SIZE,
 } from "./utils/constants";
@@ -79,9 +78,12 @@ describe("integration tests private/public/keypair", () => {
         true,
       );
 
+      const startDate = await getBlockTimestamp(signer);
+
       // deploy a poll
       await maci.deployPoll({
-        duration: BigInt(duration),
+        startDate,
+        endDate: startDate + 30,
         treeDepths: {
           intStateTreeDepth: INT_STATE_TREE_DEPTH,
           voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,

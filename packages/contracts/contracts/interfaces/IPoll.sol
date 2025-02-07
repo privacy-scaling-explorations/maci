@@ -62,10 +62,18 @@ interface IPoll {
   /// currentSbCommitment.
   function mergeState() external;
 
-  /// @notice Returns the Poll's deploy time and duration
-  /// @return _deployTime The deployment timestamp
-  /// @return _duration The duration of the poll
-  function getDeployTimeAndDuration() external view returns (uint256 _deployTime, uint256 _duration);
+  /// @notice Returns the Poll's start and end dates
+  /// @return _startDate The start date of the poll
+  /// @return _endDate The end date of the poll
+  function getStartAndEndDate() external view returns (uint256 _startDate, uint256 _endDate);
+
+  /// @notice Returns the Poll's end date
+  /// @return _endDate The end date of the poll
+  function endDate() external view returns (uint256);
+
+  /// @notice Returns the Poll's start date
+  /// @return _startDate The start date of the poll
+  function startDate() external view returns (uint256);
 
   /// @notice Get the result of whether the MACI contract's stateAq has been merged by this contract
   /// @return Whether the MACI contract's stateAq has been merged by this contract

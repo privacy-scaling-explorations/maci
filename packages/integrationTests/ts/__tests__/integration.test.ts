@@ -20,7 +20,7 @@ import {
 import { MaciState, TreeDepths } from "maci-core";
 import { genPubKey, genRandomSalt, poseidon } from "maci-crypto";
 import { Keypair, PCommand, PrivKey, PubKey } from "maci-domainobjs";
-import { getDefaultSigner } from "maci-sdk";
+import { getBlockTimestamp, getDefaultSigner } from "maci-sdk";
 
 import fs from "fs";
 import { homedir } from "os";
@@ -103,9 +103,12 @@ describe("Integration tests", function test() {
     // 3. deploy maci
     contracts = await deploy({ stateTreeDepth: STATE_TREE_DEPTH, initialVoiceCredits, signer });
 
+    const startDate = await getBlockTimestamp(signer);
+
     // 4. create a poll
     await deployPoll({
-      pollDuration: duration,
+      pollStartDate: startDate,
+      pollEndDate: startDate + duration,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
@@ -123,12 +126,7 @@ describe("Integration tests", function test() {
 
     const messageBatchSize = MESSAGE_BATCH_SIZE;
 
-    pollId = maciState.deployPoll(
-      BigInt(Date.now() + duration * 60000),
-      treeDepths,
-      messageBatchSize,
-      coordinatorKeypair,
-    );
+    pollId = maciState.deployPoll(BigInt(startDate + duration), treeDepths, messageBatchSize, coordinatorKeypair);
   });
 
   // after each test we need to cleanup some files

@@ -8,7 +8,7 @@ import { Keypair, Message, PubKey } from "maci-domainobjs";
 
 import { EMode } from "../ts/constants";
 import { IVerifyingKeyStruct } from "../ts/types";
-import { getDefaultSigner } from "../ts/utils";
+import { getDefaultSigner, getBlockTimestamp } from "../ts/utils";
 import {
   MACI,
   MessageProcessor,
@@ -50,6 +50,8 @@ describe("MessageProcessor", () => {
 
   before(async () => {
     signer = await getDefaultSigner();
+    const startTime = await getBlockTimestamp(signer);
+
     // deploy test contracts
     const r = await deployTestContracts({
       initialVoiceCreditBalance,
@@ -65,7 +67,8 @@ describe("MessageProcessor", () => {
 
     // deploy on chain poll
     const tx = await maciContract.deployPoll({
-      duration,
+      startDate: startTime,
+      endDate: startTime + duration,
       treeDepths,
       messageBatchSize,
       coordinatorPubKey: coordinator.pubKey.asContractParam(),
@@ -86,11 +89,8 @@ describe("MessageProcessor", () => {
     const pollContracts = await maciContract.getPoll(pollId);
     mpContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
 
-    const block = await signer.provider!.getBlock(receipt!.blockHash);
-    const deployTime = block!.timestamp;
-
     // deploy local poll
-    const p = maciState.deployPoll(BigInt(deployTime + duration), treeDepths, messageBatchSize, coordinator);
+    const p = maciState.deployPoll(BigInt(startTime + duration), treeDepths, messageBatchSize, coordinator);
     expect(p.toString()).to.eq(pollId.toString());
 
     const messages = [];

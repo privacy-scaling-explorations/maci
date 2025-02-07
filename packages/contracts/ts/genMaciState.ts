@@ -117,9 +117,9 @@ export const genMaciStateFromContract = async (
   const pollContractAddress = pollContractAddresses.get(pollId)!;
   const pollContract = PollFactory.connect(pollContractAddress, provider);
 
-  const [coordinatorPubKeyOnChain, [deployTime, duration], onChainTreeDepths, msgBatchSize] = await Promise.all([
+  const [coordinatorPubKeyOnChain, pollEndTimestamp, onChainTreeDepths, msgBatchSize] = await Promise.all([
     pollContract.coordinatorPubKey(),
-    pollContract.getDeployTimeAndDuration().then((values) => values.map(Number)),
+    pollContract.endDate(),
     pollContract.treeDepths(),
     pollContract.messageBatchSize(),
   ]);
@@ -248,7 +248,7 @@ export const genMaciStateFromContract = async (
       }
 
       case action.type === "DeployPoll" && action.data.pollId?.toString() === pollId.toString(): {
-        maciState.deployPoll(BigInt(deployTime + duration), treeDepths, messageBatchSize, coordinatorKeypair);
+        maciState.deployPoll(pollEndTimestamp, treeDepths, messageBatchSize, coordinatorKeypair);
         break;
       }
 
