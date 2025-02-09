@@ -4,11 +4,13 @@
     "outDir": "./build",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "module": "ES2022",
-    "moduleResolution": "node",
-    "target": "ES2021",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ESNext",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
   "include": ["./ts", "./scripts", "./tests"],
-  "files": ["./hardhat.config.cjs"]
+  "files": ["hardhat.config.cjs"]
 }

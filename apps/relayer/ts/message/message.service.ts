@@ -3,12 +3,12 @@ import { Cron, CronExpression } from "@nestjs/schedule";
 import { PubKey } from "maci-domainobjs";
 import { getDefaultSigner, MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-sdk";
 
-import type { PublishMessagesDto } from "./message.dto";
+import type { PublishMessagesDto } from "./message.dto.js";
 
-import { MessageBatchService } from "../messageBatch/messageBatch.service";
+import { MessageBatchService } from "../messageBatch/messageBatch.service.js";
 
-import { MessageRepository } from "./message.repository";
-import { Message } from "./message.schema";
+import { MessageRepository } from "./message.repository.js";
+import { Message } from "./message.schema.js";
 
 /**
  * MessageService is responsible for saving messages and send them onchain

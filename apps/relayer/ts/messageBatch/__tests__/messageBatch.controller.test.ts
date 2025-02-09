@@ -2,10 +2,10 @@ import { jest } from "@jest/globals";
 import { HttpException, HttpStatus } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 
-import { MessageBatchController } from "../messageBatch.controller";
-import { MessageBatchService } from "../messageBatch.service";
+import { MessageBatchController } from "../messageBatch.controller.js";
+import { MessageBatchService } from "../messageBatch.service.js";
 
-import { defaultGetMessageBatchesDto, defaultMessageBatches } from "./utils";
+import { defaultGetMessageBatchesDto, defaultMessageBatches } from "./utils.js";
 
 describe("MessageBatchController", () => {
   let controller: MessageBatchController;

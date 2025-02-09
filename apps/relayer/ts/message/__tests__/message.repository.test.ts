@@ -3,10 +3,10 @@ import { ZeroAddress } from "ethers";
 import { Keypair } from "maci-domainobjs";
 import { Model } from "mongoose";
 
-import { MessageRepository } from "../message.repository";
-import { Message } from "../message.schema";
+import { MessageRepository } from "../message.repository.js";
+import { Message } from "../message.schema.js";
 
-import { defaultSaveMessagesArgs } from "./utils";
+import { defaultSaveMessagesArgs } from "./utils.js";
 
 describe("MessageRepository", () => {
   const defaultMessages: Message[] = [

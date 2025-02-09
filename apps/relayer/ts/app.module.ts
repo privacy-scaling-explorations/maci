@@ -3,9 +3,10 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { ScheduleModule } from "@nestjs/schedule";
 import { ThrottlerModule } from "@nestjs/throttler";
 
-import { IpfsModule } from "./ipfs/ipfs.module";
-import { MessageModule } from "./message/message.module";
-import { MessageBatchModule } from "./messageBatch/messageBatch.module";
+import { HealthModule } from "./health/health.module.js";
+import { IpfsModule } from "./ipfs/ipfs.module.js";
+import { MessageModule } from "./message/message.module.js";
+import { MessageBatchModule } from "./messageBatch/messageBatch.module.js";
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { MessageBatchModule } from "./messageBatch/messageBatch.module";
     MongooseModule.forRootAsync({
       useFactory: async () => {
         if (process.env.NODE_ENV === "test") {
-          const { getTestMongooseModuleOptions } = await import("./jest/mongo");
+          const { getTestMongooseModuleOptions } = await import("./jest/mongo.js");
 
           return getTestMongooseModuleOptions();
         }
@@ -37,6 +38,7 @@ import { MessageBatchModule } from "./messageBatch/messageBatch.module";
     IpfsModule,
     MessageModule,
     MessageBatchModule,
+    HealthModule,
   ],
 })
 export class AppModule {}

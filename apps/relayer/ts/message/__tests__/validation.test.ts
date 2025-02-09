@@ -1,6 +1,6 @@
 import { Keypair } from "maci-domainobjs";
 
-import { PublicKeyValidator } from "../validation";
+import { PublicKeyValidator } from "../validation.js";
 
 describe("PublicKeyValidator", () => {
   test("should validate valid public key", () => {

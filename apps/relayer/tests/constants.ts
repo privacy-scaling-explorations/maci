@@ -2,6 +2,8 @@ import { homedir } from "os";
 import path from "path";
 import url from "url";
 
+import type request from "supertest";
+
 export const STATE_TREE_DEPTH = 10;
 export const INT_STATE_TREE_DEPTH = 1;
 export const VOTE_OPTION_TREE_DEPTH = 2;
@@ -36,3 +38,5 @@ export const tallyVotesZkeyPathNonQv = path.resolve(
   dirname,
   "../zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test.0.zkey",
 );
+
+export type TApp = Parameters<typeof request>[0];

@@ -1,10 +1,10 @@
 import { jest } from "@jest/globals";
 import { Model } from "mongoose";
 
-import { MessageBatchRepository } from "../messageBatch.repository";
-import { MessageBatch } from "../messageBatch.schema";
+import { MessageBatchRepository } from "../messageBatch.repository.js";
+import { MessageBatch } from "../messageBatch.schema.js";
 
-import { defaultMessageBatches } from "./utils";
+import { defaultMessageBatches } from "./utils.js";
 
 describe("MessageBatchRepository", () => {
   const mockMessageBatchModel = {

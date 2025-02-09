@@ -15,7 +15,7 @@ import {
   pollWasm,
   pollWitgen,
   rapidsnark,
-} from "./constants";
+} from "./constants.js";
 
 interface IContractsData {
   initialized: boolean;
@@ -76,7 +76,7 @@ export class TestDeploy {
 
     const maciAddresses = await deploy({ stateTreeDepth: 10, signer });
 
-    const startDate = (await signer.provider.getBlock("latest"))?.timestamp ?? Math.floor(Date.now() / 1000);
+    const startDate = Math.floor(Date.now() / 1000) + 30;
 
     await deployPoll({
       pollStartDate: startDate,

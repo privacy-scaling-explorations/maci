@@ -1,9 +1,10 @@
 import { ZeroAddress } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
-import { defaultMessageBatches } from "../../messageBatch/__tests__/utils";
-import { PublishMessagesDto } from "../message.dto";
-import { ICreateMessages } from "../types";
+import type { ICreateMessages } from "../types.js";
+
+import { defaultMessageBatches } from "../../messageBatch/__tests__/utils.js";
+import { PublishMessagesDto } from "../message.dto.js";
 
 const keypair = new Keypair();
 

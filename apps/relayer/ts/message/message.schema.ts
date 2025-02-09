@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { HydratedDocument } from "mongoose";
 
-import type { MessageBatch } from "../messageBatch/messageBatch.schema";
+import type { MessageBatch } from "../messageBatch/messageBatch.schema.js";
 
 /**
  * Message document type

@@ -11,15 +11,15 @@ import {
 import { Reflector } from "@nestjs/core";
 import { validate } from "class-validator";
 import hardhat from "hardhat";
-import flatMap from "lodash/flatMap";
-import flatten from "lodash/flatten";
-import map from "lodash/map";
-import values from "lodash/values";
+import flatMap from "lodash/flatMap.js";
+import flatten from "lodash/flatten.js";
+import map from "lodash/map.js";
+import values from "lodash/values.js";
 import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-sdk";
 
 import type { Request as Req } from "express";
 
-import { MAX_MESSAGES, MessageContractParamsDto, PublishMessagesDto } from "./message.dto";
+import { MAX_MESSAGES, MessageContractParamsDto, PublishMessagesDto } from "./message.dto.js";
 
 /**
  * Public metadata key
