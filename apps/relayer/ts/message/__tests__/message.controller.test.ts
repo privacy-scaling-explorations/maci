@@ -2,10 +2,10 @@ import { jest } from "@jest/globals";
 import { HttpException, HttpStatus } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 
-import { MessageController } from "../message.controller";
-import { MessageService } from "../message.service";
+import { MessageController } from "../message.controller.js";
+import { MessageService } from "../message.service.js";
 
-import { defaultSaveMessagesDto } from "./utils";
+import { defaultSaveMessagesDto } from "./utils.js";
 
 describe("MessageController", () => {
   let controller: MessageController;

@@ -2,14 +2,15 @@ import { jest } from "@jest/globals";
 import { ZeroAddress } from "ethers";
 import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-sdk";
 
-import { IpfsService } from "../../ipfs/ipfs.service";
-import { MessageBatchDto } from "../messageBatch.dto";
-import { MessageBatchRepository } from "../messageBatch.repository";
-import { MessageBatchService } from "../messageBatch.service";
+import { IpfsService } from "../../ipfs/ipfs.service.js";
+import { MessageBatchDto } from "../messageBatch.dto.js";
+import { MessageBatchRepository } from "../messageBatch.repository.js";
+import { MessageBatchService } from "../messageBatch.service.js";
 
-import { defaultIpfsHash, defaultMessageBatches } from "./utils";
+import { defaultIpfsHash, defaultMessageBatches } from "./utils.js";
 
 jest.mock("maci-sdk", (): unknown => ({
+  getDefaultSigner: jest.fn(),
   MACI__factory: {
     connect: jest.fn(),
   },

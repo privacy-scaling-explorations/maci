@@ -1,4 +1,4 @@
-import { IpfsService } from "../ipfs.service";
+import { IpfsService } from "../ipfs.service.js";
 
 describe("IpfsService", () => {
   const defaultData = { hello: "world" };

@@ -2,8 +2,8 @@ import { Injectable, Logger } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, RootFilterQuery } from "mongoose";
 
-import { MessageBatchDto } from "./messageBatch.dto";
-import { MESSAGE_BATCHES_LIMIT, MessageBatch } from "./messageBatch.schema";
+import { MessageBatchDto } from "./messageBatch.dto.js";
+import { MESSAGE_BATCHES_LIMIT, MessageBatch } from "./messageBatch.schema.js";
 
 /**
  * Message batch repository is used to interact with the message batch collection

@@ -6,7 +6,7 @@ import { ZeroAddress } from "ethers";
 import { Keypair } from "maci-domainobjs";
 import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-sdk";
 
-import { MessageGuard, PUBLIC_METADATA_KEY, Public } from "../message.guard";
+import { MessageGuard, PUBLIC_METADATA_KEY, Public } from "../message.guard.js";
 
 dotenv.config();
 

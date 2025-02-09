@@ -16,7 +16,7 @@ import {
 } from "class-validator";
 import { Message } from "maci-domainobjs";
 
-import { PublicKeyValidator } from "./validation";
+import { PublicKeyValidator } from "./validation.js";
 
 /**
  * Max messages per batch

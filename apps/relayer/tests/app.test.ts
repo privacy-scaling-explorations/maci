@@ -2,12 +2,12 @@ import { HttpStatus, ValidationPipe, type INestApplication } from "@nestjs/commo
 import { Test } from "@nestjs/testing";
 import request from "supertest";
 
-import type { App } from "supertest/types";
+import type { TApp } from "./constants.js";
 
-import { AppModule } from "../ts/app.module";
+import { AppModule } from "../ts/app.module.js";
 
 describe("Integration", () => {
-  let app: INestApplication;
+  let app: INestApplication<TApp>;
 
   beforeAll(async () => {
     const moduleFixture = await Test.createTestingModule({
@@ -24,15 +24,16 @@ describe("Integration", () => {
   });
 
   test("should throw an error if api is not found", async () => {
-    const result = await request(app.getHttpServer() as App)
-      .get("/unknown")
-      .send()
-      .expect(404);
+    const result = await request(app.getHttpServer()).get("/unknown").send().expect(404);
 
     expect(result.body).toStrictEqual({
       error: "Not Found",
       statusCode: HttpStatus.NOT_FOUND,
       message: "Cannot GET /unknown",
     });
+  });
+
+  test("should check health properly", async () => {
+    await request(app.getHttpServer()).get("/v1/health/check").send().expect(200);
   });
 });

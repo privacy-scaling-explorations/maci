@@ -2,9 +2,9 @@ import { Injectable, Logger } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, RootFilterQuery } from "mongoose";
 
-import type { ICreateMessages } from "./types";
+import type { ICreateMessages } from "./types.js";
 
-import { Message, MESSAGES_LIMIT } from "./message.schema";
+import { Message, MESSAGES_LIMIT } from "./message.schema.js";
 
 /**
  * Message repository is used to interact with the message collection

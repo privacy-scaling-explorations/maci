@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 import { Body, Controller, Get, HttpException, HttpStatus, Logger } from "@nestjs/common";
 import { ApiBody, ApiResponse, ApiTags } from "@nestjs/swagger";
-import set from "lodash/set";
+import set from "lodash/set.js";
 
-import { GetMessageBatchesDto } from "./messageBatch.dto";
-import { MessageBatch } from "./messageBatch.schema";
-import { MessageBatchService } from "./messageBatch.service";
+import { GetMessageBatchesDto } from "./messageBatch.dto.js";
+import { MessageBatch } from "./messageBatch.schema.js";
+import { MessageBatchService } from "./messageBatch.service.js";
 
 @ApiTags("v1/messageBatches")
 @Controller("v1/messageBatches")

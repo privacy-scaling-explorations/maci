@@ -1,12 +1,12 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 
-import { MessageBatchModule } from "../messageBatch/messageBatch.module";
+import { MessageBatchModule } from "../messageBatch/messageBatch.module.js";
 
-import { MessageController } from "./message.controller";
-import { MessageRepository } from "./message.repository";
-import { Message, MessageSchema } from "./message.schema";
-import { MessageService } from "./message.service";
+import { MessageController } from "./message.controller.js";
+import { MessageRepository } from "./message.repository.js";
+import { Message, MessageSchema } from "./message.schema.js";
+import { MessageService } from "./message.service.js";
 
 @Module({
   imports: [MongooseModule.forFeature([{ name: Message.name, schema: MessageSchema }]), MessageBatchModule],

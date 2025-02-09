@@ -5,22 +5,20 @@ import { Keypair } from "maci-domainobjs";
 import { formatProofForVerifierContract, genProofSnarkjs } from "maci-sdk";
 import request from "supertest";
 
-import type { App } from "supertest/types";
+import { AppModule } from "../ts/app.module.js";
 
-import { AppModule } from "../ts/app.module";
+import { pollJoinedWasm, pollJoinedZkey, type TApp } from "./constants.js";
 
-import { pollJoinedWasm, pollJoinedZkey } from "./constants";
-
-jest.unmock("maci-contracts/typechain-types");
+jest.unmock("maci-sdk");
 
 describe("Integration messages", () => {
-  let app: INestApplication;
+  let app: INestApplication<TApp>;
   let circuitInputs: Record<string, string>;
   let stateLeafIndex: number;
   let maciContractAddress: string;
 
   beforeAll(async () => {
-    const { TestDeploy } = await import("./deploy");
+    const { TestDeploy } = await import("./deploy.js");
     await TestDeploy.sleep(10_000);
     const testDeploy = await TestDeploy.getInstance();
     const poll = testDeploy.contractsData.maciState!.polls.get(0n);
@@ -67,7 +65,7 @@ describe("Integration messages", () => {
     };
 
     test("should throw an error if there is no valid proof", async () => {
-      const result = await request(app.getHttpServer() as App)
+      const result = await request(app.getHttpServer())
         .post("/v1/messages/publish")
         .send({
           ...defaultSaveMessagesArgs,
@@ -92,7 +90,7 @@ describe("Integration messages", () => {
         wasmPath: pollJoinedWasm,
       });
 
-      const result = await request(app.getHttpServer() as App)
+      const result = await request(app.getHttpServer())
         .post("/v1/messages/publish")
         .send({
           stateLeafIndex,
@@ -122,7 +120,7 @@ describe("Integration messages", () => {
         wasmPath: pollJoinedWasm,
       });
 
-      const result = await request(app.getHttpServer() as App)
+      const result = await request(app.getHttpServer())
         .post("/v1/messages/publish")
         .send({
           ...defaultSaveMessagesArgs,
@@ -147,7 +145,7 @@ describe("Integration messages", () => {
         wasmPath: pollJoinedWasm,
       });
 
-      const result = await request(app.getHttpServer() as App)
+      const result = await request(app.getHttpServer())
         .post("/v1/messages/publish")
         .send({
           ...defaultSaveMessagesArgs,

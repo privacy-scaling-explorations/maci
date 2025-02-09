@@ -16,10 +16,10 @@ import {
   MinLength,
 } from "class-validator";
 
-import { Message } from "../message/message.schema";
-import { PublicKeyValidator } from "../message/validation";
+import { Message } from "../message/message.schema.js";
+import { PublicKeyValidator } from "../message/validation.js";
 
-import { IpfsHashValidator } from "./validation";
+import { IpfsHashValidator } from "./validation.js";
 
 /**
  * Max messages per batch

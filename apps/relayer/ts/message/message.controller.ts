@@ -2,10 +2,10 @@
 import { Body, Controller, HttpException, HttpStatus, Logger, Post, UseGuards } from "@nestjs/common";
 import { ApiBody, ApiResponse, ApiTags } from "@nestjs/swagger";
 
-import { PublishMessagesDto } from "./message.dto";
-import { MessageGuard } from "./message.guard";
-import { Message } from "./message.schema";
-import { MessageService } from "./message.service";
+import { PublishMessagesDto } from "./message.dto.js";
+import { MessageGuard } from "./message.guard.js";
+import { Message } from "./message.schema.js";
+import { MessageService } from "./message.service.js";
 
 @ApiTags("v1/messages")
 @Controller("v1/messages")

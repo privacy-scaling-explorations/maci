@@ -1,17 +1,17 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { validate } from "class-validator";
-import flatten from "lodash/flatten";
-import uniqBy from "lodash/uniqBy";
+import flatten from "lodash/flatten.js";
+import uniqBy from "lodash/uniqBy.js";
 import { PubKey } from "maci-domainobjs";
 import { getDefaultSigner, MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-sdk";
 
-import type { MessageBatch } from "./messageBatch.schema";
+import type { MessageBatch } from "./messageBatch.schema.js";
 import type { RootFilterQuery } from "mongoose";
 
-import { IpfsService } from "../ipfs/ipfs.service";
+import { IpfsService } from "../ipfs/ipfs.service.js";
 
-import { MAX_MESSAGES, type MessageBatchDto } from "./messageBatch.dto";
-import { MessageBatchRepository } from "./messageBatch.repository";
+import { MAX_MESSAGES, type MessageBatchDto } from "./messageBatch.dto.js";
+import { MessageBatchRepository } from "./messageBatch.repository.js";
 
 /**
  * MessageBatchService is responsible for saving message batches and send them to ipfs

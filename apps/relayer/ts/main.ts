@@ -19,7 +19,7 @@ dotenv.config({
 });
 
 async function bootstrap() {
-  const { AppModule } = await import("./app.module");
+  const { AppModule } = await import("./app.module.js");
   const app = await NestFactory.create(AppModule, {
     logger: ["log", "fatal", "error", "warn"],
   });

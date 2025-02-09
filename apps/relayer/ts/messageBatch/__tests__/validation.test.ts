@@ -1,6 +1,6 @@
-import { IpfsHashValidator } from "../validation";
+import { IpfsHashValidator } from "../validation.js";
 
-import { defaultIpfsHash } from "./utils";
+import { defaultIpfsHash } from "./utils.js";
 
 describe("IpfsHashValidator", () => {
   test("should validate valid ipfs hash", () => {
