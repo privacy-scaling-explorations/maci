@@ -84,9 +84,9 @@ interface IPoll {
   /// @return voteOptionTreeDepth The subdepth of the vote option tree
   function treeDepths() external view returns (uint8 intStateTreeDepth, uint8 voteOptionTreeDepth);
 
-  /// @notice Get the max vote options for the poll
-  /// @return maxVoteOptions The maximum number of vote options
-  function maxVoteOptions() external view returns (uint256);
+  /// @notice Get the number of vote options for the poll
+  /// @return voteOptions The number of vote options
+  function voteOptions() external view returns (uint256);
 
   /// @notice Get message batch size for the poll
   /// @return The message batch size

@@ -8,7 +8,14 @@ import fs from "fs";
 
 import { IProcessMessagesInputs } from "../types";
 
-import { STATE_TREE_DEPTH, duration, messageBatchSize, treeDepths, voiceCreditBalance } from "./utils/constants";
+import {
+  STATE_TREE_DEPTH,
+  duration,
+  maxVoteOptions,
+  messageBatchSize,
+  treeDepths,
+  voiceCreditBalance,
+} from "./utils/constants";
 import { circomkitInstance } from "./utils/utils";
 
 describe("ProcessMessage circuit", function test() {
@@ -38,6 +45,7 @@ describe("ProcessMessage circuit", function test() {
     "currentBallotsPathElements",
     "currentVoteWeights",
     "currentVoteWeightsPathElements",
+    "voteOptions",
   ];
 
   let circuit: WitnessTester<ProcessMessageCircuitInputs>;
@@ -80,6 +88,7 @@ describe("ProcessMessage circuit", function test() {
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
+        maxVoteOptions,
       );
 
       poll = maciState.polls.get(pollId)!;
@@ -168,6 +177,7 @@ describe("ProcessMessage circuit", function test() {
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
+        maxVoteOptions,
       );
 
       poll = maciState.polls.get(pollId)!;
@@ -267,10 +277,11 @@ describe("ProcessMessage circuit", function test() {
       maciState.signUp(userKeypair2.pubKey);
 
       pollId = maciState.deployPoll(
-        BigInt(2 + duration), // BigInt(Math.floor(Date.now() / 1000) + duration),
+        BigInt(2 + duration),
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
+        maxVoteOptions,
       );
 
       poll = maciState.polls.get(pollId)!;
@@ -350,10 +361,11 @@ describe("ProcessMessage circuit", function test() {
       maciState.signUp(userKeypair.pubKey);
 
       pollId = maciState.deployPoll(
-        BigInt(2 + duration), // BigInt(Math.floor(Date.now() / 1000) + duration),
+        BigInt(2 + duration),
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
+        maxVoteOptions,
       );
 
       poll = maciState.polls.get(pollId)!;
@@ -473,6 +485,7 @@ describe("ProcessMessage circuit", function test() {
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
+        maxVoteOptions,
       );
 
       poll = maciState.polls.get(pollId)!;
@@ -537,6 +550,7 @@ describe("ProcessMessage circuit", function test() {
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
+        maxVoteOptions,
       );
 
       poll = maciState.polls.get(pollId)!;
@@ -659,6 +673,7 @@ describe("ProcessMessage circuit", function test() {
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
+        maxVoteOptions,
       );
 
       poll = maciState.polls.get(pollId)!;
@@ -788,6 +803,7 @@ describe("ProcessMessage circuit", function test() {
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
+        maxVoteOptions,
       );
 
       poll = maciState.polls.get(pollId)!;

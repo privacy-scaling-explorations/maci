@@ -74,6 +74,7 @@ export interface IProcessMessagesInputs {
   currentBallotsPathElements: bigint[][];
   currentVoteWeights: bigint[];
   currentVoteWeightsPathElements: bigint[][];
+  voteOptions: bigint;
 }
 
 /**

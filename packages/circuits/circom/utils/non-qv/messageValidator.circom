@@ -19,8 +19,8 @@ template MessageValidatorNonQv() {
     signal input numSignUps;
     // Vote option index.
     signal input voteOptionIndex;
-    // Maximum number of vote options.
-    signal input maxVoteOptions;
+    // Number of valid vote options for the poll.
+    signal input voteOptions;
     // Ballot nonce.
     signal input originalNonce;
     // Command nonce.
@@ -53,8 +53,8 @@ template MessageValidatorNonQv() {
     // while 1 is for the first actual user.
     var computedIsStateLeafIndexValid = SafeLessThan(252)([stateTreeIndex, numSignUps]);
 
-    // Check (2) - The max vote option tree index must be correct.
-    var computedIsVoteOptionIndexValid = SafeLessThan(252)([voteOptionIndex, maxVoteOptions]);
+    // Check (2) - The vote option index must be less than the number of valid vote options (0 indexed).
+    var computedIsVoteOptionIndexValid = SafeLessThan(252)([voteOptionIndex, voteOptions]);
 
     // Check (3) - The nonce must be correct.    
     var computedIsNonceValid = IsEqual()([originalNonce + 1, nonce]);

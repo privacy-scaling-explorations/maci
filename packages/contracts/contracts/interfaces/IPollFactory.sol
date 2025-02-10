@@ -7,26 +7,32 @@ import { DomainObjs } from "../utilities/DomainObjs.sol";
 /// @title IPollFactory
 /// @notice PollFactory interface
 interface IPollFactory {
+  /// @notice A struct holding the arguments for poll deployment
+  struct DeployPollArgs {
+    /// @param startDate The start date of the poll
+    uint256 startDate;
+    /// @param endDate The end date of the poll
+    uint256 endDate;
+    /// @param treeDepths The depths of the merkle trees
+    Params.TreeDepths treeDepths;
+    /// @param messageBatchSize The size of message batch
+    uint8 messageBatchSize;
+    /// @param coordinatorPubKey The coordinator's public key
+    DomainObjs.PubKey coordinatorPubKey;
+    /// @param extContracts The external contracts interface references
+    Params.ExtContracts extContracts;
+    /// @param emptyBallotRoot The root of the empty ballot tree
+    uint256 emptyBallotRoot;
+    /// @param pollId The poll id
+    uint256 pollId;
+    /// @param relayers The message relayers (optional)
+    address[] relayers;
+    /// @param voteOptions The number of vote options for the poll
+    uint256 voteOptions;
+  }
+
   /// @notice Deploy a new Poll contract
-  /// @param _startDate The start date of the poll
-  /// @param _endDate The end date of the poll
-  /// @param _treeDepths The depths of the merkle trees
-  /// @param _messageBatchSize The size of message batch
-  /// @param _coordinatorPubKey The coordinator's public key
-  /// @param _extContracts The external contracts interface references
-  /// @param _emptyBallotRoot The root of the empty ballot tree
-  /// @param _pollId The poll id
-  /// @param _relayers The message relayers (optional)
+  /// @param _args The arguments for the poll deployment
   /// @return The deployed Poll contract
-  function deploy(
-    uint256 _startDate,
-    uint256 _endDate,
-    Params.TreeDepths calldata _treeDepths,
-    uint8 _messageBatchSize,
-    DomainObjs.PubKey calldata _coordinatorPubKey,
-    Params.ExtContracts calldata _extContracts,
-    uint256 _emptyBallotRoot,
-    uint256 _pollId,
-    address[] calldata _relayers
-  ) external returns (address);
+  function deploy(DeployPollArgs calldata _args) external returns (address);
 }

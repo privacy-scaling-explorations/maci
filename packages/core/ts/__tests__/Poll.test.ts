@@ -6,7 +6,14 @@ import { MaciState } from "../MaciState";
 import { Poll } from "../Poll";
 import { STATE_TREE_DEPTH, VOTE_OPTION_TREE_ARITY } from "../utils/constants";
 
-import { coordinatorKeypair, duration, messageBatchSize, treeDepths, voiceCreditBalance } from "./utils/constants";
+import {
+  coordinatorKeypair,
+  duration,
+  maxVoteOptions,
+  messageBatchSize,
+  treeDepths,
+  voiceCreditBalance,
+} from "./utils/constants";
 
 describe("Poll", function test() {
   this.timeout(90000);
@@ -18,6 +25,7 @@ describe("Poll", function test() {
       treeDepths,
       messageBatchSize,
       coordinatorKeypair,
+      maxVoteOptions,
     );
 
     const poll = maciState.polls.get(pollId)!;
@@ -241,6 +249,7 @@ describe("Poll", function test() {
       treeDepths,
       messageBatchSize,
       coordinatorKeypair,
+      maxVoteOptions,
     );
 
     const poll = maciState.polls.get(pollId)!;
@@ -264,6 +273,7 @@ describe("Poll", function test() {
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
+        maxVoteOptions,
       );
 
       expect(() => maciState.polls.get(tmpPoll)?.processMessages(pollId)).to.throw(
@@ -317,6 +327,7 @@ describe("Poll", function test() {
       treeDepths,
       messageBatchSize,
       coordinatorKeypair,
+      maxVoteOptions,
     );
 
     const poll = maciState.polls.get(pollId)!;
@@ -410,6 +421,7 @@ describe("Poll", function test() {
       treeDepths,
       messageBatchSize,
       coordinatorKeypair,
+      maxVoteOptions,
     );
 
     const poll = maciState.polls.get(pollId)!;
@@ -478,6 +490,7 @@ describe("Poll", function test() {
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
+        maxVoteOptions,
       );
 
       const secondPoll = maciState.polls.get(secondPollId)!;
@@ -528,6 +541,7 @@ describe("Poll", function test() {
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
+        maxVoteOptions,
       );
 
       const poll = maciState.polls.get(pollId)!;
@@ -546,6 +560,7 @@ describe("Poll", function test() {
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
+        maxVoteOptions,
       );
 
       maciState.signUp(new Keypair().pubKey);
@@ -571,6 +586,7 @@ describe("Poll", function test() {
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
+        maxVoteOptions,
       );
 
       const poll = maciState.polls.get(pollId)!;

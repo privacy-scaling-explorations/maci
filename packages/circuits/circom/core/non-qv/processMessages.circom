@@ -64,6 +64,8 @@ include "../../trees/incrementalQuinaryTree.circom";
     signal input actualStateTreeDepth;
     // The coordinator public key hash
     signal input coordinatorPublicKeyHash;
+    // The number of valid vote options for the poll.
+    signal input voteOptions;
 
     // The state leaves upon which messages are applied.
     //    transform(currentStateLeaf[4], message5) => newStateLeaf4
@@ -117,10 +119,10 @@ include "../../trees/incrementalQuinaryTree.circom";
     computedCurrentSbCommitment === currentSbCommitment;
 
     //  ----------------------------------------------------------------------- 
-    // 0. Ensure that the maximum vote options signal is valid and if
-    // the maximum users signal is valid.
-    var maxVoValid = LessEqThan(32)([maxVoteOptions, VOTE_OPTION_TREE_ARITY ** voteOptionTreeDepth]);
-    maxVoValid === 1;
+        // 0. Ensure that the maximum vote options signal is valid and if
+    // the maximum users signal is valid
+    var voteOptionsValid = LessEqThan(32)([voteOptions, VOTE_OPTION_TREE_ARITY ** voteOptionTreeDepth]);
+    voteOptionsValid === 1;
 
     // Check numSignUps <= the max number of users (i.e., number of state leaves
     // that can fit the state tree).
@@ -242,7 +244,8 @@ include "../../trees/incrementalQuinaryTree.circom";
             computedCommandsSalt[i],
             computedCommandsSigR8[i],
             computedCommandsSigS[i],
-            computedCommandsPackedCommandOut[i]
+            computedCommandsPackedCommandOut[i],
+            voteOptions
         );
 
         stateRoots[i] <== computedNewVoteStateRoot[i];
@@ -272,8 +275,6 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     var BALLOT_NONCE_IDX = 0;
     // Ballot vote option (VO) root index.
     var BALLOT_VO_ROOT_IDX = 1;
-    // Number of options for this poll.
-    var maxVoteOptions = VOTE_OPTION_TREE_ARITY ** voteOptionTreeDepth;
 
     // Indices for elements within a state leaf.
     // Public key.
@@ -319,6 +320,9 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     signal input cmdSigS;
     signal input packedCmd[PACKED_CMD_LENGTH];
 
+    // The number of valid vote options for the poll.
+    signal input voteOptions;
+
     signal output newStateRoot;
     signal output newBallotRoot;
 
@@ -330,7 +334,7 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     var computedNewSlPubKey[2], computedNewBallotNonce, computedIsValid, computedIsStateLeafIndexValid, computedIsVoteOptionIndexValid;
     (computedNewSlPubKey, computedNewBallotNonce, computedIsValid, computedIsStateLeafIndexValid, computedIsVoteOptionIndexValid) = StateLeafAndBallotTransformerNonQv()(
         numSignUps,
-        maxVoteOptions,
+        voteOptions,
         [stateLeaf[STATE_LEAF_PUB_X_IDX], stateLeaf[STATE_LEAF_PUB_Y_IDX]],
         stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX],
         ballot[BALLOT_NONCE_IDX],

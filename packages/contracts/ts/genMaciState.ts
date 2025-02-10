@@ -237,6 +237,8 @@ export const genMaciStateFromContract = async (
     }
   }
 
+  const voteOptions = await pollContract.voteOptions();
+
   // Reconstruct MaciState in order
   sortActions(actions).forEach((action) => {
     switch (true) {
@@ -248,7 +250,7 @@ export const genMaciStateFromContract = async (
       }
 
       case action.type === "DeployPoll" && action.data.pollId?.toString() === pollId.toString(): {
-        maciState.deployPoll(pollEndTimestamp, treeDepths, messageBatchSize, coordinatorKeypair);
+        maciState.deployPoll(pollEndTimestamp, treeDepths, messageBatchSize, coordinatorKeypair, voteOptions);
         break;
       }
 

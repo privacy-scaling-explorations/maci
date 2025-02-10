@@ -9,7 +9,14 @@ import { EMode } from "../ts/constants";
 import { getDefaultSigner, getSigners, getBlockTimestamp } from "../ts/utils";
 import { MACI, Verifier, VkRegistry, SignUpGatekeeper, ConstantInitialVoiceCreditProxy } from "../typechain-types";
 
-import { STATE_TREE_DEPTH, duration, initialVoiceCreditBalance, messageBatchSize, treeDepths } from "./constants";
+import {
+  STATE_TREE_DEPTH,
+  duration,
+  initialVoiceCreditBalance,
+  maxVoteOptions,
+  messageBatchSize,
+  treeDepths,
+} from "./constants";
 import { deployTestContracts } from "./utils";
 
 describe("MACI", function test() {
@@ -211,13 +218,20 @@ describe("MACI", function test() {
         gatekeeper: signupGatekeeperContract,
         initialVoiceCreditProxy,
         relayers: [ZeroAddress],
+        voteOptions: maxVoteOptions,
       });
       const receipt = await tx.wait();
 
       expect(receipt?.status).to.eq(1);
       pollId = (await maciContract.nextPollId()) - 1n;
 
-      const p = maciState.deployPoll(BigInt(startTime + duration), treeDepths, messageBatchSize, coordinator);
+      const p = maciState.deployPoll(
+        BigInt(startTime + duration),
+        treeDepths,
+        messageBatchSize,
+        coordinator,
+        BigInt(maxVoteOptions),
+      );
       expect(p.toString()).to.eq(pollId.toString());
 
       // publish the NOTHING_UP_MY_SLEEVE message
@@ -246,6 +260,7 @@ describe("MACI", function test() {
         gatekeeper: signupGatekeeperContract,
         initialVoiceCreditProxy,
         relayers: [ZeroAddress],
+        voteOptions: maxVoteOptions,
       });
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
@@ -266,6 +281,7 @@ describe("MACI", function test() {
         gatekeeper: signupGatekeeperContract,
         initialVoiceCreditProxy,
         relayers: [ZeroAddress],
+        voteOptions: maxVoteOptions,
       });
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);

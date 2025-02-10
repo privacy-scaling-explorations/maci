@@ -23,7 +23,8 @@
       "newSbCommitment",
       "outputBatchHash",
       "actualStateTreeDepth",
-      "coordinatorPublicKeyHash"
+      "coordinatorPublicKeyHash",
+      "voteOptions"
     ]
   },
   "ProcessMessagesNonQv_10-20-2_test": {
@@ -38,7 +39,8 @@
       "newSbCommitment",
       "outputBatchHash",
       "actualStateTreeDepth",
-      "coordinatorPublicKeyHash"
+      "coordinatorPublicKeyHash",
+      "voteOptions"
     ]
   },
   "TallyVotes_10-1-2_test": {

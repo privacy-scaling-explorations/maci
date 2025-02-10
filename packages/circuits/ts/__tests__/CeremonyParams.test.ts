@@ -6,6 +6,7 @@ import { PrivKey, Keypair, PCommand, Message, Ballot } from "maci-domainobjs";
 
 import { IProcessMessagesInputs, ITallyVotesInputs } from "../types";
 
+import { maxVoteOptions } from "./utils/constants";
 import { generateRandomIndex, circomkitInstance } from "./utils/utils";
 
 describe("Ceremony param tests", () => {
@@ -54,6 +55,7 @@ describe("Ceremony param tests", () => {
         "currentBallotsPathElements",
         "currentVoteWeights",
         "currentVoteWeightsPathElements",
+        "voteOptions",
       ]
     >;
 
@@ -85,6 +87,7 @@ describe("Ceremony param tests", () => {
           treeDepths,
           MESSAGE_BATCH_SIZE,
           coordinatorKeypair,
+          maxVoteOptions,
         );
 
         poll = maciState.polls.get(pollId)!;
@@ -228,6 +231,7 @@ describe("Ceremony param tests", () => {
           treeDepths,
           MESSAGE_BATCH_SIZE,
           coordinatorKeypair,
+          maxVoteOptions,
         );
 
         poll = maciState.polls.get(pollId)!;

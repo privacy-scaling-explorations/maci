@@ -18,7 +18,7 @@ export function handleDeployPoll(event: DeployPollEvent): void {
   const contracts = maciContract.getPoll(id);
   const poll = new Poll(contracts.poll);
   const pollContract = PollContract.bind(contracts.poll);
-  const maxVoteOptions = pollContract.maxVoteOptions();
+  const voteOptions = pollContract.voteOptions();
   const treeDepths = pollContract.treeDepths();
   const durations = pollContract.getStartAndEndDate();
   const duration = durations.value1.minus(durations.value0);
@@ -26,7 +26,7 @@ export function handleDeployPoll(event: DeployPollEvent): void {
   poll.pollId = event.params._pollId;
   poll.messageProcessor = contracts.messageProcessor;
   poll.tally = contracts.tally;
-  poll.maxVoteOptions = maxVoteOptions;
+  poll.voteOptions = voteOptions;
   poll.treeDepth = GraphBN.fromI32(treeDepths.value0);
   poll.duration = duration;
   poll.startDate = durations.value0;

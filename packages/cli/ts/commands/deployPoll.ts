@@ -1,3 +1,4 @@
+import { VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { PubKey } from "maci-domainobjs";
 import {
   MACI__factory as MACIFactory,
@@ -38,6 +39,7 @@ export const deployPoll = async ({
   initialVoiceCreditsBalance,
   relayers = [],
   signer,
+  voteOptions,
   quiet = true,
   useQuadraticVoting = false,
 }: DeployPollArgs): Promise<PollContracts> => {
@@ -106,6 +108,11 @@ export const deployPoll = async ({
     logError("Vote option tree depth cannot be <= 0");
   }
 
+  // ensure the vote option parameter is valid (if passed)
+  if (voteOptions && voteOptions >= VOTE_OPTION_TREE_ARITY ** voteOptionTreeDepth) {
+    logError("Vote options cannot be greater than the number of leaves in the vote option tree");
+  }
+
   // we check that the contract is deployed
   if (!(await contractExists(signer.provider!, maci))) {
     logError("MACI contract does not exist");
@@ -144,6 +151,7 @@ export const deployPoll = async ({
         gatekeeper: signupGatekeeperContractAddress,
         initialVoiceCreditProxy: initialVoiceCreditProxyAddress,
         relayers,
+        voteOptions: voteOptions ?? VOTE_OPTION_TREE_ARITY ** voteOptionTreeDepth,
       },
       { gasLimit: 10000000 },
     );

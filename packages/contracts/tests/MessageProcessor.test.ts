@@ -23,6 +23,7 @@ import {
   STATE_TREE_DEPTH,
   duration,
   initialVoiceCreditBalance,
+  maxVoteOptions,
   messageBatchSize,
   testProcessVk,
   testTallyVk,
@@ -78,6 +79,7 @@ describe("MessageProcessor", () => {
       gatekeeper: signupGatekeeperContract,
       initialVoiceCreditProxy: initialVoiceCreditProxyContract,
       relayers: [ZeroAddress],
+      voteOptions: maxVoteOptions,
     });
     let receipt = await tx.wait();
 
@@ -90,7 +92,13 @@ describe("MessageProcessor", () => {
     mpContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
 
     // deploy local poll
-    const p = maciState.deployPoll(BigInt(startTime + duration), treeDepths, messageBatchSize, coordinator);
+    const p = maciState.deployPoll(
+      BigInt(startTime + duration),
+      treeDepths,
+      messageBatchSize,
+      coordinator,
+      BigInt(maxVoteOptions),
+    );
     expect(p.toString()).to.eq(pollId.toString());
 
     const messages = [];

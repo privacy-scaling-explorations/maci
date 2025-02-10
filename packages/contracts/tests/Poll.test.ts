@@ -3,7 +3,7 @@
 import { expect } from "chai";
 import { AbiCoder, decodeBase58, encodeBase58, getBytes, hexlify, Signer, ZeroAddress } from "ethers";
 import { EthereumProvider } from "hardhat/types";
-import { MaciState, VOTE_OPTION_TREE_ARITY } from "maci-core";
+import { MaciState } from "maci-core";
 import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, Message, PCommand, PubKey, StateLeaf } from "maci-domainobjs";
 
@@ -24,6 +24,7 @@ import {
   STATE_TREE_DEPTH,
   duration,
   initialVoiceCreditBalance,
+  maxVoteOptions,
   messageBatchSize,
   testPollJoinedVk,
   testPollJoiningVk,
@@ -89,6 +90,7 @@ describe("Poll", () => {
         gatekeeper: signupGatekeeperContract,
         initialVoiceCreditProxy: initialVoiceCreditProxyContract,
         relayers: [signer],
+        voteOptions: maxVoteOptions,
       });
       const receipt = await tx.wait();
 
@@ -100,7 +102,13 @@ describe("Poll", () => {
       pollContract = PollFactory.connect(pollContracts.poll, signer);
 
       // deploy local poll
-      const p = maciState.deployPoll(BigInt(startDate + duration), treeDepths, messageBatchSize, coordinator);
+      const p = maciState.deployPoll(
+        BigInt(startDate + duration),
+        treeDepths,
+        messageBatchSize,
+        coordinator,
+        BigInt(maxVoteOptions),
+      );
       expect(p.toString()).to.eq(pollId.toString());
       // publish the NOTHING_UP_MY_SLEEVE message
       const messageData = [NOTHING_UP_MY_SLEEVE];
@@ -156,11 +164,6 @@ describe("Poll", () => {
       expect(dd[1] - dd[0]).to.eq(BigInt(duration));
     });
 
-    it("should have the correct max values set", async () => {
-      const mvo = await pollContract.maxVoteOptions();
-      expect(mvo.toString()).to.eq(BigInt(VOTE_OPTION_TREE_ARITY ** treeDepths.voteOptionTreeDepth).toString());
-    });
-
     it("should have the correct tree depths set", async () => {
       const td = await pollContract.treeDepths();
       expect(td[0].toString()).to.eq(treeDepths.intStateTreeDepth.toString());
@@ -197,6 +200,7 @@ describe("Poll", () => {
           gatekeeper: signupGatekeeperContract,
           initialVoiceCreditProxy: initialVoiceCreditProxyContract,
           relayers: [ZeroAddress],
+          voteOptions: maxVoteOptions,
         }),
       ).to.be.revertedWithCustomError(testMaciContract, "InvalidPubKey");
     });

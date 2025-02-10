@@ -9,7 +9,7 @@ export const DEFAULT_MESSAGE_PROCESSOR_ADDRESS = Address.fromString("0x000000000
 export const DEFAULT_TALLY_ADDRESS = Address.fromString("0x0000000000000000000000000000000000000003");
 
 export function mockPollContract(): void {
-  createMockedFunction(DEFAULT_POLL_ADDRESS, "maxVoteOptions", "maxVoteOptions():(uint256)").returns([
+  createMockedFunction(DEFAULT_POLL_ADDRESS, "voteOptions", "voteOptions():(uint256)").returns([
     ethereum.Value.fromI32(20),
   ]);
 

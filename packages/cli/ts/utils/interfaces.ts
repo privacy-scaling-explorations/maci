@@ -349,6 +349,11 @@ export interface DeployPollArgs {
    * The initial voice credits balance
    */
   initialVoiceCreditsBalance?: number;
+
+  /**
+   * The number of vote options
+   */
+  voteOptions?: number;
 }
 
 /**

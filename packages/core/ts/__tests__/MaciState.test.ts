@@ -7,7 +7,7 @@ import { MaciState } from "../MaciState";
 import { STATE_TREE_DEPTH } from "../utils/constants";
 import { IJsonMaciState } from "../utils/types";
 
-import { coordinatorKeypair, duration, messageBatchSize, treeDepths } from "./utils/constants";
+import { coordinatorKeypair, duration, maxVoteOptions, messageBatchSize, treeDepths } from "./utils/constants";
 
 describe("MaciState", function test() {
   this.timeout(100000);
@@ -32,6 +32,7 @@ describe("MaciState", function test() {
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
+        maxVoteOptions,
       );
       const command = new PCommand(0n, userKeypair.pubKey, 0n, 0n, 0n, BigInt(pollId), 0n);
 

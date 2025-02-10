@@ -34,7 +34,7 @@ type Poll @entity {
   endDate: BigInt! # uint256
   duration: BigInt! # uint256
   treeDepth: BigInt! # uint8
-  maxVoteOptions: BigInt!
+  voteOptions: BigInt! # uint256
   messageProcessor: Bytes! # address
   tally: Bytes! # address
   createdAt: BigInt!

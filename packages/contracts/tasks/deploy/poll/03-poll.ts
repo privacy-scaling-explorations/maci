@@ -64,6 +64,8 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
       hre.network.name,
     );
 
+    const voteOptions = deployment.getDeployConfigField<number>(EContracts.Poll, "voteOptions");
+
     const tx = await maciContract.deployPoll({
       startDate: pollStartTimestamp,
       endDate: pollEndTimestamp,
@@ -79,6 +81,7 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
       gatekeeper: gatekeeperContractAddress,
       initialVoiceCreditProxy: initialVoiceCreditProxyContractAddress,
       relayers,
+      voteOptions,
     });
 
     const receipt = await tx.wait();
