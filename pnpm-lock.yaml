@@ -278,8 +278,8 @@ importers:
         specifier: ^3.7.0
         version: 3.7.0(@docusaurus/plugin-content-docs@3.7.0(@mdx-js/react@3.1.0(@types/react@19.0.8)(react@19.0.0))(eslint@8.57.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.7.3))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@easyops-cn/docusaurus-search-local':
-        specifier: ^0.48.4
-        version: 0.48.4(@docusaurus/theme-common@3.7.0(@docusaurus/plugin-content-docs@3.7.0(@mdx-js/react@3.1.0(@types/react@19.0.8)(react@19.0.0))(eslint@8.57.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.7.3))(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(@mdx-js/react@3.1.0(@types/react@19.0.8)(react@19.0.0))(eslint@8.57.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.7.3)
+        specifier: ^0.48.5
+        version: 0.48.5(@docusaurus/theme-common@3.7.0(@docusaurus/plugin-content-docs@3.7.0(@mdx-js/react@3.1.0(@types/react@19.0.8)(react@19.0.0))(eslint@8.57.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.7.3))(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(@mdx-js/react@3.1.0(@types/react@19.0.8)(react@19.0.0))(eslint@8.57.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.7.3)
       '@mdx-js/react':
         specifier: ^3.1.0
         version: 3.1.0(@types/react@19.0.8)(react@19.0.0)
@@ -2789,8 +2789,8 @@ packages:
   '@easyops-cn/autocomplete.js@0.38.1':
     resolution: {integrity: sha512-drg76jS6syilOUmVNkyo1c7ZEBPcPuK+aJA7AksM5ZIIbV57DMHCywiCr+uHyv8BE5jUTU98j/H7gVrkHrWW3Q==}
 
-  '@easyops-cn/docusaurus-search-local@0.48.4':
-    resolution: {integrity: sha512-QgVHbGFOASFZHZdFz9NsnzsU6VRki+Mq+qd1RIDxMK3lQ7uz2cLE5MnvBfpzTmC5Ea5JF2YdMibgPechLr5uiw==}
+  '@easyops-cn/docusaurus-search-local@0.48.5':
+    resolution: {integrity: sha512-d+wnmJy/rBrQolCrLqfwvjjHL8w7zpl4OsFAm3HHOLIzQQKKSllIP4M9w4jCbHRZietfm95A5wyvJMvlynVC2w==}
     engines: {node: '>=12'}
     peerDependencies:
       '@docusaurus/theme-common': ^2 || ^3
@@ -17414,7 +17414,7 @@ snapshots:
       cssesc: 3.0.0
       immediate: 3.3.0
 
-  '@easyops-cn/docusaurus-search-local@0.48.4(@docusaurus/theme-common@3.7.0(@docusaurus/plugin-content-docs@3.7.0(@mdx-js/react@3.1.0(@types/react@19.0.8)(react@19.0.0))(eslint@8.57.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.7.3))(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(@mdx-js/react@3.1.0(@types/react@19.0.8)(react@19.0.0))(eslint@8.57.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.7.3)':
+  '@easyops-cn/docusaurus-search-local@0.48.5(@docusaurus/theme-common@3.7.0(@docusaurus/plugin-content-docs@3.7.0(@mdx-js/react@3.1.0(@types/react@19.0.8)(react@19.0.0))(eslint@8.57.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.7.3))(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(@mdx-js/react@3.1.0(@types/react@19.0.8)(react@19.0.0))(eslint@8.57.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.7.3)':
     dependencies:
       '@docusaurus/plugin-content-docs': 3.7.0(@mdx-js/react@3.1.0(@types/react@19.0.8)(react@19.0.0))(debug@4.4.0)(eslint@8.57.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.7.3)
       '@docusaurus/theme-common': 3.7.0(@docusaurus/plugin-content-docs@3.7.0(@mdx-js/react@3.1.0(@types/react@19.0.8)(react@19.0.0))(eslint@8.57.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(typescript@5.7.3))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -25291,7 +25291,7 @@ snapshots:
   https-proxy-agent@5.0.1:
     dependencies:
       agent-base: 6.0.2
-      debug: 4.3.7
+      debug: 4.4.0(supports-color@8.1.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -30354,7 +30354,7 @@ snapshots:
 
   send@1.1.0:
     dependencies:
-      debug: 4.3.6
+      debug: 4.4.0(supports-color@8.1.1)
       destroy: 1.2.0
       encodeurl: 2.0.0
       escape-html: 1.0.3
