@@ -7,8 +7,8 @@
   position: relative;
   height: 427px;
   overflow: hidden;
-  background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.3) 100%),
-    url("../../static/img/hero.svg");
+  background-image:
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.3) 100%), url("../../static/img/hero.svg");
   background-position: 0% 75%;
   background-repeat: no-repeat;
   background-size: cover;
