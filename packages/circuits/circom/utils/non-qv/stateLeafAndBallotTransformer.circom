@@ -17,8 +17,8 @@ template StateLeafAndBallotTransformerNonQv() {
 
     // Number of user sign-ups in the state tree.
     signal input numSignUps;
-    // Maximum number of vote options.
-    signal input maxVoteOptions;
+    // Number of valid vote options for the poll.
+    signal input voteOptions;
 
     // The following signals represents a state leaf (signed up user).
     // Public key.
@@ -72,7 +72,7 @@ template StateLeafAndBallotTransformerNonQv() {
         cmdStateIndex,
         numSignUps,
         cmdVoteOptionIndex,
-        maxVoteOptions,
+        voteOptions,
         ballotNonce,
         cmdNonce,
         packedCommand,

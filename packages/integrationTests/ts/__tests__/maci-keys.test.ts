@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import { VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { genPrivKey, genPubKey } from "maci-crypto";
 import { Keypair, PrivKey, PubKey } from "maci-domainobjs";
 import { Poll__factory as PollFactory, type Poll, getDefaultSigner, EMode, getBlockTimestamp } from "maci-sdk";
@@ -96,6 +97,7 @@ describe("integration tests private/public/keypair", () => {
         gatekeeper,
         initialVoiceCreditProxy,
         relayers: [],
+        voteOptions: VOTE_OPTION_TREE_ARITY ** VOTE_OPTION_TREE_DEPTH,
       });
 
       // we know it's the first poll so id is 0

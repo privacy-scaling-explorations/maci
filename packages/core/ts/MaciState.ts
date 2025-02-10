@@ -61,6 +61,7 @@ export class MaciState implements IMaciState {
    * @param treeDepths - The depths of the tree.
    * @param messageBatchSize - The batch size for processing messages.
    * @param coordinatorKeypair - The keypair of the MACI round coordinator.
+   * @param voteOptions - The number of vote options for this poll.
    * @returns The index of the newly deployed poll.
    */
   deployPoll(
@@ -68,6 +69,7 @@ export class MaciState implements IMaciState {
     treeDepths: TreeDepths,
     messageBatchSize: number,
     coordinatorKeypair: Keypair,
+    voteOptions: bigint,
   ): bigint {
     const poll: Poll = new Poll(
       pollEndTimestamp,
@@ -78,6 +80,7 @@ export class MaciState implements IMaciState {
         tallyBatchSize: STATE_TREE_ARITY ** treeDepths.intStateTreeDepth,
       },
       this,
+      voteOptions,
     );
 
     this.polls.set(BigInt(this.polls.size), poll);

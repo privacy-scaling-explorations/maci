@@ -149,8 +149,6 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
       revert InvalidPubKey();
     }
 
-    uint256 voteOptionTreeDepth = args.treeDepths.voteOptionTreeDepth;
-
     ExtContracts memory extContracts = ExtContracts({
       maci: IMACI(address(this)),
       verifier: IVerifier(args.verifier),
@@ -159,18 +157,20 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
       initialVoiceCreditProxy: IInitialVoiceCreditProxy(args.initialVoiceCreditProxy)
     });
 
-    address p = pollFactory.deploy(
-      args.startDate,
-      args.endDate,
-      args.treeDepths,
-      args.messageBatchSize,
-      args.coordinatorPubKey,
-      extContracts,
-      emptyBallotRoots[voteOptionTreeDepth - 1],
-      pollId,
-      args.relayers
-    );
+    IPollFactory.DeployPollArgs memory deployPollArgs = IPollFactory.DeployPollArgs({
+      startDate: args.startDate,
+      endDate: args.endDate,
+      treeDepths: args.treeDepths,
+      messageBatchSize: args.messageBatchSize,
+      coordinatorPubKey: args.coordinatorPubKey,
+      extContracts: extContracts,
+      emptyBallotRoot: emptyBallotRoots[args.treeDepths.voteOptionTreeDepth - 1],
+      pollId: pollId,
+      relayers: args.relayers,
+      voteOptions: args.voteOptions
+    });
 
+    address p = pollFactory.deploy(deployPollArgs);
     address mp = messageProcessorFactory.deploy(args.verifier, args.vkRegistry, p, msg.sender, args.mode);
     address tally = tallyFactory.deploy(args.verifier, args.vkRegistry, p, mp, msg.sender, args.mode);
 

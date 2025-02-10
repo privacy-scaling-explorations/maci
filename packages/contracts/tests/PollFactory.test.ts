@@ -11,6 +11,7 @@ import {
   STATE_TREE_DEPTH,
   treeDepths,
   ExtContractsStruct,
+  maxVoteOptions,
 } from "./constants";
 import { deployTestContracts } from "./utils";
 
@@ -46,17 +47,18 @@ describe("pollFactory", () => {
 
   describe("deployment", () => {
     it("should allow anyone to deploy a new poll", async () => {
-      const tx = await pollFactory.deploy(
-        new Date().getTime(),
-        new Date().getTime() + 100,
+      const tx = await pollFactory.deploy({
+        startDate: new Date().getTime(),
+        endDate: new Date().getTime() + 100,
         treeDepths,
         messageBatchSize,
-        coordinatorPubKey.asContractParam(),
+        coordinatorPubKey: coordinatorPubKey.asContractParam(),
         extContracts,
         emptyBallotRoot,
-        0n,
-        [ZeroAddress],
-      );
+        pollId: 0n,
+        relayers: [ZeroAddress],
+        voteOptions: maxVoteOptions,
+      });
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
     });

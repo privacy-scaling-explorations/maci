@@ -35,6 +35,7 @@ import {
   duration,
   initialVoiceCredits,
   maxMessages,
+  maxVoteOptions,
 } from "./utils/constants";
 import { ITestSuite } from "./utils/interfaces";
 import { expectTally, genTestUserCommands, isArm } from "./utils/utils";
@@ -126,7 +127,13 @@ describe("Integration tests", function test() {
 
     const messageBatchSize = MESSAGE_BATCH_SIZE;
 
-    pollId = maciState.deployPoll(BigInt(startDate + duration), treeDepths, messageBatchSize, coordinatorKeypair);
+    pollId = maciState.deployPoll(
+      BigInt(startDate + duration),
+      treeDepths,
+      messageBatchSize,
+      coordinatorKeypair,
+      BigInt(maxVoteOptions),
+    );
   });
 
   // after each test we need to cleanup some files

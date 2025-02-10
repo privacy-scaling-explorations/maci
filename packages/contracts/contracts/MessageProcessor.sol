@@ -21,7 +21,6 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
   error NoMoreMessages();
   error StateNotMerged();
   error InvalidProcessMessageProof();
-  error MaxVoteOptionsTooLarge();
   error NumSignUpsTooLarge();
   error CurrentMessageBatchIndexTooLarge();
   error BatchEndIndexTooLarge();
@@ -130,15 +129,16 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
 
     uint256 batchStartIndex = batchEndIndex > messageBatchSize ? batchEndIndex - messageBatchSize : 0;
 
-    publicInputs = new uint256[](8);
+    publicInputs = new uint256[](9);
     publicInputs[0] = numSignUps;
     publicInputs[1] = _outputBatchHash;
     publicInputs[2] = poll.actualStateTreeDepth();
     publicInputs[3] = coordinatorPubKeyHash;
-    publicInputs[4] = (sbCommitment == 0 ? poll.currentSbCommitment() : sbCommitment);
-    publicInputs[5] = _newSbCommitment;
-    publicInputs[6] = batchStartIndex;
-    publicInputs[7] = batchEndIndex;
+    publicInputs[4] = poll.voteOptions();
+    publicInputs[5] = (sbCommitment == 0 ? poll.currentSbCommitment() : sbCommitment);
+    publicInputs[6] = _newSbCommitment;
+    publicInputs[7] = batchStartIndex;
+    publicInputs[8] = batchEndIndex;
   }
 
   /// @notice Verify the proof for processMessage

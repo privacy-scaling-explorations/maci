@@ -37,6 +37,8 @@ interface IMACI {
     address initialVoiceCreditProxy;
     /// @param relayer The message relayer (optional)
     address[] relayers;
+    /// @param voteOptions The number of valid vote options for the poll
+    uint256 voteOptions;
   }
 
   /// @notice Get the depth of the state tree

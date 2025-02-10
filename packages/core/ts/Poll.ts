@@ -61,6 +61,8 @@ export class Poll implements IPoll {
 
   batchSizes: BatchSizes;
 
+  voteOptions: bigint;
+
   maxVoteOptions: number;
 
   // the depth of the state tree
@@ -152,11 +154,16 @@ export class Poll implements IPoll {
     treeDepths: TreeDepths,
     batchSizes: BatchSizes,
     maciStateRef: MaciState,
+    voteOptions: bigint,
   ) {
     this.pollEndTimestamp = pollEndTimestamp;
     this.coordinatorKeypair = coordinatorKeypair;
     this.treeDepths = treeDepths;
     this.batchSizes = batchSizes;
+    if (voteOptions > VOTE_OPTION_TREE_ARITY ** treeDepths.voteOptionTreeDepth) {
+      throw new Error("Vote options cannot be greater than the number of leaves in the vote option tree");
+    }
+    this.voteOptions = voteOptions;
     this.maxVoteOptions = VOTE_OPTION_TREE_ARITY ** treeDepths.voteOptionTreeDepth;
     this.maciStateRef = maciStateRef;
     this.pollId = BigInt(maciStateRef.polls.size);
@@ -299,7 +306,7 @@ export class Poll implements IPoll {
       }
 
       // If the vote option index is invalid, do nothing
-      if (command.voteOptionIndex < 0n || command.voteOptionIndex >= BigInt(this.maxVoteOptions)) {
+      if (command.voteOptionIndex < 0n || command.voteOptionIndex >= BigInt(this.voteOptions)) {
         throw new ProcessMessageError(ProcessMessageErrors.InvalidVoteOptionIndex);
       }
 
@@ -687,11 +694,11 @@ export class Poll implements IPoll {
               currentBallots.unshift(ballot);
               currentBallotsPathElements.unshift(this.ballotTree!.genProof(Number(stateLeafIndex)).pathElements);
 
-              // @note we check that command.voteOptionIndex is valid so < maxVoteOptions
+              // @note we check that command.voteOptionIndex is valid so < voteOptions
               // this might be unnecessary but we do it to prevent a possible DoS attack
               // from voters who could potentially encrypt a message in such as way that
               // when decrypted it results in a valid state leaf index but an invalid vote option index
-              if (command.voteOptionIndex < this.maxVoteOptions) {
+              if (command.voteOptionIndex < this.voteOptions) {
                 currentVoteWeights.unshift(ballot.votes[Number(command.voteOptionIndex)]);
 
                 // create a new quinary tree and add all votes we have so far
@@ -916,6 +923,7 @@ export class Poll implements IPoll {
       currentBallotRoot,
       currentSbCommitment,
       currentSbSalt: this.sbSalts[this.currentMessageBatchIndex],
+      voteOptions: this.voteOptions,
     }) as CircuitInputs;
   };
 
@@ -1329,6 +1337,7 @@ export class Poll implements IPoll {
         messageBatchSize: Number(this.batchSizes.messageBatchSize.toString()),
       },
       this.maciStateRef,
+      this.voteOptions,
     );
 
     copied.pubKeys = this.pubKeys.map((x) => x.copy());
@@ -1423,6 +1432,7 @@ export class Poll implements IPoll {
       treeDepths: this.treeDepths,
       batchSizes: this.batchSizes,
       maxVoteOptions: this.maxVoteOptions,
+      voteOptions: this.voteOptions.toString(),
       messages: this.messages.map((message) => message.toJSON()),
       commands: this.commands.map((command) => command.toJSON()),
       ballots: this.ballots.map((ballot) => ballot.toJSON()),
@@ -1446,7 +1456,14 @@ export class Poll implements IPoll {
    * @returns a new Poll instance
    */
   static fromJSON(json: IJsonPoll, maciState: MaciState): Poll {
-    const poll = new Poll(BigInt(json.pollEndTimestamp), new Keypair(), json.treeDepths, json.batchSizes, maciState);
+    const poll = new Poll(
+      BigInt(json.pollEndTimestamp),
+      new Keypair(),
+      json.treeDepths,
+      json.batchSizes,
+      maciState,
+      BigInt(json.voteOptions),
+    );
 
     // set all properties
     poll.pollStateLeaves = json.pollStateLeaves.map((leaf) => StateLeaf.fromJSON(leaf));

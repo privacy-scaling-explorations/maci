@@ -11,7 +11,7 @@ export interface IMessageValidatorCircuitInputs {
   stateTreeIndex: SignalValueType;
   numSignUps: SignalValueType;
   voteOptionIndex: SignalValueType;
-  maxVoteOptions: SignalValueType;
+  voteOptions: SignalValueType;
   originalNonce: SignalValueType;
   nonce: SignalValueType;
   cmd: SignalValueType;

@@ -2,6 +2,7 @@ import benny from "benny";
 import { Keypair, PCommand } from "maci-domainobjs";
 
 import { MaciState } from "..";
+import { maxVoteOptions } from "../__tests__/utils/constants";
 
 import {
   COORDINATOR_KEYPAIR,
@@ -37,6 +38,7 @@ export default function runCore(): void {
         TREE_DEPTHS,
         MESSAGE_BATCH_SIZE,
         COORDINATOR_KEYPAIR,
+        maxVoteOptions,
       );
       const poll = maciState.polls.get(pollId)!;
 

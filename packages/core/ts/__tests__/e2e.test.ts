@@ -7,7 +7,14 @@ import { MaciState } from "../MaciState";
 import { Poll } from "../Poll";
 import { STATE_TREE_DEPTH, STATE_TREE_ARITY } from "../utils/constants";
 
-import { coordinatorKeypair, duration, messageBatchSize, treeDepths, voiceCreditBalance } from "./utils/constants";
+import {
+  coordinatorKeypair,
+  duration,
+  maxVoteOptions,
+  messageBatchSize,
+  treeDepths,
+  voiceCreditBalance,
+} from "./utils/constants";
 import { TestHarness, calculateTotal } from "./utils/utils";
 
 describe("MaciState/Poll e2e", function test() {
@@ -56,6 +63,7 @@ describe("MaciState/Poll e2e", function test() {
           treeDepths,
           messageBatchSize,
           coordinatorKeypair,
+          maxVoteOptions,
         );
 
         maciState.polls.get(pollId)?.updatePoll(BigInt(maciState.pubKeys.length));
@@ -151,6 +159,7 @@ describe("MaciState/Poll e2e", function test() {
           treeDepths,
           messageBatchSize,
           coordinatorKeypair,
+          maxVoteOptions,
         );
 
         poll = maciState.polls.get(pollId)!;
@@ -261,6 +270,7 @@ describe("MaciState/Poll e2e", function test() {
           treeDepths,
           messageBatchSize,
           coordinatorKeypair,
+          maxVoteOptions,
         );
 
         poll = maciState.polls.get(pollId)!;
@@ -350,6 +360,7 @@ describe("MaciState/Poll e2e", function test() {
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
+        maxVoteOptions,
       );
 
       poll = maciState.polls.get(pollId)!;
@@ -440,6 +451,7 @@ describe("MaciState/Poll e2e", function test() {
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
+        maxVoteOptions,
       );
       poll = maciState.polls.get(pollId)!;
       poll.updatePoll(BigInt(maciState.pubKeys.length));
@@ -586,6 +598,7 @@ describe("MaciState/Poll e2e", function test() {
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
+        maxVoteOptions,
       );
 
       poll = maciState.polls.get(pollId)!;

@@ -5,7 +5,14 @@ import { Keypair, Message, PCommand } from "maci-domainobjs";
 
 import { IPollJoiningInputs } from "../types";
 
-import { STATE_TREE_DEPTH, duration, messageBatchSize, treeDepths, voiceCreditBalance } from "./utils/constants";
+import {
+  STATE_TREE_DEPTH,
+  duration,
+  maxVoteOptions,
+  messageBatchSize,
+  treeDepths,
+  voiceCreditBalance,
+} from "./utils/constants";
 import { circomkitInstance } from "./utils/utils";
 
 describe("Poll Joining circuit", function test() {
@@ -57,6 +64,7 @@ describe("Poll Joining circuit", function test() {
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
+        maxVoteOptions,
       );
 
       poll = maciState.polls.get(pollId)!;

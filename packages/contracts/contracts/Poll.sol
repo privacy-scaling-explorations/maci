@@ -56,8 +56,8 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   /// to be used as public input for the circuit
   uint8 public actualStateTreeDepth;
 
-  /// @notice Max vote options for the poll
-  uint256 public immutable maxVoteOptions;
+  /// @notice The number of valid vote options for the poll
+  uint256 public immutable voteOptions;
 
   /// @notice Depths of the merkle trees
   TreeDepths public treeDepths;
@@ -115,6 +115,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   error InvalidPollProof();
   error NotRelayer();
   error StateLeafNotFound();
+  error TooManyVoteOptions();
 
   event PublishMessage(Message _message, PubKey _encPubKey);
   event MergeState(uint256 indexed _stateRoot, uint256 indexed _numSignups);
@@ -139,6 +140,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   /// @param _extContracts The external contracts
   /// @param _emptyBallotRoot The root of the empty ballot tree
   /// @param _pollId The poll id
+  /// @param _voteOptions The number of valid vote options for the poll
   constructor(
     uint256 _startDate,
     uint256 _endDate,
@@ -148,7 +150,8 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     ExtContracts memory _extContracts,
     uint256 _emptyBallotRoot,
     uint256 _pollId,
-    address[] memory _relayers
+    address[] memory _relayers,
+    uint256 _voteOptions
   ) payable {
     // check that the coordinator public key is valid
     if (!CurveBabyJubJub.isOnCurve(_coordinatorPubKey.x, _coordinatorPubKey.y)) {
@@ -169,7 +172,11 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     endDate = _endDate;
 
     // store max vote options
-    maxVoteOptions = uint256(VOTE_TREE_ARITY) ** _treeDepths.voteOptionTreeDepth;
+    if (_voteOptions > uint256(VOTE_TREE_ARITY) ** _treeDepths.voteOptionTreeDepth) {
+      revert TooManyVoteOptions();
+    }
+
+    voteOptions = _voteOptions;
 
     // store message batch size
     messageBatchSize = _messageBatchSize;

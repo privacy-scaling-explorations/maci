@@ -23,7 +23,15 @@ import {
   ConstantInitialVoiceCreditProxy,
 } from "../typechain-types";
 
-import { STATE_TREE_DEPTH, duration, messageBatchSize, testProcessVk, testTallyVk, treeDepths } from "./constants";
+import {
+  STATE_TREE_DEPTH,
+  duration,
+  maxVoteOptions,
+  messageBatchSize,
+  testProcessVk,
+  testTallyVk,
+  treeDepths,
+} from "./constants";
 import { timeTravel, deployTestContracts } from "./utils";
 
 describe("TallyVotesNonQv", () => {
@@ -72,6 +80,7 @@ describe("TallyVotesNonQv", () => {
       gatekeeper: gatekeeperContract,
       initialVoiceCreditProxy: initialVoiceCreditProxyContract,
       relayers: [ZeroAddress],
+      voteOptions: maxVoteOptions,
     });
     const receipt = await tx.wait();
 
@@ -85,7 +94,13 @@ describe("TallyVotesNonQv", () => {
     tallyContract = TallyFactory.connect(pollContracts.tally, signer);
 
     // deploy local poll
-    const p = maciState.deployPoll(BigInt(startTime + duration), treeDepths, messageBatchSize, coordinator);
+    const p = maciState.deployPoll(
+      BigInt(startTime + duration),
+      treeDepths,
+      messageBatchSize,
+      coordinator,
+      BigInt(maxVoteOptions),
+    );
     expect(p.toString()).to.eq(pollId.toString());
     // publish the NOTHING_UP_MY_SLEEVE message
     const messageData = [NOTHING_UP_MY_SLEEVE];

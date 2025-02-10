@@ -15,28 +15,19 @@ contract PollFactory is Params, DomainObjs, IPollFactory {
   constructor() payable {}
 
   /// @inheritdoc IPollFactory
-  function deploy(
-    uint256 _startDate,
-    uint256 _endDate,
-    Params.TreeDepths calldata _treeDepths,
-    uint8 _messageBatchSize,
-    DomainObjs.PubKey calldata _coordinatorPubKey,
-    Params.ExtContracts calldata _extContracts,
-    uint256 _emptyBallotRoot,
-    uint256 _pollId,
-    address[] calldata _relayers
-  ) public virtual returns (address pollAddr) {
+  function deploy(DeployPollArgs calldata _args) public virtual returns (address pollAddr) {
     // deploy the poll
     Poll poll = new Poll(
-      _startDate,
-      _endDate,
-      _treeDepths,
-      _messageBatchSize,
-      _coordinatorPubKey,
-      _extContracts,
-      _emptyBallotRoot,
-      _pollId,
-      _relayers
+      _args.startDate,
+      _args.endDate,
+      _args.treeDepths,
+      _args.messageBatchSize,
+      _args.coordinatorPubKey,
+      _args.extContracts,
+      _args.emptyBallotRoot,
+      _args.pollId,
+      _args.relayers,
+      _args.voteOptions
     );
 
     pollAddr = address(poll);

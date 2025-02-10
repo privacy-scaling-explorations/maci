@@ -27,6 +27,7 @@ import {
   STATE_TREE_DEPTH,
   duration,
   initialVoiceCreditBalance,
+  maxVoteOptions,
   messageBatchSize,
   testPollJoinedVk,
   testPollJoiningVk,
@@ -87,6 +88,7 @@ describe("TallyVotes", () => {
       gatekeeper: signupGatekeeperContract,
       initialVoiceCreditProxy: initialVoiceCreditProxyContract,
       relayers: [ZeroAddress],
+      voteOptions: maxVoteOptions,
     });
     const receipt = await tx.wait();
 
@@ -100,7 +102,13 @@ describe("TallyVotes", () => {
     tallyContract = TallyFactory.connect(pollContracts.tally, signer);
 
     // deploy local poll
-    const p = maciState.deployPoll(BigInt(startTime + duration), treeDepths, messageBatchSize, coordinator);
+    const p = maciState.deployPoll(
+      BigInt(startTime + duration),
+      treeDepths,
+      messageBatchSize,
+      coordinator,
+      BigInt(maxVoteOptions),
+    );
     expect(p.toString()).to.eq(pollId.toString());
     // publish the NOTHING_UP_MY_SLEEVE message
     const messageData = [NOTHING_UP_MY_SLEEVE];
@@ -245,6 +253,7 @@ describe("TallyVotes", () => {
         gatekeeper: signupGatekeeperContract,
         initialVoiceCreditProxy: initialVoiceCreditProxyContract,
         relayers: [ZeroAddress],
+        voteOptions: maxVoteOptions,
       });
       const receipt = await tx.wait();
 
@@ -266,6 +275,7 @@ describe("TallyVotes", () => {
         },
         messageBatchSize,
         coordinator,
+        BigInt(maxVoteOptions),
       );
       expect(p.toString()).to.eq(pollId.toString());
       // publish the NOTHING_UP_MY_SLEEVE message
@@ -559,6 +569,7 @@ describe("TallyVotes", () => {
         gatekeeper: signupGatekeeperContract,
         initialVoiceCreditProxy: initialVoiceCreditProxyContract,
         relayers: [ZeroAddress],
+        voteOptions: maxVoteOptions,
       });
       const receipt = await tx.wait();
 
@@ -580,6 +591,7 @@ describe("TallyVotes", () => {
         },
         messageBatchSize,
         coordinator,
+        BigInt(maxVoteOptions),
       );
       expect(p.toString()).to.eq(pollId.toString());
       // publish the NOTHING_UP_MY_SLEEVE message

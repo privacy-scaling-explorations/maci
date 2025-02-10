@@ -73,7 +73,8 @@
       "useQuadraticVoting": false,
       "gatekeeper": "FreeForAllGatekeeper",
       "relayers": "0x0000000000000000000000000000000000000000",
-      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
+      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
+      "voteOptions": 2
     }
   },
   "scroll_sepolia": {
@@ -149,7 +150,8 @@
       "useQuadraticVoting": false,
       "gatekeeper": "FreeForAllGatekeeper",
       "relayers": "0x0000000000000000000000000000000000000000",
-      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
+      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
+      "voteOptions": 2
     }
   },
   "optimism": {
@@ -226,7 +228,8 @@
       "useQuadraticVoting": false,
       "gatekeeper": "FreeForAllGatekeeper",
       "relayers": "0x0000000000000000000000000000000000000000",
-      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
+      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
+      "voteOptions": 2
     }
   },
   "arbitrum_sepolia": {
@@ -303,7 +306,8 @@
       "useQuadraticVoting": false,
       "gatekeeper": "FreeForAllGatekeeper",
       "relayers": "0x0000000000000000000000000000000000000000",
-      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
+      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
+      "voteOptions": 2
     }
   },
   "localhost": {
@@ -380,7 +384,8 @@
       "useQuadraticVoting": false,
       "gatekeeper": "FreeForAllGatekeeper",
       "relayers": "0x0000000000000000000000000000000000000000",
-      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
+      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
+      "voteOptions": 2
     }
   },
   "base_sepolia": {
@@ -457,7 +462,8 @@
       "useQuadraticVoting": false,
       "gatekeeper": "FreeForAllGatekeeper",
       "relayers": "0x0000000000000000000000000000000000000000",
-      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
+      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
+      "voteOptions": 2
     }
   },
   "optimism_sepolia": {
@@ -539,7 +545,8 @@
       "useQuadraticVoting": false,
       "gatekeeper": "FreeForAllGatekeeper",
       "relayers": "0x0000000000000000000000000000000000000000",
-      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
+      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
+      "voteOptions": 2
     }
   },
   "gnosis_chiado": {
@@ -621,7 +628,8 @@
       "useQuadraticVoting": false,
       "gatekeeper": "FreeForAllGatekeeper",
       "relayers": "0x0000000000000000000000000000000000000000",
-      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
+      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
+      "voteOptions": 2
     }
   },
   "gnosis": {
@@ -703,7 +711,8 @@
       "useQuadraticVoting": false,
       "gatekeeper": "FreeForAllGatekeeper",
       "relayers": "0x0000000000000000000000000000000000000000",
-      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
+      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
+      "voteOptions": 2
     }
   },
   "polygon_amoy": {
@@ -785,7 +794,8 @@
       "useQuadraticVoting": true,
       "gatekeeper": "FreeForAllGatekeeper",
       "relayers": "0x0000000000000000000000000000000000000000",
-      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
+      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
+      "voteOptions": 2
     }
   },
   "polygon": {
@@ -867,7 +877,8 @@
       "useQuadraticVoting": true,
       "gatekeeper": "FreeForAllGatekeeper",
       "relayers": "0x0000000000000000000000000000000000000000",
-      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy"
+      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
+      "voteOptions": 2
     }
   }
 }

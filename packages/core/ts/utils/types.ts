@@ -52,6 +52,7 @@ export interface IMaciState {
     treeDepths: TreeDepths,
     messageBatchSize: number,
     coordinatorKeypair: Keypair,
+    voteOptions: bigint,
   ): bigint;
   // These methods are helper functions.
   deployNullPoll(): void;
@@ -91,6 +92,7 @@ export interface IJsonPoll {
   treeDepths: TreeDepths;
   batchSizes: BatchSizes;
   maxVoteOptions: number;
+  voteOptions: string;
   messages: unknown[];
   commands: IJsonPCommand[];
   ballots: IJsonBallot[];
@@ -209,6 +211,7 @@ export interface IProcessMessagesCircuitInputs {
   currentVoteWeightsPathElements: string[][];
   newSbSalt: string;
   newSbCommitment: string;
+  voteOptions: bigint;
 }
 
 /**

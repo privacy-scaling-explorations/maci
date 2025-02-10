@@ -205,6 +205,7 @@ program
   .option("-m, --relayers <relayers>", "the relayer addresses", (value) => value.split(",").map((item) => item.trim()))
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
+  .option("-o, --vote-options <voteOptions>", "the number of vote options", parseInt)
   .action(async (cmdObj) => {
     try {
       const signer = await getSigner();
@@ -222,6 +223,7 @@ program
         quiet: cmdObj.quiet,
         useQuadraticVoting: cmdObj.useQuadraticVoting,
         signer,
+        voteOptions: cmdObj.voteOptions,
       });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });

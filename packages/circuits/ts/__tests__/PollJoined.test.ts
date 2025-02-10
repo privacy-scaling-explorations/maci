@@ -5,7 +5,14 @@ import { Keypair, Message, PCommand } from "maci-domainobjs";
 
 import type { IPollJoinedInputs } from "../types";
 
-import { STATE_TREE_DEPTH, duration, messageBatchSize, treeDepths, voiceCreditBalance } from "./utils/constants";
+import {
+  STATE_TREE_DEPTH,
+  duration,
+  maxVoteOptions,
+  messageBatchSize,
+  treeDepths,
+  voiceCreditBalance,
+} from "./utils/constants";
 import { circomkitInstance } from "./utils/utils";
 
 describe("Poll Joined circuit", function test() {
@@ -53,7 +60,13 @@ describe("Poll Joined circuit", function test() {
         maciState.signUp(userKeypair.pubKey);
       });
 
-      pollId = maciState.deployPoll(timestamp + BigInt(duration), treeDepths, messageBatchSize, coordinatorKeypair);
+      pollId = maciState.deployPoll(
+        timestamp + BigInt(duration),
+        treeDepths,
+        messageBatchSize,
+        coordinatorKeypair,
+        maxVoteOptions,
+      );
 
       poll = maciState.polls.get(pollId)!;
 

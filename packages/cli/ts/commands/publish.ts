@@ -64,7 +64,7 @@ export const publish = async ({
   const pollContract = PollFactory.connect(pollContracts.poll, signer);
 
   const coordinatorPubKey = await getCoordinatorPubKey(pollContracts.poll, signer);
-  const maxVoteOptions = await pollContract.maxVoteOptions();
+  const maxVoteOption = await pollContract.voteOptions();
 
   const { message, ephemeralKeypair } = generateVote({
     pollId,
@@ -75,7 +75,7 @@ export const publish = async ({
     stateIndex,
     voteWeight: newVoteWeight,
     coordinatorPubKey,
-    maxVoteOption: maxVoteOptions,
+    maxVoteOption,
     newPubKey: votePubKey,
   });
 
@@ -133,14 +133,14 @@ export const publishBatch = async ({
 
   const pollContract = PollFactory.connect(pollContracts.poll, signer);
 
-  const [maxVoteOptions, coordinatorPubKeyResult] = await Promise.all([
-    pollContract.maxVoteOptions().then(Number),
+  const [maxVoteOption, coordinatorPubKeyResult] = await Promise.all([
+    pollContract.voteOptions().then(Number),
     pollContract.coordinatorPubKey(),
   ]);
 
   // validate the vote options index against the max leaf index on-chain
   messages.forEach(({ stateIndex, voteOptionIndex, salt, nonce }) => {
-    if (voteOptionIndex < 0 || maxVoteOptions < voteOptionIndex) {
+    if (voteOptionIndex < 0 || voteOptionIndex >= maxVoteOption) {
       throw new Error("invalid vote option index");
     }
 

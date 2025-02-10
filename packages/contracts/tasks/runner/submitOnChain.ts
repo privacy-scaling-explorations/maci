@@ -132,7 +132,9 @@ task("submitOnChain", "Command to prove the result of a poll on-chain")
 
     await prover.proveTally(data.tallyProofs);
 
-    await prover.submitResults(tallyData);
+    const voteOptions = await pollContract.voteOptions();
+
+    await prover.submitResults(tallyData, Number.parseInt(voteOptions.toString(), 10));
 
     const endBalance = await signer.provider.getBalance(signer);
 
