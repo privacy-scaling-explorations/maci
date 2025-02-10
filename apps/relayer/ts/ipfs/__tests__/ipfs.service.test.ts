@@ -19,4 +19,13 @@ describe("IpfsService", () => {
 
     expect(data).toStrictEqual(defaultData);
   });
+
+  test("should convert cid v1 to bytes32 properly", async () => {
+    const service = new IpfsService();
+    await service.init();
+
+    const bytes32Id = await service.cidToBytes32("bagaaierae7uwukkhfsvbw63l2wc4jdi2pilwaceei5quutzi4vcuh2z72dcq");
+
+    expect(bytes32Id).toBe("0x27e96a29472caa1b7b6bd585c48d1a7a1760088447614a4f28e54543eb3fd0c5");
+  });
 });

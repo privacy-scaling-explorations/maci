@@ -80,12 +80,13 @@ export class TestDeploy {
 
     await deployPoll({
       pollStartDate: startDate,
-      pollEndDate: startDate + 30,
+      pollEndDate: startDate + 130,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       coordinatorPubkey: coordinatorKeypair.pubKey.serialize(),
       useQuadraticVoting: false,
+      relayers: [await signer.getAddress()],
       signer,
     });
 

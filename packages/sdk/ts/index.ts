@@ -1,4 +1,5 @@
 export * from "./keys";
+export * from "./relayer";
 export * from "./poll";
 export * from "./tally";
 export * from "./trees";
