@@ -26,7 +26,7 @@
   "dependencies": {
     "@helia/json": "^4.0.2",
     "@nestjs/common": "^11.0.9",
-    "@nestjs/core": "^11.0.7",
+    "@nestjs/core": "^11.0.9",
     "@nestjs/mongoose": "^11.0.1",
     "@nestjs/platform-express": "^11.0.9",
     "@nestjs/platform-socket.io": "^11.0.7",
