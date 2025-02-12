@@ -21,6 +21,8 @@ jest.mock("maci-sdk", (): unknown => ({
 
 describe("MessageBatchService", () => {
   const mockIpfsService = {
+    init: jest.fn(),
+    cidToBytes32: jest.fn().mockImplementation(() => Promise.resolve(defaultIpfsHash)),
     add: jest.fn().mockImplementation(() => Promise.resolve(defaultIpfsHash)),
   };
 
@@ -44,6 +46,8 @@ describe("MessageBatchService", () => {
     mockRepository.create = jest.fn().mockImplementation(() => Promise.resolve(defaultMessageBatches));
     mockRepository.find = jest.fn().mockImplementation(() => Promise.resolve(defaultMessageBatches));
     mockIpfsService.add = jest.fn().mockImplementation(() => Promise.resolve(defaultIpfsHash));
+    mockIpfsService.cidToBytes32 = jest.fn().mockImplementation(() => Promise.resolve(defaultIpfsHash));
+    mockIpfsService.init = jest.fn();
 
     MACIFactory.connect = jest.fn().mockImplementation(() => mockMaciContract) as typeof MACIFactory.connect;
     PollFactory.connect = jest.fn().mockImplementation(() => mockPollContract) as typeof PollFactory.connect;

@@ -1,4 +1,5 @@
 export { getPoll, getPollParams } from "./poll";
+export { getPollContracts } from "./utils";
 export type {
   IGetPollArgs,
   IGetPollData,

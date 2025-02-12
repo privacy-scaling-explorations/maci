@@ -32,7 +32,9 @@ export class MessageBatchService {
   constructor(
     private readonly ipfsService: IpfsService,
     private readonly messageBatchRepository: MessageBatchRepository,
-  ) {}
+  ) {
+    ipfsService.init();
+  }
 
   /**
    * Find message batches
@@ -71,8 +73,11 @@ export class MessageBatchService {
     }
 
     const allMessages = flatten(args.map((item) => item.messages)).map((message) => ({
-      ...message,
-      publicKey: PubKey.deserialize(message.publicKey).asArray(),
+      poll: message.poll,
+      data: message.data,
+      hash: message.hash,
+      maciContractAddress: message.maciContractAddress,
+      publicKey: PubKey.deserialize(message.publicKey).asArray().map(String),
     }));
 
     const ipfsHash = await this.ipfsService.add(allMessages).catch((error) => {
@@ -102,11 +107,12 @@ export class MessageBatchService {
 
     const messageHashes = await Promise.all(
       allMessages.map(({ data, publicKey }) =>
-        pollContract.hashMessageAndEncPubKey({ data }, { x: publicKey[0], y: publicKey[1] }),
+        pollContract.hashMessageAndEncPubKey({ data }, { x: BigInt(publicKey[0]), y: BigInt(publicKey[1]) }),
       ),
     );
 
-    await pollContract.relayMessagesBatch(messageHashes, ipfsHash).then((tx) => tx.wait());
+    const bytes32IpfsHash = await this.ipfsService.cidToBytes32(ipfsHash);
+    await pollContract.relayMessagesBatch(messageHashes, bytes32IpfsHash).then((tx) => tx.wait());
 
     return messageBatches;
   }
