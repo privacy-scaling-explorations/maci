@@ -16451,11 +16451,11 @@
       "locked": false,
       "fontSize": 20,
       "fontFamily": 1,
-      "text": "pollEndTimstamp",
+      "text": "pollEndTimestamp",
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": "YxQWNOZTE1FGfVCn3uExR",
-      "originalText": "pollEndTimstamp",
+      "originalText": "pollEndTimestamp",
       "lineHeight": 1.25,
       "baseline": 18
     },
