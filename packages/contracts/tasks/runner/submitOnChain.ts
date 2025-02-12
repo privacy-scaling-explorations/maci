@@ -31,7 +31,11 @@ async function readProofs({ files, folder, type }: IReadProofsArgs): Promise<Pro
   return Promise.all(
     files
       .filter((f) => f.startsWith(`${type}_`) && f.endsWith(".json"))
-      .sort()
+      .sort((a, b) => {
+        const numA = parseInt(a.match(/\d+/)?.[0] ?? "0", 10);
+        const numB = parseInt(b.match(/\d+/)?.[0] ?? "0", 10);
+        return numA - numB;
+      })
       .map(async (file) =>
         fs.promises.readFile(`${folder}/${file}`, "utf8").then((result) => JSON.parse(result) as Proof),
       ),
