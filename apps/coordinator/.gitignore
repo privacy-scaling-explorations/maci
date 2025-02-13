@@ -1,0 +1,9 @@
+*.key
+*.key
+zkeys/
+proofs/
+tally.json
+session-keys.json
+
+deploy-config.json
+deployed-contracts.json
