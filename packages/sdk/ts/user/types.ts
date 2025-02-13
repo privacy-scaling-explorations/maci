@@ -1,6 +1,6 @@
 import type { Signer } from "ethers";
 import type { MACI, Poll } from "maci-contracts/typechain-types";
-import type { PubKey } from "maci-domainobjs";
+import type { PrivKey, PubKey } from "maci-domainobjs";
 
 /**
  * Interface for the arguments to the isJoinedUser command
@@ -177,4 +177,296 @@ export interface IParseSignupEventsArgs {
    * The public key
    */
   publicKey: PubKey;
+}
+
+/**
+ * An interface describing the circuit inputs to the PollJoining circuit
+ */
+export interface IPollJoiningCircuitInputs {
+  /**
+   * The private key
+   */
+  privKey: string;
+
+  /**
+   * The poll public key
+   */
+  pollPubKey: string[];
+
+  /**
+   * The state leaf
+   */
+  stateLeaf: string[];
+
+  /**
+   * The siblings for the merkle proof
+   */
+  siblings: string[][];
+
+  /**
+   * The path indices
+   */
+  indices: string[];
+
+  /**
+   * The nullifier
+   */
+  nullifier: string;
+
+  /**
+   * The state root
+   */
+  stateRoot: string;
+
+  /**
+   * The actual state tree depth
+   */
+  actualStateTreeDepth: string;
+
+  /**
+   * The poll id
+   */
+  pollId: string;
+}
+
+/**
+ * An interface describing the circuit inputs to the PollJoined circuit
+ */
+export interface IPollJoinedCircuitInputs {
+  /**
+   * The private key
+   */
+  privKey: string;
+
+  /**
+   * The voice credits balance
+   */
+  voiceCreditsBalance: string;
+
+  /**
+   * The join timestamp
+   */
+  joinTimestamp: string;
+
+  /**
+   * The state leaf
+   */
+  stateLeaf: string[];
+
+  /**
+   * The path elements
+   */
+  pathElements: string[][];
+
+  /**
+   * The path indices
+   */
+  pathIndices: string[];
+
+  /**
+   * The state root
+   */
+  stateRoot: string;
+
+  /**
+   * The actual state tree depth
+   */
+  actualStateTreeDepth: string;
+}
+
+/**
+ * Interface for the arguments to the joinPoll command
+ */
+export interface IJoinPollArgs {
+  /**
+   * A signer object
+   */
+  signer: Signer;
+
+  /**
+   * The private key of the user
+   */
+  privateKey: string;
+
+  /**
+   * The id of the poll
+   */
+  pollId: bigint;
+
+  /**
+   * The index of the public key in the state tree
+   */
+  stateIndex?: bigint;
+
+  /**
+   * Path to the state file with MACI state
+   */
+  stateFile?: string;
+
+  /**
+   * The address of the MACI contract
+   */
+  maciAddress: string;
+
+  /**
+   * The end block number
+   */
+  endBlock?: number;
+
+  /**
+   * The start block number
+   */
+  startBlock?: number;
+
+  /**
+   * The number of blocks to fetch per batch
+   */
+  blocksPerBatch?: number;
+
+  /**
+   * The path to the poll zkey file
+   */
+  pollJoiningZkey: string;
+
+  /**
+   * Whether to use wasm or rapidsnark
+   */
+  useWasm?: boolean;
+
+  /**
+   * The path to the rapidsnark binary
+   */
+  rapidsnark?: string;
+
+  /**
+   * The path to the poll witnessgen binary
+   */
+  pollWitgen?: string;
+
+  /**
+   * The path to the poll wasm file
+   */
+  pollWasm?: string;
+
+  /**
+   * The signup gatekeeper data
+   */
+  sgDataArg: string;
+
+  /**
+   * The initial voice credit proxy data
+   */
+  ivcpDataArg: string;
+}
+
+/**
+ * Interface for the return data to the joinPoll command
+ */
+export interface IJoinPollData {
+  /**
+   * The poll state index of the joined user
+   */
+  pollStateIndex: string;
+
+  /**
+   * Voice credits balance
+   */
+  voiceCredits: string;
+
+  /**
+   * Joining poll timestamp
+   */
+  timestamp: string;
+
+  /**
+   * Private key nullifier
+   */
+  nullifier: string;
+
+  /**
+   * The join poll transaction hash
+   */
+  hash: string;
+}
+
+/**
+ * The arguments to check if a nullifier is on chain
+ */
+export interface IIsNullifierOnChainArgs {
+  /**
+   * The address of the MACI contract
+   */
+  maciAddress: string;
+  /**
+   * The id of the poll
+   */
+  pollId: bigint;
+  /**
+   * The nullifier to check
+   */
+  nullifier: bigint;
+  /**
+   * The signer to use
+   */
+  signer: Signer;
+}
+
+/**
+ * Arguments for getPollJoiningCircuitEvents
+ */
+export interface IGetPollJoiningCircuitEventsArgs {
+  /**
+   * The MACI contract
+   */
+  maciContract: MACI;
+  /**
+   * The state index
+   */
+  stateIndex: bigint;
+  /**
+   * The poll id
+   */
+  pollId: bigint;
+  /**
+   * The user's maci private key
+   */
+  userMaciPrivKey: PrivKey;
+  /**
+   * The signer
+   */
+  signer: Signer;
+  /**
+   * The start block
+   */
+  startBlock?: number;
+  /**
+   * The end block
+   */
+  endBlock?: number;
+  /**
+   * The blocks per batch
+   */
+  blocksPerBatch?: number;
+}
+
+/**
+ * Arguments for getPollJoiningCircuitInputsFromStateFile
+ */
+export interface IGetPollJoiningCircuitInputsFromStateFileArgs {
+  /**
+   * The path to the file containing the serialized MACI state
+   */
+  stateFile: string;
+  /**
+   * The poll id
+   */
+  pollId: bigint;
+  /**
+   * The state index
+   */
+  stateIndex: bigint;
+  /**
+   * The user's maci private key
+   */
+  userMaciPrivKey: PrivKey;
 }

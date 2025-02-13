@@ -3,5 +3,6 @@ export { contractExists, currentBlockTimestamp } from "./contracts";
 export { validateParams } from "./params";
 export { calculateBinaryTreeDepthFromMaxLeaves, calculateQuinTreeDepthFromMaxLeaves } from "./trees";
 export { isArm } from "./utils";
+export { generateAndVerifyProof } from "./proofs";
 
 export type { ICircuitParams, ISnarkJSVerificationKey } from "./types";

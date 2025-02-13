@@ -35,7 +35,8 @@
     "ethers": "^6.13.4",
     "maci-contracts": "^2.5.0",
     "maci-crypto": "^2.5.0",
-    "maci-domainobjs": "^2.5.0"
+    "maci-domainobjs": "^2.5.0",
+    "maci-core": "^2.5.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.2",

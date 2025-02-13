@@ -774,6 +774,9 @@ importers:
       maci-contracts:
         specifier: ^2.5.0
         version: link:../contracts
+      maci-core:
+        specifier: ^2.5.0
+        version: link:../core
       maci-crypto:
         specifier: ^2.5.0
         version: link:../crypto

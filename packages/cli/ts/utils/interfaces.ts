@@ -390,6 +390,7 @@ export interface IJoinedUserArgs {
    */
   quiet: boolean;
 }
+
 /**
  * Interface for the arguments to the joinPoll command
  */

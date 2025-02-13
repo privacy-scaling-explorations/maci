@@ -1,7 +1,16 @@
 #!/usr/bin/env node
 
 import { Command } from "@commander-js/extra-typings";
-import { generateTallyCommitments, getPollParams, verify, getPoll, isUserRegistered, signup } from "maci-sdk";
+import {
+  generateTallyCommitments,
+  getPollParams,
+  verify,
+  getPoll,
+  getSignedupUserData,
+  signup,
+  joinPoll,
+  getJoinedUserData,
+} from "maci-sdk";
 
 import fs from "fs";
 import path from "path";
@@ -26,13 +35,13 @@ import {
   checkVerifyingKeys,
   genLocalState,
   extractVkToFile,
-  joinPoll,
-  isJoinedUser,
 } from "./commands";
 import {
+  DEFAULT_IVCP_DATA,
   DEFAULT_SG_DATA,
   TallyData,
   banner,
+  info,
   logError,
   logGreen,
   logRed,
@@ -234,7 +243,7 @@ program
   .description("join the poll")
   .requiredOption("-k, --priv-key <privKey>", "the private key")
   .option("-i, --state-index <stateIndex>", "the user's state index", BigInt)
-  .requiredOption("-s, --sg-data <sgData>", "the signup gateway data")
+  .option("-s, --sg-data <sgData>", "the signup gatekeeper data")
   .option("-v, --ivcp-data <ivcpData>", "the initial voice credit proxy data")
   .option(
     "-n, --new-voice-credit-balance <newVoiceCreditBalance>",
@@ -265,26 +274,28 @@ program
       const maciAddress = cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
       const privateKey = cmdObj.privKey || (await promptSensitiveValue("Insert your MACI private key"));
 
-      await joinPoll({
+      const data = await joinPoll({
         maciAddress,
         privateKey,
-        stateIndex: cmdObj.stateIndex || undefined,
+        stateIndex: cmdObj.stateIndex,
         stateFile: cmdObj.stateFile,
         pollId: cmdObj.pollId,
         signer,
         startBlock: cmdObj.startBlock,
         endBlock: cmdObj.endBlock,
         blocksPerBatch: cmdObj.blocksPerBatch,
-        transactionHash: cmdObj.transactionHash,
         pollJoiningZkey: cmdObj.pollJoiningZkey,
         pollWasm: cmdObj.pollWasm,
-        quiet: cmdObj.quiet,
         useWasm: cmdObj.wasm,
         rapidsnark: cmdObj.rapidsnark,
         pollWitgen: cmdObj.pollWitnessgen,
-        sgDataArg: cmdObj.sgData,
-        ivcpDataArg: cmdObj.ivcpData,
+        sgDataArg: cmdObj.sgData ?? DEFAULT_SG_DATA,
+        ivcpDataArg: cmdObj.ivcpData ?? DEFAULT_IVCP_DATA,
       });
+
+      logGreen(cmdObj.quiet, info(`User joined poll with nullifier: ${data.nullifier}`));
+      logGreen(cmdObj.quiet, info(`User joined poll with state index: ${data.pollStateIndex}`));
+      logGreen(cmdObj.quiet, info(`User joined poll with ${data.voiceCredits} voice credits`));
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -509,7 +520,7 @@ program
   });
 program
   .command("isRegisteredUser")
-  .description("Checks if user is registered with public key")
+  .description("Checks if user is registered with their public key and get their data")
   .requiredOption("-p, --pubkey <maciPubKey>", "the MACI public key")
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
@@ -520,7 +531,7 @@ program
 
       const maciAddress = cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
 
-      const data = await isUserRegistered({
+      const data = await getSignedupUserData({
         maciPubKey: cmdObj.pubkey,
         maciAddress,
         signer,
@@ -552,13 +563,12 @@ program
 
       const maciAddress = cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
 
-      const data = await isJoinedUser({
+      const data = await getJoinedUserData({
         pollPubKey: cmdObj.pubkey,
         startBlock: cmdObj.startBlock!,
         maciAddress,
         pollId: cmdObj.pollId,
         signer,
-        quiet: cmdObj.quiet,
       });
 
       if (data.isJoined) {

@@ -92,8 +92,8 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
 
   uint8 internal constant VOTE_TREE_ARITY = 5;
 
-  /// @notice Poll voting nullifier
-  mapping(uint256 => bool) private pollNullifier;
+  /// @notice Poll joining nullifiers
+  mapping(uint256 => bool) public pollNullifiers;
 
   /// @notice The Id of this poll
   uint256 public immutable pollId;
@@ -356,12 +356,12 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     bytes memory _initialVoiceCreditProxyData
   ) external virtual isWithinVotingDeadline {
     // Whether the user has already joined
-    if (pollNullifier[_nullifier]) {
+    if (pollNullifiers[_nullifier]) {
       revert UserAlreadyJoined();
     }
 
     // Set nullifier for user's private key
-    pollNullifier[_nullifier] = true;
+    pollNullifiers[_nullifier] = true;
 
     // Verify user's proof
     if (!verifyJoiningPollProof(_nullifier, _stateRootIndex, _pubKey, _proof)) {
