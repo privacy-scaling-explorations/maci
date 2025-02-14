@@ -163,17 +163,26 @@ export const proveOnChain = async ({
 
   // process all batches left
   for (let i = numberBatchesProcessed; i < totalMessageBatches; i += 1) {
-    let currentMessageBatchIndex = totalMessageBatches;
+    let currentMessageBatchIndex: number;
+
     if (numberBatchesProcessed === 0) {
       const chainHash = lastChainHash;
+
       if (numMessages % messageBatchSize !== 0) {
         batchHashes.push(chainHash);
       }
+
       currentMessageBatchIndex = batchHashes.length;
 
       if (currentMessageBatchIndex > 0) {
         currentMessageBatchIndex -= 1;
       }
+    } else {
+      currentMessageBatchIndex = (totalMessageBatches - numberBatchesProcessed) * messageBatchSize;
+    }
+
+    if (numberBatchesProcessed > 0 && currentMessageBatchIndex > 0) {
+      currentMessageBatchIndex /= messageBatchSize;
     }
 
     const { proof, circuitInputs, publicInputs } = data.processProofs[i];
@@ -181,16 +190,19 @@ export const proveOnChain = async ({
     // validation
 
     const inputBatchHash = batchHashes[currentMessageBatchIndex - 1];
+
     if (BigInt(circuitInputs.inputBatchHash as BigNumberish).toString() !== inputBatchHash.toString()) {
       logError("input batch hash mismatch.");
     }
 
     const outputBatchHash = batchHashes[currentMessageBatchIndex];
+
     if (BigInt(circuitInputs.outputBatchHash as BigNumberish).toString() !== outputBatchHash.toString()) {
       logError("output batch hash mismatch.");
     }
 
     let currentSbCommitmentOnChain: bigint;
+
     if (numberBatchesProcessed === 0) {
       currentSbCommitmentOnChain = BigInt(await pollContract.currentSbCommitment());
     } else {

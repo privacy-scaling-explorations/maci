@@ -124,7 +124,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
     uint256 batchEndIndex = _currentMessageBatchIndex * messageBatchSize;
 
     if (batchEndIndex > numMessages) {
-      batchEndIndex = numMessages;
+      batchEndIndex = numMessages - (_currentMessageBatchIndex - 1) * messageBatchSize;
     }
 
     uint256 batchStartIndex = batchEndIndex > messageBatchSize ? batchEndIndex - messageBatchSize : 0;

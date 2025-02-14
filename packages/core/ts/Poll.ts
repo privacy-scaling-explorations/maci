@@ -882,11 +882,7 @@ export class Poll implements IPoll {
       batchEndIndex = this.messages.length - (index - 1) * messageBatchSize;
     }
 
-    let batchStartIndex = batchEndIndex - messageBatchSize;
-
-    if (batchStartIndex < 0) {
-      batchStartIndex = 0;
-    }
+    const batchStartIndex = batchEndIndex > messageBatchSize ? batchEndIndex - messageBatchSize : 0;
 
     // copy the public keys, pad the array with the last keys if needed
     let encPubKeys = this.encPubKeys.map((x) => x.copy());
