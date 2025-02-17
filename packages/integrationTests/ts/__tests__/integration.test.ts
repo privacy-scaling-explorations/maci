@@ -10,7 +10,7 @@ import {
   mergeSignups,
   proveOnChain,
   publish,
-  setVerifyingKeys,
+  setVerifyingKeysCli,
   signup,
   timeTravel,
   verify,
@@ -76,7 +76,7 @@ describe("Integration tests", function test() {
     // 1. deploy Vk Registry
     const vkRegistryAddress = await deployVkRegistryContract({ signer });
     // 2. set verifying keys
-    await setVerifyingKeys({
+    await setVerifyingKeysCli({
       stateTreeDepth: STATE_TREE_DEPTH,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,

@@ -26,7 +26,7 @@ import {
   showContracts,
   deployPoll,
   publish,
-  setVerifyingKeys,
+  setVerifyingKeysCli,
   mergeSignups,
   timeTravel,
   genProofs,
@@ -344,7 +344,7 @@ program
     try {
       const signer = await getSigner();
 
-      await setVerifyingKeys({
+      await setVerifyingKeysCli({
         stateTreeDepth: cmdObj.stateTreeDepth,
         intStateTreeDepth: cmdObj.intStateTreeDepth,
         voteOptionTreeDepth: cmdObj.voteOptionTreeDepth,
@@ -851,14 +851,13 @@ export {
   publish,
   publishBatch,
   proveOnChain,
-  setVerifyingKeys,
+  setVerifyingKeysCli,
   signup,
   isRegisteredUser,
   timeTravel,
   verify,
   joinPoll,
   isJoinedUser,
-  generateAndVerifyProof,
 } from "./commands";
 
 export type {

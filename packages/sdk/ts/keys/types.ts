@@ -101,3 +101,53 @@ export interface IMaciVks {
    */
   tallyVk?: VerifyingKey;
 }
+
+/**
+ * The arguments for the setVerifyingKeys function
+ */
+export interface ISetVerifyingKeysArgs {
+  /**
+   * The polll joining Vk object
+   */
+  pollJoiningVk: VerifyingKey;
+  /**
+   * The poll joined Vk object
+   */
+  pollJoinedVk: VerifyingKey;
+  /**
+   * The process messages Vk object
+   */
+  processMessagesVk: VerifyingKey;
+  /**
+   * The tally votes Vk object
+   */
+  tallyVotesVk: VerifyingKey;
+  /**
+   * The state tree depth
+   */
+  stateTreeDepth: number;
+  /**
+   * The intermediate state tree depth (ballot tree)
+   */
+  intStateTreeDepth: number;
+  /**
+   * The vote option tree depth
+   */
+  voteOptionTreeDepth: number;
+  /**
+   * The message batch size
+   */
+  messageBatchSize: number;
+  /**
+   * The VkRegistry contract address
+   */
+  vkRegistryAddress: string;
+  /**
+   * The signer
+   */
+  signer: Signer;
+  /**
+   * QV or NON_QV
+   */
+  mode: EMode;
+}

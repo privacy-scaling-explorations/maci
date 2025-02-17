@@ -13,7 +13,7 @@ import {
   mergeSignups,
   proveOnChain,
   publish,
-  setVerifyingKeys,
+  setVerifyingKeysCli,
   signup,
   timeTravel,
   verify,
@@ -80,7 +80,7 @@ describe("e2e tests with non quadratic voting", function test() {
     // we deploy the vk registry contract
     await deployVkRegistryContract({ signer });
     // we set the verifying keys
-    await setVerifyingKeys({ ...setVerifyingKeysNonQvArgs, useQuadraticVoting: false, signer });
+    await setVerifyingKeysCli({ ...setVerifyingKeysNonQvArgs, useQuadraticVoting: false, signer });
   });
 
   describe("1 signup, 1 message", () => {

@@ -18,7 +18,7 @@ import {
   mergeSignups,
   proveOnChain,
   publish,
-  setVerifyingKeys,
+  setVerifyingKeysCli,
   signup,
   timeTravel,
   verify,
@@ -83,7 +83,7 @@ describe("keyChange tests", function test() {
     // we deploy the vk registry contract
     await deployVkRegistryContract({ signer });
     // we set the verifying keys
-    await setVerifyingKeys({ ...setVerifyingKeysArgs, signer });
+    await setVerifyingKeysCli({ ...setVerifyingKeysArgs, signer });
   });
 
   describe("keyChange and new vote (new vote has same nonce)", () => {

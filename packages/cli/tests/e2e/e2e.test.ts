@@ -17,7 +17,7 @@ import {
   mergeSignups,
   proveOnChain,
   publish,
-  setVerifyingKeys,
+  setVerifyingKeysCli,
   signup,
   timeTravel,
   verify,
@@ -98,7 +98,7 @@ describe("e2e tests", function test() {
     // we deploy the vk registry contract
     await deployVkRegistryContract({ signer });
     // we set the verifying keys
-    await setVerifyingKeys({ ...setVerifyingKeysArgs, signer });
+    await setVerifyingKeysCli({ ...setVerifyingKeysArgs, signer });
   });
 
   describe("2 signups (1 after stateAq is merged and logs are fetched), 1 message", () => {

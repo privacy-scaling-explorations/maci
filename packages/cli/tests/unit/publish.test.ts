@@ -10,7 +10,7 @@ import {
   deploy,
   deployPoll,
   deployVkRegistryContract,
-  setVerifyingKeys,
+  setVerifyingKeysCli,
   publishBatch,
   signup,
 } from "../../ts/commands";
@@ -47,7 +47,7 @@ describe("publish", function test() {
     // we deploy the vk registry contract
     await deployVkRegistryContract({ signer });
     // we set the verifying keys
-    await setVerifyingKeys({ ...setVerifyingKeysArgs, signer });
+    await setVerifyingKeysCli({ ...setVerifyingKeysArgs, signer });
   });
 
   describe("publish batch messages", () => {

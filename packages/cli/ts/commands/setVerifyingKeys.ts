@@ -1,29 +1,16 @@
-import { genPollJoinedVkSig, genPollJoiningVkSig, genProcessVkSig, genTallyVkSig } from "maci-core";
 import { VerifyingKey } from "maci-domainobjs";
-import { type IVerifyingKeyStruct, VkRegistry__factory as VkRegistryFactory, EMode } from "maci-sdk";
-import { extractVk } from "maci-sdk";
+import { EMode, extractVk, setVerifyingKeys } from "maci-sdk";
 
 import fs from "fs";
 
-import {
-  type SetVerifyingKeysArgs,
-  info,
-  logError,
-  logGreen,
-  logYellow,
-  success,
-  readContractAddress,
-  contractExists,
-  banner,
-  compareVks,
-} from "../utils";
+import { type SetVerifyingKeysArgs, logError, logGreen, success, readContractAddress, banner } from "../utils";
 
 /**
  * Function that sets the verifying keys in the VkRegistry contract
  * @note see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing
  * @param SetVerifyingKeysArgs - The arguments for the setVerifyingKeys command
  */
-export const setVerifyingKeys = async ({
+export const setVerifyingKeysCli = async ({
   stateTreeDepth,
   intStateTreeDepth,
   voteOptionTreeDepth,
@@ -112,119 +99,19 @@ export const setVerifyingKeys = async ({
     intStateTreeDepth,
   });
 
-  // ensure we have a contract deployed at the provided address
-  if (!(await contractExists(signer.provider!, vkRegistryAddress))) {
-    logError(`A VkRegistry contract is not deployed at ${vkRegistryAddress}`);
-  }
-
-  // connect to VkRegistry contract
-  const vkRegistryContract = VkRegistryFactory.connect(vkRegistryAddress, signer);
-
-  // check if the poll vk was already set
-  const pollJoiningVkSig = genPollJoiningVkSig(stateTreeDepth, voteOptionTreeDepth);
-
-  if (await vkRegistryContract.isPollJoiningVkSet(pollJoiningVkSig)) {
-    logError("This poll verifying key is already set in the contract");
-  }
-
-  // check if the poll vk was already set
-  const pollJoinedVkSig = genPollJoinedVkSig(stateTreeDepth, voteOptionTreeDepth);
-
-  if (await vkRegistryContract.isPollJoinedVkSet(pollJoinedVkSig)) {
-    logError("This poll verifying key is already set in the contract");
-  }
-
-  // check if the process messages vk was already set
-  const processVkSig = genProcessVkSig(stateTreeDepth, voteOptionTreeDepth, messageBatchSize);
-
-  if (useQuadraticVoting && (await vkRegistryContract.isProcessVkSet(processVkSig, EMode.QV))) {
-    logError("This process verifying key is already set in the contract");
-  }
-
-  if (!useQuadraticVoting && (await vkRegistryContract.isProcessVkSet(processVkSig, EMode.NON_QV))) {
-    logError("This process verifying key is already set in the contract");
-  }
-
-  // do the same for the tally votes vk
-  const tallyVkSig = genTallyVkSig(stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth);
-
-  if (useQuadraticVoting && (await vkRegistryContract.isTallyVkSet(tallyVkSig, EMode.QV))) {
-    logError("This tally verifying key is already set in the contract");
-  }
-
-  if (!useQuadraticVoting && (await vkRegistryContract.isTallyVkSet(tallyVkSig, EMode.NON_QV))) {
-    logError("This tally verifying key is already set in the contract");
-  }
-
-  // actually set those values
-  try {
-    logYellow(quiet, info("Setting verifying keys..."));
-
-    const processZkeys = [processVkQv, processVkNonQv]
-      .filter(Boolean)
-      .map((vk) => (vk as VerifyingKey).asContractParam() as IVerifyingKeyStruct);
-    const tallyZkeys = [tallyVkQv, tallyVkNonQv]
-      .filter(Boolean)
-      .map((vk) => (vk as VerifyingKey).asContractParam() as IVerifyingKeyStruct);
-    const modes: EMode[] = [];
-
-    if (processVkQv && tallyVkQv) {
-      modes.push(EMode.QV);
-    }
-
-    if (processVkNonQv && tallyVkNonQv) {
-      modes.push(EMode.NON_QV);
-    }
-
-    // set them onchain
-    const tx = await vkRegistryContract.setVerifyingKeysBatch(
-      stateTreeDepth,
-      intStateTreeDepth,
-      voteOptionTreeDepth,
-      messageBatchSize,
-      modes,
-      (pollJoiningVk as VerifyingKey).asContractParam() as IVerifyingKeyStruct,
-      (pollJoinedVk as VerifyingKey).asContractParam() as IVerifyingKeyStruct,
-      processZkeys,
-      tallyZkeys,
-    );
-
-    const receipt = await tx.wait();
-
-    if (receipt?.status !== 1) {
-      logError("Set verifying keys transaction failed");
-    }
-
-    logYellow(quiet, info(`Transaction hash: ${receipt!.hash}`));
-
-    // confirm that they were actually set correctly
-    const mode = useQuadraticVoting ? EMode.QV : EMode.NON_QV;
-
-    const [pollJoiningVkOnChain, pollJoinedVkOnChain, processVkOnChain, tallyVkOnChain] = await Promise.all([
-      vkRegistryContract.getPollJoiningVk(stateTreeDepth, voteOptionTreeDepth),
-      vkRegistryContract.getPollJoinedVk(stateTreeDepth, voteOptionTreeDepth),
-      vkRegistryContract.getProcessVk(stateTreeDepth, voteOptionTreeDepth, messageBatchSize, mode),
-      vkRegistryContract.getTallyVk(stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth, mode),
-    ]);
-
-    if (!compareVks(pollJoiningVk as VerifyingKey, pollJoiningVkOnChain)) {
-      logError("pollJoiningVk mismatch");
-    }
-
-    if (!compareVks(pollJoinedVk as VerifyingKey, pollJoinedVkOnChain)) {
-      logError("pollJoinedVk mismatch");
-    }
-
-    if (!compareVks((useQuadraticVoting ? processVkQv : processVkNonQv) as VerifyingKey, processVkOnChain)) {
-      logError("processVk mismatch");
-    }
-
-    if (!compareVks((useQuadraticVoting ? tallyVkQv : tallyVkNonQv) as VerifyingKey, tallyVkOnChain)) {
-      logError("tallyVk mismatch");
-    }
-  } catch (error) {
-    logError((error as Error).message);
-  }
+  await setVerifyingKeys({
+    pollJoiningVk: pollJoiningVk as VerifyingKey,
+    pollJoinedVk: pollJoinedVk as VerifyingKey,
+    processMessagesVk: useQuadraticVoting ? (processVkQv as VerifyingKey) : (processVkNonQv as VerifyingKey),
+    tallyVotesVk: useQuadraticVoting ? (tallyVkQv as VerifyingKey) : (tallyVkNonQv as VerifyingKey),
+    stateTreeDepth,
+    intStateTreeDepth,
+    voteOptionTreeDepth,
+    messageBatchSize,
+    vkRegistryAddress,
+    signer,
+    mode: useQuadraticVoting ? EMode.QV : EMode.NON_QV,
+  });
 
   logGreen(quiet, success("Verifying keys set successfully"));
 };
