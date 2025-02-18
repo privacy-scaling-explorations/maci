@@ -33,6 +33,7 @@ export const genLocalState = async ({
   transactionHash,
   sleep,
   signer,
+  ipfsMessageBackupFiles,
   quiet = true,
 }: GenLocalStateArgs): Promise<void> => {
   banner(quiet);
@@ -104,16 +105,17 @@ export const genLocalState = async ({
     info(`Fetching logs from ${fromBlock} till ${endBlockNumber} and generating the offline maci state`),
   );
 
-  const maciState = await genMaciStateFromContract(
-    provider!,
-    maciContractAddress,
+  const maciState = await genMaciStateFromContract({
+    provider: provider!,
+    address: maciContractAddress,
     coordinatorKeypair,
     pollId,
     fromBlock,
-    blockPerBatch || 50,
-    endBlockNumber,
-    sleep,
-  );
+    blocksPerRequest: blockPerBatch || 50,
+    endBlock: endBlockNumber,
+    sleepAmount: sleep,
+    ipfsMessageBackupFiles,
+  });
 
   // write the state to a file
   const serializedState = maciState.toJSON();

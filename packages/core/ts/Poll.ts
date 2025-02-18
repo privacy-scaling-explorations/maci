@@ -868,25 +868,6 @@ export class Poll implements IPoll {
     while (msgs.length % messageBatchSize > 0) {
       msgs.push(msg.asCircuitInputs());
     }
-    // we only take the messages we need for this batch
-    // it slice msgs array from index of first message in current batch to
-    // index of last message in current batch
-    msgs = msgs.slice((index - 1) * messageBatchSize, index * messageBatchSize);
-
-    // validate that the batch index is correct, if not fix it
-    // this means that the end will be the last message
-
-    let batchEndIndex = index * messageBatchSize;
-
-    if (batchEndIndex > this.messages.length) {
-      batchEndIndex = this.messages.length - (index - 1) * messageBatchSize;
-    }
-
-    let batchStartIndex = batchEndIndex - messageBatchSize;
-
-    if (batchStartIndex < 0) {
-      batchStartIndex = 0;
-    }
 
     // copy the public keys, pad the array with the last keys if needed
     let encPubKeys = this.encPubKeys.map((x) => x.copy());
@@ -895,8 +876,23 @@ export class Poll implements IPoll {
       encPubKeys.push(key.pubKey.copy());
     }
 
+    // validate that the batch index is correct, if not fix it
+    // this means that the end will be the last message
+    let batchEndIndex = index * messageBatchSize;
+
+    if (batchEndIndex > this.messages.length) {
+      batchEndIndex = this.messages.length;
+    }
+
+    const batchStartIndex = index > 0 ? (index - 1) * messageBatchSize : 0;
+
+    // we only take the messages we need for this batch
+    // it slice msgs array from index of first message in current batch to
+    // index of last message in current batch
+    msgs = msgs.slice(batchStartIndex, index * messageBatchSize);
+
     // then take the ones part of this batch
-    encPubKeys = encPubKeys.slice((index - 1) * messageBatchSize, index * messageBatchSize);
+    encPubKeys = encPubKeys.slice(batchStartIndex, index * messageBatchSize);
 
     // cache tree roots
     const currentStateRoot = this.pollStateTree!.root;

@@ -1,3 +1,5 @@
+import path from "path";
+
 // this file contains all of the constants used in the integration tests
 export const invalidVote = {
   voteWeight: 2n,
@@ -12,6 +14,7 @@ export const defaultVote = {
   voteCreditBalance: 1n,
   voteOptionIndex: 0n,
 };
+export const backupFolder = path.resolve(__dirname, "../../../backup");
 export const SG_DATA = "0x0000000000000000000000000000000000000000000000000000000000000000";
 export const QUINARY_HASH_LENGTH = 5;
 export const HASH_LENGTH = 2;

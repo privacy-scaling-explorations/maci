@@ -106,12 +106,12 @@ export class TestDeploy {
       quiet: true,
     });
 
-    const maciState = await genMaciStateFromContract(
-      signer.provider,
-      maciAddresses.maciAddress,
+    const maciState = await genMaciStateFromContract({
+      provider: signer.provider,
+      address: maciAddresses.maciAddress,
       coordinatorKeypair,
-      0n,
-    );
+      pollId: 0n,
+    });
 
     this.contractsData.maciState = maciState;
     this.contractsData.maciContractAddress = maciAddresses.maciAddress;

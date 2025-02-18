@@ -1,7 +1,8 @@
 import { expect } from "chai";
+import { VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
-import { getBlockTimestamp, getDefaultSigner } from "maci-sdk";
+import { generateVote, getBlockTimestamp, getDefaultSigner } from "maci-sdk";
 
 import fs from "fs";
 
@@ -47,8 +48,9 @@ import {
   testPollJoiningWasmPath,
   testPollJoiningWitnessPath,
   pollDuration,
+  coordinatorKeypair,
 } from "../constants";
-import { clean, isArm } from "../utils";
+import { clean, getBackupFilenames, isArm, relayTestMessages } from "../utils";
 
 describe("keyChange tests", function test() {
   const useWasm = isArm();
@@ -108,7 +110,13 @@ describe("keyChange tests", function test() {
       const startDate = await getBlockTimestamp(signer);
 
       // deploy a poll contract
-      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
+      await deployPoll({
+        ...deployPollArgs,
+        signer,
+        pollStartDate: startDate,
+        pollEndDate: startDate + pollDuration,
+        relayers: [await signer.getAddress()],
+      });
       stateIndex = BigInt(
         await signup({
           maciAddress: maciAddresses.maciAddress,
@@ -143,6 +151,35 @@ describe("keyChange tests", function test() {
       });
     });
 
+    it("should publish relay a message to change the poll key and cast a new vote", async () => {
+      const votes = [
+        {
+          pollId,
+          voteOptionIndex: initialVoteOption,
+          salt: genRandomSalt(),
+          nonce: initialNonce,
+          privateKey: pollPrivKey1,
+          stateIndex,
+          voteWeight: initialVoteAmount - 2n,
+          coordinatorPubKey: coordinatorKeypair.pubKey,
+          maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+          newPubKey: pollPubKey2,
+        },
+      ];
+
+      const messages = votes
+        .map((vote) => generateVote(vote))
+        .map(({ message, ephemeralKeypair }) => ({
+          maciContractAddress: maciAddresses.maciAddress,
+          poll: Number(pollId),
+          data: message.data.map(String),
+          publicKey: ephemeralKeypair.pubKey.asArray().map(String),
+          hash: message.hash(ephemeralKeypair.pubKey).toString(),
+        }));
+
+      await relayTestMessages({ messages, signer, pollId: Number(pollId), maciAddress: maciAddresses.maciAddress });
+    });
+
     it("should publish a message to change the poll key and cast a new vote", async () => {
       await publish({
         pubkey: pollPubKey2.serialize(),
@@ -159,9 +196,10 @@ describe("keyChange tests", function test() {
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
+      const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-      await genProofs({ ...genProofsArgs, signer });
+      await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...(await verifyArgs()), signer });
     });
@@ -198,7 +236,13 @@ describe("keyChange tests", function test() {
       const startDate = await getBlockTimestamp(signer);
 
       // deploy a poll contract
-      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
+      await deployPoll({
+        ...deployPollArgs,
+        signer,
+        pollStartDate: startDate,
+        pollEndDate: startDate + pollDuration,
+        relayers: [await signer.getAddress()],
+      });
       stateIndex = BigInt(
         await signup({
           maciAddress: maciAddresses.maciAddress,
@@ -219,18 +263,33 @@ describe("keyChange tests", function test() {
         signer,
         quiet: true,
       });
-      await publish({
-        pubkey: user1Keypair.pubKey.serialize(),
-        stateIndex,
-        voteOptionIndex: initialVoteOption,
-        nonce: initialNonce,
-        pollId,
-        newVoteWeight: initialVoteAmount,
-        maciAddress: maciAddresses.maciAddress,
-        salt: genRandomSalt(),
-        privateKey: user1Keypair.privKey.serialize(),
-        signer,
-      });
+
+      const votes = [
+        {
+          pollId,
+          voteOptionIndex: initialVoteOption,
+          salt: genRandomSalt(),
+          nonce: initialNonce,
+          privateKey: user1Keypair.privKey,
+          stateIndex,
+          voteWeight: initialVoteAmount,
+          coordinatorPubKey: coordinatorKeypair.pubKey,
+          maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+          newPubKey: user1Keypair.pubKey,
+        },
+      ];
+
+      const messages = votes
+        .map((vote) => generateVote(vote))
+        .map(({ message, ephemeralKeypair }) => ({
+          maciContractAddress: maciAddresses.maciAddress,
+          poll: Number(pollId),
+          data: message.data.map(String),
+          publicKey: ephemeralKeypair.pubKey.asArray().map(String),
+          hash: message.hash(ephemeralKeypair.pubKey).toString(),
+        }));
+
+      await relayTestMessages({ messages, signer, pollId: Number(pollId), maciAddress: maciAddresses.maciAddress });
     });
 
     it("should publish a message to change the key and cast a new vote", async () => {
@@ -249,9 +308,10 @@ describe("keyChange tests", function test() {
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
+      const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, signer });
-      await genProofs({ ...genProofsArgs, signer });
+      await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...(await verifyArgs()), signer });
     });
@@ -288,7 +348,13 @@ describe("keyChange tests", function test() {
       const startDate = await getBlockTimestamp(signer);
 
       // deploy a poll contract
-      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
+      await deployPoll({
+        ...deployPollArgs,
+        signer,
+        pollStartDate: startDate,
+        pollEndDate: startDate + pollDuration,
+        relayers: [await signer.getAddress()],
+      });
       stateIndex = BigInt(
         await signup({
           maciAddress: maciAddresses.maciAddress,
@@ -324,6 +390,35 @@ describe("keyChange tests", function test() {
       });
     });
 
+    it("should relay a message to change the poll key, and a new vote", async () => {
+      const votes = [
+        {
+          pollId,
+          voteOptionIndex: initialVoteOption + 2n,
+          salt: genRandomSalt(),
+          nonce: initialNonce,
+          privateKey: user1Keypair.privKey,
+          stateIndex,
+          voteWeight: initialVoteAmount - 2n,
+          coordinatorPubKey: coordinatorKeypair.pubKey,
+          maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+          newPubKey: secondKeypair.pubKey,
+        },
+      ];
+
+      const messages = votes
+        .map((vote) => generateVote(vote))
+        .map(({ message, ephemeralKeypair }) => ({
+          maciContractAddress: maciAddresses.maciAddress,
+          poll: Number(pollId),
+          data: message.data.map(String),
+          publicKey: ephemeralKeypair.pubKey.asArray().map(String),
+          hash: message.hash(ephemeralKeypair.pubKey).toString(),
+        }));
+
+      await relayTestMessages({ messages, signer, pollId: Number(pollId), maciAddress: maciAddresses.maciAddress });
+    });
+
     it("should publish a message to change the poll key, and a new vote", async () => {
       await publish({
         pubkey: secondKeypair.pubKey.serialize(),
@@ -340,9 +435,10 @@ describe("keyChange tests", function test() {
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
+      const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, signer });
-      await genProofs({ ...genProofsArgs, signer });
+      await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...(await verifyArgs()), signer });
     });

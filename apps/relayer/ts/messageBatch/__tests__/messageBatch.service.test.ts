@@ -1,6 +1,4 @@
 import { jest } from "@jest/globals";
-import { ZeroAddress } from "ethers";
-import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-sdk";
 
 import { IpfsService } from "../../ipfs/ipfs.service.js";
 import { MessageBatchDto } from "../messageBatch.dto.js";
@@ -11,12 +9,7 @@ import { defaultIpfsHash, defaultMessageBatches } from "./utils.js";
 
 jest.mock("maci-sdk", (): unknown => ({
   getDefaultSigner: jest.fn(),
-  MACI__factory: {
-    connect: jest.fn(),
-  },
-  Poll__factory: {
-    connect: jest.fn(),
-  },
+  relayMessages: jest.fn(),
 }));
 
 describe("MessageBatchService", () => {
@@ -31,26 +24,12 @@ describe("MessageBatchService", () => {
     find: jest.fn().mockImplementation(() => Promise.resolve(defaultMessageBatches)),
   };
 
-  const mockMaciContract = {
-    polls: jest.fn().mockImplementation(() => Promise.resolve({ poll: ZeroAddress })),
-  };
-
-  const mockPollContract = {
-    hashMessageAndEncPubKey: jest.fn().mockImplementation(() => Promise.resolve("hash")),
-    relayMessagesBatch: jest
-      .fn()
-      .mockImplementation(() => Promise.resolve({ wait: jest.fn().mockImplementation(() => Promise.resolve()) })),
-  };
-
   beforeEach(() => {
     mockRepository.create = jest.fn().mockImplementation(() => Promise.resolve(defaultMessageBatches));
     mockRepository.find = jest.fn().mockImplementation(() => Promise.resolve(defaultMessageBatches));
     mockIpfsService.add = jest.fn().mockImplementation(() => Promise.resolve(defaultIpfsHash));
     mockIpfsService.cidToBytes32 = jest.fn().mockImplementation(() => Promise.resolve(defaultIpfsHash));
     mockIpfsService.init = jest.fn();
-
-    MACIFactory.connect = jest.fn().mockImplementation(() => mockMaciContract) as typeof MACIFactory.connect;
-    PollFactory.connect = jest.fn().mockImplementation(() => mockPollContract) as typeof PollFactory.connect;
   });
 
   afterEach(() => {
@@ -68,7 +47,6 @@ describe("MessageBatchService", () => {
 
     expect(result).toStrictEqual(defaultMessageBatches);
     expect(messageBatches).toStrictEqual(defaultMessageBatches);
-    expect(mockPollContract.relayMessagesBatch).toHaveBeenCalledTimes(1);
   });
 
   test("should throw an error if can't find message batches", async () => {

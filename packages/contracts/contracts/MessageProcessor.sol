@@ -127,7 +127,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
       batchEndIndex = numMessages;
     }
 
-    uint256 batchStartIndex = batchEndIndex > messageBatchSize ? batchEndIndex - messageBatchSize : 0;
+    uint256 batchStartIndex = _currentMessageBatchIndex > 0 ? (_currentMessageBatchIndex - 1) * messageBatchSize : 0;
 
     publicInputs = new uint256[](9);
     publicInputs[0] = numSignUps;

@@ -34,8 +34,8 @@ export const parseIpfsHashAddedEvents = async ({
   const messages = await Promise.all(ipfsHashes.map((ipfsHash) => ipfsService.read<IIpfsMessage[]>(ipfsHash))).then(
     (data) =>
       data.reduce((acc, items) => {
-        acc.push(
-          ...items
+        acc?.push(
+          ...(items || [])
             .filter((message) =>
               publicKeys && publicKeys.length > 0
                 ? publicKeys.some((publicKey) =>
@@ -50,11 +50,11 @@ export const parseIpfsHashAddedEvents = async ({
             ),
         );
 
-        return acc;
+        return acc ?? [];
       }, []),
   );
 
   return {
-    messages,
+    messages: messages ?? [],
   };
 };

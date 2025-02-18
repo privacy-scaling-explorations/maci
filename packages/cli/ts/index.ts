@@ -721,6 +721,11 @@ program
     (value) => value === "true",
     true,
   )
+  .option(
+    "-b, --ipfs-message-backup-files <ipfsMessageBackupFiles>",
+    "Backup files for ipfs messages (name format: ipfsHash1.json, ipfsHash2.json, ..., ipfsHashN.json)",
+    (value: string | undefined) => value?.split(/\s*,\s*/),
+  )
   .action(async (cmdObj) => {
     try {
       const signer = await getSigner();
@@ -747,6 +752,7 @@ program
         endBlock: cmdObj.endBlock,
         blocksPerBatch: cmdObj.blocksPerBatch,
         useQuadraticVoting: cmdObj.useQuadraticVoting,
+        ipfsMessageBackupFiles: cmdObj.ipfsMessageBackupFiles,
         quiet: cmdObj.quiet,
         signer,
       });
@@ -768,6 +774,11 @@ program
   .option("-s, --sleep <sleep>", "the sleep time between batches", parseInt)
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
+  .option(
+    "-b, --ipfs-message-backup-files <ipfsMessageBackupFiles>",
+    "Backup files for ipfs messages (name format: ipfsHash1.json, ipfsHash2.json, ..., ipfsHashN.json)",
+    (value: string | undefined) => value?.split(/\s*,\s*/),
+  )
   .action(async (cmdObj) => {
     try {
       const signer = await getSigner();
@@ -782,6 +793,7 @@ program
         startBlock: cmdObj.startBlock,
         blockPerBatch: cmdObj.blocksPerBatch,
         transactionHash: cmdObj.transactionHash,
+        ipfsMessageBackupFiles: cmdObj.ipfsMessageBackupFiles,
         sleep: cmdObj.sleep,
         quiet: cmdObj.quiet,
         signer,
