@@ -16,6 +16,7 @@ env:
   MONGODB_PASSWORD: ${{ secrets.MONGODB_PASSWORD }}
   MONGODB_DATABASE: ${{ secrets.MONGODB_DATABASE }}
   MNEMONIC: ${{ secrets.RELAYER_MNEMONIC }}
+  CRON_EXPRESSION: ${{ secrets.CRON_EXPRESSION }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}

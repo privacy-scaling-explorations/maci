@@ -53,6 +53,7 @@ export const genProofs = async ({
   blocksPerBatch,
   endBlock,
   signer,
+  ipfsMessageBackupFiles,
   useQuadraticVoting = true,
   quiet = true,
 }: GenProofsArgs): Promise<TallyData> => {
@@ -193,15 +194,16 @@ export const genProofs = async ({
     }
 
     logYellow(quiet, info(`starting to fetch logs from block ${fromBlock}`));
-    maciState = await genMaciStateFromContract(
-      signer.provider!,
-      await maciContract.getAddress(),
+    maciState = await genMaciStateFromContract({
+      provider: signer.provider!,
+      address: await maciContract.getAddress(),
       coordinatorKeypair,
       pollId,
       fromBlock,
-      blocksPerBatch,
-      endBlock || defaultEndBlock,
-    );
+      blocksPerRequest: blocksPerBatch,
+      endBlock: endBlock || defaultEndBlock,
+      ipfsMessageBackupFiles,
+    });
   }
 
   const poll = maciState!.polls.get(pollId)!;

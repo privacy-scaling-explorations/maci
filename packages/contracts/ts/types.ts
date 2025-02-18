@@ -10,9 +10,9 @@ import type {
   PoseidonT6,
   VkRegistry,
 } from "../typechain-types";
-import type { BigNumberish, Signer, ContractFactory } from "ethers";
+import type { BigNumberish, Signer, ContractFactory, Provider } from "ethers";
 import type { CircuitInputs } from "maci-core";
-import type { Message, PubKey } from "maci-domainobjs";
+import type { Keypair, Message, PubKey } from "maci-domainobjs";
 import type { PublicSignals } from "snarkjs";
 
 /**
@@ -227,7 +227,7 @@ export interface IIpfsMessage {
   /**
    * User public key
    */
-  publicKey: [string, string];
+  publicKey: BigNumberish[];
 
   /**
    * Message data
@@ -248,4 +248,54 @@ export interface IIpfsMessage {
    * Poll id
    */
   poll: number;
+}
+
+/**
+ * Interface that represents maci state generation arguments
+ */
+export interface IGenMaciStateFromContractArgs {
+  /**
+   * The ethereum provider
+   */
+  provider: Provider;
+
+  /**
+   * The address of the MACI contract
+   */
+  address: string;
+
+  /**
+   * The keypair of the coordinator
+   */
+  coordinatorKeypair: Keypair;
+
+  /**
+   * The id of the poll for which we are fetching events
+   */
+  pollId: bigint;
+
+  /**
+   * The block number from which to start fetching events
+   */
+  fromBlock?: number;
+
+  /**
+   * The number of blocks to fetch in each request
+   */
+  blocksPerRequest?: number;
+
+  /**
+   * The block number at which to stop fetching events
+   */
+  endBlock?: number;
+
+  /**
+   * The amount of time to sleep between each request
+   */
+  sleepAmount?: number;
+
+  /**
+   * Backup files for ipfs messages (name format: ipfsHash.json)
+   */
+  ipfsMessageBackupFiles?: string[];
 }

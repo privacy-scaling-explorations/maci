@@ -1,7 +1,8 @@
 import { expect } from "chai";
+import { VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
-import { getBlockTimestamp, getDefaultSigner } from "maci-sdk";
+import { generateVote, getBlockTimestamp, getDefaultSigner } from "maci-sdk";
 
 import fs from "fs";
 
@@ -52,19 +53,24 @@ import {
   testTallyVotesWitnessPath,
   deployArgs,
   timeTravelArgs,
+  coordinatorKeypair,
 } from "../constants";
-import { clean, isArm } from "../utils";
+import { clean, getBackupFilenames, isArm, relayTestMessages } from "../utils";
 
 /**
  Test scenarios:
     1 signup, 1 message
+    1 signup, 1 relayed message
+    1 signup, 1 message, 1 relayed message
     4 signups, 8 messages
-    5 signups, 1 message
-    8 signups, 10 messages
-    4 signups, 4 messages
+    4 signups, 8 messages, 16 relayed messages
+    9 signups, 1 message
+    9 signups, 1 message, 2 relayed messages
+    8 signups (same key), 12 messages (same message), 12 relayed messages (same message)
+    30 signups (31 ballots), 4 messages
+    30 signups (31 ballots), 4 messages, 3 relayed messages
     test if keys are set correctly given a set of files
-    1 signup and 1 valid message for multiple polls
-    7 signups and 1 message, another polls and 6 messages
+    multiple polls tests
  */
 describe("e2e tests", function test() {
   const useWasm = isArm();
@@ -242,6 +248,185 @@ describe("e2e tests", function test() {
     });
   });
 
+  describe("1 signup, 1 relayed message", () => {
+    after(async () => {
+      await clean();
+    });
+
+    const user = new Keypair();
+
+    before(async () => {
+      // deploy the smart contracts
+      maciAddresses = await deploy({ ...deployArgs, signer });
+      const startDate = await getBlockTimestamp(signer);
+      // deploy a poll contract
+      await deployPoll({
+        ...deployPollArgs,
+        signer,
+        useQuadraticVoting: true,
+        pollStartDate: startDate,
+        pollEndDate: startDate + pollDuration,
+        relayers: [await signer.getAddress()],
+      });
+    });
+
+    it("should signup one user", async () => {
+      await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer });
+    });
+
+    it("should join one user", async () => {
+      await joinPoll({
+        maciAddress: maciAddresses.maciAddress,
+        privateKey: user.privKey.serialize(),
+        stateIndex: 1n,
+        pollId: 0n,
+        pollJoiningZkey: pollJoiningTestZkeyPath,
+        useWasm: true,
+        pollWasm: testPollJoiningWasmPath,
+        pollWitgen: testPollJoiningWitnessPath,
+        rapidsnark: testRapidsnarkPath,
+        signer,
+        quiet: true,
+      });
+    });
+
+    it("should relay one message", async () => {
+      const { message, ephemeralKeypair } = generateVote({
+        pollId: 0n,
+        voteOptionIndex: 0n,
+        salt: genRandomSalt(),
+        nonce: 1n,
+        privateKey: user.privKey,
+        stateIndex: 1n,
+        voteWeight: 9n,
+        coordinatorPubKey: coordinatorKeypair.pubKey,
+        maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+        newPubKey: user.pubKey,
+      });
+
+      const messages = [
+        {
+          maciContractAddress: maciAddresses.maciAddress,
+          poll: 0,
+          data: message.data.map(String),
+          publicKey: ephemeralKeypair.pubKey.asArray().map(String),
+          hash: message.hash(ephemeralKeypair.pubKey).toString(),
+        },
+      ];
+
+      await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciAddress });
+    });
+
+    it("should generate zk-SNARK proofs and verify them", async () => {
+      const ipfsMessageBackupFiles = await getBackupFilenames();
+      await timeTravel({ seconds: pollDuration, signer });
+      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
+      const tallyFileData = await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
+      await proveOnChain({ ...proveOnChainArgs, signer });
+      await verify({
+        ...(await verifyArgs()),
+        tallyData: tallyFileData,
+        signer,
+      });
+    });
+  });
+
+  describe("1 signup, 1 message, 1 relayed message", () => {
+    after(async () => {
+      await clean();
+    });
+
+    const user = new Keypair();
+
+    before(async () => {
+      // deploy the smart contracts
+      maciAddresses = await deploy({ ...deployArgs, signer });
+      const startDate = await getBlockTimestamp(signer);
+      // deploy a poll contract
+      await deployPoll({
+        ...deployPollArgs,
+        signer,
+        useQuadraticVoting: true,
+        pollStartDate: startDate,
+        pollEndDate: startDate + pollDuration,
+        relayers: [await signer.getAddress()],
+      });
+    });
+
+    it("should signup one user", async () => {
+      await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer });
+    });
+
+    it("should join one user", async () => {
+      await joinPoll({
+        maciAddress: maciAddresses.maciAddress,
+        privateKey: user.privKey.serialize(),
+        stateIndex: 1n,
+        pollId: 0n,
+        pollJoiningZkey: pollJoiningTestZkeyPath,
+        useWasm: true,
+        pollWasm: testPollJoiningWasmPath,
+        pollWitgen: testPollJoiningWitnessPath,
+        rapidsnark: testRapidsnarkPath,
+        signer,
+        quiet: true,
+      });
+    });
+
+    it("should relay one message and publish one message", async () => {
+      const { message, ephemeralKeypair } = generateVote({
+        pollId: 0n,
+        voteOptionIndex: 0n,
+        salt: genRandomSalt(),
+        nonce: 1n,
+        privateKey: user.privKey,
+        stateIndex: 1n,
+        voteWeight: 9n,
+        coordinatorPubKey: coordinatorKeypair.pubKey,
+        maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+        newPubKey: user.pubKey,
+      });
+
+      const messages = [
+        {
+          maciContractAddress: maciAddresses.maciAddress,
+          poll: 0,
+          data: message.data.map(String),
+          publicKey: ephemeralKeypair.pubKey.asArray().map(String),
+          hash: message.hash(ephemeralKeypair.pubKey).toString(),
+        },
+      ];
+
+      await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciAddress });
+
+      await publish({
+        pubkey: user.pubKey.serialize(),
+        stateIndex: 1n,
+        voteOptionIndex: 0n,
+        nonce: 1n,
+        pollId: 0n,
+        newVoteWeight: 9n,
+        maciAddress: maciAddresses.maciAddress,
+        salt: genRandomSalt(),
+        privateKey: user.privKey.serialize(),
+        signer,
+      });
+    });
+
+    it("should generate zk-SNARK proofs and verify them", async () => {
+      const ipfsMessageBackupFiles = await getBackupFilenames();
+      await timeTravel({ seconds: pollDuration, signer });
+      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
+      const tallyFileData = await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
+      await proveOnChain({ ...proveOnChainArgs, signer });
+      await verify({
+        ...(await verifyArgs()),
+        tallyData: tallyFileData,
+        signer,
+      });
+    });
+  });
+
   describe("4 signups, 8 messages", () => {
     after(async () => {
       await clean();
@@ -395,6 +580,286 @@ describe("e2e tests", function test() {
     });
   });
 
+  describe("4 signups, 8 messages, 16 relayed messages", () => {
+    after(async () => {
+      await clean();
+    });
+
+    const users = [new Keypair(), new Keypair(), new Keypair(), new Keypair()];
+
+    before(async () => {
+      // deploy the smart contracts
+      maciAddresses = await deploy({ ...deployArgs, signer });
+
+      const startDate = await getBlockTimestamp(signer);
+
+      // deploy a poll contract
+      await deployPoll({
+        ...deployPollArgs,
+        signer,
+        pollStartDate: startDate,
+        pollEndDate: startDate + pollDuration,
+        relayers: [await signer.getAddress()],
+      });
+    });
+
+    it("should signup four users", async () => {
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < users.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[i].pubKey.serialize(), signer });
+      }
+    });
+
+    it("should join four users", async () => {
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < users.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await joinPoll({
+          maciAddress: maciAddresses.maciAddress,
+          privateKey: users[i].privKey.serialize(),
+          stateIndex: BigInt(i + 1),
+          pollId: 0n,
+          pollJoiningZkey: pollJoiningTestZkeyPath,
+          useWasm: true,
+          pollWasm: testPollJoiningWasmPath,
+          pollWitgen: testPollJoiningWitnessPath,
+          rapidsnark: testRapidsnarkPath,
+          signer,
+          quiet: true,
+        });
+      }
+    });
+
+    it("should publish eight messages", async () => {
+      await publish({
+        pubkey: users[0].pubKey.serialize(),
+        stateIndex: 1n,
+        voteOptionIndex: 0n,
+        nonce: 2n,
+        pollId: 0n,
+        newVoteWeight: 4n,
+        maciAddress: maciAddresses.maciAddress,
+        salt: genRandomSalt(),
+        privateKey: users[0].privKey.serialize(),
+        signer,
+      });
+
+      await publish({
+        pubkey: users[0].pubKey.serialize(),
+        stateIndex: 1n,
+        voteOptionIndex: 0n,
+        nonce: 2n,
+        pollId: 0n,
+        newVoteWeight: 3n,
+        maciAddress: maciAddresses.maciAddress,
+        salt: genRandomSalt(),
+        privateKey: users[0].privKey.serialize(),
+        signer,
+      });
+
+      await publish({
+        pubkey: users[0].pubKey.serialize(),
+        stateIndex: 1n,
+        voteOptionIndex: 0n,
+        nonce: 1n,
+        pollId: 0n,
+        newVoteWeight: 9n,
+        maciAddress: maciAddresses.maciAddress,
+        salt: genRandomSalt(),
+        privateKey: users[0].privKey.serialize(),
+        signer,
+      });
+
+      await publish({
+        pubkey: users[1].pubKey.serialize(),
+        stateIndex: 2n,
+        voteOptionIndex: 2n,
+        nonce: 1n,
+        pollId: 0n,
+        newVoteWeight: 9n,
+        maciAddress: maciAddresses.maciAddress,
+        salt: genRandomSalt(),
+        privateKey: users[1].privKey.serialize(),
+        signer,
+      });
+
+      await publish({
+        pubkey: users[2].pubKey.serialize(),
+        stateIndex: 3n,
+        voteOptionIndex: 2n,
+        nonce: 1n,
+        pollId: 0n,
+        newVoteWeight: 9n,
+        maciAddress: maciAddresses.maciAddress,
+        salt: genRandomSalt(),
+        privateKey: users[2].privKey.serialize(),
+        signer,
+      });
+
+      await publish({
+        pubkey: users[3].pubKey.serialize(),
+        stateIndex: 4n,
+        voteOptionIndex: 2n,
+        nonce: 3n,
+        pollId: 0n,
+        newVoteWeight: 3n,
+        maciAddress: maciAddresses.maciAddress,
+        salt: genRandomSalt(),
+        privateKey: users[3].privKey.serialize(),
+        signer,
+      });
+
+      await publish({
+        pubkey: users[3].pubKey.serialize(),
+        stateIndex: 4n,
+        voteOptionIndex: 2n,
+        nonce: 2n,
+        pollId: 0n,
+        newVoteWeight: 2n,
+        maciAddress: maciAddresses.maciAddress,
+        salt: genRandomSalt(),
+        privateKey: users[3].privKey.serialize(),
+        signer,
+      });
+
+      await publish({
+        pubkey: users[3].pubKey.serialize(),
+        stateIndex: 4n,
+        voteOptionIndex: 1n,
+        nonce: 1n,
+        pollId: 0n,
+        newVoteWeight: 9n,
+        maciAddress: maciAddresses.maciAddress,
+        salt: genRandomSalt(),
+        privateKey: users[3].privKey.serialize(),
+        signer,
+      });
+    });
+
+    it("should relay sixteen messages", async () => {
+      const votes = [
+        {
+          pollId: 0n,
+          voteOptionIndex: 1n,
+          salt: genRandomSalt(),
+          nonce: 2n,
+          privateKey: users[0].privKey,
+          stateIndex: 1n,
+          voteWeight: 4n,
+          coordinatorPubKey: coordinatorKeypair.pubKey,
+          maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+          newPubKey: users[0].pubKey,
+        },
+        {
+          pollId: 0n,
+          voteOptionIndex: 1n,
+          salt: genRandomSalt(),
+          nonce: 2n,
+          privateKey: users[0].privKey,
+          stateIndex: 1n,
+          voteWeight: 3n,
+          coordinatorPubKey: coordinatorKeypair.pubKey,
+          maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+          newPubKey: users[0].pubKey,
+        },
+        {
+          pollId: 0n,
+          voteOptionIndex: 1n,
+          salt: genRandomSalt(),
+          nonce: 1n,
+          privateKey: users[0].privKey,
+          stateIndex: 1n,
+          voteWeight: 9n,
+          coordinatorPubKey: coordinatorKeypair.pubKey,
+          maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+          newPubKey: users[0].pubKey,
+        },
+        {
+          pollId: 0n,
+          voteOptionIndex: 1n,
+          salt: genRandomSalt(),
+          nonce: 1n,
+          privateKey: users[1].privKey,
+          stateIndex: 2n,
+          voteWeight: 9n,
+          coordinatorPubKey: coordinatorKeypair.pubKey,
+          maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+          newPubKey: users[1].pubKey,
+        },
+        {
+          pollId: 0n,
+          voteOptionIndex: 1n,
+          salt: genRandomSalt(),
+          nonce: 1n,
+          privateKey: users[2].privKey,
+          stateIndex: 3n,
+          voteWeight: 9n,
+          coordinatorPubKey: coordinatorKeypair.pubKey,
+          maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+          newPubKey: users[2].pubKey,
+        },
+        {
+          pollId: 0n,
+          voteOptionIndex: 0n,
+          salt: genRandomSalt(),
+          nonce: 3n,
+          privateKey: users[3].privKey,
+          stateIndex: 4n,
+          voteWeight: 3n,
+          coordinatorPubKey: coordinatorKeypair.pubKey,
+          maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+          newPubKey: users[3].pubKey,
+        },
+        {
+          pollId: 0n,
+          voteOptionIndex: 0n,
+          salt: genRandomSalt(),
+          nonce: 2n,
+          privateKey: users[3].privKey,
+          stateIndex: 4n,
+          voteWeight: 2n,
+          coordinatorPubKey: coordinatorKeypair.pubKey,
+          maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+          newPubKey: users[3].pubKey,
+        },
+        {
+          pollId: 0n,
+          voteOptionIndex: 0n,
+          salt: genRandomSalt(),
+          nonce: 1n,
+          privateKey: users[3].privKey,
+          stateIndex: 4n,
+          voteWeight: 9n,
+          coordinatorPubKey: coordinatorKeypair.pubKey,
+          maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+          newPubKey: users[3].pubKey,
+        },
+      ];
+
+      const messages = votes
+        .map((vote) => generateVote(vote))
+        .map(({ message, ephemeralKeypair }) => ({
+          maciContractAddress: maciAddresses.maciAddress,
+          poll: 0,
+          data: message.data.map(String),
+          publicKey: ephemeralKeypair.pubKey.asArray().map(String),
+          hash: message.hash(ephemeralKeypair.pubKey).toString(),
+        }));
+
+      await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciAddress });
+    });
+
+    it("should generate zk-SNARK proofs and verify them", async () => {
+      const ipfsMessageBackupFiles = await getBackupFilenames();
+      await timeTravel({ ...timeTravelArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, signer });
+      await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
+      await proveOnChain({ ...proveOnChainArgs, signer });
+      await verify({ ...(await verifyArgs()), signer });
+    });
+  });
+
   describe("9 signups, 1 message", () => {
     after(async () => {
       await clean();
@@ -474,7 +939,134 @@ describe("e2e tests", function test() {
     });
   });
 
-  describe("8 signups (same key), 12 messages (same message)", () => {
+  describe("9 signups, 1 message, 2 relayed messages", () => {
+    after(async () => {
+      await clean();
+    });
+
+    const users = [
+      new Keypair(),
+      new Keypair(),
+      new Keypair(),
+      new Keypair(),
+      new Keypair(),
+      new Keypair(),
+      new Keypair(),
+      new Keypair(),
+      new Keypair(),
+    ];
+
+    before(async () => {
+      // deploy the smart contracts
+      maciAddresses = await deploy({ ...deployArgs, signer });
+
+      const startDate = await getBlockTimestamp(signer);
+
+      // deploy a poll contract
+      await deployPoll({
+        ...deployPollArgs,
+        signer,
+        pollStartDate: startDate,
+        pollEndDate: startDate + pollDuration,
+        relayers: [await signer.getAddress()],
+      });
+    });
+
+    it("should signup nine users", async () => {
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < users.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[i].pubKey.serialize(), signer });
+      }
+    });
+
+    it("should join nine users", async () => {
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < users.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await joinPoll({
+          maciAddress: maciAddresses.maciAddress,
+          privateKey: users[i].privKey.serialize(),
+          stateIndex: BigInt(i + 1),
+          pollId: 0n,
+          pollJoiningZkey: pollJoiningTestZkeyPath,
+          useWasm: true,
+          pollWasm: testPollJoiningWasmPath,
+          pollWitgen: testPollJoiningWitnessPath,
+          rapidsnark: testRapidsnarkPath,
+          signer,
+          quiet: true,
+        });
+      }
+    });
+
+    it("should publish one message", async () => {
+      await publish({
+        pubkey: users[0].pubKey.serialize(),
+        stateIndex: 1n,
+        voteOptionIndex: 0n,
+        nonce: 1n,
+        pollId: 0n,
+        newVoteWeight: 9n,
+        maciAddress: maciAddresses.maciAddress,
+        salt: genRandomSalt(),
+        privateKey: users[0].privKey.serialize(),
+        signer,
+      });
+    });
+
+    it("should relay two messages", async () => {
+      const votes = [
+        {
+          pollId: 0n,
+          voteOptionIndex: 1n,
+          salt: genRandomSalt(),
+          nonce: 2n,
+          privateKey: users[0].privKey,
+          stateIndex: 1n,
+          voteWeight: 4n,
+          coordinatorPubKey: coordinatorKeypair.pubKey,
+          maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+          newPubKey: users[0].pubKey,
+        },
+        {
+          pollId: 0n,
+          voteOptionIndex: 1n,
+          salt: genRandomSalt(),
+          nonce: 3n,
+          privateKey: users[0].privKey,
+          stateIndex: 1n,
+          voteWeight: 9n,
+          coordinatorPubKey: coordinatorKeypair.pubKey,
+          maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+          newPubKey: users[0].pubKey,
+        },
+      ];
+
+      const messages = votes
+        .map((vote) => generateVote(vote))
+        .map(({ message, ephemeralKeypair }) => ({
+          maciContractAddress: maciAddresses.maciAddress,
+          poll: 0,
+          data: message.data.map(String),
+          publicKey: ephemeralKeypair.pubKey.asArray().map(String),
+          hash: message.hash(ephemeralKeypair.pubKey).toString(),
+        }));
+
+      await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciAddress });
+    });
+
+    it("should generate zk-SNARK proofs and verify them", async () => {
+      const ipfsMessageBackupFiles = await getBackupFilenames();
+      await timeTravel({ ...timeTravelArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, signer });
+      const tallyFileData = await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
+      await proveOnChain({ ...proveOnChainArgs, signer });
+      await verify({ ...(await verifyArgs()), tallyData: tallyFileData, signer });
+    });
+  });
+
+  describe("8 signups (same key), 12 messages (same message), 12 relayed messages (same message)", () => {
     after(async () => {
       await clean();
     });
@@ -488,7 +1080,13 @@ describe("e2e tests", function test() {
       const startDate = await getBlockTimestamp(signer);
 
       // deploy a poll contract
-      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
+      await deployPoll({
+        ...deployPollArgs,
+        signer,
+        pollStartDate: startDate,
+        pollEndDate: startDate + pollDuration,
+        relayers: [await signer.getAddress()],
+      });
     });
 
     it("should signup eight users (same pub key)", async () => {
@@ -515,7 +1113,33 @@ describe("e2e tests", function test() {
       });
     });
 
-    it("should publish 12 messages with the same nonce", async () => {
+    it("should publish and relay 12 messages with the same nonce", async () => {
+      const messages = new Array(12)
+        .fill(0)
+        .map(() =>
+          generateVote({
+            pollId: 0n,
+            voteOptionIndex: 0n,
+            salt: genRandomSalt(),
+            nonce: 1n,
+            privateKey: user.privKey,
+            stateIndex: 1n,
+            voteWeight: 9n,
+            coordinatorPubKey: coordinatorKeypair.pubKey,
+            maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+            newPubKey: user.pubKey,
+          }),
+        )
+        .map(({ message, ephemeralKeypair }) => ({
+          maciContractAddress: maciAddresses.maciAddress,
+          poll: 0,
+          data: message.data.map(String),
+          publicKey: ephemeralKeypair.pubKey.asArray().map(String),
+          hash: message.hash(ephemeralKeypair.pubKey).toString(),
+        }));
+
+      await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciAddress });
+
       for (let i = 0; i < 12; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         await publish({
@@ -534,9 +1158,10 @@ describe("e2e tests", function test() {
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
+      const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, signer });
-      await genProofs({ ...genProofsArgs, signer });
+      await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...(await verifyArgs()), signer });
     });
@@ -651,11 +1276,181 @@ describe("e2e tests", function test() {
     });
   });
 
+  describe("30 signups (31 ballots), 4 messages, 3 relayed messages", () => {
+    after(async () => {
+      await clean();
+    });
+
+    const users = Array.from({ length: 30 }, () => new Keypair());
+
+    before(async () => {
+      // deploy the smart contracts
+      maciAddresses = await deploy({ ...deployArgs, signer });
+
+      const startDate = await getBlockTimestamp(signer);
+
+      // deploy a poll contract
+      await deployPoll({
+        ...deployPollArgs,
+        signer,
+        pollStartDate: startDate,
+        pollEndDate: startDate + pollDuration,
+        relayers: [await signer.getAddress()],
+      });
+    });
+
+    it("should signup thirty users", async () => {
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < users.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[i].pubKey.serialize(), signer });
+      }
+    });
+
+    it("should join thirty users", async () => {
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let i = 0; i < users.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await joinPoll({
+          maciAddress: maciAddresses.maciAddress,
+          privateKey: users[i].privKey.serialize(),
+          stateIndex: BigInt(i + 1),
+          pollId: 0n,
+          pollJoiningZkey: pollJoiningTestZkeyPath,
+          useWasm: true,
+          pollWasm: testPollJoiningWasmPath,
+          pollWitgen: testPollJoiningWitnessPath,
+          rapidsnark: testRapidsnarkPath,
+          signer,
+          quiet: true,
+        });
+      }
+    });
+
+    it("should publish 4 messages", async () => {
+      // publish four different messages
+      await publish({
+        maciAddress: maciAddresses.maciAddress,
+        pubkey: users[0].pubKey.serialize(),
+        stateIndex: 1n,
+        voteOptionIndex: 0n,
+        nonce: 1n,
+        pollId: 0n,
+        newVoteWeight: 9n,
+        salt: genRandomSalt(),
+        privateKey: users[0].privKey.serialize(),
+        signer,
+      });
+
+      await publish({
+        maciAddress: maciAddresses.maciAddress,
+        pubkey: users[1].pubKey.serialize(),
+        stateIndex: 2n,
+        voteOptionIndex: 1n,
+        nonce: 1n,
+        pollId: 0n,
+        newVoteWeight: 9n,
+        salt: genRandomSalt(),
+        privateKey: users[1].privKey.serialize(),
+        signer,
+      });
+
+      await publish({
+        maciAddress: maciAddresses.maciAddress,
+        pubkey: users[2].pubKey.serialize(),
+        stateIndex: 3n,
+        voteOptionIndex: 2n,
+        nonce: 1n,
+        pollId: 0n,
+        newVoteWeight: 9n,
+        salt: genRandomSalt(),
+        privateKey: users[2].privKey.serialize(),
+        signer,
+      });
+
+      await publish({
+        maciAddress: maciAddresses.maciAddress,
+        pubkey: users[3].pubKey.serialize(),
+        stateIndex: 4n,
+        voteOptionIndex: 3n,
+        nonce: 1n,
+        pollId: 0n,
+        newVoteWeight: 9n,
+        salt: genRandomSalt(),
+        privateKey: users[3].privKey.serialize(),
+        signer,
+      });
+    });
+
+    it("should relay 3 messages", async () => {
+      const votes = [
+        {
+          pollId: 0n,
+          voteOptionIndex: 1n,
+          salt: genRandomSalt(),
+          nonce: 2n,
+          privateKey: users[0].privKey,
+          stateIndex: 1n,
+          voteWeight: 5n,
+          coordinatorPubKey: coordinatorKeypair.pubKey,
+          maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+          newPubKey: users[0].pubKey,
+        },
+        {
+          pollId: 0n,
+          voteOptionIndex: 2n,
+          salt: genRandomSalt(),
+          nonce: 3n,
+          privateKey: users[2].privKey,
+          stateIndex: 3n,
+          voteWeight: 9n,
+          coordinatorPubKey: coordinatorKeypair.pubKey,
+          maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+          newPubKey: users[2].pubKey,
+        },
+        {
+          pollId: 0n,
+          voteOptionIndex: 3n,
+          salt: genRandomSalt(),
+          nonce: 3n,
+          privateKey: users[3].privKey,
+          stateIndex: 4n,
+          voteWeight: 7n,
+          coordinatorPubKey: coordinatorKeypair.pubKey,
+          maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+          newPubKey: users[3].pubKey,
+        },
+      ];
+
+      const messages = votes
+        .map((vote) => generateVote(vote))
+        .map(({ message, ephemeralKeypair }) => ({
+          maciContractAddress: maciAddresses.maciAddress,
+          poll: 0,
+          data: message.data.map(String),
+          publicKey: ephemeralKeypair.pubKey.asArray().map(String),
+          hash: message.hash(ephemeralKeypair.pubKey).toString(),
+        }));
+
+      await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciAddress });
+    });
+
+    it("should generate zk-SNARK proofs and verify them", async () => {
+      const ipfsMessageBackupFiles = await getBackupFilenames();
+      await timeTravel({ ...timeTravelArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, signer });
+      const tallyFileData = await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
+      await proveOnChain({ ...proveOnChainArgs, signer });
+      await verify({ ...(await verifyArgs()), tallyData: tallyFileData, signer });
+    });
+  });
+
   describe("checkKeys", () => {
     before(async () => {
       // deploy maci as we need the address
       await deploy({ ...deployArgs, signer });
     });
+
     it("should check if the verifying keys have been set correctly", async () => {
       await checkVerifyingKeys({ ...checkVerifyingKeysArgs, signer });
     });
@@ -675,7 +1470,13 @@ describe("e2e tests", function test() {
       const startDate = await getBlockTimestamp(signer);
 
       // deploy a poll contract
-      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
+      await deployPoll({
+        ...deployPollArgs,
+        signer,
+        pollStartDate: startDate,
+        pollEndDate: startDate + pollDuration,
+        relayers: [await signer.getAddress()],
+      });
       // signup
       await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer });
       // joinPoll
@@ -692,6 +1493,34 @@ describe("e2e tests", function test() {
         signer,
         quiet: true,
       });
+
+      const votes = [
+        {
+          pollId: 0n,
+          voteOptionIndex: 0n,
+          salt: genRandomSalt(),
+          nonce: 1n,
+          privateKey: user.privKey,
+          stateIndex: 1n,
+          voteWeight: 5n,
+          coordinatorPubKey: coordinatorKeypair.pubKey,
+          maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+          newPubKey: user.pubKey,
+        },
+      ];
+
+      const messages = votes
+        .map((vote) => generateVote(vote))
+        .map(({ message, ephemeralKeypair }) => ({
+          maciContractAddress: maciAddresses.maciAddress,
+          poll: 0,
+          data: message.data.map(String),
+          publicKey: ephemeralKeypair.pubKey.asArray().map(String),
+          hash: message.hash(ephemeralKeypair.pubKey).toString(),
+        }));
+
+      await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciAddress });
+
       // publish
       await publish({
         pubkey: user.pubKey.serialize(),
@@ -705,11 +1534,12 @@ describe("e2e tests", function test() {
         privateKey: user.privKey.serialize(),
         signer,
       });
+      const ipfsMessageBackupFiles = await getBackupFilenames();
       // time travel
       await timeTravel({ ...timeTravelArgs, signer });
       // generate proofs
       await mergeSignups({ ...mergeSignupsArgs, signer });
-      const tallyFileData = await genProofs({ ...genProofsArgs, signer });
+      const tallyFileData = await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...(await verifyArgs()), tallyData: tallyFileData, signer });
       await clean();
@@ -718,7 +1548,13 @@ describe("e2e tests", function test() {
     it("should deploy a new poll", async () => {
       const startDate = await getBlockTimestamp(signer);
 
-      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
+      await deployPoll({
+        ...deployPollArgs,
+        signer,
+        pollStartDate: startDate,
+        pollEndDate: startDate + pollDuration,
+        relayers: [await signer.getAddress()],
+      });
     });
 
     it("should join to new poll", async () => {
@@ -753,10 +1589,40 @@ describe("e2e tests", function test() {
       });
     });
 
+    it("should relay a new message", async () => {
+      const votes = [
+        {
+          pollId: 1n,
+          voteOptionIndex: 1n,
+          salt: genRandomSalt(),
+          nonce: 1n,
+          privateKey: user.privKey,
+          stateIndex: 1n,
+          voteWeight: 9n,
+          coordinatorPubKey: coordinatorKeypair.pubKey,
+          maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+          newPubKey: user.pubKey,
+        },
+      ];
+
+      const messages = votes
+        .map((vote) => generateVote(vote))
+        .map(({ message, ephemeralKeypair }) => ({
+          maciContractAddress: maciAddresses.maciAddress,
+          poll: 1,
+          data: message.data.map(String),
+          publicKey: ephemeralKeypair.pubKey.asArray().map(String),
+          hash: message.hash(ephemeralKeypair.pubKey).toString(),
+        }));
+
+      await relayTestMessages({ messages, signer, pollId: 1, maciAddress: maciAddresses.maciAddress });
+    });
+
     it("should generate proofs and verify them", async () => {
+      const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ pollId: 1n, signer });
-      await genProofs({ ...genProofsArgs, pollId: 1n, signer });
+      await genProofs({ ...genProofsArgs, pollId: 1n, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, pollId: 1n, signer });
       await verify({ ...(await verifyArgs()), pollId: 1n, signer });
     });
@@ -776,7 +1642,13 @@ describe("e2e tests", function test() {
       const startDate = await getBlockTimestamp(signer);
 
       // deploy a poll contract
-      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
+      await deployPoll({
+        ...deployPollArgs,
+        signer,
+        pollStartDate: startDate,
+        pollEndDate: startDate + pollDuration,
+        relayers: [await signer.getAddress()],
+      });
       // signup
       await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[0].pubKey.serialize(), signer });
       // joinPoll
@@ -827,11 +1699,39 @@ describe("e2e tests", function test() {
         quiet: true,
       });
 
+      const votes = [
+        {
+          pollId: 0n,
+          voteOptionIndex: 0n,
+          salt: genRandomSalt(),
+          nonce: 1n,
+          privateKey: users[1].privKey,
+          stateIndex: 2n,
+          voteWeight: 2n,
+          coordinatorPubKey: coordinatorKeypair.pubKey,
+          maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+          newPubKey: users[1].pubKey,
+        },
+      ];
+
+      const messages = votes
+        .map((vote) => generateVote(vote))
+        .map(({ message, ephemeralKeypair }) => ({
+          maciContractAddress: maciAddresses.maciAddress,
+          poll: 0,
+          data: message.data.map(String),
+          publicKey: ephemeralKeypair.pubKey.asArray().map(String),
+          hash: message.hash(ephemeralKeypair.pubKey).toString(),
+        }));
+
+      await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciAddress });
+
+      const ipfsMessageBackupFiles = await getBackupFilenames();
       // time travel
       await timeTravel({ ...timeTravelArgs, signer });
       // generate proofs
       await mergeSignups({ ...mergeSignupsArgs, signer });
-      const tallyFileData = await genProofs({ ...genProofsArgs, signer });
+      const tallyFileData = await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...(await verifyArgs()), tallyData: tallyFileData, signer });
       await clean();
@@ -840,7 +1740,13 @@ describe("e2e tests", function test() {
     it("should deploy a new poll", async () => {
       const startDate = await getBlockTimestamp(signer);
 
-      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
+      await deployPoll({
+        ...deployPollArgs,
+        signer,
+        pollStartDate: startDate,
+        pollEndDate: startDate + pollDuration,
+        relayers: [await signer.getAddress()],
+      });
     });
 
     it("should signup four new users", async () => {
@@ -881,6 +1787,47 @@ describe("e2e tests", function test() {
       });
     });
 
+    it("should relay new messages", async () => {
+      const votes = [
+        {
+          pollId: 1n,
+          voteOptionIndex: 1n,
+          salt: genRandomSalt(),
+          nonce: 1n,
+          privateKey: users[0].privKey,
+          stateIndex: 1n,
+          voteWeight: 9n,
+          coordinatorPubKey: coordinatorKeypair.pubKey,
+          maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+          newPubKey: users[0].pubKey,
+        },
+        {
+          pollId: 1n,
+          voteOptionIndex: 0n,
+          salt: genRandomSalt(),
+          nonce: 1n,
+          privateKey: users[1].privKey,
+          stateIndex: 1n,
+          voteWeight: 5n,
+          coordinatorPubKey: coordinatorKeypair.pubKey,
+          maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+          newPubKey: users[1].pubKey,
+        },
+      ];
+
+      const messages = votes
+        .map((vote) => generateVote(vote))
+        .map(({ message, ephemeralKeypair }) => ({
+          maciContractAddress: maciAddresses.maciAddress,
+          poll: 1,
+          data: message.data.map(String),
+          publicKey: ephemeralKeypair.pubKey.asArray().map(String),
+          hash: message.hash(ephemeralKeypair.pubKey).toString(),
+        }));
+
+      await relayTestMessages({ messages, signer, pollId: 1, maciAddress: maciAddresses.maciAddress });
+    });
+
     it("should publish a new message from the first poll voter", async () => {
       await publish({
         pubkey: users[0].pubKey.serialize(),
@@ -912,9 +1859,10 @@ describe("e2e tests", function test() {
     });
 
     it("should generate proofs and verify them", async () => {
+      const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ pollId: 1n, signer });
-      await genProofs({ ...genProofsArgs, pollId: 1n, signer });
+      await genProofs({ ...genProofsArgs, pollId: 1n, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, pollId: 1n, signer });
       await verify({ ...(await verifyArgs()), pollId: 1n, signer });
     });
@@ -944,7 +1892,13 @@ describe("e2e tests", function test() {
       const startDate = await getBlockTimestamp(signer);
 
       // deploy a poll contract
-      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
+      await deployPoll({
+        ...deployPollArgs,
+        signer,
+        pollStartDate: startDate,
+        pollEndDate: startDate + pollDuration,
+        relayers: [await signer.getAddress()],
+      });
 
       // signup
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
@@ -1008,11 +1962,39 @@ describe("e2e tests", function test() {
         signer,
       });
 
+      const votes = [
+        {
+          pollId: 0n,
+          voteOptionIndex: 0n,
+          salt: genRandomSalt(),
+          nonce: 1n,
+          privateKey: users[0].privKey,
+          stateIndex: 1n,
+          voteWeight: 5n,
+          coordinatorPubKey: coordinatorKeypair.pubKey,
+          maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+          newPubKey: users[0].pubKey,
+        },
+      ];
+
+      const messages = votes
+        .map((vote) => generateVote(vote))
+        .map(({ message, ephemeralKeypair }) => ({
+          maciContractAddress: maciAddresses.maciAddress,
+          poll: 0,
+          data: message.data.map(String),
+          publicKey: ephemeralKeypair.pubKey.asArray().map(String),
+          hash: message.hash(ephemeralKeypair.pubKey).toString(),
+        }));
+
+      await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciAddress });
+
+      const ipfsMessageBackupFiles = await getBackupFilenames();
       // time travel
       await timeTravel({ ...timeTravelArgs, signer });
       // generate proofs
       await mergeSignups({ ...mergeSignupsArgs, signer });
-      await genProofs({ ...genProofsArgs, signer });
+      await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...(await verifyArgs()), signer });
       await clean();
@@ -1022,8 +2004,20 @@ describe("e2e tests", function test() {
       const startDate = await getBlockTimestamp(signer);
 
       // deploy a poll contract
-      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
-      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
+      await deployPoll({
+        ...deployPollArgs,
+        signer,
+        pollStartDate: startDate,
+        pollEndDate: startDate + pollDuration,
+        relayers: [await signer.getAddress()],
+      });
+      await deployPoll({
+        ...deployPollArgs,
+        signer,
+        pollStartDate: startDate,
+        pollEndDate: startDate + pollDuration,
+        relayers: [await signer.getAddress()],
+      });
     });
 
     it("join the second and third polls", async () => {
@@ -1101,6 +2095,76 @@ describe("e2e tests", function test() {
       });
     });
 
+    it("should relay a message to the second poll", async () => {
+      const votes = [
+        {
+          pollId: 1n,
+          voteOptionIndex: 0n,
+          salt: genRandomSalt(),
+          nonce: 1n,
+          privateKey: users[0].privKey,
+          stateIndex: 1n,
+          voteWeight: 3n,
+          coordinatorPubKey: coordinatorKeypair.pubKey,
+          maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+          newPubKey: users[0].pubKey,
+        },
+      ];
+
+      const messages = votes
+        .map((vote) => generateVote(vote))
+        .map(({ message, ephemeralKeypair }) => ({
+          maciContractAddress: maciAddresses.maciAddress,
+          poll: 1,
+          data: message.data.map(String),
+          publicKey: ephemeralKeypair.pubKey.asArray().map(String),
+          hash: message.hash(ephemeralKeypair.pubKey).toString(),
+        }));
+
+      await relayTestMessages({ messages, signer, pollId: 1, maciAddress: maciAddresses.maciAddress });
+    });
+
+    it("should relay two messages to the third poll", async () => {
+      const votes = [
+        {
+          pollId: 2n,
+          voteOptionIndex: 7n,
+          salt: genRandomSalt(),
+          nonce: 1n,
+          privateKey: users[4].privKey,
+          stateIndex: 4n,
+          voteWeight: 3n,
+          coordinatorPubKey: coordinatorKeypair.pubKey,
+          maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+          newPubKey: users[4].pubKey,
+        },
+        {
+          pollId: 2n,
+          voteOptionIndex: 5n,
+          salt: genRandomSalt(),
+          nonce: 1n,
+          privateKey: users[5].privKey,
+          stateIndex: 5n,
+          voteWeight: 4n,
+          coordinatorPubKey: coordinatorKeypair.pubKey,
+          maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+          newPubKey: users[5].pubKey,
+        },
+      ];
+
+      const messages = votes
+        .map((vote) => generateVote(vote))
+        .map(({ message, ephemeralKeypair }) => ({
+          maciContractAddress: maciAddresses.maciAddress,
+          poll: 2,
+          data: message.data.map(String),
+          publicKey: ephemeralKeypair.pubKey.asArray().map(String),
+          hash: message.hash(ephemeralKeypair.pubKey).toString(),
+        }));
+
+      await relayTestMessages({ messages, signer, pollId: 2, maciAddress: maciAddresses.maciAddress });
+    });
+
     it("should publish messages to the third poll", async () => {
       await publish({
         pubkey: users[3].pubKey.serialize(),
@@ -1143,9 +2207,10 @@ describe("e2e tests", function test() {
     });
 
     it("should complete the second poll", async () => {
+      const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ pollId: 1n, signer });
-      const tallyData = await genProofs({ ...genProofsArgs, pollId: 1n, signer });
+      const tallyData = await genProofs({ ...genProofsArgs, pollId: 1n, signer, ipfsMessageBackupFiles });
       await proveOnChain({
         ...proveOnChainArgs,
         pollId: 1n,
@@ -1159,12 +2224,13 @@ describe("e2e tests", function test() {
         maciAddress: maciAddresses.maciAddress,
         signer,
       });
-      await clean();
+      await clean(false);
     });
 
     it("should complete the third poll", async () => {
+      const ipfsMessageBackupFiles = await getBackupFilenames();
       await mergeSignups({ pollId: 2n, signer });
-      const tallyData = await genProofs({ ...genProofsArgs, pollId: 2n, signer });
+      const tallyData = await genProofs({ ...genProofsArgs, pollId: 2n, signer, ipfsMessageBackupFiles });
       await proveOnChain({
         ...proveOnChainArgs,
         pollId: 2n,
@@ -1201,7 +2267,13 @@ describe("e2e tests", function test() {
       const startDate = await getBlockTimestamp(signer);
 
       // deploy a poll contract
-      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
+      await deployPoll({
+        ...deployPollArgs,
+        signer,
+        pollStartDate: startDate,
+        pollEndDate: startDate + pollDuration,
+        relayers: [await signer.getAddress()],
+      });
     });
 
     it("should signup one user", async () => {
@@ -1240,7 +2312,37 @@ describe("e2e tests", function test() {
       });
     });
 
+    it("should relay one message", async () => {
+      const votes = [
+        {
+          pollId: 0n,
+          voteOptionIndex: 5n,
+          salt: genRandomSalt(),
+          nonce: 1n,
+          privateKey: user.privKey,
+          stateIndex: 1n,
+          voteWeight: 5n,
+          coordinatorPubKey: coordinatorKeypair.pubKey,
+          maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
+          newPubKey: user.pubKey,
+        },
+      ];
+
+      const messages = votes
+        .map((vote) => generateVote(vote))
+        .map(({ message, ephemeralKeypair }) => ({
+          maciContractAddress: maciAddresses.maciAddress,
+          poll: 0,
+          data: message.data.map(String),
+          publicKey: ephemeralKeypair.pubKey.asArray().map(String),
+          hash: message.hash(ephemeralKeypair.pubKey).toString(),
+        }));
+
+      await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciAddress });
+    });
+
     it("should generate zk-SNARK proofs and verify them", async () => {
+      const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, signer });
       await genLocalState({
@@ -1249,11 +2351,13 @@ describe("e2e tests", function test() {
         blockPerBatch: 50,
         pollId: 0n,
         signer,
+        ipfsMessageBackupFiles,
       });
       await genProofs({
         ...genProofsArgs,
         stateFile: stateOutPath,
         signer,
+        ipfsMessageBackupFiles,
       });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...(await verifyArgs()), signer });

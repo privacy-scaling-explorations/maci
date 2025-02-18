@@ -22,7 +22,7 @@ export interface IGetRelayedMessagesArgs {
   signer: Signer;
 
   /**
-   * Signer
+   * Provider
    */
   provider: Provider;
 
@@ -150,4 +150,49 @@ export interface IMessageBatch {
    * IPFS hash
    */
   ipfsHash?: string;
+}
+
+/**
+ * Interface that represents relay messages arguments
+ */
+export interface IRelayMessagesArgs {
+  /**
+   * Poll id
+   */
+  pollId: number;
+
+  /**
+   * MACI contract address
+   */
+  maciAddress: string;
+
+  /**
+   * IPFS hash
+   */
+  ipfsHash: string;
+
+  /**
+   * IPFS Messages
+   */
+  messages: IIpfsMessage[];
+
+  /**
+   * Signer
+   */
+  signer?: Signer;
+
+  /**
+   * Provider
+   */
+  provider?: Provider;
+}
+
+/**
+ * Interface that represents return data for relay messages
+ */
+export interface IRelayMessagesData {
+  /**
+   * Transaction hash
+   */
+  hash?: string;
 }

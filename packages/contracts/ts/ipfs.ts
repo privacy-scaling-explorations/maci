@@ -49,13 +49,9 @@ export class IpfsService {
    *
    * @template T - The type of the data expected from the IPFS response.
    */
-  async read<T>(cid: string): Promise<T> {
+  async read<T>(cid: string): Promise<T | null> {
     return fetch(`${this.ipfsGatewayUrl}/${cid}`)
-      .then((res) =>
-        res.json().catch(() => {
-          throw new Error(`invalid json for cid ${cid}`);
-        }),
-      )
+      .then((res) => res.json().catch(() => null))
       .then((res) => res as T);
   }
 }

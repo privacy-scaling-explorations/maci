@@ -64,7 +64,7 @@ export class MessageService {
    * @param args publish messages dto
    * @returns transaction and ipfs hashes
    */
-  @Cron(CronExpression.EVERY_HOUR, { name: "publishMessages" })
+  @Cron(process.env.CRON_EXPRESSION || CronExpression.EVERY_HOUR, { name: "publishMessages" })
   async publishMessages(): Promise<boolean> {
     const messages = await this.messageRepository.find({ messageBatch: { $exists: false } });
 

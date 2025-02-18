@@ -20,6 +20,7 @@ services:
       - MONGODB_PASSWORD=${MONGODB_PASSWORD}
       - MONGODB_DATABASE=${MONGODB_DATABASE}
       - MNEMONIC=${MNEMONIC}
+      - CRON_EXPRESSION=${CRON_EXPRESSION}
     depends_on:
       - mongodb
     networks:

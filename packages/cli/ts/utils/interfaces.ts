@@ -577,6 +577,11 @@ export interface GenLocalStateArgs {
   sleep?: number;
 
   /**
+   * Backup files for ipfs messages (name format: ipfsHash.json)
+   */
+  ipfsMessageBackupFiles?: string[];
+
+  /**
    * Whether to log the output
    */
   quiet?: boolean;
@@ -700,6 +705,11 @@ export interface GenProofsArgs {
    * Whether to use quadratic voting or not
    */
   useQuadraticVoting?: boolean;
+
+  /**
+   * Backup files for ipfs messages (name format: ipfsHash.json)
+   */
+  ipfsMessageBackupFiles?: string[];
 }
 
 /**

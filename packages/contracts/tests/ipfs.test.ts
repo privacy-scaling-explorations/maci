@@ -20,7 +20,9 @@ describe("IpfsService", () => {
     expect(data).to.deep.equal({ Title: "sukuna", Description: "gambare gambare 🔥" });
   });
 
-  it("should throw error if can't read data", async () => {
-    await expect(ipfsService.read("invalid")).to.eventually.be.rejectedWith("invalid json for cid invalid");
+  it("should return null if can't read data", async () => {
+    const data = await ipfsService.read("invalid");
+
+    expect(data).to.eq(null);
   });
 });

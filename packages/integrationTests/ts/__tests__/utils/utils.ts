@@ -12,11 +12,13 @@ import {
   Verifier,
 } from "maci-sdk";
 
+import fs from "fs";
 import { arch } from "os";
+import path from "path";
 
 import type { TallyData } from "maci-cli";
 
-import { defaultVote } from "./constants";
+import { backupFolder, defaultVote } from "./constants";
 import { IVote, IBriber, IDeployedTestContracts } from "./interfaces";
 import { UserCommand } from "./user";
 
@@ -201,4 +203,18 @@ export const deployTestContracts = async (
     gatekeeper: gatekeeperContract,
     initialVoiceCreditProxy: constantInitialVoiceCreditProxyContract,
   };
+};
+
+/**
+ * Write backup data to file.
+ *
+ * @param name file name without extension
+ * @param data backup data
+ */
+export const writeBackupFile = async (name: string, data: unknown): Promise<void> => {
+  if (!fs.existsSync(backupFolder)) {
+    await fs.promises.mkdir(backupFolder);
+  }
+
+  await fs.promises.writeFile(path.resolve(backupFolder, `${name}.json`), JSON.stringify(data));
 };

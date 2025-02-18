@@ -29,6 +29,12 @@ task("prove", "Command to generate proofs")
   .addOptionalParam("blocksPerBatch", "The number of blocks to fetch logs from", undefined, types.int)
   .addOptionalParam("endBlock", "The block number to stop fetching logs from", undefined, types.int)
   .addOptionalParam("transactionHash", "The transaction hash of the first transaction", undefined, types.int)
+  .addOptionalParam(
+    "ipfsMessageBackupFiles",
+    "Backup files for ipfs messages (name format: ipfsHash1.json, ipfsHash2.json, ..., ipfsHashN.json)",
+    undefined,
+    types.string,
+  )
   .setAction(
     async (
       {
@@ -44,6 +50,7 @@ task("prove", "Command to generate proofs")
         blocksPerBatch,
         endBlock,
         transactionHash,
+        ipfsMessageBackupFiles,
       }: IProveParams,
       hre,
     ) => {
@@ -91,6 +98,7 @@ task("prove", "Command to generate proofs")
         pollId: poll,
         signer,
         outputDir,
+        ipfsMessageBackupFiles: ipfsMessageBackupFiles?.split(/\s*,\s*/),
         options: {
           stateFile,
           transactionHash,

@@ -148,6 +148,11 @@ export interface IProveParams {
    * The transaction hash of the first transaction
    */
   transactionHash?: string;
+
+  /**
+   * Backup files for ipfs messages (name format: ipfsHash1.json, ipfsHash2.json, ..., ipfsHashN.json)
+   */
+  ipfsMessageBackupFiles?: string;
 }
 
 /**
@@ -308,6 +313,11 @@ export interface IPrepareStateParams {
      */
     transactionHash: string;
   }>;
+
+  /**
+   * Backup files for ipfs messages (name format: ipfsHash.json)
+   */
+  ipfsMessageBackupFiles?: string[];
 }
 
 /**

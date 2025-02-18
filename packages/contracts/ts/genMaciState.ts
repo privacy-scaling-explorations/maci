@@ -1,11 +1,12 @@
 /* eslint-disable no-underscore-dangle */
-import { type Provider } from "ethers";
 import { MaciState } from "maci-core";
-import { type Keypair, PubKey, Message } from "maci-domainobjs";
+import { PubKey, Message } from "maci-domainobjs";
 
 import assert from "assert";
+import fs from "fs";
+import path from "path";
 
-import type { Action, IIpfsMessage } from "./types";
+import type { Action, IGenMaciStateFromContractArgs, IIpfsMessage } from "./types";
 
 import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "../typechain-types";
 
@@ -24,16 +25,17 @@ import { sleep, sortActions } from "./utils";
  * @param sleepAmount - the amount of time to sleep between each request
  * @returns an instance of MaciState
  */
-export const genMaciStateFromContract = async (
-  provider: Provider,
-  address: string,
-  coordinatorKeypair: Keypair,
-  pollId: bigint,
+export const genMaciStateFromContract = async ({
+  provider,
+  address,
+  coordinatorKeypair,
+  pollId,
   fromBlock = 0,
   blocksPerRequest = 50,
-  endBlock: number | undefined = undefined,
-  sleepAmount: number | undefined = undefined,
-): Promise<MaciState> => {
+  endBlock,
+  sleepAmount,
+  ipfsMessageBackupFiles = [],
+}: IGenMaciStateFromContractArgs): Promise<MaciState> => {
   // ensure the pollId is valid
   assert(pollId >= 0);
 
@@ -54,6 +56,8 @@ export const genMaciStateFromContract = async (
   const actions: Action[] = [];
   const foundPollIds = new Set<number>();
   const pollContractAddresses = new Map<bigint, string>();
+
+  const backupMessagesByIpfsHash = await extractBackupIpfsMessages(ipfsMessageBackupFiles);
 
   // Fetch event logs in batches (lastBlock inclusive)
   for (let i = fromBlock; i <= lastBlock; i += blocksPerRequest + 1) {
@@ -174,14 +178,25 @@ export const genMaciStateFromContract = async (
       ipfsHashAddedLogs.map(async (event) => {
         assert(!!event);
 
-        return ipfsService.read<IIpfsMessage[]>(event.args._ipfsHash).then((messages) => ({
-          data: messages.map((value) => ({
-            message: new Message(value.data.map(BigInt)),
-            encPubKey: new PubKey([BigInt(value.publicKey[0]), BigInt(value.publicKey[1])]),
-          })),
-          blockNumber: event.blockNumber,
-          transactionIndex: event.transactionIndex,
-        }));
+        return ipfsService
+          .read<IIpfsMessage[]>(event.args._ipfsHash)
+          .then((data) => {
+            const messages = data && data.length > 0 ? data : backupMessagesByIpfsHash.get(event.args._ipfsHash);
+
+            if (!messages || messages.length === 0) {
+              throw new Error(`invalid json for cid ${event.args._ipfsHash}`);
+            }
+
+            return messages;
+          })
+          .then((messages) => ({
+            data: messages.map((value) => ({
+              message: new Message(value.data.map(BigInt)),
+              encPubKey: new PubKey([BigInt(value.publicKey[0]), BigInt(value.publicKey[1])]),
+            })),
+            blockNumber: event.blockNumber,
+            transactionIndex: event.transactionIndex,
+          }));
       }),
     );
 
@@ -290,3 +305,24 @@ export const genMaciStateFromContract = async (
 
   return maciState;
 };
+
+async function extractBackupIpfsMessages(ipfsMessageBackupFiles: string[]): Promise<Map<string, IIpfsMessage[]>> {
+  try {
+    const data = await Promise.all(
+      ipfsMessageBackupFiles.map((file) =>
+        fs.promises
+          .readFile(file, "utf-8")
+          .then((res) => JSON.parse(res) as IIpfsMessage[])
+          .then((messages) => ({ ipfsHash: path.parse(file).base.replace(".json", ""), messages })),
+      ),
+    );
+
+    return data.reduce((acc, { ipfsHash, messages }) => {
+      acc.set(ipfsHash, messages);
+
+      return acc;
+    }, new Map());
+  } catch (error) {
+    return new Map();
+  }
+}

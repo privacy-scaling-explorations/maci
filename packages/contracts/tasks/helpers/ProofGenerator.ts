@@ -82,6 +82,7 @@ export class ProofGenerator {
     maciPrivateKey,
     coordinatorKeypair,
     signer,
+    ipfsMessageBackupFiles,
     outputDir,
     options: { transactionHash, stateFile, startBlock, endBlock, blocksPerBatch },
   }: IPrepareStateParams): Promise<MaciState> {
@@ -134,15 +135,16 @@ export class ProofGenerator {
     const maciContractAddress = await maciContract.getAddress();
 
     return import("../../ts/genMaciState").then(({ genMaciStateFromContract }) =>
-      genMaciStateFromContract(
-        signer.provider!,
-        maciContractAddress,
+      genMaciStateFromContract({
+        provider: signer.provider!,
+        address: maciContractAddress,
         coordinatorKeypair,
-        BigInt(pollId),
+        pollId: BigInt(pollId),
         fromBlock,
-        blocksPerBatch,
-        endBlock || defaultEndBlock,
-      ),
+        blocksPerRequest: blocksPerBatch,
+        endBlock: endBlock || defaultEndBlock,
+        ipfsMessageBackupFiles,
+      }),
     );
   }
 

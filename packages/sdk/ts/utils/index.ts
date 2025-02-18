@@ -1,3 +1,4 @@
+export { cidToBytes32, createCidFromObject } from "./cid";
 export { BLOCKS_STEP } from "./constants";
 export { contractExists, currentBlockTimestamp } from "./contracts";
 export { validateParams } from "./params";

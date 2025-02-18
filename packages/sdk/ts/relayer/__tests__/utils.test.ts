@@ -72,4 +72,16 @@ describe("utils", () => {
 
     expect(messages).toStrictEqual(defaultMessages);
   });
+
+  it("should return empty array if can't get messages from ipfs", async () => {
+    mockIpfsService.read = jest.fn().mockResolvedValue(null);
+
+    const { messages } = await parseIpfsHashAddedEvents({
+      startBlock: 0,
+      provider: mockProvider,
+      pollContract: mockPollContract,
+    });
+
+    expect(messages).toHaveLength(0);
+  });
 });

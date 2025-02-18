@@ -4,6 +4,8 @@ import type {
   IGetRelayedMessagesArgs,
   IGetRelayedMessagesData,
   IMessageBatch,
+  IRelayMessagesArgs,
+  IRelayMessagesData,
 } from "./types";
 
 import { getPollContracts } from "../poll/utils";
@@ -73,4 +75,33 @@ export const getMessageBatches = async ({
     .then((res) => res as IMessageBatch[]);
 
   return { messageBatches };
+};
+
+/**
+ * Relay IPFS messages to Poll contract.
+ *
+ * @param args relay messages arguments
+ * @returns transaction hash
+ */
+export const relayMessages = async ({
+  maciAddress,
+  pollId,
+  ipfsHash,
+  messages,
+  signer,
+  provider,
+}: IRelayMessagesArgs): Promise<IRelayMessagesData> => {
+  const { poll: pollContract } = await getPollContracts({ maciAddress, pollId, signer, provider });
+
+  const messageHashes = await Promise.all(
+    messages.map(({ data, publicKey }) =>
+      pollContract.hashMessageAndEncPubKey({ data }, { x: publicKey[0], y: publicKey[1] }),
+    ),
+  );
+
+  const receipt = await pollContract.relayMessagesBatch(messageHashes, ipfsHash).then((tx) => tx.wait());
+
+  return {
+    hash: receipt?.hash,
+  };
 };

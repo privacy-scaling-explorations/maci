@@ -131,7 +131,7 @@ export class Prover {
       }
 
       if (numberBatchesProcessed > 0 && currentMessageBatchIndex > 0) {
-        currentMessageBatchIndex -= messageBatchSize;
+        currentMessageBatchIndex /= messageBatchSize;
       }
 
       const { proof, circuitInputs, publicInputs } = proofs[i];

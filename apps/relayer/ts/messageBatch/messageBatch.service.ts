@@ -3,7 +3,6 @@ import { validate } from "class-validator";
 import flatten from "lodash/flatten.js";
 import uniqBy from "lodash/uniqBy.js";
 import { PubKey } from "maci-domainobjs";
-import { getDefaultSigner, MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-sdk";
 
 import type { MessageBatch } from "./messageBatch.schema.js";
 import type { RootFilterQuery } from "mongoose";
@@ -100,19 +99,11 @@ export class MessageBatchService {
       "maciContractAddress",
     );
 
+    const { getDefaultSigner, relayMessages } = await import("maci-sdk");
     const signer = await getDefaultSigner();
-    const maciContract = MACIFactory.connect(maciAddress, signer);
-    const pollAddresses = await maciContract.polls(pollId);
-    const pollContract = PollFactory.connect(pollAddresses.poll, signer);
-
-    const messageHashes = await Promise.all(
-      allMessages.map(({ data, publicKey }) =>
-        pollContract.hashMessageAndEncPubKey({ data }, { x: BigInt(publicKey[0]), y: BigInt(publicKey[1]) }),
-      ),
-    );
 
     const bytes32IpfsHash = await this.ipfsService.cidToBytes32(ipfsHash);
-    await pollContract.relayMessagesBatch(messageHashes, bytes32IpfsHash).then((tx) => tx.wait());
+    await relayMessages({ maciAddress, pollId, ipfsHash: bytes32IpfsHash, messages: allMessages, signer });
 
     return messageBatches;
   }

@@ -17,10 +17,17 @@ import {
   DeployedContracts,
   joinPoll,
 } from "maci-cli";
-import { MaciState, TreeDepths } from "maci-core";
+import { MaciState, TreeDepths, VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { genPubKey, genRandomSalt, poseidon } from "maci-crypto";
 import { Keypair, PCommand, PrivKey, PubKey } from "maci-domainobjs";
-import { getBlockTimestamp, getDefaultSigner } from "maci-sdk";
+import {
+  cidToBytes32,
+  createCidFromObject,
+  generateVote,
+  getBlockTimestamp,
+  getDefaultSigner,
+  relayMessages,
+} from "maci-sdk";
 
 import fs from "fs";
 import { homedir } from "os";
@@ -32,13 +39,14 @@ import {
   SG_DATA,
   STATE_TREE_DEPTH,
   VOTE_OPTION_TREE_DEPTH,
+  backupFolder,
   duration,
   initialVoiceCredits,
   maxMessages,
   maxVoteOptions,
 } from "./utils/constants";
 import { ITestSuite } from "./utils/interfaces";
-import { expectTally, genTestUserCommands, isArm } from "./utils/utils";
+import { expectTally, genTestUserCommands, isArm, writeBackupFile } from "./utils/utils";
 
 chai.use(chaiAsPromised);
 
@@ -118,6 +126,7 @@ describe("Integration tests", function test() {
       signer,
       useQuadraticVoting: true,
       initialVoiceCreditsBalance: initialVoiceCredits,
+      relayers: [await signer.getAddress()],
     });
 
     const treeDepths: TreeDepths = {
@@ -142,15 +151,19 @@ describe("Integration tests", function test() {
       await fs.promises.unlink(path.resolve(__dirname, "../../../cli/tally.json"));
     }
 
-    const directory = path.resolve(__dirname, "../../../cli/proofs/");
+    const proofDirectory = path.resolve(__dirname, "../../../cli/proofs/");
 
-    if (!fs.existsSync(directory)) {
+    if (!fs.existsSync(proofDirectory)) {
       return;
     }
 
-    const files = await fs.promises.readdir(directory);
+    const files = await fs.promises.readdir(proofDirectory);
 
-    await Promise.all(files.map((file) => fs.promises.unlink(path.resolve(directory, file))));
+    await Promise.all(files.map((file) => fs.promises.unlink(path.resolve(proofDirectory, file))));
+
+    if (fs.existsSync(backupFolder)) {
+      await fs.promises.rm(backupFolder, { recursive: true, force: true });
+    }
   });
 
   // read the test suite data
@@ -222,20 +235,58 @@ describe("Integration tests", function test() {
             user.changeKeypair();
           }
 
-          // actually publish it
-          const encryptionKey = await publish({
-            pubkey: user.keypair.pubKey.serialize(),
-            stateIndex,
-            voteOptionIndex: voteOptionIndex!,
-            nonce,
+          // Generate vote for relayer
+          const vote = generateVote({
             pollId,
-            newVoteWeight: newVoteWeight!,
-            maciAddress: contracts.maciAddress,
+            voteOptionIndex: voteOptionIndex!,
             salt,
-            // if it's a key change command, then we pass the old private key otherwise just pass the current
-            privateKey: isKeyChange ? oldKeypair.privKey.serialize() : user.keypair.privKey.serialize(),
-            signer,
+            nonce,
+            privateKey: isKeyChange ? oldKeypair.privKey : user.keypair.privKey,
+            stateIndex,
+            voteWeight: newVoteWeight!,
+            coordinatorPubKey: coordinatorKeypair.pubKey,
+            maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** VOTE_OPTION_TREE_DEPTH),
+            newPubKey: user.keypair.pubKey,
           });
+
+          const messages = [
+            {
+              maciContractAddress: contracts.maciAddress,
+              poll: Number(pollId),
+              data: vote.message.data.map(String),
+              publicKey: vote.ephemeralKeypair.pubKey.asArray().map(String),
+              hash: vote.message.hash(vote.ephemeralKeypair.pubKey).toString(),
+            },
+          ];
+
+          const cid = await createCidFromObject(messages);
+          const ipfsHash = await cidToBytes32(cid);
+
+          await writeBackupFile(ipfsHash, messages);
+
+          // actually publish it
+          const encryptionKey =
+            nonce % 2n === 0n
+              ? await publish({
+                  pubkey: user.keypair.pubKey.serialize(),
+                  stateIndex,
+                  voteOptionIndex: voteOptionIndex!,
+                  nonce,
+                  pollId,
+                  newVoteWeight: newVoteWeight!,
+                  maciAddress: contracts.maciAddress,
+                  salt,
+                  // if it's a key change command, then we pass the old private key otherwise just pass the current
+                  privateKey: isKeyChange ? oldKeypair.privKey.serialize() : user.keypair.privKey.serialize(),
+                  signer,
+                })
+              : await relayMessages({
+                  maciAddress: contracts.maciAddress,
+                  ipfsHash,
+                  messages,
+                  pollId: Number(pollId),
+                  signer,
+                }).then(() => vote.ephemeralKeypair.privKey.serialize());
 
           const encPrivKey = PrivKey.deserialize(encryptionKey);
           const encPubKey = new PubKey(genPubKey(encPrivKey.rawPrivKey));
@@ -262,6 +313,10 @@ describe("Integration tests", function test() {
       await expect(
         mergeSignups({ pollId, maciAddress: contracts.maciAddress, signer }),
       ).to.eventually.not.be.rejectedWith();
+
+      const ipfsMessageBackupFiles = await fs.promises
+        .readdir(backupFolder)
+        .then((paths) => paths.map((filename) => path.resolve(backupFolder, filename)));
 
       // generate proofs
       const tallyData = await genProofs({
@@ -302,6 +357,7 @@ describe("Integration tests", function test() {
         ),
         useWasm,
         useQuadraticVoting: true,
+        ipfsMessageBackupFiles,
         signer,
       });
       expect(tallyData).to.not.eq(undefined);
