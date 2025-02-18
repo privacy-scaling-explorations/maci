@@ -27,11 +27,11 @@
     "@zk-kit/lean-imt": "^2.2.2"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.11",
+    "@types/chai": "^5.0.1",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.13.1",
     "benny": "^3.7.1",
-    "chai": "^4.3.10",
+    "chai": "^5.2.0",
     "mocha": "^11.1.0",
     "nyc": "^17.1.0",
     "ts-mocha": "^10.0.0",
