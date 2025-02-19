@@ -37,7 +37,7 @@
     "maci-core": "^2.5.0",
     "maci-crypto": "^2.5.0",
     "maci-domainobjs": "^2.5.0",
-    "multiformats": "^9"
+    "multiformats": "^13"
   },
   "devDependencies": {
     "@types/jest": "^29.5.2",
