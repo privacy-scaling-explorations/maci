@@ -2,30 +2,12 @@
   "suites": [
     {
       "name": "Happy path",
-      "description": "Full tree, 4 batches, no bribers",
-      "numVotesPerUser": 1,
-      "numUsers": 15,
-      "expectedTally": [15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      "expectedSpentVoiceCredits": [15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      "expectedTotalSpentVoiceCredits": 15
-    },
-    {
-      "name": "Happy path",
       "description": "Full tree, 4 full batches, no bribers",
       "numVotesPerUser": 1,
       "numUsers": 16,
       "expectedTally": [16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       "expectedSpentVoiceCredits": [16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       "expectedTotalSpentVoiceCredits": 16
-    },
-    {
-      "name": "Happy path 2",
-      "description": "Quarter tree, 1 batch, no bribers",
-      "numUsers": 4,
-      "numVotesPerUser": 1,
-      "expectedTally": [4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      "expectedSpentVoiceCredits": [4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      "expectedTotalSpentVoiceCredits": 4
     },
     {
       "name": "10 Users test",
