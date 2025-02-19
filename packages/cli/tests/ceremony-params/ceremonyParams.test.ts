@@ -13,7 +13,7 @@ import {
   mergeSignups,
   proveOnChain,
   publish,
-  setVerifyingKeys,
+  setVerifyingKeysCli,
   signup,
   timeTravel,
   verify,
@@ -119,7 +119,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
       // we deploy the vk registry contract
       await deployVkRegistryContract({ signer });
       // we set the verifying keys
-      await setVerifyingKeys({ ...verifyingKeysArgs, signer });
+      await setVerifyingKeysCli({ ...verifyingKeysArgs, signer });
     });
 
     describe("1 user, 2 messages, 2 relayed messages", () => {
@@ -334,7 +334,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
       // we deploy the vk registry contract
       await deployVkRegistryContract({ signer });
       // we set the verifying keys
-      await setVerifyingKeys({ ...verifyingKeysArgs, signer });
+      await setVerifyingKeysCli({ ...verifyingKeysArgs, signer });
     });
 
     describe("1 signup, 1 message, 1 relayed message", () => {

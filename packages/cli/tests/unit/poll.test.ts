@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { getBlockTimestamp, getDefaultSigner } from "maci-sdk";
+import { getBlockTimestamp, getDefaultSigner, getPoll } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
@@ -7,8 +7,7 @@ import {
   deploy,
   deployPoll,
   deployVkRegistryContract,
-  setVerifyingKeys,
-  getPoll,
+  setVerifyingKeysCli,
   timeTravel,
   mergeSignups,
 } from "../../ts/commands";
@@ -30,7 +29,7 @@ describe("poll", function test() {
     // we deploy the vk registry contract
     await deployVkRegistryContract({ signer });
     // we set the verifying keys
-    await setVerifyingKeys({ ...setVerifyingKeysArgs, signer });
+    await setVerifyingKeysCli({ ...setVerifyingKeysArgs, signer });
   });
 
   describe("check deploy and get poll", () => {

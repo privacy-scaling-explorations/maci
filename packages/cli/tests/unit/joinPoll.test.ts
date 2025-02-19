@@ -7,7 +7,7 @@ import {
   deploy,
   DeployedContracts,
   deployVkRegistryContract,
-  setVerifyingKeys,
+  setVerifyingKeysCli,
   joinPoll,
   signup,
   deployPoll,
@@ -44,7 +44,7 @@ describe("joinPoll", function test() {
     // we deploy the vk registry contract
     await deployVkRegistryContract({ signer });
     // we set the verifying keys
-    await setVerifyingKeys({ ...setVerifyingKeysArgs, signer });
+    await setVerifyingKeysCli({ ...setVerifyingKeysArgs, signer });
     // deploy the smart contracts
     maciAddresses = await deploy({ ...deployArgs, signer });
     // signup the user

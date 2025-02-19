@@ -1,5 +1,5 @@
 import hardhat from "hardhat";
-import { deploy, deployPoll, deployVkRegistryContract, joinPoll, setVerifyingKeys, signup } from "maci-cli";
+import { deploy, deployPoll, deployVkRegistryContract, joinPoll, setVerifyingKeysCli, signup } from "maci-cli";
 import { Keypair } from "maci-domainobjs";
 import { genMaciStateFromContract } from "maci-sdk";
 
@@ -59,7 +59,7 @@ export class TestDeploy {
     const user = new Keypair();
 
     const vkRegistry = await deployVkRegistryContract({ signer });
-    await setVerifyingKeys({
+    await setVerifyingKeysCli({
       quiet: true,
       vkRegistry,
       stateTreeDepth: STATE_TREE_DEPTH,
