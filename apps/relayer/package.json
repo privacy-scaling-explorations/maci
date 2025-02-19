@@ -49,7 +49,7 @@
     "maci-sdk": "^0.0.1",
     "maci-domainobjs": "^2.5.0",
     "maci-contracts": "^2.5.0",
-    "mongoose": "^8.10.0",
+    "mongoose": "^8.10.1",
     "multiformats": "^13.3.2",
     "mustache": "^4.2.0",
     "reflect-metadata": "^0.2.0",
