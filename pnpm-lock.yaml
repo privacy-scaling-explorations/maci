@@ -244,8 +244,8 @@ importers:
         specifier: ^0.95.0
         version: 0.95.0(@types/node@22.13.4)(typescript@5.7.3)(zod@3.24.1)
       '@graphprotocol/graph-ts':
-        specifier: ^0.37.0
-        version: 0.37.0
+        specifier: ^0.38.0
+        version: 0.38.0
       maci-contracts:
         specifier: ^2.5.0
         version: link:../../packages/contracts
@@ -2552,8 +2552,8 @@ packages:
     engines: {node: '>=20.18.1'}
     hasBin: true
 
-  '@graphprotocol/graph-ts@0.37.0':
-    resolution: {integrity: sha512-3xp/sO8zFDBkX44ydGB87ow5Cyrfr/SAm/cWzIRzUVL7ROw0KUyFBG1xj4KKlMnAod7/RL99zChYquC15H4Oqg==}
+  '@graphprotocol/graph-ts@0.38.0':
+    resolution: {integrity: sha512-fx9IpqbXHWMskl6wLDstKLy0VeszTQg6K5xsUEHXPkpOtceDkWAiDE8FyqsGF0IVTmE2Pxafw4t6+rEG8lVfyw==}
 
   '@hapi/hoek@9.3.0':
     resolution: {integrity: sha512-/c6rf4UJlmHlC9b5BaNvzAcFv7HZ2QHaV0D4/HNlBdvFnvQq8RI4kYdhyPCl7Xj+oWvTWQ8ujhqS53LIgAe6KQ==}
@@ -9240,6 +9240,9 @@ packages:
 
   long@5.2.3:
     resolution: {integrity: sha512-lcHwpNoggQTObv5apGNCTdJrO69eHOZMi4BNC+rTLER8iHAqGrUVeLh/irVIM7zTw2bOXA8T6uNPeujwOLg/2Q==}
+
+  long@5.3.1:
+    resolution: {integrity: sha512-ka87Jz3gcx/I7Hal94xaN2tZEOPoUOEVftkQqZx2EeQRN7LGdfLlI3FvZ+7WDplm+vK2Urx9ULrvSowtdCieng==}
 
   longest-streak@3.1.0:
     resolution: {integrity: sha512-9Ri+o0JYgehTaVBBDoMqIl8GXtbWg711O3srftcHhZ0dqnETqLaoIK0x17fUw9rFSlK/0NlsKe0Ahhyl5pXE2g==}
@@ -17269,7 +17272,7 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@graphprotocol/graph-ts@0.37.0':
+  '@graphprotocol/graph-ts@0.38.0':
     dependencies:
       assemblyscript: 0.27.31
 
@@ -20837,7 +20840,7 @@ snapshots:
   assemblyscript@0.27.31:
     dependencies:
       binaryen: 116.0.0-nightly.20240114
-      long: 5.2.3
+      long: 5.3.1
 
   assertion-error@1.1.0: {}
 
@@ -26600,6 +26603,8 @@ snapshots:
   logplease@1.2.15: {}
 
   long@5.2.3: {}
+
+  long@5.3.1: {}
 
   longest-streak@3.1.0: {}
 
