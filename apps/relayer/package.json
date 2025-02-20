@@ -31,7 +31,7 @@
     "@nestjs/platform-express": "^11.0.10",
     "@nestjs/platform-socket.io": "^11.0.10",
     "@nestjs/schedule": "^5.0.1",
-    "@nestjs/swagger": "^11.0.3",
+    "@nestjs/swagger": "^11.0.4",
     "@nestjs/throttler": "^6.4.0",
     "@nestjs/websockets": "^11.0.10",
     "@nomicfoundation/hardhat-ethers": "^3.0.8",
