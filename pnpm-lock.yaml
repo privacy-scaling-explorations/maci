@@ -784,8 +784,8 @@ importers:
         specifier: ^2.5.0
         version: link:../domainobjs
       multiformats:
-        specifier: 9.9.0
-        version: 9.9.0
+        specifier: 13.3.2
+        version: 13.3.2
     devDependencies:
       '@types/jest':
         specifier: ^29.5.2
@@ -10022,9 +10022,6 @@ packages:
 
   multiformats@13.3.2:
     resolution: {integrity: sha512-qbB0CQDt3QKfiAzZ5ZYjLFOs+zW43vA4uyM8g27PeEuXZybUOFyjrVdP93HPBHMoglibwfkdVwbzfUq8qGcH6g==}
-
-  multiformats@9.9.0:
-    resolution: {integrity: sha512-HoMUjhH9T8DDBNT+6xzkrd9ga/XiBI4xLr58LJACwK6G3HTOPeMz4nB4KJs33L2BelrIJa7P0VuNaVF3hMYfjg==}
 
   multimatch@5.0.0:
     resolution: {integrity: sha512-ypMKuglUrZUD99Tk2bUQ+xNQj43lPEfAeX2o9cTteAmShXy2VHDJpuwu1o0xqoKCt9jLVAvwyFKdLTPXKAfJyA==}
@@ -27741,8 +27738,6 @@ snapshots:
   multiformats@13.1.3: {}
 
   multiformats@13.3.2: {}
-
-  multiformats@9.9.0: {}
 
   multimatch@5.0.0:
     dependencies:
