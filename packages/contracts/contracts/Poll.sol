@@ -402,10 +402,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     uint256[8] memory _proof
   ) public view returns (bool isValid) {
     // Get the verifying key from the VkRegistry
-    VerifyingKey memory vk = extContracts.vkRegistry.getPollJoiningVk(
-      extContracts.maci.stateTreeDepth(),
-      treeDepths.voteOptionTreeDepth
-    );
+    VerifyingKey memory vk = extContracts.vkRegistry.getPollJoiningVk(extContracts.maci.stateTreeDepth());
 
     // Generate the circuit public input
     uint256[] memory circuitPublicInputs = getPublicJoiningCircuitInputs(_nullifier, _index, _pubKey);
@@ -419,10 +416,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   /// @return isValid Whether the proof is valid
   function verifyJoinedPollProof(uint256 _index, uint256[8] memory _proof) public view returns (bool isValid) {
     // Get the verifying key from the VkRegistry
-    VerifyingKey memory vk = extContracts.vkRegistry.getPollJoinedVk(
-      extContracts.maci.stateTreeDepth(),
-      treeDepths.voteOptionTreeDepth
-    );
+    VerifyingKey memory vk = extContracts.vkRegistry.getPollJoinedVk(extContracts.maci.stateTreeDepth());
 
     // Generate the circuit public input
     uint256[] memory circuitPublicInputs = getPublicJoinedCircuitInputs(_index);

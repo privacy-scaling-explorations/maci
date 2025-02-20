@@ -23,8 +23,8 @@ export const getAllOnChainVks = async ({
   const vkRegistryContractInstance = VkRegistryFactory.connect(vkRegistryAddress, signer);
 
   const [pollJoiningVkOnChain, pollJoinedVkOnChain, processVkOnChain, tallyVkOnChain] = await Promise.all([
-    vkRegistryContractInstance.getPollJoiningVk(stateTreeDepth, voteOptionTreeDepth),
-    vkRegistryContractInstance.getPollJoinedVk(stateTreeDepth, voteOptionTreeDepth),
+    vkRegistryContractInstance.getPollJoiningVk(stateTreeDepth),
+    vkRegistryContractInstance.getPollJoinedVk(stateTreeDepth),
     vkRegistryContractInstance.getProcessVk(stateTreeDepth, voteOptionTreeDepth, messageBatchSize, mode),
     vkRegistryContractInstance.getTallyVk(stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth, mode),
   ]);
@@ -136,14 +136,14 @@ export const setVerifyingKeys = async ({
   const vkRegistryContract = VkRegistryFactory.connect(vkRegistryAddress, signer);
 
   // check if the poll vk was already set
-  const pollJoiningVkSig = genPollJoiningVkSig(stateTreeDepth, voteOptionTreeDepth);
+  const pollJoiningVkSig = genPollJoiningVkSig(stateTreeDepth);
 
   if (await vkRegistryContract.isPollJoiningVkSet(pollJoiningVkSig)) {
     throw new Error("This poll verifying key is already set in the contract");
   }
 
   // check if the poll vk was already set
-  const pollJoinedVkSig = genPollJoinedVkSig(stateTreeDepth, voteOptionTreeDepth);
+  const pollJoinedVkSig = genPollJoinedVkSig(stateTreeDepth);
 
   if (await vkRegistryContract.isPollJoinedVkSet(pollJoinedVkSig)) {
     throw new Error("This poll verifying key is already set in the contract");
@@ -183,8 +183,8 @@ export const setVerifyingKeys = async ({
   }
 
   const [pollJoiningVkOnChain, pollJoinedVkOnChain, processVkOnChain, tallyVkOnChain] = await Promise.all([
-    vkRegistryContract.getPollJoiningVk(stateTreeDepth, voteOptionTreeDepth),
-    vkRegistryContract.getPollJoinedVk(stateTreeDepth, voteOptionTreeDepth),
+    vkRegistryContract.getPollJoiningVk(stateTreeDepth),
+    vkRegistryContract.getPollJoinedVk(stateTreeDepth),
     vkRegistryContract.getProcessVk(stateTreeDepth, voteOptionTreeDepth, messageBatchSize, mode),
     vkRegistryContract.getTallyVk(stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth, mode),
   ]);
