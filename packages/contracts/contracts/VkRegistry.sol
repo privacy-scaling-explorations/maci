@@ -68,19 +68,14 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
 
   /// @notice generate the signature for the poll joining verifying key
   /// @param _stateTreeDepth The state tree depth
-  /// @param _voteOptionTreeDepth The vote option tree depth
-  function genPollJoiningVkSig(
-    uint256 _stateTreeDepth,
-    uint256 _voteOptionTreeDepth
-  ) public pure returns (uint256 sig) {
-    sig = (_stateTreeDepth << 64) + _voteOptionTreeDepth;
+  function genPollJoiningVkSig(uint256 _stateTreeDepth) public pure returns (uint256 sig) {
+    sig = (_stateTreeDepth << 64);
   }
 
   /// @notice generate the signature for the poll joined verifying key
   /// @param _stateTreeDepth The state tree depth
-  /// @param _voteOptionTreeDepth The vote option tree depth
-  function genPollJoinedVkSig(uint256 _stateTreeDepth, uint256 _voteOptionTreeDepth) public pure returns (uint256 sig) {
-    sig = (_stateTreeDepth << 128) + (_voteOptionTreeDepth << 64);
+  function genPollJoinedVkSig(uint256 _stateTreeDepth) public pure returns (uint256 sig) {
+    sig = (_stateTreeDepth << 128);
   }
 
   /// @notice generate the signature for the process verifying key
@@ -136,8 +131,8 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
 
     uint256 length = _modes.length;
 
-    setPollJoiningVkKey(_stateTreeDepth, _voteOptionTreeDepth, _pollJoiningVk);
-    setPollJoinedVkKey(_stateTreeDepth, _voteOptionTreeDepth, _pollJoinedVk);
+    setPollJoiningVkKey(_stateTreeDepth, _pollJoiningVk);
+    setPollJoinedVkKey(_stateTreeDepth, _pollJoinedVk);
 
     for (uint256 index = 0; index < length; ) {
       setVerifyingKeys(
@@ -253,14 +248,9 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
 
   /// @notice Set the poll joining verifying key for a certain combination of parameters
   /// @param _stateTreeDepth The state tree depth
-  /// @param _voteOptionTreeDepth The vote option tree depth
   /// @param _pollJoiningVk The poll joining verifying key
-  function setPollJoiningVkKey(
-    uint256 _stateTreeDepth,
-    uint256 _voteOptionTreeDepth,
-    VerifyingKey calldata _pollJoiningVk
-  ) public onlyOwner {
-    uint256 pollJoiningVkSig = genPollJoiningVkSig(_stateTreeDepth, _voteOptionTreeDepth);
+  function setPollJoiningVkKey(uint256 _stateTreeDepth, VerifyingKey calldata _pollJoiningVk) public onlyOwner {
+    uint256 pollJoiningVkSig = genPollJoiningVkSig(_stateTreeDepth);
 
     if (pollJoiningVkSet[pollJoiningVkSig]) revert VkAlreadySet();
 
@@ -286,14 +276,9 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
 
   /// @notice Set the poll joined verifying key for a certain combination of parameters
   /// @param _stateTreeDepth The state tree depth
-  /// @param _voteOptionTreeDepth The vote option tree depth
   /// @param _pollJoinedVk The poll joined verifying key
-  function setPollJoinedVkKey(
-    uint256 _stateTreeDepth,
-    uint256 _voteOptionTreeDepth,
-    VerifyingKey calldata _pollJoinedVk
-  ) public onlyOwner {
-    uint256 pollJoinedVkSig = genPollJoinedVkSig(_stateTreeDepth, _voteOptionTreeDepth);
+  function setPollJoinedVkKey(uint256 _stateTreeDepth, VerifyingKey calldata _pollJoinedVk) public onlyOwner {
+    uint256 pollJoinedVkSig = genPollJoinedVkSig(_stateTreeDepth);
 
     if (pollJoinedVkSet[pollJoinedVkSig]) revert VkAlreadySet();
 
@@ -413,21 +398,15 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
   }
 
   /// @inheritdoc IVkRegistry
-  function getPollJoiningVk(
-    uint256 _stateTreeDepth,
-    uint256 _voteOptionTreeDepth
-  ) public view returns (VerifyingKey memory vk) {
-    uint256 sig = genPollJoiningVkSig(_stateTreeDepth, _voteOptionTreeDepth);
+  function getPollJoiningVk(uint256 _stateTreeDepth) public view returns (VerifyingKey memory vk) {
+    uint256 sig = genPollJoiningVkSig(_stateTreeDepth);
 
     vk = getPollJoiningVkBySig(sig);
   }
 
   /// @inheritdoc IVkRegistry
-  function getPollJoinedVk(
-    uint256 _stateTreeDepth,
-    uint256 _voteOptionTreeDepth
-  ) public view returns (VerifyingKey memory vk) {
-    uint256 sig = genPollJoinedVkSig(_stateTreeDepth, _voteOptionTreeDepth);
+  function getPollJoinedVk(uint256 _stateTreeDepth) public view returns (VerifyingKey memory vk) {
+    uint256 sig = genPollJoinedVkSig(_stateTreeDepth);
 
     vk = getPollJoinedVkBySig(sig);
   }

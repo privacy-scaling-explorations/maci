@@ -37,7 +37,6 @@ describe("VkRegistry", () => {
     it("should set the poll vk", async () => {
       const tx = await vkRegistryContract.setPollJoiningVkKey(
         stateTreeDepth + 1,
-        treeDepths.voteOptionTreeDepth,
         testPollJoiningVk.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 1000000 },
       );
@@ -49,7 +48,6 @@ describe("VkRegistry", () => {
       await expect(
         vkRegistryContract.setPollJoiningVkKey(
           stateTreeDepth + 1,
-          treeDepths.voteOptionTreeDepth,
           testPollJoiningVk.asContractParam() as IVerifyingKeyStruct,
           { gasLimit: 1000000 },
         ),
@@ -61,7 +59,6 @@ describe("VkRegistry", () => {
     it("should set the poll vk", async () => {
       const tx = await vkRegistryContract.setPollJoinedVkKey(
         stateTreeDepth + 1,
-        treeDepths.voteOptionTreeDepth,
         testPollJoinedVk.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 1000000 },
       );
@@ -73,7 +70,6 @@ describe("VkRegistry", () => {
       await expect(
         vkRegistryContract.setPollJoinedVkKey(
           stateTreeDepth + 1,
-          treeDepths.voteOptionTreeDepth,
           testPollJoinedVk.asContractParam() as IVerifyingKeyStruct,
           { gasLimit: 1000000 },
         ),
@@ -230,7 +226,7 @@ describe("VkRegistry", () => {
   describe("genSignatures", () => {
     describe("genPollJoiningVkSig", () => {
       it("should generate a valid signature", async () => {
-        const sig = await vkRegistryContract.genPollJoiningVkSig(stateTreeDepth, treeDepths.voteOptionTreeDepth);
+        const sig = await vkRegistryContract.genPollJoiningVkSig(stateTreeDepth);
         const vk = await vkRegistryContract.getPollJoiningVkBySig(sig);
         compareVks(testPollJoiningVk, vk);
       });
@@ -238,7 +234,7 @@ describe("VkRegistry", () => {
 
     describe("genPollJoinedVkSig", () => {
       it("should generate a valid signature", async () => {
-        const sig = await vkRegistryContract.genPollJoinedVkSig(stateTreeDepth, treeDepths.voteOptionTreeDepth);
+        const sig = await vkRegistryContract.genPollJoinedVkSig(stateTreeDepth);
         const vk = await vkRegistryContract.getPollJoinedVkBySig(sig);
         compareVks(testPollJoinedVk, vk);
       });
