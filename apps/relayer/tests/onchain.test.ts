@@ -4,6 +4,7 @@ import { SchedulerRegistry } from "@nestjs/schedule";
 import { Test } from "@nestjs/testing";
 import { Keypair } from "maci-domainobjs";
 import { formatProofForVerifierContract, genProofSnarkjs, getDefaultSigner, getPollContracts } from "maci-sdk";
+import { TestDeploy } from "maci-testing";
 import request from "supertest";
 
 import type { JsonRpcProvider } from "ethers";
@@ -22,7 +23,6 @@ describe("Integration message publishing", () => {
   let schedulerRegistry: SchedulerRegistry;
 
   beforeAll(async () => {
-    const { TestDeploy } = await import("./deploy.js");
     await TestDeploy.sleep(20_000);
     const testDeploy = await TestDeploy.getInstance();
     const poll = testDeploy.contractsData.maciState!.polls.get(0n);
@@ -98,7 +98,6 @@ describe("Integration message publishing", () => {
     await (signer.provider as unknown as JsonRpcProvider).send("evm_increaseTime", [100]);
     await (signer.provider as unknown as JsonRpcProvider).send("evm_mine", []);
 
-    const { TestDeploy } = await import("./deploy.js");
     const { poll: pollContract } = await getPollContracts({ maciAddress: maciContractAddress, pollId: 0, signer });
 
     await Promise.race([

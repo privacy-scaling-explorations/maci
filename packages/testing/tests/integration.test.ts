@@ -3,22 +3,24 @@ import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { Signer } from "ethers";
 import {
-  deploy,
-  deployPoll,
-  deployVkRegistryContract,
   genProofs,
   mergeSignups,
   proveOnChain,
   publish,
+<<<<<<< HEAD:packages/integrationTests/ts/__tests__/integration.test.ts
   setVerifyingKeysCli,
+=======
+  signup,
+>>>>>>> f9935fe00 (refactor: create separate package for test suite):packages/testing/tests/integration.test.ts
   timeTravel,
   verify,
   DeployedContracts,
   joinPoll,
 } from "maci-cli";
-import { MaciState, TreeDepths, VOTE_OPTION_TREE_ARITY } from "maci-core";
+import { MaciState, VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { genPubKey, genRandomSalt, poseidon } from "maci-crypto";
 import { Keypair, PCommand, PrivKey, PubKey } from "maci-domainobjs";
+<<<<<<< HEAD:packages/integrationTests/ts/__tests__/integration.test.ts
 import {
   cidToBytes32,
   createCidFromObject,
@@ -28,25 +30,26 @@ import {
   relayMessages,
   signup,
 } from "maci-sdk";
+=======
+import { cidToBytes32, createCidFromObject, generateVote, getDefaultSigner, relayMessages, isArm } from "maci-sdk";
+>>>>>>> f9935fe00 (refactor: create separate package for test suite):packages/testing/tests/integration.test.ts
 
 import fs from "fs";
 import { homedir } from "os";
 import path from "path";
 
 import {
-  INT_STATE_TREE_DEPTH,
-  MESSAGE_BATCH_SIZE,
   SG_DATA,
-  STATE_TREE_DEPTH,
   VOTE_OPTION_TREE_DEPTH,
   backupFolder,
   duration,
   initialVoiceCredits,
   maxMessages,
-  maxVoteOptions,
 } from "./utils/constants";
 import { ITestSuite } from "./utils/interfaces";
-import { expectTally, genTestUserCommands, isArm, writeBackupFile } from "./utils/utils";
+import { expectTally, genTestUserCommands, writeBackupFile } from "./utils/utils";
+
+import { TestDeploy } from "../ts/testingClass";
 
 chai.use(chaiAsPromised);
 
@@ -64,85 +67,18 @@ describe("Integration tests", function test() {
   const useWasm = isArm();
 
   // global variables we need shared between tests
-  let maciState: MaciState;
-  let contracts: DeployedContracts;
-  let pollId: bigint;
   let signer: Signer;
+  let testingClass: TestDeploy;
   const coordinatorKeypair = new Keypair();
 
   // the code that we run before all tests
   before(async () => {
     signer = await getDefaultSigner();
-    // 1. deploy Vk Registry
-    const vkRegistryAddress = await deployVkRegistryContract({ signer });
-    // 2. set verifying keys
-    await setVerifyingKeysCli({
-      stateTreeDepth: STATE_TREE_DEPTH,
-      intStateTreeDepth: INT_STATE_TREE_DEPTH,
-      voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
-      messageBatchSize: MESSAGE_BATCH_SIZE,
-      pollJoiningZkeyPath: path.resolve(__dirname, "../../../cli/zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey"),
-      pollJoinedZkeyPath: path.resolve(__dirname, "../../../cli/zkeys/PollJoined_10_test/PollJoined_10_test.0.zkey"),
-      processMessagesZkeyPathQv: path.resolve(
-        __dirname,
-        "../../../cli/zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey",
-      ),
-      tallyVotesZkeyPathQv: path.resolve(
-        __dirname,
-        "../../../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey",
-      ),
-      processMessagesZkeyPathNonQv: path.resolve(
-        __dirname,
-        "../../../cli/zkeys/ProcessMessagesNonQv_10-20-2_test/ProcessMessagesNonQv_10-20-2_test.0.zkey",
-      ),
-      tallyVotesZkeyPathNonQv: path.resolve(
-        __dirname,
-        "../../../cli/zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test.0.zkey",
-      ),
-      vkRegistry: vkRegistryAddress,
-      signer,
-    });
   });
 
   // the code that we run before each test
   beforeEach(async () => {
-    // create a new maci state
-    maciState = new MaciState(STATE_TREE_DEPTH);
-
-    // 3. deploy maci
-    contracts = await deploy({ stateTreeDepth: STATE_TREE_DEPTH, initialVoiceCredits, signer });
-
-    const startDate = await getBlockTimestamp(signer);
-
-    // 4. create a poll
-    await deployPoll({
-      pollStartDate: startDate,
-      pollEndDate: startDate + duration,
-      intStateTreeDepth: INT_STATE_TREE_DEPTH,
-      messageBatchSize: MESSAGE_BATCH_SIZE,
-      voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
-      coordinatorPubkey: coordinatorKeypair.pubKey.serialize(),
-      maciAddress: contracts.maciAddress,
-      signer,
-      useQuadraticVoting: true,
-      initialVoiceCreditsBalance: initialVoiceCredits,
-      relayers: [await signer.getAddress()],
-    });
-
-    const treeDepths: TreeDepths = {
-      intStateTreeDepth: INT_STATE_TREE_DEPTH,
-      voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
-    };
-
-    const messageBatchSize = MESSAGE_BATCH_SIZE;
-
-    pollId = maciState.deployPoll(
-      BigInt(startDate + duration),
-      treeDepths,
-      messageBatchSize,
-      coordinatorKeypair,
-      BigInt(maxVoteOptions),
-    );
+    testingClass = await TestDeploy.getInstance();
   });
 
   // after each test we need to cleanup some files
@@ -175,6 +111,10 @@ describe("Integration tests", function test() {
     it(testCase.description, async () => {
       const users = genTestUserCommands(testCase.numUsers, testCase.numVotesPerUser, testCase.bribers, testCase.votes);
 
+      const maciAddress = testingClass.contractsData.maciContractAddress!;
+      const pollId = testingClass.contractsData.pollId!;
+      const maciState = testingClass.contractsData.maciState!;
+
       // loop through all users and generate keypair + signup
       for (let i = 0; i < users.length; i += 1) {
         const user = users[i];
@@ -183,14 +123,19 @@ describe("Integration tests", function test() {
         const stateIndex = BigInt(
           await signup({
             maciPubKey: user.keypair.pubKey.serialize(),
+<<<<<<< HEAD:packages/integrationTests/ts/__tests__/integration.test.ts
             maciAddress: contracts.maciAddress,
             sgData: SG_DATA,
+=======
+            maciAddress,
+            sgDataArg: SG_DATA,
+>>>>>>> f9935fe00 (refactor: create separate package for test suite):packages/testing/tests/integration.test.ts
             signer,
           }).then((result) => result.stateIndex),
         );
 
         await joinPoll({
-          maciAddress: contracts.maciAddress,
+          maciAddress,
           privateKey: user.keypair.privKey.serialize(),
           stateIndex,
           pollId,
@@ -210,12 +155,12 @@ describe("Integration tests", function test() {
         });
 
         // signup on local maci state
-        maciState.signUp(user.keypair.pubKey);
+        maciState?.signUp(user.keypair.pubKey);
 
         // join the poll on local
         const inputNullifier = BigInt(user.keypair.privKey.asCircuitInputs());
         const nullifier = poseidon([inputNullifier]);
-        const poll = maciState.polls.get(pollId);
+        const poll = maciState?.polls.get(pollId!);
         poll?.joinPoll(nullifier, user.keypair.pubKey, BigInt(initialVoiceCredits), BigInt(timestamp));
 
         // publish messages
@@ -251,7 +196,7 @@ describe("Integration tests", function test() {
 
           const messages = [
             {
-              maciContractAddress: contracts.maciAddress,
+              maciContractAddress: maciAddress,
               poll: Number(pollId),
               data: vote.message.data.map(String),
               publicKey: vote.ephemeralKeypair.pubKey.asArray().map(String),
@@ -274,14 +219,14 @@ describe("Integration tests", function test() {
                   nonce,
                   pollId,
                   newVoteWeight: newVoteWeight!,
-                  maciAddress: contracts.maciAddress,
+                  maciAddress,
                   salt,
                   // if it's a key change command, then we pass the old private key otherwise just pass the current
                   privateKey: isKeyChange ? oldKeypair.privKey.serialize() : user.keypair.privKey.serialize(),
                   signer,
                 })
               : await relayMessages({
-                  maciAddress: contracts.maciAddress,
+                  maciAddress,
                   ipfsHash,
                   messages,
                   pollId: Number(pollId),
@@ -298,12 +243,12 @@ describe("Integration tests", function test() {
             voteOptionIndex!,
             newVoteWeight!,
             nonce,
-            pollId,
+            pollId!,
             salt,
           );
           const signature = command.sign(isKeyChange ? oldKeypair.privKey : user.keypair.privKey);
           const message = command.encrypt(signature, Keypair.genEcdhSharedKey(encPrivKey, coordinatorKeypair.pubKey));
-          maciState.polls.get(pollId)?.publishMessage(message, encPubKey);
+          maciState?.polls.get(pollId!)?.publishMessage(message, encPubKey);
         }
       }
 
@@ -311,7 +256,7 @@ describe("Integration tests", function test() {
 
       // merge signups
       await expect(
-        mergeSignups({ pollId, maciAddress: contracts.maciAddress, signer }),
+        mergeSignups({ pollId: pollId!, maciAddress: maciAddress!, signer }),
       ).to.eventually.not.be.rejectedWith();
 
       const ipfsMessageBackupFiles = await fs.promises
@@ -327,7 +272,7 @@ describe("Integration tests", function test() {
           __dirname,
           "../../../cli/zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey",
         ),
-        pollId,
+        pollId: pollId!,
         rapidsnark: `${homedir()}/rapidsnark/build/prover`,
         processWitgen: path.resolve(
           __dirname,
@@ -346,7 +291,7 @@ describe("Integration tests", function test() {
           "../../../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_cpp/TallyVotes_10-1-2_test.dat",
         ),
         coordinatorPrivKey: coordinatorKeypair.privKey.serialize(),
-        maciAddress: contracts.maciAddress,
+        maciAddress: maciAddress!,
         processWasm: path.resolve(
           __dirname,
           "../../../cli/zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_js/ProcessMessages_10-20-2_test.wasm",
@@ -377,7 +322,7 @@ describe("Integration tests", function test() {
           pollId,
           tallyFile: path.resolve(__dirname, "../../../cli/tally.json"),
           proofDir: path.resolve(__dirname, "../../../cli/proofs"),
-          maciAddress: contracts.maciAddress,
+          maciAddress,
           signer,
         }),
       ).to.not.be.rejected;
@@ -387,7 +332,7 @@ describe("Integration tests", function test() {
         verify({
           pollId,
           tallyData,
-          maciAddress: contracts.maciAddress,
+          maciAddress,
           signer,
         }),
       ).to.not.be.rejected;

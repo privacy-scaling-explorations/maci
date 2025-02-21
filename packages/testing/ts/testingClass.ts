@@ -1,21 +1,25 @@
 import hardhat from "hardhat";
-import { deploy, deployPoll, deployVkRegistryContract, joinPoll, setVerifyingKeysCli } from "maci-cli";
+import { joinPoll, setVerifyingKeysCli } from "maci-cli";
 import { Keypair } from "maci-domainobjs";
-import { genMaciStateFromContract, signup } from "maci-sdk";
+import { genMaciStateFromContract, deployPoll, deployVkRegistry, EMode, deployVerifier, signup } from "maci-sdk";
 
 import {
   INT_STATE_TREE_DEPTH,
   MESSAGE_BATCH_SIZE,
   STATE_TREE_DEPTH,
+  VOTE_OPTIONS,
   VOTE_OPTION_TREE_DEPTH,
-  pollJoinedZkey,
-  pollJoiningZkey,
-  processMessagesZkeyPathNonQv,
-  tallyVotesZkeyPathNonQv,
-  pollWasm,
-  pollWitgen,
-  rapidsnark,
-} from "./constants.js";
+  pollJoinedTestZkeyPath,
+  pollJoiningTestZkeyPath,
+  processMessageTestNonQvZkeyPath,
+  processMessageTestZkeyPath,
+  tallyVotesTestNonQvZkeyPath,
+  tallyVotesTestZkeyPath,
+  testPollJoiningWasmPath,
+  testPollJoiningWitnessPath,
+  testRapidsnarkPath,
+} from "./constants";
+import { deployMaciContracts } from "./utils";
 
 interface IContractsData {
   initialized: boolean;
@@ -25,6 +29,8 @@ interface IContractsData {
   stateLeafIndex?: number;
   maciContractAddress?: string;
   maciState?: Awaited<ReturnType<typeof genMaciStateFromContract>>;
+  pollId?: bigint;
+  coordinatorKeypair?: Keypair;
 }
 
 const DEFAULT_SG_DATA = "0x0000000000000000000000000000000000000000000000000000000000000000";
@@ -60,36 +66,47 @@ export class TestDeploy {
     const coordinatorKeypair = new Keypair();
     const user = new Keypair();
 
-    const vkRegistry = await deployVkRegistryContract({ signer });
+    const vkRegistry = await deployVkRegistry(signer, true);
+    const vkRegistryAddress = await vkRegistry.getAddress();
     await setVerifyingKeysCli({
       quiet: true,
-      vkRegistry,
+      vkRegistry: vkRegistryAddress,
       stateTreeDepth: STATE_TREE_DEPTH,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
-      processMessagesZkeyPathNonQv,
-      tallyVotesZkeyPathNonQv,
-      pollJoiningZkeyPath: pollJoiningZkey,
-      pollJoinedZkeyPath: pollJoinedZkey,
+      processMessagesZkeyPathQv: processMessageTestZkeyPath,
+      processMessagesZkeyPathNonQv: processMessageTestNonQvZkeyPath,
+      tallyVotesZkeyPathQv: tallyVotesTestZkeyPath,
+      tallyVotesZkeyPathNonQv: tallyVotesTestNonQvZkeyPath,
+      pollJoiningZkeyPath: pollJoiningTestZkeyPath,
+      pollJoinedZkeyPath: pollJoinedTestZkeyPath,
       useQuadraticVoting: false,
       signer,
     });
 
-    const maciAddresses = await deploy({ stateTreeDepth: 10, signer });
+    const maciAddresses = await deployMaciContracts(signer);
+
+    const verifier = await deployVerifier(signer, true);
 
     const startDate = Math.floor(Date.now() / 1000) + 30;
 
     await deployPoll({
-      pollStartDate: startDate,
-      pollEndDate: startDate + 130,
+      pollStartTimestamp: startDate,
+      pollEndTimestamp: startDate + 130,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
-      coordinatorPubkey: coordinatorKeypair.pubKey.serialize(),
-      useQuadraticVoting: false,
+      coordinatorPubKey: coordinatorKeypair.pubKey,
+      mode: EMode.NON_QV,
       relayers: [await signer.getAddress()],
       signer,
+      maciContractAddress: maciAddresses.maciAddress,
+      verifierContractAddress: await verifier.getAddress(),
+      vkRegistryContractAddress: vkRegistryAddress,
+      gatekeeperContractAddress: maciAddresses.signupGatekeeper,
+      initialVoiceCreditProxyContractAddress: maciAddresses.voiceCreditProxy,
+      voteOptions: VOTE_OPTIONS,
     });
 
     await signup({
@@ -104,10 +121,10 @@ export class TestDeploy {
       pollId: 0n,
       privateKey: user.privKey.serialize(),
       stateIndex: 1n,
-      pollJoiningZkey,
-      pollWasm,
-      pollWitgen,
-      rapidsnark,
+      pollJoiningZkey: pollJoiningTestZkeyPath,
+      pollWasm: testPollJoiningWasmPath,
+      pollWitgen: testPollJoiningWitnessPath,
+      rapidsnark: testRapidsnarkPath,
       signer,
       useWasm: true,
       quiet: true,
@@ -127,5 +144,7 @@ export class TestDeploy {
     this.contractsData.voiceCredits = Number(voiceCredits);
     this.contractsData.user = user;
     this.contractsData.initialized = true;
+    this.contractsData.pollId = 0n;
+    this.contractsData.coordinatorKeypair = coordinatorKeypair;
   }
 }

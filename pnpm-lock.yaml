@@ -225,6 +225,9 @@ importers:
       jest:
         specifier: ^29.5.0
         version: 29.7.0(@types/node@22.13.4)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))
+      maci-testing:
+        specifier: ^0.1.0
+        version: link:../../packages/testing
       mongodb-memory-server:
         specifier: ^10.1.4
         version: 10.1.4(socks@2.8.4)
@@ -699,7 +702,56 @@ importers:
         specifier: ^11.1.0
         version: 11.1.0(mocha@11.1.0)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(tsconfig-paths@4.2.0)
 
-  packages/integrationTests:
+  packages/sdk:
+    dependencies:
+      '@zk-kit/lean-imt':
+        specifier: ^2.2.2
+        version: 2.2.2
+      ethers:
+        specifier: ^6.13.4
+        version: 6.13.5
+      maci-contracts:
+        specifier: ^2.5.0
+        version: link:../contracts
+      maci-core:
+        specifier: ^2.5.0
+        version: link:../core
+      maci-crypto:
+        specifier: ^2.5.0
+        version: link:../crypto
+      maci-domainobjs:
+        specifier: ^2.5.0
+        version: link:../domainobjs
+      multiformats:
+        specifier: 9.9.0
+        version: 9.9.0
+    devDependencies:
+      '@types/jest':
+        specifier: ^29.5.2
+        version: 29.5.14
+      '@types/node':
+        specifier: ^22.13.4
+        version: 22.13.4
+      '@types/snarkjs':
+        specifier: ^0.7.9
+        version: 0.7.9
+      jest:
+        specifier: ^29.5.0
+        version: 29.7.0(@types/node@22.13.4)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))
+      mocha:
+        specifier: ^11.1.0
+        version: 11.1.0
+      nyc:
+        specifier: ^17.1.0
+        version: 17.1.0
+      ts-jest:
+        specifier: ^29.2.5
+        version: 29.2.5(@babel/core@7.26.9)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.26.9))(jest@29.7.0(@types/node@22.13.4)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3)))(typescript@5.7.3)
+      typescript:
+        specifier: ^5.6.3
+        version: 5.7.3
+
+  packages/testing:
     dependencies:
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
@@ -707,9 +759,6 @@ importers:
       ethers:
         specifier: ^6.13.5
         version: 6.13.5
-      maci-circuits:
-        specifier: ^2.5.0
-        version: link:../circuits
       maci-cli:
         specifier: ^2.5.0
         version: link:../cli
@@ -761,55 +810,6 @@ importers:
         version: 11.1.0(mocha@11.1.0)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))(tsconfig-paths@4.2.0)
       typescript:
         specifier: ^5.7.3
-        version: 5.7.3
-
-  packages/sdk:
-    dependencies:
-      '@zk-kit/lean-imt':
-        specifier: ^2.2.2
-        version: 2.2.2
-      ethers:
-        specifier: ^6.13.4
-        version: 6.13.5
-      maci-contracts:
-        specifier: ^2.5.0
-        version: link:../contracts
-      maci-core:
-        specifier: ^2.5.0
-        version: link:../core
-      maci-crypto:
-        specifier: ^2.5.0
-        version: link:../crypto
-      maci-domainobjs:
-        specifier: ^2.5.0
-        version: link:../domainobjs
-      multiformats:
-        specifier: 9.9.0
-        version: 9.9.0
-    devDependencies:
-      '@types/jest':
-        specifier: ^29.5.2
-        version: 29.5.14
-      '@types/node':
-        specifier: ^22.13.4
-        version: 22.13.4
-      '@types/snarkjs':
-        specifier: ^0.7.9
-        version: 0.7.9
-      jest:
-        specifier: ^29.5.0
-        version: 29.7.0(@types/node@22.13.4)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3))
-      mocha:
-        specifier: ^11.1.0
-        version: 11.1.0
-      nyc:
-        specifier: ^17.1.0
-        version: 17.1.0
-      ts-jest:
-        specifier: ^29.2.5
-        version: 29.2.5(@babel/core@7.26.9)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.26.9))(jest@29.7.0(@types/node@22.13.4)(ts-node@10.9.2(@types/node@22.13.4)(typescript@5.7.3)))(typescript@5.7.3)
-      typescript:
-        specifier: ^5.6.3
         version: 5.7.3
 
 packages:

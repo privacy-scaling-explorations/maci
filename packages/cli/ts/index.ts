@@ -21,10 +21,7 @@ import "./cliInit";
 import {
   genKeyPair,
   genMaciPubKey,
-  deployVkRegistryContract,
-  deploy,
   showContracts,
-  deployPoll,
   publish,
   setVerifyingKeysCli,
   mergeSignups,
@@ -60,42 +57,6 @@ program.name(name).description(description).version(version);
 const getSigner = async (): Promise<Signer> => import("maci-contracts").then((m) => m.getDefaultSigner());
 
 // add the commands
-program
-  .command("create")
-  .description("deploy the contracts")
-  .option("-i, --initialVoiceCredits <initialVoiceCredits>", "the initial voice credits", parseInt)
-  .option(
-    "-p, --initialVoiceCreditsProxyAddress <initialVoiceCreditsProxyAddress>",
-    "the initial voice credits proxy contract address",
-  )
-  .option("--poseidonT3Address <poseidonT3Address>", "PoseidonT3 contract address")
-  .option("--poseidonT4Address <poseidonT4Address>", "PoseidonT4 contract address")
-  .option("--poseidonT5Address <poseidonT5Address>", "PoseidonT5 contract address")
-  .option("--poseidonT6Address <poseidonT6Address>", "PoseidonT6 contract address")
-  .option("-g, --signupGatekeeperAddress <signupGatekeeperAddress>", "the signup gatekeeper contract address")
-  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
-  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .requiredOption("-s, --stateTreeDepth <stateTreeDepth>", "the state tree depth", parseInt)
-  .action(async (cmdOptions) => {
-    try {
-      const signer = await getSigner();
-
-      await deploy({
-        stateTreeDepth: cmdOptions.stateTreeDepth,
-        initialVoiceCredits: cmdOptions.initialVoiceCredits,
-        initialVoiceCreditsProxyAddress: cmdOptions.initialVoiceCreditsProxyAddress,
-        signupGatekeeperAddress: cmdOptions.signupGatekeeperAddress,
-        poseidonT3Address: cmdOptions.poseidonT3Address,
-        poseidonT4Address: cmdOptions.poseidonT4Address,
-        poseidonT5Address: cmdOptions.poseidonT5Address,
-        poseidonT6Address: cmdOptions.poseidonT6Address,
-        quiet: cmdOptions.quiet,
-        signer,
-      });
-    } catch (error) {
-      program.error((error as Error).message, { exitCode: 1 });
-    }
-  });
 program
   .command("checkVerifyingKeys")
   .description("check that the verifying keys in the contract match the local ones")
@@ -169,20 +130,6 @@ program
     genKeyPair({ seed: cmdObj.seed, quiet: cmdObj.quiet });
   });
 program
-  .command("deployVkRegistry")
-  .description("deploy a new verification key registry contract")
-  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
-  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .action(async (cmdObj) => {
-    try {
-      const signer = await getSigner();
-
-      await deployVkRegistryContract({ quiet: cmdObj.quiet, signer });
-    } catch (error) {
-      program.error((error as Error).message, { exitCode: 1 });
-    }
-  });
-program
   .command("show")
   .description("show the deployed contract addresses")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
@@ -190,50 +137,6 @@ program
   .action(async (cmdObj) => {
     try {
       await showContracts(cmdObj.quiet);
-    } catch (error) {
-      program.error((error as Error).message, { exitCode: 1 });
-    }
-  });
-program
-  .command("deployPoll")
-  .description("deploy a new poll")
-  .option("-k, --vkRegistryAddress <vkRegistryAddress>", "the vk registry contract address")
-  .requiredOption("-s, --start <pollStartDate>", "the poll start date", parseInt)
-  .requiredOption("-e, --end <pollEndDate>", "the poll end date", parseInt)
-  .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the int state tree depth", parseInt)
-  .requiredOption("-b, --msg-batch-size <messageBatchSize>", "the message batch size", parseInt)
-  .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
-  .requiredOption("-p, --pubkey <coordinatorPubkey>", "the coordinator public key")
-  .option(
-    "-u, --use-quadratic-voting <useQuadraticVoting>",
-    "whether to use quadratic voting",
-    (value) => value === "true",
-    true,
-  )
-  .option("-x, --maci-address <maciAddress>", "the MACI contract address")
-  .option("-m, --relayers <relayers>", "the relayer addresses", (value) => value.split(",").map((item) => item.trim()))
-  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
-  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .option("-o, --vote-options <voteOptions>", "the number of vote options", parseInt)
-  .action(async (cmdObj) => {
-    try {
-      const signer = await getSigner();
-
-      await deployPoll({
-        pollStartDate: cmdObj.start,
-        pollEndDate: cmdObj.end,
-        intStateTreeDepth: cmdObj.intStateTreeDepth,
-        messageBatchSize: cmdObj.msgBatchSize,
-        voteOptionTreeDepth: cmdObj.voteOptionTreeDepth,
-        coordinatorPubkey: cmdObj.pubkey,
-        maciAddress: cmdObj.maciAddress,
-        vkRegistryAddress: cmdObj.vkRegistryAddress,
-        relayers: cmdObj.relayers,
-        quiet: cmdObj.quiet,
-        useQuadraticVoting: cmdObj.useQuadraticVoting,
-        signer,
-        voteOptions: cmdObj.voteOptions,
-      });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -838,10 +741,7 @@ if (require.main === module) {
 // export everything so we can use in other packages
 export {
   checkVerifyingKeys,
-  deploy,
-  deployPoll,
   getPoll,
-  deployVkRegistryContract,
   fundWallet,
   genLocalState,
   genKeyPair,

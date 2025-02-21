@@ -1,0 +1,1 @@
+export { TestDeploy } from "./testingClass";

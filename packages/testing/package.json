@@ -1,7 +1,7 @@
 {
-  "name": "maci-integrationtests",
-  "version": "2.5.0",
-  "description": "",
+  "name": "maci-testing",
+  "version": "0.1.0",
+  "description": "A package with testing utilities for MACI",
   "main": "build/ts/index.js",
   "files": [
     "build",
@@ -13,8 +13,7 @@
     "build": "tsc",
     "types": "tsc -p tsconfig.json --noEmit",
     "test": "ts-mocha --exit ./ts/__tests__/**.test.ts",
-    "test:integration": "NODE_OPTIONS=--max-old-space-size=4096 ts-mocha --exit  ./ts/__tests__/integration.test.ts",
-    "test:maciKeys": "ts-mocha --exit ./ts/__tests__/maci-keys.test.ts"
+    "test:integration": "NODE_OPTIONS=--max-old-space-size=4096 ts-mocha --exit  ./ts/__tests__/integration.test.ts"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
@@ -33,7 +32,6 @@
   "dependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "ethers": "^6.13.5",
-    "maci-circuits": "^2.5.0",
     "maci-cli": "^2.5.0",
     "maci-core": "^2.5.0",
     "maci-crypto": "^2.5.0",

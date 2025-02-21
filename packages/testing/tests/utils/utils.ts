@@ -13,7 +13,6 @@ import {
 } from "maci-sdk";
 
 import fs from "fs";
-import { arch } from "os";
 import path from "path";
 
 import type { TallyData } from "maci-cli";
@@ -151,12 +150,6 @@ export const sleep = async (ms: number): Promise<void> =>
   });
 
 /**
- * Check whether we are running on an arm chip
- * @returns whether we are running on an arm chip
- */
-export const isArm = (): boolean => arch().includes("arm");
-
-/**
  * Deploy a set of smart contracts that can be used for testing.
  * @param initialVoiceCreditBalance - the initial voice credit balance for each user
  * @param stateTreeDepth - the depth of the state tree
@@ -218,3 +211,22 @@ export const writeBackupFile = async (name: string, data: unknown): Promise<void
 
   await fs.promises.writeFile(path.resolve(backupFolder, `${name}.json`), JSON.stringify(data));
 };
+
+/**
+ * Test utility to clean up the proofs directory
+ * and the tally.json file
+ */
+export const clean = async (withBackup = true): Promise<void> => {
+    const files = await fs.promises.readdir("./proofs");
+  
+    await Promise.all(files.map((file) => fs.promises.rm(path.resolve("./proofs", file))));
+  
+    if (fs.existsSync("./tally.json")) {
+      await fs.promises.rm("./tally.json");
+    }
+  
+    if (withBackup && fs.existsSync(backupFolder)) {
+      await fs.promises.rm(backupFolder, { recursive: true, force: true });
+    }
+  };
+  

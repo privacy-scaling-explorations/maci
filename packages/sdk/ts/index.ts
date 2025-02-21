@@ -6,6 +6,7 @@ export * from "./trees";
 export * from "./vote";
 export * from "./utils";
 export * from "./user";
+export * from "./deploy";
 
 export {
   EMode,

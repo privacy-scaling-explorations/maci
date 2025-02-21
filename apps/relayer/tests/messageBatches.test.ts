@@ -3,6 +3,7 @@ import { HttpStatus, ValidationPipe, type INestApplication } from "@nestjs/commo
 import { Test } from "@nestjs/testing";
 import { Keypair } from "maci-domainobjs";
 import { formatProofForVerifierContract, genProofSnarkjs } from "maci-sdk";
+import { TestDeploy } from "maci-testing";
 import request from "supertest";
 
 import { AppModule } from "../ts/app.module.js";
@@ -18,7 +19,6 @@ describe("Integration message batches", () => {
   let user: Keypair;
 
   beforeAll(async () => {
-    const { TestDeploy } = await import("./deploy.js");
     await TestDeploy.sleep(1_000);
     const testDeploy = await TestDeploy.getInstance();
     const poll = testDeploy.contractsData.maciState!.polls.get(0n);
