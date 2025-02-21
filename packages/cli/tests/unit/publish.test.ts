@@ -82,31 +82,31 @@ describe("publish", function test() {
       const pollContract = PollFactory.connect(pollAddresses.poll, signer);
       const initialNumMessages = await pollContract.numMessages();
 
-      const { hash, encryptedMessages, privateKey } = await publishBatch(defaultArgs);
+      const { hash, encryptedMessages, privateKeys } = await publishBatch(defaultArgs);
       const numMessages = await pollContract.numMessages();
 
       expect(initialNumMessages).to.eq(1n);
       expect(hash).to.not.eq(null);
       expect(hash).to.not.eq(undefined);
       expect(numMessages).to.eq(BigInt(messages.length + 1));
-      expect(privateKey).to.not.eq(undefined);
+      expect(privateKeys.length).to.eq(defaultArgs.messages.length);
       expect(encryptedMessages.length).to.eq(defaultArgs.messages.length);
     });
 
     it("should throw error if public key is invalid", async () => {
       await expect(publishBatch({ ...defaultArgs, publicKey: "invalid" })).eventually.rejectedWith(
-        "invalid MACI public key",
+        "Invalid MACI public key",
       );
     });
 
     it("should throw error if private key is invalid", async () => {
       await expect(publishBatch({ ...defaultArgs, privateKey: "invalid" })).eventually.rejectedWith(
-        "invalid MACI private key",
+        "Invalid MACI private key",
       );
     });
 
     it("should throw error if poll id is invalid", async () => {
-      await expect(publishBatch({ ...defaultArgs, pollId: -1n })).eventually.rejectedWith("invalid poll id -1");
+      await expect(publishBatch({ ...defaultArgs, pollId: -1n })).eventually.rejectedWith("Invalid poll id -1");
     });
 
     it("should throw error if current poll is not deployed", async () => {
@@ -119,28 +119,28 @@ describe("publish", function test() {
           ...defaultArgs,
           messages: [...messages, { ...messages[0], voteOptionIndex: -1n }],
         }),
-      ).eventually.rejectedWith("invalid vote option index");
+      ).eventually.rejectedWith("Invalid vote option index");
 
       await expect(
         publishBatch({
           ...defaultArgs,
           messages: [...messages, { ...messages[0], stateIndex: 0n }],
         }),
-      ).eventually.rejectedWith("invalid state index");
+      ).eventually.rejectedWith("Invalid state index");
 
       await expect(
         publishBatch({
           ...defaultArgs,
           messages: [...messages, { ...messages[0], nonce: -1n }],
         }),
-      ).eventually.rejectedWith("invalid nonce");
+      ).eventually.rejectedWith("Invalid nonce");
 
       await expect(
         publishBatch({
           ...defaultArgs,
           messages: [...messages, { ...messages[0], salt: SNARK_FIELD_SIZE + 1n }],
         }),
-      ).eventually.rejectedWith("invalid salt");
+      ).eventually.rejectedWith("Invalid salt");
     });
   });
 });
