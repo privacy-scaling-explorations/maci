@@ -26,8 +26,6 @@ export type {
   ISnarkJSVerificationKey,
   FundWalletArgs,
   TimeTravelArgs,
-  SignupArgs,
-  ISignupData,
   IJoinPollArgs,
   IJoinPollData,
   IJoinedUserArgs,
@@ -41,23 +39,13 @@ export type {
   TallyData,
   VerifyArgs,
   ExtractVkToFileArgs,
-  IRegisteredUserArgs,
   IGenKeypairArgs,
   IGetPollArgs,
   IGetPollData,
   IPublishBatchArgs,
   IPublishBatchData,
   IPublishMessage,
-  IParseSignupEventsArgs,
-  IGetGatekeeperTraitArgs,
-  ISemaphoreGatekeeperData,
-  IGetGatekeeperDataArgs,
-  IZupassGatekeeperData,
-  IEASGatekeeperData,
-  IHatsGatekeeperData,
-  IMerkleProofGatekeeperData,
 } from "./interfaces";
-export { GatekeeperTrait } from "./interfaces";
 export { compareVks } from "./vks";
 export { delay } from "./time";
 export {

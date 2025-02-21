@@ -1,7 +1,7 @@
 import { VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
-import { generateVote, getBlockTimestamp, getDefaultSigner } from "maci-sdk";
+import { generateVote, getBlockTimestamp, getDefaultSigner, signup } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
@@ -14,11 +14,17 @@ import {
   proveOnChain,
   publish,
   setVerifyingKeysCli,
-  signup,
   timeTravel,
   verify,
 } from "../../ts/commands";
-import { DeployArgs, DeployPollArgs, DeployedContracts, GenProofsArgs, SetVerifyingKeysArgs } from "../../ts/utils";
+import {
+  DEFAULT_SG_DATA,
+  DeployArgs,
+  DeployPollArgs,
+  DeployedContracts,
+  GenProofsArgs,
+  SetVerifyingKeysArgs,
+} from "../../ts/utils";
 import {
   coordinatorPrivKey,
   coordinatorPubKey,
@@ -144,7 +150,12 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
       });
 
       it("should signup 1 user", async () => {
-        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[0].pubKey.serialize(), signer });
+        await signup({
+          maciAddress: maciAddresses.maciAddress,
+          maciPubKey: users[0].pubKey.serialize(),
+          sgData: DEFAULT_SG_DATA,
+          signer,
+        });
       });
 
       it("should publish 2 messages", async () => {
@@ -244,7 +255,12 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
         // eslint-disable-next-line @typescript-eslint/prefer-for-of
         for (let i = 0; i < 25; i += 1) {
           // eslint-disable-next-line no-await-in-loop
-          await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[i].pubKey.serialize(), signer });
+          await signup({
+            maciAddress: maciAddresses.maciAddress,
+            maciPubKey: users[i].pubKey.serialize(),
+            sgData: DEFAULT_SG_DATA,
+            signer,
+          });
         }
       });
 
@@ -360,7 +376,12 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
       });
 
       it("should signup one user", async () => {
-        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[0].pubKey.serialize(), signer });
+        await signup({
+          maciAddress: maciAddresses.maciAddress,
+          maciPubKey: users[0].pubKey.serialize(),
+          sgData: DEFAULT_SG_DATA,
+          signer,
+        });
       });
 
       it("should publish one message", async () => {
@@ -453,7 +474,12 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
         // eslint-disable-next-line @typescript-eslint/prefer-for-of
         for (let i = 0; i < 25; i += 1) {
           // eslint-disable-next-line no-await-in-loop
-          await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[i].pubKey.serialize(), signer });
+          await signup({
+            maciAddress: maciAddresses.maciAddress,
+            maciPubKey: users[i].pubKey.serialize(),
+            sgData: DEFAULT_SG_DATA,
+            signer,
+          });
         }
       });
 

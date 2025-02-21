@@ -1,7 +1,7 @@
 import hardhat from "hardhat";
-import { deploy, deployPoll, deployVkRegistryContract, joinPoll, setVerifyingKeysCli, signup } from "maci-cli";
+import { deploy, deployPoll, deployVkRegistryContract, joinPoll, setVerifyingKeysCli } from "maci-cli";
 import { Keypair } from "maci-domainobjs";
-import { genMaciStateFromContract } from "maci-sdk";
+import { genMaciStateFromContract, signup } from "maci-sdk";
 
 import {
   INT_STATE_TREE_DEPTH,
@@ -26,6 +26,8 @@ interface IContractsData {
   maciContractAddress?: string;
   maciState?: Awaited<ReturnType<typeof genMaciStateFromContract>>;
 }
+
+const DEFAULT_SG_DATA = "0x0000000000000000000000000000000000000000000000000000000000000000";
 
 export class TestDeploy {
   private static INSTANCE?: TestDeploy;
@@ -90,7 +92,12 @@ export class TestDeploy {
       signer,
     });
 
-    await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer });
+    await signup({
+      maciAddress: maciAddresses.maciAddress,
+      maciPubKey: user.pubKey.serialize(),
+      sgData: DEFAULT_SG_DATA,
+      signer,
+    });
 
     const { pollStateIndex, timestamp, voiceCredits } = await joinPoll({
       maciAddress: maciAddresses.maciAddress,

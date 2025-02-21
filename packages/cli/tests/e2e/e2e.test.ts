@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
-import { generateVote, getBlockTimestamp, getDefaultSigner } from "maci-sdk";
+import { generateVote, getBlockTimestamp, getDefaultSigner, getSignedupUserData, signup } from "maci-sdk";
 
 import fs from "fs";
 
@@ -18,14 +18,12 @@ import {
   proveOnChain,
   publish,
   setVerifyingKeysCli,
-  signup,
   timeTravel,
   verify,
-  isRegisteredUser,
   joinPoll,
   isJoinedUser,
 } from "../../ts/commands";
-import { DeployedContracts, GenProofsArgs } from "../../ts/utils";
+import { DEFAULT_SG_DATA, DeployedContracts, GenProofsArgs } from "../../ts/utils";
 import {
   deployPollArgs,
   coordinatorPrivKey,
@@ -119,7 +117,12 @@ describe("e2e tests", function test() {
     });
 
     it("should signup one user", async () => {
-      await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer });
+      await signup({
+        maciAddress: maciAddresses.maciAddress,
+        maciPubKey: user.pubKey.serialize(),
+        sgData: DEFAULT_SG_DATA,
+        signer,
+      });
     });
 
     it("should join one user", async () => {
@@ -157,7 +160,12 @@ describe("e2e tests", function test() {
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       const tallyFileData = await genProofs({ ...genProofsArgs, signer });
-      await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer });
+      await signup({
+        maciAddress: maciAddresses.maciAddress,
+        maciPubKey: user.pubKey.serialize(),
+        sgData: DEFAULT_SG_DATA,
+        signer,
+      });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({
         ...(await verifyArgs()),
@@ -195,7 +203,12 @@ describe("e2e tests", function test() {
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < users.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
-        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[i].pubKey.serialize(), signer });
+        await signup({
+          maciAddress: maciAddresses.maciAddress,
+          maciPubKey: users[i].pubKey.serialize(),
+          sgData: DEFAULT_SG_DATA,
+          signer,
+        });
       }
     });
 
@@ -474,7 +487,12 @@ describe("e2e tests", function test() {
     it("should signup eight users (same pub key)", async () => {
       for (let i = 0; i < 8; i += 1) {
         // eslint-disable-next-line no-await-in-loop
-        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer });
+        await signup({
+          maciAddress: maciAddresses.maciAddress,
+          maciPubKey: user.pubKey.serialize(),
+          sgData: DEFAULT_SG_DATA,
+          signer,
+        });
       }
     });
 
@@ -570,7 +588,12 @@ describe("e2e tests", function test() {
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < users.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
-        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[i].pubKey.serialize(), signer });
+        await signup({
+          maciAddress: maciAddresses.maciAddress,
+          maciPubKey: users[i].pubKey.serialize(),
+          sgData: DEFAULT_SG_DATA,
+          signer,
+        });
       }
     });
 
@@ -649,7 +672,12 @@ describe("e2e tests", function test() {
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < users.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
-        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[i].pubKey.serialize(), signer });
+        await signup({
+          maciAddress: maciAddresses.maciAddress,
+          maciPubKey: users[i].pubKey.serialize(),
+          sgData: DEFAULT_SG_DATA,
+          signer,
+        });
       }
     });
 
@@ -777,7 +805,12 @@ describe("e2e tests", function test() {
         relayers: [await signer.getAddress()],
       });
       // signup
-      await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[0].pubKey.serialize(), signer });
+      await signup({
+        maciAddress: maciAddresses.maciAddress,
+        maciPubKey: users[0].pubKey.serialize(),
+        sgData: DEFAULT_SG_DATA,
+        signer,
+      });
       // joinPoll
       await joinPoll({
         maciAddress: maciAddresses.maciAddress,
@@ -807,9 +840,19 @@ describe("e2e tests", function test() {
         signer,
       });
 
-      await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[1].pubKey.serialize(), signer });
+      await signup({
+        maciAddress: maciAddresses.maciAddress,
+        maciPubKey: users[1].pubKey.serialize(),
+        sgData: DEFAULT_SG_DATA,
+        signer,
+      });
 
-      await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[1].pubKey.serialize(), signer });
+      await signup({
+        maciAddress: maciAddresses.maciAddress,
+        maciPubKey: users[1].pubKey.serialize(),
+        sgData: DEFAULT_SG_DATA,
+        signer,
+      });
 
       // joinPoll
       await joinPoll({
@@ -877,10 +920,30 @@ describe("e2e tests", function test() {
     });
 
     it("should signup four new users", async () => {
-      await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[2].pubKey.serialize(), signer });
-      await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[3].pubKey.serialize(), signer });
-      await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[3].pubKey.serialize(), signer });
-      await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[3].pubKey.serialize(), signer });
+      await signup({
+        maciAddress: maciAddresses.maciAddress,
+        maciPubKey: users[2].pubKey.serialize(),
+        sgData: DEFAULT_SG_DATA,
+        signer,
+      });
+      await signup({
+        maciAddress: maciAddresses.maciAddress,
+        maciPubKey: users[3].pubKey.serialize(),
+        sgData: DEFAULT_SG_DATA,
+        signer,
+      });
+      await signup({
+        maciAddress: maciAddresses.maciAddress,
+        maciPubKey: users[3].pubKey.serialize(),
+        sgData: DEFAULT_SG_DATA,
+        signer,
+      });
+      await signup({
+        maciAddress: maciAddresses.maciAddress,
+        maciPubKey: users[3].pubKey.serialize(),
+        sgData: DEFAULT_SG_DATA,
+        signer,
+      });
     });
 
     it("should join users", async () => {
@@ -1031,10 +1094,15 @@ describe("e2e tests", function test() {
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < users.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
-        await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: users[i].pubKey.serialize(), signer });
+        await signup({
+          maciAddress: maciAddresses.maciAddress,
+          maciPubKey: users[i].pubKey.serialize(),
+          sgData: DEFAULT_SG_DATA,
+          signer,
+        });
 
         // eslint-disable-next-line no-await-in-loop
-        const { isRegistered, stateIndex } = await isRegisteredUser({
+        const { isRegistered, stateIndex } = await getSignedupUserData({
           maciAddress: maciAddresses.maciAddress,
           maciPubKey: users[i].pubKey.serialize(),
           signer,
@@ -1404,7 +1472,12 @@ describe("e2e tests", function test() {
     });
 
     it("should signup one user", async () => {
-      await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer });
+      await signup({
+        maciAddress: maciAddresses.maciAddress,
+        maciPubKey: user.pubKey.serialize(),
+        sgData: DEFAULT_SG_DATA,
+        signer,
+      });
     });
 
     it("should join one user", async () => {

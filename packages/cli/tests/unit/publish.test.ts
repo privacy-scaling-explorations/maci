@@ -2,19 +2,12 @@ import { expect } from "chai";
 import { Poll__factory as PollFactory } from "maci-contracts/typechain-types";
 import { SNARK_FIELD_SIZE } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
-import { getBlockTimestamp, getDefaultSigner } from "maci-sdk";
+import { getBlockTimestamp, getDefaultSigner, signup } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
-import {
-  deploy,
-  deployPoll,
-  deployVkRegistryContract,
-  setVerifyingKeysCli,
-  publishBatch,
-  signup,
-} from "../../ts/commands";
-import { DeployedContracts, IPublishBatchArgs, IPublishMessage, PollContracts } from "../../ts/utils";
+import { deploy, deployPoll, deployVkRegistryContract, setVerifyingKeysCli, publishBatch } from "../../ts/commands";
+import { DEFAULT_SG_DATA, DeployedContracts, IPublishBatchArgs, IPublishMessage, PollContracts } from "../../ts/utils";
 import { deployPollArgs, setVerifyingKeysArgs, deployArgs, pollDuration } from "../constants";
 
 describe("publish", function test() {
@@ -77,7 +70,12 @@ describe("publish", function test() {
         signer,
       };
 
-      await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer });
+      await signup({
+        maciAddress: maciAddresses.maciAddress,
+        maciPubKey: user.pubKey.serialize(),
+        sgData: DEFAULT_SG_DATA,
+        signer,
+      });
     });
 
     it("should publish messages properly", async () => {

@@ -1,4 +1,3 @@
-import { type ContractTransactionReceipt, isBytesLike } from "ethers";
 import {
   MACI__factory as MACIFactory,
   SignUpGatekeeper__factory as SignUpGatekeeperFactory,
@@ -8,165 +7,18 @@ import {
   HatsGatekeeperSingle__factory as HatsSingleGatekeeperFactory,
   MerkleProofGatekeeper__factory as MerkleProofGatekeeperFactory,
 } from "maci-contracts/typechain-types";
-import { PubKey } from "maci-domainobjs";
 
 import type {
   IGetGatekeeperTraitArgs,
-  IParseSignupEventsArgs,
-  IRegisteredUserArgs,
-  ISignupData,
-  SignupArgs,
   IGetGatekeeperDataArgs,
   ISemaphoreGatekeeperData,
   IZupassGatekeeperData,
   IEASGatekeeperData,
   IHatsGatekeeperData,
   IMerkleProofGatekeeperData,
-} from "../utils/interfaces";
+} from "./types";
 
-import { banner } from "../utils/banner";
-import { contractExists } from "../utils/contracts";
-import { DEFAULT_SG_DATA } from "../utils/defaults";
-import { GatekeeperTrait } from "../utils/interfaces";
-import { info, logError, logGreen, logYellow, success } from "../utils/theme";
-
-/**
- * Signup a user to the MACI contract
- * @param {SignupArgs} args - The arguments for the signup command
- * @returns {ISignupData} The state index of the user and transaction hash
- */
-export const signup = async ({
-  maciPubKey,
-  maciAddress,
-  sgDataArg,
-  signer,
-  quiet = true,
-}: SignupArgs): Promise<ISignupData> => {
-  banner(quiet);
-
-  // validate user key
-  if (!PubKey.isValidSerializedPubKey(maciPubKey)) {
-    logError("Invalid MACI public key");
-  }
-
-  const userMaciPubKey = PubKey.deserialize(maciPubKey);
-
-  if (!(await contractExists(signer.provider!, maciAddress))) {
-    logError("There is no contract deployed at the specified address");
-  }
-
-  const sgData = sgDataArg || DEFAULT_SG_DATA;
-
-  // we validate that the signup data and voice credit data is valid
-  if (!isBytesLike(sgData)) {
-    logError("invalid signup gateway data");
-  }
-
-  const maciContract = MACIFactory.connect(maciAddress, signer);
-
-  let stateIndex = "";
-  let voiceCredits = "";
-  let receipt: ContractTransactionReceipt | null = null;
-
-  try {
-    // sign up to the MACI contract
-    const tx = await maciContract.signUp(userMaciPubKey.asContractParam(), sgData);
-    receipt = await tx.wait();
-
-    logYellow(quiet, info(`Transaction hash: ${tx.hash}`));
-
-    if (receipt?.status !== 1) {
-      logError("The transaction failed");
-    }
-
-    const iface = maciContract.interface;
-
-    // get state index from the event
-    if (receipt?.logs) {
-      const [log] = receipt.logs;
-      const { args } = iface.parseLog(log as unknown as { topics: string[]; data: string }) || { args: [] };
-      [stateIndex, , , voiceCredits] = args;
-      logGreen(quiet, success(`State index: ${stateIndex.toString()}`));
-    } else {
-      logError("Unable to retrieve the transaction receipt");
-    }
-  } catch (error) {
-    logError((error as Error).message);
-  }
-
-  return {
-    stateIndex: stateIndex ? stateIndex.toString() : "",
-    voiceCredits: voiceCredits ? Number.parseInt(voiceCredits, 10) : 0,
-    hash: receipt!.hash,
-  };
-};
-
-/**
- * Parse the signup events from the MACI contract
- */
-const parseSignupEvents = async ({
-  maciContract,
-  startBlock,
-  currentBlock,
-  publicKey,
-}: IParseSignupEventsArgs): Promise<{ stateIndex?: string }> => {
-  // 1000 blocks at a time
-  for (let block = startBlock; block <= currentBlock; block += 1000) {
-    const toBlock = Math.min(block + 999, currentBlock);
-    // eslint-disable-next-line no-await-in-loop
-    const newEvents = await maciContract.queryFilter(
-      maciContract.filters.SignUp(undefined, undefined, publicKey.rawPubKey[0], publicKey.rawPubKey[1]),
-      block,
-      toBlock,
-    );
-
-    if (newEvents.length > 0) {
-      const [event] = newEvents;
-
-      return {
-        stateIndex: event.args[0].toString(),
-      };
-    }
-  }
-
-  return {
-    stateIndex: undefined,
-  };
-};
-
-/**
- * Checks if user is registered with public key
- * @param IRegisteredArgs - The arguments for the register check command
- * @returns user registered or not and state index, voice credit balance
- */
-export const isRegisteredUser = async ({
-  maciAddress,
-  maciPubKey,
-  signer,
-  startBlock,
-  quiet = true,
-}: IRegisteredUserArgs): Promise<{ isRegistered: boolean; stateIndex?: string }> => {
-  banner(quiet);
-
-  const maciContract = MACIFactory.connect(maciAddress, signer);
-  const publicKey = PubKey.deserialize(maciPubKey);
-  const startBlockNumber = startBlock || 0;
-  const currentBlock = await signer.provider!.getBlockNumber();
-
-  const { stateIndex } = await parseSignupEvents({
-    maciContract,
-    startBlock: startBlockNumber,
-    currentBlock,
-    publicKey,
-  });
-
-  logGreen(quiet, success(`State index: ${stateIndex?.toString()}, registered: ${stateIndex !== undefined}`));
-
-  return {
-    isRegistered: stateIndex !== undefined,
-    stateIndex,
-  };
-};
+import { EGatekeeperTrait } from "./types";
 
 /**
  * Get the gatekeeper type of the MACI contract
@@ -176,7 +28,7 @@ export const isRegisteredUser = async ({
 export const getGatekeeperTrait = async ({
   maciAddress,
   signer,
-}: IGetGatekeeperTraitArgs): Promise<GatekeeperTrait> => {
+}: IGetGatekeeperTraitArgs): Promise<EGatekeeperTrait> => {
   const maciContract = MACIFactory.connect(maciAddress, signer);
 
   // get the address of the signup gatekeeper
@@ -186,7 +38,7 @@ export const getGatekeeperTrait = async ({
 
   const gatekeeperType = await gatekeeperContract.getTrait();
 
-  return gatekeeperType as GatekeeperTrait;
+  return gatekeeperType as EGatekeeperTrait;
 };
 
 /**

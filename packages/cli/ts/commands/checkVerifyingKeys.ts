@@ -45,7 +45,9 @@ export const checkVerifyingKeys = async ({
     logError("Please provide a VkRegistry contract address");
   }
 
-  if (!(await contractExists(signer.provider!, vkContractAddress))) {
+  const isVkExists = await contractExists(signer.provider!, vkContractAddress);
+
+  if (!isVkExists) {
     logError("The VkRegistry contract does not exist");
   }
 

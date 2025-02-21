@@ -1,7 +1,7 @@
 import { VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
-import { generateVote, getBlockTimestamp, getDefaultSigner } from "maci-sdk";
+import { generateVote, getBlockTimestamp, getDefaultSigner, signup } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
@@ -14,11 +14,10 @@ import {
   proveOnChain,
   publish,
   setVerifyingKeysCli,
-  signup,
   timeTravel,
   verify,
 } from "../../ts/commands";
-import { DeployedContracts, GenProofsArgs } from "../../ts/utils";
+import { DEFAULT_SG_DATA, DeployedContracts, GenProofsArgs } from "../../ts/utils";
 import {
   deployPollArgs,
   coordinatorPrivKey,
@@ -107,7 +106,12 @@ describe("e2e tests with non quadratic voting", function test() {
     });
 
     it("should signup one user", async () => {
-      await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer });
+      await signup({
+        maciAddress: maciAddresses.maciAddress,
+        maciPubKey: user.pubKey.serialize(),
+        sgData: DEFAULT_SG_DATA,
+        signer,
+      });
     });
 
     it("should publish one message", async () => {
@@ -164,7 +168,12 @@ describe("e2e tests with non quadratic voting", function test() {
     });
 
     it("should signup one user", async () => {
-      await signup({ maciAddress: maciAddresses.maciAddress, maciPubKey: user.pubKey.serialize(), signer });
+      await signup({
+        maciAddress: maciAddresses.maciAddress,
+        maciPubKey: user.pubKey.serialize(),
+        sgData: DEFAULT_SG_DATA,
+        signer,
+      });
     });
 
     it("should relay one message", async () => {
