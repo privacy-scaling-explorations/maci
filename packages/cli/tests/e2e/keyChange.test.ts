@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
-import { generateVote, getBlockTimestamp, getDefaultSigner } from "maci-sdk";
+import { generateVote, getBlockTimestamp, getDefaultSigner, signup } from "maci-sdk";
 
 import fs from "fs";
 
@@ -19,11 +19,10 @@ import {
   proveOnChain,
   publish,
   setVerifyingKeysCli,
-  signup,
   timeTravel,
   verify,
 } from "../../ts/commands";
-import { GenProofsArgs } from "../../ts/utils";
+import { DEFAULT_SG_DATA, GenProofsArgs } from "../../ts/utils";
 import {
   coordinatorPrivKey,
   deployArgs,
@@ -121,6 +120,7 @@ describe("keyChange tests", function test() {
         await signup({
           maciAddress: maciAddresses.maciAddress,
           maciPubKey: user1Keypair.pubKey.serialize(),
+          sgData: DEFAULT_SG_DATA,
           signer,
         }).then((result) => result.stateIndex),
       );
@@ -247,6 +247,7 @@ describe("keyChange tests", function test() {
         await signup({
           maciAddress: maciAddresses.maciAddress,
           maciPubKey: user1Keypair.pubKey.serialize(),
+          sgData: DEFAULT_SG_DATA,
           signer,
         }).then((result) => result.stateIndex),
       );
@@ -359,6 +360,7 @@ describe("keyChange tests", function test() {
         await signup({
           maciAddress: maciAddresses.maciAddress,
           maciPubKey: user1Keypair.pubKey.serialize(),
+          sgData: DEFAULT_SG_DATA,
           signer,
         }).then((result) => result.stateIndex),
       );

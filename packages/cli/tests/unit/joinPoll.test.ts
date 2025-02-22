@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { Signer } from "ethers";
 import { Keypair } from "maci-domainobjs";
-import { getBlockTimestamp, getDefaultSigner } from "maci-sdk";
+import { getBlockTimestamp, getDefaultSigner, signup } from "maci-sdk";
 
 import {
   deploy,
@@ -9,10 +9,10 @@ import {
   deployVkRegistryContract,
   setVerifyingKeysCli,
   joinPoll,
-  signup,
   deployPoll,
   isJoinedUser,
 } from "../../ts";
+import { DEFAULT_SG_DATA } from "../../ts/utils";
 import {
   deployArgs,
   deployPollArgs,
@@ -51,6 +51,7 @@ describe("joinPoll", function test() {
     await signup({
       maciAddress: maciAddresses.maciAddress,
       maciPubKey: userPublicKey,
+      sgData: DEFAULT_SG_DATA,
       signer,
     });
 

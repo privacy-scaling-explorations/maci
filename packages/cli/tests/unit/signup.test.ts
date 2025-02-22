@@ -1,16 +1,10 @@
 import { expect } from "chai";
 import { Signer } from "ethers";
 import { Keypair } from "maci-domainobjs";
-import { getDefaultSigner } from "maci-sdk";
+import { getDefaultSigner, getSignedupUserData, signup } from "maci-sdk";
 
-import {
-  deploy,
-  DeployedContracts,
-  deployVkRegistryContract,
-  isRegisteredUser,
-  setVerifyingKeysCli,
-  signup,
-} from "../../ts";
+import { deploy, DeployedContracts, deployVkRegistryContract, setVerifyingKeysCli } from "../../ts";
+import { DEFAULT_SG_DATA } from "../../ts/utils";
 import { deployArgs, setVerifyingKeysArgs } from "../constants";
 
 describe("signup", function test() {
@@ -37,10 +31,11 @@ describe("signup", function test() {
     const signUpData = await signup({
       maciAddress: maciAddresses.maciAddress,
       maciPubKey: user.pubKey.serialize(),
+      sgData: DEFAULT_SG_DATA,
       signer,
     });
 
-    const registeredUserData = await isRegisteredUser({
+    const registeredUserData = await getSignedupUserData({
       maciAddress: maciAddresses.maciAddress,
       startBlock,
       maciPubKey: user.pubKey.serialize(),
@@ -52,7 +47,7 @@ describe("signup", function test() {
   });
 
   it("should not get the user data if the user is not registered", async () => {
-    const registeredUserData = await isRegisteredUser({
+    const registeredUserData = await getSignedupUserData({
       maciAddress: maciAddresses.maciAddress,
       startBlock: await signer.provider?.getBlockNumber(),
       maciPubKey: new Keypair().pubKey.serialize(),
@@ -63,7 +58,7 @@ describe("signup", function test() {
   });
 
   it("should start fetchig from block zero if the start block is not provided", async () => {
-    const registeredUserData = await isRegisteredUser({
+    const registeredUserData = await getSignedupUserData({
       maciAddress: maciAddresses.maciAddress,
       maciPubKey: user.pubKey.serialize(),
       signer,

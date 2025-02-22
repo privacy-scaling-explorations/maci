@@ -11,7 +11,6 @@ import {
   proveOnChain,
   publish,
   setVerifyingKeysCli,
-  signup,
   timeTravel,
   verify,
   DeployedContracts,
@@ -27,6 +26,7 @@ import {
   getBlockTimestamp,
   getDefaultSigner,
   relayMessages,
+  signup,
 } from "maci-sdk";
 
 import fs from "fs";
@@ -184,7 +184,7 @@ describe("Integration tests", function test() {
           await signup({
             maciPubKey: user.keypair.pubKey.serialize(),
             maciAddress: contracts.maciAddress,
-            sgDataArg: SG_DATA,
+            sgData: SG_DATA,
             signer,
           }).then((result) => result.stateIndex),
         );
