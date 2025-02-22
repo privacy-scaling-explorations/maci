@@ -30,7 +30,7 @@ The key focus of this improvement is to enable users to be completely anonymous 
 
 Thus, voters can prove anonymously that they know the preimage of a [`StateLeaf`](/docs/developers-references/typescript-code/typedoc/domainobjs/classes/StateLeaf), by passing this information to a zk-SNARK circuit, and validating this proof within the poll contract when joining with the new key. You might be thinking that everyone knows the preimage of a state leaf, as it's public information that can be taken from the contracts' logs. However, the circuit will not accept the public key directly but would instead take the private key and use it to generate the public key. This way, only users with knowledge of a specific private key can generate a valid inclusion proof.
 
-Now after signing up to the Poll with this new key, there will not be any link to the original key, and users will effectively be anonymous. Of course users should ensure that they are using different wallets where possible.
+Now after signing up for the Poll with this new key, there will not be any link to the original key, and users will effectively be anonymous. Of course users should ensure that they are using different wallets where possible.
 
 Finally, with the use of a nullifier, it will not be possible for the same original key to be used to signup more than once for each new poll.
 
