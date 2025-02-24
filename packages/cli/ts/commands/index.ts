@@ -8,4 +8,3 @@ export { timeTravel } from "./timeTravel";
 export { genProofs } from "./genProofs";
 export { fundWallet } from "./fundWallet";
 export { proveOnChain } from "./proveOnChain";
-export { genLocalState } from "./genLocalState";

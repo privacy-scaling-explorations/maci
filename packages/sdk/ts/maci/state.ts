@@ -1,32 +1,24 @@
 import { JsonRpcProvider } from "ethers";
+import { MACI__factory as MACIFactory, Poll__factory as PollFactory, genMaciStateFromContract } from "maci-contracts";
 import { Keypair, PrivKey } from "maci-domainobjs";
-import { MACI__factory as MACIFactory, Poll__factory as PollFactory, genMaciStateFromContract } from "maci-sdk";
 
 import fs from "fs";
 
-import {
-  promptSensitiveValue,
-  banner,
-  contractExists,
-  logError,
-  logYellow,
-  readContractAddress,
-  info,
-  logGreen,
-  success,
-  type GenLocalStateArgs,
-} from "../utils";
+import type { IGenerateMaciStateArgs } from "./types";
+import type { MaciState } from "maci-core";
+
+import { contractExists } from "../utils";
 
 /**
  * Generate a local MACI state from the smart contracts events
- * @param GenLocalStateArgs - The arguments for the genLocalState command
+ * @param args The arguments for the genLocalState command
  */
-export const genLocalState = async ({
+export const generateMaciState = async ({
   outputPath,
   pollId,
   maciAddress,
   coordinatorPrivateKey,
-  ethereumProvider,
+  provider,
   endBlock,
   startBlock,
   blockPerBatch,
@@ -34,38 +26,34 @@ export const genLocalState = async ({
   sleep,
   signer,
   ipfsMessageBackupFiles,
-  quiet = true,
-}: GenLocalStateArgs): Promise<void> => {
-  banner(quiet);
-
-  const network = await signer.provider?.getNetwork();
-
-  // validation of the maci contract address
-  const maciContractAddress = maciAddress || (await readContractAddress("MACI", network?.name));
-
-  if (!maciContractAddress) {
-    logError("MACI contract address is empty");
+}: IGenerateMaciStateArgs): Promise<MaciState> => {
+  if (!maciAddress) {
+    throw new Error("MACI contract address is empty");
   }
 
-  if (!(await contractExists(signer.provider!, maciContractAddress))) {
-    logError("MACI contract does not exist");
+  const isMaciExists = await contractExists(signer.provider!, maciAddress);
+
+  if (!isMaciExists) {
+    throw new Error("MACI contract does not exist");
   }
 
   // if no private key is passed we ask it securely
-  const coordPrivKey = coordinatorPrivateKey || (await promptSensitiveValue("Insert your MACI private key"));
-  if (!PrivKey.isValidSerializedPrivKey(coordPrivKey)) {
-    logError("Invalid MACI private key");
+  if (!PrivKey.isValidSerializedPrivKey(coordinatorPrivateKey)) {
+    throw new Error("Invalid MACI private key");
   }
 
-  const coordinatorMaciPrivKey = PrivKey.deserialize(coordPrivKey);
+  const coordinatorMaciPrivKey = PrivKey.deserialize(coordinatorPrivateKey);
   const coordinatorKeypair = new Keypair(coordinatorMaciPrivKey);
 
-  const maciContract = MACIFactory.connect(maciContractAddress, signer);
+  const maciContract = MACIFactory.connect(maciAddress, signer);
   const pollContracts = await maciContract.polls(pollId);
 
-  if (!(await contractExists(signer.provider!, pollContracts.poll))) {
-    logError("Poll contract does not exist");
+  const isPollExists = await contractExists(signer.provider!, pollContracts.poll);
+
+  if (!isPollExists) {
+    throw new Error("Poll contract does not exist");
   }
+
   const pollContract = PollFactory.connect(pollContracts.poll, signer);
 
   const [defaultStartBlockSignup, defaultStartBlockPoll, stateRoot, numSignups] = await Promise.all([
@@ -98,16 +86,9 @@ export const genLocalState = async ({
     fromBlock = tx?.blockNumber ?? defaultStartBlock;
   }
 
-  const provider = ethereumProvider ? new JsonRpcProvider(ethereumProvider) : signer.provider;
-
-  logYellow(
-    quiet,
-    info(`Fetching logs from ${fromBlock} till ${endBlockNumber} and generating the offline maci state`),
-  );
-
   const maciState = await genMaciStateFromContract({
-    provider: provider!,
-    address: maciContractAddress,
+    provider: provider ? new JsonRpcProvider(provider) : signer.provider!,
+    address: maciAddress,
     coordinatorKeypair,
     pollId,
     fromBlock,
@@ -118,8 +99,10 @@ export const genLocalState = async ({
   });
 
   // write the state to a file
-  const serializedState = maciState.toJSON();
-  await fs.promises.writeFile(outputPath, JSON.stringify(serializedState, null, 4));
+  if (outputPath) {
+    const serializedState = maciState.toJSON();
+    await fs.promises.writeFile(outputPath, JSON.stringify(serializedState, null, 4));
+  }
 
-  logGreen(quiet, success(`The state has been written to ${outputPath}`));
+  return maciState;
 };

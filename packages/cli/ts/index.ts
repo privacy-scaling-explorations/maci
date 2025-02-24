@@ -18,6 +18,7 @@ import {
   extractAllVks,
   EMode,
   extractVkToFile,
+  generateMaciState,
 } from "maci-sdk";
 
 import fs from "fs";
@@ -36,7 +37,6 @@ import {
   genProofs,
   fundWallet,
   proveOnChain,
-  genLocalState,
 } from "./commands";
 import {
   DEFAULT_IVCP_DATA,
@@ -804,20 +804,24 @@ program
   .action(async (cmdObj) => {
     try {
       const signer = await getSigner();
+      const network = await signer.provider?.getNetwork();
 
-      await genLocalState({
+      // validation of the maci contract address
+      const maciAddress = cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
+      const coordinatorPrivateKey = cmdObj.privkey || (await promptSensitiveValue("Insert your MACI private key"));
+
+      await generateMaciState({
         outputPath: cmdObj.output.toString(),
         pollId: cmdObj.pollId,
-        maciAddress: cmdObj.maciAddress,
-        coordinatorPrivateKey: cmdObj.privkey,
-        ethereumProvider: cmdObj.rpcProvider,
+        maciAddress,
+        coordinatorPrivateKey,
+        provider: cmdObj.rpcProvider,
         endBlock: cmdObj.endBlock,
         startBlock: cmdObj.startBlock,
         blockPerBatch: cmdObj.blocksPerBatch,
         transactionHash: cmdObj.transactionHash,
         ipfsMessageBackupFiles: cmdObj.ipfsMessageBackupFiles,
         sleep: cmdObj.sleep,
-        quiet: cmdObj.quiet,
         signer,
       });
     } catch (error) {
@@ -863,7 +867,6 @@ export {
   deployPoll,
   deployVkRegistryContract,
   fundWallet,
-  genLocalState,
   genProofs,
   publish,
   publishBatch,
@@ -876,9 +879,7 @@ export {
 export type {
   DeployedContracts,
   PollContracts,
-  TallyData,
   DeployPollArgs,
-  GenLocalStateArgs,
   GenProofsArgs,
   PublishArgs,
   ProveOnChainArgs,

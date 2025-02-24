@@ -10,13 +10,12 @@ import {
   deployMockVerifier,
   deployVkRegistry,
   Verifier,
+  ITallyData,
 } from "maci-sdk";
 
 import fs from "fs";
 import { arch } from "os";
 import path from "path";
-
-import type { TallyData } from "maci-cli";
 
 import { backupFolder, defaultVote } from "./constants";
 import { IVote, IBriber, IDeployedTestContracts } from "./interfaces";
@@ -119,7 +118,7 @@ export const expectTally = (
   expectedTally: number[],
   expectedPerVOSpentVoiceCredits: number[],
   expectedTotalSpentVoiceCredits: number,
-  tallyFile: TallyData,
+  tallyFile: ITallyData,
 ): void => {
   const genTally = Array(maxMessages).fill("0");
   const genPerVOSpentVoiceCredits = Array(maxMessages).fill("0");
