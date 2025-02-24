@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
-import { generateVote, getBlockTimestamp, getDefaultSigner, getSignedupUserData, signup } from "maci-sdk";
+import { generateVote, getBlockTimestamp, getDefaultSigner, getSignedupUserData, signup, mergeSignups } from "maci-sdk";
 
 import fs from "fs";
 
@@ -14,7 +14,6 @@ import {
   deployVkRegistryContract,
   genLocalState,
   genProofs,
-  mergeSignups,
   proveOnChain,
   publish,
   setVerifyingKeysCli,
@@ -454,7 +453,7 @@ describe("e2e tests", function test() {
     it("should generate zk-SNARK proofs and verify them", async () => {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeSignups({ ...mergeSignupsArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...(await verifyArgs()), signer });
@@ -560,7 +559,7 @@ describe("e2e tests", function test() {
     it("should generate zk-SNARK proofs and verify them", async () => {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeSignups({ ...mergeSignupsArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...(await verifyArgs()), signer });
@@ -638,7 +637,7 @@ describe("e2e tests", function test() {
 
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeSignups({ ...mergeSignupsArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       const tallyFileData = await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...(await verifyArgs()), tallyData: tallyFileData, signer });
@@ -776,7 +775,7 @@ describe("e2e tests", function test() {
     it("should generate zk-SNARK proofs and verify them", async () => {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeSignups({ ...mergeSignupsArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       const tallyFileData = await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...(await verifyArgs()), tallyData: tallyFileData, signer });
@@ -900,7 +899,7 @@ describe("e2e tests", function test() {
       // time travel
       await timeTravel({ ...timeTravelArgs, signer });
       // generate proofs
-      await mergeSignups({ ...mergeSignupsArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       const tallyFileData = await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...(await verifyArgs()), tallyData: tallyFileData, signer });
@@ -1051,7 +1050,7 @@ describe("e2e tests", function test() {
     it("should generate proofs and verify them", async () => {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeSignups({ pollId: 1n, signer });
+      await mergeSignups({ maciAddress: maciAddresses.maciAddress, pollId: 1n, signer });
       await genProofs({ ...genProofsArgs, pollId: 1n, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, pollId: 1n, signer });
       await verify({ ...(await verifyArgs()), pollId: 1n, signer });
@@ -1188,7 +1187,7 @@ describe("e2e tests", function test() {
       // time travel
       await timeTravel({ ...timeTravelArgs, signer });
       // generate proofs
-      await mergeSignups({ ...mergeSignupsArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...(await verifyArgs()), signer });
@@ -1404,7 +1403,7 @@ describe("e2e tests", function test() {
     it("should complete the second poll", async () => {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeSignups({ pollId: 1n, signer });
+      await mergeSignups({ maciAddress: maciAddresses.maciAddress, pollId: 1n, signer });
       const tallyData = await genProofs({ ...genProofsArgs, pollId: 1n, signer, ipfsMessageBackupFiles });
       await proveOnChain({
         ...proveOnChainArgs,
@@ -1424,7 +1423,7 @@ describe("e2e tests", function test() {
 
     it("should complete the third poll", async () => {
       const ipfsMessageBackupFiles = await getBackupFilenames();
-      await mergeSignups({ pollId: 2n, signer });
+      await mergeSignups({ maciAddress: maciAddresses.maciAddress, pollId: 2n, signer });
       const tallyData = await genProofs({ ...genProofsArgs, pollId: 2n, signer, ipfsMessageBackupFiles });
       await proveOnChain({
         ...proveOnChainArgs,
@@ -1544,7 +1543,7 @@ describe("e2e tests", function test() {
     it("should generate zk-SNARK proofs and verify them", async () => {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeSignups({ ...mergeSignupsArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       await genLocalState({
         outputPath: stateOutPath,
         coordinatorPrivateKey: coordinatorPrivKey,

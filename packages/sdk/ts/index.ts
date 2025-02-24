@@ -1,4 +1,5 @@
 export * from "./keys";
+export * from "./maci";
 export * from "./relayer";
 export * from "./poll";
 export * from "./tally";

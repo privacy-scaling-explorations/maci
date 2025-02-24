@@ -2,7 +2,6 @@ export { deploy } from "./deploy";
 export { deployPoll } from "./deployPoll";
 export { joinPoll, isJoinedUser } from "./joinPoll";
 export { deployVkRegistryContract } from "./deployVkRegistry";
-export { mergeSignups } from "./mergeSignups";
 export { publish, publishBatch } from "./publish";
 export { setVerifyingKeysCli } from "./setVerifyingKeys";
 export { showContracts } from "./showContracts";

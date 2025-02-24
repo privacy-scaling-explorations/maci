@@ -12,6 +12,7 @@ import {
   getPoll,
   generateMaciPublicKey,
   generateKeypair,
+  mergeSignups,
 } from "maci-sdk";
 
 import fs from "fs";
@@ -27,7 +28,6 @@ import {
   deployPoll,
   publish,
   setVerifyingKeysCli,
-  mergeSignups,
   timeTravel,
   genProofs,
   fundWallet,
@@ -413,21 +413,23 @@ program
   .command("mergeSignups")
   .description("merge the signups accumulator queue")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
-  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
-  .requiredOption("-o, --poll-id <pollId>", "the poll id", BigInt)
-  .option("-n, --num-queue-ops <numQueueOps>", "the number of queue operations", parseInt)
+  .requiredOption("-p, --poll-id <pollId>", "the poll id", BigInt)
   .action(async (cmdObj) => {
     try {
       const signer = await getSigner();
+      const network = await signer.provider?.getNetwork();
 
-      await mergeSignups({
+      const maciAddress = cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
+
+      const receipt = await mergeSignups({
         pollId: cmdObj.pollId,
-        maciAddress: cmdObj.maciAddress,
-        numQueueOps: cmdObj.numQueueOps?.toString(),
-        quiet: cmdObj.quiet,
+        maciAddress,
         signer,
       });
+
+      logGreen(cmdObj.quiet, info(`Transaction hash: ${receipt.hash}`));
+      logGreen(cmdObj.quiet, success(`Executed mergeSignups(); gas used: ${receipt.gasUsed.toString()}`));
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -846,7 +848,6 @@ export {
   fundWallet,
   genLocalState,
   genProofs,
-  mergeSignups,
   publish,
   publishBatch,
   proveOnChain,
@@ -865,12 +866,9 @@ export type {
   GenLocalStateArgs,
   GenProofsArgs,
   PublishArgs,
-  MergeSignupsArgs,
   VerifyArgs,
   ProveOnChainArgs,
   DeployArgs,
-  IGetPollArgs,
-  IGetPollData,
   IPublishBatchArgs,
   IPublishBatchData,
   IPublishMessage,

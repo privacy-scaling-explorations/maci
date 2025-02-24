@@ -7,7 +7,6 @@ import {
   deployPoll,
   deployVkRegistryContract,
   genProofs,
-  mergeSignups,
   proveOnChain,
   publish,
   setVerifyingKeysCli,
@@ -27,6 +26,7 @@ import {
   getDefaultSigner,
   relayMessages,
   signup,
+  mergeSignups,
 } from "maci-sdk";
 
 import fs from "fs";

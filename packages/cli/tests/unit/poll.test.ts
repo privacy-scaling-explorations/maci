@@ -1,16 +1,9 @@
 import { expect } from "chai";
-import { getBlockTimestamp, getDefaultSigner, getPoll } from "maci-sdk";
+import { getBlockTimestamp, getDefaultSigner, getPoll, mergeSignups } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
-import {
-  deploy,
-  deployPoll,
-  deployVkRegistryContract,
-  setVerifyingKeysCli,
-  timeTravel,
-  mergeSignups,
-} from "../../ts/commands";
+import { deploy, deployPoll, deployVkRegistryContract, setVerifyingKeysCli, timeTravel } from "../../ts/commands";
 import { DeployedContracts, PollContracts } from "../../ts/utils";
 import { deployPollArgs, setVerifyingKeysArgs, deployArgs, pollDuration } from "../constants";
 import { clean } from "../utils";

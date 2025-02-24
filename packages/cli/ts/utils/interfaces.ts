@@ -1,4 +1,4 @@
-import type { Provider, Signer } from "ethers";
+import type { Signer } from "ethers";
 import type { CircuitInputs } from "maci-core";
 import type { PubKey, IMessageContractParams } from "maci-domainobjs";
 import type { Poll, SnarkProof } from "maci-sdk";
@@ -710,36 +710,6 @@ export interface GenProofsArgs {
 }
 
 /**
- * Interface for the arguments to the mergeSignups command
- */
-export interface MergeSignupsArgs {
-  /**
-   * The id of the poll
-   */
-  pollId: bigint;
-
-  /**
-   * A signer object
-   */
-  signer: Signer;
-
-  /**
-   * The address of the MACI contract
-   */
-  maciAddress?: string;
-
-  /**
-   * The number of queue operations to perform
-   */
-  numQueueOps?: string;
-
-  /**
-   * Whether to log the output
-   */
-  quiet?: boolean;
-}
-
-/**
  * Interface for the arguments to the ProveOnChainArgs command
  */
 export interface ProveOnChainArgs {
@@ -972,76 +942,6 @@ export interface SetVerifyingKeysArgs {
    * Whether to use quadratic voting or not
    */
   useQuadraticVoting?: boolean;
-}
-
-/**
- * Interface for the arguments to the get poll command
- */
-export interface IGetPollArgs {
-  /**
-   * A signer object
-   */
-  signer?: Signer;
-
-  /**
-   * A provider fallback object
-   */
-  provider?: Provider;
-
-  /**
-   * The address of the MACI contract
-   */
-  maciAddress: string;
-
-  /**
-   * The poll id. If not specified, latest poll id will be used
-   */
-  pollId?: BigNumberish;
-
-  /**
-   * Whether to log the output
-   */
-  quiet?: boolean;
-}
-
-/**
- * Interface for the return data to the get poll command
- */
-export interface IGetPollData {
-  /**
-   * The poll id
-   */
-  id: BigNumberish;
-
-  /**
-   * The poll address
-   */
-  address: string;
-
-  /**
-   * The poll deployment time
-   */
-  startDate: BigNumberish;
-
-  /**
-   * The poll end date
-   */
-  endDate: BigNumberish;
-
-  /**
-   * The poll number of signups
-   */
-  numSignups: BigNumberish;
-
-  /**
-   * Whether the MACI contract's state root has been merged
-   */
-  isMerged: boolean;
-
-  /**
-   * Mode of the poll
-   */
-  mode: BigNumberish;
 }
 
 /**

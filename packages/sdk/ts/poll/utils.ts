@@ -8,6 +8,8 @@ import {
 
 import type { IGetPollArgs, IGetPollContractsData } from "./types";
 
+import { contractExists } from "../utils";
+
 /**
  * Get poll contracts
  *
@@ -27,10 +29,22 @@ export const getPollContracts = async ({
     throw new Error(`Invalid poll id ${id}`);
   }
 
+  const isMaciExists = await contractExists(signer?.provider || provider!, maciAddress);
+
+  if (!isMaciExists) {
+    throw new Error("MACI contract does not exist");
+  }
+
   const pollContracts = await maci.polls(id);
 
   if (pollContracts.poll === ZeroAddress) {
     throw new Error(`MACI contract doesn't have any deployed poll ${id}`);
+  }
+
+  const isPollExists = await contractExists(signer?.provider || provider!, pollContracts.poll);
+
+  if (!isPollExists) {
+    throw new Error("Poll contract does not exist");
   }
 
   const poll = PollFactory.connect(pollContracts.poll, signer ?? provider);

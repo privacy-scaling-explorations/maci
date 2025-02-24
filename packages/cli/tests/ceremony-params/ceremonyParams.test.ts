@@ -1,7 +1,7 @@
 import { VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
-import { generateVote, getBlockTimestamp, getDefaultSigner, signup } from "maci-sdk";
+import { generateVote, getBlockTimestamp, getDefaultSigner, signup, mergeSignups } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
@@ -10,7 +10,6 @@ import {
   deployPoll,
   deployVkRegistryContract,
   genProofs,
-  mergeSignups,
   proveOnChain,
   publish,
   setVerifyingKeysCli,
@@ -223,7 +222,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
       it("should generate zk-SNARK proofs and verify them", async () => {
         const ipfsMessageBackupFiles = await getBackupFilenames();
         await timeTravel({ seconds: pollDuration, signer });
-        await mergeSignups({ ...mergeSignupsArgs, signer });
+        await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
         await genProofs({ ...genProofsCeremonyArgs, signer, ipfsMessageBackupFiles });
         await proveOnChain({ ...proveOnChainArgs, signer });
         await verify({ ...(await verifyArgs()), signer });
@@ -316,7 +315,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
       it("should generate zk-SNARK proofs and verify them", async () => {
         const ipfsMessageBackupFiles = await getBackupFilenames();
         await timeTravel({ seconds: pollDuration, signer });
-        await mergeSignups({ ...mergeSignupsArgs, signer });
+        await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
         await genProofs({ ...genProofsCeremonyArgs, signer, ipfsMessageBackupFiles });
         await proveOnChain({ ...proveOnChainArgs, signer });
         await verify({ ...(await verifyArgs()), signer });
@@ -431,7 +430,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
       it("should generate zk-SNARK proofs and verify them", async () => {
         const ipfsMessageBackupFiles = await getBackupFilenames();
         await timeTravel({ seconds: pollDuration, signer });
-        await mergeSignups({ ...mergeSignupsArgs, signer });
+        await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
         const tallyFileData = await genProofs({
           ...genProofsArgs,
           signer,
@@ -535,7 +534,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
       it("should generate zk-SNARK proofs and verify them", async () => {
         const ipfsMessageBackupFiles = await getBackupFilenames();
         await timeTravel({ seconds: pollDuration, signer });
-        await mergeSignups({ ...mergeSignupsArgs, signer });
+        await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
         const tallyFileData = await genProofs({
           ...genProofsArgs,
           signer,

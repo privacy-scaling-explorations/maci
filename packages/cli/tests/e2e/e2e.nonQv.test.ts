@@ -1,7 +1,7 @@
 import { VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
-import { generateVote, getBlockTimestamp, getDefaultSigner, signup } from "maci-sdk";
+import { generateVote, getBlockTimestamp, getDefaultSigner, signup, mergeSignups } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
@@ -10,7 +10,6 @@ import {
   deployPoll,
   deployVkRegistryContract,
   genProofs,
-  mergeSignups,
   proveOnChain,
   publish,
   setVerifyingKeysCli,
