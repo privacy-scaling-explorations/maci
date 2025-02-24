@@ -1075,21 +1075,6 @@ export interface VerifyArgs {
 }
 
 /**
- * Interface for the arguments for generate keypair command
- */
-export interface IGenKeypairArgs {
-  /**
-   * Seed value for keypair
-   */
-  seed?: bigint;
-
-  /**
-   * Whether to log the output
-   */
-  quiet?: boolean;
-}
-
-/**
  * Interface for the arguments to the FundWallet command
  */
 export interface FundWalletArgs {

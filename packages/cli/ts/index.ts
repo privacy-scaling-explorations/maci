@@ -5,11 +5,13 @@ import {
   generateTallyCommitments,
   getPollParams,
   verify,
-  getPoll,
   getSignedupUserData,
   signup,
   joinPoll,
   getJoinedUserData,
+  getPoll,
+  generateMaciPublicKey,
+  generateKeypair,
 } from "maci-sdk";
 
 import fs from "fs";
@@ -19,8 +21,6 @@ import type { Signer } from "ethers";
 
 import "./cliInit";
 import {
-  genKeyPair,
-  genMaciPubKey,
   deployVkRegistryContract,
   deploy,
   showContracts,
@@ -157,16 +157,18 @@ program
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action((cmdObj) => {
-    genMaciPubKey(cmdObj.privkey, cmdObj.quiet);
+    const publicKey = generateMaciPublicKey(cmdObj.privkey);
+    logGreen(cmdObj.quiet, success(`Public key: ${publicKey}`));
   });
 program
   .command("genMaciKeyPair")
   .description("generate a new MACI key pair")
   .option("-s, --seed <seed>", "seed value for keypair", (value) => (value ? BigInt(value) : undefined), undefined)
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
-  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action((cmdObj) => {
-    genKeyPair({ seed: cmdObj.seed, quiet: cmdObj.quiet });
+    const { publicKey, privateKey } = generateKeypair({ seed: cmdObj.seed });
+    logGreen(cmdObj.quiet, success(`Public key: ${publicKey}`));
+    logGreen(cmdObj.quiet, success(`Private key: ${privateKey}`));
   });
 program
   .command("deployVkRegistry")
@@ -840,12 +842,9 @@ export {
   checkVerifyingKeys,
   deploy,
   deployPoll,
-  getPoll,
   deployVkRegistryContract,
   fundWallet,
   genLocalState,
-  genKeyPair,
-  genMaciPubKey,
   genProofs,
   mergeSignups,
   publish,
@@ -870,7 +869,6 @@ export type {
   VerifyArgs,
   ProveOnChainArgs,
   DeployArgs,
-  IGenKeypairArgs,
   IGetPollArgs,
   IGetPollData,
   IPublishBatchArgs,

@@ -39,7 +39,6 @@ export type {
   TallyData,
   VerifyArgs,
   ExtractVkToFileArgs,
-  IGenKeypairArgs,
   IGetPollArgs,
   IGetPollData,
   IPublishBatchArgs,
