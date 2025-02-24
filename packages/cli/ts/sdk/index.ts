@@ -1,7 +1,6 @@
-import { extractVkToFile } from "../commands/extractVkToFile";
 import { publish, publishBatch } from "../commands/publish";
 
-export { publish, publishBatch, extractVkToFile };
+export { publish, publishBatch };
 
 export { VerifyingKey, PubKey, type IVkObjectParams } from "maci-domainobjs";
 

@@ -10,6 +10,7 @@ import {
   signup,
   mergeSignups,
   verify,
+  setVerifyingKeys,
 } from "maci-sdk";
 
 import fs from "fs";
@@ -24,7 +25,6 @@ import {
   genProofs,
   proveOnChain,
   publish,
-  setVerifyingKeysCli,
   timeTravel,
   joinPoll,
   isJoinedUser,
@@ -39,7 +39,6 @@ import {
   mergeSignupsArgs,
   pollJoiningTestZkeyPath,
   processMessageTestZkeyPath,
-  setVerifyingKeysArgs,
   tallyVotesTestZkeyPath,
   testPollJoiningWasmPath,
   testProcessMessagesWasmPath,
@@ -55,6 +54,7 @@ import {
   deployArgs,
   timeTravelArgs,
   coordinatorKeypair,
+  verifyingKeysArgs,
 } from "../constants";
 import { clean, getBackupFilenames, isArm, relayTestMessages } from "../utils";
 
@@ -100,9 +100,9 @@ describe("e2e tests", function test() {
     signer = await getDefaultSigner();
 
     // we deploy the vk registry contract
-    await deployVkRegistryContract({ signer });
+    const vkRegistryAddress = await deployVkRegistryContract({ signer });
     // we set the verifying keys
-    await setVerifyingKeysCli({ ...setVerifyingKeysArgs, signer });
+    await setVerifyingKeys({ ...(await verifyingKeysArgs(signer)), vkRegistryAddress });
   });
 
   describe("2 signups (1 after stateAq is merged and logs are fetched), 1 message", () => {

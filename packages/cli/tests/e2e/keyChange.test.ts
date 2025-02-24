@@ -2,7 +2,15 @@ import { expect } from "chai";
 import { VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
-import { generateVote, getBlockTimestamp, getDefaultSigner, signup, mergeSignups, verify } from "maci-sdk";
+import {
+  generateVote,
+  getBlockTimestamp,
+  getDefaultSigner,
+  signup,
+  mergeSignups,
+  verify,
+  setVerifyingKeys,
+} from "maci-sdk";
 
 import fs from "fs";
 
@@ -17,7 +25,6 @@ import {
   joinPoll,
   proveOnChain,
   publish,
-  setVerifyingKeysCli,
   timeTravel,
 } from "../../ts/commands";
 import { DEFAULT_SG_DATA, GenProofsArgs } from "../../ts/utils";
@@ -27,7 +34,6 @@ import {
   deployPollArgs,
   processMessageTestZkeyPath,
   mergeSignupsArgs,
-  setVerifyingKeysArgs,
   tallyVotesTestZkeyPath,
   testProcessMessagesWasmPath,
   testProcessMessagesWitnessDatPath,
@@ -46,6 +52,7 @@ import {
   testPollJoiningWitnessPath,
   pollDuration,
   coordinatorKeypair,
+  verifyingKeysArgs,
 } from "../constants";
 import { clean, getBackupFilenames, isArm, relayTestMessages } from "../utils";
 
@@ -78,9 +85,9 @@ describe("keyChange tests", function test() {
     signer = await getDefaultSigner();
 
     // we deploy the vk registry contract
-    await deployVkRegistryContract({ signer });
+    const vkRegistryAddress = await deployVkRegistryContract({ signer });
     // we set the verifying keys
-    await setVerifyingKeysCli({ ...setVerifyingKeysArgs, signer });
+    await setVerifyingKeys({ ...(await verifyingKeysArgs(signer)), vkRegistryAddress });
   });
 
   describe("keyChange and new vote (new vote has same nonce)", () => {

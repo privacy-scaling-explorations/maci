@@ -1,11 +1,11 @@
 import { expect } from "chai";
 import { Signer } from "ethers";
 import { Keypair } from "maci-domainobjs";
-import { getDefaultSigner, getSignedupUserData, signup } from "maci-sdk";
+import { getDefaultSigner, getSignedupUserData, setVerifyingKeys, signup } from "maci-sdk";
 
-import { deploy, DeployedContracts, deployVkRegistryContract, setVerifyingKeysCli } from "../../ts";
+import { deploy, DeployedContracts, deployVkRegistryContract } from "../../ts";
 import { DEFAULT_SG_DATA } from "../../ts/utils";
-import { deployArgs, setVerifyingKeysArgs } from "../constants";
+import { deployArgs, verifyingKeysArgs } from "../constants";
 
 describe("signup", function test() {
   this.timeout(900000);
@@ -18,9 +18,9 @@ describe("signup", function test() {
     signer = await getDefaultSigner();
 
     // we deploy the vk registry contract
-    await deployVkRegistryContract({ signer });
+    const vkRegistryAddress = await deployVkRegistryContract({ signer });
     // we set the verifying keys
-    await setVerifyingKeysCli({ ...setVerifyingKeysArgs, signer });
+    await setVerifyingKeys({ ...(await verifyingKeysArgs(signer)), vkRegistryAddress });
     // deploy the smart contracts
     maciAddresses = await deploy({ ...deployArgs, signer });
   });

@@ -1,7 +1,7 @@
 import hardhat from "hardhat";
-import { deploy, deployPoll, deployVkRegistryContract, joinPoll, setVerifyingKeysCli } from "maci-cli";
+import { deploy, deployPoll, deployVkRegistryContract, joinPoll } from "maci-cli";
 import { Keypair } from "maci-domainobjs";
-import { genMaciStateFromContract, signup } from "maci-sdk";
+import { EMode, extractAllVks, genMaciStateFromContract, setVerifyingKeys, signup } from "maci-sdk";
 
 import {
   INT_STATE_TREE_DEPTH,
@@ -60,19 +60,25 @@ export class TestDeploy {
     const coordinatorKeypair = new Keypair();
     const user = new Keypair();
 
+    const { pollJoiningVk, pollJoinedVk, processVk, tallyVk } = await extractAllVks({
+      pollJoiningZkeyPath: pollJoiningZkey,
+      pollJoinedZkeyPath: pollJoinedZkey,
+      processMessagesZkeyPath: processMessagesZkeyPathNonQv,
+      tallyVotesZkeyPath: tallyVotesZkeyPathNonQv,
+    });
+
     const vkRegistry = await deployVkRegistryContract({ signer });
-    await setVerifyingKeysCli({
-      quiet: true,
-      vkRegistry,
+    await setVerifyingKeys({
+      vkRegistryAddress: vkRegistry,
       stateTreeDepth: STATE_TREE_DEPTH,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
-      processMessagesZkeyPathNonQv,
-      tallyVotesZkeyPathNonQv,
-      pollJoiningZkeyPath: pollJoiningZkey,
-      pollJoinedZkeyPath: pollJoinedZkey,
-      useQuadraticVoting: false,
+      pollJoiningVk: pollJoiningVk!,
+      pollJoinedVk: pollJoinedVk!,
+      processMessagesVk: processVk!,
+      tallyVotesVk: tallyVk!,
+      mode: EMode.NON_QV,
       signer,
     });
 

@@ -1,7 +1,16 @@
 import { VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
-import { generateVote, getBlockTimestamp, getDefaultSigner, signup, mergeSignups, verify } from "maci-sdk";
+import {
+  generateVote,
+  getBlockTimestamp,
+  getDefaultSigner,
+  signup,
+  mergeSignups,
+  verify,
+  setVerifyingKeys,
+  EMode,
+} from "maci-sdk";
 
 import type { Signer } from "ethers";
 
@@ -12,7 +21,6 @@ import {
   genProofs,
   proveOnChain,
   publish,
-  setVerifyingKeysCli,
   timeTravel,
 } from "../../ts/commands";
 import { DEFAULT_SG_DATA, DeployedContracts, GenProofsArgs } from "../../ts/utils";
@@ -27,7 +35,6 @@ import {
   testRapidsnarkPath,
   testTallyFilePath,
   deployArgs,
-  setVerifyingKeysNonQvArgs,
   testProcessMessagesNonQvWitnessPath,
   testProcessMessagesNonQvWitnessDatPath,
   testTallyVotesNonQvWitnessPath,
@@ -37,6 +44,7 @@ import {
   processMessageTestNonQvZkeyPath,
   tallyVotesTestNonQvZkeyPath,
   coordinatorKeypair,
+  verifyingKeysArgs,
 } from "../constants";
 import { clean, getBackupFilenames, isArm, relayTestMessages } from "../utils";
 
@@ -75,9 +83,9 @@ describe("e2e tests with non quadratic voting", function test() {
     signer = await getDefaultSigner();
 
     // we deploy the vk registry contract
-    await deployVkRegistryContract({ signer });
+    const vkRegistryAddress = await deployVkRegistryContract({ signer });
     // we set the verifying keys
-    await setVerifyingKeysCli({ ...setVerifyingKeysNonQvArgs, useQuadraticVoting: false, signer });
+    await setVerifyingKeys({ ...(await verifyingKeysArgs(signer, EMode.NON_QV)), vkRegistryAddress });
   });
 
   describe("1 signup, 1 message", () => {

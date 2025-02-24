@@ -149,71 +149,6 @@ export interface ISnarkJSVerificationKey {
 }
 
 /**
- * Interface for the arguments to the checkVerifyingKeys command
- */
-export interface CheckVerifyingKeysArgs {
-  /**
-   * The depth of the state tree
-   */
-  stateTreeDepth: number;
-
-  /**
-   * The depth of the state subtree
-   */
-  intStateTreeDepth: number;
-
-  /**
-   * The depth of the vote option tree
-   */
-  voteOptionTreeDepth: number;
-
-  /**
-   * The size of the message  batch
-   */
-  messageBatchSize: number;
-
-  /**
-   * The path to the poll joining zkey
-   */
-  pollJoiningZkeyPath: string;
-
-  /**
-   * The path to the poll joined zkey
-   */
-  pollJoinedZkeyPath: string;
-
-  /**
-   * The path to the process messages zkey
-   */
-  processMessagesZkeyPath: string;
-
-  /**
-   * The path to the tally votes zkey
-   */
-  tallyVotesZkeyPath: string;
-
-  /**
-   * A signer object
-   */
-  signer: Signer;
-
-  /**
-   * The address of the VkRegistry contract
-   */
-  vkRegistry?: string;
-
-  /**
-   * Whether to log the output
-   */
-  quiet?: boolean;
-
-  /**
-   * Whether to use quadratic voting or not
-   */
-  useQuadraticVoting?: boolean;
-}
-
-/**
  * Interface for the arguments to the deploy command
  */
 export interface DeployArgs {
@@ -870,81 +805,6 @@ export interface IPublishBatchData {
 }
 
 /**
- * Interface for the arguments to the setVerifyingKeys command
- */
-export interface SetVerifyingKeysArgs {
-  /**
-   * The depth of the state tree
-   */
-  stateTreeDepth: number;
-
-  /**
-   * The depth of the state subtree
-   */
-  intStateTreeDepth: number;
-
-  /**
-   * The depth of the vote option tree
-   */
-  voteOptionTreeDepth: number;
-
-  /**
-   * The size of message batch
-   */
-  messageBatchSize: number;
-
-  /**
-   * The path to the poll joining zkey
-   */
-  pollJoiningZkeyPath?: string;
-
-  /**
-   * The path to the poll joined zkey
-   */
-  pollJoinedZkeyPath?: string;
-
-  /**
-   * The path to the process messages qv zkey
-   */
-  processMessagesZkeyPathQv?: string;
-
-  /**
-   * The path to the tally votes qv zkey
-   */
-  tallyVotesZkeyPathQv?: string;
-
-  /**
-   * The path to the process messages non-qv zkey
-   */
-  processMessagesZkeyPathNonQv?: string;
-
-  /**
-   * The path to the tally votes non-qv zkey
-   */
-  tallyVotesZkeyPathNonQv?: string;
-
-  /**
-   * A signer object
-   */
-  signer: Signer;
-
-  /**
-   * The address of the vkRegistry contract
-   */
-  vkRegistry?: string;
-
-  /**
-   * Whether to log the output
-   */
-  quiet?: boolean;
-
-  /**
-   * Whether to use quadratic voting or not
-   */
-  useQuadraticVoting?: boolean;
-}
-
-/**
  * Interface for the arguments to the FundWallet command
  */
 export interface FundWalletArgs {
@@ -1002,43 +862,6 @@ export interface DeployVkRegistryArgs {
    * Whether to log the output
    */
   quiet?: boolean;
-}
-
-export interface ExtractVkToFileArgs {
-  /**
-   * File path for poll joining zkey
-   */
-  pollJoiningZkeyPath: string;
-
-  /**
-   * File path for poll joined zkey
-   */
-  pollJoinedZkeyPath: string;
-
-  /**
-   * File path for processMessagesQv zkey
-   */
-  processMessagesZkeyPathQv: string;
-
-  /**
-   * File path for tallyVotesQv zkey
-   */
-  tallyVotesZkeyPathQv: string;
-
-  /**
-   * File path for processMessagesNonQv zkey
-   */
-  processMessagesZkeyPathNonQv: string;
-
-  /**
-   * File path for tallyVotes zkey
-   */
-  tallyVotesZkeyPathNonQv: string;
-
-  /**
-   * Output file path of extracted vkeys
-   */
-  outputFilePath: string;
 }
 
 /**

@@ -2,13 +2,13 @@ import { expect } from "chai";
 import { Poll__factory as PollFactory } from "maci-contracts/typechain-types";
 import { SNARK_FIELD_SIZE } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
-import { getBlockTimestamp, getDefaultSigner, signup } from "maci-sdk";
+import { getBlockTimestamp, getDefaultSigner, setVerifyingKeys, signup } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
-import { deploy, deployPoll, deployVkRegistryContract, setVerifyingKeysCli, publishBatch } from "../../ts/commands";
+import { deploy, deployPoll, deployVkRegistryContract, publishBatch } from "../../ts/commands";
 import { DEFAULT_SG_DATA, DeployedContracts, IPublishBatchArgs, IPublishMessage, PollContracts } from "../../ts/utils";
-import { deployPollArgs, setVerifyingKeysArgs, deployArgs, pollDuration } from "../constants";
+import { deployPollArgs, deployArgs, pollDuration, verifyingKeysArgs } from "../constants";
 
 describe("publish", function test() {
   this.timeout(900000);
@@ -38,9 +38,9 @@ describe("publish", function test() {
     signer = await getDefaultSigner();
 
     // we deploy the vk registry contract
-    await deployVkRegistryContract({ signer });
+    const vkRegistryAddress = await deployVkRegistryContract({ signer });
     // we set the verifying keys
-    await setVerifyingKeysCli({ ...setVerifyingKeysArgs, signer });
+    await setVerifyingKeys({ ...(await verifyingKeysArgs(signer)), vkRegistryAddress });
   });
 
   describe("publish batch messages", () => {
