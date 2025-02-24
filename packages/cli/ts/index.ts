@@ -663,6 +663,7 @@ program
 
       // read the tally file
       const isTallyFileExists = fs.existsSync(cmdObj.tallyFile);
+
       if (!cmdObj.tallyFile || !isTallyFileExists) {
         logError(`Unable to open ${cmdObj.tallyFile}`);
       }
@@ -853,7 +854,6 @@ export {
   proveOnChain,
   setVerifyingKeysCli,
   timeTravel,
-  verify,
   joinPoll,
   isJoinedUser,
 } from "./commands";
@@ -866,7 +866,6 @@ export type {
   GenLocalStateArgs,
   GenProofsArgs,
   PublishArgs,
-  VerifyArgs,
   ProveOnChainArgs,
   DeployArgs,
   IPublishBatchArgs,

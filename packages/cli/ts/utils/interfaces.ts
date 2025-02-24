@@ -945,36 +945,6 @@ export interface SetVerifyingKeysArgs {
 }
 
 /**
- * Interface for the arguments to the verifyProof command
- */
-export interface VerifyArgs {
-  /**
-   * The id of the poll
-   */
-  pollId: bigint;
-
-  /**
-   * A signer object
-   */
-  signer: Signer;
-
-  /**
-   * The tally data
-   */
-  tallyData: TallyData;
-
-  /**
-   * The address of the MACI contract
-   */
-  maciAddress: string;
-
-  /**
-   * Whether to log the output
-   */
-  quiet?: boolean;
-}
-
-/**
  * Interface for the arguments to the FundWallet command
  */
 export interface FundWalletArgs {

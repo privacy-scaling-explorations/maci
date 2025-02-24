@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
-import { generateVote, getBlockTimestamp, getDefaultSigner, signup, mergeSignups } from "maci-sdk";
+import { generateVote, getBlockTimestamp, getDefaultSigner, signup, mergeSignups, verify } from "maci-sdk";
 
 import fs from "fs";
 
@@ -19,7 +19,6 @@ import {
   publish,
   setVerifyingKeysCli,
   timeTravel,
-  verify,
 } from "../../ts/commands";
 import { DEFAULT_SG_DATA, GenProofsArgs } from "../../ts/utils";
 import {
@@ -200,7 +199,7 @@ describe("keyChange tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...(await verifyArgs()), signer });
+      await verify({ ...(await verifyArgs(signer)) });
     });
 
     it("should confirm the tally is correct", async () => {
@@ -313,7 +312,7 @@ describe("keyChange tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...(await verifyArgs()), signer });
+      await verify({ ...(await verifyArgs(signer)) });
     });
 
     it("should confirm the tally is correct", async () => {
@@ -441,7 +440,7 @@ describe("keyChange tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...(await verifyArgs()), signer });
+      await verify({ ...(await verifyArgs(signer)) });
     });
 
     it("should confirm the tally is correct", async () => {

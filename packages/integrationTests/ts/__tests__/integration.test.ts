@@ -11,7 +11,6 @@ import {
   publish,
   setVerifyingKeysCli,
   timeTravel,
-  verify,
   DeployedContracts,
   joinPoll,
 } from "maci-cli";
@@ -27,6 +26,9 @@ import {
   relayMessages,
   signup,
   mergeSignups,
+  verify,
+  generateTallyCommitments,
+  getPollParams,
 } from "maci-sdk";
 
 import fs from "fs";
@@ -382,12 +384,21 @@ describe("Integration tests", function test() {
         }),
       ).to.not.be.rejected;
 
+      const pollParams = await getPollParams({ pollId: 0n, maciContractAddress: tallyData.maci, signer });
+      const tallyCommitments = generateTallyCommitments({
+        tallyData,
+        voteOptionTreeDepth: pollParams.voteOptionTreeDepth,
+      });
+
       // verify the proofs
       await expect(
         verify({
           pollId,
           tallyData,
           maciAddress: contracts.maciAddress,
+          tallyCommitments,
+          numVoteOptions: pollParams.numVoteOptions,
+          voteOptionTreeDepth: pollParams.voteOptionTreeDepth,
           signer,
         }),
       ).to.not.be.rejected;

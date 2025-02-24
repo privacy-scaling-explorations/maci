@@ -1,7 +1,7 @@
 import { VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
-import { generateVote, getBlockTimestamp, getDefaultSigner, signup, mergeSignups } from "maci-sdk";
+import { generateVote, getBlockTimestamp, getDefaultSigner, signup, mergeSignups, verify } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
@@ -14,7 +14,6 @@ import {
   publish,
   setVerifyingKeysCli,
   timeTravel,
-  verify,
 } from "../../ts/commands";
 import { DEFAULT_SG_DATA, DeployedContracts, GenProofsArgs } from "../../ts/utils";
 import {
@@ -134,10 +133,9 @@ describe("e2e tests with non quadratic voting", function test() {
       const tallyFileData = await genProofs({ ...genProofsArgs, signer, useQuadraticVoting: false });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({
-        ...(await verifyArgs()),
+        ...(await verifyArgs(signer)),
         tallyData: tallyFileData,
         maciAddress: tallyFileData.maci,
-        signer,
       });
     });
   });
@@ -214,10 +212,9 @@ describe("e2e tests with non quadratic voting", function test() {
       });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({
-        ...(await verifyArgs()),
+        ...(await verifyArgs(signer)),
         tallyData: tallyFileData,
         maciAddress: tallyFileData.maci,
-        signer,
       });
     });
   });
