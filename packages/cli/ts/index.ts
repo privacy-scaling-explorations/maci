@@ -13,6 +13,11 @@ import {
   generateMaciPublicKey,
   generateKeypair,
   mergeSignups,
+  checkVerifyingKeys,
+  setVerifyingKeys,
+  extractAllVks,
+  EMode,
+  extractVkToFile,
 } from "maci-sdk";
 
 import fs from "fs";
@@ -27,14 +32,11 @@ import {
   showContracts,
   deployPoll,
   publish,
-  setVerifyingKeysCli,
   timeTravel,
   genProofs,
   fundWallet,
   proveOnChain,
-  checkVerifyingKeys,
   genLocalState,
-  extractVkToFile,
 } from "./commands";
 import {
   DEFAULT_IVCP_DATA,
@@ -45,6 +47,7 @@ import {
   logError,
   logGreen,
   logRed,
+  logYellow,
   promptSensitiveValue,
   readContractAddress,
   success,
@@ -131,6 +134,10 @@ program
   .action(async (cmdOptions) => {
     try {
       const signer = await getSigner();
+      const network = await signer.provider?.getNetwork();
+      const vkContractAddress = cmdOptions.vkContract || (await readContractAddress("VkRegistry", network?.name));
+
+      logYellow(cmdOptions.quiet, info("Retrieving verifying keys from the contract..."));
 
       await checkVerifyingKeys({
         stateTreeDepth: cmdOptions.stateTreeDepth,
@@ -141,11 +148,12 @@ program
         tallyVotesZkeyPath: cmdOptions.tallyVotesZkey,
         pollJoiningZkeyPath: cmdOptions.pollJoiningZkey,
         pollJoinedZkeyPath: cmdOptions.pollJoinedZkey,
-        vkRegistry: cmdOptions.vkContract,
-        quiet: cmdOptions.quiet,
+        vkRegistry: vkContractAddress,
         useQuadraticVoting: cmdOptions.useQuadraticVoting,
         signer,
       });
+
+      logGreen(cmdOptions.quiet, success("Verifying keys match"));
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -345,21 +353,30 @@ program
   .action(async (cmdObj) => {
     try {
       const signer = await getSigner();
+      const network = await signer.provider?.getNetwork();
 
-      await setVerifyingKeysCli({
+      const vkRegistryAddress = cmdObj.vkRegistry || (await readContractAddress("VkRegistry", network?.name));
+
+      const { pollJoiningVk, pollJoinedVk, processVk, tallyVk } = await extractAllVks({
+        pollJoiningZkeyPath: cmdObj.pollJoiningZkey,
+        pollJoinedZkeyPath: cmdObj.pollJoinedZkey,
+        processMessagesZkeyPath: cmdObj.useQuadraticVoting
+          ? cmdObj.processMessagesZkeyQv
+          : cmdObj.processMessagesZkeyNonQv,
+        tallyVotesZkeyPath: cmdObj.useQuadraticVoting ? cmdObj.tallyVotesZkeyQv : cmdObj.tallyVotesZkeyQv,
+      });
+
+      await setVerifyingKeys({
         stateTreeDepth: cmdObj.stateTreeDepth,
         intStateTreeDepth: cmdObj.intStateTreeDepth,
         voteOptionTreeDepth: cmdObj.voteOptionTreeDepth,
         messageBatchSize: cmdObj.msgBatchSize,
-        pollJoiningZkeyPath: cmdObj.pollJoiningZkey,
-        pollJoinedZkeyPath: cmdObj.pollJoinedZkey,
-        processMessagesZkeyPathQv: cmdObj.processMessagesZkeyQv,
-        tallyVotesZkeyPathQv: cmdObj.tallyVotesZkeyQv,
-        processMessagesZkeyPathNonQv: cmdObj.processMessagesZkeyNonQv,
-        tallyVotesZkeyPathNonQv: cmdObj.tallyVotesZkeyNonQv,
-        vkRegistry: cmdObj.vkRegistry,
-        quiet: cmdObj.quiet,
-        useQuadraticVoting: cmdObj.useQuadraticVoting,
+        pollJoiningVk: pollJoiningVk!,
+        pollJoinedVk: pollJoinedVk!,
+        processMessagesVk: processVk!,
+        tallyVotesVk: tallyVk!,
+        vkRegistryAddress,
+        mode: cmdObj.useQuadraticVoting ? EMode.QV : EMode.NON_QV,
         signer,
       });
     } catch (error) {
@@ -842,7 +859,6 @@ if (require.main === module) {
 
 // export everything so we can use in other packages
 export {
-  checkVerifyingKeys,
   deploy,
   deployPoll,
   deployVkRegistryContract,
@@ -852,7 +868,6 @@ export {
   publish,
   publishBatch,
   proveOnChain,
-  setVerifyingKeysCli,
   timeTravel,
   joinPoll,
   isJoinedUser,

@@ -1,7 +1,17 @@
 import { VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
-import { generateVote, getBlockTimestamp, getDefaultSigner, signup, mergeSignups, verify } from "maci-sdk";
+import {
+  generateVote,
+  getBlockTimestamp,
+  getDefaultSigner,
+  signup,
+  mergeSignups,
+  verify,
+  setVerifyingKeys,
+  EMode,
+  extractAllVks,
+} from "maci-sdk";
 
 import type { Signer } from "ethers";
 
@@ -12,17 +22,9 @@ import {
   genProofs,
   proveOnChain,
   publish,
-  setVerifyingKeysCli,
   timeTravel,
 } from "../../ts/commands";
-import {
-  DEFAULT_SG_DATA,
-  DeployArgs,
-  DeployPollArgs,
-  DeployedContracts,
-  GenProofsArgs,
-  SetVerifyingKeysArgs,
-} from "../../ts/utils";
+import { DEFAULT_SG_DATA, DeployArgs, DeployPollArgs, DeployedContracts, GenProofsArgs } from "../../ts/utils";
 import {
   coordinatorPrivKey,
   coordinatorPubKey,
@@ -48,9 +50,10 @@ import {
   ceremonyTallyVotesNonQvZkeyPath,
   ceremonyProcessMessagesNonQvWasmPath,
   ceremonyTallyVotesNonQvWasmPath,
+  coordinatorKeypair,
+  verifyingKeysArgs,
   ceremonyPollJoiningZkeyPath,
   ceremonyPollJoinedZkeyPath,
-  coordinatorKeypair,
 } from "../constants";
 import { clean, getBackupFilenames, isArm, relayTestMessages } from "../utils";
 
@@ -67,21 +70,6 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
 
   let maciAddresses: DeployedContracts;
   let signer: Signer;
-
-  const verifyingKeysArgs: Omit<SetVerifyingKeysArgs, "signer"> = {
-    quiet: true,
-    stateTreeDepth,
-    intStateTreeDepth,
-    voteOptionTreeDepth,
-    messageBatchSize,
-    pollJoiningZkeyPath: ceremonyPollJoiningZkeyPath,
-    pollJoinedZkeyPath: ceremonyPollJoinedZkeyPath,
-    processMessagesZkeyPathQv: ceremonyProcessMessagesZkeyPath,
-    tallyVotesZkeyPathQv: ceremonyTallyVotesZkeyPath,
-    processMessagesZkeyPathNonQv: ceremonyProcessMessagesNonQvZkeyPath,
-    tallyVotesZkeyPathNonQv: ceremonyTallyVotesNonQvZkeyPath,
-    useQuadraticVoting: true,
-  };
 
   const ceremonyDeployArgs: Omit<DeployArgs, "signer"> = {
     stateTreeDepth,
@@ -121,9 +109,9 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
       signer = await getDefaultSigner();
 
       // we deploy the vk registry contract
-      await deployVkRegistryContract({ signer });
+      const vkRegistryAddress = await deployVkRegistryContract({ signer });
       // we set the verifying keys
-      await setVerifyingKeysCli({ ...verifyingKeysArgs, signer });
+      await setVerifyingKeys({ ...(await verifyingKeysArgs(signer)), vkRegistryAddress });
     });
 
     describe("1 user, 2 messages, 2 relayed messages", () => {
@@ -345,10 +333,29 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
     before(async () => {
       signer = await getDefaultSigner();
 
+      const { pollJoiningVk, pollJoinedVk, processVk, tallyVk } = await extractAllVks({
+        pollJoiningZkeyPath: ceremonyPollJoiningZkeyPath,
+        pollJoinedZkeyPath: ceremonyPollJoinedZkeyPath,
+        processMessagesZkeyPath: ceremonyProcessMessagesZkeyPath,
+        tallyVotesZkeyPath: ceremonyProcessMessagesNonQvZkeyPath,
+      });
+
       // we deploy the vk registry contract
-      await deployVkRegistryContract({ signer });
+      const vkRegistryAddress = await deployVkRegistryContract({ signer });
       // we set the verifying keys
-      await setVerifyingKeysCli({ ...verifyingKeysArgs, signer });
+      await setVerifyingKeys({
+        stateTreeDepth,
+        intStateTreeDepth,
+        voteOptionTreeDepth,
+        messageBatchSize,
+        pollJoiningVk: pollJoiningVk!,
+        pollJoinedVk: pollJoinedVk!,
+        processMessagesVk: processVk!,
+        tallyVotesVk: tallyVk!,
+        mode: EMode.QV,
+        vkRegistryAddress,
+        signer,
+      });
     });
 
     describe("1 signup, 1 message, 1 relayed message", () => {

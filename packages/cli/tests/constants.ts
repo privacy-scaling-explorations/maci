@@ -1,20 +1,20 @@
 import { Keypair } from "maci-domainobjs";
-import { generateTallyCommitments, getPollParams, type IMergeSignupsArgs, type IVerifyArgs } from "maci-sdk";
+import {
+  EMode,
+  extractAllVks,
+  generateTallyCommitments,
+  getPollParams,
+  ICheckVerifyingKeysArgs,
+  ISetVerifyingKeysArgs,
+  type IMergeSignupsArgs,
+  type IVerifyArgs,
+} from "maci-sdk";
 
 import { homedir } from "os";
 
 import type { Signer } from "ethers";
 
-import {
-  CheckVerifyingKeysArgs,
-  DeployArgs,
-  DeployPollArgs,
-  ProveOnChainArgs,
-  SetVerifyingKeysArgs,
-  TallyData,
-  TimeTravelArgs,
-  readJSONFile,
-} from "../ts/utils";
+import { DeployArgs, DeployPollArgs, ProveOnChainArgs, TallyData, TimeTravelArgs, readJSONFile } from "../ts/utils";
 
 export const STATE_TREE_DEPTH = 10;
 export const INT_STATE_TREE_DEPTH = 1;
@@ -95,31 +95,7 @@ export const pollDuration = 2000;
 export const maxMessages = 25;
 export const maxVoteOptions = 25;
 
-export const setVerifyingKeysArgs: Omit<SetVerifyingKeysArgs, "signer"> = {
-  quiet: true,
-  stateTreeDepth: STATE_TREE_DEPTH,
-  intStateTreeDepth: INT_STATE_TREE_DEPTH,
-  voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
-  messageBatchSize: MESSAGE_BATCH_SIZE,
-  pollJoiningZkeyPath: pollJoiningTestZkeyPath,
-  pollJoinedZkeyPath: pollJoinedTestZkeyPath,
-  processMessagesZkeyPathQv: processMessageTestZkeyPath,
-  tallyVotesZkeyPathQv: tallyVotesTestZkeyPath,
-};
-
-export const setVerifyingKeysNonQvArgs: Omit<SetVerifyingKeysArgs, "signer"> = {
-  quiet: true,
-  stateTreeDepth: STATE_TREE_DEPTH,
-  intStateTreeDepth: INT_STATE_TREE_DEPTH,
-  voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
-  messageBatchSize: MESSAGE_BATCH_SIZE,
-  pollJoiningZkeyPath: pollJoiningTestZkeyPath,
-  pollJoinedZkeyPath: pollJoinedTestZkeyPath,
-  processMessagesZkeyPathNonQv: processMessageTestNonQvZkeyPath,
-  tallyVotesZkeyPathNonQv: tallyVotesTestNonQvZkeyPath,
-};
-
-export const checkVerifyingKeysArgs: Omit<CheckVerifyingKeysArgs, "signer"> = {
+export const checkVerifyingKeysArgs: Omit<ICheckVerifyingKeysArgs, "vkRegistry" | "signer"> = {
   stateTreeDepth: STATE_TREE_DEPTH,
   intStateTreeDepth: INT_STATE_TREE_DEPTH,
   voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
@@ -159,6 +135,31 @@ export const verifyArgs = async (signer: Signer): Promise<IVerifyArgs> => {
     tallyCommitments,
     numVoteOptions: tallyData.results.tally.length,
     voteOptionTreeDepth: pollParams.voteOptionTreeDepth,
+    signer,
+  };
+};
+
+export const verifyingKeysArgs = async (
+  signer: Signer,
+  mode = EMode.QV,
+): Promise<Omit<ISetVerifyingKeysArgs, "vkRegistryAddress">> => {
+  const { pollJoiningVk, pollJoinedVk, processVk, tallyVk } = await extractAllVks({
+    pollJoiningZkeyPath: pollJoiningTestZkeyPath,
+    pollJoinedZkeyPath: pollJoinedTestZkeyPath,
+    processMessagesZkeyPath: mode === EMode.QV ? processMessageTestZkeyPath : processMessageTestNonQvZkeyPath,
+    tallyVotesZkeyPath: mode === EMode.QV ? tallyVotesTestZkeyPath : tallyVotesTestNonQvZkeyPath,
+  });
+
+  return {
+    stateTreeDepth: STATE_TREE_DEPTH,
+    intStateTreeDepth: INT_STATE_TREE_DEPTH,
+    voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
+    messageBatchSize: MESSAGE_BATCH_SIZE,
+    pollJoiningVk: pollJoiningVk!,
+    pollJoinedVk: pollJoinedVk!,
+    processMessagesVk: processVk!,
+    tallyVotesVk: tallyVk!,
+    mode,
     signer,
   };
 };

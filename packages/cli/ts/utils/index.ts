@@ -16,7 +16,6 @@ export {
   DEFAULT_SR_QUEUE_OPS,
 } from "./defaults";
 export type {
-  CheckVerifyingKeysArgs,
   DeployVkRegistryArgs,
   DeployArgs,
   DeployedContracts,
@@ -30,13 +29,11 @@ export type {
   IJoinPollData,
   IJoinedUserArgs,
   IParsePollJoinEventsArgs,
-  SetVerifyingKeysArgs,
   ProveOnChainArgs,
   PublishArgs,
   DeployPollArgs,
   PollContracts,
   TallyData,
-  ExtractVkToFileArgs,
   IPublishBatchArgs,
   IPublishBatchData,
   IPublishMessage,

@@ -1,6 +1,8 @@
+export { checkVerifyingKeys } from "./checkVerifyingKeys";
 export { generateKeypair } from "./keypair";
 export { generateMaciPublicKey } from "./publicKeys";
-export { getAllOnChainVks, compareVks, extractAllVks, setVerifyingKeys } from "./verifyingKeys";
+export { setVerifyingKeys } from "./setVerifyingKeys";
+export { getAllOnChainVks, compareVks, extractAllVks, extractVkToFile } from "./utils";
 export type {
   IGetAllVksArgs,
   IMaciVerifyingKeys,
@@ -9,4 +11,5 @@ export type {
   ISetVerifyingKeysArgs,
   IGenerateKeypairArgs,
   IGenerateKeypairData,
+  ICheckVerifyingKeysArgs,
 } from "./types";

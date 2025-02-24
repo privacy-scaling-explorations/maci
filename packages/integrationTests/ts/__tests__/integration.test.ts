@@ -9,7 +9,6 @@ import {
   genProofs,
   proveOnChain,
   publish,
-  setVerifyingKeysCli,
   timeTravel,
   DeployedContracts,
   joinPoll,
@@ -29,6 +28,9 @@ import {
   verify,
   generateTallyCommitments,
   getPollParams,
+  setVerifyingKeys,
+  EMode,
+  extractAllVks,
 } from "maci-sdk";
 
 import fs from "fs";
@@ -78,30 +80,30 @@ describe("Integration tests", function test() {
     // 1. deploy Vk Registry
     const vkRegistryAddress = await deployVkRegistryContract({ signer });
     // 2. set verifying keys
-    await setVerifyingKeysCli({
+    const { pollJoiningVk, pollJoinedVk, processVk, tallyVk } = await extractAllVks({
+      pollJoiningZkeyPath: path.resolve(__dirname, "../../../cli/zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey"),
+      pollJoinedZkeyPath: path.resolve(__dirname, "../../../cli/zkeys/PollJoined_10_test/PollJoined_10_test.0.zkey"),
+      processMessagesZkeyPath: path.resolve(
+        __dirname,
+        "../../../cli/zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey",
+      ),
+      tallyVotesZkeyPath: path.resolve(
+        __dirname,
+        "../../../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey",
+      ),
+    });
+
+    await setVerifyingKeys({
       stateTreeDepth: STATE_TREE_DEPTH,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
-      pollJoiningZkeyPath: path.resolve(__dirname, "../../../cli/zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey"),
-      pollJoinedZkeyPath: path.resolve(__dirname, "../../../cli/zkeys/PollJoined_10_test/PollJoined_10_test.0.zkey"),
-      processMessagesZkeyPathQv: path.resolve(
-        __dirname,
-        "../../../cli/zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey",
-      ),
-      tallyVotesZkeyPathQv: path.resolve(
-        __dirname,
-        "../../../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey",
-      ),
-      processMessagesZkeyPathNonQv: path.resolve(
-        __dirname,
-        "../../../cli/zkeys/ProcessMessagesNonQv_10-20-2_test/ProcessMessagesNonQv_10-20-2_test.0.zkey",
-      ),
-      tallyVotesZkeyPathNonQv: path.resolve(
-        __dirname,
-        "../../../cli/zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test.0.zkey",
-      ),
-      vkRegistry: vkRegistryAddress,
+      mode: EMode.QV,
+      pollJoiningVk: pollJoiningVk!,
+      pollJoinedVk: pollJoinedVk!,
+      processMessagesVk: processVk!,
+      tallyVotesVk: tallyVk!,
+      vkRegistryAddress,
       signer,
     });
   });

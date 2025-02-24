@@ -1,27 +1,19 @@
 import { expect } from "chai";
 import { Signer } from "ethers";
 import { Keypair } from "maci-domainobjs";
-import { getBlockTimestamp, getDefaultSigner, signup } from "maci-sdk";
+import { getBlockTimestamp, getDefaultSigner, setVerifyingKeys, signup } from "maci-sdk";
 
-import {
-  deploy,
-  DeployedContracts,
-  deployVkRegistryContract,
-  setVerifyingKeysCli,
-  joinPoll,
-  deployPoll,
-  isJoinedUser,
-} from "../../ts";
+import { deploy, DeployedContracts, deployVkRegistryContract, joinPoll, deployPoll, isJoinedUser } from "../../ts";
 import { DEFAULT_SG_DATA } from "../../ts/utils";
 import {
   deployArgs,
   deployPollArgs,
-  setVerifyingKeysArgs,
   pollJoiningTestZkeyPath,
   testPollJoiningWasmPath,
   testRapidsnarkPath,
   testPollJoiningWitnessPath,
   pollDuration,
+  verifyingKeysArgs,
 } from "../constants";
 
 describe("joinPoll", function test() {
@@ -42,9 +34,9 @@ describe("joinPoll", function test() {
     const startDate = await getBlockTimestamp(signer);
 
     // we deploy the vk registry contract
-    await deployVkRegistryContract({ signer });
+    const vkRegistryAddress = await deployVkRegistryContract({ signer });
     // we set the verifying keys
-    await setVerifyingKeysCli({ ...setVerifyingKeysArgs, signer });
+    await setVerifyingKeys({ ...(await verifyingKeysArgs(signer)), vkRegistryAddress });
     // deploy the smart contracts
     maciAddresses = await deploy({ ...deployArgs, signer });
     // signup the user
