@@ -36,7 +36,6 @@ export type {
   DeployPollArgs,
   PollContracts,
   TallyData,
-  VerifyArgs,
   ExtractVkToFileArgs,
   IPublishBatchArgs,
   IPublishBatchData,

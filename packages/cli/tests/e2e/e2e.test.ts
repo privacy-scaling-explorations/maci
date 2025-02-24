@@ -2,7 +2,15 @@ import { expect } from "chai";
 import { VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
-import { generateVote, getBlockTimestamp, getDefaultSigner, getSignedupUserData, signup, mergeSignups } from "maci-sdk";
+import {
+  generateVote,
+  getBlockTimestamp,
+  getDefaultSigner,
+  getSignedupUserData,
+  signup,
+  mergeSignups,
+  verify,
+} from "maci-sdk";
 
 import fs from "fs";
 
@@ -18,7 +26,6 @@ import {
   publish,
   setVerifyingKeysCli,
   timeTravel,
-  verify,
   joinPoll,
   isJoinedUser,
 } from "../../ts/commands";
@@ -167,10 +174,9 @@ describe("e2e tests", function test() {
       });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({
-        ...(await verifyArgs()),
+        ...(await verifyArgs(signer)),
         tallyData: tallyFileData,
         maciAddress: tallyFileData.maci,
-        signer,
       });
     });
   });
@@ -456,7 +462,7 @@ describe("e2e tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...(await verifyArgs()), signer });
+      await verify({ ...(await verifyArgs(signer)) });
     });
   });
 
@@ -562,7 +568,7 @@ describe("e2e tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...(await verifyArgs()), signer });
+      await verify({ ...(await verifyArgs(signer)) });
     });
   });
 
@@ -640,7 +646,7 @@ describe("e2e tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       const tallyFileData = await genProofs({ ...genProofsArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...(await verifyArgs()), tallyData: tallyFileData, signer });
+      await verify({ ...(await verifyArgs(signer)), tallyData: tallyFileData });
     });
   });
 
@@ -778,7 +784,7 @@ describe("e2e tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       const tallyFileData = await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...(await verifyArgs()), tallyData: tallyFileData, signer });
+      await verify({ ...(await verifyArgs(signer)), tallyData: tallyFileData });
     });
   });
 
@@ -902,7 +908,7 @@ describe("e2e tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       const tallyFileData = await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...(await verifyArgs()), tallyData: tallyFileData, signer });
+      await verify({ ...(await verifyArgs(signer)), tallyData: tallyFileData });
       await clean();
     });
 
@@ -1053,7 +1059,7 @@ describe("e2e tests", function test() {
       await mergeSignups({ maciAddress: maciAddresses.maciAddress, pollId: 1n, signer });
       await genProofs({ ...genProofsArgs, pollId: 1n, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, pollId: 1n, signer });
-      await verify({ ...(await verifyArgs()), pollId: 1n, signer });
+      await verify({ ...(await verifyArgs(signer)), pollId: 1n });
     });
   });
 
@@ -1190,7 +1196,7 @@ describe("e2e tests", function test() {
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...(await verifyArgs()), signer });
+      await verify({ ...(await verifyArgs(signer)) });
       await clean();
     });
 
@@ -1412,11 +1418,10 @@ describe("e2e tests", function test() {
         signer,
       });
       await verify({
-        ...(await verifyArgs()),
+        ...(await verifyArgs(signer)),
         pollId: 1n,
         tallyData,
         maciAddress: maciAddresses.maciAddress,
-        signer,
       });
       await clean(false);
     });
@@ -1432,11 +1437,10 @@ describe("e2e tests", function test() {
         signer,
       });
       await verify({
-        ...(await verifyArgs()),
+        ...(await verifyArgs(signer)),
         pollId: 2n,
         tallyData,
         maciAddress: maciAddresses.maciAddress,
-        signer,
       });
     });
   });
@@ -1559,7 +1563,7 @@ describe("e2e tests", function test() {
         ipfsMessageBackupFiles,
       });
       await proveOnChain({ ...proveOnChainArgs, signer });
-      await verify({ ...(await verifyArgs()), signer });
+      await verify({ ...(await verifyArgs(signer)) });
     });
   });
 });

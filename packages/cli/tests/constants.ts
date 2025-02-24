@@ -1,8 +1,9 @@
 import { Keypair } from "maci-domainobjs";
+import { generateTallyCommitments, getPollParams, type IMergeSignupsArgs, type IVerifyArgs } from "maci-sdk";
 
 import { homedir } from "os";
 
-import type { IMergeSignupsArgs } from "maci-sdk";
+import type { Signer } from "ethers";
 
 import {
   CheckVerifyingKeysArgs,
@@ -12,7 +13,6 @@ import {
   SetVerifyingKeysArgs,
   TallyData,
   TimeTravelArgs,
-  VerifyArgs,
   readJSONFile,
 } from "../ts/utils";
 
@@ -144,13 +144,22 @@ export const proveOnChainArgs: Omit<ProveOnChainArgs, "signer"> = {
   proofDir: testProofsDirPath,
 };
 
-export const verifyArgs = async (): Promise<Omit<VerifyArgs, "signer">> => {
+export const verifyArgs = async (signer: Signer): Promise<IVerifyArgs> => {
   const tallyData = (await readJSONFile(testTallyFilePath)) as unknown as TallyData;
+  const pollParams = await getPollParams({ pollId: 0n, maciContractAddress: tallyData.maci, signer });
+  const tallyCommitments = generateTallyCommitments({
+    tallyData,
+    voteOptionTreeDepth: pollParams.voteOptionTreeDepth,
+  });
 
   return {
     pollId: 0n,
     tallyData,
     maciAddress: tallyData.maci,
+    tallyCommitments,
+    numVoteOptions: tallyData.results.tally.length,
+    voteOptionTreeDepth: pollParams.voteOptionTreeDepth,
+    signer,
   };
 };
 
