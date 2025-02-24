@@ -1,20 +1,11 @@
 import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts/typechain-types";
-import { genRandomSalt } from "maci-crypto";
-import {
-  type IG1ContractParams,
-  type IMessageContractParams,
-  Keypair,
-  PCommand,
-  PrivKey,
-  PubKey,
-} from "maci-domainobjs";
-import { generateVote, getCoordinatorPubKey } from "maci-sdk";
+import { PrivKey, PubKey } from "maci-domainobjs";
+import { generateVote, getCoordinatorPubKey, IVote, submitVote, submitVoteBatch } from "maci-sdk";
 
 import type { IPublishBatchArgs, IPublishBatchData, PublishArgs } from "../utils/interfaces";
 
 import { banner } from "../utils/banner";
 import { contractExists } from "../utils/contracts";
-import { validateSalt } from "../utils/salt";
 import { info, logError, logGreen, logYellow } from "../utils/theme";
 
 /**
@@ -39,7 +30,7 @@ export const publish = async ({
 
   // validate that the pub key of the user is valid
   if (!PubKey.isValidSerializedPubKey(pubkey)) {
-    logError("invalid MACI public key");
+    logError("Invalid MACI public key");
   }
   // deserialize
   const votePubKey = PubKey.deserialize(pubkey);
@@ -66,7 +57,7 @@ export const publish = async ({
   const coordinatorPubKey = await getCoordinatorPubKey(pollContracts.poll, signer);
   const maxVoteOption = await pollContract.voteOptions();
 
-  const { message, ephemeralKeypair } = generateVote({
+  const vote = generateVote({
     pollId,
     voteOptionIndex,
     salt,
@@ -81,21 +72,16 @@ export const publish = async ({
 
   try {
     // submit the message onchain as well as the encryption public key
-    const tx = await pollContract.publishMessage(message.asContractParam(), ephemeralKeypair.pubKey.asContractParam());
-    const receipt = await tx.wait();
+    const txHash = await submitVote({ pollAddress: await pollContract.getAddress(), vote, signer });
 
-    if (receipt?.status !== 1) {
-      logError("Transaction failed");
-    }
-
-    logYellow(quiet, info(`Transaction hash: ${receipt!.hash}`));
-    logGreen(quiet, info(`Ephemeral private key: ${ephemeralKeypair.privKey.serialize()}`));
+    logYellow(quiet, info(`Transaction hash: ${txHash}`));
+    logGreen(quiet, info(`Ephemeral private key: ${vote.ephemeralKeypair.privKey.serialize()}`));
   } catch (error) {
     logError((error as Error).message);
   }
 
   // we want the user to have the ephemeral private key
-  return ephemeralKeypair.privKey.serialize();
+  return vote.ephemeralKeypair.privKey.serialize();
 };
 
 /**
@@ -115,15 +101,15 @@ export const publishBatch = async ({
   banner(quiet);
 
   if (!PubKey.isValidSerializedPubKey(publicKey)) {
-    throw new Error("invalid MACI public key");
+    throw new Error("Invalid MACI public key");
   }
 
   if (!PrivKey.isValidSerializedPrivKey(privateKey)) {
-    throw new Error("invalid MACI private key");
+    throw new Error("Invalid MACI private key");
   }
 
   if (pollId < 0n) {
-    throw new Error(`invalid poll id ${pollId}`);
+    throw new Error(`Invalid poll id ${pollId}`);
   }
 
   const userMaciPubKey = PubKey.deserialize(publicKey);
@@ -133,73 +119,38 @@ export const publishBatch = async ({
 
   const pollContract = PollFactory.connect(pollContracts.poll, signer);
 
-  const [maxVoteOption, coordinatorPubKeyResult] = await Promise.all([
-    pollContract.voteOptions().then(Number),
-    pollContract.coordinatorPubKey(),
-  ]);
+  const maxVoteOption = await pollContract.voteOptions().then(Number);
+  const coordinatorPubKey = await getCoordinatorPubKey(pollContracts.poll, signer);
+
+  const votes: IVote[] = [];
 
   // validate the vote options index against the max leaf index on-chain
-  messages.forEach(({ stateIndex, voteOptionIndex, salt, nonce }) => {
-    if (voteOptionIndex < 0 || voteOptionIndex >= maxVoteOption) {
-      throw new Error("invalid vote option index");
-    }
-
-    // check < 1 cause index zero is a blank state leaf
-    if (stateIndex < 1) {
-      throw new Error("invalid state index");
-    }
-
-    if (nonce < 0) {
-      throw new Error("invalid nonce");
-    }
-
-    if (salt && !validateSalt(salt)) {
-      throw new Error("invalid salt");
-    }
+  messages.forEach(({ stateIndex, voteOptionIndex, salt, nonce, newVoteWeight }) => {
+    votes.push(
+      generateVote({
+        pollId,
+        voteOptionIndex,
+        nonce,
+        privateKey: userMaciPrivKey,
+        stateIndex,
+        maxVoteOption: BigInt(maxVoteOption),
+        salt,
+        voteWeight: newVoteWeight,
+        coordinatorPubKey,
+        newPubKey: userMaciPubKey,
+      }),
+    );
   });
 
-  const coordinatorPubKey = new PubKey([
-    BigInt(coordinatorPubKeyResult.x.toString()),
-    BigInt(coordinatorPubKeyResult.y.toString()),
-  ]);
-
-  const encryptionKeypair = new Keypair();
-  const sharedKey = Keypair.genEcdhSharedKey(encryptionKeypair.privKey, coordinatorPubKey);
-
-  const payload: [IMessageContractParams, IG1ContractParams][] = messages.map(
-    ({ salt, stateIndex, voteOptionIndex, newVoteWeight, nonce }) => {
-      const userSalt = salt ? BigInt(salt) : genRandomSalt();
-
-      // create the command object
-      const command = new PCommand(
-        stateIndex,
-        userMaciPubKey,
-        voteOptionIndex,
-        newVoteWeight,
-        nonce,
-        BigInt(pollId),
-        userSalt,
-      );
-
-      // sign the command with the user private key
-      const signature = command.sign(userMaciPrivKey);
-
-      const message = command.encrypt(signature, sharedKey);
-
-      return [message.asContractParam(), encryptionKeypair.pubKey.asContractParam()];
-    },
-  );
-
-  const preparedMessages = payload.map(([message]) => message);
-  const preparedKeys = payload.map(([, key]) => key);
-
-  const receipt = await pollContract
-    .publishMessageBatch(preparedMessages.reverse(), preparedKeys.reverse())
-    .then((tx) => tx.wait());
+  const txHash = await submitVoteBatch({
+    pollAddress: await pollContract.getAddress(),
+    votes: votes.reverse(),
+    signer,
+  });
 
   return {
-    hash: receipt?.hash,
-    encryptedMessages: preparedMessages,
-    privateKey: encryptionKeypair.privKey.serialize(),
+    hash: txHash!,
+    encryptedMessages: votes.map((vote) => vote.message),
+    privateKeys: votes.map((vote) => vote.ephemeralKeypair.privKey.serialize()),
   };
 };

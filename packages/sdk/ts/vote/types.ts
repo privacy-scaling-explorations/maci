@@ -1,3 +1,4 @@
+import type { Signer } from "ethers";
 import type { Keypair, Message, PrivKey, PubKey } from "maci-domainobjs";
 
 /**
@@ -65,29 +66,38 @@ export interface IVote {
 }
 
 /**
- * Inputs for circuit ProcessMessages
+ * Interface for the submitVote function
  */
-export interface IProcessMessagesInputs {
-  actualStateTreeDepth: bigint;
-  numSignUps: bigint;
-  batchEndIndex: bigint;
-  index: bigint;
-  inputBatchHash: bigint;
-  outputBatchHash: bigint;
-  msgs: bigint[];
-  coordPrivKey: bigint;
-  coordinatorPublicKeyHash: bigint;
-  encPubKeys: bigint[];
-  currentStateRoot: bigint;
-  currentStateLeaves: bigint[];
-  currentStateLeavesPathElements: bigint[][];
-  currentSbCommitment: bigint;
-  currentSbSalt: bigint;
-  newSbCommitment: bigint;
-  newSbSalt: bigint;
-  currentBallotRoot: bigint;
-  currentBallots: bigint[];
-  currentBallotsPathElements: bigint[][];
-  currentVoteWeights: bigint[];
-  currentVoteWeightsPathElements: bigint[][];
+export interface ISubmitVoteArgs {
+  /**
+   * The address of the poll
+   */
+  pollAddress: string;
+  /**
+   * The vote to submit
+   */
+  vote: IVote;
+  /**
+   * The signer to use
+   */
+  signer: Signer;
+}
+
+/**
+ * Interface for the submitVoteBatch function
+ */
+export interface ISubmitVoteBatchArgs {
+  /**
+   * The address of the poll
+   */
+  pollAddress: string;
+  /**
+   * The votes to submit
+   * @note The messages must be in reverse order (by nonce) to be processed correctly
+   */
+  votes: IVote[];
+  /**
+   * The signer to use
+   */
+  signer: Signer;
 }

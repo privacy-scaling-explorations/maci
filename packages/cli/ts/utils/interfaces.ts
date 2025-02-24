@@ -894,9 +894,9 @@ export interface IPublishBatchData {
   encryptedMessages: IMessageContractParams[];
 
   /**
-   * Encryption private key
+   * Encryption private keys
    */
-  privateKey: string;
+  privateKeys: string[];
 }
 
 /**
