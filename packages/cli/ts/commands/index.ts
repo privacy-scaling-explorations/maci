@@ -5,6 +5,6 @@ export { deployVkRegistryContract } from "./deployVkRegistry";
 export { publish, publishBatch } from "./publish";
 export { showContracts } from "./showContracts";
 export { timeTravel } from "./timeTravel";
-export { genProofs } from "./genProofs";
+export { genProofsCommand } from "./genProofs";
 export { fundWallet } from "./fundWallet";
 export { proveOnChain } from "./proveOnChain";

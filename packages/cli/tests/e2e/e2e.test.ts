@@ -22,7 +22,7 @@ import {
   deploy,
   deployPoll,
   deployVkRegistryContract,
-  genProofs,
+  genProofsCommand,
   proveOnChain,
   publish,
   timeTravel,
@@ -77,7 +77,7 @@ describe("e2e tests", function test() {
   let maciAddresses: DeployedContracts;
   let signer: Signer;
 
-  const genProofsArgs: Omit<GenProofsArgs, "signer"> = {
+  const genProofsCommandArgs: Omit<GenProofsArgs, "signer"> = {
     outputDir: testProofsDirPath,
     tallyFile: testTallyFilePath,
     tallyZkey: tallyVotesTestZkeyPath,
@@ -165,7 +165,7 @@ describe("e2e tests", function test() {
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-      const tallyFileData = await genProofs({ ...genProofsArgs, signer });
+      const tallyFileData = await genProofsCommand({ ...genProofsCommandArgs, signer });
       await signup({
         maciAddress: maciAddresses.maciAddress,
         maciPubKey: user.pubKey.serialize(),
@@ -460,7 +460,7 @@ describe("e2e tests", function test() {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-      await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
+      await genProofsCommand({ ...genProofsCommandArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...(await verifyArgs(signer)) });
     });
@@ -566,7 +566,7 @@ describe("e2e tests", function test() {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-      await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
+      await genProofsCommand({ ...genProofsCommandArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...(await verifyArgs(signer)) });
     });
@@ -644,7 +644,7 @@ describe("e2e tests", function test() {
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-      const tallyFileData = await genProofs({ ...genProofsArgs, signer });
+      const tallyFileData = await genProofsCommand({ ...genProofsCommandArgs, signer });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...(await verifyArgs(signer)), tallyData: tallyFileData });
     });
@@ -782,7 +782,7 @@ describe("e2e tests", function test() {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-      const tallyFileData = await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
+      const tallyFileData = await genProofsCommand({ ...genProofsCommandArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...(await verifyArgs(signer)), tallyData: tallyFileData });
     });
@@ -906,7 +906,7 @@ describe("e2e tests", function test() {
       await timeTravel({ ...timeTravelArgs, signer });
       // generate proofs
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-      const tallyFileData = await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
+      const tallyFileData = await genProofsCommand({ ...genProofsCommandArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...(await verifyArgs(signer)), tallyData: tallyFileData });
       await clean();
@@ -1057,7 +1057,7 @@ describe("e2e tests", function test() {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ maciAddress: maciAddresses.maciAddress, pollId: 1n, signer });
-      await genProofs({ ...genProofsArgs, pollId: 1n, signer, ipfsMessageBackupFiles });
+      await genProofsCommand({ ...genProofsCommandArgs, pollId: 1n, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, pollId: 1n, signer });
       await verify({ ...(await verifyArgs(signer)), pollId: 1n });
     });
@@ -1194,7 +1194,7 @@ describe("e2e tests", function test() {
       await timeTravel({ ...timeTravelArgs, signer });
       // generate proofs
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-      await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
+      await genProofsCommand({ ...genProofsCommandArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...(await verifyArgs(signer)) });
       await clean();
@@ -1410,7 +1410,7 @@ describe("e2e tests", function test() {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ maciAddress: maciAddresses.maciAddress, pollId: 1n, signer });
-      const tallyData = await genProofs({ ...genProofsArgs, pollId: 1n, signer, ipfsMessageBackupFiles });
+      const tallyData = await genProofsCommand({ ...genProofsCommandArgs, pollId: 1n, signer, ipfsMessageBackupFiles });
       await proveOnChain({
         ...proveOnChainArgs,
         pollId: 1n,
@@ -1429,7 +1429,7 @@ describe("e2e tests", function test() {
     it("should complete the third poll", async () => {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await mergeSignups({ maciAddress: maciAddresses.maciAddress, pollId: 2n, signer });
-      const tallyData = await genProofs({ ...genProofsArgs, pollId: 2n, signer, ipfsMessageBackupFiles });
+      const tallyData = await genProofsCommand({ ...genProofsCommandArgs, pollId: 2n, signer, ipfsMessageBackupFiles });
       await proveOnChain({
         ...proveOnChainArgs,
         pollId: 2n,
@@ -1557,8 +1557,8 @@ describe("e2e tests", function test() {
         signer,
         ipfsMessageBackupFiles,
       });
-      await genProofs({
-        ...genProofsArgs,
+      await genProofsCommand({
+        ...genProofsCommandArgs,
         stateFile: stateOutPath,
         signer,
         ipfsMessageBackupFiles,
