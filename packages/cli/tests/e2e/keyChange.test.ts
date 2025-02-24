@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { genRandomSalt } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
-import { generateVote, getBlockTimestamp, getDefaultSigner, signup } from "maci-sdk";
+import { generateVote, getBlockTimestamp, getDefaultSigner, signup, mergeSignups } from "maci-sdk";
 
 import fs from "fs";
 
@@ -15,7 +15,6 @@ import {
   deployVkRegistryContract,
   genProofs,
   joinPoll,
-  mergeSignups,
   proveOnChain,
   publish,
   setVerifyingKeysCli,
@@ -311,7 +310,7 @@ describe("keyChange tests", function test() {
     it("should generate zk-SNARK proofs and verify them", async () => {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeSignups({ ...mergeSignupsArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...(await verifyArgs()), signer });
@@ -439,7 +438,7 @@ describe("keyChange tests", function test() {
     it("should generate zk-SNARK proofs and verify them", async () => {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeSignups({ ...mergeSignupsArgs, signer });
+      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...(await verifyArgs()), signer });

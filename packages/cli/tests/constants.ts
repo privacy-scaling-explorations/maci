@@ -2,11 +2,12 @@ import { Keypair } from "maci-domainobjs";
 
 import { homedir } from "os";
 
+import type { IMergeSignupsArgs } from "maci-sdk";
+
 import {
   CheckVerifyingKeysArgs,
   DeployArgs,
   DeployPollArgs,
-  MergeSignupsArgs,
   ProveOnChainArgs,
   SetVerifyingKeysArgs,
   TallyData,
@@ -133,7 +134,7 @@ export const timeTravelArgs: Omit<TimeTravelArgs, "signer"> = {
   seconds: pollDuration,
 };
 
-export const mergeSignupsArgs: Omit<MergeSignupsArgs, "signer"> = {
+export const mergeSignupsArgs: Omit<IMergeSignupsArgs, "maciAddress" | "signer"> = {
   pollId: 0n,
 };
 

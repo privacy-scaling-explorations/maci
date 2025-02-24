@@ -123,3 +123,28 @@ export interface IMerkleProofGatekeeperData {
    */
   root: string;
 }
+
+/**
+ * Interface for the arguments to the mergeSignups command
+ */
+export interface IMergeSignupsArgs {
+  /**
+   * The id of the poll
+   */
+  pollId: bigint;
+
+  /**
+   * A signer object
+   */
+  signer: Signer;
+
+  /**
+   * The address of the MACI contract
+   */
+  maciAddress: string;
+
+  /**
+   * The number of queue operations to perform
+   */
+  numQueueOps?: string;
+}

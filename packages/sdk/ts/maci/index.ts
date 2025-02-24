@@ -6,6 +6,7 @@ export {
   getHatsSingleGatekeeperData,
   getMerkleProofGatekeeperData,
 } from "./gatekeeper";
+export { mergeSignups } from "./merge";
 export { EGatekeeperTrait } from "./types";
 export type {
   IGetGatekeeperTraitArgs,
@@ -15,4 +16,5 @@ export type {
   IEASGatekeeperData,
   IHatsGatekeeperData,
   IMerkleProofGatekeeperData,
+  IMergeSignupsArgs,
 } from "./types";
