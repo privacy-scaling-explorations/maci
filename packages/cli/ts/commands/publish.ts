@@ -1,11 +1,10 @@
 import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts/typechain-types";
 import { PrivKey, PubKey } from "maci-domainobjs";
-import { generateVote, getCoordinatorPubKey, IVote, submitVote, submitVoteBatch } from "maci-sdk";
+import { contractExists, generateVote, getCoordinatorPubKey, IVote, submitVote, submitVoteBatch } from "maci-sdk";
 
 import type { IPublishBatchArgs, IPublishBatchData, PublishArgs } from "../utils/interfaces";
 
 import { banner } from "../utils/banner";
-import { contractExists } from "../utils/contracts";
 import { info, logError, logGreen, logYellow } from "../utils/theme";
 
 /**

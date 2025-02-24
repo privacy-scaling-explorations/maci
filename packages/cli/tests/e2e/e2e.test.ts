@@ -11,6 +11,7 @@ import {
   mergeSignups,
   verify,
   setVerifyingKeys,
+  generateMaciState,
 } from "maci-sdk";
 
 import fs from "fs";
@@ -21,7 +22,6 @@ import {
   deploy,
   deployPoll,
   deployVkRegistryContract,
-  genLocalState,
   genProofs,
   proveOnChain,
   publish,
@@ -1548,7 +1548,8 @@ describe("e2e tests", function test() {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-      await genLocalState({
+      await generateMaciState({
+        maciAddress: maciAddresses.maciAddress,
         outputPath: stateOutPath,
         coordinatorPrivateKey: coordinatorPrivKey,
         blockPerBatch: 50,

@@ -10,13 +10,14 @@ import {
   mergeSignups,
   verify,
   setVerifyingKeys,
+  ITallyData,
 } from "maci-sdk";
 
 import fs from "fs";
 
 import type { Signer } from "ethers";
 
-import { DeployedContracts, TallyData } from "../../ts";
+import { DeployedContracts } from "../../ts";
 import {
   deploy,
   deployPoll,
@@ -212,7 +213,7 @@ describe("keyChange tests", function test() {
     it("should confirm the tally is correct", async () => {
       const tallyData = JSON.parse(
         await fs.promises.readFile(testTallyFilePath).then((res) => res.toString()),
-      ) as TallyData;
+      ) as ITallyData;
       expect(tallyData.results.tally[0]).to.equal(expectedTally.toString());
       expect(tallyData.perVOSpentVoiceCredits?.tally[0]).to.equal(expectedPerVoteOptionTally.toString());
     });
@@ -325,7 +326,7 @@ describe("keyChange tests", function test() {
     it("should confirm the tally is correct", async () => {
       const tallyData = JSON.parse(
         await fs.promises.readFile(testTallyFilePath).then((res) => res.toString()),
-      ) as TallyData;
+      ) as ITallyData;
       expect(tallyData.results.tally[0]).to.equal(expectedTally.toString());
       expect(tallyData.perVOSpentVoiceCredits?.tally[0]).to.equal(expectedPerVoteOptionTally.toString());
     });
@@ -453,7 +454,7 @@ describe("keyChange tests", function test() {
     it("should confirm the tally is correct", async () => {
       const tallyData = JSON.parse(
         await fs.promises.readFile(testTallyFilePath).then((res) => res.toString()),
-      ) as TallyData;
+      ) as ITallyData;
       expect(tallyData.results.tally[2]).to.equal(expectedTally.toString());
       expect(tallyData.perVOSpentVoiceCredits?.tally[2]).to.equal(expectedPerVoteOptionTally.toString());
     });

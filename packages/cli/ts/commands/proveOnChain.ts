@@ -12,6 +12,7 @@ import {
   Verifier__factory as VerifierFactory,
   formatProofForVerifierContract,
   type IVerifyingKeyStruct,
+  contractExists,
 } from "maci-sdk";
 
 import fs from "fs";
@@ -20,7 +21,6 @@ import path from "path";
 import {
   asHex,
   banner,
-  contractExists,
   error,
   info,
   logError,

@@ -5,11 +5,11 @@ import {
   EMode,
   deployFreeForAllSignUpGatekeeper,
   deployConstantInitialVoiceCreditProxy,
+  contractExists,
 } from "maci-sdk";
 
 import {
   banner,
-  contractExists,
   readContractAddress,
   storeContractAddress,
   info,

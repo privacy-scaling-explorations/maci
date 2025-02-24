@@ -148,3 +148,69 @@ export interface IMergeSignupsArgs {
    */
   numQueueOps?: string;
 }
+
+/**
+ * Interface for the arguments to the genLocalState command
+ * Generate a local MACI state from the smart contracts events
+ */
+export interface IGenerateMaciStateArgs {
+  /**
+   * The id of the poll
+   */
+  pollId: bigint;
+
+  /**
+   * A signer object
+   */
+  signer: Signer;
+
+  /**
+   * The address of the MACI contract
+   */
+  maciAddress: string;
+
+  /**
+   * The private key of the MACI coordinator
+   */
+  coordinatorPrivateKey: string;
+
+  /**
+   * The ethereum provider
+   */
+  provider?: string;
+
+  /**
+   * The path where to write the state
+   */
+  outputPath?: string;
+
+  /**
+   * The start block number
+   */
+  startBlock?: number;
+
+  /**
+   * The end block number
+   */
+  endBlock?: number;
+
+  /**
+   * The number of blocks to fetch per batch
+   */
+  blockPerBatch?: number;
+
+  /**
+   * The transaction hash
+   */
+  transactionHash?: string;
+
+  /**
+   * The sleep time between batches
+   */
+  sleep?: number;
+
+  /**
+   * Backup files for ipfs messages (name format: ipfsHash.json)
+   */
+  ipfsMessageBackupFiles?: string[];
+}

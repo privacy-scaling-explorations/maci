@@ -6,7 +6,6 @@ export {
   oldContractAddressesStore,
   BLOCKS_STEP,
 } from "./constants";
-export { contractExists, currentBlockTimestamp } from "./contracts";
 export {
   DEFAULT_ETH_PROVIDER,
   DEFAULT_ETH_SK,
@@ -19,7 +18,6 @@ export type {
   DeployVkRegistryArgs,
   DeployArgs,
   DeployedContracts,
-  GenLocalStateArgs,
   GenProofsArgs,
   Proof,
   ISnarkJSVerificationKey,

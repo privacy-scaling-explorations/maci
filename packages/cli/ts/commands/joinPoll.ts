@@ -13,6 +13,7 @@ import {
   generateSignUpTree,
   MACI__factory as MACIFactory,
   Poll__factory as PollFactory,
+  contractExists,
 } from "maci-sdk";
 
 import fs from "fs";
@@ -20,7 +21,6 @@ import fs from "fs";
 import type { IJoinPollArgs, IJoinedUserArgs, IParsePollJoinEventsArgs, IJoinPollData } from "../utils";
 
 import {
-  contractExists,
   logError,
   logYellow,
   info,

@@ -2,7 +2,12 @@ import { type BigNumberish } from "ethers";
 import { type CircuitInputs, type IJsonMaciState, MaciState } from "maci-core";
 import { hash3, hashLeftRight, genTreeCommitment } from "maci-crypto";
 import { Keypair, PrivKey } from "maci-domainobjs";
-import { MACI__factory as MACIFactory, Poll__factory as PollFactory, genMaciStateFromContract } from "maci-sdk";
+import {
+  MACI__factory as MACIFactory,
+  Poll__factory as PollFactory,
+  contractExists,
+  genMaciStateFromContract,
+} from "maci-sdk";
 import { extractVk, genProofSnarkjs, genProofRapidSnark, verifyProof, type FullProveResult } from "maci-sdk";
 
 import fs from "fs";
@@ -11,7 +16,6 @@ import path from "path";
 import {
   asHex,
   banner,
-  contractExists,
   doesPathExist,
   info,
   logError,
