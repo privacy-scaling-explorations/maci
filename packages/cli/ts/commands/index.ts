@@ -1,10 +1,8 @@
 export { deploy } from "./deploy";
 export { deployPoll } from "./deployPoll";
-export { joinPoll, isJoinedUser } from "./joinPoll";
 export { deployVkRegistryContract } from "./deployVkRegistry";
 export { publish, publishBatch } from "./publish";
 export { showContracts } from "./showContracts";
 export { timeTravel } from "./timeTravel";
 export { genProofsCommand } from "./genProofs";
 export { fundWallet } from "./fundWallet";
-export { proveOnChain } from "./proveOnChain";

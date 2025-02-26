@@ -7,40 +7,11 @@ import fs from "fs";
 import type { Proof } from "../../ts/types";
 import type { VkRegistry, Verifier, MACI, Poll, MessageProcessor, Tally } from "../../typechain-types";
 
+import { readProofs } from "../../ts/proofs";
 import { ContractStorage } from "../helpers/ContractStorage";
 import { Deployment } from "../helpers/Deployment";
 import { Prover } from "../helpers/Prover";
 import { EContracts, TallyData, type ISubmitOnChainParams } from "../helpers/types";
-
-/**
- * Interface that represents read proofs arguments
- */
-interface IReadProofsArgs {
-  files: string[];
-  folder: string;
-  type: "tally" | "process";
-}
-
-/**
- * Read and parse proofs
- *
- * @param args - read proofs arguments
- * @returns proofs
- */
-async function readProofs({ files, folder, type }: IReadProofsArgs): Promise<Proof[]> {
-  return Promise.all(
-    files
-      .filter((f) => f.startsWith(`${type}_`) && f.endsWith(".json"))
-      .sort((a, b) => {
-        const numA = parseInt(a.match(/\d+/)?.[0] ?? "0", 10);
-        const numB = parseInt(b.match(/\d+/)?.[0] ?? "0", 10);
-        return numA - numB;
-      })
-      .map(async (file) =>
-        fs.promises.readFile(`${folder}/${file}`, "utf8").then((result) => JSON.parse(result) as Proof),
-      ),
-  );
-}
 
 /**
  * Prove hardhat task for submitting proofs on-chain as well as uploading tally results

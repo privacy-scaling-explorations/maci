@@ -19,6 +19,8 @@ import {
   EMode,
   extractVkToFile,
   generateMaciState,
+  proveOnChain,
+  type ITallyData,
 } from "maci-sdk";
 
 import fs from "fs";
@@ -35,13 +37,11 @@ import {
   publish,
   timeTravel,
   fundWallet,
-  proveOnChain,
   genProofsCommand,
 } from "./commands";
 import {
   DEFAULT_IVCP_DATA,
   DEFAULT_SG_DATA,
-  TallyData,
   banner,
   info,
   logError,
@@ -685,7 +685,7 @@ program
         logError(`Unable to open ${cmdObj.tallyFile}`);
       }
 
-      const tallyData = JSON.parse(await fs.promises.readFile(cmdObj.tallyFile, { encoding: "utf8" })) as TallyData;
+      const tallyData = JSON.parse(await fs.promises.readFile(cmdObj.tallyFile, { encoding: "utf8" })) as ITallyData;
 
       const maciAddress = tallyData.maci || cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
 
@@ -843,13 +843,14 @@ program
   .action(async (cmdObj) => {
     try {
       const signer = await getSigner();
+      const network = await signer.provider?.getNetwork();
+      const maciAddress = cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
 
       await proveOnChain({
         pollId: cmdObj.pollId,
         tallyFile: cmdObj.tallyFile,
         proofDir: cmdObj.proofDir,
-        maciAddress: cmdObj.maciAddress,
-        quiet: cmdObj.quiet,
+        maciAddress,
         signer,
       });
     } catch (error) {
@@ -870,10 +871,7 @@ export {
   genProofsCommand,
   publish,
   publishBatch,
-  proveOnChain,
   timeTravel,
-  joinPoll,
-  isJoinedUser,
 } from "./commands";
 
 export type {
@@ -882,7 +880,6 @@ export type {
   DeployPollArgs,
   GenProofsArgs,
   PublishArgs,
-  ProveOnChainArgs,
   DeployArgs,
   IPublishBatchArgs,
   IPublishBatchData,

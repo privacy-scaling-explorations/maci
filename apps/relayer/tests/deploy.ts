@@ -1,7 +1,7 @@
 import hardhat from "hardhat";
-import { deploy, deployPoll, deployVkRegistryContract, joinPoll } from "maci-cli";
+import { deploy, deployPoll, deployVkRegistryContract } from "maci-cli";
 import { Keypair } from "maci-domainobjs";
-import { EMode, extractAllVks, genMaciStateFromContract, setVerifyingKeys, signup } from "maci-sdk";
+import { EMode, extractAllVks, genMaciStateFromContract, setVerifyingKeys, signup, joinPoll } from "maci-sdk";
 
 import {
   INT_STATE_TREE_DEPTH,
@@ -28,6 +28,7 @@ interface IContractsData {
 }
 
 const DEFAULT_SG_DATA = "0x0000000000000000000000000000000000000000000000000000000000000000";
+const DEFAULT_IVCP_DATA = "0x0000000000000000000000000000000000000000000000000000000000000000";
 
 export class TestDeploy {
   private static INSTANCE?: TestDeploy;
@@ -116,7 +117,8 @@ export class TestDeploy {
       rapidsnark,
       signer,
       useWasm: true,
-      quiet: true,
+      sgDataArg: DEFAULT_SG_DATA,
+      ivcpDataArg: DEFAULT_IVCP_DATA,
     });
 
     const maciState = await genMaciStateFromContract({

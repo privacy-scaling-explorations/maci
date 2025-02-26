@@ -1,10 +1,10 @@
 import { expect } from "chai";
 import { Signer } from "ethers";
 import { Keypair } from "maci-domainobjs";
-import { getBlockTimestamp, getDefaultSigner, setVerifyingKeys, signup } from "maci-sdk";
+import { getBlockTimestamp, getDefaultSigner, getJoinedUserData, joinPoll, setVerifyingKeys, signup } from "maci-sdk";
 
-import { deploy, DeployedContracts, deployVkRegistryContract, joinPoll, deployPoll, isJoinedUser } from "../../ts";
-import { DEFAULT_SG_DATA } from "../../ts/utils";
+import { deploy, DeployedContracts, deployVkRegistryContract, deployPoll } from "../../ts";
+import { DEFAULT_IVCP_DATA, DEFAULT_SG_DATA } from "../../ts/utils";
 import {
   deployArgs,
   deployPollArgs,
@@ -64,16 +64,16 @@ describe("joinPoll", function test() {
       pollWasm: testPollJoiningWasmPath,
       pollWitgen: testPollJoiningWitnessPath,
       rapidsnark: testRapidsnarkPath,
-      quiet: true,
+      sgDataArg: DEFAULT_SG_DATA,
+      ivcpDataArg: DEFAULT_IVCP_DATA,
     });
 
-    const registeredUserData = await isJoinedUser({
+    const registeredUserData = await getJoinedUserData({
       maciAddress: maciAddresses.maciAddress,
       pollId: 0n,
       pollPubKey: user.pubKey.serialize(),
       signer,
       startBlock: startBlock || 0,
-      quiet: true,
     });
 
     expect(registeredUserData.isJoined).to.eq(true);
@@ -89,21 +89,25 @@ describe("joinPoll", function test() {
         signer,
         pollId: mockPollId,
         pollJoiningZkey: pollJoiningTestZkeyPath,
-        quiet: true,
+        sgDataArg: DEFAULT_SG_DATA,
+        ivcpDataArg: DEFAULT_IVCP_DATA,
       }),
     ).eventually.rejectedWith("PollDoesNotExist(9000)");
   });
 
   it("should throw error if state index is invalid", async () => {
+    const keypair = new Keypair();
+
     await expect(
       joinPoll({
         maciAddress: maciAddresses.maciAddress,
-        privateKey: userPrivateKey,
+        privateKey: keypair.privKey.serialize(),
         stateIndex: -1n,
         signer,
         pollId: 0n,
         pollJoiningZkey: pollJoiningTestZkeyPath,
-        quiet: true,
+        sgDataArg: DEFAULT_SG_DATA,
+        ivcpDataArg: DEFAULT_IVCP_DATA,
       }),
     ).eventually.rejectedWith("Invalid state index");
   });
@@ -117,7 +121,8 @@ describe("joinPoll", function test() {
         signer,
         pollId: -1n,
         pollJoiningZkey: pollJoiningTestZkeyPath,
-        quiet: true,
+        sgDataArg: DEFAULT_SG_DATA,
+        ivcpDataArg: DEFAULT_IVCP_DATA,
       }),
     ).eventually.rejectedWith("Invalid poll id");
   });

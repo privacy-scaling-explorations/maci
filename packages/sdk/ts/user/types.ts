@@ -419,30 +419,37 @@ export interface IGetPollJoiningCircuitEventsArgs {
    * The MACI contract
    */
   maciContract: MACI;
+
   /**
    * The state index
    */
   stateIndex: bigint;
+
   /**
    * The poll id
    */
   pollId: bigint;
+
   /**
    * The user's maci private key
    */
   userMaciPrivKey: PrivKey;
+
   /**
    * The signer
    */
   signer: Signer;
+
   /**
    * The start block
    */
   startBlock?: number;
+
   /**
    * The end block
    */
   endBlock?: number;
+
   /**
    * The blocks per batch
    */
@@ -457,14 +464,17 @@ export interface IGetPollJoiningCircuitInputsFromStateFileArgs {
    * The path to the file containing the serialized MACI state
    */
   stateFile: string;
+
   /**
    * The poll id
    */
   pollId: bigint;
+
   /**
    * The state index
    */
   stateIndex: bigint;
+
   /**
    * The user's maci private key
    */

@@ -96,9 +96,11 @@ export const parseSignupEvents = async ({
 export const getStateIndex = (pubKeys: PubKey[], userMaciPubKey: PubKey, stateIndex?: bigint): bigint | undefined => {
   if (!stateIndex) {
     const index = pubKeys.findIndex((key) => key.equals(userMaciPubKey));
+
     if (index > 0) {
       return BigInt(index);
     }
+
     throw new Error("MACI Public key not found");
   }
 
@@ -191,7 +193,13 @@ export const getPollJoiningCircuitInputsFromStateFile = async ({
   const maciState = MaciState.fromJSON(content);
   const poll = maciState.polls.get(pollId)!;
 
-  const userPubKey = new Keypair(userMaciPrivKey).pubKey;
+  const { pubKey: userPubKey } = new Keypair(userMaciPrivKey);
+  const loadedStateIndex = getStateIndex(maciState.pubKeys, userPubKey, stateIndex);
+
+  // check < 1 cause index zero is a blank state leaf
+  if (loadedStateIndex! < 1) {
+    throw new Error("Invalid state index");
+  }
 
   poll.updatePoll(BigInt(maciState.pubKeys.length));
 
@@ -243,7 +251,12 @@ export const getPollJoiningCircuitEvents = async ({
     sleepAmount: 0,
   });
 
-  const userPubKey = new Keypair(userMaciPrivKey).pubKey;
+  const { pubKey: userPubKey } = new Keypair(userMaciPrivKey);
+  const loadedStateIndex = getStateIndex(signUpData.pubKeys, userPubKey, stateIndex);
+
+  if (loadedStateIndex! < 1) {
+    throw new Error("Invalid state index");
+  }
 
   return joiningCircuitInputs(
     signUpData,

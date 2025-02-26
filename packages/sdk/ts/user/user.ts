@@ -217,9 +217,10 @@ export const joinPoll = async ({
   const pollContract = PollFactory.connect(pollContracts.poll, signer);
 
   // get the state index from the MACI contract
-  const stateIndex = await maciContract.getStateIndex(userMaciPubKey.hash());
+  const stateIndex = await maciContract.getStateIndex(userMaciPubKey.hash()).catch(() => -1n);
 
   let circuitInputs: CircuitInputs;
+
   if (stateFile) {
     circuitInputs = await getPollJoiningCircuitInputsFromStateFile({
       stateFile,

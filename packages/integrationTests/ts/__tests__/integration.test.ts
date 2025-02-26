@@ -6,12 +6,10 @@ import {
   deploy,
   deployPoll,
   deployVkRegistryContract,
-  genProofsCommand,
-  proveOnChain,
   publish,
   timeTravel,
   DeployedContracts,
-  joinPoll,
+  genProofsCommand,
 } from "maci-cli";
 import { MaciState, TreeDepths, VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { genPubKey, genRandomSalt, poseidon } from "maci-crypto";
@@ -31,6 +29,8 @@ import {
   setVerifyingKeys,
   EMode,
   extractAllVks,
+  proveOnChain,
+  joinPoll,
 } from "maci-sdk";
 
 import fs from "fs";
@@ -176,6 +176,9 @@ describe("Integration tests", function test() {
   };
 
   data.suites.forEach((testCase) => {
+    const DEFAULT_SG_DATA = "0x0000000000000000000000000000000000000000000000000000000000000000";
+    const DEFAULT_IVCP_DATA = "0x0000000000000000000000000000000000000000000000000000000000000000";
+
     it(testCase.description, async () => {
       const users = genTestUserCommands(testCase.numUsers, testCase.numVotesPerUser, testCase.bribers, testCase.votes);
 
@@ -209,8 +212,9 @@ describe("Integration tests", function test() {
             "../../../cli/zkeys/PollJoining_10_test/PollJoining_10_test_cpp/PollJoining_10_test",
           ),
           rapidsnark: `${homedir()}/rapidsnark/build/prover`,
+          sgDataArg: DEFAULT_SG_DATA,
+          ivcpDataArg: DEFAULT_IVCP_DATA,
           signer,
-          quiet: true,
         });
 
         // signup on local maci state

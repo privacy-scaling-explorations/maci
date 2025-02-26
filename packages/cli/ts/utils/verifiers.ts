@@ -1,7 +1,6 @@
 import { genTreeProof } from "maci-crypto";
 
-import type { TallyData } from "./interfaces";
-import type { Tally } from "maci-sdk";
+import type { ITallyData, Tally } from "maci-sdk";
 
 /**
  * Loop through each per vote option spent voice credits and verify it on-chain
@@ -15,7 +14,7 @@ import type { Tally } from "maci-sdk";
  */
 export const verifyPerVOSpentVoiceCredits = async (
   tallyContract: Tally,
-  tallyData: TallyData,
+  tallyData: ITallyData,
   voteOptionTreeDepth: number,
   newSpentVoiceCreditsCommitment: bigint,
   newResultsCommitment: bigint,
@@ -58,7 +57,7 @@ export const verifyPerVOSpentVoiceCredits = async (
  */
 export const verifyTallyResults = async (
   tallyContract: Tally,
-  tallyData: TallyData,
+  tallyData: ITallyData,
   voteOptionTreeDepth: number,
   newSpentVoiceCreditsCommitment: bigint,
   newPerVOSpentVoiceCreditsCommitment?: bigint,

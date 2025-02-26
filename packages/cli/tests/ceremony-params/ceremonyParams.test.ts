@@ -11,19 +11,12 @@ import {
   setVerifyingKeys,
   EMode,
   extractAllVks,
+  proveOnChain,
 } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
-import {
-  deploy,
-  deployPoll,
-  deployVkRegistryContract,
-  genProofsCommand,
-  proveOnChain,
-  publish,
-  timeTravel,
-} from "../../ts/commands";
+import { deploy, deployPoll, deployVkRegistryContract, genProofsCommand, publish, timeTravel } from "../../ts/commands";
 import { DEFAULT_SG_DATA, DeployArgs, DeployPollArgs, DeployedContracts, GenProofsArgs } from "../../ts/utils";
 import {
   coordinatorPrivKey,
@@ -211,7 +204,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
         await timeTravel({ seconds: pollDuration, signer });
         await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
         await genProofsCommand({ ...genProofsCommandCeremonyArgs, signer, ipfsMessageBackupFiles });
-        await proveOnChain({ ...proveOnChainArgs, signer });
+        await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
         await verify({ ...(await verifyArgs(signer)) });
       });
     });
@@ -304,7 +297,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
         await timeTravel({ seconds: pollDuration, signer });
         await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
         await genProofsCommand({ ...genProofsCommandCeremonyArgs, signer, ipfsMessageBackupFiles });
-        await proveOnChain({ ...proveOnChainArgs, signer });
+        await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
         await verify({ ...(await verifyArgs(signer)) });
       });
     });
@@ -443,7 +436,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
           ipfsMessageBackupFiles,
           useQuadraticVoting: false,
         });
-        await proveOnChain({ ...proveOnChainArgs, signer });
+        await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
         await verify({
           ...(await verifyArgs(signer)),
           tallyData: tallyFileData,
@@ -546,7 +539,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
           ipfsMessageBackupFiles,
           useQuadraticVoting: false,
         });
-        await proveOnChain({ ...proveOnChainArgs, signer });
+        await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
         await verify({
           ...(await verifyArgs(signer)),
           tallyData: tallyFileData,
