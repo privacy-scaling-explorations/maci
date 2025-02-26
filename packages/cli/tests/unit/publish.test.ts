@@ -8,23 +8,30 @@ import {
   setVerifyingKeys,
   signup,
   publishBatch,
-  deployPoll,
   deployVkRegistryContract,
   type IPublishMessage,
   type IPublishBatchArgs,
   type IPollContractsData,
+  deployPoll,
+  type IMaciContracts,
+  deployMaci,
+  deployFreeForAllSignUpGatekeeper,
+  deployConstantInitialVoiceCreditProxy,
+  deployVerifier,
 } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
-import { deploy } from "../../ts/commands";
-import { DEFAULT_SG_DATA, DeployedContracts } from "../../ts/utils";
+import { DEFAULT_INITIAL_VOICE_CREDITS, DEFAULT_SG_DATA } from "../../ts/utils";
 import { deployPollArgs, deployArgs, pollDuration, verifyingKeysArgs } from "../constants";
 
 describe("publish", function test() {
   this.timeout(900000);
 
-  let maciAddresses: DeployedContracts;
+  let maciAddresses: IMaciContracts;
+  let signupGatekeeperContractAddress: string;
+  let initialVoiceCreditProxyContractAddress: string;
+  let verifierContractAddress: string;
   let pollAddresses: IPollContractsData;
   let signer: Signer;
 
@@ -47,6 +54,18 @@ describe("publish", function test() {
   // before all tests we deploy the vk registry contract and set the verifying keys
   before(async () => {
     signer = await getDefaultSigner();
+    const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+    signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
+
+    const initialVoiceCreditProxy = await deployConstantInitialVoiceCreditProxy(
+      DEFAULT_INITIAL_VOICE_CREDITS,
+      signer,
+      true,
+    );
+    initialVoiceCreditProxyContractAddress = await initialVoiceCreditProxy.getAddress();
+
+    const verifier = await deployVerifier(signer, true);
+    verifierContractAddress = await verifier.getAddress();
 
     // we deploy the vk registry contract
     const vkRegistryAddress = await deployVkRegistryContract({ signer });
@@ -56,7 +75,12 @@ describe("publish", function test() {
     const startDate = await getBlockTimestamp(signer);
 
     // deploy the smart contracts
-    maciAddresses = await deploy({ ...deployArgs, signer });
+    maciAddresses = await deployMaci({
+      ...deployArgs,
+      signer,
+      signupGatekeeperAddress: signupGatekeeperContractAddress,
+    });
+
     // deploy a poll contract
     pollAddresses = await deployPoll({
       ...deployPollArgs,
@@ -64,11 +88,11 @@ describe("publish", function test() {
       pollStartTimestamp: startDate,
       pollEndTimestamp: startDate + pollDuration,
       relayers: [await signer.getAddress()],
-      maciAddress: maciAddresses.maciAddress,
-      verifierContractAddress: maciAddresses.verifierAddress,
+      maciAddress: maciAddresses.maciContractAddress,
+      verifierContractAddress,
       vkRegistryContractAddress: vkRegistryAddress,
-      gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
-      initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+      gatekeeperContractAddress: signupGatekeeperContractAddress,
+      initialVoiceCreditProxyContractAddress,
     });
   });
 
@@ -79,7 +103,7 @@ describe("publish", function test() {
 
     before(async () => {
       defaultArgs = {
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         publicKey: user.pubKey.serialize(),
         privateKey: user.privKey.serialize(),
         messages,
@@ -88,7 +112,7 @@ describe("publish", function test() {
       };
 
       await signup({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         maciPubKey: user.pubKey.serialize(),
         sgData: DEFAULT_SG_DATA,
         signer,

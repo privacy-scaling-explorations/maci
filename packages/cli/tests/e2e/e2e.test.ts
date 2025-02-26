@@ -22,14 +22,18 @@ import {
   timeTravel,
   type IGenerateProofsArgs,
   isArm,
+  deployMaci,
+  type IMaciContracts,
+  deployFreeForAllSignUpGatekeeper,
+  deployConstantInitialVoiceCreditProxy,
+  deployVerifier,
 } from "maci-sdk";
 
 import fs from "fs";
 
 import type { Signer } from "ethers";
 
-import { deploy } from "../../ts/commands";
-import { DEFAULT_IVCP_DATA, DEFAULT_SG_DATA, DeployedContracts } from "../../ts/utils";
+import { DEFAULT_IVCP_DATA, DEFAULT_SG_DATA, DEFAULT_INITIAL_VOICE_CREDITS } from "../../ts/utils";
 import {
   deployPollArgs,
   coordinatorPrivKey,
@@ -74,8 +78,11 @@ describe("e2e tests", function test() {
   const useWasm = isArm();
   this.timeout(900000);
 
-  let maciAddresses: DeployedContracts;
+  let maciAddresses: IMaciContracts;
   let vkRegistryAddress: string;
+  let signupGatekeeperContractAddress: string;
+  let initialVoiceCreditProxyContractAddress: string;
+  let verifierContractAddress: string;
   let signer: Signer;
 
   const generateProofsArgs: Omit<IGenerateProofsArgs, "maciAddress" | "signer"> = {
@@ -102,6 +109,20 @@ describe("e2e tests", function test() {
 
     // we deploy the vk registry contract
     vkRegistryAddress = await deployVkRegistryContract({ signer });
+
+    const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+    signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
+
+    const initialVoiceCreditProxy = await deployConstantInitialVoiceCreditProxy(
+      DEFAULT_INITIAL_VOICE_CREDITS,
+      signer,
+      true,
+    );
+    initialVoiceCreditProxyContractAddress = await initialVoiceCreditProxy.getAddress();
+
+    const verifier = await deployVerifier(signer, true);
+    verifierContractAddress = await verifier.getAddress();
+
     // we set the verifying keys
     await setVerifyingKeys({ ...(await verifyingKeysArgs(signer)), vkRegistryAddress });
   });
@@ -115,7 +136,11 @@ describe("e2e tests", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy({ ...deployArgs, signer });
+      maciAddresses = await deployMaci({
+        ...deployArgs,
+        signer,
+        signupGatekeeperAddress: signupGatekeeperContractAddress,
+      });
 
       const startDate = await getBlockTimestamp(signer);
 
@@ -126,17 +151,17 @@ describe("e2e tests", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciAddress: maciAddresses.maciAddress,
-        verifierContractAddress: maciAddresses.verifierAddress,
+        maciAddress: maciAddresses.maciContractAddress,
+        verifierContractAddress,
         vkRegistryContractAddress: vkRegistryAddress,
-        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
-        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+        gatekeeperContractAddress: signupGatekeeperContractAddress,
+        initialVoiceCreditProxyContractAddress,
       });
     });
 
     it("should signup one user", async () => {
       await signup({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         maciPubKey: user.pubKey.serialize(),
         sgData: DEFAULT_SG_DATA,
         signer,
@@ -145,7 +170,7 @@ describe("e2e tests", function test() {
 
     it("should join one user", async () => {
       await joinPoll({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         privateKey: user.privKey.serialize(),
         stateIndex: 1n,
         pollId: 0n,
@@ -168,7 +193,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
         privateKey: user.privKey.serialize(),
         signer,
@@ -177,19 +202,19 @@ describe("e2e tests", function test() {
 
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
+      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciContractAddress, signer });
       const { tallyData: tallyFileData } = await generateProofs({
         ...generateProofsArgs,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         signer,
       });
       await signup({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         maciPubKey: user.pubKey.serialize(),
         sgData: DEFAULT_SG_DATA,
         signer,
       });
-      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
+      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciContractAddress, signer });
       await verify({
         ...(await verifyArgs(signer)),
         tallyData: tallyFileData,
@@ -207,7 +232,11 @@ describe("e2e tests", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy({ ...deployArgs, signer });
+      maciAddresses = await deployMaci({
+        ...deployArgs,
+        signer,
+        signupGatekeeperAddress: signupGatekeeperContractAddress,
+      });
 
       const startDate = await getBlockTimestamp(signer);
 
@@ -218,11 +247,11 @@ describe("e2e tests", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciAddress: maciAddresses.maciAddress,
-        verifierContractAddress: maciAddresses.verifierAddress,
+        maciAddress: maciAddresses.maciContractAddress,
+        verifierContractAddress,
         vkRegistryContractAddress: vkRegistryAddress,
-        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
-        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+        gatekeeperContractAddress: signupGatekeeperContractAddress,
+        initialVoiceCreditProxyContractAddress,
       });
     });
 
@@ -231,7 +260,7 @@ describe("e2e tests", function test() {
       for (let i = 0; i < users.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         await signup({
-          maciAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           maciPubKey: users[i].pubKey.serialize(),
           sgData: DEFAULT_SG_DATA,
           signer,
@@ -244,7 +273,7 @@ describe("e2e tests", function test() {
       for (let i = 0; i < users.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         await joinPoll({
-          maciAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           privateKey: users[i].privKey.serialize(),
           stateIndex: BigInt(i + 1),
           pollId: 0n,
@@ -268,7 +297,7 @@ describe("e2e tests", function test() {
         nonce: 2n,
         pollId: 0n,
         newVoteWeight: 4n,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
         privateKey: users[0].privKey.serialize(),
         signer,
@@ -281,7 +310,7 @@ describe("e2e tests", function test() {
         nonce: 2n,
         pollId: 0n,
         newVoteWeight: 3n,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
         privateKey: users[0].privKey.serialize(),
         signer,
@@ -294,7 +323,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
         privateKey: users[0].privKey.serialize(),
         signer,
@@ -307,7 +336,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
         privateKey: users[1].privKey.serialize(),
         signer,
@@ -320,7 +349,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
         privateKey: users[2].privKey.serialize(),
         signer,
@@ -333,7 +362,7 @@ describe("e2e tests", function test() {
         nonce: 3n,
         pollId: 0n,
         newVoteWeight: 3n,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
         privateKey: users[3].privKey.serialize(),
         signer,
@@ -346,7 +375,7 @@ describe("e2e tests", function test() {
         nonce: 2n,
         pollId: 0n,
         newVoteWeight: 2n,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
         privateKey: users[3].privKey.serialize(),
         signer,
@@ -359,7 +388,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
         privateKey: users[3].privKey.serialize(),
         signer,
@@ -469,27 +498,27 @@ describe("e2e tests", function test() {
       const messages = votes
         .map((vote) => generateVote(vote))
         .map(({ message, ephemeralKeypair }) => ({
-          maciContractAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           poll: 0,
           data: message.data.map(String),
           publicKey: ephemeralKeypair.pubKey.asArray().map(String),
           hash: message.hash(ephemeralKeypair.pubKey).toString(),
         }));
 
-      await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciAddress });
+      await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciContractAddress });
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
+      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciContractAddress, signer });
       await generateProofs({
         ...generateProofsArgs,
         signer,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         ipfsMessageBackupFiles,
       });
-      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
+      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciContractAddress, signer });
       await verify({ ...(await verifyArgs(signer)) });
     });
   });
@@ -503,7 +532,11 @@ describe("e2e tests", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy({ ...deployArgs, signer });
+      maciAddresses = await deployMaci({
+        ...deployArgs,
+        signer,
+        signupGatekeeperAddress: signupGatekeeperContractAddress,
+      });
 
       const startDate = await getBlockTimestamp(signer);
 
@@ -514,11 +547,11 @@ describe("e2e tests", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciAddress: maciAddresses.maciAddress,
-        verifierContractAddress: maciAddresses.verifierAddress,
+        maciAddress: maciAddresses.maciContractAddress,
+        verifierContractAddress,
         vkRegistryContractAddress: vkRegistryAddress,
-        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
-        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+        gatekeeperContractAddress: signupGatekeeperContractAddress,
+        initialVoiceCreditProxyContractAddress,
       });
     });
 
@@ -526,7 +559,7 @@ describe("e2e tests", function test() {
       for (let i = 0; i < 8; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         await signup({
-          maciAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           maciPubKey: user.pubKey.serialize(),
           sgData: DEFAULT_SG_DATA,
           signer,
@@ -537,7 +570,7 @@ describe("e2e tests", function test() {
     it("should join user", async () => {
       // eslint-disable-next-line no-await-in-loop
       await joinPoll({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         privateKey: user.privKey.serialize(),
         stateIndex: 1n,
         pollId: 0n,
@@ -570,14 +603,14 @@ describe("e2e tests", function test() {
           }),
         )
         .map(({ message, ephemeralKeypair }) => ({
-          maciContractAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           poll: 0,
           data: message.data.map(String),
           publicKey: ephemeralKeypair.pubKey.asArray().map(String),
           hash: message.hash(ephemeralKeypair.pubKey).toString(),
         }));
 
-      await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciAddress });
+      await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciContractAddress });
 
       for (let i = 0; i < 12; i += 1) {
         // eslint-disable-next-line no-await-in-loop
@@ -588,7 +621,7 @@ describe("e2e tests", function test() {
           nonce: 1n,
           pollId: 0n,
           newVoteWeight: 9n,
-          maciAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           salt: genRandomSalt(),
           privateKey: user.privKey.serialize(),
           signer,
@@ -599,14 +632,14 @@ describe("e2e tests", function test() {
     it("should generate zk-SNARK proofs and verify them", async () => {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
+      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciContractAddress, signer });
       await generateProofs({
         ...generateProofsArgs,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         signer,
         ipfsMessageBackupFiles,
       });
-      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
+      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciContractAddress, signer });
       await verify({ ...(await verifyArgs(signer)) });
     });
   });
@@ -620,9 +653,14 @@ describe("e2e tests", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy({ ...deployArgs, signer });
+      maciAddresses = await deployMaci({
+        ...deployArgs,
+        signer,
+        signupGatekeeperAddress: signupGatekeeperContractAddress,
+      });
 
       const startDate = await getBlockTimestamp(signer);
+
       // deploy a poll contract
       await deployPoll({
         ...deployPollArgs,
@@ -630,11 +668,11 @@ describe("e2e tests", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciAddress: maciAddresses.maciAddress,
-        verifierContractAddress: maciAddresses.verifierAddress,
+        maciAddress: maciAddresses.maciContractAddress,
+        verifierContractAddress,
         vkRegistryContractAddress: vkRegistryAddress,
-        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
-        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+        gatekeeperContractAddress: signupGatekeeperContractAddress,
+        initialVoiceCreditProxyContractAddress,
       });
     });
 
@@ -643,7 +681,7 @@ describe("e2e tests", function test() {
       for (let i = 0; i < users.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         await signup({
-          maciAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           maciPubKey: users[i].pubKey.serialize(),
           sgData: DEFAULT_SG_DATA,
           signer,
@@ -656,7 +694,7 @@ describe("e2e tests", function test() {
       for (let i = 0; i < users.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         await joinPoll({
-          maciAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           privateKey: users[i].privKey.serialize(),
           stateIndex: BigInt(i + 1),
           pollId: 0n,
@@ -677,7 +715,7 @@ describe("e2e tests", function test() {
       for (let i = 0; i < users.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         await publish({
-          maciAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           pubkey: users[i].pubKey.serialize(),
           stateIndex: BigInt(i + 1),
           voteOptionIndex: 0n,
@@ -693,13 +731,13 @@ describe("e2e tests", function test() {
 
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
+      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciContractAddress, signer });
       const { tallyData: tallyFileData } = await generateProofs({
         ...generateProofsArgs,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         signer,
       });
-      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
+      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciContractAddress, signer });
       await verify({ ...(await verifyArgs(signer)), tallyData: tallyFileData });
     });
   });
@@ -713,7 +751,11 @@ describe("e2e tests", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy({ ...deployArgs, signer });
+      maciAddresses = await deployMaci({
+        ...deployArgs,
+        signer,
+        signupGatekeeperAddress: signupGatekeeperContractAddress,
+      });
 
       const startDate = await getBlockTimestamp(signer);
 
@@ -724,11 +766,11 @@ describe("e2e tests", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciAddress: maciAddresses.maciAddress,
-        verifierContractAddress: maciAddresses.verifierAddress,
+        maciAddress: maciAddresses.maciContractAddress,
+        verifierContractAddress,
         vkRegistryContractAddress: vkRegistryAddress,
-        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
-        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+        gatekeeperContractAddress: signupGatekeeperContractAddress,
+        initialVoiceCreditProxyContractAddress,
       });
     });
 
@@ -737,7 +779,7 @@ describe("e2e tests", function test() {
       for (let i = 0; i < users.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         await signup({
-          maciAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           maciPubKey: users[i].pubKey.serialize(),
           sgData: DEFAULT_SG_DATA,
           signer,
@@ -750,7 +792,7 @@ describe("e2e tests", function test() {
       for (let i = 0; i < users.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         await joinPoll({
-          maciAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           privateKey: users[i].privKey.serialize(),
           stateIndex: BigInt(i + 1),
           pollId: 0n,
@@ -771,7 +813,7 @@ describe("e2e tests", function test() {
       for (let i = 0; i < users.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         await publish({
-          maciAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           pubkey: users[i].pubKey.serialize(),
           stateIndex: 1n,
           voteOptionIndex: 0n,
@@ -828,27 +870,27 @@ describe("e2e tests", function test() {
       const messages = votes
         .map((vote) => generateVote(vote))
         .map(({ message, ephemeralKeypair }) => ({
-          maciContractAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           poll: 0,
           data: message.data.map(String),
           publicKey: ephemeralKeypair.pubKey.asArray().map(String),
           hash: message.hash(ephemeralKeypair.pubKey).toString(),
         }));
 
-      await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciAddress });
+      await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciContractAddress });
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
+      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciContractAddress, signer });
       const { tallyData: tallyFileData } = await generateProofs({
         ...generateProofsArgs,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         signer,
         ipfsMessageBackupFiles,
       });
-      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
+      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciContractAddress, signer });
       await verify({ ...(await verifyArgs(signer)), tallyData: tallyFileData });
     });
   });
@@ -862,7 +904,11 @@ describe("e2e tests", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy({ ...deployArgs, signer });
+      maciAddresses = await deployMaci({
+        ...deployArgs,
+        signer,
+        signupGatekeeperAddress: signupGatekeeperContractAddress,
+      });
 
       const startDate = await getBlockTimestamp(signer);
 
@@ -873,22 +919,22 @@ describe("e2e tests", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciAddress: maciAddresses.maciAddress,
-        verifierContractAddress: maciAddresses.verifierAddress,
+        maciAddress: maciAddresses.maciContractAddress,
+        verifierContractAddress,
         vkRegistryContractAddress: vkRegistryAddress,
-        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
-        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+        gatekeeperContractAddress: signupGatekeeperContractAddress,
+        initialVoiceCreditProxyContractAddress,
       });
       // signup
       await signup({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         maciPubKey: users[0].pubKey.serialize(),
         sgData: DEFAULT_SG_DATA,
         signer,
       });
       // joinPoll
       await joinPoll({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         privateKey: users[0].privKey.serialize(),
         stateIndex: 1n,
         pollId: 0n,
@@ -910,21 +956,21 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
         privateKey: users[0].privKey.serialize(),
         signer,
       });
 
       await signup({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         maciPubKey: users[1].pubKey.serialize(),
         sgData: DEFAULT_SG_DATA,
         signer,
       });
 
       await signup({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         maciPubKey: users[1].pubKey.serialize(),
         sgData: DEFAULT_SG_DATA,
         signer,
@@ -932,7 +978,7 @@ describe("e2e tests", function test() {
 
       // joinPoll
       await joinPoll({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         privateKey: users[1].privKey.serialize(),
         stateIndex: 2n,
         pollId: 0n,
@@ -964,27 +1010,27 @@ describe("e2e tests", function test() {
       const messages = votes
         .map((vote) => generateVote(vote))
         .map(({ message, ephemeralKeypair }) => ({
-          maciContractAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           poll: 0,
           data: message.data.map(String),
           publicKey: ephemeralKeypair.pubKey.asArray().map(String),
           hash: message.hash(ephemeralKeypair.pubKey).toString(),
         }));
 
-      await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciAddress });
+      await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciContractAddress });
 
       const ipfsMessageBackupFiles = await getBackupFilenames();
       // time travel
       await timeTravel({ ...timeTravelArgs, signer });
       // generate proofs
-      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
+      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciContractAddress, signer });
       const { tallyData: tallyFileData } = await generateProofs({
         ...generateProofsArgs,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         signer,
         ipfsMessageBackupFiles,
       });
-      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
+      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciContractAddress, signer });
       await verify({ ...(await verifyArgs(signer)), tallyData: tallyFileData });
       await clean();
     });
@@ -999,35 +1045,35 @@ describe("e2e tests", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciAddress: maciAddresses.maciAddress,
-        verifierContractAddress: maciAddresses.verifierAddress,
+        maciAddress: maciAddresses.maciContractAddress,
+        verifierContractAddress,
         vkRegistryContractAddress: vkRegistryAddress,
-        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
-        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+        gatekeeperContractAddress: signupGatekeeperContractAddress,
+        initialVoiceCreditProxyContractAddress,
       });
     });
 
     it("should signup four new users", async () => {
       await signup({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         maciPubKey: users[2].pubKey.serialize(),
         sgData: DEFAULT_SG_DATA,
         signer,
       });
       await signup({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         maciPubKey: users[3].pubKey.serialize(),
         sgData: DEFAULT_SG_DATA,
         signer,
       });
       await signup({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         maciPubKey: users[3].pubKey.serialize(),
         sgData: DEFAULT_SG_DATA,
         signer,
       });
       await signup({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         maciPubKey: users[3].pubKey.serialize(),
         sgData: DEFAULT_SG_DATA,
         signer,
@@ -1037,7 +1083,7 @@ describe("e2e tests", function test() {
     it("should join users", async () => {
       // joinPoll
       await joinPoll({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         privateKey: users[2].privKey.serialize(),
         stateIndex: 4n,
         pollId: 1n,
@@ -1052,7 +1098,7 @@ describe("e2e tests", function test() {
       });
       // joinPoll
       await joinPoll({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         privateKey: users[3].privKey.serialize(),
         stateIndex: 5n,
         pollId: 1n,
@@ -1098,14 +1144,14 @@ describe("e2e tests", function test() {
       const messages = votes
         .map((vote) => generateVote(vote))
         .map(({ message, ephemeralKeypair }) => ({
-          maciContractAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           poll: 1,
           data: message.data.map(String),
           publicKey: ephemeralKeypair.pubKey.asArray().map(String),
           hash: message.hash(ephemeralKeypair.pubKey).toString(),
         }));
 
-      await relayTestMessages({ messages, signer, pollId: 1, maciAddress: maciAddresses.maciAddress });
+      await relayTestMessages({ messages, signer, pollId: 1, maciAddress: maciAddresses.maciContractAddress });
     });
 
     it("should publish a new message from the first poll voter", async () => {
@@ -1116,7 +1162,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 1n,
         newVoteWeight: 7n,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
         privateKey: users[0].privKey.serialize(),
         signer,
@@ -1131,7 +1177,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 1n,
         newVoteWeight: 7n,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
         privateKey: users[1].privKey.serialize(),
         signer,
@@ -1141,15 +1187,15 @@ describe("e2e tests", function test() {
     it("should generate proofs and verify them", async () => {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeSignups({ maciAddress: maciAddresses.maciAddress, pollId: 1n, signer });
+      await mergeSignups({ maciAddress: maciAddresses.maciContractAddress, pollId: 1n, signer });
       await generateProofs({
         ...generateProofsArgs,
-        pollId: 1n,
-        maciAddress: maciAddresses.maciAddress,
+        pollId: 1,
+        maciAddress: maciAddresses.maciContractAddress,
         signer,
         ipfsMessageBackupFiles,
       });
-      await proveOnChain({ ...proveOnChainArgs, pollId: 1n, maciAddress: maciAddresses.maciAddress, signer });
+      await proveOnChain({ ...proveOnChainArgs, pollId: 1n, maciAddress: maciAddresses.maciContractAddress, signer });
       await verify({ ...(await verifyArgs(signer)), pollId: 1n });
     });
   });
@@ -1171,7 +1217,11 @@ describe("e2e tests", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy({ ...deployArgs, signer });
+      maciAddresses = await deployMaci({
+        ...deployArgs,
+        signer,
+        signupGatekeeperAddress: signupGatekeeperContractAddress,
+      });
     });
 
     it("should run the first poll", async () => {
@@ -1184,11 +1234,11 @@ describe("e2e tests", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciAddress: maciAddresses.maciAddress,
-        verifierContractAddress: maciAddresses.verifierAddress,
+        maciAddress: maciAddresses.maciContractAddress,
+        verifierContractAddress,
         vkRegistryContractAddress: vkRegistryAddress,
-        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
-        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+        gatekeeperContractAddress: signupGatekeeperContractAddress,
+        initialVoiceCreditProxyContractAddress,
       });
 
       // signup
@@ -1196,7 +1246,7 @@ describe("e2e tests", function test() {
       for (let i = 0; i < users.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         await signup({
-          maciAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           maciPubKey: users[i].pubKey.serialize(),
           sgData: DEFAULT_SG_DATA,
           signer,
@@ -1204,7 +1254,7 @@ describe("e2e tests", function test() {
 
         // eslint-disable-next-line no-await-in-loop
         const { isRegistered, stateIndex } = await getSignedupUserData({
-          maciAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           maciPubKey: users[i].pubKey.serialize(),
           signer,
         });
@@ -1218,7 +1268,7 @@ describe("e2e tests", function test() {
       for (let i = 0; i < users.length; i += 1) {
         // eslint-disable-next-line no-await-in-loop
         await joinPoll({
-          maciAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           privateKey: users[i].privKey.serialize(),
           stateIndex: BigInt(i + 1),
           pollId: 0n,
@@ -1233,7 +1283,7 @@ describe("e2e tests", function test() {
         });
         // eslint-disable-next-line no-await-in-loop
         const { isJoined, pollStateIndex } = await getJoinedUserData({
-          maciAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           pollId: 0n,
           pollPubKey: users[i].pubKey.serialize(),
           signer,
@@ -1252,7 +1302,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
         privateKey: users[0].privKey.serialize(),
         signer,
@@ -1276,27 +1326,27 @@ describe("e2e tests", function test() {
       const messages = votes
         .map((vote) => generateVote(vote))
         .map(({ message, ephemeralKeypair }) => ({
-          maciContractAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           poll: 0,
           data: message.data.map(String),
           publicKey: ephemeralKeypair.pubKey.asArray().map(String),
           hash: message.hash(ephemeralKeypair.pubKey).toString(),
         }));
 
-      await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciAddress });
+      await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciContractAddress });
 
       const ipfsMessageBackupFiles = await getBackupFilenames();
       // time travel
       await timeTravel({ ...timeTravelArgs, signer });
       // generate proofs
-      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
+      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciContractAddress, signer });
       await generateProofs({
         ...generateProofsArgs,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         signer,
         ipfsMessageBackupFiles,
       });
-      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
+      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciContractAddress, signer });
       await verify({ ...(await verifyArgs(signer)) });
       await clean();
     });
@@ -1311,24 +1361,25 @@ describe("e2e tests", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciAddress: maciAddresses.maciAddress,
-        verifierContractAddress: maciAddresses.verifierAddress,
+        maciAddress: maciAddresses.maciContractAddress,
+        verifierContractAddress,
         vkRegistryContractAddress: vkRegistryAddress,
-        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
-        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+        gatekeeperContractAddress: signupGatekeeperContractAddress,
+        initialVoiceCreditProxyContractAddress,
       });
-      // deploy another poll contract
+
+      // deploy a poll contract
       await deployPoll({
         ...deployPollArgs,
         signer,
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciAddress: maciAddresses.maciAddress,
-        verifierContractAddress: maciAddresses.verifierAddress,
+        maciAddress: maciAddresses.maciContractAddress,
+        verifierContractAddress,
         vkRegistryContractAddress: vkRegistryAddress,
-        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
-        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+        gatekeeperContractAddress: signupGatekeeperContractAddress,
+        initialVoiceCreditProxyContractAddress,
       });
     });
 
@@ -1338,7 +1389,7 @@ describe("e2e tests", function test() {
         for (let i = 0; i < users.length; i += 1) {
           // eslint-disable-next-line no-await-in-loop
           await joinPoll({
-            maciAddress: maciAddresses.maciAddress,
+            maciAddress: maciAddresses.maciContractAddress,
             privateKey: users[i].privKey.serialize(),
             stateIndex: BigInt(i + 1),
             pollId: BigInt(p),
@@ -1353,7 +1404,7 @@ describe("e2e tests", function test() {
           });
           // eslint-disable-next-line no-await-in-loop
           const { isJoined, pollStateIndex } = await getJoinedUserData({
-            maciAddress: maciAddresses.maciAddress,
+            maciAddress: maciAddresses.maciContractAddress,
             pollId: BigInt(p),
             pollPubKey: users[i].pubKey.serialize(),
             signer,
@@ -1374,7 +1425,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 1n,
         newVoteWeight: 9n,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
         privateKey: users[0].privKey.serialize(),
         signer,
@@ -1387,7 +1438,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 1n,
         newVoteWeight: 1n,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
         privateKey: users[1].privKey.serialize(),
         signer,
@@ -1400,7 +1451,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 1n,
         newVoteWeight: 3n,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
         privateKey: users[2].privKey.serialize(),
         signer,
@@ -1426,14 +1477,14 @@ describe("e2e tests", function test() {
       const messages = votes
         .map((vote) => generateVote(vote))
         .map(({ message, ephemeralKeypair }) => ({
-          maciContractAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           poll: 1,
           data: message.data.map(String),
           publicKey: ephemeralKeypair.pubKey.asArray().map(String),
           hash: message.hash(ephemeralKeypair.pubKey).toString(),
         }));
 
-      await relayTestMessages({ messages, signer, pollId: 1, maciAddress: maciAddresses.maciAddress });
+      await relayTestMessages({ messages, signer, pollId: 1, maciAddress: maciAddresses.maciContractAddress });
     });
 
     it("should relay two messages to the third poll", async () => {
@@ -1467,14 +1518,14 @@ describe("e2e tests", function test() {
       const messages = votes
         .map((vote) => generateVote(vote))
         .map(({ message, ephemeralKeypair }) => ({
-          maciContractAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           poll: 2,
           data: message.data.map(String),
           publicKey: ephemeralKeypair.pubKey.asArray().map(String),
           hash: message.hash(ephemeralKeypair.pubKey).toString(),
         }));
 
-      await relayTestMessages({ messages, signer, pollId: 2, maciAddress: maciAddresses.maciAddress });
+      await relayTestMessages({ messages, signer, pollId: 2, maciAddress: maciAddresses.maciContractAddress });
     });
 
     it("should publish messages to the third poll", async () => {
@@ -1485,7 +1536,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 2n,
         newVoteWeight: 3n,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
         privateKey: users[3].privKey.serialize(),
         signer,
@@ -1498,7 +1549,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 2n,
         newVoteWeight: 2n,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
         privateKey: users[4].privKey.serialize(),
         signer,
@@ -1511,7 +1562,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 2n,
         newVoteWeight: 9n,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
         privateKey: users[5].privKey.serialize(),
         signer,
@@ -1521,50 +1572,50 @@ describe("e2e tests", function test() {
     it("should complete the second poll", async () => {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeSignups({ maciAddress: maciAddresses.maciAddress, pollId: 1n, signer });
+      await mergeSignups({ maciAddress: maciAddresses.maciContractAddress, pollId: 1n, signer });
       const { tallyData } = await generateProofs({
         ...generateProofsArgs,
-        pollId: 1n,
-        maciAddress: maciAddresses.maciAddress,
+        pollId: 1,
+        maciAddress: maciAddresses.maciContractAddress,
         signer,
         ipfsMessageBackupFiles,
       });
       await proveOnChain({
         ...proveOnChainArgs,
         pollId: 1n,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         signer,
       });
       await verify({
         ...(await verifyArgs(signer)),
         pollId: 1n,
         tallyData,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
       });
       await clean(false);
     });
 
     it("should complete the third poll", async () => {
       const ipfsMessageBackupFiles = await getBackupFilenames();
-      await mergeSignups({ maciAddress: maciAddresses.maciAddress, pollId: 2n, signer });
+      await mergeSignups({ maciAddress: maciAddresses.maciContractAddress, pollId: 2n, signer });
       const { tallyData } = await generateProofs({
         ...generateProofsArgs,
-        pollId: 2n,
-        maciAddress: maciAddresses.maciAddress,
+        pollId: 2,
+        maciAddress: maciAddresses.maciContractAddress,
         signer,
         ipfsMessageBackupFiles,
       });
       await proveOnChain({
         ...proveOnChainArgs,
         pollId: 2n,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         signer,
       });
       await verify({
         ...(await verifyArgs(signer)),
         pollId: 2n,
         tallyData,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
       });
     });
   });
@@ -1584,7 +1635,11 @@ describe("e2e tests", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy({ ...deployArgs, signer });
+      maciAddresses = await deployMaci({
+        ...deployArgs,
+        signer,
+        signupGatekeeperAddress: signupGatekeeperContractAddress,
+      });
 
       const startDate = await getBlockTimestamp(signer);
 
@@ -1595,17 +1650,17 @@ describe("e2e tests", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciAddress: maciAddresses.maciAddress,
-        verifierContractAddress: maciAddresses.verifierAddress,
+        maciAddress: maciAddresses.maciContractAddress,
+        verifierContractAddress,
         vkRegistryContractAddress: vkRegistryAddress,
-        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
-        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+        gatekeeperContractAddress: signupGatekeeperContractAddress,
+        initialVoiceCreditProxyContractAddress,
       });
     });
 
     it("should signup one user", async () => {
       await signup({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         maciPubKey: user.pubKey.serialize(),
         sgData: DEFAULT_SG_DATA,
         signer,
@@ -1615,7 +1670,7 @@ describe("e2e tests", function test() {
     it("should join one user", async () => {
       // joinPoll
       await joinPoll({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         privateKey: user.privKey.serialize(),
         stateIndex: 1n,
         pollId: 0n,
@@ -1638,7 +1693,7 @@ describe("e2e tests", function test() {
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 3n,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
         privateKey: user.privKey.serialize(),
         signer,
@@ -1664,22 +1719,22 @@ describe("e2e tests", function test() {
       const messages = votes
         .map((vote) => generateVote(vote))
         .map(({ message, ephemeralKeypair }) => ({
-          maciContractAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           poll: 0,
           data: message.data.map(String),
           publicKey: ephemeralKeypair.pubKey.asArray().map(String),
           hash: message.hash(ephemeralKeypair.pubKey).toString(),
         }));
 
-      await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciAddress });
+      await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciContractAddress });
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
+      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciContractAddress, signer });
       await generateMaciState({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         outputPath: stateOutPath,
         coordinatorPrivateKey: coordinatorPrivKey,
         blockPerBatch: 50,
@@ -1690,11 +1745,11 @@ describe("e2e tests", function test() {
       await generateProofs({
         ...generateProofsArgs,
         stateFile: stateOutPath,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         signer,
         ipfsMessageBackupFiles,
       });
-      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
+      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciContractAddress, signer });
       await verify({ ...(await verifyArgs(signer)) });
     });
   });

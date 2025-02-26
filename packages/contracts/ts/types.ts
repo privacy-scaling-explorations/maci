@@ -246,7 +246,7 @@ export interface IIpfsMessage {
   /**
    * MACI contract address
    */
-  maciContractAddress: string;
+  maciAddress: string;
 
   /**
    * Poll id

@@ -10,10 +10,14 @@ import {
   signup,
   deployPoll,
   deployVkRegistryContract,
+  type IMaciContracts,
+  deployFreeForAllSignUpGatekeeper,
+  deployConstantInitialVoiceCreditProxy,
+  deployVerifier,
+  deployMaci,
 } from "maci-sdk";
 
-import { deploy, DeployedContracts } from "../../ts";
-import { DEFAULT_IVCP_DATA, DEFAULT_SG_DATA } from "../../ts/utils";
+import { DEFAULT_INITIAL_VOICE_CREDITS, DEFAULT_IVCP_DATA, DEFAULT_SG_DATA } from "../../ts/utils";
 import {
   deployArgs,
   deployPollArgs,
@@ -27,7 +31,11 @@ import {
 
 describe("joinPoll", function test() {
   let signer: Signer;
-  let maciAddresses: DeployedContracts;
+  let maciAddresses: IMaciContracts;
+  let signupGatekeeperContractAddress: string;
+  let initialVoiceCreditProxyContractAddress: string;
+  let verifierContractAddress: string;
+
   const user = new Keypair();
   const userPrivateKey = user.privKey.serialize();
   const userPublicKey = user.pubKey.serialize();
@@ -40,6 +48,19 @@ describe("joinPoll", function test() {
   before(async () => {
     signer = await getDefaultSigner();
 
+    const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+    signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
+
+    const initialVoiceCreditProxy = await deployConstantInitialVoiceCreditProxy(
+      DEFAULT_INITIAL_VOICE_CREDITS,
+      signer,
+      true,
+    );
+    initialVoiceCreditProxyContractAddress = await initialVoiceCreditProxy.getAddress();
+
+    const verifier = await deployVerifier(signer, true);
+    verifierContractAddress = await verifier.getAddress();
+
     const startDate = await getBlockTimestamp(signer);
 
     // we deploy the vk registry contract
@@ -47,26 +68,32 @@ describe("joinPoll", function test() {
     // we set the verifying keys
     await setVerifyingKeys({ ...(await verifyingKeysArgs(signer)), vkRegistryAddress });
     // deploy the smart contracts
-    maciAddresses = await deploy({ ...deployArgs, signer });
+    maciAddresses = await deployMaci({
+      ...deployArgs,
+      signer,
+      signupGatekeeperAddress: signupGatekeeperContractAddress,
+    });
+
     // signup the user
     await signup({
-      maciAddress: maciAddresses.maciAddress,
+      maciAddress: maciAddresses.maciContractAddress,
       maciPubKey: userPublicKey,
       sgData: DEFAULT_SG_DATA,
       signer,
     });
 
+    // deploy a poll contract
     await deployPoll({
       ...deployPollArgs,
       signer,
       pollStartTimestamp: startDate,
       pollEndTimestamp: startDate + pollDuration,
       relayers: [await signer.getAddress()],
-      maciAddress: maciAddresses.maciAddress,
-      verifierContractAddress: maciAddresses.verifierAddress,
+      maciAddress: maciAddresses.maciContractAddress,
+      verifierContractAddress,
       vkRegistryContractAddress: vkRegistryAddress,
-      gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
-      initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+      gatekeeperContractAddress: signupGatekeeperContractAddress,
+      initialVoiceCreditProxyContractAddress,
     });
   });
 
@@ -74,7 +101,7 @@ describe("joinPoll", function test() {
     const startBlock = await signer.provider?.getBlockNumber();
 
     await joinPoll({
-      maciAddress: maciAddresses.maciAddress,
+      maciAddress: maciAddresses.maciContractAddress,
       privateKey: userPrivateKey,
       stateIndex: 1n,
       signer,
@@ -89,7 +116,7 @@ describe("joinPoll", function test() {
     });
 
     const registeredUserData = await getJoinedUserData({
-      maciAddress: maciAddresses.maciAddress,
+      maciAddress: maciAddresses.maciContractAddress,
       pollId: 0n,
       pollPubKey: user.pubKey.serialize(),
       signer,
@@ -103,7 +130,7 @@ describe("joinPoll", function test() {
   it("should throw error if poll does not exist", async () => {
     await expect(
       joinPoll({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         privateKey: userPrivateKey,
         stateIndex: mockStateIndex,
         signer,
@@ -120,7 +147,7 @@ describe("joinPoll", function test() {
 
     await expect(
       joinPoll({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         privateKey: keypair.privKey.serialize(),
         stateIndex: -1n,
         signer,
@@ -135,7 +162,7 @@ describe("joinPoll", function test() {
   it("should throw error if current poll id is invalid", async () => {
     await expect(
       joinPoll({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         privateKey: userPrivateKey,
         stateIndex: mockStateIndex,
         signer,

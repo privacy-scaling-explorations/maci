@@ -75,7 +75,7 @@ export class MessageBatchService {
       poll: message.poll,
       data: message.data,
       hash: message.hash,
-      maciContractAddress: message.maciContractAddress,
+      maciAddress: message.maciContractAddress,
       publicKey: PubKey.deserialize(message.publicKey).asArray().map(String),
     }));
 
@@ -91,9 +91,9 @@ export class MessageBatchService {
         throw error;
       });
 
-    const [{ maciAddress, pollId }] = uniqBy(
-      allMessages.map(({ maciContractAddress, poll }) => ({
-        maciAddress: maciContractAddress,
+    const [{ maciContractAddress, pollId }] = uniqBy(
+      allMessages.map(({ maciAddress, poll }) => ({
+        maciContractAddress: maciAddress,
         pollId: poll,
       })),
       "maciContractAddress",
@@ -103,7 +103,13 @@ export class MessageBatchService {
     const signer = await getDefaultSigner();
 
     const bytes32IpfsHash = await this.ipfsService.cidToBytes32(ipfsHash);
-    await relayMessages({ maciAddress, pollId, ipfsHash: bytes32IpfsHash, messages: allMessages, signer });
+    await relayMessages({
+      maciAddress: maciContractAddress,
+      pollId,
+      ipfsHash: bytes32IpfsHash,
+      messages: allMessages,
+      signer,
+    });
 
     return messageBatches;
   }

@@ -1,9 +1,17 @@
 import { expect } from "chai";
 import { Signer } from "ethers";
 import { Keypair } from "maci-domainobjs";
-import { getDefaultSigner, getSignedupUserData, setVerifyingKeys, signup, deployVkRegistryContract } from "maci-sdk";
+import {
+  getDefaultSigner,
+  getSignedupUserData,
+  type IMaciContracts,
+  setVerifyingKeys,
+  signup,
+  deployMaci,
+  deployFreeForAllSignUpGatekeeper,
+  deployVkRegistryContract,
+} from "maci-sdk";
 
-import { deploy, DeployedContracts } from "../../ts";
 import { DEFAULT_SG_DATA } from "../../ts/utils";
 import { deployArgs, verifyingKeysArgs } from "../constants";
 
@@ -11,32 +19,40 @@ describe("signup", function test() {
   this.timeout(900000);
 
   let signer: Signer;
-  let maciAddresses: DeployedContracts;
+  let maciAddresses: IMaciContracts;
+
   const user = new Keypair();
   // before all tests we deploy the vk registry contract and set the verifying keys
   before(async () => {
     signer = await getDefaultSigner();
+    const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+    const signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
 
     // we deploy the vk registry contract
     const vkRegistryAddress = await deployVkRegistryContract({ signer });
     // we set the verifying keys
     await setVerifyingKeys({ ...(await verifyingKeysArgs(signer)), vkRegistryAddress });
+
     // deploy the smart contracts
-    maciAddresses = await deploy({ ...deployArgs, signer });
+    maciAddresses = await deployMaci({
+      ...deployArgs,
+      signer,
+      signupGatekeeperAddress: signupGatekeeperContractAddress,
+    });
   });
 
   it("should allow to signup and return the user data", async () => {
     const startBlock = await signer.provider?.getBlockNumber();
 
     const signUpData = await signup({
-      maciAddress: maciAddresses.maciAddress,
+      maciAddress: maciAddresses.maciContractAddress,
       maciPubKey: user.pubKey.serialize(),
       sgData: DEFAULT_SG_DATA,
       signer,
     });
 
     const registeredUserData = await getSignedupUserData({
-      maciAddress: maciAddresses.maciAddress,
+      maciAddress: maciAddresses.maciContractAddress,
       startBlock,
       maciPubKey: user.pubKey.serialize(),
       signer,
@@ -48,7 +64,7 @@ describe("signup", function test() {
 
   it("should not get the user data if the user is not registered", async () => {
     const registeredUserData = await getSignedupUserData({
-      maciAddress: maciAddresses.maciAddress,
+      maciAddress: maciAddresses.maciContractAddress,
       startBlock: await signer.provider?.getBlockNumber(),
       maciPubKey: new Keypair().pubKey.serialize(),
       signer,
@@ -59,7 +75,7 @@ describe("signup", function test() {
 
   it("should start fetchig from block zero if the start block is not provided", async () => {
     const registeredUserData = await getSignedupUserData({
-      maciAddress: maciAddresses.maciAddress,
+      maciAddress: maciAddresses.maciContractAddress,
       maciPubKey: user.pubKey.serialize(),
       signer,
     });

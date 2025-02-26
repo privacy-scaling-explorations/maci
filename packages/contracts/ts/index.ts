@@ -45,6 +45,7 @@ export {
   type IMergeParams,
   type IProveParams,
   type IRegisterContract,
+  type TAbi,
 } from "../tasks/helpers/types";
 export { linkPoseidonLibraries } from "../tasks/helpers/abi";
 export { IpfsService } from "./ipfs";

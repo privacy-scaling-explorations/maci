@@ -1,4 +1,4 @@
-import { EMode } from "maci-contracts";
+import { EMode, TAbi } from "maci-contracts";
 import { PubKey } from "maci-domainobjs";
 
 import type { Signer } from "ethers";
@@ -65,7 +65,7 @@ export interface IDeployPollArgs {
   /**
    * The address of the initial voice credit proxy contract
    */
-  initialVoiceCreditProxyContractAddress: string;
+  initialVoiceCreditProxyContractAddress?: string;
 
   /**
    * The addresses of the relayers
@@ -80,7 +80,7 @@ export interface IDeployPollArgs {
   /**
    * The initial voice credits to be minted
    */
-  initialVoiceCredits: number;
+  initialVoiceCredits?: number;
 
   /**
    * The signer
@@ -124,6 +124,86 @@ export interface IPollContractsData {
 }
 
 /**
+ * An interface that represents the arguments for MACI contracts deployment.
+ */
+export interface IDeployMaciArgs {
+  /**
+   * The depth of the state tree
+   */
+  stateTreeDepth: number;
+
+  /**
+   * The address of the SignUpTokenGatekeeper contract
+   */
+  signupGatekeeperAddress: string;
+
+  /**
+   * The signer to use to deploy the contract
+   */
+  signer: Signer;
+
+  /**
+   * The address of the PollFactory contract
+   */
+  pollFactoryAddress?: string;
+
+  /**
+   * The address of the MessageProcessorFactory contract
+   */
+  messageProcessorFactoryAddress?: string;
+
+  /**
+   * The address of the TallyFactory contract
+   */
+  tallyFactoryAddress?: string;
+
+  /**
+   * Poseidon contract addresses (if not provided, they will be deployed automatically)
+   */
+  poseidonAddresses?: Partial<{
+    poseidonT3: string;
+    poseidonT4: string;
+    poseidonT5: string;
+    poseidonT6: string;
+  }>;
+}
+
+/**
+ * An interface that represents the deployed MACI contracts.
+ */
+export interface IMaciContracts {
+  /**
+   * The address of the MACI contract
+   */
+  maciContractAddress: string;
+
+  /**
+   * The address of the PollFactory contract
+   */
+  pollFactoryContractAddress: string;
+
+  /**
+   * The address of the MessageProcessorFactory contract
+   */
+  messageProcessorFactoryContractAddress: string;
+
+  /**
+   * The address of the TallyFactory contract
+   */
+  tallyFactoryContractAddress: string;
+
+  /**
+   * The addresses of the Poseidon contracts
+   */
+  poseidonAddresses: {
+    poseidonT3: string;
+    poseidonT4: string;
+    poseidonT5: string;
+    poseidonT6: string;
+  };
+}
+
+/**
  * Interface for the arguments to the DeployVkRegistry command
  */
 export interface IDeployVkRegistryArgs {
@@ -131,4 +211,34 @@ export interface IDeployVkRegistryArgs {
    * A signer object
    */
   signer: Signer;
+}
+
+/**
+ * Arguments for deploying a factory
+ */
+export interface IDeployFactoryArgs {
+  /**
+   * The abi of the factory
+   */
+  abi: TAbi;
+
+  /**
+   * The bytecode of the factory
+   */
+  bytecode: string;
+
+  /**
+   * The signer to use
+   */
+  signer: Signer;
+
+  /**
+   * The arguments
+   */
+  args?: unknown[];
+
+  /**
+   * The address of the factory
+   */
+  address?: string;
 }

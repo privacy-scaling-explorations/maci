@@ -21,14 +21,14 @@ describe("utils", () => {
       publicKey: keypair.pubKey.asArray().map(String) as [string, string],
       data: new Array(10).fill("0") as string[],
       hash: "hash1",
-      maciContractAddress: ZeroAddress,
+      maciAddress: ZeroAddress,
       poll: 0,
     },
     {
       publicKey: new Keypair().pubKey.asArray().map(String) as [string, string],
       data: new Array(10).fill("0") as string[],
       hash: "hash2",
-      maciContractAddress: ZeroAddress,
+      maciAddress: ZeroAddress,
       poll: 0,
     },
   ];

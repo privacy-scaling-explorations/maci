@@ -52,6 +52,7 @@ export class IpfsService {
   async read<T>(cid: string): Promise<T | null> {
     return fetch(`${this.ipfsGatewayUrl}/${cid}`)
       .then((res) => res.json().catch(() => null))
-      .then((res) => res as T);
+      .then((res) => res as T)
+      .catch(() => null);
   }
 }

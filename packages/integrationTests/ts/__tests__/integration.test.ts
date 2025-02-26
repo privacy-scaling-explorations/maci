@@ -2,7 +2,6 @@
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { Signer } from "ethers";
-import { deploy, DeployedContracts } from "maci-cli";
 import { MaciState, TreeDepths, VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { genPubKey, genRandomSalt, poseidon } from "maci-crypto";
 import { Keypair, PCommand, PrivKey, PubKey } from "maci-domainobjs";
@@ -28,6 +27,11 @@ import {
   generateProofs,
   deployVkRegistryContract,
   timeTravel,
+  deployMaci,
+  type IMaciContracts,
+  deployFreeForAllSignUpGatekeeper,
+  deployConstantInitialVoiceCreditProxy,
+  deployVerifier,
 } from "maci-sdk";
 
 import fs from "fs";
@@ -35,7 +39,7 @@ import { homedir } from "os";
 import path from "path";
 
 import {
-  DEFAULT_INITIAL_VOICE_CREDITS,
+  DEFAULT_VOICE_CREDITS,
   DEFAULT_VOTE_OPTIONS,
   INT_STATE_TREE_DEPTH,
   MESSAGE_BATCH_SIZE,
@@ -68,7 +72,8 @@ describe("Integration tests", function test() {
 
   // global variables we need shared between tests
   let maciState: MaciState;
-  let contracts: DeployedContracts;
+  let signupGatekeeperAddress: string;
+  let contracts: IMaciContracts;
   let pollId: bigint;
   let signer: Signer;
   const coordinatorKeypair = new Keypair();
@@ -94,6 +99,9 @@ describe("Integration tests", function test() {
       ),
     });
 
+    const signUpGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+    signupGatekeeperAddress = await signUpGatekeeper.getAddress();
+
     await setVerifyingKeys({
       stateTreeDepth: STATE_TREE_DEPTH,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
@@ -115,7 +123,12 @@ describe("Integration tests", function test() {
     maciState = new MaciState(STATE_TREE_DEPTH);
 
     // 3. deploy maci
-    contracts = await deploy({ stateTreeDepth: STATE_TREE_DEPTH, initialVoiceCredits, signer });
+    contracts = await deployMaci({ stateTreeDepth: STATE_TREE_DEPTH, signupGatekeeperAddress, signer });
+
+    const initialVoiceCreditProxy = await deployConstantInitialVoiceCreditProxy(DEFAULT_VOICE_CREDITS, signer, true);
+    const initialVoiceCreditProxyContractAddress = await initialVoiceCreditProxy.getAddress();
+    const verifier = await deployVerifier(signer, true);
+    const verifierContractAddress = await verifier.getAddress();
 
     const startDate = await getBlockTimestamp(signer);
 
@@ -127,15 +140,15 @@ describe("Integration tests", function test() {
       messageBatchSize: MESSAGE_BATCH_SIZE,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       coordinatorPubKey: coordinatorKeypair.pubKey,
-      maciAddress: contracts.maciAddress,
+      maciAddress: contracts.maciContractAddress,
       signer,
       mode: EMode.QV,
-      initialVoiceCreditProxyContractAddress: contracts.initialVoiceCreditProxyAddress,
-      verifierContractAddress: contracts.verifierAddress,
+      initialVoiceCreditProxyContractAddress,
+      verifierContractAddress,
       vkRegistryContractAddress: vkRegistryAddress,
-      gatekeeperContractAddress: contracts.signUpGatekeeperAddress,
+      gatekeeperContractAddress: signupGatekeeperAddress,
+      initialVoiceCredits: DEFAULT_VOICE_CREDITS,
       voteOptions: DEFAULT_VOTE_OPTIONS,
-      initialVoiceCredits: DEFAULT_INITIAL_VOICE_CREDITS,
       relayers: [await signer.getAddress()],
     });
 
@@ -196,14 +209,14 @@ describe("Integration tests", function test() {
         const stateIndex = BigInt(
           await signup({
             maciPubKey: user.keypair.pubKey.serialize(),
-            maciAddress: contracts.maciAddress,
+            maciAddress: contracts.maciContractAddress,
             sgData: SG_DATA,
             signer,
           }).then((result) => result.stateIndex),
         );
 
         await joinPoll({
-          maciAddress: contracts.maciAddress,
+          maciAddress: contracts.maciContractAddress,
           privateKey: user.keypair.privKey.serialize(),
           stateIndex,
           pollId,
@@ -265,7 +278,7 @@ describe("Integration tests", function test() {
 
           const messages = [
             {
-              maciContractAddress: contracts.maciAddress,
+              maciAddress: contracts.maciContractAddress,
               poll: Number(pollId),
               data: vote.message.data.map(String),
               publicKey: vote.ephemeralKeypair.pubKey.asArray().map(String),
@@ -288,14 +301,14 @@ describe("Integration tests", function test() {
                   nonce,
                   pollId,
                   newVoteWeight: newVoteWeight!,
-                  maciAddress: contracts.maciAddress,
+                  maciAddress: contracts.maciContractAddress,
                   salt,
                   // if it's a key change command, then we pass the old private key otherwise just pass the current
                   privateKey: isKeyChange ? oldKeypair.privKey.serialize() : user.keypair.privKey.serialize(),
                   signer,
                 }).then(({ privateKey }) => privateKey)
               : await relayMessages({
-                  maciAddress: contracts.maciAddress,
+                  maciAddress: contracts.maciContractAddress,
                   ipfsHash,
                   messages,
                   pollId: Number(pollId),
@@ -325,7 +338,7 @@ describe("Integration tests", function test() {
 
       // merge signups
       await expect(
-        mergeSignups({ pollId, maciAddress: contracts.maciAddress, signer }),
+        mergeSignups({ pollId, maciAddress: contracts.maciContractAddress, signer }),
       ).to.eventually.not.be.rejectedWith();
 
       const ipfsMessageBackupFiles = await fs.promises
@@ -360,7 +373,7 @@ describe("Integration tests", function test() {
           "../../../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_cpp/TallyVotes_10-1-2_test.dat",
         ),
         coordinatorPrivateKey: coordinatorKeypair.privKey.serialize(),
-        maciAddress: contracts.maciAddress,
+        maciAddress: contracts.maciContractAddress,
         processWasm: path.resolve(
           __dirname,
           "../../../cli/zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_js/ProcessMessages_10-20-2_test.wasm",
@@ -391,7 +404,7 @@ describe("Integration tests", function test() {
           pollId,
           tallyFile: path.resolve(__dirname, "../../../cli/tally.json"),
           proofDir: path.resolve(__dirname, "../../../cli/proofs"),
-          maciAddress: contracts.maciAddress,
+          maciAddress: contracts.maciContractAddress,
           signer,
         }),
       ).to.not.be.rejected;
@@ -407,7 +420,7 @@ describe("Integration tests", function test() {
         verify({
           pollId,
           tallyData,
-          maciAddress: contracts.maciAddress,
+          maciAddress: contracts.maciContractAddress,
           tallyCommitments,
           numVoteOptions: pollParams.numVoteOptions,
           voteOptionTreeDepth: pollParams.voteOptionTreeDepth,

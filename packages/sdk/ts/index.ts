@@ -29,7 +29,6 @@ export {
   linkPoseidonLibraries,
   deployConstantInitialVoiceCreditProxy,
   deployFreeForAllSignUpGatekeeper,
-  deployMaci,
   deployMockVerifier,
   deployVkRegistry,
   deployVerifier,
