@@ -13,15 +13,15 @@ import {
   extractAllVks,
   proveOnChain,
   publish,
+  deployPoll,
 } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
-import { deploy, deployPoll, deployVkRegistryContract, genProofsCommand, timeTravel } from "../../ts/commands";
-import { DEFAULT_SG_DATA, DeployArgs, DeployPollArgs, DeployedContracts, GenProofsArgs } from "../../ts/utils";
+import { deploy, deployVkRegistryContract, genProofsCommand, timeTravel } from "../../ts/commands";
+import { DEFAULT_SG_DATA, DeployArgs, DeployedContracts, GenProofsArgs } from "../../ts/utils";
 import {
   coordinatorPrivKey,
-  coordinatorPubKey,
   ceremonyProcessMessagesZkeyPath,
   ceremonyTallyVotesZkeyPath,
   ceremonyProcessMessagesWasmPath,
@@ -48,6 +48,7 @@ import {
   verifyingKeysArgs,
   ceremonyPollJoiningZkeyPath,
   ceremonyPollJoinedZkeyPath,
+  deployPollArgs,
 } from "../constants";
 import { clean, getBackupFilenames, isArm, relayTestMessages } from "../utils";
 
@@ -64,17 +65,9 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
 
   let maciAddresses: DeployedContracts;
   let signer: Signer;
-
+  let vkRegistryAddress: string;
   const ceremonyDeployArgs: Omit<DeployArgs, "signer"> = {
     stateTreeDepth,
-  };
-
-  const deployPollArgs: Omit<DeployPollArgs, "signer" | "pollStartDate" | "pollEndDate"> = {
-    intStateTreeDepth,
-    messageBatchSize,
-    voteOptionTreeDepth,
-    coordinatorPubkey: coordinatorPubKey,
-    useQuadraticVoting: true,
   };
 
   const genProofsCommandCeremonyArgs: Omit<GenProofsArgs, "signer"> = {
@@ -103,7 +96,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
       signer = await getDefaultSigner();
 
       // we deploy the vk registry contract
-      const vkRegistryAddress = await deployVkRegistryContract({ signer });
+      vkRegistryAddress = await deployVkRegistryContract({ signer });
       // we set the verifying keys
       await setVerifyingKeys({ ...(await verifyingKeysArgs(signer)), vkRegistryAddress });
     });
@@ -123,9 +116,17 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
         await deployPoll({
           ...deployPollArgs,
           signer,
-          pollStartDate: startDate,
-          pollEndDate: startDate + pollDuration,
+          pollStartTimestamp: startDate,
+          pollEndTimestamp: startDate + pollDuration,
           relayers: [await signer.getAddress()],
+          intStateTreeDepth,
+          messageBatchSize,
+          voteOptionTreeDepth,
+          maciContractAddress: maciAddresses.maciAddress,
+          verifierContractAddress: maciAddresses.verifierAddress,
+          vkRegistryContractAddress: vkRegistryAddress,
+          gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
+          initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
         });
       });
 
@@ -225,9 +226,17 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
         await deployPoll({
           ...deployPollArgs,
           signer,
-          pollStartDate: startDate,
-          pollEndDate: startDate + pollDuration,
+          pollStartTimestamp: startDate,
+          pollEndTimestamp: startDate + pollDuration,
           relayers: [await signer.getAddress()],
+          intStateTreeDepth,
+          messageBatchSize,
+          voteOptionTreeDepth,
+          maciContractAddress: maciAddresses.maciAddress,
+          verifierContractAddress: maciAddresses.verifierAddress,
+          vkRegistryContractAddress: vkRegistryAddress,
+          gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
+          initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
         });
       });
 
@@ -335,7 +344,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
       });
 
       // we deploy the vk registry contract
-      const vkRegistryAddress = await deployVkRegistryContract({ signer });
+      vkRegistryAddress = await deployVkRegistryContract({ signer });
       // we set the verifying keys
       await setVerifyingKeys({
         stateTreeDepth,
@@ -367,10 +376,18 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
         await deployPoll({
           ...deployPollArgs,
           signer,
-          useQuadraticVoting: false,
-          pollStartDate: startDate,
-          pollEndDate: startDate + pollDuration,
+          pollStartTimestamp: startDate,
+          pollEndTimestamp: startDate + pollDuration,
           relayers: [await signer.getAddress()],
+          intStateTreeDepth,
+          messageBatchSize,
+          voteOptionTreeDepth,
+          maciContractAddress: maciAddresses.maciAddress,
+          verifierContractAddress: maciAddresses.verifierAddress,
+          vkRegistryContractAddress: vkRegistryAddress,
+          gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
+          initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+          mode: EMode.NON_QV,
         });
       });
 
@@ -461,10 +478,18 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
         await deployPoll({
           ...deployPollArgs,
           signer,
-          useQuadraticVoting: false,
-          pollStartDate: startDate,
-          pollEndDate: startDate + pollDuration,
+          pollStartTimestamp: startDate,
+          pollEndTimestamp: startDate + pollDuration,
           relayers: [await signer.getAddress()],
+          intStateTreeDepth,
+          messageBatchSize,
+          voteOptionTreeDepth,
+          maciContractAddress: maciAddresses.maciAddress,
+          verifierContractAddress: maciAddresses.verifierAddress,
+          vkRegistryContractAddress: vkRegistryAddress,
+          gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
+          initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+          mode: EMode.NON_QV,
         });
       });
 

@@ -12,11 +12,12 @@ import {
   EMode,
   proveOnChain,
   publish,
+  deployPoll,
 } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
-import { deploy, deployPoll, deployVkRegistryContract, genProofsCommand, timeTravel } from "../../ts/commands";
+import { deploy, deployVkRegistryContract, genProofsCommand, timeTravel } from "../../ts/commands";
 import { DEFAULT_SG_DATA, DeployedContracts, GenProofsArgs } from "../../ts/utils";
 import {
   deployPollArgs,
@@ -53,6 +54,7 @@ describe("e2e tests with non quadratic voting", function test() {
 
   let maciAddresses: DeployedContracts;
   let signer: Signer;
+  let vkRegistryAddress: string;
 
   const genProofsCommandArgs: Omit<GenProofsArgs, "signer"> = {
     outputDir: testProofsDirPath,
@@ -77,7 +79,7 @@ describe("e2e tests with non quadratic voting", function test() {
     signer = await getDefaultSigner();
 
     // we deploy the vk registry contract
-    const vkRegistryAddress = await deployVkRegistryContract({ signer });
+    vkRegistryAddress = await deployVkRegistryContract({ signer });
     // we set the verifying keys
     await setVerifyingKeys({ ...(await verifyingKeysArgs(signer, EMode.NON_QV)), vkRegistryAddress });
   });
@@ -96,12 +98,19 @@ describe("e2e tests with non quadratic voting", function test() {
       const startDate = await getBlockTimestamp(signer);
 
       // deploy a poll contract
+      // deploy a poll contract
       await deployPoll({
         ...deployPollArgs,
         signer,
-        useQuadraticVoting: false,
-        pollStartDate: startDate,
-        pollEndDate: startDate + pollDuration,
+        pollStartTimestamp: startDate,
+        pollEndTimestamp: startDate + pollDuration,
+        relayers: [await signer.getAddress()],
+        maciContractAddress: maciAddresses.maciAddress,
+        verifierContractAddress: maciAddresses.verifierAddress,
+        vkRegistryContractAddress: vkRegistryAddress,
+        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
+        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+        mode: EMode.NON_QV,
       });
     });
 
@@ -156,13 +165,19 @@ describe("e2e tests with non quadratic voting", function test() {
       const startDate = await getBlockTimestamp(signer);
 
       // deploy a poll contract
+      // deploy a poll contract
       await deployPoll({
         ...deployPollArgs,
         signer,
-        useQuadraticVoting: false,
-        pollStartDate: startDate,
-        pollEndDate: startDate + pollDuration,
+        pollStartTimestamp: startDate,
+        pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
+        maciContractAddress: maciAddresses.maciAddress,
+        verifierContractAddress: maciAddresses.verifierAddress,
+        vkRegistryContractAddress: vkRegistryAddress,
+        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
+        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+        mode: EMode.NON_QV,
       });
     });
 

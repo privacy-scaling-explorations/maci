@@ -23,7 +23,6 @@ export type {
   ISnarkJSVerificationKey,
   FundWalletArgs,
   TimeTravelArgs,
-  DeployPollArgs,
   PollContracts,
 } from "./interfaces";
 export { compareVks } from "./vks";

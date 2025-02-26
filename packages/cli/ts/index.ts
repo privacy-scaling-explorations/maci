@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 
 import { Command } from "@commander-js/extra-typings";
+import { ZeroAddress, type Signer } from "ethers";
+import { VOTE_OPTION_TREE_ARITY } from "maci-core";
+import { PubKey } from "maci-domainobjs";
 import {
   generateTallyCommitments,
   getPollParams,
@@ -22,24 +25,20 @@ import {
   proveOnChain,
   type ITallyData,
   publish,
+  MACI__factory as MACIFactory,
+  deployFreeForAllSignUpGatekeeper,
+  deployConstantInitialVoiceCreditProxy,
+  contractExists,
+  deployPoll,
 } from "maci-sdk";
 
 import fs from "fs";
 import path from "path";
 
-import type { Signer } from "ethers";
-
 import "./cliInit";
+import { deployVkRegistryContract, deploy, showContracts, timeTravel, fundWallet, genProofsCommand } from "./commands";
 import {
-  deployVkRegistryContract,
-  deploy,
-  showContracts,
-  deployPoll,
-  timeTravel,
-  fundWallet,
-  genProofsCommand,
-} from "./commands";
-import {
+  DEFAULT_INITIAL_VOICE_CREDITS,
   DEFAULT_IVCP_DATA,
   DEFAULT_SG_DATA,
   banner,
@@ -52,6 +51,7 @@ import {
   readContractAddress,
   success,
 } from "./utils";
+import { DEFAULT_VOTE_OPTIONS } from "./utils/defaults";
 
 // set the description version and name of the cli tool
 const { description, version, name } = JSON.parse(
@@ -225,25 +225,131 @@ program
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .option("-o, --vote-options <voteOptions>", "the number of vote options", parseInt)
+  .option("--initial-voice-credits <initialVoiceCredits>", "the initial voice credits", parseInt)
+  .option("--initial-voice-credits-proxy <initialVoiceCreditsProxy>", "the initial voice credits proxy address")
+  .option("--signup-gatekeeper <signupGatekeeper>", "the signup gatekeeper contract address")
   .action(async (cmdObj) => {
     try {
       const signer = await getSigner();
 
-      await deployPoll({
-        pollStartDate: cmdObj.start,
-        pollEndDate: cmdObj.end,
+      banner(cmdObj.quiet);
+
+      const network = await signer.provider?.getNetwork();
+
+      const vkRegistryContractAddress = await readContractAddress("VkRegistry", network?.name);
+      if (!vkRegistryContractAddress && !cmdObj.vkRegistryAddress) {
+        logError("Please provide a VkRegistry contract address");
+      }
+
+      const vkRegistry = cmdObj.vkRegistryAddress || vkRegistryContractAddress;
+
+      const maciContractAddress = await readContractAddress("MACI", network?.name);
+      if (!maciContractAddress && !cmdObj.maciAddress) {
+        logError("Please provide a MACI contract address");
+      }
+
+      const maci = cmdObj.maciAddress || maciContractAddress;
+
+      const maciContract = MACIFactory.connect(maci, signer);
+
+      const nextPollId = await maciContract.nextPollId();
+
+      // check if we have a signupGatekeeper already deployed or passed as arg
+      let signupGatekeeperContractAddress =
+        cmdObj.signupGatekeeper ||
+        (await readContractAddress(`SignUpGatekeeper-${nextPollId.toString()}`, network?.name));
+
+      if (!signupGatekeeperContractAddress) {
+        const contract = await deployFreeForAllSignUpGatekeeper(signer, true);
+        signupGatekeeperContractAddress = await contract.getAddress();
+      }
+
+      let initialVoiceCreditProxyAddress =
+        cmdObj.initialVoiceCreditsProxy || (await readContractAddress("VoiceCreditProxy", network?.name));
+      if (!initialVoiceCreditProxyAddress) {
+        const contract = await deployConstantInitialVoiceCreditProxy(
+          cmdObj.initialVoiceCredits ?? DEFAULT_INITIAL_VOICE_CREDITS,
+          signer,
+          true,
+        );
+        initialVoiceCreditProxyAddress = await contract.getAddress();
+      }
+
+      // required arg -> poll duration
+      if (cmdObj.start < Math.floor(Date.now() / 1000)) {
+        logError("Start date cannot be in the past");
+      }
+
+      if (cmdObj.end <= cmdObj.start) {
+        logError("End date cannot be before start date");
+      }
+
+      // required arg -> int state tree depth
+      if (cmdObj.intStateTreeDepth <= 0) {
+        logError("Int state tree depth cannot be <= 0");
+      }
+
+      // required arg -> message tree depth
+      if (cmdObj.msgBatchSize <= 0) {
+        logError("Message batch size cannot be <= 0");
+      }
+      // required arg -> vote option tree depth
+      if (cmdObj.voteOptionTreeDepth <= 0) {
+        logError("Vote option tree depth cannot be <= 0");
+      }
+
+      // ensure the vote option parameter is valid (if passed)
+      if (cmdObj.voteOptions && cmdObj.voteOptions >= VOTE_OPTION_TREE_ARITY ** cmdObj.voteOptionTreeDepth) {
+        logError("Vote options cannot be greater than the number of leaves in the vote option tree");
+      }
+
+      // we check that the contract is deployed
+      if (!(await contractExists(signer.provider!, maci))) {
+        logError("MACI contract does not exist");
+      }
+
+      // we check that the coordinator's public key is valid
+      if (!PubKey.isValidSerializedPubKey(cmdObj.pubkey)) {
+        logError("Invalid MACI public key");
+      }
+
+      // get the verifier contract
+      const verifierContractAddress = await readContractAddress("Verifier", network?.name);
+
+      const {
+        pollId,
+        pollContractAddress,
+        tallyContractAddress,
+        messageProcessorContractAddress,
+        initialVoiceCreditProxyContractAddress,
+        gatekeeperContractAddress,
+      } = await deployPoll({
+        pollStartTimestamp: cmdObj.start,
+        pollEndTimestamp: cmdObj.end,
         intStateTreeDepth: cmdObj.intStateTreeDepth,
         messageBatchSize: cmdObj.msgBatchSize,
         voteOptionTreeDepth: cmdObj.voteOptionTreeDepth,
-        coordinatorPubkey: cmdObj.pubkey,
-        maciAddress: cmdObj.maciAddress,
-        vkRegistryAddress: cmdObj.vkRegistryAddress,
-        relayers: cmdObj.relayers,
-        quiet: cmdObj.quiet,
-        useQuadraticVoting: cmdObj.useQuadraticVoting,
+        coordinatorPubKey: PubKey.deserialize(cmdObj.pubkey),
+        maciContractAddress: maci,
+        vkRegistryContractAddress: vkRegistry,
+        relayers: cmdObj.relayers ?? [ZeroAddress],
+        mode: cmdObj.useQuadraticVoting ? EMode.QV : EMode.NON_QV,
         signer,
-        voteOptions: cmdObj.voteOptions,
+        voteOptions: cmdObj.voteOptions ?? DEFAULT_VOTE_OPTIONS,
+        verifierContractAddress,
+        gatekeeperContractAddress: signupGatekeeperContractAddress,
+        initialVoiceCreditProxyContractAddress: initialVoiceCreditProxyAddress,
       });
+
+      logGreen(cmdObj.quiet, success(`Poll ID: ${pollId}`));
+      logGreen(cmdObj.quiet, success(`Poll contract address: ${pollContractAddress}`));
+      logGreen(cmdObj.quiet, success(`Tally contract address: ${tallyContractAddress}`));
+      logGreen(cmdObj.quiet, success(`Message processor contract address: ${messageProcessorContractAddress}`));
+      logGreen(
+        cmdObj.quiet,
+        success(`Initial voice credit proxy contract address: ${initialVoiceCreditProxyContractAddress}`),
+      );
+      logGreen(cmdObj.quiet, success(`Signup gatekeeper contract address: ${gatekeeperContractAddress}`));
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -862,6 +968,6 @@ if (require.main === module) {
 }
 
 // export everything so we can use in other packages
-export { deploy, deployPoll, deployVkRegistryContract, fundWallet, genProofsCommand, timeTravel } from "./commands";
+export { deploy, deployVkRegistryContract, fundWallet, genProofsCommand, timeTravel } from "./commands";
 
-export type { DeployedContracts, PollContracts, DeployPollArgs, GenProofsArgs, DeployArgs } from "./utils";
+export type { DeployedContracts, PollContracts, GenProofsArgs, DeployArgs } from "./utils";

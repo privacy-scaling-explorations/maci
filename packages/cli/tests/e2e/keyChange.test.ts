@@ -14,6 +14,7 @@ import {
   proveOnChain,
   publish,
   type ITallyData,
+  deployPoll,
 } from "maci-sdk";
 
 import fs from "fs";
@@ -21,7 +22,7 @@ import fs from "fs";
 import type { Signer } from "ethers";
 
 import { DeployedContracts } from "../../ts";
-import { deploy, deployPoll, deployVkRegistryContract, genProofsCommand, timeTravel } from "../../ts/commands";
+import { deploy, deployVkRegistryContract, genProofsCommand, timeTravel } from "../../ts/commands";
 import { DEFAULT_IVCP_DATA, DEFAULT_SG_DATA, GenProofsArgs } from "../../ts/utils";
 import {
   coordinatorPrivKey,
@@ -57,6 +58,7 @@ describe("keyChange tests", function test() {
 
   let maciAddresses: DeployedContracts;
   let signer: Signer;
+  let vkRegistryAddress: string;
 
   const genProofsCommandArgs: Omit<GenProofsArgs, "signer"> = {
     outputDir: testProofsDirPath,
@@ -80,7 +82,7 @@ describe("keyChange tests", function test() {
     signer = await getDefaultSigner();
 
     // we deploy the vk registry contract
-    const vkRegistryAddress = await deployVkRegistryContract({ signer });
+    vkRegistryAddress = await deployVkRegistryContract({ signer });
     // we set the verifying keys
     await setVerifyingKeys({ ...(await verifyingKeysArgs(signer)), vkRegistryAddress });
   });
@@ -112,9 +114,14 @@ describe("keyChange tests", function test() {
       await deployPoll({
         ...deployPollArgs,
         signer,
-        pollStartDate: startDate,
-        pollEndDate: startDate + pollDuration,
+        pollStartTimestamp: startDate,
+        pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
+        maciContractAddress: maciAddresses.maciAddress,
+        verifierContractAddress: maciAddresses.verifierAddress,
+        vkRegistryContractAddress: vkRegistryAddress,
+        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
+        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
       });
       stateIndex = BigInt(
         await signup({
@@ -240,9 +247,14 @@ describe("keyChange tests", function test() {
       await deployPoll({
         ...deployPollArgs,
         signer,
-        pollStartDate: startDate,
-        pollEndDate: startDate + pollDuration,
+        pollStartTimestamp: startDate,
+        pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
+        maciContractAddress: maciAddresses.maciAddress,
+        verifierContractAddress: maciAddresses.verifierAddress,
+        vkRegistryContractAddress: vkRegistryAddress,
+        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
+        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
       });
       stateIndex = BigInt(
         await signup({
@@ -354,9 +366,14 @@ describe("keyChange tests", function test() {
       await deployPoll({
         ...deployPollArgs,
         signer,
-        pollStartDate: startDate,
-        pollEndDate: startDate + pollDuration,
+        pollStartTimestamp: startDate,
+        pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
+        maciContractAddress: maciAddresses.maciAddress,
+        verifierContractAddress: maciAddresses.verifierAddress,
+        vkRegistryContractAddress: vkRegistryAddress,
+        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
+        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
       });
       stateIndex = BigInt(
         await signup({

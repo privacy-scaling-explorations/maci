@@ -16,13 +16,14 @@ import {
   getJoinedUserData,
   proveOnChain,
   publish,
+  deployPoll,
 } from "maci-sdk";
 
 import fs from "fs";
 
 import type { Signer } from "ethers";
 
-import { deploy, deployPoll, deployVkRegistryContract, genProofsCommand, timeTravel } from "../../ts/commands";
+import { deploy, deployVkRegistryContract, genProofsCommand, timeTravel } from "../../ts/commands";
 import { DEFAULT_IVCP_DATA, DEFAULT_SG_DATA, DeployedContracts, GenProofsArgs } from "../../ts/utils";
 import {
   deployPollArgs,
@@ -69,6 +70,7 @@ describe("e2e tests", function test() {
   this.timeout(900000);
 
   let maciAddresses: DeployedContracts;
+  let vkRegistryAddress: string;
   let signer: Signer;
 
   const genProofsCommandArgs: Omit<GenProofsArgs, "signer"> = {
@@ -94,7 +96,7 @@ describe("e2e tests", function test() {
     signer = await getDefaultSigner();
 
     // we deploy the vk registry contract
-    const vkRegistryAddress = await deployVkRegistryContract({ signer });
+    vkRegistryAddress = await deployVkRegistryContract({ signer });
     // we set the verifying keys
     await setVerifyingKeys({ ...(await verifyingKeysArgs(signer)), vkRegistryAddress });
   });
@@ -113,7 +115,18 @@ describe("e2e tests", function test() {
       const startDate = await getBlockTimestamp(signer);
 
       // deploy a poll contract
-      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
+      await deployPoll({
+        ...deployPollArgs,
+        signer,
+        pollStartTimestamp: startDate,
+        pollEndTimestamp: startDate + pollDuration,
+        relayers: [await signer.getAddress()],
+        maciContractAddress: maciAddresses.maciAddress,
+        verifierContractAddress: maciAddresses.verifierAddress,
+        vkRegistryContractAddress: vkRegistryAddress,
+        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
+        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+      });
     });
 
     it("should signup one user", async () => {
@@ -193,9 +206,14 @@ describe("e2e tests", function test() {
       await deployPoll({
         ...deployPollArgs,
         signer,
-        pollStartDate: startDate,
-        pollEndDate: startDate + pollDuration,
+        pollStartTimestamp: startDate,
+        pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
+        maciContractAddress: maciAddresses.maciAddress,
+        verifierContractAddress: maciAddresses.verifierAddress,
+        vkRegistryContractAddress: vkRegistryAddress,
+        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
+        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
       });
     });
 
@@ -479,9 +497,14 @@ describe("e2e tests", function test() {
       await deployPoll({
         ...deployPollArgs,
         signer,
-        pollStartDate: startDate,
-        pollEndDate: startDate + pollDuration,
+        pollStartTimestamp: startDate,
+        pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
+        maciContractAddress: maciAddresses.maciAddress,
+        verifierContractAddress: maciAddresses.verifierAddress,
+        vkRegistryContractAddress: vkRegistryAddress,
+        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
+        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
       });
     });
 
@@ -581,9 +604,19 @@ describe("e2e tests", function test() {
       maciAddresses = await deploy({ ...deployArgs, signer });
 
       const startDate = await getBlockTimestamp(signer);
-
       // deploy a poll contract
-      await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
+      await deployPoll({
+        ...deployPollArgs,
+        signer,
+        pollStartTimestamp: startDate,
+        pollEndTimestamp: startDate + pollDuration,
+        relayers: [await signer.getAddress()],
+        maciContractAddress: maciAddresses.maciAddress,
+        verifierContractAddress: maciAddresses.verifierAddress,
+        vkRegistryContractAddress: vkRegistryAddress,
+        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
+        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+      });
     });
 
     it("should signup thirty users", async () => {
@@ -665,9 +698,14 @@ describe("e2e tests", function test() {
       await deployPoll({
         ...deployPollArgs,
         signer,
-        pollStartDate: startDate,
-        pollEndDate: startDate + pollDuration,
+        pollStartTimestamp: startDate,
+        pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
+        maciContractAddress: maciAddresses.maciAddress,
+        verifierContractAddress: maciAddresses.verifierAddress,
+        vkRegistryContractAddress: vkRegistryAddress,
+        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
+        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
       });
     });
 
@@ -804,9 +842,14 @@ describe("e2e tests", function test() {
       await deployPoll({
         ...deployPollArgs,
         signer,
-        pollStartDate: startDate,
-        pollEndDate: startDate + pollDuration,
+        pollStartTimestamp: startDate,
+        pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
+        maciContractAddress: maciAddresses.maciAddress,
+        verifierContractAddress: maciAddresses.verifierAddress,
+        vkRegistryContractAddress: vkRegistryAddress,
+        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
+        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
       });
       // signup
       await signup({
@@ -916,12 +959,18 @@ describe("e2e tests", function test() {
     it("should deploy a new poll", async () => {
       const startDate = await getBlockTimestamp(signer);
 
+      // deploy a poll contract
       await deployPoll({
         ...deployPollArgs,
         signer,
-        pollStartDate: startDate,
-        pollEndDate: startDate + pollDuration,
+        pollStartTimestamp: startDate,
+        pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
+        maciContractAddress: maciAddresses.maciAddress,
+        verifierContractAddress: maciAddresses.verifierAddress,
+        vkRegistryContractAddress: vkRegistryAddress,
+        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
+        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
       });
     });
 
@@ -1093,9 +1142,14 @@ describe("e2e tests", function test() {
       await deployPoll({
         ...deployPollArgs,
         signer,
-        pollStartDate: startDate,
-        pollEndDate: startDate + pollDuration,
+        pollStartTimestamp: startDate,
+        pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
+        maciContractAddress: maciAddresses.maciAddress,
+        verifierContractAddress: maciAddresses.verifierAddress,
+        vkRegistryContractAddress: vkRegistryAddress,
+        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
+        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
       });
 
       // signup
@@ -1210,16 +1264,27 @@ describe("e2e tests", function test() {
       await deployPoll({
         ...deployPollArgs,
         signer,
-        pollStartDate: startDate,
-        pollEndDate: startDate + pollDuration,
+        pollStartTimestamp: startDate,
+        pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
+        maciContractAddress: maciAddresses.maciAddress,
+        verifierContractAddress: maciAddresses.verifierAddress,
+        vkRegistryContractAddress: vkRegistryAddress,
+        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
+        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
       });
+      // deploy another poll contract
       await deployPoll({
         ...deployPollArgs,
         signer,
-        pollStartDate: startDate,
-        pollEndDate: startDate + pollDuration,
+        pollStartTimestamp: startDate,
+        pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
+        maciContractAddress: maciAddresses.maciAddress,
+        verifierContractAddress: maciAddresses.verifierAddress,
+        vkRegistryContractAddress: vkRegistryAddress,
+        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
+        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
       });
     });
 
@@ -1471,9 +1536,14 @@ describe("e2e tests", function test() {
       await deployPoll({
         ...deployPollArgs,
         signer,
-        pollStartDate: startDate,
-        pollEndDate: startDate + pollDuration,
+        pollStartTimestamp: startDate,
+        pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
+        maciContractAddress: maciAddresses.maciAddress,
+        verifierContractAddress: maciAddresses.verifierAddress,
+        vkRegistryContractAddress: vkRegistryAddress,
+        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
+        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
       });
     });
 

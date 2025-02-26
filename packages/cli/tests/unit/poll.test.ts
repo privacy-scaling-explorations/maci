@@ -1,10 +1,18 @@
 import { expect } from "chai";
-import { getBlockTimestamp, getDefaultSigner, getPoll, mergeSignups, setVerifyingKeys } from "maci-sdk";
+import {
+  getBlockTimestamp,
+  getDefaultSigner,
+  getPoll,
+  mergeSignups,
+  setVerifyingKeys,
+  deployPoll,
+  IPollContractsData,
+} from "maci-sdk";
 
 import type { Signer } from "ethers";
 
-import { deploy, deployPoll, deployVkRegistryContract, timeTravel } from "../../ts/commands";
-import { DeployedContracts, PollContracts } from "../../ts/utils";
+import { deploy, deployVkRegistryContract, timeTravel } from "../../ts/commands";
+import { DeployedContracts } from "../../ts/utils";
 import { deployPollArgs, deployArgs, pollDuration, verifyingKeysArgs } from "../constants";
 import { clean } from "../utils";
 
@@ -12,7 +20,7 @@ describe("poll", function test() {
   this.timeout(900000);
 
   let maciAddresses: DeployedContracts;
-  let pollAddresses: PollContracts;
+  let pollAddresses: IPollContractsData;
   let signer: Signer;
 
   // before all tests we deploy the vk registry contract and set the verifying keys
@@ -23,25 +31,29 @@ describe("poll", function test() {
     const vkRegistryAddress = await deployVkRegistryContract({ signer });
     // we set the verifying keys
     await setVerifyingKeys({ ...(await verifyingKeysArgs(signer)), vkRegistryAddress });
+
+    const startDate = await getBlockTimestamp(signer);
+
+    // deploy the smart contracts
+    maciAddresses = await deploy({ ...deployArgs, signer });
+
+    pollAddresses = await deployPoll({
+      ...deployPollArgs,
+      signer,
+      pollStartTimestamp: startDate,
+      pollEndTimestamp: startDate + pollDuration,
+      relayers: [await signer.getAddress()],
+      maciContractAddress: maciAddresses.maciAddress,
+      verifierContractAddress: maciAddresses.verifierAddress,
+      vkRegistryContractAddress: vkRegistryAddress,
+      gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
+      initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+    });
   });
 
   describe("check deploy and get poll", () => {
     after(async () => {
       await clean();
-    });
-
-    before(async () => {
-      const startDate = await getBlockTimestamp(signer);
-
-      // deploy the smart contracts
-      maciAddresses = await deploy({ ...deployArgs, signer });
-      // deploy a poll contract
-      pollAddresses = await deployPoll({
-        ...deployPollArgs,
-        signer,
-        pollStartDate: startDate,
-        pollEndDate: startDate + pollDuration,
-      });
     });
 
     it("should get current poll properly", async () => {
@@ -55,7 +67,7 @@ describe("poll", function test() {
         signer,
       });
 
-      expect(pollData.address).to.eq(pollAddresses.poll);
+      expect(pollData.address).to.eq(pollAddresses.pollContractAddress);
       expect(pollData).to.deep.eq(samePollData);
     });
 
