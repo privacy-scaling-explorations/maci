@@ -2,14 +2,7 @@
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { Signer } from "ethers";
-import {
-  deploy,
-  deployPoll,
-  deployVkRegistryContract,
-  timeTravel,
-  DeployedContracts,
-  genProofsCommand,
-} from "maci-cli";
+import { deploy, deployVkRegistryContract, timeTravel, DeployedContracts, genProofsCommand } from "maci-cli";
 import { MaciState, TreeDepths, VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { genPubKey, genRandomSalt, poseidon } from "maci-crypto";
 import { Keypair, PCommand, PrivKey, PubKey } from "maci-domainobjs";
@@ -31,6 +24,7 @@ import {
   proveOnChain,
   joinPoll,
   publish,
+  deployPoll,
 } from "maci-sdk";
 
 import fs from "fs";
@@ -38,6 +32,7 @@ import { homedir } from "os";
 import path from "path";
 
 import {
+  DEFAULT_VOTE_OPTIONS,
   INT_STATE_TREE_DEPTH,
   MESSAGE_BATCH_SIZE,
   SG_DATA,
@@ -74,11 +69,13 @@ describe("Integration tests", function test() {
   let signer: Signer;
   const coordinatorKeypair = new Keypair();
 
+  let vkRegistryAddress: string;
+
   // the code that we run before all tests
   before(async () => {
     signer = await getDefaultSigner();
     // 1. deploy Vk Registry
-    const vkRegistryAddress = await deployVkRegistryContract({ signer });
+    vkRegistryAddress = await deployVkRegistryContract({ signer });
     // 2. set verifying keys
     const { pollJoiningVk, pollJoinedVk, processVk, tallyVk } = await extractAllVks({
       pollJoiningZkeyPath: path.resolve(__dirname, "../../../cli/zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey"),
@@ -120,16 +117,20 @@ describe("Integration tests", function test() {
 
     // 4. create a poll
     await deployPoll({
-      pollStartDate: startDate,
-      pollEndDate: startDate + duration,
+      pollEndTimestamp: startDate + duration,
+      pollStartTimestamp: startDate,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
-      coordinatorPubkey: coordinatorKeypair.pubKey.serialize(),
-      maciAddress: contracts.maciAddress,
+      coordinatorPubKey: coordinatorKeypair.pubKey,
+      maciContractAddress: contracts.maciAddress,
       signer,
-      useQuadraticVoting: true,
-      initialVoiceCreditsBalance: initialVoiceCredits,
+      mode: EMode.QV,
+      initialVoiceCreditProxyContractAddress: contracts.initialVoiceCreditProxyAddress,
+      verifierContractAddress: contracts.verifierAddress,
+      vkRegistryContractAddress: vkRegistryAddress,
+      gatekeeperContractAddress: contracts.signUpGatekeeperAddress,
+      voteOptions: DEFAULT_VOTE_OPTIONS,
       relayers: [await signer.getAddress()],
     });
 

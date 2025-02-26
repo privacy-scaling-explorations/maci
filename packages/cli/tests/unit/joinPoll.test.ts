@@ -1,9 +1,17 @@
 import { expect } from "chai";
 import { Signer } from "ethers";
 import { Keypair } from "maci-domainobjs";
-import { getBlockTimestamp, getDefaultSigner, getJoinedUserData, joinPoll, setVerifyingKeys, signup } from "maci-sdk";
+import {
+  getBlockTimestamp,
+  getDefaultSigner,
+  getJoinedUserData,
+  joinPoll,
+  setVerifyingKeys,
+  signup,
+  deployPoll,
+} from "maci-sdk";
 
-import { deploy, DeployedContracts, deployVkRegistryContract, deployPoll } from "../../ts";
+import { deploy, DeployedContracts, deployVkRegistryContract } from "../../ts";
 import { DEFAULT_IVCP_DATA, DEFAULT_SG_DATA } from "../../ts/utils";
 import {
   deployArgs,
@@ -47,7 +55,18 @@ describe("joinPoll", function test() {
       signer,
     });
 
-    await deployPoll({ ...deployPollArgs, signer, pollStartDate: startDate, pollEndDate: startDate + pollDuration });
+    await deployPoll({
+      ...deployPollArgs,
+      signer,
+      pollStartTimestamp: startDate,
+      pollEndTimestamp: startDate + pollDuration,
+      relayers: [await signer.getAddress()],
+      maciContractAddress: maciAddresses.maciAddress,
+      verifierContractAddress: maciAddresses.verifierAddress,
+      vkRegistryContractAddress: vkRegistryAddress,
+      gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
+      initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+    });
   });
 
   it("should allow to join the poll and return the user data", async () => {

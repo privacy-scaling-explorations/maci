@@ -5,6 +5,7 @@ import {
   generateTallyCommitments,
   getPollParams,
   ICheckVerifyingKeysArgs,
+  IDeployPollArgs,
   ISetVerifyingKeysArgs,
   type ITallyData,
   type IMergeSignupsArgs,
@@ -16,7 +17,8 @@ import { homedir } from "os";
 
 import type { Signer } from "ethers";
 
-import { DeployArgs, DeployPollArgs, TimeTravelArgs, readJSONFile } from "../ts/utils";
+import { DeployArgs, TimeTravelArgs, readJSONFile } from "../ts/utils";
+import { DEFAULT_VOTE_OPTIONS } from "../ts/utils/defaults";
 
 export const STATE_TREE_DEPTH = 10;
 export const INT_STATE_TREE_DEPTH = 1;
@@ -170,10 +172,22 @@ export const deployArgs: Omit<DeployArgs, "signer"> = {
   stateTreeDepth: STATE_TREE_DEPTH,
 };
 
-export const deployPollArgs: Omit<DeployPollArgs, "signer" | "pollStartDate" | "pollEndDate"> = {
+export const deployPollArgs: Omit<
+  IDeployPollArgs,
+  | "relayers"
+  | "signer"
+  | "pollStartTimestamp"
+  | "pollEndTimestamp"
+  | "maciContractAddress"
+  | "verifierContractAddress"
+  | "vkRegistryContractAddress"
+  | "gatekeeperContractAddress"
+  | "initialVoiceCreditProxyContractAddress"
+> = {
   intStateTreeDepth: INT_STATE_TREE_DEPTH,
   messageBatchSize: MESSAGE_BATCH_SIZE,
   voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
-  coordinatorPubkey: coordinatorPubKey,
-  useQuadraticVoting: true,
+  coordinatorPubKey: coordinatorKeypair.pubKey,
+  mode: EMode.QV,
+  voteOptions: DEFAULT_VOTE_OPTIONS,
 };

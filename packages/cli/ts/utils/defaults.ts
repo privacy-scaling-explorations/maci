@@ -10,3 +10,5 @@ export const DEFAULT_SG_DATA = "0x0000000000000000000000000000000000000000000000
 export const DEFAULT_IVCP_DATA = "0x0000000000000000000000000000000000000000000000000000000000000000";
 // the default number of operations to queue in the state root queue
 export const DEFAULT_SR_QUEUE_OPS = 4;
+// the default number of vote options
+export const DEFAULT_VOTE_OPTIONS = 25;

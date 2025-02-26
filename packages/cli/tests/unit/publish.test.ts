@@ -10,19 +10,21 @@ import {
   publishBatch,
   type IPublishMessage,
   type IPublishBatchArgs,
+  deployPoll,
+  IPollContractsData,
 } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
-import { deploy, deployPoll, deployVkRegistryContract } from "../../ts/commands";
-import { DEFAULT_SG_DATA, DeployedContracts, PollContracts } from "../../ts/utils";
+import { deploy, deployVkRegistryContract } from "../../ts/commands";
+import { DEFAULT_SG_DATA, DeployedContracts } from "../../ts/utils";
 import { deployPollArgs, deployArgs, pollDuration, verifyingKeysArgs } from "../constants";
 
 describe("publish", function test() {
   this.timeout(900000);
 
   let maciAddresses: DeployedContracts;
-  let pollAddresses: PollContracts;
+  let pollAddresses: IPollContractsData;
   let signer: Signer;
 
   const messages: IPublishMessage[] = [
@@ -49,6 +51,24 @@ describe("publish", function test() {
     const vkRegistryAddress = await deployVkRegistryContract({ signer });
     // we set the verifying keys
     await setVerifyingKeys({ ...(await verifyingKeysArgs(signer)), vkRegistryAddress });
+
+    const startDate = await getBlockTimestamp(signer);
+
+    // deploy the smart contracts
+    maciAddresses = await deploy({ ...deployArgs, signer });
+    // deploy a poll contract
+    pollAddresses = await deployPoll({
+      ...deployPollArgs,
+      signer,
+      pollStartTimestamp: startDate,
+      pollEndTimestamp: startDate + pollDuration,
+      relayers: [await signer.getAddress()],
+      maciContractAddress: maciAddresses.maciAddress,
+      verifierContractAddress: maciAddresses.verifierAddress,
+      vkRegistryContractAddress: vkRegistryAddress,
+      gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
+      initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+    });
   });
 
   describe("publish batch messages", () => {
@@ -57,18 +77,6 @@ describe("publish", function test() {
     let defaultArgs: IPublishBatchArgs;
 
     before(async () => {
-      const startDate = await getBlockTimestamp(signer);
-
-      // deploy the smart contracts
-      maciAddresses = await deploy({ ...deployArgs, signer });
-      // deploy a poll contract
-      pollAddresses = await deployPoll({
-        ...deployPollArgs,
-        signer,
-        pollStartDate: startDate,
-        pollEndDate: startDate + pollDuration,
-      });
-
       defaultArgs = {
         maciAddress: maciAddresses.maciAddress,
         publicKey: user.pubKey.serialize(),
@@ -87,7 +95,7 @@ describe("publish", function test() {
     });
 
     it("should publish messages properly", async () => {
-      const pollContract = PollFactory.connect(pollAddresses.poll, signer);
+      const pollContract = PollFactory.connect(pollAddresses.pollContractAddress, signer);
       const initialNumMessages = await pollContract.numMessages();
 
       const { hash, encryptedMessages, privateKeys } = await publishBatch(defaultArgs);

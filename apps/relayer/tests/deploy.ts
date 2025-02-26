@@ -1,7 +1,15 @@
 import hardhat from "hardhat";
-import { deploy, deployPoll, deployVkRegistryContract } from "maci-cli";
+import { deploy, deployVkRegistryContract } from "maci-cli";
 import { Keypair } from "maci-domainobjs";
-import { EMode, extractAllVks, genMaciStateFromContract, setVerifyingKeys, signup, joinPoll } from "maci-sdk";
+import {
+  EMode,
+  extractAllVks,
+  genMaciStateFromContract,
+  setVerifyingKeys,
+  signup,
+  joinPoll,
+  deployPoll,
+} from "maci-sdk";
 
 import {
   INT_STATE_TREE_DEPTH,
@@ -15,6 +23,7 @@ import {
   pollWasm,
   pollWitgen,
   rapidsnark,
+  DEFAULT_VOTE_OPTIONS,
 } from "./constants.js";
 
 interface IContractsData {
@@ -88,15 +97,21 @@ export class TestDeploy {
     const startDate = Math.floor(Date.now() / 1000) + 30;
 
     await deployPoll({
-      pollStartDate: startDate,
-      pollEndDate: startDate + 130,
+      pollStartTimestamp: startDate,
+      pollEndTimestamp: startDate + 130,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
-      coordinatorPubkey: coordinatorKeypair.pubKey.serialize(),
-      useQuadraticVoting: false,
+      coordinatorPubKey: coordinatorKeypair.pubKey,
+      mode: EMode.NON_QV,
       relayers: [await signer.getAddress()],
       signer,
+      verifierContractAddress: maciAddresses.verifierAddress,
+      maciContractAddress: maciAddresses.maciAddress,
+      gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
+      initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+      voteOptions: DEFAULT_VOTE_OPTIONS,
+      vkRegistryContractAddress: vkRegistry,
     });
 
     await signup({
