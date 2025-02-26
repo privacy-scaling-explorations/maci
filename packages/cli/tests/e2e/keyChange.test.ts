@@ -10,7 +10,9 @@ import {
   mergeSignups,
   verify,
   setVerifyingKeys,
-  ITallyData,
+  joinPoll,
+  proveOnChain,
+  type ITallyData,
 } from "maci-sdk";
 
 import fs from "fs";
@@ -18,17 +20,8 @@ import fs from "fs";
 import type { Signer } from "ethers";
 
 import { DeployedContracts } from "../../ts";
-import {
-  deploy,
-  deployPoll,
-  deployVkRegistryContract,
-  genProofsCommand,
-  joinPoll,
-  proveOnChain,
-  publish,
-  timeTravel,
-} from "../../ts/commands";
-import { DEFAULT_SG_DATA, GenProofsArgs } from "../../ts/utils";
+import { deploy, deployPoll, deployVkRegistryContract, genProofsCommand, publish, timeTravel } from "../../ts/commands";
+import { DEFAULT_IVCP_DATA, DEFAULT_SG_DATA, GenProofsArgs } from "../../ts/utils";
 import {
   coordinatorPrivKey,
   deployArgs,
@@ -140,8 +133,9 @@ describe("keyChange tests", function test() {
         pollWasm: testPollJoiningWasmPath,
         pollWitgen: testPollJoiningWitnessPath,
         rapidsnark: testRapidsnarkPath,
+        sgDataArg: DEFAULT_SG_DATA,
+        ivcpDataArg: DEFAULT_IVCP_DATA,
         signer,
-        quiet: true,
       });
       await publish({
         pubkey: pollPubKey1.serialize(),
@@ -206,7 +200,7 @@ describe("keyChange tests", function test() {
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       await genProofsCommand({ ...genProofsCommandArgs, signer, ipfsMessageBackupFiles });
-      await proveOnChain({ ...proveOnChainArgs, signer });
+      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
       await verify({ ...(await verifyArgs(signer)) });
     });
 
@@ -267,8 +261,9 @@ describe("keyChange tests", function test() {
         pollWasm: testPollJoiningWasmPath,
         pollWitgen: testPollJoiningWitnessPath,
         rapidsnark: testRapidsnarkPath,
+        sgDataArg: DEFAULT_SG_DATA,
+        ivcpDataArg: DEFAULT_IVCP_DATA,
         signer,
-        quiet: true,
       });
 
       const votes = [
@@ -319,7 +314,7 @@ describe("keyChange tests", function test() {
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       await genProofsCommand({ ...genProofsCommandArgs, signer, ipfsMessageBackupFiles });
-      await proveOnChain({ ...proveOnChainArgs, signer });
+      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
       await verify({ ...(await verifyArgs(signer)) });
     });
 
@@ -380,8 +375,9 @@ describe("keyChange tests", function test() {
         pollWasm: testPollJoiningWasmPath,
         pollWitgen: testPollJoiningWitnessPath,
         rapidsnark: testRapidsnarkPath,
+        sgDataArg: DEFAULT_SG_DATA,
+        ivcpDataArg: DEFAULT_IVCP_DATA,
         signer,
-        quiet: true,
       });
 
       await publish({
@@ -447,7 +443,7 @@ describe("keyChange tests", function test() {
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       await genProofsCommand({ ...genProofsCommandArgs, signer, ipfsMessageBackupFiles });
-      await proveOnChain({ ...proveOnChainArgs, signer });
+      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
       await verify({ ...(await verifyArgs(signer)) });
     });
 

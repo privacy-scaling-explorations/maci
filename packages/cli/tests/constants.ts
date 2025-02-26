@@ -6,15 +6,17 @@ import {
   getPollParams,
   ICheckVerifyingKeysArgs,
   ISetVerifyingKeysArgs,
+  type ITallyData,
   type IMergeSignupsArgs,
   type IVerifyArgs,
+  IProveOnChainArgs,
 } from "maci-sdk";
 
 import { homedir } from "os";
 
 import type { Signer } from "ethers";
 
-import { DeployArgs, DeployPollArgs, ProveOnChainArgs, TallyData, TimeTravelArgs, readJSONFile } from "../ts/utils";
+import { DeployArgs, DeployPollArgs, TimeTravelArgs, readJSONFile } from "../ts/utils";
 
 export const STATE_TREE_DEPTH = 10;
 export const INT_STATE_TREE_DEPTH = 1;
@@ -114,14 +116,14 @@ export const mergeSignupsArgs: Omit<IMergeSignupsArgs, "maciAddress" | "signer">
   pollId: 0n,
 };
 
-export const proveOnChainArgs: Omit<ProveOnChainArgs, "signer"> = {
+export const proveOnChainArgs: Omit<IProveOnChainArgs, "maciAddress" | "signer"> = {
   pollId: 0n,
   tallyFile: testTallyFilePath,
   proofDir: testProofsDirPath,
 };
 
 export const verifyArgs = async (signer: Signer): Promise<IVerifyArgs> => {
-  const tallyData = (await readJSONFile(testTallyFilePath)) as unknown as TallyData;
+  const tallyData = (await readJSONFile(testTallyFilePath)) as unknown as ITallyData;
   const pollParams = await getPollParams({ pollId: 0n, maciContractAddress: tallyData.maci, signer });
   const tallyCommitments = generateTallyCommitments({
     tallyData,

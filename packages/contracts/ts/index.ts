@@ -26,7 +26,7 @@ export {
   unlinkFile,
   getBlockTimestamp,
 } from "./utils";
-export { extractVk, genProofRapidSnark, genProofSnarkjs, verifyProof } from "./proofs";
+export { extractVk, genProofRapidSnark, genProofSnarkjs, verifyProof, readProofs } from "./proofs";
 export { EMode } from "./constants";
 export { EDeploySteps } from "../tasks/helpers/constants";
 export { Deployment } from "../tasks/helpers/Deployment";

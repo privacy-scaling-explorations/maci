@@ -1,4 +1,5 @@
-import { ICircuitParams } from "./types";
+import type { ICircuitParams } from "./types";
+import type { BigNumberish } from "ethers";
 
 /**
  * Validate the circuit parameters
@@ -21,3 +22,10 @@ export const validateParams = ({
 
   return true;
 };
+
+/**
+ * Convert a value to its hex representation
+ * @param value the value to convert
+ * @returns the value converted as a hex string
+ */
+export const asHex = (value: BigNumberish): string => `0x${BigInt(value).toString(16)}`;

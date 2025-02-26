@@ -59,6 +59,7 @@ export const generateSignUpTree = async ({
       await sleep(sleepAmount);
     }
   }
+
   return {
     signUpTree,
     pubKeys,

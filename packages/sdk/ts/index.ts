@@ -2,12 +2,12 @@ export * from "./keys";
 export * from "./maci";
 export * from "./relayer";
 export * from "./poll";
+export * from "./proof";
 export * from "./tally";
 export * from "./trees";
 export * from "./vote";
 export * from "./utils";
 export * from "./user";
-export * from "./proofs";
 
 export {
   EMode,

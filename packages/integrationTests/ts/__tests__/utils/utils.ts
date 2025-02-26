@@ -10,7 +10,7 @@ import {
   deployMockVerifier,
   deployVkRegistry,
   Verifier,
-  ITallyData,
+  type ITallyData,
 } from "maci-sdk";
 
 import fs from "fs";

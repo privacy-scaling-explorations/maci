@@ -1,21 +1,18 @@
-import {
-  MACI__factory as MACIFactory,
-  Poll__factory as PollFactory,
-  ProofGenerator,
-  type TallyData,
-} from "maci-contracts";
+import { MACI__factory as MACIFactory, Poll__factory as PollFactory, ProofGenerator } from "maci-contracts";
 import { Keypair, PrivKey } from "maci-domainobjs";
 
 import fs from "fs";
 
-import { IGenProofsArgs } from "./types";
+import type { ITallyData } from "../tally";
+
+import { IGenerateProofsArgs } from "./types";
 
 /**
  * Generate proofs for the message processing and tally calculations
  * @param args - The arguments for the genProofs command
  * @returns The tally data
  */
-export const genProofs = async ({
+export const generateProofs = async ({
   outputDir,
   coordinatorPrivateKey,
   signer,
@@ -38,7 +35,7 @@ export const genProofs = async ({
   processWitgen,
   processWasm,
   tallyFile,
-}: IGenProofsArgs): Promise<TallyData> => {
+}: IGenerateProofsArgs): Promise<ITallyData> => {
   // if we do not have the output directory just create it
   const isOutputDirExists = fs.existsSync(outputDir);
 

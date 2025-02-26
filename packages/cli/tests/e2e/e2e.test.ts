@@ -12,24 +12,17 @@ import {
   verify,
   setVerifyingKeys,
   generateMaciState,
+  joinPoll,
+  getJoinedUserData,
+  proveOnChain,
 } from "maci-sdk";
 
 import fs from "fs";
 
 import type { Signer } from "ethers";
 
-import {
-  deploy,
-  deployPoll,
-  deployVkRegistryContract,
-  genProofsCommand,
-  proveOnChain,
-  publish,
-  timeTravel,
-  joinPoll,
-  isJoinedUser,
-} from "../../ts/commands";
-import { DEFAULT_SG_DATA, DeployedContracts, GenProofsArgs } from "../../ts/utils";
+import { deploy, deployPoll, deployVkRegistryContract, genProofsCommand, publish, timeTravel } from "../../ts/commands";
+import { DEFAULT_IVCP_DATA, DEFAULT_SG_DATA, DeployedContracts, GenProofsArgs } from "../../ts/utils";
 import {
   deployPollArgs,
   coordinatorPrivKey,
@@ -142,8 +135,9 @@ describe("e2e tests", function test() {
         pollWasm: testPollJoiningWasmPath,
         pollWitgen: testPollJoiningWitnessPath,
         rapidsnark: testRapidsnarkPath,
+        sgDataArg: DEFAULT_SG_DATA,
+        ivcpDataArg: DEFAULT_IVCP_DATA,
         signer,
-        quiet: true,
       });
     });
 
@@ -172,7 +166,7 @@ describe("e2e tests", function test() {
         sgData: DEFAULT_SG_DATA,
         signer,
       });
-      await proveOnChain({ ...proveOnChainArgs, signer });
+      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
       await verify({
         ...(await verifyArgs(signer)),
         tallyData: tallyFileData,
@@ -231,8 +225,9 @@ describe("e2e tests", function test() {
           pollWasm: testPollJoiningWasmPath,
           pollWitgen: testPollJoiningWitnessPath,
           rapidsnark: testRapidsnarkPath,
+          sgDataArg: DEFAULT_SG_DATA,
+          ivcpDataArg: DEFAULT_IVCP_DATA,
           signer,
-          quiet: true,
         });
       }
     });
@@ -461,7 +456,7 @@ describe("e2e tests", function test() {
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       await genProofsCommand({ ...genProofsCommandArgs, signer, ipfsMessageBackupFiles });
-      await proveOnChain({ ...proveOnChainArgs, signer });
+      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
       await verify({ ...(await verifyArgs(signer)) });
     });
   });
@@ -513,8 +508,9 @@ describe("e2e tests", function test() {
         pollWasm: testPollJoiningWasmPath,
         pollWitgen: testPollJoiningWitnessPath,
         rapidsnark: testRapidsnarkPath,
+        sgDataArg: DEFAULT_SG_DATA,
+        ivcpDataArg: DEFAULT_IVCP_DATA,
         signer,
-        quiet: true,
       });
     });
 
@@ -567,7 +563,7 @@ describe("e2e tests", function test() {
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       await genProofsCommand({ ...genProofsCommandArgs, signer, ipfsMessageBackupFiles });
-      await proveOnChain({ ...proveOnChainArgs, signer });
+      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
       await verify({ ...(await verifyArgs(signer)) });
     });
   });
@@ -616,8 +612,9 @@ describe("e2e tests", function test() {
           pollWasm: testPollJoiningWasmPath,
           pollWitgen: testPollJoiningWitnessPath,
           rapidsnark: testRapidsnarkPath,
+          sgDataArg: DEFAULT_SG_DATA,
+          ivcpDataArg: DEFAULT_IVCP_DATA,
           signer,
-          quiet: true,
         });
       }
     });
@@ -645,7 +642,7 @@ describe("e2e tests", function test() {
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       const tallyFileData = await genProofsCommand({ ...genProofsCommandArgs, signer });
-      await proveOnChain({ ...proveOnChainArgs, signer });
+      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
       await verify({ ...(await verifyArgs(signer)), tallyData: tallyFileData });
     });
   });
@@ -700,8 +697,9 @@ describe("e2e tests", function test() {
           pollWasm: testPollJoiningWasmPath,
           pollWitgen: testPollJoiningWitnessPath,
           rapidsnark: testRapidsnarkPath,
+          sgDataArg: DEFAULT_SG_DATA,
+          ivcpDataArg: DEFAULT_IVCP_DATA,
           signer,
-          quiet: true,
         });
       }
     });
@@ -783,7 +781,7 @@ describe("e2e tests", function test() {
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       const tallyFileData = await genProofsCommand({ ...genProofsCommandArgs, signer, ipfsMessageBackupFiles });
-      await proveOnChain({ ...proveOnChainArgs, signer });
+      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
       await verify({ ...(await verifyArgs(signer)), tallyData: tallyFileData });
     });
   });
@@ -827,8 +825,9 @@ describe("e2e tests", function test() {
         pollWasm: testPollJoiningWasmPath,
         pollWitgen: testPollJoiningWitnessPath,
         rapidsnark: testRapidsnarkPath,
+        sgDataArg: DEFAULT_SG_DATA,
+        ivcpDataArg: DEFAULT_IVCP_DATA,
         signer,
-        quiet: true,
       });
 
       // publish
@@ -870,8 +869,9 @@ describe("e2e tests", function test() {
         pollWasm: testPollJoiningWasmPath,
         pollWitgen: testPollJoiningWitnessPath,
         rapidsnark: testRapidsnarkPath,
+        sgDataArg: DEFAULT_SG_DATA,
+        ivcpDataArg: DEFAULT_IVCP_DATA,
         signer,
-        quiet: true,
       });
 
       const votes = [
@@ -907,7 +907,7 @@ describe("e2e tests", function test() {
       // generate proofs
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       const tallyFileData = await genProofsCommand({ ...genProofsCommandArgs, signer, ipfsMessageBackupFiles });
-      await proveOnChain({ ...proveOnChainArgs, signer });
+      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
       await verify({ ...(await verifyArgs(signer)), tallyData: tallyFileData });
       await clean();
     });
@@ -963,8 +963,9 @@ describe("e2e tests", function test() {
         pollWasm: testPollJoiningWasmPath,
         pollWitgen: testPollJoiningWitnessPath,
         rapidsnark: testRapidsnarkPath,
+        sgDataArg: DEFAULT_SG_DATA,
+        ivcpDataArg: DEFAULT_IVCP_DATA,
         signer,
-        quiet: true,
       });
       // joinPoll
       await joinPoll({
@@ -977,8 +978,9 @@ describe("e2e tests", function test() {
         pollWasm: testPollJoiningWasmPath,
         pollWitgen: testPollJoiningWitnessPath,
         rapidsnark: testRapidsnarkPath,
+        sgDataArg: DEFAULT_SG_DATA,
+        ivcpDataArg: DEFAULT_IVCP_DATA,
         signer,
-        quiet: true,
       });
     });
 
@@ -1058,7 +1060,7 @@ describe("e2e tests", function test() {
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ maciAddress: maciAddresses.maciAddress, pollId: 1n, signer });
       await genProofsCommand({ ...genProofsCommandArgs, pollId: 1n, signer, ipfsMessageBackupFiles });
-      await proveOnChain({ ...proveOnChainArgs, pollId: 1n, signer });
+      await proveOnChain({ ...proveOnChainArgs, pollId: 1n, maciAddress: maciAddresses.maciAddress, signer });
       await verify({ ...(await verifyArgs(signer)), pollId: 1n });
     });
   });
@@ -1131,17 +1133,17 @@ describe("e2e tests", function test() {
           pollWasm: testPollJoiningWasmPath,
           pollWitgen: testPollJoiningWitnessPath,
           rapidsnark: testRapidsnarkPath,
+          sgDataArg: DEFAULT_SG_DATA,
+          ivcpDataArg: DEFAULT_IVCP_DATA,
           signer,
-          quiet: true,
         });
         // eslint-disable-next-line no-await-in-loop
-        const { isJoined, pollStateIndex } = await isJoinedUser({
+        const { isJoined, pollStateIndex } = await getJoinedUserData({
           maciAddress: maciAddresses.maciAddress,
           pollId: 0n,
           pollPubKey: users[i].pubKey.serialize(),
           signer,
           startBlock: 0,
-          quiet: true,
         });
 
         expect(isJoined).to.eq(true);
@@ -1195,7 +1197,7 @@ describe("e2e tests", function test() {
       // generate proofs
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       await genProofsCommand({ ...genProofsCommandArgs, signer, ipfsMessageBackupFiles });
-      await proveOnChain({ ...proveOnChainArgs, signer });
+      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
       await verify({ ...(await verifyArgs(signer)) });
       await clean();
     });
@@ -1235,17 +1237,17 @@ describe("e2e tests", function test() {
             pollWasm: testPollJoiningWasmPath,
             pollWitgen: testPollJoiningWitnessPath,
             rapidsnark: testRapidsnarkPath,
+            sgDataArg: DEFAULT_SG_DATA,
+            ivcpDataArg: DEFAULT_IVCP_DATA,
             signer,
-            quiet: true,
           });
           // eslint-disable-next-line no-await-in-loop
-          const { isJoined, pollStateIndex } = await isJoinedUser({
+          const { isJoined, pollStateIndex } = await getJoinedUserData({
             maciAddress: maciAddresses.maciAddress,
             pollId: BigInt(p),
             pollPubKey: users[i].pubKey.serialize(),
             signer,
             startBlock: 0,
-            quiet: true,
           });
 
           expect(isJoined).to.eq(true);
@@ -1495,8 +1497,9 @@ describe("e2e tests", function test() {
         pollWasm: testPollJoiningWasmPath,
         pollWitgen: testPollJoiningWitnessPath,
         rapidsnark: testRapidsnarkPath,
+        sgDataArg: DEFAULT_SG_DATA,
+        ivcpDataArg: DEFAULT_IVCP_DATA,
         signer,
-        quiet: true,
       });
     });
 
@@ -1563,7 +1566,7 @@ describe("e2e tests", function test() {
         signer,
         ipfsMessageBackupFiles,
       });
-      await proveOnChain({ ...proveOnChainArgs, signer });
+      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
       await verify({ ...(await verifyArgs(signer)) });
     });
   });

@@ -10,19 +10,12 @@ import {
   verify,
   setVerifyingKeys,
   EMode,
+  proveOnChain,
 } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
-import {
-  deploy,
-  deployPoll,
-  deployVkRegistryContract,
-  genProofsCommand,
-  proveOnChain,
-  publish,
-  timeTravel,
-} from "../../ts/commands";
+import { deploy, deployPoll, deployVkRegistryContract, genProofsCommand, publish, timeTravel } from "../../ts/commands";
 import { DEFAULT_SG_DATA, DeployedContracts, GenProofsArgs } from "../../ts/utils";
 import {
   deployPollArgs,
@@ -139,7 +132,7 @@ describe("e2e tests with non quadratic voting", function test() {
       await timeTravel({ seconds: pollDuration, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
       const tallyFileData = await genProofsCommand({ ...genProofsCommandArgs, signer, useQuadraticVoting: false });
-      await proveOnChain({ ...proveOnChainArgs, signer });
+      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
       await verify({
         ...(await verifyArgs(signer)),
         tallyData: tallyFileData,
@@ -218,7 +211,7 @@ describe("e2e tests with non quadratic voting", function test() {
         ipfsMessageBackupFiles,
         useQuadraticVoting: false,
       });
-      await proveOnChain({ ...proveOnChainArgs, signer });
+      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
       await verify({
         ...(await verifyArgs(signer)),
         tallyData: tallyFileData,

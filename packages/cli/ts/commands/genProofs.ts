@@ -1,14 +1,13 @@
 import { PrivKey } from "maci-domainobjs";
-import { genProofs } from "maci-sdk";
+import { generateProofs, type ITallyData } from "maci-sdk";
 
 import {
   banner,
   doesPathExist,
   logError,
   promptSensitiveValue,
-  type TallyData,
-  type GenProofsArgs,
   readContractAddress,
+  type GenProofsArgs,
 } from "../utils";
 
 /**
@@ -42,7 +41,7 @@ export const genProofsCommand = async ({
   ipfsMessageBackupFiles,
   useQuadraticVoting = true,
   quiet = true,
-}: GenProofsArgs): Promise<TallyData> => {
+}: GenProofsArgs): Promise<ITallyData> => {
   banner(quiet);
 
   // differentiate whether we are using wasm or rapidsnark
@@ -90,19 +89,20 @@ export const genProofsCommand = async ({
   }
 
   const network = await signer.provider?.getNetwork();
-
   const maciContractAddress = await readContractAddress("MACI", network?.name);
+
   if (!maciContractAddress && !maciAddress) {
     logError("Please provide a MACI contract address");
   }
 
   // the coordinator's MACI private key
   const privateKey = coordinatorPrivKey || (await promptSensitiveValue("Insert your MACI private key"));
+
   if (!PrivKey.isValidSerializedPrivKey(privateKey)) {
     logError("Invalid MACI private key");
   }
 
-  const tallyData = await genProofs({
+  const tallyData = await generateProofs({
     networkName: network?.name || "",
     chainId: network?.chainId.toString() || "0",
     maciContractAddress,

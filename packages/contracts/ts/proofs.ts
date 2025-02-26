@@ -7,7 +7,7 @@ import fs from "fs";
 import { tmpdir } from "os";
 import path from "path";
 
-import type { IGenProofOptions, ISnarkJSVerificationKey, FullProveResult } from "./types";
+import type { IGenProofOptions, ISnarkJSVerificationKey, FullProveResult, Proof } from "./types";
 
 import { cleanThreads, unlinkFile } from "./utils";
 
@@ -135,3 +135,33 @@ export const extractVk = async (zkeyPath: string, cleanup = true): Promise<IVkOb
         cleanThreads();
       }
     });
+
+/**
+ * Interface that represents read proofs arguments
+ */
+interface IReadProofsArgs {
+  files: string[];
+  folder: string;
+  type: "tally" | "process";
+}
+
+/**
+ * Read and parse proofs
+ *
+ * @param args - read proofs arguments
+ * @returns proofs
+ */
+export async function readProofs({ files, folder, type }: IReadProofsArgs): Promise<Proof[]> {
+  return Promise.all(
+    files
+      .filter((f) => f.startsWith(`${type}_`) && f.endsWith(".json"))
+      .sort((a, b) => {
+        const numA = parseInt(a.match(/\d+/)?.[0] ?? "0", 10);
+        const numB = parseInt(b.match(/\d+/)?.[0] ?? "0", 10);
+        return numA - numB;
+      })
+      .map(async (file) =>
+        fs.promises.readFile(`${folder}/${file}`, "utf8").then((result) => JSON.parse(result) as Proof),
+      ),
+  );
+}
