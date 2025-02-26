@@ -165,7 +165,9 @@ task("prove", "Command to generate proofs")
       };
 
       data.processProofs = await proofGenerator.generateMpProofs();
-      data.tallyProofs = await proofGenerator.generateTallyProofs(network).then(({ proofs }) => proofs);
+      data.tallyProofs = await proofGenerator
+        .generateTallyProofs(network.name, network.config.chainId?.toString())
+        .then(({ proofs }) => proofs);
 
       const endBalance = await signer.provider.getBalance(signer);
 

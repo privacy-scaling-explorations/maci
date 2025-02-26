@@ -156,3 +156,4 @@ packages/circuits/circom/test
 **/ts/__benchmarks__/results/**
 
 proofs 
+!packages/sdk/ts/proofs/

@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-import { Network } from "hardhat/types";
 import { CircuitInputs, IJsonMaciState, MaciState, Poll } from "maci-core";
 import { genTreeCommitment, hash3, hashLeftRight } from "maci-crypto";
 
@@ -243,11 +242,13 @@ export class ProofGenerator {
   /**
    * Generate tally proofs
    *
-   * @param network - current network
+   * @param networkName - current network name
+   * @param chainId - current chain id
    * @returns tally proofs
    */
   async generateTallyProofs(
-    network: Network,
+    networkName: string,
+    chainId?: string,
     options?: IGenerateProofsOptions,
   ): Promise<{ proofs: Proof[]; tallyData: TallyData }> {
     performance.mark("tally-proofs-start");
@@ -313,8 +314,8 @@ export class ProofGenerator {
       const tallyFileData: TallyData = {
         maci: this.maciContractAddress,
         pollId: this.poll.pollId.toString(),
-        network: network.name,
-        chainId: network.config.chainId?.toString(),
+        network: networkName,
+        chainId,
         isQuadratic: Boolean(this.useQuadraticVoting),
         tallyAddress: this.tallyContractAddress,
         newTallyCommitment: asHex(tallyCircuitInputs!.newTallyCommitment as BigNumberish),

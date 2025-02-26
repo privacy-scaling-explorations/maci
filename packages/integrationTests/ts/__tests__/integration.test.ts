@@ -6,7 +6,7 @@ import {
   deploy,
   deployPoll,
   deployVkRegistryContract,
-  genProofs,
+  genProofsCommand,
   proveOnChain,
   publish,
   timeTravel,
@@ -323,7 +323,7 @@ describe("Integration tests", function test() {
         .then((paths) => paths.map((filename) => path.resolve(backupFolder, filename)));
 
       // generate proofs
-      const tallyData = await genProofs({
+      const tallyData = await genProofsCommand({
         outputDir: path.resolve(__dirname, "../../../cli/proofs"),
         tallyFile: path.resolve(__dirname, "../../../cli/tally.json"),
         tallyZkey: path.resolve(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey"),

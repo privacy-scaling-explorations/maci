@@ -22,7 +22,7 @@ import {
   deploy,
   deployPoll,
   deployVkRegistryContract,
-  genProofs,
+  genProofsCommand,
   joinPoll,
   proveOnChain,
   publish,
@@ -64,7 +64,7 @@ describe("keyChange tests", function test() {
   let maciAddresses: DeployedContracts;
   let signer: Signer;
 
-  const genProofsArgs: Omit<GenProofsArgs, "signer"> = {
+  const genProofsCommandArgs: Omit<GenProofsArgs, "signer"> = {
     outputDir: testProofsDirPath,
     tallyFile: testTallyFilePath,
     tallyZkey: tallyVotesTestZkeyPath,
@@ -205,7 +205,7 @@ describe("keyChange tests", function test() {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-      await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
+      await genProofsCommand({ ...genProofsCommandArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...(await verifyArgs(signer)) });
     });
@@ -318,7 +318,7 @@ describe("keyChange tests", function test() {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-      await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
+      await genProofsCommand({ ...genProofsCommandArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...(await verifyArgs(signer)) });
     });
@@ -446,7 +446,7 @@ describe("keyChange tests", function test() {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-      await genProofs({ ...genProofsArgs, signer, ipfsMessageBackupFiles });
+      await genProofsCommand({ ...genProofsCommandArgs, signer, ipfsMessageBackupFiles });
       await proveOnChain({ ...proveOnChainArgs, signer });
       await verify({ ...(await verifyArgs(signer)) });
     });

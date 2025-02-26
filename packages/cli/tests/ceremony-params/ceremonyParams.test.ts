@@ -19,7 +19,7 @@ import {
   deploy,
   deployPoll,
   deployVkRegistryContract,
-  genProofs,
+  genProofsCommand,
   proveOnChain,
   publish,
   timeTravel,
@@ -83,7 +83,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
     useQuadraticVoting: true,
   };
 
-  const genProofsCeremonyArgs: Omit<GenProofsArgs, "signer"> = {
+  const genProofsCommandCeremonyArgs: Omit<GenProofsArgs, "signer"> = {
     outputDir: testProofsDirPath,
     tallyFile: testTallyFilePath,
     tallyZkey: ceremonyTallyVotesZkeyPath,
@@ -210,7 +210,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
         const ipfsMessageBackupFiles = await getBackupFilenames();
         await timeTravel({ seconds: pollDuration, signer });
         await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-        await genProofs({ ...genProofsCeremonyArgs, signer, ipfsMessageBackupFiles });
+        await genProofsCommand({ ...genProofsCommandCeremonyArgs, signer, ipfsMessageBackupFiles });
         await proveOnChain({ ...proveOnChainArgs, signer });
         await verify({ ...(await verifyArgs(signer)) });
       });
@@ -303,7 +303,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
         const ipfsMessageBackupFiles = await getBackupFilenames();
         await timeTravel({ seconds: pollDuration, signer });
         await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-        await genProofs({ ...genProofsCeremonyArgs, signer, ipfsMessageBackupFiles });
+        await genProofsCommand({ ...genProofsCommandCeremonyArgs, signer, ipfsMessageBackupFiles });
         await proveOnChain({ ...proveOnChainArgs, signer });
         await verify({ ...(await verifyArgs(signer)) });
       });
@@ -311,7 +311,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
   });
 
   describe("non quadratic voting", () => {
-    const genProofsArgs: Omit<GenProofsArgs, "signer"> = {
+    const genProofsCommandArgs: Omit<GenProofsArgs, "signer"> = {
       outputDir: testProofsDirPath,
       tallyFile: testTallyFilePath,
       tallyZkey: ceremonyTallyVotesNonQvZkeyPath,
@@ -437,8 +437,8 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
         const ipfsMessageBackupFiles = await getBackupFilenames();
         await timeTravel({ seconds: pollDuration, signer });
         await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-        const tallyFileData = await genProofs({
-          ...genProofsArgs,
+        const tallyFileData = await genProofsCommand({
+          ...genProofsCommandArgs,
           signer,
           ipfsMessageBackupFiles,
           useQuadraticVoting: false,
@@ -540,8 +540,8 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
         const ipfsMessageBackupFiles = await getBackupFilenames();
         await timeTravel({ seconds: pollDuration, signer });
         await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-        const tallyFileData = await genProofs({
-          ...genProofsArgs,
+        const tallyFileData = await genProofsCommand({
+          ...genProofsCommandArgs,
           signer,
           ipfsMessageBackupFiles,
           useQuadraticVoting: false,

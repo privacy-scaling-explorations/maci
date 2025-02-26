@@ -34,9 +34,9 @@ import {
   deployPoll,
   publish,
   timeTravel,
-  genProofs,
   fundWallet,
   proveOnChain,
+  genProofsCommand,
 } from "./commands";
 import {
   DEFAULT_IVCP_DATA,
@@ -752,7 +752,7 @@ program
     try {
       const signer = await getSigner();
 
-      await genProofs({
+      await genProofsCommand({
         outputDir: cmdObj.output,
         tallyFile: cmdObj.tallyFile,
         tallyZkey: cmdObj.tallyZkey,
@@ -867,7 +867,7 @@ export {
   deployPoll,
   deployVkRegistryContract,
   fundWallet,
-  genProofs,
+  genProofsCommand,
   publish,
   publishBatch,
   proveOnChain,
