@@ -2,12 +2,20 @@ import { expect } from "chai";
 import { Poll__factory as PollFactory } from "maci-contracts/typechain-types";
 import { SNARK_FIELD_SIZE } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
-import { getBlockTimestamp, getDefaultSigner, setVerifyingKeys, signup } from "maci-sdk";
+import {
+  getBlockTimestamp,
+  getDefaultSigner,
+  setVerifyingKeys,
+  signup,
+  publishBatch,
+  type IPublishMessage,
+  type IPublishBatchArgs,
+} from "maci-sdk";
 
 import type { Signer } from "ethers";
 
-import { deploy, deployPoll, deployVkRegistryContract, publishBatch } from "../../ts/commands";
-import { DEFAULT_SG_DATA, DeployedContracts, IPublishBatchArgs, IPublishMessage, PollContracts } from "../../ts/utils";
+import { deploy, deployPoll, deployVkRegistryContract } from "../../ts/commands";
+import { DEFAULT_SG_DATA, DeployedContracts, PollContracts } from "../../ts/utils";
 import { deployPollArgs, deployArgs, pollDuration, verifyingKeysArgs } from "../constants";
 
 describe("publish", function test() {
@@ -110,7 +118,9 @@ describe("publish", function test() {
     });
 
     it("should throw error if current poll is not deployed", async () => {
-      await expect(publishBatch({ ...defaultArgs, pollId: 9000n })).eventually.rejectedWith("PollDoesNotExist(9000)");
+      await expect(publishBatch({ ...defaultArgs, pollId: 9000n })).eventually.rejectedWith(
+        "MACI contract doesn't have any deployed poll 9000",
+      );
     });
 
     it("should throw error if message is invalid", async () => {

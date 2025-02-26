@@ -12,6 +12,7 @@ import {
   setVerifyingKeys,
   joinPoll,
   proveOnChain,
+  publish,
   type ITallyData,
 } from "maci-sdk";
 
@@ -20,7 +21,7 @@ import fs from "fs";
 import type { Signer } from "ethers";
 
 import { DeployedContracts } from "../../ts";
-import { deploy, deployPoll, deployVkRegistryContract, genProofsCommand, publish, timeTravel } from "../../ts/commands";
+import { deploy, deployPoll, deployVkRegistryContract, genProofsCommand, timeTravel } from "../../ts/commands";
 import { DEFAULT_IVCP_DATA, DEFAULT_SG_DATA, GenProofsArgs } from "../../ts/utils";
 import {
   coordinatorPrivKey,

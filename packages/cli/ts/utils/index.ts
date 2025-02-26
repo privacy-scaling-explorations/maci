@@ -23,12 +23,8 @@ export type {
   ISnarkJSVerificationKey,
   FundWalletArgs,
   TimeTravelArgs,
-  PublishArgs,
   DeployPollArgs,
   PollContracts,
-  IPublishBatchArgs,
-  IPublishBatchData,
-  IPublishMessage,
 } from "./interfaces";
 export { compareVks } from "./vks";
 export { delay } from "./time";

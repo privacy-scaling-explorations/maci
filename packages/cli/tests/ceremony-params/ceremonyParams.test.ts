@@ -12,11 +12,12 @@ import {
   EMode,
   extractAllVks,
   proveOnChain,
+  publish,
 } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
-import { deploy, deployPoll, deployVkRegistryContract, genProofsCommand, publish, timeTravel } from "../../ts/commands";
+import { deploy, deployPoll, deployVkRegistryContract, genProofsCommand, timeTravel } from "../../ts/commands";
 import { DEFAULT_SG_DATA, DeployArgs, DeployPollArgs, DeployedContracts, GenProofsArgs } from "../../ts/utils";
 import {
   coordinatorPrivKey,
