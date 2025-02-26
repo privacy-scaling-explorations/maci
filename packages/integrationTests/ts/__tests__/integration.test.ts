@@ -6,7 +6,6 @@ import {
   deploy,
   deployPoll,
   deployVkRegistryContract,
-  publish,
   timeTravel,
   DeployedContracts,
   genProofsCommand,
@@ -31,6 +30,7 @@ import {
   extractAllVks,
   proveOnChain,
   joinPoll,
+  publish,
 } from "maci-sdk";
 
 import fs from "fs";
@@ -287,7 +287,7 @@ describe("Integration tests", function test() {
                   // if it's a key change command, then we pass the old private key otherwise just pass the current
                   privateKey: isKeyChange ? oldKeypair.privKey.serialize() : user.keypair.privKey.serialize(),
                   signer,
-                })
+                }).then(({ privateKey }) => privateKey)
               : await relayMessages({
                   maciAddress: contracts.maciAddress,
                   ipfsHash,

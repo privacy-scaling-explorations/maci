@@ -21,6 +21,7 @@ import {
   generateMaciState,
   proveOnChain,
   type ITallyData,
+  publish,
 } from "maci-sdk";
 
 import fs from "fs";
@@ -34,7 +35,6 @@ import {
   deploy,
   showContracts,
   deployPoll,
-  publish,
   timeTravel,
   fundWallet,
   genProofsCommand,
@@ -418,7 +418,6 @@ program
         maciAddress,
         salt: cmdObj.salt,
         privateKey,
-        quiet: cmdObj.quiet,
         signer,
       });
     } catch (error) {
@@ -863,25 +862,6 @@ if (require.main === module) {
 }
 
 // export everything so we can use in other packages
-export {
-  deploy,
-  deployPoll,
-  deployVkRegistryContract,
-  fundWallet,
-  genProofsCommand,
-  publish,
-  publishBatch,
-  timeTravel,
-} from "./commands";
+export { deploy, deployPoll, deployVkRegistryContract, fundWallet, genProofsCommand, timeTravel } from "./commands";
 
-export type {
-  DeployedContracts,
-  PollContracts,
-  DeployPollArgs,
-  GenProofsArgs,
-  PublishArgs,
-  DeployArgs,
-  IPublishBatchArgs,
-  IPublishBatchData,
-  IPublishMessage,
-} from "./utils";
+export type { DeployedContracts, PollContracts, DeployPollArgs, GenProofsArgs, DeployArgs } from "./utils";

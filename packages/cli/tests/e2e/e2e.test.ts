@@ -15,13 +15,14 @@ import {
   joinPoll,
   getJoinedUserData,
   proveOnChain,
+  publish,
 } from "maci-sdk";
 
 import fs from "fs";
 
 import type { Signer } from "ethers";
 
-import { deploy, deployPoll, deployVkRegistryContract, genProofsCommand, publish, timeTravel } from "../../ts/commands";
+import { deploy, deployPoll, deployVkRegistryContract, genProofsCommand, timeTravel } from "../../ts/commands";
 import { DEFAULT_IVCP_DATA, DEFAULT_SG_DATA, DeployedContracts, GenProofsArgs } from "../../ts/utils";
 import {
   deployPollArgs,
