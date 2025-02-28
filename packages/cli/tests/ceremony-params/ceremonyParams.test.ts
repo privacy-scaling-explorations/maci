@@ -14,12 +14,14 @@ import {
   proveOnChain,
   publish,
   deployPoll,
+  generateProofs,
+  type IGenerateProofsArgs,
 } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
-import { deploy, deployVkRegistryContract, genProofsCommand, timeTravel } from "../../ts/commands";
-import { DEFAULT_SG_DATA, DeployArgs, DeployedContracts, GenProofsArgs } from "../../ts/utils";
+import { deploy, deployVkRegistryContract, timeTravel } from "../../ts/commands";
+import { DEFAULT_SG_DATA, DeployArgs, DeployedContracts } from "../../ts/utils";
 import {
   coordinatorPrivKey,
   ceremonyProcessMessagesZkeyPath,
@@ -70,14 +72,14 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
     stateTreeDepth,
   };
 
-  const genProofsCommandCeremonyArgs: Omit<GenProofsArgs, "signer"> = {
+  const generateProofsCeremonyArgs: Omit<IGenerateProofsArgs, "maciAddress" | "signer"> = {
     outputDir: testProofsDirPath,
     tallyFile: testTallyFilePath,
     tallyZkey: ceremonyTallyVotesZkeyPath,
     processZkey: ceremonyProcessMessagesZkeyPath,
     pollId: 0n,
     useWasm,
-    coordinatorPrivKey,
+    coordinatorPrivateKey: coordinatorPrivKey,
     rapidsnark: testRapidsnarkPath,
     processWitgen: ceremonyProcessMessagesWitnessPath,
     tallyWitgen: ceremonyTallyVotesWitnessPath,
@@ -122,7 +124,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
           intStateTreeDepth,
           messageBatchSize,
           voteOptionTreeDepth,
-          maciContractAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciAddress,
           verifierContractAddress: maciAddresses.verifierAddress,
           vkRegistryContractAddress: vkRegistryAddress,
           gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
@@ -205,7 +207,12 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
         const ipfsMessageBackupFiles = await getBackupFilenames();
         await timeTravel({ seconds: pollDuration, signer });
         await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-        await genProofsCommand({ ...genProofsCommandCeremonyArgs, signer, ipfsMessageBackupFiles });
+        await generateProofs({
+          ...generateProofsCeremonyArgs,
+          maciAddress: maciAddresses.maciAddress,
+          signer,
+          ipfsMessageBackupFiles,
+        });
         await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
         await verify({ ...(await verifyArgs(signer)) });
       });
@@ -232,7 +239,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
           intStateTreeDepth,
           messageBatchSize,
           voteOptionTreeDepth,
-          maciContractAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciAddress,
           verifierContractAddress: maciAddresses.verifierAddress,
           vkRegistryContractAddress: vkRegistryAddress,
           gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
@@ -306,7 +313,12 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
         const ipfsMessageBackupFiles = await getBackupFilenames();
         await timeTravel({ seconds: pollDuration, signer });
         await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-        await genProofsCommand({ ...genProofsCommandCeremonyArgs, signer, ipfsMessageBackupFiles });
+        await generateProofs({
+          ...generateProofsCeremonyArgs,
+          maciAddress: maciAddresses.maciAddress,
+          signer,
+          ipfsMessageBackupFiles,
+        });
         await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
         await verify({ ...(await verifyArgs(signer)) });
       });
@@ -314,7 +326,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
   });
 
   describe("non quadratic voting", () => {
-    const genProofsCommandArgs: Omit<GenProofsArgs, "signer"> = {
+    const generateProofsArgs: Omit<IGenerateProofsArgs, "maciAddress" | "signer"> = {
       outputDir: testProofsDirPath,
       tallyFile: testTallyFilePath,
       tallyZkey: ceremonyTallyVotesNonQvZkeyPath,
@@ -325,7 +337,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
       processDatFile: ceremonyProcessMessagesNonQvDatPath,
       tallyWitgen: ceremonyTallyVotesNonQvWitnessPath,
       tallyDatFile: ceremonyTallyVotesNonQvDatPath,
-      coordinatorPrivKey,
+      coordinatorPrivateKey: coordinatorPrivKey,
       processWasm: ceremonyProcessMessagesNonQvWasmPath,
       tallyWasm: ceremonyTallyVotesNonQvWasmPath,
       useWasm,
@@ -382,7 +394,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
           intStateTreeDepth,
           messageBatchSize,
           voteOptionTreeDepth,
-          maciContractAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciAddress,
           verifierContractAddress: maciAddresses.verifierAddress,
           vkRegistryContractAddress: vkRegistryAddress,
           gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
@@ -448,10 +460,11 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
         const ipfsMessageBackupFiles = await getBackupFilenames();
         await timeTravel({ seconds: pollDuration, signer });
         await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-        const tallyFileData = await genProofsCommand({
-          ...genProofsCommandArgs,
+        const { tallyData: tallyFileData } = await generateProofs({
+          ...generateProofsArgs,
           signer,
           ipfsMessageBackupFiles,
+          maciAddress: maciAddresses.maciAddress,
           useQuadraticVoting: false,
         });
         await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
@@ -484,7 +497,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
           intStateTreeDepth,
           messageBatchSize,
           voteOptionTreeDepth,
-          maciContractAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciAddress,
           verifierContractAddress: maciAddresses.verifierAddress,
           vkRegistryContractAddress: vkRegistryAddress,
           gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
@@ -559,9 +572,10 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
         const ipfsMessageBackupFiles = await getBackupFilenames();
         await timeTravel({ seconds: pollDuration, signer });
         await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-        const tallyFileData = await genProofsCommand({
-          ...genProofsCommandArgs,
+        const { tallyData: tallyFileData } = await generateProofs({
+          ...generateProofsArgs,
           signer,
+          maciAddress: maciAddresses.maciAddress,
           ipfsMessageBackupFiles,
           useQuadraticVoting: false,
         });

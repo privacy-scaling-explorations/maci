@@ -13,12 +13,14 @@ import {
   proveOnChain,
   publish,
   deployPoll,
+  generateProofs,
+  type IGenerateProofsArgs,
 } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
-import { deploy, deployVkRegistryContract, genProofsCommand, timeTravel } from "../../ts/commands";
-import { DEFAULT_SG_DATA, DeployedContracts, GenProofsArgs } from "../../ts/utils";
+import { deploy, deployVkRegistryContract, timeTravel } from "../../ts/commands";
+import { DEFAULT_SG_DATA, DeployedContracts } from "../../ts/utils";
 import {
   deployPollArgs,
   coordinatorPrivKey,
@@ -56,7 +58,7 @@ describe("e2e tests with non quadratic voting", function test() {
   let signer: Signer;
   let vkRegistryAddress: string;
 
-  const genProofsCommandArgs: Omit<GenProofsArgs, "signer"> = {
+  const generateProofsArgs: Omit<IGenerateProofsArgs, "maciAddress" | "signer"> = {
     outputDir: testProofsDirPath,
     tallyFile: testTallyFilePath,
     tallyZkey: tallyVotesTestNonQvZkeyPath,
@@ -67,7 +69,7 @@ describe("e2e tests with non quadratic voting", function test() {
     processDatFile: testProcessMessagesNonQvWitnessDatPath,
     tallyWitgen: testTallyVotesNonQvWitnessPath,
     tallyDatFile: testTallyVotesNonQvWitnessDatPath,
-    coordinatorPrivKey,
+    coordinatorPrivateKey: coordinatorPrivKey,
     processWasm: testProcessMessagesNonQvWasmPath,
     tallyWasm: testTallyVotesNonQvWasmPath,
     useWasm,
@@ -105,7 +107,7 @@ describe("e2e tests with non quadratic voting", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         verifierContractAddress: maciAddresses.verifierAddress,
         vkRegistryContractAddress: vkRegistryAddress,
         gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
@@ -141,7 +143,12 @@ describe("e2e tests with non quadratic voting", function test() {
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel({ seconds: pollDuration, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-      const tallyFileData = await genProofsCommand({ ...genProofsCommandArgs, signer, useQuadraticVoting: false });
+      const { tallyData: tallyFileData } = await generateProofs({
+        ...generateProofsArgs,
+        signer,
+        maciAddress: maciAddresses.maciAddress,
+        useQuadraticVoting: false,
+      });
       await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
       await verify({
         ...(await verifyArgs(signer)),
@@ -172,7 +179,7 @@ describe("e2e tests with non quadratic voting", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         verifierContractAddress: maciAddresses.verifierAddress,
         vkRegistryContractAddress: vkRegistryAddress,
         gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
@@ -221,9 +228,10 @@ describe("e2e tests with non quadratic voting", function test() {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ seconds: pollDuration, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-      const tallyFileData = await genProofsCommand({
-        ...genProofsCommandArgs,
+      const { tallyData: tallyFileData } = await generateProofs({
+        ...generateProofsArgs,
         signer,
+        maciAddress: maciAddresses.maciAddress,
         ipfsMessageBackupFiles,
         useQuadraticVoting: false,
       });

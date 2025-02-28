@@ -12,4 +12,4 @@ export type {
 export { generateVote } from "./generate";
 export { publish, publishBatch } from "./publish";
 export { submitVote, submitVoteBatch } from "./submit";
-export { getCoordinatorPubKey } from "./utils";
+export { getCoordinatorPubKey, validateSalt } from "./utils";

@@ -63,7 +63,7 @@ describe("publish", function test() {
       pollStartTimestamp: startDate,
       pollEndTimestamp: startDate + pollDuration,
       relayers: [await signer.getAddress()],
-      maciContractAddress: maciAddresses.maciAddress,
+      maciAddress: maciAddresses.maciAddress,
       verifierContractAddress: maciAddresses.verifierAddress,
       vkRegistryContractAddress: vkRegistryAddress,
       gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,

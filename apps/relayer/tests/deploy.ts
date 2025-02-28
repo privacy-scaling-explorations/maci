@@ -24,6 +24,7 @@ import {
   pollWitgen,
   rapidsnark,
   DEFAULT_VOTE_OPTIONS,
+  DEFAULT_INITIAL_VOICE_CREDITS,
 } from "./constants.js";
 
 interface IContractsData {
@@ -107,11 +108,12 @@ export class TestDeploy {
       relayers: [await signer.getAddress()],
       signer,
       verifierContractAddress: maciAddresses.verifierAddress,
-      maciContractAddress: maciAddresses.maciAddress,
+      maciAddress: maciAddresses.maciAddress,
       gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
       initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
       voteOptions: DEFAULT_VOTE_OPTIONS,
       vkRegistryContractAddress: vkRegistry,
+      initialVoiceCredits: DEFAULT_INITIAL_VOICE_CREDITS,
     });
 
     await signup({

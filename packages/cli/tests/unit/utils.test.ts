@@ -1,12 +1,10 @@
 import { expect } from "chai";
 import { SNARK_FIELD_SIZE, genRandomSalt } from "maci-crypto";
 import { VerifyingKey } from "maci-domainobjs";
+import { compareVks, validateSalt } from "maci-sdk";
 
 import fs from "fs";
 import path from "path";
-
-import { compareVks } from "../../ts/utils";
-import { validateSalt } from "../../ts/utils/salt";
 
 describe("utils", () => {
   describe("vks", () => {
