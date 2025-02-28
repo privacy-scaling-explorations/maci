@@ -3,9 +3,7 @@ import { Keypair, PrivKey } from "maci-domainobjs";
 
 import fs from "fs";
 
-import type { ITallyData } from "../tally";
-
-import { IGenerateProofsArgs } from "./types";
+import { IGenerateProofsArgs, IGenerateProofsData } from "./types";
 
 /**
  * Generate proofs for the message processing and tally calculations
@@ -35,7 +33,7 @@ export const generateProofs = async ({
   processWitgen,
   processWasm,
   tallyFile,
-}: IGenerateProofsArgs): Promise<ITallyData> => {
+}: IGenerateProofsArgs): Promise<IGenerateProofsData> => {
   // if we do not have the output directory just create it
   const isOutputDirExists = fs.existsSync(outputDir);
 
@@ -103,8 +101,8 @@ export const generateProofs = async ({
     useQuadraticVoting,
   });
 
-  await proofGenerator.generateMpProofs();
-  const { tallyData } = await proofGenerator.generateTallyProofs(networkName, chainId);
+  const processProofs = await proofGenerator.generateMpProofs();
+  const { proofs: tallyProofs, tallyData } = await proofGenerator.generateTallyProofs(networkName, chainId);
 
-  return tallyData;
+  return { processProofs, tallyProofs, tallyData };
 };
