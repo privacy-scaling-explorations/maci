@@ -8,15 +8,16 @@ import {
   setVerifyingKeys,
   signup,
   publishBatch,
+  deployPoll,
+  deployVkRegistryContract,
   type IPublishMessage,
   type IPublishBatchArgs,
-  deployPoll,
-  IPollContractsData,
+  type IPollContractsData,
 } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
-import { deploy, deployVkRegistryContract } from "../../ts/commands";
+import { deploy } from "../../ts/commands";
 import { DEFAULT_SG_DATA, DeployedContracts } from "../../ts/utils";
 import { deployPollArgs, deployArgs, pollDuration, verifyingKeysArgs } from "../constants";
 

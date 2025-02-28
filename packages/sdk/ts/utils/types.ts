@@ -1,4 +1,4 @@
-import type { BigNumberish } from "ethers";
+import type { BigNumberish, Signer } from "ethers";
 
 /**
  * A circuit inputs for the circom circuit
@@ -40,4 +40,39 @@ export interface ISnarkJSVerificationKey {
   vk_delta_2: BigNumberish[][];
   vk_alphabeta_12: BigNumberish[][][];
   IC: BigNumberish[][];
+}
+
+/**
+ * Interface for the arguments to the TimeTravel command
+ */
+export interface ITimeTravelArgs {
+  /**
+   * The number of seconds to time travel
+   */
+  seconds: number;
+
+  /**
+   * A signer object
+   */
+  signer: Signer;
+}
+
+/**
+ * Interface for the arguments to the FundWallet command
+ */
+export interface IFundWalletArgs {
+  /**
+   * The amount to fund
+   */
+  amount: number;
+
+  /**
+   * The address of the wallet to fund
+   */
+  address: string;
+
+  /**
+   * A signer object
+   */
+  signer: Signer;
 }

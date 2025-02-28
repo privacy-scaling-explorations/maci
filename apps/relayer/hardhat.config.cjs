@@ -28,6 +28,6 @@ module.exports = {
   },
   paths: {
     sources: path.resolve(__dirname, parentDir, "./node_modules/maci-contracts/contracts"),
-    artifacts: path.resolve(__dirname, parentDir, "./node_modules/maci-contracts/build/artifacts"),
+    artifacts: path.resolve(__dirname, parentDir, "./node_modules/maci-contracts/artifacts"),
   },
 };

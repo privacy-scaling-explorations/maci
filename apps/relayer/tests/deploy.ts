@@ -1,5 +1,6 @@
 import hardhat from "hardhat";
-import { deploy, deployVkRegistryContract } from "maci-cli";
+import { deploy } from "maci-cli";
+import { deployPoseidonContracts } from "maci-contracts";
 import { Keypair } from "maci-domainobjs";
 import {
   EMode,
@@ -9,6 +10,7 @@ import {
   signup,
   joinPoll,
   deployPoll,
+  deployVkRegistryContract,
 } from "maci-sdk";
 
 import {
@@ -93,7 +95,29 @@ export class TestDeploy {
       signer,
     });
 
-    const maciAddresses = await deploy({ stateTreeDepth: 10, signer });
+    const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } =
+      await deployPoseidonContracts(signer, {});
+
+    const poseidonAddrs = await Promise.all([
+      PoseidonT3Contract.getAddress(),
+      PoseidonT4Contract.getAddress(),
+      PoseidonT5Contract.getAddress(),
+      PoseidonT6Contract.getAddress(),
+    ]).then(([poseidonT3, poseidonT4, poseidonT5, poseidonT6]) => ({
+      poseidonT3,
+      poseidonT4,
+      poseidonT5,
+      poseidonT6,
+    }));
+
+    const maciAddresses = await deploy({
+      stateTreeDepth: 10,
+      poseidonT3Address: poseidonAddrs.poseidonT3,
+      poseidonT4Address: poseidonAddrs.poseidonT4,
+      poseidonT5Address: poseidonAddrs.poseidonT5,
+      poseidonT6Address: poseidonAddrs.poseidonT6,
+      signer,
+    });
 
     const startDate = Math.floor(Date.now() / 1000) + 30;
 
