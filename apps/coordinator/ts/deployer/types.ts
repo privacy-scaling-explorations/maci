@@ -1,0 +1,296 @@
+import { EGatekeepers, EInitialVoiceCreditProxies } from "maci-sdk";
+import { PrepareUserOperationRequestParameters } from "permissionless/actions/smartAccount";
+import { ENTRYPOINT_ADDRESS_V07_TYPE } from "permissionless/types";
+
+import type { Abi, Hex } from "viem";
+
+import { ESupportedNetworks } from "../common";
+
+/**
+ * IDeployMACIArgs represents the arguments for deploying MACI
+ */
+export interface IDeployMaciArgs {
+  /**
+   * The address of the session key
+   */
+  sessionKeyAddress: Hex;
+  /**
+   * The approval for the session key
+   */
+  approval: string;
+  /**
+   * The chain name
+   */
+  chain: ESupportedNetworks;
+  /**
+   * The configuration for deploying MACI
+   */
+  config: IDeployMaciConfig;
+}
+
+/**
+ * IDeployPollArgs represents the arguments for deploying a poll
+ */
+export interface IDeployPollArgs {
+  /**
+   * The address of the session key
+   */
+  sessionKeyAddress: Hex;
+  /**
+   * The approval for the session key
+   */
+  approval: string;
+  /**
+   * The chain name
+   */
+  chain: ESupportedNetworks;
+  /**
+   * The configuration for deploying a poll
+   */
+  config: IDeployPollConfig;
+}
+
+/**
+ * IConstantInitialVoiceCreditProxyArgs represents the arguments for deploying a constant initial voice credit proxy
+ */
+export interface IConstantInitialVoiceCreditProxyArgs {
+  /**
+   * The amount of initial voice credits to deploy
+   */
+  amount: string;
+}
+
+/**
+ * IEASGatekeeperArgs represents the arguments for deploying an EAS gatekeeper
+ */
+export interface IEASGatekeeperArgs {
+  /**
+   * The address of the EAS contract
+   */
+  easAddress: string;
+  /**
+   * The attestation schema to be used
+   */
+  schema: string;
+  /**
+   * The trusted attester
+   */
+  attester: string;
+}
+
+/**
+ * IZupassGatekeeperArgs represents the arguments for deploying a Zupass gatekeeper
+ */
+export interface IZupassGatekeeperArgs {
+  /**
+   * The first signer
+   */
+  signer1: string;
+  /**
+   * The second signer
+   */
+  signer2: string;
+  /**
+   * The event ID
+   */
+  eventId: string;
+  /**
+   * The Zupass verifier address
+   */
+  zupassVerifier: string;
+}
+
+/**
+ * IHatsGatekeeperArgs represents the arguments for deploying a Hats gatekeeper
+ */
+export interface IHatsGatekeeperArgs {
+  /**
+   * The hats protocol address
+   */
+  hatsProtocolAddress: string;
+  /**
+   * The criterion hats
+   */
+  critrionHats: string[];
+}
+
+/**
+ * ISemaphoreGatekeeperArgs represents the arguments for deploying a semaphore gatekeeper
+ */
+export interface ISemaphoreGatekeeperArgs {
+  /**
+   * The semaphore contract address
+   */
+  semaphoreContract: string;
+  /**
+   * The group ID
+   */
+  groupId: string;
+}
+
+/**
+ * IGitcoinPassportGatekeeperArgs represents the arguments for deploying a gitcoin passport gatekeeper
+ */
+export interface IGitcoinPassportGatekeeperArgs {
+  /**
+   * The decoder address
+   */
+  decoderAddress: string;
+  /**
+   * The passing score
+   */
+  passingScore: string;
+}
+
+/**
+ * IVkRegistryArgs represents the arguments for deploying a VkRegistry
+ */
+export interface IVkRegistryArgs {
+  /**
+   * The state tree depth
+   */
+  stateTreeDepth: bigint | string;
+  /**
+   * The int state tree depth determines the tally batch size
+   */
+  intStateTreeDepth: bigint | string;
+  /**
+   * The vote option tree depth
+   */
+  voteOptionTreeDepth: bigint | string;
+  /**
+   * The message batch size
+   */
+  messageBatchSize: number;
+}
+
+/**
+ * IGatekeeperArgs represents the arguments for deploying a gatekeeper
+ */
+export type IGatekeeperArgs =
+  | IEASGatekeeperArgs
+  | IZupassGatekeeperArgs
+  | IHatsGatekeeperArgs
+  | ISemaphoreGatekeeperArgs
+  | IGitcoinPassportGatekeeperArgs;
+
+export type IInitialVoiceCreditProxyArgs = IConstantInitialVoiceCreditProxyArgs;
+/**
+ * DeployMaciConfig is the configuration for deploying MACI
+ */
+export interface IDeployMaciConfig {
+  /**
+   * The gatekeeper configuration
+   */
+  gatekeeper: {
+    type: EGatekeepers;
+    args?: IGatekeeperArgs;
+  };
+  /**
+   * The MACI configuration
+   */
+  MACI: {
+    stateTreeDepth: number;
+    gatekeeper: EGatekeepers;
+  };
+  /**
+   * The VkRegistry configuration
+   */
+  VkRegistry: {
+    args: IVkRegistryArgs;
+  };
+  /**
+   * Poseidon configuration
+   */
+  Poseidon?: {
+    poseidonT3: Hex;
+    poseidonT4: Hex;
+    poseidonT5: Hex;
+    poseidonT6: Hex;
+  };
+}
+
+/**
+ * DeployPollConfig is the configuration for deploying a poll
+ */
+export interface IDeployPollConfig {
+  /**
+   * The poll's start date
+   */
+  startDate: number;
+  /**
+   * The poll's end date
+   */
+  endDate: number;
+  /**
+   * The coordinator pubkey
+   */
+  coordinatorPubkey: string;
+  /**
+   * Whether to use quadratic voting
+   */
+  useQuadraticVoting: boolean;
+  /**
+   * Determines the tally batch size
+   */
+  intStateTreeDepth: number;
+  /**
+   * Message batch size
+   */
+  messageBatchSize: number;
+  /**
+   * Vote option tree depth
+   */
+  voteOptionTreeDepth: number;
+  /**
+   * The gatekeeper configuration
+   */
+  gatekeeper: {
+    type: EGatekeepers;
+    args?: IGatekeeperArgs;
+    address?: Hex;
+  };
+  /**
+   * The initial voice credits proxy configuration
+   */
+  initialVoiceCreditsProxy: {
+    type: EInitialVoiceCreditProxies;
+    args: IInitialVoiceCreditProxyArgs;
+    address?: Hex;
+  };
+  /**
+   * The relayer addresses
+   */
+  relayers?: string[];
+  /**
+   * Number of valid vote options
+   */
+  voteOptions: bigint | string;
+}
+
+/**
+ * IContractData represents the data for a contract
+ */
+export interface IContractData {
+  /**
+   * The contract's address
+   */
+  address: string | undefined;
+  /**
+   * The ABI of the contract
+   */
+  abi: Abi;
+  /**
+   * The bytecode of the contract
+   */
+  bytecode: Hex;
+  /**
+   * Whether the contract is already deployed
+   */
+  alreadyDeployed: boolean;
+}
+
+/**
+ * IUserOperation represents the data send for a user operation
+ */
+export type IUserOperation = PrepareUserOperationRequestParameters<ENTRYPOINT_ADDRESS_V07_TYPE>["userOperation"];

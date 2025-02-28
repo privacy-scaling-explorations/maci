@@ -1,0 +1,1554 @@
+{
+  "optimism-sepolia": {
+    "instance": {
+      "0x4473aC3e68ad78D67757336ABaAa2Dced08cfcdF": {
+        "id": "ConstantInitialVoiceCreditProxy",
+        "deploymentTxHash": "0x8b62e4abe0db623981b8873a5f88f3c447b4202159e5d47b1d3158c1914afb91",
+        "verify": {
+          "args": "[\"99\"]"
+        }
+      },
+      "0xa4fF6765C207C84AbeFCe0226b24204f9ceBAB45": {
+        "id": "FreeForAllGatekeeper",
+        "deploymentTxHash": "0x7fa84fe66edeb0f6d13999344289d0404eac443e52dab4c9b25d7415ff84e45b",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xB1abb44291ff487f96636758b07Ccd9881f64c9A": {
+        "id": "Verifier",
+        "deploymentTxHash": "0x50377144a799369d26cb0f4de471a9c95a3b7de0a3aed18363cb1204ee45213a",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x07490eba00dc4ACA6721D052Fa4C5002Aa077233": {
+        "id": "PoseidonT3",
+        "deploymentTxHash": "0x799a38ec8dfa740286f496da91d3549cfc923aa8f7c32cf0af2e03829ddb105f",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xbb0e724CE02e5E7eDd31e632dc6e59F229a1126d": {
+        "id": "PoseidonT4",
+        "deploymentTxHash": "0x82e8dedbfd9a583b7b09d5e3d7a0b14d0b7a5062438ab70d3154d15f888ef960",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xE0398F7DFAC494c530F6404AfEaC8669ABeD2679": {
+        "id": "PoseidonT5",
+        "deploymentTxHash": "0xd57d72b7d519b81bd80b01c0b80669fb4c14b3b349b3d5555e7007ec0adae68d",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xfD77833F10a29c76A6a0ede235Eb651D744d0E2F": {
+        "id": "PoseidonT6",
+        "deploymentTxHash": "0xb37f2be891314378b5f8579ba5bd95df7b0f1652b4f91356ddeb9e86ea7311fe",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xad844a9567ada5996FFC0D2DeC78b3767a1c0501": {
+        "id": "PollFactory",
+        "deploymentTxHash": "0x99a4dd853297e4aa9a824c509268926875f9ec2971b6c6e74b3179fd4f8845ca",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xbBb6f1B4232F993e5a026217a3D596B332062CB3": {
+        "id": "MessageProcessorFactory",
+        "deploymentTxHash": "0xe817a6c240bdbb19a974f9a36eed9fd89794229496ed51db591b23382910bbb2",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x1356f05179cdcAD2D8708B539A75de082118de92": {
+        "id": "TallyFactory",
+        "deploymentTxHash": "0x7b57994dccdbeeff25d9f7f58fde0f35cd10ce53eb160009c565033a370a0600",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x42B1AB3d98B8235204E75112e5d9E974cE7531cC": {
+        "id": "VkRegistry",
+        "deploymentTxHash": "0x1b05a22de2735ed74b58532303e7af01659b066206e696f4c8e6df61bc97f442",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x6f9F7Fef2FF7F5D1Ff8966F751EC154146d8f431": {
+        "id": "ConstantInitialVoiceCreditProxy",
+        "deploymentTxHash": "0xe5b6ce84a95af89c64cff82901bc26b96d67bf4ffb18d4e82ebfcbc19c4392f2",
+        "verify": {
+          "args": "[\"99\"]"
+        }
+      },
+      "0x6b414ff158581Ac940797463a44221d0ba6A0B9C": {
+        "id": "FreeForAllGatekeeper",
+        "deploymentTxHash": "0x5f7640018acb7155aa510e05cca92ad40003327dfe75fcab7d61bd21fefdea67",
+        "verify": {
+          "args": "[]"
+        }
+      }
+    },
+    "named": {
+      "Verifier": {
+        "address": "0xB1abb44291ff487f96636758b07Ccd9881f64c9A",
+        "count": 1
+      },
+      "PoseidonT3": {
+        "address": "0x07490eba00dc4ACA6721D052Fa4C5002Aa077233",
+        "count": 1
+      },
+      "PoseidonT4": {
+        "address": "0xbb0e724CE02e5E7eDd31e632dc6e59F229a1126d",
+        "count": 1
+      },
+      "PoseidonT5": {
+        "address": "0xE0398F7DFAC494c530F6404AfEaC8669ABeD2679",
+        "count": 1
+      },
+      "PoseidonT6": {
+        "address": "0xfD77833F10a29c76A6a0ede235Eb651D744d0E2F",
+        "count": 1
+      },
+      "PollFactory": {
+        "address": "0xad844a9567ada5996FFC0D2DeC78b3767a1c0501",
+        "count": 1
+      },
+      "MessageProcessorFactory": {
+        "address": "0xbBb6f1B4232F993e5a026217a3D596B332062CB3",
+        "count": 1
+      },
+      "TallyFactory": {
+        "address": "0x1356f05179cdcAD2D8708B539A75de082118de92",
+        "count": 1
+      },
+      "VkRegistry": {
+        "address": "0x42B1AB3d98B8235204E75112e5d9E974cE7531cC",
+        "count": 1
+      },
+      "ConstantInitialVoiceCreditProxy": {
+        "address": "0x6f9F7Fef2FF7F5D1Ff8966F751EC154146d8f431",
+        "count": 1
+      },
+      "FreeForAllGatekeeper": {
+        "address": "0x6b414ff158581Ac940797463a44221d0ba6A0B9C",
+        "count": 1
+      }
+    }
+  },
+  "arbitrum-sepolia": {
+    "instance": {
+      "0x41a29A58A63A998c9Edde6883Bcec2d89835a8e9": {
+        "id": "ConstantInitialVoiceCreditProxy",
+        "deploymentTxHash": "0x897bfb740aba18fff51fcde7c5c1f97b2727f4a0122118fa300411684004211c",
+        "verify": {
+          "args": "[\"99\"]"
+        }
+      },
+      "0x9e98cAA76492338627BAD0e5a6AA2762d827E169": {
+        "id": "FreeForAllGatekeeper",
+        "deploymentTxHash": "0x5a740ad234560fab4097150f6c6acbf95224b4949ff3d82b477903a435a60621",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xB400794f463d90ce5f462A43d8E6f9155656d02d": {
+        "id": "Verifier",
+        "deploymentTxHash": "0xbf743a2514c0a57bb7972a5a2cbaa2b57ffeac78c51ed730b5ccf29e2a428ad3",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xa0e0aC07c211D329ebA2D6ec552F4dC1B230A89A": {
+        "id": "PoseidonT3",
+        "deploymentTxHash": "0x8c0f24d6d5837334143bf181ae74ae8c4d8218f40681146f88cc6d793b416065",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x0CC8B7Aed7d79a8B948636242706265548D0B10a": {
+        "id": "PoseidonT4",
+        "deploymentTxHash": "0xbc566db1ae8192e94418cfc9082d2a8f7dc71352438b92790a8ae9e01de86999",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x43B519FF023757508311518AC41B5fA1CfD57181": {
+        "id": "PoseidonT5",
+        "deploymentTxHash": "0x28c63a2021aac9f0400affd73d9bd57de107a557bed40299ab0ee7adb58fdcb1",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xb123798B1b21082100D289BeA24bFF0F8dfcbEe1": {
+        "id": "PoseidonT6",
+        "deploymentTxHash": "0xdfa42ab39a49f75c8d14cd750610b1cf2aaecf6f767362f732551416ae4445c5",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xBa350B0cF67a0dEDa103A5d0d297bd120bF87E39": {
+        "id": "PollFactory",
+        "deploymentTxHash": "0x4a955482e8a4ecb0e275cb978980b2b85c765c0ced4e9005612ac989a5769d11",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x96FD5e4E40671Bf8d5f1d0E3F3402488680B8376": {
+        "id": "MessageProcessorFactory",
+        "deploymentTxHash": "0x51727155edfd8c178c583801f24714dd9e4fbdd6e7c9bbbe0e7663ea3d9a3198",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xEEBc671e15B3f1c7483161F866d76ad84645d7C8": {
+        "id": "TallyFactory",
+        "deploymentTxHash": "0xc1c7e05a40164b8429517eed34b2042e593df11091840a9820451ee0d8f796c9",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xE21F9Ea298b62032B3C2206955cd12c4Ab0a046b": {
+        "id": "VkRegistry",
+        "deploymentTxHash": "0x2216dc97941a301e817d630a1a5ec31a7997f0d3ea5bcf5581defd374d8ab8aa",
+        "verify": {
+          "args": "[]"
+        }
+      }
+    },
+    "named": {
+      "ConstantInitialVoiceCreditProxy": {
+        "address": "0x41a29A58A63A998c9Edde6883Bcec2d89835a8e9",
+        "count": 1
+      },
+      "FreeForAllGatekeeper": {
+        "address": "0x9e98cAA76492338627BAD0e5a6AA2762d827E169",
+        "count": 1
+      },
+      "Verifier": {
+        "address": "0xB400794f463d90ce5f462A43d8E6f9155656d02d",
+        "count": 1
+      },
+      "PoseidonT3": {
+        "address": "0xa0e0aC07c211D329ebA2D6ec552F4dC1B230A89A",
+        "count": 1
+      },
+      "PoseidonT4": {
+        "address": "0x0CC8B7Aed7d79a8B948636242706265548D0B10a",
+        "count": 1
+      },
+      "PoseidonT5": {
+        "address": "0x43B519FF023757508311518AC41B5fA1CfD57181",
+        "count": 1
+      },
+      "PoseidonT6": {
+        "address": "0xb123798B1b21082100D289BeA24bFF0F8dfcbEe1",
+        "count": 1
+      },
+      "PollFactory": {
+        "address": "0xBa350B0cF67a0dEDa103A5d0d297bd120bF87E39",
+        "count": 1
+      },
+      "MessageProcessorFactory": {
+        "address": "0x96FD5e4E40671Bf8d5f1d0E3F3402488680B8376",
+        "count": 1
+      },
+      "TallyFactory": {
+        "address": "0xEEBc671e15B3f1c7483161F866d76ad84645d7C8",
+        "count": 1
+      },
+      "VkRegistry": {
+        "address": "0xE21F9Ea298b62032B3C2206955cd12c4Ab0a046b",
+        "count": 1
+      }
+    }
+  },
+  "base-sepolia": {
+    "instance": {
+      "0x16FC13edD59D4b9F788Fb11A70eA022E1Bb1B856": {
+        "id": "ConstantInitialVoiceCreditProxy",
+        "deploymentTxHash": "0x2d94f77f843c7f3f19eec1d0cac75a1260e0708e47ee9cb7fbf72c63ebcb156b",
+        "verify": {
+          "args": "[\"99\"]"
+        }
+      },
+      "0x8BA83Dd6E0E448417C519A38c90Ee570A4CA3e9f": {
+        "id": "FreeForAllGatekeeper",
+        "deploymentTxHash": "0x24c07b7ccc8ab143f03b03749ad81e4830456d4353f3c9783ffd08b3ea2d1004",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x2427Ab201488Ac81Bec421F179B1Be23c55ebC27": {
+        "id": "Verifier",
+        "deploymentTxHash": "0x536d8665489c174d17d584b9dc3e6a6ccc595e5b232f8029879ae49e2c38c3d6",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x2F1398ab5E322d357dF8CdD2e7ba73122c5FDDA4": {
+        "id": "PoseidonT3",
+        "deploymentTxHash": "0xc87ffe646d64cde4e819636490a8eb8d246233aeb58b42d06ff76ab04c07a301",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x8778dA47eF619f56341fE95514e95fa0FF3B77C6": {
+        "id": "PoseidonT4",
+        "deploymentTxHash": "0xcebcf39fd5857e595b50139004123c27a29c504ed12440c062833fcda2525848",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xB8Bc2c7cF71441fF7E6F111D3457e3d61c564968": {
+        "id": "PoseidonT5",
+        "deploymentTxHash": "0x64d9db02a0b4cb29135e56becafe30c045919f20328e3d10a50f69f27add94e9",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x37282fEde56aa1d7266Ecb12DC3b342D12044e2E": {
+        "id": "PoseidonT6",
+        "deploymentTxHash": "0xfd556b278a7b10b70382207c733de3f9e97ad3e2ed6821a3acd16011f3b94084",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x2F1A5B4F8F3B7348C66A1522622b1DB712261607": {
+        "id": "PollFactory",
+        "deploymentTxHash": "0xe89d4e3c14bd680691568382e38b9400034632672b802eb1ae684afc03f7bf82",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xE4c9d4248F1371C5C61d406A9859f9FE667567a5": {
+        "id": "MessageProcessorFactory",
+        "deploymentTxHash": "0x7d709c06be1a8055a9f12dc40eb71b27ce71fccddf5ffb1f488ed5ed3cadfbd6",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x57034389Dbe3DE1D1C14763f55B77A2279D6d43C": {
+        "id": "TallyFactory",
+        "deploymentTxHash": "0xb5e583c45a53ac522d1025a0b594f3e58dd4fa1f837baadeb47bcc164eac0439",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x6aA5baD99aC44bB008930c68CE2249549Cf10944": {
+        "id": "VkRegistry",
+        "deploymentTxHash": "0xdb1cbc7acc63c814dc238177adbf4012a1ccf743be3b2ef8ac2bde66177fe3a1",
+        "verify": {
+          "args": "[]"
+        }
+      }
+    },
+    "named": {
+      "ConstantInitialVoiceCreditProxy": {
+        "address": "0x16FC13edD59D4b9F788Fb11A70eA022E1Bb1B856",
+        "count": 1
+      },
+      "FreeForAllGatekeeper": {
+        "address": "0x8BA83Dd6E0E448417C519A38c90Ee570A4CA3e9f",
+        "count": 1
+      },
+      "Verifier": {
+        "address": "0x2427Ab201488Ac81Bec421F179B1Be23c55ebC27",
+        "count": 1
+      },
+      "PoseidonT3": {
+        "address": "0x2F1398ab5E322d357dF8CdD2e7ba73122c5FDDA4",
+        "count": 1
+      },
+      "PoseidonT4": {
+        "address": "0x8778dA47eF619f56341fE95514e95fa0FF3B77C6",
+        "count": 1
+      },
+      "PoseidonT5": {
+        "address": "0xB8Bc2c7cF71441fF7E6F111D3457e3d61c564968",
+        "count": 1
+      },
+      "PoseidonT6": {
+        "address": "0x37282fEde56aa1d7266Ecb12DC3b342D12044e2E",
+        "count": 1
+      },
+      "PollFactory": {
+        "address": "0x2F1A5B4F8F3B7348C66A1522622b1DB712261607",
+        "count": 1
+      },
+      "MessageProcessorFactory": {
+        "address": "0xE4c9d4248F1371C5C61d406A9859f9FE667567a5",
+        "count": 1
+      },
+      "TallyFactory": {
+        "address": "0x57034389Dbe3DE1D1C14763f55B77A2279D6d43C",
+        "count": 1
+      },
+      "VkRegistry": {
+        "address": "0x6aA5baD99aC44bB008930c68CE2249549Cf10944",
+        "count": 1
+      }
+    }
+  },
+  "scroll-sepolia": {
+    "instance": {
+      "0xB486cce9B4507A67Db147B0802D5673774C8D278": {
+        "id": "ConstantInitialVoiceCreditProxy",
+        "deploymentTxHash": "0x19fffe5a56c36405586b627d896513ca6949b654faac219e5d39041f7ce67d93",
+        "verify": {
+          "args": "[\"99\"]"
+        }
+      },
+      "0x83dD551541C580e338206f1f677835D427C92dE2": {
+        "id": "FreeForAllGatekeeper",
+        "deploymentTxHash": "0x637fbce4ecd191f31f768f3d46a67727c29e61149cd9d2f8830f2c685cda5019",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xD5C41106db85EDd0298279AcFCE5A722060cc5f9": {
+        "id": "Verifier",
+        "deploymentTxHash": "0xeb106e6aa2ec41e7fd36306d843cdc2a70e6b2ed3e2156664177a23db29bf400",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x88C2c6A7535463962A34757FE63cc4F296381aba": {
+        "id": "PoseidonT3",
+        "deploymentTxHash": "0xe6f4d9bcbd8012fd7bf90aefe60818722cbeef7c40dff937aa4fb90c06e2384a",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xF8E637e5c9EC3A8d8fa8843A6dF833348E1F1E66": {
+        "id": "PoseidonT4",
+        "deploymentTxHash": "0x041f2bfa9258dde9a411d9bf6155bdb9282dbd4eb4182cc9052e6285679c0ff1",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x0a0D66baFDa8c8838281084d9C3d68Dd9a6Fc274": {
+        "id": "PoseidonT5",
+        "deploymentTxHash": "0x197041bb741918efd7d1cb1ccdd58a76e53da56fdebfa7fa3f5850349cb457d6",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xD2F6c828606Ad8e985008Cd825012f269B50CD58": {
+        "id": "PoseidonT6",
+        "deploymentTxHash": "0xff9c1393788a82b95c00b037bfac7fcb6857836e604bdadd42049cbf0d88537a",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x982530673Ce9e5Efa02438c694d48327Aa4fB592": {
+        "id": "PollFactory",
+        "deploymentTxHash": "0x1a0ba85163df584ea645e3f4de1173d8e7c86d4bd1641b2f6f10d8d2a5cde971",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x50045B05cb1C76410783D8A3e5625a99d5729339": {
+        "id": "MessageProcessorFactory",
+        "deploymentTxHash": "0x85717a2b7f555c5a31d67a401b4c233a216de27c4e8ccbc8ead5ab4241f92dba",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xbB28555E989799478442483CD1f2D370a14e2C42": {
+        "id": "TallyFactory",
+        "deploymentTxHash": "0xa7634556c12fb6e039fc189544b61ec5baa8fda94f5499e71751fa57e53c164e",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x3D4C58074DCD8E6526885F465ab5F311b6B290B5": {
+        "id": "VkRegistry",
+        "deploymentTxHash": "0x147fe06bd640870ef3e4dca188c89d8c75b35e3ce30bc9b972e0eae573658537",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x33Cc5e8b6f158B9ee3600EcD3f3DE76c6B7765a7": {
+        "id": "ZupassGatekeeper",
+        "deploymentTxHash": "0xe6954597b9079895f6facc122e2a0bd9af00bc0401bf6f61d9d7824aed534754",
+        "verify": {
+          "args": "[\"280209352117126055869169359893920931853\",\"13908133709081944902758389525983124100292637002438232157513257158004852609027\",\"7654374482676219729919246464135900991450848628968334062174564799457623790084\",\"0xd81aB9859e1d423aC51170256BedD0Aa00e4eD5A\"]"
+        }
+      }
+    },
+    "named": {
+      "ConstantInitialVoiceCreditProxy": {
+        "address": "0xB486cce9B4507A67Db147B0802D5673774C8D278",
+        "count": 1
+      },
+      "FreeForAllGatekeeper": {
+        "address": "0x83dD551541C580e338206f1f677835D427C92dE2",
+        "count": 1
+      },
+      "Verifier": {
+        "address": "0xD5C41106db85EDd0298279AcFCE5A722060cc5f9",
+        "count": 1
+      },
+      "PoseidonT3": {
+        "address": "0x88C2c6A7535463962A34757FE63cc4F296381aba",
+        "count": 1
+      },
+      "PoseidonT4": {
+        "address": "0xF8E637e5c9EC3A8d8fa8843A6dF833348E1F1E66",
+        "count": 1
+      },
+      "PoseidonT5": {
+        "address": "0x0a0D66baFDa8c8838281084d9C3d68Dd9a6Fc274",
+        "count": 1
+      },
+      "PoseidonT6": {
+        "address": "0xD2F6c828606Ad8e985008Cd825012f269B50CD58",
+        "count": 1
+      },
+      "PollFactory": {
+        "address": "0x982530673Ce9e5Efa02438c694d48327Aa4fB592",
+        "count": 1
+      },
+      "MessageProcessorFactory": {
+        "address": "0x50045B05cb1C76410783D8A3e5625a99d5729339",
+        "count": 1
+      },
+      "TallyFactory": {
+        "address": "0xbB28555E989799478442483CD1f2D370a14e2C42",
+        "count": 1
+      },
+      "VkRegistry": {
+        "address": "0x3D4C58074DCD8E6526885F465ab5F311b6B290B5",
+        "count": 1
+      },
+      "ZupassGatekeeper": {
+        "address": "0x33Cc5e8b6f158B9ee3600EcD3f3DE76c6B7765a7",
+        "count": 1
+      }
+    }
+  },
+  "base": {
+    "instance": {
+      "0x16FC13edD59D4b9F788Fb11A70eA022E1Bb1B856": {
+        "id": "ConstantInitialVoiceCreditProxy",
+        "deploymentTxHash": "0x242651353bbceb375246239a73005c9d9359754e5739d354ad9f90b76e80be0c",
+        "verify": {
+          "args": "[\"200\"]"
+        }
+      },
+      "0x8BA83Dd6E0E448417C519A38c90Ee570A4CA3e9f": {
+        "id": "FreeForAllGatekeeper",
+        "deploymentTxHash": "0x9bd1a8595f8ab33fac82958a02dd8bfc59756d367c74a0c9d87718fdcf973060",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x2427Ab201488Ac81Bec421F179B1Be23c55ebC27": {
+        "id": "Verifier",
+        "deploymentTxHash": "0x6eedd506c4339c14df939a98bd15b6e503eecc4e3a693dcb313a56a14ca7d8f9",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x2F1398ab5E322d357dF8CdD2e7ba73122c5FDDA4": {
+        "id": "PoseidonT3",
+        "deploymentTxHash": "0x0908efdd06741443bd38d57eab6d07daaa15f782a2eba0d485116580da21785d",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x8778dA47eF619f56341fE95514e95fa0FF3B77C6": {
+        "id": "PoseidonT4",
+        "deploymentTxHash": "0x4551ba77ad63c28cbf4910e2a3db99b6b8eb1a94e0d902c2366b08a8324b8819",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xB8Bc2c7cF71441fF7E6F111D3457e3d61c564968": {
+        "id": "PoseidonT5",
+        "deploymentTxHash": "0x2dea3913d068f5c365b88da011b542f8c86daa78bff60b0239dfbc1284d8c6ef",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x37282fEde56aa1d7266Ecb12DC3b342D12044e2E": {
+        "id": "PoseidonT6",
+        "deploymentTxHash": "0x56974c8cae477fba1c16ecebcf2bc929a112471e25e1779cdad3da43b45a6cd2",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x2F1A5B4F8F3B7348C66A1522622b1DB712261607": {
+        "id": "PollFactory",
+        "deploymentTxHash": "0x9a9640ccb8a938f97729bfc78e891161082de511c10ab0b62b0e18edd514a017",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xE4c9d4248F1371C5C61d406A9859f9FE667567a5": {
+        "id": "MessageProcessorFactory",
+        "deploymentTxHash": "0x1a23828d513579f09360065323b553de620ae8ce7dfa487dc43397d30700f8fb",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x57034389Dbe3DE1D1C14763f55B77A2279D6d43C": {
+        "id": "TallyFactory",
+        "deploymentTxHash": "0xa9afd6b34776d392bdeb5a8eea1c4d6692a2c0b000e131b9eecb4b5e0fc2bff6",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x6aA5baD99aC44bB008930c68CE2249549Cf10944": {
+        "id": "VkRegistry",
+        "deploymentTxHash": "0x15fd66ac9c193eae37b2b447621ff1d7603a4b55c54c73e0468f900136fc37cb",
+        "verify": {
+          "args": "[]"
+        }
+      }
+    },
+    "named": {
+      "ConstantInitialVoiceCreditProxy": {
+        "address": "0x16FC13edD59D4b9F788Fb11A70eA022E1Bb1B856",
+        "count": 1
+      },
+      "FreeForAllGatekeeper": {
+        "address": "0x8BA83Dd6E0E448417C519A38c90Ee570A4CA3e9f",
+        "count": 1
+      },
+      "Verifier": {
+        "address": "0x2427Ab201488Ac81Bec421F179B1Be23c55ebC27",
+        "count": 1
+      },
+      "PoseidonT3": {
+        "address": "0x2F1398ab5E322d357dF8CdD2e7ba73122c5FDDA4",
+        "count": 1
+      },
+      "PoseidonT4": {
+        "address": "0x8778dA47eF619f56341fE95514e95fa0FF3B77C6",
+        "count": 1
+      },
+      "PoseidonT5": {
+        "address": "0xB8Bc2c7cF71441fF7E6F111D3457e3d61c564968",
+        "count": 1
+      },
+      "PoseidonT6": {
+        "address": "0x37282fEde56aa1d7266Ecb12DC3b342D12044e2E",
+        "count": 1
+      },
+      "PollFactory": {
+        "address": "0x2F1A5B4F8F3B7348C66A1522622b1DB712261607",
+        "count": 1
+      },
+      "MessageProcessorFactory": {
+        "address": "0xE4c9d4248F1371C5C61d406A9859f9FE667567a5",
+        "count": 1
+      },
+      "TallyFactory": {
+        "address": "0x57034389Dbe3DE1D1C14763f55B77A2279D6d43C",
+        "count": 1
+      },
+      "VkRegistry": {
+        "address": "0x6aA5baD99aC44bB008930c68CE2249549Cf10944",
+        "count": 1
+      }
+    }
+  },
+  "arbitrum": {
+    "instance": {
+      "0x16FC13edD59D4b9F788Fb11A70eA022E1Bb1B856": {
+        "id": "ConstantInitialVoiceCreditProxy",
+        "deploymentTxHash": "0x72ef6fcc655bcd8bbc1d545b2a51ab44ce5291bb4fa548259c42de1325145952",
+        "verify": {
+          "args": "[\"200\"]"
+        }
+      },
+      "0x8BA83Dd6E0E448417C519A38c90Ee570A4CA3e9f": {
+        "id": "FreeForAllGatekeeper",
+        "deploymentTxHash": "0x9c0775b0288898a94f27865d46e5bd8872492b5df65cd177b150806aab7560a7",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x2427Ab201488Ac81Bec421F179B1Be23c55ebC27": {
+        "id": "Verifier",
+        "deploymentTxHash": "0x4a1a77469dff336b80ed4ef8e7482b3a77b9e1c76e92e9bb0c3f3f3229b2ee4c",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x2F1398ab5E322d357dF8CdD2e7ba73122c5FDDA4": {
+        "id": "PoseidonT3",
+        "deploymentTxHash": "0x1479f77d3c9ccb71d3050097f9caa7c24632814282e1a530d8eefe7e34ab2949",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x8778dA47eF619f56341fE95514e95fa0FF3B77C6": {
+        "id": "PoseidonT4",
+        "deploymentTxHash": "0x3d203b3236acec539b1da934f43184924aef0cba84f375febe0919921fbea803",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xB8Bc2c7cF71441fF7E6F111D3457e3d61c564968": {
+        "id": "PoseidonT5",
+        "deploymentTxHash": "0x7a4c8f1809958494685511cf25a70d4e2906bd074843b56ccf5ce5fd96e6f2f9",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x37282fEde56aa1d7266Ecb12DC3b342D12044e2E": {
+        "id": "PoseidonT6",
+        "deploymentTxHash": "0x75853fcc0e430fdd3c4a7971d4e555161affdf93a7f5a4eaaa93c83c4c1ce94f",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x2F1A5B4F8F3B7348C66A1522622b1DB712261607": {
+        "id": "PollFactory",
+        "deploymentTxHash": "0x8315c48647621fa0cee54314ea49bcc851223eabd1f7dc9f3efcf307924ebd69",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xE4c9d4248F1371C5C61d406A9859f9FE667567a5": {
+        "id": "MessageProcessorFactory",
+        "deploymentTxHash": "0x1a30587862f43b3f2cb764cc18e4fbd09a55880bc059471998793ff4e92b6469",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x57034389Dbe3DE1D1C14763f55B77A2279D6d43C": {
+        "id": "TallyFactory",
+        "deploymentTxHash": "0x960ed63cbea915e39b7dec78d22e83f3d2c710b902262217f2444202356d0880",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x6aA5baD99aC44bB008930c68CE2249549Cf10944": {
+        "id": "VkRegistry",
+        "deploymentTxHash": "0xfeaaff43b313214986c4d1f3d3b610f5715be2c17bc10849e3cae776a505bd09",
+        "verify": {
+          "args": "[]"
+        }
+      }
+    },
+    "named": {
+      "ConstantInitialVoiceCreditProxy": {
+        "address": "0x16FC13edD59D4b9F788Fb11A70eA022E1Bb1B856",
+        "count": 1
+      },
+      "FreeForAllGatekeeper": {
+        "address": "0x8BA83Dd6E0E448417C519A38c90Ee570A4CA3e9f",
+        "count": 1
+      },
+      "Verifier": {
+        "address": "0x2427Ab201488Ac81Bec421F179B1Be23c55ebC27",
+        "count": 1
+      },
+      "PoseidonT3": {
+        "address": "0x2F1398ab5E322d357dF8CdD2e7ba73122c5FDDA4",
+        "count": 1
+      },
+      "PoseidonT4": {
+        "address": "0x8778dA47eF619f56341fE95514e95fa0FF3B77C6",
+        "count": 1
+      },
+      "PoseidonT5": {
+        "address": "0xB8Bc2c7cF71441fF7E6F111D3457e3d61c564968",
+        "count": 1
+      },
+      "PoseidonT6": {
+        "address": "0x37282fEde56aa1d7266Ecb12DC3b342D12044e2E",
+        "count": 1
+      },
+      "PollFactory": {
+        "address": "0x2F1A5B4F8F3B7348C66A1522622b1DB712261607",
+        "count": 1
+      },
+      "MessageProcessorFactory": {
+        "address": "0xE4c9d4248F1371C5C61d406A9859f9FE667567a5",
+        "count": 1
+      },
+      "TallyFactory": {
+        "address": "0x57034389Dbe3DE1D1C14763f55B77A2279D6d43C",
+        "count": 1
+      },
+      "VkRegistry": {
+        "address": "0x6aA5baD99aC44bB008930c68CE2249549Cf10944",
+        "count": 1
+      }
+    }
+  },
+  "optimism": {
+    "instance": {
+      "0x83dD551541C580e338206f1f677835D427C92dE2": {
+        "id": "ConstantInitialVoiceCreditProxy",
+        "deploymentTxHash": "0x44b638a8e359b5014ed77492755ade1d59cf6f5f72f39110c325e7fa463dad6a",
+        "verify": {
+          "args": "[\"200\"]"
+        }
+      },
+      "0xD5C41106db85EDd0298279AcFCE5A722060cc5f9": {
+        "id": "FreeForAllGatekeeper",
+        "deploymentTxHash": "0x69c745b040908eb98e63065b1f5635d7d5176d0e331d37321c564ed1b6658a5c",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x88C2c6A7535463962A34757FE63cc4F296381aba": {
+        "id": "Verifier",
+        "deploymentTxHash": "0x7f25d693564a17029b9bdfc0850a4c8ea30797e2096961558c5e05df4aa8175d",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xF8E637e5c9EC3A8d8fa8843A6dF833348E1F1E66": {
+        "id": "PoseidonT3",
+        "deploymentTxHash": "0x25e4abb71a79528f8c76bcb83a1163597c80177091667ccb2fd2eb57af84b254",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x0a0D66baFDa8c8838281084d9C3d68Dd9a6Fc274": {
+        "id": "PoseidonT4",
+        "deploymentTxHash": "0xff394431d7f8985936fc81009a461aa176b4e97a540b031771387e2b3a058ef5",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xD2F6c828606Ad8e985008Cd825012f269B50CD58": {
+        "id": "PoseidonT5",
+        "deploymentTxHash": "0x64b18ed067fcd5aa9061255cace422992b0c02207d09a4f78e7182143bb05d88",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x982530673Ce9e5Efa02438c694d48327Aa4fB592": {
+        "id": "PoseidonT6",
+        "deploymentTxHash": "0xbb20d4bdc02536ae1435cfcd4b07914161f028063d8cbf66cb8f79b2e2097929",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x50045B05cb1C76410783D8A3e5625a99d5729339": {
+        "id": "PollFactory",
+        "deploymentTxHash": "0x65d63100f9eeea80513d6f8513af97e51dca6caf138488eb849f5ae600d2b5b1",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xbB28555E989799478442483CD1f2D370a14e2C42": {
+        "id": "MessageProcessorFactory",
+        "deploymentTxHash": "0x74384358e8fba869c0d4be06e562a93d5020a0685ab428dbbab94068af5a6d4d",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xdA10b22B81eb8EA6BC04aa9b86d3f9d969CD49F0": {
+        "id": "TallyFactory",
+        "deploymentTxHash": "0x918e20d6b1c39d921efec9bf8ebcf46ff20449750633350b8a0b9281bb621cd2",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x7E16271EaE58F52a0431F87Ee7E40c978178C63F": {
+        "id": "VkRegistry",
+        "deploymentTxHash": "0x197b6b3cc28fda77c36a2b14d44c24f5b8aeff4d009939d200166476656ac521",
+        "verify": {
+          "args": "[]"
+        }
+      }
+    },
+    "named": {
+      "ConstantInitialVoiceCreditProxy": {
+        "address": "0x83dD551541C580e338206f1f677835D427C92dE2",
+        "count": 1
+      },
+      "FreeForAllGatekeeper": {
+        "address": "0xD5C41106db85EDd0298279AcFCE5A722060cc5f9",
+        "count": 1
+      },
+      "Verifier": {
+        "address": "0x88C2c6A7535463962A34757FE63cc4F296381aba",
+        "count": 1
+      },
+      "PoseidonT3": {
+        "address": "0xF8E637e5c9EC3A8d8fa8843A6dF833348E1F1E66",
+        "count": 1
+      },
+      "PoseidonT4": {
+        "address": "0x0a0D66baFDa8c8838281084d9C3d68Dd9a6Fc274",
+        "count": 1
+      },
+      "PoseidonT5": {
+        "address": "0xD2F6c828606Ad8e985008Cd825012f269B50CD58",
+        "count": 1
+      },
+      "PoseidonT6": {
+        "address": "0x982530673Ce9e5Efa02438c694d48327Aa4fB592",
+        "count": 1
+      },
+      "PollFactory": {
+        "address": "0x50045B05cb1C76410783D8A3e5625a99d5729339",
+        "count": 1
+      },
+      "MessageProcessorFactory": {
+        "address": "0xbB28555E989799478442483CD1f2D370a14e2C42",
+        "count": 1
+      },
+      "TallyFactory": {
+        "address": "0xdA10b22B81eb8EA6BC04aa9b86d3f9d969CD49F0",
+        "count": 1
+      },
+      "VkRegistry": {
+        "address": "0x7E16271EaE58F52a0431F87Ee7E40c978178C63F",
+        "count": 1
+      }
+    },
+    "verified": {
+      "0x83dD551541C580e338206f1f677835D427C92dE2": true
+    }
+  },
+  "sepolia": {
+    "instance": {
+      "0x88C2c6A7535463962A34757FE63cc4F296381aba": {
+        "id": "ConstantInitialVoiceCreditProxy",
+        "deploymentTxHash": "0xde7be5b9db31e80d77254630c55cc770a232e02c949fa6636c16fb4301f26ff9",
+        "verify": {
+          "args": "[\"99\"]"
+        }
+      },
+      "0xF8E637e5c9EC3A8d8fa8843A6dF833348E1F1E66": {
+        "id": "FreeForAllGatekeeper",
+        "deploymentTxHash": "0x7da5cd7a2c15edc4f8da4d1706995cba1ad77f72f3cfaa74fcbcb5716e0c6aea",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x0a0D66baFDa8c8838281084d9C3d68Dd9a6Fc274": {
+        "id": "Verifier",
+        "deploymentTxHash": "0x95a162dcc11a4ea83253c7879005f8881532ea47a0c53e6e17f99fab144d2a7c",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xD2F6c828606Ad8e985008Cd825012f269B50CD58": {
+        "id": "PoseidonT3",
+        "deploymentTxHash": "0x73a9516529253bab26fdbcb3a07a7e95502a7dbed400ffb31e105ac9af7effbf",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x982530673Ce9e5Efa02438c694d48327Aa4fB592": {
+        "id": "PoseidonT4",
+        "deploymentTxHash": "0x3ace926b65edf3a1feed864cc31ebf6eacdf89856c4106d1a613b3a1bcca2172",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x50045B05cb1C76410783D8A3e5625a99d5729339": {
+        "id": "PoseidonT5",
+        "deploymentTxHash": "0xdab1329e39d4bb433128c443680c4e37315e3d401e476df99af4a9665c8acd87",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xbB28555E989799478442483CD1f2D370a14e2C42": {
+        "id": "PoseidonT6",
+        "deploymentTxHash": "0xf25f2dec66584f9edb29fc66ec1f487c258f557c843fe294c2b997a1d19a310c",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xdA10b22B81eb8EA6BC04aa9b86d3f9d969CD49F0": {
+        "id": "PollFactory",
+        "deploymentTxHash": "0x6051c605989e782aa466442ab0f6cf33a02b854137506d1ad69433335a5fe119",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x3D4C58074DCD8E6526885F465ab5F311b6B290B5": {
+        "id": "MessageProcessorFactory",
+        "deploymentTxHash": "0xc31ca730ab1f011dd98b3e16e60b364770f5dbe8fd2f87473fc54d0cae8505a3",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x7E16271EaE58F52a0431F87Ee7E40c978178C63F": {
+        "id": "TallyFactory",
+        "deploymentTxHash": "0xdb2cdbb2a4eb1725cfd200b15c865b74bdf03743eea4cb79984f07f139662d9b",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x33Cc5e8b6f158B9ee3600EcD3f3DE76c6B7765a7": {
+        "id": "VkRegistry",
+        "deploymentTxHash": "0xdb5367f5d5bdaaaffa7f52f26af384ba44bb3edd6975471d6f313eb02c34fe56",
+        "verify": {
+          "args": "[]"
+        }
+      }
+    },
+    "named": {
+      "ConstantInitialVoiceCreditProxy": {
+        "address": "0x88C2c6A7535463962A34757FE63cc4F296381aba",
+        "count": 1
+      },
+      "FreeForAllGatekeeper": {
+        "address": "0xF8E637e5c9EC3A8d8fa8843A6dF833348E1F1E66",
+        "count": 1
+      },
+      "Verifier": {
+        "address": "0x0a0D66baFDa8c8838281084d9C3d68Dd9a6Fc274",
+        "count": 1
+      },
+      "PoseidonT3": {
+        "address": "0xD2F6c828606Ad8e985008Cd825012f269B50CD58",
+        "count": 1
+      },
+      "PoseidonT4": {
+        "address": "0x982530673Ce9e5Efa02438c694d48327Aa4fB592",
+        "count": 1
+      },
+      "PoseidonT5": {
+        "address": "0x50045B05cb1C76410783D8A3e5625a99d5729339",
+        "count": 1
+      },
+      "PoseidonT6": {
+        "address": "0xbB28555E989799478442483CD1f2D370a14e2C42",
+        "count": 1
+      },
+      "PollFactory": {
+        "address": "0xdA10b22B81eb8EA6BC04aa9b86d3f9d969CD49F0",
+        "count": 1
+      },
+      "MessageProcessorFactory": {
+        "address": "0x3D4C58074DCD8E6526885F465ab5F311b6B290B5",
+        "count": 1
+      },
+      "TallyFactory": {
+        "address": "0x7E16271EaE58F52a0431F87Ee7E40c978178C63F",
+        "count": 1
+      },
+      "VkRegistry": {
+        "address": "0x33Cc5e8b6f158B9ee3600EcD3f3DE76c6B7765a7",
+        "count": 1
+      }
+    }
+  },
+  "gnosis-chiado": {
+    "instance": {
+      "0x1Cf6eE7c94f980E0dE60Ad741201D4c6Da3090f9": {
+        "id": "ConstantInitialVoiceCreditProxy",
+        "deploymentTxHash": "0xacd5721dfc20c1bfa3812f8cebf0faa6f0a2e3b226f35d7acf528e85750f3846",
+        "verify": {
+          "args": "[\"200\"]"
+        }
+      },
+      "0xb078423e7e046Bf84ec2140bBF7101CD59773Ccf": {
+        "id": "FreeForAllGatekeeper",
+        "deploymentTxHash": "0x426148cb8a849ce86f463ddddaca602051e9d707d77788e14ace39873f211204",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x9D1C736b5c86d3eB6D9C062D89793C2fEa4bd5da": {
+        "id": "Verifier",
+        "deploymentTxHash": "0x48649ead55da178532f2a399ac37e61f291e38a95038af462899d208a1035166",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x11Ac728015427Bed8846f7Be44359E4a95B63390": {
+        "id": "PoseidonT3",
+        "deploymentTxHash": "0xe6dbbed30fdafdaae081b2f1ddba5177a513017a2649348090dc9376929f1c5d",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xF85482f8254EFb6a96346756ab81d5582E436d18": {
+        "id": "PoseidonT4",
+        "deploymentTxHash": "0xa71d45b1992d9d93000cad35680bb73c4956e33cccf2a3c3111dccd254f72af9",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x9862F690468B7232F5895A2eCF78a1AAa509C992": {
+        "id": "PoseidonT5",
+        "deploymentTxHash": "0xc116f9861727091febd386fa7486aae8d10ba7194a4b3317ef451fdeab278b1e",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x41501310360fB771e65Ef7DCA4F48231D9178253": {
+        "id": "PoseidonT6",
+        "deploymentTxHash": "0xa29f9f693cbe65b0a735408d204515f843fd01d25bc6633c4446ca1c8a19be99",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xE756e41cB942365437e32FD13F559245F0Df8d4B": {
+        "id": "PollFactory",
+        "deploymentTxHash": "0xeb9d4173c54dbebfd46d8d49a9e9df98ab261789e41bcca577cdc0c59b2cb623",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x88E6983f7D21b6A42e57e844893D417Aa8250F30": {
+        "id": "MessageProcessorFactory",
+        "deploymentTxHash": "0x836deb9ed65313c8c73e5db61a12984853fc6b2bdfd36351ddbf34452bc9269f",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x65748179ECd9FC73470D427163e03d4338A1cD8F": {
+        "id": "TallyFactory",
+        "deploymentTxHash": "0xbc544eaec1758adca80911a412a88bccd4315fb5748ddd649a1418cc543575d5",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xE47B468E9E9FD8Dd2B0e8327aF720671552b24E2": {
+        "id": "VkRegistry",
+        "deploymentTxHash": "0x5f4d262dd0e5f97f0735a012bf1a8540048f34ea1977c96a69664d467568f9d0",
+        "verify": {
+          "args": "[]"
+        }
+      }
+    },
+    "named": {
+      "ConstantInitialVoiceCreditProxy": {
+        "address": "0x1Cf6eE7c94f980E0dE60Ad741201D4c6Da3090f9",
+        "count": 1
+      },
+      "FreeForAllGatekeeper": {
+        "address": "0xb078423e7e046Bf84ec2140bBF7101CD59773Ccf",
+        "count": 1
+      },
+      "Verifier": {
+        "address": "0x9D1C736b5c86d3eB6D9C062D89793C2fEa4bd5da",
+        "count": 1
+      },
+      "PoseidonT3": {
+        "address": "0x11Ac728015427Bed8846f7Be44359E4a95B63390",
+        "count": 1
+      },
+      "PoseidonT4": {
+        "address": "0xF85482f8254EFb6a96346756ab81d5582E436d18",
+        "count": 1
+      },
+      "PoseidonT5": {
+        "address": "0x9862F690468B7232F5895A2eCF78a1AAa509C992",
+        "count": 1
+      },
+      "PoseidonT6": {
+        "address": "0x41501310360fB771e65Ef7DCA4F48231D9178253",
+        "count": 1
+      },
+      "PollFactory": {
+        "address": "0xE756e41cB942365437e32FD13F559245F0Df8d4B",
+        "count": 1
+      },
+      "MessageProcessorFactory": {
+        "address": "0x88E6983f7D21b6A42e57e844893D417Aa8250F30",
+        "count": 1
+      },
+      "TallyFactory": {
+        "address": "0x65748179ECd9FC73470D427163e03d4338A1cD8F",
+        "count": 1
+      },
+      "VkRegistry": {
+        "address": "0xE47B468E9E9FD8Dd2B0e8327aF720671552b24E2",
+        "count": 1
+      }
+    }
+  },
+  "gnosis": {
+    "instance": {
+      "0x41a29A58A63A998c9Edde6883Bcec2d89835a8e9": {
+        "id": "ConstantInitialVoiceCreditProxy",
+        "deploymentTxHash": "0x9d48aa401d49d2674a8b6bdc7f8de0ea2f03c9b6bb0bc19b2ba3d54017c7804f",
+        "verify": {
+          "args": "[\"200\"]"
+        }
+      },
+      "0x9e98cAA76492338627BAD0e5a6AA2762d827E169": {
+        "id": "FreeForAllGatekeeper",
+        "deploymentTxHash": "0xb9c5a75f51f0224509c6bb975868688ee91dd294791f4cf39ce3f03e3e7aa410",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xB400794f463d90ce5f462A43d8E6f9155656d02d": {
+        "id": "Verifier",
+        "deploymentTxHash": "0xc05c712550422873544841dfdec46ffce75d46025e58331e78ec9044ae5416c7",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xa0e0aC07c211D329ebA2D6ec552F4dC1B230A89A": {
+        "id": "PoseidonT3",
+        "deploymentTxHash": "0x68c84961d70679e895ded0e5c79cc81b5cf764bfab91319ec12b6272b6e01dd4",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x0CC8B7Aed7d79a8B948636242706265548D0B10a": {
+        "id": "PoseidonT4",
+        "deploymentTxHash": "0xd44538216a618fe96f21ea7b6f9ff0da5109c2b2ef90e8507b779e298bc08e2b",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x43B519FF023757508311518AC41B5fA1CfD57181": {
+        "id": "PoseidonT5",
+        "deploymentTxHash": "0xc15324656c232c7b650d2e21326cea7e2055f98ce53d94eb8e675b192d0c91bd",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xb123798B1b21082100D289BeA24bFF0F8dfcbEe1": {
+        "id": "PoseidonT6",
+        "deploymentTxHash": "0x6dc6b044dae39a104c48305eb3359d0dae722a2315efdcdf4e0c2eeecc077ec6",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xBa350B0cF67a0dEDa103A5d0d297bd120bF87E39": {
+        "id": "PollFactory",
+        "deploymentTxHash": "0x37a15ca276ec0bf23ef3b21d30083fba84b536663f613e87d2193edf381cd949",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x96FD5e4E40671Bf8d5f1d0E3F3402488680B8376": {
+        "id": "MessageProcessorFactory",
+        "deploymentTxHash": "0x709583260d64db05493d65e99b82c5cd1c2dcd6631de466b4296af8991ad9651",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xEEBc671e15B3f1c7483161F866d76ad84645d7C8": {
+        "id": "TallyFactory",
+        "deploymentTxHash": "0x12ed4b1631115199f4d04bc2af92521953f7a69f5dce698768501b3f33320ca4",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xE21F9Ea298b62032B3C2206955cd12c4Ab0a046b": {
+        "id": "VkRegistry",
+        "deploymentTxHash": "0x2b143ecfb9c643f7ffc3d8d3b7c16aacb2057382079970b62e4a7d9280944b34",
+        "verify": {
+          "args": "[]"
+        }
+      }
+    },
+    "named": {
+      "ConstantInitialVoiceCreditProxy": {
+        "address": "0x41a29A58A63A998c9Edde6883Bcec2d89835a8e9",
+        "count": 1
+      },
+      "FreeForAllGatekeeper": {
+        "address": "0x9e98cAA76492338627BAD0e5a6AA2762d827E169",
+        "count": 1
+      },
+      "Verifier": {
+        "address": "0xB400794f463d90ce5f462A43d8E6f9155656d02d",
+        "count": 1
+      },
+      "PoseidonT3": {
+        "address": "0xa0e0aC07c211D329ebA2D6ec552F4dC1B230A89A",
+        "count": 1
+      },
+      "PoseidonT4": {
+        "address": "0x0CC8B7Aed7d79a8B948636242706265548D0B10a",
+        "count": 1
+      },
+      "PoseidonT5": {
+        "address": "0x43B519FF023757508311518AC41B5fA1CfD57181",
+        "count": 1
+      },
+      "PoseidonT6": {
+        "address": "0xb123798B1b21082100D289BeA24bFF0F8dfcbEe1",
+        "count": 1
+      },
+      "PollFactory": {
+        "address": "0xBa350B0cF67a0dEDa103A5d0d297bd120bF87E39",
+        "count": 1
+      },
+      "MessageProcessorFactory": {
+        "address": "0x96FD5e4E40671Bf8d5f1d0E3F3402488680B8376",
+        "count": 1
+      },
+      "TallyFactory": {
+        "address": "0xEEBc671e15B3f1c7483161F866d76ad84645d7C8",
+        "count": 1
+      },
+      "VkRegistry": {
+        "address": "0xE21F9Ea298b62032B3C2206955cd12c4Ab0a046b",
+        "count": 1
+      }
+    }
+  },
+  "polygon-amoy": {
+    "instance": {
+      "0x3D4C58074DCD8E6526885F465ab5F311b6B290B5": {
+        "id": "ConstantInitialVoiceCreditProxy",
+        "deploymentTxHash": "0x85478d9ce20d0b1db965aead2ee6ea07e5e4ed8c5fd7200e28104561d01b00b0",
+        "verify": {
+          "args": "[\"200\"]"
+        }
+      },
+      "0x7E16271EaE58F52a0431F87Ee7E40c978178C63F": {
+        "id": "FreeForAllGatekeeper",
+        "deploymentTxHash": "0xa21de26515a57b8a3b3f04511d490b555fef8c4e880ebba5045a45dbc637cb3f",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xd81aB9859e1d423aC51170256BedD0Aa00e4eD5A": {
+        "id": "Verifier",
+        "deploymentTxHash": "0x7d6c7aeed8477c17270086aa6bb63c83799b5569d582299a5e0859fc30cdaf07",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x33Cc5e8b6f158B9ee3600EcD3f3DE76c6B7765a7": {
+        "id": "PoseidonT3",
+        "deploymentTxHash": "0x5d6eda8b24b826ef377efa3d0d606b1f7b71fe851cced25b62f14b1fb6b0e3ca",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xfcaFB222bd61556E393058F08d6d86bdEbcCE72c": {
+        "id": "PoseidonT4",
+        "deploymentTxHash": "0x589fa59ca59b9539ac116dca69295a4991055b7ae113e17be2a731c56418e82d",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xC22411B2a05A9e8D3E6D5C6335B7EEFE3326B463": {
+        "id": "PoseidonT5",
+        "deploymentTxHash": "0x17cf2076f874acbfd4531204a9d0d4dc9501914887db02b9fc09c4dc55db170e",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x5AF94C036c47aEEA21f10B721f6A32d82f127B7b": {
+        "id": "PoseidonT6",
+        "deploymentTxHash": "0x92d79444ada1b4ac9d2ca99f871f59dc20dc8c036c6c83b4b6e04722779d74d7",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x31b7Befe18B90Dbc2115aE7A27099251341FE09f": {
+        "id": "PollFactory",
+        "deploymentTxHash": "0xf65cc72a6837032d825de79c4e4c736497f49bb4c2134de2b8cdd21235ccad09",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x30339f46f1b46d1FbB84cE2ffC2efD2D0CD6E7a3": {
+        "id": "MessageProcessorFactory",
+        "deploymentTxHash": "0x9f3a3df914f7462f399632e2cfb13116678aa34ce4063b7c1725e8b1ec2904c4",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x41a29A58A63A998c9Edde6883Bcec2d89835a8e9": {
+        "id": "TallyFactory",
+        "deploymentTxHash": "0xae87d4c5591aaf6cdfcfb48b350eeac6ae948997d5fb8cb35f38c8133ec4dc64",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xB400794f463d90ce5f462A43d8E6f9155656d02d": {
+        "id": "VkRegistry",
+        "deploymentTxHash": "0x4bdcfa66c2c04eca5864a44c898d5c64fefcb64bca85e1f90619ebf50e8ac767",
+        "verify": {
+          "args": "[]"
+        }
+      }
+    },
+    "named": {
+      "ConstantInitialVoiceCreditProxy": {
+        "address": "0x3D4C58074DCD8E6526885F465ab5F311b6B290B5",
+        "count": 1
+      },
+      "FreeForAllGatekeeper": {
+        "address": "0x7E16271EaE58F52a0431F87Ee7E40c978178C63F",
+        "count": 1
+      },
+      "Verifier": {
+        "address": "0xd81aB9859e1d423aC51170256BedD0Aa00e4eD5A",
+        "count": 1
+      },
+      "PoseidonT3": {
+        "address": "0x33Cc5e8b6f158B9ee3600EcD3f3DE76c6B7765a7",
+        "count": 1
+      },
+      "PoseidonT4": {
+        "address": "0xfcaFB222bd61556E393058F08d6d86bdEbcCE72c",
+        "count": 1
+      },
+      "PoseidonT5": {
+        "address": "0xC22411B2a05A9e8D3E6D5C6335B7EEFE3326B463",
+        "count": 1
+      },
+      "PoseidonT6": {
+        "address": "0x5AF94C036c47aEEA21f10B721f6A32d82f127B7b",
+        "count": 1
+      },
+      "PollFactory": {
+        "address": "0x31b7Befe18B90Dbc2115aE7A27099251341FE09f",
+        "count": 1
+      },
+      "MessageProcessorFactory": {
+        "address": "0x30339f46f1b46d1FbB84cE2ffC2efD2D0CD6E7a3",
+        "count": 1
+      },
+      "TallyFactory": {
+        "address": "0x41a29A58A63A998c9Edde6883Bcec2d89835a8e9",
+        "count": 1
+      },
+      "VkRegistry": {
+        "address": "0xB400794f463d90ce5f462A43d8E6f9155656d02d",
+        "count": 1
+      }
+    }
+  },
+  "polygon": {
+    "instance": {
+      "0x6d1b05EcD959cD11fAa07ED0537395FE1D39eAc5": {
+        "id": "ConstantInitialVoiceCreditProxy",
+        "deploymentTxHash": "0x06cb4d913ad211111bef645e3346e30657a5c9ef686b8afb949d8cfee4c6c158",
+        "verify": {
+          "args": "[\"200\"]"
+        }
+      },
+      "0x4241540530d25A83c920CB48e69CcA9D47eE0687": {
+        "id": "FreeForAllGatekeeper",
+        "deploymentTxHash": "0x9f4d39e9bcae1eecf839cf59b8d86b93569727de8ca768f40fb00bf3d64417d8",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x16eE00033D863c00cFaf37d35d86CFAa7CCF7057": {
+        "id": "Verifier",
+        "deploymentTxHash": "0x1e4c95ff90d47ca0e255c1f4d7eae68b02de19ca380b3121d3ca63fc37942943",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x2018747cA1574ccCadA63Dc55d16B79e983C4Aa7": {
+        "id": "PoseidonT3",
+        "deploymentTxHash": "0x30aec42624d4ea3e972c25d82b52bbf7f1e1f1cd60f42b8362ab241f2717ab2a",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x2941105833E4fcD3aB0D6610Fed9B6FfFe2ba45B": {
+        "id": "PoseidonT4",
+        "deploymentTxHash": "0x0cc1cb2a4e475b9a8139837334b65c2bec41024e2110de7eda721b267d415fc3",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x13De8DFb45aD435D55406Cdd0E4F35eddB4e0d55": {
+        "id": "PoseidonT5",
+        "deploymentTxHash": "0x4c3b946fdf7d5a34d65b17d0c2214a2e6ac761aa72aa1e735c5cb6a39cb8183f",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x0339e0E6df1F6B592060fa6FE2301a91C9d0b68a": {
+        "id": "PoseidonT6",
+        "deploymentTxHash": "0x9010ad974372bf57b8b88ead0aaf32b7823b4c8977be175dbc7558debc68bc2a",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x9F9303200658cB14F220b453a076B3AC4AEf4895": {
+        "id": "PollFactory",
+        "deploymentTxHash": "0x73993638b2ee6829f7e399eb813b64ee86ce7bfdbe0f2a6067f100a0de4b952a",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0xE1Bc8c8692683A0D145c7FB6292bB44AFd9c5cCD": {
+        "id": "MessageProcessorFactory",
+        "deploymentTxHash": "0xeee48d2d6eac893e0f02ef8bb18d2709bb7a1ecdcb88a35e1594d9e7a49858ca",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x28a8F18b19bF3Ec051B8f070416e28e4D3006bD1": {
+        "id": "TallyFactory",
+        "deploymentTxHash": "0x52d83a8ee827c78e6994267ec2ab922df2f5ed94eebe33a75a7ce1dcdf3cbf64",
+        "verify": {
+          "args": "[]"
+        }
+      },
+      "0x7F2aDE88ca1D74678356D79b8A6E8550aC31a8F0": {
+        "id": "VkRegistry",
+        "deploymentTxHash": "0x76c6ec1c7722003496e5e220ff9908ae20e5c9bec3eaccbc92023a97cda5e66b",
+        "verify": {
+          "args": "[]"
+        }
+      }
+    },
+    "named": {
+      "ConstantInitialVoiceCreditProxy": {
+        "address": "0x6d1b05EcD959cD11fAa07ED0537395FE1D39eAc5",
+        "count": 1
+      },
+      "FreeForAllGatekeeper": {
+        "address": "0x4241540530d25A83c920CB48e69CcA9D47eE0687",
+        "count": 1
+      },
+      "Verifier": {
+        "address": "0x16eE00033D863c00cFaf37d35d86CFAa7CCF7057",
+        "count": 1
+      },
+      "PoseidonT3": {
+        "address": "0x2018747cA1574ccCadA63Dc55d16B79e983C4Aa7",
+        "count": 1
+      },
+      "PoseidonT4": {
+        "address": "0x2941105833E4fcD3aB0D6610Fed9B6FfFe2ba45B",
+        "count": 1
+      },
+      "PoseidonT5": {
+        "address": "0x13De8DFb45aD435D55406Cdd0E4F35eddB4e0d55",
+        "count": 1
+      },
+      "PoseidonT6": {
+        "address": "0x0339e0E6df1F6B592060fa6FE2301a91C9d0b68a",
+        "count": 1
+      },
+      "PollFactory": {
+        "address": "0x9F9303200658cB14F220b453a076B3AC4AEf4895",
+        "count": 1
+      },
+      "MessageProcessorFactory": {
+        "address": "0xE1Bc8c8692683A0D145c7FB6292bB44AFd9c5cCD",
+        "count": 1
+      },
+      "TallyFactory": {
+        "address": "0x28a8F18b19bF3Ec051B8f070416e28e4D3006bD1",
+        "count": 1
+      },
+      "VkRegistry": {
+        "address": "0x7F2aDE88ca1D74678356D79b8A6E8550aC31a8F0",
+        "count": 1
+      }
+    }
+  }
+}
