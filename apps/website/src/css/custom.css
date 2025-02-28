@@ -84,3 +84,8 @@ nav {
     font-size: 1.5rem;
   }
 }
+
+footer .footer__title {
+  font-size: 1.1rem;
+  text-decoration: underline;
+}

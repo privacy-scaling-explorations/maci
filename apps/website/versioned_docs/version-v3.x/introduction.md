@@ -1,19 +1,15 @@
 ---
-title: Introduction to MACI
+title: What is MACI?
 description: High-level introduction to Minimum Anti-Collusion Infrastructure (MACI)
-sidebar_label: Introduction
+sidebar_label: What is MACI?
 sidebar_position: 1
 ---
-
-:::info
-For a more secure and stable protocol, please refer to MACI v3.x
-:::
 
 # Welcome to MACI
 
 ![MACI card](/img/maci-card.png)
 
-## Introduction
+## What is MACI?
 
 **Minimal Anti-Collusion Infrastructure (MACI)** is an open-source public good that serves as infrastructure for private on-chain voting.
 
@@ -21,8 +17,64 @@ MACI is an Ethereum application that provides privacy and collusion resistance f
 
 MACI counters this problem by using encryption and zero-knowledge proofs (zk-SNARKs) to hide how each person voted while still publicly revealing the final result. User’s cannot prove which option they voted for, and therefore bribers cannot reliably trust that a user voted for their preferred option. For example, a voter can tell a briber that they are voting for option A, but in reality they voted for option B. There is no reliable way to prove which option the voter actually voted for, so the briber has less incentive to pay voters to vote their way.
 
-Applications like [clr.fund](https://clr.fund/) build atop MACI to increase
+Applications like [clr.fund](https://clr.fund/) or protocols like [Allo](https://github.com/gitcoinco/MACI_QF) build atop MACI to increase
 user privacy and discourage collusion or bribery for public goods funding.
+
+## Why MACI Matters
+
+To understand the promise of on-chain voting and the purpose of MACI, we highly recommend reading [Vitalik's post on blockchain voting](https://vitalik.eth.limo/general/2021/05/25/voting2.html). He provides an overview of the incredible potential of e-voting and why blockchains are an excellent technology to implement e-voting solutions on top of.
+
+Below we attempt to summarize some of the points laid out in that post:
+
+### Security requirements of a voting system
+
+Any voting system requires a few crucial security properties in order to be trusted by users:
+
+- **Correct execution**: the result (tally of votes) must be correct, and the result must be guaranteed by a transparent process (so that everyone is convinced that the result is correct)
+- **Censorship resistance**: anyone eligible to vote should be able to vote, and it should not be possible to interfere with anyone's attempt to vote or to prevent anyone’s vote from being counted
+- **Privacy:** you should not be able to tell which candidate someone specific voted for, or even if they voted at all
+- **Coercion resistance:** you should not be able to prove to someone else how you voted, even if you want to
+
+### Voting systems
+
+Looking at various approaches to implement a voting system, we can see how they compare across these properties.
+
+#### In-person voting systems
+
+In short, it's hard to know for sure how current voting systems operate. Governments and corporations spend lots of resources on their systems and processes in an attempt to ensure their integrity, but ultimately neither the systems nor the processes are fully auditable, so we must trust that these security properties are being enforced.
+
+|                       | In-person |
+| --------------------- | --------- |
+| Correct execution     | 🤷‍♂️        |
+| Censorship resistance | 🤷‍♂️        |
+| Privacy               | 🤷‍♂️        |
+| Collusion resistance  | 🤷‍♂️        |
+
+#### Blockchain voting systems
+
+Blockchains provide two key properties: correct execution and censorship resistance. In terms of execution, the blockchain accepts inputs (transaction) from users, correctly processes them according to some pre-defined rules, and returns the correct output. No one is able to change the rules. Any user that wants to send a transaction and is willing to pay a high enough fee can send the transaction and expect to see it quickly included on-chain.
+
+By default, however, Blockchain voting applications face challenges. Ethereum, like most blockchains, is completely transparent - all transaction data is public, so there is no privacy for voters or their votes. This makes bribery very easy as a result: someone can easily show a transaction receipt that proves how they voted. In some cases, bribery can be completely automated via smart contracts to make collusion entirely trustless.
+
+|                       | In-person | Ethereum |
+| --------------------- | --------- | -------- |
+| Correct execution     | 🤷‍♂️        | ✅       |
+| Censorship resistance | 🤷‍♂️        | ✅       |
+| Privacy               | 🤷‍♂️        | ❌       |
+| Collusion resistance  | 🤷‍♂️        | ❌       |
+
+#### Blockchain voting systems (with ZKPs)
+
+Enter zero-knowledge proofs (ZKPs), which when combined with blockchains like Ethereum, can enable private on-chain voting but maintain public on-chain results that are verifiable by anyone (including smart contracts). Vote tallying takes place off-chain but ZKPs are submitted and verified on-chain, which guarantees votes are counted correctly without revealing the individual votes.
+
+|                       | In-person | Ethereum | Ethereum w/ ZK |
+| --------------------- | --------- | -------- | -------------- |
+| Correct execution     | 🤷‍♂️        | ✅       | ✅             |
+| Censorship resistance | 🤷‍♂️        | ✅       | ✅             |
+| Privacy               | 🤷‍♂️        | ❌       | ✅             |
+| Collusion resistance  | 🤷‍♂️        | ❌       | ✅             |
+
+This, in essence, is why MACI exists. By combining these technologies in novel ways, we believe we can achieve all the core security properties that a voting system must have.
 
 ## Features
 
@@ -48,7 +100,7 @@ The participants of a MACI voting process are: 1) the voters and 2) a trusted co
 Note that MACI presumes an identity system where each legitimate member
 controls a unique Ethereum private key.
 
-For information on MACI's latest features, please check out our [MACI v1.2.0 release post](/blog/maci-v1-2-0-release).
+For information on MACI's latest features, please check out our [MACI v2.0.0 release post](/blog/2024-v2).
 
 ## Background
 
@@ -90,5 +142,5 @@ MACI is a public good infrastructure that is supported by the [Ethereum Foundati
 Our core team continues to work on improving the protocol and its documentation with help from our open source community.
 
 :::info
-If you are using one of the previous versions of MACI, see the [MACI v0.x](/docs/v0.x/introduction) documentation.
+If you are using one of the previous versions of MACI, see the [MACI v1.2](/docs/v1.2/introduction) documentation.
 :::

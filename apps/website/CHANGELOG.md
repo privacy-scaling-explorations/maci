@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.5.0...v3.0.0) (2025-02-05)
+
+### Features
+* Integration of Anon Poll Joining grant code
+* Voice credits custom per poll
+* Custom Gatekeepers per poll
+* MACI Offchain happy path based on Vitalik’s idea: [Ethereum Research MACI with mostly-off-chain "happy path"](https://ethresear.ch/t/maci-with-mostly-off-chain-happy-path/19527)
+* Separation of duties between cli and SDK to ensure the SDK it’s easy to integrate
+
+### Miscellaneous
+* General cleanup and refactoring
+
 ## [2.5.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.4.0...v2.5.0) (2024-11-20)
 
 
