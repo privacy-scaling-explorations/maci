@@ -3,6 +3,8 @@ import type { Groth16Proof, SnarkProof } from "maci-contracts";
 import type { CircuitInputs } from "maci-core";
 import type { PublicSignals } from "snarkjs";
 
+import { ITallyData } from "../tally";
+
 /**
  * Interface for the arguments to the proveOnChain command
  */
@@ -166,4 +168,13 @@ export interface IGenerateProofsArgs {
    * The tally file
    */
   tallyFile: string;
+}
+
+/**
+ * Interface for the data returned by the generateProofs function
+ */
+export interface IGenerateProofsData {
+  processProofs: IProof[];
+  tallyProofs: IProof[];
+  tallyData: ITallyData;
 }

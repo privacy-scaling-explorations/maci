@@ -102,7 +102,7 @@ export const genProofsCommand = async ({
     logError("Invalid MACI private key");
   }
 
-  const tallyData = await generateProofs({
+  const { tallyData } = await generateProofs({
     networkName: network?.name || "",
     chainId: network?.chainId.toString() || "0",
     maciContractAddress,
