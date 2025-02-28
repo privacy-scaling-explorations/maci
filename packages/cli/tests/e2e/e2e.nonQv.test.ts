@@ -14,12 +14,14 @@ import {
   publish,
   deployPoll,
   generateProofs,
+  deployVkRegistryContract,
+  timeTravel,
   type IGenerateProofsArgs,
 } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
-import { deploy, deployVkRegistryContract, timeTravel } from "../../ts/commands";
+import { deploy } from "../../ts/commands";
 import { DEFAULT_SG_DATA, DeployedContracts } from "../../ts/utils";
 import {
   deployPollArgs,

@@ -9,9 +9,10 @@ import {
   setVerifyingKeys,
   signup,
   deployPoll,
+  deployVkRegistryContract,
 } from "maci-sdk";
 
-import { deploy, DeployedContracts, deployVkRegistryContract } from "../../ts";
+import { deploy, DeployedContracts } from "../../ts";
 import { DEFAULT_IVCP_DATA, DEFAULT_SG_DATA } from "../../ts/utils";
 import {
   deployArgs,

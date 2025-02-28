@@ -2,7 +2,7 @@
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { Signer } from "ethers";
-import { deploy, deployVkRegistryContract, timeTravel, DeployedContracts } from "maci-cli";
+import { deploy, DeployedContracts } from "maci-cli";
 import { MaciState, TreeDepths, VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { genPubKey, genRandomSalt, poseidon } from "maci-crypto";
 import { Keypair, PCommand, PrivKey, PubKey } from "maci-domainobjs";
@@ -26,6 +26,8 @@ import {
   publish,
   deployPoll,
   generateProofs,
+  deployVkRegistryContract,
+  timeTravel,
 } from "maci-sdk";
 
 import fs from "fs";

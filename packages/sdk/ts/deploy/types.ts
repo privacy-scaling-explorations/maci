@@ -122,3 +122,13 @@ export interface IPollContractsData {
    */
   initialVoiceCreditProxyContractAddress: string;
 }
+
+/**
+ * Interface for the arguments to the DeployVkRegistry command
+ */
+export interface IDeployVkRegistryArgs {
+  /**
+   * A signer object
+   */
+  signer: Signer;
+}

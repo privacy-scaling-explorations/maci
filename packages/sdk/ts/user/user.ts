@@ -83,24 +83,20 @@ export const signup = async ({ maciPubKey, maciAddress, sgData, signer }: ISignu
   let stateIndex = "";
   let receipt: ContractTransactionReceipt | null = null;
 
-  try {
-    // sign up to the MACI contract
-    const tx = await maciContract.signUp(userMaciPubKey.asContractParam(), sgData);
-    receipt = await tx.wait();
+  // sign up to the MACI contract
+  const tx = await maciContract.signUp(userMaciPubKey.asContractParam(), sgData);
+  receipt = await tx.wait();
 
-    if (receipt?.status !== 1) {
-      throw new Error("The transaction failed");
-    }
-
-    const iface = maciContract.interface;
-
-    // get state index from the event
-    const [log] = receipt.logs;
-    const { args } = iface.parseLog(log as unknown as { topics: string[]; data: string }) || { args: [] };
-    [stateIndex, ,] = args;
-  } catch (error) {
-    throw new Error((error as Error).message);
+  if (receipt?.status !== 1) {
+    throw new Error("The transaction failed");
   }
+
+  const iface = maciContract.interface;
+
+  // get state index from the event
+  const [log] = receipt.logs;
+  const { args } = iface.parseLog(log as unknown as { topics: string[]; data: string }) || { args: [] };
+  [stateIndex, ,] = args;
 
   return {
     stateIndex: stateIndex ? stateIndex.toString() : "",

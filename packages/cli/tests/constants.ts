@@ -10,14 +10,15 @@ import {
   type ITallyData,
   type IMergeSignupsArgs,
   type IVerifyArgs,
-  IProveOnChainArgs,
+  type IProveOnChainArgs,
+  type ITimeTravelArgs,
 } from "maci-sdk";
 
 import { homedir } from "os";
 
 import type { Signer } from "ethers";
 
-import { DeployArgs, TimeTravelArgs, readJSONFile } from "../ts/utils";
+import { DeployArgs, readJSONFile } from "../ts/utils";
 import { DEFAULT_INITIAL_VOICE_CREDITS, DEFAULT_VOTE_OPTIONS } from "../ts/utils/defaults";
 
 export const STATE_TREE_DEPTH = 10;
@@ -110,7 +111,7 @@ export const checkVerifyingKeysArgs: Omit<ICheckVerifyingKeysArgs, "vkRegistry" 
   tallyVotesZkeyPath: tallyVotesTestZkeyPath,
 };
 
-export const timeTravelArgs: Omit<TimeTravelArgs, "signer"> = {
+export const timeTravelArgs: Omit<ITimeTravelArgs, "signer"> = {
   seconds: pollDuration,
 };
 

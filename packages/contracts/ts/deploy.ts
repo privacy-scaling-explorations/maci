@@ -218,12 +218,21 @@ export const deployPoseidonContracts = async (
   { poseidonT3, poseidonT4, poseidonT5, poseidonT6 }: IDeployMaciArgs["poseidonAddresses"] = {},
   quiet = false,
 ): Promise<IDeployedPoseidonContracts> => {
-  const [PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract] = await Promise.all([
-    !poseidonT3 ? await deployContract<PoseidonT3>("PoseidonT3", signer, quiet) : PoseidonT3Factory.connect(poseidonT3),
-    !poseidonT4 ? await deployContract<PoseidonT4>("PoseidonT4", signer, quiet) : PoseidonT4Factory.connect(poseidonT4),
-    !poseidonT5 ? await deployContract<PoseidonT5>("PoseidonT5", signer, quiet) : PoseidonT5Factory.connect(poseidonT5),
-    !poseidonT6 ? await deployContract<PoseidonT6>("PoseidonT6", signer, quiet) : PoseidonT6Factory.connect(poseidonT6),
-  ]);
+  const PoseidonT3Contract = !poseidonT3
+    ? await deployContract<PoseidonT3>("PoseidonT3", signer, quiet)
+    : PoseidonT3Factory.connect(poseidonT3);
+
+  const PoseidonT4Contract = !poseidonT4
+    ? await deployContract<PoseidonT4>("PoseidonT4", signer, quiet)
+    : PoseidonT4Factory.connect(poseidonT4);
+
+  const PoseidonT5Contract = !poseidonT5
+    ? await deployContract<PoseidonT5>("PoseidonT5", signer, quiet)
+    : PoseidonT5Factory.connect(poseidonT5);
+
+  const PoseidonT6Contract = !poseidonT6
+    ? await deployContract<PoseidonT6>("PoseidonT6", signer, quiet)
+    : PoseidonT6Factory.connect(poseidonT6);
 
   return {
     PoseidonT3Contract,

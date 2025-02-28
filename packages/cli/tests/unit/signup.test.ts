@@ -1,9 +1,9 @@
 import { expect } from "chai";
 import { Signer } from "ethers";
 import { Keypair } from "maci-domainobjs";
-import { getDefaultSigner, getSignedupUserData, setVerifyingKeys, signup } from "maci-sdk";
+import { getDefaultSigner, getSignedupUserData, setVerifyingKeys, signup, deployVkRegistryContract } from "maci-sdk";
 
-import { deploy, DeployedContracts, deployVkRegistryContract } from "../../ts";
+import { deploy, DeployedContracts } from "../../ts";
 import { DEFAULT_SG_DATA } from "../../ts/utils";
 import { deployArgs, verifyingKeysArgs } from "../constants";
 

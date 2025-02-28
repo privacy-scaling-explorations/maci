@@ -6,12 +6,14 @@ import {
   mergeSignups,
   setVerifyingKeys,
   deployPoll,
-  IPollContractsData,
+  deployVkRegistryContract,
+  timeTravel,
+  type IPollContractsData,
 } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
-import { deploy, deployVkRegistryContract, timeTravel } from "../../ts/commands";
+import { deploy } from "../../ts/commands";
 import { DeployedContracts } from "../../ts/utils";
 import { deployPollArgs, deployArgs, pollDuration, verifyingKeysArgs } from "../constants";
 import { clean } from "../utils";

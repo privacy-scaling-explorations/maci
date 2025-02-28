@@ -4,7 +4,6 @@ export {
   oldContractAddressStoreName,
   contractAddressesStore,
   oldContractAddressesStore,
-  BLOCKS_STEP,
 } from "./constants";
 export {
   DEFAULT_ETH_PROVIDER,
@@ -12,22 +11,13 @@ export {
   DEFAULT_INITIAL_VOICE_CREDITS,
   DEFAULT_SG_DATA,
   DEFAULT_IVCP_DATA,
-  DEFAULT_SR_QUEUE_OPS,
 } from "./defaults";
-export type {
-  DeployVkRegistryArgs,
-  DeployArgs,
-  DeployedContracts,
-  ISnarkJSVerificationKey,
-  FundWalletArgs,
-  TimeTravelArgs,
-  PollContracts,
-} from "./interfaces";
+export type { DeployArgs, DeployedContracts, PollContracts } from "./interfaces";
 export { delay } from "./time";
 export {
   readJSONFile,
-  storeContractAddress,
-  readContractAddress,
+  storeContractAddresses,
+  readContractAddresses,
   resetContractAddresses,
   doesPathExist,
 } from "./storage";

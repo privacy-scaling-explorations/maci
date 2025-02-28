@@ -15,22 +15,17 @@ export const readJSONFile = async (path: string): Promise<Record<string, Record<
     logError(`File ${path} does not exist`);
   }
 
-  return JSON.parse(await fs.promises.readFile(path).then((res) => res.toString())) as Record<
-    string,
-    Record<string, string> | undefined
-  >;
+  return fs.promises
+    .readFile(path)
+    .then((res) => JSON.parse(res.toString()) as Record<string, Record<string, string> | undefined>);
 };
 
 /**
  * Store a contract address to the local address store file
- * @param contractName - the name of the contract
- * @param address - the address of the contract
+ * @param data the contract name - address object
+ * @param network the network where the contracts are deployed
  */
-export const storeContractAddress = async (
-  contractName: string,
-  address: string,
-  network = "default",
-): Promise<void> => {
+export const storeContractAddresses = async (data: Record<string, string>, network = "default"): Promise<void> => {
   // if it does not exist yet, then create it
   const isContractAddressesStoreExists = fs.existsSync(contractAddressesStore);
 
@@ -40,26 +35,31 @@ export const storeContractAddress = async (
 
   const contractAddrs = await readJSONFile(contractAddressesStore);
 
-  if (!contractAddrs[network]) {
-    contractAddrs[network] = {};
-  }
-
-  contractAddrs[network][contractName] = address;
-  await fs.promises.writeFile(contractAddressesStore, JSON.stringify(contractAddrs, null, 4));
+  await fs.promises.writeFile(
+    contractAddressesStore,
+    JSON.stringify({ ...(contractAddrs[network] || {}), ...data }, null, 4),
+  );
 };
 
 /**
  * Read a contract address from the local address store file
- * @param contractName - the name of the contract
+ * @param contractNames the names of the contracts
+ * @param network the network where the contracts are deployed
+ * @param defaultValues the default addresses for the contracts
  * @returns the contract address or a undefined if it does not exist
  */
-export const readContractAddress = async (contractName: string, network = "default"): Promise<string> => {
+export const readContractAddresses = async (
+  contractNames: string[],
+  network?: string,
+  defaultValues?: (string | undefined)[],
+): Promise<string[]> => {
   try {
     const result = await readJSONFile(contractAddressesStore);
+    const data = { ...(result[network ?? "default"] || {}) };
 
-    return result[network]?.[contractName] || "";
+    return contractNames.map((name, index) => defaultValues?.[index] ?? data[name]).filter(Boolean);
   } catch (error) {
-    return "";
+    return defaultValues ? (defaultValues.filter(Boolean) as string[]) : [];
   }
 };
 

@@ -26,6 +26,9 @@ import {
   MACI__factory as MACIFactory,
   deployPoll,
   generateProofs,
+  deployVkRegistryContract,
+  timeTravel,
+  fundWallet,
   type ITallyData,
 } from "maci-sdk";
 
@@ -33,18 +36,22 @@ import fs from "fs";
 import path from "path";
 
 import "./cliInit";
-import { deployVkRegistryContract, deploy, showContracts, timeTravel, fundWallet } from "./commands";
+import { deploy } from "./commands";
 import {
   DEFAULT_IVCP_DATA,
   DEFAULT_SG_DATA,
   banner,
+  contractAddressesStore,
   info,
   logError,
   logGreen,
   logRed,
   logYellow,
+  oldContractAddressesStore,
   promptSensitiveValue,
-  readContractAddress,
+  readContractAddresses,
+  resetContractAddresses,
+  storeContractAddresses,
   success,
 } from "./utils";
 import { DEFAULT_INITIAL_VOICE_CREDITS, DEFAULT_VOTE_OPTIONS } from "./utils/defaults";
@@ -131,7 +138,7 @@ program
     try {
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
-      const vkContractAddress = cmdOptions.vkContract || (await readContractAddress("VkRegistry", network?.name));
+      const [vkContractAddress] = await readContractAddresses(["VkRegistry"], network?.name, [cmdOptions.vkContract]);
 
       logYellow(cmdOptions.quiet, info("Retrieving verifying keys from the contract..."));
 
@@ -181,9 +188,23 @@ program
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
-      const signer = await getSigner();
+      banner(cmdObj.quiet);
 
-      await deployVkRegistryContract({ quiet: cmdObj.quiet, signer });
+      const signer = await getSigner();
+      // assume that the vkRegistry contract is the first one to be deployed
+      const isContractAddressesStoreExists = fs.existsSync(contractAddressesStore);
+
+      if (isContractAddressesStoreExists) {
+        await fs.promises.rename(contractAddressesStore, oldContractAddressesStore);
+        await resetContractAddresses();
+      }
+
+      const network = await signer.provider?.getNetwork();
+      // deploy and store the address
+      const vkRegistryAddress = await deployVkRegistryContract({ signer });
+      await storeContractAddresses({ VkRegistry: vkRegistryAddress }, network?.name);
+
+      logGreen(cmdObj.quiet, success(`VkRegistry deployed at: ${vkRegistryAddress}`));
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -191,11 +212,21 @@ program
 program
   .command("show")
   .description("show the deployed contract addresses")
-  .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
-  .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .action(async (cmdObj) => {
+  .action(async () => {
     try {
-      await showContracts(cmdObj.quiet);
+      banner(false);
+
+      if (!fs.existsSync(contractAddressesStore)) {
+        logError("No contracts have been deployed yet");
+      }
+
+      const data = JSON.parse(
+        await fs.promises.readFile(contractAddressesStore, "utf8").then((result) => result.toString()),
+      ) as Record<string, string>;
+
+      Object.entries(data).forEach(([key, value]) => {
+        logGreen(false, info(`${key}: ${value}`));
+      });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -232,20 +263,20 @@ program
 
       const network = await signer.provider?.getNetwork();
 
-      const vkRegistry = cmdObj.vkRegistryAddress || (await readContractAddress("VkRegistry", network?.name));
-      const maci = cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
+      const [vkRegistry, maci] = await readContractAddresses(["VkRegistry", "MACI"], network?.name, [
+        cmdObj.vkRegistryAddress,
+        cmdObj.maciAddress,
+      ]);
       const maciContract = MACIFactory.connect(maci, signer);
 
       const nextPollId = await maciContract.nextPollId();
 
-      const signupGatekeeperContractAddress =
-        cmdObj.signupGatekeeper ||
-        (await readContractAddress(`SignUpGatekeeper-${nextPollId.toString()}`, network?.name));
-
-      const initialVoiceCreditProxyAddress =
-        cmdObj.initialVoiceCreditsProxy || (await readContractAddress("VoiceCreditProxy", network?.name));
-
-      const verifierContractAddress = await readContractAddress("Verifier", network?.name);
+      const [signupGatekeeperContractAddress, initialVoiceCreditProxyAddress, verifierContractAddress] =
+        await readContractAddresses(
+          [`SignUpGatekeeper-${nextPollId.toString()}`, "VoiceCreditProxy", "Verifier"],
+          network?.name,
+          [cmdObj.signupGatekeeper, cmdObj.initialVoiceCreditsProxy],
+        );
 
       const {
         pollId,
@@ -319,7 +350,7 @@ program
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
 
-      const maciAddress = cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
+      const [maciAddress] = await readContractAddresses(["MACI"], network?.name, [cmdObj.maciAddress]);
       const privateKey = cmdObj.privKey || (await promptSensitiveValue("Insert your MACI private key"));
 
       const data = await joinPoll({
@@ -393,16 +424,17 @@ program
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
 
-      const vkRegistryAddress = cmdObj.vkRegistry || (await readContractAddress("VkRegistry", network?.name));
-
-      const { pollJoiningVk, pollJoinedVk, processVk, tallyVk } = await extractAllVks({
-        pollJoiningZkeyPath: cmdObj.pollJoiningZkey,
-        pollJoinedZkeyPath: cmdObj.pollJoinedZkey,
-        processMessagesZkeyPath: cmdObj.useQuadraticVoting
-          ? cmdObj.processMessagesZkeyQv
-          : cmdObj.processMessagesZkeyNonQv,
-        tallyVotesZkeyPath: cmdObj.useQuadraticVoting ? cmdObj.tallyVotesZkeyQv : cmdObj.tallyVotesZkeyQv,
-      });
+      const [[vkRegistryAddress], { pollJoiningVk, pollJoinedVk, processVk, tallyVk }] = await Promise.all([
+        readContractAddresses(["VkRegistry"], network?.name, [cmdObj.vkRegistry]),
+        extractAllVks({
+          pollJoiningZkeyPath: cmdObj.pollJoiningZkey,
+          pollJoinedZkeyPath: cmdObj.pollJoinedZkey,
+          processMessagesZkeyPath: cmdObj.useQuadraticVoting
+            ? cmdObj.processMessagesZkeyQv
+            : cmdObj.processMessagesZkeyNonQv,
+          tallyVotesZkeyPath: cmdObj.useQuadraticVoting ? cmdObj.tallyVotesZkeyQv : cmdObj.tallyVotesZkeyQv,
+        }),
+      ]);
 
       await setVerifyingKeys({
         stateTreeDepth: cmdObj.stateTreeDepth,
@@ -443,7 +475,7 @@ program
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
 
-      const maciAddress = cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
+      const [maciAddress] = await readContractAddresses(["MACI"], network?.name, [cmdObj.maciAddress]);
       const privateKey = cmdObj.privkey || (await promptSensitiveValue("Insert your MACI private key"));
 
       await publish({
@@ -474,7 +506,7 @@ program
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
 
-      const maciAddress = cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
+      const [maciAddress] = await readContractAddresses(["MACI"], network?.name, [cmdObj.maciAddress]);
 
       const receipt = await mergeSignups({
         pollId: cmdObj.pollId,
@@ -496,9 +528,13 @@ program
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
+      banner(cmdObj.quiet);
+
       const signer = await getSigner();
 
-      await timeTravel({ seconds: cmdObj.seconds, quiet: cmdObj.quiet, signer });
+      await timeTravel({ seconds: cmdObj.seconds, signer });
+
+      logGreen(cmdObj.quiet, success(`Fast-forwarded ${cmdObj.seconds} seconds`));
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -559,7 +595,7 @@ program
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
 
-      const maciAddress = cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
+      const [maciAddress] = await readContractAddresses(["MACI"], network?.name, [cmdObj.maciAddress]);
 
       const data = await signup({
         maciPubKey: cmdObj.pubkey,
@@ -587,7 +623,7 @@ program
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
 
-      const maciAddress = cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
+      const [maciAddress] = await readContractAddresses(["MACI"], network?.name, [cmdObj.maciAddress]);
 
       const data = await getSignedupUserData({
         maciPubKey: cmdObj.pubkey,
@@ -619,7 +655,7 @@ program
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
 
-      const maciAddress = cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
+      const [maciAddress] = await readContractAddresses(["MACI"], network?.name, [cmdObj.maciAddress]);
 
       const data = await getJoinedUserData({
         pollPubKey: cmdObj.pubkey,
@@ -657,7 +693,7 @@ program
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
 
-      const maciAddress = cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
+      const [maciAddress] = await readContractAddresses(["MACI"], network?.name, [cmdObj.maciAddress]);
 
       const details = await getPoll({
         pollId: cmdObj.poll,
@@ -691,9 +727,14 @@ program
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action(async (cmdObj) => {
     try {
+      banner(cmdObj.quiet);
+
       const signer = await getSigner();
 
-      await fundWallet({ amount: cmdObj.amount, address: cmdObj.address, quiet: cmdObj.quiet, signer });
+      const hash = await fundWallet({ amount: cmdObj.amount, address: cmdObj.address, signer });
+
+      logYellow(cmdObj.quiet, info(`Transaction hash: ${hash}`));
+      logGreen(cmdObj.quiet, success(`Successfully funded ${cmdObj.address} with ${cmdObj.amount} wei`));
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -724,7 +765,7 @@ program
 
       const tallyData = JSON.parse(await fs.promises.readFile(cmdObj.tallyFile, { encoding: "utf8" })) as ITallyData;
 
-      const maciAddress = tallyData.maci || cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
+      const [maciAddress] = await readContractAddresses(["MACI"], network?.name, [cmdObj.maciAddress]);
 
       const pollParams = await getPollParams({ pollId: cmdObj.pollId, maciContractAddress: maciAddress, signer });
       const tallyCommitments = generateTallyCommitments({
@@ -816,11 +857,11 @@ program
         const signer = await getSigner();
 
         const network = await signer.provider?.getNetwork();
-        const maciContractAddress = await readContractAddress("MACI", network?.name);
+        const [maciContractAddress] = await readContractAddresses(["MACI"], network?.name, [maciAddress]);
         const coordinatorPrivateKey = privkey || (await promptSensitiveValue("Insert your MACI private key"));
 
         await generateProofs({
-          maciAddress: maciAddress || maciContractAddress,
+          maciAddress: maciContractAddress,
           coordinatorPrivateKey,
           pollId: Number(pollId),
           ipfsMessageBackupFiles,
@@ -874,7 +915,7 @@ program
       const network = await signer.provider?.getNetwork();
 
       // validation of the maci contract address
-      const maciAddress = cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
+      const [maciAddress] = await readContractAddresses(["MACI"], network?.name, [cmdObj.maciAddress]);
       const coordinatorPrivateKey = cmdObj.privkey || (await promptSensitiveValue("Insert your MACI private key"));
 
       await generateMaciState({
@@ -911,7 +952,7 @@ program
     try {
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
-      const maciAddress = cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
+      const [maciAddress] = await readContractAddresses(["MACI"], network?.name, [cmdObj.maciAddress]);
 
       await proveOnChain({
         pollId: cmdObj.pollId,
@@ -930,6 +971,6 @@ if (require.main === module) {
 }
 
 // export everything so we can use in other packages
-export { deploy, deployVkRegistryContract, fundWallet, timeTravel } from "./commands";
+export { deploy } from "./commands";
 
 export type { DeployedContracts, PollContracts, DeployArgs } from "./utils";

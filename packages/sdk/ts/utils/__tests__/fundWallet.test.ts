@@ -1,8 +1,7 @@
-import { expect } from "chai";
 import { ZeroAddress } from "ethers";
-import { getDefaultSigner } from "maci-sdk";
+import { getDefaultSigner } from "maci-contracts";
 
-import { fundWallet } from "../../ts";
+import { fundWallet } from "../fundWallet";
 
 describe("fundWallet", () => {
   it("should increase the balance of a wallet", async () => {
@@ -11,6 +10,7 @@ describe("fundWallet", () => {
     const balanceBefore = await signer.provider?.getBalance(ZeroAddress);
     await fundWallet({ amount: 1000000000, address: ZeroAddress, signer });
     const balanceAfter = await signer.provider?.getBalance(ZeroAddress);
-    expect(Number(balanceAfter)).to.be.gt(Number(balanceBefore!));
+
+    expect(Number(balanceAfter)).toBeGreaterThan(Number(balanceBefore!));
   });
 });

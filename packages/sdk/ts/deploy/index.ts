@@ -1,2 +1,3 @@
 export { deployPoll } from "./poll";
-export type { IDeployPollArgs, IPollContractsData } from "./types";
+export { deployVkRegistryContract } from "./vkRegistry";
+export type { IDeployPollArgs, IPollContractsData, IDeployVkRegistryArgs } from "./types";
