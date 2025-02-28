@@ -2,7 +2,7 @@
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { Signer } from "ethers";
-import { deploy, deployVkRegistryContract, timeTravel, DeployedContracts, genProofsCommand } from "maci-cli";
+import { deploy, deployVkRegistryContract, timeTravel, DeployedContracts } from "maci-cli";
 import { MaciState, TreeDepths, VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { genPubKey, genRandomSalt, poseidon } from "maci-crypto";
 import { Keypair, PCommand, PrivKey, PubKey } from "maci-domainobjs";
@@ -25,6 +25,7 @@ import {
   joinPoll,
   publish,
   deployPoll,
+  generateProofs,
 } from "maci-sdk";
 
 import fs from "fs";
@@ -32,6 +33,7 @@ import { homedir } from "os";
 import path from "path";
 
 import {
+  DEFAULT_INITIAL_VOICE_CREDITS,
   DEFAULT_VOTE_OPTIONS,
   INT_STATE_TREE_DEPTH,
   MESSAGE_BATCH_SIZE,
@@ -123,7 +125,7 @@ describe("Integration tests", function test() {
       messageBatchSize: MESSAGE_BATCH_SIZE,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       coordinatorPubKey: coordinatorKeypair.pubKey,
-      maciContractAddress: contracts.maciAddress,
+      maciAddress: contracts.maciAddress,
       signer,
       mode: EMode.QV,
       initialVoiceCreditProxyContractAddress: contracts.initialVoiceCreditProxyAddress,
@@ -131,6 +133,7 @@ describe("Integration tests", function test() {
       vkRegistryContractAddress: vkRegistryAddress,
       gatekeeperContractAddress: contracts.signUpGatekeeperAddress,
       voteOptions: DEFAULT_VOTE_OPTIONS,
+      initialVoiceCredits: DEFAULT_INITIAL_VOICE_CREDITS,
       relayers: [await signer.getAddress()],
     });
 
@@ -328,7 +331,7 @@ describe("Integration tests", function test() {
         .then((paths) => paths.map((filename) => path.resolve(backupFolder, filename)));
 
       // generate proofs
-      const tallyData = await genProofsCommand({
+      const { tallyData } = await generateProofs({
         outputDir: path.resolve(__dirname, "../../../cli/proofs"),
         tallyFile: path.resolve(__dirname, "../../../cli/tally.json"),
         tallyZkey: path.resolve(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey"),
@@ -354,7 +357,7 @@ describe("Integration tests", function test() {
           __dirname,
           "../../../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_cpp/TallyVotes_10-1-2_test.dat",
         ),
-        coordinatorPrivKey: coordinatorKeypair.privKey.serialize(),
+        coordinatorPrivateKey: coordinatorKeypair.privKey.serialize(),
         maciAddress: contracts.maciAddress,
         processWasm: path.resolve(
           __dirname,

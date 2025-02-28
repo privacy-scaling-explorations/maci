@@ -13,6 +13,8 @@ import {
   joinPoll,
   proveOnChain,
   publish,
+  generateProofs,
+  type IGenerateProofsArgs,
   type ITallyData,
   deployPoll,
 } from "maci-sdk";
@@ -22,8 +24,8 @@ import fs from "fs";
 import type { Signer } from "ethers";
 
 import { DeployedContracts } from "../../ts";
-import { deploy, deployVkRegistryContract, genProofsCommand, timeTravel } from "../../ts/commands";
-import { DEFAULT_IVCP_DATA, DEFAULT_SG_DATA, GenProofsArgs } from "../../ts/utils";
+import { deploy, deployVkRegistryContract, timeTravel } from "../../ts/commands";
+import { DEFAULT_IVCP_DATA, DEFAULT_SG_DATA } from "../../ts/utils";
 import {
   coordinatorPrivKey,
   deployArgs,
@@ -60,7 +62,7 @@ describe("keyChange tests", function test() {
   let signer: Signer;
   let vkRegistryAddress: string;
 
-  const genProofsCommandArgs: Omit<GenProofsArgs, "signer"> = {
+  const generateProofsArgs: Omit<IGenerateProofsArgs, "maciAddress" | "signer"> = {
     outputDir: testProofsDirPath,
     tallyFile: testTallyFilePath,
     tallyZkey: tallyVotesTestZkeyPath,
@@ -71,10 +73,11 @@ describe("keyChange tests", function test() {
     processDatFile: testProcessMessagesWitnessDatPath,
     tallyWitgen: testTallyVotesWitnessPath,
     tallyDatFile: testTallyVotesWitnessDatPath,
-    coordinatorPrivKey,
+    coordinatorPrivateKey: coordinatorPrivKey,
     processWasm: testProcessMessagesWasmPath,
     tallyWasm: testTallyVotesWasmPath,
     useWasm,
+    useQuadraticVoting: true,
   };
 
   // before all tests we deploy the vk registry contract and set the verifying keys
@@ -117,7 +120,7 @@ describe("keyChange tests", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         verifierContractAddress: maciAddresses.verifierAddress,
         vkRegistryContractAddress: vkRegistryAddress,
         gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
@@ -207,7 +210,12 @@ describe("keyChange tests", function test() {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-      await genProofsCommand({ ...genProofsCommandArgs, signer, ipfsMessageBackupFiles });
+      await generateProofs({
+        ...generateProofsArgs,
+        maciAddress: maciAddresses.maciAddress,
+        signer,
+        ipfsMessageBackupFiles,
+      });
       await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
       await verify({ ...(await verifyArgs(signer)) });
     });
@@ -250,7 +258,7 @@ describe("keyChange tests", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         verifierContractAddress: maciAddresses.verifierAddress,
         vkRegistryContractAddress: vkRegistryAddress,
         gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
@@ -326,7 +334,12 @@ describe("keyChange tests", function test() {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-      await genProofsCommand({ ...genProofsCommandArgs, signer, ipfsMessageBackupFiles });
+      await generateProofs({
+        ...generateProofsArgs,
+        maciAddress: maciAddresses.maciAddress,
+        signer,
+        ipfsMessageBackupFiles,
+      });
       await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
       await verify({ ...(await verifyArgs(signer)) });
     });
@@ -369,7 +382,7 @@ describe("keyChange tests", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         verifierContractAddress: maciAddresses.verifierAddress,
         vkRegistryContractAddress: vkRegistryAddress,
         gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
@@ -460,7 +473,12 @@ describe("keyChange tests", function test() {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-      await genProofsCommand({ ...genProofsCommandArgs, signer, ipfsMessageBackupFiles });
+      await generateProofs({
+        ...generateProofsArgs,
+        maciAddress: maciAddresses.maciAddress,
+        signer,
+        ipfsMessageBackupFiles,
+      });
       await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
       await verify({ ...(await verifyArgs(signer)) });
     });

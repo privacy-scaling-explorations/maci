@@ -17,14 +17,16 @@ import {
   proveOnChain,
   publish,
   deployPoll,
+  generateProofs,
+  type IGenerateProofsArgs,
 } from "maci-sdk";
 
 import fs from "fs";
 
 import type { Signer } from "ethers";
 
-import { deploy, deployVkRegistryContract, genProofsCommand, timeTravel } from "../../ts/commands";
-import { DEFAULT_IVCP_DATA, DEFAULT_SG_DATA, DeployedContracts, GenProofsArgs } from "../../ts/utils";
+import { deploy, deployVkRegistryContract, timeTravel } from "../../ts/commands";
+import { DEFAULT_IVCP_DATA, DEFAULT_SG_DATA, DeployedContracts } from "../../ts/utils";
 import {
   deployPollArgs,
   coordinatorPrivKey,
@@ -73,7 +75,7 @@ describe("e2e tests", function test() {
   let vkRegistryAddress: string;
   let signer: Signer;
 
-  const genProofsCommandArgs: Omit<GenProofsArgs, "signer"> = {
+  const generateProofsArgs: Omit<IGenerateProofsArgs, "maciAddress" | "signer"> = {
     outputDir: testProofsDirPath,
     tallyFile: testTallyFilePath,
     tallyZkey: tallyVotesTestZkeyPath,
@@ -84,7 +86,7 @@ describe("e2e tests", function test() {
     processDatFile: testProcessMessagesWitnessDatPath,
     tallyWitgen: testTallyVotesWitnessPath,
     tallyDatFile: testTallyVotesWitnessDatPath,
-    coordinatorPrivKey,
+    coordinatorPrivateKey: coordinatorPrivKey,
     processWasm: testProcessMessagesWasmPath,
     tallyWasm: testTallyVotesWasmPath,
     useWasm,
@@ -121,7 +123,7 @@ describe("e2e tests", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         verifierContractAddress: maciAddresses.verifierAddress,
         vkRegistryContractAddress: vkRegistryAddress,
         gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
@@ -173,7 +175,11 @@ describe("e2e tests", function test() {
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-      const tallyFileData = await genProofsCommand({ ...genProofsCommandArgs, signer });
+      const { tallyData: tallyFileData } = await generateProofs({
+        ...generateProofsArgs,
+        maciAddress: maciAddresses.maciAddress,
+        signer,
+      });
       await signup({
         maciAddress: maciAddresses.maciAddress,
         maciPubKey: user.pubKey.serialize(),
@@ -209,7 +215,7 @@ describe("e2e tests", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         verifierContractAddress: maciAddresses.verifierAddress,
         vkRegistryContractAddress: vkRegistryAddress,
         gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
@@ -474,7 +480,12 @@ describe("e2e tests", function test() {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-      await genProofsCommand({ ...genProofsCommandArgs, signer, ipfsMessageBackupFiles });
+      await generateProofs({
+        ...generateProofsArgs,
+        signer,
+        maciAddress: maciAddresses.maciAddress,
+        ipfsMessageBackupFiles,
+      });
       await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
       await verify({ ...(await verifyArgs(signer)) });
     });
@@ -500,7 +511,7 @@ describe("e2e tests", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         verifierContractAddress: maciAddresses.verifierAddress,
         vkRegistryContractAddress: vkRegistryAddress,
         gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
@@ -586,7 +597,12 @@ describe("e2e tests", function test() {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-      await genProofsCommand({ ...genProofsCommandArgs, signer, ipfsMessageBackupFiles });
+      await generateProofs({
+        ...generateProofsArgs,
+        maciAddress: maciAddresses.maciAddress,
+        signer,
+        ipfsMessageBackupFiles,
+      });
       await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
       await verify({ ...(await verifyArgs(signer)) });
     });
@@ -611,7 +627,7 @@ describe("e2e tests", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         verifierContractAddress: maciAddresses.verifierAddress,
         vkRegistryContractAddress: vkRegistryAddress,
         gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
@@ -675,7 +691,11 @@ describe("e2e tests", function test() {
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-      const tallyFileData = await genProofsCommand({ ...genProofsCommandArgs, signer });
+      const { tallyData: tallyFileData } = await generateProofs({
+        ...generateProofsArgs,
+        maciAddress: maciAddresses.maciAddress,
+        signer,
+      });
       await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
       await verify({ ...(await verifyArgs(signer)), tallyData: tallyFileData });
     });
@@ -701,7 +721,7 @@ describe("e2e tests", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         verifierContractAddress: maciAddresses.verifierAddress,
         vkRegistryContractAddress: vkRegistryAddress,
         gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
@@ -819,7 +839,12 @@ describe("e2e tests", function test() {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-      const tallyFileData = await genProofsCommand({ ...genProofsCommandArgs, signer, ipfsMessageBackupFiles });
+      const { tallyData: tallyFileData } = await generateProofs({
+        ...generateProofsArgs,
+        maciAddress: maciAddresses.maciAddress,
+        signer,
+        ipfsMessageBackupFiles,
+      });
       await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
       await verify({ ...(await verifyArgs(signer)), tallyData: tallyFileData });
     });
@@ -845,7 +870,7 @@ describe("e2e tests", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         verifierContractAddress: maciAddresses.verifierAddress,
         vkRegistryContractAddress: vkRegistryAddress,
         gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
@@ -950,7 +975,12 @@ describe("e2e tests", function test() {
       await timeTravel({ ...timeTravelArgs, signer });
       // generate proofs
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-      const tallyFileData = await genProofsCommand({ ...genProofsCommandArgs, signer, ipfsMessageBackupFiles });
+      const { tallyData: tallyFileData } = await generateProofs({
+        ...generateProofsArgs,
+        maciAddress: maciAddresses.maciAddress,
+        signer,
+        ipfsMessageBackupFiles,
+      });
       await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
       await verify({ ...(await verifyArgs(signer)), tallyData: tallyFileData });
       await clean();
@@ -966,7 +996,7 @@ describe("e2e tests", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         verifierContractAddress: maciAddresses.verifierAddress,
         vkRegistryContractAddress: vkRegistryAddress,
         gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
@@ -1109,7 +1139,13 @@ describe("e2e tests", function test() {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ maciAddress: maciAddresses.maciAddress, pollId: 1n, signer });
-      await genProofsCommand({ ...genProofsCommandArgs, pollId: 1n, signer, ipfsMessageBackupFiles });
+      await generateProofs({
+        ...generateProofsArgs,
+        pollId: 1n,
+        maciAddress: maciAddresses.maciAddress,
+        signer,
+        ipfsMessageBackupFiles,
+      });
       await proveOnChain({ ...proveOnChainArgs, pollId: 1n, maciAddress: maciAddresses.maciAddress, signer });
       await verify({ ...(await verifyArgs(signer)), pollId: 1n });
     });
@@ -1145,7 +1181,7 @@ describe("e2e tests", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         verifierContractAddress: maciAddresses.verifierAddress,
         vkRegistryContractAddress: vkRegistryAddress,
         gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
@@ -1251,7 +1287,12 @@ describe("e2e tests", function test() {
       await timeTravel({ ...timeTravelArgs, signer });
       // generate proofs
       await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-      await genProofsCommand({ ...genProofsCommandArgs, signer, ipfsMessageBackupFiles });
+      await generateProofs({
+        ...generateProofsArgs,
+        maciAddress: maciAddresses.maciAddress,
+        signer,
+        ipfsMessageBackupFiles,
+      });
       await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
       await verify({ ...(await verifyArgs(signer)) });
       await clean();
@@ -1267,7 +1308,7 @@ describe("e2e tests", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         verifierContractAddress: maciAddresses.verifierAddress,
         vkRegistryContractAddress: vkRegistryAddress,
         gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
@@ -1280,7 +1321,7 @@ describe("e2e tests", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         verifierContractAddress: maciAddresses.verifierAddress,
         vkRegistryContractAddress: vkRegistryAddress,
         gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
@@ -1478,7 +1519,13 @@ describe("e2e tests", function test() {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
       await mergeSignups({ maciAddress: maciAddresses.maciAddress, pollId: 1n, signer });
-      const tallyData = await genProofsCommand({ ...genProofsCommandArgs, pollId: 1n, signer, ipfsMessageBackupFiles });
+      const { tallyData } = await generateProofs({
+        ...generateProofsArgs,
+        pollId: 1n,
+        maciAddress: maciAddresses.maciAddress,
+        signer,
+        ipfsMessageBackupFiles,
+      });
       await proveOnChain({
         ...proveOnChainArgs,
         pollId: 1n,
@@ -1497,7 +1544,13 @@ describe("e2e tests", function test() {
     it("should complete the third poll", async () => {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await mergeSignups({ maciAddress: maciAddresses.maciAddress, pollId: 2n, signer });
-      const tallyData = await genProofsCommand({ ...genProofsCommandArgs, pollId: 2n, signer, ipfsMessageBackupFiles });
+      const { tallyData } = await generateProofs({
+        ...generateProofsArgs,
+        pollId: 2n,
+        maciAddress: maciAddresses.maciAddress,
+        signer,
+        ipfsMessageBackupFiles,
+      });
       await proveOnChain({
         ...proveOnChainArgs,
         pollId: 2n,
@@ -1539,7 +1592,7 @@ describe("e2e tests", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciContractAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciAddress,
         verifierContractAddress: maciAddresses.verifierAddress,
         vkRegistryContractAddress: vkRegistryAddress,
         gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
@@ -1631,9 +1684,10 @@ describe("e2e tests", function test() {
         signer,
         ipfsMessageBackupFiles,
       });
-      await genProofsCommand({
-        ...genProofsCommandArgs,
+      await generateProofs({
+        ...generateProofsArgs,
         stateFile: stateOutPath,
+        maciAddress: maciAddresses.maciAddress,
         signer,
         ipfsMessageBackupFiles,
       });

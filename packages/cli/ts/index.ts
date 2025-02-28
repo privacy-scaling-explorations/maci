@@ -2,7 +2,6 @@
 
 import { Command } from "@commander-js/extra-typings";
 import { ZeroAddress, type Signer } from "ethers";
-import { VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { PubKey } from "maci-domainobjs";
 import {
   generateTallyCommitments,
@@ -23,22 +22,19 @@ import {
   extractVkToFile,
   generateMaciState,
   proveOnChain,
-  type ITallyData,
   publish,
   MACI__factory as MACIFactory,
-  deployFreeForAllSignUpGatekeeper,
-  deployConstantInitialVoiceCreditProxy,
-  contractExists,
   deployPoll,
+  generateProofs,
+  type ITallyData,
 } from "maci-sdk";
 
 import fs from "fs";
 import path from "path";
 
 import "./cliInit";
-import { deployVkRegistryContract, deploy, showContracts, timeTravel, fundWallet, genProofsCommand } from "./commands";
+import { deployVkRegistryContract, deploy, showContracts, timeTravel, fundWallet } from "./commands";
 import {
-  DEFAULT_INITIAL_VOICE_CREDITS,
   DEFAULT_IVCP_DATA,
   DEFAULT_SG_DATA,
   banner,
@@ -51,7 +47,7 @@ import {
   readContractAddress,
   success,
 } from "./utils";
-import { DEFAULT_VOTE_OPTIONS } from "./utils/defaults";
+import { DEFAULT_INITIAL_VOICE_CREDITS, DEFAULT_VOTE_OPTIONS } from "./utils/defaults";
 
 // set the description version and name of the cli tool
 const { description, version, name } = JSON.parse(
@@ -236,84 +232,19 @@ program
 
       const network = await signer.provider?.getNetwork();
 
-      const vkRegistryContractAddress = await readContractAddress("VkRegistry", network?.name);
-      if (!vkRegistryContractAddress && !cmdObj.vkRegistryAddress) {
-        logError("Please provide a VkRegistry contract address");
-      }
-
-      const vkRegistry = cmdObj.vkRegistryAddress || vkRegistryContractAddress;
-
-      const maciContractAddress = await readContractAddress("MACI", network?.name);
-      if (!maciContractAddress && !cmdObj.maciAddress) {
-        logError("Please provide a MACI contract address");
-      }
-
-      const maci = cmdObj.maciAddress || maciContractAddress;
-
+      const vkRegistry = cmdObj.vkRegistryAddress || (await readContractAddress("VkRegistry", network?.name));
+      const maci = cmdObj.maciAddress || (await readContractAddress("MACI", network?.name));
       const maciContract = MACIFactory.connect(maci, signer);
 
       const nextPollId = await maciContract.nextPollId();
 
-      // check if we have a signupGatekeeper already deployed or passed as arg
-      let signupGatekeeperContractAddress =
+      const signupGatekeeperContractAddress =
         cmdObj.signupGatekeeper ||
         (await readContractAddress(`SignUpGatekeeper-${nextPollId.toString()}`, network?.name));
 
-      if (!signupGatekeeperContractAddress) {
-        const contract = await deployFreeForAllSignUpGatekeeper(signer, true);
-        signupGatekeeperContractAddress = await contract.getAddress();
-      }
-
-      let initialVoiceCreditProxyAddress =
+      const initialVoiceCreditProxyAddress =
         cmdObj.initialVoiceCreditsProxy || (await readContractAddress("VoiceCreditProxy", network?.name));
-      if (!initialVoiceCreditProxyAddress) {
-        const contract = await deployConstantInitialVoiceCreditProxy(
-          cmdObj.initialVoiceCredits ?? DEFAULT_INITIAL_VOICE_CREDITS,
-          signer,
-          true,
-        );
-        initialVoiceCreditProxyAddress = await contract.getAddress();
-      }
 
-      // required arg -> poll duration
-      if (cmdObj.start < Math.floor(Date.now() / 1000)) {
-        logError("Start date cannot be in the past");
-      }
-
-      if (cmdObj.end <= cmdObj.start) {
-        logError("End date cannot be before start date");
-      }
-
-      // required arg -> int state tree depth
-      if (cmdObj.intStateTreeDepth <= 0) {
-        logError("Int state tree depth cannot be <= 0");
-      }
-
-      // required arg -> message tree depth
-      if (cmdObj.msgBatchSize <= 0) {
-        logError("Message batch size cannot be <= 0");
-      }
-      // required arg -> vote option tree depth
-      if (cmdObj.voteOptionTreeDepth <= 0) {
-        logError("Vote option tree depth cannot be <= 0");
-      }
-
-      // ensure the vote option parameter is valid (if passed)
-      if (cmdObj.voteOptions && cmdObj.voteOptions >= VOTE_OPTION_TREE_ARITY ** cmdObj.voteOptionTreeDepth) {
-        logError("Vote options cannot be greater than the number of leaves in the vote option tree");
-      }
-
-      // we check that the contract is deployed
-      if (!(await contractExists(signer.provider!, maci))) {
-        logError("MACI contract does not exist");
-      }
-
-      // we check that the coordinator's public key is valid
-      if (!PubKey.isValidSerializedPubKey(cmdObj.pubkey)) {
-        logError("Invalid MACI public key");
-      }
-
-      // get the verifier contract
       const verifierContractAddress = await readContractAddress("Verifier", network?.name);
 
       const {
@@ -324,13 +255,14 @@ program
         initialVoiceCreditProxyContractAddress,
         gatekeeperContractAddress,
       } = await deployPoll({
+        initialVoiceCredits: cmdObj.initialVoiceCredits || DEFAULT_INITIAL_VOICE_CREDITS,
         pollStartTimestamp: cmdObj.start,
         pollEndTimestamp: cmdObj.end,
         intStateTreeDepth: cmdObj.intStateTreeDepth,
         messageBatchSize: cmdObj.msgBatchSize,
         voteOptionTreeDepth: cmdObj.voteOptionTreeDepth,
         coordinatorPubKey: PubKey.deserialize(cmdObj.pubkey),
-        maciContractAddress: maci,
+        maciAddress: maci,
         vkRegistryContractAddress: vkRegistry,
         relayers: cmdObj.relayers ?? [ZeroAddress],
         mode: cmdObj.useQuadraticVoting ? EMode.QV : EMode.NON_QV,
@@ -853,40 +785,70 @@ program
     "Backup files for ipfs messages (name format: ipfsHash1.json, ipfsHash2.json, ..., ipfsHashN.json)",
     (value: string | undefined) => value?.split(/\s*,\s*/),
   )
-  .action(async (cmdObj) => {
-    try {
-      const signer = await getSigner();
+  .action(
+    async ({
+      quiet,
+      maciAddress,
+      pollId,
+      ipfsMessageBackupFiles,
+      stateFile,
+      startBlock,
+      endBlock,
+      blocksPerBatch,
+      privkey,
+      transactionHash,
+      output,
+      tallyFile,
+      tallyZkey,
+      tallyWitnessgen,
+      tallyWasm,
+      processZkey,
+      processWitnessgen,
+      processWasm,
+      useQuadraticVoting,
+      tallyWitnessdat,
+      processWitnessdat,
+      wasm,
+      rapidsnark,
+    }) => {
+      try {
+        banner(quiet);
+        const signer = await getSigner();
 
-      await genProofsCommand({
-        outputDir: cmdObj.output,
-        tallyFile: cmdObj.tallyFile,
-        tallyZkey: cmdObj.tallyZkey,
-        processZkey: cmdObj.processZkey,
-        pollId: cmdObj.pollId,
-        rapidsnark: cmdObj.rapidsnark,
-        processWitgen: cmdObj.processWitnessgen,
-        processDatFile: cmdObj.processWitnessdat,
-        tallyWitgen: cmdObj.tallyWitnessgen,
-        tallyDatFile: cmdObj.tallyWitnessdat,
-        coordinatorPrivKey: cmdObj.privkey,
-        maciAddress: cmdObj.maciAddress,
-        transactionHash: cmdObj.transactionHash,
-        processWasm: cmdObj.processWasm,
-        tallyWasm: cmdObj.tallyWasm,
-        useWasm: cmdObj.wasm,
-        stateFile: cmdObj.stateFile,
-        startBlock: cmdObj.startBlock,
-        endBlock: cmdObj.endBlock,
-        blocksPerBatch: cmdObj.blocksPerBatch,
-        useQuadraticVoting: cmdObj.useQuadraticVoting,
-        ipfsMessageBackupFiles: cmdObj.ipfsMessageBackupFiles,
-        quiet: cmdObj.quiet,
-        signer,
-      });
-    } catch (error) {
-      program.error((error as Error).message, { exitCode: 1 });
-    }
-  });
+        const network = await signer.provider?.getNetwork();
+        const maciContractAddress = await readContractAddress("MACI", network?.name);
+        const coordinatorPrivateKey = privkey || (await promptSensitiveValue("Insert your MACI private key"));
+
+        await generateProofs({
+          maciAddress: maciAddress || maciContractAddress,
+          coordinatorPrivateKey,
+          pollId: Number(pollId),
+          ipfsMessageBackupFiles,
+          stateFile: stateFile || "",
+          transactionHash: transactionHash || "",
+          startBlock,
+          endBlock,
+          blocksPerBatch,
+          signer,
+          outputDir: output,
+          tallyFile,
+          tallyZkey,
+          tallyWitgen: tallyWitnessgen,
+          tallyWasm,
+          processZkey,
+          processWitgen: processWitnessgen,
+          processWasm,
+          useQuadraticVoting,
+          tallyDatFile: tallyWitnessdat,
+          processDatFile: processWitnessdat,
+          useWasm: wasm,
+          rapidsnark,
+        });
+      } catch (error) {
+        program.error((error as Error).message, { exitCode: 1 });
+      }
+    },
+  );
 program
   .command("genLocalState")
   .description("generate a local MACI state from the smart contracts events")
@@ -968,6 +930,6 @@ if (require.main === module) {
 }
 
 // export everything so we can use in other packages
-export { deploy, deployVkRegistryContract, fundWallet, genProofsCommand, timeTravel } from "./commands";
+export { deploy, deployVkRegistryContract, fundWallet, timeTravel } from "./commands";
 
-export type { DeployedContracts, PollContracts, GenProofsArgs, DeployArgs } from "./utils";
+export type { DeployedContracts, PollContracts, DeployArgs } from "./utils";

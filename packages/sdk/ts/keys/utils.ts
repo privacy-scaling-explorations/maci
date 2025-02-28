@@ -42,7 +42,10 @@ export const getAllOnChainVks = async ({
  * @param vk - the local verifying key
  * @returns whether they are equal or not
  */
-export const compareVks = (vkOnChain: IVkContractParams, vk?: VerifyingKey): boolean => {
+export const compareVks = (
+  vkOnChain: VerifyingKey | IVkContractParams,
+  vk?: VerifyingKey | IVkContractParams,
+): boolean => {
   if (!vk) {
     throw new Error("Verifying key is not provided");
   }

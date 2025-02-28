@@ -1,6 +1,14 @@
-import { MACI__factory as MACIFactory } from "maci-contracts";
+import {
+  deployConstantInitialVoiceCreditProxy,
+  deployFreeForAllSignUpGatekeeper,
+  MACI__factory as MACIFactory,
+} from "maci-contracts";
+import { VOTE_OPTION_TREE_ARITY } from "maci-core";
+import { PubKey } from "maci-domainobjs";
 
 import type { IDeployPollArgs, IPollContractsData } from "./types";
+
+import { contractExists } from "../utils";
 
 /**
  * Deploy a poll
@@ -8,7 +16,7 @@ import type { IDeployPollArgs, IPollContractsData } from "./types";
  * @returns The addresses of the deployed contracts
  */
 export const deployPoll = async ({
-  maciContractAddress,
+  maciAddress,
   pollStartTimestamp,
   pollEndTimestamp,
   intStateTreeDepth,
@@ -22,9 +30,72 @@ export const deployPoll = async ({
   initialVoiceCreditProxyContractAddress,
   relayers,
   voteOptions,
+  initialVoiceCredits,
   signer,
 }: IDeployPollArgs): Promise<IPollContractsData> => {
-  const maciContract = MACIFactory.connect(maciContractAddress, signer);
+  if (!vkRegistryContractAddress) {
+    throw new Error("Please provide a VkRegistry contract address");
+  }
+
+  if (!maciAddress) {
+    throw new Error("Please provide a MACI contract address");
+  }
+
+  const isMaciExists = await contractExists(signer.provider!, maciAddress);
+
+  if (!isMaciExists) {
+    throw new Error("MACI contract does not exist");
+  }
+
+  const maciContract = MACIFactory.connect(maciAddress, signer);
+
+  // check if we have a signupGatekeeper already deployed or passed as arg
+  let signupGatekeeperContractAddress = gatekeeperContractAddress;
+
+  if (!signupGatekeeperContractAddress) {
+    const contract = await deployFreeForAllSignUpGatekeeper(signer, true);
+    signupGatekeeperContractAddress = await contract.getAddress();
+  }
+
+  let initialVoiceCreditProxyAddress = initialVoiceCreditProxyContractAddress;
+
+  if (!initialVoiceCreditProxyAddress) {
+    const contract = await deployConstantInitialVoiceCreditProxy(initialVoiceCredits, signer, true);
+    initialVoiceCreditProxyAddress = await contract.getAddress();
+  }
+
+  // required arg -> poll duration
+  if (pollStartTimestamp < Math.floor(Date.now() / 1000)) {
+    throw new Error("Start date cannot be in the past");
+  }
+
+  if (pollEndTimestamp <= pollStartTimestamp) {
+    throw new Error("End date cannot be before start date");
+  }
+
+  // required arg -> int state tree depth
+  if (intStateTreeDepth <= 0) {
+    throw new Error("Int state tree depth cannot be <= 0");
+  }
+
+  // required arg -> message tree depth
+  if (messageBatchSize <= 0) {
+    throw new Error("Message batch size cannot be <= 0");
+  }
+  // required arg -> vote option tree depth
+  if (voteOptionTreeDepth <= 0) {
+    throw new Error("Vote option tree depth cannot be <= 0");
+  }
+
+  // ensure the vote option parameter is valid (if passed)
+  if (voteOptions && voteOptions > VOTE_OPTION_TREE_ARITY ** voteOptionTreeDepth) {
+    throw new Error("Vote options cannot be greater than the number of leaves in the vote option tree");
+  }
+
+  // we check that the coordinator's public key is valid
+  if (!PubKey.isValidSerializedPubKey(coordinatorPubKey.serialize())) {
+    throw new Error("Invalid MACI public key");
+  }
 
   const tx = await maciContract.deployPoll({
     startDate: pollStartTimestamp,

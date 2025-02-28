@@ -1,7 +1,4 @@
-import type { Signer } from "ethers";
-import type { CircuitInputs } from "maci-core";
-import type { SnarkProof } from "maci-sdk";
-import type { Groth16Proof, PublicSignals } from "snarkjs";
+import type { BigNumberish, Signer } from "ethers";
 
 export interface DeployedContracts {
   maciAddress: string;
@@ -21,18 +18,6 @@ export interface PollContracts {
   tally: string;
   signupGatekeeper: string;
 }
-
-/**
- * Proof interface for cli commands
- */
-export interface Proof {
-  proof: SnarkProof | Groth16Proof;
-  circuitInputs: CircuitInputs;
-  publicInputs: PublicSignals;
-}
-
-// snark js related interfaces
-export type BigNumberish = number | string | bigint;
 
 export interface ISnarkJSVerificationKey {
   protocol: BigNumberish;
@@ -99,131 +84,6 @@ export interface DeployArgs {
    * Whether to log the output
    */
   quiet?: boolean;
-}
-
-/**
- * Interface for the arguments to the genProof command
- */
-export interface GenProofsArgs {
-  /**
-   * The directory to store the proofs
-   */
-  outputDir: string;
-
-  /**
-   * The file to store the tally proof
-   */
-  tallyFile: string;
-
-  /**
-   * The path to the tally zkey file
-   */
-  tallyZkey: string;
-
-  /**
-   * The path to the process zkey file
-   */
-  processZkey: string;
-
-  /**
-   * The id of the poll
-   */
-  pollId: bigint;
-
-  /**
-   * A signer object
-   */
-  signer: Signer;
-
-  /**
-   * The path to the rapidsnark binary
-   */
-  rapidsnark?: string;
-
-  /**
-   * The path to the process witnessgen binary
-   */
-  processWitgen?: string;
-
-  /**
-   * The path to the process dat file
-   */
-  processDatFile?: string;
-
-  /**
-   * The path to the tally witnessgen binary
-   */
-  tallyWitgen?: string;
-
-  /**
-   * The path to the tally dat file
-   */
-  tallyDatFile?: string;
-
-  /**
-   * The coordinator's private key
-   */
-  coordinatorPrivKey?: string;
-
-  /**
-   * The address of the MACI contract
-   */
-  maciAddress?: string;
-
-  /**
-   * The transaction hash of the first transaction
-   */
-  transactionHash?: string;
-
-  /**
-   * The path to the process wasm file
-   */
-  processWasm?: string;
-
-  /**
-   * The path to the tally wasm file
-   */
-  tallyWasm?: string;
-
-  /**
-   * Whether to use wasm or rapidsnark
-   */
-  useWasm?: boolean;
-
-  /**
-   * The file with the serialized maci state
-   */
-  stateFile?: string;
-
-  /**
-   * The block number to start fetching logs from
-   */
-  startBlock?: number;
-
-  /**
-   * The number of blocks to fetch logs from
-   */
-  blocksPerBatch?: number;
-
-  /**
-   * The block number to stop fetching logs from
-   */
-  endBlock?: number;
-
-  /**
-   * Whether to log the output
-   */
-  quiet?: boolean;
-
-  /**
-   * Whether to use quadratic voting or not
-   */
-  useQuadraticVoting?: boolean;
-
-  /**
-   * Backup files for ipfs messages (name format: ipfsHash.json)
-   */
-  ipfsMessageBackupFiles?: string[];
 }
 
 /**

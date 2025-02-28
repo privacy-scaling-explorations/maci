@@ -18,7 +18,7 @@ import { homedir } from "os";
 import type { Signer } from "ethers";
 
 import { DeployArgs, TimeTravelArgs, readJSONFile } from "../ts/utils";
-import { DEFAULT_VOTE_OPTIONS } from "../ts/utils/defaults";
+import { DEFAULT_INITIAL_VOICE_CREDITS, DEFAULT_VOTE_OPTIONS } from "../ts/utils/defaults";
 
 export const STATE_TREE_DEPTH = 10;
 export const INT_STATE_TREE_DEPTH = 1;
@@ -178,7 +178,7 @@ export const deployPollArgs: Omit<
   | "signer"
   | "pollStartTimestamp"
   | "pollEndTimestamp"
-  | "maciContractAddress"
+  | "maciAddress"
   | "verifierContractAddress"
   | "vkRegistryContractAddress"
   | "gatekeeperContractAddress"
@@ -188,6 +188,7 @@ export const deployPollArgs: Omit<
   messageBatchSize: MESSAGE_BATCH_SIZE,
   voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
   coordinatorPubKey: coordinatorKeypair.pubKey,
+  initialVoiceCredits: DEFAULT_INITIAL_VOICE_CREDITS,
   mode: EMode.QV,
   voteOptions: DEFAULT_VOTE_OPTIONS,
 };

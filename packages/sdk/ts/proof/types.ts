@@ -1,4 +1,4 @@
-import type { Signer } from "ethers";
+import type { BigNumberish, Signer } from "ethers";
 import type { Groth16Proof, SnarkProof } from "maci-contracts";
 import type { CircuitInputs } from "maci-core";
 import type { PublicSignals } from "snarkjs";
@@ -75,24 +75,14 @@ export interface IGenerateProofsArgs {
   signer: Signer;
 
   /**
-   * The network name
-   */
-  networkName: string;
-
-  /**
-   * The chain id
-   */
-  chainId: string;
-
-  /**
    * The maci contract address
    */
-  maciContractAddress: string;
+  maciAddress: string;
 
   /**
    * The poll id
    */
-  pollId: number;
+  pollId: BigNumberish;
 
   /**
    * The ipfs message backup files
@@ -102,7 +92,7 @@ export interface IGenerateProofsArgs {
   /**
    * The state file
    */
-  stateFile: string;
+  stateFile?: string;
 
   /**
    * The transaction hash
@@ -130,9 +120,24 @@ export interface IGenerateProofsArgs {
   rapidsnark?: string;
 
   /**
+   * The path to the process dat file
+   */
+  processDatFile?: string;
+
+  /**
+   * The path to the tally dat file
+   */
+  tallyDatFile?: string;
+
+  /**
    * The use quadratic voting
    */
   useQuadraticVoting: boolean;
+
+  /**
+   * Whether to use wasm or rapidsnark
+   */
+  useWasm?: boolean;
 
   /**
    * The tally zkey
@@ -174,7 +179,18 @@ export interface IGenerateProofsArgs {
  * Interface for the data returned by the generateProofs function
  */
 export interface IGenerateProofsData {
+  /**
+   * Process proofs
+   */
   processProofs: IProof[];
+
+  /**
+   * Tally proofs
+   */
   tallyProofs: IProof[];
+
+  /**
+   * Tally data
+   */
   tallyData: ITallyData;
 }

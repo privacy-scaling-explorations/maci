@@ -1,9 +1,12 @@
-import { MACI__factory as MACIFactory, Poll__factory as PollFactory, ProofGenerator } from "maci-contracts";
+import { ProofGenerator } from "maci-contracts";
 import { Keypair, PrivKey } from "maci-domainobjs";
 
 import fs from "fs";
 
-import { IGenerateProofsArgs, IGenerateProofsData } from "./types";
+import type { IGenerateProofsArgs, IGenerateProofsData } from "./types";
+
+import { getPollContracts } from "../poll";
+import { doesPathExist } from "../utils/files";
 
 /**
  * Generate proofs for the message processing and tally calculations
@@ -14,9 +17,7 @@ export const generateProofs = async ({
   outputDir,
   coordinatorPrivateKey,
   signer,
-  networkName,
-  chainId,
-  maciContractAddress,
+  maciAddress,
   pollId,
   ipfsMessageBackupFiles,
   stateFile,
@@ -32,8 +33,66 @@ export const generateProofs = async ({
   processZkey,
   processWitgen,
   processWasm,
+  processDatFile,
+  tallyDatFile,
   tallyFile,
+  useWasm,
 }: IGenerateProofsArgs): Promise<IGenerateProofsData> => {
+  // differentiate whether we are using wasm or rapidsnark
+  if (useWasm) {
+    // if no rapidsnark then we assume we go with wasm
+    // so we expect those arguments
+    if (!processWasm) {
+      throw new Error("Please specify the process wasm file location");
+    }
+
+    if (!tallyWasm) {
+      throw new Error("Please specify the tally wasm file location");
+    }
+
+    const wasmResult = doesPathExist([processWasm, tallyWasm]);
+
+    if (!wasmResult[0]) {
+      throw new Error(`Could not find ${wasmResult[1]}.`);
+    }
+  } else {
+    if (!rapidsnark) {
+      throw new Error("Please specify the rapidsnark file location");
+    }
+
+    if (!processWitgen) {
+      throw new Error("Please specify the process witgen file location");
+    }
+
+    if (!tallyWitgen) {
+      throw new Error("Please specify the tally witgen file location");
+    }
+
+    const witgenResult = doesPathExist([rapidsnark, processWitgen, tallyWitgen, processDatFile!, tallyDatFile!]);
+
+    if (!witgenResult[0]) {
+      throw new Error(`Could not find ${witgenResult[1]}.`);
+    }
+  }
+
+  // check if zkeys were provided
+  const zkResult = doesPathExist([processZkey, tallyZkey]);
+
+  if (!zkResult[0]) {
+    throw new Error(`Could not find ${zkResult[1]}.`);
+  }
+
+  const network = await signer.provider?.getNetwork();
+
+  if (!maciAddress) {
+    throw new Error("Please provide a MACI contract address");
+  }
+
+  // the coordinator's MACI private key
+  if (!PrivKey.isValidSerializedPrivKey(coordinatorPrivateKey)) {
+    throw new Error("Invalid MACI private key");
+  }
+
   // if we do not have the output directory just create it
   const isOutputDirExists = fs.existsSync(outputDir);
 
@@ -45,12 +104,20 @@ export const generateProofs = async ({
   const maciPrivateKey = PrivKey.deserialize(coordinatorPrivateKey);
   const coordinatorKeypair = new Keypair(maciPrivateKey);
 
-  const maciContract = MACIFactory.connect(maciContractAddress, signer);
+  const {
+    poll: pollContract,
+    maci: maciContract,
+    tally: tallyContract,
+  } = await getPollContracts({
+    maciAddress,
+    pollId,
+    signer,
+  });
 
-  const pollContracts = await maciContract.polls(pollId);
-  const tallyContractAddress = pollContracts.tally;
-  const pollContract = PollFactory.connect(pollContracts.poll, signer);
-  const isStateAqMerged = await pollContract.stateMerged();
+  const [isStateAqMerged, tallyContractAddress] = await Promise.all([
+    pollContract.stateMerged(),
+    tallyContract.getAddress(),
+  ]);
 
   // Check that the state and message trees have been merged
   if (!isStateAqMerged) {
@@ -83,7 +150,7 @@ export const generateProofs = async ({
 
   const proofGenerator = new ProofGenerator({
     poll: foundPoll,
-    maciContractAddress,
+    maciContractAddress: maciAddress,
     tallyContractAddress,
     rapidsnark,
     tally: {
@@ -102,7 +169,10 @@ export const generateProofs = async ({
   });
 
   const processProofs = await proofGenerator.generateMpProofs();
-  const { proofs: tallyProofs, tallyData } = await proofGenerator.generateTallyProofs(networkName, chainId);
+  const { proofs: tallyProofs, tallyData } = await proofGenerator.generateTallyProofs(
+    network?.name ?? "",
+    network?.chainId.toString() ?? "0",
+  );
 
   return { processProofs, tallyProofs, tallyData };
 };

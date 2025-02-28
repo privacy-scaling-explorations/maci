@@ -18,14 +18,11 @@ export type {
   DeployVkRegistryArgs,
   DeployArgs,
   DeployedContracts,
-  GenProofsArgs,
-  Proof,
   ISnarkJSVerificationKey,
   FundWalletArgs,
   TimeTravelArgs,
   PollContracts,
 } from "./interfaces";
-export { compareVks } from "./vks";
 export { delay } from "./time";
 export {
   readJSONFile,
@@ -36,6 +33,3 @@ export {
 } from "./storage";
 export { logRed, logGreen, logYellow, logMagenta, logError, info, success, warning, error } from "./theme";
 export { promptSensitiveValue } from "./prompts";
-export { asHex } from "./formatting";
-export { validateSalt } from "./salt";
-export { verifyPerVOSpentVoiceCredits, verifyTallyResults } from "./verifiers";
