@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { Message, Keypair } from "maci-domainobjs";
 
+import { error, logGreen, logRed, success } from "../../ts/logger";
 import { MACI, Poll } from "../../typechain-types";
 
 import { Deployment } from "./Deployment";
@@ -46,19 +47,19 @@ export async function publishBatch(
       const tx = await pollContract.publishMessageBatch(finalMessageBatch, finalPubKeyBatch);
       // eslint-disable-next-line no-await-in-loop
       const receipt = await tx.wait();
-      console.log(`Successfully published batch of ${optimalBatchSize} messages`);
-      console.log(`Gas used: ${receipt?.gasUsed.toString()} wei`);
-      console.log(`Tx: ${tx.hash}`);
+      logGreen({ text: success(`Successfully published batch of ${optimalBatchSize} messages`) });
+      logGreen({ text: success(`Gas used: ${receipt?.gasUsed.toString()} wei`) });
+      logGreen({ text: success(`Tx: ${tx.hash}`) });
       break; // If successful, we've found the largest working batch size
-    } catch (error) {
+    } catch (err) {
       // If this size doesn't work, reduce by 1 and try again
       optimalBatchSize -= 1;
     }
   }
 
   if (optimalBatchSize > 0) {
-    console.log(`Found optimal batch size: ${optimalBatchSize}`);
+    logGreen({ text: success(`Found optimal batch size: ${optimalBatchSize}`) });
   } else {
-    console.error("Unable to publish even a single message");
+    logRed({ text: error("Unable to publish even a single message") });
   }
 }

@@ -47,6 +47,7 @@ export {
 } from "../tasks/helpers/types";
 export { linkPoseidonLibraries } from "../tasks/helpers/abi";
 export { IpfsService } from "./ipfs";
+export { logGreen, logMagenta, logRed, logYellow, info, success, warning, error } from "./logger";
 
 export type {
   IVerifyingKeyStruct,

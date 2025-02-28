@@ -3,13 +3,12 @@ import {
   deployFreeForAllSignUpGatekeeper,
   deployVerifier,
   deployMaci,
+  logGreen,
+  success,
 } from "maci-sdk";
 
 import {
   banner,
-  logError,
-  logGreen,
-  success,
   readContractAddresses,
   storeContractAddresses,
   DEFAULT_INITIAL_VOICE_CREDITS,
@@ -37,7 +36,7 @@ export const deploy = async ({
   banner(quiet);
 
   if (initialVoiceCreditsProxyAddress && initialVoiceCredits) {
-    logError("Please provide either an initialVoiceCreditProxyAddress or initialVoiceCredits, not both");
+    throw new Error("Please provide either an initialVoiceCreditProxyAddress or initialVoiceCredits, not both");
   }
 
   const network = await signer.provider?.getNetwork();
@@ -122,7 +121,7 @@ export const deploy = async ({
     network?.name,
   );
 
-  logGreen(quiet, success(`MACI deployed at:  ${maciContractAddress}`));
+  logGreen({ quiet, text: success(`MACI deployed at:  ${maciContractAddress}`) });
 
   // return all addresses
   return {

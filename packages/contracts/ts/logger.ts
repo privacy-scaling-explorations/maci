@@ -1,5 +1,6 @@
+import type { ILogArgs } from "./types";
+
 /* eslint-disable no-console */
-// Description: This file contains the theme for the CLI
 const RESET = "\x1b[0m";
 const RED = "\x1b[31m";
 const GREEN = "\x1b[32m";
@@ -8,10 +9,9 @@ const MAGENTA = "\x1b[35m";
 
 /**
  * Print red text to the console (fancy)
- * @param quiet - whether to print the text or not
- * @param text - the text to print
+ * @param args log arguments
  */
-export function logRed(quiet: boolean, text: string): void {
+export function logRed({ quiet = process.env.NODE_ENV === "test", text }: ILogArgs): void {
   if (!quiet) {
     console.log(RED + text + RESET);
   }
@@ -19,10 +19,9 @@ export function logRed(quiet: boolean, text: string): void {
 
 /**
  * Print green text to the console (fancy)
- * @param quiet - whether to print the text or not
- * @param text - the text to print
+ * @param args log arguments
  */
-export function logGreen(quiet: boolean, text: string): void {
+export function logGreen({ quiet = process.env.NODE_ENV === "test", text }: ILogArgs): void {
   if (!quiet) {
     console.log(GREEN + text + RESET);
   }
@@ -30,10 +29,9 @@ export function logGreen(quiet: boolean, text: string): void {
 
 /**
  * Print yellow text to the console (fancy)
- * @param quiet - whether to print the text or not
- * @param text - the text to print
+ * @param args log arguments
  */
-export function logYellow(quiet: boolean, text: string): void {
+export function logYellow({ quiet = process.env.NODE_ENV === "test", text }: ILogArgs): void {
   if (!quiet) {
     console.log(YELLOW + text + RESET);
   }
@@ -41,10 +39,9 @@ export function logYellow(quiet: boolean, text: string): void {
 
 /**
  * Print magenta text to the console (fancy)
- * @param quiet - whether to print the text or not
- * @param text - the text to print
+ * @param args log arguments
  */
-export function logMagenta(quiet: boolean, text: string): void {
+export function logMagenta({ quiet = process.env.NODE_ENV === "test", text }: ILogArgs): void {
   if (!quiet) {
     console.log(MAGENTA + text + RESET);
   }
@@ -77,11 +74,3 @@ export const warning = (text: string): string => `[!] ${text}`;
  * @returns the text with a prefix
  */
 export const error = (text: string): string => `[✗] ${text}`;
-
-/**
- * Log an error and throw an error
- * @param text
- */
-export function logError(text: string): void {
-  throw new Error(error(text));
-}

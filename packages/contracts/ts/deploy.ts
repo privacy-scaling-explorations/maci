@@ -35,7 +35,7 @@ import {
 } from "../typechain-types";
 
 import { genEmptyBallotRoots } from "./genEmptyBallotRoots";
-import { log } from "./utils";
+import { logMagenta } from "./logger";
 
 /**
  * Creates contract factory from abi and bytecode
@@ -67,7 +67,7 @@ export const deployContract = async <T extends BaseContract>(
   quiet = false,
   ...args: unknown[]
 ): Promise<T> => {
-  log(`Deploying ${contractName}`, quiet);
+  logMagenta({ text: `Deploying ${contractName}`, quiet });
   const hre = await import("hardhat");
   const deployment = Deployment.getInstance({ hre });
   deployment.setHre(hre);

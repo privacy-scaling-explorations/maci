@@ -1,6 +1,7 @@
 import type { SignUpGatekeeper, MACI } from "../../../typechain-types";
 
 import { genEmptyBallotRoots } from "../../../ts/genEmptyBallotRoots";
+import { info, logGreen } from "../../../ts/logger";
 import { EDeploySteps } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
@@ -23,7 +24,7 @@ deployment.deployTask(EDeploySteps.Maci, "Deploy MACI contract").then((task) =>
 
     if (incremental && maciContractAddress) {
       // eslint-disable-next-line no-console
-      console.log(`Skipping deployment of the ${EContracts.MACI} contract`);
+      logGreen({ text: info(`Skipping deployment of the ${EContracts.MACI} contract`) });
       return;
     }
 

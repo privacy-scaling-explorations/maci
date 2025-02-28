@@ -4,6 +4,7 @@ import type { IVerifyingKeyStruct } from "../../../ts/types";
 import type { VkRegistry } from "../../../typechain-types";
 
 import { EMode } from "../../../ts/constants";
+import { info, logGreen } from "../../../ts/logger";
 import { extractVk } from "../../../ts/proofs";
 import { EDeploySteps } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
@@ -25,7 +26,7 @@ deployment.deployTask(EDeploySteps.VkRegistry, "Deploy Vk Registry and set keys"
 
     if (incremental && vkRegistryContractAddress) {
       // eslint-disable-next-line no-console
-      console.log(`Skipping deployment of the ${EContracts.VkRegistry} contract`);
+      logGreen({ text: info(`Skipping deployment of the ${EContracts.VkRegistry} contract`) });
       return;
     }
 

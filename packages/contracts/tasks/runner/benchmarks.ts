@@ -2,6 +2,7 @@
 import { task } from "hardhat/config";
 import { Keypair, PCommand } from "maci-domainobjs";
 
+import { logMagenta, logRed } from "../../ts/logger";
 import { Deployment } from "../helpers/Deployment";
 import { EContracts } from "../helpers/types";
 
@@ -29,8 +30,8 @@ task("benchmark", "Run benchmarks").setAction(async (_, hre) => {
     const startBalance = await deployer.provider.getBalance(deployer);
     const maxBatchSize = 100;
 
-    console.log("======================================================================");
-    console.log(`Starting balance: ${Number(startBalance / 10n ** 12n) / 1e6}\n`);
+    logMagenta({ text: "======================================================================" });
+    logMagenta({ text: `Starting balance: ${Number(startBalance / 10n ** 12n) / 1e6}\n` });
 
     // generate a message
     const keypair = new Keypair();
@@ -46,9 +47,11 @@ task("benchmark", "Run benchmarks").setAction(async (_, hre) => {
     await publishBatch(deployment, message, keypair, maxBatchSize);
 
     const endBalance = await deployer.provider.getBalance(deployer);
-    console.log(`Ending balance: ${Number(endBalance / 10n ** 12n) / 1e6}\n`);
-    console.log("======================================================================");
+    logMagenta({ text: `Ending balance: ${Number(endBalance / 10n ** 12n) / 1e6}\n` });
+    logMagenta({ text: "======================================================================" });
   } catch (err) {
-    console.error("\n=========================================================\nERROR:", err, "\n");
+    logRed({
+      text: `\n=========================================================\nERROR: ${(err as Error).message}\n`,
+    });
   }
 });

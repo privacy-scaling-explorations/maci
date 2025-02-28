@@ -299,3 +299,18 @@ export interface IGenMaciStateFromContractArgs {
    */
   ipfsMessageBackupFiles?: string[];
 }
+
+/**
+ * Interface that represents log arguments
+ */
+export interface ILogArgs {
+  /**
+   * Text to log
+   */
+  text: string;
+
+  /**
+   * Whether to log the output
+   */
+  quiet?: boolean;
+}

@@ -1,3 +1,4 @@
+import { info, logGreen } from "../../../ts/logger";
 import { EDeploySteps } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
@@ -27,7 +28,7 @@ deployment.deployTask(EDeploySteps.Poseidon, "Deploy poseidon contracts").then((
       poseidonT6ContractAddress
     ) {
       // eslint-disable-next-line no-console
-      console.log(`Skipping deployment of the Poseidon contracts`);
+      logGreen({ text: info(`Skipping deployment of the Poseidon contracts`) });
       return;
     }
 

@@ -1,3 +1,4 @@
+import { info, logGreen } from "../../../ts/logger";
 import { EDeploySteps } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
@@ -18,7 +19,7 @@ deployment.deployTask(EDeploySteps.TallyFactory, "Deploy tally factory").then((t
 
     if (incremental && tallyFactoryContractAddress) {
       // eslint-disable-next-line no-console
-      console.log(`Skipping deployment of the ${EContracts.TallyFactory} contract`);
+      logGreen({ text: info(`Skipping deployment of the ${EContracts.TallyFactory} contract`) });
       return;
     }
 

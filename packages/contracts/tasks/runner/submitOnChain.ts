@@ -7,6 +7,7 @@ import fs from "fs";
 import type { Proof } from "../../ts/types";
 import type { VkRegistry, Verifier, MACI, Poll, MessageProcessor, Tally } from "../../typechain-types";
 
+import { logMagenta, info } from "../../ts/logger";
 import { readProofs } from "../../ts/proofs";
 import { ContractStorage } from "../helpers/ContractStorage";
 import { Deployment } from "../helpers/Deployment";
@@ -41,7 +42,7 @@ task("submitOnChain", "Command to prove the result of a poll on-chain")
 
     const startBalance = await signer.provider.getBalance(signer);
 
-    console.log("Start balance: ", Number(startBalance / 10n ** 12n) / 1e6);
+    logMagenta({ text: info(`Start balance: ${Number(startBalance / 10n ** 12n) / 1e6}`) });
 
     const maciContractAddress = storage.mustGetAddress(EContracts.MACI, network.name);
     const [maciContract, vkRegistryContract, verifierContract] = await Promise.all([
@@ -113,6 +114,6 @@ task("submitOnChain", "Command to prove the result of a poll on-chain")
 
     const endBalance = await signer.provider.getBalance(signer);
 
-    console.log("End balance: ", Number(endBalance / 10n ** 12n) / 1e6);
-    console.log("Prove expenses: ", Number((startBalance - endBalance) / 10n ** 12n) / 1e6);
+    logMagenta({ text: info(`End balance: ${Number(endBalance / 10n ** 12n) / 1e6}`) });
+    logMagenta({ text: info(`Prove expenses: ${Number((startBalance - endBalance) / 10n ** 12n) / 1e6}`) });
   });

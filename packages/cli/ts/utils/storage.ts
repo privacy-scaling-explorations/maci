@@ -1,7 +1,6 @@
 import fs from "fs";
 
 import { contractAddressesStore } from "./constants";
-import { logError } from "./theme";
 
 /**
  * Read a JSON file from disk
@@ -12,7 +11,7 @@ export const readJSONFile = async (path: string): Promise<Record<string, Record<
   const isExists = fs.existsSync(path);
 
   if (!isExists) {
-    logError(`File ${path} does not exist`);
+    throw new Error(`File ${path} does not exist`);
   }
 
   return fs.promises
