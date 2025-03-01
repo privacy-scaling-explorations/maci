@@ -16,6 +16,7 @@ import type { Proof } from "../../ts/types";
 import type { BigNumberish } from "ethers";
 import type { IVkObjectParams } from "maci-domainobjs";
 
+import { logMagenta, info, logGreen, success } from "../../ts/logger";
 import { extractVk, genProofSnarkjs, genProofRapidSnark, verifyProof } from "../../ts/proofs";
 import { asHex, cleanThreads } from "../../ts/utils";
 
@@ -129,7 +130,7 @@ export class ProofGenerator {
       fromBlock = tx?.blockNumber ?? defaultStartBlock;
     }
 
-    console.log(`starting to fetch logs from block ${fromBlock}`);
+    logMagenta({ text: info(`Starting to fetch logs from block ${fromBlock}`) });
 
     const maciContractAddress = await maciContract.getAddress();
 
@@ -180,9 +181,9 @@ export class ProofGenerator {
    * @returns message processing proofs
    */
   async generateMpProofs(options?: IGenerateProofsOptions): Promise<Proof[]> {
+    logMagenta({ text: info(`Generating proofs of message processing...`) });
     performance.mark("mp-proofs-start");
 
-    console.log(`Generating proofs of message processing...`);
     const { messageBatchSize } = this.poll.batchSizes;
     const numMessages = this.poll.messages.length;
     let totalMessageBatches = numMessages <= messageBatchSize ? 1 : Math.floor(numMessages / messageBatchSize);
@@ -205,10 +206,10 @@ export class ProofGenerator {
         // generate the proof for this batch
         inputs.push(circuitInputs);
 
-        console.log(`Progress: ${this.poll.numBatchesProcessed} / ${totalMessageBatches}`);
+        logMagenta({ text: info(`Progress: ${this.poll.numBatchesProcessed} / ${totalMessageBatches}`) });
       }
 
-      console.log("Wait until proof generation is finished");
+      logMagenta({ text: info("Wait until proof generation is finished") });
 
       const processZkey = await extractVk(this.mp.zkey, false);
 
@@ -221,7 +222,7 @@ export class ProofGenerator {
         ),
       ).then((data) => data.reduce((acc, x) => acc.concat(x), []));
 
-      console.log("Proof generation is finished");
+      logGreen({ text: success("Proof generation is finished") });
 
       // cleanup threads
       await cleanThreads();
@@ -251,9 +252,9 @@ export class ProofGenerator {
     chainId?: string,
     options?: IGenerateProofsOptions,
   ): Promise<{ proofs: Proof[]; tallyData: TallyData }> {
+    logMagenta({ text: info(`Generating proofs of vote tallying...`) });
     performance.mark("tally-proofs-start");
 
-    console.log(`Generating proofs of vote tallying...`);
     const { tallyBatchSize } = this.poll.batchSizes;
     const numStateLeaves = this.poll.pollStateLeaves.length;
     let totalTallyBatches = numStateLeaves <= tallyBatchSize ? 1 : Math.floor(numStateLeaves / tallyBatchSize);
@@ -272,10 +273,10 @@ export class ProofGenerator {
 
         inputs.push(tallyCircuitInputs);
 
-        console.log(`Progress: ${this.poll.numBatchesTallied} / ${totalTallyBatches}`);
+        logMagenta({ text: info(`Progress: ${this.poll.numBatchesTallied} / ${totalTallyBatches}`) });
       }
 
-      console.log("Wait until proof generation is finished");
+      logMagenta({ text: info("Wait until proof generation is finished") });
 
       const tallyVk = await extractVk(this.tally.zkey, false);
 
@@ -288,7 +289,7 @@ export class ProofGenerator {
         ),
       ).then((data) => data.reduce((acc, x) => acc.concat(x), []));
 
-      console.log("Proof generation is finished");
+      logGreen({ text: success("Proof generation is finished") });
 
       // cleanup threads
       await cleanThreads();
@@ -358,11 +359,11 @@ export class ProofGenerator {
 
       await fs.promises.writeFile(this.tallyOutputFile, JSON.stringify(tallyFileData, null, 4));
 
-      console.log(`Tally file:\n${JSON.stringify(tallyFileData, null, 4)}\n`);
+      logGreen({ text: success(`Tally file:\n${JSON.stringify(tallyFileData, null, 4)}\n`) });
 
       // compare the commitments
       if (asHex(newTallyCommitment) === tallyFileData.newTallyCommitment) {
-        console.log("The tally commitment is correct");
+        logGreen({ text: success("The tally commitment is correct") });
       } else {
         throw new Error("Error: the newTallyCommitment is invalid.");
       }

@@ -1,3 +1,4 @@
+import { info, logGreen } from "../../../ts/logger";
 import { EDeploySteps } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
@@ -18,7 +19,7 @@ deployment.deployTask(EDeploySteps.Verifier, "Deploy verifier").then((task) =>
 
     if (incremental && verifierContractAddress) {
       // eslint-disable-next-line no-console
-      console.log(`Skipping deployment of the ${EContracts.Verifier} contract`);
+      logGreen({ text: info(`Skipping deployment of the ${EContracts.Verifier} contract`) });
       return;
     }
 

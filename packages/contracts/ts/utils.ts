@@ -7,6 +7,8 @@ import type { Action, SnarkProof, Groth16Proof } from "./types";
 import type { Ownable } from "../typechain-types";
 import type { BigNumberish, FeeData, Network, Signer } from "ethers";
 
+import { info, logGreen } from "./logger";
+
 declare global {
   interface ITerminatable {
     terminate: () => Promise<unknown>;
@@ -78,18 +80,6 @@ export function sortActions(actions: Action[]): Action[] {
 }
 
 /**
- * Print to the console
- * @param msg - the message to print
- * @param quiet - whether to suppress console output
- */
-export const log = (msg: string, quiet: boolean): void => {
-  if (!quiet) {
-    // eslint-disable-next-line no-console
-    console.log(msg);
-  }
-};
-
-/**
  * Get the default signer from the hardhat node
  * @returns the default signer
  */
@@ -143,7 +133,8 @@ export const transferOwnership = async <T extends Ownable>(
   newOwner: string,
   quiet = false,
 ): Promise<void> => {
-  log(`Transferring ownership of ${await contract.getAddress()} to ${newOwner}`, quiet);
+  logGreen({ text: info(`Transferring ownership of ${await contract.getAddress()} to ${newOwner}`), quiet });
+
   const tx = await contract.transferOwnership(newOwner, {
     maxFeePerGas: await getFeeData().then((res) => res?.maxFeePerGas),
   });

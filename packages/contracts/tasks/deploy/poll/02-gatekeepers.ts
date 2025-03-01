@@ -1,5 +1,6 @@
 import { hexToBigInt, uuidToBigInt } from "@pcd/util";
 
+import { info, logGreen } from "../../../ts/logger";
 import { HatsGatekeeperBase, MACI } from "../../../typechain-types";
 import { EDeploySteps, ESupportedChains } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
@@ -92,7 +93,7 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
 
     if (canSkipDeploy) {
       // eslint-disable-next-line no-console
-      console.log(`Skipping deployment of the Gatekeeper contract`);
+      logGreen({ text: info(`Skipping deployment of the Gatekeeper contract`) });
       return;
     }
 

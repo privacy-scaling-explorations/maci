@@ -1,3 +1,4 @@
+import { info, logGreen } from "../../../ts/logger";
 import { EDeploySteps } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
@@ -18,7 +19,7 @@ deployment.deployTask(EDeploySteps.PollFactory, "Deploy poll factory").then((tas
 
     if (incremental && pollFactoryContractAddress) {
       // eslint-disable-next-line no-console
-      console.log(`Skipping deployment of the ${EContracts.PollFactory} contract`);
+      logGreen({ text: info(`Skipping deployment of the ${EContracts.PollFactory} contract`) });
       return;
     }
 

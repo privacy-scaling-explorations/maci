@@ -8,6 +8,7 @@ import fs from "fs";
 import type { Proof } from "../../ts/types";
 import type { MACI, Poll, Tally } from "../../typechain-types";
 
+import { logMagenta, info } from "../../ts/logger";
 import { ContractStorage } from "../helpers/ContractStorage";
 import { Deployment } from "../helpers/Deployment";
 import { ProofGenerator } from "../helpers/ProofGenerator";
@@ -73,7 +74,7 @@ task("prove", "Command to generate proofs")
 
       const startBalance = await signer.provider.getBalance(signer);
 
-      console.log("Start balance: ", Number(startBalance / 10n ** 12n) / 1e6);
+      logMagenta({ text: info(`Start balance: ${Number(startBalance / 10n ** 12n) / 1e6}`) });
 
       const maciContractAddress = storage.mustGetAddress(EContracts.MACI, network.name);
       const maciContract = await deployment.getContract<MACI>({ name: EContracts.MACI, address: maciContractAddress });
@@ -171,11 +172,13 @@ task("prove", "Command to generate proofs")
 
       const endBalance = await signer.provider.getBalance(signer);
 
-      console.log("End balance: ", Number(endBalance / 10n ** 12n) / 1e6);
-      console.log("Prove expenses: ", Number((startBalance - endBalance) / 10n ** 12n) / 1e6);
+      logMagenta({ text: info(`End balance: ${Number(endBalance / 10n ** 12n) / 1e6}`) });
+      logMagenta({ text: info(`Prove expenses: ${Number((startBalance - endBalance) / 10n ** 12n) / 1e6}`) });
 
-      console.log(
-        "Please make sure that you do not delete the proofs from the proof directory until they are all submitted on-chain.\nRegenerating proofs will result in overwriting the existing proofs and commitments which will be different due to the use of random salts.",
-      );
+      logMagenta({
+        text: info(
+          "Please make sure that you do not delete the proofs from the proof directory until they are all submitted on-chain.\nRegenerating proofs will result in overwriting the existing proofs and commitments which will be different due to the use of random salts.",
+        ),
+      });
     },
   );

@@ -38,6 +38,14 @@ export {
   cleanThreads,
   unlinkFile,
   getBlockTimestamp,
+  logGreen,
+  logMagenta,
+  logRed,
+  logYellow,
+  info,
+  success,
+  warning,
+  error,
 } from "maci-contracts";
 
 export type {

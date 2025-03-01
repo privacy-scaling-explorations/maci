@@ -29,6 +29,11 @@ import {
   deployVkRegistryContract,
   timeTravel,
   fundWallet,
+  info,
+  success,
+  logGreen,
+  logRed,
+  logYellow,
   type ITallyData,
 } from "maci-sdk";
 
@@ -42,17 +47,11 @@ import {
   DEFAULT_SG_DATA,
   banner,
   contractAddressesStore,
-  info,
-  logError,
-  logGreen,
-  logRed,
-  logYellow,
   oldContractAddressesStore,
   promptSensitiveValue,
   readContractAddresses,
   resetContractAddresses,
   storeContractAddresses,
-  success,
 } from "./utils";
 import { DEFAULT_INITIAL_VOICE_CREDITS, DEFAULT_VOTE_OPTIONS } from "./utils/defaults";
 
@@ -140,7 +139,7 @@ program
       const network = await signer.provider?.getNetwork();
       const [vkContractAddress] = await readContractAddresses(["VkRegistry"], network?.name, [cmdOptions.vkContract]);
 
-      logYellow(cmdOptions.quiet, info("Retrieving verifying keys from the contract..."));
+      logYellow({ quiet: cmdOptions.quiet, text: info("Retrieving verifying keys from the contract...") });
 
       await checkVerifyingKeys({
         stateTreeDepth: cmdOptions.stateTreeDepth,
@@ -156,7 +155,7 @@ program
         signer,
       });
 
-      logGreen(cmdOptions.quiet, success("Verifying keys match"));
+      logGreen({ quiet: cmdOptions.quiet, text: success("Verifying keys match") });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -169,7 +168,7 @@ program
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action((cmdObj) => {
     const publicKey = generateMaciPublicKey(cmdObj.privkey);
-    logGreen(cmdObj.quiet, success(`Public key: ${publicKey}`));
+    logGreen({ quiet: cmdObj.quiet, text: success(`Public key: ${publicKey}`) });
   });
 program
   .command("genMaciKeyPair")
@@ -178,8 +177,8 @@ program
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .action((cmdObj) => {
     const { publicKey, privateKey } = generateKeypair({ seed: cmdObj.seed });
-    logGreen(cmdObj.quiet, success(`Public key: ${publicKey}`));
-    logGreen(cmdObj.quiet, success(`Private key: ${privateKey}`));
+    logGreen({ quiet: cmdObj.quiet, text: success(`Public key: ${publicKey}`) });
+    logGreen({ quiet: cmdObj.quiet, text: success(`Private key: ${privateKey}`) });
   });
 program
   .command("deployVkRegistry")
@@ -204,7 +203,7 @@ program
       const vkRegistryAddress = await deployVkRegistryContract({ signer });
       await storeContractAddresses({ VkRegistry: vkRegistryAddress }, network?.name);
 
-      logGreen(cmdObj.quiet, success(`VkRegistry deployed at: ${vkRegistryAddress}`));
+      logGreen({ quiet: cmdObj.quiet, text: success(`VkRegistry deployed at: ${vkRegistryAddress}`) });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -217,7 +216,7 @@ program
       banner(false);
 
       if (!fs.existsSync(contractAddressesStore)) {
-        logError("No contracts have been deployed yet");
+        throw new Error("No contracts have been deployed yet");
       }
 
       const data = JSON.parse(
@@ -225,7 +224,7 @@ program
       ) as Record<string, string>;
 
       Object.entries(data).forEach(([key, value]) => {
-        logGreen(false, info(`${key}: ${value}`));
+        logGreen({ quiet: false, text: info(`${key}: ${value}`) });
       });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
@@ -304,15 +303,21 @@ program
         initialVoiceCreditProxyContractAddress: initialVoiceCreditProxyAddress,
       });
 
-      logGreen(cmdObj.quiet, success(`Poll ID: ${pollId}`));
-      logGreen(cmdObj.quiet, success(`Poll contract address: ${pollContractAddress}`));
-      logGreen(cmdObj.quiet, success(`Tally contract address: ${tallyContractAddress}`));
-      logGreen(cmdObj.quiet, success(`Message processor contract address: ${messageProcessorContractAddress}`));
-      logGreen(
-        cmdObj.quiet,
-        success(`Initial voice credit proxy contract address: ${initialVoiceCreditProxyContractAddress}`),
-      );
-      logGreen(cmdObj.quiet, success(`Signup gatekeeper contract address: ${gatekeeperContractAddress}`));
+      logGreen({ quiet: cmdObj.quiet, text: success(`Poll ID: ${pollId}`) });
+      logGreen({ quiet: cmdObj.quiet, text: success(`Poll contract address: ${pollContractAddress}`) });
+      logGreen({ quiet: cmdObj.quiet, text: success(`Tally contract address: ${tallyContractAddress}`) });
+      logGreen({
+        quiet: cmdObj.quiet,
+        text: success(`Message processor contract address: ${messageProcessorContractAddress}`),
+      });
+      logGreen({
+        quiet: cmdObj.quiet,
+        text: success(`Initial voice credit proxy contract address: ${initialVoiceCreditProxyContractAddress}`),
+      });
+      logGreen({
+        quiet: cmdObj.quiet,
+        text: success(`Signup gatekeeper contract address: ${gatekeeperContractAddress}`),
+      });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -372,9 +377,9 @@ program
         ivcpDataArg: cmdObj.ivcpData ?? DEFAULT_IVCP_DATA,
       });
 
-      logGreen(cmdObj.quiet, info(`User joined poll with nullifier: ${data.nullifier}`));
-      logGreen(cmdObj.quiet, info(`User joined poll with state index: ${data.pollStateIndex}`));
-      logGreen(cmdObj.quiet, info(`User joined poll with ${data.voiceCredits} voice credits`));
+      logGreen({ quiet: cmdObj.quiet, text: info(`User joined poll with nullifier: ${data.nullifier}`) });
+      logGreen({ quiet: cmdObj.quiet, text: info(`User joined poll with state index: ${data.pollStateIndex}`) });
+      logGreen({ quiet: cmdObj.quiet, text: info(`User joined poll with ${data.voiceCredits} voice credits`) });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -514,8 +519,11 @@ program
         signer,
       });
 
-      logGreen(cmdObj.quiet, info(`Transaction hash: ${receipt.hash}`));
-      logGreen(cmdObj.quiet, success(`Executed mergeSignups(); gas used: ${receipt.gasUsed.toString()}`));
+      logGreen({ quiet: cmdObj.quiet, text: info(`Transaction hash: ${receipt.hash}`) });
+      logGreen({
+        quiet: cmdObj.quiet,
+        text: success(`Executed mergeSignups(); gas used: ${receipt.gasUsed.toString()}`),
+      });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -534,7 +542,7 @@ program
 
       await timeTravel({ seconds: cmdObj.seconds, signer });
 
-      logGreen(cmdObj.quiet, success(`Fast-forwarded ${cmdObj.seconds} seconds`));
+      logGreen({ quiet: cmdObj.quiet, text: success(`Fast-forwarded ${cmdObj.seconds} seconds`) });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -604,10 +612,10 @@ program
         signer,
       });
 
-      logGreen(
-        cmdObj.quiet,
-        success(`State index: ${data.stateIndex.toString()}\n Transaction hash: ${data.transactionHash}`),
-      );
+      logGreen({
+        quiet: cmdObj.quiet,
+        text: success(`State index: ${data.stateIndex.toString()}\n Transaction hash: ${data.transactionHash}`),
+      });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -632,9 +640,9 @@ program
       });
 
       if (data.isRegistered) {
-        logGreen(cmdObj.quiet, success(`State index: ${data.stateIndex?.toString()}`));
+        logGreen({ quiet: cmdObj.quiet, text: success(`State index: ${data.stateIndex?.toString()}`) });
       } else {
-        logRed(cmdObj.quiet, "User is not registered");
+        logRed({ quiet: cmdObj.quiet, text: "User is not registered" });
       }
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
@@ -666,17 +674,17 @@ program
       });
 
       if (data.isJoined) {
-        logGreen(
-          cmdObj.quiet,
-          success(
+        logGreen({
+          quiet: cmdObj.quiet,
+          text: success(
             [
               `Poll state index: ${data.pollStateIndex?.toString()}, registered: ${data.isJoined}`,
               `Voice credits: ${data.voiceCredits?.toString()}`,
             ].join("\n"),
           ),
-        );
+        });
       } else {
-        logRed(cmdObj.quiet, "User has not joined the poll");
+        logRed({ quiet: cmdObj.quiet, text: "User has not joined the poll" });
       }
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
@@ -701,9 +709,9 @@ program
         signer,
       });
 
-      logGreen(
-        true,
-        success(
+      logGreen({
+        quiet: true,
+        text: success(
           [
             `ID: ${details.id}`,
             `Start time: ${new Date(Number(details.startDate) * 1000).toString()}`,
@@ -713,7 +721,7 @@ program
             `Mode: ${details.mode === 0n ? "Quadratic Voting" : "Non-Quadratic Voting"}`,
           ].join("\n"),
         ),
-      );
+      });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -733,8 +741,11 @@ program
 
       const hash = await fundWallet({ amount: cmdObj.amount, address: cmdObj.address, signer });
 
-      logYellow(cmdObj.quiet, info(`Transaction hash: ${hash}`));
-      logGreen(cmdObj.quiet, success(`Successfully funded ${cmdObj.address} with ${cmdObj.amount} wei`));
+      logYellow({ quiet: cmdObj.quiet, text: info(`Transaction hash: ${hash}`) });
+      logGreen({
+        quiet: cmdObj.quiet,
+        text: success(`Successfully funded ${cmdObj.address} with ${cmdObj.amount} wei`),
+      });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -760,7 +771,7 @@ program
       const isTallyFileExists = fs.existsSync(cmdObj.tallyFile);
 
       if (!cmdObj.tallyFile || !isTallyFileExists) {
-        logError(`Unable to open ${cmdObj.tallyFile}`);
+        throw new Error(`Unable to open ${cmdObj.tallyFile}`);
       }
 
       const tallyData = JSON.parse(await fs.promises.readFile(cmdObj.tallyFile, { encoding: "utf8" })) as ITallyData;

@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { task, types } from "hardhat/config";
 
+import { info, logMagenta, logRed } from "../../ts/logger";
 import { Deployment } from "../helpers/Deployment";
 import { type IDeployParams } from "../helpers/types";
 
@@ -32,13 +33,15 @@ task("deploy-full", "Deploy environment")
 
       success = true;
     } catch (err) {
-      console.error("\n=========================================================\nERROR:", err, "\n");
+      logRed({
+        text: `\n=========================================================\nERROR: ${(err as Error).message}\n`,
+      });
     }
 
     await deployment.finish(startBalance, success);
 
     if (verify) {
-      console.log("Verify all contracts");
+      logMagenta({ text: info("Verify all contracts") });
       await hre.run("verify-full");
     }
   });

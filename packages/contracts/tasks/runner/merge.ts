@@ -4,6 +4,7 @@ import { task, types } from "hardhat/config";
 
 import type { MACI, Poll } from "../../typechain-types";
 
+import { info, logMagenta } from "../../ts/logger";
 import { Deployment } from "../helpers/Deployment";
 import { TreeMerger } from "../helpers/TreeMerger";
 import { EContracts, type IMergeParams } from "../helpers/types";
@@ -38,10 +39,9 @@ task("merge", "Merge signups")
       deployer,
       pollContract,
     });
-
     const startBalance = await deployer.provider.getBalance(deployer);
 
-    console.log("Start balance: ", Number(startBalance / 10n ** 12n) / 1e6);
+    logMagenta({ text: info(`Start balance: ${Number(startBalance / 10n ** 12n) / 1e6}`) });
 
     await treeMerger.checkPollDuration();
 
@@ -49,11 +49,11 @@ task("merge", "Merge signups")
 
     const endBalance = await deployer.provider.getBalance(deployer);
 
-    console.log("End balance: ", Number(endBalance / 10n ** 12n) / 1e6);
-    console.log("Merge expenses: ", Number((startBalance - endBalance) / 10n ** 12n) / 1e6);
+    logMagenta({ text: info(`End balance: ${Number(endBalance / 10n ** 12n) / 1e6}`) });
+    logMagenta({ text: info(`Merge expenses: ${Number((startBalance - endBalance) / 10n ** 12n) / 1e6}`) });
 
     if (prove) {
-      console.log(`Prove poll ${poll} results`);
+      logMagenta({ text: info(`Prove poll ${poll} results`) });
       await hre.run("prove");
     }
   });

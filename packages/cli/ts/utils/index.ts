@@ -21,5 +21,4 @@ export {
   resetContractAddresses,
   doesPathExist,
 } from "./storage";
-export { logRed, logGreen, logYellow, logMagenta, logError, info, success, warning, error } from "./theme";
 export { promptSensitiveValue } from "./prompts";
