@@ -15,14 +15,13 @@ import { logMagenta } from "../../ts/logger";
  * instance: contract can be queried by address
  * verified: mark contracts which are already verified
  */
-type TStorage = Record<
-  string,
-  Partial<{
-    named: Record<string, IStorageNamedEntry | Record<string, IStorageNamedEntry>>;
-    instance: Record<string, IStorageInstanceEntry>;
-    verified: Record<string, boolean>;
-  }>
->;
+type TStorage = Record<string, TValue>;
+
+type TValue = Partial<{
+  named: Record<string, IStorageNamedEntry | Record<string, IStorageNamedEntry>>;
+  instance: Record<string, IStorageInstanceEntry>;
+  verified: Record<string, boolean>;
+}>;
 
 /**
  * @notice Contract storage keeps all deployed contracts with addresses, arguments in the json file.
@@ -185,6 +184,35 @@ export class ContractStorage {
   }
 
   /**
+   * Get contract addresses by names from the json file
+   *
+   * @param ids - contract names
+   * @param network - selected network
+   * @returns contract address
+   */
+  getAddresses<ID extends string = EContracts>(
+    ids: ID[],
+    network: string,
+    keys: string[] = [],
+  ): (string | undefined)[] {
+    const collection = this.db.get(`${network}.named`).value() as
+      | Record<string, IStorageNamedEntry | Record<string, IStorageNamedEntry>>
+      | undefined;
+
+    return ids
+      .map((id, index) => {
+        const entry = collection?.[id];
+
+        if (entry && keys[index] in entry) {
+          return (entry as Record<string, IStorageNamedEntry>)[keys[index]];
+        }
+
+        return entry as IStorageNamedEntry | undefined;
+      })
+      .map((entity) => entity?.address);
+  }
+
+  /**
    * Get contract address by name from the json file
    *
    * @param id - contract name
@@ -228,7 +256,8 @@ export class ContractStorage {
     logMagenta({ text: "---------------------------------" });
 
     const entryMap = new Map<string, string>();
-    const { named, instance } = this.db.get(network).value();
+    const data = this.db.get(network).value() as TValue | undefined;
+    const { named, instance } = data || {};
     const namedEntries = Object.entries<IStorageNamedEntry | Record<string, IStorageNamedEntry>>(named || {});
     const instanceEntries = Object.entries<IStorageInstanceEntry>(instance || {});
 

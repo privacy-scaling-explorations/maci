@@ -11,6 +11,7 @@ import {
   joinPoll,
   deployPoll,
   deployVkRegistryContract,
+  ContractStorage,
 } from "maci-sdk";
 
 import {
@@ -62,6 +63,12 @@ export class TestDeploy {
     return new Promise((resolve) => {
       setTimeout(resolve, ms);
     });
+  }
+
+  static clean(): void {
+    const contractStorage = ContractStorage.getInstance();
+    contractStorage.cleanup("hardhat");
+    contractStorage.cleanup("localhost");
   }
 
   private async contractsInit(): Promise<void> {

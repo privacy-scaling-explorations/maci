@@ -560,6 +560,7 @@ export interface IRegisterContract<ID = EContracts> {
  */
 export enum EGatekeepers {
   FreeForAll = "FreeForAllGatekeeper",
+  Token = "SignUpTokenGatekeeper",
   EAS = "EASGatekeeper",
   GitcoinPassport = "GitcoinPassportGatekeeper",
   Hats = "HatsGatekeeper",
@@ -590,13 +591,13 @@ export enum EContracts {
   HatsGatekeeperSingle = "HatsGatekeeperSingle",
   HatsGatekeeperMultiple = "HatsGatekeeperMultiple",
   ZupassGatekeeper = "ZupassGatekeeper",
+  SignUpTokenGatekeeper = "SignUpTokenGatekeeper",
   ZupassGroth16Verifier = "ZupassGroth16Verifier",
   SemaphoreGatekeeper = "SemaphoreGatekeeper",
   MerkleProofGatekeeper = "MerkleProofGatekeeper",
   SignUpGatekeeper = "SignUpGatekeeper",
   Verifier = "Verifier",
   MACI = "MACI",
-  StateAq = "StateAq",
   PollFactory = "PollFactory",
   MessageProcessorFactory = "MessageProcessorFactory",
   TallyFactory = "TallyFactory",

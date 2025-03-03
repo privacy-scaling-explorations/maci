@@ -375,6 +375,8 @@ export const deployMaci = async ({
   return {
     maciContract,
     pollFactoryContract,
+    messageProcessorFactoryContract,
+    tallyFactoryContract,
     poseidonAddrs,
   };
 };

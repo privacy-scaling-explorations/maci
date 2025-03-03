@@ -18,6 +18,7 @@ import {
   deployVkRegistryContract,
   timeTravel,
   type IGenerateProofsArgs,
+  isArm,
 } from "maci-sdk";
 
 import type { Signer } from "ethers";
@@ -54,7 +55,7 @@ import {
   ceremonyPollJoinedZkeyPath,
   deployPollArgs,
 } from "../constants";
-import { clean, getBackupFilenames, isArm, relayTestMessages } from "../utils";
+import { clean, getBackupFilenames, relayTestMessages } from "../utils";
 
 describe("Stress tests with ceremony params (6,3,2,20)", function test() {
   const stateTreeDepth = 6;

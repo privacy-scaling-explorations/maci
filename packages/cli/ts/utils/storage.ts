@@ -1,83 +1,82 @@
+import { ContractStorage, Deployment, EContracts } from "maci-sdk";
+
 import fs from "fs";
 
-import { contractAddressesStore } from "./constants";
+import type { IReadContractAddressesArgs, IStoreContractsArgs } from "./interfaces";
 
 /**
  * Read a JSON file from disk
  * @param path - the path of the file
  * @returns the JSON object
  */
-export const readJSONFile = async (path: string): Promise<Record<string, Record<string, string> | undefined>> => {
+export const readJSONFile = async <T = Record<string, Record<string, string> | undefined>>(
+  path: string,
+): Promise<T> => {
   const isExists = fs.existsSync(path);
 
   if (!isExists) {
     throw new Error(`File ${path} does not exist`);
   }
 
-  return fs.promises
-    .readFile(path)
-    .then((res) => JSON.parse(res.toString()) as Record<string, Record<string, string> | undefined>);
+  return fs.promises.readFile(path).then((res) => JSON.parse(res.toString()) as T);
 };
 
 /**
  * Store a contract address to the local address store file
- * @param data the contract name - address object
- * @param network the network where the contracts are deployed
+ * @param args the store contract addresses arguments
  */
-export const storeContractAddresses = async (data: Record<string, string>, network = "default"): Promise<void> => {
-  // if it does not exist yet, then create it
-  const isContractAddressesStoreExists = fs.existsSync(contractAddressesStore);
-
-  if (!isContractAddressesStoreExists) {
-    await fs.promises.writeFile(contractAddressesStore, "{}");
+export const storeContractAddresses = async ({ data, signer }: IStoreContractsArgs): Promise<void> => {
+  if (process.env.NODE_ENV === "test") {
+    return;
   }
 
-  const contractAddrs = await readJSONFile(contractAddressesStore);
+  const contractStorage = ContractStorage.getInstance();
+  const deployment = Deployment.getInstance();
+  const network = await signer.provider?.getNetwork().then(({ name }) => name);
 
-  await fs.promises.writeFile(
-    contractAddressesStore,
-    JSON.stringify({ ...(contractAddrs[network] || {}), ...data }, null, 4),
+  const contracts = await Promise.all(
+    Object.entries(data).map(([name, { address, key }]) =>
+      deployment.getContract({ name: name as EContracts, address, key, signer }),
+    ),
+  );
+
+  await Promise.all(
+    Object.entries(data).map(([id, { key, args }], index) =>
+      contractStorage.register({
+        id,
+        key,
+        contract: contracts[index],
+        args,
+        network: network ?? "hardhat",
+      }),
+    ),
   );
 };
 
 /**
- * Read a contract address from the local address store file
- * @param contractNames the names of the contracts
- * @param network the network where the contracts are deployed
- * @param defaultValues the default addresses for the contracts
- * @returns the contract address or a undefined if it does not exist
+ * Read a contract addresses from the local address store file
+ * @param args the read contract addresses arguments
+ * @returns the contract addresses
  */
-export const readContractAddresses = async (
-  contractNames: string[],
-  network?: string,
-  defaultValues?: (string | undefined)[],
-): Promise<string[]> => {
-  try {
-    const result = await readJSONFile(contractAddressesStore);
-    const data = { ...(result[network ?? "default"] || {}) };
+export const readContractAddresses = ({
+  contractNames,
+  network = "hardhat",
+  keys = [],
+  defaultAddresses = [],
+}: IReadContractAddressesArgs): string[] => {
+  const contractStorage = ContractStorage.getInstance();
 
-    return contractNames.map((name, index) => defaultValues?.[index] ?? data[name]).filter(Boolean);
-  } catch (error) {
-    return defaultValues ? (defaultValues.filter(Boolean) as string[]) : [];
-  }
+  return contractStorage
+    .getAddresses(contractNames, network, keys)
+    .map((address, index) => defaultAddresses[index] || address || "");
 };
 
 /**
  * Delete the content of the contract address file
+ *
+ * @param network the network
  */
-export const resetContractAddresses = async (): Promise<void> => {
-  await fs.promises.writeFile(contractAddressesStore, JSON.stringify({}, null, 4));
-};
-
-/**
- * Check if an array of paths exist on the local file system
- * @param paths - the array of paths to check
- * @returns an array of boolean and string,
- * where the boolean indicates whether all paths exist, and the string
- * is the path that does not exist
- */
-export const doesPathExist = (paths: string[]): [boolean, string | null] => {
-  const notFoundPath = paths.find((path) => !fs.existsSync(path));
-
-  return notFoundPath ? [false, notFoundPath] : [true, null];
+export const resetContractAddresses = (network = "hardhat"): void => {
+  const contractStorage = ContractStorage.getInstance();
+  contractStorage.cleanup(network);
 };

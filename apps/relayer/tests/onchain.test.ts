@@ -52,7 +52,10 @@ describe("Integration message publishing", () => {
   });
 
   afterAll(async () => {
+    const { TestDeploy } = await import("./deploy.js");
+
     jest.restoreAllMocks();
+    TestDeploy.clean();
     await app.close();
   });
 

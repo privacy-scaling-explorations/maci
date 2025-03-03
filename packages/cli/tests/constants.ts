@@ -126,7 +126,7 @@ export const proveOnChainArgs: Omit<IProveOnChainArgs, "maciAddress" | "signer">
 };
 
 export const verifyArgs = async (signer: Signer): Promise<IVerifyArgs> => {
-  const tallyData = (await readJSONFile(testTallyFilePath)) as unknown as ITallyData;
+  const tallyData = await readJSONFile<ITallyData>(testTallyFilePath);
   const pollParams = await getPollParams({ pollId: 0n, maciContractAddress: tallyData.maci, signer });
   const tallyCommitments = generateTallyCommitments({
     tallyData,
