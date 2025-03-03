@@ -33,7 +33,7 @@
     "@nestjs/core": "^10.4.7",
     "@nestjs/platform-express": "^10.4.7",
     "@nestjs/platform-socket.io": "^10.3.10",
-    "@nestjs/swagger": "^8.0.3",
+    "@nestjs/swagger": "^11.0.6",
     "@nestjs/throttler": "^6.3.0",
     "@nestjs/websockets": "^10.4.7",
     "@nomicfoundation/hardhat-ethers": "^3.0.8",
