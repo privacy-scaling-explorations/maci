@@ -57,7 +57,7 @@
     "maci-sdk": "^0.0.1",
     "date-fns": "^4.1.0",
     "mustache": "^4.2.0",
-    "permissionless": ">=0.1.18 <=0.1.29",
+    "permissionless": ">=0.1.18 <=0.2.36",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "socket.io": "^4.7.5",

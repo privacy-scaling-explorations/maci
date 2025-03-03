@@ -133,13 +133,13 @@ importers:
         version: 0.27.2
       '@zerodev/ecdsa-validator':
         specifier: 5.3.1
-        version: 5.3.1(@zerodev/sdk@5.3.8(permissionless@0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(permissionless@0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))
+        version: 5.3.1(@zerodev/sdk@5.3.8(permissionless@0.2.35(ox@0.6.7(typescript@5.7.3)(zod@3.24.2))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(permissionless@0.2.35(ox@0.6.7(typescript@5.7.3)(zod@3.24.2))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))
       '@zerodev/permissions':
         specifier: 5.4.3
-        version: 5.4.3(@zerodev/sdk@5.3.8(permissionless@0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(@zerodev/webauthn-key@5.4.2(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(permissionless@0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))
+        version: 5.4.3(@zerodev/sdk@5.3.8(permissionless@0.2.35(ox@0.6.7(typescript@5.7.3)(zod@3.24.2))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(@zerodev/webauthn-key@5.4.2(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(permissionless@0.2.35(ox@0.6.7(typescript@5.7.3)(zod@3.24.2))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))
       '@zerodev/sdk':
         specifier: 5.3.8
-        version: 5.3.8(permissionless@0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))
+        version: 5.3.8(permissionless@0.2.35(ox@0.6.7(typescript@5.7.3)(zod@3.24.2))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
@@ -186,8 +186,8 @@ importers:
         specifier: ^4.2.0
         version: 4.2.0
       permissionless:
-        specifier: '>=0.1.18 <=0.1.29'
-        version: 0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))
+        specifier: '>=0.1.18 <=0.2.36'
+        version: 0.2.35(ox@0.6.7(typescript@5.7.3)(zod@3.24.2))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))
       reflect-metadata:
         specifier: ^0.2.0
         version: 0.2.2
@@ -11115,10 +11115,14 @@ packages:
   periscopic@3.1.0:
     resolution: {integrity: sha512-vKiQ8RRtkl9P+r/+oefh25C3fhybptkHKCZSPlcXiJux2tJF55GnEj3BVn4A5gKfq9NWWXXrxkHBwVPUfH0opw==}
 
-  permissionless@0.1.29:
-    resolution: {integrity: sha512-jKkgl3G2b4hv5DvX2U8v0OI3JfX+nEzj9a6zsrcXuJaLZdS14td4tExnlmBY93nUN6lRC6NfPZjdLbi8Dkzz7w==}
+  permissionless@0.2.35:
+    resolution: {integrity: sha512-vhSdd39xZ+oktY+BY8zf/ImI6eX8g0VKPopMeVcHDwwyp1fL8BKq/IZ3NUMKS9r9dHpHboUqTLNM1+TP40PMng==}
     peerDependencies:
-      viem: ^2.9.17
+      ox: 0.6.7
+      viem: ^2.23.2
+    peerDependenciesMeta:
+      ox:
+        optional: true
 
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
@@ -21772,24 +21776,24 @@ snapshots:
       js-yaml: 3.14.1
       tslib: 2.8.1
 
-  '@zerodev/ecdsa-validator@5.3.1(@zerodev/sdk@5.3.8(permissionless@0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(permissionless@0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))':
+  '@zerodev/ecdsa-validator@5.3.1(@zerodev/sdk@5.3.8(permissionless@0.2.35(ox@0.6.7(typescript@5.7.3)(zod@3.24.2))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(permissionless@0.2.35(ox@0.6.7(typescript@5.7.3)(zod@3.24.2))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))':
     dependencies:
-      '@zerodev/sdk': 5.3.8(permissionless@0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))
-      permissionless: 0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))
+      '@zerodev/sdk': 5.3.8(permissionless@0.2.35(ox@0.6.7(typescript@5.7.3)(zod@3.24.2))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))
+      permissionless: 0.2.35(ox@0.6.7(typescript@5.7.3)(zod@3.24.2))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))
       viem: 2.23.2(typescript@5.7.3)(zod@3.24.2)
 
-  '@zerodev/permissions@5.4.3(@zerodev/sdk@5.3.8(permissionless@0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(@zerodev/webauthn-key@5.4.2(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(permissionless@0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))':
+  '@zerodev/permissions@5.4.3(@zerodev/sdk@5.3.8(permissionless@0.2.35(ox@0.6.7(typescript@5.7.3)(zod@3.24.2))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(@zerodev/webauthn-key@5.4.2(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(permissionless@0.2.35(ox@0.6.7(typescript@5.7.3)(zod@3.24.2))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))':
     dependencies:
       '@simplewebauthn/browser': 9.0.1
-      '@zerodev/sdk': 5.3.8(permissionless@0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))
+      '@zerodev/sdk': 5.3.8(permissionless@0.2.35(ox@0.6.7(typescript@5.7.3)(zod@3.24.2))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))
       '@zerodev/webauthn-key': 5.4.2(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))
       merkletreejs: 0.3.11
-      permissionless: 0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))
+      permissionless: 0.2.35(ox@0.6.7(typescript@5.7.3)(zod@3.24.2))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))
       viem: 2.23.2(typescript@5.7.3)(zod@3.24.2)
 
-  '@zerodev/sdk@5.3.8(permissionless@0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))':
+  '@zerodev/sdk@5.3.8(permissionless@0.2.35(ox@0.6.7(typescript@5.7.3)(zod@3.24.2))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))':
     dependencies:
-      permissionless: 0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))
+      permissionless: 0.2.35(ox@0.6.7(typescript@5.7.3)(zod@3.24.2))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))
       semver: 7.7.1
       viem: 2.23.2(typescript@5.7.3)(zod@3.24.2)
 
@@ -30222,9 +30226,11 @@ snapshots:
       estree-walker: 3.0.3
       is-reference: 3.0.2
 
-  permissionless@0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)):
+  permissionless@0.2.35(ox@0.6.7(typescript@5.7.3)(zod@3.24.2))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)):
     dependencies:
       viem: 2.23.2(typescript@5.7.3)(zod@3.24.2)
+    optionalDependencies:
+      ox: 0.6.7(typescript@5.7.3)(zod@3.24.2)
 
   picocolors@1.1.1: {}
 
