@@ -135,8 +135,8 @@ importers:
         specifier: 5.3.1
         version: 5.3.1(@zerodev/sdk@5.3.8(permissionless@0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(permissionless@0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))
       '@zerodev/permissions':
-        specifier: 5.4.3
-        version: 5.4.3(@zerodev/sdk@5.3.8(permissionless@0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(@zerodev/webauthn-key@5.4.2(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(permissionless@0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))
+        specifier: 5.5.2
+        version: 5.5.2(@zerodev/sdk@5.3.8(permissionless@0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(@zerodev/webauthn-key@5.4.2(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))
       '@zerodev/sdk':
         specifier: 5.3.8
         version: 5.3.8(permissionless@0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))
@@ -4950,13 +4950,12 @@ packages:
       permissionless: ^0.1.18
       viem: ^2.16.3
 
-  '@zerodev/permissions@5.4.3':
-    resolution: {integrity: sha512-rC5npYPRQO8lwhMXO6h2MXO3DGgRSDqAEVh9E2pRnlYPhaMDHRVd+nPqLIsx1OubRT0jSXrPFTQJd2MqeKcJ6w==}
+  '@zerodev/permissions@5.5.2':
+    resolution: {integrity: sha512-NmLzb1iGTcQWczLZF313CLMv1A/x3J7k1GluUIbivc5ixI9NCbXpuXrII+Y7otDf7Z1RsKkpvzZgdwO7hmdkNw==}
     peerDependencies:
-      '@zerodev/sdk': ^5.2.13
-      '@zerodev/webauthn-key': ^5.3.0
-      permissionless: ^0.1.18
-      viem: ^2.16.3
+      '@zerodev/sdk': ^5.4.0
+      '@zerodev/webauthn-key': ^5.4.0
+      viem: ^2.21.40
 
   '@zerodev/sdk@5.3.8':
     resolution: {integrity: sha512-CA5SkVUXbu8NCa7vxXp3KXt+c1yVDZwF1vQk+JsTW5QKTBBo0czeR8amb+VI5B1Dhz2lUTbv0SqLfJ/7JeXrMw==}
@@ -21778,13 +21777,12 @@ snapshots:
       permissionless: 0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))
       viem: 2.23.2(typescript@5.7.3)(zod@3.24.2)
 
-  '@zerodev/permissions@5.4.3(@zerodev/sdk@5.3.8(permissionless@0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(@zerodev/webauthn-key@5.4.2(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(permissionless@0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))':
+  '@zerodev/permissions@5.5.2(@zerodev/sdk@5.3.8(permissionless@0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(@zerodev/webauthn-key@5.4.2(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))':
     dependencies:
       '@simplewebauthn/browser': 9.0.1
       '@zerodev/sdk': 5.3.8(permissionless@0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))
       '@zerodev/webauthn-key': 5.4.2(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))
       merkletreejs: 0.3.11
-      permissionless: 0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))
       viem: 2.23.2(typescript@5.7.3)(zod@3.24.2)
 
   '@zerodev/sdk@5.3.8(permissionless@0.1.29(viem@2.23.2(typescript@5.7.3)(zod@3.24.2)))(viem@2.23.2(typescript@5.7.3)(zod@3.24.2))':
@@ -24098,7 +24096,7 @@ snapshots:
 
   elliptic@6.5.4:
     dependencies:
-      bn.js: 4.12.0
+      bn.js: 4.12.1
       brorand: 1.1.0
       hash.js: 1.1.7
       hmac-drbg: 1.0.1
@@ -24108,7 +24106,7 @@ snapshots:
 
   elliptic@6.5.5:
     dependencies:
-      bn.js: 4.12.0
+      bn.js: 4.12.1
       brorand: 1.1.0
       hash.js: 1.1.7
       hmac-drbg: 1.0.1
