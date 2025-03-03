@@ -1,3 +1,4 @@
+import { EGatekeepers } from "maci-contracts";
 import {
   MACI__factory as MACIFactory,
   SignUpGatekeeper__factory as SignUpGatekeeperFactory,
@@ -40,6 +41,26 @@ export const getGatekeeperTrait = async ({
 
   return gatekeeperType as EGatekeeperTrait;
 };
+
+const GATEKEEPER_CONTRACT_NAMES_BY_TRAIT = {
+  [EGatekeeperTrait.EAS]: EGatekeepers.EAS,
+  [EGatekeeperTrait.FreeForAll]: EGatekeepers.FreeForAll,
+  [EGatekeeperTrait.GitcoinPassport]: EGatekeepers.GitcoinPassport,
+  [EGatekeeperTrait.Hats]: EGatekeepers.Hats,
+  [EGatekeeperTrait.Semaphore]: EGatekeepers.Semaphore,
+  [EGatekeeperTrait.Token]: EGatekeepers.Token,
+  [EGatekeeperTrait.Zupass]: EGatekeepers.Zupass,
+  [EGatekeeperTrait.MerkleProof]: EGatekeepers.MerkleProof,
+};
+
+/**
+ * Get gatekeeper contract names associated with the trait provided.
+ *
+ * @param trait the gatekeeper trait
+ * @returns the gatekeeper contract names
+ */
+export const getGatekeeperContractNamesByTrait = (trait: EGatekeeperTrait): EGatekeepers =>
+  GATEKEEPER_CONTRACT_NAMES_BY_TRAIT[trait];
 
 /**
  * Get the semaphore gatekeeper data

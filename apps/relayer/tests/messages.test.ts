@@ -46,6 +46,8 @@ describe("Integration messages", () => {
   });
 
   afterAll(async () => {
+    const { TestDeploy } = await import("./deploy.js");
+    TestDeploy.clean();
     await app.close();
   });
 

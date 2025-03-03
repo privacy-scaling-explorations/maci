@@ -3,6 +3,8 @@ import type {
   FreeForAllGatekeeper,
   MACI,
   MockVerifier,
+  MessageProcessorFactory,
+  TallyFactory,
   PollFactory,
   PoseidonT3,
   PoseidonT4,
@@ -176,6 +178,8 @@ export interface IDeployMaciArgs {
 export interface IDeployedMaci {
   maciContract: MACI;
   pollFactoryContract: PollFactory;
+  messageProcessorFactoryContract: MessageProcessorFactory;
+  tallyFactoryContract: TallyFactory;
   poseidonAddrs: {
     poseidonT3: string;
     poseidonT4: string;

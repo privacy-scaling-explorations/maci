@@ -46,6 +46,7 @@ export {
   success,
   warning,
   error,
+  genEmptyBallotRoots,
 } from "maci-contracts";
 
 export type {

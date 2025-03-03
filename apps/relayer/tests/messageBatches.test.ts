@@ -70,6 +70,8 @@ describe("Integration message batches", () => {
   });
 
   afterAll(async () => {
+    const { TestDeploy } = await import("./deploy.js");
+    TestDeploy.clean();
     await app.close();
   });
 

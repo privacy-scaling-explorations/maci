@@ -1,7 +1,6 @@
 import { cidToBytes32, createCidFromObject, relayMessages } from "maci-sdk";
 
 import fs from "fs";
-import os from "os";
 import path from "path";
 
 import type { Signer } from "ethers";
@@ -26,12 +25,6 @@ export const clean = async (withBackup = true): Promise<void> => {
     await fs.promises.rm(backupFolder, { recursive: true, force: true });
   }
 };
-
-/**
- * Check if we are running on an arm chip
- * @returns whether we are running on an arm chip
- */
-export const isArm = (): boolean => os.arch().includes("arm");
 
 /**
  * Write backup data to file.

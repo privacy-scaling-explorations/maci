@@ -21,6 +21,7 @@ import {
   deployVkRegistryContract,
   timeTravel,
   type IGenerateProofsArgs,
+  isArm,
 } from "maci-sdk";
 
 import fs from "fs";
@@ -55,7 +56,7 @@ import {
   coordinatorKeypair,
   verifyingKeysArgs,
 } from "../constants";
-import { clean, getBackupFilenames, isArm, relayTestMessages } from "../utils";
+import { clean, getBackupFilenames, relayTestMessages } from "../utils";
 
 /**
  Test scenarios:

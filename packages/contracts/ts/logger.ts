@@ -7,11 +7,13 @@ const GREEN = "\x1b[32m";
 const YELLOW = "\x1b[33m";
 const MAGENTA = "\x1b[35m";
 
+const QUIET = process.env.NODE_ENV === "test";
+
 /**
  * Print red text to the console (fancy)
  * @param args log arguments
  */
-export function logRed({ quiet = process.env.NODE_ENV === "test", text }: ILogArgs): void {
+export function logRed({ quiet = QUIET, text }: ILogArgs): void {
   if (!quiet) {
     console.log(RED + text + RESET);
   }
@@ -21,7 +23,7 @@ export function logRed({ quiet = process.env.NODE_ENV === "test", text }: ILogAr
  * Print green text to the console (fancy)
  * @param args log arguments
  */
-export function logGreen({ quiet = process.env.NODE_ENV === "test", text }: ILogArgs): void {
+export function logGreen({ quiet = QUIET, text }: ILogArgs): void {
   if (!quiet) {
     console.log(GREEN + text + RESET);
   }
@@ -31,7 +33,7 @@ export function logGreen({ quiet = process.env.NODE_ENV === "test", text }: ILog
  * Print yellow text to the console (fancy)
  * @param args log arguments
  */
-export function logYellow({ quiet = process.env.NODE_ENV === "test", text }: ILogArgs): void {
+export function logYellow({ quiet = QUIET, text }: ILogArgs): void {
   if (!quiet) {
     console.log(YELLOW + text + RESET);
   }
@@ -41,7 +43,7 @@ export function logYellow({ quiet = process.env.NODE_ENV === "test", text }: ILo
  * Print magenta text to the console (fancy)
  * @param args log arguments
  */
-export function logMagenta({ quiet = process.env.NODE_ENV === "test", text }: ILogArgs): void {
+export function logMagenta({ quiet = QUIET, text }: ILogArgs): void {
   if (!quiet) {
     console.log(MAGENTA + text + RESET);
   }

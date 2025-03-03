@@ -19,6 +19,7 @@ import {
   timeTravel,
   type IGenerateProofsArgs,
   type ITallyData,
+  isArm,
 } from "maci-sdk";
 
 import fs from "fs";
@@ -54,7 +55,7 @@ import {
   coordinatorKeypair,
   verifyingKeysArgs,
 } from "../constants";
-import { clean, getBackupFilenames, isArm, relayTestMessages } from "../utils";
+import { clean, getBackupFilenames, relayTestMessages } from "../utils";
 
 describe("keyChange tests", function test() {
   const useWasm = isArm();

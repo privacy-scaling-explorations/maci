@@ -1,5 +1,6 @@
 export {
   getGatekeeperTrait,
+  getGatekeeperContractNamesByTrait,
   getSemaphoreGatekeeperData,
   getZupassGatekeeperData,
   getEASGatekeeperData,
