@@ -39,7 +39,7 @@
     "@nomicfoundation/hardhat-ethers": "^3.0.8",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@vercel/blob": "^0.27.2",
-    "@zerodev/ecdsa-validator": "5.3.1",
+    "@zerodev/ecdsa-validator": "5.4.4",
     "@zerodev/permissions": "5.4.3",
     "@zerodev/sdk": "5.3.8",
     "class-transformer": "^0.5.1",
