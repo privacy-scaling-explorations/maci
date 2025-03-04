@@ -1,0 +1,54 @@
+import { Keypair } from "maci-domainobjs";
+
+import type { IInvalidateVotesArgs } from "./types";
+
+import { getPollContracts } from "../poll";
+
+import { generateVote } from "./generate";
+import { submitVote } from "./submit";
+import { getCoordinatorPubKey } from "./utils";
+
+/**
+ * Invalidate votes
+ * @dev This function is used to invalidate votes for a given poll
+ *      by sending a key change command with a new random key
+ *      Given messages are processed in reverse order, this will be processed before
+ *      previous votes and would require previous votes to have been casted with this
+ *      new key, which is impossible.
+ * @param args invalidate votes args
+ * @returns transaction hash
+ */
+export const invalidateVotes = async ({
+  maciAddress,
+  pollId,
+  signer,
+  maciPrivateKey,
+  stateIndex,
+}: IInvalidateVotesArgs): Promise<string | undefined> => {
+  const { poll: pollContract } = await getPollContracts({ maciAddress, pollId, signer });
+
+  const [maxVoteOption, pollAddress] = await Promise.all([pollContract.voteOptions(), pollContract.getAddress()]);
+  const coordinatorPubKey = await getCoordinatorPubKey(pollAddress, signer);
+
+  // generate the key change message
+  const message = generateVote({
+    pollId,
+    voteOptionIndex: 0n,
+    nonce: 0n,
+    privateKey: maciPrivateKey,
+    stateIndex,
+    // use a random key to invalidate the previous votes
+    newPubKey: new Keypair().pubKey,
+    voteWeight: 0n,
+    coordinatorPubKey,
+    maxVoteOption,
+  });
+
+  const receipt = await submitVote({
+    pollAddress,
+    vote: message,
+    signer,
+  });
+
+  return receipt;
+};

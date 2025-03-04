@@ -251,3 +251,33 @@ export interface IPublishData {
    */
   hash: string;
 }
+
+/**
+ * Invalidate votes args
+ */
+export interface IInvalidateVotesArgs {
+  /**
+   * MACI contract address
+   */
+  maciAddress: string;
+
+  /**
+   * Poll id
+   */
+  pollId: bigint;
+
+  /**
+   * Signer
+   */
+  signer: Signer;
+
+  /**
+   * MACI private key
+   */
+  maciPrivateKey: PrivKey;
+
+  /**
+   * State index
+   */
+  stateIndex: bigint;
+}
