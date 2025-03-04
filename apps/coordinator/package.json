@@ -46,7 +46,7 @@
     "class-validator": "^0.14.1",
     "dotenv": "^16.4.7",
     "ethers": "^6.13.5",
-    "hardhat": "^2.22.18",
+    "hardhat": "^2.22.19",
     "helmet": "^8.0.0",
     "lowdb": "^1.0.0",
     "maci-cli": "^2.5.0",
