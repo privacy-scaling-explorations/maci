@@ -9,25 +9,44 @@ import {
   deployVkRegistryContract,
   timeTravel,
   type IPollContractsData,
+  type IMaciContracts,
+  deployFreeForAllSignUpGatekeeper,
+  deployConstantInitialVoiceCreditProxy,
+  deployVerifier,
+  deployMaci,
 } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
-import { deploy } from "../../ts/commands";
-import { DeployedContracts } from "../../ts/utils";
+import { DEFAULT_INITIAL_VOICE_CREDITS } from "../../ts/utils";
 import { deployPollArgs, deployArgs, pollDuration, verifyingKeysArgs } from "../constants";
 import { clean } from "../utils";
 
 describe("poll", function test() {
   this.timeout(900000);
 
-  let maciAddresses: DeployedContracts;
+  let maciAddresses: IMaciContracts;
+  let signupGatekeeperContractAddress: string;
+  let initialVoiceCreditProxyContractAddress: string;
+  let verifierContractAddress: string;
   let pollAddresses: IPollContractsData;
   let signer: Signer;
 
   // before all tests we deploy the vk registry contract and set the verifying keys
   before(async () => {
     signer = await getDefaultSigner();
+    const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+    signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
+
+    const initialVoiceCreditProxy = await deployConstantInitialVoiceCreditProxy(
+      DEFAULT_INITIAL_VOICE_CREDITS,
+      signer,
+      true,
+    );
+    initialVoiceCreditProxyContractAddress = await initialVoiceCreditProxy.getAddress();
+
+    const verifier = await deployVerifier(signer, true);
+    verifierContractAddress = await verifier.getAddress();
 
     // we deploy the vk registry contract
     const vkRegistryAddress = await deployVkRegistryContract({ signer });
@@ -37,19 +56,24 @@ describe("poll", function test() {
     const startDate = await getBlockTimestamp(signer);
 
     // deploy the smart contracts
-    maciAddresses = await deploy({ ...deployArgs, signer });
+    maciAddresses = await deployMaci({
+      ...deployArgs,
+      signer,
+      signupGatekeeperAddress: signupGatekeeperContractAddress,
+    });
 
+    // deploy a poll contract
     pollAddresses = await deployPoll({
       ...deployPollArgs,
       signer,
       pollStartTimestamp: startDate,
       pollEndTimestamp: startDate + pollDuration,
       relayers: [await signer.getAddress()],
-      maciAddress: maciAddresses.maciAddress,
-      verifierContractAddress: maciAddresses.verifierAddress,
+      maciAddress: maciAddresses.maciContractAddress,
+      verifierContractAddress,
       vkRegistryContractAddress: vkRegistryAddress,
-      gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
-      initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+      gatekeeperContractAddress: signupGatekeeperContractAddress,
+      initialVoiceCreditProxyContractAddress,
     });
   });
 
@@ -60,11 +84,11 @@ describe("poll", function test() {
 
     it("should get current poll properly", async () => {
       const pollData = await getPoll({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         signer,
       });
       const samePollData = await getPoll({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         pollId: pollData.id,
         signer,
       });
@@ -75,15 +99,15 @@ describe("poll", function test() {
 
     it("should get finished poll properly", async () => {
       const pollData = await getPoll({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         provider: signer.provider!,
       });
 
       await timeTravel({ seconds: pollDuration, signer });
-      await mergeSignups({ pollId: BigInt(pollData.id), maciAddress: maciAddresses.maciAddress, signer });
+      await mergeSignups({ pollId: BigInt(pollData.id), maciAddress: maciAddresses.maciContractAddress, signer });
 
       const finishedPollData = await getPoll({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         signer,
       });
 
@@ -93,21 +117,21 @@ describe("poll", function test() {
     });
 
     it("should throw error if there are no signer and provider", async () => {
-      await expect(getPoll({ maciAddress: maciAddresses.maciAddress, pollId: -1n })).eventually.rejectedWith(
+      await expect(getPoll({ maciAddress: maciAddresses.maciContractAddress, pollId: -1n })).eventually.rejectedWith(
         "No signer and provider are provided",
       );
     });
 
     it("should throw error if current poll id is invalid", async () => {
-      await expect(getPoll({ maciAddress: maciAddresses.maciAddress, pollId: -1n, signer })).eventually.rejectedWith(
-        "Invalid poll id -1",
-      );
+      await expect(
+        getPoll({ maciAddress: maciAddresses.maciContractAddress, pollId: -1n, signer }),
+      ).eventually.rejectedWith("Invalid poll id -1");
     });
 
     it("should throw error if current poll is not deployed", async () => {
-      await expect(getPoll({ maciAddress: maciAddresses.maciAddress, pollId: 9000n, signer })).eventually.rejectedWith(
-        "MACI contract doesn't have any deployed poll 9000",
-      );
+      await expect(
+        getPoll({ maciAddress: maciAddresses.maciContractAddress, pollId: 9000n, signer }),
+      ).eventually.rejectedWith("MACI contract doesn't have any deployed poll 9000");
     });
   });
 });

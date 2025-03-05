@@ -7,6 +7,5 @@ export {
   DEFAULT_SG_DATA,
   DEFAULT_IVCP_DATA,
 } from "./defaults";
-export type { DeployArgs, DeployedContracts } from "./interfaces";
 export { readJSONFile, storeContractAddresses, readContractAddresses, resetContractAddresses } from "./storage";
 export { promptSensitiveValue } from "./prompts";

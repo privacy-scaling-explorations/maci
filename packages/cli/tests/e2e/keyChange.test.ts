@@ -20,15 +20,18 @@ import {
   type IGenerateProofsArgs,
   type ITallyData,
   isArm,
+  deployMaci,
+  IMaciContracts,
+  deployFreeForAllSignUpGatekeeper,
+  deployConstantInitialVoiceCreditProxy,
+  deployVerifier,
 } from "maci-sdk";
 
 import fs from "fs";
 
 import type { Signer } from "ethers";
 
-import { DeployedContracts } from "../../ts";
-import { deploy } from "../../ts/commands";
-import { DEFAULT_IVCP_DATA, DEFAULT_SG_DATA } from "../../ts/utils";
+import { DEFAULT_IVCP_DATA, DEFAULT_SG_DATA, DEFAULT_INITIAL_VOICE_CREDITS } from "../../ts/utils";
 import {
   coordinatorPrivKey,
   deployArgs,
@@ -61,7 +64,10 @@ describe("keyChange tests", function test() {
   const useWasm = isArm();
   this.timeout(900000);
 
-  let maciAddresses: DeployedContracts;
+  let maciAddresses: IMaciContracts;
+  let signupGatekeeperContractAddress: string;
+  let initialVoiceCreditProxyContractAddress: string;
+  let verifierContractAddress: string;
   let signer: Signer;
   let vkRegistryAddress: string;
 
@@ -89,6 +95,20 @@ describe("keyChange tests", function test() {
 
     // we deploy the vk registry contract
     vkRegistryAddress = await deployVkRegistryContract({ signer });
+
+    const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+    signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
+
+    const initialVoiceCreditProxy = await deployConstantInitialVoiceCreditProxy(
+      DEFAULT_INITIAL_VOICE_CREDITS,
+      signer,
+      true,
+    );
+    initialVoiceCreditProxyContractAddress = await initialVoiceCreditProxy.getAddress();
+
+    const verifier = await deployVerifier(signer, true);
+    verifierContractAddress = await verifier.getAddress();
+
     // we set the verifying keys
     await setVerifyingKeys({ ...(await verifyingKeysArgs(signer)), vkRegistryAddress });
   });
@@ -112,7 +132,11 @@ describe("keyChange tests", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy({ ...deployArgs, signer });
+      maciAddresses = await deployMaci({
+        ...deployArgs,
+        signer,
+        signupGatekeeperAddress: signupGatekeeperContractAddress,
+      });
 
       const startDate = await getBlockTimestamp(signer);
 
@@ -123,22 +147,22 @@ describe("keyChange tests", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciAddress: maciAddresses.maciAddress,
-        verifierContractAddress: maciAddresses.verifierAddress,
+        maciAddress: maciAddresses.maciContractAddress,
+        verifierContractAddress,
         vkRegistryContractAddress: vkRegistryAddress,
-        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
-        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+        gatekeeperContractAddress: signupGatekeeperContractAddress,
+        initialVoiceCreditProxyContractAddress,
       });
       stateIndex = BigInt(
         await signup({
-          maciAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           maciPubKey: user1Keypair.pubKey.serialize(),
           sgData: DEFAULT_SG_DATA,
           signer,
         }).then((result) => result.stateIndex),
       );
       await joinPoll({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         privateKey: user1Keypair.privKey.serialize(),
         stateIndex,
         pollId,
@@ -158,7 +182,7 @@ describe("keyChange tests", function test() {
         nonce: initialNonce,
         pollId,
         newVoteWeight: initialVoteAmount,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
         privateKey: pollPrivKey1.serialize(),
         signer,
@@ -184,14 +208,19 @@ describe("keyChange tests", function test() {
       const messages = votes
         .map((vote) => generateVote(vote))
         .map(({ message, ephemeralKeypair }) => ({
-          maciContractAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           poll: Number(pollId),
           data: message.data.map(String),
           publicKey: ephemeralKeypair.pubKey.asArray().map(String),
           hash: message.hash(ephemeralKeypair.pubKey).toString(),
         }));
 
-      await relayTestMessages({ messages, signer, pollId: Number(pollId), maciAddress: maciAddresses.maciAddress });
+      await relayTestMessages({
+        messages,
+        signer,
+        pollId: Number(pollId),
+        maciAddress: maciAddresses.maciContractAddress,
+      });
     });
 
     it("should publish a message to change the poll key and cast a new vote", async () => {
@@ -202,7 +231,7 @@ describe("keyChange tests", function test() {
         nonce: initialNonce,
         pollId,
         newVoteWeight: initialVoteAmount - 1n,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
         privateKey: pollPrivKey1.serialize(),
         signer,
@@ -212,14 +241,14 @@ describe("keyChange tests", function test() {
     it("should generate zk-SNARK proofs and verify them", async () => {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
+      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciContractAddress, signer });
       await generateProofs({
         ...generateProofsArgs,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         signer,
         ipfsMessageBackupFiles,
       });
-      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
+      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciContractAddress, signer });
       await verify({ ...(await verifyArgs(signer)) });
     });
 
@@ -250,7 +279,11 @@ describe("keyChange tests", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy({ ...deployArgs, signer });
+      maciAddresses = await deployMaci({
+        ...deployArgs,
+        signer,
+        signupGatekeeperAddress: signupGatekeeperContractAddress,
+      });
 
       const startDate = await getBlockTimestamp(signer);
 
@@ -261,22 +294,22 @@ describe("keyChange tests", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciAddress: maciAddresses.maciAddress,
-        verifierContractAddress: maciAddresses.verifierAddress,
+        maciAddress: maciAddresses.maciContractAddress,
+        verifierContractAddress,
         vkRegistryContractAddress: vkRegistryAddress,
-        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
-        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+        gatekeeperContractAddress: signupGatekeeperContractAddress,
+        initialVoiceCreditProxyContractAddress,
       });
       stateIndex = BigInt(
         await signup({
-          maciAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           maciPubKey: user1Keypair.pubKey.serialize(),
           sgData: DEFAULT_SG_DATA,
           signer,
         }).then((result) => result.stateIndex),
       );
       await joinPoll({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         privateKey: user1Keypair.privKey.serialize(),
         stateIndex,
         pollId,
@@ -308,14 +341,19 @@ describe("keyChange tests", function test() {
       const messages = votes
         .map((vote) => generateVote(vote))
         .map(({ message, ephemeralKeypair }) => ({
-          maciContractAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           poll: Number(pollId),
           data: message.data.map(String),
           publicKey: ephemeralKeypair.pubKey.asArray().map(String),
           hash: message.hash(ephemeralKeypair.pubKey).toString(),
         }));
 
-      await relayTestMessages({ messages, signer, pollId: Number(pollId), maciAddress: maciAddresses.maciAddress });
+      await relayTestMessages({
+        messages,
+        signer,
+        pollId: Number(pollId),
+        maciAddress: maciAddresses.maciContractAddress,
+      });
     });
 
     it("should publish a message to change the key and cast a new vote", async () => {
@@ -326,7 +364,7 @@ describe("keyChange tests", function test() {
         nonce: initialNonce + 1n,
         pollId,
         newVoteWeight: initialVoteAmount - 1n,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
         privateKey: user1Keypair.privKey.serialize(),
         signer,
@@ -336,14 +374,14 @@ describe("keyChange tests", function test() {
     it("should generate zk-SNARK proofs and verify them", async () => {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
+      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciContractAddress, signer });
       await generateProofs({
         ...generateProofsArgs,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         signer,
         ipfsMessageBackupFiles,
       });
-      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
+      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciContractAddress, signer });
       await verify({ ...(await verifyArgs(signer)) });
     });
 
@@ -374,7 +412,11 @@ describe("keyChange tests", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy({ ...deployArgs, signer });
+      maciAddresses = await deployMaci({
+        ...deployArgs,
+        signer,
+        signupGatekeeperAddress: signupGatekeeperContractAddress,
+      });
 
       const startDate = await getBlockTimestamp(signer);
 
@@ -385,22 +427,22 @@ describe("keyChange tests", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciAddress: maciAddresses.maciAddress,
-        verifierContractAddress: maciAddresses.verifierAddress,
+        maciAddress: maciAddresses.maciContractAddress,
+        verifierContractAddress,
         vkRegistryContractAddress: vkRegistryAddress,
-        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
-        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+        gatekeeperContractAddress: signupGatekeeperContractAddress,
+        initialVoiceCreditProxyContractAddress,
       });
       stateIndex = BigInt(
         await signup({
-          maciAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           maciPubKey: user1Keypair.pubKey.serialize(),
           sgData: DEFAULT_SG_DATA,
           signer,
         }).then((result) => result.stateIndex),
       );
       await joinPoll({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         privateKey: user1Keypair.privKey.serialize(),
         stateIndex,
         pollId,
@@ -421,7 +463,7 @@ describe("keyChange tests", function test() {
         nonce: initialNonce,
         pollId,
         newVoteWeight: initialVoteAmount,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
         privateKey: user1Keypair.privKey.serialize(),
         signer,
@@ -447,14 +489,19 @@ describe("keyChange tests", function test() {
       const messages = votes
         .map((vote) => generateVote(vote))
         .map(({ message, ephemeralKeypair }) => ({
-          maciContractAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           poll: Number(pollId),
           data: message.data.map(String),
           publicKey: ephemeralKeypair.pubKey.asArray().map(String),
           hash: message.hash(ephemeralKeypair.pubKey).toString(),
         }));
 
-      await relayTestMessages({ messages, signer, pollId: Number(pollId), maciAddress: maciAddresses.maciAddress });
+      await relayTestMessages({
+        messages,
+        signer,
+        pollId: Number(pollId),
+        maciAddress: maciAddresses.maciContractAddress,
+      });
     });
 
     it("should publish a message to change the poll key, and a new vote", async () => {
@@ -465,7 +512,7 @@ describe("keyChange tests", function test() {
         nonce: initialNonce,
         pollId,
         newVoteWeight: initialVoteAmount - 3n,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
         privateKey: user1Keypair.privKey.serialize(),
         signer,
@@ -475,14 +522,14 @@ describe("keyChange tests", function test() {
     it("should generate zk-SNARK proofs and verify them", async () => {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ ...timeTravelArgs, signer });
-      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
+      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciContractAddress, signer });
       await generateProofs({
         ...generateProofsArgs,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         signer,
         ipfsMessageBackupFiles,
       });
-      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
+      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciContractAddress, signer });
       await verify({ ...(await verifyArgs(signer)) });
     });
 

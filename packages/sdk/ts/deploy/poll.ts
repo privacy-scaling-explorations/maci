@@ -10,6 +10,8 @@ import type { IDeployPollArgs, IPollContractsData } from "./types";
 
 import { contractExists } from "../utils";
 
+import { DEFAULT_INITIAL_VOICE_CREDITS } from "./utils";
+
 /**
  * Deploy a poll
  * @param args - The arguments for the deploy poll command
@@ -60,7 +62,11 @@ export const deployPoll = async ({
   let initialVoiceCreditProxyAddress = initialVoiceCreditProxyContractAddress;
 
   if (!initialVoiceCreditProxyAddress) {
-    const contract = await deployConstantInitialVoiceCreditProxy(initialVoiceCredits, signer, true);
+    const contract = await deployConstantInitialVoiceCreditProxy(
+      initialVoiceCredits ?? DEFAULT_INITIAL_VOICE_CREDITS,
+      signer,
+      true,
+    );
     initialVoiceCreditProxyAddress = await contract.getAddress();
   }
 
@@ -110,7 +116,7 @@ export const deployPoll = async ({
     vkRegistry: vkRegistryContractAddress,
     mode,
     gatekeeper: gatekeeperContractAddress,
-    initialVoiceCreditProxy: initialVoiceCreditProxyContractAddress,
+    initialVoiceCreditProxy: initialVoiceCreditProxyAddress,
     relayers,
     voteOptions,
   });
@@ -152,6 +158,6 @@ export const deployPoll = async ({
     messageProcessorContractAddress,
     tallyContractAddress,
     gatekeeperContractAddress,
-    initialVoiceCreditProxyContractAddress,
+    initialVoiceCreditProxyContractAddress: initialVoiceCreditProxyAddress,
   };
 };

@@ -11,6 +11,7 @@ import {
   deployVkRegistry,
   Verifier,
   type ITallyData,
+  MACI__factory as MACIFactory,
 } from "maci-sdk";
 
 import fs from "fs";
@@ -168,7 +169,6 @@ export const deployTestContracts = async (
   initialVoiceCreditBalance: number,
   stateTreeDepth: number,
   signer?: Signer,
-  quiet = false,
   gatekeeper: FreeForAllGatekeeper | undefined = undefined,
 ): Promise<IDeployedTestContracts> => {
   const mockVerifierContract = await deployMockVerifier(signer, true);
@@ -188,15 +188,16 @@ export const deployTestContracts = async (
   const vkRegistryContract = await deployVkRegistry(signer, true);
   const [gatekeeperContractAddress] = await Promise.all([gatekeeperContract.getAddress()]);
 
-  const { maciContract } = await deployMaci({
-    signUpTokenGatekeeperContractAddress: gatekeeperContractAddress,
-    signer,
+  const { maciContractAddress } = await deployMaci({
+    signupGatekeeperAddress: gatekeeperContractAddress,
+    signer: signer!,
     stateTreeDepth,
-    quiet,
   });
 
+  const maci = MACIFactory.connect(maciContractAddress, signer);
+
   return {
-    maci: maciContract,
+    maci,
     verifier: mockVerifierContract as Verifier,
     vkRegistry: vkRegistryContract,
     gatekeeper: gatekeeperContract,

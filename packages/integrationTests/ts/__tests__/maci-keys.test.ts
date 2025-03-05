@@ -76,7 +76,6 @@ describe("integration tests private/public/keypair", () => {
         initialVoiceCredits,
         STATE_TREE_DEPTH,
         signer,
-        true,
       );
 
       const startDate = await getBlockTimestamp(signer);

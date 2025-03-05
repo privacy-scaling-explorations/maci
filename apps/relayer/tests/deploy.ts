@@ -1,6 +1,4 @@
 import hardhat from "hardhat";
-import { deploy } from "maci-cli";
-import { deployPoseidonContracts } from "maci-contracts";
 import { Keypair } from "maci-domainobjs";
 import {
   EMode,
@@ -9,9 +7,13 @@ import {
   setVerifyingKeys,
   signup,
   joinPoll,
+  deployMaci,
   deployPoll,
   deployVkRegistryContract,
   ContractStorage,
+  deployFreeForAllSignUpGatekeeper,
+  deployVerifier,
+  deployConstantInitialVoiceCreditProxy,
 } from "maci-sdk";
 
 import {
@@ -102,29 +104,24 @@ export class TestDeploy {
       signer,
     });
 
-    const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } =
-      await deployPoseidonContracts(signer, {});
+    const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+    const signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
 
-    const poseidonAddrs = await Promise.all([
-      PoseidonT3Contract.getAddress(),
-      PoseidonT4Contract.getAddress(),
-      PoseidonT5Contract.getAddress(),
-      PoseidonT6Contract.getAddress(),
-    ]).then(([poseidonT3, poseidonT4, poseidonT5, poseidonT6]) => ({
-      poseidonT3,
-      poseidonT4,
-      poseidonT5,
-      poseidonT6,
-    }));
-
-    const maciAddresses = await deploy({
+    const maciAddresses = await deployMaci({
       stateTreeDepth: 10,
-      poseidonT3Address: poseidonAddrs.poseidonT3,
-      poseidonT4Address: poseidonAddrs.poseidonT4,
-      poseidonT5Address: poseidonAddrs.poseidonT5,
-      poseidonT6Address: poseidonAddrs.poseidonT6,
       signer,
+      signupGatekeeperAddress: signupGatekeeperContractAddress,
     });
+
+    const initialVoiceCreditProxy = await deployConstantInitialVoiceCreditProxy(
+      DEFAULT_INITIAL_VOICE_CREDITS,
+      signer,
+      true,
+    );
+    const initialVoiceCreditProxyContractAddress = await initialVoiceCreditProxy.getAddress();
+
+    const verifier = await deployVerifier(signer, true);
+    const verifierContractAddress = await verifier.getAddress();
 
     const startDate = Math.floor(Date.now() / 1000) + 30;
 
@@ -138,24 +135,23 @@ export class TestDeploy {
       mode: EMode.NON_QV,
       relayers: [await signer.getAddress()],
       signer,
-      verifierContractAddress: maciAddresses.verifierAddress,
-      maciAddress: maciAddresses.maciAddress,
-      gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
-      initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+      verifierContractAddress,
+      maciAddress: maciAddresses.maciContractAddress,
+      gatekeeperContractAddress: signupGatekeeperContractAddress,
+      initialVoiceCreditProxyContractAddress,
       voteOptions: DEFAULT_VOTE_OPTIONS,
       vkRegistryContractAddress: vkRegistry,
-      initialVoiceCredits: DEFAULT_INITIAL_VOICE_CREDITS,
     });
 
     await signup({
-      maciAddress: maciAddresses.maciAddress,
+      maciAddress: maciAddresses.maciContractAddress,
       maciPubKey: user.pubKey.serialize(),
       sgData: DEFAULT_SG_DATA,
       signer,
     });
 
     const { pollStateIndex, timestamp, voiceCredits } = await joinPoll({
-      maciAddress: maciAddresses.maciAddress,
+      maciAddress: maciAddresses.maciContractAddress,
       pollId: 0n,
       privateKey: user.privKey.serialize(),
       stateIndex: 1n,
@@ -171,13 +167,13 @@ export class TestDeploy {
 
     const maciState = await genMaciStateFromContract({
       provider: signer.provider,
-      address: maciAddresses.maciAddress,
+      address: maciAddresses.maciContractAddress,
       coordinatorKeypair,
       pollId: 0n,
     });
 
     this.contractsData.maciState = maciState;
-    this.contractsData.maciContractAddress = maciAddresses.maciAddress;
+    this.contractsData.maciContractAddress = maciAddresses.maciContractAddress;
     this.contractsData.stateLeafIndex = Number(pollStateIndex);
     this.contractsData.timestamp = Number(timestamp);
     this.contractsData.voiceCredits = Number(voiceCredits);

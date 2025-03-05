@@ -12,13 +12,14 @@ import {
   type IVerifyArgs,
   type IProveOnChainArgs,
   type ITimeTravelArgs,
+  type IDeployMaciArgs,
 } from "maci-sdk";
 
 import { homedir } from "os";
 
 import type { Signer } from "ethers";
 
-import { DeployArgs, readJSONFile } from "../ts/utils";
+import { readJSONFile } from "../ts/utils";
 import { DEFAULT_INITIAL_VOICE_CREDITS, DEFAULT_VOTE_OPTIONS } from "../ts/utils/defaults";
 
 export const STATE_TREE_DEPTH = 10;
@@ -169,7 +170,7 @@ export const verifyingKeysArgs = async (
   };
 };
 
-export const deployArgs: Omit<DeployArgs, "signer"> = {
+export const deployArgs: Omit<IDeployMaciArgs, "signer" | "signupGatekeeperAddress"> = {
   stateTreeDepth: STATE_TREE_DEPTH,
 };
 

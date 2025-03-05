@@ -39,13 +39,16 @@ import {
   getGatekeeperTrait,
   getGatekeeperContractNamesByTrait,
   type ITallyData,
+  deployVerifier,
+  deployMaci,
+  deployFreeForAllSignUpGatekeeper,
+  genEmptyBallotRoots,
 } from "maci-sdk";
 
 import fs from "fs";
 import path from "path";
 
 import "./cliInit";
-import { deploy } from "./commands";
 import {
   DEFAULT_IVCP_DATA,
   DEFAULT_SG_DATA,
@@ -72,16 +75,15 @@ const getSigner = async (): Promise<Signer> => import("maci-contracts").then((m)
 program
   .command("create")
   .description("deploy the contracts")
-  .option("-i, --initialVoiceCredits <initialVoiceCredits>", "the initial voice credits", parseInt)
-  .option(
-    "-p, --initialVoiceCreditsProxyAddress <initialVoiceCreditsProxyAddress>",
-    "the initial voice credits proxy contract address",
-  )
   .option("--poseidonT3Address <poseidonT3Address>", "PoseidonT3 contract address")
   .option("--poseidonT4Address <poseidonT4Address>", "PoseidonT4 contract address")
   .option("--poseidonT5Address <poseidonT5Address>", "PoseidonT5 contract address")
   .option("--poseidonT6Address <poseidonT6Address>", "PoseidonT6 contract address")
   .option("-g, --signupGatekeeperAddress <signupGatekeeperAddress>", "the signup gatekeeper contract address")
+  .requiredOption(
+    "--signupGatekeeperContractName <signupGatekeeperContractName>",
+    "the signup gatekeeper contract name",
+  )
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .requiredOption("-s, --stateTreeDepth <stateTreeDepth>", "the state tree depth", parseInt)
@@ -89,18 +91,79 @@ program
     try {
       const signer = await getSigner();
 
-      await deploy({
+      banner(cmdOptions.quiet);
+
+      const network = await signer.provider?.getNetwork();
+
+      const [poseidonT3, poseidonT4, poseidonT5, poseidonT6] = readContractAddresses({
+        contractNames: [EContracts.PoseidonT3, EContracts.PoseidonT4, EContracts.PoseidonT5, EContracts.PoseidonT6],
+        network: network?.name,
+      });
+
+      let [signupGatekeeperContractAddress] = readContractAddresses({
+        contractNames: [cmdOptions.signupGatekeeperContractName.toString() as EContracts],
+        network: network?.name,
+      });
+
+      if (!signupGatekeeperContractAddress) {
+        const contract = await deployFreeForAllSignUpGatekeeper(signer, true);
+        signupGatekeeperContractAddress = await contract.getAddress();
+      }
+
+      // deploy a verifier contract
+      const verifierContract = await deployVerifier(signer, true);
+
+      const verifierContractAddress = await verifierContract.getAddress();
+
+      // deploy MACI, PollFactory and poseidon
+      const {
+        maciContractAddress,
+        pollFactoryContractAddress,
+        tallyFactoryContractAddress,
+        messageProcessorFactoryContractAddress,
+        poseidonAddresses,
+      } = await deployMaci({
+        signupGatekeeperAddress: signupGatekeeperContractAddress,
+        poseidonAddresses: {
+          poseidonT3,
+          poseidonT4,
+          poseidonT5,
+          poseidonT6,
+        },
+        signer,
         stateTreeDepth: cmdOptions.stateTreeDepth,
-        initialVoiceCredits: cmdOptions.initialVoiceCredits,
-        initialVoiceCreditsProxyAddress: cmdOptions.initialVoiceCreditsProxyAddress,
-        signupGatekeeperAddress: cmdOptions.signupGatekeeperAddress,
-        poseidonT3Address: cmdOptions.poseidonT3Address,
-        poseidonT4Address: cmdOptions.poseidonT4Address,
-        poseidonT5Address: cmdOptions.poseidonT5Address,
-        poseidonT6Address: cmdOptions.poseidonT6Address,
-        quiet: cmdOptions.quiet,
+      });
+
+      const emptyBallotRoots = genEmptyBallotRoots(cmdOptions.stateTreeDepth);
+
+      // save to the JSON File
+      await storeContractAddresses({
+        data: {
+          [cmdOptions.signupGatekeeperContractName]: { address: signupGatekeeperContractAddress, args: [] },
+          [EContracts.Verifier]: { address: verifierContractAddress, args: [] },
+          [EContracts.MACI]: {
+            address: maciContractAddress,
+            args: [
+              pollFactoryContractAddress,
+              messageProcessorFactoryContractAddress,
+              tallyFactoryContractAddress,
+              signupGatekeeperContractAddress,
+              cmdOptions.stateTreeDepth,
+              emptyBallotRoots.map((root) => root.toString()),
+            ],
+          },
+          [EContracts.MessageProcessorFactory]: { address: messageProcessorFactoryContractAddress, args: [] },
+          [EContracts.TallyFactory]: { address: tallyFactoryContractAddress, args: [] },
+          [EContracts.PollFactory]: { address: pollFactoryContractAddress, args: [] },
+          [EContracts.PoseidonT3]: { address: poseidonAddresses.poseidonT3, args: [] },
+          [EContracts.PoseidonT4]: { address: poseidonAddresses.poseidonT4, args: [] },
+          [EContracts.PoseidonT5]: { address: poseidonAddresses.poseidonT5, args: [] },
+          [EContracts.PoseidonT6]: { address: poseidonAddresses.poseidonT6, args: [] },
+        },
         signer,
       });
+
+      logGreen({ quiet: cmdOptions.quiet, text: success(`MACI deployed at:  ${maciContractAddress}`) });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -1046,8 +1109,3 @@ program
 if (require.main === module) {
   program.parseAsync(process.argv);
 }
-
-// export everything so we can use in other packages
-export { deploy } from "./commands";
-
-export type { DeployedContracts, DeployArgs } from "./utils";

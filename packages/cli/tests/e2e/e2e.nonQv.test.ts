@@ -18,12 +18,16 @@ import {
   timeTravel,
   type IGenerateProofsArgs,
   isArm,
+  deployMaci,
+  IMaciContracts,
+  deployFreeForAllSignUpGatekeeper,
+  deployConstantInitialVoiceCreditProxy,
+  deployVerifier,
 } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
-import { deploy } from "../../ts/commands";
-import { DEFAULT_SG_DATA, DeployedContracts } from "../../ts/utils";
+import { DEFAULT_INITIAL_VOICE_CREDITS, DEFAULT_SG_DATA } from "../../ts/utils";
 import {
   deployPollArgs,
   coordinatorPrivKey,
@@ -57,7 +61,10 @@ describe("e2e tests with non quadratic voting", function test() {
   const useWasm = isArm();
   this.timeout(900000);
 
-  let maciAddresses: DeployedContracts;
+  let maciAddresses: IMaciContracts;
+  let signupGatekeeperContractAddress: string;
+  let initialVoiceCreditProxyContractAddress: string;
+  let verifierContractAddress: string;
   let signer: Signer;
   let vkRegistryAddress: string;
 
@@ -85,6 +92,22 @@ describe("e2e tests with non quadratic voting", function test() {
 
     // we deploy the vk registry contract
     vkRegistryAddress = await deployVkRegistryContract({ signer });
+
+    const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+    signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
+
+    const initialVoiceCreditProxy = await deployConstantInitialVoiceCreditProxy(
+      DEFAULT_INITIAL_VOICE_CREDITS,
+      signer,
+      true,
+    );
+    initialVoiceCreditProxyContractAddress = await initialVoiceCreditProxy.getAddress();
+
+    const verifier = await deployVerifier(signer, true);
+    verifierContractAddress = await verifier.getAddress();
+
+    // we deploy the vk registry contract
+    vkRegistryAddress = await deployVkRegistryContract({ signer });
     // we set the verifying keys
     await setVerifyingKeys({ ...(await verifyingKeysArgs(signer, EMode.NON_QV)), vkRegistryAddress });
   });
@@ -98,11 +121,14 @@ describe("e2e tests with non quadratic voting", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy({ ...deployArgs, signer });
+      maciAddresses = await deployMaci({
+        ...deployArgs,
+        signer,
+        signupGatekeeperAddress: signupGatekeeperContractAddress,
+      });
 
       const startDate = await getBlockTimestamp(signer);
 
-      // deploy a poll contract
       // deploy a poll contract
       await deployPoll({
         ...deployPollArgs,
@@ -110,18 +136,18 @@ describe("e2e tests with non quadratic voting", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciAddress: maciAddresses.maciAddress,
-        verifierContractAddress: maciAddresses.verifierAddress,
+        maciAddress: maciAddresses.maciContractAddress,
+        verifierContractAddress,
         vkRegistryContractAddress: vkRegistryAddress,
-        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
-        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+        gatekeeperContractAddress: signupGatekeeperContractAddress,
+        initialVoiceCreditProxyContractAddress,
         mode: EMode.NON_QV,
       });
     });
 
     it("should signup one user", async () => {
       await signup({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         maciPubKey: user.pubKey.serialize(),
         sgData: DEFAULT_SG_DATA,
         signer,
@@ -136,7 +162,7 @@ describe("e2e tests with non quadratic voting", function test() {
         nonce: 1n,
         pollId: 0n,
         newVoteWeight: 9n,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
         privateKey: user.privKey.serialize(),
         signer,
@@ -145,14 +171,14 @@ describe("e2e tests with non quadratic voting", function test() {
 
     it("should generate zk-SNARK proofs and verify them", async () => {
       await timeTravel({ seconds: pollDuration, signer });
-      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
+      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciContractAddress, signer });
       const { tallyData: tallyFileData } = await generateProofs({
         ...generateProofsArgs,
         signer,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         useQuadraticVoting: false,
       });
-      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
+      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciContractAddress, signer });
       await verify({
         ...(await verifyArgs(signer)),
         tallyData: tallyFileData,
@@ -170,11 +196,14 @@ describe("e2e tests with non quadratic voting", function test() {
 
     before(async () => {
       // deploy the smart contracts
-      maciAddresses = await deploy({ ...deployArgs, signer });
+      maciAddresses = await deployMaci({
+        ...deployArgs,
+        signer,
+        signupGatekeeperAddress: signupGatekeeperContractAddress,
+      });
 
       const startDate = await getBlockTimestamp(signer);
 
-      // deploy a poll contract
       // deploy a poll contract
       await deployPoll({
         ...deployPollArgs,
@@ -182,18 +211,18 @@ describe("e2e tests with non quadratic voting", function test() {
         pollStartTimestamp: startDate,
         pollEndTimestamp: startDate + pollDuration,
         relayers: [await signer.getAddress()],
-        maciAddress: maciAddresses.maciAddress,
-        verifierContractAddress: maciAddresses.verifierAddress,
+        maciAddress: maciAddresses.maciContractAddress,
+        verifierContractAddress,
         vkRegistryContractAddress: vkRegistryAddress,
-        gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
-        initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+        gatekeeperContractAddress: signupGatekeeperContractAddress,
+        initialVoiceCreditProxyContractAddress,
         mode: EMode.NON_QV,
       });
     });
 
     it("should signup one user", async () => {
       await signup({
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         maciPubKey: user.pubKey.serialize(),
         sgData: DEFAULT_SG_DATA,
         signer,
@@ -216,7 +245,7 @@ describe("e2e tests with non quadratic voting", function test() {
 
       const messages = [
         {
-          maciContractAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           poll: 0,
           data: message.data.map(String),
           publicKey: ephemeralKeypair.pubKey.asArray().map(String),
@@ -224,21 +253,21 @@ describe("e2e tests with non quadratic voting", function test() {
         },
       ];
 
-      await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciAddress });
+      await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciContractAddress });
     });
 
     it("should generate zk-SNARK proofs and verify them", async () => {
       const ipfsMessageBackupFiles = await getBackupFilenames();
       await timeTravel({ seconds: pollDuration, signer });
-      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
+      await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciContractAddress, signer });
       const { tallyData: tallyFileData } = await generateProofs({
         ...generateProofsArgs,
         signer,
-        maciAddress: maciAddresses.maciAddress,
+        maciAddress: maciAddresses.maciContractAddress,
         ipfsMessageBackupFiles,
         useQuadraticVoting: false,
       });
-      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
+      await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciContractAddress, signer });
       await verify({
         ...(await verifyArgs(signer)),
         tallyData: tallyFileData,

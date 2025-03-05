@@ -29,7 +29,7 @@ describe("messages", () => {
       publicKey: keypair.pubKey.asArray().map(String) as [string, string],
       data: new Array(10).fill("0") as string[],
       hash: "hash",
-      maciContractAddress: ZeroAddress,
+      maciAddress: ZeroAddress,
       poll: 0,
     },
   ];

@@ -19,12 +19,16 @@ import {
   timeTravel,
   type IGenerateProofsArgs,
   isArm,
+  deployMaci,
+  type IMaciContracts,
+  deployVerifier,
+  deployConstantInitialVoiceCreditProxy,
+  deployFreeForAllSignUpGatekeeper,
 } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
-import { deploy } from "../../ts/commands";
-import { DEFAULT_SG_DATA, DeployArgs, DeployedContracts } from "../../ts/utils";
+import { DEFAULT_INITIAL_VOICE_CREDITS, DEFAULT_SG_DATA } from "../../ts/utils";
 import {
   coordinatorPrivKey,
   ceremonyProcessMessagesZkeyPath,
@@ -68,12 +72,12 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
   const useWasm = isArm();
   this.timeout(90000000);
 
-  let maciAddresses: DeployedContracts;
-  let signer: Signer;
+  let maciAddresses: IMaciContracts;
   let vkRegistryAddress: string;
-  const ceremonyDeployArgs: Omit<DeployArgs, "signer"> = {
-    stateTreeDepth,
-  };
+  let signupGatekeeperContractAddress: string;
+  let initialVoiceCreditProxyContractAddress: string;
+  let verifierContractAddress: string;
+  let signer: Signer;
 
   const generateProofsCeremonyArgs: Omit<IGenerateProofsArgs, "maciAddress" | "signer"> = {
     outputDir: testProofsDirPath,
@@ -100,6 +104,19 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
     before(async () => {
       signer = await getDefaultSigner();
 
+      const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
+
+      const initialVoiceCreditProxy = await deployConstantInitialVoiceCreditProxy(
+        DEFAULT_INITIAL_VOICE_CREDITS,
+        signer,
+        true,
+      );
+      initialVoiceCreditProxyContractAddress = await initialVoiceCreditProxy.getAddress();
+
+      const verifier = await deployVerifier(signer, true);
+      verifierContractAddress = await verifier.getAddress();
+
       // we deploy the vk registry contract
       vkRegistryAddress = await deployVkRegistryContract({ signer });
       // we set the verifying keys
@@ -113,7 +130,11 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
 
       before(async () => {
         // deploy the smart contracts
-        maciAddresses = await deploy({ ...ceremonyDeployArgs, signer });
+        maciAddresses = await deployMaci({
+          stateTreeDepth,
+          signer,
+          signupGatekeeperAddress: signupGatekeeperContractAddress,
+        });
 
         const startDate = await getBlockTimestamp(signer);
 
@@ -127,17 +148,17 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
           intStateTreeDepth,
           messageBatchSize,
           voteOptionTreeDepth,
-          maciAddress: maciAddresses.maciAddress,
-          verifierContractAddress: maciAddresses.verifierAddress,
+          maciAddress: maciAddresses.maciContractAddress,
+          verifierContractAddress,
           vkRegistryContractAddress: vkRegistryAddress,
-          gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
-          initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+          gatekeeperContractAddress: signupGatekeeperContractAddress,
+          initialVoiceCreditProxyContractAddress,
         });
       });
 
       it("should signup 1 user", async () => {
         await signup({
-          maciAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           maciPubKey: users[0].pubKey.serialize(),
           sgData: DEFAULT_SG_DATA,
           signer,
@@ -156,7 +177,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
             voteOptionIndex: randomVoteOption,
             nonce: 1n,
             newVoteWeight: randomVoteWeight,
-            maciAddress: maciAddresses.maciAddress,
+            maciAddress: maciAddresses.maciContractAddress,
             salt: genRandomSalt(),
             privateKey: users[0].privKey.serialize(),
             pollId: 0n,
@@ -196,27 +217,27 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
         const messages = votes
           .map((vote) => generateVote(vote))
           .map(({ message, ephemeralKeypair }) => ({
-            maciContractAddress: maciAddresses.maciAddress,
+            maciAddress: maciAddresses.maciContractAddress,
             poll: 0,
             data: message.data.map(String),
             publicKey: ephemeralKeypair.pubKey.asArray().map(String),
             hash: message.hash(ephemeralKeypair.pubKey).toString(),
           }));
 
-        await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciAddress });
+        await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciContractAddress });
       });
 
       it("should generate zk-SNARK proofs and verify them", async () => {
         const ipfsMessageBackupFiles = await getBackupFilenames();
         await timeTravel({ seconds: pollDuration, signer });
-        await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
+        await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciContractAddress, signer });
         await generateProofs({
           ...generateProofsCeremonyArgs,
-          maciAddress: maciAddresses.maciAddress,
           signer,
           ipfsMessageBackupFiles,
+          maciAddress: maciAddresses.maciContractAddress,
         });
-        await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
+        await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciContractAddress, signer });
         await verify({ ...(await verifyArgs(signer)) });
       });
     });
@@ -228,7 +249,11 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
 
       before(async () => {
         // deploy the smart contracts
-        maciAddresses = await deploy({ ...ceremonyDeployArgs, signer });
+        maciAddresses = await deployMaci({
+          stateTreeDepth,
+          signer,
+          signupGatekeeperAddress: signupGatekeeperContractAddress,
+        });
 
         const startDate = await getBlockTimestamp(signer);
 
@@ -242,11 +267,11 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
           intStateTreeDepth,
           messageBatchSize,
           voteOptionTreeDepth,
-          maciAddress: maciAddresses.maciAddress,
-          verifierContractAddress: maciAddresses.verifierAddress,
+          maciAddress: maciAddresses.maciContractAddress,
+          verifierContractAddress,
           vkRegistryContractAddress: vkRegistryAddress,
-          gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
-          initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+          gatekeeperContractAddress: signupGatekeeperContractAddress,
+          initialVoiceCreditProxyContractAddress,
         });
       });
 
@@ -255,7 +280,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
         for (let i = 0; i < 25; i += 1) {
           // eslint-disable-next-line no-await-in-loop
           await signup({
-            maciAddress: maciAddresses.maciAddress,
+            maciAddress: maciAddresses.maciContractAddress,
             maciPubKey: users[i].pubKey.serialize(),
             sgData: DEFAULT_SG_DATA,
             signer,
@@ -281,14 +306,14 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
             }),
           )
           .map(({ message, ephemeralKeypair }) => ({
-            maciContractAddress: maciAddresses.maciAddress,
+            maciAddress: maciAddresses.maciContractAddress,
             poll: 0,
             data: message.data.map(String),
             publicKey: ephemeralKeypair.pubKey.asArray().map(String),
             hash: message.hash(ephemeralKeypair.pubKey).toString(),
           }));
 
-        await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciAddress });
+        await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciContractAddress });
       });
 
       it("should publish 100 messages", async () => {
@@ -304,7 +329,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
             nonce: 1n,
             pollId: 0n,
             newVoteWeight: randomVoteWeight,
-            maciAddress: maciAddresses.maciAddress,
+            maciAddress: maciAddresses.maciContractAddress,
             salt: genRandomSalt(),
             privateKey: users[i].privKey.serialize(),
             signer,
@@ -315,14 +340,14 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
       it("should generate zk-SNARK proofs and verify them", async () => {
         const ipfsMessageBackupFiles = await getBackupFilenames();
         await timeTravel({ seconds: pollDuration, signer });
-        await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
+        await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciContractAddress, signer });
         await generateProofs({
           ...generateProofsCeremonyArgs,
-          maciAddress: maciAddresses.maciAddress,
           signer,
           ipfsMessageBackupFiles,
+          maciAddress: maciAddresses.maciContractAddress,
         });
-        await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
+        await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciContractAddress, signer });
         await verify({ ...(await verifyArgs(signer)) });
       });
     });
@@ -383,7 +408,11 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
 
       before(async () => {
         // deploy the smart contracts
-        maciAddresses = await deploy({ ...ceremonyDeployArgs, signer });
+        maciAddresses = await deployMaci({
+          stateTreeDepth,
+          signer,
+          signupGatekeeperAddress: signupGatekeeperContractAddress,
+        });
 
         const startDate = await getBlockTimestamp(signer);
 
@@ -397,18 +426,18 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
           intStateTreeDepth,
           messageBatchSize,
           voteOptionTreeDepth,
-          maciAddress: maciAddresses.maciAddress,
-          verifierContractAddress: maciAddresses.verifierAddress,
+          maciAddress: maciAddresses.maciContractAddress,
+          verifierContractAddress,
           vkRegistryContractAddress: vkRegistryAddress,
-          gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
-          initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+          gatekeeperContractAddress: signupGatekeeperContractAddress,
+          initialVoiceCreditProxyContractAddress,
           mode: EMode.NON_QV,
         });
       });
 
       it("should signup one user", async () => {
         await signup({
-          maciAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           maciPubKey: users[0].pubKey.serialize(),
           sgData: DEFAULT_SG_DATA,
           signer,
@@ -423,7 +452,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
           nonce: 1n,
           pollId: 0n,
           newVoteWeight: 9n,
-          maciAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           salt: genRandomSalt(),
           privateKey: users[0].privKey.serialize(),
           signer,
@@ -449,32 +478,32 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
         const messages = votes
           .map((vote) => generateVote(vote))
           .map(({ message, ephemeralKeypair }) => ({
-            maciContractAddress: maciAddresses.maciAddress,
+            maciAddress: maciAddresses.maciContractAddress,
             poll: 0,
             data: message.data.map(String),
             publicKey: ephemeralKeypair.pubKey.asArray().map(String),
             hash: message.hash(ephemeralKeypair.pubKey).toString(),
           }));
 
-        await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciAddress });
+        await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciContractAddress });
       });
 
       it("should generate zk-SNARK proofs and verify them", async () => {
         const ipfsMessageBackupFiles = await getBackupFilenames();
         await timeTravel({ seconds: pollDuration, signer });
-        await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-        const { tallyData: tallyFileData } = await generateProofs({
+        await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciContractAddress, signer });
+        const { tallyData } = await generateProofs({
           ...generateProofsArgs,
           signer,
           ipfsMessageBackupFiles,
-          maciAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           useQuadraticVoting: false,
         });
-        await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
+        await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciContractAddress, signer });
         await verify({
           ...(await verifyArgs(signer)),
-          tallyData: tallyFileData,
-          maciAddress: tallyFileData.maci,
+          tallyData,
+          maciAddress: maciAddresses.maciContractAddress,
         });
       });
     });
@@ -486,7 +515,11 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
 
       before(async () => {
         // deploy the smart contracts
-        maciAddresses = await deploy({ ...ceremonyDeployArgs, signer });
+        maciAddresses = await deployMaci({
+          stateTreeDepth,
+          signer,
+          signupGatekeeperAddress: signupGatekeeperContractAddress,
+        });
 
         const startDate = await getBlockTimestamp(signer);
 
@@ -500,11 +533,11 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
           intStateTreeDepth,
           messageBatchSize,
           voteOptionTreeDepth,
-          maciAddress: maciAddresses.maciAddress,
-          verifierContractAddress: maciAddresses.verifierAddress,
+          maciAddress: maciAddresses.maciContractAddress,
+          verifierContractAddress,
           vkRegistryContractAddress: vkRegistryAddress,
-          gatekeeperContractAddress: maciAddresses.signUpGatekeeperAddress,
-          initialVoiceCreditProxyContractAddress: maciAddresses.initialVoiceCreditProxyAddress,
+          gatekeeperContractAddress: signupGatekeeperContractAddress,
+          initialVoiceCreditProxyContractAddress,
           mode: EMode.NON_QV,
         });
       });
@@ -514,7 +547,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
         for (let i = 0; i < 25; i += 1) {
           // eslint-disable-next-line no-await-in-loop
           await signup({
-            maciAddress: maciAddresses.maciAddress,
+            maciAddress: maciAddresses.maciContractAddress,
             maciPubKey: users[i].pubKey.serialize(),
             sgData: DEFAULT_SG_DATA,
             signer,
@@ -540,14 +573,14 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
             }),
           )
           .map(({ message, ephemeralKeypair }) => ({
-            maciContractAddress: maciAddresses.maciAddress,
+            maciAddress: maciAddresses.maciContractAddress,
             poll: 0,
             data: message.data.map(String),
             publicKey: ephemeralKeypair.pubKey.asArray().map(String),
             hash: message.hash(ephemeralKeypair.pubKey).toString(),
           }));
 
-        await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciAddress });
+        await relayTestMessages({ messages, signer, pollId: 0, maciAddress: maciAddresses.maciContractAddress });
       });
 
       it("should publish 100 messages", async () => {
@@ -563,7 +596,7 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
             nonce: 1n,
             pollId: 0n,
             newVoteWeight: randomVoteWeight,
-            maciAddress: maciAddresses.maciAddress,
+            maciAddress: maciAddresses.maciContractAddress,
             salt: genRandomSalt(),
             privateKey: users[i].privKey.serialize(),
             signer,
@@ -574,19 +607,18 @@ describe("Stress tests with ceremony params (6,3,2,20)", function test() {
       it("should generate zk-SNARK proofs and verify them", async () => {
         const ipfsMessageBackupFiles = await getBackupFilenames();
         await timeTravel({ seconds: pollDuration, signer });
-        await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciAddress, signer });
-        const { tallyData: tallyFileData } = await generateProofs({
+        await mergeSignups({ ...mergeSignupsArgs, maciAddress: maciAddresses.maciContractAddress, signer });
+        const { tallyData } = await generateProofs({
           ...generateProofsArgs,
           signer,
-          maciAddress: maciAddresses.maciAddress,
+          maciAddress: maciAddresses.maciContractAddress,
           ipfsMessageBackupFiles,
           useQuadraticVoting: false,
         });
-        await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciAddress, signer });
+        await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciContractAddress, signer });
         await verify({
           ...(await verifyArgs(signer)),
-          tallyData: tallyFileData,
-          maciAddress: tallyFileData.maci,
+          tallyData,
         });
       });
     });
