@@ -1,19 +1,20 @@
 import { expect } from "chai";
-import { VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { genPrivKey, genPubKey } from "maci-crypto";
 import { Keypair, PrivKey, PubKey } from "maci-domainobjs";
-import { Poll__factory as PollFactory, type Poll, getDefaultSigner, EMode, getBlockTimestamp } from "maci-sdk";
+import { Poll__factory as PollFactory, type Poll, getDefaultSigner } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
 import {
-  INT_STATE_TREE_DEPTH,
-  STATE_TREE_DEPTH,
-  VOTE_OPTION_TREE_DEPTH,
-  initialVoiceCredits,
-  MESSAGE_BATCH_SIZE,
-} from "./utils/constants";
-import { deployTestContracts } from "./utils/utils";
+  pollJoinedZkey,
+  pollJoiningZkey,
+  pollWasm,
+  pollWitgen,
+  processMessagesZkeyPathNonQv,
+  rapidsnark,
+  tallyVotesZkeyPathNonQv,
+} from "../constants";
+import { TestingClass } from "../testingClass";
 
 describe("integration tests private/public/keypair", () => {
   describe("crypto/domainobjs", () => {
@@ -67,41 +68,26 @@ describe("integration tests private/public/keypair", () => {
   describe("crypto/domainobjs/contracts", () => {
     let pollContract: Poll;
 
+    let testingClass: TestingClass;
+
     let signer: Signer;
     const coordinatorKeypair = new Keypair();
 
     before(async () => {
       signer = await getDefaultSigner();
-      const { maci, verifier, vkRegistry, gatekeeper, initialVoiceCreditProxy } = await deployTestContracts(
-        initialVoiceCredits,
-        STATE_TREE_DEPTH,
-        signer,
-      );
 
-      const startDate = await getBlockTimestamp(signer);
-
-      // deploy a poll
-      await maci.deployPoll({
-        startDate,
-        endDate: startDate + 30,
-        treeDepths: {
-          intStateTreeDepth: INT_STATE_TREE_DEPTH,
-          voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
-        },
-        messageBatchSize: MESSAGE_BATCH_SIZE,
-        coordinatorPubKey: coordinatorKeypair.pubKey.asContractParam(),
-        verifier,
-        vkRegistry,
-        mode: EMode.NON_QV,
-        gatekeeper,
-        initialVoiceCreditProxy,
-        relayers: [],
-        voteOptions: VOTE_OPTION_TREE_ARITY ** VOTE_OPTION_TREE_DEPTH,
+      testingClass = await TestingClass.getInstance({
+        pollJoiningZkeyPath: pollJoiningZkey,
+        pollJoinedZkeyPath: pollJoinedZkey,
+        processMessagesZkeyPath: processMessagesZkeyPathNonQv,
+        tallyVotesZkeyPath: tallyVotesZkeyPathNonQv,
+        pollWasm,
+        pollWitgen,
+        rapidsnark,
       });
 
-      // we know it's the first poll so id is 0
-      const { poll } = await maci.polls(0);
-      pollContract = PollFactory.connect(poll, signer);
+      const pollContractAddress = testingClass.contractsData.polls![0];
+      pollContract = PollFactory.connect(pollContractAddress, signer);
     });
 
     it("should have the correct coordinator pub key set on chain", async () => {

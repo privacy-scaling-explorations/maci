@@ -3,11 +3,22 @@ import { HttpStatus, ValidationPipe, type INestApplication } from "@nestjs/commo
 import { Test } from "@nestjs/testing";
 import { Keypair } from "maci-domainobjs";
 import { formatProofForVerifierContract, genProofSnarkjs } from "maci-sdk";
+import { TestingClass } from "maci-testing";
 import request from "supertest";
 
 import { AppModule } from "../ts/app.module.js";
 
-import { pollJoinedWasm, pollJoinedZkey, type TApp } from "./constants.js";
+import {
+  pollJoinedWasm,
+  pollJoinedZkey,
+  pollWasm,
+  type TApp,
+  tallyVotesZkeyPathNonQv,
+  pollJoiningZkey,
+  processMessagesZkeyPathNonQv,
+  pollWitgen,
+  rapidsnark,
+} from "./constants.js";
 
 jest.unmock("maci-sdk");
 
@@ -18,22 +29,31 @@ describe("Integration messages", () => {
   let maciContractAddress: string;
 
   beforeAll(async () => {
-    const { TestDeploy } = await import("./deploy.js");
-    await TestDeploy.sleep(10_000);
-    const testDeploy = await TestDeploy.getInstance();
+    await TestingClass.sleep(10_000);
+    const testDeploy = await TestingClass.getInstance({
+      pollJoiningZkeyPath: pollJoiningZkey,
+      pollJoinedZkeyPath: pollJoinedZkey,
+      processMessagesZkeyPath: processMessagesZkeyPathNonQv,
+      tallyVotesZkeyPath: tallyVotesZkeyPathNonQv,
+      pollWasm,
+      pollWitgen,
+      rapidsnark,
+    });
     const poll = testDeploy.contractsData.maciState!.polls.get(0n);
 
     poll!.updatePoll(BigInt(testDeploy.contractsData.maciState!.pubKeys.length));
 
-    stateLeafIndex = Number(testDeploy.contractsData.stateLeafIndex);
+    const [user] = testDeploy.contractsData.users!;
+
+    stateLeafIndex = Number(user.stateLeafIndex);
 
     maciContractAddress = testDeploy.contractsData.maciContractAddress!;
 
     circuitInputs = poll!.joinedCircuitInputs({
-      maciPrivKey: testDeploy.contractsData.user!.privKey,
-      stateLeafIndex: BigInt(testDeploy.contractsData.stateLeafIndex!),
-      voiceCreditsBalance: BigInt(testDeploy.contractsData.voiceCredits!),
-      joinTimestamp: BigInt(testDeploy.contractsData.timestamp!),
+      maciPrivKey: user.keypair.privKey,
+      stateLeafIndex: user.stateLeafIndex!,
+      voiceCreditsBalance: user.voiceCreditBalance,
+      joinTimestamp: user.timestamp!,
     }) as unknown as typeof circuitInputs;
 
     const moduleFixture = await Test.createTestingModule({
@@ -46,8 +66,7 @@ describe("Integration messages", () => {
   });
 
   afterAll(async () => {
-    const { TestDeploy } = await import("./deploy.js");
-    TestDeploy.clean();
+    TestingClass.clean();
     await app.close();
   });
 

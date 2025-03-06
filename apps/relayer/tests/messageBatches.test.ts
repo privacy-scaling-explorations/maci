@@ -3,31 +3,47 @@ import { HttpStatus, ValidationPipe, type INestApplication } from "@nestjs/commo
 import { Test } from "@nestjs/testing";
 import { Keypair } from "maci-domainobjs";
 import { formatProofForVerifierContract, genProofSnarkjs } from "maci-sdk";
+import { TestingClass, User } from "maci-testing";
 import request from "supertest";
 
 import { AppModule } from "../ts/app.module.js";
 
-import { pollJoinedWasm, pollJoinedZkey, type TApp } from "./constants.js";
+import {
+  pollJoinedWasm,
+  pollJoinedZkey,
+  pollJoiningZkey,
+  pollWasm,
+  pollWitgen,
+  processMessagesZkeyPathNonQv,
+  rapidsnark,
+  tallyVotesZkeyPathNonQv,
+  type TApp,
+} from "./constants.js";
 
 jest.unmock("maci-sdk");
 
 describe("Integration message batches", () => {
   let app: INestApplication<TApp>;
-  let stateLeafIndex: number;
   let maciContractAddress: string;
-  let user: Keypair;
+  let user: User;
 
   beforeAll(async () => {
-    const { TestDeploy } = await import("./deploy.js");
-    await TestDeploy.sleep(1_000);
-    const testDeploy = await TestDeploy.getInstance();
+    await TestingClass.sleep(1_000);
+    const testDeploy = await TestingClass.getInstance({
+      pollJoiningZkeyPath: pollJoiningZkey,
+      pollJoinedZkeyPath: pollJoinedZkey,
+      processMessagesZkeyPath: processMessagesZkeyPathNonQv,
+      tallyVotesZkeyPath: tallyVotesZkeyPathNonQv,
+      pollWasm,
+      pollWitgen,
+      rapidsnark,
+    });
     const poll = testDeploy.contractsData.maciState!.polls.get(0n);
 
     poll!.updatePoll(BigInt(testDeploy.contractsData.maciState!.pubKeys.length));
 
-    stateLeafIndex = Number(testDeploy.contractsData.stateLeafIndex);
     maciContractAddress = testDeploy.contractsData.maciContractAddress!;
-    user = testDeploy.contractsData.user!;
+    [user] = testDeploy.contractsData.users!;
 
     const moduleFixture = await Test.createTestingModule({
       imports: [AppModule],
@@ -38,10 +54,10 @@ describe("Integration message batches", () => {
     await app.listen(3001);
 
     const circuitInputs = poll!.joinedCircuitInputs({
-      maciPrivKey: testDeploy.contractsData.user!.privKey,
-      stateLeafIndex: BigInt(testDeploy.contractsData.stateLeafIndex!),
-      voiceCreditsBalance: BigInt(testDeploy.contractsData.voiceCredits!),
-      joinTimestamp: BigInt(testDeploy.contractsData.timestamp!),
+      maciPrivKey: user.keypair.privKey,
+      stateLeafIndex: user.stateLeafIndex!,
+      voiceCreditsBalance: user.voiceCreditBalance,
+      joinTimestamp: user.timestamp!,
     });
 
     const { proof } = await genProofSnarkjs({
@@ -63,15 +79,14 @@ describe("Integration message batches", () => {
         ],
         poll: 0,
         maciContractAddress,
-        stateLeafIndex,
+        stateLeafIndex: Number(user.stateLeafIndex!),
         proof: formatProofForVerifierContract(proof),
       })
       .expect(HttpStatus.CREATED);
   });
 
   afterAll(async () => {
-    const { TestDeploy } = await import("./deploy.js");
-    TestDeploy.clean();
+    TestingClass.clean();
     await app.close();
   });
 
@@ -111,7 +126,7 @@ describe("Integration message batches", () => {
           skip: 0,
           poll: 0,
           maciContractAddress,
-          publicKeys: [user!.pubKey.serialize()],
+          publicKeys: [user!.keypair.pubKey.serialize()],
         })
         .expect(HttpStatus.OK);
 

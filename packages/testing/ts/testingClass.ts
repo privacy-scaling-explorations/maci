@@ -21,44 +21,124 @@ import {
   MESSAGE_BATCH_SIZE,
   STATE_TREE_DEPTH,
   VOTE_OPTION_TREE_DEPTH,
-  pollJoinedZkey,
-  pollJoiningZkey,
-  processMessagesZkeyPathNonQv,
-  tallyVotesZkeyPathNonQv,
-  pollWasm,
-  pollWitgen,
-  rapidsnark,
   DEFAULT_VOTE_OPTIONS,
   DEFAULT_INITIAL_VOICE_CREDITS,
-} from "./constants.js";
+  DEFAULT_SG_DATA,
+  DEFAULT_IVCP_DATA,
+} from "./constants";
+import { type IContractsData } from "./types";
+import { User } from "./user";
+/**
+ * Interface for the paths to the zkey files and the wasm and witgen files
+ */
+export interface ITestingClassPaths {
+  /**
+   * Path to the pollJoining zkey file
+   */
+  pollJoiningZkeyPath: string;
 
-interface IContractsData {
-  initialized: boolean;
-  user?: Keypair;
-  voiceCredits?: number;
-  timestamp?: number;
-  stateLeafIndex?: number;
-  maciContractAddress?: string;
-  maciState?: Awaited<ReturnType<typeof genMaciStateFromContract>>;
+  /**
+   * Path to the pollJoined zkey file
+   */
+  pollJoinedZkeyPath: string;
+
+  /**
+   * Path to the processMessages zkey file
+   */
+  processMessagesZkeyPath: string;
+
+  /**
+   * Path to the tallyVotes zkey file
+   */
+  tallyVotesZkeyPath: string;
+
+  /**
+   * Path to the poll wasm file
+   */
+  pollWasm: string;
+
+  /**
+   * Path to the poll witgen file
+   */
+  pollWitgen: string;
+
+  /**
+   * Path to the rapidsnark file
+   */
+  rapidsnark: string;
 }
 
-const DEFAULT_SG_DATA = "0x0000000000000000000000000000000000000000000000000000000000000000";
-const DEFAULT_IVCP_DATA = "0x0000000000000000000000000000000000000000000000000000000000000000";
+/**
+ * A class that represents the testing class used in MACI tests
+ * It can be used to deploy and initialize the contracts
+ */
+export class TestingClass {
+  private static INSTANCE?: TestingClass;
 
-export class TestDeploy {
-  private static INSTANCE?: TestDeploy;
+  /**
+   * Paths to the pollJoining zkey file
+   */
+  private pollJoiningZkeyPath: string;
+
+  /**
+   * Paths to the pollJoined zkey file
+   */
+  private pollJoinedZkeyPath: string;
+
+  /**
+   * Paths to the processMessages zkey file
+   */
+  private processMessagesZkeyPath: string;
+
+  /**
+   * Paths to the tallyVotes zkey file
+   */
+  private tallyVotesZkeyPath: string;
+
+  /**
+   * Paths to the poll wasm file
+   */
+  private pollWasm: string;
+
+  /**
+   * Paths to the poll witgen file
+   */
+  private pollWitgen: string;
+
+  /**
+   * Paths to the rapidsnark file
+   */
+  private rapidsnark: string;
 
   readonly contractsData: IContractsData = {
     initialized: false,
   };
 
-  static async getInstance(): Promise<TestDeploy> {
-    if (!TestDeploy.INSTANCE) {
-      TestDeploy.INSTANCE = new TestDeploy();
-      await TestDeploy.INSTANCE.contractsInit();
+  constructor({
+    pollJoiningZkeyPath,
+    pollJoinedZkeyPath,
+    processMessagesZkeyPath,
+    tallyVotesZkeyPath,
+    pollWasm,
+    pollWitgen,
+    rapidsnark,
+  }: ITestingClassPaths) {
+    this.pollJoiningZkeyPath = pollJoiningZkeyPath;
+    this.pollJoinedZkeyPath = pollJoinedZkeyPath;
+    this.processMessagesZkeyPath = processMessagesZkeyPath;
+    this.tallyVotesZkeyPath = tallyVotesZkeyPath;
+    this.pollWasm = pollWasm;
+    this.pollWitgen = pollWitgen;
+    this.rapidsnark = rapidsnark;
+  }
+
+  static async getInstance(paths: ITestingClassPaths): Promise<TestingClass> {
+    if (!TestingClass.INSTANCE) {
+      TestingClass.INSTANCE = new TestingClass(paths);
+      await TestingClass.INSTANCE.contractsInit();
     }
 
-    return TestDeploy.INSTANCE;
+    return TestingClass.INSTANCE;
   }
 
   static async sleep(ms: number): Promise<void> {
@@ -83,10 +163,10 @@ export class TestDeploy {
     const user = new Keypair();
 
     const { pollJoiningVk, pollJoinedVk, processVk, tallyVk } = await extractAllVks({
-      pollJoiningZkeyPath: pollJoiningZkey,
-      pollJoinedZkeyPath: pollJoinedZkey,
-      processMessagesZkeyPath: processMessagesZkeyPathNonQv,
-      tallyVotesZkeyPath: tallyVotesZkeyPathNonQv,
+      pollJoiningZkeyPath: this.pollJoiningZkeyPath,
+      pollJoinedZkeyPath: this.pollJoinedZkeyPath,
+      processMessagesZkeyPath: this.processMessagesZkeyPath,
+      tallyVotesZkeyPath: this.tallyVotesZkeyPath,
     });
 
     const vkRegistry = await deployVkRegistryContract({ signer });
@@ -128,7 +208,7 @@ export class TestDeploy {
 
     const startDate = Math.floor(Date.now() / 1000) + 30;
 
-    await deployPoll({
+    const { pollContractAddress } = await deployPoll({
       pollStartTimestamp: startDate,
       pollEndTimestamp: startDate + 130,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
@@ -153,15 +233,15 @@ export class TestDeploy {
       signer,
     });
 
-    const { pollStateIndex, timestamp, voiceCredits } = await joinPoll({
+    const { pollStateIndex, voiceCredits, timestamp } = await joinPoll({
       maciAddress: maciAddresses.maciContractAddress,
       pollId: 0n,
       privateKey: user.privKey.serialize(),
       stateIndex: 1n,
-      pollJoiningZkey,
-      pollWasm,
-      pollWitgen,
-      rapidsnark,
+      pollJoiningZkey: this.pollJoiningZkeyPath,
+      pollWasm: this.pollWasm,
+      pollWitgen: this.pollWitgen,
+      rapidsnark: this.rapidsnark,
       signer,
       useWasm: true,
       sgDataArg: DEFAULT_SG_DATA,
@@ -177,10 +257,11 @@ export class TestDeploy {
 
     this.contractsData.maciState = maciState;
     this.contractsData.maciContractAddress = maciAddresses.maciContractAddress;
-    this.contractsData.stateLeafIndex = Number(pollStateIndex);
-    this.contractsData.timestamp = Number(timestamp);
-    this.contractsData.voiceCredits = Number(voiceCredits);
-    this.contractsData.user = user;
+    this.contractsData.users = [];
+    this.contractsData.users.push(
+      new User(user, [], BigInt(voiceCredits), 0n, BigInt(timestamp), BigInt(pollStateIndex)),
+    );
     this.contractsData.initialized = true;
+    this.contractsData.polls?.push(pollContractAddress);
   }
 }

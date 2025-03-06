@@ -31,8 +31,10 @@ import fs from "fs";
 
 import type { Signer } from "ethers";
 
-import { DEFAULT_IVCP_DATA, DEFAULT_SG_DATA, DEFAULT_INITIAL_VOICE_CREDITS } from "../../ts/utils";
 import {
+  DEFAULT_IVCP_DATA,
+  DEFAULT_SG_DATA,
+  DEFAULT_INITIAL_VOICE_CREDITS,
   coordinatorPrivKey,
   deployArgs,
   deployPollArgs,

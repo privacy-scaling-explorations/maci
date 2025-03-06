@@ -1,26 +1,43 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { expect } from "chai";
-import { Signer } from "ethers";
 import { Keypair } from "maci-domainobjs";
-import {
-  FreeForAllGatekeeper,
-  deployConstantInitialVoiceCreditProxy,
-  deployFreeForAllSignUpGatekeeper,
-  deployMaci,
-  deployMockVerifier,
-  deployVkRegistry,
-  Verifier,
-  type ITallyData,
-  MACI__factory as MACIFactory,
-} from "maci-sdk";
+import { type ITallyData } from "maci-sdk";
+import { cidToBytes32, createCidFromObject, relayMessages } from "maci-sdk";
 
 import fs from "fs";
 import { arch } from "os";
 import path from "path";
 
-import { backupFolder, defaultVote } from "./constants";
-import { IVote, IBriber, IDeployedTestContracts } from "./interfaces";
-import { UserCommand } from "./user";
+import type { IVote, IBriber, IRelayTestMessagesArgs } from "./types";
+
+import { User } from "./user";
+
+export const backupFolder = "./backup";
+
+export const defaultVote = {
+  voteWeight: 1n,
+  nonce: 1n,
+  maxVoteWeight: 25n,
+  voteCreditBalance: 1n,
+  voteOptionIndex: 0n,
+};
+
+/**
+ * Read a JSON file from disk
+ * @param filePath - the path of the file
+ * @returns the JSON object
+ */
+export const readJSONFile = async <T = Record<string, Record<string, string> | undefined>>(
+  filePath: string,
+): Promise<T> => {
+  const isExists = fs.existsSync(filePath);
+
+  if (!isExists) {
+    throw new Error(`File ${filePath} does not exist`);
+  }
+
+  return fs.promises.readFile(filePath).then((res) => JSON.parse(res.toString()) as T);
+};
 
 /**
  * Test utility to generate vote objects for integrationt ests
@@ -82,8 +99,8 @@ export const genTestUserCommands = (
   numVotesPerUser: number,
   bribers?: IBriber[],
   presetVotes?: IVote[][],
-): UserCommand[] => {
-  const usersCommands: UserCommand[] = [];
+): User[] => {
+  const usersCommands: User[] = [];
   for (let i = 0; i < numUsers; i += 1) {
     const userKeypair = new Keypair();
     const votes: IVote[] = [];
@@ -99,7 +116,7 @@ export const genTestUserCommands = (
       votes.push(vote);
     }
 
-    const userCommand = new UserCommand(userKeypair, votes, defaultVote.maxVoteWeight, defaultVote.nonce);
+    const userCommand = new User(userKeypair, votes, defaultVote.maxVoteWeight, defaultVote.nonce);
     usersCommands.push(userCommand);
   }
 
@@ -157,55 +174,6 @@ export const sleep = async (ms: number): Promise<void> =>
 export const isArm = (): boolean => arch().includes("arm");
 
 /**
- * Deploy a set of smart contracts that can be used for testing.
- * @param initialVoiceCreditBalance - the initial voice credit balance for each user
- * @param stateTreeDepth - the depth of the state tree
- * @param signer - the signer to use
- * @param quiet - whether to suppress console output
- * @param gatekeeper - the gatekeeper contract to use
- * @returns the deployed contracts
- */
-export const deployTestContracts = async (
-  initialVoiceCreditBalance: number,
-  stateTreeDepth: number,
-  signer?: Signer,
-  gatekeeper: FreeForAllGatekeeper | undefined = undefined,
-): Promise<IDeployedTestContracts> => {
-  const mockVerifierContract = await deployMockVerifier(signer, true);
-
-  let gatekeeperContract = gatekeeper;
-  if (!gatekeeperContract) {
-    gatekeeperContract = await deployFreeForAllSignUpGatekeeper(signer, true);
-  }
-
-  const constantInitialVoiceCreditProxyContract = await deployConstantInitialVoiceCreditProxy(
-    initialVoiceCreditBalance,
-    signer,
-    true,
-  );
-
-  // VkRegistry
-  const vkRegistryContract = await deployVkRegistry(signer, true);
-  const [gatekeeperContractAddress] = await Promise.all([gatekeeperContract.getAddress()]);
-
-  const { maciContractAddress } = await deployMaci({
-    signupGatekeeperAddress: gatekeeperContractAddress,
-    signer: signer!,
-    stateTreeDepth,
-  });
-
-  const maci = MACIFactory.connect(maciContractAddress, signer);
-
-  return {
-    maci,
-    verifier: mockVerifierContract as Verifier,
-    vkRegistry: vkRegistryContract,
-    gatekeeper: gatekeeperContract,
-    initialVoiceCreditProxy: constantInitialVoiceCreditProxyContract,
-  };
-};
-
-/**
  * Write backup data to file.
  *
  * @param name file name without extension
@@ -217,4 +185,55 @@ export const writeBackupFile = async (name: string, data: unknown): Promise<void
   }
 
   await fs.promises.writeFile(path.resolve(backupFolder, `${name}.json`), JSON.stringify(data));
+};
+
+/**
+ * Test utility to clean up the proofs directory
+ * and the tally.json file
+ */
+export const clean = async (withBackup = true): Promise<void> => {
+  const files = await fs.promises.readdir("./proofs");
+
+  await Promise.all(files.map((file) => fs.promises.rm(path.resolve("./proofs", file))));
+
+  if (fs.existsSync("./tally.json")) {
+    await fs.promises.rm("./tally.json");
+  }
+
+  if (withBackup && fs.existsSync(backupFolder)) {
+    await fs.promises.rm(backupFolder, { recursive: true, force: true });
+  }
+};
+
+/**
+ * Get backup filenames from backup folder.
+ *
+ * @returns filenames
+ */
+export const getBackupFilenames = async (): Promise<string[]> =>
+  fs.promises.readdir(backupFolder).then((paths) => paths.map((filename) => path.resolve(backupFolder, filename)));
+
+/**
+ * Relay test messages to mock contracts and save messages to backup folder.
+ *
+ * @param args relay test messages arguments
+ */
+export const relayTestMessages = async ({
+  messages,
+  maciAddress,
+  pollId,
+  signer,
+}: IRelayTestMessagesArgs): Promise<void> => {
+  const cid = await createCidFromObject(messages);
+  const ipfsHash = await cidToBytes32(cid);
+
+  await writeBackupFile(ipfsHash, messages);
+
+  await relayMessages({
+    maciAddress,
+    pollId,
+    ipfsHash,
+    messages,
+    signer,
+  });
 };
