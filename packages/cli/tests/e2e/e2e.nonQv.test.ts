@@ -62,7 +62,6 @@ describe("e2e tests with non quadratic voting", function test() {
   this.timeout(900000);
 
   let maciAddresses: IMaciContracts;
-  let signupGatekeeperContractAddress: string;
   let initialVoiceCreditProxyContractAddress: string;
   let verifierContractAddress: string;
   let signer: Signer;
@@ -93,9 +92,6 @@ describe("e2e tests with non quadratic voting", function test() {
     // we deploy the vk registry contract
     vkRegistryAddress = await deployVkRegistryContract({ signer });
 
-    const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
-    signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
-
     const initialVoiceCreditProxy = await deployConstantInitialVoiceCreditProxy(
       DEFAULT_INITIAL_VOICE_CREDITS,
       signer,
@@ -120,6 +116,12 @@ describe("e2e tests with non quadratic voting", function test() {
     const user = new Keypair();
 
     before(async () => {
+      const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
+
+      const pollGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const pollGatekeeperContractAddress = await pollGatekeeper.getAddress();
+
       // deploy the smart contracts
       maciAddresses = await deployMaci({
         ...deployArgs,
@@ -139,7 +141,7 @@ describe("e2e tests with non quadratic voting", function test() {
         maciAddress: maciAddresses.maciContractAddress,
         verifierContractAddress,
         vkRegistryContractAddress: vkRegistryAddress,
-        gatekeeperContractAddress: signupGatekeeperContractAddress,
+        gatekeeperContractAddress: pollGatekeeperContractAddress,
         initialVoiceCreditProxyContractAddress,
         mode: EMode.NON_QV,
       });
@@ -195,6 +197,12 @@ describe("e2e tests with non quadratic voting", function test() {
     const user = new Keypair();
 
     before(async () => {
+      const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
+
+      const pollGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const pollGatekeeperContractAddress = await pollGatekeeper.getAddress();
+
       // deploy the smart contracts
       maciAddresses = await deployMaci({
         ...deployArgs,
@@ -214,7 +222,7 @@ describe("e2e tests with non quadratic voting", function test() {
         maciAddress: maciAddresses.maciContractAddress,
         verifierContractAddress,
         vkRegistryContractAddress: vkRegistryAddress,
-        gatekeeperContractAddress: signupGatekeeperContractAddress,
+        gatekeeperContractAddress: pollGatekeeperContractAddress,
         initialVoiceCreditProxyContractAddress,
         mode: EMode.NON_QV,
       });

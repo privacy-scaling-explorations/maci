@@ -22,7 +22,6 @@ describe("HatsProtocol Gatekeeper", () => {
   let mockHatsAddress: string;
 
   const user = new Keypair();
-  const oneAddress = "0x0000000000000000000000000000000000000001";
 
   const hatId = 1;
   const secondHatId = 2;
@@ -60,28 +59,27 @@ describe("HatsProtocol Gatekeeper", () => {
       it("should be deployed correctly", async () => {
         expect(hatsGatekeeperSingle).to.not.eq(undefined);
         expect(await hatsGatekeeperSingle.criterionHat()).to.eq(hatId);
-        expect(await hatsGatekeeperSingle.maci()).to.eq(ZeroAddress);
         expect(await hatsGatekeeperSingle.hats()).to.eq(mockHatsAddress);
       });
     });
 
     describe("setMaci", () => {
-      it("should set the MACI instance correctly", async () => {
+      it("should set guarded target correctly", async () => {
         const maciAddress = await maciContract.getAddress();
-        await hatsGatekeeperSingle.setMaciInstance(maciAddress).then((tx) => tx.wait());
+        await hatsGatekeeperSingle.setTarget(maciAddress).then((tx) => tx.wait());
 
-        expect(await hatsGatekeeperSingle.maci()).to.eq(maciAddress);
+        expect(await hatsGatekeeperSingle.guarded()).to.eq(maciAddress);
       });
 
-      it("should fail to set MACI instance to the zero address", async () => {
-        await expect(hatsGatekeeperSingle.setMaciInstance(ZeroAddress)).to.be.revertedWithCustomError(
+      it("should fail to set guarded target to the zero address", async () => {
+        await expect(hatsGatekeeperSingle.setTarget(ZeroAddress)).to.be.revertedWithCustomError(
           hatsGatekeeperSingle,
           "ZeroAddress",
         );
       });
 
-      it("should fail to set MACI instance when the caller is not the owner", async () => {
-        await expect(hatsGatekeeperSingle.connect(voter).setMaciInstance(signerAddress)).to.be.revertedWithCustomError(
+      it("should fail to set guarded target when the caller is not the owner", async () => {
+        await expect(hatsGatekeeperSingle.connect(voter).setTarget(signerAddress)).to.be.revertedWithCustomError(
           hatsGatekeeperSingle,
           "OwnableUnauthorizedAccount",
         );
@@ -90,17 +88,12 @@ describe("HatsProtocol Gatekeeper", () => {
 
     describe("register", () => {
       it("should not allow to call from a non-registered MACI contract", async () => {
-        await hatsGatekeeperSingle.setMaciInstance(oneAddress).then((tx) => tx.wait());
         await expect(
-          maciContract
-            .connect(signer)
-            .signUp(user.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [1])),
-        ).to.be.revertedWithCustomError(hatsGatekeeperSingle, "OnlyMACI");
+          hatsGatekeeperSingle.enforce(await signer.getAddress(), AbiCoder.defaultAbiCoder().encode(["uint256"], [1])),
+        ).to.be.revertedWithCustomError(hatsGatekeeperSingle, "TargetOnly");
       });
 
       it("should register a user if the register function is called with the valid data", async () => {
-        await hatsGatekeeperSingle.setMaciInstance(await maciContract.getAddress()).then((tx) => tx.wait());
-
         // signup via MACI
         const tx = await maciContract
           .connect(voter)
@@ -136,7 +129,6 @@ describe("HatsProtocol Gatekeeper", () => {
     describe("Deployment", () => {
       it("should be deployed correctly", async () => {
         expect(hatsGatekeeperMultiple).to.not.eq(undefined);
-        expect(await hatsGatekeeperMultiple.maci()).to.eq(ZeroAddress);
         expect(await hatsGatekeeperMultiple.hats()).to.eq(mockHatsAddress);
         expect(await hatsGatekeeperMultiple.criterionHat(hatId)).to.eq(true);
         expect(await hatsGatekeeperMultiple.criterionHat(thirdHatId)).to.eq(true);
@@ -144,47 +136,43 @@ describe("HatsProtocol Gatekeeper", () => {
     });
 
     describe("setMaci", () => {
-      it("should set the MACI instance correctly", async () => {
+      it("should set guarded target correctly", async () => {
         const maciAddress = await maciContract.getAddress();
-        await hatsGatekeeperMultiple.setMaciInstance(maciAddress).then((tx) => tx.wait());
+        await hatsGatekeeperMultiple.setTarget(maciAddress).then((tx) => tx.wait());
 
-        expect(await hatsGatekeeperMultiple.maci()).to.eq(maciAddress);
+        expect(await hatsGatekeeperMultiple.guarded()).to.eq(maciAddress);
       });
 
-      it("should fail to set MACI instance to the zero address", async () => {
-        await expect(hatsGatekeeperMultiple.setMaciInstance(ZeroAddress)).to.be.revertedWithCustomError(
+      it("should fail to set guarded target to the zero address", async () => {
+        await expect(hatsGatekeeperMultiple.setTarget(ZeroAddress)).to.be.revertedWithCustomError(
           hatsGatekeeperMultiple,
           "ZeroAddress",
         );
       });
 
-      it("should fail to set MACI instance when the caller is not the owner", async () => {
-        await expect(
-          hatsGatekeeperMultiple.connect(voter).setMaciInstance(signerAddress),
-        ).to.be.revertedWithCustomError(hatsGatekeeperMultiple, "OwnableUnauthorizedAccount");
+      it("should fail to set guarded target when the caller is not the owner", async () => {
+        await expect(hatsGatekeeperMultiple.connect(voter).setTarget(signerAddress)).to.be.revertedWithCustomError(
+          hatsGatekeeperMultiple,
+          "OwnableUnauthorizedAccount",
+        );
       });
     });
 
     describe("register", () => {
       it("should not allow to call from a non-registered MACI contract", async () => {
-        await hatsGatekeeperMultiple
-          .connect(signer)
-          .setMaciInstance(oneAddress)
-          .then((tx) => tx.wait());
         await expect(
-          maciContract
+          hatsGatekeeperMultiple
             .connect(signer)
-            .signUp(user.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [1])),
-        ).to.be.revertedWithCustomError(hatsGatekeeperMultiple, "OnlyMACI");
+            .enforce(await signer.getAddress(), AbiCoder.defaultAbiCoder().encode(["uint256"], [1])),
+        ).to.be.revertedWithCustomError(hatsGatekeeperMultiple, "TargetOnly");
       });
 
       it("should register a user if the register function is called with the valid data", async () => {
-        await hatsGatekeeperMultiple.connect(signer).setMaciInstance(await maciContract.getAddress());
-
+        const keypair = new Keypair();
         // signup via MACI
         const tx = await maciContract
           .connect(signer)
-          .signUp(user.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [hatId]));
+          .signUp(keypair.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [hatId]));
 
         const receipt = await tx.wait();
 

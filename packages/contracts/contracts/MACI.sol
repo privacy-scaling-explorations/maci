@@ -121,7 +121,7 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
 
     // Register the user via the sign-up gatekeeper. This function should
     // throw if the user has already registered or if ineligible to do so.
-    signUpGatekeeper.register(msg.sender, _signUpGatekeeperData);
+    signUpGatekeeper.enforce(msg.sender, _signUpGatekeeperData);
 
     // Hash the public key and insert it into the tree.
     uint256 pubKeyHash = hashLeftRight(_pubKey.x, _pubKey.y);

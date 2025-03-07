@@ -37,7 +37,7 @@ export const getGatekeeperTrait = async ({
 
   const gatekeeperContract = SignUpGatekeeperFactory.connect(gatekeeperContractAddress, signer);
 
-  const gatekeeperType = await gatekeeperContract.getTrait();
+  const gatekeeperType = await gatekeeperContract.trait();
 
   return gatekeeperType as EGatekeeperTrait;
 };

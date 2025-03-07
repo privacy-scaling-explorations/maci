@@ -695,7 +695,7 @@ export class DeployerService {
       gatekeeperAddress as Hex,
       0n,
       gatekeeperData.abi,
-      "setMaciInstance",
+      "setTarget",
       [maciAddress],
       ErrorCodes.FAILED_TO_SET_MACI_INSTANCE_ON_GATEKEEPER.toString(),
       kernelClient,

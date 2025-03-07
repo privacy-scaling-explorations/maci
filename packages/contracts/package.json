@@ -162,6 +162,7 @@
     "benchmark:polygon-amoy": "pnpm run benchmark --network polygon_amoy"
   },
   "dependencies": {
+    "@excubiae/contracts": "^0.4.0",
     "@nomicfoundation/hardhat-ethers": "^3.0.8",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@openzeppelin/contracts": "^5.2.0",
@@ -177,6 +178,7 @@
     "maci-crypto": "^2.5.0",
     "maci-domainobjs": "^2.5.0",
     "snarkjs": "^0.7.5",
+    "solady": "^0.1.10",
     "solidity-docgen": "^0.6.0-beta.36",
     "uuid": "^11.1.0"
   },

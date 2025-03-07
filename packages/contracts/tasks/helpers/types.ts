@@ -609,6 +609,9 @@ export enum EContracts {
   Poll = "Poll",
   Tally = "Tally",
   MessageProcessor = "MessageProcessor",
+  SignupGatekeeperFactory = "SignupGatekeeperFactory",
+  Checker = "Checker",
+  CheckerFactory = "CheckerFactory",
 }
 
 /**

@@ -107,6 +107,9 @@ export class TestDeploy {
     const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
     const signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
 
+    const pollGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+    const pollGatekeeperContractAddress = await pollGatekeeper.getAddress();
+
     const maciAddresses = await deployMaci({
       stateTreeDepth: 10,
       signer,
@@ -137,7 +140,7 @@ export class TestDeploy {
       signer,
       verifierContractAddress,
       maciAddress: maciAddresses.maciContractAddress,
-      gatekeeperContractAddress: signupGatekeeperContractAddress,
+      gatekeeperContractAddress: pollGatekeeperContractAddress,
       initialVoiceCreditProxyContractAddress,
       voteOptions: DEFAULT_VOTE_OPTIONS,
       vkRegistryContractAddress: vkRegistry,

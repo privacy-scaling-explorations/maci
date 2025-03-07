@@ -66,63 +66,50 @@ describe("EAS Gatekeeper", () => {
       maciContract = r.maciContract;
     });
 
-    it("sets MACI instance correctly", async () => {
+    it("should set guarded target correctly", async () => {
       const maciAddress = await maciContract.getAddress();
-      await easGatekeeper.setMaciInstance(maciAddress).then((tx) => tx.wait());
+      await easGatekeeper.setTarget(maciAddress).then((tx) => tx.wait());
 
-      expect(await easGatekeeper.maci()).to.eq(maciAddress);
+      expect(await easGatekeeper.guarded()).to.eq(maciAddress);
     });
 
-    it("should fail to set MACI instance when the caller is not the owner", async () => {
+    it("should fail to set guarded target when the caller is not the owner", async () => {
       const [, secondSigner] = await getSigners();
-      await expect(easGatekeeper.connect(secondSigner).setMaciInstance(signerAddress)).to.be.revertedWithCustomError(
+      await expect(easGatekeeper.connect(secondSigner).setTarget(signerAddress)).to.be.revertedWithCustomError(
         easGatekeeper,
         "OwnableUnauthorizedAccount",
       );
     });
 
-    it("should fail to set MACI instance when the MACI instance is not valid", async () => {
-      await expect(easGatekeeper.setMaciInstance(ZeroAddress)).to.be.revertedWithCustomError(
-        easGatekeeper,
-        "ZeroAddress",
-      );
+    it("should fail to set guarded target when the MACI instance is not valid", async () => {
+      await expect(easGatekeeper.setTarget(ZeroAddress)).to.be.revertedWithCustomError(easGatekeeper, "ZeroAddress");
     });
 
     it("should throw when the attestation is not owned by the caller (mocking maci.signUp call)", async () => {
-      await easGatekeeper.setMaciInstance(signerAddress).then((tx) => tx.wait());
-
-      await expect(easGatekeeper.register(signerAddress, invalidRecipientAttestation)).to.be.revertedWithCustomError(
-        easGatekeeper,
-        "NotYourAttestation",
-      );
+      await expect(
+        maciContract.signUp(user.pubKey.asContractParam(), invalidRecipientAttestation),
+      ).to.be.revertedWithCustomError(easGatekeeper, "NotYourAttestation");
     });
 
     it("should throw when the attestation has been revoked", async () => {
-      await expect(easGatekeeper.register(signerAddress, revokedAttestation)).to.be.revertedWithCustomError(
-        easGatekeeper,
-        "AttestationRevoked",
-      );
+      await expect(
+        maciContract.signUp(user.pubKey.asContractParam(), revokedAttestation),
+      ).to.be.revertedWithCustomError(easGatekeeper, "AttestationRevoked");
     });
 
     it("should throw when the attestation schema is not the one expected by the gatekeeper", async () => {
-      await easGatekeeper.setMaciInstance(signerAddress).then((tx) => tx.wait());
-      await expect(easGatekeeper.register(signerAddress, invalidSchemaAttestation)).to.be.revertedWithCustomError(
-        easGatekeeper,
-        "InvalidSchema",
-      );
+      await expect(
+        maciContract.signUp(user.pubKey.asContractParam(), invalidSchemaAttestation),
+      ).to.be.revertedWithCustomError(easGatekeeper, "InvalidSchema");
     });
 
     it("should throw when the attestation is not signed by the attestation owner", async () => {
-      await easGatekeeper.setMaciInstance(signerAddress).then((tx) => tx.wait());
-      await expect(easGatekeeper.register(signerAddress, invalidAttesterAttestation)).to.be.revertedWithCustomError(
-        easGatekeeper,
-        "AttesterNotTrusted",
-      );
+      await expect(
+        maciContract.signUp(user.pubKey.asContractParam(), invalidAttesterAttestation),
+      ).to.be.revertedWithCustomError(easGatekeeper, "AttesterNotTrusted");
     });
 
     it("should register a user if the register function is called with the valid data", async () => {
-      await easGatekeeper.setMaciInstance(await maciContract.getAddress()).then((tx) => tx.wait());
-
       // signup via MACI
       const tx = await maciContract.signUp(user.pubKey.asContractParam(), attestation);
 

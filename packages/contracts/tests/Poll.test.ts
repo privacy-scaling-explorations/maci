@@ -8,6 +8,7 @@ import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
 import { Keypair, Message, PCommand, PubKey, StateLeaf } from "maci-domainobjs";
 
 import { EMode } from "../ts/constants";
+import { deployFreeForAllSignUpGatekeeper } from "../ts/deploy";
 import { IVerifyingKeyStruct } from "../ts/types";
 import { getBlockTimestamp, getDefaultSigner, getSigners } from "../ts/utils";
 import {
@@ -41,6 +42,7 @@ describe("Poll", () => {
   let verifierContract: Verifier;
   let vkRegistryContract: VkRegistry;
   let signupGatekeeperContract: SignUpGatekeeper;
+  let pollGatekeeperContract: SignUpGatekeeper;
   let initialVoiceCreditProxyContract: ConstantInitialVoiceCreditProxy;
   let signer: Signer;
 
@@ -69,6 +71,8 @@ describe("Poll", () => {
       signupGatekeeperContract = r.gatekeeperContract;
       initialVoiceCreditProxyContract = r.constantInitialVoiceCreditProxyContract;
 
+      await signupGatekeeperContract.setTarget(await maciContract.getAddress()).then((tx) => tx.wait());
+
       for (let i = 0; i < NUM_USERS; i += 1) {
         const user = new Keypair();
         maciState.signUp(user.pubKey);
@@ -77,22 +81,25 @@ describe("Poll", () => {
         await maciContract.signUp(user.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [1]));
       }
 
+      pollGatekeeperContract = await deployFreeForAllSignUpGatekeeper(signer, true);
+
       // deploy on chain poll
-      const tx = await maciContract.deployPoll({
-        startDate,
-        endDate: startDate + duration,
-        treeDepths,
-        messageBatchSize,
-        coordinatorPubKey: coordinator.pubKey.asContractParam(),
-        verifier: verifierContract,
-        vkRegistry: vkRegistryContract,
-        mode: EMode.QV,
-        gatekeeper: signupGatekeeperContract,
-        initialVoiceCreditProxy: initialVoiceCreditProxyContract,
-        relayers: [signer],
-        voteOptions: maxVoteOptions,
-      });
-      const receipt = await tx.wait();
+      const receipt = await maciContract
+        .deployPoll({
+          startDate,
+          endDate: startDate + duration,
+          treeDepths,
+          messageBatchSize,
+          coordinatorPubKey: coordinator.pubKey.asContractParam(),
+          verifier: verifierContract,
+          vkRegistry: vkRegistryContract,
+          mode: EMode.QV,
+          gatekeeper: pollGatekeeperContract,
+          initialVoiceCreditProxy: initialVoiceCreditProxyContract,
+          relayers: [signer],
+          voteOptions: maxVoteOptions,
+        })
+        .then((tx) => tx.wait());
 
       expect(receipt?.status).to.eq(1);
 
@@ -100,6 +107,8 @@ describe("Poll", () => {
 
       const pollContracts = await maciContract.getPoll(pollId);
       pollContract = PollFactory.connect(pollContracts.poll, signer);
+
+      await pollGatekeeperContract.setTarget(pollContracts.poll).then((tx) => tx.wait());
 
       // deploy local poll
       const p = maciState.deployPoll(
@@ -195,7 +204,7 @@ describe("Poll", () => {
           verifier: r.mockVerifierContract as Verifier,
           vkRegistry: r.vkRegistryContract,
           mode: EMode.QV,
-          gatekeeper: signupGatekeeperContract,
+          gatekeeper: pollGatekeeperContract,
           initialVoiceCreditProxy: initialVoiceCreditProxyContract,
           relayers: [ZeroAddress],
           voteOptions: maxVoteOptions,

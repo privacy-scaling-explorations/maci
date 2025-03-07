@@ -72,7 +72,6 @@ describe("Integration tests", function test() {
 
   // global variables we need shared between tests
   let maciState: MaciState;
-  let signupGatekeeperAddress: string;
   let contracts: IMaciContracts;
   let pollId: bigint;
   let signer: Signer;
@@ -99,9 +98,6 @@ describe("Integration tests", function test() {
       ),
     });
 
-    const signUpGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
-    signupGatekeeperAddress = await signUpGatekeeper.getAddress();
-
     await setVerifyingKeys({
       stateTreeDepth: STATE_TREE_DEPTH,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
@@ -119,6 +115,12 @@ describe("Integration tests", function test() {
 
   // the code that we run before each test
   beforeEach(async () => {
+    const signUpGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+    const signupGatekeeperAddress = await signUpGatekeeper.getAddress();
+
+    const pollGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+    const pollGatekeeperAddress = await pollGatekeeper.getAddress();
+
     // create a new maci state
     maciState = new MaciState(STATE_TREE_DEPTH);
 
@@ -146,7 +148,7 @@ describe("Integration tests", function test() {
       initialVoiceCreditProxyContractAddress,
       verifierContractAddress,
       vkRegistryContractAddress: vkRegistryAddress,
-      gatekeeperContractAddress: signupGatekeeperAddress,
+      gatekeeperContractAddress: pollGatekeeperAddress,
       initialVoiceCredits: DEFAULT_VOICE_CREDITS,
       voteOptions: DEFAULT_VOTE_OPTIONS,
       relayers: [await signer.getAddress()],

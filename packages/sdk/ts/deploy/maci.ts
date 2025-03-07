@@ -5,6 +5,7 @@ import {
   TallyFactory__factory as TallyFactoryFactory,
   MACI__factory as MACIFactory,
   MessageProcessorFactory__factory as MessageProcessorFactoryFactory,
+  SignUpGatekeeper__factory as SignUpGatekeeperFactory,
 } from "maci-contracts";
 
 import type { IDeployMaciArgs, IMaciContracts } from "./types";
@@ -96,6 +97,9 @@ export const deployMaci = async ({
       emptyBallotRoots,
     ],
   });
+
+  const gatekeeper = SignUpGatekeeperFactory.connect(signupGatekeeperAddress, signer);
+  await gatekeeper.setTarget(maciContractAddress).then((tx) => tx.wait());
 
   return {
     maciContractAddress,

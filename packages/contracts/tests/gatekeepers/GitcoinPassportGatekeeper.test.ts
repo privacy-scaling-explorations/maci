@@ -52,31 +52,30 @@ describe("GitcoinPassport Gatekeeper", () => {
   });
 
   describe("GitcoinGakeeper", () => {
-    it("sets MACI instance correctly", async () => {
+    it("should set guarded target correctly", async () => {
       const maciAddress = await maciContract.getAddress();
-      await gitcoinGatekeeper.setMaciInstance(maciAddress).then((tx) => tx.wait());
+      await gitcoinGatekeeper.setTarget(maciAddress).then((tx) => tx.wait());
 
-      expect(await gitcoinGatekeeper.maci()).to.eq(maciAddress);
+      expect(await gitcoinGatekeeper.guarded()).to.eq(maciAddress);
     });
 
-    it("should fail to set MACI instance when the caller is not the owner", async () => {
+    it("should fail to set guarded target when the caller is not the owner", async () => {
       const [, secondSigner] = await getSigners();
-      await expect(
-        gitcoinGatekeeper.connect(secondSigner).setMaciInstance(signerAddress),
-      ).to.be.revertedWithCustomError(gitcoinGatekeeper, "OwnableUnauthorizedAccount");
+      await expect(gitcoinGatekeeper.connect(secondSigner).setTarget(signerAddress)).to.be.revertedWithCustomError(
+        gitcoinGatekeeper,
+        "OwnableUnauthorizedAccount",
+      );
     });
 
-    it("should fail to set MACI instance when the MACI instance is not valid", async () => {
-      await expect(gitcoinGatekeeper.setMaciInstance(ZeroAddress)).to.be.revertedWithCustomError(
+    it("should fail to set guarded target when the MACI instance is not valid", async () => {
+      await expect(gitcoinGatekeeper.setTarget(ZeroAddress)).to.be.revertedWithCustomError(
         gitcoinGatekeeper,
         "ZeroAddress",
       );
     });
 
     it("should throw when the score is not high enough", async () => {
-      await gitcoinGatekeeper.setMaciInstance(signerAddress).then((tx) => tx.wait());
-
-      await expect(gitcoinGatekeeper.register(signerAddress, "0x")).to.be.revertedWithCustomError(
+      await expect(maciContract.signUp(user.pubKey.asContractParam(), "0x")).to.be.revertedWithCustomError(
         gitcoinGatekeeper,
         "ScoreTooLow",
       );
@@ -84,13 +83,13 @@ describe("GitcoinPassport Gatekeeper", () => {
 
     it("should allow to signup when the score is high enough", async () => {
       await mockDecoder.changeScore(passingScore * 100).then((tx) => tx.wait());
-      await gitcoinGatekeeper.register(signerAddress, "0x").then((tx) => tx.wait());
+      await maciContract.signUp(user.pubKey.asContractParam(), "0x").then((tx) => tx.wait());
 
       expect(await gitcoinGatekeeper.registeredUsers(signerAddress)).to.eq(true);
     });
 
     it("should prevent signing up twice", async () => {
-      await expect(gitcoinGatekeeper.register(signerAddress, "0x")).to.be.revertedWithCustomError(
+      await expect(maciContract.signUp(user.pubKey.asContractParam(), "0x")).to.be.revertedWithCustomError(
         gitcoinGatekeeper,
         "AlreadyRegistered",
       );
@@ -98,8 +97,6 @@ describe("GitcoinPassport Gatekeeper", () => {
 
     it("should signup via MACI", async () => {
       const [, secondSigner] = await getSigners();
-
-      await gitcoinGatekeeper.setMaciInstance(await maciContract.getAddress()).then((tx) => tx.wait());
 
       const tx = await maciContract
         .connect(secondSigner)

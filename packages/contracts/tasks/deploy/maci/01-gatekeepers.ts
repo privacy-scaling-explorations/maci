@@ -1,7 +1,8 @@
 import { hexToBigInt, uuidToBigInt } from "@pcd/util";
 
+import type { HatsGatekeeperBase } from "../../../typechain-types";
+
 import { info, logGreen } from "../../../ts/logger";
-import { HatsGatekeeperBase } from "../../../typechain-types";
 import { EDeploySteps, ESupportedChains } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
@@ -156,7 +157,7 @@ deployment.deployTask(EDeploySteps.Gatekeepers, "Deploy gatekeepers").then((task
         verifier = await verifierContract.getAddress();
       }
 
-      const ZupassGatekeeperContract = await deployment.deployContract(
+      const zupassGatekeeperContract = await deployment.deployContract(
         {
           name: EContracts.ZupassGatekeeper,
           signer: deployer,
@@ -168,7 +169,7 @@ deployment.deployTask(EDeploySteps.Gatekeepers, "Deploy gatekeepers").then((task
       );
       await storage.register({
         id: EContracts.ZupassGatekeeper,
-        contract: ZupassGatekeeperContract,
+        contract: zupassGatekeeperContract,
         args: [validEventId.toString(), validSigner1.toString(), validSigner2.toString(), verifier],
         network: hre.network.name,
       });
@@ -241,7 +242,7 @@ deployment.deployTask(EDeploySteps.Gatekeepers, "Deploy gatekeepers").then((task
     if (!skipDeployMerkleProofGatekeeper) {
       const root = deployment.getDeployConfigField<string>(EContracts.MerkleProofGatekeeper, "root", true);
 
-      const MerkleProofGatekeeperContract = await deployment.deployContract(
+      const merkleProofGatekeeperContract = await deployment.deployContract(
         {
           name: EContracts.MerkleProofGatekeeper,
           signer: deployer,
@@ -250,7 +251,7 @@ deployment.deployTask(EDeploySteps.Gatekeepers, "Deploy gatekeepers").then((task
       );
       await storage.register({
         id: EContracts.MerkleProofGatekeeper,
-        contract: MerkleProofGatekeeperContract,
+        contract: merkleProofGatekeeperContract,
         args: [root],
         network: hre.network.name,
       });

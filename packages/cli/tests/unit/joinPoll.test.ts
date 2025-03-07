@@ -32,7 +32,6 @@ import {
 describe("joinPoll", function test() {
   let signer: Signer;
   let maciAddresses: IMaciContracts;
-  let signupGatekeeperContractAddress: string;
   let initialVoiceCreditProxyContractAddress: string;
   let verifierContractAddress: string;
 
@@ -49,7 +48,10 @@ describe("joinPoll", function test() {
     signer = await getDefaultSigner();
 
     const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
-    signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
+    const signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
+
+    const pollGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+    const pollGatekeeperContractAddress = await pollGatekeeper.getAddress();
 
     const initialVoiceCreditProxy = await deployConstantInitialVoiceCreditProxy(
       DEFAULT_INITIAL_VOICE_CREDITS,
@@ -92,7 +94,7 @@ describe("joinPoll", function test() {
       maciAddress: maciAddresses.maciContractAddress,
       verifierContractAddress,
       vkRegistryContractAddress: vkRegistryAddress,
-      gatekeeperContractAddress: signupGatekeeperContractAddress,
+      gatekeeperContractAddress: pollGatekeeperContractAddress,
       initialVoiceCreditProxyContractAddress,
     });
   });

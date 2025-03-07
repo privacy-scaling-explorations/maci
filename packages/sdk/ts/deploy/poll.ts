@@ -2,6 +2,7 @@ import {
   deployConstantInitialVoiceCreditProxy,
   deployFreeForAllSignUpGatekeeper,
   MACI__factory as MACIFactory,
+  SignUpGatekeeper__factory as SignUpGatekeeperFactory,
 } from "maci-contracts";
 import { VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { PubKey } from "maci-domainobjs";
@@ -103,25 +104,25 @@ export const deployPoll = async ({
     throw new Error("Invalid MACI public key");
   }
 
-  const tx = await maciContract.deployPoll({
-    startDate: pollStartTimestamp,
-    endDate: pollEndTimestamp,
-    treeDepths: {
-      intStateTreeDepth,
-      voteOptionTreeDepth,
-    },
-    messageBatchSize,
-    coordinatorPubKey: coordinatorPubKey.asContractParam(),
-    verifier: verifierContractAddress,
-    vkRegistry: vkRegistryContractAddress,
-    mode,
-    gatekeeper: gatekeeperContractAddress,
-    initialVoiceCreditProxy: initialVoiceCreditProxyAddress,
-    relayers,
-    voteOptions,
-  });
-
-  const receipt = await tx.wait();
+  const receipt = await maciContract
+    .deployPoll({
+      startDate: pollStartTimestamp,
+      endDate: pollEndTimestamp,
+      treeDepths: {
+        intStateTreeDepth,
+        voteOptionTreeDepth,
+      },
+      messageBatchSize,
+      coordinatorPubKey: coordinatorPubKey.asContractParam(),
+      verifier: verifierContractAddress,
+      vkRegistry: vkRegistryContractAddress,
+      mode,
+      gatekeeper: signupGatekeeperContractAddress,
+      initialVoiceCreditProxy: initialVoiceCreditProxyAddress,
+      relayers,
+      voteOptions,
+    })
+    .then((tx) => tx.wait());
 
   if (receipt?.status !== 1) {
     throw new Error("Deploy poll transaction is failed");
@@ -152,12 +153,15 @@ export const deployPoll = async ({
   const messageProcessorContractAddress = pollContracts.messageProcessor;
   const tallyContractAddress = pollContracts.tally;
 
+  const gatekeeperContract = SignUpGatekeeperFactory.connect(signupGatekeeperContractAddress, signer);
+  await gatekeeperContract.setTarget(pollContractAddress).then((tx) => tx.wait());
+
   return {
     pollId,
     pollContractAddress,
     messageProcessorContractAddress,
     tallyContractAddress,
-    gatekeeperContractAddress,
+    gatekeeperContractAddress: signupGatekeeperContractAddress,
     initialVoiceCreditProxyContractAddress: initialVoiceCreditProxyAddress,
   };
 };
