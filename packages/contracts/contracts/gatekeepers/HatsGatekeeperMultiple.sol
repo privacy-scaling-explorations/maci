@@ -7,22 +7,11 @@ import { HatsGatekeeperBase } from "./HatsGatekeeperBase.sol";
 /// @notice A gatekeeper contract which allows users to sign up to MACI
 /// only if they are wearing one of the specified hats
 contract HatsGatekeeperMultiple is HatsGatekeeperBase {
-  /*//////////////////////////////////////////////////////////////
-                              CUSTOM ERRORS
-  //////////////////////////////////////////////////////////////*/
-
+  /// @notice Custom errors
   error NotCriterionHat();
-
-  /*//////////////////////////////////////////////////////////////
-                            PUBLIC CONSTANTS
-  //////////////////////////////////////////////////////////////*/
 
   /// @notice Tracks hats that users must wear to be eligible to register
   mapping(uint256 => bool) public criterionHat;
-
-  /*//////////////////////////////////////////////////////////////
-                               CONSTRUCTOR
-  //////////////////////////////////////////////////////////////*/
 
   /// @notice Deploy an instance of HatsGatekeeperMultiple
   /// @param _hats The Hats Protocol contract
@@ -34,35 +23,28 @@ contract HatsGatekeeperMultiple is HatsGatekeeperBase {
     }
   }
 
-  /*//////////////////////////////////////////////////////////////
-                            GATEKEEPER FUNCTION
-  //////////////////////////////////////////////////////////////*/
-
   /// @notice Registers the user
-  /// @param _user The address of the user
-  /// @param _data additional data
-  function register(address _user, bytes memory _data) public override {
-    // ensure that the caller is the MACI contract
-    if (maci != msg.sender) revert OnlyMACI();
-
-    // _user must not be already registered
-    if (registered[_user]) revert AlreadyRegistered();
+  /// @param _subject The address of the user
+  /// @param _evidence additional data
+  function enforce(address _subject, bytes calldata _evidence) public override onlyTarget {
+    // _subject must not be already registered
+    if (registered[_subject]) revert AlreadyRegistered();
 
     // decode the _data as a hat
-    uint256 hat = abi.decode(_data, (uint256));
+    uint256 hat = abi.decode(_evidence, (uint256));
 
     // the hat must be set as a criterion hat
     if (!criterionHat[hat]) revert NotCriterionHat();
 
-    registered[_user] = true;
+    registered[_subject] = true;
 
-    // _user must be wearing the criterion hat
-    if (!hats.isWearerOfHat(_user, hat)) revert NotWearingCriterionHat();
+    // _subject must be wearing the criterion hat
+    if (!hats.isWearerOfHat(_subject, hat)) revert NotWearingCriterionHat();
   }
 
   /// @notice Get the trait of the gatekeeper
   /// @return The type of the gatekeeper
-  function getTrait() public pure override returns (string memory) {
+  function trait() public pure override returns (string memory) {
     return "HatsMultiple";
   }
 }

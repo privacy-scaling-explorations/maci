@@ -87,30 +87,29 @@ describe("Semaphore Gatekeeper", () => {
       maciContract = r.maciContract;
     });
 
-    it("sets MACI instance correctly", async () => {
+    it("should set guarded target correctly", async () => {
       const maciAddress = await maciContract.getAddress();
-      await semaphoreGatekeeper.setMaciInstance(maciAddress).then((tx) => tx.wait());
+      await semaphoreGatekeeper.setTarget(maciAddress).then((tx) => tx.wait());
 
-      expect(await semaphoreGatekeeper.maci()).to.eq(maciAddress);
+      expect(await semaphoreGatekeeper.guarded()).to.eq(maciAddress);
     });
 
-    it("should fail to set MACI instance when the caller is not the owner", async () => {
+    it("should fail to set guarded target when the caller is not the owner", async () => {
       const [, secondSigner] = await getSigners();
-      await expect(
-        semaphoreGatekeeper.connect(secondSigner).setMaciInstance(signerAddress),
-      ).to.be.revertedWithCustomError(semaphoreGatekeeper, "OwnableUnauthorizedAccount");
+      await expect(semaphoreGatekeeper.connect(secondSigner).setTarget(signerAddress)).to.be.revertedWithCustomError(
+        semaphoreGatekeeper,
+        "OwnableUnauthorizedAccount",
+      );
     });
 
-    it("should fail to set MACI instance when the MACI instance is not valid", async () => {
-      await expect(semaphoreGatekeeper.setMaciInstance(ZeroAddress)).to.be.revertedWithCustomError(
+    it("should fail to set guarded target when the MACI instance is not valid", async () => {
+      await expect(semaphoreGatekeeper.setTarget(ZeroAddress)).to.be.revertedWithCustomError(
         semaphoreGatekeeper,
         "ZeroAddress",
       );
     });
 
     it("should not register a user if the register function is called with invalid groupId", async () => {
-      await semaphoreGatekeeper.setMaciInstance(await maciContract.getAddress()).then((tx) => tx.wait());
-
       await expect(
         maciContract.signUp(user.pubKey.asContractParam(), encodedProofInvalidGroupId),
       ).to.be.revertedWithCustomError(semaphoreGatekeeper, "InvalidGroup");

@@ -69,14 +69,13 @@ deployment.deployTask(EDeploySteps.Maci, "Deploy MACI contract").then((task) =>
       emptyBallotRoots,
     );
 
-    if (gatekeeper !== EContracts.FreeForAllGatekeeper) {
-      const gatekeeperContract = await deployment.getContract<SignUpGatekeeper>({
-        name: EContracts.SignUpGatekeeper,
-        address: gatekeeperContractAddress,
-      });
-      const maciInstanceAddress = await maciContract.getAddress();
-      await gatekeeperContract.setMaciInstance(maciInstanceAddress).then((tx) => tx.wait());
-    }
+    const gatekeeperContract = await deployment.getContract<SignUpGatekeeper>({
+      name: EContracts.SignUpGatekeeper,
+      address: gatekeeperContractAddress,
+    });
+    const maciInstanceAddress = await maciContract.getAddress();
+
+    await gatekeeperContract.setTarget(maciInstanceAddress).then((tx) => tx.wait());
 
     await storage.register({
       id: EContracts.MACI,

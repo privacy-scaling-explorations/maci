@@ -50,12 +50,11 @@ describe("SignUpGatekeeper", () => {
       maciContract = r.maciContract;
     });
 
-    it("sets MACI instance correctly", async () => {
+    it("should set guarded target correctly", async () => {
       const maciAddress = await maciContract.getAddress();
-      const tx = await signUpTokenGatekeeperContract.setMaciInstance(maciAddress);
-      await tx.wait();
+      await signUpTokenGatekeeperContract.setTarget(maciAddress).then((tx) => tx.wait());
 
-      expect(await signUpTokenGatekeeperContract.maci()).to.eq(maciAddress);
+      expect(await signUpTokenGatekeeperContract.guarded()).to.eq(maciAddress);
     });
 
     it("it should revert if the register function is called by a non registered maci instance", async () => {
@@ -65,7 +64,7 @@ describe("SignUpGatekeeper", () => {
 
       await expect(
         maciContract.signUp(user.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [1])),
-      ).to.be.revertedWithCustomError(signUpTokenGatekeeperContract, "OnlyMACI");
+      ).to.be.revertedWithCustomError(signUpTokenGatekeeperContract, "TargetOnly");
     });
 
     it("should register a user if the register function is called by a registered maci instance", async () => {
@@ -73,7 +72,8 @@ describe("SignUpGatekeeper", () => {
 
       await signUpToken.giveToken(await signer.getAddress(), 0);
 
-      await signUpTokenGatekeeperContract.setMaciInstance(await maciContract.getAddress());
+      const maciAddress = await maciContract.getAddress();
+      await signUpTokenGatekeeperContract.setTarget(maciAddress).then((tx) => tx.wait());
 
       const tx = await maciContract.signUp(
         user.pubKey.asContractParam(),
@@ -87,7 +87,9 @@ describe("SignUpGatekeeper", () => {
 
   describe("FreeForAllGatekeeper", () => {
     it("should always complete successfully", async () => {
-      const tx = await freeForAllContract.register(ZeroAddress, AbiCoder.defaultAbiCoder().encode(["uint256"], [1]));
+      await freeForAllContract.setTarget(await signer.getAddress()).then((tx) => tx.wait());
+
+      const tx = await freeForAllContract.enforce(ZeroAddress, AbiCoder.defaultAbiCoder().encode(["uint256"], [1]));
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
     });

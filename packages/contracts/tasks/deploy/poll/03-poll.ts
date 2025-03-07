@@ -2,7 +2,7 @@
 import { ZeroAddress } from "ethers";
 import { PubKey } from "maci-domainobjs";
 
-import type { MACI, Poll } from "../../../typechain-types";
+import type { MACI, Poll, SignUpGatekeeper } from "../../../typechain-types";
 
 import { EMode } from "../../../ts/constants";
 import { EDeploySteps } from "../../helpers/constants";
@@ -66,25 +66,25 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
 
     const voteOptions = deployment.getDeployConfigField<number>(EContracts.Poll, "voteOptions");
 
-    const tx = await maciContract.deployPoll({
-      startDate: pollStartTimestamp,
-      endDate: pollEndTimestamp,
-      treeDepths: {
-        intStateTreeDepth,
-        voteOptionTreeDepth,
-      },
-      messageBatchSize,
-      coordinatorPubKey: unserializedKey.asContractParam(),
-      verifier: verifierContractAddress,
-      vkRegistry: vkRegistryContractAddress,
-      mode,
-      gatekeeper: gatekeeperContractAddress,
-      initialVoiceCreditProxy: initialVoiceCreditProxyContractAddress,
-      relayers,
-      voteOptions,
-    });
-
-    const receipt = await tx.wait();
+    const receipt = await maciContract
+      .deployPoll({
+        startDate: pollStartTimestamp,
+        endDate: pollEndTimestamp,
+        treeDepths: {
+          intStateTreeDepth,
+          voteOptionTreeDepth,
+        },
+        messageBatchSize,
+        coordinatorPubKey: unserializedKey.asContractParam(),
+        verifier: verifierContractAddress,
+        vkRegistry: vkRegistryContractAddress,
+        mode,
+        gatekeeper: gatekeeperContractAddress,
+        initialVoiceCreditProxy: initialVoiceCreditProxyContractAddress,
+        relayers,
+        voteOptions,
+      })
+      .then((tx) => tx.wait());
 
     if (receipt?.status !== 1) {
       throw new Error("Deploy poll transaction is failed");
@@ -97,6 +97,13 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
 
     const pollContract = await deployment.getContract<Poll>({ name: EContracts.Poll, address: pollContractAddress });
     const extContracts = await pollContract.extContracts();
+
+    const gatekeeperContract = await deployment.getContract<SignUpGatekeeper>({
+      name: EContracts.SignUpGatekeeper,
+      address: gatekeeperContractAddress,
+    });
+
+    await gatekeeperContract.setTarget(pollContractAddress).then((tx) => tx.wait());
 
     const messageProcessorContract = await deployment.getContract({
       name: EContracts.MessageProcessor,

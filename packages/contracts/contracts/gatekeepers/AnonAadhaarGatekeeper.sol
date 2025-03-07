@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-
 import { SignUpGatekeeper } from "./SignUpGatekeeper.sol";
 import { IAnonAadhaar } from "./interfaces/IAnonAadhaar.sol";
 
@@ -11,12 +9,9 @@ import { IAnonAadhaar } from "./interfaces/IAnonAadhaar.sol";
 /// only if they can prove they are valid Aadhaar owners.
 /// @dev Please note that once a identity is used to register, it cannot be used again.
 /// This is because we store the nullifier of the proof.
-contract AnonAadhaarGatekeeper is SignUpGatekeeper, Ownable(msg.sender) {
+contract AnonAadhaarGatekeeper is SignUpGatekeeper {
   /// @notice The anonAadhaar contract
   IAnonAadhaar public immutable anonAadhaarContract;
-
-  /// @notice The address of the MACI contract
-  address public maci;
 
   /// @notice The registered identities
   mapping(uint256 => bool) public registeredAadhaars;
@@ -25,9 +20,6 @@ contract AnonAadhaarGatekeeper is SignUpGatekeeper, Ownable(msg.sender) {
   uint256 public immutable nullifierSeed;
 
   /// @notice Errors
-  error ZeroAddress();
-  error OnlyMACI();
-  error AlreadyRegistered();
   error InvalidProof();
   error InvalidSignal();
   error InvalidNullifierSeed();
@@ -41,18 +33,12 @@ contract AnonAadhaarGatekeeper is SignUpGatekeeper, Ownable(msg.sender) {
     nullifierSeed = _nullifierSeed;
   }
 
-  /// @notice Adds an uninitialised MACI instance to allow for token signups
-  /// @param _maci The MACI contract interface to be stored
-  function setMaciInstance(address _maci) public override onlyOwner {
-    if (_maci == address(0)) revert ZeroAddress();
-    maci = _maci;
-  }
-
   /// @notice Register an user if they can prove anonAadhaar proof
   /// @dev Throw if the proof is not valid or just complete silently
-  /// @param _data The ABI-encoded data containing nullifierSeed, nullifier, timestamp, signal, revealArray,
+  /// @param _subject The address of the entity being validated.
+  /// @param _evidence The ABI-encoded data containing nullifierSeed, nullifier, timestamp, signal, revealArray,
   /// and groth16Proof.
-  function register(address _user, bytes memory _data) public override {
+  function enforce(address _subject, bytes calldata _evidence) public override onlyTarget {
     // decode the argument
     (
       uint256 providedNullifierSeed,
@@ -61,16 +47,13 @@ contract AnonAadhaarGatekeeper is SignUpGatekeeper, Ownable(msg.sender) {
       uint256 signal,
       uint256[4] memory revealArray,
       uint256[8] memory groth16Proof
-    ) = abi.decode(_data, (uint256, uint256, uint256, uint256, uint256[4], uint256[8]));
-
-    // ensure that the caller is the MACI contract
-    if (maci != msg.sender) revert OnlyMACI();
+    ) = abi.decode(_evidence, (uint256, uint256, uint256, uint256, uint256[4], uint256[8]));
 
     // ensure that the provided nullifier seed matches the stored nullifier seed
     if (providedNullifierSeed != nullifierSeed) revert InvalidNullifierSeed();
 
     // ensure that the signal is correct
-    if (signal != addressToUint256(_user)) revert InvalidSignal();
+    if (signal != addressToUint256(_subject)) revert InvalidSignal();
 
     // ensure that the nullifier has not been registered yet
     if (registeredAadhaars[nullifier]) revert AlreadyRegistered();
@@ -100,7 +83,7 @@ contract AnonAadhaarGatekeeper is SignUpGatekeeper, Ownable(msg.sender) {
 
   /// @notice Get the trait of the gatekeeper
   /// @return The type of the gatekeeper
-  function getTrait() public pure override returns (string memory) {
+  function trait() public pure override returns (string memory) {
     return "AnonAadhaar";
   }
 }

@@ -26,7 +26,6 @@ describe("poll", function test() {
   this.timeout(900000);
 
   let maciAddresses: IMaciContracts;
-  let signupGatekeeperContractAddress: string;
   let initialVoiceCreditProxyContractAddress: string;
   let verifierContractAddress: string;
   let pollAddresses: IPollContractsData;
@@ -35,8 +34,12 @@ describe("poll", function test() {
   // before all tests we deploy the vk registry contract and set the verifying keys
   before(async () => {
     signer = await getDefaultSigner();
+
     const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
-    signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
+    const signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
+
+    const pollGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+    const pollGatekeeperContractAddress = await pollGatekeeper.getAddress();
 
     const initialVoiceCreditProxy = await deployConstantInitialVoiceCreditProxy(
       DEFAULT_INITIAL_VOICE_CREDITS,
@@ -72,7 +75,7 @@ describe("poll", function test() {
       maciAddress: maciAddresses.maciContractAddress,
       verifierContractAddress,
       vkRegistryContractAddress: vkRegistryAddress,
-      gatekeeperContractAddress: signupGatekeeperContractAddress,
+      gatekeeperContractAddress: pollGatekeeperContractAddress,
       initialVoiceCreditProxyContractAddress,
     });
   });

@@ -10,20 +10,15 @@ contract FreeForAllGatekeeper is SignUpGatekeeper {
   // solhint-disable-next-line no-empty-blocks
   constructor() payable {}
 
-  /// @notice setMaciInstance does nothing in this gatekeeper
-  /// @param _maci The MACI contract
-  // solhint-disable-next-line no-empty-blocks
-  function setMaciInstance(address _maci) public override {}
-
   /// @notice Registers the user without any restrictions.
-  /// @param _address The address of the user
-  /// @param _data memory additional data
+  /// @param _subject The address of the user
+  /// @param _evidence memory additional data
   // solhint-disable-next-line no-empty-blocks
-  function register(address _address, bytes memory _data) public override {}
+  function enforce(address _subject, bytes calldata _evidence) public override onlyTarget {}
 
   /// @notice Get the trait of the gatekeeper
   /// @return The type of the gatekeeper
-  function getTrait() public pure override returns (string memory) {
+  function trait() public pure override returns (string memory) {
     return "FreeForAll";
   }
 }

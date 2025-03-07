@@ -73,22 +73,23 @@ describe("AnonAadhaar Gatekeeper", () => {
       maciContract = r.maciContract;
     });
 
-    it("sets MACI instance correctly", async () => {
+    it("should set guarded target correctly", async () => {
       const maciAddress = await maciContract.getAddress();
-      await anonAadhaarGatekeeper.setMaciInstance(maciAddress).then((tx) => tx.wait());
+      await anonAadhaarGatekeeper.setTarget(maciAddress).then((tx) => tx.wait());
 
-      expect(await anonAadhaarGatekeeper.maci()).to.eq(maciAddress);
+      expect(await anonAadhaarGatekeeper.guarded()).to.eq(maciAddress);
     });
 
-    it("should fail to set MACI instance when the caller is not the owner", async () => {
+    it("should fail to set guarded target when the caller is not the owner", async () => {
       const [, secondSigner] = await getSigners();
-      await expect(
-        anonAadhaarGatekeeper.connect(secondSigner).setMaciInstance(signerAddress),
-      ).to.be.revertedWithCustomError(anonAadhaarGatekeeper, "OwnableUnauthorizedAccount");
+      await expect(anonAadhaarGatekeeper.connect(secondSigner).setTarget(signerAddress)).to.be.revertedWithCustomError(
+        anonAadhaarGatekeeper,
+        "OwnableUnauthorizedAccount",
+      );
     });
 
-    it("should fail to set MACI instance when the MACI instance is not valid", async () => {
-      await expect(anonAadhaarGatekeeper.setMaciInstance(ZeroAddress)).to.be.revertedWithCustomError(
+    it("should fail to set guarded target when the MACI instance is not valid", async () => {
+      await expect(anonAadhaarGatekeeper.setTarget(ZeroAddress)).to.be.revertedWithCustomError(
         anonAadhaarGatekeeper,
         "ZeroAddress",
       );

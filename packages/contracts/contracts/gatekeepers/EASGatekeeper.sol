@@ -1,15 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-
 import { SignUpGatekeeper } from "./SignUpGatekeeper.sol";
 import { IEAS } from "./interfaces/IEAS.sol";
 
 /// @title EASGatekeeper
 /// @notice A gatekeeper contract which allows users to sign up to MACI
 /// only if they've received an attestation of a specific schema from a trusted attester
-contract EASGatekeeper is SignUpGatekeeper, Ownable(msg.sender) {
+contract EASGatekeeper is SignUpGatekeeper {
   // the reference to the EAS contract
   IEAS public immutable eas;
 
@@ -19,20 +17,14 @@ contract EASGatekeeper is SignUpGatekeeper, Ownable(msg.sender) {
   // the trusted attester
   address public immutable attester;
 
-  /// @notice the reference to the MACI contract
-  address public maci;
-
   // a mapping of attestations that have already registered
   mapping(bytes32 => bool) public registeredAttestations;
 
   /// @notice custom errors
   error AttestationRevoked();
-  error AlreadyRegistered();
   error AttesterNotTrusted();
   error NotYourAttestation();
   error InvalidSchema();
-  error OnlyMACI();
-  error ZeroAddress();
 
   /// @notice Deploy an instance of EASGatekeeper
   /// @param _eas The EAS contract
@@ -45,23 +37,13 @@ contract EASGatekeeper is SignUpGatekeeper, Ownable(msg.sender) {
     attester = _attester;
   }
 
-  /// @notice Adds an uninitialised MACI instance to allow for token signups
-  /// @param _maci The MACI contract interface to be stored
-  function setMaciInstance(address _maci) public override onlyOwner {
-    if (_maci == address(0)) revert ZeroAddress();
-    maci = _maci;
-  }
-
   /// @notice Register an user based on their attestation
   /// @dev Throw if the attestation is not valid or just complete silently
-  /// @param _user The user's Ethereum address.
-  /// @param _data The ABI-encoded schemaId as a uint256.
-  function register(address _user, bytes memory _data) public override {
+  /// @param _subject The user's Ethereum address.
+  /// @param _evidence The ABI-encoded schemaId as a uint256.
+  function enforce(address _subject, bytes calldata _evidence) public override onlyTarget {
     // decode the argument
-    bytes32 attestationId = abi.decode(_data, (bytes32));
-
-    // ensure that the caller is the MACI contract
-    if (maci != msg.sender) revert OnlyMACI();
+    bytes32 attestationId = abi.decode(_evidence, (bytes32));
 
     // ensure that the attestation has not been registered yet
     if (registeredAttestations[attestationId]) revert AlreadyRegistered();
@@ -82,12 +64,12 @@ contract EASGatekeeper is SignUpGatekeeper, Ownable(msg.sender) {
     if (attestation.revocationTime != 0) revert AttestationRevoked();
 
     // one cannot register an attestation for another user
-    if (attestation.recipient != _user) revert NotYourAttestation();
+    if (attestation.recipient != _subject) revert NotYourAttestation();
   }
 
   /// @notice Get the trait of the gatekeeper
   /// @return The type of the gatekeeper
-  function getTrait() public pure override returns (string memory) {
+  function trait() public pure override returns (string memory) {
     return "EAS";
   }
 }

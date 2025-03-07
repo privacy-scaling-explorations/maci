@@ -50,6 +50,8 @@ describe("MACI", function test() {
       verifierContract = r.mockVerifierContract as Verifier;
       signupGatekeeperContract = r.gatekeeperContract;
       initialVoiceCreditProxy = r.constantInitialVoiceCreditProxyContract;
+
+      await signupGatekeeperContract.setTarget(await maciContract.getAddress()).then((tx) => tx.wait());
     });
 
     it("should have set the correct stateTreeDepth", async () => {
@@ -156,13 +158,12 @@ describe("MACI", function test() {
     it("should not allow to sign up more than the supported amount of users (2 ** stateTreeDepth)", async () => {
       const stateTreeDepthTest = 1;
       const maxUsers = 2 ** stateTreeDepthTest;
-      const maci = (
-        await deployTestContracts({
-          initialVoiceCreditBalance,
-          stateTreeDepth: stateTreeDepthTest,
-          signer,
-        })
-      ).maciContract;
+      const { maciContract: maci, gatekeeperContract } = await deployTestContracts({
+        initialVoiceCreditBalance,
+        stateTreeDepth: stateTreeDepthTest,
+        signer,
+      });
+      await gatekeeperContract.setTarget(await maci.getAddress()).then((tx) => tx.wait());
       const keypair = new Keypair();
       // start from one as we already have one signup (blank state leaf)
       for (let i = 1; i < maxUsers; i += 1) {
@@ -179,11 +180,12 @@ describe("MACI", function test() {
     it("should signup 2 ** 10 users", async () => {
       const stateTreeDepthTest = 10;
       const maxUsers = 2 ** stateTreeDepthTest;
-      const { maciContract: maci } = await deployTestContracts({
+      const { maciContract: maci, gatekeeperContract } = await deployTestContracts({
         initialVoiceCreditBalance,
         stateTreeDepth: stateTreeDepthTest,
         signer,
       });
+      await gatekeeperContract.setTarget(await maci.getAddress()).then((tx) => tx.wait());
 
       const keypair = new Keypair();
       // start from one as we already have one signup (blank state leaf)

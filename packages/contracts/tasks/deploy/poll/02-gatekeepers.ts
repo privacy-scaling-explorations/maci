@@ -192,7 +192,7 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
         verifier = await verifierContract.getAddress();
       }
 
-      const ZupassGatekeeperContract = await deployment.deployContract(
+      const zupassGatekeeperContract = await deployment.deployContract(
         {
           name: EContracts.ZupassGatekeeper,
           signer: deployer,
@@ -205,7 +205,7 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
       await storage.register({
         id: EContracts.ZupassGatekeeper,
         key: `poll-${pollId}`,
-        contract: ZupassGatekeeperContract,
+        contract: zupassGatekeeperContract,
         args: [validEventId.toString(), validSigner1.toString(), validSigner2.toString(), verifier],
         network: hre.network.name,
       });
@@ -280,7 +280,7 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
     if (!skipDeployMerkleProofGatekeeper) {
       const root = deployment.getDeployConfigField<string>(EContracts.MerkleProofGatekeeper, "root", true);
 
-      const MerkleProofGatekeeperContract = await deployment.deployContract(
+      const merkleProofGatekeeperContract = await deployment.deployContract(
         {
           name: EContracts.MerkleProofGatekeeper,
           signer: deployer,
@@ -290,7 +290,7 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
       await storage.register({
         id: EContracts.MerkleProofGatekeeper,
         key: `poll-${pollId}`,
-        contract: MerkleProofGatekeeperContract,
+        contract: merkleProofGatekeeperContract,
         args: [root],
         network: hre.network.name,
       });

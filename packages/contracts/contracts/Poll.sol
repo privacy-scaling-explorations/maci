@@ -369,7 +369,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     }
 
     // Check if the user is eligible to join the poll
-    extContracts.gatekeeper.register(msg.sender, _signUpGatekeeperData);
+    extContracts.gatekeeper.enforce(msg.sender, _signUpGatekeeperData);
 
     // Get the user's voice credit balance.
     uint256 voiceCreditBalance = extContracts.initialVoiceCreditProxy.getVoiceCredits(

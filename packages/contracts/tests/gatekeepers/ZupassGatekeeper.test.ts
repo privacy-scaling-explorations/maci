@@ -66,31 +66,29 @@ describe("Zupass Gatekeeper", () => {
       maciContract = r.maciContract;
     });
 
-    it("sets MACI instance correctly", async () => {
+    it("should set guarded target correctly", async () => {
       const maciAddress = await maciContract.getAddress();
-      await zupassGatekeeper.setMaciInstance(maciAddress).then((tx) => tx.wait());
+      await zupassGatekeeper.setTarget(maciAddress).then((tx) => tx.wait());
 
-      expect(await zupassGatekeeper.maci()).to.eq(maciAddress);
+      expect(await zupassGatekeeper.guarded()).to.eq(maciAddress);
     });
 
-    it("should fail to set MACI instance when the caller is not the owner", async () => {
+    it("should fail to set guarded target when the caller is not the owner", async () => {
       const [, secondSigner] = await getSigners();
-      await expect(zupassGatekeeper.connect(secondSigner).setMaciInstance(signerAddress)).to.be.revertedWithCustomError(
+      await expect(zupassGatekeeper.connect(secondSigner).setTarget(signerAddress)).to.be.revertedWithCustomError(
         zupassGatekeeper,
         "OwnableUnauthorizedAccount",
       );
     });
 
-    it("should fail to set MACI instance when the MACI instance is not valid", async () => {
-      await expect(zupassGatekeeper.setMaciInstance(ZeroAddress)).to.be.revertedWithCustomError(
+    it("should fail to set guarded target when the MACI instance is not valid", async () => {
+      await expect(zupassGatekeeper.setTarget(ZeroAddress)).to.be.revertedWithCustomError(
         zupassGatekeeper,
         "ZeroAddress",
       );
     });
 
     it("should not register a user if the register function is called with invalid watermark", async () => {
-      await zupassGatekeeper.setMaciInstance(await maciContract.getAddress()).then((tx) => tx.wait());
-
       await expect(
         maciContract.signUp(user.pubKey.asContractParam(), dataWithInvalidWatermark),
       ).to.be.revertedWithCustomError(zupassGatekeeper, "InvalidWatermark");

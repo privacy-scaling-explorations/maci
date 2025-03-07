@@ -66,38 +66,38 @@ describe("MerkleProof Gatekeeper", () => {
       validProof = tree.getProof([signerAddress]);
     });
 
-    it("sets MACI instance correctly", async () => {
+    it("should set guarded target correctly", async () => {
       const maciAddress = await maciContract.getAddress();
-      await merkleProofGatekeeper.setMaciInstance(maciAddress).then((tx) => tx.wait());
+      await merkleProofGatekeeper.setTarget(maciAddress).then((tx) => tx.wait());
 
-      expect(await merkleProofGatekeeper.maci()).to.eq(maciAddress);
+      expect(await merkleProofGatekeeper.guarded()).to.eq(maciAddress);
     });
 
-    it("should fail to set MACI instance when the caller is not the owner", async () => {
+    it("should fail to set guarded target when the caller is not the owner", async () => {
       const [, secondSigner] = await getSigners();
-      await expect(
-        merkleProofGatekeeper.connect(secondSigner).setMaciInstance(signerAddress),
-      ).to.be.revertedWithCustomError(merkleProofGatekeeper, "OwnableUnauthorizedAccount");
+      await expect(merkleProofGatekeeper.connect(secondSigner).setTarget(signerAddress)).to.be.revertedWithCustomError(
+        merkleProofGatekeeper,
+        "OwnableUnauthorizedAccount",
+      );
     });
 
-    it("should fail to set MACI instance when the MACI instance is not valid", async () => {
-      await expect(merkleProofGatekeeper.setMaciInstance(ZeroAddress)).to.be.revertedWithCustomError(
+    it("should fail to set guarded target when the MACI instance is not valid", async () => {
+      await expect(merkleProofGatekeeper.setTarget(ZeroAddress)).to.be.revertedWithCustomError(
         merkleProofGatekeeper,
         "ZeroAddress",
       );
     });
 
     it("should throw when the proof is invalid)", async () => {
-      await merkleProofGatekeeper.setMaciInstance(signerAddress).then((tx) => tx.wait());
-
       await expect(
-        merkleProofGatekeeper.register(signerAddress, AbiCoder.defaultAbiCoder().encode(["bytes32[]"], [invalidProof])),
+        maciContract.signUp(
+          user.pubKey.asContractParam(),
+          AbiCoder.defaultAbiCoder().encode(["bytes32[]"], [invalidProof]),
+        ),
       ).to.be.revertedWithCustomError(merkleProofGatekeeper, "InvalidProof");
     });
 
     it("should register a user if the register function is called with the valid data", async () => {
-      await merkleProofGatekeeper.setMaciInstance(await maciContract.getAddress()).then((tx) => tx.wait());
-
       // signup via MACI
       const tx = await maciContract.signUp(
         user.pubKey.asContractParam(),
