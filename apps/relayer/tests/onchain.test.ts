@@ -4,13 +4,24 @@ import { SchedulerRegistry } from "@nestjs/schedule";
 import { Test } from "@nestjs/testing";
 import { Keypair } from "maci-domainobjs";
 import { formatProofForVerifierContract, genProofSnarkjs, getDefaultSigner, getPollContracts } from "maci-sdk";
+import { TestingClass } from "maci-testing";
 import request from "supertest";
 
 import type { JsonRpcProvider } from "ethers";
 
 import { AppModule } from "../ts/app.module.js";
 
-import { pollJoinedWasm, pollJoinedZkey, type TApp } from "./constants.js";
+import {
+  pollJoinedWasm,
+  pollJoinedZkey,
+  pollWasm,
+  type TApp,
+  tallyVotesZkeyPathNonQv,
+  pollJoiningZkey,
+  processMessagesZkeyPathNonQv,
+  pollWitgen,
+  rapidsnark,
+} from "./constants.js";
 
 jest.unmock("maci-sdk");
 
@@ -22,22 +33,31 @@ describe("Integration message publishing", () => {
   let schedulerRegistry: SchedulerRegistry;
 
   beforeAll(async () => {
-    const { TestDeploy } = await import("./deploy.js");
-    await TestDeploy.sleep(20_000);
-    const testDeploy = await TestDeploy.getInstance();
+    await TestingClass.sleep(20_000);
+    const testDeploy = await TestingClass.getInstance({
+      pollJoiningZkeyPath: pollJoiningZkey,
+      pollJoinedZkeyPath: pollJoinedZkey,
+      processMessagesZkeyPath: processMessagesZkeyPathNonQv,
+      tallyVotesZkeyPath: tallyVotesZkeyPathNonQv,
+      pollWasm,
+      pollWitgen,
+      rapidsnark,
+    });
     const poll = testDeploy.contractsData.maciState!.polls.get(0n);
 
     poll!.updatePoll(BigInt(testDeploy.contractsData.maciState!.pubKeys.length));
 
-    stateLeafIndex = Number(testDeploy.contractsData.stateLeafIndex);
+    const [user] = testDeploy.contractsData.users!;
+
+    stateLeafIndex = Number(user.stateLeafIndex);
 
     maciContractAddress = testDeploy.contractsData.maciContractAddress!;
 
     circuitInputs = poll!.joinedCircuitInputs({
-      maciPrivKey: testDeploy.contractsData.user!.privKey,
-      stateLeafIndex: BigInt(testDeploy.contractsData.stateLeafIndex!),
-      voiceCreditsBalance: BigInt(testDeploy.contractsData.voiceCredits!),
-      joinTimestamp: BigInt(testDeploy.contractsData.timestamp!),
+      maciPrivKey: user.keypair.privKey,
+      stateLeafIndex: user.stateLeafIndex!,
+      voiceCreditsBalance: user.voiceCreditBalance,
+      joinTimestamp: user.timestamp!,
     }) as unknown as typeof circuitInputs;
 
     const moduleFixture = await Test.createTestingModule({
@@ -52,10 +72,8 @@ describe("Integration message publishing", () => {
   });
 
   afterAll(async () => {
-    const { TestDeploy } = await import("./deploy.js");
-
     jest.restoreAllMocks();
-    TestDeploy.clean();
+    TestingClass.clean();
     await app.close();
   });
 
@@ -101,7 +119,6 @@ describe("Integration message publishing", () => {
     await (signer.provider as unknown as JsonRpcProvider).send("evm_increaseTime", [100]);
     await (signer.provider as unknown as JsonRpcProvider).send("evm_mine", []);
 
-    const { TestDeploy } = await import("./deploy.js");
     const { poll: pollContract } = await getPollContracts({ maciAddress: maciContractAddress, pollId: 0, signer });
 
     await Promise.race([
@@ -111,7 +128,7 @@ describe("Integration message publishing", () => {
           resolve(true);
         });
       }),
-      TestDeploy.sleep(30_000).then(() => {
+      TestingClass.sleep(30_000).then(() => {
         throw new Error("Timeout error");
       }),
     ]);

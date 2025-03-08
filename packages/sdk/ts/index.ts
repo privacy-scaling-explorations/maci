@@ -57,6 +57,7 @@ export type {
   IProveParams,
   IVerifyingKeyStruct,
   SnarkProof,
+  IIpfsMessage,
 } from "maci-contracts";
 
 export * from "maci-contracts/typechain-types";

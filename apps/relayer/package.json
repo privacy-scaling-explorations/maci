@@ -49,6 +49,7 @@
     "maci-sdk": "^0.0.1",
     "maci-domainobjs": "^2.5.0",
     "maci-contracts": "^2.5.0",
+    "maci-testing": "^0.1.0",
     "mongoose": "^8.12.1",
     "multiformats": "^13.3.2",
     "mustache": "^4.2.0",

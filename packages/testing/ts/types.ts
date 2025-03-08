@@ -1,4 +1,15 @@
-import { MACI, Verifier, VkRegistry, FreeForAllGatekeeper, ConstantInitialVoiceCreditProxy } from "maci-sdk";
+import { genMaciStateFromContract } from "maci-sdk";
+
+import type { User } from "./user";
+import type { Signer } from "ethers";
+import type {
+  MACI,
+  Verifier,
+  VkRegistry,
+  FreeForAllGatekeeper,
+  ConstantInitialVoiceCreditProxy,
+  IIpfsMessage,
+} from "maci-sdk";
 
 /**
  * A util interface that represents a vote object
@@ -49,4 +60,22 @@ export interface IDeployedTestContracts {
   vkRegistry: VkRegistry;
   gatekeeper: FreeForAllGatekeeper;
   initialVoiceCreditProxy: ConstantInitialVoiceCreditProxy;
+}
+
+/**
+ * A util interface that represents testing data from the TestingClass object
+ */
+export interface IContractsData {
+  initialized: boolean;
+  users?: User[];
+  maciContractAddress?: string;
+  maciState?: Awaited<ReturnType<typeof genMaciStateFromContract>>;
+  polls?: string[];
+}
+
+export interface IRelayTestMessagesArgs {
+  messages: IIpfsMessage[];
+  maciAddress: string;
+  signer: Signer;
+  pollId: number;
 }

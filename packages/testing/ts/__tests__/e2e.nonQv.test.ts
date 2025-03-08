@@ -27,8 +27,9 @@ import {
 
 import type { Signer } from "ethers";
 
-import { DEFAULT_INITIAL_VOICE_CREDITS, DEFAULT_SG_DATA } from "../../ts/utils";
 import {
+  DEFAULT_INITIAL_VOICE_CREDITS,
+  DEFAULT_SG_DATA,
   deployPollArgs,
   coordinatorPrivKey,
   pollDuration,

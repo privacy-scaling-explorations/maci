@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        command: ["test:cli", "test:integration"]
+        command: ["test:e2e", "test:integration"]
 
     runs-on: ubuntu-24.04
 
@@ -76,8 +76,8 @@ jobs:
       - name: Compile Circuits And Generate zkeys
         if: ${{ env.CHANGED == 'true' }}
         run: |
-          pnpm build:circuits-c -- --outPath ../cli/zkeys
-          pnpm setup:zkeys -- --outPath ../cli/zkeys
+          pnpm build:circuits-c -- --outPath ../testing/zkeys
+          pnpm setup:zkeys -- --outPath ../testing/zkeys
 
       - name: Download zkeys
         if: ${{ env.CHANGED == 'false' }}

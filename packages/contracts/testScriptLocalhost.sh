@@ -10,9 +10,9 @@ pnpm run merge:localhost --poll 0
 
 pnpm run prove:localhost --poll 0 \
     --coordinator-private-key "macisk.1751146b59d32e3c0d7426de411218172428263f93b2fc4d981c036047a4d8c0" \
-    --tally-file ../cli/tally.json \
-    --output-dir ../cli/proofs/
+    --tally-file ./tally.json \
+    --output-dir ./proofs/
 
 pnpm run submitOnChain:localhost --poll 0 \
-    --tally-file ../cli/tally.json \
-    --output-dir ../cli/proofs/
+    --tally-file ./tally.json \
+    --output-dir ./proofs/

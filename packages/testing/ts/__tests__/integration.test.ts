@@ -39,21 +39,18 @@ import { homedir } from "os";
 import path from "path";
 
 import {
-  DEFAULT_VOICE_CREDITS,
+  DEFAULT_INITIAL_VOICE_CREDITS,
   DEFAULT_VOTE_OPTIONS,
   INT_STATE_TREE_DEPTH,
   MESSAGE_BATCH_SIZE,
-  SG_DATA,
   STATE_TREE_DEPTH,
   VOTE_OPTION_TREE_DEPTH,
-  backupFolder,
-  duration,
-  initialVoiceCredits,
+  pollDuration,
   maxMessages,
   maxVoteOptions,
-} from "./utils/constants";
-import { ITestSuite } from "./utils/interfaces";
-import { expectTally, genTestUserCommands, isArm, writeBackupFile } from "./utils/utils";
+} from "../constants";
+import { ITestSuite } from "../types";
+import { expectTally, genTestUserCommands, isArm, writeBackupFile, backupFolder } from "../utils";
 
 chai.use(chaiAsPromised);
 
@@ -86,16 +83,10 @@ describe("Integration tests", function test() {
     vkRegistryAddress = await deployVkRegistryContract({ signer });
     // 2. set verifying keys
     const { pollJoiningVk, pollJoinedVk, processVk, tallyVk } = await extractAllVks({
-      pollJoiningZkeyPath: path.resolve(__dirname, "../../../cli/zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey"),
-      pollJoinedZkeyPath: path.resolve(__dirname, "../../../cli/zkeys/PollJoined_10_test/PollJoined_10_test.0.zkey"),
-      processMessagesZkeyPath: path.resolve(
-        __dirname,
-        "../../../cli/zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey",
-      ),
-      tallyVotesZkeyPath: path.resolve(
-        __dirname,
-        "../../../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey",
-      ),
+      pollJoiningZkeyPath: "./zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey",
+      pollJoinedZkeyPath: "./zkeys/PollJoined_10_test/PollJoined_10_test.0.zkey",
+      processMessagesZkeyPath: "./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey",
+      tallyVotesZkeyPath: "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey",
     });
 
     await setVerifyingKeys({
@@ -127,7 +118,11 @@ describe("Integration tests", function test() {
     // 3. deploy maci
     contracts = await deployMaci({ stateTreeDepth: STATE_TREE_DEPTH, signupGatekeeperAddress, signer });
 
-    const initialVoiceCreditProxy = await deployConstantInitialVoiceCreditProxy(DEFAULT_VOICE_CREDITS, signer, true);
+    const initialVoiceCreditProxy = await deployConstantInitialVoiceCreditProxy(
+      DEFAULT_INITIAL_VOICE_CREDITS,
+      signer,
+      true,
+    );
     const initialVoiceCreditProxyContractAddress = await initialVoiceCreditProxy.getAddress();
     const verifier = await deployVerifier(signer, true);
     const verifierContractAddress = await verifier.getAddress();
@@ -136,7 +131,7 @@ describe("Integration tests", function test() {
 
     // 4. create a poll
     await deployPoll({
-      pollEndTimestamp: startDate + duration,
+      pollEndTimestamp: startDate + pollDuration,
       pollStartTimestamp: startDate,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
@@ -149,7 +144,7 @@ describe("Integration tests", function test() {
       verifierContractAddress,
       vkRegistryContractAddress: vkRegistryAddress,
       gatekeeperContractAddress: pollGatekeeperAddress,
-      initialVoiceCredits: DEFAULT_VOICE_CREDITS,
+      initialVoiceCredits: DEFAULT_INITIAL_VOICE_CREDITS,
       voteOptions: DEFAULT_VOTE_OPTIONS,
       relayers: [await signer.getAddress()],
     });
@@ -162,7 +157,7 @@ describe("Integration tests", function test() {
     const messageBatchSize = MESSAGE_BATCH_SIZE;
 
     pollId = maciState.deployPoll(
-      BigInt(startDate + duration),
+      BigInt(startDate + pollDuration),
       treeDepths,
       messageBatchSize,
       coordinatorKeypair,
@@ -172,11 +167,11 @@ describe("Integration tests", function test() {
 
   // after each test we need to cleanup some files
   afterEach(async () => {
-    if (fs.existsSync(path.resolve(__dirname, "../../../cli/tally.json"))) {
-      await fs.promises.unlink(path.resolve(__dirname, "../../../cli/tally.json"));
+    if (fs.existsSync("./tally.json")) {
+      await fs.promises.unlink("./tally.json");
     }
 
-    const proofDirectory = path.resolve(__dirname, "../../../cli/proofs/");
+    const proofDirectory = "./proofs/";
 
     if (!fs.existsSync(proofDirectory)) {
       return;
@@ -212,7 +207,7 @@ describe("Integration tests", function test() {
           await signup({
             maciPubKey: user.keypair.pubKey.serialize(),
             maciAddress: contracts.maciContractAddress,
-            sgData: SG_DATA,
+            sgData: DEFAULT_SG_DATA,
             signer,
           }).then((result) => result.stateIndex),
         );
@@ -222,16 +217,10 @@ describe("Integration tests", function test() {
           privateKey: user.keypair.privKey.serialize(),
           stateIndex,
           pollId,
-          pollJoiningZkey: path.resolve(__dirname, "../../../cli/zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey"),
+          pollJoiningZkey: "./zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey",
           useWasm: true,
-          pollWasm: path.resolve(
-            __dirname,
-            "../../../cli/zkeys/PollJoining_10_test/PollJoining_10_test_js/PollJoining_10_test.wasm",
-          ),
-          pollWitgen: path.resolve(
-            __dirname,
-            "../../../cli/zkeys/PollJoining_10_test/PollJoining_10_test_cpp/PollJoining_10_test",
-          ),
+          pollWasm: "./zkeys/PollJoining_10_test/PollJoining_10_test_js/PollJoining_10_test.wasm",
+          pollWitgen: "./zkeys/PollJoining_10_test/PollJoining_10_test_cpp/PollJoining_10_test",
           rapidsnark: `${homedir()}/rapidsnark/build/prover`,
           sgDataArg: DEFAULT_SG_DATA,
           ivcpDataArg: DEFAULT_IVCP_DATA,
@@ -245,7 +234,7 @@ describe("Integration tests", function test() {
         const inputNullifier = BigInt(user.keypair.privKey.asCircuitInputs());
         const nullifier = poseidon([inputNullifier]);
         const poll = maciState.polls.get(pollId);
-        poll?.joinPoll(nullifier, user.keypair.pubKey, BigInt(initialVoiceCredits), BigInt(timestamp));
+        poll?.joinPoll(nullifier, user.keypair.pubKey, BigInt(DEFAULT_INITIAL_VOICE_CREDITS), BigInt(timestamp));
 
         // publish messages
         for (let j = 0; j < user.votes.length; j += 1) {
@@ -336,7 +325,7 @@ describe("Integration tests", function test() {
         }
       }
 
-      await timeTravel({ seconds: duration, signer });
+      await timeTravel({ seconds: pollDuration, signer });
 
       // merge signups
       await expect(
@@ -349,41 +338,23 @@ describe("Integration tests", function test() {
 
       // generate proofs
       const { tallyData } = await generateProofs({
-        outputDir: path.resolve(__dirname, "../../../cli/proofs"),
-        tallyFile: path.resolve(__dirname, "../../../cli/tally.json"),
-        tallyZkey: path.resolve(__dirname, "../../../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey"),
-        processZkey: path.resolve(
-          __dirname,
-          "../../../cli/zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey",
-        ),
+        outputDir: "./proofs",
+        tallyFile: "./tally.json",
+        tallyZkey: "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey",
+        processZkey: "./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey",
         pollId,
         rapidsnark: `${homedir()}/rapidsnark/build/prover`,
-        processWitgen: path.resolve(
-          __dirname,
-          "../../../cli/zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_cpp/ProcessMessages_10-20-2_test",
-        ),
-        processDatFile: path.resolve(
-          __dirname,
-          "../../../cli/zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_cpp/ProcessMessages_10-20-2_test.dat",
-        ),
-        tallyWitgen: path.resolve(
-          __dirname,
-          "../../../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_cpp/TallyVotes_10-1-2_test",
-        ),
-        tallyDatFile: path.resolve(
-          __dirname,
-          "../../../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_cpp/TallyVotes_10-1-2_test.dat",
-        ),
+        processWitgen:
+          "./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_cpp/ProcessMessages_10-20-2_test",
+        processDatFile:
+          "./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_cpp/ProcessMessages_10-20-2_test.dat",
+        tallyWitgen: "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_cpp/TallyVotes_10-1-2_test",
+        tallyDatFile: "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_cpp/TallyVotes_10-1-2_test.dat",
         coordinatorPrivateKey: coordinatorKeypair.privKey.serialize(),
         maciAddress: contracts.maciContractAddress,
-        processWasm: path.resolve(
-          __dirname,
-          "../../../cli/zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_js/ProcessMessages_10-20-2_test.wasm",
-        ),
-        tallyWasm: path.resolve(
-          __dirname,
-          "../../../cli/zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm",
-        ),
+        processWasm:
+          "./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_js/ProcessMessages_10-20-2_test.wasm",
+        tallyWasm: "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm",
         useWasm,
         useQuadraticVoting: true,
         ipfsMessageBackupFiles,
@@ -404,8 +375,8 @@ describe("Integration tests", function test() {
       await expect(
         proveOnChain({
           pollId,
-          tallyFile: path.resolve(__dirname, "../../../cli/tally.json"),
-          proofDir: path.resolve(__dirname, "../../../cli/proofs"),
+          tallyFile: "./tally.json",
+          proofDir: "./proofs",
           maciAddress: contracts.maciContractAddress,
           signer,
         }),
