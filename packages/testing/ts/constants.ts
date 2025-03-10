@@ -232,11 +232,3 @@ export const invalidVote = {
   maxVoteWeight: 1n,
   voteCreditBalance: 1n,
 };
-
-export const defaultVote = {
-  voteWeight: 1n,
-  nonce: 1n,
-  maxVoteWeight: 25n,
-  voteCreditBalance: 1n,
-  voteOptionIndex: 0n,
-};

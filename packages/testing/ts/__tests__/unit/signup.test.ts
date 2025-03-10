@@ -12,8 +12,7 @@ import {
   deployVkRegistryContract,
 } from "maci-sdk";
 
-import { DEFAULT_SG_DATA } from "../../ts/utils";
-import { deployArgs, verifyingKeysArgs } from "../constants";
+import { deployArgs, verifyingKeysArgs, DEFAULT_SG_DATA } from "../../constants";
 
 describe("signup", function test() {
   this.timeout(900000);

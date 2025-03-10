@@ -1,5 +1,4 @@
 import { expect } from "chai";
-import { Poll__factory as PollFactory } from "maci-contracts/typechain-types";
 import { SNARK_FIELD_SIZE } from "maci-crypto";
 import { Keypair } from "maci-domainobjs";
 import {
@@ -18,12 +17,19 @@ import {
   deployFreeForAllSignUpGatekeeper,
   deployConstantInitialVoiceCreditProxy,
   deployVerifier,
+  Poll__factory as PollFactory,
 } from "maci-sdk";
 
 import type { Signer } from "ethers";
 
-import { DEFAULT_INITIAL_VOICE_CREDITS, DEFAULT_SG_DATA } from "../../ts/utils";
-import { deployPollArgs, deployArgs, pollDuration, verifyingKeysArgs } from "../constants";
+import {
+  deployPollArgs,
+  deployArgs,
+  pollDuration,
+  verifyingKeysArgs,
+  DEFAULT_INITIAL_VOICE_CREDITS,
+  DEFAULT_SG_DATA,
+} from "../../constants";
 
 describe("publish", function test() {
   this.timeout(900000);

@@ -7,10 +7,6 @@
     ".": {
       "types": "./build/ts/index.d.ts",
       "default": "./build/ts/index.js"
-    },
-    "./sdk": {
-      "types": "./build/ts/sdk/index.d.ts",
-      "default": "./build/ts/sdk/index.js"
     }
   },
   "bin": {
@@ -26,15 +22,6 @@
     "build": "tsc -p tsconfig.build.json",
     "postbuild": "cp package.json ./build && mkdir -p ./zkeys",
     "types": "tsc -p tsconfig.json --noEmit",
-    "test:unit": "NODE_ENV=test nyc ts-mocha --exit tests/unit/*.test.ts",
-    "test:airdrop": "NODE_ENV=test nyc ts-mocha --exit tests/unit/airdrop.test.ts",
-    "test:genPubKey": "NODE_ENV=test ts-mocha --exit tests/unit/genPubKey.test.ts",
-    "test:genKeypair": "NODE_ENV=test ts-mocha --exit tests/unit/genKeyPair.test.ts",
-    "test:joinPoll": "NODE_ENV=test ts-mocha --exit tests/unit/joinPoll.test.ts",
-    "test:timeTravel": "NODE_ENV=test ts-mocha --exit tests/unit/timeTravel.test.ts",
-    "test:fundWallet": "NODE_ENV=test ts-mocha --exit tests/unit/fundWallet.test.ts",
-    "test:signup": "NODE_ENV=test ts-mocha --exit tests/unit/signup.test.ts",
-    "test:utils": "NODE_ENV=test ts-mocha --exit tests/unit/utils.test.ts",
     "docs": "typedoc --plugin typedoc-plugin-markdown --options ./typedoc.json"
   },
   "dependencies": {
@@ -45,7 +32,6 @@
     "ethers": "^6.13.5",
     "hardhat": "^2.22.19",
     "maci-circuits": "^2.5.0",
-    "maci-contracts": "^2.5.0",
     "maci-core": "^2.5.0",
     "maci-crypto": "^2.5.0",
     "maci-domainobjs": "^2.5.0",

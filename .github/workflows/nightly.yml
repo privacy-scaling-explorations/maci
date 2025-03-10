@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        command: ["test:cli", "test:integration"]
+        command: ["test:unit", "test:integration", "test:e2e"]
 
     runs-on: ubuntu-24.04
 
@@ -69,8 +69,8 @@ jobs:
 
       - name: Compile Circuits And Generate zkeys
         run: |
-          pnpm build:circuits-c -- --outPath ../cli/zkeys
-          pnpm setup:zkeys -- --outPath ../cli/zkeys
+          pnpm build:circuits-c -- --outPath ../testing/zkeys
+          pnpm setup:zkeys -- --outPath ../testing/zkeys
 
       - name: ${{ matrix.command }}
         run: pnpm run ${{ matrix.command }}

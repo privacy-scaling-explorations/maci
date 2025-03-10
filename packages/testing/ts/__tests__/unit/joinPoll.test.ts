@@ -17,8 +17,10 @@ import {
   deployMaci,
 } from "maci-sdk";
 
-import { DEFAULT_INITIAL_VOICE_CREDITS, DEFAULT_IVCP_DATA, DEFAULT_SG_DATA } from "../../ts/utils";
 import {
+  DEFAULT_INITIAL_VOICE_CREDITS,
+  DEFAULT_IVCP_DATA,
+  DEFAULT_SG_DATA,
   deployArgs,
   deployPollArgs,
   pollJoiningTestZkeyPath,
@@ -27,7 +29,7 @@ import {
   testPollJoiningWitnessPath,
   pollDuration,
   verifyingKeysArgs,
-} from "../constants";
+} from "../../constants";
 
 describe("joinPoll", function test() {
   let signer: Signer;

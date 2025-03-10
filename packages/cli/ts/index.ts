@@ -69,7 +69,7 @@ const { description, version, name } = JSON.parse(
 const program = new Command();
 program.name(name).description(description).version(version);
 
-const getSigner = async (): Promise<Signer> => import("maci-contracts").then((m) => m.getDefaultSigner());
+const getSigner = async (): Promise<Signer> => import("maci-sdk").then((m) => m.getDefaultSigner());
 
 // add the commands
 program
