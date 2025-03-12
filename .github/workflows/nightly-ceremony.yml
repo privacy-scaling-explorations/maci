@@ -59,7 +59,7 @@ jobs:
         run: pnpm download-zkeys:ceremony
 
       - name: Run e2e tests
-        run: pnpm test:cli-ceremony
+        run: pnpm test:ceremony
 
       - name: Stop Hardhat
         if: always()

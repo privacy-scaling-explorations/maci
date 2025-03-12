@@ -9,14 +9,14 @@ import path from "path";
 describe("utils", () => {
   describe("vks", () => {
     it("should return true for two equal VKs", async () => {
-      const vkPath = path.resolve(__dirname, "data", "testVk.json");
+      const vkPath = path.resolve(__dirname, "..", "data", "testVk.json");
       const vk1 = VerifyingKey.fromJSON(await fs.promises.readFile(vkPath).then((res) => res.toString()));
 
       expect(compareVks(vk1, vk1.asContractParam())).to.eq(true);
     });
 
     it("should return false for two unequal VKs", async () => {
-      const vkPath = path.resolve(__dirname, "data", "testVk.json");
+      const vkPath = path.resolve(__dirname, "..", "data", "testVk.json");
       const vk1 = VerifyingKey.fromJSON(await fs.promises.readFile(vkPath).then((res) => res.toString()));
 
       const vk2 = vk1.asContractParam();

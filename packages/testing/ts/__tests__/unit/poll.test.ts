@@ -18,9 +18,13 @@ import {
 
 import type { Signer } from "ethers";
 
-import { DEFAULT_INITIAL_VOICE_CREDITS } from "../../ts/utils";
-import { deployPollArgs, deployArgs, pollDuration, verifyingKeysArgs } from "../constants";
-import { clean } from "../utils";
+import {
+  deployPollArgs,
+  deployArgs,
+  pollDuration,
+  verifyingKeysArgs,
+  DEFAULT_INITIAL_VOICE_CREDITS,
+} from "../../constants";
 
 describe("poll", function test() {
   this.timeout(900000);
@@ -81,10 +85,6 @@ describe("poll", function test() {
   });
 
   describe("check deploy and get poll", () => {
-    after(async () => {
-      await clean();
-    });
-
     it("should get current poll properly", async () => {
       const pollData = await getPoll({
         maciAddress: maciAddresses.maciContractAddress,

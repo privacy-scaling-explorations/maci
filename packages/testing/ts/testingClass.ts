@@ -16,6 +16,8 @@ import {
   deployConstantInitialVoiceCreditProxy,
 } from "maci-sdk";
 
+import type { ITestingClassPaths, IContractsData } from "./types";
+
 import {
   INT_STATE_TREE_DEPTH,
   MESSAGE_BATCH_SIZE,
@@ -26,47 +28,7 @@ import {
   DEFAULT_SG_DATA,
   DEFAULT_IVCP_DATA,
 } from "./constants";
-import { type IContractsData } from "./types";
 import { User } from "./user";
-/**
- * Interface for the paths to the zkey files and the wasm and witgen files
- */
-export interface ITestingClassPaths {
-  /**
-   * Path to the pollJoining zkey file
-   */
-  pollJoiningZkeyPath: string;
-
-  /**
-   * Path to the pollJoined zkey file
-   */
-  pollJoinedZkeyPath: string;
-
-  /**
-   * Path to the processMessages zkey file
-   */
-  processMessagesZkeyPath: string;
-
-  /**
-   * Path to the tallyVotes zkey file
-   */
-  tallyVotesZkeyPath: string;
-
-  /**
-   * Path to the poll wasm file
-   */
-  pollWasm: string;
-
-  /**
-   * Path to the poll witgen file
-   */
-  pollWitgen: string;
-
-  /**
-   * Path to the rapidsnark file
-   */
-  rapidsnark: string;
-}
 
 /**
  * A class that represents the testing class used in MACI tests

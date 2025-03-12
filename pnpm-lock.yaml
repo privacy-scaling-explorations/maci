@@ -580,9 +580,6 @@ importers:
       maci-circuits:
         specifier: ^2.5.0
         version: link:../circuits
-      maci-contracts:
-        specifier: ^2.5.0
-        version: link:../contracts
       maci-core:
         specifier: ^2.5.0
         version: link:../core
@@ -16563,7 +16560,7 @@ snapshots:
       react-dev-utils: 12.0.1(eslint@8.57.0)(typescript@5.8.2)(webpack@5.98.0)
       terser-webpack-plugin: 5.3.10(webpack@5.98.0)
       tslib: 2.8.1
-      url-loader: 4.1.1(file-loader@6.2.0(webpack@5.98.0))(webpack@5.98.0)
+      url-loader: 4.1.1(file-loader@6.2.0(webpack@5.97.1))(webpack@5.98.0)
       webpack: 5.98.0
       webpackbar: 6.0.1(webpack@5.98.0)
     transitivePeerDependencies:
@@ -16670,7 +16667,7 @@ snapshots:
       '@slorber/remark-comment': 1.0.0
       escape-html: 1.0.3
       estree-util-value-to-estree: 3.1.1
-      file-loader: 6.2.0(webpack@5.97.1)
+      file-loader: 6.2.0(webpack@5.98.0)
       fs-extra: 11.3.0
       image-size: 1.1.1
       mdast-util-mdx: 3.0.0
@@ -16686,7 +16683,7 @@ snapshots:
       tslib: 2.8.1
       unified: 11.0.4
       unist-util-visit: 5.0.0
-      url-loader: 4.1.1(file-loader@6.2.0(webpack@5.98.0))(webpack@5.98.0)
+      url-loader: 4.1.1(file-loader@6.2.0(webpack@5.97.1))(webpack@5.98.0)
       vfile: 6.0.1
       webpack: 5.98.0
     transitivePeerDependencies:
@@ -17251,7 +17248,7 @@ snapshots:
       resolve-pathname: 3.0.0
       shelljs: 0.8.5
       tslib: 2.8.1
-      url-loader: 4.1.1(file-loader@6.2.0(webpack@5.98.0))(webpack@5.98.0)
+      url-loader: 4.1.1(file-loader@6.2.0(webpack@5.97.1))(webpack@5.98.0)
       utility-types: 3.11.0
       webpack: 5.98.0
     transitivePeerDependencies:
@@ -24419,6 +24416,7 @@ snapshots:
       loader-utils: 2.0.4
       schema-utils: 3.3.0
       webpack: 5.97.1
+    optional: true
 
   file-loader@6.2.0(webpack@5.98.0):
     dependencies:
@@ -32156,7 +32154,7 @@ snapshots:
     dependencies:
       punycode: 2.3.1
 
-  url-loader@4.1.1(file-loader@6.2.0(webpack@5.98.0))(webpack@5.98.0):
+  url-loader@4.1.1(file-loader@6.2.0(webpack@5.97.1))(webpack@5.98.0):
     dependencies:
       loader-utils: 2.0.4
       mime-types: 2.1.35

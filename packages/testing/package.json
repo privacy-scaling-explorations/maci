@@ -12,13 +12,14 @@
     "watch": "tsc --watch",
     "build": "tsc",
     "types": "tsc -p tsconfig.json --noEmit",
-    "test": "ts-mocha --exit ./ts/__tests__/**.test.ts",
+    "test": "ts-mocha --exit ./ts/__tests__/**/*.test.ts",
     "test:integration": "NODE_OPTIONS=--max-old-space-size=4096 ts-mocha --exit  ./ts/__tests__/integration.test.ts",
     "test:ceremony": "NODE_ENV=test ts-mocha --exit ./ts/__tests__/ceremonyParams.test.ts",
     "test:e2e": "NODE_ENV=test ts-mocha --exit ./ts/__tests__/e2e*.test.ts",
     "test:e2e-qv": "NODE_ENV=test ts-mocha --exit ./ts/__tests__/e2e.test.ts",
     "test:e2e-non-qv": "NODE_ENV=test ts-mocha --exit ./ts/__tests__/e2e.nonQv.test.ts",
-    "test:keyChange": "NODE_ENV=test ts-mocha --exit ./ts/__tests__/keyChange.test.ts"
+    "test:keyChange": "NODE_ENV=test ts-mocha --exit ./ts/__tests__/keyChange.test.ts",
+    "test:unit": "NODE_ENV=test ts-mocha --exit ./ts/__tests__/unit/*.test.ts"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
