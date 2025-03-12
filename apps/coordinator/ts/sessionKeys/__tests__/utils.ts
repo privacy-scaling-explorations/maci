@@ -2,11 +2,10 @@ import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
 import { type Policy, serializePermissionAccount, toPermissionValidator } from "@zerodev/permissions";
 import { toSudoPolicy, toTimestampPolicy } from "@zerodev/permissions/policies";
 import { toECDSASigner } from "@zerodev/permissions/signers";
-import { addressToEmptyAccount, createKernelAccount, KernelSmartAccount } from "@zerodev/sdk";
-import { KERNEL_V3_1 } from "@zerodev/sdk/constants";
+import { addressToEmptyAccount, createKernelAccount, CreateKernelAccountReturnType } from "@zerodev/sdk";
+import { getEntryPoint, KERNEL_V3_1 } from "@zerodev/sdk/constants";
 import dotenv from "dotenv";
-import { ENTRYPOINT_ADDRESS_V07 } from "permissionless";
-import { Chain, type Hex, HttpTransport } from "viem";
+import { type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
 import { ESupportedNetworks } from "../../common";
@@ -14,7 +13,7 @@ import { getPublicClient } from "../../common/accountAbstraction";
 
 dotenv.config();
 
-export const ENTRY_POINT = ENTRYPOINT_ADDRESS_V07;
+export const ENTRY_POINT = getEntryPoint("0.7");
 export const KERNEL_VERSION = KERNEL_V3_1;
 
 /**
@@ -34,9 +33,7 @@ export const generateTimestampPolicy = (endTime: number, start?: number): Policy
  * @param sessionKeyAddress - the session key address
  * @returns - the kernel account
  */
-export const getKernelAccount = async (
-  sessionKeyAddress: Hex,
-): Promise<KernelSmartAccount<typeof ENTRYPOINT_ADDRESS_V07, HttpTransport, Chain>> => {
+export const getKernelAccount = async (sessionKeyAddress: Hex): Promise<CreateKernelAccountReturnType> => {
   const publicClient = getPublicClient(ESupportedNetworks.OPTIMISM_SEPOLIA);
 
   const sessionKeySigner = privateKeyToAccount(process.env.TEST_PRIVATE_KEY! as Hex);
@@ -47,7 +44,7 @@ export const getKernelAccount = async (
   });
 
   const emptyAccount = addressToEmptyAccount(sessionKeyAddress);
-  const emptySessionKeySigner = toECDSASigner({ signer: emptyAccount });
+  const emptySessionKeySigner = await toECDSASigner({ signer: emptyAccount });
 
   const permissionPlugin = await toPermissionValidator(publicClient, {
     entryPoint: ENTRY_POINT,

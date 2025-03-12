@@ -17,6 +17,7 @@ import type {
 import type { CircuitInputs } from "../utils/types";
 
 import { contractExists, generateAndVerifyProof } from "../utils";
+import { parseEventFromLogs } from "../utils/contracts";
 
 import {
   getPollJoiningCircuitEvents,
@@ -91,11 +92,10 @@ export const signup = async ({ maciPubKey, maciAddress, sgData, signer }: ISignu
     throw new Error("The transaction failed");
   }
 
-  const iface = maciContract.interface;
-
   // get state index from the event
-  const [log] = receipt.logs;
-  const { args } = iface.parseLog(log as unknown as { topics: string[]; data: string }) || { args: [] };
+  const iface = maciContract.interface;
+  const log = parseEventFromLogs(receipt, iface, "SignUp");
+  const { args } = log || { args: [] };
   [stateIndex, ,] = args;
 
   return {
@@ -257,17 +257,16 @@ export const joinPoll = async ({
     throw new Error("Transaction failed");
   }
 
-  const iface = pollContract.interface;
-
   // get user data from the event
-  const [log] = receipt.logs;
-  const { args } = iface.parseLog(log as unknown as { topics: string[]; data: string }) as unknown as {
+  const iface = pollContract.interface;
+  const log = parseEventFromLogs(receipt, iface, "PollJoined") as unknown as {
     args: {
       _pollStateIndex: bigint;
       _voiceCreditBalance: bigint;
       _timestamp: bigint;
     };
   };
+  const { args } = log;
 
   return {
     pollStateIndex: args._pollStateIndex.toString(),

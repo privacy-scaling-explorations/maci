@@ -127,19 +127,19 @@ importers:
         version: 3.0.8(ethers@6.13.5)(hardhat@2.22.19(ts-node@10.9.2(@types/node@22.13.10)(typescript@5.8.2))(typescript@5.8.2))
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
-        version: 5.0.0(xncnyqtvbr5772sw5j53jgi4he)
+        version: 5.0.0(6448484928b36276eb41375c1ca3e129)
       '@vercel/blob':
         specifier: ^0.27.2
         version: 0.27.2
       '@zerodev/ecdsa-validator':
-        specifier: 5.3.1
-        version: 5.3.1(@zerodev/sdk@5.3.8(permissionless@0.1.29(viem@2.23.9(typescript@5.8.2)(zod@3.24.2)))(viem@2.23.9(typescript@5.8.2)(zod@3.24.2)))(permissionless@0.1.29(viem@2.23.9(typescript@5.8.2)(zod@3.24.2)))(viem@2.23.9(typescript@5.8.2)(zod@3.24.2))
+        specifier: 5.4.4
+        version: 5.4.4(@zerodev/sdk@5.4.26(viem@2.23.9(typescript@5.8.2)(zod@3.24.2)))(viem@2.23.9(typescript@5.8.2)(zod@3.24.2))
       '@zerodev/permissions':
-        specifier: 5.4.3
-        version: 5.4.3(@zerodev/sdk@5.3.8(permissionless@0.1.29(viem@2.23.9(typescript@5.8.2)(zod@3.24.2)))(viem@2.23.9(typescript@5.8.2)(zod@3.24.2)))(@zerodev/webauthn-key@5.4.2(viem@2.23.9(typescript@5.8.2)(zod@3.24.2)))(permissionless@0.1.29(viem@2.23.9(typescript@5.8.2)(zod@3.24.2)))(viem@2.23.9(typescript@5.8.2)(zod@3.24.2))
+        specifier: 5.5.2
+        version: 5.5.2(@zerodev/sdk@5.4.26(viem@2.23.9(typescript@5.8.2)(zod@3.24.2)))(@zerodev/webauthn-key@5.4.2(viem@2.23.9(typescript@5.8.2)(zod@3.24.2)))(viem@2.23.9(typescript@5.8.2)(zod@3.24.2))
       '@zerodev/sdk':
-        specifier: 5.3.8
-        version: 5.3.8(permissionless@0.1.29(viem@2.23.9(typescript@5.8.2)(zod@3.24.2)))(viem@2.23.9(typescript@5.8.2)(zod@3.24.2))
+        specifier: 5.4.26
+        version: 5.4.26(viem@2.23.9(typescript@5.8.2)(zod@3.24.2))
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
@@ -287,7 +287,7 @@ importers:
         version: 3.0.8(ethers@6.13.5)(hardhat@2.22.19(ts-node@10.9.2(@types/node@22.13.10)(typescript@5.8.2))(typescript@5.8.2))
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
-        version: 5.0.0(xncnyqtvbr5772sw5j53jgi4he)
+        version: 5.0.0(6448484928b36276eb41375c1ca3e129)
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
@@ -564,7 +564,7 @@ importers:
         version: 13.1.0(commander@13.1.0)
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
-        version: 5.0.0(xncnyqtvbr5772sw5j53jgi4he)
+        version: 5.0.0(6448484928b36276eb41375c1ca3e129)
       commander:
         specifier: ^13.1.0
         version: 13.1.0
@@ -646,7 +646,7 @@ importers:
         version: 3.0.8(ethers@6.13.5)(hardhat@2.22.19(ts-node@10.9.2(@types/node@22.13.10)(typescript@5.8.2))(typescript@5.8.2))
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
-        version: 5.0.0(xncnyqtvbr5772sw5j53jgi4he)
+        version: 5.0.0(6448484928b36276eb41375c1ca3e129)
       '@openzeppelin/contracts':
         specifier: ^5.2.0
         version: 5.2.0
@@ -912,7 +912,7 @@ importers:
     dependencies:
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
-        version: 5.0.0(xncnyqtvbr5772sw5j53jgi4he)
+        version: 5.0.0(6448484928b36276eb41375c1ca3e129)
       ethers:
         specifier: ^6.13.5
         version: 6.13.5
@@ -4824,26 +4824,23 @@ packages:
     resolution: {integrity: sha512-/HcYgtUSiJiot/XWGLOlGxPYUG65+/31V8oqk17vZLW1xlCoR4PampyePljOxY2n8/3jz9+tIFzICsyGujJZoA==}
     engines: {node: '>=18.12.0'}
 
-  '@zerodev/ecdsa-validator@5.3.1':
-    resolution: {integrity: sha512-4xg/uBgjQLyO5GoE9TkQqO7HRwSPVbchd6UXit+R3excN1fC27k7UcjLmm5rTrM2JxbgncIodGcNQMxYKNejsA==}
+  '@zerodev/ecdsa-validator@5.4.4':
+    resolution: {integrity: sha512-PDmNX3GmmMh2MEpvkBpIl2s1KgmmI6NW9b8K6z5eMZsoM/f5FWgCuboUOGKX1PltNp3Rqo9OY/hNjzCyB4Kmuw==}
     peerDependencies:
-      '@zerodev/sdk': ^5.2.1
-      permissionless: ^0.1.18
-      viem: ^2.16.3
+      '@zerodev/sdk': ^5.4.13
+      viem: ^2.21.40
 
-  '@zerodev/permissions@5.4.3':
-    resolution: {integrity: sha512-rC5npYPRQO8lwhMXO6h2MXO3DGgRSDqAEVh9E2pRnlYPhaMDHRVd+nPqLIsx1OubRT0jSXrPFTQJd2MqeKcJ6w==}
+  '@zerodev/permissions@5.5.2':
+    resolution: {integrity: sha512-NmLzb1iGTcQWczLZF313CLMv1A/x3J7k1GluUIbivc5ixI9NCbXpuXrII+Y7otDf7Z1RsKkpvzZgdwO7hmdkNw==}
     peerDependencies:
-      '@zerodev/sdk': ^5.2.13
-      '@zerodev/webauthn-key': ^5.3.0
-      permissionless: ^0.1.18
-      viem: ^2.16.3
+      '@zerodev/sdk': ^5.4.0
+      '@zerodev/webauthn-key': ^5.4.0
+      viem: ^2.21.40
 
-  '@zerodev/sdk@5.3.8':
-    resolution: {integrity: sha512-CA5SkVUXbu8NCa7vxXp3KXt+c1yVDZwF1vQk+JsTW5QKTBBo0czeR8amb+VI5B1Dhz2lUTbv0SqLfJ/7JeXrMw==}
+  '@zerodev/sdk@5.4.26':
+    resolution: {integrity: sha512-vzWjoBrus/54SVg+VhjFG0fr2M99208+78ya62tLyuYJzx8PTlLbBfSlzVYHYGtGFbhinmcYelM0q1CuOa4arQ==}
     peerDependencies:
-      permissionless: ^0.1.18
-      viem: ^2.16.3
+      viem: ^2.21.40
 
   '@zerodev/webauthn-key@5.4.2':
     resolution: {integrity: sha512-e/JKpV8SXmICZM0TVpiC05Q5eRdI9ECmsrRyc8PMO4qvZ7pJBV2dEdZjrFOmMSYLec59GHedsui6dHasqd50eA==}
@@ -19492,7 +19489,7 @@ snapshots:
       ethereumjs-util: 7.1.5
       hardhat: 2.22.19(ts-node@10.9.2(@types/node@22.13.10)(typescript@5.8.2))(typescript@5.8.2)
 
-  '@nomicfoundation/hardhat-toolbox@5.0.0(xncnyqtvbr5772sw5j53jgi4he)':
+  '@nomicfoundation/hardhat-toolbox@5.0.0(6448484928b36276eb41375c1ca3e129)':
     dependencies:
       '@nomicfoundation/hardhat-chai-matchers': 2.0.7(@nomicfoundation/hardhat-ethers@3.0.8(ethers@6.13.5)(hardhat@2.22.19(ts-node@10.9.2(@types/node@22.13.10)(typescript@5.8.2))(typescript@5.8.2)))(chai@4.4.1)(ethers@6.13.5)(hardhat@2.22.19(ts-node@10.9.2(@types/node@22.13.10)(typescript@5.8.2))(typescript@5.8.2))
       '@nomicfoundation/hardhat-ethers': 3.0.8(ethers@6.13.5)(hardhat@2.22.19(ts-node@10.9.2(@types/node@22.13.10)(typescript@5.8.2))(typescript@5.8.2))
@@ -21059,24 +21056,21 @@ snapshots:
       js-yaml: 3.14.1
       tslib: 2.8.1
 
-  '@zerodev/ecdsa-validator@5.3.1(@zerodev/sdk@5.3.8(permissionless@0.1.29(viem@2.23.9(typescript@5.8.2)(zod@3.24.2)))(viem@2.23.9(typescript@5.8.2)(zod@3.24.2)))(permissionless@0.1.29(viem@2.23.9(typescript@5.8.2)(zod@3.24.2)))(viem@2.23.9(typescript@5.8.2)(zod@3.24.2))':
+  '@zerodev/ecdsa-validator@5.4.4(@zerodev/sdk@5.4.26(viem@2.23.9(typescript@5.8.2)(zod@3.24.2)))(viem@2.23.9(typescript@5.8.2)(zod@3.24.2))':
     dependencies:
-      '@zerodev/sdk': 5.3.8(permissionless@0.1.29(viem@2.23.9(typescript@5.8.2)(zod@3.24.2)))(viem@2.23.9(typescript@5.8.2)(zod@3.24.2))
-      permissionless: 0.1.29(viem@2.23.9(typescript@5.8.2)(zod@3.24.2))
+      '@zerodev/sdk': 5.4.26(viem@2.23.9(typescript@5.8.2)(zod@3.24.2))
       viem: 2.23.9(typescript@5.8.2)(zod@3.24.2)
 
-  '@zerodev/permissions@5.4.3(@zerodev/sdk@5.3.8(permissionless@0.1.29(viem@2.23.9(typescript@5.8.2)(zod@3.24.2)))(viem@2.23.9(typescript@5.8.2)(zod@3.24.2)))(@zerodev/webauthn-key@5.4.2(viem@2.23.9(typescript@5.8.2)(zod@3.24.2)))(permissionless@0.1.29(viem@2.23.9(typescript@5.8.2)(zod@3.24.2)))(viem@2.23.9(typescript@5.8.2)(zod@3.24.2))':
+  '@zerodev/permissions@5.5.2(@zerodev/sdk@5.4.26(viem@2.23.9(typescript@5.8.2)(zod@3.24.2)))(@zerodev/webauthn-key@5.4.2(viem@2.23.9(typescript@5.8.2)(zod@3.24.2)))(viem@2.23.9(typescript@5.8.2)(zod@3.24.2))':
     dependencies:
       '@simplewebauthn/browser': 9.0.1
-      '@zerodev/sdk': 5.3.8(permissionless@0.1.29(viem@2.23.9(typescript@5.8.2)(zod@3.24.2)))(viem@2.23.9(typescript@5.8.2)(zod@3.24.2))
+      '@zerodev/sdk': 5.4.26(viem@2.23.9(typescript@5.8.2)(zod@3.24.2))
       '@zerodev/webauthn-key': 5.4.2(viem@2.23.9(typescript@5.8.2)(zod@3.24.2))
       merkletreejs: 0.3.11
-      permissionless: 0.1.29(viem@2.23.9(typescript@5.8.2)(zod@3.24.2))
       viem: 2.23.9(typescript@5.8.2)(zod@3.24.2)
 
-  '@zerodev/sdk@5.3.8(permissionless@0.1.29(viem@2.23.9(typescript@5.8.2)(zod@3.24.2)))(viem@2.23.9(typescript@5.8.2)(zod@3.24.2))':
+  '@zerodev/sdk@5.4.26(viem@2.23.9(typescript@5.8.2)(zod@3.24.2))':
     dependencies:
-      permissionless: 0.1.29(viem@2.23.9(typescript@5.8.2)(zod@3.24.2))
       semver: 7.7.1
       viem: 2.23.9(typescript@5.8.2)(zod@3.24.2)
 

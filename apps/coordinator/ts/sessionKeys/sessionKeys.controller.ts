@@ -29,7 +29,7 @@ export class SessionKeysController {
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: "Forbidden" })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "BadRequest" })
   @Get("generate")
-  generateSessionKey(): IGenerateSessionKeyReturn {
+  async generateSessionKey(): Promise<IGenerateSessionKeyReturn> {
     return this.sessionKeysService.generateSessionKey();
   }
 

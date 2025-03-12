@@ -17,6 +17,7 @@ import {
   MessageProcessor,
   Tally,
   getPoll,
+  mergeSignups,
 } from "maci-sdk";
 import { IProof, ITallyData } from "maci-sdk";
 import { Hex } from "viem";
@@ -199,54 +200,15 @@ export class ProofGeneratorService {
    * @returns whether the proofs were successfully merged
    */
   async merge({ maciContractAddress, pollId, approval, sessionKeyAddress, chain }: IMergeArgs): Promise<boolean> {
-    const publicClient = getPublicClient(chain);
-
-    const pollContracts = await publicClient.readContract({
-      address: maciContractAddress as Hex,
-      abi: MACIFactory.abi,
-      functionName: "getPoll",
-      args: [BigInt(pollId)],
-    });
-
-    const pollAddress = pollContracts.poll;
-
-    if (pollAddress.toLowerCase() === ZeroAddress.toLowerCase()) {
-      this.logger.error(`Error: ${ErrorCodes.POLL_NOT_FOUND}, Poll ${pollId} not found`);
-      throw new Error(ErrorCodes.POLL_NOT_FOUND.toString());
-    }
-
     // get a kernel client
     const kernelClient = await this.sessionKeysService.generateClientFromSessionKey(sessionKeyAddress, approval, chain);
+    const signer = await this.sessionKeysService.getKernelClientSigner(kernelClient);
 
-    // start with the state tree
-    const isStateMerged = await publicClient.readContract({
-      address: pollAddress,
-      abi: PollFactory.abi,
-      functionName: "stateMerged",
+    await mergeSignups({
+      maciAddress: maciContractAddress,
+      pollId: BigInt(pollId),
+      signer,
     });
-
-    if (isStateMerged) {
-      this.logger.debug("State tree is already merged");
-    } else {
-      // merge it
-      const { request } = await publicClient.simulateContract({
-        // @ts-expect-error type error between permissionless.js and viem
-        account: kernelClient.account,
-        address: pollAddress,
-        abi: PollFactory.abi,
-        functionName: "mergeState",
-      });
-
-      const txHash = await kernelClient.writeContract(request);
-      const txReceipt = await publicClient.waitForTransactionReceipt({
-        hash: txHash,
-      });
-
-      if (txReceipt.status !== "success") {
-        this.logger.error(`Error: ${ErrorCodes.FAILED_TO_MERGE_STATE_TREE}, state tree merge failed`);
-        throw new Error(ErrorCodes.FAILED_TO_MERGE_STATE_TREE.toString());
-      }
-    }
 
     return true;
   }

@@ -1,5 +1,5 @@
 import { Test } from "@nestjs/testing";
-import { zeroAddress } from "viem";
+import { Hex, zeroAddress } from "viem";
 
 import { ErrorCodes, ESupportedNetworks } from "../../common";
 import { FileService } from "../../file/file.service";
@@ -30,12 +30,13 @@ describe("DeployerController", () => {
   );
   const fileService = new FileService();
   const sessionKeyService = new SessionKeysService(fileService);
-  const { sessionKeyAddress } = sessionKeyService.generateSessionKey();
 
   let approval: string;
+  let sessionKeyAddress: Hex;
 
   beforeAll(async () => {
     approval = await generateApproval(sessionKeyAddress);
+    sessionKeyAddress = (await sessionKeyService.generateSessionKey()).sessionKeyAddress;
   });
 
   beforeEach(async () => {

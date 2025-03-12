@@ -9,3 +9,5 @@ export const testRapidsnarkPath = `${homedir()}/rapidsnark/build/prover`;
 
 export const zeroUint256Encoded = AbiCoder.defaultAbiCoder().encode(["uint256"], [0]);
 export const oneUint256Encoded = AbiCoder.defaultAbiCoder().encode(["uint256"], [1]);
+
+export const pollDuration = 10; // 100 seconds (added to unix timestamp of start date)

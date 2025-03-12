@@ -6,7 +6,7 @@ export { fundWallet } from "./fundWallet";
 export { validateParams } from "./params";
 export { timeTravel } from "./timeTravel";
 export { calculateBinaryTreeDepthFromMaxLeaves, calculateQuinTreeDepthFromMaxLeaves } from "./trees";
-export { isArm } from "./utils";
+export { isArm, sleep } from "./utils";
 export { generateAndVerifyProof } from "./proofs";
 
 export type { ICircuitParams, ISnarkJSVerificationKey, ITimeTravelArgs, IFundWalletArgs } from "./types";

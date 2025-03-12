@@ -1,7 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { KernelAccountClient, KernelSmartAccount } from "@zerodev/sdk";
-import { BaseContract, InterfaceAbi } from "ethers";
-import { genEmptyBallotRoots } from "maci-contracts";
+import { BaseContract, InterfaceAbi, Signer } from "ethers";
+import { extractVk, genEmptyBallotRoots, IVerifyingKeyStruct, VkRegistry } from "maci-contracts";
 import { IVkObjectParams, PubKey, VerifyingKey } from "maci-domainobjs";
 import {
   ConstantInitialVoiceCreditProxy__factory as ConstantInitialVoiceCreditProxyFactory,
@@ -29,20 +28,19 @@ import {
   EContracts,
   EInitialVoiceCreditProxies,
   EMode,
-  extractVk,
-  IVerifyingKeyStruct,
+  deployPoll,
+  ISetVerifyingKeysArgs,
+  extractAllVks,
 } from "maci-sdk";
-import { BundlerClient, GetUserOperationReceiptReturnType } from "permissionless";
-import { ENTRYPOINT_ADDRESS_V07_TYPE } from "permissionless/types";
-import { Abi, Chain, encodeFunctionData, HttpTransport, PublicClient, Transport, type Hex } from "viem";
+import { GetUserOperationReceiptReturnType } from "permissionless";
+import { Abi, encodeFunctionData, type Hex } from "viem";
 
 import path from "path";
 
-import { ErrorCodes, ESupportedNetworks } from "../common";
+import { ErrorCodes, ESupportedNetworks, KernelClientType, BundlerClientType, PublicClientType } from "../common";
 import { getBundlerClient, getDeployedContractAddress, getPublicClient } from "../common/accountAbstraction";
 import { FileService } from "../file/file.service";
 import { SessionKeysService } from "../sessionKeys/sessionKeys.service";
-import { KernelClient } from "../sessionKeys/types";
 
 import { MAX_GAS_LIMIT } from "./constants";
 import {
@@ -56,6 +54,7 @@ import {
   IInitialVoiceCreditProxyArgs,
   ISemaphoreGatekeeperArgs,
   IUserOperation,
+  IVkRegistryArgs,
   IZupassGatekeeperArgs,
 } from "./types";
 import { estimateExtraGasLimit } from "./utils";
@@ -219,8 +218,6 @@ export class DeployerService {
   }
 
   /**
-   * Deploy a contract and get the address
-   * @param kernelClient - the kernel client
    * @param abi - the abi
    * @param bytecode - the bytecode
    * @param args - the args
@@ -228,17 +225,12 @@ export class DeployerService {
    * @returns - the address
    */
   async deployAndGetAddress(
-    kernelClient: KernelAccountClient<
-      ENTRYPOINT_ADDRESS_V07_TYPE,
-      Transport,
-      Chain,
-      KernelSmartAccount<ENTRYPOINT_ADDRESS_V07_TYPE, HttpTransport, Chain>
-    >,
+    kernelClient: KernelClientType,
     abi: Abi,
     bytecode: Hex,
     args: unknown[],
-    bundlerClient: BundlerClient<ENTRYPOINT_ADDRESS_V07_TYPE>,
-    publicClient: PublicClient<Transport, Chain>,
+    bundlerClient: BundlerClientType,
+    publicClient: PublicClientType,
   ): Promise<string | undefined> {
     const deployCallData = await kernelClient.account.encodeDeployCallData({
       abi,
@@ -248,28 +240,24 @@ export class DeployerService {
 
     const gasPrice = await kernelClient.getUserOperationGasPrice();
 
-    const opEstimate = await kernelClient.prepareUserOperationRequest({
-      userOperation: {
-        callData: deployCallData,
-        sender: kernelClient.account.address,
-        maxFeePerGas: gasPrice.maxFeePerGas,
-        maxPriorityFeePerGas: gasPrice.maxPriorityFeePerGas,
-      },
+    const opEstimate = await kernelClient.prepareUserOperation({
+      callData: deployCallData,
+      sender: kernelClient.account.address,
+      maxFeePerGas: gasPrice.maxFeePerGas,
+      maxPriorityFeePerGas: gasPrice.maxPriorityFeePerGas,
     });
 
     const callGasLimitMultiplier = estimateExtraGasLimit(opEstimate.callGasLimit);
 
     const tx = await kernelClient.sendUserOperation({
-      userOperation: {
-        callData: deployCallData,
-        sender: kernelClient.account.address,
-        maxFeePerGas: gasPrice.maxFeePerGas,
-        maxPriorityFeePerGas: gasPrice.maxPriorityFeePerGas,
-        callGasLimit:
-          opEstimate.callGasLimit + callGasLimitMultiplier < MAX_GAS_LIMIT
-            ? opEstimate.callGasLimit + callGasLimitMultiplier
-            : MAX_GAS_LIMIT,
-      },
+      callData: deployCallData,
+      sender: kernelClient.account.address,
+      maxFeePerGas: gasPrice.maxFeePerGas,
+      maxPriorityFeePerGas: gasPrice.maxPriorityFeePerGas,
+      callGasLimit:
+        opEstimate.callGasLimit + callGasLimitMultiplier < MAX_GAS_LIMIT
+          ? opEstimate.callGasLimit + callGasLimitMultiplier
+          : MAX_GAS_LIMIT,
     });
 
     const receipt = await bundlerClient.waitForUserOperationReceipt({
@@ -300,9 +288,9 @@ export class DeployerService {
     args: unknown[],
     abi: Abi,
     bytecode: Hex,
-    kernelClient: KernelClient,
-    bundlerClient: BundlerClient<ENTRYPOINT_ADDRESS_V07_TYPE>,
-    publicClient: PublicClient<Transport, Chain>,
+    kernelClient: KernelClientType,
+    bundlerClient: BundlerClientType,
+    publicClient: PublicClientType,
     chain: ESupportedNetworks,
   ): Promise<Hex> {
     let address = this.storage.getAddress(contract, chain);
@@ -349,35 +337,35 @@ export class DeployerService {
     functionName: string,
     args: unknown[],
     errorMessage: string,
-    kernelClient: KernelClient,
-    bundlerClient: BundlerClient<ENTRYPOINT_ADDRESS_V07_TYPE>,
+    kernelClient: KernelClientType,
+    bundlerClient: BundlerClientType,
   ): Promise<GetUserOperationReceiptReturnType> {
     const gasEstimates = await kernelClient.getUserOperationGasPrice();
     const userOperation: IUserOperation = {
       sender: kernelClient.account.address,
       maxFeePerGas: gasEstimates.maxFeePerGas,
       maxPriorityFeePerGas: gasEstimates.maxPriorityFeePerGas,
-      callData: await kernelClient.account.encodeCallData({
-        to,
-        value,
-        data: encodeFunctionData({
-          abi,
-          functionName,
-          args,
-        }),
-      }),
+      callData: await kernelClient.account.encodeCalls([
+        {
+          to,
+          value,
+          data: encodeFunctionData({
+            abi,
+            functionName,
+            args,
+          }),
+        },
+      ]),
     };
-    const opEstimate = await kernelClient.prepareUserOperationRequest({ userOperation });
+    const opEstimate = await kernelClient.prepareUserOperation(userOperation);
     const callGasLimitMultiplier = estimateExtraGasLimit(opEstimate.callGasLimit);
 
     const userOperationHash = await kernelClient.sendUserOperation({
-      userOperation: {
-        ...userOperation,
-        callGasLimit:
-          opEstimate.callGasLimit + callGasLimitMultiplier < MAX_GAS_LIMIT
-            ? opEstimate.callGasLimit + callGasLimitMultiplier
-            : MAX_GAS_LIMIT,
-      },
+      ...userOperation,
+      callGasLimit:
+        opEstimate.callGasLimit + callGasLimitMultiplier < MAX_GAS_LIMIT
+          ? opEstimate.callGasLimit + callGasLimitMultiplier
+          : MAX_GAS_LIMIT,
     });
     const receipt = await bundlerClient.waitForUserOperationReceipt({ hash: userOperationHash });
 
@@ -386,6 +374,58 @@ export class DeployerService {
     }
 
     return receipt;
+  }
+
+  /**
+   * Get verifying keys arguments (specially zkey paths)
+   * @param signer - the signer
+   * @param vkRegistryContract - the deployed vk registry contract
+   * @param vkRegistryArgs - the arguments send to the endpoint
+   * @param mode - use QV or NON_QV
+   * @returns SetVerifyingKeysArgs
+   */
+  async getVerifyingKeysArgs(
+    signer: Signer,
+    vkRegistryContract: VkRegistry,
+    vkRegistryArgs: IVkRegistryArgs,
+    mode: EMode,
+  ): Promise<ISetVerifyingKeysArgs> {
+    const pollJoiningZkeyPath = this.fileService.getZkeyFilePaths(
+      process.env.COORDINATOR_POLL_JOINING_ZKEY_NAME!,
+      true,
+    ).zkey;
+    const pollJoinedZkeyPath = this.fileService.getZkeyFilePaths(
+      process.env.COORDINATOR_POLL_JOINED_ZKEY_NAME!,
+      true,
+    ).zkey;
+    const processMessagesZkeyPath = this.fileService.getZkeyFilePaths(
+      process.env.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME!,
+      mode === EMode.QV,
+    ).zkey;
+    const tallyVotesZkeyPath = this.fileService.getZkeyFilePaths(
+      process.env.COORDINATOR_TALLY_ZKEY_NAME!,
+      mode === EMode.QV,
+    ).zkey;
+    const { pollJoiningVk, pollJoinedVk, processVk, tallyVk } = await extractAllVks({
+      pollJoiningZkeyPath,
+      pollJoinedZkeyPath,
+      processMessagesZkeyPath,
+      tallyVotesZkeyPath,
+    });
+    const { stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth, messageBatchSize } = vkRegistryArgs;
+    return {
+      pollJoiningVk: pollJoiningVk!,
+      pollJoinedVk: pollJoinedVk!,
+      processMessagesVk: processVk!,
+      tallyVotesVk: tallyVk!,
+      stateTreeDepth: Number(stateTreeDepth),
+      intStateTreeDepth: Number(intStateTreeDepth),
+      voteOptionTreeDepth: Number(voteOptionTreeDepth),
+      messageBatchSize: Number(messageBatchSize),
+      signer,
+      mode,
+      vkRegistryAddress: await vkRegistryContract.getAddress(),
+    };
   }
 
   /**
@@ -714,8 +754,8 @@ export class DeployerService {
   async deployPoll({ approval, sessionKeyAddress, chain, config }: IDeployPollArgs): Promise<{ pollId: string }> {
     const publicClient = getPublicClient(chain);
     const bundlerClient = getBundlerClient(chain);
-
     const kernelClient = await this.sessionKeysService.generateClientFromSessionKey(sessionKeyAddress, approval, chain);
+    const signer = await this.sessionKeysService.getKernelClientSigner(kernelClient);
 
     // check if there is a maci contract deployed on this chain
     const maciAddress = this.storage.getAddress(EContracts.MACI, chain);
@@ -781,76 +821,38 @@ export class DeployerService {
 
     const mode = config.useQuadraticVoting ? EMode.QV : EMode.NON_QV;
 
-    const pollId = await publicClient.readContract({
-      address: maciAddress as Hex,
-      abi: MACIFactory.abi,
-      functionName: "nextPollId",
-    });
-
     const deployPollArgs = {
-      startDate: config.startDate,
-      endDate: config.endDate,
-      treeDepths: {
-        intStateTreeDepth: config.intStateTreeDepth,
-        voteOptionTreeDepth: config.voteOptionTreeDepth,
-      },
+      maciAddress,
+      pollStartTimestamp: config.startDate,
+      pollEndTimestamp: config.endDate,
+      intStateTreeDepth: config.intStateTreeDepth,
+      voteOptionTreeDepth: config.voteOptionTreeDepth,
       messageBatchSize: config.messageBatchSize,
-      coordinatorPubKey: PubKey.deserialize(config.coordinatorPubkey).asContractParam() as {
-        x: bigint;
-        y: bigint;
-      },
-      verifier: verifierAddress as Hex,
-      vkRegistry: vkRegistryAddress as Hex,
+      coordinatorPubKey: PubKey.deserialize(config.coordinatorPubkey),
+      verifierContractAddress: verifierAddress,
+      vkRegistryContractAddress: vkRegistryAddress,
       mode,
-      gatekeeper: gatekeeperAddress,
-      initialVoiceCreditProxy: initialVoiceCreditProxyAddress,
+      gatekeeperContractAddress: gatekeeperAddress,
+      initialVoiceCreditProxyContractAddress: initialVoiceCreditProxyAddress,
       relayers: config.relayers ? config.relayers.map((address) => address as Hex) : [],
-      voteOptions: config.voteOptions,
+      voteOptions: Number(config.voteOptions),
+      initialVoiceCredits: Number(config.initialVoiceCreditsProxy.args.amount),
+      signer,
     };
+    const { pollContractAddress, messageProcessorContractAddress, tallyContractAddress, pollId } =
+      await deployPoll(deployPollArgs);
 
-    try {
-      await this.estimateGasAndSend(
-        maciAddress as Hex,
-        0n,
-        MACIFactory.abi,
-        "deployPoll",
-        [deployPollArgs],
-        `${ErrorCodes.FAILED_TO_DEPLOY_CONTRACT} - ${EContracts.Poll}`,
-        kernelClient,
-        bundlerClient,
-      );
-    } catch (error) {
-      this.logger.error("error deploying poll", error);
-      throw new Error(ErrorCodes.FAILED_TO_DEPLOY_POLL.toString());
-    }
-
-    // get the addresses so we can store this information
-    const pollAddresses = await publicClient.readContract({
-      address: maciAddress as Hex,
-      abi: MACIFactory.abi,
-      functionName: "getPoll",
-      args: [pollId],
-    });
-
+    const poll = PollFactory.connect(pollContractAddress, signer);
     // read the emptyBallotRoot and extContracts
-    const [emptyBallotRoot, extContracts] = await Promise.all([
-      publicClient.readContract({
-        address: pollAddresses.poll,
-        abi: PollFactory.abi,
-        functionName: "emptyBallotRoot",
-      }),
-      publicClient.readContract({
-        address: pollAddresses.poll,
-        abi: PollFactory.abi,
-        functionName: "extContracts",
-      }),
-    ]);
+    const emptyBallotRoot = await poll.emptyBallotRoot();
+    const extContracts = await poll.extContracts();
+
     // store to storage
     await Promise.all([
       this.storage.register({
         id: EContracts.Poll,
         key: `poll-${pollId}`,
-        contract: new BaseContract(pollAddresses.poll, PollFactory.abi as unknown as InterfaceAbi),
+        contract: poll,
         args: [
           {
             ...deployPollArgs,
@@ -863,15 +865,15 @@ export class DeployerService {
       this.storage.register({
         id: EContracts.MessageProcessor,
         key: `poll-${pollId}`,
-        contract: new BaseContract(pollAddresses.messageProcessor, MessageProcessorFactory.abi),
-        args: [verifierAddress, vkRegistryAddress, pollAddresses.poll, mode],
+        contract: new BaseContract(messageProcessorContractAddress, MessageProcessorFactory.abi),
+        args: [verifierAddress, vkRegistryAddress, pollContractAddress, mode],
         network: chain,
       }),
       this.storage.register({
         id: EContracts.Tally,
         key: `poll-${pollId}`,
-        contract: new BaseContract(pollAddresses.tally, TallyFactory.abi),
-        args: [verifierAddress, vkRegistryAddress, pollAddresses.poll, pollAddresses.messageProcessor, mode],
+        contract: new BaseContract(tallyContractAddress, TallyFactory.abi),
+        args: [verifierAddress, vkRegistryAddress, pollContractAddress, messageProcessorContractAddress, mode],
         network: chain,
       }),
     ]);

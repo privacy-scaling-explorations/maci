@@ -18,8 +18,8 @@ describe("SessionKeysService", () => {
   });
 
   describe("generateSessionKey", () => {
-    test("should generate and store a session key", () => {
-      const sessionKeyAddress = sessionKeysService.generateSessionKey();
+    test("should generate and store a session key", async () => {
+      const sessionKeyAddress = await sessionKeysService.generateSessionKey();
       expect(sessionKeyAddress).toBeDefined();
       expect(sessionKeyAddress).not.toEqual(zeroAddress);
 
@@ -29,8 +29,8 @@ describe("SessionKeysService", () => {
   });
 
   describe("deactivateSessionKey", () => {
-    test("should delete a session key", () => {
-      const sessionKeyAddress = sessionKeysService.generateSessionKey();
+    test("should delete a session key", async () => {
+      const sessionKeyAddress = await sessionKeysService.generateSessionKey();
       expect(sessionKeyAddress).toBeDefined();
       expect(sessionKeyAddress).not.toEqual(zeroAddress);
 
@@ -45,7 +45,7 @@ describe("SessionKeysService", () => {
 
   describe("generateClientFromSessionKey", () => {
     test("should fail to generate a client with an invalid approval", async () => {
-      const sessionKeyAddress = sessionKeysService.generateSessionKey();
+      const sessionKeyAddress = await sessionKeysService.generateSessionKey();
       await expect(
         sessionKeysService.generateClientFromSessionKey(
           sessionKeyAddress.sessionKeyAddress,
@@ -73,7 +73,7 @@ describe("SessionKeysService", () => {
         .spyOn(SessionKeysService.prototype, "generateClientFromSessionKey")
         .mockImplementation(mockGenerateClientFromSessionKey);
 
-      const sessionKeyAddress = sessionKeysService.generateSessionKey();
+      const sessionKeyAddress = await sessionKeysService.generateSessionKey();
       const approval = await generateApproval(sessionKeyAddress.sessionKeyAddress);
 
       const client = await sessionKeysService.generateClientFromSessionKey(

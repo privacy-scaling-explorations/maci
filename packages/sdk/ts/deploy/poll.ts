@@ -10,6 +10,7 @@ import { PubKey } from "maci-domainobjs";
 import type { IDeployPollArgs, IPollContractsData } from "./types";
 
 import { contractExists } from "../utils";
+import { parseEventFromLogs } from "../utils/contracts";
 
 import { DEFAULT_INITIAL_VOICE_CREDITS } from "./utils";
 
@@ -128,11 +129,9 @@ export const deployPoll = async ({
     throw new Error("Deploy poll transaction is failed");
   }
 
-  const iface = maciContract.interface;
-  const receiptLog = receipt.logs[receipt.logs.length - 1];
-
   // parse DeployPoll log
-  const log = iface.parseLog(receiptLog as unknown as { topics: string[]; data: string }) as unknown as {
+  const iface = maciContract.interface;
+  const log = parseEventFromLogs(receipt, iface, "DeployPoll") as unknown as {
     args: {
       _pollId: bigint;
     };
