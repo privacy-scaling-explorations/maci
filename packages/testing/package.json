@@ -43,6 +43,6 @@
     "maci-core": "^2.5.0",
     "maci-crypto": "^2.5.0",
     "maci-domainobjs": "^2.5.0",
-    "maci-sdk": "^0.0.1"
+    "maci-sdk": "^0.1.0"
   }
 }
