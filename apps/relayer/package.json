@@ -46,7 +46,7 @@
     "helmet": "^8.0.0",
     "lodash": "^4.17.21",
     "maci-cli": "^2.5.0",
-    "maci-sdk": "^0.0.1",
+    "maci-sdk": "^0.1.0",
     "maci-domainobjs": "^2.5.0",
     "maci-contracts": "^2.5.0",
     "maci-testing": "^0.1.0",

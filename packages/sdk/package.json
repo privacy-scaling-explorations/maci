@@ -1,6 +1,6 @@
 {
   "name": "maci-sdk",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "MACI's SDK",
   "main": "build/ts/index.js",
   "exports": {
