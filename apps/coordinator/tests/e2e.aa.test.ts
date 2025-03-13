@@ -1,4 +1,4 @@
-import { zeroAddress } from "viem";
+import { Hex, zeroAddress } from "viem";
 
 import { ErrorCodes, ESupportedNetworks } from "../ts/common";
 import { CryptoService } from "../ts/crypto/crypto.service";
@@ -21,12 +21,12 @@ describe("E2E Account Abstraction Tests", () => {
   const maciContract = "0xf281870519822f302B13c07252d0f6A71E8D023e";
   const pollId = 2;
 
-  const { sessionKeyAddress } = sessionKeyService.generateSessionKey();
-
   let approval: string;
+  let sessionKeyAddress: Hex;
 
   beforeAll(async () => {
     approval = await generateApproval(sessionKeyAddress);
+    sessionKeyAddress = (await sessionKeyService.generateSessionKey()).sessionKeyAddress;
   });
 
   describe("deploy", () => {
@@ -62,7 +62,7 @@ describe("E2E Account Abstraction Tests", () => {
 
   describe("merge", () => {
     test("should return true when there are no errors", async () => {
-      const sessionKey = sessionKeyService.generateSessionKey().sessionKeyAddress;
+      const { sessionKeyAddress: sessionKey } = await sessionKeyService.generateSessionKey();
       const generatedApproval = await generateApproval(sessionKey);
 
       const merged = await proofService.merge({
@@ -77,7 +77,7 @@ describe("E2E Account Abstraction Tests", () => {
     });
 
     test("should throw when given an invalid pollId", async () => {
-      const sessionKey = sessionKeyService.generateSessionKey().sessionKeyAddress;
+      const { sessionKeyAddress: sessionKey } = await sessionKeyService.generateSessionKey();
       const generatedApproval = await generateApproval(sessionKey);
 
       await expect(

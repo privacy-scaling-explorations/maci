@@ -15,7 +15,7 @@ import {
   MACI__factory as MACIFactory,
   Verifier__factory as VerifierFactory,
 } from "maci-sdk";
-import { zeroAddress } from "viem";
+import { Hex, zeroAddress } from "viem";
 
 import path from "path";
 
@@ -42,12 +42,13 @@ describe("DeployerService", () => {
   const storageInstance = ContractStorage.getInstance(path.join(process.cwd(), "deployed-contracts.json"));
   const sessionKeyService = new SessionKeysService(fileService);
   const deployerService = new DeployerService(sessionKeyService, fileService);
-  const { sessionKeyAddress } = sessionKeyService.generateSessionKey();
 
   let approval: string;
+  let sessionKeyAddress: Hex;
 
   beforeAll(async () => {
     approval = await generateApproval(sessionKeyAddress);
+    sessionKeyAddress = (await sessionKeyService.generateSessionKey()).sessionKeyAddress;
   });
 
   describe("getVoiceCreditProxyData", () => {

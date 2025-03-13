@@ -1,42 +1,17 @@
 import { deserializePermissionAccount } from "@zerodev/permissions";
 import { toECDSASigner } from "@zerodev/permissions/signers";
-import { createKernelAccountClient, KernelAccountClient, KernelSmartAccount } from "@zerodev/sdk";
-import { KERNEL_V3_1 } from "@zerodev/sdk/constants";
+import { createKernelAccountClient } from "@zerodev/sdk";
+import { getEntryPoint, KERNEL_V3_1 } from "@zerodev/sdk/constants";
 import dotenv from "dotenv";
-import { BundlerClient, createBundlerClient, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
-import { ENTRYPOINT_ADDRESS_V07_TYPE } from "permissionless/types";
-import {
-  createPublicClient,
-  http,
-  type HttpTransport,
-  type Transport,
-  type Hex,
-  type PublicClient,
-  Chain,
-  TransactionReceipt,
-} from "viem";
+import { createBundlerClient, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
+import { createPublicClient, http, type Hex, TransactionReceipt } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
 import { ErrorCodes } from "./errors";
 import { ESupportedNetworks, viemChain } from "./networks";
+import { KernelClientType, BundlerClientType, PublicClientHTTPType } from "./types";
 
 dotenv.config();
-
-/**
- * Generate the RPCUrl for Pimlico based on the chain we need to interact with
- *
- * @param network - the network we want to interact with
- * @returns the RPCUrl for the network
- */
-export const genPimlicoRPCUrl = (network: string): string => {
-  const pimlicoAPIKey = process.env.PIMLICO_API_KEY;
-
-  if (!pimlicoAPIKey) {
-    throw new Error(ErrorCodes.PIMLICO_API_KEY_NOT_SET.toString());
-  }
-
-  return `https://api.pimlico.io/v2/${network}/rpc?apikey=${pimlicoAPIKey}`;
-};
 
 /**
  * Generate the RPCUrl for Alchemy based on the chain we need to interact with
@@ -67,7 +42,7 @@ export const genAlchemyRPCUrl = (network: ESupportedNetworks): string => {
  * @param chainName - the name of the chain to use
  * @returns the public client
  */
-export const getPublicClient = (chainName: ESupportedNetworks): PublicClient<HttpTransport, Chain> =>
+export const getPublicClient = (chainName: ESupportedNetworks): PublicClientHTTPType =>
   createPublicClient({
     transport: http(genAlchemyRPCUrl(chainName)),
     chain: viemChain(chainName),
@@ -96,9 +71,9 @@ export const getZeroDevBundlerRPCUrl = (network: ESupportedNetworks): string => 
  * @param chainName - the chain name
  * @returns the bundler client
  */
-export const getBundlerClient = (chainName: ESupportedNetworks): BundlerClient<ENTRYPOINT_ADDRESS_V07_TYPE> =>
+export const getBundlerClient = (chainName: ESupportedNetworks): BundlerClientType =>
   createBundlerClient({
-    transport: http(genPimlicoRPCUrl(chainName)),
+    transport: http(getZeroDevBundlerRPCUrl(chainName)),
     chain: viemChain(chainName),
     entryPoint: ENTRYPOINT_ADDRESS_V07,
   });
@@ -138,25 +113,18 @@ export const getKernelClient = async (
   sessionKey: Hex,
   approval: string,
   chain: ESupportedNetworks,
-): Promise<
-  KernelAccountClient<
-    ENTRYPOINT_ADDRESS_V07_TYPE,
-    Transport,
-    Chain,
-    KernelSmartAccount<ENTRYPOINT_ADDRESS_V07_TYPE, HttpTransport, Chain>
-  >
-> => {
-  const bundlerUrl = genPimlicoRPCUrl(chain);
+): Promise<KernelClientType> => {
+  const bundlerUrl = getZeroDevBundlerRPCUrl(chain);
   const publicClient = getPublicClient(chain);
 
   // Using a stored private key
-  const sessionKeySigner = toECDSASigner({
+  const sessionKeySigner = await toECDSASigner({
     signer: privateKeyToAccount(sessionKey),
   });
 
   const sessionKeyAccount = await deserializePermissionAccount(
     publicClient,
-    ENTRYPOINT_ADDRESS_V07,
+    getEntryPoint("0.7"),
     KERNEL_V3_1,
     approval,
     sessionKeySigner,
@@ -164,7 +132,6 @@ export const getKernelClient = async (
 
   const kernelClient = createKernelAccountClient({
     bundlerTransport: http(bundlerUrl),
-    entryPoint: ENTRYPOINT_ADDRESS_V07,
     account: sessionKeyAccount,
     chain: viemChain(chain),
   });

@@ -111,7 +111,7 @@ export interface IHatsGatekeeperArgs {
   /**
    * The criterion hats
    */
-  critrionHats: string[];
+  critrionHats: string[] | string;
 }
 
 /**

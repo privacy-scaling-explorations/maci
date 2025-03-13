@@ -13,7 +13,7 @@ module.exports = {
   defaultNetwork: "sepolia",
   networks: {
     sepolia: {
-      url: process.env.COORDINATOR_RPC_URL || "",
+      url: process.env.COORDINATOR_RPC_URL || "http://localhost:8545",
       accounts: {
         mnemonic: TEST_MNEMONIC,
         path: "m/44'/60'/0'/0",
