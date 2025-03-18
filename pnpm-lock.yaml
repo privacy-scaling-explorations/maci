@@ -159,8 +159,8 @@ importers:
         specifier: ^2.22.19
         version: 2.22.19(ts-node@10.9.2(@types/node@22.13.10)(typescript@5.8.2))(typescript@5.8.2)
       helmet:
-        specifier: ^8.0.0
-        version: 8.0.0
+        specifier: ^8.1.0
+        version: 8.1.0
       lowdb:
         specifier: ^1.0.0
         version: 1.0.0
@@ -310,8 +310,8 @@ importers:
         specifier: ^5.3.0
         version: 5.3.0(react-native@0.76.6(@babel/core@7.26.10)(@babel/preset-env@7.26.0(@babel/core@7.26.10))(@types/react@18.3.12)(encoding@0.1.13)(react@19.0.0))
       helmet:
-        specifier: ^8.0.0
-        version: 8.0.0
+        specifier: ^8.1.0
+        version: 8.1.0
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
@@ -8213,8 +8213,8 @@ packages:
   helia@5.3.0:
     resolution: {integrity: sha512-mSM/zQqdoQWUicf90NEcVO1MPSjrzPro5vMe90cKdU0mv10BDk6aJDEImgQlN2x7EsmHCf+hOgmA9K3gZizK4w==}
 
-  helmet@8.0.0:
-    resolution: {integrity: sha512-VyusHLEIIO5mjQPUI1wpOAEu+wl6Q0998jzTxqUYGE45xCIcAxy3MsbEK/yyJUJ3ADeMoB6MornPH6GMWAf+Pw==}
+  helmet@8.1.0:
+    resolution: {integrity: sha512-jOiHyAZsmnr8LqoPGmCjYAaiuWwjAPLgY8ZX2XrmHawt99/u1y6RgrZMTeoPfpUbV96HOalYgz1qzkRbw54Pmg==}
     engines: {node: '>=18.0.0'}
 
   hermes-estree@0.23.1:
@@ -26154,7 +26154,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  helmet@8.0.0: {}
+  helmet@8.1.0: {}
 
   hermes-estree@0.23.1: {}
 
