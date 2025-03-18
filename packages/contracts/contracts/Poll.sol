@@ -6,7 +6,6 @@ import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { LazyIMTData, InternalLazyIMT } from "./trees/LazyIMT.sol";
 import { IMACI } from "./interfaces/IMACI.sol";
 import { IPoll } from "./interfaces/IPoll.sol";
-import { ISignUpGatekeeper } from "./interfaces/ISignUpGatekeeper.sol";
 import { Utilities } from "./utilities/Utilities.sol";
 import { CurveBabyJubJub } from "./crypto/BabyJubJub.sol";
 

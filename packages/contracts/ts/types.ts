@@ -1,6 +1,6 @@
+import type { ECheckerFactories, EGatekeeperFactories } from "../tasks/helpers/types";
 import type {
   ConstantInitialVoiceCreditProxy,
-  FreeForAllGatekeeper,
   MACI,
   MockVerifier,
   MessageProcessorFactory,
@@ -11,8 +11,11 @@ import type {
   PoseidonT5,
   PoseidonT6,
   VkRegistry,
+  Factory,
+  SignUpGatekeeper,
 } from "../typechain-types";
-import type { BigNumberish, Signer, ContractFactory, Provider } from "ethers";
+import type { TypedContractMethod } from "../typechain-types/common";
+import type { BigNumberish, Signer, ContractFactory, Provider, TransactionReceipt } from "ethers";
 import type { CircuitInputs } from "maci-core";
 import type { Keypair, Message, PubKey } from "maci-domainobjs";
 import type { PublicSignals } from "snarkjs";
@@ -80,7 +83,7 @@ export interface IDeployedTestContractsArgs {
   stateTreeDepth: number;
   signer?: Signer;
   quiet?: boolean;
-  gatekeeper?: FreeForAllGatekeeper;
+  gatekeeper?: SignUpGatekeeper;
   factories?: [ContractFactory, ContractFactory, ContractFactory, ContractFactory];
 }
 
@@ -89,7 +92,7 @@ export interface IDeployedTestContractsArgs {
  */
 export interface IDeployedTestContracts {
   mockVerifierContract: MockVerifier;
-  gatekeeperContract: FreeForAllGatekeeper;
+  gatekeeperContract: SignUpGatekeeper;
   constantInitialVoiceCreditProxyContract: ConstantInitialVoiceCreditProxy;
   maciContract: MACI;
   vkRegistryContract: VkRegistry;
@@ -317,4 +320,84 @@ export interface ILogArgs {
    * Whether to log the output
    */
   quiet?: boolean;
+}
+
+/**
+ * Interface for the deploy gatekeeper arguments
+ */
+export interface IDeployGatekeeperArgs<
+  G extends ContractFactory = ContractFactory,
+  C extends ContractFactory = ContractFactory,
+> {
+  /**
+   * Gatekeeper factory name
+   */
+  gatekeeperFactoryName: EGatekeeperFactories;
+
+  /**
+   * Checker factory name
+   */
+  checkerFactoryName: ECheckerFactories;
+
+  /**
+   * Gatekeeper factory
+   */
+  gatekeeperFactory: G;
+
+  /**
+   * Checker factory
+   */
+  checkerFactory: C;
+
+  /**
+   * Ethereum signer
+   */
+  signer: Signer;
+
+  /**
+   * Gatekeeper deploy args
+   */
+  gatekeeperArgs?: unknown[];
+
+  /**
+   * Checker deploy args
+   */
+  checkerArgs?: unknown[];
+
+  /**
+   * Whether to suppress console output
+   */
+  quiet?: boolean;
+}
+
+/**
+ * Type for the factory like contract
+ */
+export type IFactoryLike<P extends unknown[] = []> = Factory & {
+  deploy: TypedContractMethod<P, [], "nonpayable">;
+};
+
+/**
+ * Interface that represents the argument for the get proxy contract function
+ */
+export interface IGetProxyContractArgs<F = ContractFactory> {
+  /**
+   * Proxied contract factory
+   */
+  factory: F;
+
+  /**
+   * Proxy contract factory
+   */
+  proxyFactory: Factory;
+
+  /**
+   * Ethereum signer
+   */
+  signer?: Signer;
+
+  /**
+   * Transaction receipt
+   */
+  receipt?: TransactionReceipt | null;
 }

@@ -573,6 +573,57 @@ export enum EGatekeepers {
 }
 
 /**
+ * Enum represents gatekeeper factory types
+ */
+export enum EGatekeeperFactories {
+  FreeForAll = "FreeForAllGatekeeperFactory",
+  Token = "SignUpTokenGatekeeperFactory",
+  EAS = "EASGatekeeperFactory",
+  GitcoinPassport = "GitcoinPassportGatekeeperFactory",
+  Hats = "HatsGatekeeperFactory",
+  HatsSingle = "HatsGatekeeperSingleFactory",
+  HatsMultiple = "HatsGatekeeperMultipleFactory",
+  Zupass = "ZupassGatekeeperFactory",
+  Semaphore = "SemaphoreGatekeeperFactory",
+  MerkleProof = "MerkleProofGatekeeperFactory",
+  SignUp = "SignUpGatekeeperFactory",
+}
+
+/**
+ * Enum represents checker types
+ */
+export enum ECheckers {
+  FreeForAll = "FreeForAllChecker",
+  Token = "SignUpTokenChecker",
+  EAS = "EASChecker",
+  GitcoinPassport = "GitcoinPassportChecker",
+  Hats = "HatsChecker",
+  HatsSingle = "HatsGatekeeperSingleChecker",
+  HatsMultiple = "HatsGatekeeperMultipleChecker",
+  Zupass = "ZupassChecker",
+  Semaphore = "SemaphoreChecker",
+  MerkleProof = "MerkleProofChecker",
+  SignUp = "SignUpChecker",
+}
+
+/**
+ * Enum represents checker factory types
+ */
+export enum ECheckerFactories {
+  FreeForAll = "FreeForAllCheckerFactory",
+  Token = "SignUpTokenCheckerFactory",
+  EAS = "EASCheckerFactory",
+  GitcoinPassport = "GitcoinPassportCheckerFactory",
+  Hats = "HatsCheckerFactory",
+  HatsSingle = "HatsGatekeeperSingleCheckerFactory",
+  HatsMultiple = "HatsGatekeeperMultipleCheckerFactory",
+  Zupass = "ZupassCheckerFactory",
+  Semaphore = "SemaphoreCheckerFactory",
+  MerkleProof = "MerkleProofCheckerFactory",
+  SignUp = "SignUpCheckerFactory",
+}
+
+/**
  * Enum represents initial voice credit proxies
  */
 export enum EInitialVoiceCreditProxies {

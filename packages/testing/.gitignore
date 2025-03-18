@@ -3,4 +3,5 @@ cache
 deploy-config.json
 deployed-contracts.json
 backup
-zkeys 
+zkeys/
+state.json

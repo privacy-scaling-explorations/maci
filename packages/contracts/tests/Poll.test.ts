@@ -215,7 +215,6 @@ describe("Poll", () => {
 
   describe("Poll join", () => {
     it("should let users join the poll", async () => {
-      const iface = pollContract.interface;
       const pubkey = keypair.pubKey.asContractParam();
       const mockProof = [0, 0, 0, 0, 0, 0, 0, 0];
 
@@ -231,10 +230,11 @@ describe("Poll", () => {
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
         );
         const receipt = await response.wait();
-        const logs = receipt!.logs[0];
-        const event = iface.parseLog(logs as unknown as { topics: string[]; data: string }) as unknown as {
-          args: { _pollStateIndex: bigint; _voiceCreditBalance: bigint };
-        };
+        const [event] = await pollContract.queryFilter(
+          pollContract.filters.PollJoined,
+          receipt?.blockNumber,
+          receipt?.blockNumber,
+        );
         const index = event.args._pollStateIndex;
         const voiceCredits = event.args._voiceCreditBalance;
 

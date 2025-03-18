@@ -1,10 +1,16 @@
 import { type ContractFactory, type Signer, BaseContract } from "ethers";
 
-import type { IDeployMaciArgs, IDeployedMaci, IDeployedPoseidonContracts } from "./types";
+import type {
+  IDeployGatekeeperArgs,
+  IDeployMaciArgs,
+  IDeployedMaci,
+  IDeployedPoseidonContracts,
+  IFactoryLike,
+} from "./types";
 import type { TAbi } from "../tasks/helpers/types";
 
 import { Deployment } from "../tasks/helpers/Deployment";
-import { EContracts } from "../tasks/helpers/types";
+import { ECheckerFactories, EContracts, EGatekeeperFactories } from "../tasks/helpers/types";
 import {
   ConstantInitialVoiceCreditProxy,
   FreeForAllGatekeeper,
@@ -32,10 +38,16 @@ import {
   GitcoinPassportGatekeeper,
   SemaphoreGatekeeper,
   AnonAadhaarGatekeeper,
+  FreeForAllGatekeeper__factory as FreeForAllGatekeeperFactory,
+  FreeForAllChecker__factory as FreeForAllCheckerFactory,
+  SignUpGatekeeper,
+  FreeForAllChecker,
+  BaseChecker,
 } from "../typechain-types";
 
 import { genEmptyBallotRoots } from "./genEmptyBallotRoots";
 import { logMagenta } from "./logger";
+import { getProxyContract } from "./proxy";
 
 /**
  * Creates contract factory from abi and bytecode
@@ -126,6 +138,57 @@ export const deploySignupToken = async (signer?: Signer, quiet = false): Promise
   deployContract<SignUpToken>("SignUpToken", signer, quiet);
 
 /**
+ * Deploy gatekeeper and checker contracts.
+ *
+ * @param args deploy gatekeeper arguments
+ * @returns gatekeeper and checker contracts
+ */
+const deployGatekeeper = async <
+  C extends BaseChecker = BaseChecker,
+  T extends SignUpGatekeeper = SignUpGatekeeper,
+  F extends ContractFactory = ContractFactory,
+>({
+  gatekeeperFactoryName,
+  checkerFactoryName,
+  gatekeeperFactory,
+  checkerFactory,
+  signer,
+  gatekeeperArgs = [],
+  checkerArgs = [],
+  quiet = true,
+}: IDeployGatekeeperArgs<F>): Promise<{ checker: C; gatekeeper: T }> => {
+  const checkerProxyFactory = await deployContract<IFactoryLike<typeof checkerArgs>>(checkerFactoryName, signer, quiet);
+
+  const checkerReceipt = await checkerProxyFactory.deploy(...checkerArgs).then((tx) => tx.wait());
+
+  const checker = await getProxyContract<C>({
+    factory: checkerFactory,
+    proxyFactory: checkerProxyFactory,
+    receipt: checkerReceipt,
+    signer,
+  });
+
+  const gatekeeperProxyFactory = await deployContract<IFactoryLike<typeof gatekeeperArgs>>(
+    gatekeeperFactoryName,
+    signer,
+    quiet,
+  );
+
+  const gatekeeperReceipt = await gatekeeperProxyFactory
+    .deploy(...gatekeeperArgs.concat(await checker.getAddress()))
+    .then((tx) => tx.wait());
+
+  const gatekeeper = await getProxyContract<T>({
+    factory: gatekeeperFactory,
+    proxyFactory: gatekeeperProxyFactory,
+    receipt: gatekeeperReceipt,
+    signer,
+  });
+
+  return { checker, gatekeeper };
+};
+
+/**
  * Deploy a SignUpTokenGatekeeper contract
  * @param signUpTokenAddress - the address of the SignUpToken contract
  * @param signer - the signer to use to deploy the contract
@@ -145,8 +208,21 @@ export const deploySignupTokenGatekeeper = async (
  * @param quiet - whether to suppress console output
  * @returns the deployed FreeForAllGatekeeper contract
  */
-export const deployFreeForAllSignUpGatekeeper = async (signer?: Signer, quiet = false): Promise<FreeForAllGatekeeper> =>
-  deployContract<FreeForAllGatekeeper>("FreeForAllGatekeeper", signer, quiet);
+export const deployFreeForAllSignUpGatekeeper = async (
+  signer?: Signer,
+  quiet = false,
+): Promise<FreeForAllGatekeeper> => {
+  const { gatekeeper } = await deployGatekeeper<FreeForAllChecker, FreeForAllGatekeeper, FreeForAllGatekeeperFactory>({
+    gatekeeperFactoryName: EGatekeeperFactories.FreeForAll,
+    checkerFactoryName: ECheckerFactories.FreeForAll,
+    checkerFactory: new FreeForAllCheckerFactory(signer),
+    gatekeeperFactory: new FreeForAllGatekeeperFactory(signer),
+    signer: signer!,
+    quiet,
+  });
+
+  return gatekeeper;
+};
 
 /**
  * Deploy a GitcoinPassportGatekeeper contract

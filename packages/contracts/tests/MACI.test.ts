@@ -77,8 +77,6 @@ describe("MACI", function test() {
 
   describe("Signups", () => {
     it("should sign up multiple users", async () => {
-      const iface = maciContract.interface;
-
       for (let index = 0; index < users.length; index += 1) {
         const user = users[index];
 
@@ -91,15 +89,12 @@ describe("MACI", function test() {
         const receipt = await tx.wait();
         expect(receipt?.status).to.eq(1);
 
-        // Store the state index
-        const log = receipt!.logs[receipt!.logs.length - 1];
-        const event = iface.parseLog(log as unknown as { topics: string[]; data: string }) as unknown as {
-          args: {
-            _stateIndex: BigNumberish;
-            _voiceCreditBalance: BigNumberish;
-            _timestamp: BigNumberish;
-          };
-        };
+        // eslint-disable-next-line no-await-in-loop
+        const [event] = await maciContract.queryFilter(
+          maciContract.filters.SignUp,
+          receipt?.blockNumber,
+          receipt?.blockNumber,
+        );
 
         expect(event.args._stateIndex.toString()).to.eq((index + 1).toString());
 
