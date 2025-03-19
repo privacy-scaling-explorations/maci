@@ -87,10 +87,13 @@ deployment.deployTask(EDeploySteps.VkRegistry, "Deploy Vk Registry and set keys"
       ),
     );
 
-    const vkRegistryContract = await deployment.deployContract<VkRegistry>({
-      name: EContracts.VkRegistry,
-      signer: deployer,
-    });
+    const vkRegistryContract = await deployment.deployContract<VkRegistry>(
+      {
+        name: EContracts.VkRegistry,
+        signer: deployer,
+      },
+      await deployer.getAddress(),
+    );
 
     const processZkeys = [qvProcessVk, nonQvProcessVk].filter(Boolean) as IVerifyingKeyStruct[];
     const tallyZkeys = [qvTallyVk, nonQvTallyQv].filter(Boolean) as IVerifyingKeyStruct[];

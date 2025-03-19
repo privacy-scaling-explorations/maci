@@ -122,12 +122,12 @@ export interface ISetVerifyingKeysArgs {
   /**
    * The process messages Vk object
    */
-  processMessagesVk: VerifyingKey;
+  processMessagesVks: VerifyingKey[];
 
   /**
    * The tally votes Vk object
    */
-  tallyVotesVk: VerifyingKey;
+  tallyVotesVks: VerifyingKey[];
 
   /**
    * The state tree depth
@@ -162,7 +162,7 @@ export interface ISetVerifyingKeysArgs {
   /**
    * QV or NON_QV
    */
-  mode: EMode;
+  modes: EMode[];
 }
 
 /**

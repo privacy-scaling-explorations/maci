@@ -424,3 +424,7 @@ export type IFactoryLike<T extends BaseContract> = Factory &
   T & {
     deploy: TypedContractMethod<unknown[], unknown, "nonpayable">;
   };
+
+export interface AASigner extends Signer {
+  isAA?: boolean;
+}

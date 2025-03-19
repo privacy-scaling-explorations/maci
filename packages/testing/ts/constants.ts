@@ -194,9 +194,9 @@ export const verifyingKeysArgs = async (
     messageBatchSize: MESSAGE_BATCH_SIZE,
     pollJoiningVk: pollJoiningVk!,
     pollJoinedVk: pollJoinedVk!,
-    processMessagesVk: processVk!,
-    tallyVotesVk: tallyVk!,
-    mode,
+    processMessagesVks: [processVk!],
+    tallyVotesVks: [tallyVk!],
+    modes: [mode],
     signer,
   };
 };

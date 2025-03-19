@@ -140,9 +140,9 @@ export class TestingClass {
       messageBatchSize: MESSAGE_BATCH_SIZE,
       pollJoiningVk: pollJoiningVk!,
       pollJoinedVk: pollJoinedVk!,
-      processMessagesVk: processVk!,
-      tallyVotesVk: tallyVk!,
-      mode: EMode.NON_QV,
+      processMessagesVks: [processVk!],
+      tallyVotesVks: [tallyVk!],
+      modes: [EMode.NON_QV],
       signer,
     });
 

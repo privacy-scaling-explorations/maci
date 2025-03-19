@@ -1,15 +1,16 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { toECDSASigner } from "@zerodev/permissions/signers";
-import { KernelEIP1193Provider } from "@zerodev/sdk";
-import { BrowserProvider, JsonRpcSigner } from "ethers";
+import { BrowserProvider } from "ethers";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 
+import type { AASigner } from "@maci-protocol/contracts";
 import type { Hex } from "viem";
 
 import { ErrorCodes, ESupportedNetworks, KernelClientType } from "../common";
 import { getKernelClient } from "../common/accountAbstraction";
 import { FileService } from "../file/file.service";
 
+import { KernelEIP1193Provider } from "./provider/KernelEIP1193Provider";
 import { IGenerateSessionKeyReturn } from "./types";
 
 /**
@@ -78,7 +79,7 @@ export class SessionKeysService {
       const kernelClient = getKernelClient(sessionKey, approval, chain);
       return kernelClient;
     } catch (error) {
-      this.logger.error(`Error: ${ErrorCodes.INVALID_APPROVAL}`, error);
+      this.logger.error("Error:", error);
       throw new Error(ErrorCodes.INVALID_APPROVAL.toString());
     }
   }
@@ -89,11 +90,14 @@ export class SessionKeysService {
    * @param kernelClient - kernel client
    * @returns signer
    */
-  async getKernelClientSigner(kernelClient: KernelClientType): Promise<JsonRpcSigner> {
+  async getKernelClientSigner(kernelClient: KernelClientType): Promise<AASigner> {
     const kernelProvider = new KernelEIP1193Provider(kernelClient);
     const ethersProvider = new BrowserProvider(kernelProvider);
     const signer = await ethersProvider.getSigner();
-    return signer;
+    const aaSigner = signer as AASigner;
+    aaSigner.isAA = true;
+
+    return aaSigner;
   }
 
   /**

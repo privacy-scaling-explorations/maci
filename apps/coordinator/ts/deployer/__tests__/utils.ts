@@ -1,5 +1,6 @@
-import { Keypair } from "@maci-protocol/domainobjs";
+import { Keypair, PrivKey } from "@maci-protocol/domainobjs";
 import { EPolicies, EInitialVoiceCreditProxies } from "@maci-protocol/sdk";
+import { zeroHash } from "viem";
 
 import {
   IDeployMaciConfig,
@@ -7,11 +8,20 @@ import {
   IEASPolicyArgs,
   IGitcoinPassportPolicyArgs,
   IHatsPolicyArgs,
+  IMerkleProofPolicyArgs,
   ISemaphorePolicyArgs,
+  ISignUpPolicyArgs,
   IZupassPolicyArgs,
 } from "../types";
 
 export const MSG_BATCH_SIZE = 20;
+
+/**
+ * Coordinator MACI Keypair
+ */
+export const coordinatorMACIKeyPair = new Keypair(
+  PrivKey.deserialize("macisk.bdd73f1757f75261a0c9997def6cd47519cad2856347cdc6fd30718999576860"),
+);
 
 /**
  * MACI deployment configuration for testing
@@ -42,13 +52,32 @@ export const testMaciDeploymentConfig: IDeployMaciConfig = {
 };
 
 /**
+ * Start date for the poll (it cannot be in the past)
+ * n seconds are added to give it time until it is deployed
+ */
+export const startDate = Math.floor(Date.now() / 1000) + 10;
+
+/**
+ * Poll duration in seconds
+ * n seconds are added to the poll start date
+ */
+export const pollDuration = 2;
+
+/**
+ * Poll start date extra seconds
+ * n seconds are added to the poll start date
+ * to give it time until it the previous poll contracts are deployed
+ */
+export const pollStartDateExtraSeconds = 100;
+
+/**
  * Poll deployment configuration for testing
  */
 export const testPollDeploymentConfig: IDeployPollConfig = {
-  startDate: 100,
-  endDate: 200,
+  startDate,
+  endDate: startDate + pollDuration,
   useQuadraticVoting: false,
-  coordinatorPubkey: new Keypair().pubKey.serialize(),
+  coordinatorPubkey: coordinatorMACIKeyPair.pubKey.serialize(),
   intStateTreeDepth: 1,
   messageBatchSize: MSG_BATCH_SIZE,
   voteOptionTreeDepth: 2,
@@ -58,7 +87,7 @@ export const testPollDeploymentConfig: IDeployPollConfig = {
   initialVoiceCreditsProxy: {
     type: EInitialVoiceCreditProxies.Constant,
     args: {
-      amount: "100",
+      amount: 100,
     },
   },
   voteOptions: 2n,
@@ -74,8 +103,8 @@ export const testPollDeploymentConfig: IDeployPollConfig = {
  */
 export const EASPolicyDeploymentConfig: IEASPolicyArgs = {
   easAddress: "0xC2679fBD37d54388Ce493F1DB75320D236e1815e",
-  schema: "0xe2636f31239f7948afdd9a9c477048b7fc2a089c347af60e3aa1251e5bf63e5c",
   attester: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  schema: "0xe2636f31239f7948afdd9a9c477048b7fc2a089c347af60e3aa1251e5bf63e5c",
 };
 
 /**
@@ -102,6 +131,20 @@ export const SemaphorePolicyDeploymentConfig: ISemaphorePolicyArgs = {
 export const HatsPolicyDeploymentConfig: IHatsPolicyArgs = {
   hatsProtocolAddress: "0x3bc1A0Ad72417f2d411118085256fC53CBdDd137",
   critrionHats: ["26960358043289970096177553829315270011263390106506980876069447401472"],
+};
+
+/**
+ * MerkleProofPolicy deployment configuration for testing
+ */
+export const MerkleProofPolicyDeploymentConfig: IMerkleProofPolicyArgs = {
+  root: zeroHash,
+};
+
+/**
+ * SignUpPolicy deployment configuration for testing
+ */
+export const SignUpPolicyDeploymentConfig: ISignUpPolicyArgs = {
+  token: "0x5fd84259d66Cd46123540766Be93DFE6D43130D7", // OP Sepolia USDC
 };
 
 /**

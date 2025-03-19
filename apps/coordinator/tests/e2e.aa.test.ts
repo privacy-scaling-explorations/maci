@@ -4,7 +4,6 @@ import { ErrorCodes, ESupportedNetworks } from "../ts/common";
 import { CryptoService } from "../ts/crypto/crypto.service";
 import { testMaciDeploymentConfig, testPollDeploymentConfig } from "../ts/deployer/__tests__/utils";
 import { DeployerService } from "../ts/deployer/deployer.service";
-import { IDeployPollConfig } from "../ts/deployer/types";
 import { FileService } from "../ts/file/file.service";
 import { ProofGeneratorService } from "../ts/proof/proof.service";
 import { ENTRY_POINT, generateApproval, KERNEL_VERSION } from "../ts/sessionKeys/__tests__/utils";
@@ -25,8 +24,8 @@ describe("E2E Account Abstraction Tests", () => {
   let sessionKeyAddress: Hex;
 
   beforeAll(async () => {
-    approval = await generateApproval(sessionKeyAddress);
     sessionKeyAddress = (await sessionKeyService.generateSessionKey()).sessionKeyAddress;
+    approval = await generateApproval(sessionKeyAddress);
   });
 
   describe("deploy", () => {
@@ -45,14 +44,11 @@ describe("E2E Account Abstraction Tests", () => {
 
     describe("deployPoll", () => {
       it("should deploy a poll", async () => {
-        // Serialize the config with the custom serializer
-        const serializedConfig = JSON.stringify(testPollDeploymentConfig);
-        const pollConfig = JSON.parse(serializedConfig) as IDeployPollConfig;
         const { pollId: poll } = await deployerService.deployPoll({
           approval,
           sessionKeyAddress,
           chain: ESupportedNetworks.OPTIMISM_SEPOLIA,
-          config: pollConfig,
+          config: testPollDeploymentConfig,
         });
 
         expect(poll).toBeDefined();

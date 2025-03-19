@@ -1,4 +1,4 @@
-import { EMode, type IVerifyingKeyStruct } from "@maci-protocol/contracts";
+import { type IVerifyingKeyStruct } from "@maci-protocol/contracts";
 import { VkRegistry__factory as VkRegistryFactory } from "@maci-protocol/contracts/typechain-types";
 import { genPollJoinedVkSig, genPollJoiningVkSig, genProcessVkSig, genTallyVkSig } from "@maci-protocol/core";
 
@@ -15,15 +15,15 @@ import { compareVks } from "./utils";
 export const setVerifyingKeys = async ({
   pollJoiningVk,
   pollJoinedVk,
-  processMessagesVk,
-  tallyVotesVk,
+  processMessagesVks,
+  tallyVotesVks,
   stateTreeDepth,
   intStateTreeDepth,
   voteOptionTreeDepth,
   messageBatchSize,
   vkRegistryAddress,
   signer,
-  mode,
+  modes,
 }: ISetVerifyingKeysArgs): Promise<void> => {
   // validate args
   if (stateTreeDepth < 1 || intStateTreeDepth < 1 || voteOptionTreeDepth < 1 || messageBatchSize < 1) {
@@ -57,19 +57,21 @@ export const setVerifyingKeys = async ({
     throw new Error("This poll verifying key is already set in the contract");
   }
 
-  // check if the process messages vk was already set
-  const processVkSig = genProcessVkSig(stateTreeDepth, voteOptionTreeDepth, messageBatchSize);
+  modes.forEach(async (mode) => {
+    // check if the process messages vk was already set
+    const processVkSig = genProcessVkSig(stateTreeDepth, voteOptionTreeDepth, messageBatchSize);
 
-  if (await vkRegistryContract.isProcessVkSet(processVkSig, EMode.QV)) {
-    throw new Error("This process verifying key is already set in the contract");
-  }
+    if (await vkRegistryContract.isProcessVkSet(processVkSig, mode)) {
+      throw new Error("This process verifying key is already set in the contract");
+    }
 
-  // do the same for the tally votes vk
-  const tallyVkSig = genTallyVkSig(stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth);
+    // do the same for the tally votes vk
+    const tallyVkSig = genTallyVkSig(stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth);
 
-  if (await vkRegistryContract.isTallyVkSet(tallyVkSig, mode)) {
-    throw new Error("This tally verifying key is already set in the contract");
-  }
+    if (await vkRegistryContract.isTallyVkSet(tallyVkSig, mode)) {
+      throw new Error("This tally verifying key is already set in the contract");
+    }
+  });
 
   // set them onchain
   const tx = await vkRegistryContract.setVerifyingKeysBatch(
@@ -77,11 +79,11 @@ export const setVerifyingKeys = async ({
     intStateTreeDepth,
     voteOptionTreeDepth,
     messageBatchSize,
-    [mode],
+    modes,
     pollJoiningVk.asContractParam() as IVerifyingKeyStruct,
     pollJoinedVk.asContractParam() as IVerifyingKeyStruct,
-    [processMessagesVk.asContractParam() as IVerifyingKeyStruct],
-    [tallyVotesVk.asContractParam() as IVerifyingKeyStruct],
+    processMessagesVks.map((vk) => vk.asContractParam()) as IVerifyingKeyStruct[],
+    tallyVotesVks.map((vk) => vk.asContractParam()) as IVerifyingKeyStruct[],
   );
 
   const receipt = await tx.wait();
@@ -90,11 +92,9 @@ export const setVerifyingKeys = async ({
     throw new Error("Set verifying keys transaction failed");
   }
 
-  const [pollJoiningVkOnChain, pollJoinedVkOnChain, processVkOnChain, tallyVkOnChain] = await Promise.all([
+  const [pollJoiningVkOnChain, pollJoinedVkOnChain] = await Promise.all([
     vkRegistryContract.getPollJoiningVk(stateTreeDepth),
     vkRegistryContract.getPollJoinedVk(stateTreeDepth),
-    vkRegistryContract.getProcessVk(stateTreeDepth, voteOptionTreeDepth, messageBatchSize, mode),
-    vkRegistryContract.getTallyVk(stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth, mode),
   ]);
 
   if (!compareVks(pollJoiningVkOnChain, pollJoiningVk)) {
@@ -105,11 +105,18 @@ export const setVerifyingKeys = async ({
     throw new Error("pollJoinedVk mismatch");
   }
 
-  if (!compareVks(processVkOnChain, processMessagesVk)) {
-    throw new Error("processVk mismatch");
-  }
+  modes.forEach(async (mode, i) => {
+    const [processVkOnChain, tallyVkOnChain] = await Promise.all([
+      vkRegistryContract.getProcessVk(stateTreeDepth, voteOptionTreeDepth, messageBatchSize, mode),
+      vkRegistryContract.getTallyVk(stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth, mode),
+    ]);
 
-  if (!compareVks(tallyVkOnChain, tallyVotesVk)) {
-    throw new Error("tallyVk mismatch");
-  }
+    if (!compareVks(processVkOnChain, processMessagesVks[i])) {
+      throw new Error("processVk mismatch");
+    }
+
+    if (!compareVks(tallyVkOnChain, tallyVotesVks[i])) {
+      throw new Error("tallyVk mismatch");
+    }
+  });
 };

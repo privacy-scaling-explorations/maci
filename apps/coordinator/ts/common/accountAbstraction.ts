@@ -3,13 +3,13 @@ import { toECDSASigner } from "@zerodev/permissions/signers";
 import { createKernelAccountClient } from "@zerodev/sdk";
 import { getEntryPoint, KERNEL_V3_1 } from "@zerodev/sdk/constants";
 import dotenv from "dotenv";
-import { createBundlerClient, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
-import { createPublicClient, http, type Hex, TransactionReceipt } from "viem";
+import { createPublicClient, http, type Hex } from "viem";
+import { createBundlerClient } from "viem/account-abstraction";
 import { privateKeyToAccount } from "viem/accounts";
 
 import { ErrorCodes } from "./errors";
 import { ESupportedNetworks, viemChain } from "./networks";
-import { KernelClientType, BundlerClientType, PublicClientHTTPType } from "./types";
+import { BundlerClientType, KernelClientType, PublicClientHTTPType } from "./types";
 
 dotenv.config();
 
@@ -75,31 +75,12 @@ export const getBundlerClient = (chainName: ESupportedNetworks): BundlerClientTy
   createBundlerClient({
     transport: http(getZeroDevBundlerRPCUrl(chainName)),
     chain: viemChain(chainName),
-    entryPoint: ENTRYPOINT_ADDRESS_V07,
   });
-
-/**
- * The topic for the contract creation event
- */
-export const contractCreationEventTopic = "0x4db17dd5e4732fb6da34a148104a592783ca119a1e7bb8829eba6cbadef0b511";
 
 /**
  * The offset for the address in the contract creation event
  */
 export const addressOffset = 26;
-
-/**
- * Get the address of the newly deployed contract from a transaction receipt
- * @param receipt - The transaction receipt
- * @returns The address of the newly deployed contract
- */
-export const getDeployedContractAddress = (receipt: TransactionReceipt): string | undefined => {
-  const addr = receipt.logs.find((log) => log.topics[0] === contractCreationEventTopic);
-
-  const deployedAddress = addr ? `0x${addr.topics[1]?.slice(addressOffset)}` : undefined;
-
-  return deployedAddress;
-};
 
 /**
  * Get a Kernel account handle given a session key
@@ -122,19 +103,22 @@ export const getKernelClient = async (
     signer: privateKeyToAccount(sessionKey),
   });
 
-  const sessionKeyAccount = await deserializePermissionAccount(
-    publicClient,
-    getEntryPoint("0.7"),
-    KERNEL_V3_1,
-    approval,
-    sessionKeySigner,
-  );
+  try {
+    const sessionKeyAccount = await deserializePermissionAccount(
+      publicClient,
+      getEntryPoint("0.7"),
+      KERNEL_V3_1,
+      approval,
+      sessionKeySigner,
+    );
+    const kernelClient = createKernelAccountClient({
+      bundlerTransport: http(bundlerUrl),
+      account: sessionKeyAccount,
+      chain: viemChain(chain),
+    });
 
-  const kernelClient = createKernelAccountClient({
-    bundlerTransport: http(bundlerUrl),
-    account: sessionKeyAccount,
-    chain: viemChain(chain),
-  });
-
-  return kernelClient;
+    return kernelClient;
+  } catch (error) {
+    throw new Error(ErrorCodes.INVALID_APPROVAL.toString());
+  }
 };

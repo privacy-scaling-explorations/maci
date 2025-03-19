@@ -10,7 +10,7 @@ import { DomainObjs } from "./utilities/DomainObjs.sol";
 /// @notice Stores verifying keys for the circuits.
 /// Each circuit has a signature which is its compile-time constants represented
 /// as a uint256.
-contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry {
+contract VkRegistry is Ownable, DomainObjs, SnarkCommon, IVkRegistry {
   mapping(Mode => mapping(uint256 => VerifyingKey)) internal processVks;
   mapping(Mode => mapping(uint256 => bool)) internal processVkSet;
 
@@ -34,7 +34,7 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
 
   /// @notice Create a new instance of the VkRegistry contract
   // solhint-disable-next-line no-empty-blocks
-  constructor() payable {}
+  constructor(address _initialOwner) payable Ownable(_initialOwner) {}
 
   /// @notice Check if the poll joining verifying key is set
   /// @param _sig The signature

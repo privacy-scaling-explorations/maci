@@ -1,11 +1,11 @@
 import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
+import { Interface, TransactionReceipt, type BigNumberish, type FeeData, type Network, type Signer } from "ethers";
 
 import fs from "fs";
 import os from "os";
 
 import type { Action, SnarkProof, Groth16Proof } from "./types";
 import type { Ownable } from "../typechain-types";
-import type { BigNumberish, FeeData, Network, Signer } from "ethers";
 
 import { info, logGreen } from "./logger";
 
@@ -198,4 +198,34 @@ export const unlinkFile = async (filepath: string): Promise<void> => {
 export const getBlockTimestamp = async (signer: Signer): Promise<number> => {
   const block = await signer.provider?.getBlock("latest");
   return block?.timestamp ?? Math.floor(Date.now() / 1000);
+};
+
+/**
+ * Get the address of the deployed contract from the transaction receipt
+ * This is useful for contracts that are deployed using the CREATE2 opcode
+ * or for contracts that emit a ContractCreation event. Useful for Account Abstraction txs
+ * @param receipt - the transaction receipt of the contract creation
+ * @returns - the address of the deployed contract
+ */
+export const getDeployedContractAddressFromContractReceipt: (
+  receipt: TransactionReceipt | null | undefined,
+) => string | undefined = (receipt) => {
+  if (!receipt) {
+    return undefined;
+  }
+  const iface = new Interface(["event ContractCreation(address indexed newContract)"]);
+  const contractCreationLog = receipt.logs.find((log) => {
+    try {
+      const parsedLog = iface.parseLog(log);
+      return parsedLog?.name === "ContractCreation";
+    } catch (err) {
+      // If parseLog fails, this log is not from the ABI
+      return false;
+    }
+  });
+  if (!contractCreationLog) {
+    return undefined;
+  }
+  const newContractAddress = iface.parseLog(contractCreationLog)?.args[0] as string;
+  return newContractAddress;
 };

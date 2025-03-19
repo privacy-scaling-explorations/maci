@@ -5,7 +5,7 @@ import { zeroAddress } from "viem";
 
 import type { IGenerateArgs } from "../types";
 
-import { ErrorCodes } from "../../common";
+import { ErrorCodes, ESupportedNetworks } from "../../common";
 import { CryptoService } from "../../crypto/crypto.service";
 import { FileService } from "../../file/file.service";
 import { SessionKeysService } from "../../sessionKeys/sessionKeys.service";
@@ -40,10 +40,12 @@ describe("ProofGeneratorService", () => {
   const defaultProofArgs: IGenerateArgs = {
     poll: 1,
     maciContractAddress: zeroAddress,
-    tallyContractAddress: zeroAddress,
     useQuadraticVoting: false,
     encryptedCoordinatorPrivateKey:
       "siO9W/g7jNVXs9tOUv/pffrcqYdMlgdXw7nSSlqM1q1UvHGSSbhtLJpeT+nJKW7/+xrBTgI0wB866DSkg8Rgr8zD+POUMiKPrGqAO/XhrcmRDL+COURFNDRh9WGeAua6hdiNoufQYvXPl1iWyIYidSDbfmC2wR6F9vVkhg/6KDZyw8Wlr6LUh0RYT+hUHEwwGbz7MeqZJcJQSTpECPF5pnk8NTHL2W/XThaewB4n4HYqjDUbYLmBDLYWsDDMgoPo709a309rTq3uEe0YBgVF8g9aGxucTDhz+/LYYzqaeSxclUwen9Z4BGZjiDSPBZfooOEQEEwIJlViQ2kl1VeOKAmkiWEUVfItivmNbC/PNZchklmfFsGpiu4DT9UU9YVBN2OTcFYHHsslcaqrR7SuesqjluaGjG46oYEmfQlkZ4gXhavdWXw2ant+Tv6HRo4trqjoD1e3jUkN6gJMWomxOeRBTg0czBZlz/IwUtTpBHcKhi3EqGQo8OuQtWww+Ts7ySmeoONuovYUsIAppNuOubfUxvFJoTr2vKbWNAiYetw09kddkjmBe+S8A5PUiFOi262mfc7g5wJwPPP7wpTBY0Fya+2BCPzXqRLMOtNI+1tW3/UQLZYvEY8J0TxmhoAGZaRn8FKaosatRxDZTQS6QUNmKxpmUspkRKzTXN5lznM=",
+    sessionKeyAddress: "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
+    approval: "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
+    chain: ESupportedNetworks.LOCALHOST,
   };
 
   let mockContract = {

@@ -32,16 +32,6 @@ export class GenerateProofDto {
   maciContractAddress!: string;
 
   /**
-   * Tally contract address
-   */
-  @ApiProperty({
-    description: "Tally contract address",
-    type: String,
-  })
-  @IsEthereumAddress()
-  tallyContractAddress!: string;
-
-  /**
    * Whether to use Qv or NonQv
    */
   @ApiProperty({
@@ -104,6 +94,30 @@ export class GenerateProofDto {
   @Max(1000)
   @IsOptional()
   blocksPerBatch?: number;
+
+  @ApiProperty({
+    description: "Session key address",
+    type: String,
+  })
+  @IsEthereumAddress()
+  sessionKeyAddress!: Hex;
+
+  @ApiProperty({
+    description: "Approval",
+    type: String,
+  })
+  @IsString()
+  approval!: string;
+
+  /**
+   * Chain Name
+   */
+  @ApiProperty({
+    description: "Chain to which to deploy the contract(s)",
+    enum: ESupportedNetworks,
+  })
+  @IsEnum(ESupportedNetworks)
+  chain!: ESupportedNetworks;
 }
 
 /**
@@ -176,13 +190,6 @@ export class SubmitProofsDto {
   })
   @IsEthereumAddress()
   maciContractAddress!: Hex;
-
-  @ApiProperty({
-    description: "Tally contract address",
-    type: String,
-  })
-  @IsEthereumAddress()
-  tallyContractAddress!: Hex;
 
   @ApiProperty({
     description: "Session key address",

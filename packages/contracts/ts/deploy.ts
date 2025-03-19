@@ -161,7 +161,7 @@ export const deployContract = async <T extends BaseContract>(
  * @returns the deployed VkRegistry contract
  */
 export const deployVkRegistry = async (signer?: Signer, quiet = false): Promise<VkRegistry> =>
-  deployContract<VkRegistry>("VkRegistry", signer, quiet);
+  deployContract<VkRegistry>("VkRegistry", signer, quiet, await signer?.getAddress());
 
 /**
  * Deploy a MockVerifier contract (testing only)
@@ -775,20 +775,20 @@ export const deployPoseidonContracts = async (
 /**
  * Deploy a contract with linked libraries
  * @param contractFactory - the contract factory to use
- * @param name - the name of the contract
- * @param quiet - whether to suppress console output
+ * @param signer - the signer to use for deployment (optional)
  * @param args - the constructor arguments of the contract
  * @returns the deployed contract instance
  */
 export const deployContractWithLinkedLibraries = async <T extends BaseContract>(
   contractFactory: ContractFactory,
+  signer?: Signer,
   ...args: unknown[]
 ): Promise<T> => {
   const hre = await import("hardhat");
   const deployment = Deployment.getInstance({ hre });
   deployment.setHre(hre);
 
-  return deployment.deployContractWithLinkedLibraries({ contractFactory }, ...args);
+  return deployment.deployContractWithLinkedLibraries({ contractFactory, signer }, ...args);
 };
 
 /**
@@ -894,6 +894,7 @@ export const deployMaci = async ({
 
   const maciContract = await deployContractWithLinkedLibraries<MACI>(
     maciContractFactory,
+    signer,
     pollAddress,
     messageProcessorAddress,
     tallyAddress,

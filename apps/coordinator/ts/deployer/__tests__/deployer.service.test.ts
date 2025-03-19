@@ -1,30 +1,22 @@
 import {
-  IInitialVoiceCreditProxy__factory as VoiceCreditProxyFactory,
   ContractStorage,
   EContracts,
   EInitialVoiceCreditProxies,
   EPolicies,
-  FreeForAllPolicy__factory as FreeForAllPolicyFactory,
-  EASPolicy__factory as EASPolicyFactory,
-  ZupassPolicy__factory as ZupassPolicyFactory,
-  SemaphorePolicy__factory as SemaphorePolicyFactory,
-  HatsPolicy__factory as HatsPolicyFactory,
-  GitcoinPassportPolicy__factory as GitcoinPassportPolicyFactory,
   MACI__factory as MACIFactory,
   Verifier__factory as VerifierFactory,
 } from "@maci-protocol/sdk";
 import dotenv from "dotenv";
-import { BaseContract, zeroPadBytes } from "ethers";
+import { BaseContract, Signer } from "ethers";
 import { Hex, zeroAddress } from "viem";
 
 import path from "path";
 
-import { ErrorCodes, ESupportedNetworks } from "../../common";
+import { ErrorCodes, ESupportedNetworks, KernelClientType } from "../../common";
 import { FileService } from "../../file/file.service";
 import { generateApproval } from "../../sessionKeys/__tests__/utils";
 import { SessionKeysService } from "../../sessionKeys/sessionKeys.service";
 import { DeployerService } from "../deployer.service";
-import { estimateExtraGasLimit } from "../utils";
 
 import { testMaciDeploymentConfig, testPollDeploymentConfig } from "./utils";
 
@@ -45,348 +37,67 @@ describe("DeployerService", () => {
 
   let approval: string;
   let sessionKeyAddress: Hex;
+  let kernelClient: KernelClientType;
+  let signer: Signer;
 
   beforeAll(async () => {
-    approval = await generateApproval(sessionKeyAddress);
     sessionKeyAddress = (await sessionKeyService.generateSessionKey()).sessionKeyAddress;
+    approval = await generateApproval(sessionKeyAddress);
+
+    kernelClient = await sessionKeyService.generateClientFromSessionKey(sessionKeyAddress, approval, chain);
+    signer = await sessionKeyService.getKernelClientSigner(kernelClient);
   });
 
-  describe("getVoiceCreditProxyData", () => {
-    test("should return the voice credit proxy data", () => {
-      const voiceCreditProxyData = deployerService.getVoiceCreditProxyData(EInitialVoiceCreditProxies.Constant, chain, {
-        amount: "50",
-      });
+  afterAll(() => {
+    storageInstance.cleanup(ESupportedNetworks.OPTIMISM_SEPOLIA);
+    storageInstance.cleanup(ESupportedNetworks.ARBITRUM_ONE);
+  });
 
-      expect(voiceCreditProxyData).toBeDefined();
-      expect(voiceCreditProxyData.alreadyDeployed).toBe(false);
-      expect(voiceCreditProxyData.abi).toBeDefined();
-      expect(voiceCreditProxyData.bytecode).toBeDefined();
-    });
-
-    test("should return the voice credit proxy data and that the voice credit proxy is already deployed", async () => {
-      await storageInstance.register({
-        id: EInitialVoiceCreditProxies.Constant as unknown as EContracts,
-        contract: new BaseContract("0x", VoiceCreditProxyFactory.abi),
-        network: chain,
-        args: ["50"],
-      });
-      const voiceCreditProxyData = deployerService.getVoiceCreditProxyData(EInitialVoiceCreditProxies.Constant, chain, {
-        amount: "50",
-      });
-
-      expect(voiceCreditProxyData).toBeDefined();
-      expect(voiceCreditProxyData.alreadyDeployed).toBe(true);
-      expect(voiceCreditProxyData.abi).toBeDefined();
-      expect(voiceCreditProxyData.bytecode).toBeDefined();
-
+  describe("deployAndSavePolicy", () => {
+    // we cleanup after each test so we don't have leftover saved contracts
+    afterEach(() => {
       storageInstance.cleanup(chain);
     });
+    it("should throw when the policy is not existent", async () => {
+      await expect(
+        deployerService.deployAndSavePolicy(signer, "NonExistent" as unknown as EPolicies, chain),
+      ).rejects.toThrow(ErrorCodes.UNSUPPORTED_POLICY.toString());
+    });
 
-    it("should throw when the voice credits proxy is not existent", () => {
-      expect(() =>
-        deployerService.getVoiceCreditProxyData("NotExistent" as unknown as EInitialVoiceCreditProxies, chain, {
-          amount: "50",
-        }),
-      ).toThrow(ErrorCodes.UNSUPPORTED_VOICE_CREDIT_PROXY.toString());
+    test("should deploy policy if none is stored", async () => {
+      const policy = await deployerService.deployAndSavePolicy(signer, EPolicies.FreeForAll, chain);
+
+      expect(policy).toBeDefined();
+      expect(await policy.getAddress()).not.toBe(zeroAddress);
     });
   });
 
-  describe("getPolicyData", () => {
+  describe("deployAndSaveVoiceCreditProxy", () => {
     // we cleanup after each test so we don't have leftover saved contracts
     afterEach(() => {
       storageInstance.cleanup(chain);
     });
 
-    it("should throw when the policy is not existent", () => {
-      expect(() => deployerService.getPolicyData("NotExistent" as unknown as EPolicies, chain)).toThrow(
-        ErrorCodes.UNSUPPORTED_POLICY.toString(),
+    it("should throw when the voice credit proxy is not existent", async () => {
+      await expect(
+        deployerService.deployAndSaveVoiceCreditProxy(
+          signer,
+          "NonExistent" as unknown as EInitialVoiceCreditProxies,
+          chain,
+        ),
+      ).rejects.toThrow(ErrorCodes.UNSUPPORTED_VOICE_CREDIT_PROXY.toString());
+    });
+
+    test("should deploy voice credit proxy if none is stored", async () => {
+      const voiceCreditProxy = await deployerService.deployAndSaveVoiceCreditProxy(
+        signer,
+        EInitialVoiceCreditProxies.Constant,
+        chain,
+        { amount: 100 },
       );
-    });
 
-    describe("FreeForAllPolicy", () => {
-      it("should return the policy data and that the policy is not deployed", () => {
-        const policyData = deployerService.getPolicyData(EPolicies.FreeForAll, chain);
-        expect(policyData).toBeDefined();
-        expect(policyData.alreadyDeployed).toBe(false);
-        expect(policyData.abi).toBeDefined();
-        expect(policyData.bytecode).toBeDefined();
-      });
-
-      it("should return the policy data and that the policy is already deployed", async () => {
-        await storageInstance.register({
-          id: EPolicies.FreeForAll as unknown as EContracts,
-          contract: new BaseContract("0x", FreeForAllPolicyFactory.abi),
-          network: chain,
-          args: [],
-        });
-        const policyData = deployerService.getPolicyData(EPolicies.FreeForAll, chain);
-        expect(policyData).toBeDefined();
-        expect(policyData.alreadyDeployed).toBe(true);
-        expect(policyData.abi).toBeDefined();
-        expect(policyData.bytecode).toBeDefined();
-      });
-    });
-
-    describe("EASPolicy", () => {
-      it("should return the policy data and that the policy is not deployed", () => {
-        const policyData = deployerService.getPolicyData(EPolicies.EAS, chain);
-        expect(policyData).toBeDefined();
-        expect(policyData.alreadyDeployed).toBe(false);
-        expect(policyData.abi).toBeDefined();
-        expect(policyData.bytecode).toBeDefined();
-      });
-
-      it("should return the policy data and that the policy is already deployed", async () => {
-        await storageInstance.register({
-          id: EPolicies.EAS as unknown as EContracts,
-          contract: new BaseContract("0x", EASPolicyFactory.abi),
-          network: chain,
-          args: [zeroAddress, zeroPadBytes("0x", 32), zeroAddress],
-        });
-
-        const policyData = deployerService.getPolicyData(EPolicies.EAS, chain, {
-          easAddress: zeroAddress,
-          schema: zeroPadBytes("0x", 32),
-          attester: zeroAddress,
-        });
-
-        expect(policyData).toBeDefined();
-        expect(policyData.alreadyDeployed).toBe(true);
-        expect(policyData.abi).toBeDefined();
-        expect(policyData.bytecode).toBeDefined();
-      });
-
-      it("should return that the policy is not deployed when the args are different", async () => {
-        await storageInstance.register({
-          id: EPolicies.EAS as unknown as EContracts,
-          contract: new BaseContract("0x", EASPolicyFactory.abi),
-          network: chain,
-          args: [zeroAddress, zeroPadBytes("0x", 32), zeroAddress.replace("0x0", "0x1")],
-        });
-
-        const policyData = deployerService.getPolicyData(EPolicies.EAS, chain, {
-          easAddress: zeroAddress,
-          schema: zeroPadBytes("0x", 32),
-          attester: zeroAddress,
-        });
-
-        expect(policyData).toBeDefined();
-        expect(policyData.alreadyDeployed).toBe(false);
-        expect(policyData.abi).toBeDefined();
-        expect(policyData.bytecode).toBeDefined();
-      });
-    });
-
-    describe("ZupassPolicy", () => {
-      it("should return the policy data and that the policy is not deployed", () => {
-        const policyData = deployerService.getPolicyData(EPolicies.Zupass, chain, {
-          signer1: zeroAddress,
-          signer2: zeroAddress,
-          eventId: "0x",
-          zupassVerifier: zeroAddress,
-        });
-        expect(policyData).toBeDefined();
-        expect(policyData.alreadyDeployed).toBe(false);
-        expect(policyData.abi).toBeDefined();
-        expect(policyData.bytecode).toBeDefined();
-      });
-
-      it("should return the policy data and that the policy is already deployed", async () => {
-        await storageInstance.register({
-          id: EPolicies.Zupass as unknown as EContracts,
-          contract: new BaseContract("0x", ZupassPolicyFactory.abi),
-          network: chain,
-          args: [zeroAddress, zeroAddress, "0x", zeroAddress],
-        });
-
-        const policyData = deployerService.getPolicyData(EPolicies.Zupass, chain, {
-          signer1: zeroAddress,
-          signer2: zeroAddress,
-          eventId: "0x",
-          zupassVerifier: zeroAddress,
-        });
-
-        expect(policyData).toBeDefined();
-        expect(policyData.alreadyDeployed).toBe(true);
-        expect(policyData.abi).toBeDefined();
-        expect(policyData.bytecode).toBeDefined();
-      });
-
-      it("should return that the policy is not deployed when the args are different", async () => {
-        await storageInstance.register({
-          id: EPolicies.Zupass as unknown as EContracts,
-          contract: new BaseContract("0x", ZupassPolicyFactory.abi),
-          network: chain,
-          args: [zeroAddress, zeroAddress, "0x", zeroAddress.replace("0x0", "0x1")],
-        });
-
-        const policyData = deployerService.getPolicyData(EPolicies.Zupass, chain, {
-          signer1: zeroAddress,
-          signer2: zeroAddress,
-          eventId: "0x",
-          zupassVerifier: zeroAddress,
-        });
-
-        expect(policyData).toBeDefined();
-        expect(policyData.alreadyDeployed).toBe(false);
-        expect(policyData.abi).toBeDefined();
-        expect(policyData.bytecode).toBeDefined();
-      });
-    });
-
-    describe("SemaphorePolicy", () => {
-      it("should return the policy data and that the policy is not deployed", () => {
-        const policyData = deployerService.getPolicyData(EPolicies.Semaphore, chain, {
-          semaphoreContract: zeroAddress,
-          groupId: "0",
-        });
-
-        expect(policyData).toBeDefined();
-        expect(policyData.alreadyDeployed).toBe(false);
-        expect(policyData.abi).toBeDefined();
-        expect(policyData.bytecode).toBeDefined();
-      });
-
-      it("should return the policy data and that the policy is already deployed", async () => {
-        await storageInstance.register({
-          id: EPolicies.Semaphore as unknown as EContracts,
-          contract: new BaseContract("0x", SemaphorePolicyFactory.abi),
-          network: chain,
-          args: [zeroAddress, "0"],
-        });
-
-        const policyData = deployerService.getPolicyData(EPolicies.Semaphore, chain, {
-          semaphoreContract: zeroAddress,
-          groupId: "0",
-        });
-
-        expect(policyData).toBeDefined();
-        expect(policyData.alreadyDeployed).toBe(true);
-        expect(policyData.abi).toBeDefined();
-        expect(policyData.bytecode).toBeDefined();
-      });
-
-      it("should return that the policy is not deployed when the args are different", async () => {
-        await storageInstance.register({
-          id: EPolicies.Semaphore as unknown as EContracts,
-          contract: new BaseContract("0x", SemaphorePolicyFactory.abi),
-          network: chain,
-          args: [zeroAddress, "0"],
-        });
-
-        const policyData = deployerService.getPolicyData(EPolicies.Semaphore, chain, {
-          semaphoreContract: zeroAddress,
-          groupId: "1",
-        });
-
-        expect(policyData).toBeDefined();
-        expect(policyData.alreadyDeployed).toBe(false);
-        expect(policyData.abi).toBeDefined();
-        expect(policyData.bytecode).toBeDefined();
-      });
-    });
-
-    describe("HatsPolicy", () => {
-      it("should return the policy data and that the policy is not deployed", () => {
-        const policyData = deployerService.getPolicyData(EPolicies.Hats, chain, {
-          hatsProtocolAddress: zeroAddress,
-          critrionHats: [zeroAddress],
-        });
-        expect(policyData).toBeDefined();
-        expect(policyData.alreadyDeployed).toBe(false);
-        expect(policyData.abi).toBeDefined();
-        expect(policyData.bytecode).toBeDefined();
-      });
-
-      it("should return the policy data and that the policy is already deployed", async () => {
-        await storageInstance.register({
-          id: EPolicies.Hats as unknown as EContracts,
-          contract: new BaseContract("0x", HatsPolicyFactory.abi),
-          network: chain,
-          args: [zeroAddress, [zeroAddress]],
-        });
-
-        const policyData = deployerService.getPolicyData(EPolicies.Hats, chain, {
-          hatsProtocolAddress: zeroAddress,
-          critrionHats: [zeroAddress],
-        });
-
-        expect(policyData).toBeDefined();
-        expect(policyData.alreadyDeployed).toBe(true);
-        expect(policyData.abi).toBeDefined();
-        expect(policyData.bytecode).toBeDefined();
-      });
-
-      it("should return that the policy is not deployed when the args are different", async () => {
-        await storageInstance.register({
-          id: EPolicies.Hats as unknown as EContracts,
-          contract: new BaseContract("0x", HatsPolicyFactory.abi),
-          network: chain,
-          args: [zeroAddress, ["0x"]],
-        });
-
-        const policyData = deployerService.getPolicyData(EPolicies.Hats, chain, {
-          hatsProtocolAddress: zeroAddress,
-          critrionHats: ["0x1"],
-        });
-
-        expect(policyData).toBeDefined();
-        expect(policyData.alreadyDeployed).toBe(false);
-        expect(policyData.abi).toBeDefined();
-        expect(policyData.bytecode).toBeDefined();
-      });
-    });
-
-    describe("GitcoinPassportPolicy", () => {
-      it("should return the policy data and that the policy is not deployed", () => {
-        const policyData = deployerService.getPolicyData(EPolicies.GitcoinPassport, chain, {
-          decoderAddress: zeroAddress,
-          passingScore: "0",
-        });
-
-        expect(policyData).toBeDefined();
-        expect(policyData.alreadyDeployed).toBe(false);
-        expect(policyData.abi).toBeDefined();
-        expect(policyData.bytecode).toBeDefined();
-      });
-
-      it("should return the policy data and that the policy is already deployed", async () => {
-        await storageInstance.register({
-          id: EPolicies.GitcoinPassport as unknown as EContracts,
-          contract: new BaseContract("0x", GitcoinPassportPolicyFactory.abi),
-          network: chain,
-          args: [zeroAddress, "0"],
-        });
-
-        const policyData = deployerService.getPolicyData(EPolicies.GitcoinPassport, chain, {
-          decoderAddress: zeroAddress,
-          passingScore: "0",
-        });
-
-        expect(policyData).toBeDefined();
-        expect(policyData.alreadyDeployed).toBe(true);
-        expect(policyData.abi).toBeDefined();
-        expect(policyData.bytecode).toBeDefined();
-      });
-
-      it("should return that the policy is not deployed when the args are different", async () => {
-        await storageInstance.register({
-          id: EPolicies.GitcoinPassport as unknown as EContracts,
-          contract: new BaseContract("0x", GitcoinPassportPolicyFactory.abi),
-          network: chain,
-          args: [zeroAddress, "0"],
-        });
-
-        const policyData = deployerService.getPolicyData(EPolicies.GitcoinPassport, chain, {
-          decoderAddress: zeroAddress,
-          passingScore: "1",
-        });
-
-        expect(policyData).toBeDefined();
-        expect(policyData.alreadyDeployed).toBe(false);
-        expect(policyData.abi).toBeDefined();
-        expect(policyData.bytecode).toBeDefined();
-      });
+      expect(voiceCreditProxy).toBeDefined();
+      expect(await voiceCreditProxy.getAddress()).not.toBe(zeroAddress);
     });
   });
 
@@ -516,13 +227,6 @@ describe("DeployerService", () => {
       });
 
       expect(pollId).toBe("0");
-    });
-  });
-
-  describe("estimateExtraGasLimit", () => {
-    it("should return the extra gas limit", () => {
-      const extraGasLimit = estimateExtraGasLimit(100n);
-      expect(extraGasLimit.toString()).toBe("5");
     });
   });
 });

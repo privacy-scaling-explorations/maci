@@ -33,6 +33,19 @@ export interface IReadProofsResults {
  */
 export interface IGenerateArgs {
   /**
+   * Approval for the session key
+   */
+  approval: string;
+  /**
+   * Session key address
+   */
+  sessionKeyAddress: Hex;
+  /**
+   * Chain
+   */
+  chain: ESupportedNetworks;
+
+  /**
    * Poll id
    */
   poll: number;
@@ -41,11 +54,6 @@ export interface IGenerateArgs {
    * Maci contract address
    */
   maciContractAddress: string;
-
-  /**
-   * Tally contract address
-   */
-  tallyContractAddress: string;
 
   /**
    * Whether to use Qv or NonQv

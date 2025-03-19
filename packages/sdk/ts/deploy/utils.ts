@@ -24,6 +24,6 @@ export const deployFactoryWithLinkedLibraries = async ({
 
   const contractFactory = await createContractFactory(abi, bytecode, signer);
 
-  const contractFactoryContract = await deployContractWithLinkedLibraries(contractFactory, ...(args ?? []));
+  const contractFactoryContract = await deployContractWithLinkedLibraries(contractFactory, signer, ...(args ?? []));
   return contractFactoryContract.getAddress();
 };

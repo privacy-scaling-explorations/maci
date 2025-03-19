@@ -554,10 +554,10 @@ program
         messageBatchSize: cmdObj.msgBatchSize,
         pollJoiningVk: pollJoiningVk!,
         pollJoinedVk: pollJoinedVk!,
-        processMessagesVk: processVk!,
-        tallyVotesVk: tallyVk!,
+        processMessagesVks: [processVk!],
+        tallyVotesVks: [tallyVk!],
         vkRegistryAddress,
-        mode: cmdObj.useQuadraticVoting ? EMode.QV : EMode.NON_QV,
+        modes: cmdObj.useQuadraticVoting ? [EMode.QV] : [EMode.NON_QV],
         signer,
       });
     } catch (error) {

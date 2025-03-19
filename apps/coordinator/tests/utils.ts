@@ -13,16 +13,26 @@ import { CryptoService } from "../ts/crypto/crypto.service";
 dotenv.config();
 
 /**
+ * Encrypt a message using the coordinator's public key
+ * @param message to encrypt
+ * @returns encrypted message (ciphertext)
+ */
+export const encryptWithCoordinatorRSAPubKey = async (message: string): Promise<string> => {
+  const cryptoService = new CryptoService();
+  const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
+  return cryptoService.encrypt(publicKey, message);
+};
+
+/**
  * Sign a message with a wallet and encrypt it using the coordinator's public key
  * @param signer
  * @returns Authorization header
  */
 export const getAuthorizationHeader = async (signer: Signer): Promise<string> => {
-  const cryptoService = new CryptoService();
-  const publicKey = await fs.promises.readFile(process.env.COORDINATOR_PUBLIC_KEY_PATH!);
   const signature = await signer.signMessage("message");
   const digest = Buffer.from(getBytes(hashMessage("message"))).toString("hex");
-  return `Bearer ${cryptoService.encrypt(publicKey, `${signature}:${digest}`)}`;
+  const encrypted = await encryptWithCoordinatorRSAPubKey(`${signature}:${digest}`);
+  return `Bearer ${encrypted}`;
 };
 
 /**

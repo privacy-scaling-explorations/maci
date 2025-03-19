@@ -44,6 +44,8 @@ export {
   deploySemaphoreSignupPolicy,
   deployZupassSignUpPolicy,
   deployFreeForAllSignUpPolicy,
+  deploySignupTokenPolicy,
+  deployHatsSignupPolicy,
   deployContract,
   deployContractWithLinkedLibraries,
   getDefaultSigner,

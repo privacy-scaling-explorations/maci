@@ -2,25 +2,14 @@ import { Keypair, PrivKey, PubKey } from "@maci-protocol/domainobjs";
 import {
   Deployment,
   EContracts,
-  ProofGenerator,
   type Poll,
-  type MACI,
   type IGenerateProofsOptions,
-  Poll__factory as PollFactory,
-  MACI__factory as MACIFactory,
-  Prover,
-  VkRegistry,
-  Verifier,
-  MessageProcessor,
-  Tally,
   getPoll,
   mergeSignups,
 } from "@maci-protocol/sdk";
-import { IProof, ITallyData } from "@maci-protocol/sdk";
+import { IProof, ITallyData, generateProofs, proveOnChain } from "@maci-protocol/sdk";
 import { Logger, Injectable } from "@nestjs/common";
-import { ZeroAddress } from "ethers";
 import hre from "hardhat";
-import { Hex } from "viem";
 
 import fs from "fs";
 import path from "path";
@@ -28,7 +17,6 @@ import path from "path";
 import type { IGenerateArgs, IGenerateData, IMergeArgs, ISubmitProofsArgs } from "./types";
 
 import { ErrorCodes } from "../common";
-import { getPublicClient } from "../common/accountAbstraction";
 import { CryptoService } from "../crypto/crypto.service";
 import { FileService } from "../file/file.service";
 import { SessionKeysService } from "../sessionKeys/sessionKeys.service";
@@ -87,9 +75,11 @@ export class ProofGeneratorService {
    */
   async generate(
     {
+      approval,
+      sessionKeyAddress,
+      chain,
       poll,
       maciContractAddress,
-      tallyContractAddress,
       useQuadraticVoting,
       encryptedCoordinatorPrivateKey,
       startBlock,
@@ -99,30 +89,23 @@ export class ProofGeneratorService {
     options?: IGenerateProofsOptions,
   ): Promise<IGenerateData> {
     try {
-      const maciContract = await this.deployment.getContract<MACI>({
-        name: EContracts.MACI,
-        address: maciContractAddress,
-      });
-      const signer = await this.deployment.getDeployer();
+      const kernelClient = await this.sessionKeysService.generateClientFromSessionKey(
+        sessionKeyAddress,
+        approval,
+        chain,
+      );
+      const signer = await this.sessionKeysService.getKernelClientSigner(kernelClient);
+
       const pollData = await getPoll({
         maciAddress: maciContractAddress,
         pollId: poll,
         signer,
       });
-
       const pollContract = await this.deployment.getContract<Poll>({
         name: EContracts.Poll,
         address: pollData.address,
       });
-      const [coordinatorPublicKey, isStateAqMerged] = await Promise.all([
-        pollContract.coordinatorPubKey(),
-        pollContract.stateMerged(),
-      ]);
-
-      if (!isStateAqMerged) {
-        this.logger.error(`Error: ${ErrorCodes.NOT_MERGED_STATE_TREE}, state tree is not merged`);
-        throw new Error(ErrorCodes.NOT_MERGED_STATE_TREE.toString());
-      }
+      const coordinatorPublicKey = await pollContract.coordinatorPubKey();
 
       const { privateKey } = await this.fileService.getPrivateKey();
       const maciPrivateKey = PrivKey.deserialize(
@@ -139,48 +122,31 @@ export class ProofGeneratorService {
         throw new Error(ErrorCodes.PRIVATE_KEY_MISMATCH.toString());
       }
 
-      const outputDir = path.resolve("./proofs");
-
-      const maciState = await ProofGenerator.prepareState({
-        maciContract,
-        pollContract,
-        maciPrivateKey,
-        coordinatorKeypair,
-        pollId: poll,
-        signer,
-        outputDir,
-        options: {
-          startBlock,
-          endBlock,
-          blocksPerBatch,
-        },
-      });
-
-      const foundPoll = maciState.polls.get(BigInt(poll));
-
-      if (!foundPoll) {
-        this.logger.error(`Error: ${ErrorCodes.POLL_NOT_FOUND}, Poll ${poll} not found in maci state`);
-        throw new Error(ErrorCodes.POLL_NOT_FOUND.toString());
-      }
-
-      const proofGenerator = new ProofGenerator({
-        poll: foundPoll,
-        maciContractAddress,
-        tallyContractAddress,
-        tally: this.fileService.getZkeyFilePaths(process.env.COORDINATOR_TALLY_ZKEY_NAME!, useQuadraticVoting),
-        mp: this.fileService.getZkeyFilePaths(process.env.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME!, useQuadraticVoting),
-        rapidsnark: process.env.COORDINATOR_RAPIDSNARK_EXE,
-        outputDir,
-        tallyOutputFile: path.resolve("./tally.json"),
+      const tally = this.fileService.getZkeyFilePaths(process.env.COORDINATOR_TALLY_ZKEY_NAME!, useQuadraticVoting);
+      const mp = this.fileService.getZkeyFilePaths(
+        process.env.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME!,
         useQuadraticVoting,
-      });
-
-      const processProofs = await proofGenerator.generateMpProofs(options);
-      const { proofs: tallyProofs, tallyData } = await proofGenerator.generateTallyProofs(
-        hre.network.name,
-        String(hre.network.config.chainId || 1),
-        options,
       );
+
+      const { processProofs, tallyProofs, tallyData } = await generateProofs({
+        outputDir: path.resolve("./proofs"),
+        coordinatorPrivateKey: maciPrivateKey.serialize(),
+        signer,
+        maciAddress: maciContractAddress,
+        pollId: BigInt(poll),
+        startBlock,
+        endBlock,
+        blocksPerBatch,
+        rapidsnark: process.env.COORDINATOR_RAPIDSNARK_EXE,
+        useQuadraticVoting,
+        tallyZkey: tally.zkey,
+        tallyWitgen: tally.witgen,
+        tallyWasm: tally.wasm,
+        processZkey: mp.zkey,
+        processWitgen: mp.witgen,
+        processWasm: mp.wasm,
+        tallyFile: path.resolve("./tally.json"),
+      });
 
       return {
         processProofs,
@@ -200,7 +166,6 @@ export class ProofGeneratorService {
    * @returns whether the proofs were successfully merged
    */
   async merge({ maciContractAddress, pollId, approval, sessionKeyAddress, chain }: IMergeArgs): Promise<boolean> {
-    // get a kernel client
     const kernelClient = await this.sessionKeysService.generateClientFromSessionKey(sessionKeyAddress, approval, chain);
     const signer = await this.sessionKeysService.getKernelClientSigner(kernelClient);
 
@@ -218,80 +183,28 @@ export class ProofGeneratorService {
    *
    * @param args - submit proofs on-chain arguments
    */
-  async submit({ maciContractAddress, pollId, chain }: ISubmitProofsArgs): Promise<boolean> {
-    const publicClient = getPublicClient(chain);
+  async submit({
+    maciContractAddress,
+    pollId,
+    sessionKeyAddress,
+    approval,
+    chain,
+  }: ISubmitProofsArgs): Promise<ITallyData> {
+    const kernelClient = await this.sessionKeysService.generateClientFromSessionKey(sessionKeyAddress, approval, chain);
+    const signer = await this.sessionKeysService.getKernelClientSigner(kernelClient);
 
-    // get the poll address
-    const pollContracts = await publicClient.readContract({
-      address: maciContractAddress as Hex,
-      abi: MACIFactory.abi,
-      functionName: "getPoll",
-      args: [BigInt(pollId)],
+    const tallyData = await proveOnChain({
+      pollId: BigInt(pollId),
+      maciAddress: maciContractAddress,
+      proofDir: "./proofs",
+      tallyFile: "./tally.json",
+      signer,
     });
 
-    const pollAddress = pollContracts.poll;
-    if (pollAddress.toLowerCase() === ZeroAddress.toLowerCase()) {
-      this.logger.error(`Error: ${ErrorCodes.POLL_NOT_FOUND}, Poll ${pollId} not found`);
-      throw new Error(ErrorCodes.POLL_NOT_FOUND.toString());
+    if (!tallyData) {
+      throw new Error("Tally data is undefined");
     }
 
-    // check if state tree has been merged
-    const isStateMerged = await publicClient.readContract({
-      address: pollAddress,
-      abi: PollFactory.abi,
-      functionName: "stateMerged",
-    });
-    if (!isStateMerged) {
-      this.logger.error(`Error: ${ErrorCodes.NOT_MERGED_STATE_TREE}, state tree is not merged`);
-      throw new Error(ErrorCodes.NOT_MERGED_STATE_TREE.toString());
-    }
-
-    const [maciContract, mpContract, pollContract, tallyContract, vkRegistryContract, verifierContract] =
-      await Promise.all([
-        this.deployment.getContract<MACI>({
-          name: EContracts.MACI,
-          address: maciContractAddress,
-        }),
-        this.deployment.getContract<MessageProcessor>({
-          name: EContracts.MessageProcessor,
-          address: pollContracts.messageProcessor,
-        }),
-        this.deployment.getContract<Poll>({
-          name: EContracts.Poll,
-          address: pollContracts.poll,
-        }),
-        this.deployment.getContract<Tally>({
-          name: EContracts.Tally,
-          address: pollContracts.tally,
-        }),
-        this.deployment.getContract<VkRegistry>({ name: EContracts.VkRegistry }),
-        this.deployment.getContract<Verifier>({ name: EContracts.Verifier }),
-      ]);
-    const prover = new Prover({
-      maciContract,
-      mpContract,
-      pollContract,
-      tallyContract,
-      vkRegistryContract,
-      verifierContract,
-    });
-
-    const data = {
-      processProofs: await this.readProofs(path.resolve("./proofs"), "process"),
-      tallyProofs: await this.readProofs(path.resolve("./proofs"), "tally"),
-    };
-    // prove message processing
-    await prover.proveMessageProcessing(data.processProofs);
-    // read tally data
-    const tallyData = await fs.promises
-      .readFile("./tally.json", "utf8")
-      .then((result) => JSON.parse(result) as unknown as ITallyData);
-    // prove tally
-    await prover.proveTally(data.tallyProofs);
-    // submit results
-    const voteOptions = Number(await pollContract.voteOptions());
-    await prover.submitResults(tallyData, voteOptions);
-
-    return true;
+    return tallyData;
   }
 }

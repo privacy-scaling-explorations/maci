@@ -14,6 +14,7 @@ import { EChainId, ESupportedChains, getEtherscanApiKeys, getNetworkRpcUrls } fr
 import "./tasks/runner/benchmarks";
 import "./tasks/runner/deployFull";
 import "./tasks/runner/deployPoll";
+import "./tasks/runner/encodeErrors";
 import "./tasks/runner/merge";
 import "./tasks/runner/prove";
 import "./tasks/runner/submitOnChain";
