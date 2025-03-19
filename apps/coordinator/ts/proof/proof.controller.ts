@@ -3,10 +3,11 @@ import { Body, Controller, Get, HttpException, HttpStatus, Logger, Post, UseGuar
 import { ApiBearerAuth, ApiBody, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import type { IGenerateData, IMergeArgs } from "./types";
-import type { IGetPublicKeyData } from "../file/types";
+import type { ITallyData } from "@maci-protocol/sdk";
 
 import { AccountSignatureGuard, Public } from "../auth/AccountSignatureGuard.service";
 import { FileService } from "../file/file.service";
+import { IGetPublicKeyData } from "../file/types";
 
 import { GenerateProofDto, MergeTreesDto, SubmitProofsDto } from "./dto";
 import { ProofGeneratorService } from "./proof.service";
@@ -77,7 +78,7 @@ export class ProofController {
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: "Forbidden" })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "BadRequest" })
   @Post("submit")
-  async submit(@Body() args: SubmitProofsDto): Promise<boolean> {
+  async submit(@Body() args: SubmitProofsDto): Promise<ITallyData> {
     return this.proofGeneratorService.submit(args).catch((error: Error) => {
       this.logger.error(`Error:`, error);
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);

@@ -32,16 +32,6 @@ export class GenerateProofDto {
   maciContractAddress!: string;
 
   /**
-   * Tally contract address
-   */
-  @ApiProperty({
-    description: "Tally contract address",
-    type: String,
-  })
-  @IsEthereumAddress()
-  tallyContractAddress!: string;
-
-  /**
    * Whether to use Qv or NonQv
    */
   @ApiProperty({
@@ -104,6 +94,34 @@ export class GenerateProofDto {
   @Max(1000)
   @IsOptional()
   blocksPerBatch?: number;
+
+  @ApiProperty({
+    description: "Session key address",
+    type: String,
+    required: false,
+  })
+  @IsOptional()
+  @IsEthereumAddress()
+  sessionKeyAddress?: Hex;
+
+  @ApiProperty({
+    description: "Approval",
+    type: String,
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  approval?: string;
+
+  /**
+   * Chain Name
+   */
+  @ApiProperty({
+    description: "Chain to which to deploy the contract(s)",
+    enum: ESupportedNetworks,
+  })
+  @IsEnum(ESupportedNetworks)
+  chain!: ESupportedNetworks;
 }
 
 /**
@@ -132,16 +150,20 @@ export class MergeTreesDto {
   @ApiProperty({
     description: "Session key address",
     type: String,
+    required: false,
   })
+  @IsOptional()
   @IsEthereumAddress()
-  sessionKeyAddress!: string;
+  sessionKeyAddress?: string;
 
   @ApiProperty({
     description: "Approval",
     type: String,
+    required: false,
   })
+  @IsOptional()
   @IsString()
-  approval!: string;
+  approval?: string;
 
   /**
    * Chain Name
@@ -178,25 +200,22 @@ export class SubmitProofsDto {
   maciContractAddress!: Hex;
 
   @ApiProperty({
-    description: "Tally contract address",
-    type: String,
-  })
-  @IsEthereumAddress()
-  tallyContractAddress!: Hex;
-
-  @ApiProperty({
     description: "Session key address",
     type: String,
+    required: false,
   })
+  @IsOptional()
   @IsEthereumAddress()
-  sessionKeyAddress!: Hex;
+  sessionKeyAddress?: Hex;
 
   @ApiProperty({
     description: "Approval",
     type: String,
+    required: false,
   })
+  @IsOptional()
   @IsString()
-  approval!: string;
+  approval?: string;
 
   /**
    * Chain Name

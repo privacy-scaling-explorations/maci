@@ -1,42 +1,54 @@
-// To only run this file: pnpm exec jest --testPathPattern=tests/e2e.deploy.test.ts
-
-import { generateRandomSalt } from "@maci-protocol/crypto";
 import { Keypair } from "@maci-protocol/domainobjs";
-import { joinPoll, publish, signup, sleep } from "@maci-protocol/sdk";
+import { ContractStorage, joinPoll, signup, sleep } from "@maci-protocol/sdk";
 import { ValidationPipe, type INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import dotenv from "dotenv";
 import { type Signer } from "ethers";
-import hardhat from "hardhat";
 import { Socket, io } from "socket.io-client";
 import { Hex, zeroAddress } from "viem";
 
+import path from "path";
+
 import { AppModule } from "../ts/app.module";
-import { ESupportedNetworks } from "../ts/common";
+import { ESupportedNetworks, getSigner } from "../ts/common";
 import { getPublicClient } from "../ts/common/accountAbstraction";
-import { testMaciDeploymentConfig, testPollDeploymentConfig } from "../ts/deployer/__tests__/utils";
+import {
+  coordinatorMACIKeypair,
+  pollStartDateExtraSeconds,
+  testMaciDeploymentConfig,
+  testPollDeploymentConfig,
+} from "../ts/deployer/__tests__/utils";
+import { DeployerModule } from "../ts/deployer/deployer.module";
 import { IDeployMaciArgs, IDeployPollArgs } from "../ts/deployer/types";
 import { FileModule } from "../ts/file/file.module";
-import { IMergeArgs } from "../ts/proof/types";
+import { IGetPublicKeyData } from "../ts/file/types";
+import { ProofModule } from "../ts/proof/proof.module";
+import { IGenerateArgs, IGenerateData, IMergeArgs, ISubmitProofsArgs } from "../ts/proof/types";
 import { generateApproval, getKernelAccount } from "../ts/sessionKeys/__tests__/utils";
+import { SessionKeysModule } from "../ts/sessionKeys/sessionKeys.module";
 import { IGenerateSessionKeyReturn } from "../ts/sessionKeys/types";
 import { IDeploySubgraphArgs } from "../ts/subgraph/types";
 
 import {
-  pollDuration,
   pollJoiningTestZkeyPath,
   testPollJoiningWasmPath,
   testPollJoiningWitnessPath,
   testRapidsnarkPath,
   zeroUint256Encoded,
 } from "./constants";
-import { getAuthorizationHeader, rechargeGasIfNeeded } from "./utils";
+import { encryptWithCoordinatorRSAPublicKey, getAuthorizationHeader, rechargeGasIfNeeded } from "./utils";
 
 dotenv.config();
 
-const LOCALHOST = "http://localhost:3000";
+jest.setTimeout(700000); // Sets timeout to 700 seconds
+
+const TEST_URL = "http://localhost:3000/v1";
+const CHAIN = ESupportedNetworks.OPTIMISM_SEPOLIA;
+
+const REGEX_SUBGRAPH = /^https:\/\/api\.studio\.thegraph\.com\/query\/\d+\/maci-subgraph\/v0\.0\.\d+$/;
+
 const NUM_USERS = 1;
-const voteOptions: Record<string, number> = {
+const VOTE_OPTIONS: Record<string, number> = {
   "0": 0,
   "1": 0,
 };
@@ -44,22 +56,22 @@ const voteOptions: Record<string, number> = {
 describe("E2E Deployment Tests", () => {
   let signer: Signer;
   let encryptedHeader: string;
-  let coordinatorKeypair: Keypair;
   let sessionKeyAddress: Hex;
   let approval: string;
 
   let app: INestApplication;
   let socket: Socket;
-  const publicClient = getPublicClient(ESupportedNetworks.OPTIMISM_SEPOLIA);
+  const publicClient = getPublicClient(CHAIN);
 
   let maciAddress: Hex;
   let pollId: bigint;
 
+  const pollDuration = 600;
+
   // set up coordinator address
   beforeAll(async () => {
-    [signer] = await hardhat.ethers.getSigners();
+    signer = getSigner(CHAIN);
     encryptedHeader = await getAuthorizationHeader(signer);
-    coordinatorKeypair = new Keypair();
     process.env.COORDINATOR_ADDRESSES = await signer.getAddress();
     await rechargeGasIfNeeded(process.env.COORDINATOR_ADDRESSES as Hex, "0.007", "0.007");
   });
@@ -67,15 +79,18 @@ describe("E2E Deployment Tests", () => {
   // set up NestJS app
   beforeAll(async () => {
     const moduleFixture = await Test.createTestingModule({
-      imports: [AppModule, FileModule],
+      imports: [AppModule, FileModule, DeployerModule, ProofModule, SessionKeysModule],
     }).compile();
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ transform: true }));
     await app.init();
     await app.listen(3000);
   });
+
   afterAll(async () => {
     await app.close();
+    const storageInstance = ContractStorage.getInstance(path.join(process.cwd(), "deployed-contracts.json"));
+    storageInstance.cleanup(CHAIN);
   });
 
   // set up auth header in WS connection
@@ -100,8 +115,19 @@ describe("E2E Deployment Tests", () => {
   });
 
   // run tests
+  test("should retrieve RSA public key", async () => {
+    const response = await fetch(`${TEST_URL}/proof/publicKey`, {
+      method: "GET",
+    });
+    const body = (await response.json()) as IGetPublicKeyData;
+    expect(response.status).toBe(200);
+    expect(body.publicKey).toBeDefined();
+
+    // this RSA should be used in the encrypted auth header and the encrypted coordinator maci private key
+  });
+
   test("should retrieve the session key address", async () => {
-    const response = await fetch(`${LOCALHOST}/v1/session-keys/generate`, {
+    const response = await fetch(`${TEST_URL}/session-keys/generate`, {
       method: "GET",
       headers: {
         Authorization: encryptedHeader,
@@ -121,11 +147,14 @@ describe("E2E Deployment Tests", () => {
   test("should deploy MACI correctly", async () => {
     const config = testMaciDeploymentConfig;
     config.VerifyingKeysRegistry.args.stateTreeDepth = config.VerifyingKeysRegistry.args.stateTreeDepth.toString();
+    config.VerifyingKeysRegistry.args.pollStateTreeDepth =
+      config.VerifyingKeysRegistry.args.pollStateTreeDepth.toString();
     config.VerifyingKeysRegistry.args.intStateTreeDepth =
       config.VerifyingKeysRegistry.args.intStateTreeDepth.toString();
     config.VerifyingKeysRegistry.args.voteOptionTreeDepth =
       config.VerifyingKeysRegistry.args.voteOptionTreeDepth.toString();
-    const response = await fetch(`${LOCALHOST}/v1/deploy/maci`, {
+
+    const response = await fetch(`${TEST_URL}/deploy/maci`, {
       method: "POST",
       headers: {
         Authorization: encryptedHeader,
@@ -134,10 +163,11 @@ describe("E2E Deployment Tests", () => {
       body: JSON.stringify({
         approval,
         sessionKeyAddress,
-        chain: ESupportedNetworks.OPTIMISM_SEPOLIA,
+        chain: CHAIN,
         config,
       } as IDeployMaciArgs),
     });
+
     const body = (await response.json()) as { address: string };
 
     expect(response.status).toBe(201);
@@ -149,23 +179,20 @@ describe("E2E Deployment Tests", () => {
 
   test("should deploy a poll correctly", async () => {
     const config = testPollDeploymentConfig;
-    config.coordinatorPublicKey = coordinatorKeypair.publicKey.serialize();
     config.voteOptions = config.voteOptions.toString();
 
-    const startDate = Math.floor(Date.now() / 1000) + 10;
+    const startDate = Math.floor(Date.now() / 1000) + pollStartDateExtraSeconds;
     config.startDate = startDate;
     config.endDate = startDate + pollDuration;
 
-    const response = await fetch(`${LOCALHOST}/v1/deploy/poll`, {
+    const response = await fetch(`${TEST_URL}/deploy/poll`, {
       method: "POST",
       headers: {
         Authorization: encryptedHeader,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        approval,
-        sessionKeyAddress,
-        chain: ESupportedNetworks.OPTIMISM_SEPOLIA,
+        chain: CHAIN,
         config,
       } as IDeployPollArgs),
     });
@@ -177,37 +204,15 @@ describe("E2E Deployment Tests", () => {
     pollId = BigInt(body.pollId);
   });
 
-  test("should deploy a subgraph correctly", async () => {
-    const blockNumber = Number(await publicClient.getBlockNumber());
-    const response = await fetch(`${LOCALHOST}/v1/subgraph/deploy`, {
-      method: "POST",
-      headers: {
-        Authorization: encryptedHeader,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        maciContractAddress: maciAddress,
-        startBlock: blockNumber,
-        network: ESupportedNetworks.OPTIMISM_SEPOLIA,
-        name: process.env.SUBGRAPH_NAME,
-        tag: `v0.0.${blockNumber}`, // different versions per test using block number
-      } as IDeploySubgraphArgs),
-    });
-    const body = (await response.json()) as { url: string };
-    const { url } = body;
-    const regex = /^https:\/\/api\.studio\.thegraph\.com\/query\/\d+\/maci-subgraph\/v0\.0\.\d+$/;
-    expect(response.status).toBe(201);
-    expect(body.url).toBeDefined();
-    expect(regex.test(url)).toBe(true);
-  });
-
   test("should allow voting on a poll", async () => {
+    await sleep(pollStartDateExtraSeconds * 1000);
     for (let i = 0; i < NUM_USERS; i += 1) {
       const keypairUser = new Keypair();
       const userPublicKey = keypairUser.publicKey.serialize();
       const userPrivateKey = keypairUser.privateKey.serialize();
       const vote = i % 2;
-      voteOptions[String(vote)] += 1;
+      VOTE_OPTIONS[String(vote)] += 1;
+
       // user signs up to MACI
       // eslint-disable-next-line no-await-in-loop
       await signup({
@@ -233,29 +238,36 @@ describe("E2E Deployment Tests", () => {
         ivcpDataArg: zeroUint256Encoded,
         signer,
       });
-
-      // user publishes a vote
-      // eslint-disable-next-line no-await-in-loop
-      const publishData = await publish({
-        publicKey: userPublicKey,
-        stateIndex: 1n,
-        voteOptionIndex: BigInt(vote),
-        nonce: 1n,
-        pollId: BigInt(pollId),
-        newVoteWeight: 1n,
-        maciAddress,
-        salt: generateRandomSalt(),
-        privateKey: userPrivateKey,
-        signer,
-      });
-
-      expect(publishData.hash).not.toBe(zeroAddress);
     }
   });
 
+  test("should deploy a subgraph correctly", async () => {
+    const blockNumber = await publicClient.getBlockNumber();
+    const response = await fetch(`${TEST_URL}/subgraph/deploy`, {
+      method: "POST",
+      headers: {
+        Authorization: encryptedHeader,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        maciContractAddress: maciAddress,
+        startBlock: Number(blockNumber),
+        network: CHAIN,
+        name: process.env.SUBGRAPH_NAME,
+        tag: `v0.0.${blockNumber}`, // different versions per test using block number
+      } as IDeploySubgraphArgs),
+    });
+    const body = (await response.json()) as { url: string };
+    const { url } = body;
+
+    expect(response.status).toBe(201);
+    expect(body.url).toBeDefined();
+    expect(REGEX_SUBGRAPH.test(url)).toBe(true);
+  });
+
   test("should merge correctly", async () => {
-    await sleep(10000);
-    const response = await fetch(`${LOCALHOST}/v1/proof/merge`, {
+    await sleep(pollDuration * 2000);
+    const response = await fetch(`${TEST_URL}/proof/merge`, {
       method: "POST",
       headers: {
         Authorization: encryptedHeader,
@@ -266,8 +278,63 @@ describe("E2E Deployment Tests", () => {
         pollId: Number(pollId),
         approval,
         sessionKeyAddress,
-        chain: ESupportedNetworks.OPTIMISM_SEPOLIA,
+        chain: CHAIN,
       } as IMergeArgs),
+    });
+
+    expect(response.status).toBe(201);
+  });
+
+  test("should generate proofs correctly", async () => {
+    const blockNumber = await publicClient.getBlockNumber();
+    const encryptedCoordinatorPrivateKey = await encryptWithCoordinatorRSAPublicKey(
+      coordinatorMACIKeypair.privateKey.serialize(),
+    );
+
+    const response = await fetch(`${TEST_URL}/proof/generate`, {
+      method: "POST",
+      headers: {
+        Authorization: encryptedHeader,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        poll: Number(pollId),
+        maciContractAddress: maciAddress,
+        useQuadraticVoting: testPollDeploymentConfig.useQuadraticVoting,
+        encryptedCoordinatorPrivateKey,
+        startBlock: Number(blockNumber) - 100,
+        endBlock: Number(blockNumber) + 100,
+        blocksPerBatch: 20,
+        approval,
+        sessionKeyAddress,
+        chain: CHAIN,
+      } as IGenerateArgs),
+    });
+    const body = (await response.json()) as IGenerateData;
+
+    expect(response.status).toBe(201);
+    expect(body.processProofs).toBeDefined();
+    expect(body.processProofs.length).toBeGreaterThan(0);
+    expect(body.tallyProofs).toBeDefined();
+    expect(body.tallyProofs.length).toBeGreaterThan(0);
+    expect(body.tallyData).toBeDefined();
+    expect(body.tallyData.results).toBeDefined();
+  });
+
+  test("should submit results on-chain correctly", async () => {
+    const response = await fetch(`${TEST_URL}/proof/submit`, {
+      method: "POST",
+      headers: {
+        Authorization: encryptedHeader,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        pollId: Number(pollId),
+        maciContractAddress: maciAddress,
+        approval,
+        sessionKeyAddress,
+        chain: CHAIN,
+      } as ISubmitProofsArgs),
     });
 
     expect(response.status).toBe(201);

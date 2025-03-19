@@ -424,3 +424,19 @@ export type IFactoryLike<T extends BaseContract> = Factory &
   T & {
     deploy: TypedContractMethod<unknown[], unknown, "nonpayable">;
   };
+
+/**
+ * Type for the account abstraction signer
+ * @dev This is a workaround for the fact that ethers.js does not support account abstraction yet.
+ * If isAA is true, then the transactions will be sent using a account abstraction relayer.
+ * This means that the deploy contract transactions will be normal transactions (with `to` attribute)
+ * and the contract address will be in the transaction logs instead of derived from the sender address.
+ *
+ * This interface helps the deployment scripts to detect and return the correct contract address.
+ */
+export interface AASigner extends Signer {
+  /**
+   * Flag to indicate if the signer is an account abstraction signer
+   */
+  isAA?: boolean;
+}

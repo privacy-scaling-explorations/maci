@@ -33,6 +33,21 @@ export interface IReadProofsResults {
  */
 export interface IGenerateArgs {
   /**
+   * Approval for the session key
+   */
+  approval?: string;
+
+  /**
+   * Session key address
+   */
+  sessionKeyAddress?: Hex;
+
+  /**
+   * Chain
+   */
+  chain: ESupportedNetworks;
+
+  /**
    * Poll id
    */
   poll: number;
@@ -41,11 +56,6 @@ export interface IGenerateArgs {
    * Maci contract address
    */
   maciContractAddress: string;
-
-  /**
-   * Tally contract address
-   */
-  tallyContractAddress: string;
 
   /**
    * Whether to use Qv or NonQv
@@ -116,18 +126,22 @@ export interface IMergeArgs {
    * MACI contract address
    */
   maciContractAddress: string;
+
   /**
    * Poll ID
    */
   pollId: number;
+
   /**
    * Approval for the session key
    */
-  approval: string;
+  approval?: string;
+
   /**
    * Session key address
    */
-  sessionKeyAddress: Hex;
+  sessionKeyAddress?: Hex;
+
   /**
    * Chain
    */
@@ -142,18 +156,22 @@ export interface ISubmitProofsArgs {
    * MACI contract address
    */
   maciContractAddress: string;
+
   /**
    * Poll ID
    */
   pollId: number;
+
   /**
    * Approval for the session key
    */
-  approval: string;
+  approval?: string;
+
   /**
    * Session key address
    */
-  sessionKeyAddress: Hex;
+  sessionKeyAddress?: Hex;
+
   /**
    * Chain
    */

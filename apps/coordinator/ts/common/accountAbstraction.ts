@@ -3,38 +3,17 @@ import { toECDSASigner } from "@zerodev/permissions/signers";
 import { createKernelAccountClient } from "@zerodev/sdk";
 import { getEntryPoint, KERNEL_V3_1 } from "@zerodev/sdk/constants";
 import dotenv from "dotenv";
-import { createBundlerClient, ENTRYPOINT_ADDRESS_V07 } from "permissionless";
-import { createPublicClient, http, type Hex, TransactionReceipt } from "viem";
+import { createPublicClient, http, type Hex } from "viem";
+import { createBundlerClient } from "viem/account-abstraction";
 import { privateKeyToAccount } from "viem/accounts";
 
+import type { BundlerClientType, KernelClientType, PublicClientHTTPType } from "./types";
+
+import { genAlchemyRPCUrl } from "./chain";
 import { ErrorCodes } from "./errors";
 import { ESupportedNetworks, viemChain } from "./networks";
-import { KernelClientType, BundlerClientType, PublicClientHTTPType } from "./types";
 
 dotenv.config();
-
-/**
- * Generate the RPCUrl for Alchemy based on the chain we need to interact with
- *
- * @param network - the network we want to interact with
- * @returns the RPCUrl for the network
- */
-export const genAlchemyRPCUrl = (network: ESupportedNetworks): string => {
-  const rpcAPIKey = process.env.RPC_API_KEY;
-
-  if (!rpcAPIKey) {
-    throw new Error(ErrorCodes.RPC_API_KEY_NOT_SET.toString());
-  }
-
-  switch (network) {
-    case ESupportedNetworks.OPTIMISM_SEPOLIA:
-      return `https://opt-sepolia.g.alchemy.com/v2/${rpcAPIKey}`;
-    case ESupportedNetworks.ETHEREUM_SEPOLIA:
-      return `https://eth-sepolia.g.alchemy.com/v2/${rpcAPIKey}`;
-    default:
-      throw new Error(ErrorCodes.UNSUPPORTED_NETWORK.toString());
-  }
-};
 
 /**
  * Get a public client
@@ -75,31 +54,12 @@ export const getBundlerClient = (chainName: ESupportedNetworks): BundlerClientTy
   createBundlerClient({
     transport: http(getZeroDevBundlerRPCUrl(chainName)),
     chain: viemChain(chainName),
-    entryPoint: ENTRYPOINT_ADDRESS_V07,
   });
-
-/**
- * The topic for the contract creation event
- */
-export const contractCreationEventTopic = "0x4db17dd5e4732fb6da34a148104a592783ca119a1e7bb8829eba6cbadef0b511";
 
 /**
  * The offset for the address in the contract creation event
  */
 export const addressOffset = 26;
-
-/**
- * Get the address of the newly deployed contract from a transaction receipt
- * @param receipt - The transaction receipt
- * @returns The address of the newly deployed contract
- */
-export const getDeployedContractAddress = (receipt: TransactionReceipt): string | undefined => {
-  const log = receipt.logs.find(({ topics }) => topics[0] === contractCreationEventTopic);
-
-  const deployedAddress = log ? `0x${log.topics[1]?.slice(addressOffset)}` : undefined;
-
-  return deployedAddress;
-};
 
 /**
  * Get a Kernel account handle given a session key
@@ -122,19 +82,22 @@ export const getKernelClient = async (
     signer: privateKeyToAccount(sessionKey),
   });
 
-  const sessionKeyAccount = await deserializePermissionAccount(
-    publicClient,
-    getEntryPoint("0.7"),
-    KERNEL_V3_1,
-    approval,
-    sessionKeySigner,
-  );
+  try {
+    const sessionKeyAccount = await deserializePermissionAccount(
+      publicClient,
+      getEntryPoint("0.7"),
+      KERNEL_V3_1,
+      approval,
+      sessionKeySigner,
+    );
+    const kernelClient = createKernelAccountClient({
+      bundlerTransport: http(bundlerUrl),
+      account: sessionKeyAccount,
+      chain: viemChain(chain),
+    });
 
-  const kernelClient = createKernelAccountClient({
-    bundlerTransport: http(bundlerUrl),
-    account: sessionKeyAccount,
-    chain: viemChain(chain),
-  });
-
-  return kernelClient;
+    return kernelClient;
+  } catch (error) {
+    throw new Error(ErrorCodes.INVALID_APPROVAL.toString());
+  }
 };

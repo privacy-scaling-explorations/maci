@@ -8,10 +8,12 @@ import LocalStorageSync from "lowdb/adapters/LocalStorage";
 import path from "path";
 
 import type { TAbi } from "./types";
+import type { AASigner } from "../../ts/types";
 import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import type { ConfigurableTaskDefinition, HardhatRuntimeEnvironment, TaskArguments } from "hardhat/types";
 
 import { error, info, success, warning, logGreen, logMagenta, logRed, logYellow } from "../../ts/logger";
+import { getDeployedContractAddressFromContractReceipt } from "../../ts/utils";
 
 import { ContractStorage } from "./ContractStorage";
 import {
@@ -354,6 +356,18 @@ export class Deployment {
     });
     await contract.deploymentTransaction()!.wait();
 
+    if (signer && (signer as AASigner).isAA) {
+      const { hash } = contract.deploymentTransaction()!;
+      const receipt = await signer.provider?.getTransactionReceipt(hash);
+      const address = getDeployedContractAddressFromContractReceipt(receipt);
+
+      if (address) {
+        // this contract does not have .deploymentTransaction()
+        const realContract = contractFactory.attach(address);
+        return realContract as unknown as T;
+      }
+    }
+
     return contract as unknown as T;
   }
 
@@ -376,6 +390,18 @@ export class Deployment {
       maxPriorityFeePerGas: feeData?.maxPriorityFeePerGas,
     });
     await contract.deploymentTransaction()!.wait();
+
+    if (signer && (signer as AASigner).isAA) {
+      const { hash } = contract.deploymentTransaction()!;
+      const receipt = await signer.provider?.getTransactionReceipt(hash);
+      const address = getDeployedContractAddressFromContractReceipt(receipt);
+
+      if (address) {
+        // this contract does not have .deploymentTransaction()
+        const realContract = contractFactory.attach(address);
+        return realContract as T;
+      }
+    }
 
     return contract as T;
   }

@@ -68,6 +68,7 @@
     "test:erc20_policy": "pnpm run test ./tests/policies/ERC20.test.ts",
     "deploy": "hardhat deploy-full",
     "deploy-poll": "hardhat deploy-poll",
+    "encode-errors": "hardhat encode-errors",
     "verify": "hardhat verify-full",
     "merge": "hardhat merge",
     "prove": "hardhat prove",
