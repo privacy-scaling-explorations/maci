@@ -10,7 +10,6 @@ import { PubKey } from "maci-domainobjs";
 import type { IDeployPollArgs, IPollContractsData } from "./types";
 
 import { contractExists } from "../utils";
-import { parseEventFromLogs } from "../utils/contracts";
 
 import { DEFAULT_INITIAL_VOICE_CREDITS } from "./utils";
 
@@ -130,23 +129,15 @@ export const deployPoll = async ({
   }
 
   // parse DeployPoll log
-  const iface = maciContract.interface;
-  const log = parseEventFromLogs(receipt, iface, "DeployPoll") as unknown as {
-    args: {
-      _pollId: bigint;
-    };
-    name: string;
-  };
-
-  // we are trying to get the poll id from the event logs
-  // if we do not find this log then we throw
-  if (log.name !== "DeployPoll") {
-    throw new Error("Invalid event log");
-  }
+  const events = await maciContract.queryFilter(
+    maciContract.filters.DeployPoll,
+    receipt.blockNumber,
+    receipt.blockNumber,
+  );
+  const log = events[events.length - 1];
 
   // eslint-disable-next-line no-underscore-dangle
   const pollId = log.args._pollId;
-
   const pollContracts = await maciContract.getPoll(pollId);
   const pollContractAddress = pollContracts.poll;
   const messageProcessorContractAddress = pollContracts.messageProcessor;

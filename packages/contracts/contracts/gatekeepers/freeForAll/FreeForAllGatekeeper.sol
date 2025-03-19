@@ -1,20 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import { SignUpGatekeeper } from "./SignUpGatekeeper.sol";
+import { BasePolicy } from "@excubiae/contracts/policy/BasePolicy.sol";
 
 /// @title FreeForAllGatekeeper
 /// @notice A SignUpGatekeeper which allows anyone to sign up.
-contract FreeForAllGatekeeper is SignUpGatekeeper {
+contract FreeForAllGatekeeper is BasePolicy {
   /// @notice Create a new instance of FreeForAllGatekeeper
   // solhint-disable-next-line no-empty-blocks
   constructor() payable {}
-
-  /// @notice Registers the user without any restrictions.
-  /// @param _subject The address of the user
-  /// @param _evidence memory additional data
-  // solhint-disable-next-line no-empty-blocks
-  function enforce(address _subject, bytes calldata _evidence) public override onlyTarget {}
 
   /// @notice Get the trait of the gatekeeper
   /// @return The type of the gatekeeper
