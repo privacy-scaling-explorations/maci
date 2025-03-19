@@ -2,9 +2,9 @@ import { expect } from "chai";
 import { Signer, ZeroAddress } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
-import { deployContract } from "../../ts/deploy";
+import { deployContract, deployZupassSignUpGatekeeper } from "../../ts/deploy";
 import { getDefaultSigner, getSigners } from "../../ts/utils";
-import { MACI, ZupassGatekeeper } from "../../typechain-types";
+import { MACI, ZupassChecker__factory as ZupassCheckerFactory, ZupassGatekeeper } from "../../typechain-types";
 import { STATE_TREE_DEPTH, initialVoiceCreditBalance } from "../constants";
 import { deployTestContracts } from "../utils";
 
@@ -34,14 +34,15 @@ describe("Zupass Gatekeeper", () => {
     const verifier = await deployContract("ZupassGroth16Verifier", signer, true);
     const verifierAddress = await verifier.getAddress();
     signerAddress = await signer.getAddress();
-    zupassGatekeeper = await deployContract(
-      "ZupassGatekeeper",
+    zupassGatekeeper = await deployZupassSignUpGatekeeper(
+      {
+        eventId: validEventId,
+        signer1: zupassSigner[0],
+        signer2: zupassSigner[1],
+        verifier: verifierAddress,
+      },
       signer,
       true,
-      validEventId,
-      zupassSigner[0],
-      zupassSigner[1],
-      verifierAddress,
     );
   });
 
@@ -89,9 +90,12 @@ describe("Zupass Gatekeeper", () => {
     });
 
     it("should not register a user if the register function is called with invalid watermark", async () => {
+      const zupassCheckerAddress = await zupassGatekeeper.BASE_CHECKER();
+      const zupassChecker = ZupassCheckerFactory.connect(zupassCheckerAddress, signer);
+
       await expect(
         maciContract.signUp(user.pubKey.asContractParam(), dataWithInvalidWatermark),
-      ).to.be.revertedWithCustomError(zupassGatekeeper, "InvalidWatermark");
+      ).to.be.revertedWithCustomError(zupassChecker, "InvalidWatermark");
     });
 
     it("should register a user if the register function is called with the valid data", async () => {
