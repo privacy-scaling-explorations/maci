@@ -5,37 +5,39 @@ sidebar_label: Integrating
 sidebar_position: 5
 ---
 
-MACI can be used in any protocol that requires collusion resistance, for instance it has been proven to be quite efficient when integrated in quadratic funding applications such as [clr.fund](https://github.com/clrfund/monorepo) and [qfi](https://github.com/quadratic-funding/qfi/tree/feat/code-freeze).
+MACI can be used in any protocol that requires collusion resistance, for instance it has been proven to be quite efficient when integrated in quadratic funding applications such as [clr.fund](https://github.com/clrfund/monorepo), [qfi](https://github.com/quadratic-gardens/qfi/tree/main), [MACI Platform](https://github.com/privacy-scaling-explorations/maci-platform), and the [Gitcoin Allo Stack](https://github.com/gitcoinco/MACI_QF).
 
-Here we will be looking at how the smart contracts can be integrated. Please note that this will be expanded as QFI is updated to use the newest version of MACI. Should you decide to integrate MACI in the meantime, feel free to open an issue on the GitHub repo.
+Here we will be looking at how the smart contracts can be integrated.
 
 ## MACI Contract
 
-The MACI contract is the core of the protocol. Contracts can inherit from MACI and thus expose the `signUp` and `deployPoll` functions. As with standalone MACI, one would need to deploy a [sign up gatekeeper](/docs/technical-references/smart-contracts/Gatekeepers) as well as the [voice credit proxy](/docs/technical-references/smart-contracts/VoiceCreditProxy).
+The MACI contract is the core of the protocol. Contracts can inherit from MACI and thus expose the `signUp` and `deployPoll` functions. As with standalone MACI, one would need to deploy a [sign up gatekeeper](/docs/technical-references/smart-contracts/Gatekeepers).
 
 As an example, a [contract](https://github.com/ctrlc03/minimalQF/blob/main/contracts/MinimalQf.sol#L113) could inherit from MACI and allows sign up via a custom signup function.
 
 ```javascript
-function signUp(
-    PubKey memory _pubKey,
-    bytes memory _signUpGatekeeperData,
-    bytes memory _initialVoiceCreditProxyData
-) public override {
-  // the amount must be set in the initial voice credit proxy data
-  uint256 amount = abi.decode(_initialVoiceCreditProxyData, (uint256));
+/// @inheritdoc IMACI
+function signUp(PubKey memory _pubKey, bytes memory _signUpGatekeeperData) public virtual {
+  // ensure we do not have more signups than what the circuits support
+  if (leanIMTData.size >= maxSignups) revert TooManySignups();
 
-  // transfer tokens to this contract
-  nativeToken.safeTransferFrom(msg.sender, address(this), amount);
+  // ensure that the public key is on the baby jubjub curve
+  if (!CurveBabyJubJub.isOnCurve(_pubKey.x, _pubKey.y)) {
+    revert InvalidPubKey();
+  }
 
-  // the voice credits will be the amount divided by the factor
-  // the factor should be decimals of the token
-  // normal signup
-  super.signUp(_pubKey, _signUpGatekeeperData, _initialVoiceCreditProxyData);
+  // Register the user via the sign-up gatekeeper. This function should
+  // throw if the user has already registered or if ineligible to do so.
+  signUpGatekeeper.enforce(msg.sender, _signUpGatekeeperData);
 
-  // store the address of the user signing up and amount so they can be refunded just in case
-  // the round is cancelled
-  // they will be able to vote from different addresses though
-  contributors[msg.sender] = amount;
+  // Hash the public key and insert it into the tree.
+  uint256 pubKeyHash = hashLeftRight(_pubKey.x, _pubKey.y);
+  uint256 stateRoot = InternalLeanIMT._insert(leanIMTData, pubKeyHash);
+
+  // Store the current state tree root in the array
+  stateRootsOnSignUp.push(stateRoot);
+
+  emit SignUp(leanIMTData.size - 1, block.timestamp, _pubKey.x, _pubKey.y);
 }
 ```
 
@@ -64,10 +66,72 @@ contract ConstantInitialVoiceCreditProxy is InitialVoiceCreditProxy {
 
 ## Poll Contract
 
-On the other hand, the Poll contract can be inherited to expose functionality such as publishing of messages/commands.
+On the other hand, the Poll contract can be inherited to expand functionality such as publishing of messages/commands, or the logic that allows users to register for the poll (AKA poll joining).
 
-For instance, should it be required to gatekeep who can send a message, overriding the `publishMessage` function could be the best way to go.
+```javascript
+function joinPoll(
+  uint256 _nullifier,
+  PubKey calldata _pubKey,
+  uint256 _stateRootIndex,
+  uint256[8] calldata _proof,
+  bytes memory _signUpGatekeeperData,
+  bytes memory _initialVoiceCreditProxyData
+) external virtual isWithinVotingDeadline {
+  // Whether the user has already joined
+  if (pollNullifiers[_nullifier]) {
+    revert UserAlreadyJoined();
+  }
+
+  // Set nullifier for user's private key
+  pollNullifiers[_nullifier] = true;
+
+  // Verify user's proof
+  if (!verifyJoiningPollProof(_nullifier, _stateRootIndex, _pubKey, _proof)) {
+    revert InvalidPollProof();
+  }
+
+  // Check if the user is eligible to join the poll
+  extContracts.gatekeeper.enforce(msg.sender, _signUpGatekeeperData);
+
+  // Get the user's voice credit balance.
+  uint256 voiceCreditBalance = extContracts.initialVoiceCreditProxy.getVoiceCredits(
+    msg.sender,
+    _initialVoiceCreditProxyData
+  );
+
+  // Store user in the pollStateTree
+  uint256 stateLeaf = hashStateLeaf(StateLeaf(_pubKey, voiceCreditBalance, block.timestamp));
+
+  uint256 stateRoot = InternalLazyIMT._insert(pollStateTree, stateLeaf);
+
+  // Store the current state tree root in the array
+  pollStateRootsOnJoin.push(stateRoot);
+
+  uint256 pollStateIndex = pollStateTree.numberOfLeaves - 1;
+  emit PollJoined(_pubKey.x, _pubKey.y, voiceCreditBalance, block.timestamp, _nullifier, pollStateIndex);
+}
+```
 
 ## Tally Contract
 
 Given the verification functions being exposed by the Tally contract, quadratic funding protocols might require to extend the Tally contract to add distribution logic. Looking at this [example](https://github.com/ctrlc03/minimalQF/blob/main/contracts/MinimalQFTally.sol#L114) the `claimFunds` function is added to a contract inheriting from `Tally`, and uses functions such as `verifyPerVOSpentVoiceCredits` to distribute funds to projects part of a quadratic funding round.
+
+## SDK
+
+Another important component of MACI is the [SDK](https://github.com/privacy-scaling-explorations/maci/tree/dev/packages/sdk). This is a TypeScript library that allows you to interact with MACI.
+
+You can find the following subdirectories, where functions are organised as follows:
+
+- `deploy` - For deployment related code
+- `keys` - For utilities related to MACI keys
+- `maci` - For functions that allow to interact with the MACI contract, such as user signup
+- `poll` - For functions that allow to interact with the Poll contract, such as poll joining
+- `proof` - For functions related to proof generation, and submission on chain
+- `relayer` - For functions that allow to interact with the relayer service
+- `tally` - For functions that allow to interact with the Tally contract
+- `trees` - Utility functions to interact with MACI's merkle trees structures
+- `user` - Function related to user activities such as sign up and poll joining
+- `utils` - Various utility functions that are used across the SDK and more
+- `vote` - Functions that allow to create MACI encrypted votes and submit them on chain
+
+You should find all you need to integrate MACI into your application inside this package. If anything is missing, feel free to open an issue on our repo.

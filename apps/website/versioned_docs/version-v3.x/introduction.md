@@ -131,7 +131,7 @@ MACI is a public good infrastructure that is supported by the [Ethereum Foundati
 - [daodesigner](https://github.com/daodesigner)
 - [0xjei](https://github.com/0xjei)
 
-**Currently, MACI (v1.2.0 and beyond) is maintained and continuously improved by a core development team:**
+**[MACI v1.2 till v3.0](/blog/2024-v2) was primarily developed by:**
 
 - [ctrlc03](https://github.com/ctrlc03)
 - [samajammin](https://github.com/samajammin)
@@ -139,8 +139,15 @@ MACI is a public good infrastructure that is supported by the [Ethereum Foundati
 - [kittybest](https://github.com/kittybest)
 - [crisgarner](https://github.com/crisgarner)
 
+**Currently, MACI (v3.0 and beyond) is maintained and continuously improved by a core development team:**
+
+- [ctrlc03](https://github.com/ctrlc03)
+- [0xmad](https://github.com/0xmad)
+- [nicoserranop](https://github.com/NicoSerranoP)
+- [john](https://github.com/JohnGuilding)
+
 Our core team continues to work on improving the protocol and its documentation with help from our open source community.
 
 :::info
-If you are using one of the previous versions of MACI, see the [MACI v1.2](/docs/v1.2/introduction) documentation.
+If you are using one of the previous versions of MACI, see the [MACI v2.0](/docs/v2.0/introduction) documentation.
 :::

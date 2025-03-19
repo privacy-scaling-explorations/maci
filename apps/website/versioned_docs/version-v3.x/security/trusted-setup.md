@@ -22,6 +22,12 @@ which are available and accessible on
 [p0tion's website](https://ceremony.pse.dev/).
 For more info on trusted setup ceremonies please refer to p0tion's [docs](https://p0tion.super.site/).
 
+## Maci v3.0 Trusted Setup Ceremony
+
+:::danger
+Maci v3.0 Trusted Setup Ceremony has not started yet. Thus for production use cases, please use [MACI v2.0](https://github.com/privacy-scaling-explorations/maci/releases/tag/v2.5.0).
+:::
+
 ## Maci v2.0 Trusted Setup Ceremony (most recent)
 
 :::info

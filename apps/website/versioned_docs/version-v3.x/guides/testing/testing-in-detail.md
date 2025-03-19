@@ -13,7 +13,7 @@ This doc expands on our [introduction to testing](/docs/testing) doc and explain
 
 ### Integration Tests
 
-Integration tests follow a similar fashion of the CLI tests, though they also ensure that the tally results are as expected.
+Integration tests follow a similar fashion of the e2e tests, though they also ensure that the tally results are as expected.
 
 Currently, tests are defined using a JSON file, here is one example:
 
@@ -35,7 +35,7 @@ Finally, the whole process of merging the state and message trees is performed, 
 
 #### How to implement a new test case
 
-To add a new test case, it is quite simple. You can amend the `integrationTests/ts/__tests__/data/suites.json` file and add your test declaration in there.
+To add a new test case, it is quite simple. You can amend the `testing/ts/__tests__/data/suites.json` file and add your test declaration in there.
 
 ```json
 {
@@ -154,7 +154,7 @@ Within the circuits folder, there are a number of tests that are used to verify 
 
 These tests often use mock data from the `core` package. For instance, when testing the `processMessages` circuit, we are required to generate the parameters from the `core` packing, using the `Poll:processMessages` function. The same applies to vote tallying, where we need the `Poll:tally` function to be run first with mock users and vote messages.
 
-All of the tests run using test parameters, usually `10, 2, 1, 2`, aside from the tests inside: [`ceremonyParam`](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/ts/__tests__/CeremonyParams.test.ts) which use the parameters of the latest MACI ceremony. More details on the trusted setup can be found [here](/docs/security/trusted-setup).
+All of the tests run using test parameters, usually `10, 20, 2`, aside from the tests inside: [`ceremonyParam`](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/ts/__tests__/CeremonyParams.test.ts) which use the parameters of the latest MACI ceremony. More details on the trusted setup can be found [here](/docs/security/trusted-setup).
 
 ### Core
 
@@ -170,7 +170,7 @@ These tests are used to verify that MACI's primitives such as private keys work 
 
 ## "Manual" Testing
 
-To ensure that the MACI stack works as expected, without having to run the entire test suite (or even just the e2e tests), there is a [bash script](https://github.com/privacy-scaling-explorations/maci/blob/dev/cli/testScript.sh) inside the cli folder which can be used.
+To ensure that the MACI stack works as expected, without having to run the entire test suite (or even just the e2e tests), there is a [bash script](https://github.com/privacy-scaling-explorations/maci/blob/dev/packages/contracts/testScriptLocalhost.sh) inside the contracts folder which can be used.
 
 This script contains a number of actions which touch all of the parts of MACI, and resemble exactly what other e2e tests do.
 
@@ -183,10 +183,9 @@ Looking at this in more details we do the following:
 5. Signup 1 user
 6. Publish 2 messages
 7. Travel in time (local blockchain node) to arrive at the end of the poll
-8. Merge the signups tree
-9. Merge the messages tree
-10. Generate proofs for the message processing and vote tallying
-11. Update the on chain state
-12. Verify that proofs and tally are correct
+8. Merge the tree commitments on chain
+9. Generate proofs for the message processing and vote tallying
+10. Update the on chain state
+11. Verify that proofs and tally are correct
 
 The above is the minimum required to ensure that the stack works as expected, as it encompasses actions from both voters and the coordinator.

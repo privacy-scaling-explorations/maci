@@ -31,7 +31,3 @@ function deploy(DeployPollArgs calldata _args) public virtual returns (address p
   pollAddr = address(poll);
 }
 ```
-
-Upon deployment, the following will happen:
-
-- ownership of the `messageAq` contract is transferred to the deployed poll contract

@@ -5,10 +5,11 @@ sidebar_label: zk-SNARK Circuits
 sidebar_position: 1
 ---
 
-MACI has two main zk-SNARK [circuits](https://github.com/privacy-scaling-explorations/maci/tree/dev/circuits):
+MACI has three main zk-SNARK [circuits](https://github.com/privacy-scaling-explorations/maci/tree/dev/circuits):
 
 1. ProcessMessages.circom, which takes a batch of encrypted messages, decrypts them, and generates a proof that the coordinator's local processing was performed correctly. [QV](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/core/qv/processMessages.circom) and [non-QV](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/core/non-qv/processMessages.circom) versions are available.
 2. TallyVotes.circom, which counts votes from users' ballots, batch by batch. [QV](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/core/qv/tallyVotes.circom) and [non-QV](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/core/non-qv/tallyVotes.circom) versions are available.
+3. PollJoining.circom, which allows users to prove they know a private key for a public key signed up to the MACI smart contract, and to register to a specific poll.
 
 The rest of the circuits are utilities templates that are required for the main circuits to work correctly. These include utilities such as float math, conversion of private keys, and Poseidon hashing/encryption.
 
@@ -30,7 +31,11 @@ MACI uses [Groth16](https://eprint.iacr.org/2016/260.pdf) as its proving system.
 
 ## How are the circuits used?
 
-The circuits are used by the coordinator (the prover) to prove that they have correctly processed a batch of messages and tallied the votes correctly. This happens after a Poll has completed, and the coordinator has merged the state and message trees. The coordinator then generates a proof for each batch of messages, and submits them to the contract. The contract then verifies the proofs and updates the commitments on chain.
+The process messages and tally circuits are used by the coordinator (the prover) to prove that they have correctly processed a batch of messages and tallied the votes correctly. This happens after a Poll has completed, and the coordinator has merged the state and message trees. The coordinator then generates a proof for each batch of messages, and submits them to the contract. The contract then verifies the proofs and updates the commitments on chain.
+
+The poll joining circuit are used by users to prove that they know a private key for a public key signed up to the MACI smart contract, and to register to a specific poll. This happens when a user wants to register to a poll.
+
+Furthermore, an optional circuit is available to prove that a user has been registered to a specific poll. This is to be used when offchain voting is enabled, so that the coordinator relayer can use it as a way to prevent spam.
 
 ## How do the Circuits fit in a voting round?
 
