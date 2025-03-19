@@ -22,6 +22,30 @@ The main functions of the contract are as follows:
 The `publishMessage` function looks as follows:
 
 ```solidity
+function publishMessage(Message calldata _message, PubKey calldata _encPubKey) public virtual isOpenForVoting {
+  // check if the public key is on the curve
+  if (!CurveBabyJubJub.isOnCurve(_encPubKey.x, _encPubKey.y)) {
+    revert InvalidPubKey();
+  }
+
+  // cannot realistically overflow
+  unchecked {
+    numMessages++;
+  }
+
+  // compute current message hash
+  uint256 messageHash = hashMessageAndEncPubKey(_message, _encPubKey);
+
+  // update current message chain hash
+  updateChainHash(messageHash);
+
+  emit PublishMessage(_message, _encPubKey);
+}
+```
+
+The `publishMessageBatch` function looks as follows:
+
+```solidity
 function publishMessageBatch(Message[] calldata _messages, PubKey[] calldata _encPubKeys) public virtual {
   if (_messages.length != _encPubKeys.length) {
     revert InvalidBatchLength();
@@ -79,9 +103,9 @@ function mergeState() public isAfterVotingDeadline {
 }
 ```
 
-The function will store the state root from the MACI contract, create a commitment by hashing this merkle root, an empty ballot root stored in the `emptyBallotRoots` mapping, and a zero as salt. The commitment will be stored in the `currentSbCommitment` variable. Finally, it will store the total number of signups, and calculate the actual depth of the state tree. This information will be used when processing messages and tally to ensure proof validity.
+The function will store the state root from the MACI contract, create a commitment by hashing this merkle root, an empty ballot root stored in the `emptyBallotRoot` variable, and a zero as salt. The commitment will be stored in the `currentSbCommitment` variable. Finally, it will store the total number of signups, and calculate the actual depth of the state tree. This information will be used when processing messages and tally to ensure proof validity.
 
-The `emptyBallotRoots` mapping is used to store the empty ballot roots for each vote option tree depth. For instance, if the vote option tree depth is 5, a build script will generate the following values (this assumes that the state tree depth is 10):
+The `emptyBallotRoot` value is used to store the empty ballot root for the configured vote option tree depth. For instance, if the vote option tree depth is 5, a build script will generate the following values (this assumes that the state tree depth is 10):
 
 ```javascript
 emptyBallotRoots[0] = uint256(16015576667038038422103932363190100635991292382181099511410843174865570503661);

@@ -21,7 +21,7 @@ To install MACI you need to run the following commands:
 ```bash
 git clone https://github.com/privacy-scaling-explorations/maci.git && \
 cd maci && \
-pnpm i && \
+pnpm install && \
 pnpm run build
 ```
 
@@ -68,6 +68,14 @@ Currently, the ceremony artifacts work with MACI version up to 2.x
 
 ## Deploy Contracts
 
+### Generate Coordinator Keys
+
+In order to run MACI polls, a coordinator is required to publish their MACI public key. You will need to generate a MACI keypair, and treat the private key just as your ethereum private keys. Please store them in a safe place as you won't be able to finish a round if you lose access, or if compromised a bad actor could decrypt the vote and publish them online. You can generate a new key pair using maci-cli by running the following command in the root of the project:
+
+```bash
+pnpm run genMaciKeyPair
+```
+
 ### Set the .env
 
 Head to the `packages/contracts` folder and copy the `.env.example` file.
@@ -85,21 +93,12 @@ NETWORK_RPC_URL = "the_eth_provider_url";
 NETWORK_ETHERSCAN_API_KEY = "etherscan api key";
 ```
 
-### Generate Coordinator Keys
-
-In order to run MACI polls, a coordinator is required to publish their MACI public key. You will need to generate a MACI keypair, and treat the private key just as your ethereum private keys. Please store them in a safe place as you won't be able to finish a round if you lose access, or if compromised a bad actor could decrypt the vote and publish them online. You can generate a new key pair using maci-cli by running the following commands:
-
-```bash
-cd packages/cli && \
-node build/ts/index.js genMaciKeyPair
-```
-
 ### Set the configuration file
 
-Head back to the contracts folder and copy the config example and update the fields as necessary:
+In the folder and copy the config example and update the fields as necessary:
 
 ```bash
-cd ../contracts && \
+cd ./packages/contracts && \
 cp deploy-config-example.json deploy-config.json
 
 ```

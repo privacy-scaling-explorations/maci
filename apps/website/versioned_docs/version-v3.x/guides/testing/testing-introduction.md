@@ -84,8 +84,7 @@ Unless you wish to generate a fresh set of `.zkey` files, you should obtain
 them from someone who has performed a multi-party trusted setup for said
 circuits.
 
-Note the locations of the `.zkey` files as the CLI requires them as
-command-line flags.
+Note the locations of the `.zkey` files as the smart contract tasks require them as part of the JSON configuration file.
 
 For testing purposes you can download the required artifacts using the [`download-zkeys:test`](https://github.com/privacy-scaling-explorations/maci/blob/dev/package.json#L15). The script will place all required artifacts inside the `cli/zkeys` folder.
 
@@ -98,19 +97,19 @@ From the root folder, run:
 **for c++ witness generator**
 
 ```bash
-pnpm build:circuits-c -- --outPath ../cli/zkeys
+pnpm build:circuits-c -- --outPath ../testing/zkeys
 ```
 
 **for wasm witness generator**
 
 ```bash
-pnpm build:circuits-wasm -- --outPath ../cli/zkeys
+pnpm build:circuits-wasm -- --outPath ../testing/zkeys
 ```
 
 **generate zkeys**
 
 ```bash
-pnpm setup:zkeys --outPath ../cli/zkeys
+pnpm setup:zkeys --outPath ../testing/zkeys
 ```
 
 ### Check the Rapidsnark binary
@@ -119,19 +118,19 @@ Next, ensure that the `prover` binary of `rapidsnark` is in
 `~/rapidsnark/build/prover`.
 
 :::info
-This step is only required if you wish to use rapidsnark, for faster proof generation. You can also use the WASM witnesses provided in the `cli/zkeys` folder.
+This step is only required if you wish to use rapidsnark, for faster proof generation. You can also use the WASM witnesses provided in the `testing/zkeys` folder.
 :::
 
 ### Run CLI tests
 
-You can find the tests in `maci/cli/tests`.
+You can find the tests in `maci/testing/ts/__tests__`.
 
 To run the tests first start a hardhat node in the background:
 
 ```bash
 cd packages/contracts
 pnpm run hardhat &
-cd ../cli
+cd ../testing/ts
 ```
 
 Then run the tests (this will run all tests):
@@ -152,12 +151,8 @@ To run e2e tests with normal voting (not quadratic voting):
 pnpm run test:e2e-non-qv
 ```
 
-### Run integration tests
-
-You can find the tests in `maci/integrationTests/`.
-
-You can run them with:
+To run integration tests:
 
 ```bash
-pnpm run test
+pnpm run test:integration
 ```
