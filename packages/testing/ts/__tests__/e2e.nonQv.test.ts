@@ -117,10 +117,10 @@ describe("e2e tests with non quadratic voting", function test() {
     const user = new Keypair();
 
     before(async () => {
-      const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [signupGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
       const signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
 
-      const pollGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [pollGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
       const pollGatekeeperContractAddress = await pollGatekeeper.getAddress();
 
       // deploy the smart contracts
@@ -198,10 +198,10 @@ describe("e2e tests with non quadratic voting", function test() {
     const user = new Keypair();
 
     before(async () => {
-      const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [signupGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
       const signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
 
-      const pollGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [pollGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
       const pollGatekeeperContractAddress = await pollGatekeeper.getAddress();
 
       // deploy the smart contracts

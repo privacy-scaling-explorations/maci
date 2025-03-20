@@ -56,7 +56,7 @@ export const deployPoll = async ({
   let signupGatekeeperContractAddress = gatekeeperContractAddress;
 
   if (!signupGatekeeperContractAddress) {
-    const contract = await deployFreeForAllSignUpGatekeeper(signer, true);
+    const [contract] = await deployFreeForAllSignUpGatekeeper(signer, true);
     signupGatekeeperContractAddress = await contract.getAddress();
   }
 

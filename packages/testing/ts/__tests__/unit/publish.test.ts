@@ -60,10 +60,10 @@ describe("publish", function test() {
   before(async () => {
     signer = await getDefaultSigner();
 
-    const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+    const [signupGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
     const signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
 
-    const pollGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+    const [pollGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
     const pollGatekeeperContractAddress = await pollGatekeeper.getAddress();
 
     const initialVoiceCreditProxy = await deployConstantInitialVoiceCreditProxy(

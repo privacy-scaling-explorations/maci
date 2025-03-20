@@ -24,7 +24,7 @@ describe("signup", function test() {
   // before all tests we deploy the vk registry contract and set the verifying keys
   before(async () => {
     signer = await getDefaultSigner();
-    const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+    const [signupGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
     const signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
 
     // we deploy the vk registry contract

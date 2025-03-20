@@ -4,12 +4,13 @@ import { Keypair } from "maci-domainobjs";
 
 import { deployAnonAadhaarGatekeeper, deployContract } from "../../ts/deploy";
 import { getDefaultSigner, getSigners } from "../../ts/utils";
-import { MACI, AnonAadhaarGatekeeper, MockAnonAadhaar } from "../../typechain-types";
+import { MACI, AnonAadhaarGatekeeper, MockAnonAadhaar, AnonAadhaarChecker } from "../../typechain-types";
 import { STATE_TREE_DEPTH, initialVoiceCreditBalance } from "../constants";
 import { deployTestContracts } from "../utils";
 
 describe("AnonAadhaar Gatekeeper", () => {
   let anonAadhaarGatekeeper: AnonAadhaarGatekeeper;
+  let anonAadhaarChecker: AnonAadhaarChecker;
   let mockAnonAadhaar: MockAnonAadhaar;
   let signer: Signer;
   let signerAddressUint256: bigint;
@@ -38,7 +39,13 @@ describe("AnonAadhaar Gatekeeper", () => {
     mockAnonAadhaar = await deployContract("MockAnonAadhaar", signer, true);
     const mockAnonAadhaarAddress = await mockAnonAadhaar.getAddress();
     signerAddress = await signer.getAddress();
-    anonAadhaarGatekeeper = await deployAnonAadhaarGatekeeper(mockAnonAadhaarAddress, nullifierSeed, signer, true);
+    [anonAadhaarGatekeeper, anonAadhaarChecker] = await deployAnonAadhaarGatekeeper(
+      mockAnonAadhaarAddress,
+      nullifierSeed,
+      signer,
+      true,
+    );
+
     signerAddressUint256 = BigInt(signerAddress);
     encodedProof = AbiCoder.defaultAbiCoder().encode(
       ["uint256", "uint256", "uint256", "uint256", "uint256[4]", "uint256[8]"],
@@ -120,7 +127,7 @@ describe("AnonAadhaar Gatekeeper", () => {
 
       await expect(
         maciContract.signUp(user.pubKey.asContractParam(), encodedInvalidNullifierSeedProof),
-      ).to.be.revertedWithCustomError(anonAadhaarGatekeeper, "InvalidNullifierSeed");
+      ).to.be.revertedWithCustomError(anonAadhaarChecker, "InvalidNullifierSeed");
     });
 
     it("should revert if the signal is invalid", async () => {
@@ -137,13 +144,13 @@ describe("AnonAadhaar Gatekeeper", () => {
       );
       await expect(
         maciContract.signUp(user.pubKey.asContractParam(), encodedInvalidProof),
-      ).to.be.revertedWithCustomError(anonAadhaarGatekeeper, "InvalidSignal");
+      ).to.be.revertedWithCustomError(anonAadhaarChecker, "InvalidSignal");
     });
 
     it("should revert if the proof is invalid (mock)", async () => {
       await mockAnonAadhaar.flipValid();
       await expect(maciContract.signUp(user.pubKey.asContractParam(), encodedProof)).to.be.revertedWithCustomError(
-        anonAadhaarGatekeeper,
+        anonAadhaarChecker,
         "InvalidProof",
       );
       await mockAnonAadhaar.flipValid();

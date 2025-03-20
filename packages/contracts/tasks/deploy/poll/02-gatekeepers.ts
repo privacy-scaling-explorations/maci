@@ -5,7 +5,14 @@ import { HatsGatekeeperBase, MACI } from "../../../typechain-types";
 import { EDeploySteps, ESupportedChains } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
-import { EContracts, IDeployParams } from "../../helpers/types";
+import {
+  ECheckerFactories,
+  ECheckers,
+  EContracts,
+  EGatekeeperFactories,
+  EGatekeepers,
+  IDeployParams,
+} from "../../helpers/types";
 
 const deployment = Deployment.getInstance();
 const storage = ContractStorage.getInstance();
@@ -100,15 +107,43 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
     }
 
     if (!skipDeployFreeForAllGatekeeper) {
-      const freeForAllGatekeeperContract = await deployFreeForAllSignUpGatekeeper(deployer);
+      const [
+        freeForAllGatekeeperContract,
+        freeForAllCheckerContract,
+        freeForAllGatekeeperFactoryContract,
+        freeForAllCheckerFactoryContract,
+      ] = await deployFreeForAllSignUpGatekeeper(deployer);
 
-      await storage.register({
-        id: EContracts.FreeForAllGatekeeper,
-        key: `poll-${pollId}`,
-        contract: freeForAllGatekeeperContract,
-        args: [],
-        network: hre.network.name,
-      });
+      await Promise.all([
+        storage.register({
+          id: EContracts.FreeForAllGatekeeper,
+          key: `poll-${pollId}`,
+          contract: freeForAllGatekeeperContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: ECheckers.FreeForAll,
+          key: `poll-${pollId}`,
+          contract: freeForAllCheckerContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: EGatekeeperFactories.FreeForAll,
+          key: `poll-${pollId}`,
+          contract: freeForAllGatekeeperFactoryContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: ECheckerFactories.FreeForAll,
+          key: `poll-${pollId}`,
+          contract: freeForAllCheckerFactoryContract,
+          args: [],
+          network: hre.network.name,
+        }),
+      ]);
     }
 
     const isSupportedEASGatekeeperNetwork = ![ESupportedChains.Hardhat, ESupportedChains.Coverage].includes(
@@ -191,18 +226,46 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
         verifier = await verifierContract.getAddress();
       }
 
-      const zupassGatekeeperContract = await deployZupassSignUpGatekeeper(
+      const [
+        zupassGatekeeperContract,
+        zupassCheckerContract,
+        zupassGatekeeperFactoryContract,
+        zupassCheckerFactoryContract,
+      ] = await deployZupassSignUpGatekeeper(
         { eventId: validEventId, signer1: validSigner1, signer2: validSigner2, verifier },
         deployer,
       );
 
-      await storage.register({
-        id: EContracts.ZupassGatekeeper,
-        key: `poll-${pollId}`,
-        contract: zupassGatekeeperContract,
-        args: [],
-        network: hre.network.name,
-      });
+      await Promise.all([
+        storage.register({
+          id: EGatekeepers.Zupass,
+          key: `poll-${pollId}`,
+          contract: zupassGatekeeperContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: ECheckers.Zupass,
+          key: `poll-${pollId}`,
+          contract: zupassCheckerContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: EGatekeeperFactories.Zupass,
+          key: `poll-${pollId}`,
+          contract: zupassGatekeeperFactoryContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: ECheckerFactories.Zupass,
+          key: `poll-${pollId}`,
+          contract: zupassCheckerFactoryContract,
+          args: [],
+          network: hre.network.name,
+        }),
+      ]);
     }
 
     if (!skipDeploySemaphoreGatekeeper) {

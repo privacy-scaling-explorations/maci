@@ -6,7 +6,7 @@ import { BaseChecker } from "@excubiae/contracts/checker/BaseChecker.sol";
 import { ZupassGroth16Verifier } from "./ZupassGroth16Verifier.sol";
 
 /// @title ZupassChecker
-/// @notice Free for all validator.
+/// @notice Zupass validator.
 /// @dev Extends BaseChecker to implement Zupass validation logic.
 contract ZupassChecker is BaseChecker {
   /// @notice the Zupass event UUID converted to bigint
@@ -57,17 +57,25 @@ contract ZupassChecker is BaseChecker {
     );
 
     // Verify proof
-    if (!verifier.verifyProof(pA, pB, pC, pubSignals)) revert InvalidProof();
+    if (!verifier.verifyProof(pA, pB, pC, pubSignals)) {
+      revert InvalidProof();
+    }
 
     // Event id is stored at index 1
-    if (pubSignals[1] != validEventId) revert InvalidEventId();
+    if (pubSignals[1] != validEventId) {
+      revert InvalidEventId();
+    }
 
     // Signers are stored at index 13 and 14
-    if (pubSignals[13] != validSigner1 || pubSignals[14] != validSigner2) revert InvalidSigners();
+    if (pubSignals[13] != validSigner1 || pubSignals[14] != validSigner2) {
+      revert InvalidSigners();
+    }
 
     // Watermark is stored at index 37
     // user address converted to bigint is used as the watermark
-    if (pubSignals[37] != uint256(uint160(subject))) revert InvalidWatermark();
+    if (pubSignals[37] != uint256(uint160(subject))) {
+      revert InvalidWatermark();
+    }
 
     return true;
   }

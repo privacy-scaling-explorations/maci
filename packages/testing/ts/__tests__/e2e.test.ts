@@ -133,10 +133,10 @@ describe("e2e tests", function test() {
     const user = new Keypair();
 
     before(async () => {
-      const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [signupGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
       const signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
 
-      const pollGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [pollGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
       const pollGatekeeperContractAddress = await pollGatekeeper.getAddress();
 
       // deploy the smart contracts
@@ -235,10 +235,10 @@ describe("e2e tests", function test() {
     const users = [new Keypair(), new Keypair(), new Keypair(), new Keypair()];
 
     before(async () => {
-      const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [signupGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
       const signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
 
-      const pollGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [pollGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
       const pollGatekeeperContractAddress = await pollGatekeeper.getAddress();
 
       // deploy the smart contracts
@@ -541,10 +541,10 @@ describe("e2e tests", function test() {
     const user = new Keypair();
 
     before(async () => {
-      const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [signupGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
       const signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
 
-      const pollGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [pollGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
       const pollGatekeeperContractAddress = await pollGatekeeper.getAddress();
 
       // deploy the smart contracts
@@ -668,10 +668,10 @@ describe("e2e tests", function test() {
     const users = Array.from({ length: 30 }, () => new Keypair());
 
     before(async () => {
-      const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [signupGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
       const signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
 
-      const pollGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [pollGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
       const pollGatekeeperContractAddress = await pollGatekeeper.getAddress();
 
       // deploy the smart contracts
@@ -772,10 +772,10 @@ describe("e2e tests", function test() {
     const users = Array.from({ length: 30 }, () => new Keypair());
 
     before(async () => {
-      const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [signupGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
       const signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
 
-      const pollGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [pollGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
       const pollGatekeeperContractAddress = await pollGatekeeper.getAddress();
 
       // deploy the smart contracts
@@ -931,10 +931,10 @@ describe("e2e tests", function test() {
     const users = Array.from({ length: 4 }, () => new Keypair());
 
     before(async () => {
-      const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [signupGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
       const signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
 
-      const pollGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [pollGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
       const pollGatekeeperContractAddress = await pollGatekeeper.getAddress();
 
       // deploy the smart contracts
@@ -1070,7 +1070,7 @@ describe("e2e tests", function test() {
     });
 
     it("should deploy a new poll", async () => {
-      const pollGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [pollGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
       const pollGatekeeperContractAddress = await pollGatekeeper.getAddress();
 
       const startDate = await getBlockTimestamp(signer);
@@ -1253,7 +1253,7 @@ describe("e2e tests", function test() {
     });
 
     before(async () => {
-      const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [signupGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
       const signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
 
       // deploy the smart contracts
@@ -1265,7 +1265,7 @@ describe("e2e tests", function test() {
     });
 
     it("should run the first poll", async () => {
-      const pollGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [pollGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
       const pollGatekeeperContractAddress = await pollGatekeeper.getAddress();
 
       const startDate = await getBlockTimestamp(signer);
@@ -1398,7 +1398,7 @@ describe("e2e tests", function test() {
       const startDate = await getBlockTimestamp(signer);
 
       {
-        const pollGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+        const [pollGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
         const pollGatekeeperContractAddress = await pollGatekeeper.getAddress();
 
         // deploy a poll contract
@@ -1417,7 +1417,7 @@ describe("e2e tests", function test() {
       }
 
       {
-        const pollGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+        const [pollGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
         const pollGatekeeperContractAddress = await pollGatekeeper.getAddress();
 
         // deploy a poll contract
@@ -1687,10 +1687,10 @@ describe("e2e tests", function test() {
     });
 
     before(async () => {
-      const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [signupGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
       const signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
 
-      const pollGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [pollGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
       const pollGatekeeperContractAddress = await pollGatekeeper.getAddress();
 
       // deploy the smart contracts

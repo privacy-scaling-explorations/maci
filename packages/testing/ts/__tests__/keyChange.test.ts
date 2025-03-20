@@ -129,10 +129,10 @@ describe("keyChange tests", function test() {
     const expectedPerVoteOptionTally = (initialVoteAmount - 1n) ** 2n;
 
     before(async () => {
-      const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [signupGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
       const signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
 
-      const pollGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [pollGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
       const pollGatekeeperContractAddress = await pollGatekeeper.getAddress();
 
       // deploy the smart contracts
@@ -282,10 +282,10 @@ describe("keyChange tests", function test() {
     const expectedPerVoteOptionTally = initialVoteAmount ** 2n;
 
     before(async () => {
-      const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [signupGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
       const signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
 
-      const pollGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [pollGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
       const pollGatekeeperContractAddress = await pollGatekeeper.getAddress();
 
       // deploy the smart contracts
@@ -421,10 +421,10 @@ describe("keyChange tests", function test() {
     const expectedPerVoteOptionTally = (initialVoteAmount - 3n) ** 2n;
 
     before(async () => {
-      const signupGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [signupGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
       const signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
 
-      const pollGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [pollGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
       const pollGatekeeperContractAddress = await pollGatekeeper.getAddress();
 
       // deploy the smart contracts

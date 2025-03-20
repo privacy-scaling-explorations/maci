@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import { IAnonAadhaar } from "../interfaces/IAnonAadhaar.sol";
+import { IAnonAadhaar } from "../anonAadhaar/IAnonAadhaar.sol";
 
 /// @title MockAnonAadhaar
 /// @notice A mock contract to test the AnonAadhaarGatekeeper

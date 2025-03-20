@@ -570,6 +570,7 @@ export enum EGatekeepers {
   Semaphore = "SemaphoreGatekeeper",
   MerkleProof = "MerkleProofGatekeeper",
   SignUp = "SignUpGatekeeper",
+  AnonAadhaar = "AnonAadhaarGatekeeper",
 }
 
 /**
@@ -587,6 +588,7 @@ export enum EGatekeeperFactories {
   Semaphore = "SemaphoreGatekeeperFactory",
   MerkleProof = "MerkleProofGatekeeperFactory",
   SignUp = "SignUpGatekeeperFactory",
+  AnonAadhaar = "AnonAadhaarGatekeeperFactory",
 }
 
 /**
@@ -604,6 +606,7 @@ export enum ECheckers {
   Semaphore = "SemaphoreChecker",
   MerkleProof = "MerkleProofChecker",
   SignUp = "SignUpChecker",
+  AnonAadhaar = "AnonAadhaarChecker",
 }
 
 /**
@@ -621,6 +624,7 @@ export enum ECheckerFactories {
   Semaphore = "SemaphoreCheckerFactory",
   MerkleProof = "MerkleProofCheckerFactory",
   SignUp = "SignUpCheckerFactory",
+  AnonAadhaar = "AnonAadhaarCheckerFactory",
 }
 
 /**

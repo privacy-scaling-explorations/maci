@@ -106,7 +106,7 @@ program
       });
 
       if (!signupGatekeeperContractAddress) {
-        const contract = await deployFreeForAllSignUpGatekeeper(signer, true);
+        const [contract] = await deployFreeForAllSignUpGatekeeper(signer, true);
         signupGatekeeperContractAddress = await contract.getAddress();
       }
 
