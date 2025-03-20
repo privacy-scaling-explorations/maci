@@ -14,9 +14,9 @@ contract AnonAadhaarGatekeeperFactory is Factory {
 
   /// @notice Deploys a new AnonAadhaarGatekeeper clone with the specified checker address.
   /// @dev Encodes the checker address and caller as configuration data for the clone.
-  /// @param _checkerAddress Address of the checker to use for validation.
-  function deploy(address _checkerAddress) public {
-    bytes memory data = abi.encode(msg.sender, _checkerAddress);
+  /// @param checkerAddress Address of the checker to use for validation.
+  function deploy(address checkerAddress) public {
+    bytes memory data = abi.encode(msg.sender, checkerAddress);
 
     address clone = super._deploy(data);
 

@@ -50,12 +50,18 @@ import {
   AnonAadhaarGatekeeper__factory as AnonAadhaarGatekeeperFactory,
   AnonAadhaarCheckerFactory as AnonAadhaarCheckerFactoryContract,
   AnonAadhaarGatekeeperFactory as AnonAadhaarGatekeeperFactoryContract,
+  EASGatekeeperFactory as EASGatekeeperFactoryContract,
+  EASCheckerFactory as EASCheckerFactoryContract,
   SignUpGatekeeper,
   FreeForAllChecker,
   BaseChecker,
   ZupassChecker,
   ZupassGatekeeper,
   AnonAadhaarChecker,
+  EASGatekeeper,
+  EASChecker,
+  EASChecker__factory as EASCheckerFactory,
+  EASGatekeeper__factory as EASGatekeeperFactory,
 } from "../typechain-types";
 
 import { genEmptyBallotRoots } from "./genEmptyBallotRoots";
@@ -234,7 +240,7 @@ export const deploySignupTokenGatekeeper = async (
  * Deploy a FreeForAllGatekeeper contract
  * @param signer - the signer to use to deploy the contract
  * @param quiet - whether to suppress console output
- * @returns the deployed FreeForAllGatekeeper contract
+ * @returns the deployed FreeForAllGatekeeper contracts
  */
 export const deployFreeForAllSignUpGatekeeper = async (
   signer?: Signer,
@@ -260,11 +266,45 @@ export const deployFreeForAllSignUpGatekeeper = async (
 };
 
 /**
+ * Deploy a EASGatekeeper contract
+ * @param args - the arguments to deploy gatekeeper
+ * @param signer - the signer to use to deploy the contract
+ * @param quiet - whether to suppress console output
+ * @returns the deployed EASGatekeeper contracts
+ */
+export const deployEASSignUpGatekeeper = async (
+  args: {
+    eas: string;
+    attester: string;
+    schema: Uint8Array | string;
+  },
+  signer?: Signer,
+  quiet = false,
+): Promise<[EASGatekeeper, EASChecker, EASGatekeeperFactoryContract, EASCheckerFactoryContract]> => {
+  const { gatekeeper, checker, gatekeeperProxyFactory, checkerProxyFactory } = await deployGatekeeper<
+    EASChecker,
+    EASGatekeeper,
+    EASCheckerFactoryContract,
+    EASGatekeeperFactoryContract
+  >({
+    gatekeeperFactoryName: EGatekeeperFactories.EAS,
+    checkerFactoryName: ECheckerFactories.EAS,
+    checkerFactory: new EASCheckerFactory(signer),
+    gatekeeperFactory: new EASGatekeeperFactory(signer),
+    checkerArgs: [args.eas, args.attester, args.schema],
+    signer: signer!,
+    quiet,
+  });
+
+  return [gatekeeper, checker, gatekeeperProxyFactory, checkerProxyFactory];
+};
+
+/**
  * Deploy a ZupassGatekeeper contract
  * @param args - the arguments to deploy gatekeeper
  * @param signer - the signer to use to deploy the contract
  * @param quiet - whether to suppress console output
- * @returns the deployed ZupassGatekeeper contract
+ * @returns the deployed ZupassGatekeeper contracts
  */
 export const deployZupassSignUpGatekeeper = async (
   args: {
@@ -334,13 +374,14 @@ export const deploySemaphoreGatekeeper = async (
 
 /**
  * Deploy an AnonAadhaarGatekeeper contract
- * @param verifierAddress - the address of the Verifier contract
- * @param proofValidTime - the time in seconds that a proof is valid for
- * @returns the deployed AnonAadhaarGatekeeper contract
+ * @param args - the arguments to deploy gatekeepert
+ * @returns the deployed AnonAadhaarGatekeeper contracts
  */
 export const deployAnonAadhaarGatekeeper = async (
-  verifierAddress: string,
-  proofValidTime: number,
+  args: {
+    verifierAddress: string;
+    nullifierSeed: string;
+  },
   signer?: Signer,
   quiet = false,
 ): Promise<
@@ -357,7 +398,7 @@ export const deployAnonAadhaarGatekeeper = async (
     checkerFactory: new AnonAadhaarCheckerFactory(signer),
     gatekeeperFactory: new AnonAadhaarGatekeeperFactory(signer),
     signer: signer!,
-    checkerArgs: [verifierAddress, proofValidTime.toString()],
+    checkerArgs: [args.verifierAddress, args.nullifierSeed],
     quiet,
   });
 

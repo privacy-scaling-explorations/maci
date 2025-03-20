@@ -40,8 +40,10 @@ describe("AnonAadhaar Gatekeeper", () => {
     const mockAnonAadhaarAddress = await mockAnonAadhaar.getAddress();
     signerAddress = await signer.getAddress();
     [anonAadhaarGatekeeper, anonAadhaarChecker] = await deployAnonAadhaarGatekeeper(
-      mockAnonAadhaarAddress,
-      nullifierSeed,
+      {
+        verifierAddress: mockAnonAadhaarAddress,
+        nullifierSeed: nullifierSeed.toString(),
+      },
       signer,
       true,
     );

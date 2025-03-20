@@ -8,6 +8,7 @@ import {
   HatsGatekeeperSingle__factory as HatsSingleGatekeeperFactory,
   MerkleProofGatekeeper__factory as MerkleProofGatekeeperFactory,
   ZupassChecker__factory as ZupassCheckerFactory,
+  EASChecker__factory as EASCheckerFactory,
 } from "maci-contracts/typechain-types";
 
 import type {
@@ -136,11 +137,13 @@ export const getEASGatekeeperData = async ({
   const gatekeeperContractAddress = await maciContract.signUpGatekeeper();
 
   const gatekeeperContract = EASGatekeeperFactory.connect(gatekeeperContractAddress, signer);
+  const checkerAddress = await gatekeeperContract.BASE_CHECKER();
+  const checkerContract = EASCheckerFactory.connect(checkerAddress, signer);
 
   const [eas, schema, attester] = await Promise.all([
-    gatekeeperContract.eas(),
-    gatekeeperContract.schema(),
-    gatekeeperContract.attester(),
+    checkerContract.eas(),
+    checkerContract.schema(),
+    checkerContract.attester(),
   ]);
 
   return {
