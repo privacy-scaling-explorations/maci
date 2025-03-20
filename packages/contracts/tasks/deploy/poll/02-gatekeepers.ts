@@ -18,6 +18,8 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
     deployment.setHre(hre);
     const deployer = await deployment.getDeployer();
 
+    const { deployFreeForAllSignUpGatekeeper, deployZupassSignUpGatekeeper } = await import("../../../ts/deploy");
+
     const maciContract = await deployment.getContract<MACI>({ name: EContracts.MACI });
     const pollId = await maciContract.nextPollId();
 
@@ -98,10 +100,7 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
     }
 
     if (!skipDeployFreeForAllGatekeeper) {
-      const freeForAllGatekeeperContract = await deployment.deployContract({
-        name: EContracts.FreeForAllGatekeeper,
-        signer: deployer,
-      });
+      const freeForAllGatekeeperContract = await deployFreeForAllSignUpGatekeeper(deployer);
 
       await storage.register({
         id: EContracts.FreeForAllGatekeeper,
@@ -192,21 +191,16 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
         verifier = await verifierContract.getAddress();
       }
 
-      const zupassGatekeeperContract = await deployment.deployContract(
-        {
-          name: EContracts.ZupassGatekeeper,
-          signer: deployer,
-        },
-        validEventId,
-        validSigner1,
-        validSigner2,
-        verifier,
+      const zupassGatekeeperContract = await deployZupassSignUpGatekeeper(
+        { eventId: validEventId, signer1: validSigner1, signer2: validSigner2, verifier },
+        deployer,
       );
+
       await storage.register({
         id: EContracts.ZupassGatekeeper,
         key: `poll-${pollId}`,
         contract: zupassGatekeeperContract,
-        args: [validEventId.toString(), validSigner1.toString(), validSigner2.toString(), verifier],
+        args: [],
         network: hre.network.name,
       });
     }

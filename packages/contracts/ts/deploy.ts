@@ -1,4 +1,4 @@
-import { type ContractFactory, type Signer, BaseContract } from "ethers";
+import { type ContractFactory, type Signer, BaseContract, type BigNumberish } from "ethers";
 
 import type {
   IDeployGatekeeperArgs,
@@ -40,9 +40,13 @@ import {
   AnonAadhaarGatekeeper,
   FreeForAllGatekeeper__factory as FreeForAllGatekeeperFactory,
   FreeForAllChecker__factory as FreeForAllCheckerFactory,
+  ZupassGatekeeper__factory as ZupassGatekeeperFactory,
+  ZupassChecker__factory as ZupassCheckerFactory,
   SignUpGatekeeper,
   FreeForAllChecker,
   BaseChecker,
+  ZupassChecker,
+  ZupassGatekeeper,
 } from "../typechain-types";
 
 import { genEmptyBallotRoots } from "./genEmptyBallotRoots";
@@ -218,6 +222,36 @@ export const deployFreeForAllSignUpGatekeeper = async (
     checkerFactory: new FreeForAllCheckerFactory(signer),
     gatekeeperFactory: new FreeForAllGatekeeperFactory(signer),
     signer: signer!,
+    quiet,
+  });
+
+  return gatekeeper;
+};
+
+/**
+ * Deploy a ZupassGatekeeper contract
+ * @param args - the arguments to deploy gatekeeper
+ * @param signer - the signer to use to deploy the contract
+ * @param quiet - whether to suppress console output
+ * @returns the deployed ZupassGatekeeper contract
+ */
+export const deployZupassSignUpGatekeeper = async (
+  args: {
+    eventId: BigNumberish;
+    signer1: BigNumberish;
+    signer2: BigNumberish;
+    verifier: string;
+  },
+  signer?: Signer,
+  quiet = false,
+): Promise<ZupassGatekeeper> => {
+  const { gatekeeper } = await deployGatekeeper<ZupassChecker, ZupassGatekeeper, ZupassGatekeeperFactory>({
+    gatekeeperFactoryName: EGatekeeperFactories.Zupass,
+    checkerFactoryName: ECheckerFactories.Zupass,
+    checkerFactory: new ZupassCheckerFactory(signer),
+    gatekeeperFactory: new ZupassGatekeeperFactory(signer),
+    signer: signer!,
+    checkerArgs: [args.eventId, args.signer1, args.signer2, args.verifier],
     quiet,
   });
 

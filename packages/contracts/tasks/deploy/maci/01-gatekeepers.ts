@@ -19,6 +19,8 @@ deployment.deployTask(EDeploySteps.Gatekeepers, "Deploy gatekeepers").then((task
     deployment.setHre(hre);
     const deployer = await deployment.getDeployer();
 
+    const { deployFreeForAllSignUpGatekeeper, deployZupassSignUpGatekeeper } = await import("../../../ts/deploy");
+
     const freeForAllGatekeeperContractAddress = storage.getAddress(EContracts.FreeForAllGatekeeper, hre.network.name);
     const easGatekeeperContractAddress = storage.getAddress(EContracts.EASGatekeeper, hre.network.name);
     const hatsGatekeeperContractAddress = storage.getAddress(EContracts.HatsGatekeeper, hre.network.name);
@@ -66,10 +68,7 @@ deployment.deployTask(EDeploySteps.Gatekeepers, "Deploy gatekeepers").then((task
     }
 
     if (!skipDeployFreeForAllGatekeeper) {
-      const freeForAllGatekeeperContract = await deployment.deployContract({
-        name: EContracts.FreeForAllGatekeeper,
-        signer: deployer,
-      });
+      const freeForAllGatekeeperContract = await deployFreeForAllSignUpGatekeeper(deployer);
 
       await storage.register({
         id: EContracts.FreeForAllGatekeeper,
@@ -157,20 +156,15 @@ deployment.deployTask(EDeploySteps.Gatekeepers, "Deploy gatekeepers").then((task
         verifier = await verifierContract.getAddress();
       }
 
-      const zupassGatekeeperContract = await deployment.deployContract(
-        {
-          name: EContracts.ZupassGatekeeper,
-          signer: deployer,
-        },
-        validEventId,
-        validSigner1,
-        validSigner2,
-        verifier,
+      const zupassGatekeeperContract = await deployZupassSignUpGatekeeper(
+        { eventId: validEventId, signer1: validSigner1, signer2: validSigner2, verifier },
+        deployer,
       );
+
       await storage.register({
         id: EContracts.ZupassGatekeeper,
         contract: zupassGatekeeperContract,
-        args: [validEventId.toString(), validSigner1.toString(), validSigner2.toString(), verifier],
+        args: [],
         network: hre.network.name,
       });
     }

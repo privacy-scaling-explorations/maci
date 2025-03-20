@@ -7,6 +7,7 @@ import {
   EASGatekeeper__factory as EASGatekeeperFactory,
   HatsGatekeeperSingle__factory as HatsSingleGatekeeperFactory,
   MerkleProofGatekeeper__factory as MerkleProofGatekeeperFactory,
+  ZupassChecker__factory as ZupassCheckerFactory,
 } from "maci-contracts/typechain-types";
 
 import type {
@@ -105,11 +106,13 @@ export const getZupassGatekeeperData = async ({
   const gatekeeperContractAddress = await maciContract.signUpGatekeeper();
 
   const gatekeeperContract = ZupassGatekeeperFactory.connect(gatekeeperContractAddress, signer);
+  const checkerAddress = await gatekeeperContract.BASE_CHECKER();
+  const checkerContract = ZupassCheckerFactory.connect(checkerAddress, signer);
 
   const [validEventId, validSigner1, validSigner2] = await Promise.all([
-    gatekeeperContract.validEventId(),
-    gatekeeperContract.validSigner1(),
-    gatekeeperContract.validSigner2(),
+    checkerContract.validEventId(),
+    checkerContract.validSigner1(),
+    checkerContract.validSigner2(),
   ]);
 
   return {
