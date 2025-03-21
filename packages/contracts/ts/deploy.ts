@@ -54,6 +54,8 @@ import {
   EASCheckerFactory as EASCheckerFactoryContract,
   GitcoinPassportCheckerFactory as GitcoinPassportCheckerFactoryContract,
   GitcoinPassportGatekeeperFactory as GitcoinPassportGatekeeperFactoryContract,
+  MerkleProofCheckerFactory as MerkleProofCheckerFactoryContract,
+  MerkleProofGatekeeperFactory as MerkleProofGatekeeperFactoryContract,
   SignUpGatekeeper,
   FreeForAllChecker,
   BaseChecker,
@@ -67,6 +69,10 @@ import {
   GitcoinPassportChecker,
   GitcoinPassportChecker__factory as GitcoinPassportCheckerFactory,
   GitcoinPassportGatekeeper__factory as GitcoinPassportGatekeeperFactory,
+  MerkleProofGatekeeper,
+  MerkleProofChecker,
+  MerkleProofChecker__factory as MerkleProofCheckerFactory,
+  MerkleProofGatekeeper__factory as MerkleProofGatekeeperFactory,
 } from "../typechain-types";
 
 import { genEmptyBallotRoots } from "./genEmptyBallotRoots";
@@ -344,7 +350,7 @@ export const deployZupassSignUpGatekeeper = async (
  * @param args - the arguments to deploy gatekeeper
  * @param signer - the signer to use to deploy the contract
  * @param quiet - whether to suppress console output
- * @returns the deployed GitcoinPassportGatekeeper contract
+ * @returns the deployed GitcoinPassportGatekeeper contracts
  */
 export const deployGitcoinPassportGatekeeper = async (
   args: { decoderAddress: string; minimumScore: number },
@@ -370,6 +376,38 @@ export const deployGitcoinPassportGatekeeper = async (
     gatekeeperFactory: new GitcoinPassportGatekeeperFactory(signer),
     signer: signer!,
     checkerArgs: [args.decoderAddress, args.minimumScore.toString()],
+    quiet,
+  });
+
+  return [gatekeeper, checker, gatekeeperProxyFactory, checkerProxyFactory];
+};
+
+/**
+ * Deploy a MerkleProofGatekeeper contract
+ * @param args - the arguments to deploy gatekeeper
+ * @param signer - the signer to use to deploy the contract
+ * @param quiet - whether to suppress console output
+ * @returns the deployed MerkleProofGatekeeper contracts
+ */
+export const deployMerkleProofGatekeeper = async (
+  args: { root: Uint8Array | string },
+  signer?: Signer,
+  quiet = false,
+): Promise<
+  [MerkleProofGatekeeper, MerkleProofChecker, MerkleProofGatekeeperFactoryContract, MerkleProofCheckerFactoryContract]
+> => {
+  const { gatekeeper, checker, checkerProxyFactory, gatekeeperProxyFactory } = await deployGatekeeper<
+    MerkleProofChecker,
+    MerkleProofGatekeeper,
+    MerkleProofCheckerFactoryContract,
+    MerkleProofGatekeeperFactoryContract
+  >({
+    gatekeeperFactoryName: EGatekeeperFactories.MerkleProof,
+    checkerFactoryName: ECheckerFactories.MerkleProof,
+    checkerFactory: new MerkleProofCheckerFactory(signer),
+    gatekeeperFactory: new MerkleProofGatekeeperFactory(signer),
+    signer: signer!,
+    checkerArgs: [args.root],
     quiet,
   });
 

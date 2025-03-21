@@ -36,10 +36,10 @@ contract EASChecker is BaseChecker {
     schema = _schema;
   }
 
-  /// @notice Returns true for everycall.
+  /// @notice Throws errors if evidence and subject are not valid.
   /// @param subject Address to validate ownership for.
   /// @param evidence Encoded token ID used for validation.
-  /// @return Boolean indicating whether the subject owns the token.
+  /// @return Boolean indicating whether the subject passes the check.
   function _check(address subject, bytes calldata evidence) internal view override returns (bool) {
     super._check(subject, evidence);
 
