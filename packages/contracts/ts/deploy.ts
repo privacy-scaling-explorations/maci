@@ -56,6 +56,10 @@ import {
   GitcoinPassportGatekeeperFactory as GitcoinPassportGatekeeperFactoryContract,
   MerkleProofCheckerFactory as MerkleProofCheckerFactoryContract,
   MerkleProofGatekeeperFactory as MerkleProofGatekeeperFactoryContract,
+  SemaphoreGatekeeperFactory as SemaphoreGatekeeperFactoryContract,
+  SemaphoreCheckerFactory as SemaphoreCheckerFactoryContract,
+  SemaphoreChecker__factory as SemaphoreCheckerFactory,
+  SemaphoreGatekeeper__factory as SemaphoreGatekeeperFactory,
   SignUpGatekeeper,
   FreeForAllChecker,
   BaseChecker,
@@ -73,6 +77,7 @@ import {
   MerkleProofChecker,
   MerkleProofChecker__factory as MerkleProofCheckerFactory,
   MerkleProofGatekeeper__factory as MerkleProofGatekeeperFactory,
+  SemaphoreChecker,
 } from "../typechain-types";
 
 import { genEmptyBallotRoots } from "./genEmptyBallotRoots";
@@ -416,19 +421,38 @@ export const deployMerkleProofGatekeeper = async (
 
 /**
  * Deploy a SemaphoreGatekeeper contract
- * @param semaphoreAddress - the address of the Semaphore contract
- * @param groupId - The group id of the semaphore group
+ * @param args - the arguments to deploy gatekeeper
  * @param signer - the signer to use to deploy the contract
  * @param quiet - whether to suppress console output
  * @returns the deployed SemaphoreGatekeeper contract
  */
-export const deploySemaphoreGatekeeper = async (
-  semaphoreAddress: string,
-  groupId: bigint,
+export const deploySemaphoreSignupGatekeeper = async (
+  args: {
+    semaphore: string;
+    groupId: BigNumberish;
+  },
   signer?: Signer,
   quiet = false,
-): Promise<SemaphoreGatekeeper> =>
-  deployContract<SemaphoreGatekeeper>("SemaphoreGatekeeper", signer, quiet, semaphoreAddress, groupId.toString());
+): Promise<
+  [SemaphoreGatekeeper, SemaphoreChecker, SemaphoreGatekeeperFactoryContract, SemaphoreCheckerFactoryContract]
+> => {
+  const { gatekeeper, checker, checkerProxyFactory, gatekeeperProxyFactory } = await deployGatekeeper<
+    SemaphoreChecker,
+    SemaphoreGatekeeper,
+    SemaphoreCheckerFactoryContract,
+    SemaphoreGatekeeperFactoryContract
+  >({
+    gatekeeperFactoryName: EGatekeeperFactories.Semaphore,
+    checkerFactoryName: ECheckerFactories.Semaphore,
+    checkerFactory: new SemaphoreCheckerFactory(signer),
+    gatekeeperFactory: new SemaphoreGatekeeperFactory(signer),
+    signer: signer!,
+    checkerArgs: [args.semaphore, args.groupId.toString()],
+    quiet,
+  });
+
+  return [gatekeeper, checker, gatekeeperProxyFactory, checkerProxyFactory];
+};
 
 /**
  * Deploy an AnonAadhaarGatekeeper contract

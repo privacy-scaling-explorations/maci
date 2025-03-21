@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import { ISemaphore } from "../interfaces/ISemaphore.sol";
+import { ISemaphore } from "../semaphore/ISemaphore.sol";
 
 /// @title MockSemaphore
 /// @notice A mock contract to test the Semaphore gatekeeper

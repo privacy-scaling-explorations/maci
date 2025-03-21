@@ -2,14 +2,15 @@ import { expect } from "chai";
 import { AbiCoder, Signer, ZeroAddress } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
-import { deploySemaphoreGatekeeper, deployContract } from "../../ts/deploy";
+import { deploySemaphoreSignupGatekeeper, deployContract } from "../../ts/deploy";
 import { getDefaultSigner, getSigners } from "../../ts/utils";
-import { MACI, SemaphoreGatekeeper, MockSemaphore } from "../../typechain-types";
+import { MACI, SemaphoreGatekeeper, MockSemaphore, SemaphoreChecker } from "../../typechain-types";
 import { STATE_TREE_DEPTH, initialVoiceCreditBalance } from "../constants";
 import { deployTestContracts } from "../utils";
 
 describe("Semaphore Gatekeeper", () => {
   let semaphoreGatekeeper: SemaphoreGatekeeper;
+  let semaphoreChecker: SemaphoreChecker;
   let mockSemaphore: MockSemaphore;
   let signer: Signer;
   let signerAddress: string;
@@ -37,26 +38,9 @@ describe("Semaphore Gatekeeper", () => {
     points: [1n, 0n, 0n, 0n, 0n, 0n, 0n, 0n],
   };
 
-  const encodedProof = AbiCoder.defaultAbiCoder().encode(
-    ["uint256", "uint256", "uint256", "uint256", "uint256", "uint256[8]"],
-    [proof.merkleTreeDepth, proof.merkleTreeRoot, proof.nullifier, proof.message, proof.scope, proof.points],
-  );
-
   const encodedProofInvalidGroupId = AbiCoder.defaultAbiCoder().encode(
     ["uint256", "uint256", "uint256", "uint256", "uint256", "uint256[8]"],
     [proof.merkleTreeDepth, proof.merkleTreeRoot, proof.nullifier, proof.message, invalidGroupId, proof.points],
-  );
-
-  const encodedInvalidProof = AbiCoder.defaultAbiCoder().encode(
-    ["uint256", "uint256", "uint256", "uint256", "uint256", "uint256[8]"],
-    [
-      invalidProof.merkleTreeDepth,
-      invalidProof.merkleTreeRoot,
-      invalidProof.nullifier,
-      invalidProof.message,
-      validGroupId,
-      invalidProof.points,
-    ],
   );
 
   before(async () => {
@@ -64,7 +48,15 @@ describe("Semaphore Gatekeeper", () => {
     mockSemaphore = await deployContract("MockSemaphore", signer, true, validGroupId);
     const mockSemaphoreAddress = await mockSemaphore.getAddress();
     signerAddress = await signer.getAddress();
-    semaphoreGatekeeper = await deploySemaphoreGatekeeper(mockSemaphoreAddress, validGroupId, signer, true);
+
+    // eslint-disable-next-line no-bitwise
+    proof.scope = (BigInt(signerAddress) << 96n) | validGroupId;
+
+    [semaphoreGatekeeper, semaphoreChecker] = await deploySemaphoreSignupGatekeeper(
+      { semaphore: mockSemaphoreAddress, groupId: validGroupId },
+      signer,
+      true,
+    );
   });
 
   describe("Deployment", () => {
@@ -112,18 +104,35 @@ describe("Semaphore Gatekeeper", () => {
     it("should not register a user if the register function is called with invalid groupId", async () => {
       await expect(
         maciContract.signUp(user.pubKey.asContractParam(), encodedProofInvalidGroupId),
-      ).to.be.revertedWithCustomError(semaphoreGatekeeper, "InvalidGroup");
+      ).to.be.revertedWithCustomError(semaphoreChecker, "InvalidGroup");
     });
 
     it("should revert if the proof is invalid (mock)", async () => {
+      const encodedInvalidProof = AbiCoder.defaultAbiCoder().encode(
+        ["uint256", "uint256", "uint256", "uint256", "uint256", "uint256[8]"],
+        [
+          invalidProof.merkleTreeDepth,
+          invalidProof.merkleTreeRoot,
+          invalidProof.nullifier,
+          invalidProof.message,
+          proof.scope,
+          invalidProof.points,
+        ],
+      );
+
       await mockSemaphore.flipValid();
       await expect(
         maciContract.signUp(user.pubKey.asContractParam(), encodedInvalidProof),
-      ).to.be.revertedWithCustomError(semaphoreGatekeeper, "InvalidProof");
+      ).to.be.revertedWithCustomError(semaphoreChecker, "InvalidProof");
       await mockSemaphore.flipValid();
     });
 
     it("should register a user if the register function is called with the valid data", async () => {
+      const encodedProof = AbiCoder.defaultAbiCoder().encode(
+        ["uint256", "uint256", "uint256", "uint256", "uint256", "uint256[8]"],
+        [proof.merkleTreeDepth, proof.merkleTreeRoot, proof.nullifier, proof.message, proof.scope, proof.points],
+      );
+
       const tx = await maciContract.signUp(user.pubKey.asContractParam(), encodedProof);
 
       const receipt = await tx.wait();
@@ -132,6 +141,11 @@ describe("Semaphore Gatekeeper", () => {
     });
 
     it("should prevent signing up twice", async () => {
+      const encodedProof = AbiCoder.defaultAbiCoder().encode(
+        ["uint256", "uint256", "uint256", "uint256", "uint256", "uint256[8]"],
+        [proof.merkleTreeDepth, proof.merkleTreeRoot, proof.nullifier, proof.message, proof.scope, proof.points],
+      );
+
       await expect(maciContract.signUp(user.pubKey.asContractParam(), encodedProof)).to.be.revertedWithCustomError(
         semaphoreGatekeeper,
         "AlreadyRegistered",
