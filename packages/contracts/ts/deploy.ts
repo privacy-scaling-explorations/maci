@@ -40,13 +40,22 @@ import {
   AnonAadhaarGatekeeper,
   FreeForAllGatekeeper__factory as FreeForAllGatekeeperFactory,
   FreeForAllChecker__factory as FreeForAllCheckerFactory,
+  FreeForAllGatekeeperFactory as FreeForAllGatekeeperFactoryContract,
+  FreeForAllCheckerFactory as FreeForAllCheckerFactoryContract,
   ZupassGatekeeper__factory as ZupassGatekeeperFactory,
   ZupassChecker__factory as ZupassCheckerFactory,
+  ZupassCheckerFactory as ZupassCheckerFactoryContract,
+  ZupassGatekeeperFactory as ZupassGatekeeperFactoryContract,
+  AnonAadhaarChecker__factory as AnonAadhaarCheckerFactory,
+  AnonAadhaarGatekeeper__factory as AnonAadhaarGatekeeperFactory,
+  AnonAadhaarCheckerFactory as AnonAadhaarCheckerFactoryContract,
+  AnonAadhaarGatekeeperFactory as AnonAadhaarGatekeeperFactoryContract,
   SignUpGatekeeper,
   FreeForAllChecker,
   BaseChecker,
   ZupassChecker,
   ZupassGatekeeper,
+  AnonAadhaarChecker,
 } from "../typechain-types";
 
 import { genEmptyBallotRoots } from "./genEmptyBallotRoots";
@@ -150,7 +159,8 @@ export const deploySignupToken = async (signer?: Signer, quiet = false): Promise
 const deployGatekeeper = async <
   C extends BaseChecker = BaseChecker,
   T extends SignUpGatekeeper = SignUpGatekeeper,
-  F extends ContractFactory = ContractFactory,
+  FC extends BaseContract = BaseContract,
+  FG extends BaseContract = BaseContract,
 >({
   gatekeeperFactoryName,
   checkerFactoryName,
@@ -160,8 +170,17 @@ const deployGatekeeper = async <
   gatekeeperArgs = [],
   checkerArgs = [],
   quiet = true,
-}: IDeployGatekeeperArgs<F>): Promise<{ checker: C; gatekeeper: T }> => {
-  const checkerProxyFactory = await deployContract<IFactoryLike<typeof checkerArgs>>(checkerFactoryName, signer, quiet);
+}: IDeployGatekeeperArgs): Promise<{
+  checker: C;
+  gatekeeper: T;
+  checkerProxyFactory: IFactoryLike<typeof checkerArgs> & FC;
+  gatekeeperProxyFactory: IFactoryLike<typeof gatekeeperArgs> & FG;
+}> => {
+  const checkerProxyFactory = await deployContract<IFactoryLike<typeof checkerArgs> & FC>(
+    checkerFactoryName,
+    signer,
+    quiet,
+  );
 
   const checkerReceipt = await checkerProxyFactory.deploy(...checkerArgs).then((tx) => tx.wait());
 
@@ -172,7 +191,7 @@ const deployGatekeeper = async <
     signer,
   });
 
-  const gatekeeperProxyFactory = await deployContract<IFactoryLike<typeof gatekeeperArgs>>(
+  const gatekeeperProxyFactory = await deployContract<IFactoryLike<typeof gatekeeperArgs> & FG>(
     gatekeeperFactoryName,
     signer,
     quiet,
@@ -189,7 +208,12 @@ const deployGatekeeper = async <
     signer,
   });
 
-  return { checker, gatekeeper };
+  return {
+    checker,
+    gatekeeper,
+    checkerProxyFactory,
+    gatekeeperProxyFactory,
+  };
 };
 
 /**
@@ -215,8 +239,15 @@ export const deploySignupTokenGatekeeper = async (
 export const deployFreeForAllSignUpGatekeeper = async (
   signer?: Signer,
   quiet = false,
-): Promise<FreeForAllGatekeeper> => {
-  const { gatekeeper } = await deployGatekeeper<FreeForAllChecker, FreeForAllGatekeeper, FreeForAllGatekeeperFactory>({
+): Promise<
+  [FreeForAllGatekeeper, FreeForAllChecker, FreeForAllGatekeeperFactoryContract, FreeForAllCheckerFactoryContract]
+> => {
+  const { gatekeeper, checker, gatekeeperProxyFactory, checkerProxyFactory } = await deployGatekeeper<
+    FreeForAllChecker,
+    FreeForAllGatekeeper,
+    FreeForAllCheckerFactoryContract,
+    FreeForAllGatekeeperFactoryContract
+  >({
     gatekeeperFactoryName: EGatekeeperFactories.FreeForAll,
     checkerFactoryName: ECheckerFactories.FreeForAll,
     checkerFactory: new FreeForAllCheckerFactory(signer),
@@ -225,7 +256,7 @@ export const deployFreeForAllSignUpGatekeeper = async (
     quiet,
   });
 
-  return gatekeeper;
+  return [gatekeeper, checker, gatekeeperProxyFactory, checkerProxyFactory];
 };
 
 /**
@@ -244,8 +275,13 @@ export const deployZupassSignUpGatekeeper = async (
   },
   signer?: Signer,
   quiet = false,
-): Promise<ZupassGatekeeper> => {
-  const { gatekeeper } = await deployGatekeeper<ZupassChecker, ZupassGatekeeper, ZupassGatekeeperFactory>({
+): Promise<[ZupassGatekeeper, ZupassChecker, ZupassGatekeeperFactoryContract, ZupassCheckerFactoryContract]> => {
+  const { gatekeeper, checker, checkerProxyFactory, gatekeeperProxyFactory } = await deployGatekeeper<
+    ZupassChecker,
+    ZupassGatekeeper,
+    ZupassCheckerFactoryContract,
+    ZupassGatekeeperFactoryContract
+  >({
     gatekeeperFactoryName: EGatekeeperFactories.Zupass,
     checkerFactoryName: ECheckerFactories.Zupass,
     checkerFactory: new ZupassCheckerFactory(signer),
@@ -255,7 +291,7 @@ export const deployZupassSignUpGatekeeper = async (
     quiet,
   });
 
-  return gatekeeper;
+  return [gatekeeper, checker, gatekeeperProxyFactory, checkerProxyFactory];
 };
 
 /**
@@ -302,20 +338,31 @@ export const deploySemaphoreGatekeeper = async (
  * @param proofValidTime - the time in seconds that a proof is valid for
  * @returns the deployed AnonAadhaarGatekeeper contract
  */
-
 export const deployAnonAadhaarGatekeeper = async (
   verifierAddress: string,
   proofValidTime: number,
   signer?: Signer,
   quiet = false,
-): Promise<AnonAadhaarGatekeeper> =>
-  deployContract<AnonAadhaarGatekeeper>(
-    "AnonAadhaarGatekeeper",
-    signer,
+): Promise<
+  [AnonAadhaarGatekeeper, AnonAadhaarChecker, AnonAadhaarGatekeeperFactoryContract, AnonAadhaarCheckerFactoryContract]
+> => {
+  const { gatekeeper, checker, gatekeeperProxyFactory, checkerProxyFactory } = await deployGatekeeper<
+    AnonAadhaarChecker,
+    AnonAadhaarGatekeeper,
+    AnonAadhaarCheckerFactoryContract,
+    AnonAadhaarGatekeeperFactoryContract
+  >({
+    gatekeeperFactoryName: EGatekeeperFactories.AnonAadhaar,
+    checkerFactoryName: ECheckerFactories.AnonAadhaar,
+    checkerFactory: new AnonAadhaarCheckerFactory(signer),
+    gatekeeperFactory: new AnonAadhaarGatekeeperFactory(signer),
+    signer: signer!,
+    checkerArgs: [verifierAddress, proofValidTime.toString()],
     quiet,
-    verifierAddress,
-    proofValidTime.toString(),
-  );
+  });
+
+  return [gatekeeper, checker, gatekeeperProxyFactory, checkerProxyFactory];
+};
 
 /**
  * Deploy Poseidon contracts

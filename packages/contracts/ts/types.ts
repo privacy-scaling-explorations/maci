@@ -15,7 +15,7 @@ import type {
   SignUpGatekeeper,
 } from "../typechain-types";
 import type { TypedContractMethod } from "../typechain-types/common";
-import type { BigNumberish, Signer, ContractFactory, Provider, TransactionReceipt } from "ethers";
+import type { BigNumberish, Signer, ContractFactory, Provider, TransactionReceipt, BaseContract } from "ethers";
 import type { CircuitInputs } from "maci-core";
 import type { Keypair, Message, PubKey } from "maci-domainobjs";
 import type { PublicSignals } from "snarkjs";
@@ -373,9 +373,10 @@ export interface IDeployGatekeeperArgs<
 /**
  * Type for the factory like contract
  */
-export type IFactoryLike<P extends unknown[] = []> = Factory & {
-  deploy: TypedContractMethod<P, [], "nonpayable">;
-};
+export type IFactoryLike<P extends unknown[] = []> = Factory &
+  BaseContract & {
+    deploy: TypedContractMethod<P, [], "nonpayable">;
+  };
 
 /**
  * Interface that represents the argument for the get proxy contract function

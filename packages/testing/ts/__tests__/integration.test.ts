@@ -106,10 +106,10 @@ describe("Integration tests", function test() {
 
   // the code that we run before each test
   beforeEach(async () => {
-    const signUpGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+    const [signUpGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
     const signupGatekeeperAddress = await signUpGatekeeper.getAddress();
 
-    const pollGatekeeper = await deployFreeForAllSignUpGatekeeper(signer, true);
+    const [pollGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
     const pollGatekeeperAddress = await pollGatekeeper.getAddress();
 
     // create a new maci state

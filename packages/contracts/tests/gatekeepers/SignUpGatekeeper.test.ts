@@ -16,7 +16,7 @@ describe("SignUpGatekeeper", () => {
 
   before(async () => {
     signer = await getDefaultSigner();
-    freeForAllContract = await deployFreeForAllSignUpGatekeeper(signer, true);
+    [freeForAllContract] = await deployFreeForAllSignUpGatekeeper(signer, true);
     signUpToken = await deploySignupToken(signer, true);
     signUpTokenGatekeeperContract = await deploySignupTokenGatekeeper(await signUpToken.getAddress(), signer, true);
   });

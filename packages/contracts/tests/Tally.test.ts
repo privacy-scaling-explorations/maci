@@ -241,7 +241,7 @@ describe("TallyVotes", () => {
         );
       }
 
-      const pollGatekeeperContract = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [pollGatekeeperContract] = await deployFreeForAllSignUpGatekeeper(signer, true);
 
       // deploy a poll
       // deploy on chain poll
@@ -562,7 +562,7 @@ describe("TallyVotes", () => {
         );
       }
 
-      const pollGatekeeperContract = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [pollGatekeeperContract] = await deployFreeForAllSignUpGatekeeper(signer, true);
 
       // deploy a poll
       // deploy on chain poll

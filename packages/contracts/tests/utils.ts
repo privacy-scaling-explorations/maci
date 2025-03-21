@@ -75,7 +75,7 @@ export const deployTestContracts = async ({
 
   let gatekeeperContract = gatekeeper;
   if (!gatekeeperContract) {
-    gatekeeperContract = await deployFreeForAllSignUpGatekeeper(signer, true);
+    [gatekeeperContract] = await deployFreeForAllSignUpGatekeeper(signer, true);
   }
 
   const constantInitialVoiceCreditProxyContract = await deployConstantInitialVoiceCreditProxy(

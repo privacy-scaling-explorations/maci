@@ -13,7 +13,7 @@ contract ZupassGatekeeper is BasePolicy {
   /// @notice custom errors
   error AlreadyRegistered();
 
-  /// @notice Create a new instance of FreeForAllGatekeeper
+  /// @notice Create a new instance of ZupassGatekeeper
   // solhint-disable-next-line no-empty-blocks
   constructor() payable {}
 
@@ -26,7 +26,10 @@ contract ZupassGatekeeper is BasePolicy {
 
     // Ticket ID is stored at index 0
     uint256 ticketId = pubSignals[0];
-    if (registeredTickets[ticketId]) revert AlreadyRegistered();
+
+    if (registeredTickets[ticketId]) {
+      revert AlreadyRegistered();
+    }
 
     registeredTickets[ticketId] = true;
 

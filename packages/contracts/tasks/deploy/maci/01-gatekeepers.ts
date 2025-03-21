@@ -6,7 +6,14 @@ import { info, logGreen } from "../../../ts/logger";
 import { EDeploySteps, ESupportedChains } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
-import { EContracts, IDeployParams } from "../../helpers/types";
+import {
+  ECheckerFactories,
+  ECheckers,
+  EContracts,
+  EGatekeeperFactories,
+  EGatekeepers,
+  IDeployParams,
+} from "../../helpers/types";
 
 const deployment = Deployment.getInstance();
 const storage = ContractStorage.getInstance();
@@ -68,14 +75,39 @@ deployment.deployTask(EDeploySteps.Gatekeepers, "Deploy gatekeepers").then((task
     }
 
     if (!skipDeployFreeForAllGatekeeper) {
-      const freeForAllGatekeeperContract = await deployFreeForAllSignUpGatekeeper(deployer);
+      const [
+        freeForAllGatekeeperContract,
+        freeForAllCheckerContract,
+        freeForAllGatekeeperFactoryContract,
+        freeForAllCheckerFactoryContract,
+      ] = await deployFreeForAllSignUpGatekeeper(deployer);
 
-      await storage.register({
-        id: EContracts.FreeForAllGatekeeper,
-        contract: freeForAllGatekeeperContract,
-        args: [],
-        network: hre.network.name,
-      });
+      await Promise.all([
+        storage.register({
+          id: EGatekeepers.FreeForAll,
+          contract: freeForAllGatekeeperContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: ECheckers.FreeForAll,
+          contract: freeForAllCheckerContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: EGatekeeperFactories.FreeForAll,
+          contract: freeForAllGatekeeperFactoryContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: ECheckerFactories.FreeForAll,
+          contract: freeForAllCheckerFactoryContract,
+          args: [],
+          network: hre.network.name,
+        }),
+      ]);
     }
 
     const isSupportedEASGatekeeperNetwork = ![ESupportedChains.Hardhat, ESupportedChains.Coverage].includes(
@@ -156,17 +188,42 @@ deployment.deployTask(EDeploySteps.Gatekeepers, "Deploy gatekeepers").then((task
         verifier = await verifierContract.getAddress();
       }
 
-      const zupassGatekeeperContract = await deployZupassSignUpGatekeeper(
+      const [
+        zupassGatekeeperContract,
+        zupassCheckerContract,
+        zupassGatekeeperFactoryContract,
+        zupassCheckerFactoryContract,
+      ] = await deployZupassSignUpGatekeeper(
         { eventId: validEventId, signer1: validSigner1, signer2: validSigner2, verifier },
         deployer,
       );
 
-      await storage.register({
-        id: EContracts.ZupassGatekeeper,
-        contract: zupassGatekeeperContract,
-        args: [],
-        network: hre.network.name,
-      });
+      await Promise.all([
+        storage.register({
+          id: ECheckers.Zupass,
+          contract: zupassCheckerContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: EGatekeepers.Zupass,
+          contract: zupassGatekeeperContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: ECheckerFactories.Zupass,
+          contract: zupassCheckerFactoryContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: EGatekeeperFactories.Zupass,
+          contract: zupassGatekeeperFactoryContract,
+          args: [],
+          network: hre.network.name,
+        }),
+      ]);
     }
 
     if (!skipDeploySemaphoreGatekeeper) {
