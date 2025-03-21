@@ -2,14 +2,15 @@ import { expect } from "chai";
 import { Signer, ZeroAddress, toBeArray } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
-import { deployContract } from "../../ts/deploy";
+import { deployContract, deployEASSignUpGatekeeper } from "../../ts/deploy";
 import { getDefaultSigner, getSigners } from "../../ts/utils";
-import { EASGatekeeper, MACI } from "../../typechain-types";
+import { EASChecker, EASGatekeeper, MACI } from "../../typechain-types";
 import { STATE_TREE_DEPTH, initialVoiceCreditBalance } from "../constants";
 import { deployTestContracts } from "../utils";
 
 describe("EAS Gatekeeper", () => {
   let easGatekeeper: EASGatekeeper;
+  let easChecker: EASChecker;
   let signer: Signer;
   let signerAddress: string;
   let easAddress: string;
@@ -30,25 +31,17 @@ describe("EAS Gatekeeper", () => {
     signerAddress = await signer.getAddress();
     const mockEAS = await deployContract("MockEAS", signer, true, signerAddress, toBeArray(schema), signerAddress);
     easAddress = await mockEAS.getAddress();
-    easGatekeeper = await deployContract("EASGatekeeper", signer, true, easAddress, signerAddress, toBeArray(schema));
+    [easGatekeeper, easChecker] = await deployEASSignUpGatekeeper(
+      { eas: easAddress, attester: signerAddress, schema: toBeArray(schema) },
+      signer,
+      true,
+    );
   });
 
   describe("Deployment", () => {
     it("The gatekeeper should be deployed correctly", async () => {
       expect(easGatekeeper).to.not.eq(undefined);
       expect(await easGatekeeper.getAddress()).to.not.eq(ZeroAddress);
-    });
-
-    it("should fail to deploy when the eas contract address is not valid", async () => {
-      await expect(
-        deployContract("EASGatekeeper", signer, true, ZeroAddress, signerAddress, toBeArray(schema)),
-      ).to.be.revertedWithCustomError(easGatekeeper, "ZeroAddress");
-    });
-
-    it("should fail to deploy when the attester address is not valid", async () => {
-      await expect(
-        deployContract("EASGatekeeper", signer, true, easAddress, ZeroAddress, toBeArray(schema)),
-      ).to.be.revertedWithCustomError(easGatekeeper, "ZeroAddress");
     });
   });
 
@@ -88,25 +81,25 @@ describe("EAS Gatekeeper", () => {
     it("should throw when the attestation is not owned by the caller (mocking maci.signUp call)", async () => {
       await expect(
         maciContract.signUp(user.pubKey.asContractParam(), invalidRecipientAttestation),
-      ).to.be.revertedWithCustomError(easGatekeeper, "NotYourAttestation");
+      ).to.be.revertedWithCustomError(easChecker, "NotYourAttestation");
     });
 
     it("should throw when the attestation has been revoked", async () => {
       await expect(
         maciContract.signUp(user.pubKey.asContractParam(), revokedAttestation),
-      ).to.be.revertedWithCustomError(easGatekeeper, "AttestationRevoked");
+      ).to.be.revertedWithCustomError(easChecker, "AttestationRevoked");
     });
 
     it("should throw when the attestation schema is not the one expected by the gatekeeper", async () => {
       await expect(
         maciContract.signUp(user.pubKey.asContractParam(), invalidSchemaAttestation),
-      ).to.be.revertedWithCustomError(easGatekeeper, "InvalidSchema");
+      ).to.be.revertedWithCustomError(easChecker, "InvalidSchema");
     });
 
     it("should throw when the attestation is not signed by the attestation owner", async () => {
       await expect(
         maciContract.signUp(user.pubKey.asContractParam(), invalidAttesterAttestation),
-      ).to.be.revertedWithCustomError(easGatekeeper, "AttesterNotTrusted");
+      ).to.be.revertedWithCustomError(easChecker, "AttesterNotTrusted");
     });
 
     it("should register a user if the register function is called with the valid data", async () => {

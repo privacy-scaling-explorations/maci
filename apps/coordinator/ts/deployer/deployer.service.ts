@@ -103,14 +103,16 @@ export class DeployerService {
 
     // based on the gatekeeper type, we need to deploy the correct gatekeeper
     switch (gatekeeperType) {
-      case EGatekeepers.FreeForAll:
+      case EGatekeepers.FreeForAll: {
         return {
           address,
           abi: FreeForAllGatekeeperFactory.abi,
           bytecode: FreeForAllGatekeeperFactory.bytecode,
           alreadyDeployed: !!address,
         };
-      case EGatekeepers.EAS:
+      }
+
+      case EGatekeepers.EAS: {
         storedArgs = this.storage.getContractArgs(gatekeeperType as unknown as EContracts, network);
         isAlreadyDeployed =
           !!storedArgs &&
@@ -118,13 +120,16 @@ export class DeployerService {
           storedArgs[0] === (args as IEASGatekeeperArgs).easAddress &&
           storedArgs[1] === (args as IEASGatekeeperArgs).schema &&
           storedArgs[2] === (args as IEASGatekeeperArgs).attester;
+
         return {
           address: isAlreadyDeployed ? address : undefined,
           abi: EASGatekeeperFactory.abi,
           bytecode: EASGatekeeperFactory.bytecode,
           alreadyDeployed: isAlreadyDeployed,
         };
-      case EGatekeepers.Zupass:
+      }
+
+      case EGatekeepers.Zupass: {
         storedArgs = this.storage.getContractArgs(gatekeeperType as unknown as EContracts, network);
         isAlreadyDeployed =
           !!storedArgs &&
@@ -133,51 +138,63 @@ export class DeployerService {
           storedArgs[1] === (args as IZupassGatekeeperArgs).signer2 &&
           storedArgs[2] === (args as IZupassGatekeeperArgs).eventId &&
           storedArgs[3] === (args as IZupassGatekeeperArgs).zupassVerifier;
+
         return {
           address: isAlreadyDeployed ? address : undefined,
           abi: ZupassGatekeeperFactory.abi,
           bytecode: ZupassGatekeeperFactory.bytecode,
           alreadyDeployed: isAlreadyDeployed,
         };
-      case EGatekeepers.HatsSingle:
+      }
+
+      case EGatekeepers.HatsSingle: {
         storedArgs = this.storage.getContractArgs(gatekeeperType as unknown as EContracts, network);
         isAlreadyDeployed =
           !!storedArgs &&
           storedArgs.length === 2 &&
           storedArgs[0] === (args as IHatsGatekeeperArgs).hatsProtocolAddress &&
           JSON.stringify(storedArgs[1]) === JSON.stringify((args as IHatsGatekeeperArgs).critrionHats);
+
         return {
           address: isAlreadyDeployed ? address : undefined,
           abi: HatsGatekeeperSingleFactory.abi,
           bytecode: HatsGatekeeperSingleFactory.bytecode,
           alreadyDeployed: isAlreadyDeployed,
         };
-      case EGatekeepers.Semaphore:
+      }
+
+      case EGatekeepers.Semaphore: {
         storedArgs = this.storage.getContractArgs(gatekeeperType as unknown as EContracts, network);
         isAlreadyDeployed =
           !!storedArgs &&
           storedArgs.length === 2 &&
           storedArgs[0] === (args as ISemaphoreGatekeeperArgs).semaphoreContract &&
           storedArgs[1] === (args as ISemaphoreGatekeeperArgs).groupId;
+
         return {
           address: isAlreadyDeployed ? address : undefined,
           abi: SemaphoreGatekeeperFactory.abi,
           bytecode: SemaphoreGatekeeperFactory.bytecode,
           alreadyDeployed: isAlreadyDeployed,
         };
-      case EGatekeepers.GitcoinPassport:
+      }
+
+      case EGatekeepers.GitcoinPassport: {
         storedArgs = this.storage.getContractArgs(gatekeeperType as unknown as EContracts, network);
         isAlreadyDeployed =
           !!storedArgs &&
           storedArgs.length === 2 &&
           storedArgs[0] === (args as IGitcoinPassportGatekeeperArgs).decoderAddress &&
           storedArgs[1] === (args as IGitcoinPassportGatekeeperArgs).passingScore;
+
         return {
           address: isAlreadyDeployed ? address : undefined,
           abi: GitcoinPassportGatekeeperFactory.abi,
           bytecode: GitcoinPassportGatekeeperFactory.bytecode,
           alreadyDeployed: isAlreadyDeployed,
         };
+      }
+
       default:
         throw new Error(ErrorCodes.UNSUPPORTED_GATEKEEPER.toString());
     }
@@ -202,7 +219,7 @@ export class DeployerService {
     const address = this.storage.getAddress(voiceCreditProxyType, network);
 
     switch (voiceCreditProxyType) {
-      case EInitialVoiceCreditProxies.Constant:
+      case EInitialVoiceCreditProxies.Constant: {
         storedArgs = this.storage.getContractArgs(voiceCreditProxyType as unknown as EContracts, network);
         isAlreadyDeployed = !!storedArgs && storedArgs[0] === args.amount;
 
@@ -212,6 +229,8 @@ export class DeployerService {
           bytecode: ConstantInitialVoiceCreditProxyFactory.bytecode,
           alreadyDeployed: isAlreadyDeployed,
         };
+      }
+
       default:
         throw new Error(ErrorCodes.UNSUPPORTED_VOICE_CREDIT_PROXY.toString());
     }

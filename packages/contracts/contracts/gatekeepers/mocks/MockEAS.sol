@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import { IEAS } from "../interfaces/IEAS.sol";
+import { IEAS } from "../eas/IEAS.sol";
 
 /// @title MockEAS
 /// @notice A mock contract to test the EASGatekeeper

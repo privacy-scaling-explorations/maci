@@ -26,7 +26,9 @@ deployment.deployTask(EDeploySteps.Gatekeepers, "Deploy gatekeepers").then((task
     deployment.setHre(hre);
     const deployer = await deployment.getDeployer();
 
-    const { deployFreeForAllSignUpGatekeeper, deployZupassSignUpGatekeeper } = await import("../../../ts/deploy");
+    const { deployFreeForAllSignUpGatekeeper, deployZupassSignUpGatekeeper, deployEASSignUpGatekeeper } = await import(
+      "../../../ts/deploy"
+    );
 
     const freeForAllGatekeeperContractAddress = storage.getAddress(EContracts.FreeForAllGatekeeper, hre.network.name);
     const easGatekeeperContractAddress = storage.getAddress(EContracts.EASGatekeeper, hre.network.name);
@@ -119,22 +121,43 @@ deployment.deployTask(EDeploySteps.Gatekeepers, "Deploy gatekeepers").then((task
       const encodedSchema = deployment.getDeployConfigField<string>(EContracts.EASGatekeeper, "schema", true);
       const attester = deployment.getDeployConfigField<string>(EContracts.EASGatekeeper, "attester", true);
 
-      const easGatekeeperContract = await deployment.deployContract(
-        {
-          name: EContracts.EASGatekeeper,
-          signer: deployer,
-        },
-        easAddress,
-        attester,
-        encodedSchema,
-      );
+      const [easGatekeeperContract, easCheckerContract, easGatekeeperFactoryContract, easCheckerFactoryContract] =
+        await deployEASSignUpGatekeeper(
+          {
+            eas: easAddress,
+            attester,
+            schema: encodedSchema,
+          },
+          deployer,
+          true,
+        );
 
-      await storage.register({
-        id: EContracts.EASGatekeeper,
-        contract: easGatekeeperContract,
-        args: [easAddress, attester, encodedSchema],
-        network: hre.network.name,
-      });
+      await Promise.all([
+        storage.register({
+          id: EGatekeepers.EAS,
+          contract: easGatekeeperContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: ECheckers.EAS,
+          contract: easCheckerContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: EGatekeeperFactories.EAS,
+          contract: easGatekeeperFactoryContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: ECheckerFactories.EAS,
+          contract: easCheckerFactoryContract,
+          args: [],
+          network: hre.network.name,
+        }),
+      ]);
     }
 
     const isSupportedGitcoinGatekeeperNetwork = ![
