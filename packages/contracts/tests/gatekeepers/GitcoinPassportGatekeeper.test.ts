@@ -2,13 +2,19 @@ import { expect } from "chai";
 import { AbiCoder, Signer, ZeroAddress } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
-import { deployContract, getDefaultSigner, getSigners } from "../../ts";
-import { GitcoinPassportGatekeeper, MACI, MockGitcoinPassportDecoder } from "../../typechain-types";
+import { deployContract, deployGitcoinPassportGatekeeper, getDefaultSigner, getSigners } from "../../ts";
+import {
+  GitcoinPassportChecker,
+  GitcoinPassportGatekeeper,
+  MACI,
+  MockGitcoinPassportDecoder,
+} from "../../typechain-types";
 import { initialVoiceCreditBalance, STATE_TREE_DEPTH } from "../constants";
 import { deployTestContracts } from "../utils";
 
 describe("GitcoinPassport Gatekeeper", () => {
   let gitcoinGatekeeper: GitcoinPassportGatekeeper;
+  let gitcoinChecker: GitcoinPassportChecker;
   let maciContract: MACI;
   let mockDecoder: MockGitcoinPassportDecoder;
 
@@ -27,7 +33,11 @@ describe("GitcoinPassport Gatekeeper", () => {
     signerAddress = await signer.getAddress();
     mockDecoder = await deployContract("MockGitcoinPassportDecoder", signer, true);
     decoderAddress = await mockDecoder.getAddress();
-    gitcoinGatekeeper = await deployContract("GitcoinPassportGatekeeper", signer, true, decoderAddress, passingScore);
+    [gitcoinGatekeeper, gitcoinChecker] = await deployGitcoinPassportGatekeeper(
+      { decoderAddress, minimumScore: passingScore },
+      signer,
+      true,
+    );
 
     const r = await deployTestContracts({
       initialVoiceCreditBalance,
@@ -42,12 +52,6 @@ describe("GitcoinPassport Gatekeeper", () => {
     it("The gatekeeper should be deployed correctly", async () => {
       expect(gitcoinGatekeeper).to.not.eq(undefined);
       expect(await gitcoinGatekeeper.getAddress()).to.not.eq(ZeroAddress);
-    });
-
-    it("should fail to deploy when the decoder contract address is not valid", async () => {
-      await expect(
-        deployContract("GitcoinPassportGatekeeper", signer, true, ZeroAddress, passingScore),
-      ).to.be.revertedWithCustomError(gitcoinGatekeeper, "ZeroAddress");
     });
   });
 
@@ -76,7 +80,7 @@ describe("GitcoinPassport Gatekeeper", () => {
 
     it("should throw when the score is not high enough", async () => {
       await expect(maciContract.signUp(user.pubKey.asContractParam(), "0x")).to.be.revertedWithCustomError(
-        gitcoinGatekeeper,
+        gitcoinChecker,
         "ScoreTooLow",
       );
     });

@@ -52,6 +52,8 @@ import {
   AnonAadhaarGatekeeperFactory as AnonAadhaarGatekeeperFactoryContract,
   EASGatekeeperFactory as EASGatekeeperFactoryContract,
   EASCheckerFactory as EASCheckerFactoryContract,
+  GitcoinPassportCheckerFactory as GitcoinPassportCheckerFactoryContract,
+  GitcoinPassportGatekeeperFactory as GitcoinPassportGatekeeperFactoryContract,
   SignUpGatekeeper,
   FreeForAllChecker,
   BaseChecker,
@@ -62,6 +64,9 @@ import {
   EASChecker,
   EASChecker__factory as EASCheckerFactory,
   EASGatekeeper__factory as EASGatekeeperFactory,
+  GitcoinPassportChecker,
+  GitcoinPassportChecker__factory as GitcoinPassportCheckerFactory,
+  GitcoinPassportGatekeeper__factory as GitcoinPassportGatekeeperFactory,
 } from "../typechain-types";
 
 import { genEmptyBallotRoots } from "./genEmptyBallotRoots";
@@ -336,25 +341,40 @@ export const deployZupassSignUpGatekeeper = async (
 
 /**
  * Deploy a GitcoinPassportGatekeeper contract
- * @param decoderAddress - the address of the GitcoinPassportDecoder contract
- * @param minimumScore - the minimum score required to pass
+ * @param args - the arguments to deploy gatekeeper
  * @param signer - the signer to use to deploy the contract
  * @param quiet - whether to suppress console output
  * @returns the deployed GitcoinPassportGatekeeper contract
  */
 export const deployGitcoinPassportGatekeeper = async (
-  decoderAddress: string,
-  minimumScore: number,
+  args: { decoderAddress: string; minimumScore: number },
   signer?: Signer,
   quiet = false,
-): Promise<GitcoinPassportGatekeeper> =>
-  deployContract<GitcoinPassportGatekeeper>(
-    "GitcoinPassportGatekeeper",
-    signer,
+): Promise<
+  [
+    GitcoinPassportGatekeeper,
+    GitcoinPassportChecker,
+    GitcoinPassportGatekeeperFactoryContract,
+    GitcoinPassportCheckerFactoryContract,
+  ]
+> => {
+  const { gatekeeper, checker, checkerProxyFactory, gatekeeperProxyFactory } = await deployGatekeeper<
+    GitcoinPassportChecker,
+    GitcoinPassportGatekeeper,
+    GitcoinPassportCheckerFactoryContract,
+    GitcoinPassportGatekeeperFactoryContract
+  >({
+    gatekeeperFactoryName: EGatekeeperFactories.GitcoinPassport,
+    checkerFactoryName: ECheckerFactories.GitcoinPassport,
+    checkerFactory: new GitcoinPassportCheckerFactory(signer),
+    gatekeeperFactory: new GitcoinPassportGatekeeperFactory(signer),
+    signer: signer!,
+    checkerArgs: [args.decoderAddress, args.minimumScore.toString()],
     quiet,
-    decoderAddress,
-    minimumScore.toString(),
-  );
+  });
+
+  return [gatekeeper, checker, gatekeeperProxyFactory, checkerProxyFactory];
+};
 
 /**
  * Deploy a SemaphoreGatekeeper contract
