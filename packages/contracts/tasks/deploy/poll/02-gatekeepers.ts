@@ -25,7 +25,12 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
     deployment.setHre(hre);
     const deployer = await deployment.getDeployer();
 
-    const { deployFreeForAllSignUpGatekeeper, deployZupassSignUpGatekeeper } = await import("../../../ts/deploy");
+    const {
+      deployFreeForAllSignUpGatekeeper,
+      deployZupassSignUpGatekeeper,
+      deployEASSignUpGatekeeper,
+      deployGitcoinPassportGatekeeper,
+    } = await import("../../../ts/deploy");
 
     const maciContract = await deployment.getContract<MACI>({ name: EContracts.MACI });
     const pollId = await maciContract.nextPollId();
@@ -155,23 +160,47 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
       const encodedSchema = deployment.getDeployConfigField<string>(EContracts.EASGatekeeper, "schema", true);
       const attester = deployment.getDeployConfigField<string>(EContracts.EASGatekeeper, "attester", true);
 
-      const easGatekeeperContract = await deployment.deployContract(
-        {
-          name: EContracts.EASGatekeeper,
-          signer: deployer,
-        },
-        easAddress,
-        attester,
-        encodedSchema,
-      );
+      const [easGatekeeperContract, easCheckerContract, easGatekeeperFactoryContract, easCheckerFactoryContract] =
+        await deployEASSignUpGatekeeper(
+          {
+            eas: easAddress,
+            attester,
+            schema: encodedSchema,
+          },
+          deployer,
+          true,
+        );
 
-      await storage.register({
-        id: EContracts.EASGatekeeper,
-        key: `poll-${pollId}`,
-        contract: easGatekeeperContract,
-        args: [easAddress, attester, encodedSchema],
-        network: hre.network.name,
-      });
+      await Promise.all([
+        storage.register({
+          id: EGatekeepers.EAS,
+          key: `poll-${pollId}`,
+          contract: easGatekeeperContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: ECheckers.EAS,
+          key: `poll-${pollId}`,
+          contract: easCheckerContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: EGatekeeperFactories.EAS,
+          key: `poll-${pollId}`,
+          contract: easGatekeeperFactoryContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: ECheckerFactories.EAS,
+          key: `poll-${pollId}`,
+          contract: easCheckerFactoryContract,
+          args: [],
+          network: hre.network.name,
+        }),
+      ]);
     }
 
     const isSupportedGitcoinGatekeeperNetwork = ![
@@ -191,22 +220,51 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
         "passingScore",
         true,
       );
-      const gitcoinGatekeeperContract = await deployment.deployContract(
+
+      const [
+        gitcoinGatekeeperContract,
+        gitcoinCheckerContract,
+        gitcoinGatekeeperFactoryContract,
+        gitcoinCheckerFactoryContract,
+      ] = await deployGitcoinPassportGatekeeper(
         {
-          name: EContracts.GitcoinPassportGatekeeper,
-          signer: deployer,
+          decoderAddress: gitcoinGatekeeperDecoderAddress,
+          minimumScore: gitcoinGatekeeperPassingScore,
         },
-        gitcoinGatekeeperDecoderAddress,
-        gitcoinGatekeeperPassingScore,
+        deployer,
+        true,
       );
 
-      await storage.register({
-        id: EContracts.GitcoinPassportGatekeeper,
-        key: `poll-${pollId}`,
-        contract: gitcoinGatekeeperContract,
-        args: [gitcoinGatekeeperDecoderAddress, gitcoinGatekeeperPassingScore],
-        network: hre.network.name,
-      });
+      await Promise.all([
+        storage.register({
+          id: EGatekeepers.GitcoinPassport,
+          key: `poll-${pollId}`,
+          contract: gitcoinGatekeeperContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: ECheckers.GitcoinPassport,
+          key: `poll-${pollId}`,
+          contract: gitcoinCheckerContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: EGatekeeperFactories.GitcoinPassport,
+          key: `poll-${pollId}`,
+          contract: gitcoinGatekeeperFactoryContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: ECheckerFactories.GitcoinPassport,
+          key: `poll-${pollId}`,
+          contract: gitcoinCheckerFactoryContract,
+          args: [],
+          network: hre.network.name,
+        }),
+      ]);
     }
 
     if (!skipDeployZupassGatekeeper) {

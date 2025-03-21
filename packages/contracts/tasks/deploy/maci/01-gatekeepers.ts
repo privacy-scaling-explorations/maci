@@ -26,9 +26,12 @@ deployment.deployTask(EDeploySteps.Gatekeepers, "Deploy gatekeepers").then((task
     deployment.setHre(hre);
     const deployer = await deployment.getDeployer();
 
-    const { deployFreeForAllSignUpGatekeeper, deployZupassSignUpGatekeeper, deployEASSignUpGatekeeper } = await import(
-      "../../../ts/deploy"
-    );
+    const {
+      deployFreeForAllSignUpGatekeeper,
+      deployZupassSignUpGatekeeper,
+      deployEASSignUpGatekeeper,
+      deployGitcoinPassportGatekeeper,
+    } = await import("../../../ts/deploy");
 
     const freeForAllGatekeeperContractAddress = storage.getAddress(EContracts.FreeForAllGatekeeper, hre.network.name);
     const easGatekeeperContractAddress = storage.getAddress(EContracts.EASGatekeeper, hre.network.name);
@@ -177,21 +180,47 @@ deployment.deployTask(EDeploySteps.Gatekeepers, "Deploy gatekeepers").then((task
         "passingScore",
         true,
       );
-      const gitcoinGatekeeperContract = await deployment.deployContract(
+
+      const [
+        gitcoinGatekeeperContract,
+        gitcoinCheckerContract,
+        gitcoinGatekeeperFactoryContract,
+        gitcoinCheckerFactoryContract,
+      ] = await deployGitcoinPassportGatekeeper(
         {
-          name: EContracts.GitcoinPassportGatekeeper,
-          signer: deployer,
+          decoderAddress: gitcoinGatekeeperDecoderAddress,
+          minimumScore: gitcoinGatekeeperPassingScore,
         },
-        gitcoinGatekeeperDecoderAddress,
-        gitcoinGatekeeperPassingScore,
+        deployer,
+        true,
       );
 
-      await storage.register({
-        id: EContracts.GitcoinPassportGatekeeper,
-        contract: gitcoinGatekeeperContract,
-        args: [gitcoinGatekeeperDecoderAddress, gitcoinGatekeeperPassingScore],
-        network: hre.network.name,
-      });
+      await Promise.all([
+        storage.register({
+          id: EGatekeepers.GitcoinPassport,
+          contract: gitcoinGatekeeperContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: ECheckers.GitcoinPassport,
+          contract: gitcoinCheckerContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: EGatekeeperFactories.GitcoinPassport,
+          contract: gitcoinGatekeeperFactoryContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: ECheckerFactories.GitcoinPassport,
+          contract: gitcoinCheckerFactoryContract,
+          args: [],
+          network: hre.network.name,
+        }),
+      ]);
     }
 
     if (!skipDeployZupassGatekeeper) {
