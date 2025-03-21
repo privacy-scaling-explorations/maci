@@ -24,7 +24,9 @@ contract MerkleProofGatekeeper is BasePolicy {
   /// @param _evidence The proof that the user is part of the tree.
   function _enforce(address _subject, bytes calldata _evidence) internal override {
     // ensure that the user has not been registered yet
-    if (registeredAddresses[_subject]) revert AlreadyRegistered();
+    if (registeredAddresses[_subject]) {
+      revert AlreadyRegistered();
+    }
 
     // register the user so it cannot be called again with the same one
     registeredAddresses[_subject] = true;
