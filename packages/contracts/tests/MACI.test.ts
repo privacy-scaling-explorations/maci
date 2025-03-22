@@ -182,9 +182,9 @@ describe("MACI", function test() {
       });
       await gatekeeperContract.setTarget(await maci.getAddress()).then((tx) => tx.wait());
 
-      const keypair = new Keypair();
       // start from one as we already have one signup (blank state leaf)
       for (let i = 1; i < maxUsers; i += 1) {
+        const keypair = new Keypair();
         // eslint-disable-next-line no-await-in-loop
         await maci.signUp(keypair.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [1]));
       }

@@ -45,6 +45,8 @@ library InternalLeanIMT {
       revert LeafGreaterThanSnarkScalarField();
     } else if (leaf == 0) {
       revert LeafCannotBeZero();
+    } else if (_has(self, leaf)) {
+      revert LeafAlreadyExists();
     }
 
     uint256 index = self.size;
