@@ -32,6 +32,7 @@ deployment.deployTask(EDeploySteps.Gatekeepers, "Deploy gatekeepers").then((task
       deployEASSignUpGatekeeper,
       deployGitcoinPassportGatekeeper,
       deployMerkleProofGatekeeper,
+      deploySemaphoreSignupGatekeeper,
     } = await import("../../../ts/deploy");
 
     const freeForAllGatekeeperContractAddress = storage.getAddress(EContracts.FreeForAllGatekeeper, hre.network.name);
@@ -287,21 +288,39 @@ deployment.deployTask(EDeploySteps.Gatekeepers, "Deploy gatekeepers").then((task
       );
       const groupId = deployment.getDeployConfigField<number>(EContracts.SemaphoreGatekeeper, "groupId", true);
 
-      const semaphoreGatekeeperContract = await deployment.deployContract(
-        {
-          name: EContracts.SemaphoreGatekeeper,
-          signer: deployer,
-        },
-        semaphoreContractAddress,
-        groupId,
-      );
+      const [
+        semaphoreGatekeeperContract,
+        semaphoreCheckerContract,
+        semaphoreGatekeeperFactoryContract,
+        semaphoreCheckerFactoryContract,
+      ] = await deploySemaphoreSignupGatekeeper({ semaphore: semaphoreContractAddress, groupId }, deployer, true);
 
-      await storage.register({
-        id: EContracts.SemaphoreGatekeeper,
-        contract: semaphoreGatekeeperContract,
-        args: [semaphoreContractAddress, groupId.toString()],
-        network: hre.network.name,
-      });
+      await Promise.all([
+        storage.register({
+          id: EGatekeepers.Semaphore,
+          contract: semaphoreGatekeeperContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: ECheckers.Semaphore,
+          contract: semaphoreCheckerContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: EGatekeeperFactories.Semaphore,
+          contract: semaphoreGatekeeperFactoryContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: ECheckerFactories.Semaphore,
+          contract: semaphoreCheckerFactoryContract,
+          args: [],
+          network: hre.network.name,
+        }),
+      ]);
     }
 
     if (!skipDeployHatsGatekeeper) {

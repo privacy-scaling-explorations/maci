@@ -9,6 +9,7 @@ import {
   MerkleProofGatekeeper__factory as MerkleProofGatekeeperFactory,
   ZupassChecker__factory as ZupassCheckerFactory,
   EASChecker__factory as EASCheckerFactory,
+  SemaphoreChecker__factory as SemaphoreCheckerFactory,
 } from "maci-contracts/typechain-types";
 
 import type {
@@ -79,11 +80,13 @@ export const getSemaphoreGatekeeperData = async ({
   const gatekeeperContractAddress = await maciContract.signUpGatekeeper();
 
   const gatekeeperContract = SemaphoreGatekeeperFactory.connect(gatekeeperContractAddress, signer);
+  const checkerAddress = await gatekeeperContract.BASE_CHECKER();
+  const checkerContract = SemaphoreCheckerFactory.connect(checkerAddress, signer);
 
   // get the group ID and semaphore contract address
   const [groupId, semaphoreContractAddress] = await Promise.all([
-    gatekeeperContract.groupId(),
-    gatekeeperContract.semaphoreContract(),
+    checkerContract.groupId(),
+    checkerContract.semaphore(),
   ]);
 
   return {
