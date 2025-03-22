@@ -31,6 +31,7 @@ deployment.deployTask(EDeploySteps.Gatekeepers, "Deploy gatekeepers").then((task
       deployZupassSignUpGatekeeper,
       deployEASSignUpGatekeeper,
       deployGitcoinPassportGatekeeper,
+      deployMerkleProofGatekeeper,
     } = await import("../../../ts/deploy");
 
     const freeForAllGatekeeperContractAddress = storage.getAddress(EContracts.FreeForAllGatekeeper, hre.network.name);
@@ -345,19 +346,39 @@ deployment.deployTask(EDeploySteps.Gatekeepers, "Deploy gatekeepers").then((task
     if (!skipDeployMerkleProofGatekeeper) {
       const root = deployment.getDeployConfigField<string>(EContracts.MerkleProofGatekeeper, "root", true);
 
-      const merkleProofGatekeeperContract = await deployment.deployContract(
-        {
-          name: EContracts.MerkleProofGatekeeper,
-          signer: deployer,
-        },
-        root,
-      );
-      await storage.register({
-        id: EContracts.MerkleProofGatekeeper,
-        contract: merkleProofGatekeeperContract,
-        args: [root],
-        network: hre.network.name,
-      });
+      const [
+        merkleProofGatekeeperContract,
+        merkleProofCheckerContract,
+        merkleProofGatekeeperFactoryContract,
+        merkleProofCheckerFactoryContract,
+      ] = await deployMerkleProofGatekeeper({ root }, deployer, true);
+
+      await Promise.all([
+        storage.register({
+          id: EGatekeepers.MerkleProof,
+          contract: merkleProofGatekeeperContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: ECheckers.MerkleProof,
+          contract: merkleProofCheckerContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: EGatekeeperFactories.MerkleProof,
+          contract: merkleProofGatekeeperFactoryContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: ECheckerFactories.MerkleProof,
+          contract: merkleProofCheckerFactoryContract,
+          args: [],
+          network: hre.network.name,
+        }),
+      ]);
     }
   }),
 );

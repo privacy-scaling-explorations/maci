@@ -1,4 +1,4 @@
-import { EGatekeepers } from "maci-contracts";
+import { EGatekeepers, MerkleProofChecker__factory as MerkleProofCheckerFactory } from "maci-contracts";
 import {
   MACI__factory as MACIFactory,
   SignUpGatekeeper__factory as SignUpGatekeeperFactory,
@@ -194,8 +194,10 @@ export const getMerkleProofGatekeeperData = async ({
   const gatekeeperContractAddress = await maciContract.signUpGatekeeper();
 
   const gatekeeperContract = MerkleProofGatekeeperFactory.connect(gatekeeperContractAddress, signer);
+  const checkerAddress = await gatekeeperContract.BASE_CHECKER();
+  const checkerContract = MerkleProofCheckerFactory.connect(checkerAddress, signer);
 
-  const [validRoot] = await Promise.all([gatekeeperContract.root()]);
+  const [validRoot] = await Promise.all([checkerContract.root()]);
 
   return {
     root: validRoot.toString(),

@@ -15,7 +15,7 @@ contract FreeForAllChecker is BaseChecker {
   /// @notice Returns true for everycall.
   /// @param subject Address to validate ownership for.
   /// @param evidence Encoded token ID used for validation.
-  /// @return Boolean indicating whether the subject owns the token.
+  /// @return Boolean indicating whether the subject passes the check.
   function _check(address subject, bytes calldata evidence) internal view override returns (bool) {
     super._check(subject, evidence);
 

@@ -3,14 +3,15 @@ import { expect } from "chai";
 import { AbiCoder, Signer, ZeroAddress, encodeBytes32String } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
-import { deployContract } from "../../ts/deploy";
+import { deployMerkleProofGatekeeper } from "../../ts/deploy";
 import { getDefaultSigner, getSigners, generateMerkleTree } from "../../ts/utils";
-import { MerkleProofGatekeeper, MACI } from "../../typechain-types";
+import { MerkleProofGatekeeper, MACI, MerkleProofChecker } from "../../typechain-types";
 import { STATE_TREE_DEPTH, initialVoiceCreditBalance } from "../constants";
 import { deployTestContracts } from "../utils";
 
 describe("MerkleProof Gatekeeper", () => {
   let merkleProofGatekeeper: MerkleProofGatekeeper;
+  let merkleProofChecker: MerkleProofChecker;
   let signer: Signer;
   let signerAddress: string;
   let tree: StandardMerkleTree<string[]>;
@@ -34,7 +35,7 @@ describe("MerkleProof Gatekeeper", () => {
     signerAddress = await signer.getAddress();
     allowedAddress.push([signerAddress]);
     tree = generateMerkleTree(allowedAddress);
-    merkleProofGatekeeper = await deployContract("MerkleProofGatekeeper", signer, true, tree.root);
+    [merkleProofGatekeeper, merkleProofChecker] = await deployMerkleProofGatekeeper({ root: tree.root }, signer, true);
   });
 
   describe("Deployment", () => {
@@ -44,8 +45,8 @@ describe("MerkleProof Gatekeeper", () => {
     });
 
     it("should fail to deploy when the root is not valid", async () => {
-      await expect(deployContract("MerkleProofGatekeeper", signer, true, invalidRoot)).to.be.revertedWithCustomError(
-        merkleProofGatekeeper,
+      await expect(deployMerkleProofGatekeeper({ root: invalidRoot }, signer, true)).to.be.revertedWithCustomError(
+        merkleProofChecker,
         "InvalidRoot",
       );
     });
@@ -94,7 +95,7 @@ describe("MerkleProof Gatekeeper", () => {
           user.pubKey.asContractParam(),
           AbiCoder.defaultAbiCoder().encode(["bytes32[]"], [invalidProof]),
         ),
-      ).to.be.revertedWithCustomError(merkleProofGatekeeper, "InvalidProof");
+      ).to.be.revertedWithCustomError(merkleProofChecker, "InvalidProof");
     });
 
     it("should register a user if the register function is called with the valid data", async () => {
