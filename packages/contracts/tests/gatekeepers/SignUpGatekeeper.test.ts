@@ -4,7 +4,13 @@ import { Keypair } from "maci-domainobjs";
 
 import { deploySignupToken, deploySignupTokenGatekeeper, deployFreeForAllSignUpGatekeeper } from "../../ts/deploy";
 import { getDefaultSigner } from "../../ts/utils";
-import { FreeForAllGatekeeper, MACI, SignUpToken, SignUpTokenGatekeeper } from "../../typechain-types";
+import {
+  FreeForAllGatekeeper,
+  MACI,
+  SignUpToken,
+  SignUpTokenChecker,
+  SignUpTokenGatekeeper,
+} from "../../typechain-types";
 import { STATE_TREE_DEPTH, initialVoiceCreditBalance } from "../constants";
 import { deployTestContracts } from "../utils";
 
@@ -12,13 +18,18 @@ describe("SignUpGatekeeper", () => {
   let signUpToken: SignUpToken;
   let freeForAllContract: FreeForAllGatekeeper;
   let signUpTokenGatekeeperContract: SignUpTokenGatekeeper;
+  let signUpTokenChecker: SignUpTokenChecker;
   let signer: Signer;
 
   before(async () => {
     signer = await getDefaultSigner();
     [freeForAllContract] = await deployFreeForAllSignUpGatekeeper(signer, true);
     signUpToken = await deploySignupToken(signer, true);
-    signUpTokenGatekeeperContract = await deploySignupTokenGatekeeper(await signUpToken.getAddress(), signer, true);
+    [signUpTokenGatekeeperContract, signUpTokenChecker] = await deploySignupTokenGatekeeper(
+      { token: await signUpToken.getAddress() },
+      signer,
+      true,
+    );
   });
 
   describe("Deployment", () => {
@@ -26,10 +37,11 @@ describe("SignUpGatekeeper", () => {
       expect(freeForAllContract).to.not.eq(undefined);
       expect(signUpToken).to.not.eq(undefined);
       expect(signUpTokenGatekeeperContract).to.not.eq(undefined);
+      expect(signUpTokenChecker).to.not.eq(undefined);
     });
 
     it("SignUpTokenGatekeeper has token address set", async () => {
-      expect(await signUpTokenGatekeeperContract.token()).to.eq(await signUpToken.getAddress());
+      expect(await signUpTokenChecker.token()).to.eq(await signUpToken.getAddress());
     });
   });
 
@@ -38,7 +50,11 @@ describe("SignUpGatekeeper", () => {
 
     beforeEach(async () => {
       signUpToken = await deploySignupToken(signer, true);
-      signUpTokenGatekeeperContract = await deploySignupTokenGatekeeper(await signUpToken.getAddress(), signer, true);
+      [signUpTokenGatekeeperContract, signUpTokenChecker] = await deploySignupTokenGatekeeper(
+        { token: await signUpToken.getAddress() },
+        signer,
+        true,
+      );
 
       const r = await deployTestContracts({
         initialVoiceCreditBalance,

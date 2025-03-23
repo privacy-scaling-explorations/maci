@@ -60,6 +60,8 @@ import {
   SemaphoreCheckerFactory as SemaphoreCheckerFactoryContract,
   SemaphoreChecker__factory as SemaphoreCheckerFactory,
   SemaphoreGatekeeper__factory as SemaphoreGatekeeperFactory,
+  SignUpTokenGatekeeperFactory as SignUpTokenGatekeeperFactoryContract,
+  SignUpTokenCheckerFactory as SignUpTokenCheckerFactoryContract,
   SignUpGatekeeper,
   FreeForAllChecker,
   BaseChecker,
@@ -78,6 +80,9 @@ import {
   MerkleProofChecker__factory as MerkleProofCheckerFactory,
   MerkleProofGatekeeper__factory as MerkleProofGatekeeperFactory,
   SemaphoreChecker,
+  SignUpTokenChecker,
+  SignUpTokenChecker__factory as SignUpTokenCheckerFactory,
+  SignUpTokenGatekeeper__factory as SignUpTokenGatekeeperFactory,
 } from "../typechain-types";
 
 import { genEmptyBallotRoots } from "./genEmptyBallotRoots";
@@ -237,20 +242,6 @@ const deployGatekeeper = async <
     gatekeeperProxyFactory,
   };
 };
-
-/**
- * Deploy a SignUpTokenGatekeeper contract
- * @param signUpTokenAddress - the address of the SignUpToken contract
- * @param signer - the signer to use to deploy the contract
- * @param quiet - whether to suppress console output
- * @returns a SignUpTokenGatekeeper contract
- */
-export const deploySignupTokenGatekeeper = async (
-  signUpTokenAddress: string,
-  signer?: Signer,
-  quiet = false,
-): Promise<SignUpTokenGatekeeper> =>
-  deployContract<SignUpTokenGatekeeper>("SignUpTokenGatekeeper", signer, quiet, signUpTokenAddress);
 
 /**
  * Deploy a FreeForAllGatekeeper contract
@@ -448,6 +439,40 @@ export const deploySemaphoreSignupGatekeeper = async (
     gatekeeperFactory: new SemaphoreGatekeeperFactory(signer),
     signer: signer!,
     checkerArgs: [args.semaphore, args.groupId.toString()],
+    quiet,
+  });
+
+  return [gatekeeper, checker, gatekeeperProxyFactory, checkerProxyFactory];
+};
+
+/**
+ * Deploy a SignupTokenGatekeeper contract
+ * @param args - the arguments to deploy gatekeeper
+ * @param signer - the signer to use to deploy the contract
+ * @param quiet - whether to suppress console output
+ * @returns the deployed SignupTokenGatekeeper contract
+ */
+export const deploySignupTokenGatekeeper = async (
+  args: {
+    token: string;
+  },
+  signer?: Signer,
+  quiet = false,
+): Promise<
+  [SignUpTokenGatekeeper, SignUpTokenChecker, SignUpTokenGatekeeperFactoryContract, SignUpTokenCheckerFactoryContract]
+> => {
+  const { gatekeeper, checker, checkerProxyFactory, gatekeeperProxyFactory } = await deployGatekeeper<
+    SignUpTokenChecker,
+    SignUpTokenGatekeeper,
+    SignUpTokenCheckerFactoryContract,
+    SignUpTokenGatekeeperFactoryContract
+  >({
+    gatekeeperFactoryName: EGatekeeperFactories.Token,
+    checkerFactoryName: ECheckerFactories.Token,
+    checkerFactory: new SignUpTokenCheckerFactory(signer),
+    gatekeeperFactory: new SignUpTokenGatekeeperFactory(signer),
+    signer: signer!,
+    checkerArgs: [args.token],
     quiet,
   });
 

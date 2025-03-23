@@ -44,8 +44,8 @@ contract ZupassChecker is BaseChecker {
   }
 
   /// @notice Throws errors if evidence and subject are not valid.
-  /// @param subject Address to validate ownership for.
-  /// @param evidence Encoded token ID used for validation.
+  /// @param subject Address to validate.
+  /// @param evidence Encoded data used for validation.
   /// @return Boolean indicating whether the subject passes the check.
   function _check(address subject, bytes calldata evidence) internal view override returns (bool) {
     super._check(subject, evidence);
