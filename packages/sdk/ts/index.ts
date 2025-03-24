@@ -1,4 +1,4 @@
-export * from "./keys";
+export * from "./verifyingKeys";
 export * from "./maci";
 export * from "./relayer";
 export * from "./poll";
@@ -9,7 +9,7 @@ export * from "./vote";
 export * from "./utils";
 export * from "./user";
 export * from "./deploy";
-
+export * from "./maciKeys";
 export {
   EMode,
   EContracts,
