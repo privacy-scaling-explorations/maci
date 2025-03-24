@@ -13,6 +13,7 @@ import type {
   IJoinPollData,
   IJoinPollArgs,
   IIsNullifierOnChainArgs,
+  IHasUserSignedUpArgs,
 } from "./types";
 import type { CircuitInputs } from "../utils/types";
 
@@ -272,4 +273,17 @@ export const joinPoll = async ({
     nullifier: nullifier.toString(),
     hash: receipt.hash,
   };
+};
+
+/**
+ * Checks if a user is signed up with a given public key
+ * @param {IIsSignedUpArgs} args - The arguments for the is signed up command
+ * @returns {boolean} Whether the user is signed up or not
+ */
+export const hasUserSignedUp = async ({ maciAddress, maciPubKey, signer }: IHasUserSignedUpArgs): Promise<boolean> => {
+  const maciContract = MACIFactory.connect(maciAddress, signer);
+
+  const stateIndex = await maciContract.getStateIndex(PubKey.deserialize(maciPubKey).hash());
+
+  return stateIndex !== 0n;
 };

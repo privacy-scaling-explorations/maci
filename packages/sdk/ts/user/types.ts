@@ -480,3 +480,23 @@ export interface IGetPollJoiningCircuitInputsFromStateFileArgs {
    */
   userMaciPrivKey: PrivKey;
 }
+
+/**
+ * Interface for the arguments for the is signed up command
+ */
+export interface IHasUserSignedUpArgs {
+  /**
+   * The address of the MACI contract
+   */
+  maciAddress: string;
+
+  /**
+   * The public key of the user
+   */
+  maciPubKey: string;
+
+  /**
+   * The signer to use for the transaction
+   */
+  signer: Signer;
+}
