@@ -12,7 +12,9 @@ import { getDefaultSigner, getBlockTimestamp } from "../ts/utils";
 import {
   MACI,
   MessageProcessor,
+  Poll as PollContract,
   MessageProcessor__factory as MessageProcessorFactory,
+  Poll__factory as PollFactory,
   Verifier,
   VkRegistry,
   SignUpGatekeeper,
@@ -37,6 +39,7 @@ describe("MessageProcessor", () => {
   let verifierContract: Verifier;
   let vkRegistryContract: VkRegistry;
   let mpContract: MessageProcessor;
+  let pollContract: PollContract;
   let signupGatekeeperContract: SignUpGatekeeper;
   let initialVoiceCreditProxyContract: ConstantInitialVoiceCreditProxy;
   let pollId: bigint;
@@ -90,7 +93,7 @@ describe("MessageProcessor", () => {
 
     const pollContracts = await maciContract.getPoll(pollId);
     mpContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
-
+    pollContract = PollFactory.connect(pollContracts.poll, signer);
     // deploy local poll
     const p = maciState.deployPoll(
       BigInt(startTime + duration),
@@ -139,12 +142,15 @@ describe("MessageProcessor", () => {
     expect(receipt?.status).to.eq(1);
   });
 
-  describe("testing with more messages", () => {
-    before(async () => {
-      await timeTravel(signer.provider! as unknown as EthereumProvider, duration + 1);
+  describe("processMessages()", () => {
+    it("should fail if the voting period is not over", async () => {
+      await expect(
+        mpContract.processMessages(BigInt(generatedInputs.newSbCommitment), [0, 0, 0, 0, 0, 0, 0, 0]),
+      ).to.be.revertedWithCustomError(pollContract, "VotingPeriodNotOver");
     });
 
-    it("processMessages() should update the state and ballot root commitment", async () => {
+    it("should update the state and ballot root commitment", async () => {
+      await timeTravel(signer.provider! as unknown as EthereumProvider, duration + 1);
       // Submit the proof
       const tx = await mpContract.processMessages(BigInt(generatedInputs.newSbCommitment), [0, 0, 0, 0, 0, 0, 0, 0]);
 
@@ -156,6 +162,12 @@ describe("MessageProcessor", () => {
 
       const onChainNewSbCommitment = await mpContract.sbCommitment();
       expect(generatedInputs.newSbCommitment).to.eq(onChainNewSbCommitment.toString());
+    });
+
+    it("should fail if the messages have already been processed", async () => {
+      await expect(
+        mpContract.processMessages(BigInt(generatedInputs.newSbCommitment), [0, 0, 0, 0, 0, 0, 0, 0]),
+      ).to.be.revertedWithCustomError(mpContract, "NoMoreMessages");
     });
   });
 });

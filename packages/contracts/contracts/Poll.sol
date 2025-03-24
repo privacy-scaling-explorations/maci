@@ -226,12 +226,6 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     _;
   }
 
-  /// @notice A modifier that causes the function to revert if the batch hashes is padded
-  modifier isNotPadded() {
-    if (isBatchHashesPadded) revert BatchHashesAlreadyPadded();
-    _;
-  }
-
   /// @notice A modifier that causes the function to revert if the caller is not a relayer
   modifier onlyRelayer() {
     if (!relayers[msg.sender]) revert NotRelayer();
@@ -321,11 +315,17 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   }
 
   /// @notice pad last unclosed batch
-  function padLastBatch() external isAfterVotingDeadline isNotPadded {
+  /// @dev Anyone can call this function, it will only pad once
+  function padLastBatch() external isAfterVotingDeadline {
+    if (isBatchHashesPadded) {
+      return;
+    }
+
+    isBatchHashesPadded = true;
+
     if (numMessages % messageBatchSize != 0) {
       batchHashes.push(chainHash);
     }
-    isBatchHashesPadded = true;
   }
 
   /// @inheritdoc IPoll
@@ -505,7 +505,9 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
 
   /// @inheritdoc IPoll
   function getStateIndex(uint256 element) public view returns (uint40) {
-    for (uint40 i = 0; i <= pollStateTree.maxIndex; i++) {
+    uint40 maxIndex = pollStateTree.maxIndex;
+
+    for (uint40 i = 0; i <= maxIndex; i++) {
       if (pollStateTree.elements[i] == element) {
         return i;
       }

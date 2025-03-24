@@ -14,11 +14,10 @@ contract TallyFactory is ITallyFactory, DomainObjs {
     address _vkRegistry,
     address _poll,
     address _messageProcessor,
-    address _owner,
     Mode _mode
   ) public virtual returns (address tallyAddr) {
     // deploy Tally for this Poll
-    Tally tally = new Tally(_verifier, _vkRegistry, _poll, _messageProcessor, _owner, _mode);
+    Tally tally = new Tally(_verifier, _vkRegistry, _poll, _messageProcessor, _mode);
     tallyAddr = address(tally);
   }
 }

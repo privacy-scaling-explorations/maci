@@ -2,21 +2,19 @@
 pragma solidity ^0.8.28;
 
 import { IMACI } from "./interfaces/IMACI.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { IPoll } from "./interfaces/IPoll.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { Hasher } from "./crypto/Hasher.sol";
 import { IVerifier } from "./interfaces/IVerifier.sol";
 import { IVkRegistry } from "./interfaces/IVkRegistry.sol";
 import { IMessageProcessor } from "./interfaces/IMessageProcessor.sol";
-import { CommonUtilities } from "./utilities/CommonUtilities.sol";
 import { DomainObjs } from "./utilities/DomainObjs.sol";
 
 /// @title MessageProcessor
 /// @dev MessageProcessor is used to process messages published by signup users.
 /// It will process message by batch due to large size of messages.
 /// After it finishes processing, the sbCommitment will be used for Tally and Subsidy contracts.
-contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMessageProcessor, DomainObjs {
+contract MessageProcessor is SnarkCommon, Hasher, IMessageProcessor, DomainObjs {
   /// @notice custom errors
   error NoMoreMessages();
   error StateNotMerged();
@@ -46,15 +44,8 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
   /// @param _verifier The Verifier contract address
   /// @param _vkRegistry The VkRegistry contract address
   /// @param _poll The Poll contract address
-  /// @param _mpOwner The owner of the MessageProcessor contract
   /// @param _mode Voting mode
-  constructor(
-    address _verifier,
-    address _vkRegistry,
-    address _poll,
-    address _mpOwner,
-    Mode _mode
-  ) payable Ownable(_mpOwner) {
+  constructor(address _verifier, address _vkRegistry, address _poll, Mode _mode) payable {
     verifier = IVerifier(_verifier);
     vkRegistry = IVkRegistry(_vkRegistry);
     poll = IPoll(_poll);
@@ -66,10 +57,7 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
   /// @param _newSbCommitment The new state root and ballot root commitment
   ///                         after all messages are processed
   /// @param _proof The zk-SNARK proof
-  function processMessages(uint256 _newSbCommitment, uint256[8] calldata _proof) external onlyOwner {
-    // ensure the voting period is over
-    _votingPeriodOver(poll);
-
+  function processMessages(uint256 _newSbCommitment, uint256[8] calldata _proof) external {
     // There must be unprocessed messages
     if (processingComplete) {
       revert NoMoreMessages();
@@ -85,6 +73,8 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
       uint256 currentSbCommitment = poll.currentSbCommitment();
       sbCommitment = currentSbCommitment;
 
+      /// @notice this also checks that the voting period is over so we do not
+      /// need to check it in this function
       poll.padLastBatch();
       batchHashes = poll.getBatchHashes();
       currentBatchIndex = batchHashes.length - 1;
