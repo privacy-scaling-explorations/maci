@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import { BasePolicy } from "@excubiae/contracts/policy/BasePolicy.sol";
-
+import { SignUpGatekeeper } from "../SignUpGatekeeper.sol";
 import { ISemaphore } from "./ISemaphore.sol";
 
 /// @title SemaphoreGatekeeper
@@ -11,12 +10,9 @@ import { ISemaphore } from "./ISemaphore.sol";
 /// @dev Please note that once a identity is used to register, it cannot be used again.
 /// This is because we store the nullifier which is
 /// hash(secret, groupId)
-contract SemaphoreGatekeeper is BasePolicy {
+contract SemaphoreGatekeeper is SignUpGatekeeper {
   /// @notice The registered identities
   mapping(uint256 => bool) public spentNullifiers;
-
-  /// @notice custom errors
-  error AlreadyRegistered();
 
   /// @notice Create a new instance of the gatekeeper
   // solhint-disable-next-line no-empty-blocks

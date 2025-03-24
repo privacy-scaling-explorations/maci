@@ -58,6 +58,8 @@ import {
   MerkleProofGatekeeperFactory as MerkleProofGatekeeperFactoryContract,
   SemaphoreGatekeeperFactory as SemaphoreGatekeeperFactoryContract,
   SemaphoreCheckerFactory as SemaphoreCheckerFactoryContract,
+  HatsGatekeeperFactory as HatsGatekeeperFactoryContract,
+  HatsCheckerFactory as HatsCheckerFactoryContract,
   SemaphoreChecker__factory as SemaphoreCheckerFactory,
   SemaphoreGatekeeper__factory as SemaphoreGatekeeperFactory,
   SignUpTokenGatekeeperFactory as SignUpTokenGatekeeperFactoryContract,
@@ -83,6 +85,10 @@ import {
   SignUpTokenChecker,
   SignUpTokenChecker__factory as SignUpTokenCheckerFactory,
   SignUpTokenGatekeeper__factory as SignUpTokenGatekeeperFactory,
+  HatsGatekeeper,
+  HatsChecker,
+  HatsChecker__factory as HatsCheckerFactory,
+  HatsGatekeeper__factory as HatsGatekeeperFactory,
 } from "../typechain-types";
 
 import { genEmptyBallotRoots } from "./genEmptyBallotRoots";
@@ -415,7 +421,7 @@ export const deployMerkleProofGatekeeper = async (
  * @param args - the arguments to deploy gatekeeper
  * @param signer - the signer to use to deploy the contract
  * @param quiet - whether to suppress console output
- * @returns the deployed SemaphoreGatekeeper contract
+ * @returns the deployed SemaphoreGatekeeper contracts
  */
 export const deploySemaphoreSignupGatekeeper = async (
   args: {
@@ -445,6 +451,38 @@ export const deploySemaphoreSignupGatekeeper = async (
   return [gatekeeper, checker, gatekeeperProxyFactory, checkerProxyFactory];
 };
 
+/**
+ * Deploy a HatsGatekeeper contract
+ * @param args - the arguments to deploy gatekeeper
+ * @param signer - the signer to use to deploy the contract
+ * @param quiet - whether to suppress console output
+ * @returns the deployed HatsGatekeeper contracts
+ */
+export const deployHatsSignupGatekeeper = async (
+  args: {
+    hats: string;
+    criterionHats: BigNumberish[];
+  },
+  signer?: Signer,
+  quiet = false,
+): Promise<[HatsGatekeeper, HatsChecker, HatsGatekeeperFactoryContract, HatsCheckerFactoryContract]> => {
+  const { gatekeeper, checker, checkerProxyFactory, gatekeeperProxyFactory } = await deployGatekeeper<
+    HatsChecker,
+    HatsGatekeeper,
+    HatsCheckerFactoryContract,
+    HatsGatekeeperFactoryContract
+  >({
+    gatekeeperFactoryName: EGatekeeperFactories.Hats,
+    checkerFactoryName: ECheckerFactories.Hats,
+    checkerFactory: new HatsCheckerFactory(signer),
+    gatekeeperFactory: new HatsGatekeeperFactory(signer),
+    signer: signer!,
+    checkerArgs: [args.hats, args.criterionHats],
+    quiet,
+  });
+
+  return [gatekeeper, checker, gatekeeperProxyFactory, checkerProxyFactory];
+};
 /**
  * Deploy a SignupTokenGatekeeper contract
  * @param args - the arguments to deploy gatekeeper

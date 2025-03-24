@@ -4,7 +4,6 @@ export {
   getSemaphoreGatekeeperData,
   getZupassGatekeeperData,
   getEASGatekeeperData,
-  getHatsSingleGatekeeperData,
   getMerkleProofGatekeeperData,
 } from "./gatekeeper";
 export { mergeSignups } from "./merge";
@@ -16,7 +15,6 @@ export type {
   ISemaphoreGatekeeperData,
   IZupassGatekeeperData,
   IEASGatekeeperData,
-  IHatsGatekeeperData,
   IMerkleProofGatekeeperData,
   IMergeSignupsArgs,
   IGenerateMaciStateArgs,

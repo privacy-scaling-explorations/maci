@@ -14,14 +14,17 @@ export interface IDeployMaciArgs {
    * The address of the session key
    */
   sessionKeyAddress: Hex;
+
   /**
    * The approval for the session key
    */
   approval: string;
+
   /**
    * The chain name
    */
   chain: ESupportedNetworks;
+
   /**
    * The configuration for deploying MACI
    */
@@ -36,14 +39,17 @@ export interface IDeployPollArgs {
    * The address of the session key
    */
   sessionKeyAddress: Hex;
+
   /**
    * The approval for the session key
    */
   approval: string;
+
   /**
    * The chain name
    */
   chain: ESupportedNetworks;
+
   /**
    * The configuration for deploying a poll
    */
@@ -68,10 +74,12 @@ export interface IEASGatekeeperArgs {
    * The address of the EAS contract
    */
   easAddress: string;
+
   /**
    * The attestation schema to be used
    */
   schema: string;
+
   /**
    * The trusted attester
    */
@@ -86,14 +94,17 @@ export interface IZupassGatekeeperArgs {
    * The first signer
    */
   signer1: string;
+
   /**
    * The second signer
    */
   signer2: string;
+
   /**
    * The event ID
    */
   eventId: string;
+
   /**
    * The Zupass verifier address
    */
@@ -108,10 +119,11 @@ export interface IHatsGatekeeperArgs {
    * The hats protocol address
    */
   hatsProtocolAddress: string;
+
   /**
    * The criterion hats
    */
-  critrionHats: string[] | string;
+  critrionHats: string[];
 }
 
 /**
@@ -122,6 +134,7 @@ export interface ISemaphoreGatekeeperArgs {
    * The semaphore contract address
    */
   semaphoreContract: string;
+
   /**
    * The group ID
    */
@@ -136,6 +149,7 @@ export interface IGitcoinPassportGatekeeperArgs {
    * The decoder address
    */
   decoderAddress: string;
+
   /**
    * The passing score
    */
@@ -150,14 +164,17 @@ export interface IVkRegistryArgs {
    * The state tree depth
    */
   stateTreeDepth: bigint | string;
+
   /**
    * The int state tree depth determines the tally batch size
    */
   intStateTreeDepth: bigint | string;
+
   /**
    * The vote option tree depth
    */
   voteOptionTreeDepth: bigint | string;
+
   /**
    * The message batch size
    */
@@ -186,6 +203,7 @@ export interface IDeployMaciConfig {
     type: EGatekeepers;
     args?: IGatekeeperArgs;
   };
+
   /**
    * The MACI configuration
    */
@@ -193,12 +211,14 @@ export interface IDeployMaciConfig {
     stateTreeDepth: number;
     gatekeeper: EGatekeepers;
   };
+
   /**
    * The VkRegistry configuration
    */
   VkRegistry: {
     args: IVkRegistryArgs;
   };
+
   /**
    * Poseidon configuration
    */
@@ -218,30 +238,37 @@ export interface IDeployPollConfig {
    * The poll's start date
    */
   startDate: number;
+
   /**
    * The poll's end date
    */
   endDate: number;
+
   /**
    * The coordinator pubkey
    */
   coordinatorPubkey: string;
+
   /**
    * Whether to use quadratic voting
    */
   useQuadraticVoting: boolean;
+
   /**
    * Determines the tally batch size
    */
   intStateTreeDepth: number;
+
   /**
    * Message batch size
    */
   messageBatchSize: number;
+
   /**
    * Vote option tree depth
    */
   voteOptionTreeDepth: number;
+
   /**
    * The gatekeeper configuration
    */
@@ -250,6 +277,7 @@ export interface IDeployPollConfig {
     args?: IGatekeeperArgs;
     address?: Hex;
   };
+
   /**
    * The initial voice credits proxy configuration
    */
@@ -258,10 +286,12 @@ export interface IDeployPollConfig {
     args: IInitialVoiceCreditProxyArgs;
     address?: Hex;
   };
+
   /**
    * The relayer addresses
    */
   relayers?: string[];
+
   /**
    * Number of valid vote options
    */
@@ -276,14 +306,17 @@ export interface IContractData {
    * The contract's address
    */
   address: string | undefined;
+
   /**
    * The ABI of the contract
    */
   abi: Abi;
+
   /**
    * The bytecode of the contract
    */
   bytecode: Hex;
+
   /**
    * Whether the contract is already deployed
    */

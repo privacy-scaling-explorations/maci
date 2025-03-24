@@ -100,21 +100,6 @@ export interface IEASGatekeeperData {
 }
 
 /**
- * Interface for the Hats gatekeeper data
- */
-export interface IHatsGatekeeperData {
-  /**
-   * The criterion hat(s)
-   */
-  criterionHat: string[];
-
-  /**
-   * The hats contract
-   */
-  hatsContract: string;
-}
-
-/**
  * Interface for the MerkleProof gatekeeper data
  */
 export interface IMerkleProofGatekeeperData {

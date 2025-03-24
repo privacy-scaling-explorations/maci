@@ -1,7 +1,5 @@
 import { hexToBigInt, uuidToBigInt } from "@pcd/util";
 
-import type { HatsGatekeeperBase } from "../../../typechain-types";
-
 import { info, logGreen } from "../../../ts/logger";
 import { EDeploySteps, ESupportedChains } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
@@ -33,6 +31,7 @@ deployment.deployTask(EDeploySteps.Gatekeepers, "Deploy gatekeepers").then((task
       deployGitcoinPassportGatekeeper,
       deployMerkleProofGatekeeper,
       deploySemaphoreSignupGatekeeper,
+      deployHatsSignupGatekeeper,
     } = await import("../../../ts/deploy");
 
     const freeForAllGatekeeperContractAddress = storage.getAddress(EContracts.FreeForAllGatekeeper, hre.network.name);
@@ -332,34 +331,35 @@ deployment.deployTask(EDeploySteps.Gatekeepers, "Deploy gatekeepers").then((task
         true,
       );
 
-      let hatsGatekeeperContract: HatsGatekeeperBase;
-      // if we have one we use the single gatekeeper
-      if (criterionHats.length === 1) {
-        hatsGatekeeperContract = await deployment.deployContract(
-          {
-            name: EContracts.HatsGatekeeperSingle,
-            signer: deployer,
-          },
-          hatsProtocolAddress,
-          criterionHats[0],
-        );
-      } else {
-        hatsGatekeeperContract = await deployment.deployContract(
-          {
-            name: EContracts.HatsGatekeeperMultiple,
-            signer: deployer,
-          },
-          hatsProtocolAddress,
-          criterionHats,
-        );
-      }
+      const [hatsGatekeeperContract, hatsCheckerContract, hatsGatekeeperFactoryContract, hatsCheckerFactoryContract] =
+        await deployHatsSignupGatekeeper({ hats: hatsProtocolAddress, criterionHats }, deployer, true);
 
-      await storage.register({
-        id: EContracts.HatsGatekeeper,
-        contract: hatsGatekeeperContract,
-        args: [hatsProtocolAddress, criterionHats.length === 1 ? criterionHats[0] : criterionHats],
-        network: hre.network.name,
-      });
+      await Promise.all([
+        storage.register({
+          id: EGatekeepers.Hats,
+          contract: hatsGatekeeperContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: ECheckers.Hats,
+          contract: hatsCheckerContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: EGatekeeperFactories.Hats,
+          contract: hatsGatekeeperFactoryContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: ECheckerFactories.Hats,
+          contract: hatsCheckerFactoryContract,
+          args: [],
+          network: hre.network.name,
+        }),
+      ]);
     }
 
     if (!skipDeployMerkleProofGatekeeper) {

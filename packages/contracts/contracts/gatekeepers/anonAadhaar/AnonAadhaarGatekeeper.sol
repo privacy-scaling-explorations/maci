@@ -1,19 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import { BasePolicy } from "@excubiae/contracts/policy/BasePolicy.sol";
+import { SignUpGatekeeper } from "../SignUpGatekeeper.sol";
 
 /// @title AnonAadhaarGatekeeper
 /// @notice A gatekeeper contract which allows users to sign up to MACI
 /// only if they can prove they are valid Aadhaar owners.
 /// @dev Please note that once a identity is used to register, it cannot be used again.
 /// This is because we store the nullifier of the proof.
-contract AnonAadhaarGatekeeper is BasePolicy {
+contract AnonAadhaarGatekeeper is SignUpGatekeeper {
   /// @notice The registered identities
   mapping(uint256 => bool) public registeredAadhaars;
-
-  /// @notice custom errors
-  error AlreadyRegistered();
 
   /// @notice Create a new instance of AnonAadhaarGatekeeper
   // solhint-disable-next-line no-empty-blocks
