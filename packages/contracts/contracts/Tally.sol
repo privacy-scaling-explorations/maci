@@ -3,20 +3,18 @@ pragma solidity ^0.8.28;
 
 import { IMACI } from "./interfaces/IMACI.sol";
 import { Hasher } from "./crypto/Hasher.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { IPoll } from "./interfaces/IPoll.sol";
 import { ITally } from "./interfaces/ITally.sol";
 import { IMessageProcessor } from "./interfaces/IMessageProcessor.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { IVerifier } from "./interfaces/IVerifier.sol";
 import { IVkRegistry } from "./interfaces/IVkRegistry.sol";
-import { CommonUtilities } from "./utilities/CommonUtilities.sol";
 import { DomainObjs } from "./utilities/DomainObjs.sol";
 
 /// @title Tally
 /// @notice The Tally contract is used during votes tallying
 /// and by users to verify the tally results.
-contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITally {
+contract Tally is SnarkCommon, Hasher, DomainObjs, ITally {
   uint256 internal constant TREE_ARITY = 2;
   uint256 internal constant VOTE_OPTION_TREE_ARITY = 5;
 
@@ -85,16 +83,8 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
   /// @param _vkRegistry The VkRegistry contract
   /// @param _poll The Poll contract
   /// @param _mp The MessageProcessor contract
-  /// @param _tallyOwner The owner of the Tally contract
   /// @param _mode The mode of the poll
-  constructor(
-    address _verifier,
-    address _vkRegistry,
-    address _poll,
-    address _mp,
-    address _tallyOwner,
-    Mode _mode
-  ) payable Ownable(_tallyOwner) {
+  constructor(address _verifier, address _vkRegistry, address _poll, address _mp, Mode _mode) payable {
     verifier = IVerifier(_verifier);
     vkRegistry = IVkRegistry(_vkRegistry);
     poll = IPoll(_poll);
@@ -113,7 +103,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
   }
 
   /// @notice Update the state and ballot root commitment
-  function updateSbCommitment() public onlyOwner {
+  function updateSbCommitment() public {
     // Require that all messages have been processed
     if (!messageProcessor.processingComplete()) {
       revert ProcessingNotComplete();
@@ -127,8 +117,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
   /// @notice Verify the result of a tally batch
   /// @param _newTallyCommitment the new tally commitment to be verified
   /// @param _proof the proof generated after tallying this batch
-  function tallyVotes(uint256 _newTallyCommitment, uint256[8] calldata _proof) public onlyOwner {
-    _votingPeriodOver(poll);
+  function tallyVotes(uint256 _newTallyCommitment, uint256[8] calldata _proof) public {
     updateSbCommitment();
 
     // get the batch size and start index
@@ -368,7 +357,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
    * @notice Add and verify tally results by batch.
    * @param args add tally result args
    */
-  function addTallyResults(ITally.AddTallyResultsArgs calldata args) public virtual onlyOwner {
+  function addTallyResults(ITally.AddTallyResultsArgs calldata args) public virtual {
     if (!isTallied()) {
       revert VotesNotTallied();
     }

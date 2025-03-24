@@ -255,6 +255,10 @@ describe("Poll", () => {
       }
     });
 
+    it("getStateIndex should throw when given a state leaf that doesn't exist", async () => {
+      await expect(pollContract.getStateIndex(1)).to.be.revertedWithCustomError(pollContract, "StateLeafNotFound");
+    });
+
     it("should have the correct tree size", async () => {
       const pollStateTree = await pollContract.pollStateTree();
       const size = Number(pollStateTree.numberOfLeaves);

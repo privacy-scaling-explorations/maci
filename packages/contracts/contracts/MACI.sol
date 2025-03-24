@@ -77,6 +77,7 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
   error TooManySignups();
   error InvalidPubKey();
   error PollDoesNotExist(uint256 pollId);
+  error UserNotSignedUp();
 
   /// @notice Create a new instance of the MACI contract.
   /// @param _pollFactory The PollFactory contract
@@ -134,7 +135,7 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
   }
 
   /// @inheritdoc IMACI
-  function deployPoll(DeployPollArgs calldata args) public virtual returns (PollContracts memory) {
+  function deployPoll(DeployPollArgs memory args) public virtual returns (PollContracts memory) {
     // cache the poll to a local variable so we can increment it
     uint256 pollId = nextPollId;
 
@@ -171,8 +172,8 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
     });
 
     address p = pollFactory.deploy(deployPollArgs);
-    address mp = messageProcessorFactory.deploy(args.verifier, args.vkRegistry, p, msg.sender, args.mode);
-    address tally = tallyFactory.deploy(args.verifier, args.vkRegistry, p, mp, msg.sender, args.mode);
+    address mp = messageProcessorFactory.deploy(args.verifier, args.vkRegistry, p, args.mode);
+    address tally = tallyFactory.deploy(args.verifier, args.vkRegistry, p, mp, args.mode);
 
     // store the addresses in a struct so they can be returned
     PollContracts memory pollAddr = PollContracts({ poll: p, messageProcessor: mp, tally: tally });
@@ -208,8 +209,12 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
   }
 
   /// @inheritdoc IMACI
-  function getStateIndex(uint256 _pubKeyHash) external view returns (uint256 index) {
+  function getStateIndex(uint256 _pubKeyHash) external view returns (uint256) {
+    uint256 index = leanIMTData.leaves[_pubKeyHash];
+
+    if (index == 0) revert UserNotSignedUp();
+
     // need to subtract 1 because the index is 1 indexed due to 0 index reserved for deleted leaves
-    index = leanIMTData.leaves[_pubKeyHash] - 1;
+    return index - 1;
   }
 }

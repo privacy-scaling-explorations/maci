@@ -139,21 +139,12 @@ describe("TallyVotesNonQv", () => {
   it("should not be possible to tally votes before the poll has ended", async () => {
     await expect(tallyContract.tallyVotes(0n, [0, 0, 0, 0, 0, 0, 0, 0])).to.be.revertedWithCustomError(
       tallyContract,
-      "VotingPeriodNotPassed",
-    );
-  });
-
-  it("updateSbCommitment() should revert when the messages have not been processed yet", async () => {
-    // go forward in time
-    await timeTravel(signer.provider! as unknown as EthereumProvider, duration + 1);
-
-    await expect(tallyContract.updateSbCommitment()).to.be.revertedWithCustomError(
-      tallyContract,
       "ProcessingNotComplete",
     );
   });
 
   it("tallyVotes() should fail as the messages have not been processed yet", async () => {
+    await timeTravel(signer.provider! as unknown as EthereumProvider, duration + 1);
     await expect(tallyContract.tallyVotes(0n, [0, 0, 0, 0, 0, 0, 0, 0])).to.be.revertedWithCustomError(
       tallyContract,
       "ProcessingNotComplete",

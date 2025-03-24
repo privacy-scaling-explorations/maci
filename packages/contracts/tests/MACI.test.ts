@@ -196,6 +196,10 @@ describe("MACI", function test() {
       const index = await maciContract.getStateIndex(users[0].pubKey.hash());
       expect(index.toString()).to.eq("1");
     });
+
+    it("should throw when given a public key that is not signed up", async () => {
+      await expect(maciContract.getStateIndex(0)).to.be.revertedWithCustomError(maciContract, "UserNotSignedUp");
+    });
   });
 
   describe("Deploy a Poll", () => {
