@@ -1,17 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import { BasePolicy } from "@excubiae/contracts/policy/BasePolicy.sol";
+import { SignUpGatekeeper } from "../SignUpGatekeeper.sol";
 
 /// @title ZupassGatekeeper
 /// @notice This contract allows to gatekeep MACI signups
 /// by requiring new voters to own a certain Zupass event ticket
-contract ZupassGatekeeper is BasePolicy {
+contract ZupassGatekeeper is SignUpGatekeeper {
   /// @notice a mapping of ticket IDs to whether they have been used
   mapping(uint256 => bool) public registeredTickets;
-
-  /// @notice custom errors
-  error AlreadyRegistered();
 
   /// @notice Create a new instance of ZupassGatekeeper
   // solhint-disable-next-line no-empty-blocks

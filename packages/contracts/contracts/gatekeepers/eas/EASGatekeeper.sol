@@ -1,17 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import { BasePolicy } from "@excubiae/contracts/policy/BasePolicy.sol";
+import { SignUpGatekeeper } from "../SignUpGatekeeper.sol";
 
 /// @title EASGatekeeper
 /// @notice A gatekeeper contract which allows users to sign up to MACI
 /// only if they've received an attestation of a specific schema from a trusted attester
-contract EASGatekeeper is BasePolicy {
+contract EASGatekeeper is SignUpGatekeeper {
   // a mapping of attestations that have already registered
   mapping(bytes32 => bool) public registeredAttestations;
-
-  /// @notice custom errors
-  error AlreadyRegistered();
 
   /// @notice Deploy an instance of EASGatekeeper
   // solhint-disable-next-line no-empty-blocks

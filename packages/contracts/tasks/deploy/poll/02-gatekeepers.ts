@@ -1,7 +1,7 @@
 import { hexToBigInt, uuidToBigInt } from "@pcd/util";
 
 import { info, logGreen } from "../../../ts/logger";
-import { HatsGatekeeperBase, MACI } from "../../../typechain-types";
+import { MACI } from "../../../typechain-types";
 import { EDeploySteps, ESupportedChains } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
@@ -32,6 +32,7 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
       deployGitcoinPassportGatekeeper,
       deployMerkleProofGatekeeper,
       deploySemaphoreSignupGatekeeper,
+      deployHatsSignupGatekeeper,
     } = await import("../../../ts/deploy");
 
     const maciContract = await deployment.getContract<MACI>({ name: EContracts.MACI });
@@ -346,24 +347,28 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
       await Promise.all([
         storage.register({
           id: EGatekeepers.Semaphore,
+          key: `poll-${pollId}`,
           contract: semaphoreGatekeeperContract,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: ECheckers.Semaphore,
+          key: `poll-${pollId}`,
           contract: semaphoreCheckerContract,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: EGatekeeperFactories.Semaphore,
+          key: `poll-${pollId}`,
           contract: semaphoreGatekeeperFactoryContract,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: ECheckerFactories.Semaphore,
+          key: `poll-${pollId}`,
           contract: semaphoreCheckerFactoryContract,
           args: [],
           network: hre.network.name,
@@ -380,35 +385,39 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
         true,
       );
 
-      let hatsGatekeeperContract: HatsGatekeeperBase;
-      // if we have one we use the single gatekeeper
-      if (criterionHats.length === 1) {
-        hatsGatekeeperContract = await deployment.deployContract(
-          {
-            name: EContracts.HatsGatekeeperSingle,
-            signer: deployer,
-          },
-          hatsProtocolAddress,
-          criterionHats[0],
-        );
-      } else {
-        hatsGatekeeperContract = await deployment.deployContract(
-          {
-            name: EContracts.HatsGatekeeperMultiple,
-            signer: deployer,
-          },
-          hatsProtocolAddress,
-          criterionHats,
-        );
-      }
+      const [hatsGatekeeperContract, hatsCheckerContract, hatsGatekeeperFactoryContract, hatsCheckerFactoryContract] =
+        await deployHatsSignupGatekeeper({ hats: hatsProtocolAddress, criterionHats }, deployer, true);
 
-      await storage.register({
-        id: EContracts.HatsGatekeeper,
-        key: `poll-${pollId}`,
-        contract: hatsGatekeeperContract,
-        args: [hatsProtocolAddress, criterionHats.length === 1 ? criterionHats[0] : criterionHats],
-        network: hre.network.name,
-      });
+      await Promise.all([
+        storage.register({
+          id: EGatekeepers.Hats,
+          key: `poll-${pollId}`,
+          contract: hatsGatekeeperContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: ECheckers.Hats,
+          key: `poll-${pollId}`,
+          contract: hatsCheckerContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: EGatekeeperFactories.Hats,
+          key: `poll-${pollId}`,
+          contract: hatsGatekeeperFactoryContract,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: ECheckerFactories.Hats,
+          key: `poll-${pollId}`,
+          contract: hatsCheckerFactoryContract,
+          args: [],
+          network: hre.network.name,
+        }),
+      ]);
     }
 
     if (!skipDeployMerkleProofGatekeeper) {
@@ -424,24 +433,28 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
       await Promise.all([
         storage.register({
           id: EGatekeepers.MerkleProof,
+          key: `poll-${pollId}`,
           contract: merkleProofGatekeeperContract,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: ECheckers.MerkleProof,
+          key: `poll-${pollId}`,
           contract: merkleProofCheckerContract,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: EGatekeeperFactories.MerkleProof,
+          key: `poll-${pollId}`,
           contract: merkleProofGatekeeperFactoryContract,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: ECheckerFactories.MerkleProof,
+          key: `poll-${pollId}`,
           contract: merkleProofCheckerFactoryContract,
           args: [],
           network: hre.network.name,

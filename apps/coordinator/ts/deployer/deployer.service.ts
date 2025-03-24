@@ -9,7 +9,7 @@ import {
   FreeForAllGatekeeper__factory as FreeForAllGatekeeperFactory,
   EASGatekeeper__factory as EASGatekeeperFactory,
   ZupassGatekeeper__factory as ZupassGatekeeperFactory,
-  HatsGatekeeperSingle__factory as HatsGatekeeperSingleFactory,
+  HatsGatekeeper__factory as HatsGatekeeperFactory,
   SemaphoreGatekeeper__factory as SemaphoreGatekeeperFactory,
   GitcoinPassportGatekeeper__factory as GitcoinPassportGatekeeperFactory,
   Verifier__factory as VerifierFactory,
@@ -147,7 +147,7 @@ export class DeployerService {
         };
       }
 
-      case EGatekeepers.HatsSingle: {
+      case EGatekeepers.Hats: {
         storedArgs = this.storage.getContractArgs(gatekeeperType as unknown as EContracts, network);
         isAlreadyDeployed =
           !!storedArgs &&
@@ -157,8 +157,8 @@ export class DeployerService {
 
         return {
           address: isAlreadyDeployed ? address : undefined,
-          abi: HatsGatekeeperSingleFactory.abi,
-          bytecode: HatsGatekeeperSingleFactory.bytecode,
+          abi: HatsGatekeeperFactory.abi,
+          bytecode: HatsGatekeeperFactory.bytecode,
           alreadyDeployed: isAlreadyDeployed,
         };
       }

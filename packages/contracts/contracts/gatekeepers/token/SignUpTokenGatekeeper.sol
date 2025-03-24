@@ -1,18 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import { BasePolicy } from "@excubiae/contracts/policy/BasePolicy.sol";
 import { ERC721 } from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+
+import { SignUpGatekeeper } from "../SignUpGatekeeper.sol";
 
 /// @title SignUpTokenGatekeeper
 /// @notice This contract allows to gatekeep MACI signups
 /// by requiring new voters to own a certain ERC721 token
-contract SignUpTokenGatekeeper is BasePolicy {
+contract SignUpTokenGatekeeper is SignUpGatekeeper {
   /// @notice a mapping of tokenIds to whether they have been used to sign up
   mapping(uint256 => bool) public registeredTokenIds;
-
-  /// @notice custom errors
-  error AlreadyRegistered();
 
   /// @notice creates a new SignUpTokenGatekeeper
   // solhint-disable-next-line no-empty-blocks

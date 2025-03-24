@@ -1,18 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import { BasePolicy } from "@excubiae/contracts/policy/BasePolicy.sol";
 import { MerkleProof } from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+
+import { SignUpGatekeeper } from "../SignUpGatekeeper.sol";
 
 /// @title MerkleProofGatekeeper
 /// @notice A gatekeeper contract which allows users to sign up to MACI
 /// only if they are part of the tree
-contract MerkleProofGatekeeper is BasePolicy {
+contract MerkleProofGatekeeper is SignUpGatekeeper {
   // a mapping of addresses that have already registered
   mapping(address => bool) public registeredAddresses;
-
-  /// @notice custom errors
-  error AlreadyRegistered();
 
   /// @notice Deploy an instance of MerkleProofGatekeeper
   // solhint-disable-next-line no-empty-blocks

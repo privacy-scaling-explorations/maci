@@ -1,19 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import { BasePolicy } from "@excubiae/contracts/policy/BasePolicy.sol";
-
+import { SignUpGatekeeper } from "../SignUpGatekeeper.sol";
 import { IGitcoinPassportDecoder } from "./IGitcoinPassportDecoder.sol";
 
 /// @title GitcoinPassportGatekeeper
 /// @notice A gatekeeper contract which allows users to sign up to MACI
 /// only if they've received an attestation of a specific schema from a trusted attester
-contract GitcoinPassportGatekeeper is BasePolicy {
+contract GitcoinPassportGatekeeper is SignUpGatekeeper {
   // a mapping of attestations that have already registered
   mapping(address => bool) public registeredUsers;
-
-  /// @notice custom errors
-  error AlreadyRegistered();
 
   /// @notice Deploy an instance of GitcoinPassportGatekeeper
   // solhint-disable-next-line no-empty-blocks

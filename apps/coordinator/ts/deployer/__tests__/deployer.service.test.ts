@@ -10,7 +10,7 @@ import {
   EASGatekeeper__factory as EASGatekeeperFactory,
   ZupassGatekeeper__factory as ZupassGatekeeperFactory,
   SemaphoreGatekeeper__factory as SemaphoreGatekeeperFactory,
-  HatsGatekeeperSingle__factory as HatsGatekeeperSingleFactory,
+  HatsGatekeeper__factory as HatsGatekeeperFactory,
   GitcoinPassportGatekeeper__factory as GitcoinPassportGatekeeperFactory,
   MACI__factory as MACIFactory,
   Verifier__factory as VerifierFactory,
@@ -288,7 +288,7 @@ describe("DeployerService", () => {
 
     describe("HatsGatekeeper", () => {
       it("should return the gatekeeper data and that the gatekeeper is not deployed", () => {
-        const gatekeeperData = deployerService.getGatekeeperData(EGatekeepers.HatsSingle, chain, {
+        const gatekeeperData = deployerService.getGatekeeperData(EGatekeepers.Hats, chain, {
           hatsProtocolAddress: zeroAddress,
           critrionHats: [zeroAddress],
         });
@@ -300,13 +300,13 @@ describe("DeployerService", () => {
 
       it("should return the gatekeeper data and that the gatekeeper is already deployed", async () => {
         await storageInstance.register({
-          id: EGatekeepers.HatsSingle as unknown as EContracts,
-          contract: new BaseContract("0x", HatsGatekeeperSingleFactory.abi),
+          id: EGatekeepers.Hats as unknown as EContracts,
+          contract: new BaseContract("0x", HatsGatekeeperFactory.abi),
           network: chain,
           args: [zeroAddress, [zeroAddress]],
         });
 
-        const gatekeeperData = deployerService.getGatekeeperData(EGatekeepers.HatsSingle, chain, {
+        const gatekeeperData = deployerService.getGatekeeperData(EGatekeepers.Hats, chain, {
           hatsProtocolAddress: zeroAddress,
           critrionHats: [zeroAddress],
         });
@@ -319,13 +319,13 @@ describe("DeployerService", () => {
 
       it("should return that the gatekeeper is not deployed when the args are different", async () => {
         await storageInstance.register({
-          id: EGatekeepers.HatsSingle as unknown as EContracts,
-          contract: new BaseContract("0x", HatsGatekeeperSingleFactory.abi),
+          id: EGatekeepers.Hats as unknown as EContracts,
+          contract: new BaseContract("0x", HatsGatekeeperFactory.abi),
           network: chain,
           args: [zeroAddress, ["0x"]],
         });
 
-        const gatekeeperData = deployerService.getGatekeeperData(EGatekeepers.HatsSingle, chain, {
+        const gatekeeperData = deployerService.getGatekeeperData(EGatekeepers.Hats, chain, {
           hatsProtocolAddress: zeroAddress,
           critrionHats: ["0x1"],
         });
