@@ -23,6 +23,8 @@ import { sleep, sortActions } from "./utils";
  * @param blocksPerRequest - the number of blocks to fetch in each request
  * @param endBlock - the block number at which to stop fetching events
  * @param sleepAmount - the amount of time to sleep between each request
+ * @param ipfsMessageBackupFiles - backup files for ipfs messages
+ * @param logsOutputPath - the file path where to save the logs for debugging and auditing purposes
  * @returns an instance of MaciState
  */
 export const genMaciStateFromContract = async ({
@@ -35,6 +37,7 @@ export const genMaciStateFromContract = async ({
   endBlock,
   sleepAmount,
   ipfsMessageBackupFiles = [],
+  logsOutputPath,
 }: IGenMaciStateFromContractArgs): Promise<MaciState> => {
   // ensure the pollId is valid
   assert(pollId >= 0);
@@ -302,6 +305,26 @@ export const genMaciStateFromContract = async ({
   poll.updatePoll(numSignUpsAndMessages[0]);
 
   maciState.polls.set(pollId, poll);
+
+  // Save logs if output path is provided
+  if (logsOutputPath) {
+    const logsOutputDirectory = path.resolve(logsOutputPath);
+
+    if (!fs.existsSync(logsOutputDirectory)) {
+      await fs.promises.mkdir(logsOutputDirectory, { recursive: true });
+    }
+
+    const logs = {
+      maciAddress: address,
+      pollId: pollId.toString(),
+      fromBlock,
+      toBlock: lastBlock,
+      timestamp: new Date().toISOString(),
+      actions,
+    };
+
+    await fs.promises.writeFile(logsOutputPath, JSON.stringify(logs, null, 2));
+  }
 
   return maciState;
 };

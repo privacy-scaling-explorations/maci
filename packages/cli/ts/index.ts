@@ -1040,6 +1040,7 @@ program
     "Backup files for ipfs messages (name format: ipfsHash1.json, ipfsHash2.json, ..., ipfsHashN.json)",
     (value: string | undefined) => value?.split(/\s*,\s*/),
   )
+  .option("-l, --logs-output <logsOutputPath>", "the path where to save the logs for debugging and auditing purposes")
   .action(async (cmdObj) => {
     try {
       const signer = await getSigner();
@@ -1066,6 +1067,7 @@ program
         ipfsMessageBackupFiles: cmdObj.ipfsMessageBackupFiles,
         sleep: cmdObj.sleep,
         signer,
+        logsOutputPath: cmdObj.logsOutput,
       });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });

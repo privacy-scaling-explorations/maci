@@ -26,6 +26,7 @@ export const generateMaciState = async ({
   sleep,
   signer,
   ipfsMessageBackupFiles,
+  logsOutputPath,
 }: IGenerateMaciStateArgs): Promise<MaciState> => {
   if (!maciAddress) {
     throw new Error("MACI contract address is empty");
@@ -96,6 +97,7 @@ export const generateMaciState = async ({
     endBlock: endBlockNumber,
     sleepAmount: sleep,
     ipfsMessageBackupFiles,
+    logsOutputPath,
   });
 
   // write the state to a file
