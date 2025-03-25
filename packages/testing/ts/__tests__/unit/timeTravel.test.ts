@@ -1,15 +1,14 @@
-import { getDefaultSigner } from "maci-contracts";
-
-import { timeTravel } from "../timeTravel";
+import { expect } from "chai";
+import { getDefaultSigner, timeTravel } from "maci-sdk";
 
 describe("timeTravel", () => {
-  test("should work when given a valid integer number", async () => {
+  it("should work when given a valid integer number", async () => {
     const signer = await getDefaultSigner();
     const blockNumber = await signer.provider?.getBlock("latest");
 
     await timeTravel({ seconds: 5, signer });
 
     const blockNumberAfter = await signer.provider?.getBlock("latest");
-    expect(blockNumberAfter!.timestamp).toBeGreaterThan(blockNumber!.timestamp);
+    expect(blockNumberAfter!.timestamp).to.be.gt(blockNumber!.timestamp);
   });
 });
