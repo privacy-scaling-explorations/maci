@@ -305,6 +305,11 @@ export interface IGenMaciStateFromContractArgs {
    * Backup files for ipfs messages (name format: ipfsHash.json)
    */
   ipfsMessageBackupFiles?: string[];
+
+  /**
+   * The file path where to save the logs for debugging and auditing purposes
+   */
+  logsOutputPath?: string;
 }
 
 /**
