@@ -23,12 +23,6 @@ export const genProofSnarkjs = async ({ inputs, zkeyPath, wasmPath }: IGenProofO
     throw new Error("wasmPath must be specified");
   }
 
-  const isWasmExists = fs.existsSync(wasmPath);
-
-  if (!isWasmExists) {
-    throw new Error(`wasmPath ${wasmPath} does not exist`);
-  }
-
   const { proof, publicSignals } = await groth16.fullProve(inputs, wasmPath, zkeyPath);
   return { proof, publicSignals };
 };
