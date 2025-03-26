@@ -194,3 +194,18 @@ export interface IGenerateProofsData {
    */
   tallyData: ITallyData;
 }
+
+/**
+ * Interface for the poll joining artifacts
+ */
+export interface IPollJoiningArtifacts {
+  /**
+   * The zkey
+   */
+  zKey: Uint8Array;
+
+  /**
+   * The wasm
+   */
+  wasm: Uint8Array;
+}
