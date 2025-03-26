@@ -5,10 +5,12 @@ include "./comparators.circom";
 // zk-kit import
 include "./unpack-element.circom";
 // local imports
-include "../../trees/incrementalMerkleTree.circom";
-include "../../trees/incrementalQuinaryTree.circom";
 include "../../utils/calculateTotal.circom";
 include "../../utils/hashers.circom";
+include "../../trees/binary/CheckRoot.circom";
+include "../../trees/binary/LeafExists.circom";
+include "../../trees/binary/MerkleGeneratePathIndices.circom";
+include "../../trees/quinary/QuinCheckRoot.circom";
 
 /**
  * Processes batches of votes and verifies their validity in a Merkle tree structure.

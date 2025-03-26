@@ -3,7 +3,7 @@ pragma circom 2.0.0;
 // local imports
 include "../utils/hashers.circom";
 include "../utils/privToPubKey.circom";
-include "../trees/incrementalMerkleTree.circom";
+include "../trees/binary/BinaryMerkleRoot.circom";
 
 template PollJoining(stateTreeDepth) {
     // Constants defining the tree structure
