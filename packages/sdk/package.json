@@ -8,9 +8,9 @@
       "types": "./build/ts/index.d.ts",
       "default": "./build/ts/index.js"
     },
-    "./sdk": {
-      "types": "./build/ts/sdk/index.d.ts",
-      "default": "./build/ts/sdk/index.js"
+    "./browser": {
+      "types": "./build/ts/browser/index.d.ts",
+      "default": "./build/ts/browser/index.js"
     }
   },
   "bin": {
