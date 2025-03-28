@@ -1,8 +1,9 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "lib": ["dom"],
-    "outDir": "./build"
+    "lib": ["dom", "es2020"],
+    "outDir": "./build",
+    "target": "ES2020"
   },
   "include": ["./ts", "./scripts", "./typechain-types", "./tasks"],
   "files": ["./hardhat.config.ts"]

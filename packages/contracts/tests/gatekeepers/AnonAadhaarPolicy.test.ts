@@ -2,14 +2,15 @@ import { expect } from "chai";
 import { AbiCoder, Signer, ZeroAddress } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
-import { deployAnonAadhaarGatekeeper, deployContract } from "../../ts/deploy";
+import type { MACI, AnonAadhaarPolicy, MockAnonAadhaar, AnonAadhaarChecker } from "../../typechain-types";
+
+import { deployAnonAadhaarPolicy, deployContract } from "../../ts/deploy";
 import { getDefaultSigner, getSigners } from "../../ts/utils";
-import { MACI, AnonAadhaarGatekeeper, MockAnonAadhaar, AnonAadhaarChecker } from "../../typechain-types";
 import { STATE_TREE_DEPTH, initialVoiceCreditBalance } from "../constants";
 import { deployTestContracts } from "../utils";
 
-describe("AnonAadhaar Gatekeeper", () => {
-  let anonAadhaarGatekeeper: AnonAadhaarGatekeeper;
+describe("AnonAadhaar", () => {
+  let anonAadhaarPolicy: AnonAadhaarPolicy;
   let anonAadhaarChecker: AnonAadhaarChecker;
   let mockAnonAadhaar: MockAnonAadhaar;
   let signer: Signer;
@@ -39,7 +40,7 @@ describe("AnonAadhaar Gatekeeper", () => {
     mockAnonAadhaar = await deployContract("MockAnonAadhaar", signer, true);
     const mockAnonAadhaarAddress = await mockAnonAadhaar.getAddress();
     signerAddress = await signer.getAddress();
-    [anonAadhaarGatekeeper, anonAadhaarChecker] = await deployAnonAadhaarGatekeeper(
+    [anonAadhaarPolicy, anonAadhaarChecker] = await deployAnonAadhaarPolicy(
       {
         verifierAddress: mockAnonAadhaarAddress,
         nullifierSeed: nullifierSeed.toString(),
@@ -63,12 +64,12 @@ describe("AnonAadhaar Gatekeeper", () => {
   });
 
   describe("Deployment", () => {
-    it("The gatekeeper should be deployed correctly", () => {
-      expect(anonAadhaarGatekeeper).to.not.eq(undefined);
+    it("The policy should be deployed correctly", () => {
+      expect(anonAadhaarPolicy).to.not.eq(undefined);
     });
   });
 
-  describe("Gatekeeper", () => {
+  describe("Policy", () => {
     let maciContract: MACI;
 
     before(async () => {
@@ -76,7 +77,7 @@ describe("AnonAadhaar Gatekeeper", () => {
         initialVoiceCreditBalance,
         stateTreeDepth: STATE_TREE_DEPTH,
         signer,
-        gatekeeper: anonAadhaarGatekeeper,
+        policy: anonAadhaarPolicy,
       });
 
       maciContract = r.maciContract;
@@ -84,22 +85,22 @@ describe("AnonAadhaar Gatekeeper", () => {
 
     it("should set guarded target correctly", async () => {
       const maciAddress = await maciContract.getAddress();
-      await anonAadhaarGatekeeper.setTarget(maciAddress).then((tx) => tx.wait());
+      await anonAadhaarPolicy.setTarget(maciAddress).then((tx) => tx.wait());
 
-      expect(await anonAadhaarGatekeeper.guarded()).to.eq(maciAddress);
+      expect(await anonAadhaarPolicy.guarded()).to.eq(maciAddress);
     });
 
     it("should fail to set guarded target when the caller is not the owner", async () => {
       const [, secondSigner] = await getSigners();
-      await expect(anonAadhaarGatekeeper.connect(secondSigner).setTarget(signerAddress)).to.be.revertedWithCustomError(
-        anonAadhaarGatekeeper,
+      await expect(anonAadhaarPolicy.connect(secondSigner).setTarget(signerAddress)).to.be.revertedWithCustomError(
+        anonAadhaarPolicy,
         "OwnableUnauthorizedAccount",
       );
     });
 
     it("should fail to set guarded target when the MACI instance is not valid", async () => {
-      await expect(anonAadhaarGatekeeper.setTarget(ZeroAddress)).to.be.revertedWithCustomError(
-        anonAadhaarGatekeeper,
+      await expect(anonAadhaarPolicy.setTarget(ZeroAddress)).to.be.revertedWithCustomError(
+        anonAadhaarPolicy,
         "ZeroAddress",
       );
     });
@@ -168,8 +169,8 @@ describe("AnonAadhaar Gatekeeper", () => {
 
     it("should prevent signing up twice", async () => {
       await expect(maciContract.signUp(user.pubKey.asContractParam(), encodedProof)).to.be.revertedWithCustomError(
-        anonAadhaarGatekeeper,
-        "AlreadyRegistered",
+        anonAadhaarPolicy,
+        "AlreadyEnforced",
       );
     });
   });

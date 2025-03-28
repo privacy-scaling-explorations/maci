@@ -12,7 +12,7 @@ export * from "../maciKeys";
 export {
   EMode,
   EContracts,
-  EGatekeepers,
+  EPolicies,
   EInitialVoiceCreditProxies,
   extractVk,
   genProofSnarkjs,

@@ -5,13 +5,13 @@ import {
   ContractStorage,
   EContracts,
   EInitialVoiceCreditProxies,
-  EGatekeepers,
-  FreeForAllGatekeeper__factory as FreeForAllGatekeeperFactory,
-  EASGatekeeper__factory as EASGatekeeperFactory,
-  ZupassGatekeeper__factory as ZupassGatekeeperFactory,
-  SemaphoreGatekeeper__factory as SemaphoreGatekeeperFactory,
-  HatsGatekeeper__factory as HatsGatekeeperFactory,
-  GitcoinPassportGatekeeper__factory as GitcoinPassportGatekeeperFactory,
+  EPolicies,
+  FreeForAllPolicy__factory as FreeForAllPolicyFactory,
+  EASPolicy__factory as EASPolicyFactory,
+  ZupassPolicy__factory as ZupassPolicyFactory,
+  SemaphorePolicy__factory as SemaphorePolicyFactory,
+  HatsPolicy__factory as HatsPolicyFactory,
+  GitcoinPassportPolicy__factory as GitcoinPassportPolicyFactory,
   MACI__factory as MACIFactory,
   Verifier__factory as VerifierFactory,
 } from "maci-sdk";
@@ -91,301 +91,301 @@ describe("DeployerService", () => {
     });
   });
 
-  describe("getGatekeeperData", () => {
+  describe("getPolicyData", () => {
     // we cleanup after each test so we don't have leftover saved contracts
     afterEach(() => {
       storageInstance.cleanup(chain);
     });
 
-    it("should throw when the gatekeeper is not existent", () => {
-      expect(() => deployerService.getGatekeeperData("NotExistent" as unknown as EGatekeepers, chain)).toThrow(
-        ErrorCodes.UNSUPPORTED_GATEKEEPER.toString(),
+    it("should throw when the policy is not existent", () => {
+      expect(() => deployerService.getPolicyData("NotExistent" as unknown as EPolicies, chain)).toThrow(
+        ErrorCodes.UNSUPPORTED_POLICY.toString(),
       );
     });
 
-    describe("FreeForAllGatekeeper", () => {
-      it("should return the gatekeeper data and that the gatekeeper is not deployed", () => {
-        const gatekeeperData = deployerService.getGatekeeperData(EGatekeepers.FreeForAll, chain);
-        expect(gatekeeperData).toBeDefined();
-        expect(gatekeeperData.alreadyDeployed).toBe(false);
-        expect(gatekeeperData.abi).toBeDefined();
-        expect(gatekeeperData.bytecode).toBeDefined();
+    describe("FreeForAllPolicy", () => {
+      it("should return the policy data and that the policy is not deployed", () => {
+        const policyData = deployerService.getPolicyData(EPolicies.FreeForAll, chain);
+        expect(policyData).toBeDefined();
+        expect(policyData.alreadyDeployed).toBe(false);
+        expect(policyData.abi).toBeDefined();
+        expect(policyData.bytecode).toBeDefined();
       });
 
-      it("should return the gatekeeper data and that the gatekeeper is already deployed", async () => {
+      it("should return the policy data and that the policy is already deployed", async () => {
         await storageInstance.register({
-          id: EGatekeepers.FreeForAll as unknown as EContracts,
-          contract: new BaseContract("0x", FreeForAllGatekeeperFactory.abi),
+          id: EPolicies.FreeForAll as unknown as EContracts,
+          contract: new BaseContract("0x", FreeForAllPolicyFactory.abi),
           network: chain,
           args: [],
         });
-        const gatekeeperData = deployerService.getGatekeeperData(EGatekeepers.FreeForAll, chain);
-        expect(gatekeeperData).toBeDefined();
-        expect(gatekeeperData.alreadyDeployed).toBe(true);
-        expect(gatekeeperData.abi).toBeDefined();
-        expect(gatekeeperData.bytecode).toBeDefined();
+        const policyData = deployerService.getPolicyData(EPolicies.FreeForAll, chain);
+        expect(policyData).toBeDefined();
+        expect(policyData.alreadyDeployed).toBe(true);
+        expect(policyData.abi).toBeDefined();
+        expect(policyData.bytecode).toBeDefined();
       });
     });
 
-    describe("EASGatekeeper", () => {
-      it("should return the gatekeeper data and that the gatekeeper is not deployed", () => {
-        const gatekeeperData = deployerService.getGatekeeperData(EGatekeepers.EAS, chain);
-        expect(gatekeeperData).toBeDefined();
-        expect(gatekeeperData.alreadyDeployed).toBe(false);
-        expect(gatekeeperData.abi).toBeDefined();
-        expect(gatekeeperData.bytecode).toBeDefined();
+    describe("EASPolicy", () => {
+      it("should return the policy data and that the policy is not deployed", () => {
+        const policyData = deployerService.getPolicyData(EPolicies.EAS, chain);
+        expect(policyData).toBeDefined();
+        expect(policyData.alreadyDeployed).toBe(false);
+        expect(policyData.abi).toBeDefined();
+        expect(policyData.bytecode).toBeDefined();
       });
 
-      it("should return the gatekeeper data and that the gatekeeper is already deployed", async () => {
+      it("should return the policy data and that the policy is already deployed", async () => {
         await storageInstance.register({
-          id: EGatekeepers.EAS as unknown as EContracts,
-          contract: new BaseContract("0x", EASGatekeeperFactory.abi),
+          id: EPolicies.EAS as unknown as EContracts,
+          contract: new BaseContract("0x", EASPolicyFactory.abi),
           network: chain,
           args: [zeroAddress, zeroPadBytes("0x", 32), zeroAddress],
         });
 
-        const gatekeeperData = deployerService.getGatekeeperData(EGatekeepers.EAS, chain, {
+        const policyData = deployerService.getPolicyData(EPolicies.EAS, chain, {
           easAddress: zeroAddress,
           schema: zeroPadBytes("0x", 32),
           attester: zeroAddress,
         });
 
-        expect(gatekeeperData).toBeDefined();
-        expect(gatekeeperData.alreadyDeployed).toBe(true);
-        expect(gatekeeperData.abi).toBeDefined();
-        expect(gatekeeperData.bytecode).toBeDefined();
+        expect(policyData).toBeDefined();
+        expect(policyData.alreadyDeployed).toBe(true);
+        expect(policyData.abi).toBeDefined();
+        expect(policyData.bytecode).toBeDefined();
       });
 
-      it("should return that the gatekeeper is not deployed when the args are different", async () => {
+      it("should return that the policy is not deployed when the args are different", async () => {
         await storageInstance.register({
-          id: EGatekeepers.EAS as unknown as EContracts,
-          contract: new BaseContract("0x", EASGatekeeperFactory.abi),
+          id: EPolicies.EAS as unknown as EContracts,
+          contract: new BaseContract("0x", EASPolicyFactory.abi),
           network: chain,
           args: [zeroAddress, zeroPadBytes("0x", 32), zeroAddress.replace("0x0", "0x1")],
         });
 
-        const gatekeeperData = deployerService.getGatekeeperData(EGatekeepers.EAS, chain, {
+        const policyData = deployerService.getPolicyData(EPolicies.EAS, chain, {
           easAddress: zeroAddress,
           schema: zeroPadBytes("0x", 32),
           attester: zeroAddress,
         });
 
-        expect(gatekeeperData).toBeDefined();
-        expect(gatekeeperData.alreadyDeployed).toBe(false);
-        expect(gatekeeperData.abi).toBeDefined();
-        expect(gatekeeperData.bytecode).toBeDefined();
+        expect(policyData).toBeDefined();
+        expect(policyData.alreadyDeployed).toBe(false);
+        expect(policyData.abi).toBeDefined();
+        expect(policyData.bytecode).toBeDefined();
       });
     });
 
-    describe("ZupassGatekeeper", () => {
-      it("should return the gatekeeper data and that the gatekeeper is not deployed", () => {
-        const gatekeeperData = deployerService.getGatekeeperData(EGatekeepers.Zupass, chain, {
+    describe("ZupassPolicy", () => {
+      it("should return the policy data and that the policy is not deployed", () => {
+        const policyData = deployerService.getPolicyData(EPolicies.Zupass, chain, {
           signer1: zeroAddress,
           signer2: zeroAddress,
           eventId: "0x",
           zupassVerifier: zeroAddress,
         });
-        expect(gatekeeperData).toBeDefined();
-        expect(gatekeeperData.alreadyDeployed).toBe(false);
-        expect(gatekeeperData.abi).toBeDefined();
-        expect(gatekeeperData.bytecode).toBeDefined();
+        expect(policyData).toBeDefined();
+        expect(policyData.alreadyDeployed).toBe(false);
+        expect(policyData.abi).toBeDefined();
+        expect(policyData.bytecode).toBeDefined();
       });
 
-      it("should return the gatekeeper data and that the gatekeeper is already deployed", async () => {
+      it("should return the policy data and that the policy is already deployed", async () => {
         await storageInstance.register({
-          id: EGatekeepers.Zupass as unknown as EContracts,
-          contract: new BaseContract("0x", ZupassGatekeeperFactory.abi),
+          id: EPolicies.Zupass as unknown as EContracts,
+          contract: new BaseContract("0x", ZupassPolicyFactory.abi),
           network: chain,
           args: [zeroAddress, zeroAddress, "0x", zeroAddress],
         });
 
-        const gatekeeperData = deployerService.getGatekeeperData(EGatekeepers.Zupass, chain, {
+        const policyData = deployerService.getPolicyData(EPolicies.Zupass, chain, {
           signer1: zeroAddress,
           signer2: zeroAddress,
           eventId: "0x",
           zupassVerifier: zeroAddress,
         });
 
-        expect(gatekeeperData).toBeDefined();
-        expect(gatekeeperData.alreadyDeployed).toBe(true);
-        expect(gatekeeperData.abi).toBeDefined();
-        expect(gatekeeperData.bytecode).toBeDefined();
+        expect(policyData).toBeDefined();
+        expect(policyData.alreadyDeployed).toBe(true);
+        expect(policyData.abi).toBeDefined();
+        expect(policyData.bytecode).toBeDefined();
       });
 
-      it("should return that the gatekeeper is not deployed when the args are different", async () => {
+      it("should return that the policy is not deployed when the args are different", async () => {
         await storageInstance.register({
-          id: EGatekeepers.Zupass as unknown as EContracts,
-          contract: new BaseContract("0x", ZupassGatekeeperFactory.abi),
+          id: EPolicies.Zupass as unknown as EContracts,
+          contract: new BaseContract("0x", ZupassPolicyFactory.abi),
           network: chain,
           args: [zeroAddress, zeroAddress, "0x", zeroAddress.replace("0x0", "0x1")],
         });
 
-        const gatekeeperData = deployerService.getGatekeeperData(EGatekeepers.Zupass, chain, {
+        const policyData = deployerService.getPolicyData(EPolicies.Zupass, chain, {
           signer1: zeroAddress,
           signer2: zeroAddress,
           eventId: "0x",
           zupassVerifier: zeroAddress,
         });
 
-        expect(gatekeeperData).toBeDefined();
-        expect(gatekeeperData.alreadyDeployed).toBe(false);
-        expect(gatekeeperData.abi).toBeDefined();
-        expect(gatekeeperData.bytecode).toBeDefined();
+        expect(policyData).toBeDefined();
+        expect(policyData.alreadyDeployed).toBe(false);
+        expect(policyData.abi).toBeDefined();
+        expect(policyData.bytecode).toBeDefined();
       });
     });
 
-    describe("SemaphoreGatekeeper", () => {
-      it("should return the gatekeeper data and that the gatekeeper is not deployed", () => {
-        const gatekeeperData = deployerService.getGatekeeperData(EGatekeepers.Semaphore, chain, {
+    describe("SemaphorePolicy", () => {
+      it("should return the policy data and that the policy is not deployed", () => {
+        const policyData = deployerService.getPolicyData(EPolicies.Semaphore, chain, {
           semaphoreContract: zeroAddress,
           groupId: "0",
         });
 
-        expect(gatekeeperData).toBeDefined();
-        expect(gatekeeperData.alreadyDeployed).toBe(false);
-        expect(gatekeeperData.abi).toBeDefined();
-        expect(gatekeeperData.bytecode).toBeDefined();
+        expect(policyData).toBeDefined();
+        expect(policyData.alreadyDeployed).toBe(false);
+        expect(policyData.abi).toBeDefined();
+        expect(policyData.bytecode).toBeDefined();
       });
 
-      it("should return the gatekeeper data and that the gatekeeper is already deployed", async () => {
+      it("should return the policy data and that the policy is already deployed", async () => {
         await storageInstance.register({
-          id: EGatekeepers.Semaphore as unknown as EContracts,
-          contract: new BaseContract("0x", SemaphoreGatekeeperFactory.abi),
+          id: EPolicies.Semaphore as unknown as EContracts,
+          contract: new BaseContract("0x", SemaphorePolicyFactory.abi),
           network: chain,
           args: [zeroAddress, "0"],
         });
 
-        const gatekeeperData = deployerService.getGatekeeperData(EGatekeepers.Semaphore, chain, {
+        const policyData = deployerService.getPolicyData(EPolicies.Semaphore, chain, {
           semaphoreContract: zeroAddress,
           groupId: "0",
         });
 
-        expect(gatekeeperData).toBeDefined();
-        expect(gatekeeperData.alreadyDeployed).toBe(true);
-        expect(gatekeeperData.abi).toBeDefined();
-        expect(gatekeeperData.bytecode).toBeDefined();
+        expect(policyData).toBeDefined();
+        expect(policyData.alreadyDeployed).toBe(true);
+        expect(policyData.abi).toBeDefined();
+        expect(policyData.bytecode).toBeDefined();
       });
 
-      it("should return that the gatekeeper is not deployed when the args are different", async () => {
+      it("should return that the policy is not deployed when the args are different", async () => {
         await storageInstance.register({
-          id: EGatekeepers.Semaphore as unknown as EContracts,
-          contract: new BaseContract("0x", SemaphoreGatekeeperFactory.abi),
+          id: EPolicies.Semaphore as unknown as EContracts,
+          contract: new BaseContract("0x", SemaphorePolicyFactory.abi),
           network: chain,
           args: [zeroAddress, "0"],
         });
 
-        const gatekeeperData = deployerService.getGatekeeperData(EGatekeepers.Semaphore, chain, {
+        const policyData = deployerService.getPolicyData(EPolicies.Semaphore, chain, {
           semaphoreContract: zeroAddress,
           groupId: "1",
         });
 
-        expect(gatekeeperData).toBeDefined();
-        expect(gatekeeperData.alreadyDeployed).toBe(false);
-        expect(gatekeeperData.abi).toBeDefined();
-        expect(gatekeeperData.bytecode).toBeDefined();
+        expect(policyData).toBeDefined();
+        expect(policyData.alreadyDeployed).toBe(false);
+        expect(policyData.abi).toBeDefined();
+        expect(policyData.bytecode).toBeDefined();
       });
     });
 
-    describe("HatsGatekeeper", () => {
-      it("should return the gatekeeper data and that the gatekeeper is not deployed", () => {
-        const gatekeeperData = deployerService.getGatekeeperData(EGatekeepers.Hats, chain, {
+    describe("HatsPolicy", () => {
+      it("should return the policy data and that the policy is not deployed", () => {
+        const policyData = deployerService.getPolicyData(EPolicies.Hats, chain, {
           hatsProtocolAddress: zeroAddress,
           critrionHats: [zeroAddress],
         });
-        expect(gatekeeperData).toBeDefined();
-        expect(gatekeeperData.alreadyDeployed).toBe(false);
-        expect(gatekeeperData.abi).toBeDefined();
-        expect(gatekeeperData.bytecode).toBeDefined();
+        expect(policyData).toBeDefined();
+        expect(policyData.alreadyDeployed).toBe(false);
+        expect(policyData.abi).toBeDefined();
+        expect(policyData.bytecode).toBeDefined();
       });
 
-      it("should return the gatekeeper data and that the gatekeeper is already deployed", async () => {
+      it("should return the policy data and that the policy is already deployed", async () => {
         await storageInstance.register({
-          id: EGatekeepers.Hats as unknown as EContracts,
-          contract: new BaseContract("0x", HatsGatekeeperFactory.abi),
+          id: EPolicies.Hats as unknown as EContracts,
+          contract: new BaseContract("0x", HatsPolicyFactory.abi),
           network: chain,
           args: [zeroAddress, [zeroAddress]],
         });
 
-        const gatekeeperData = deployerService.getGatekeeperData(EGatekeepers.Hats, chain, {
+        const policyData = deployerService.getPolicyData(EPolicies.Hats, chain, {
           hatsProtocolAddress: zeroAddress,
           critrionHats: [zeroAddress],
         });
 
-        expect(gatekeeperData).toBeDefined();
-        expect(gatekeeperData.alreadyDeployed).toBe(true);
-        expect(gatekeeperData.abi).toBeDefined();
-        expect(gatekeeperData.bytecode).toBeDefined();
+        expect(policyData).toBeDefined();
+        expect(policyData.alreadyDeployed).toBe(true);
+        expect(policyData.abi).toBeDefined();
+        expect(policyData.bytecode).toBeDefined();
       });
 
-      it("should return that the gatekeeper is not deployed when the args are different", async () => {
+      it("should return that the policy is not deployed when the args are different", async () => {
         await storageInstance.register({
-          id: EGatekeepers.Hats as unknown as EContracts,
-          contract: new BaseContract("0x", HatsGatekeeperFactory.abi),
+          id: EPolicies.Hats as unknown as EContracts,
+          contract: new BaseContract("0x", HatsPolicyFactory.abi),
           network: chain,
           args: [zeroAddress, ["0x"]],
         });
 
-        const gatekeeperData = deployerService.getGatekeeperData(EGatekeepers.Hats, chain, {
+        const policyData = deployerService.getPolicyData(EPolicies.Hats, chain, {
           hatsProtocolAddress: zeroAddress,
           critrionHats: ["0x1"],
         });
 
-        expect(gatekeeperData).toBeDefined();
-        expect(gatekeeperData.alreadyDeployed).toBe(false);
-        expect(gatekeeperData.abi).toBeDefined();
-        expect(gatekeeperData.bytecode).toBeDefined();
+        expect(policyData).toBeDefined();
+        expect(policyData.alreadyDeployed).toBe(false);
+        expect(policyData.abi).toBeDefined();
+        expect(policyData.bytecode).toBeDefined();
       });
     });
 
-    describe("GitcoinPassportGatekeeper", () => {
-      it("should return the gatekeeper data and that the gatekeeper is not deployed", () => {
-        const gatekeeperData = deployerService.getGatekeeperData(EGatekeepers.GitcoinPassport, chain, {
+    describe("GitcoinPassportPolicy", () => {
+      it("should return the policy data and that the policy is not deployed", () => {
+        const policyData = deployerService.getPolicyData(EPolicies.GitcoinPassport, chain, {
           decoderAddress: zeroAddress,
           passingScore: "0",
         });
 
-        expect(gatekeeperData).toBeDefined();
-        expect(gatekeeperData.alreadyDeployed).toBe(false);
-        expect(gatekeeperData.abi).toBeDefined();
-        expect(gatekeeperData.bytecode).toBeDefined();
+        expect(policyData).toBeDefined();
+        expect(policyData.alreadyDeployed).toBe(false);
+        expect(policyData.abi).toBeDefined();
+        expect(policyData.bytecode).toBeDefined();
       });
 
-      it("should return the gatekeeper data and that the gatekeeper is already deployed", async () => {
+      it("should return the policy data and that the policy is already deployed", async () => {
         await storageInstance.register({
-          id: EGatekeepers.GitcoinPassport as unknown as EContracts,
-          contract: new BaseContract("0x", GitcoinPassportGatekeeperFactory.abi),
+          id: EPolicies.GitcoinPassport as unknown as EContracts,
+          contract: new BaseContract("0x", GitcoinPassportPolicyFactory.abi),
           network: chain,
           args: [zeroAddress, "0"],
         });
 
-        const gatekeeperData = deployerService.getGatekeeperData(EGatekeepers.GitcoinPassport, chain, {
+        const policyData = deployerService.getPolicyData(EPolicies.GitcoinPassport, chain, {
           decoderAddress: zeroAddress,
           passingScore: "0",
         });
 
-        expect(gatekeeperData).toBeDefined();
-        expect(gatekeeperData.alreadyDeployed).toBe(true);
-        expect(gatekeeperData.abi).toBeDefined();
-        expect(gatekeeperData.bytecode).toBeDefined();
+        expect(policyData).toBeDefined();
+        expect(policyData.alreadyDeployed).toBe(true);
+        expect(policyData.abi).toBeDefined();
+        expect(policyData.bytecode).toBeDefined();
       });
 
-      it("should return that the gatekeeper is not deployed when the args are different", async () => {
+      it("should return that the policy is not deployed when the args are different", async () => {
         await storageInstance.register({
-          id: EGatekeepers.GitcoinPassport as unknown as EContracts,
-          contract: new BaseContract("0x", GitcoinPassportGatekeeperFactory.abi),
+          id: EPolicies.GitcoinPassport as unknown as EContracts,
+          contract: new BaseContract("0x", GitcoinPassportPolicyFactory.abi),
           network: chain,
           args: [zeroAddress, "0"],
         });
 
-        const gatekeeperData = deployerService.getGatekeeperData(EGatekeepers.GitcoinPassport, chain, {
+        const policyData = deployerService.getPolicyData(EPolicies.GitcoinPassport, chain, {
           decoderAddress: zeroAddress,
           passingScore: "1",
         });
 
-        expect(gatekeeperData).toBeDefined();
-        expect(gatekeeperData.alreadyDeployed).toBe(false);
-        expect(gatekeeperData.abi).toBeDefined();
-        expect(gatekeeperData.bytecode).toBeDefined();
+        expect(policyData).toBeDefined();
+        expect(policyData.alreadyDeployed).toBe(false);
+        expect(policyData.abi).toBeDefined();
+        expect(policyData.bytecode).toBeDefined();
       });
     });
   });

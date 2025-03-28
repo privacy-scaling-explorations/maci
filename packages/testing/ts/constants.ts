@@ -201,7 +201,7 @@ export const verifyingKeysArgs = async (
   };
 };
 
-export const deployArgs: Omit<IDeployMaciArgs, "signer" | "signupGatekeeperAddress"> = {
+export const deployArgs: Omit<IDeployMaciArgs, "signer" | "signupPolicyAddress"> = {
   stateTreeDepth: STATE_TREE_DEPTH,
 };
 
@@ -214,7 +214,7 @@ export const deployPollArgs: Omit<
   | "maciAddress"
   | "verifierContractAddress"
   | "vkRegistryContractAddress"
-  | "gatekeeperContractAddress"
+  | "policyContractAddress"
   | "initialVoiceCreditProxyContractAddress"
 > = {
   intStateTreeDepth: INT_STATE_TREE_DEPTH,

@@ -29,7 +29,7 @@ import {
   timeTravel,
   deployMaci,
   type IMaciContracts,
-  deployFreeForAllSignUpGatekeeper,
+  deployFreeForAllSignUpPolicy,
   deployConstantInitialVoiceCreditProxy,
   deployVerifier,
 } from "maci-sdk";
@@ -106,17 +106,21 @@ describe("Integration tests", function test() {
 
   // the code that we run before each test
   beforeEach(async () => {
-    const [signUpGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
-    const signupGatekeeperAddress = await signUpGatekeeper.getAddress();
+    const [signUpPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+    const signupPolicyAddress = await signUpPolicy.getAddress();
 
-    const [pollGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
-    const pollGatekeeperAddress = await pollGatekeeper.getAddress();
+    const [pollPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+    const pollPolicyAddress = await pollPolicy.getAddress();
 
     // create a new maci state
     maciState = new MaciState(STATE_TREE_DEPTH);
 
     // 3. deploy maci
-    contracts = await deployMaci({ stateTreeDepth: STATE_TREE_DEPTH, signupGatekeeperAddress, signer });
+    contracts = await deployMaci({
+      stateTreeDepth: STATE_TREE_DEPTH,
+      signupPolicyAddress,
+      signer,
+    });
 
     const initialVoiceCreditProxy = await deployConstantInitialVoiceCreditProxy(
       DEFAULT_INITIAL_VOICE_CREDITS,
@@ -143,7 +147,7 @@ describe("Integration tests", function test() {
       initialVoiceCreditProxyContractAddress,
       verifierContractAddress,
       vkRegistryContractAddress: vkRegistryAddress,
-      gatekeeperContractAddress: pollGatekeeperAddress,
+      policyContractAddress: pollPolicyAddress,
       initialVoiceCredits: DEFAULT_INITIAL_VOICE_CREDITS,
       voteOptions: DEFAULT_VOTE_OPTIONS,
       relayers: [await signer.getAddress()],

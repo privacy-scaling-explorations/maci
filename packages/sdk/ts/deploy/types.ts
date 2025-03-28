@@ -58,9 +58,9 @@ export interface IDeployPollArgs {
   mode: EMode;
 
   /**
-   * The address of the gatekeeper contract
+   * The address of the policy contract
    */
-  gatekeeperContractAddress: string;
+  policyContractAddress: string;
 
   /**
    * The address of the initial voice credit proxy contract
@@ -113,9 +113,9 @@ export interface IPollContractsData {
   pollId: bigint;
 
   /**
-   * The address of the gatekeeper contract
+   * The address of the policy contract
    */
-  gatekeeperContractAddress: string;
+  policyContractAddress: string;
 
   /**
    * The address of the initial voice credit proxy contract
@@ -133,9 +133,9 @@ export interface IDeployMaciArgs {
   stateTreeDepth: number;
 
   /**
-   * The address of the SignUpTokenGatekeeper contract
+   * The address of the policy contract
    */
-  signupGatekeeperAddress: string;
+  signupPolicyAddress: string;
 
   /**
    * The signer to use to deploy the contract

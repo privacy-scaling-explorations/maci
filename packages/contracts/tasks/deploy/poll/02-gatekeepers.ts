@@ -9,8 +9,8 @@ import {
   ECheckerFactories,
   ECheckers,
   EContracts,
-  EGatekeeperFactories,
-  EGatekeepers,
+  EPolicyFactories,
+  EPolicies,
   IDeployParams,
 } from "../../helpers/types";
 
@@ -20,113 +20,100 @@ const storage = ContractStorage.getInstance();
 /**
  * Deploy step registration and task itself
  */
-deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").then((task) =>
+deployment.deployTask(EDeploySteps.PollPolicy, "Deploy Poll policies").then((task) =>
   task.setAction(async ({ incremental }: IDeployParams, hre) => {
     deployment.setHre(hre);
     const deployer = await deployment.getDeployer();
 
     const {
-      deployFreeForAllSignUpGatekeeper,
-      deployZupassSignUpGatekeeper,
-      deployEASSignUpGatekeeper,
-      deployGitcoinPassportGatekeeper,
-      deployMerkleProofGatekeeper,
-      deploySemaphoreSignupGatekeeper,
-      deployHatsSignupGatekeeper,
+      deployFreeForAllSignUpPolicy,
+      deployZupassSignUpPolicy,
+      deployEASSignUpPolicy,
+      deployGitcoinPassportPolicy,
+      deployMerkleProofPolicy,
+      deploySemaphoreSignupPolicy,
+      deployHatsSignupPolicy,
     } = await import("../../../ts/deploy");
 
     const maciContract = await deployment.getContract<MACI>({ name: EContracts.MACI });
     const pollId = await maciContract.nextPollId();
 
-    const freeForAllGatekeeperContractAddress = storage.getAddress(
-      EContracts.FreeForAllGatekeeper,
+    const freeForAllPolicyContractAddress = storage.getAddress(
+      EContracts.FreeForAllPolicy,
       hre.network.name,
       `poll-${pollId}`,
     );
-    const easGatekeeperContractAddress = storage.getAddress(
-      EContracts.EASGatekeeper,
+    const easPolicyContractAddress = storage.getAddress(EContracts.EASPolicy, hre.network.name, `poll-${pollId}`);
+    const hatsPolicyContractAddress = storage.getAddress(EContracts.HatsPolicy, hre.network.name, `poll-${pollId}`);
+    const gitcoinPolicyContractAddress = storage.getAddress(
+      EContracts.GitcoinPassportPolicy,
       hre.network.name,
       `poll-${pollId}`,
     );
-    const hatsGatekeeperContractAddress = storage.getAddress(
-      EContracts.HatsGatekeeper,
+    const zupassPolicyContractAddress = storage.getAddress(EContracts.ZupassPolicy, hre.network.name, `poll-${pollId}`);
+    const semaphorePolicyContractAddress = storage.getAddress(
+      EContracts.SemaphorePolicy,
       hre.network.name,
       `poll-${pollId}`,
     );
-    const gitcoinGatekeeperContractAddress = storage.getAddress(
-      EContracts.GitcoinPassportGatekeeper,
-      hre.network.name,
-      `poll-${pollId}`,
-    );
-    const zupassGatekeeperContractAddress = storage.getAddress(
-      EContracts.ZupassGatekeeper,
-      hre.network.name,
-      `poll-${pollId}`,
-    );
-    const semaphoreGatekeeperContractAddress = storage.getAddress(
-      EContracts.SemaphoreGatekeeper,
-      hre.network.name,
-      `poll-${pollId}`,
-    );
-    const merkleProofGatekeeperContractAddress = storage.getAddress(
-      EContracts.MerkleProofGatekeeper,
+    const merkleProofPolicyContractAddress = storage.getAddress(
+      EContracts.MerkleProofPolicy,
       hre.network.name,
       `poll-${pollId}`,
     );
 
-    const gatekeeperToDeploy =
-      deployment.getDeployConfigField<EContracts | null>(EContracts.Poll, "gatekeeper") ||
-      EContracts.FreeForAllGatekeeper;
+    const policyToDeploy =
+      deployment.getDeployConfigField<EContracts | null>(EContracts.Poll, "policy") || EContracts.FreeForAllPolicy;
 
-    const skipDeployFreeForAllGatekeeper = gatekeeperToDeploy !== EContracts.FreeForAllGatekeeper;
-    const skipDeployEASGatekeeper = gatekeeperToDeploy !== EContracts.EASGatekeeper;
-    const skipDeployGitcoinGatekeeper = gatekeeperToDeploy !== EContracts.GitcoinPassportGatekeeper;
-    const skipDeployZupassGatekeeper = gatekeeperToDeploy !== EContracts.ZupassGatekeeper;
-    const skipDeploySemaphoreGatekeeper = gatekeeperToDeploy !== EContracts.SemaphoreGatekeeper;
-    const skipDeployHatsGatekeeper = gatekeeperToDeploy !== EContracts.HatsGatekeeper;
-    const skipDeployMerkleProofGatekeeper = gatekeeperToDeploy !== EContracts.MerkleProofGatekeeper;
+    const skipDeployFreeForAllPolicy = policyToDeploy !== EContracts.FreeForAllPolicy;
+    const skipDeployEASPolicy = policyToDeploy !== EContracts.EASPolicy;
+    const skipDeployGitcoinPolicy = policyToDeploy !== EContracts.GitcoinPassportPolicy;
+    const skipDeployZupassPolicy = policyToDeploy !== EContracts.ZupassPolicy;
+    const skipDeploySemaphorePolicy = policyToDeploy !== EContracts.SemaphorePolicy;
+    const skipDeployHatsPolicy = policyToDeploy !== EContracts.HatsPolicy;
+    const skipDeployMerkleProofPolicy = policyToDeploy !== EContracts.MerkleProofPolicy;
 
-    const hasGatekeeperAddress = [
-      freeForAllGatekeeperContractAddress,
-      easGatekeeperContractAddress,
-      gitcoinGatekeeperContractAddress,
-      zupassGatekeeperContractAddress,
-      semaphoreGatekeeperContractAddress,
-      hatsGatekeeperContractAddress,
-      merkleProofGatekeeperContractAddress,
+    const hasPolicyAddress = [
+      freeForAllPolicyContractAddress,
+      easPolicyContractAddress,
+      gitcoinPolicyContractAddress,
+      zupassPolicyContractAddress,
+      semaphorePolicyContractAddress,
+      hatsPolicyContractAddress,
+      merkleProofPolicyContractAddress,
     ].some(Boolean);
 
     const isSkipable = [
-      skipDeployFreeForAllGatekeeper,
-      skipDeployEASGatekeeper,
-      skipDeployGitcoinGatekeeper,
-      skipDeployZupassGatekeeper,
-      skipDeploySemaphoreGatekeeper,
-      skipDeployHatsGatekeeper,
-      skipDeployMerkleProofGatekeeper,
+      skipDeployFreeForAllPolicy,
+      skipDeployEASPolicy,
+      skipDeployGitcoinPolicy,
+      skipDeployZupassPolicy,
+      skipDeploySemaphorePolicy,
+      skipDeployHatsPolicy,
+      skipDeployMerkleProofPolicy,
     ].some((skip) => !skip);
 
-    const canSkipDeploy = incremental && hasGatekeeperAddress && isSkipable;
+    const canSkipDeploy = incremental && hasPolicyAddress && isSkipable;
 
     if (canSkipDeploy) {
       // eslint-disable-next-line no-console
-      logGreen({ text: info(`Skipping deployment of the Gatekeeper contract`) });
+      logGreen({ text: info(`Skipping deployment of the Policy contract`) });
       return;
     }
 
-    if (!skipDeployFreeForAllGatekeeper) {
+    if (!skipDeployFreeForAllPolicy) {
       const [
-        freeForAllGatekeeperContract,
+        freeForAllPolicyContract,
         freeForAllCheckerContract,
-        freeForAllGatekeeperFactoryContract,
+        freeForAllPolicyFactoryContract,
         freeForAllCheckerFactoryContract,
-      ] = await deployFreeForAllSignUpGatekeeper(deployer);
+      ] = await deployFreeForAllSignUpPolicy(deployer);
 
       await Promise.all([
         storage.register({
-          id: EContracts.FreeForAllGatekeeper,
+          id: EContracts.FreeForAllPolicy,
           key: `poll-${pollId}`,
-          contract: freeForAllGatekeeperContract,
+          contract: freeForAllPolicyContract,
           args: [],
           network: hre.network.name,
         }),
@@ -138,9 +125,9 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
           network: hre.network.name,
         }),
         storage.register({
-          id: EGatekeeperFactories.FreeForAll,
+          id: EPolicyFactories.FreeForAll,
           key: `poll-${pollId}`,
-          contract: freeForAllGatekeeperFactoryContract,
+          contract: freeForAllPolicyFactoryContract,
           args: [],
           network: hre.network.name,
         }),
@@ -154,17 +141,17 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
       ]);
     }
 
-    const isSupportedEASGatekeeperNetwork = ![ESupportedChains.Hardhat, ESupportedChains.Coverage].includes(
+    const isSupportedEASPolicyNetwork = ![ESupportedChains.Hardhat, ESupportedChains.Coverage].includes(
       hre.network.name as ESupportedChains,
     );
 
-    if (!skipDeployEASGatekeeper && isSupportedEASGatekeeperNetwork) {
-      const easAddress = deployment.getDeployConfigField<string>(EContracts.EASGatekeeper, "easAddress", true);
-      const encodedSchema = deployment.getDeployConfigField<string>(EContracts.EASGatekeeper, "schema", true);
-      const attester = deployment.getDeployConfigField<string>(EContracts.EASGatekeeper, "attester", true);
+    if (!skipDeployEASPolicy && isSupportedEASPolicyNetwork) {
+      const easAddress = deployment.getDeployConfigField<string>(EContracts.EASPolicy, "easAddress", true);
+      const encodedSchema = deployment.getDeployConfigField<string>(EContracts.EASPolicy, "schema", true);
+      const attester = deployment.getDeployConfigField<string>(EContracts.EASPolicy, "attester", true);
 
-      const [easGatekeeperContract, easCheckerContract, easGatekeeperFactoryContract, easCheckerFactoryContract] =
-        await deployEASSignUpGatekeeper(
+      const [easPolicyContract, easCheckerContract, easPolicyFactoryContract, easCheckerFactoryContract] =
+        await deployEASSignUpPolicy(
           {
             eas: easAddress,
             attester,
@@ -176,9 +163,9 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
 
       await Promise.all([
         storage.register({
-          id: EGatekeepers.EAS,
+          id: EPolicies.EAS,
           key: `poll-${pollId}`,
-          contract: easGatekeeperContract,
+          contract: easPolicyContract,
           args: [],
           network: hre.network.name,
         }),
@@ -190,9 +177,9 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
           network: hre.network.name,
         }),
         storage.register({
-          id: EGatekeeperFactories.EAS,
+          id: EPolicyFactories.EAS,
           key: `poll-${pollId}`,
-          contract: easGatekeeperFactoryContract,
+          contract: easPolicyFactoryContract,
           args: [],
           network: hre.network.name,
         }),
@@ -206,33 +193,33 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
       ]);
     }
 
-    const isSupportedGitcoinGatekeeperNetwork = ![
+    const isSupportedGitcoinPolicyNetwork = ![
       ESupportedChains.Hardhat,
       ESupportedChains.Coverage,
       ESupportedChains.Sepolia,
     ].includes(hre.network.name as ESupportedChains);
 
-    if (!skipDeployGitcoinGatekeeper && isSupportedGitcoinGatekeeperNetwork) {
-      const gitcoinGatekeeperDecoderAddress = deployment.getDeployConfigField<string>(
-        EContracts.GitcoinPassportGatekeeper,
+    if (!skipDeployGitcoinPolicy && isSupportedGitcoinPolicyNetwork) {
+      const gitcoinPolicyDecoderAddress = deployment.getDeployConfigField<string>(
+        EContracts.GitcoinPassportPolicy,
         "decoderAddress",
         true,
       );
-      const gitcoinGatekeeperPassingScore = deployment.getDeployConfigField<number>(
-        EContracts.GitcoinPassportGatekeeper,
+      const gitcoinPolicyPassingScore = deployment.getDeployConfigField<number>(
+        EContracts.GitcoinPassportPolicy,
         "passingScore",
         true,
       );
 
       const [
-        gitcoinGatekeeperContract,
+        gitcoinPolicyContract,
         gitcoinCheckerContract,
-        gitcoinGatekeeperFactoryContract,
+        gitcoinPolicyFactoryContract,
         gitcoinCheckerFactoryContract,
-      ] = await deployGitcoinPassportGatekeeper(
+      ] = await deployGitcoinPassportPolicy(
         {
-          decoderAddress: gitcoinGatekeeperDecoderAddress,
-          minimumScore: gitcoinGatekeeperPassingScore,
+          decoderAddress: gitcoinPolicyDecoderAddress,
+          minimumScore: gitcoinPolicyPassingScore,
         },
         deployer,
         true,
@@ -240,9 +227,9 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
 
       await Promise.all([
         storage.register({
-          id: EGatekeepers.GitcoinPassport,
+          id: EPolicies.GitcoinPassport,
           key: `poll-${pollId}`,
-          contract: gitcoinGatekeeperContract,
+          contract: gitcoinPolicyContract,
           args: [],
           network: hre.network.name,
         }),
@@ -254,9 +241,9 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
           network: hre.network.name,
         }),
         storage.register({
-          id: EGatekeeperFactories.GitcoinPassport,
+          id: EPolicyFactories.GitcoinPassport,
           key: `poll-${pollId}`,
-          contract: gitcoinGatekeeperFactoryContract,
+          contract: gitcoinPolicyFactoryContract,
           args: [],
           network: hre.network.name,
         }),
@@ -270,14 +257,14 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
       ]);
     }
 
-    if (!skipDeployZupassGatekeeper) {
-      const eventId = deployment.getDeployConfigField<string>(EContracts.ZupassGatekeeper, "eventId", true);
+    if (!skipDeployZupassPolicy) {
+      const eventId = deployment.getDeployConfigField<string>(EContracts.ZupassPolicy, "eventId", true);
       const validEventId = uuidToBigInt(eventId);
-      const signer1 = deployment.getDeployConfigField<string>(EContracts.ZupassGatekeeper, "signer1", true);
+      const signer1 = deployment.getDeployConfigField<string>(EContracts.ZupassPolicy, "signer1", true);
       const validSigner1 = hexToBigInt(signer1);
-      const signer2 = deployment.getDeployConfigField<string>(EContracts.ZupassGatekeeper, "signer2", true);
+      const signer2 = deployment.getDeployConfigField<string>(EContracts.ZupassPolicy, "signer2", true);
       const validSigner2 = hexToBigInt(signer2);
-      let verifier = deployment.getDeployConfigField<string | undefined>(EContracts.ZupassGatekeeper, "zupassVerifier");
+      let verifier = deployment.getDeployConfigField<string | undefined>(EContracts.ZupassPolicy, "zupassVerifier");
 
       if (!verifier) {
         const verifierContract = await deployment.deployContract({
@@ -287,21 +274,17 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
         verifier = await verifierContract.getAddress();
       }
 
-      const [
-        zupassGatekeeperContract,
-        zupassCheckerContract,
-        zupassGatekeeperFactoryContract,
-        zupassCheckerFactoryContract,
-      ] = await deployZupassSignUpGatekeeper(
-        { eventId: validEventId, signer1: validSigner1, signer2: validSigner2, verifier },
-        deployer,
-      );
+      const [zupassPolicyContract, zupassCheckerContract, zupassPolicyFactoryContract, zupassCheckerFactoryContract] =
+        await deployZupassSignUpPolicy(
+          { eventId: validEventId, signer1: validSigner1, signer2: validSigner2, verifier },
+          deployer,
+        );
 
       await Promise.all([
         storage.register({
-          id: EGatekeepers.Zupass,
+          id: EPolicies.Zupass,
           key: `poll-${pollId}`,
-          contract: zupassGatekeeperContract,
+          contract: zupassPolicyContract,
           args: [],
           network: hre.network.name,
         }),
@@ -313,9 +296,9 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
           network: hre.network.name,
         }),
         storage.register({
-          id: EGatekeeperFactories.Zupass,
+          id: EPolicyFactories.Zupass,
           key: `poll-${pollId}`,
-          contract: zupassGatekeeperFactoryContract,
+          contract: zupassPolicyFactoryContract,
           args: [],
           network: hre.network.name,
         }),
@@ -329,26 +312,26 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
       ]);
     }
 
-    if (!skipDeploySemaphoreGatekeeper) {
+    if (!skipDeploySemaphorePolicy) {
       const semaphoreContractAddress = deployment.getDeployConfigField<string>(
-        EContracts.SemaphoreGatekeeper,
+        EContracts.SemaphorePolicy,
         "semaphoreContract",
         true,
       );
-      const groupId = deployment.getDeployConfigField<number>(EContracts.SemaphoreGatekeeper, "groupId", true);
+      const groupId = deployment.getDeployConfigField<number>(EContracts.SemaphorePolicy, "groupId", true);
 
       const [
-        semaphoreGatekeeperContract,
+        semaphorePolicyContract,
         semaphoreCheckerContract,
-        semaphoreGatekeeperFactoryContract,
+        semaphorePolicyFactoryContract,
         semaphoreCheckerFactoryContract,
-      ] = await deploySemaphoreSignupGatekeeper({ semaphore: semaphoreContractAddress, groupId }, deployer, true);
+      ] = await deploySemaphoreSignupPolicy({ semaphore: semaphoreContractAddress, groupId }, deployer, true);
 
       await Promise.all([
         storage.register({
-          id: EGatekeepers.Semaphore,
+          id: EPolicies.Semaphore,
           key: `poll-${pollId}`,
-          contract: semaphoreGatekeeperContract,
+          contract: semaphorePolicyContract,
           args: [],
           network: hre.network.name,
         }),
@@ -360,9 +343,9 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
           network: hre.network.name,
         }),
         storage.register({
-          id: EGatekeeperFactories.Semaphore,
+          id: EPolicyFactories.Semaphore,
           key: `poll-${pollId}`,
-          contract: semaphoreGatekeeperFactoryContract,
+          contract: semaphorePolicyFactoryContract,
           args: [],
           network: hre.network.name,
         }),
@@ -376,23 +359,23 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
       ]);
     }
 
-    if (!skipDeployHatsGatekeeper) {
+    if (!skipDeployHatsPolicy) {
       // get args
-      const criterionHats = deployment.getDeployConfigField<string[]>(EContracts.HatsGatekeeper, "criterionHats", true);
+      const criterionHats = deployment.getDeployConfigField<string[]>(EContracts.HatsPolicy, "criterionHats", true);
       const hatsProtocolAddress = deployment.getDeployConfigField<string>(
-        EContracts.HatsGatekeeper,
+        EContracts.HatsPolicy,
         "hatsProtocolAddress",
         true,
       );
 
-      const [hatsGatekeeperContract, hatsCheckerContract, hatsGatekeeperFactoryContract, hatsCheckerFactoryContract] =
-        await deployHatsSignupGatekeeper({ hats: hatsProtocolAddress, criterionHats }, deployer, true);
+      const [hatsPolicyContract, hatsCheckerContract, hatsPolicyFactoryContract, hatsCheckerFactoryContract] =
+        await deployHatsSignupPolicy({ hats: hatsProtocolAddress, criterionHats }, deployer, true);
 
       await Promise.all([
         storage.register({
-          id: EGatekeepers.Hats,
+          id: EPolicies.Hats,
           key: `poll-${pollId}`,
-          contract: hatsGatekeeperContract,
+          contract: hatsPolicyContract,
           args: [],
           network: hre.network.name,
         }),
@@ -404,9 +387,9 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
           network: hre.network.name,
         }),
         storage.register({
-          id: EGatekeeperFactories.Hats,
+          id: EPolicyFactories.Hats,
           key: `poll-${pollId}`,
-          contract: hatsGatekeeperFactoryContract,
+          contract: hatsPolicyFactoryContract,
           args: [],
           network: hre.network.name,
         }),
@@ -420,21 +403,21 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
       ]);
     }
 
-    if (!skipDeployMerkleProofGatekeeper) {
-      const root = deployment.getDeployConfigField<string>(EContracts.MerkleProofGatekeeper, "root", true);
+    if (!skipDeployMerkleProofPolicy) {
+      const root = deployment.getDeployConfigField<string>(EContracts.MerkleProofPolicy, "root", true);
 
       const [
-        merkleProofGatekeeperContract,
+        merkleProofPolicyContract,
         merkleProofCheckerContract,
-        merkleProofGatekeeperFactoryContract,
+        merkleProofPolicyFactoryContract,
         merkleProofCheckerFactoryContract,
-      ] = await deployMerkleProofGatekeeper({ root }, deployer, true);
+      ] = await deployMerkleProofPolicy({ root }, deployer, true);
 
       await Promise.all([
         storage.register({
-          id: EGatekeepers.MerkleProof,
+          id: EPolicies.MerkleProof,
           key: `poll-${pollId}`,
-          contract: merkleProofGatekeeperContract,
+          contract: merkleProofPolicyContract,
           args: [],
           network: hre.network.name,
         }),
@@ -446,9 +429,9 @@ deployment.deployTask(EDeploySteps.PollGatekeeper, "Deploy Poll gatekeepers").th
           network: hre.network.name,
         }),
         storage.register({
-          id: EGatekeeperFactories.MerkleProof,
+          id: EPolicyFactories.MerkleProof,
           key: `poll-${pollId}`,
-          contract: merkleProofGatekeeperFactoryContract,
+          contract: merkleProofPolicyFactoryContract,
           args: [],
           network: hre.network.name,
         }),

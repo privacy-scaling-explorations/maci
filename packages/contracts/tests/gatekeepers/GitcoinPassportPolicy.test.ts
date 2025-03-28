@@ -2,18 +2,19 @@ import { expect } from "chai";
 import { AbiCoder, Signer, ZeroAddress } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
-import { deployContract, deployGitcoinPassportGatekeeper, getDefaultSigner, getSigners } from "../../ts";
-import {
-  GitcoinPassportChecker,
-  GitcoinPassportGatekeeper,
+import type {
   MACI,
+  GitcoinPassportChecker,
+  GitcoinPassportPolicy,
   MockGitcoinPassportDecoder,
 } from "../../typechain-types";
+
+import { deployContract, deployGitcoinPassportPolicy, getDefaultSigner, getSigners } from "../../ts";
 import { initialVoiceCreditBalance, STATE_TREE_DEPTH } from "../constants";
 import { deployTestContracts } from "../utils";
 
-describe("GitcoinPassport Gatekeeper", () => {
-  let gitcoinGatekeeper: GitcoinPassportGatekeeper;
+describe("GitcoinPassport", () => {
+  let gitcoinPolicy: GitcoinPassportPolicy;
   let gitcoinChecker: GitcoinPassportChecker;
   let maciContract: MACI;
   let mockDecoder: MockGitcoinPassportDecoder;
@@ -34,7 +35,7 @@ describe("GitcoinPassport Gatekeeper", () => {
     signerAddress = await signer.getAddress();
     mockDecoder = await deployContract("MockGitcoinPassportDecoder", signer, true);
     decoderAddress = await mockDecoder.getAddress();
-    [gitcoinGatekeeper, gitcoinChecker] = await deployGitcoinPassportGatekeeper(
+    [gitcoinPolicy, gitcoinChecker] = await deployGitcoinPassportPolicy(
       { decoderAddress, minimumScore: passingScore },
       signer,
       true,
@@ -44,39 +45,36 @@ describe("GitcoinPassport Gatekeeper", () => {
       initialVoiceCreditBalance,
       stateTreeDepth: STATE_TREE_DEPTH,
       signer,
-      gatekeeper: gitcoinGatekeeper,
+      policy: gitcoinPolicy,
     });
     maciContract = r.maciContract;
   });
 
   describe("Deployment", () => {
-    it("The gatekeeper should be deployed correctly", async () => {
-      expect(gitcoinGatekeeper).to.not.eq(undefined);
-      expect(await gitcoinGatekeeper.getAddress()).to.not.eq(ZeroAddress);
+    it("The policy should be deployed correctly", async () => {
+      expect(gitcoinPolicy).to.not.eq(undefined);
+      expect(await gitcoinPolicy.getAddress()).to.not.eq(ZeroAddress);
     });
   });
 
   describe("GitcoinGakeeper", () => {
     it("should set guarded target correctly", async () => {
       const maciAddress = await maciContract.getAddress();
-      await gitcoinGatekeeper.setTarget(maciAddress).then((tx) => tx.wait());
+      await gitcoinPolicy.setTarget(maciAddress).then((tx) => tx.wait());
 
-      expect(await gitcoinGatekeeper.guarded()).to.eq(maciAddress);
+      expect(await gitcoinPolicy.guarded()).to.eq(maciAddress);
     });
 
     it("should fail to set guarded target when the caller is not the owner", async () => {
       const [, secondSigner] = await getSigners();
-      await expect(gitcoinGatekeeper.connect(secondSigner).setTarget(signerAddress)).to.be.revertedWithCustomError(
-        gitcoinGatekeeper,
+      await expect(gitcoinPolicy.connect(secondSigner).setTarget(signerAddress)).to.be.revertedWithCustomError(
+        gitcoinPolicy,
         "OwnableUnauthorizedAccount",
       );
     });
 
     it("should fail to set guarded target when the MACI instance is not valid", async () => {
-      await expect(gitcoinGatekeeper.setTarget(ZeroAddress)).to.be.revertedWithCustomError(
-        gitcoinGatekeeper,
-        "ZeroAddress",
-      );
+      await expect(gitcoinPolicy.setTarget(ZeroAddress)).to.be.revertedWithCustomError(gitcoinPolicy, "ZeroAddress");
     });
 
     it("should throw when the score is not high enough", async () => {
@@ -90,13 +88,13 @@ describe("GitcoinPassport Gatekeeper", () => {
       await mockDecoder.changeScore(passingScore * 100).then((tx) => tx.wait());
       await maciContract.signUp(user.pubKey.asContractParam(), "0x").then((tx) => tx.wait());
 
-      expect(await gitcoinGatekeeper.registeredUsers(signerAddress)).to.eq(true);
+      expect(await gitcoinPolicy.enforcedUsers(signerAddress)).to.eq(true);
     });
 
     it("should prevent signing up twice", async () => {
       await expect(maciContract.signUp(user.pubKey.asContractParam(), "0x")).to.be.revertedWithCustomError(
-        gitcoinGatekeeper,
-        "AlreadyRegistered",
+        gitcoinPolicy,
+        "AlreadyEnforced",
       );
     });
 

@@ -19,7 +19,7 @@ import {
   MessageProcessor__factory as MessageProcessorFactory,
   Poll__factory as PollFactory,
   Tally__factory as TallyFactory,
-  SignUpGatekeeper,
+  IBasePolicy,
   ConstantInitialVoiceCreditProxy,
 } from "../typechain-types";
 
@@ -42,7 +42,7 @@ describe("TallyVotesNonQv", () => {
   let mpContract: MessageProcessor;
   let verifierContract: Verifier;
   let vkRegistryContract: VkRegistry;
-  let gatekeeperContract: SignUpGatekeeper;
+  let policyContract: IBasePolicy;
   let initialVoiceCreditProxyContract: ConstantInitialVoiceCreditProxy;
   const coordinator = new Keypair();
   let maciState: MaciState;
@@ -63,7 +63,7 @@ describe("TallyVotesNonQv", () => {
     maciContract = r.maciContract;
     verifierContract = r.mockVerifierContract as Verifier;
     vkRegistryContract = r.vkRegistryContract;
-    gatekeeperContract = r.gatekeeperContract;
+    policyContract = r.policyContract;
     initialVoiceCreditProxyContract = r.constantInitialVoiceCreditProxyContract;
 
     // deploy a poll
@@ -77,7 +77,7 @@ describe("TallyVotesNonQv", () => {
       verifier: verifierContract,
       vkRegistry: vkRegistryContract,
       mode: EMode.NON_QV,
-      gatekeeper: gatekeeperContract,
+      policy: policyContract,
       initialVoiceCreditProxy: initialVoiceCreditProxyContract,
       relayers: [ZeroAddress],
       voteOptions: maxVoteOptions,

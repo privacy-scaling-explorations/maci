@@ -1,8 +1,8 @@
 import {
   deployConstantInitialVoiceCreditProxy,
-  deployFreeForAllSignUpGatekeeper,
+  deployFreeForAllSignUpPolicy,
   MACI__factory as MACIFactory,
-  SignUpGatekeeper__factory as SignUpGatekeeperFactory,
+  IBasePolicy__factory as SignUpPolicyFactory,
 } from "maci-contracts";
 import { VOTE_OPTION_TREE_ARITY } from "maci-core";
 import { PubKey } from "maci-domainobjs";
@@ -29,7 +29,7 @@ export const deployPoll = async ({
   verifierContractAddress,
   vkRegistryContractAddress,
   mode,
-  gatekeeperContractAddress,
+  policyContractAddress,
   initialVoiceCreditProxyContractAddress,
   relayers,
   voteOptions,
@@ -52,12 +52,12 @@ export const deployPoll = async ({
 
   const maciContract = MACIFactory.connect(maciAddress, signer);
 
-  // check if we have a signupGatekeeper already deployed or passed as arg
-  let signupGatekeeperContractAddress = gatekeeperContractAddress;
+  // check if we have a signupPolicy already deployed or passed as arg
+  let signupPolicyContractAddress = policyContractAddress;
 
-  if (!signupGatekeeperContractAddress) {
-    const [contract] = await deployFreeForAllSignUpGatekeeper(signer, true);
-    signupGatekeeperContractAddress = await contract.getAddress();
+  if (!signupPolicyContractAddress) {
+    const [contract] = await deployFreeForAllSignUpPolicy(signer, true);
+    signupPolicyContractAddress = await contract.getAddress();
   }
 
   let initialVoiceCreditProxyAddress = initialVoiceCreditProxyContractAddress;
@@ -117,7 +117,7 @@ export const deployPoll = async ({
       verifier: verifierContractAddress,
       vkRegistry: vkRegistryContractAddress,
       mode,
-      gatekeeper: signupGatekeeperContractAddress,
+      policy: signupPolicyContractAddress,
       initialVoiceCreditProxy: initialVoiceCreditProxyAddress,
       relayers,
       voteOptions,
@@ -143,15 +143,15 @@ export const deployPoll = async ({
   const messageProcessorContractAddress = pollContracts.messageProcessor;
   const tallyContractAddress = pollContracts.tally;
 
-  const gatekeeperContract = SignUpGatekeeperFactory.connect(signupGatekeeperContractAddress, signer);
-  await gatekeeperContract.setTarget(pollContractAddress).then((tx) => tx.wait());
+  const policyContract = SignUpPolicyFactory.connect(signupPolicyContractAddress, signer);
+  await policyContract.setTarget(pollContractAddress).then((tx) => tx.wait());
 
   return {
     pollId,
     pollContractAddress,
     messageProcessorContractAddress,
     tallyContractAddress,
-    gatekeeperContractAddress: signupGatekeeperContractAddress,
+    policyContractAddress: signupPolicyContractAddress,
     initialVoiceCreditProxyContractAddress: initialVoiceCreditProxyAddress,
   };
 };

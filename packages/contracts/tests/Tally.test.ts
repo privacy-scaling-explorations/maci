@@ -7,7 +7,7 @@ import { genTreeCommitment, genTreeProof, hashLeftRight, NOTHING_UP_MY_SLEEVE, p
 import { Keypair, Message, PubKey } from "maci-domainobjs";
 
 import { EMode } from "../ts/constants";
-import { deployFreeForAllSignUpGatekeeper } from "../ts/deploy";
+import { deployFreeForAllSignUpPolicy } from "../ts/deploy";
 import { IVerifyingKeyStruct } from "../ts/types";
 import { asHex, getDefaultSigner, getBlockTimestamp } from "../ts/utils";
 import {
@@ -20,7 +20,7 @@ import {
   MessageProcessor__factory as MessageProcessorFactory,
   Poll__factory as PollFactory,
   Tally__factory as TallyFactory,
-  SignUpGatekeeper,
+  IBasePolicy,
   ConstantInitialVoiceCreditProxy,
 } from "../typechain-types";
 
@@ -46,7 +46,7 @@ describe("TallyVotes", () => {
   let mpContract: MessageProcessor;
   let verifierContract: Verifier;
   let vkRegistryContract: VkRegistry;
-  let signupGatekeeperContract: SignUpGatekeeper;
+  let signupPolicyContract: IBasePolicy;
   let initialVoiceCreditProxyContract: ConstantInitialVoiceCreditProxy;
 
   const coordinator = new Keypair();
@@ -72,7 +72,7 @@ describe("TallyVotes", () => {
     maciContract = r.maciContract;
     verifierContract = r.mockVerifierContract as Verifier;
     vkRegistryContract = r.vkRegistryContract;
-    signupGatekeeperContract = r.gatekeeperContract;
+    signupPolicyContract = r.policyContract;
     initialVoiceCreditProxyContract = r.constantInitialVoiceCreditProxyContract;
 
     // deploy a poll
@@ -87,7 +87,7 @@ describe("TallyVotes", () => {
         verifier: verifierContract,
         vkRegistry: vkRegistryContract,
         mode: EMode.QV,
-        gatekeeper: signupGatekeeperContract,
+        policy: signupPolicyContract,
         initialVoiceCreditProxy: initialVoiceCreditProxyContract,
         relayers: [ZeroAddress],
         voteOptions: maxVoteOptions,
@@ -103,7 +103,7 @@ describe("TallyVotes", () => {
     mpContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
     tallyContract = TallyFactory.connect(pollContracts.tally, signer);
 
-    await signupGatekeeperContract.setTarget(pollContracts.poll).then((tx) => tx.wait());
+    await signupPolicyContract.setTarget(pollContracts.poll).then((tx) => tx.wait());
 
     // deploy local poll
     const p = maciState.deployPoll(
@@ -217,7 +217,7 @@ describe("TallyVotes", () => {
       maciContract = r.maciContract;
       verifierContract = r.mockVerifierContract as Verifier;
       vkRegistryContract = r.vkRegistryContract;
-      await r.gatekeeperContract.setTarget(await maciContract.getAddress()).then((tx) => tx.wait());
+      await r.policyContract.setTarget(await maciContract.getAddress()).then((tx) => tx.wait());
 
       // signup all users
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
@@ -233,7 +233,7 @@ describe("TallyVotes", () => {
         );
       }
 
-      const [pollGatekeeperContract] = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [pollPolicyContract] = await deployFreeForAllSignUpPolicy(signer, true);
 
       // deploy a poll
       // deploy on chain poll
@@ -250,7 +250,7 @@ describe("TallyVotes", () => {
           verifier: verifierContract,
           vkRegistry: vkRegistryContract,
           mode: EMode.QV,
-          gatekeeper: pollGatekeeperContract,
+          policy: pollPolicyContract,
           initialVoiceCreditProxy: initialVoiceCreditProxyContract,
           relayers: [ZeroAddress],
           voteOptions: maxVoteOptions,
@@ -266,7 +266,7 @@ describe("TallyVotes", () => {
       mpContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
       tallyContract = TallyFactory.connect(pollContracts.tally, signer);
 
-      await pollGatekeeperContract.setTarget(pollContracts.poll).then((tx) => tx.wait());
+      await pollPolicyContract.setTarget(pollContracts.poll).then((tx) => tx.wait());
 
       // deploy local poll
       const p = maciState.deployPoll(
@@ -538,7 +538,7 @@ describe("TallyVotes", () => {
       verifierContract = r.mockVerifierContract as Verifier;
       vkRegistryContract = r.vkRegistryContract;
 
-      await r.gatekeeperContract.setTarget(await maciContract.getAddress()).then((tx) => tx.wait());
+      await r.policyContract.setTarget(await maciContract.getAddress()).then((tx) => tx.wait());
 
       // signup all users
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
@@ -554,7 +554,7 @@ describe("TallyVotes", () => {
         );
       }
 
-      const [pollGatekeeperContract] = await deployFreeForAllSignUpGatekeeper(signer, true);
+      const [pollPolicyContract] = await deployFreeForAllSignUpPolicy(signer, true);
 
       // deploy a poll
       // deploy on chain poll
@@ -571,7 +571,7 @@ describe("TallyVotes", () => {
           verifier: verifierContract,
           vkRegistry: vkRegistryContract,
           mode: EMode.QV,
-          gatekeeper: pollGatekeeperContract,
+          policy: pollPolicyContract,
           initialVoiceCreditProxy: initialVoiceCreditProxyContract,
           relayers: [ZeroAddress],
           voteOptions: maxVoteOptions,
@@ -587,7 +587,7 @@ describe("TallyVotes", () => {
       mpContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
       tallyContract = TallyFactory.connect(pollContracts.tally, signer);
 
-      await pollGatekeeperContract.setTarget(pollContracts.poll).then((tx) => tx.wait());
+      await pollPolicyContract.setTarget(pollContracts.poll).then((tx) => tx.wait());
 
       // deploy local poll
       const p = maciState.deployPoll(

@@ -1,21 +1,21 @@
 export {
-  getGatekeeperTrait,
-  getGatekeeperContractNamesByTrait,
-  getSemaphoreGatekeeperData,
-  getZupassGatekeeperData,
-  getEASGatekeeperData,
-  getMerkleProofGatekeeperData,
-} from "./gatekeeper";
+  getPolicyTrait,
+  getPolicyContractNamesByTrait,
+  getSemaphorePolicyData,
+  getZupassPolicyData,
+  getEASPolicyData,
+  getMerkleProofPolicyData,
+} from "./policy";
 export { mergeSignups } from "./merge";
 export { generateMaciState } from "./state";
-export { EGatekeeperTrait } from "./types";
+export { EPolicyTrait } from "./types";
 export type {
-  IGetGatekeeperTraitArgs,
-  IGetGatekeeperDataArgs,
-  ISemaphoreGatekeeperData,
-  IZupassGatekeeperData,
-  IEASGatekeeperData,
-  IMerkleProofGatekeeperData,
+  IGetPolicyTraitArgs,
+  IGetPolicyDataArgs,
+  ISemaphorePolicyData,
+  IZupassPolicyData,
+  IEASPolicyData,
+  IMerkleProofPolicyData,
   IMergeSignupsArgs,
   IGenerateMaciStateArgs,
 } from "./types";

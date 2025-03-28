@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
+import { IBasePolicy } from "@excubiae/contracts/contracts/interfaces/IBasePolicy.sol";
+
 import { IPollFactory } from "./interfaces/IPollFactory.sol";
 import { IMessageProcessorFactory } from "./interfaces/IMPFactory.sol";
 import { ITallyFactory } from "./interfaces/ITallyFactory.sol";
 import { IVerifier } from "./interfaces/IVerifier.sol";
 import { IVkRegistry } from "./interfaces/IVkRegistry.sol";
-import { ISignUpGatekeeper } from "./interfaces/ISignUpGatekeeper.sol";
 import { IInitialVoiceCreditProxy } from "./interfaces/IInitialVoiceCreditProxy.sol";
-import { SignUpGatekeeper } from "./gatekeepers/SignUpGatekeeper.sol";
 import { IMACI } from "./interfaces/IMACI.sol";
 import { Params } from "./utilities/Params.sol";
 import { DomainObjs } from "./utilities/DomainObjs.sol";
@@ -55,9 +55,9 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
   /// @notice The state tree. Stores users' public keys
   LeanIMTData public leanIMTData;
 
-  /// @notice Address of the SignUpGatekeeper, a contract which determines whether a
+  /// @notice Address of the signup policy, a contract which determines whether a
   /// user may sign up to vote
-  SignUpGatekeeper public immutable signUpGatekeeper;
+  IBasePolicy public immutable signUpPolicy;
 
   /// @notice The array of the state tree roots for each sign up
   /// For the N'th sign up, the state tree root will be stored at the index N
@@ -83,14 +83,14 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
   /// @param _pollFactory The PollFactory contract
   /// @param _messageProcessorFactory The MessageProcessorFactory contract
   /// @param _tallyFactory The TallyFactory contract
-  /// @param _signUpGatekeeper The SignUpGatekeeper contract
+  /// @param _signUpPolicy The signup policy contract
   /// @param _stateTreeDepth The depth of the state tree
   /// @param _emptyBallotRoots The roots of the empty ballot trees
   constructor(
     IPollFactory _pollFactory,
     IMessageProcessorFactory _messageProcessorFactory,
     ITallyFactory _tallyFactory,
-    SignUpGatekeeper _signUpGatekeeper,
+    IBasePolicy _signUpPolicy,
     uint8 _stateTreeDepth,
     uint256[5] memory _emptyBallotRoots
   ) payable {
@@ -101,7 +101,7 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
     pollFactory = _pollFactory;
     messageProcessorFactory = _messageProcessorFactory;
     tallyFactory = _tallyFactory;
-    signUpGatekeeper = _signUpGatekeeper;
+    signUpPolicy = _signUpPolicy;
     stateTreeDepth = _stateTreeDepth;
     maxSignups = uint256(STATE_TREE_ARITY) ** uint256(_stateTreeDepth);
     emptyBallotRoots = _emptyBallotRoots;
@@ -111,7 +111,7 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
   }
 
   /// @inheritdoc IMACI
-  function signUp(PubKey memory _pubKey, bytes memory _signUpGatekeeperData) public virtual {
+  function signUp(PubKey memory _pubKey, bytes memory _signUpPolicyData) public virtual {
     // ensure we do not have more signups than what the circuits support
     if (leanIMTData.size >= maxSignups) revert TooManySignups();
 
@@ -120,9 +120,9 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
       revert InvalidPubKey();
     }
 
-    // Register the user via the sign-up gatekeeper. This function should
+    // Register the user via the sign-up policy. This function should
     // throw if the user has already registered or if ineligible to do so.
-    signUpGatekeeper.enforce(msg.sender, _signUpGatekeeperData);
+    signUpPolicy.enforce(msg.sender, _signUpPolicyData);
 
     // Hash the public key and insert it into the tree.
     uint256 pubKeyHash = hashLeftRight(_pubKey.x, _pubKey.y);
@@ -154,7 +154,7 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
       maci: IMACI(address(this)),
       verifier: IVerifier(args.verifier),
       vkRegistry: IVkRegistry(args.vkRegistry),
-      gatekeeper: ISignUpGatekeeper(args.gatekeeper),
+      policy: IBasePolicy(args.policy),
       initialVoiceCreditProxy: IInitialVoiceCreditProxy(args.initialVoiceCreditProxy)
     });
 

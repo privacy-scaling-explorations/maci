@@ -1,14 +1,14 @@
 import { Keypair } from "maci-domainobjs";
-import { EGatekeepers, EInitialVoiceCreditProxies } from "maci-sdk";
+import { EPolicies, EInitialVoiceCreditProxies } from "maci-sdk";
 
 import {
   IDeployMaciConfig,
   IDeployPollConfig,
-  IEASGatekeeperArgs,
-  IGitcoinPassportGatekeeperArgs,
-  IHatsGatekeeperArgs,
-  ISemaphoreGatekeeperArgs,
-  IZupassGatekeeperArgs,
+  IEASPolicyArgs,
+  IGitcoinPassportPolicyArgs,
+  IHatsPolicyArgs,
+  ISemaphorePolicyArgs,
+  IZupassPolicyArgs,
 } from "../types";
 
 export const MSG_BATCH_SIZE = 20;
@@ -17,11 +17,11 @@ export const MSG_BATCH_SIZE = 20;
  * MACI deployment configuration for testing
  */
 export const testMaciDeploymentConfig: IDeployMaciConfig = {
-  gatekeeper: {
-    type: EGatekeepers.FreeForAll,
+  policy: {
+    type: EPolicies.FreeForAll,
   },
   MACI: {
-    gatekeeper: EGatekeepers.FreeForAll,
+    policy: EPolicies.FreeForAll,
     stateTreeDepth: 10,
   },
   VkRegistry: {
@@ -52,8 +52,8 @@ export const testPollDeploymentConfig: IDeployPollConfig = {
   intStateTreeDepth: 1,
   messageBatchSize: MSG_BATCH_SIZE,
   voteOptionTreeDepth: 2,
-  gatekeeper: {
-    type: EGatekeepers.FreeForAll,
+  policy: {
+    type: EPolicies.FreeForAll,
   },
   initialVoiceCreditsProxy: {
     type: EInitialVoiceCreditProxies.Constant,
@@ -66,22 +66,22 @@ export const testPollDeploymentConfig: IDeployPollConfig = {
 
 /**
  *
- * Gatekeepers
+ * Policies
  *
  */
 /**
- * EAS Gatekeeper deployment configuration for testing
+ * EAS Policy deployment configuration for testing
  */
-export const EASGatekeeperDeploymentConfig: IEASGatekeeperArgs = {
+export const EASPolicyDeploymentConfig: IEASPolicyArgs = {
   easAddress: "0xC2679fBD37d54388Ce493F1DB75320D236e1815e",
   schema: "0xe2636f31239f7948afdd9a9c477048b7fc2a089c347af60e3aa1251e5bf63e5c",
   attester: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
 };
 
 /**
- * Zupass Gatekeeper deployment configuration for testing
+ * Zupass Policy deployment configuration for testing
  */
-export const ZupassGatekeeperDeploymentConfig: IZupassGatekeeperArgs = {
+export const ZupassPolicyDeploymentConfig: IZupassPolicyArgs = {
   signer1: "13908133709081944902758389525983124100292637002438232157513257158004852609027",
   signer2: "7654374482676219729919246464135900991450848628968334062174564799457623790084",
   eventId: "0",
@@ -89,25 +89,25 @@ export const ZupassGatekeeperDeploymentConfig: IZupassGatekeeperArgs = {
 };
 
 /**
- * Semaphore Gatekeeper deployment configuration for testing
+ * Semaphore Policy deployment configuration for testing
  */
-export const SemaphoreGatekeeperDeploymentConfig: ISemaphoreGatekeeperArgs = {
+export const SemaphorePolicyDeploymentConfig: ISemaphorePolicyArgs = {
   semaphoreContract: "0x0A09FB3f63c13F1C54F2fA41AFB1e7a98cffc774",
   groupId: "0",
 };
 
 /**
- * HatsGatekeeper deployment configuration for testing
+ * HatsPolicy deployment configuration for testing
  */
-export const HatsGatekeeperDeploymentConfig: IHatsGatekeeperArgs = {
+export const HatsPolicyDeploymentConfig: IHatsPolicyArgs = {
   hatsProtocolAddress: "0x3bc1A0Ad72417f2d411118085256fC53CBdDd137",
   critrionHats: ["26960358043289970096177553829315270011263390106506980876069447401472"],
 };
 
 /**
- * GitcoinPassportGatekeeper deployment configuration for testing
+ * GitcoinPassportPolicy deployment configuration for testing
  */
-export const GitcoinPassportGatekeeperDeploymentConfig: IGitcoinPassportGatekeeperArgs = {
+export const GitcoinPassportPolicyDeploymentConfig: IGitcoinPassportPolicyArgs = {
   decoderAddress: "0xe53C60F8069C2f0c3a84F9B3DB5cf56f3100ba56",
   passingScore: "5",
 };

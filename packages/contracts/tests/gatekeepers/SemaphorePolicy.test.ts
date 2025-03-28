@@ -2,14 +2,15 @@ import { expect } from "chai";
 import { AbiCoder, Signer, ZeroAddress } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
-import { deploySemaphoreSignupGatekeeper, deployContract } from "../../ts/deploy";
+import type { MACI, MockSemaphore, SemaphorePolicy, SemaphoreChecker } from "../../typechain-types";
+
+import { deploySemaphoreSignupPolicy, deployContract } from "../../ts/deploy";
 import { getDefaultSigner, getSigners } from "../../ts/utils";
-import { MACI, SemaphoreGatekeeper, MockSemaphore, SemaphoreChecker } from "../../typechain-types";
 import { STATE_TREE_DEPTH, initialVoiceCreditBalance } from "../constants";
 import { deployTestContracts } from "../utils";
 
-describe("Semaphore Gatekeeper", () => {
-  let semaphoreGatekeeper: SemaphoreGatekeeper;
+describe("Semaphore", () => {
+  let semaphorePolicy: SemaphorePolicy;
   let semaphoreChecker: SemaphoreChecker;
   let mockSemaphore: MockSemaphore;
   let signer: Signer;
@@ -52,7 +53,7 @@ describe("Semaphore Gatekeeper", () => {
     // eslint-disable-next-line no-bitwise
     proof.scope = (BigInt(signerAddress) << 96n) | validGroupId;
 
-    [semaphoreGatekeeper, semaphoreChecker] = await deploySemaphoreSignupGatekeeper(
+    [semaphorePolicy, semaphoreChecker] = await deploySemaphoreSignupPolicy(
       { semaphore: mockSemaphoreAddress, groupId: validGroupId },
       signer,
       true,
@@ -60,12 +61,12 @@ describe("Semaphore Gatekeeper", () => {
   });
 
   describe("Deployment", () => {
-    it("The gatekeeper should be deployed correctly", () => {
-      expect(semaphoreGatekeeper).to.not.eq(undefined);
+    it("The policy should be deployed correctly", () => {
+      expect(semaphorePolicy).to.not.eq(undefined);
     });
   });
 
-  describe("Gatekeeper", () => {
+  describe("Policy", () => {
     let maciContract: MACI;
 
     before(async () => {
@@ -73,7 +74,7 @@ describe("Semaphore Gatekeeper", () => {
         initialVoiceCreditBalance,
         stateTreeDepth: STATE_TREE_DEPTH,
         signer,
-        gatekeeper: semaphoreGatekeeper,
+        policy: semaphorePolicy,
       });
 
       maciContract = r.maciContract;
@@ -81,22 +82,22 @@ describe("Semaphore Gatekeeper", () => {
 
     it("should set guarded target correctly", async () => {
       const maciAddress = await maciContract.getAddress();
-      await semaphoreGatekeeper.setTarget(maciAddress).then((tx) => tx.wait());
+      await semaphorePolicy.setTarget(maciAddress).then((tx) => tx.wait());
 
-      expect(await semaphoreGatekeeper.guarded()).to.eq(maciAddress);
+      expect(await semaphorePolicy.guarded()).to.eq(maciAddress);
     });
 
     it("should fail to set guarded target when the caller is not the owner", async () => {
       const [, secondSigner] = await getSigners();
-      await expect(semaphoreGatekeeper.connect(secondSigner).setTarget(signerAddress)).to.be.revertedWithCustomError(
-        semaphoreGatekeeper,
+      await expect(semaphorePolicy.connect(secondSigner).setTarget(signerAddress)).to.be.revertedWithCustomError(
+        semaphorePolicy,
         "OwnableUnauthorizedAccount",
       );
     });
 
     it("should fail to set guarded target when the MACI instance is not valid", async () => {
-      await expect(semaphoreGatekeeper.setTarget(ZeroAddress)).to.be.revertedWithCustomError(
-        semaphoreGatekeeper,
+      await expect(semaphorePolicy.setTarget(ZeroAddress)).to.be.revertedWithCustomError(
+        semaphorePolicy,
         "ZeroAddress",
       );
     });
@@ -147,8 +148,8 @@ describe("Semaphore Gatekeeper", () => {
       );
 
       await expect(maciContract.signUp(user.pubKey.asContractParam(), encodedProof)).to.be.revertedWithCustomError(
-        semaphoreGatekeeper,
-        "AlreadyRegistered",
+        semaphorePolicy,
+        "AlreadyEnforced",
       );
     });
   });

@@ -6,7 +6,7 @@ import type {
   MACI,
   Verifier,
   VkRegistry,
-  FreeForAllGatekeeper,
+  FreeForAllPolicy,
   ConstantInitialVoiceCreditProxy,
   IIpfsMessage,
 } from "maci-sdk";
@@ -58,7 +58,7 @@ export interface IDeployedTestContracts {
   maci: MACI;
   verifier: Verifier;
   vkRegistry: VkRegistry;
-  gatekeeper: FreeForAllGatekeeper;
+  policy: FreeForAllPolicy;
   initialVoiceCreditProxy: ConstantInitialVoiceCreditProxy;
 }
 

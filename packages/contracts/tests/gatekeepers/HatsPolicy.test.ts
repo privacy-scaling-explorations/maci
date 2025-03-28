@@ -2,16 +2,17 @@ import { expect } from "chai";
 import { AbiCoder, Signer, ZeroAddress } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
-import { deployContract, deployHatsSignupGatekeeper } from "../../ts/deploy";
+import type { MACI, HatsChecker, HatsPolicy, MockHatsProtocol } from "../../typechain-types";
+
+import { deployContract, deployHatsSignupPolicy } from "../../ts/deploy";
 import { getSigners } from "../../ts/utils";
-import { HatsChecker, HatsGatekeeper, MACI, MockHatsProtocol } from "../../typechain-types";
 import { STATE_TREE_DEPTH, initialVoiceCreditBalance } from "../constants";
 import { deployTestContracts } from "../utils";
 
-describe("HatsProtocol Gatekeeper", () => {
+describe("HatsProtocol", () => {
   let maciContract: MACI;
 
-  let hatsGatekeeper: HatsGatekeeper;
+  let hatsPolicy: HatsPolicy;
   let hatsChecker: HatsChecker;
 
   let signer: Signer;
@@ -35,8 +36,8 @@ describe("HatsProtocol Gatekeeper", () => {
     mockHats = await deployContract("MockHatsProtocol", signer, true);
     mockHatsAddress = await mockHats.getAddress();
 
-    // deploy gatekeepers
-    [hatsGatekeeper, hatsChecker] = await deployHatsSignupGatekeeper(
+    // deploy policies
+    [hatsPolicy, hatsChecker] = await deployHatsSignupPolicy(
       { hats: mockHatsAddress, criterionHats: [hatId, thirdHatId] },
       signer,
       true,
@@ -46,7 +47,7 @@ describe("HatsProtocol Gatekeeper", () => {
       initialVoiceCreditBalance,
       stateTreeDepth: STATE_TREE_DEPTH,
       signer,
-      gatekeeper: hatsGatekeeper,
+      policy: hatsPolicy,
     });
 
     maciContract = r.maciContract;
@@ -54,7 +55,7 @@ describe("HatsProtocol Gatekeeper", () => {
 
   describe("Deployment", () => {
     it("should be deployed correctly", async () => {
-      expect(hatsGatekeeper).to.not.eq(undefined);
+      expect(hatsPolicy).to.not.eq(undefined);
       expect(await hatsChecker.criterionHats(hatId)).to.eq(true);
       expect(await hatsChecker.criterionHats(thirdHatId)).to.eq(true);
       expect(await hatsChecker.hats()).to.eq(mockHatsAddress);
@@ -64,18 +65,18 @@ describe("HatsProtocol Gatekeeper", () => {
   describe("setMaci", () => {
     it("should set guarded target correctly", async () => {
       const maciAddress = await maciContract.getAddress();
-      await hatsGatekeeper.setTarget(maciAddress).then((tx) => tx.wait());
+      await hatsPolicy.setTarget(maciAddress).then((tx) => tx.wait());
 
-      expect(await hatsGatekeeper.guarded()).to.eq(maciAddress);
+      expect(await hatsPolicy.guarded()).to.eq(maciAddress);
     });
 
     it("should fail to set guarded target to the zero address", async () => {
-      await expect(hatsGatekeeper.setTarget(ZeroAddress)).to.be.revertedWithCustomError(hatsGatekeeper, "ZeroAddress");
+      await expect(hatsPolicy.setTarget(ZeroAddress)).to.be.revertedWithCustomError(hatsPolicy, "ZeroAddress");
     });
 
     it("should fail to set guarded target when the caller is not the owner", async () => {
-      await expect(hatsGatekeeper.connect(voter).setTarget(signerAddress)).to.be.revertedWithCustomError(
-        hatsGatekeeper,
+      await expect(hatsPolicy.connect(voter).setTarget(signerAddress)).to.be.revertedWithCustomError(
+        hatsPolicy,
         "OwnableUnauthorizedAccount",
       );
     });
@@ -84,8 +85,8 @@ describe("HatsProtocol Gatekeeper", () => {
   describe("register", () => {
     it("should not allow to call from a non-registered MACI contract", async () => {
       await expect(
-        hatsGatekeeper.enforce(await signer.getAddress(), AbiCoder.defaultAbiCoder().encode(["uint256"], [1])),
-      ).to.be.revertedWithCustomError(hatsGatekeeper, "TargetOnly");
+        hatsPolicy.enforce(await signer.getAddress(), AbiCoder.defaultAbiCoder().encode(["uint256"], [1])),
+      ).to.be.revertedWithCustomError(hatsPolicy, "TargetOnly");
     });
 
     it("should fail to register a user if they pass a non-criterion hat", async () => {
@@ -123,7 +124,7 @@ describe("HatsProtocol Gatekeeper", () => {
         maciContract
           .connect(voter)
           .signUp(user.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [hatId])),
-      ).to.be.revertedWithCustomError(hatsGatekeeper, "AlreadyRegistered");
+      ).to.be.revertedWithCustomError(hatsPolicy, "AlreadyEnforced");
     });
   });
 });

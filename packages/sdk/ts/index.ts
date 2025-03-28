@@ -13,7 +13,7 @@ export * from "./maciKeys";
 export {
   EMode,
   EContracts,
-  EGatekeepers,
+  EPolicies,
   EInitialVoiceCreditProxies,
   EDeploySteps,
   Deployment,
@@ -28,7 +28,7 @@ export {
   verifyProof,
   linkPoseidonLibraries,
   deployConstantInitialVoiceCreditProxy,
-  deployFreeForAllSignUpGatekeeper,
+  deployFreeForAllSignUpPolicy,
   deployMockVerifier,
   deployVkRegistry,
   deployVerifier,
