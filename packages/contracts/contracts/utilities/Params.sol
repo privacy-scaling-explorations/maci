@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
+import { IBasePolicy } from "@excubiae/contracts/contracts/interfaces/IBasePolicy.sol";
+
 import { IMACI } from "../interfaces/IMACI.sol";
 import { IVerifier } from "../interfaces/IVerifier.sol";
 import { IVkRegistry } from "../interfaces/IVkRegistry.sol";
-import { ISignUpGatekeeper } from "../interfaces/ISignUpGatekeeper.sol";
 import { IInitialVoiceCreditProxy } from "../interfaces/IInitialVoiceCreditProxy.sol";
 
 /// @title Params
@@ -26,7 +27,7 @@ contract Params {
     IMACI maci;
     IVerifier verifier;
     IVkRegistry vkRegistry;
-    ISignUpGatekeeper gatekeeper;
+    IBasePolicy policy;
     IInitialVoiceCreditProxy initialVoiceCreditProxy;
   }
 }

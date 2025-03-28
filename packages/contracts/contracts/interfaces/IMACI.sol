@@ -31,8 +31,8 @@ interface IMACI {
     address vkRegistry;
     /// @param mode Voting mode
     DomainObjs.Mode mode;
-    /// @param gatekeeper The gatekeeper contract
-    address gatekeeper;
+    /// @param policy The policy contract
+    address policy;
     /// @param initialVoiceCreditProxy The initial voice credit proxy contract
     address initialVoiceCreditProxy;
     /// @param relayer The message relayer (optional)
@@ -58,15 +58,15 @@ interface IMACI {
   /// @param _pollArgs The deploy poll args
   function deployPoll(DeployPollArgs memory _pollArgs) external returns (PollContracts memory);
 
-  /// @notice Allows any eligible user sign up. The sign-up gatekeeper should prevent
+  /// @notice Allows any eligible user sign up. The sign-up policy should prevent
   /// double sign-ups or ineligible users from doing so.  This function will
   /// only succeed if the sign-up deadline has not passed.
   /// @param _pubKey The user's desired public key.
-  /// @param _signUpGatekeeperData Data to pass to the sign-up gatekeeper's
-  ///     register() function. For instance, the POAPGatekeeper or
-  ///     SignUpTokenGatekeeper requires this value to be the ABI-encoded
+  /// @param _signUpPolicyData Data to pass to the sign-up policy
+  ///     register() function. For instance, the POAPPolicy or
+  ///     TokenPolicy requires this value to be the ABI-encoded
   ///     token ID.
-  function signUp(DomainObjs.PubKey memory _pubKey, bytes memory _signUpGatekeeperData) external;
+  function signUp(DomainObjs.PubKey memory _pubKey, bytes memory _signUpPolicyData) external;
 
   /// @notice Return the state root when the '_index' user signed up
   /// @param _index The serial number when the user signed up

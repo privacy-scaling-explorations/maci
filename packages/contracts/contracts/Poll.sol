@@ -351,7 +351,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     PubKey calldata _pubKey,
     uint256 _stateRootIndex,
     uint256[8] calldata _proof,
-    bytes memory _signUpGatekeeperData,
+    bytes memory _signUpPolicyData,
     bytes memory _initialVoiceCreditProxyData
   ) external virtual isWithinVotingDeadline {
     // Whether the user has already joined
@@ -368,7 +368,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     }
 
     // Check if the user is eligible to join the poll
-    extContracts.gatekeeper.enforce(msg.sender, _signUpGatekeeperData);
+    extContracts.policy.enforce(msg.sender, _signUpPolicyData);
 
     // Get the user's voice credit balance.
     uint256 voiceCreditBalance = extContracts.initialVoiceCreditProxy.getVoiceCredits(

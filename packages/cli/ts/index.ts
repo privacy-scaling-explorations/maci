@@ -36,12 +36,12 @@ import {
   logYellow,
   ContractStorage,
   EContracts,
-  getGatekeeperTrait,
-  getGatekeeperContractNamesByTrait,
+  getPolicyTrait,
+  getPolicyContractNamesByTrait,
   type ITallyData,
   deployVerifier,
   deployMaci,
-  deployFreeForAllSignUpGatekeeper,
+  deployFreeForAllSignUpPolicy,
   genEmptyBallotRoots,
 } from "maci-sdk";
 
@@ -79,11 +79,8 @@ program
   .option("--poseidonT4Address <poseidonT4Address>", "PoseidonT4 contract address")
   .option("--poseidonT5Address <poseidonT5Address>", "PoseidonT5 contract address")
   .option("--poseidonT6Address <poseidonT6Address>", "PoseidonT6 contract address")
-  .option("-g, --signupGatekeeperAddress <signupGatekeeperAddress>", "the signup gatekeeper contract address")
-  .requiredOption(
-    "--signupGatekeeperContractName <signupGatekeeperContractName>",
-    "the signup gatekeeper contract name",
-  )
+  .option("-g, --signupPolicyAddress <signupPolicyAddress>", "the signup policy contract address")
+  .requiredOption("--signupPolicyContractName <signupPolicyContractName>", "the signup policy contract name")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .requiredOption("-s, --stateTreeDepth <stateTreeDepth>", "the state tree depth", parseInt)
@@ -100,14 +97,14 @@ program
         network: network?.name,
       });
 
-      let [signupGatekeeperContractAddress] = readContractAddresses({
-        contractNames: [cmdOptions.signupGatekeeperContractName.toString() as EContracts],
+      let [signupPolicyContractAddress] = readContractAddresses({
+        contractNames: [cmdOptions.signupPolicyContractName.toString() as EContracts],
         network: network?.name,
       });
 
-      if (!signupGatekeeperContractAddress) {
-        const [contract] = await deployFreeForAllSignUpGatekeeper(signer, true);
-        signupGatekeeperContractAddress = await contract.getAddress();
+      if (!signupPolicyContractAddress) {
+        const [contract] = await deployFreeForAllSignUpPolicy(signer, true);
+        signupPolicyContractAddress = await contract.getAddress();
       }
 
       // deploy a verifier contract
@@ -123,7 +120,7 @@ program
         messageProcessorFactoryContractAddress,
         poseidonAddresses,
       } = await deployMaci({
-        signupGatekeeperAddress: signupGatekeeperContractAddress,
+        signupPolicyAddress: signupPolicyContractAddress,
         poseidonAddresses: {
           poseidonT3,
           poseidonT4,
@@ -139,7 +136,7 @@ program
       // save to the JSON File
       await storeContractAddresses({
         data: {
-          [cmdOptions.signupGatekeeperContractName]: { address: signupGatekeeperContractAddress, args: [] },
+          [cmdOptions.signupPolicyContractName]: { address: signupPolicyContractAddress, args: [] },
           [EContracts.Verifier]: { address: verifierContractAddress, args: [] },
           [EContracts.MACI]: {
             address: maciContractAddress,
@@ -147,7 +144,7 @@ program
               pollFactoryContractAddress,
               messageProcessorFactoryContractAddress,
               tallyFactoryContractAddress,
-              signupGatekeeperContractAddress,
+              signupPolicyContractAddress,
               cmdOptions.stateTreeDepth,
               emptyBallotRoots.map((root) => root.toString()),
             ],
@@ -324,7 +321,7 @@ program
   .option("-o, --vote-options <voteOptions>", "the number of vote options", parseInt)
   .option("--initial-voice-credits <initialVoiceCredits>", "the initial voice credits", parseInt)
   .option("--initial-voice-credits-proxy <initialVoiceCreditsProxy>", "the initial voice credits proxy address")
-  .option("--signup-gatekeeper <signupGatekeeper>", "the signup gatekeeper contract address")
+  .option("--signup-policy <signupPolicy>", "the signup policy contract address")
   .action(async (cmdObj) => {
     try {
       banner(cmdObj.quiet);
@@ -348,14 +345,14 @@ program
 
       const nextPollId = await maciContract.nextPollId();
 
-      const gatekeeperTrait = await getGatekeeperTrait({ maciAddress, signer });
-      const gatekeeperContractName = getGatekeeperContractNamesByTrait(gatekeeperTrait);
+      const policyTrait = await getPolicyTrait({ maciAddress, signer });
+      const policyContractName = getPolicyContractNamesByTrait(policyTrait);
 
-      const [signupGatekeeperContractAddress] = readContractAddresses({
-        contractNames: [gatekeeperContractName.toString() as EContracts],
+      const [signupPolicyContractAddress] = readContractAddresses({
+        contractNames: [policyContractName.toString() as EContracts],
         keys: [nextPollId.toString()],
         network: network?.name,
-        defaultAddresses: [cmdObj.signupGatekeeper],
+        defaultAddresses: [cmdObj.signupPolicy],
       });
 
       const {
@@ -364,7 +361,7 @@ program
         tallyContractAddress,
         messageProcessorContractAddress,
         initialVoiceCreditProxyContractAddress,
-        gatekeeperContractAddress,
+        policyContractAddress,
       } = await deployPoll({
         initialVoiceCredits: cmdObj.initialVoiceCredits || DEFAULT_INITIAL_VOICE_CREDITS,
         pollStartTimestamp: cmdObj.start,
@@ -380,7 +377,7 @@ program
         signer,
         voteOptions: cmdObj.voteOptions ?? DEFAULT_VOTE_OPTIONS,
         verifierContractAddress,
-        gatekeeperContractAddress: signupGatekeeperContractAddress,
+        policyContractAddress: signupPolicyContractAddress,
         initialVoiceCreditProxyContractAddress: initialVoiceCreditProxyAddress,
       });
 
@@ -397,7 +394,7 @@ program
       });
       logGreen({
         quiet: cmdObj.quiet,
-        text: success(`Signup gatekeeper contract address: ${gatekeeperContractAddress}`),
+        text: success(`Signup policy contract address: ${policyContractAddress}`),
       });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
@@ -408,7 +405,7 @@ program
   .description("join the poll")
   .requiredOption("-k, --priv-key <privKey>", "the private key")
   .option("-i, --state-index <stateIndex>", "the user's state index", BigInt)
-  .option("-s, --sg-data <sgData>", "the signup gatekeeper data")
+  .option("-s, --sg-data <sgData>", "the signup policy data")
   .option("-v, --ivcp-data <ivcpData>", "the initial voice credit proxy data")
   .option(
     "-n, --new-voice-credit-balance <newVoiceCreditBalance>",

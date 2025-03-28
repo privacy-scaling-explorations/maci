@@ -3,14 +3,15 @@ import { expect } from "chai";
 import { AbiCoder, Signer, ZeroAddress, encodeBytes32String } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
-import { deployMerkleProofGatekeeper } from "../../ts/deploy";
+import type { MACI, MerkleProofPolicy, MerkleProofChecker } from "../../typechain-types";
+
+import { deployMerkleProofPolicy } from "../../ts/deploy";
 import { getDefaultSigner, getSigners, generateMerkleTree } from "../../ts/utils";
-import { MerkleProofGatekeeper, MACI, MerkleProofChecker } from "../../typechain-types";
 import { STATE_TREE_DEPTH, initialVoiceCreditBalance } from "../constants";
 import { deployTestContracts } from "../utils";
 
-describe("MerkleProof Gatekeeper", () => {
-  let merkleProofGatekeeper: MerkleProofGatekeeper;
+describe("MerkleProof", () => {
+  let merkleProofPolicy: MerkleProofPolicy;
   let merkleProofChecker: MerkleProofChecker;
   let signer: Signer;
   let signerAddress: string;
@@ -35,24 +36,24 @@ describe("MerkleProof Gatekeeper", () => {
     signerAddress = await signer.getAddress();
     allowedAddress.push([signerAddress]);
     tree = generateMerkleTree(allowedAddress);
-    [merkleProofGatekeeper, merkleProofChecker] = await deployMerkleProofGatekeeper({ root: tree.root }, signer, true);
+    [merkleProofPolicy, merkleProofChecker] = await deployMerkleProofPolicy({ root: tree.root }, signer, true);
   });
 
   describe("Deployment", () => {
-    it("The gatekeeper should be deployed correctly", async () => {
-      expect(merkleProofGatekeeper).to.not.eq(undefined);
-      expect(await merkleProofGatekeeper.getAddress()).to.not.eq(ZeroAddress);
+    it("The policy should be deployed correctly", async () => {
+      expect(merkleProofPolicy).to.not.eq(undefined);
+      expect(await merkleProofPolicy.getAddress()).to.not.eq(ZeroAddress);
     });
 
     it("should fail to deploy when the root is not valid", async () => {
-      await expect(deployMerkleProofGatekeeper({ root: invalidRoot }, signer, true)).to.be.revertedWithCustomError(
+      await expect(deployMerkleProofPolicy({ root: invalidRoot }, signer, true)).to.be.revertedWithCustomError(
         merkleProofChecker,
         "InvalidRoot",
       );
     });
   });
 
-  describe("MerkleProofGatekeeper", () => {
+  describe("MerkleProofPolicy", () => {
     let maciContract: MACI;
 
     before(async () => {
@@ -60,7 +61,7 @@ describe("MerkleProof Gatekeeper", () => {
         initialVoiceCreditBalance,
         stateTreeDepth: STATE_TREE_DEPTH,
         signer,
-        gatekeeper: merkleProofGatekeeper,
+        policy: merkleProofPolicy,
       });
 
       maciContract = r.maciContract;
@@ -69,27 +70,27 @@ describe("MerkleProof Gatekeeper", () => {
 
     it("should set guarded target correctly", async () => {
       const maciAddress = await maciContract.getAddress();
-      await merkleProofGatekeeper.setTarget(maciAddress).then((tx) => tx.wait());
+      await merkleProofPolicy.setTarget(maciAddress).then((tx) => tx.wait());
 
-      expect(await merkleProofGatekeeper.guarded()).to.eq(maciAddress);
+      expect(await merkleProofPolicy.guarded()).to.eq(maciAddress);
     });
 
     it("should fail to set guarded target when the caller is not the owner", async () => {
       const [, secondSigner] = await getSigners();
-      await expect(merkleProofGatekeeper.connect(secondSigner).setTarget(signerAddress)).to.be.revertedWithCustomError(
-        merkleProofGatekeeper,
+      await expect(merkleProofPolicy.connect(secondSigner).setTarget(signerAddress)).to.be.revertedWithCustomError(
+        merkleProofPolicy,
         "OwnableUnauthorizedAccount",
       );
     });
 
     it("should fail to set guarded target when the MACI instance is not valid", async () => {
-      await expect(merkleProofGatekeeper.setTarget(ZeroAddress)).to.be.revertedWithCustomError(
-        merkleProofGatekeeper,
+      await expect(merkleProofPolicy.setTarget(ZeroAddress)).to.be.revertedWithCustomError(
+        merkleProofPolicy,
         "ZeroAddress",
       );
     });
 
-    it("should throw when the proof is invalid)", async () => {
+    it("should throw when the proof is invalid", async () => {
       await expect(
         maciContract.signUp(
           user.pubKey.asContractParam(),
@@ -116,7 +117,7 @@ describe("MerkleProof Gatekeeper", () => {
           user.pubKey.asContractParam(),
           AbiCoder.defaultAbiCoder().encode(["bytes32[]"], [validProof]),
         ),
-      ).to.be.revertedWithCustomError(merkleProofGatekeeper, "AlreadyRegistered");
+      ).to.be.revertedWithCustomError(merkleProofPolicy, "AlreadyEnforced");
     });
   });
 });

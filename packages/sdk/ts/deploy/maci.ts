@@ -5,7 +5,7 @@ import {
   TallyFactory__factory as TallyFactoryFactory,
   MACI__factory as MACIFactory,
   MessageProcessorFactory__factory as MessageProcessorFactoryFactory,
-  SignUpGatekeeper__factory as SignUpGatekeeperFactory,
+  IBasePolicy__factory as SignUpPolicyFactory,
 } from "maci-contracts";
 
 import type { IDeployMaciArgs, IMaciContracts } from "./types";
@@ -19,7 +19,7 @@ import { deployFactoryWithLinkedLibraries } from "./utils";
  */
 export const deployMaci = async ({
   stateTreeDepth,
-  signupGatekeeperAddress,
+  signupPolicyAddress,
   pollFactoryAddress,
   messageProcessorFactoryAddress,
   tallyFactoryAddress,
@@ -92,14 +92,14 @@ export const deployMaci = async ({
       pollFactoryContractAddress,
       messageProcessorFactoryContractAddress,
       tallyFactoryContractAddress,
-      signupGatekeeperAddress,
+      signupPolicyAddress,
       stateTreeDepth,
       emptyBallotRoots,
     ],
   });
 
-  const gatekeeper = SignUpGatekeeperFactory.connect(signupGatekeeperAddress, signer);
-  await gatekeeper.setTarget(maciContractAddress).then((tx) => tx.wait());
+  const policy = SignUpPolicyFactory.connect(signupPolicyAddress, signer);
+  await policy.setTarget(maciContractAddress).then((tx) => tx.wait());
 
   return {
     maciContractAddress,

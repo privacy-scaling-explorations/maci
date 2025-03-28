@@ -5,13 +5,13 @@ import { IVkObjectParams, PubKey, VerifyingKey } from "maci-domainobjs";
 import {
   ConstantInitialVoiceCreditProxy__factory as ConstantInitialVoiceCreditProxyFactory,
   ContractStorage,
-  EGatekeepers,
-  FreeForAllGatekeeper__factory as FreeForAllGatekeeperFactory,
-  EASGatekeeper__factory as EASGatekeeperFactory,
-  ZupassGatekeeper__factory as ZupassGatekeeperFactory,
-  HatsGatekeeper__factory as HatsGatekeeperFactory,
-  SemaphoreGatekeeper__factory as SemaphoreGatekeeperFactory,
-  GitcoinPassportGatekeeper__factory as GitcoinPassportGatekeeperFactory,
+  EPolicies,
+  FreeForAllPolicy__factory as FreeForAllPolicyFactory,
+  EASPolicy__factory as EASPolicyFactory,
+  ZupassPolicy__factory as ZupassPolicyFactory,
+  HatsPolicy__factory as HatsPolicyFactory,
+  SemaphorePolicy__factory as SemaphorePolicyFactory,
+  GitcoinPassportPolicy__factory as GitcoinPassportPolicyFactory,
   Verifier__factory as VerifierFactory,
   PoseidonT3__factory as PoseidonT3Factory,
   PoseidonT4__factory as PoseidonT4Factory,
@@ -47,15 +47,15 @@ import {
   IContractData,
   IDeployMaciArgs,
   IDeployPollArgs,
-  IEASGatekeeperArgs,
-  IGatekeeperArgs,
-  IGitcoinPassportGatekeeperArgs,
-  IHatsGatekeeperArgs,
+  IEASPolicyArgs,
+  IPolicyArgs,
+  IGitcoinPassportPolicyArgs,
+  IHatsPolicyArgs,
   IInitialVoiceCreditProxyArgs,
-  ISemaphoreGatekeeperArgs,
+  ISemaphorePolicyArgs,
   IUserOperation,
   IVkRegistryArgs,
-  IZupassGatekeeperArgs,
+  IZupassPolicyArgs,
 } from "./types";
 import { estimateExtraGasLimit } from "./utils";
 
@@ -88,115 +88,115 @@ export class DeployerService {
   }
 
   /**
-   * Get the gatekeeper abi and bytecode based on the gatekeeper type
+   * Get the policy abi and bytecode based on the policy type
    * and also check if there is already an instance deployed
    *
-   * @param gatekeeperType - the gatekeeper type
+   * @param policyType - the policy type
    * @param network - the network
-   * @param args - the gatekeeper args
-   * @returns - the gatekeeper abi and bytecode
+   * @param args - the policy args
+   * @returns - the policy abi and bytecode
    */
-  getGatekeeperData(gatekeeperType: EGatekeepers, network: ESupportedNetworks, args?: IGatekeeperArgs): IContractData {
-    const address = this.storage.getAddress(gatekeeperType as unknown as EContracts, network);
+  getPolicyData(policyType: EPolicies, network: ESupportedNetworks, args?: IPolicyArgs): IContractData {
+    const address = this.storage.getAddress(policyType as unknown as EContracts, network);
     let storedArgs: string[] | undefined;
     let isAlreadyDeployed: boolean;
 
-    // based on the gatekeeper type, we need to deploy the correct gatekeeper
-    switch (gatekeeperType) {
-      case EGatekeepers.FreeForAll: {
+    // based on the policy type, we need to deploy the correct policy
+    switch (policyType) {
+      case EPolicies.FreeForAll: {
         return {
           address,
-          abi: FreeForAllGatekeeperFactory.abi,
-          bytecode: FreeForAllGatekeeperFactory.bytecode,
+          abi: FreeForAllPolicyFactory.abi,
+          bytecode: FreeForAllPolicyFactory.bytecode,
           alreadyDeployed: !!address,
         };
       }
 
-      case EGatekeepers.EAS: {
-        storedArgs = this.storage.getContractArgs(gatekeeperType as unknown as EContracts, network);
+      case EPolicies.EAS: {
+        storedArgs = this.storage.getContractArgs(policyType as unknown as EContracts, network);
         isAlreadyDeployed =
           !!storedArgs &&
           storedArgs.length === 3 &&
-          storedArgs[0] === (args as IEASGatekeeperArgs).easAddress &&
-          storedArgs[1] === (args as IEASGatekeeperArgs).schema &&
-          storedArgs[2] === (args as IEASGatekeeperArgs).attester;
+          storedArgs[0] === (args as IEASPolicyArgs).easAddress &&
+          storedArgs[1] === (args as IEASPolicyArgs).schema &&
+          storedArgs[2] === (args as IEASPolicyArgs).attester;
 
         return {
           address: isAlreadyDeployed ? address : undefined,
-          abi: EASGatekeeperFactory.abi,
-          bytecode: EASGatekeeperFactory.bytecode,
+          abi: EASPolicyFactory.abi,
+          bytecode: EASPolicyFactory.bytecode,
           alreadyDeployed: isAlreadyDeployed,
         };
       }
 
-      case EGatekeepers.Zupass: {
-        storedArgs = this.storage.getContractArgs(gatekeeperType as unknown as EContracts, network);
+      case EPolicies.Zupass: {
+        storedArgs = this.storage.getContractArgs(policyType as unknown as EContracts, network);
         isAlreadyDeployed =
           !!storedArgs &&
           storedArgs.length === 4 &&
-          storedArgs[0] === (args as IZupassGatekeeperArgs).signer1 &&
-          storedArgs[1] === (args as IZupassGatekeeperArgs).signer2 &&
-          storedArgs[2] === (args as IZupassGatekeeperArgs).eventId &&
-          storedArgs[3] === (args as IZupassGatekeeperArgs).zupassVerifier;
+          storedArgs[0] === (args as IZupassPolicyArgs).signer1 &&
+          storedArgs[1] === (args as IZupassPolicyArgs).signer2 &&
+          storedArgs[2] === (args as IZupassPolicyArgs).eventId &&
+          storedArgs[3] === (args as IZupassPolicyArgs).zupassVerifier;
 
         return {
           address: isAlreadyDeployed ? address : undefined,
-          abi: ZupassGatekeeperFactory.abi,
-          bytecode: ZupassGatekeeperFactory.bytecode,
+          abi: ZupassPolicyFactory.abi,
+          bytecode: ZupassPolicyFactory.bytecode,
           alreadyDeployed: isAlreadyDeployed,
         };
       }
 
-      case EGatekeepers.Hats: {
-        storedArgs = this.storage.getContractArgs(gatekeeperType as unknown as EContracts, network);
+      case EPolicies.Hats: {
+        storedArgs = this.storage.getContractArgs(policyType as unknown as EContracts, network);
         isAlreadyDeployed =
           !!storedArgs &&
           storedArgs.length === 2 &&
-          storedArgs[0] === (args as IHatsGatekeeperArgs).hatsProtocolAddress &&
-          JSON.stringify(storedArgs[1]) === JSON.stringify((args as IHatsGatekeeperArgs).critrionHats);
+          storedArgs[0] === (args as IHatsPolicyArgs).hatsProtocolAddress &&
+          JSON.stringify(storedArgs[1]) === JSON.stringify((args as IHatsPolicyArgs).critrionHats);
 
         return {
           address: isAlreadyDeployed ? address : undefined,
-          abi: HatsGatekeeperFactory.abi,
-          bytecode: HatsGatekeeperFactory.bytecode,
+          abi: HatsPolicyFactory.abi,
+          bytecode: HatsPolicyFactory.bytecode,
           alreadyDeployed: isAlreadyDeployed,
         };
       }
 
-      case EGatekeepers.Semaphore: {
-        storedArgs = this.storage.getContractArgs(gatekeeperType as unknown as EContracts, network);
+      case EPolicies.Semaphore: {
+        storedArgs = this.storage.getContractArgs(policyType as unknown as EContracts, network);
         isAlreadyDeployed =
           !!storedArgs &&
           storedArgs.length === 2 &&
-          storedArgs[0] === (args as ISemaphoreGatekeeperArgs).semaphoreContract &&
-          storedArgs[1] === (args as ISemaphoreGatekeeperArgs).groupId;
+          storedArgs[0] === (args as ISemaphorePolicyArgs).semaphoreContract &&
+          storedArgs[1] === (args as ISemaphorePolicyArgs).groupId;
 
         return {
           address: isAlreadyDeployed ? address : undefined,
-          abi: SemaphoreGatekeeperFactory.abi,
-          bytecode: SemaphoreGatekeeperFactory.bytecode,
+          abi: SemaphorePolicyFactory.abi,
+          bytecode: SemaphorePolicyFactory.bytecode,
           alreadyDeployed: isAlreadyDeployed,
         };
       }
 
-      case EGatekeepers.GitcoinPassport: {
-        storedArgs = this.storage.getContractArgs(gatekeeperType as unknown as EContracts, network);
+      case EPolicies.GitcoinPassport: {
+        storedArgs = this.storage.getContractArgs(policyType as unknown as EContracts, network);
         isAlreadyDeployed =
           !!storedArgs &&
           storedArgs.length === 2 &&
-          storedArgs[0] === (args as IGitcoinPassportGatekeeperArgs).decoderAddress &&
-          storedArgs[1] === (args as IGitcoinPassportGatekeeperArgs).passingScore;
+          storedArgs[0] === (args as IGitcoinPassportPolicyArgs).decoderAddress &&
+          storedArgs[1] === (args as IGitcoinPassportPolicyArgs).passingScore;
 
         return {
           address: isAlreadyDeployed ? address : undefined,
-          abi: GitcoinPassportGatekeeperFactory.abi,
-          bytecode: GitcoinPassportGatekeeperFactory.bytecode,
+          abi: GitcoinPassportPolicyFactory.abi,
+          bytecode: GitcoinPassportPolicyFactory.bytecode,
           alreadyDeployed: isAlreadyDeployed,
         };
       }
 
       default:
-        throw new Error(ErrorCodes.UNSUPPORTED_GATEKEEPER.toString());
+        throw new Error(ErrorCodes.UNSUPPORTED_POLICY.toString());
     }
   }
 
@@ -461,16 +461,16 @@ export class DeployerService {
 
     const kernelClient = await this.sessionKeysService.generateClientFromSessionKey(sessionKeyAddress, approval, chain);
 
-    let gatekeeperAddress = this.storage.getAddress(config.gatekeeper.type as unknown as EContracts, chain);
-    const gatekeeperData = this.getGatekeeperData(config.gatekeeper.type, chain, config.gatekeeper.args);
+    let policyAddress = this.storage.getAddress(config.policy.type as unknown as EContracts, chain);
+    const policyData = this.getPolicyData(config.policy.type, chain, config.policy.args);
 
-    // if the gatekeeper is not already deployed, we need to deploy it
-    if (!gatekeeperData.alreadyDeployed) {
-      gatekeeperAddress = await this.deployAndStore(
-        config.gatekeeper.type as unknown as EContracts,
-        config.gatekeeper.args ? Object.values(config.gatekeeper.args) : [],
-        gatekeeperData.abi,
-        gatekeeperData.bytecode,
+    // if the policy is not already deployed, we need to deploy it
+    if (!policyData.alreadyDeployed) {
+      policyAddress = await this.deployAndStore(
+        config.policy.type as unknown as EContracts,
+        config.policy.args ? Object.values(config.policy.args) : [],
+        policyData.abi,
+        policyData.bytecode,
         kernelClient,
         bundlerClient,
         publicClient,
@@ -732,7 +732,7 @@ export class DeployerService {
         pollFactoryAddress,
         messageProcessorFactoryAddress,
         tallyFactoryAddress,
-        gatekeeperAddress,
+        policyAddress,
         config.MACI.stateTreeDepth,
         emptyBallotRoots,
       ],
@@ -749,14 +749,14 @@ export class DeployerService {
       chain,
     );
 
-    // set the gate on the gatekeeper
+    // set the gate on the policy
     await this.estimateGasAndSend(
-      gatekeeperAddress as Hex,
+      policyAddress as Hex,
       0n,
-      gatekeeperData.abi,
+      policyData.abi,
       "setTarget",
       [maciAddress],
-      ErrorCodes.FAILED_TO_SET_MACI_INSTANCE_ON_GATEKEEPER.toString(),
+      ErrorCodes.FAILED_TO_SET_MACI_INSTANCE_ON_POLICY.toString(),
       kernelClient,
       bundlerClient,
     );
@@ -794,18 +794,18 @@ export class DeployerService {
       throw new Error(ErrorCodes.VK_REGISTRY_NOT_DEPLOYED.toString());
     }
 
-    // check if gatekeeper address was given
-    let gatekeeperAddress = config.gatekeeper.address;
-    if (!gatekeeperAddress) {
-      const gatekeeperData = this.getGatekeeperData(config.gatekeeper.type, chain, config.gatekeeper.args);
-      gatekeeperAddress = gatekeeperData.address as Hex;
-      // if the gatekeeper is not already deployed, we need to deploy it
-      if (!gatekeeperData.alreadyDeployed) {
-        gatekeeperAddress = await this.deployAndStore(
-          config.gatekeeper.type as unknown as EContracts,
-          config.gatekeeper.args ? Object.values(config.gatekeeper.args) : [],
-          gatekeeperData.abi,
-          gatekeeperData.bytecode,
+    // check if policy address was given
+    let policyAddress = config.policy.address;
+    if (!policyAddress) {
+      const policyData = this.getPolicyData(config.policy.type, chain, config.policy.args);
+      policyAddress = policyData.address as Hex;
+      // if the policy is not already deployed, we need to deploy it
+      if (!policyData.alreadyDeployed) {
+        policyAddress = await this.deployAndStore(
+          config.policy.type as unknown as EContracts,
+          config.policy.args ? Object.values(config.policy.args) : [],
+          policyData.abi,
+          policyData.bytecode,
           kernelClient,
           bundlerClient,
           publicClient,
@@ -851,7 +851,7 @@ export class DeployerService {
       verifierContractAddress: verifierAddress,
       vkRegistryContractAddress: vkRegistryAddress,
       mode,
-      gatekeeperContractAddress: gatekeeperAddress,
+      policyContractAddress: policyAddress,
       initialVoiceCreditProxyContractAddress: initialVoiceCreditProxyAddress,
       relayers: config.relayers ? config.relayers.map((address) => address as Hex) : [],
       voteOptions: Number(config.voteOptions),

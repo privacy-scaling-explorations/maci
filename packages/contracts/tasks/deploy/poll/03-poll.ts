@@ -2,7 +2,7 @@
 import { ZeroAddress } from "ethers";
 import { PubKey } from "maci-domainobjs";
 
-import type { MACI, Poll, SignUpGatekeeper } from "../../../typechain-types";
+import type { MACI, Poll, IBasePolicy } from "../../../typechain-types";
 
 import { EMode } from "../../../ts/constants";
 import { EDeploySteps } from "../../helpers/constants";
@@ -55,10 +55,9 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
     const unserializedKey = PubKey.deserialize(coordinatorPubkey);
     const mode = useQuadraticVoting ? EMode.QV : EMode.NON_QV;
 
-    const gatekeeper =
-      deployment.getDeployConfigField<EContracts | null>(EContracts.Poll, "gatekeeper") ||
-      EContracts.FreeForAllGatekeeper;
-    const gatekeeperContractAddress = storage.mustGetAddress(gatekeeper, hre.network.name, `poll-${pollId}`);
+    const policy =
+      deployment.getDeployConfigField<EContracts | null>(EContracts.Poll, "policy") || EContracts.FreeForAllPolicy;
+    const policyContractAddress = storage.mustGetAddress(policy, hre.network.name, `poll-${pollId}`);
     const initialVoiceCreditProxyContractAddress = storage.mustGetAddress(
       EContracts.ConstantInitialVoiceCreditProxy,
       hre.network.name,
@@ -79,7 +78,7 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
         verifier: verifierContractAddress,
         vkRegistry: vkRegistryContractAddress,
         mode,
-        gatekeeper: gatekeeperContractAddress,
+        policy: policyContractAddress,
         initialVoiceCreditProxy: initialVoiceCreditProxyContractAddress,
         relayers,
         voteOptions,
@@ -98,12 +97,12 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
     const pollContract = await deployment.getContract<Poll>({ name: EContracts.Poll, address: pollContractAddress });
     const extContracts = await pollContract.extContracts();
 
-    const gatekeeperContract = await deployment.getContract<SignUpGatekeeper>({
-      name: EContracts.SignUpGatekeeper,
-      address: gatekeeperContractAddress,
+    const policyContract = await deployment.getContract<IBasePolicy>({
+      name: policy,
+      address: policyContractAddress,
     });
 
-    await gatekeeperContract.setTarget(pollContractAddress).then((tx) => tx.wait());
+    await policyContract.setTarget(pollContractAddress).then((tx) => tx.wait());
 
     const messageProcessorContract = await deployment.getContract({
       name: EContracts.MessageProcessor,
@@ -134,7 +133,7 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
           unserializedKey.asContractParam(),
           extContracts,
           emptyBallotRoot.toString(),
-          gatekeeperContractAddress,
+          policyContractAddress,
           initialVoiceCreditProxyContractAddress,
         ],
         network: hre.network.name,

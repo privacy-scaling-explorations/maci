@@ -84,7 +84,7 @@ export interface ISignupArgs {
   maciAddress: string;
 
   /**
-   * The signup gatekeeper data
+   * The signup policy data
    */
   sgData: string;
 }
@@ -349,7 +349,7 @@ export interface IJoinPollArgs {
   pollWasm?: string;
 
   /**
-   * The signup gatekeeper data
+   * The signup policy data
    */
   sgDataArg: string;
 

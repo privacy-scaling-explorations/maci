@@ -1,9 +1,9 @@
 import type { Signer } from "ethers";
 
 /**
- * Enum for the gatekeeper type
+ * Enum for the policy type
  */
-export enum EGatekeeperTrait {
+export enum EPolicyTrait {
   EAS = "EAS",
   FreeForAll = "FreeForAll",
   GitcoinPassport = "GitcoinPassport",
@@ -15,9 +15,9 @@ export enum EGatekeeperTrait {
 }
 
 /**
- * Interface for the arguments to the getGatekeeperTrait command
+ * Interface for the arguments to the getPolicyTrait command
  */
-export interface IGetGatekeeperTraitArgs {
+export interface IGetPolicyTraitArgs {
   /**
    * The address of the MACI contract
    */
@@ -30,9 +30,9 @@ export interface IGetGatekeeperTraitArgs {
 }
 
 /**
- * Interface for the arguments to the get a gatekeeper's data command
+ * Interface for the arguments to the get a policy data command
  */
-export interface IGetGatekeeperDataArgs {
+export interface IGetPolicyDataArgs {
   /**
    * The address of the MACI contract
    */
@@ -45,11 +45,11 @@ export interface IGetGatekeeperDataArgs {
 }
 
 /**
- * Interface for the semaphore gatekeeper data
+ * Interface for the semaphore policy data
  */
-export interface ISemaphoreGatekeeperData {
+export interface ISemaphorePolicyData {
   /**
-   * The address of the semaphore gatekeeper
+   * The address of the semaphore policy
    */
   address: string;
 
@@ -60,9 +60,9 @@ export interface ISemaphoreGatekeeperData {
 }
 
 /**
- * Interface for the zupass gatekeeper data
+ * Interface for the zupass policy data
  */
-export interface IZupassGatekeeperData {
+export interface IZupassPolicyData {
   /**
    * The event ID
    */
@@ -80,9 +80,9 @@ export interface IZupassGatekeeperData {
 }
 
 /**
- * Interface for the EAS gatekeeper data
+ * Interface for the EAS policy data
  */
-export interface IEASGatekeeperData {
+export interface IEASPolicyData {
   /**
    * The EAS
    */
@@ -100,9 +100,9 @@ export interface IEASGatekeeperData {
 }
 
 /**
- * Interface for the MerkleProof gatekeeper data
+ * Interface for the MerkleProof policy data
  */
-export interface IMerkleProofGatekeeperData {
+export interface IMerkleProofPolicyData {
   /**
    * The merkle tree root
    */

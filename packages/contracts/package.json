@@ -162,7 +162,7 @@
     "benchmark:polygon-amoy": "pnpm run benchmark --network polygon_amoy"
   },
   "dependencies": {
-    "@excubiae/contracts": "^0.4.0",
+    "@excubiae/contracts": "^0.6.6",
     "@nomicfoundation/hardhat-ethers": "^3.0.8",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@openzeppelin/contracts": "^5.2.0",

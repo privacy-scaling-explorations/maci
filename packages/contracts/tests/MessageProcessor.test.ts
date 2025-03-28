@@ -17,7 +17,7 @@ import {
   Poll__factory as PollFactory,
   Verifier,
   VkRegistry,
-  SignUpGatekeeper,
+  IBasePolicy,
   ConstantInitialVoiceCreditProxy,
 } from "../typechain-types";
 
@@ -40,7 +40,7 @@ describe("MessageProcessor", () => {
   let vkRegistryContract: VkRegistry;
   let mpContract: MessageProcessor;
   let pollContract: PollContract;
-  let signupGatekeeperContract: SignUpGatekeeper;
+  let signupPolicyContract: IBasePolicy;
   let initialVoiceCreditProxyContract: ConstantInitialVoiceCreditProxy;
   let pollId: bigint;
 
@@ -66,7 +66,7 @@ describe("MessageProcessor", () => {
     signer = await getDefaultSigner();
     verifierContract = r.mockVerifierContract as Verifier;
     vkRegistryContract = r.vkRegistryContract;
-    signupGatekeeperContract = r.gatekeeperContract;
+    signupPolicyContract = r.policyContract;
     initialVoiceCreditProxyContract = r.constantInitialVoiceCreditProxyContract;
 
     // deploy on chain poll
@@ -79,7 +79,7 @@ describe("MessageProcessor", () => {
       verifier: verifierContract,
       vkRegistry: vkRegistryContract,
       mode: EMode.QV,
-      gatekeeper: signupGatekeeperContract,
+      policy: signupPolicyContract,
       initialVoiceCreditProxy: initialVoiceCreditProxyContract,
       relayers: [ZeroAddress],
       voteOptions: maxVoteOptions,

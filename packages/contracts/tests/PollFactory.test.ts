@@ -38,7 +38,7 @@ describe("pollFactory", () => {
       maci: maciContract,
       verifier: verifierContract,
       vkRegistry: vkRegistryContract,
-      gatekeeper: r.gatekeeperContract,
+      policy: r.policyContract,
       initialVoiceCreditProxy: r.constantInitialVoiceCreditProxyContract,
     };
 

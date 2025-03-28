@@ -12,14 +12,14 @@ interface IPoll {
   /// @param _pubKey Poll user's public key
   /// @param _stateRootIndex Index of the MACI's stateRootOnSignUp for which the inclusion proof is generated
   /// @param _proof The zk-SNARK proof
-  /// @param _signUpGatekeeperData Data to pass to the SignUpGatekeeper
+  /// @param _signUpPolicyData Data to pass to the signup policy
   /// @param _initialVoiceCreditProxyData Data to pass to the InitialVoiceCreditProxy
   function joinPoll(
     uint256 _nullifier,
     DomainObjs.PubKey calldata _pubKey,
     uint256 _stateRootIndex,
     uint256[8] calldata _proof,
-    bytes memory _signUpGatekeeperData,
+    bytes memory _signUpPolicyData,
     bytes memory _initialVoiceCreditProxyData
   ) external;
 

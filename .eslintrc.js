@@ -32,7 +32,9 @@ module.exports = {
       version: "999.999.999",
     },
     "import/resolver": {
-      typescript: {},
+      typescript: {
+        project: path.resolve(__dirname, "./tsconfig.json"),
+      },
       node: {
         extensions: [".ts", ".js"],
         moduleDirectory: ["node_modules", "ts", "src"],

@@ -14,7 +14,7 @@ import {
   deployPoll,
   type IMaciContracts,
   deployMaci,
-  deployFreeForAllSignUpGatekeeper,
+  deployFreeForAllSignUpPolicy,
   deployConstantInitialVoiceCreditProxy,
   deployVerifier,
   Poll__factory as PollFactory,
@@ -60,11 +60,11 @@ describe("publish", function test() {
   before(async () => {
     signer = await getDefaultSigner();
 
-    const [signupGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
-    const signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
+    const [signupPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+    const signupPolicyContractAddress = await signupPolicy.getAddress();
 
-    const [pollGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
-    const pollGatekeeperContractAddress = await pollGatekeeper.getAddress();
+    const [pollPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+    const pollPolicyContractAddress = await pollPolicy.getAddress();
 
     const initialVoiceCreditProxy = await deployConstantInitialVoiceCreditProxy(
       DEFAULT_INITIAL_VOICE_CREDITS,
@@ -87,7 +87,7 @@ describe("publish", function test() {
     maciAddresses = await deployMaci({
       ...deployArgs,
       signer,
-      signupGatekeeperAddress: signupGatekeeperContractAddress,
+      signupPolicyAddress: signupPolicyContractAddress,
     });
 
     // deploy a poll contract
@@ -100,7 +100,7 @@ describe("publish", function test() {
       maciAddress: maciAddresses.maciContractAddress,
       verifierContractAddress,
       vkRegistryContractAddress: vkRegistryAddress,
-      gatekeeperContractAddress: pollGatekeeperContractAddress,
+      policyContractAddress: pollPolicyContractAddress,
       initialVoiceCreditProxyContractAddress,
     });
   });

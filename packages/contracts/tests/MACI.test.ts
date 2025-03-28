@@ -7,7 +7,7 @@ import { Keypair, PubKey, Message } from "maci-domainobjs";
 
 import { EMode } from "../ts/constants";
 import { getDefaultSigner, getSigners, getBlockTimestamp } from "../ts/utils";
-import { MACI, Verifier, VkRegistry, SignUpGatekeeper, ConstantInitialVoiceCreditProxy } from "../typechain-types";
+import { MACI, Verifier, VkRegistry, IBasePolicy, ConstantInitialVoiceCreditProxy } from "../typechain-types";
 
 import {
   STATE_TREE_DEPTH,
@@ -25,7 +25,7 @@ describe("MACI", function test() {
   let maciContract: MACI;
   let vkRegistryContract: VkRegistry;
   let verifierContract: Verifier;
-  let signupGatekeeperContract: SignUpGatekeeper;
+  let signuPolicyContract: IBasePolicy;
   let initialVoiceCreditProxy: ConstantInitialVoiceCreditProxy;
   let pollId: bigint;
 
@@ -48,10 +48,10 @@ describe("MACI", function test() {
       maciContract = r.maciContract;
       vkRegistryContract = r.vkRegistryContract;
       verifierContract = r.mockVerifierContract as Verifier;
-      signupGatekeeperContract = r.gatekeeperContract;
+      signuPolicyContract = r.policyContract;
       initialVoiceCreditProxy = r.constantInitialVoiceCreditProxyContract;
 
-      await signupGatekeeperContract.setTarget(await maciContract.getAddress()).then((tx) => tx.wait());
+      await signuPolicyContract.setTarget(await maciContract.getAddress()).then((tx) => tx.wait());
     });
 
     it("should have set the correct stateTreeDepth", async () => {
@@ -153,12 +153,12 @@ describe("MACI", function test() {
     it("should not allow to sign up more than the supported amount of users (2 ** stateTreeDepth)", async () => {
       const stateTreeDepthTest = 1;
       const maxUsers = 2 ** stateTreeDepthTest;
-      const { maciContract: maci, gatekeeperContract } = await deployTestContracts({
+      const { maciContract: maci, policyContract } = await deployTestContracts({
         initialVoiceCreditBalance,
         stateTreeDepth: stateTreeDepthTest,
         signer,
       });
-      await gatekeeperContract.setTarget(await maci.getAddress()).then((tx) => tx.wait());
+      await policyContract.setTarget(await maci.getAddress()).then((tx) => tx.wait());
       const keypair = new Keypair();
       // start from one as we already have one signup (blank state leaf)
       for (let i = 1; i < maxUsers; i += 1) {
@@ -175,12 +175,12 @@ describe("MACI", function test() {
     it("should signup 2 ** 10 users", async () => {
       const stateTreeDepthTest = 10;
       const maxUsers = 2 ** stateTreeDepthTest;
-      const { maciContract: maci, gatekeeperContract } = await deployTestContracts({
+      const { maciContract: maci, policyContract } = await deployTestContracts({
         initialVoiceCreditBalance,
         stateTreeDepth: stateTreeDepthTest,
         signer,
       });
-      await gatekeeperContract.setTarget(await maci.getAddress()).then((tx) => tx.wait());
+      await policyContract.setTarget(await maci.getAddress()).then((tx) => tx.wait());
 
       // start from one as we already have one signup (blank state leaf)
       for (let i = 1; i < maxUsers; i += 1) {
@@ -216,7 +216,7 @@ describe("MACI", function test() {
         verifier: verifierContract,
         vkRegistry: vkRegistryContract,
         mode: EMode.QV,
-        gatekeeper: signupGatekeeperContract,
+        policy: signuPolicyContract,
         initialVoiceCreditProxy,
         relayers: [ZeroAddress],
         voteOptions: maxVoteOptions,
@@ -258,7 +258,7 @@ describe("MACI", function test() {
         verifier: verifierContract,
         vkRegistry: vkRegistryContract,
         mode: EMode.QV,
-        gatekeeper: signupGatekeeperContract,
+        policy: signuPolicyContract,
         initialVoiceCreditProxy,
         relayers: [ZeroAddress],
         voteOptions: maxVoteOptions,
@@ -279,7 +279,7 @@ describe("MACI", function test() {
         verifier: verifierContract,
         vkRegistry: vkRegistryContract,
         mode: EMode.QV,
-        gatekeeper: signupGatekeeperContract,
+        policy: signuPolicyContract,
         initialVoiceCreditProxy,
         relayers: [ZeroAddress],
         voteOptions: maxVoteOptions,

@@ -7,7 +7,7 @@ import type { EthereumProvider } from "hardhat/types";
 
 import {
   deployConstantInitialVoiceCreditProxy,
-  deployFreeForAllSignUpGatekeeper,
+  deployFreeForAllSignUpPolicy,
   deployMaci,
   deployMockVerifier,
   deployVkRegistry,
@@ -60,7 +60,7 @@ export const compareVks = (vk: VerifyingKey, vkOnChain: IVkContractParams): void
  * @param stateTreeDepth - the depth of the state tree
  * @param signer - the signer to use
  * @param quiet - whether to suppress console output
- * @param gatekeeper - the gatekeeper contract to use
+ * @param policy - the policy contract to use
  * @returns the deployed contracts
  */
 export const deployTestContracts = async ({
@@ -69,13 +69,14 @@ export const deployTestContracts = async ({
   signer,
   quiet = true,
   factories,
-  gatekeeper,
+  policy,
 }: IDeployedTestContractsArgs): Promise<IDeployedTestContracts> => {
   const mockVerifierContract = await deployMockVerifier(signer, true);
 
-  let gatekeeperContract = gatekeeper;
-  if (!gatekeeperContract) {
-    [gatekeeperContract] = await deployFreeForAllSignUpGatekeeper(signer, true);
+  let policyContract = policy;
+
+  if (!policyContract) {
+    [policyContract] = await deployFreeForAllSignUpPolicy(signer, true);
   }
 
   const constantInitialVoiceCreditProxyContract = await deployConstantInitialVoiceCreditProxy(
@@ -86,10 +87,10 @@ export const deployTestContracts = async ({
 
   // VkRegistry
   const vkRegistryContract = await deployVkRegistry(signer, true);
-  const [gatekeeperContractAddress] = await Promise.all([gatekeeperContract.getAddress()]);
+  const [policyContractAddress] = await Promise.all([policyContract.getAddress()]);
 
   const { maciContract } = await deployMaci({
-    signUpTokenGatekeeperContractAddress: gatekeeperContractAddress,
+    policyContractAddress,
     signer,
     stateTreeDepth,
     factories,
@@ -98,7 +99,7 @@ export const deployTestContracts = async ({
 
   return {
     mockVerifierContract,
-    gatekeeperContract,
+    policyContract,
     constantInitialVoiceCreditProxyContract,
     maciContract,
     vkRegistryContract,

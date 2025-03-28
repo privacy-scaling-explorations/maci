@@ -1,4 +1,4 @@
-import { EGatekeepers, EInitialVoiceCreditProxies } from "maci-sdk";
+import { EPolicies, EInitialVoiceCreditProxies } from "maci-sdk";
 import { PrepareUserOperationRequestParameters } from "permissionless/actions/smartAccount";
 import { ENTRYPOINT_ADDRESS_V07_TYPE } from "permissionless/types";
 
@@ -67,9 +67,9 @@ export interface IConstantInitialVoiceCreditProxyArgs {
 }
 
 /**
- * IEASGatekeeperArgs represents the arguments for deploying an EAS gatekeeper
+ * IEASPolicyArgs represents the arguments for deploying an EAS policy
  */
-export interface IEASGatekeeperArgs {
+export interface IEASPolicyArgs {
   /**
    * The address of the EAS contract
    */
@@ -87,9 +87,9 @@ export interface IEASGatekeeperArgs {
 }
 
 /**
- * IZupassGatekeeperArgs represents the arguments for deploying a Zupass gatekeeper
+ * IZupassPolicyArgs represents the arguments for deploying a Zupass policy
  */
-export interface IZupassGatekeeperArgs {
+export interface IZupassPolicyArgs {
   /**
    * The first signer
    */
@@ -112,9 +112,9 @@ export interface IZupassGatekeeperArgs {
 }
 
 /**
- * IHatsGatekeeperArgs represents the arguments for deploying a Hats gatekeeper
+ * IHatsPolicyArgs represents the arguments for deploying a Hats policy
  */
-export interface IHatsGatekeeperArgs {
+export interface IHatsPolicyArgs {
   /**
    * The hats protocol address
    */
@@ -127,9 +127,9 @@ export interface IHatsGatekeeperArgs {
 }
 
 /**
- * ISemaphoreGatekeeperArgs represents the arguments for deploying a semaphore gatekeeper
+ * ISemaphorePolicyArgs represents the arguments for deploying a semaphore policy
  */
-export interface ISemaphoreGatekeeperArgs {
+export interface ISemaphorePolicyArgs {
   /**
    * The semaphore contract address
    */
@@ -142,9 +142,9 @@ export interface ISemaphoreGatekeeperArgs {
 }
 
 /**
- * IGitcoinPassportGatekeeperArgs represents the arguments for deploying a gitcoin passport gatekeeper
+ * IGitcoinPassportPolicyArgs represents the arguments for deploying a gitcoin passport policy
  */
-export interface IGitcoinPassportGatekeeperArgs {
+export interface IGitcoinPassportPolicyArgs {
   /**
    * The decoder address
    */
@@ -182,14 +182,14 @@ export interface IVkRegistryArgs {
 }
 
 /**
- * IGatekeeperArgs represents the arguments for deploying a gatekeeper
+ * IPolicyArgs represents the arguments for deploying a policy
  */
-export type IGatekeeperArgs =
-  | IEASGatekeeperArgs
-  | IZupassGatekeeperArgs
-  | IHatsGatekeeperArgs
-  | ISemaphoreGatekeeperArgs
-  | IGitcoinPassportGatekeeperArgs;
+export type IPolicyArgs =
+  | IEASPolicyArgs
+  | IZupassPolicyArgs
+  | IHatsPolicyArgs
+  | ISemaphorePolicyArgs
+  | IGitcoinPassportPolicyArgs;
 
 export type IInitialVoiceCreditProxyArgs = IConstantInitialVoiceCreditProxyArgs;
 /**
@@ -197,11 +197,11 @@ export type IInitialVoiceCreditProxyArgs = IConstantInitialVoiceCreditProxyArgs;
  */
 export interface IDeployMaciConfig {
   /**
-   * The gatekeeper configuration
+   * The policy configuration
    */
-  gatekeeper: {
-    type: EGatekeepers;
-    args?: IGatekeeperArgs;
+  policy: {
+    type: EPolicies;
+    args?: IPolicyArgs;
   };
 
   /**
@@ -209,7 +209,7 @@ export interface IDeployMaciConfig {
    */
   MACI: {
     stateTreeDepth: number;
-    gatekeeper: EGatekeepers;
+    policy: EPolicies;
   };
 
   /**
@@ -270,11 +270,11 @@ export interface IDeployPollConfig {
   voteOptionTreeDepth: number;
 
   /**
-   * The gatekeeper configuration
+   * The policy configuration
    */
-  gatekeeper: {
-    type: EGatekeepers;
-    args?: IGatekeeperArgs;
+  policy: {
+    type: EPolicies;
+    args?: IPolicyArgs;
     address?: Hex;
   };
 

@@ -2,14 +2,15 @@ import { expect } from "chai";
 import { Signer, ZeroAddress } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
-import { deployContract, deployZupassSignUpGatekeeper } from "../../ts/deploy";
+import type { MACI, ZupassChecker, ZupassPolicy } from "../../typechain-types";
+
+import { deployContract, deployZupassSignUpPolicy } from "../../ts/deploy";
 import { getDefaultSigner, getSigners } from "../../ts/utils";
-import { MACI, ZupassChecker, ZupassGatekeeper } from "../../typechain-types";
 import { STATE_TREE_DEPTH, initialVoiceCreditBalance } from "../constants";
 import { deployTestContracts } from "../utils";
 
-describe("Zupass Gatekeeper", () => {
-  let zupassGatekeeper: ZupassGatekeeper;
+describe("Zupass", () => {
+  let zupassPolicy: ZupassPolicy;
   let zupassChecker: ZupassChecker;
   let signer: Signer;
   let signerAddress: string;
@@ -35,7 +36,7 @@ describe("Zupass Gatekeeper", () => {
     const verifier = await deployContract("ZupassGroth16Verifier", signer, true);
     const verifierAddress = await verifier.getAddress();
     signerAddress = await signer.getAddress();
-    [zupassGatekeeper, zupassChecker] = await deployZupassSignUpGatekeeper(
+    [zupassPolicy, zupassChecker] = await deployZupassSignUpPolicy(
       {
         eventId: validEventId,
         signer1: zupassSigner[0],
@@ -48,13 +49,13 @@ describe("Zupass Gatekeeper", () => {
   });
 
   describe("Deployment", () => {
-    it("The gatekeeper should be deployed correctly", async () => {
-      expect(zupassGatekeeper).to.not.eq(undefined);
-      expect(await zupassGatekeeper.getAddress()).to.not.eq(ZeroAddress);
+    it("The policy should be deployed correctly", async () => {
+      expect(zupassPolicy).to.not.eq(undefined);
+      expect(await zupassPolicy.getAddress()).to.not.eq(ZeroAddress);
     });
   });
 
-  describe("ZupassGatekeeper", () => {
+  describe("Policy", () => {
     let maciContract: MACI;
 
     before(async () => {
@@ -62,7 +63,7 @@ describe("Zupass Gatekeeper", () => {
         initialVoiceCreditBalance,
         stateTreeDepth: STATE_TREE_DEPTH,
         signer,
-        gatekeeper: zupassGatekeeper,
+        policy: zupassPolicy,
       });
 
       maciContract = r.maciContract;
@@ -70,24 +71,21 @@ describe("Zupass Gatekeeper", () => {
 
     it("should set guarded target correctly", async () => {
       const maciAddress = await maciContract.getAddress();
-      await zupassGatekeeper.setTarget(maciAddress).then((tx) => tx.wait());
+      await zupassPolicy.setTarget(maciAddress).then((tx) => tx.wait());
 
-      expect(await zupassGatekeeper.guarded()).to.eq(maciAddress);
+      expect(await zupassPolicy.guarded()).to.eq(maciAddress);
     });
 
     it("should fail to set guarded target when the caller is not the owner", async () => {
       const [, secondSigner] = await getSigners();
-      await expect(zupassGatekeeper.connect(secondSigner).setTarget(signerAddress)).to.be.revertedWithCustomError(
-        zupassGatekeeper,
+      await expect(zupassPolicy.connect(secondSigner).setTarget(signerAddress)).to.be.revertedWithCustomError(
+        zupassPolicy,
         "OwnableUnauthorizedAccount",
       );
     });
 
     it("should fail to set guarded target when the MACI instance is not valid", async () => {
-      await expect(zupassGatekeeper.setTarget(ZeroAddress)).to.be.revertedWithCustomError(
-        zupassGatekeeper,
-        "ZeroAddress",
-      );
+      await expect(zupassPolicy.setTarget(ZeroAddress)).to.be.revertedWithCustomError(zupassPolicy, "ZeroAddress");
     });
 
     it("should not register a user if the register function is called with invalid watermark", async () => {
@@ -106,8 +104,8 @@ describe("Zupass Gatekeeper", () => {
 
     it("should prevent signing up twice", async () => {
       await expect(maciContract.signUp(user.pubKey.asContractParam(), data)).to.be.revertedWithCustomError(
-        zupassGatekeeper,
-        "AlreadyRegistered",
+        zupassPolicy,
+        "AlreadyEnforced",
       );
     });
   });

@@ -1,4 +1,4 @@
-import type { SignUpGatekeeper, MACI } from "../../../typechain-types";
+import type { MACI, IBasePolicy } from "../../../typechain-types";
 
 import { genEmptyBallotRoots } from "../../../ts/genEmptyBallotRoots";
 import { info, logGreen } from "../../../ts/logger";
@@ -43,10 +43,9 @@ deployment.deployTask(EDeploySteps.Maci, "Deploy MACI contract").then((task) =>
       },
     });
 
-    const gatekeeper =
-      deployment.getDeployConfigField<EContracts | null>(EContracts.MACI, "gatekeeper") ||
-      EContracts.FreeForAllGatekeeper;
-    const gatekeeperContractAddress = storage.mustGetAddress(gatekeeper, hre.network.name);
+    const policy =
+      deployment.getDeployConfigField<EContracts | null>(EContracts.MACI, "policy") || EContracts.FreeForAllPolicy;
+    const policyContractAddress = storage.mustGetAddress(policy, hre.network.name);
     const pollFactoryContractAddress = storage.mustGetAddress(EContracts.PollFactory, hre.network.name);
     const messageProcessorFactoryContractAddress = storage.mustGetAddress(
       EContracts.MessageProcessorFactory,
@@ -64,18 +63,18 @@ deployment.deployTask(EDeploySteps.Maci, "Deploy MACI contract").then((task) =>
       pollFactoryContractAddress,
       messageProcessorFactoryContractAddress,
       tallyFactoryContractAddress,
-      gatekeeperContractAddress,
+      policyContractAddress,
       stateTreeDepth,
       emptyBallotRoots,
     );
 
-    const gatekeeperContract = await deployment.getContract<SignUpGatekeeper>({
-      name: EContracts.SignUpGatekeeper,
-      address: gatekeeperContractAddress,
+    const policyContract = await deployment.getContract<IBasePolicy>({
+      name: policy,
+      address: policyContractAddress,
     });
     const maciInstanceAddress = await maciContract.getAddress();
 
-    await gatekeeperContract.setTarget(maciInstanceAddress).then((tx) => tx.wait());
+    await policyContract.setTarget(maciInstanceAddress).then((tx) => tx.wait());
 
     await storage.register({
       id: EContracts.MACI,
@@ -84,7 +83,7 @@ deployment.deployTask(EDeploySteps.Maci, "Deploy MACI contract").then((task) =>
         pollFactoryContractAddress,
         messageProcessorFactoryContractAddress,
         tallyFactoryContractAddress,
-        gatekeeperContractAddress,
+        policyContractAddress,
         stateTreeDepth,
         emptyBallotRoots.map((root) => root.toString()),
       ],

@@ -7,7 +7,7 @@ export interface ExtContractsStruct {
   maci: AddressLike;
   verifier: AddressLike;
   vkRegistry: AddressLike;
-  gatekeeper: AddressLike;
+  policy: AddressLike;
   initialVoiceCreditProxy: AddressLike;
 }
 

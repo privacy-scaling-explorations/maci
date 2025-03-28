@@ -2,14 +2,15 @@ import { expect } from "chai";
 import { Signer, ZeroAddress, toBeArray } from "ethers";
 import { Keypair } from "maci-domainobjs";
 
-import { deployContract, deployEASSignUpGatekeeper } from "../../ts/deploy";
+import type { MACI, EASChecker, EASPolicy } from "../../typechain-types";
+
+import { deployContract, deployEASSignUpPolicy } from "../../ts/deploy";
 import { getDefaultSigner, getSigners } from "../../ts/utils";
-import { EASChecker, EASGatekeeper, MACI } from "../../typechain-types";
 import { STATE_TREE_DEPTH, initialVoiceCreditBalance } from "../constants";
 import { deployTestContracts } from "../utils";
 
-describe("EAS Gatekeeper", () => {
-  let easGatekeeper: EASGatekeeper;
+describe("EAS", () => {
+  let easPolicy: EASPolicy;
   let easChecker: EASChecker;
   let signer: Signer;
   let signerAddress: string;
@@ -31,7 +32,7 @@ describe("EAS Gatekeeper", () => {
     signerAddress = await signer.getAddress();
     const mockEAS = await deployContract("MockEAS", signer, true, signerAddress, toBeArray(schema), signerAddress);
     easAddress = await mockEAS.getAddress();
-    [easGatekeeper, easChecker] = await deployEASSignUpGatekeeper(
+    [easPolicy, easChecker] = await deployEASSignUpPolicy(
       { eas: easAddress, attester: signerAddress, schema: toBeArray(schema) },
       signer,
       true,
@@ -39,13 +40,13 @@ describe("EAS Gatekeeper", () => {
   });
 
   describe("Deployment", () => {
-    it("The gatekeeper should be deployed correctly", async () => {
-      expect(easGatekeeper).to.not.eq(undefined);
-      expect(await easGatekeeper.getAddress()).to.not.eq(ZeroAddress);
+    it("The policy should be deployed correctly", async () => {
+      expect(easPolicy).to.not.eq(undefined);
+      expect(await easPolicy.getAddress()).to.not.eq(ZeroAddress);
     });
   });
 
-  describe("EASGatekeeper", () => {
+  describe("EASPolicy", () => {
     let maciContract: MACI;
 
     before(async () => {
@@ -53,7 +54,7 @@ describe("EAS Gatekeeper", () => {
         initialVoiceCreditBalance,
         stateTreeDepth: STATE_TREE_DEPTH,
         signer,
-        gatekeeper: easGatekeeper,
+        policy: easPolicy,
       });
 
       maciContract = r.maciContract;
@@ -61,21 +62,21 @@ describe("EAS Gatekeeper", () => {
 
     it("should set guarded target correctly", async () => {
       const maciAddress = await maciContract.getAddress();
-      await easGatekeeper.setTarget(maciAddress).then((tx) => tx.wait());
+      await easPolicy.setTarget(maciAddress).then((tx) => tx.wait());
 
-      expect(await easGatekeeper.guarded()).to.eq(maciAddress);
+      expect(await easPolicy.guarded()).to.eq(maciAddress);
     });
 
     it("should fail to set guarded target when the caller is not the owner", async () => {
       const [, secondSigner] = await getSigners();
-      await expect(easGatekeeper.connect(secondSigner).setTarget(signerAddress)).to.be.revertedWithCustomError(
-        easGatekeeper,
+      await expect(easPolicy.connect(secondSigner).setTarget(signerAddress)).to.be.revertedWithCustomError(
+        easPolicy,
         "OwnableUnauthorizedAccount",
       );
     });
 
     it("should fail to set guarded target when the MACI instance is not valid", async () => {
-      await expect(easGatekeeper.setTarget(ZeroAddress)).to.be.revertedWithCustomError(easGatekeeper, "ZeroAddress");
+      await expect(easPolicy.setTarget(ZeroAddress)).to.be.revertedWithCustomError(easPolicy, "ZeroAddress");
     });
 
     it("should throw when the attestation is not owned by the caller (mocking maci.signUp call)", async () => {
@@ -90,7 +91,7 @@ describe("EAS Gatekeeper", () => {
       ).to.be.revertedWithCustomError(easChecker, "AttestationRevoked");
     });
 
-    it("should throw when the attestation schema is not the one expected by the gatekeeper", async () => {
+    it("should throw when the attestation schema is not the one expected by the policy", async () => {
       await expect(
         maciContract.signUp(user.pubKey.asContractParam(), invalidSchemaAttestation),
       ).to.be.revertedWithCustomError(easChecker, "InvalidSchema");
@@ -113,8 +114,8 @@ describe("EAS Gatekeeper", () => {
 
     it("should prevent signing up twice", async () => {
       await expect(maciContract.signUp(user.pubKey.asContractParam(), attestation)).to.be.revertedWithCustomError(
-        easGatekeeper,
-        "AlreadyRegistered",
+        easPolicy,
+        "AlreadyEnforced",
       );
     });
   });

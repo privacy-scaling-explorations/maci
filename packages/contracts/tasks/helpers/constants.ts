@@ -2,7 +2,7 @@
  * Deploy steps
  */
 export enum EDeploySteps {
-  Gatekeepers = "full:deploy-gatekeepers",
+  Policies = "full:deploy-policies",
   Verifier = "full:deploy-verifier",
   Poseidon = "full:deploy-poseidon",
   PollFactory = "full:deploy-poll-factory",
@@ -11,7 +11,7 @@ export enum EDeploySteps {
   Maci = "full:deploy-maci",
   VkRegistry = "full:deploy-vk-registry",
   ConstantInitialVoiceCreditProxy = "poll:deploy-constant-initial-voice-credit-proxy",
-  PollGatekeeper = "poll:deploy-gatekeeper",
+  PollPolicy = "poll:deploy-policy",
   Poll = "poll:deploy-poll",
 }
 

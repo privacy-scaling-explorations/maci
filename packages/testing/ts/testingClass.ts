@@ -11,7 +11,7 @@ import {
   deployPoll,
   deployVkRegistryContract,
   ContractStorage,
-  deployFreeForAllSignUpGatekeeper,
+  deployFreeForAllSignUpPolicy,
   deployVerifier,
   deployConstantInitialVoiceCreditProxy,
 } from "maci-sdk";
@@ -146,16 +146,16 @@ export class TestingClass {
       signer,
     });
 
-    const [signupGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
-    const signupGatekeeperContractAddress = await signupGatekeeper.getAddress();
+    const [signupPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+    const signupPolicyContractAddress = await signupPolicy.getAddress();
 
-    const [pollGatekeeper] = await deployFreeForAllSignUpGatekeeper(signer, true);
-    const pollGatekeeperContractAddress = await pollGatekeeper.getAddress();
+    const [pollPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+    const pollPolicyContractAddress = await pollPolicy.getAddress();
 
     const maciAddresses = await deployMaci({
       stateTreeDepth: 10,
       signer,
-      signupGatekeeperAddress: signupGatekeeperContractAddress,
+      signupPolicyAddress: signupPolicyContractAddress,
     });
 
     const initialVoiceCreditProxy = await deployConstantInitialVoiceCreditProxy(
@@ -182,7 +182,7 @@ export class TestingClass {
       signer,
       verifierContractAddress,
       maciAddress: maciAddresses.maciContractAddress,
-      gatekeeperContractAddress: pollGatekeeperContractAddress,
+      policyContractAddress: pollPolicyContractAddress,
       initialVoiceCreditProxyContractAddress,
       voteOptions: DEFAULT_VOTE_OPTIONS,
       vkRegistryContractAddress: vkRegistry,
