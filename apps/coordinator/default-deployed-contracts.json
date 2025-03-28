@@ -9,7 +9,7 @@
         }
       },
       "0xa4fF6765C207C84AbeFCe0226b24204f9ceBAB45": {
-        "id": "FreeForAllGatekeeper",
+        "id": "FreeForAllPolicy",
         "deploymentTxHash": "0x7fa84fe66edeb0f6d13999344289d0404eac443e52dab4c9b25d7415ff84e45b",
         "verify": {
           "args": "[]"
@@ -86,7 +86,7 @@
         }
       },
       "0x6b414ff158581Ac940797463a44221d0ba6A0B9C": {
-        "id": "FreeForAllGatekeeper",
+        "id": "FreeForAllPolicy",
         "deploymentTxHash": "0x5f7640018acb7155aa510e05cca92ad40003327dfe75fcab7d61bd21fefdea67",
         "verify": {
           "args": "[]"
@@ -134,7 +134,7 @@
         "address": "0x6f9F7Fef2FF7F5D1Ff8966F751EC154146d8f431",
         "count": 1
       },
-      "FreeForAllGatekeeper": {
+      "FreeForAllPolicy": {
         "address": "0x6b414ff158581Ac940797463a44221d0ba6A0B9C",
         "count": 1
       }
@@ -150,7 +150,7 @@
         }
       },
       "0x9e98cAA76492338627BAD0e5a6AA2762d827E169": {
-        "id": "FreeForAllGatekeeper",
+        "id": "FreeForAllPolicy",
         "deploymentTxHash": "0x5a740ad234560fab4097150f6c6acbf95224b4949ff3d82b477903a435a60621",
         "verify": {
           "args": "[]"
@@ -225,7 +225,7 @@
         "address": "0x41a29A58A63A998c9Edde6883Bcec2d89835a8e9",
         "count": 1
       },
-      "FreeForAllGatekeeper": {
+      "FreeForAllPolicy": {
         "address": "0x9e98cAA76492338627BAD0e5a6AA2762d827E169",
         "count": 1
       },
@@ -277,7 +277,7 @@
         }
       },
       "0x8BA83Dd6E0E448417C519A38c90Ee570A4CA3e9f": {
-        "id": "FreeForAllGatekeeper",
+        "id": "FreeForAllPolicy",
         "deploymentTxHash": "0x24c07b7ccc8ab143f03b03749ad81e4830456d4353f3c9783ffd08b3ea2d1004",
         "verify": {
           "args": "[]"
@@ -352,7 +352,7 @@
         "address": "0x16FC13edD59D4b9F788Fb11A70eA022E1Bb1B856",
         "count": 1
       },
-      "FreeForAllGatekeeper": {
+      "FreeForAllPolicy": {
         "address": "0x8BA83Dd6E0E448417C519A38c90Ee570A4CA3e9f",
         "count": 1
       },
@@ -404,7 +404,7 @@
         }
       },
       "0x83dD551541C580e338206f1f677835D427C92dE2": {
-        "id": "FreeForAllGatekeeper",
+        "id": "FreeForAllPolicy",
         "deploymentTxHash": "0x637fbce4ecd191f31f768f3d46a67727c29e61149cd9d2f8830f2c685cda5019",
         "verify": {
           "args": "[]"
@@ -474,7 +474,7 @@
         }
       },
       "0x33Cc5e8b6f158B9ee3600EcD3f3DE76c6B7765a7": {
-        "id": "ZupassGatekeeper",
+        "id": "ZupassPolicy",
         "deploymentTxHash": "0xe6954597b9079895f6facc122e2a0bd9af00bc0401bf6f61d9d7824aed534754",
         "verify": {
           "args": "[\"280209352117126055869169359893920931853\",\"13908133709081944902758389525983124100292637002438232157513257158004852609027\",\"7654374482676219729919246464135900991450848628968334062174564799457623790084\",\"0xd81aB9859e1d423aC51170256BedD0Aa00e4eD5A\"]"
@@ -486,7 +486,7 @@
         "address": "0xB486cce9B4507A67Db147B0802D5673774C8D278",
         "count": 1
       },
-      "FreeForAllGatekeeper": {
+      "FreeForAllPolicy": {
         "address": "0x83dD551541C580e338206f1f677835D427C92dE2",
         "count": 1
       },
@@ -526,7 +526,7 @@
         "address": "0x3D4C58074DCD8E6526885F465ab5F311b6B290B5",
         "count": 1
       },
-      "ZupassGatekeeper": {
+      "ZupassPolicy": {
         "address": "0x33Cc5e8b6f158B9ee3600EcD3f3DE76c6B7765a7",
         "count": 1
       }
@@ -542,7 +542,7 @@
         }
       },
       "0x8BA83Dd6E0E448417C519A38c90Ee570A4CA3e9f": {
-        "id": "FreeForAllGatekeeper",
+        "id": "FreeForAllPolicy",
         "deploymentTxHash": "0x9bd1a8595f8ab33fac82958a02dd8bfc59756d367c74a0c9d87718fdcf973060",
         "verify": {
           "args": "[]"
@@ -617,7 +617,7 @@
         "address": "0x16FC13edD59D4b9F788Fb11A70eA022E1Bb1B856",
         "count": 1
       },
-      "FreeForAllGatekeeper": {
+      "FreeForAllPolicy": {
         "address": "0x8BA83Dd6E0E448417C519A38c90Ee570A4CA3e9f",
         "count": 1
       },
@@ -669,7 +669,7 @@
         }
       },
       "0x8BA83Dd6E0E448417C519A38c90Ee570A4CA3e9f": {
-        "id": "FreeForAllGatekeeper",
+        "id": "FreeForAllPolicy",
         "deploymentTxHash": "0x9c0775b0288898a94f27865d46e5bd8872492b5df65cd177b150806aab7560a7",
         "verify": {
           "args": "[]"
@@ -744,7 +744,7 @@
         "address": "0x16FC13edD59D4b9F788Fb11A70eA022E1Bb1B856",
         "count": 1
       },
-      "FreeForAllGatekeeper": {
+      "FreeForAllPolicy": {
         "address": "0x8BA83Dd6E0E448417C519A38c90Ee570A4CA3e9f",
         "count": 1
       },
@@ -796,7 +796,7 @@
         }
       },
       "0xD5C41106db85EDd0298279AcFCE5A722060cc5f9": {
-        "id": "FreeForAllGatekeeper",
+        "id": "FreeForAllPolicy",
         "deploymentTxHash": "0x69c745b040908eb98e63065b1f5635d7d5176d0e331d37321c564ed1b6658a5c",
         "verify": {
           "args": "[]"
@@ -871,7 +871,7 @@
         "address": "0x83dD551541C580e338206f1f677835D427C92dE2",
         "count": 1
       },
-      "FreeForAllGatekeeper": {
+      "FreeForAllPolicy": {
         "address": "0xD5C41106db85EDd0298279AcFCE5A722060cc5f9",
         "count": 1
       },
@@ -926,7 +926,7 @@
         }
       },
       "0xF8E637e5c9EC3A8d8fa8843A6dF833348E1F1E66": {
-        "id": "FreeForAllGatekeeper",
+        "id": "FreeForAllPolicy",
         "deploymentTxHash": "0x7da5cd7a2c15edc4f8da4d1706995cba1ad77f72f3cfaa74fcbcb5716e0c6aea",
         "verify": {
           "args": "[]"
@@ -1001,7 +1001,7 @@
         "address": "0x88C2c6A7535463962A34757FE63cc4F296381aba",
         "count": 1
       },
-      "FreeForAllGatekeeper": {
+      "FreeForAllPolicy": {
         "address": "0xF8E637e5c9EC3A8d8fa8843A6dF833348E1F1E66",
         "count": 1
       },
@@ -1053,7 +1053,7 @@
         }
       },
       "0xb078423e7e046Bf84ec2140bBF7101CD59773Ccf": {
-        "id": "FreeForAllGatekeeper",
+        "id": "FreeForAllPolicy",
         "deploymentTxHash": "0x426148cb8a849ce86f463ddddaca602051e9d707d77788e14ace39873f211204",
         "verify": {
           "args": "[]"
@@ -1128,7 +1128,7 @@
         "address": "0x1Cf6eE7c94f980E0dE60Ad741201D4c6Da3090f9",
         "count": 1
       },
-      "FreeForAllGatekeeper": {
+      "FreeForAllPolicy": {
         "address": "0xb078423e7e046Bf84ec2140bBF7101CD59773Ccf",
         "count": 1
       },
@@ -1180,7 +1180,7 @@
         }
       },
       "0x9e98cAA76492338627BAD0e5a6AA2762d827E169": {
-        "id": "FreeForAllGatekeeper",
+        "id": "FreeForAllPolicy",
         "deploymentTxHash": "0xb9c5a75f51f0224509c6bb975868688ee91dd294791f4cf39ce3f03e3e7aa410",
         "verify": {
           "args": "[]"
@@ -1255,7 +1255,7 @@
         "address": "0x41a29A58A63A998c9Edde6883Bcec2d89835a8e9",
         "count": 1
       },
-      "FreeForAllGatekeeper": {
+      "FreeForAllPolicy": {
         "address": "0x9e98cAA76492338627BAD0e5a6AA2762d827E169",
         "count": 1
       },
@@ -1307,7 +1307,7 @@
         }
       },
       "0x7E16271EaE58F52a0431F87Ee7E40c978178C63F": {
-        "id": "FreeForAllGatekeeper",
+        "id": "FreeForAllPolicy",
         "deploymentTxHash": "0xa21de26515a57b8a3b3f04511d490b555fef8c4e880ebba5045a45dbc637cb3f",
         "verify": {
           "args": "[]"
@@ -1382,7 +1382,7 @@
         "address": "0x3D4C58074DCD8E6526885F465ab5F311b6B290B5",
         "count": 1
       },
-      "FreeForAllGatekeeper": {
+      "FreeForAllPolicy": {
         "address": "0x7E16271EaE58F52a0431F87Ee7E40c978178C63F",
         "count": 1
       },
@@ -1434,7 +1434,7 @@
         }
       },
       "0x4241540530d25A83c920CB48e69CcA9D47eE0687": {
-        "id": "FreeForAllGatekeeper",
+        "id": "FreeForAllPolicy",
         "deploymentTxHash": "0x9f4d39e9bcae1eecf839cf59b8d86b93569727de8ca768f40fb00bf3d64417d8",
         "verify": {
           "args": "[]"
@@ -1509,7 +1509,7 @@
         "address": "0x6d1b05EcD959cD11fAa07ED0537395FE1D39eAc5",
         "count": 1
       },
-      "FreeForAllGatekeeper": {
+      "FreeForAllPolicy": {
         "address": "0x4241540530d25A83c920CB48e69CcA9D47eE0687",
         "count": 1
       },
