@@ -1,5 +1,5 @@
+import { genKeypair, genPrivKey } from "@maci-protocol/crypto";
 import { expect } from "chai";
-import { genKeypair, genPrivKey } from "maci-crypto";
 
 import { Keypair, PrivKey } from "..";
 

@@ -1,7 +1,6 @@
-import { genMaciStateFromContract } from "maci-sdk";
+import { genMaciStateFromContract } from "@maci-protocol/sdk";
 
 import type { User } from "./user";
-import type { Signer } from "ethers";
 import type {
   MACI,
   Verifier,
@@ -9,7 +8,8 @@ import type {
   FreeForAllPolicy,
   ConstantInitialVoiceCreditProxy,
   IIpfsMessage,
-} from "maci-sdk";
+} from "@maci-protocol/sdk";
+import type { Signer } from "ethers";
 
 /**
  * A util interface that represents a vote object

@@ -1,4 +1,4 @@
-import { Keypair } from "maci-domainobjs";
+import { Keypair } from "@maci-protocol/domainobjs";
 import {
   EMode,
   extractAllVks,
@@ -13,7 +13,7 @@ import {
   type IProveOnChainArgs,
   type ITimeTravelArgs,
   type IDeployMaciArgs,
-} from "maci-sdk";
+} from "@maci-protocol/sdk";
 
 import { homedir } from "os";
 import path from "path";

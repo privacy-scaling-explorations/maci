@@ -1,5 +1,5 @@
+import { cleanThreads } from "@maci-protocol/sdk";
 import { type CircomkitConfig, type CircuitConfig, Circomkit } from "circomkit";
-import { cleanThreads } from "maci-sdk";
 
 import fs from "fs";
 import path from "path";

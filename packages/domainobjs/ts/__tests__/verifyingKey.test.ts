@@ -1,5 +1,5 @@
+import { G1Point } from "@maci-protocol/crypto";
 import { expect } from "chai";
-import { G1Point } from "maci-crypto";
 
 import fs from "fs";
 import path from "path";

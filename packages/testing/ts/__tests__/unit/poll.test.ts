@@ -1,4 +1,3 @@
-import { expect } from "chai";
 import {
   getBlockTimestamp,
   getDefaultSigner,
@@ -14,7 +13,8 @@ import {
   deployConstantInitialVoiceCreditProxy,
   deployVerifier,
   deployMaci,
-} from "maci-sdk";
+} from "@maci-protocol/sdk";
+import { expect } from "chai";
 
 import type { Signer } from "ethers";
 

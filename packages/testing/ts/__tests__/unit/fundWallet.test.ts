@@ -1,6 +1,6 @@
+import { getDefaultSigner, fundWallet } from "@maci-protocol/sdk";
 import { expect } from "chai";
 import { ZeroAddress } from "ethers";
-import { getDefaultSigner, fundWallet } from "maci-sdk";
 
 describe("fundWallet", () => {
   it("should increase the balance of a wallet", async () => {

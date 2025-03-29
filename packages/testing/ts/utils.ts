@@ -1,8 +1,8 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
+import { Keypair } from "@maci-protocol/domainobjs";
+import { type ITallyData } from "@maci-protocol/sdk";
+import { cidToBytes32, createCidFromObject, relayMessages } from "@maci-protocol/sdk";
 import { expect } from "chai";
-import { Keypair } from "maci-domainobjs";
-import { type ITallyData } from "maci-sdk";
-import { cidToBytes32, createCidFromObject, relayMessages } from "maci-sdk";
 
 import fs from "fs";
 import { arch } from "os";

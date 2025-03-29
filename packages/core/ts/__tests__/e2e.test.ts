@@ -1,7 +1,7 @@
+import { hash5, IncrementalQuinTree, poseidon, PAD_KEY_HASH, hashLeanIMT } from "@maci-protocol/crypto";
+import { PCommand, Keypair, blankStateLeafHash } from "@maci-protocol/domainobjs";
 import { LeanIMT, LeanIMTHashFunction } from "@zk-kit/lean-imt";
 import { expect } from "chai";
-import { hash5, IncrementalQuinTree, poseidon, PAD_KEY_HASH, hashLeanIMT } from "maci-crypto";
-import { PCommand, Keypair, blankStateLeafHash } from "maci-domainobjs";
 
 import { MaciState } from "../MaciState";
 import { Poll } from "../Poll";

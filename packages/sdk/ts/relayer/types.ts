@@ -1,6 +1,6 @@
+import type { IIpfsMessage } from "@maci-protocol/contracts";
+import type { Poll } from "@maci-protocol/contracts/typechain-types";
 import type { Provider, Signer } from "ethers";
-import type { IIpfsMessage } from "maci-contracts";
-import type { Poll } from "maci-contracts/typechain-types";
 
 /**
  * Interface that represents get relayed messages arguments

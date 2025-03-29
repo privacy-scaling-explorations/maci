@@ -1,5 +1,5 @@
-import { EMode, IVerifyingKeyStruct, VkRegistry__factory as VkRegistryFactory } from "maci-contracts";
-import { genPollJoinedVkSig, genPollJoiningVkSig, genProcessVkSig, genTallyVkSig } from "maci-core";
+import { EMode, IVerifyingKeyStruct, VkRegistry__factory as VkRegistryFactory } from "@maci-protocol/contracts";
+import { genPollJoinedVkSig, genPollJoiningVkSig, genProcessVkSig, genTallyVkSig } from "@maci-protocol/core";
 
 import type { ISetVerifyingKeysArgs } from "./types";
 

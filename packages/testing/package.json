@@ -1,6 +1,6 @@
 {
-  "name": "maci-testing",
-  "version": "0.1.0",
+  "name": "@maci-protocol/testing",
+  "version": "1.0.0",
   "description": "A package with testing utilities for MACI",
   "main": "build/ts/index.js",
   "files": [
@@ -22,7 +22,6 @@
     "test:unit": "NODE_ENV=test ts-mocha --exit ./ts/__tests__/unit/*.test.ts"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.11",
     "@types/chai-as-promised": "^7.1.8",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.13.10",
@@ -38,11 +37,12 @@
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "ethers": "^6.13.5",
     "hardhat": "^2.22.19",
-    "maci-circuits": "^2.5.0",
-    "maci-cli": "^2.5.0",
-    "maci-core": "^2.5.0",
-    "maci-crypto": "^2.5.0",
-    "maci-domainobjs": "^2.5.0",
-    "maci-sdk": "^0.1.0"
+    "@maci-protocol/circuits": "^3.0.0",
+    "@maci-protocol/cli": "^3.0.0",
+    "@maci-protocol/core": "^3.0.0",
+    "@maci-protocol/crypto": "^3.0.0",
+    "@maci-protocol/domainobjs": "^3.0.0",
+    "@maci-protocol/sdk": "^1.0.0",
+    "@types/chai": "^4.3.11"
   }
 }

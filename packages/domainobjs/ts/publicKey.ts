@@ -1,4 +1,4 @@
-import { inCurve, hashLeftRight, packPubKey, unpackPubKey, type PubKey as RawPubKey } from "maci-crypto";
+import { inCurve, hashLeftRight, packPubKey, unpackPubKey, type PubKey as RawPubKey } from "@maci-protocol/crypto";
 
 import assert from "assert";
 

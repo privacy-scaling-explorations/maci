@@ -1,7 +1,7 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-console */
+import { Keypair, PrivKey } from "@maci-protocol/domainobjs";
 import { task, types } from "hardhat/config";
-import { Keypair, PrivKey } from "maci-domainobjs";
 
 import fs from "fs";
 

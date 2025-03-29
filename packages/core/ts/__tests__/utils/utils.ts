@@ -1,5 +1,5 @@
-import { Signature } from "maci-crypto";
-import { PCommand, Message, Keypair, PubKey } from "maci-domainobjs";
+import { Signature } from "@maci-protocol/crypto";
+import { PCommand, Message, Keypair, PubKey } from "@maci-protocol/domainobjs";
 
 import { MaciState } from "../../MaciState";
 import { Poll } from "../../Poll";

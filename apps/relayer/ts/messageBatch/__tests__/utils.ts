@@ -1,5 +1,5 @@
+import { Keypair } from "@maci-protocol/domainobjs";
 import { ZeroAddress } from "ethers";
-import { Keypair } from "maci-domainobjs";
 
 import { Message } from "../../message/message.schema.js";
 import { GetMessageBatchesDto, MAX_MESSAGES, MessageBatchDto } from "../messageBatch.dto.js";

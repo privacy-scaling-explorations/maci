@@ -1,5 +1,4 @@
-import type { Proof } from "maci-contracts";
-import type { ITallyData } from "maci-sdk";
+import type { ITallyData, IProof } from "@maci-protocol/sdk";
 import type { Hex } from "viem";
 
 import { ESupportedNetworks } from "../common";
@@ -21,12 +20,12 @@ export interface IReadProofsResults {
   /**
    * Process proofs list
    */
-  process: Proof[];
+  process: IProof[];
 
   /**
    * Tally proofs list
    */
-  tally: Proof[];
+  tally: IProof[];
 }
 
 /**
@@ -81,12 +80,12 @@ export interface IGenerateData {
   /**
    * Message processing proofs
    */
-  processProofs: Proof[];
+  processProofs: IProof[];
 
   /**
    * Tally proofs
    */
-  tallyProofs: Proof[];
+  tallyProofs: IProof[];
 
   /**
    * TallyData

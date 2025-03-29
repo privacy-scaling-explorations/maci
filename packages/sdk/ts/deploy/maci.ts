@@ -6,7 +6,7 @@ import {
   MACI__factory as MACIFactory,
   MessageProcessorFactory__factory as MessageProcessorFactoryFactory,
   IBasePolicy__factory as SignUpPolicyFactory,
-} from "maci-contracts";
+} from "@maci-protocol/contracts";
 
 import type { IDeployMaciArgs, IMaciContracts } from "./types";
 

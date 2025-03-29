@@ -1,5 +1,5 @@
+import { Keypair, PCommand } from "@maci-protocol/domainobjs";
 import benny from "benny";
-import { Keypair, PCommand } from "maci-domainobjs";
 
 import { MaciState } from "..";
 import { maxVoteOptions } from "../__tests__/utils/constants";

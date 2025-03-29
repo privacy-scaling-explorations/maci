@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
+import { PubKey } from "@maci-protocol/domainobjs";
 import { ZeroAddress } from "ethers";
-import { PubKey } from "maci-domainobjs";
 
 import type { MACI, Poll, IBasePolicy } from "../../../typechain-types";
 

@@ -1,4 +1,4 @@
-import { VOTE_OPTION_TREE_ARITY } from "maci-core";
+import { VOTE_OPTION_TREE_ARITY } from "@maci-protocol/core";
 
 export const STATE_TREE_DEPTH = 10;
 export const voiceCreditBalance = BigInt(100);

@@ -1,8 +1,8 @@
 /* eslint-disable no-underscore-dangle */
+import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "@maci-protocol/contracts";
+import { poseidon } from "@maci-protocol/crypto";
+import { Keypair, PrivKey, PubKey } from "@maci-protocol/domainobjs";
 import { ContractTransactionReceipt, isBytesLike } from "ethers";
-import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-contracts";
-import { poseidon } from "maci-crypto";
-import { Keypair, PrivKey, PubKey } from "maci-domainobjs";
 
 import type {
   IIsRegisteredUser,

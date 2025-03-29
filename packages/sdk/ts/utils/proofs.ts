@@ -5,7 +5,7 @@ import {
   genProofSnarkjs,
   verifyProof,
   type FullProveResult,
-} from "maci-contracts";
+} from "@maci-protocol/contracts";
 
 import type { CircuitInputs } from "./types";
 

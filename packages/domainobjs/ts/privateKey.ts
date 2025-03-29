@@ -1,4 +1,4 @@
-import { formatPrivKeyForBabyJub, type PrivKey as RawPrivKey } from "maci-crypto";
+import { formatPrivKeyForBabyJub, type PrivKey as RawPrivKey } from "@maci-protocol/crypto";
 
 import type { IJsonPrivateKey } from "./types";
 

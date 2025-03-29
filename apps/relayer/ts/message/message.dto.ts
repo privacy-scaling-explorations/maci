@@ -1,3 +1,4 @@
+import { Message } from "@maci-protocol/domainobjs";
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import {
@@ -14,7 +15,6 @@ import {
   MaxLength,
   MinLength,
 } from "class-validator";
-import { Message } from "maci-domainobjs";
 
 import { PublicKeyValidator } from "./validation.js";
 

@@ -1,6 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
+import { IVkContractParams, VerifyingKey } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
-import { IVkContractParams, VerifyingKey } from "maci-domainobjs";
 
 import type { IDeployedTestContracts, IDeployedTestContractsArgs } from "../ts/types";
 import type { EthereumProvider } from "hardhat/types";

@@ -1,5 +1,5 @@
+import type { EContracts } from "@maci-protocol/sdk";
 import type { Signer } from "ethers";
-import type { EContracts } from "maci-sdk";
 
 /**
  * Interface that represents store contract arguments

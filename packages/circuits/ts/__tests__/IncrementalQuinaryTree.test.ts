@@ -1,9 +1,9 @@
+import { IncrementalQuinTree, hash5 } from "@maci-protocol/crypto";
 import { r } from "@zk-kit/baby-jubjub";
 import chai, { expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { type WitnessTester } from "circomkit";
 import fc, { type Arbitrary } from "fast-check";
-import { IncrementalQuinTree, hash5 } from "maci-crypto";
 
 import { getSignal, circomkitInstance } from "./utils/utils";
 

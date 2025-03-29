@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.5.0...v3.0.0) (2025-03-28)
+
+
+### Features
+
+* **contracts:** add anon aadhaar gatekeeper checker ([13f14b0](https://github.com/privacy-scaling-explorations/maci/commit/13f14b07fd5fe8433d46b6fc6bab94216b06c97d))
+* **contracts:** add checker and deployment for proxy gatekeepers ([87f6d3b](https://github.com/privacy-scaling-explorations/maci/commit/87f6d3b7f32bf8dddcbf99b855dbe4b7b6c2a58e))
+* prevent duplicate maci key signup ([#2273](https://github.com/privacy-scaling-explorations/maci/issues/2273)) ([4da7858](https://github.com/privacy-scaling-explorations/maci/commit/4da7858cec86c67f5b452ac3c59ee229fef310e4))
+* use excubiae policies instead of gatekeepers ([a2319b1](https://github.com/privacy-scaling-explorations/maci/commit/a2319b19e473e683a301bd79b3ab2b06e83f9452))
+
+
+### Code Refactoring
+
+* make separate testing package ([#2229](https://github.com/privacy-scaling-explorations/maci/issues/2229)) ([bd07a7f](https://github.com/privacy-scaling-explorations/maci/commit/bd07a7f0783b2efe2659bc18255f8f4ed2e3c0d3))
+* test suite cleanup ([#2233](https://github.com/privacy-scaling-explorations/maci/issues/2233)) ([5795741](https://github.com/privacy-scaling-explorations/maci/commit/5795741b8531a179247bf41438d2294d53de8d0d))
+
+
+### Miscellaneous
+
+* **deps-dev:** bump @types/node from 22.13.9 to 22.13.10 ([#2241](https://github.com/privacy-scaling-explorations/maci/issues/2241)) ([3f50bb6](https://github.com/privacy-scaling-explorations/maci/commit/3f50bb65db4cd83b5ebe9d4fb1b7a6d650bb1c51))
+* move tests over to testing package ([fad40c3](https://github.com/privacy-scaling-explorations/maci/commit/fad40c30323135483244cc6e3c89ffba51d5120b))
+* update the readme ([#2242](https://github.com/privacy-scaling-explorations/maci/issues/2242)) ([ffdceee](https://github.com/privacy-scaling-explorations/maci/commit/ffdceee3074446f81deae5ef4e3df67f98aaada7))
+
+
+
 ## [2.5.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.4.0...v2.5.0) (2024-11-20)
 
 

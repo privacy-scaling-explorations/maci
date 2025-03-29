@@ -1,6 +1,6 @@
+import { Keypair } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { AbiCoder, ZeroAddress, Signer } from "ethers";
-import { Keypair } from "maci-domainobjs";
 
 import type { MACI, FreeForAllPolicy, MockToken, TokenChecker, TokenPolicy } from "../../typechain-types";
 

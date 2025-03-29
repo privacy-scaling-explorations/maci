@@ -1,4 +1,4 @@
-import { Poll__factory as PollFactory } from "maci-contracts";
+import { Poll__factory as PollFactory } from "@maci-protocol/contracts";
 
 import type { ISubmitVoteArgs, ISubmitVoteBatchArgs } from "./types";
 

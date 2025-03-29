@@ -1,6 +1,4 @@
-import { expect } from "chai";
-import { Signer } from "ethers";
-import { Keypair } from "maci-domainobjs";
+import { Keypair } from "@maci-protocol/domainobjs";
 import {
   getDefaultSigner,
   getSignedupUserData,
@@ -10,7 +8,9 @@ import {
   deployMaci,
   deployFreeForAllSignUpPolicy,
   deployVkRegistryContract,
-} from "maci-sdk";
+} from "@maci-protocol/sdk";
+import { expect } from "chai";
+import { Signer } from "ethers";
 
 import { deployArgs, verifyingKeysArgs, DEFAULT_SG_DATA } from "../../constants";
 

@@ -1,6 +1,6 @@
+import { genRandomSalt } from "@maci-protocol/crypto";
 import { expect } from "chai";
 import { BigNumberish } from "ethers";
-import { genRandomSalt } from "maci-crypto";
 
 import { linkPoseidonLibraries } from "../tasks/helpers/abi";
 import { deployPoseidonContracts, createContractFactory } from "../ts/deploy";

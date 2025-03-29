@@ -1,6 +1,6 @@
 {
-  "name": "maci-circuits",
-  "version": "2.5.0",
+  "name": "@maci-protocol/circuits",
+  "version": "3.0.0",
   "description": "zk-SNARK circuits for MACI",
   "main": "build/ts/index.js",
   "files": [
@@ -42,10 +42,10 @@
     "@zk-kit/circuits": "^0.4.0",
     "circomkit": "^0.3.2",
     "circomlib": "^2.0.5",
-    "maci-core": "^2.5.0",
-    "maci-crypto": "^2.5.0",
-    "maci-domainobjs": "^2.5.0",
-    "maci-sdk": "^0.1.0"
+    "@maci-protocol/core": "^3.0.0",
+    "@maci-protocol/crypto": "^3.0.0",
+    "@maci-protocol/domainobjs": "^3.0.0",
+    "@maci-protocol/sdk": "^1.0.0"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",

@@ -1,4 +1,4 @@
-import { type IVkObjectParams, VerifyingKey } from "maci-domainobjs";
+import { type IVkObjectParams, VerifyingKey } from "@maci-protocol/domainobjs";
 
 import type { IVerifyingKeyStruct } from "../../../ts/types";
 import type { VkRegistry } from "../../../typechain-types";

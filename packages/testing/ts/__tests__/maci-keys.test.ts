@@ -1,7 +1,7 @@
+import { genPrivKey, genPubKey } from "@maci-protocol/crypto";
+import { Keypair, PrivKey, PubKey } from "@maci-protocol/domainobjs";
+import { Poll__factory as PollFactory, type Poll, getDefaultSigner } from "@maci-protocol/sdk";
 import { expect } from "chai";
-import { genPrivKey, genPubKey } from "maci-crypto";
-import { Keypair, PrivKey, PubKey } from "maci-domainobjs";
-import { Poll__factory as PollFactory, type Poll, getDefaultSigner } from "maci-sdk";
 
 import type { Signer } from "ethers";
 

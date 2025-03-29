@@ -1,6 +1,6 @@
+import type { EMode } from "@maci-protocol/contracts";
+import type { IVkContractParams, VerifyingKey } from "@maci-protocol/domainobjs";
 import type { Signer } from "ethers";
-import type { EMode } from "maci-contracts";
-import type { IVkContractParams, VerifyingKey } from "maci-domainobjs";
 
 /**
  * Arguments for the getAllVks function

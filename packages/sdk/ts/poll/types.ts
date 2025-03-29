@@ -1,5 +1,5 @@
+import type { Poll, MessageProcessor, Tally, MACI } from "@maci-protocol/contracts/typechain-types";
 import type { BigNumberish, Provider, Signer } from "ethers";
-import type { Poll, MessageProcessor, Tally, MACI } from "maci-contracts/typechain-types";
 
 /**
  * Interface for the arguments to the get poll command

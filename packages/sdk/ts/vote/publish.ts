@@ -1,4 +1,4 @@
-import { PrivKey, PubKey } from "maci-domainobjs";
+import { PrivKey, PubKey } from "@maci-protocol/domainobjs";
 
 import type { IPublishBatchArgs, IPublishBatchData, IPublishArgs, IPublishData } from "./types";
 

@@ -1,6 +1,6 @@
+import { Keypair } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { AbiCoder, Signer, ZeroAddress } from "ethers";
-import { Keypair } from "maci-domainobjs";
 
 import type { MACI, AnonAadhaarPolicy, MockAnonAadhaar, AnonAadhaarChecker } from "../../typechain-types";
 

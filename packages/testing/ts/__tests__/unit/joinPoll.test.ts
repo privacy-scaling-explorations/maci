@@ -1,6 +1,4 @@
-import { expect } from "chai";
-import { Signer } from "ethers";
-import { Keypair } from "maci-domainobjs";
+import { Keypair } from "@maci-protocol/domainobjs";
 import {
   getBlockTimestamp,
   getDefaultSigner,
@@ -15,7 +13,9 @@ import {
   deployConstantInitialVoiceCreditProxy,
   deployVerifier,
   deployMaci,
-} from "maci-sdk";
+} from "@maci-protocol/sdk";
+import { expect } from "chai";
+import { Signer } from "ethers";
 
 import {
   DEFAULT_INITIAL_VOICE_CREDITS,

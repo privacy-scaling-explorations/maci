@@ -1,7 +1,6 @@
-import { expect } from "chai";
-import { VOTE_OPTION_TREE_ARITY } from "maci-core";
-import { genRandomSalt } from "maci-crypto";
-import { Keypair } from "maci-domainobjs";
+import { VOTE_OPTION_TREE_ARITY } from "@maci-protocol/core";
+import { genRandomSalt } from "@maci-protocol/crypto";
+import { Keypair } from "@maci-protocol/domainobjs";
 import {
   generateVote,
   getBlockTimestamp,
@@ -27,7 +26,8 @@ import {
   deployFreeForAllSignUpPolicy,
   deployConstantInitialVoiceCreditProxy,
   deployVerifier,
-} from "maci-sdk";
+} from "@maci-protocol/sdk";
+import { expect } from "chai";
 
 import fs from "fs";
 

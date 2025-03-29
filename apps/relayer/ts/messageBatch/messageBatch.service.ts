@@ -1,8 +1,8 @@
+import { PubKey } from "@maci-protocol/domainobjs";
 import { Injectable, Logger } from "@nestjs/common";
 import { validate } from "class-validator";
 import flatten from "lodash/flatten.js";
 import uniqBy from "lodash/uniqBy.js";
-import { PubKey } from "maci-domainobjs";
 
 import type { MessageBatch } from "./messageBatch.schema.js";
 import type { RootFilterQuery } from "mongoose";
@@ -99,7 +99,7 @@ export class MessageBatchService {
       "maciContractAddress",
     );
 
-    const { getDefaultSigner, relayMessages } = await import("maci-sdk");
+    const { getDefaultSigner, relayMessages } = await import("@maci-protocol/sdk");
     const signer = await getDefaultSigner();
 
     const bytes32IpfsHash = await this.ipfsService.cidToBytes32(ipfsHash);

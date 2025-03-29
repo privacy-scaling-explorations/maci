@@ -3,7 +3,7 @@ import { Test } from "@nestjs/testing";
 
 import type { IGetPublicKeyData } from "../../file/types";
 import type { IGenerateArgs, IGenerateData, IMergeArgs } from "../types";
-import type { ITallyData } from "maci-sdk";
+import type { ITallyData } from "@maci-protocol/sdk";
 
 import { ESupportedNetworks } from "../../common";
 import { FileService } from "../../file/file.service";

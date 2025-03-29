@@ -1,6 +1,6 @@
 import { jest } from "@jest/globals";
+import { Keypair } from "@maci-protocol/domainobjs";
 import { ZeroAddress } from "ethers";
-import { Keypair } from "maci-domainobjs";
 import { Model } from "mongoose";
 
 import { MessageRepository } from "../message.repository.js";

@@ -1,4 +1,4 @@
-import { createContractFactory, deployContractWithLinkedLibraries } from "maci-contracts";
+import { createContractFactory, deployContractWithLinkedLibraries } from "@maci-protocol/contracts";
 
 import type { IDeployFactoryArgs } from "./types";
 
