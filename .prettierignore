@@ -12,7 +12,7 @@ CODEOWNERS
 .eslintignore
 packages/circuits/ts/verifier_groth16.sol
 apps/website/.docusaurus/
-apps/website/src/pages/solidity-docs/index.md
+apps/website/versioned_docs/**/technical-references/smart-contracts/solidity-docs/
 **/deployed-contracts.json
 **/deploy-config.json
 apps/subgraph/generated
