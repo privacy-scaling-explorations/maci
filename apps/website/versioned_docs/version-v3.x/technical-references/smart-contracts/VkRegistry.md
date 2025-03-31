@@ -22,7 +22,7 @@ Please note that each Verifying Key should be set with the corresponding mode. A
 
 The contract owner can set them using the `setVerifyingKeysBatch` function:
 
-```solidity
+```ts
 function setVerifyingKeysBatch(
   uint256 _stateTreeDepth,
   uint256 _intStateTreeDepth,

@@ -73,7 +73,7 @@ We use GitHub Actions to test each PR before it is merged.
 
 When you submit your PR (or later change that code), a CI build will automatically be kicked off. A note will be added to the PR, and will indicate the current status of the build.
 
-Please refer to our [testing guide](/docs/testing) for more details on how we run tests across the monorepo.
+Please refer to our [testing guide](/docs/guides/testing/testing-introduction) for more details on how we run tests across the monorepo.
 
 ## Style Guide
 

@@ -5,16 +5,16 @@ include "./comparators.circom";
 // zk-kit import
 include "./unpack-element.circom";
 // local imports
-include "../../trees/incrementalMerkleTree.circom";
-include "../../trees/incrementalQuinaryTree.circom";
+include "../../utils/trees/incrementalMerkleTree.circom";
+include "../../utils/trees/incrementalQuinaryTree.circom";
 include "../../utils/calculateTotal.circom";
 include "../../utils/hashers.circom";
 
 /**
  * Processes batches of votes and verifies their validity in a Merkle tree structure.
- * This template supports Quadratic Voting (QV).
+ * This template does not support Quadratic Voting (QV).
  */
-template TallyVotes(
+template TallyVotesNonQv(
     stateTreeDepth,
     intStateTreeDepth,
     voteOptionTreeDepth
@@ -72,20 +72,15 @@ template TallyVotes(
     signal input currentSpentVoiceCreditSubtotal;
     // Salt for the total spent voice credits.
     signal input currentSpentVoiceCreditSubtotalSalt;
-    // Spent voice credits per vote option.
-    signal input currentPerVOSpentVoiceCredits[numVoteOptions];
-    // Salt for the root of spent credits per option.
-    signal input currentPerVOSpentVoiceCreditsRootSalt;
     // Salt for the root of the new results.
     signal input newResultsRootSalt;
-    // Salt for the new spent credits per vote option root.
-    signal input newPerVOSpentVoiceCreditsRootSalt;
     // Salt for the new total spent voice credits root. 
     signal input newSpentVoiceCreditSubtotalSalt;
 
     // Verify sbCommitment.
     var computedSbCommitment = PoseidonHasher(3)([stateRoot, ballotRoot, sbSalt]);
     computedSbCommitment === sbCommitment;
+
 
     // Validates that the index is within the valid range of sign-ups.
     var numSignUpsValid = LessEqThan(50)([index, numSignUps]);
@@ -123,41 +118,28 @@ template TallyVotes(
     // Tally the new results.
     var computedCalculateTotalResult[numVoteOptions];
     for (var i = 0; i < numVoteOptions; i++) {
-        var numsRC[batchSize + 1];
-        numsRC[batchSize] = currentResults[i] * computedIsZero;
+        var computedNumsRC[batchSize + 1];
+        computedNumsRC[batchSize] = currentResults[i] * computedIsZero;
         for (var j = 0; j < batchSize; j++) {
-            numsRC[j] = votes[j][i];
+            computedNumsRC[j] = votes[j][i];
         }
 
-        computedCalculateTotalResult[i] = CalculateTotal(batchSize + 1)(numsRC);
+        computedCalculateTotalResult[i] = CalculateTotal(batchSize + 1)(computedNumsRC);
     }
 
     // Tally the new spent voice credit total.
-    var numsSVC[batchSize * numVoteOptions + 1];
-    numsSVC[batchSize * numVoteOptions] = currentSpentVoiceCreditSubtotal * computedIsZero;
+    var computedNumsSVC[batchSize * numVoteOptions + 1];
+    computedNumsSVC[batchSize * numVoteOptions] = currentSpentVoiceCreditSubtotal * computedIsZero;
     for (var i = 0; i < batchSize; i++) {
         for (var j = 0; j < numVoteOptions; j++) {
-            numsSVC[i * numVoteOptions + j] = votes[i][j] * votes[i][j];
+            computedNumsSVC[i * numVoteOptions + j] = votes[i][j];
         }
     }
 
-    var computedNewSpentVoiceCreditSubtotal = CalculateTotal(batchSize * numVoteOptions + 1)(numsSVC);
+    var computedNewSpentVoiceCreditSubtotal = CalculateTotal(batchSize * numVoteOptions + 1)(computedNumsSVC);
 
-    // Tally the spent voice credits per vote option.
-    var computedNewPerVOSpentVoiceCredits[numVoteOptions];
-
-    for (var i = 0; i < numVoteOptions; i++) {
-        var computedNumsSVC[batchSize + 1];
-        computedNumsSVC[batchSize] = currentPerVOSpentVoiceCredits[i] * computedIsZero;
-        for (var j = 0; j < batchSize; j++) {
-            computedNumsSVC[j] = votes[j][i] * votes[j][i];
-        }
-
-        computedNewPerVOSpentVoiceCredits[i] = CalculateTotal(batchSize + 1)(computedNumsSVC);
-    }
-    
     // Verifies the updated results and spent credits, ensuring consistency and correctness of tally updates.
-    ResultCommitmentVerifier(voteOptionTreeDepth)(
+    ResultCommitmentVerifierNonQv(voteOptionTreeDepth)(
         computedIsFirstBatch,
         currentTallyCommitment,
         newTallyCommitment,
@@ -168,20 +150,16 @@ template TallyVotes(
         currentSpentVoiceCreditSubtotal,
         currentSpentVoiceCreditSubtotalSalt,
         computedNewSpentVoiceCreditSubtotal,
-        newSpentVoiceCreditSubtotalSalt,
-        currentPerVOSpentVoiceCredits,
-        currentPerVOSpentVoiceCreditsRootSalt,
-        computedNewPerVOSpentVoiceCredits,
-        newPerVOSpentVoiceCreditsRootSalt        
+        newSpentVoiceCreditSubtotalSalt        
     );
 }
 
 /** 
  * Performs verifications and computations related to current voting results. 
  * Also, computes and outputs a commitment to the new results.
- * This template supports the Quadratic Voting (QV).
+ * This template does not support Quadratic Voting (QV).
  */
-template ResultCommitmentVerifier(voteOptionTreeDepth) {
+ template ResultCommitmentVerifierNonQv(voteOptionTreeDepth) {
     // Number of children per node in the tree, defining the tree's branching factor.
     var TREE_ARITY = 5;
     // Number of voting options available, determined by the depth of the vote option tree.
@@ -214,16 +192,6 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     // Salt for the new total spent voice credits.
     signal input newSpentVoiceCreditSubtotalSalt;
 
-    // Spent voice credits per vote option.
-    signal input currentPerVOSpentVoiceCredits[numVoteOptions];
-    // Salt for the root of spent credits per option.
-    signal input currentPerVOSpentVoiceCreditsRootSalt;
-
-    // New spent voice credits per vote option.
-    signal input newPerVOSpentVoiceCredits[numVoteOptions];
-    // Salt for the root of new spent credits per option.
-    signal input newPerVOSpentVoiceCreditsRootSalt;
-
     // Compute the commitment to the current results.
     var computedCurrentResultsRoot = QuinCheckRoot(voteOptionTreeDepth)(currentResults);
 
@@ -233,16 +201,8 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     // Compute the commitment to the current spent voice credits.
     var computedCurrentSpentVoiceCreditsCommitment = PoseidonHasher(2)([currentSpentVoiceCreditSubtotal, currentSpentVoiceCreditSubtotalSalt]);
 
-    // Compute the root of the spent voice credits per vote option.
-    var computedCurrentPerVOSpentVoiceCreditsRoot = QuinCheckRoot(voteOptionTreeDepth)(currentPerVOSpentVoiceCredits);
-    var computedCurrentPerVOSpentVoiceCreditsCommitment = PoseidonHasher(2)([computedCurrentPerVOSpentVoiceCreditsRoot, currentPerVOSpentVoiceCreditsRootSalt]);
-
-    // Commit to the current tally.
-    var computedCurrentTallyCommitment = PoseidonHasher(3)([
-        computedCurrentResultsCommitment, 
-        computedCurrentSpentVoiceCreditsCommitment, 
-        computedCurrentPerVOSpentVoiceCreditsCommitment
-    ]);
+    // Commit to the current tally
+    var computedCurrentTallyCommitment = PoseidonHasher(2)([computedCurrentResultsCommitment, computedCurrentSpentVoiceCreditsCommitment]);
 
     // Check if the current tally commitment is correct only if this is not the first batch.
     // computedIsZero.out is 1 if this is not the first batch.
@@ -262,15 +222,10 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     // Compute the commitment to the new spent voice credits value.
     var computedNewSpentVoiceCreditsCommitment = PoseidonHasher(2)([newSpentVoiceCreditSubtotal, newSpentVoiceCreditSubtotalSalt]);
 
-    // Compute the root of the spent voice credits per vote option.
-    var computedNewPerVOSpentVoiceCreditsRoot = QuinCheckRoot(voteOptionTreeDepth)(newPerVOSpentVoiceCredits);
-    var computedNewPerVOSpentVoiceCreditsCommitment = PoseidonHasher(2)([computedNewPerVOSpentVoiceCreditsRoot, newPerVOSpentVoiceCreditsRootSalt]);
-
     // Commit to the new tally.
-    var computedNewTallyCommitment = PoseidonHasher(3)([
+    var computedNewTallyCommitment = PoseidonHasher(2)([
         computedNewResultsCommitment,
-        computedNewSpentVoiceCreditsCommitment,
-        computedNewPerVOSpentVoiceCreditsCommitment
+        computedNewSpentVoiceCreditsCommitment
     ]);
     
     computedNewTallyCommitment === newTallyCommitment;

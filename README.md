@@ -65,7 +65,7 @@ own unit tests.
 
 ### Testing
 
-Please refer to the [testing documentation](https://maci.pse.dev/docs/guides/testing/testing-in-detail) for more information.
+Please refer to the [testing documentation](https://maci.pse.dev/docs/guides/testing/testing-introduction) for more information.
 
 ### CI pipeline
 

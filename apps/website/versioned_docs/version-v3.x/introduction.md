@@ -149,5 +149,5 @@ MACI is a public good infrastructure that is supported by the [Ethereum Foundati
 Our core team continues to work on improving the protocol and its documentation with help from our open source community.
 
 :::info
-If you are using one of the previous versions of MACI, see the [MACI v2.0](/docs/v2.0/introduction) documentation.
+If you are using one of the previous versions of MACI, see the [MACI v2.0](/docs/v2.x/introduction) documentation.
 :::

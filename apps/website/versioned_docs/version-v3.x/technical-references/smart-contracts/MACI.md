@@ -59,11 +59,9 @@ This function does the following:
 - checks that the maximum number of signups has not been reached. Given a tree depth of 10, this will be $2 ** 10 - 1$.
 - checks that the provided public key is a valid baby-jubjub point
 - registers the user using the sign up policy contract. It is important that whichever policy is used, this reverts if a user tries to sign up twice or the conditions are not met (i.e returning false is not enough)
-- calls the voice credit proxy to retrieve the number of allocated voice credits allocated to this voter
-- hashes the voice credits alongside the user's MACI public key and the current time
-- insert this hashed data into the state tree.
+- hashes the public key and inserts it into the state tree.
 
-```solidity
+```ts
 function signUp(PubKey memory _pubKey, bytes memory _signUpPolicyData) public virtual {
   // ensure we do not have more signups than what the circuits support
   if (leanIMTData.size >= maxSignups) revert TooManySignups();
@@ -92,7 +90,7 @@ function signUp(PubKey memory _pubKey, bytes memory _signUpPolicyData) public vi
 
 Once everything has been setup, polls can be deployed using the `deployPoll` function. Polls can be deployed concurrently, as each deployment has its own separate set of contracts and state.
 
-```solidity
+```ts
 function deployPoll(DeployPollArgs calldata args) public virtual returns (PollContracts memory) {
   // cache the poll to a local variable so we can increment it
   uint256 pollId = nextPollId;
@@ -152,6 +150,10 @@ Polls require the following information:
 - `verifier`: the address of the zk-SNARK verifier contract
 - `vkRegistry`: the address of the vk registry contract
 - `mode`: the mode of the poll, to set whether it supports quadratic voting or non quadratic voting
+- `signUpPolicy`: the address of the sign up policy contract
+- `initialVoiceCreditProxy`: the address of the initial voice credit proxy contract
+- `relayers`: the addresses of the relayers for the poll (if offchain voting is enabled)
+- `voteOptions`: the number of vote options for the poll
 
 :::info
 Please be advised that the number of signups in the MACI contract (number of leaves in the merkle tree holding MACI's state) considers the initial zero leaf as one signup. For this reason, when accounting for the real users signed up to MACI, you should subtract one from the value returned from the `numSignUps` function.

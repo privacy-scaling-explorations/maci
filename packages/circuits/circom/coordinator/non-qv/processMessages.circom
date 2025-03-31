@@ -9,8 +9,8 @@ include "../../utils/hashers.circom";
 include "../../utils/messageToCommand.circom";
 include "../../utils/privToPubKey.circom";
 include "../../utils/non-qv/stateLeafAndBallotTransformer.circom";
-include "../../trees/incrementalMerkleTree.circom";
-include "../../trees/incrementalQuinaryTree.circom";
+include "../../utils/trees/incrementalMerkleTree.circom";
+include "../../utils/trees/incrementalQuinaryTree.circom";
 
 /**
  * Proves the correctness of processing a batch of MACI messages.

@@ -3,8 +3,11 @@ pragma circom 2.0.0;
 // local imports
 include "../utils/hashers.circom";
 include "../utils/privToPubKey.circom";
-include "../trees/incrementalMerkleTree.circom";
+include "../utils/trees/incrementalMerkleTree.circom";
 
+// Poll Joining Circuit
+// Allows a user to prove knowledge of a private key that is signed up to 
+// a MACI contract.
 template PollJoining(stateTreeDepth) {
     // Constants defining the tree structure
     var STATE_TREE_ARITY = 2;
@@ -21,7 +24,7 @@ template PollJoining(stateTreeDepth) {
     signal input nullifier;
     // MACI State tree root which proves the user is signed up
     signal input stateRoot;
-    // The actual tree depth (might be <= stateTreeDepth) Used in BinaryMerkleRoot
+    // The actual tree depth (might be <= stateTreeDepth) used in BinaryMerkleRoot
     signal input actualStateTreeDepth;
     // The poll id
     signal input pollId;
@@ -50,6 +53,10 @@ template PollJoining(stateTreeDepth) {
     calculatedRoot === stateRoot;
 }
 
+// Poll Joined Circuit
+// Allows a user to prove that they have joined a MACI poll.
+// This is to be used with the MACI offchain implementation to allow 
+// users to authenticate to the relayer service (to reduce spamming).
 template PollJoined(stateTreeDepth) {
     // Constants defining the tree structure
     var STATE_TREE_ARITY = 2;

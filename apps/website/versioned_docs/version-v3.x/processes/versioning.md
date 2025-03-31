@@ -11,7 +11,7 @@ This document outlines the approach to versioning and releasing the MACI project
 
 ## MACI code
 
-MACI code consists 3 core parts: Circom circuits, Solidity contracts and JS (TS) libraries, from which we release a total of 7 NPM packages. See the [codebase overview](/docs/overview) for more details.
+MACI code consists 3 core parts: Circom circuits, Solidity contracts and JS (TS) libraries, from which we release a total of 7 NPM packages. See the [codebase overview](/docs/technical-references/) for more details.
 
 ## MACI versioning
 

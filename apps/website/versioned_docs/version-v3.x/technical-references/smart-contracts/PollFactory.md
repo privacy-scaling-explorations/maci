@@ -11,7 +11,7 @@ Code location: [PollFactory.sol](https://github.com/privacy-scaling-explorations
 
 `PollFactory` is a smart contract that is used to deploy new Polls. This is used by MACI inside the `deployPoll` function.
 
-```solidity
+```ts
 /// @inheritdoc IPollFactory
 function deploy(DeployPollArgs calldata _args) public virtual returns (address pollAddr) {
   // deploy the poll
