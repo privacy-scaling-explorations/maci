@@ -13,7 +13,7 @@ There are a number of MACI's smart contracts which can be re-used by different d
 - [MessageProcessorFactory](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/MessageProcessorFactory.sol)
 - [TallyFactory](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/TallyFactory.sol)
 - [Verifier](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/crypto/Verifier.sol)
-- [FreeForAllGatekeeper](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/gatekeepers/FreeForAllGatekeeper.sol)
+- [FreeForAllPolicy](https://github.com/privacy-scaling-explorations/excubiae/tree/main/packages/contracts/contracts/extensions/freeForAll)
 - [ConstantInitialVoiceCreditProxy](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/initialVoiceCreditProxy/ConstantInitialVoiceCreditProxy.sol) - if you are happy to work with a fixed amount of credits
 
 VkRegistries can be re-used by different protocols to share the same set of verifying keys. Please be advised that you should be verifying that those verifying keys are the ones that have undergone a trusted setup ceremony.

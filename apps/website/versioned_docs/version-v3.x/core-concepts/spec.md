@@ -468,9 +468,9 @@ To clarify how this works, consider the following situation between Alice and Ev
 
 Eve is doubtful whether her request was actually satisfied and is unaware of Alice casting a new vote to void the first, she decides not to compensate Alice because of the uncertainty surrounding her compliance.
 
-### 3.3. Gatekeeper contract
+### 3.3. Policy contract
 
-The gatekeeper contract is an abstraction of logic that any deployment of MACI can modify. It is a way to whitelist signups to the system. For example, a custom gatekeeper contract may only allow addresses that own a certain ERC721 token for registration.
+The policy contract is an abstraction of logic that any deployment of MACI can modify. It is a way to whitelist signups to the system. For example, a custom policy contract may only allow addresses that own a certain ERC721 token for registration.
 
 ### 3.4. Initial voice credit proxy
 
@@ -505,7 +505,7 @@ Each leaf within the message tree correlates to a command cast from participants
 
 #### When a user signs up
 
-Registration is initiated by fulfilling the requirements specified in the gatekeeper contract and calling the `signUp()` method in the MACI contract. This enqueues adding a new leaf to the state tree for it to be merged by the coordinator once appropriate.
+Registration is initiated by fulfilling the requirements specified in the policy contract and calling the `signUp()` method in the MACI contract. This enqueues adding a new leaf to the state tree for it to be merged by the coordinator once appropriate.
 
 #### When a user publishes a message
 
@@ -569,15 +569,15 @@ The integration tests and shell scripts in the `cli` directory provide examples 
 
 ### 5.1. MACI
 
-| Function                                                                                                       | Permissions                                                         | Notes                                                                        |
-| -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `init(VkRegistry _vkRegistry, MessageAqFactory _messageAqFactory)`                                             | Coordinator only                                                    | Initialise factory, helper and registry contracts that share equal ownership |
-| `signUp(PubKey memory _pubKey, bytes memory _signUpGatekeeperData, bytes memory _initialVoiceCreditProxyData)` | Executable only during the sign-up period and after initialisation  | Participant registration and voice credit assignment                         |
-| `mergeStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId)`                                                | Executable only by poll contract `_pollId` and after initialisation | Merge queued state leaves to form the state tree subroots                    |
-| `mergeStateAq(uint256 _pollId)`                                                                                | Executable only by poll contract `_pollId` and after initialisation | Merge the state subroots to form the state root                              |
-| `getStateTreeRoot()`                                                                                           | Non-applicable                                                      | Query the state root                                                         |
-| `deployPoll(uint256 _duration, TreeDepths memory _treeDepths, PubKey memory _coordinatorPubKey)`               | Executable only after initialisation                                | Create a new poll                                                            |
-| `getPoll(uint256 _pollId)`                                                                                     | Non-applicable                                                      | Query a poll address                                                         |
+| Function                                                                                                   | Permissions                                                         | Notes                                                                        |
+| ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `init(VkRegistry _vkRegistry, MessageAqFactory _messageAqFactory)`                                         | Coordinator only                                                    | Initialise factory, helper and registry contracts that share equal ownership |
+| `signUp(PubKey memory _pubKey, bytes memory _signUpPolicyData, bytes memory _initialVoiceCreditProxyData)` | Executable only during the sign-up period and after initialisation  | Participant registration and voice credit assignment                         |
+| `mergeStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId)`                                            | Executable only by poll contract `_pollId` and after initialisation | Merge queued state leaves to form the state tree subroots                    |
+| `mergeStateAq(uint256 _pollId)`                                                                            | Executable only by poll contract `_pollId` and after initialisation | Merge the state subroots to form the state root                              |
+| `getStateTreeRoot()`                                                                                       | Non-applicable                                                      | Query the state root                                                         |
+| `deployPoll(uint256 _duration, TreeDepths memory _treeDepths, PubKey memory _coordinatorPubKey)`           | Executable only after initialisation                                | Create a new poll                                                            |
+| `getPoll(uint256 _pollId)`                                                                                 | Non-applicable                                                      | Query a poll address                                                         |
 
 ### 5.2. Poll
 
