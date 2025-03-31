@@ -11,13 +11,13 @@ Here we will be looking at how the smart contracts can be integrated.
 
 ## MACI Contract
 
-The MACI contract is the core of the protocol. Contracts can inherit from MACI and thus expose the `signUp` and `deployPoll` functions. As with standalone MACI, one would need to deploy a [sign up gatekeeper](/docs/technical-references/smart-contracts/Gatekeepers).
+The MACI contract is the core of the protocol. Contracts can inherit from MACI and thus expose the `signUp` and `deployPoll` functions. As with standalone MACI, one would need to deploy a [sign up policy](/docs/technical-references/smart-contracts/Policies).
 
 As an example, a [contract](https://github.com/ctrlc03/minimalQF/blob/main/contracts/MinimalQf.sol#L113) could inherit from MACI and allows sign up via a custom signup function.
 
 ```javascript
 /// @inheritdoc IMACI
-function signUp(PubKey memory _pubKey, bytes memory _signUpGatekeeperData) public virtual {
+function signUp(PubKey memory _pubKey, bytes memory _signUpPolicyData) public virtual {
   // ensure we do not have more signups than what the circuits support
   if (leanIMTData.size >= maxSignups) revert TooManySignups();
 
@@ -26,9 +26,9 @@ function signUp(PubKey memory _pubKey, bytes memory _signUpGatekeeperData) publi
     revert InvalidPubKey();
   }
 
-  // Register the user via the sign-up gatekeeper. This function should
+  // Register the user via the sign-up policy. This function should
   // throw if the user has already registered or if ineligible to do so.
-  signUpGatekeeper.enforce(msg.sender, _signUpGatekeeperData);
+  signUpPolicy.enforce(msg.sender, _signUpPolicyData);
 
   // Hash the public key and insert it into the tree.
   uint256 pubKeyHash = hashLeftRight(_pubKey.x, _pubKey.y);
@@ -74,7 +74,7 @@ function joinPoll(
   PubKey calldata _pubKey,
   uint256 _stateRootIndex,
   uint256[8] calldata _proof,
-  bytes memory _signUpGatekeeperData,
+  bytes memory _signUpPolicyData,
   bytes memory _initialVoiceCreditProxyData
 ) external virtual isWithinVotingDeadline {
   // Whether the user has already joined
@@ -91,7 +91,7 @@ function joinPoll(
   }
 
   // Check if the user is eligible to join the poll
-  extContracts.gatekeeper.enforce(msg.sender, _signUpGatekeeperData);
+  extContracts.policy.enforce(msg.sender, _signUpPolicyData);
 
   // Get the user's voice credit balance.
   uint256 voiceCreditBalance = extContracts.initialVoiceCreditProxy.getVoiceCredits(

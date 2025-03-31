@@ -6,7 +6,7 @@ sidebar_position: 6
 ---
 
 :::info
-Code location: [Gatekeepers](https://github.com/privacy-scaling-explorations/maci/tree/dev/contracts/contracts/gatekeepers)
+Code location: [Gatekeepers](https://github.com/privacy-scaling-explorations/maci/blob/v2.5.0/packages/contracts/contracts/gatekeepers)
 :::
 
 MACI is composed of multiple smart contracts, which together with the zk-SNARK circuits, can be used to carry out on-chain voting. Start with an [overview of our smart contracts here](/docs/technical-references/smart-contracts/MACI).
@@ -24,7 +24,7 @@ The MACI repository comes with several out-of-the-box options:
 - `SemaphoreGatekeeper` - This allows gatekeeping signups only to users who can prove they are part of a [Semaphore](https://semaphore.pse.dev/) group.
 
 You can find all of our latest gatekeeper contracts here:
-https://github.com/privacy-scaling-explorations/maci/tree/dev/contracts/contracts/gatekeepers
+https://github.com/privacy-scaling-explorations/maci/blob/v2.5.0/packages/contracts/contracts/gatekeepers
 
 Developers are also welcome to implement a custom gatekeeper contract as long as it conforms to the `SignUpGatekeeper` - an abstract contract to inherit from with two function signatures:
 

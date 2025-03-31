@@ -25,7 +25,7 @@ struct ExtContracts {
   IMACI maci;
   IVerifier verifier;
   IVkRegistry vkRegistry;
-  ISignUpGatekeeper gatekeeper;
+  IBasePolicy policy;
   IInitialVoiceCreditProxy initialVoiceCreditProxy;
 }
 ```

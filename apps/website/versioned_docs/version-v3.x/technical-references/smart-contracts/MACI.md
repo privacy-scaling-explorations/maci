@@ -16,7 +16,7 @@ The constructor shown below accepts several arguments:
 - `PollFactory` address
 - `MessageProcessorFactory` address
 - `TallyFactory` address
-- `SignUpGatekeeper` address
+- `IBasePolicy` address
 - `InitialVoiceCreditProxy` address
 - The depth of the state tree
 
@@ -25,7 +25,7 @@ constructor(
   IPollFactory _pollFactory,
   IMessageProcessorFactory _messageProcessorFactory,
   ITallyFactory _tallyFactory,
-  SignUpGatekeeper _signUpGatekeeper,
+  IBasePolicy _signUpPolicy,
   uint8 _stateTreeDepth,
   uint256[5] memory _emptyBallotRoots
 ) payable {
@@ -36,7 +36,7 @@ constructor(
   pollFactory = _pollFactory;
   messageProcessorFactory = _messageProcessorFactory;
   tallyFactory = _tallyFactory;
-  signUpGatekeeper = _signUpGatekeeper;
+  signUpPolicy = _signUpPolicy;
   stateTreeDepth = _stateTreeDepth;
   maxSignups = uint256(STATE_TREE_ARITY) ** uint256(_stateTreeDepth);
   emptyBallotRoots = _emptyBallotRoots;
@@ -52,19 +52,19 @@ After this, all of the parameters will be stored to state, and then the contract
 
 ## SignUp
 
-Next, we have the `signUp` function, which allows users to `signUp`, as long as they pass the conditions set in the `SignUpGatekeeper` contract. This contract can use any mean necessary to gatekeep access to MACI's polls. For instance, only wallets with a specific ERC721 token can be allowed to sign up.
+Next, we have the `signUp` function, which allows users to `signUp`, as long as they pass the conditions set in the `signUpPolicy` contract. This contract can use any mean necessary to gatekeep access to MACI's polls. For instance, only wallets with a specific ERC721 token can be allowed to sign up.
 
 This function does the following:
 
 - checks that the maximum number of signups has not been reached. Given a tree depth of 10, this will be $2 ** 10 - 1$.
 - checks that the provided public key is a valid baby-jubjub point
-- registers the user using the sign up gatekeeper contract. It is important that whichever gatekeeper is used, this reverts if a user tries to sign up twice or the conditions are not met (i.e returning false is not enough)
+- registers the user using the sign up policy contract. It is important that whichever policy is used, this reverts if a user tries to sign up twice or the conditions are not met (i.e returning false is not enough)
 - calls the voice credit proxy to retrieve the number of allocated voice credits allocated to this voter
 - hashes the voice credits alongside the user's MACI public key and the current time
 - insert this hashed data into the state tree.
 
 ```solidity
-function signUp(PubKey memory _pubKey, bytes memory _signUpGatekeeperData) public virtual {
+function signUp(PubKey memory _pubKey, bytes memory _signUpPolicyData) public virtual {
   // ensure we do not have more signups than what the circuits support
   if (leanIMTData.size >= maxSignups) revert TooManySignups();
 
@@ -73,9 +73,9 @@ function signUp(PubKey memory _pubKey, bytes memory _signUpGatekeeperData) publi
     revert InvalidPubKey();
   }
 
-  // Register the user via the sign-up gatekeeper. This function should
+  // Register the user via the sign-up policy. This function should
   // throw if the user has already registered or if ineligible to do so.
-  signUpGatekeeper.register(msg.sender, _signUpGatekeeperData);
+  signUpPolicy.register(msg.sender, _signUpPolicyData);
 
   // Hash the public key and insert it into the tree.
   uint256 pubKeyHash = hashLeftRight(_pubKey.x, _pubKey.y);
@@ -112,7 +112,7 @@ function deployPoll(DeployPollArgs calldata args) public virtual returns (PollCo
     maci: IMACI(address(this)),
     verifier: IVerifier(args.verifier),
     vkRegistry: IVkRegistry(args.vkRegistry),
-    gatekeeper: ISignUpGatekeeper(args.gatekeeper),
+    policy: IsignUpPolicy(args.policy),
     initialVoiceCreditProxy: IInitialVoiceCreditProxy(args.initialVoiceCreditProxy)
   });
 

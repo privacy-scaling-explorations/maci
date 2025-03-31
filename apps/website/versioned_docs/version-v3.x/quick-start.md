@@ -112,16 +112,16 @@ Specifies the number of credits allocated to each voter.
 | **deploy** | Defines if the contract needs to be deployed.            |
 | **amount** | Defines how many vote credits each participant will get. |
 
-#### Gatekeeper
+#### Policy
 
-MACI uses a "gatekeeper" contract to configure and enforce the eligibility criteria of voters who can participate in MACI polls. In other words, it is a way to allowlist signups to the system to protect against sybil attacks. Please refer to the [gatekeeper page in the documentation](/docs/technical-references/smart-contracts/Gatekeepers) for more information on the supported Gatekeepers.
+MACI uses a "policy" contract to configure and enforce the eligibility criteria of voters who can participate in MACI polls. In other words, it is a way to allowlist signups to the system to protect against sybil attacks. Please refer to the [policy page in the documentation](/docs/technical-references/smart-contracts/Policies) for more information on the supported Policies.
 
 | Property   | Description                                      |
 | ---------- | ------------------------------------------------ |
 | **deploy** | Defines if the contract is going to be deployed. |
 
 :::important
-For testing we suggest using the **FreeForAllGatekeeper** as it allows anyone to signup on MACI.
+For testing we suggest using the **FreeForAlPolicy** as it allows anyone to signup on MACI.
 :::
 
 #### MACI
@@ -129,7 +129,7 @@ For testing we suggest using the **FreeForAllGatekeeper** as it allows anyone to
 | Property           | Description                                 |
 | ------------------ | ------------------------------------------- |
 | **stateTreeDepth** | Defines how many users the system supports. |
-| **gatekeeper**     | Defines which gatekeeper to use.            |
+| **policy**         | Defines which policy to use.                |
 
 #### VkRegistry
 
@@ -158,7 +158,7 @@ The recommended values for test keys are: **10-1-2-2-1**. For ceremony keys: **1
 | **pollEndDate**             | Defines how long is going to be the poll in seconds.              |
 | **coordinatorPubkey**       | Defines the coordinator public MACI key.                          |
 | **useQuadraticVoting**      | Defines if the poll uses quadratic voting or not.                 |
-| **gatekeeper**              | Defines the gatekeeper of the poll.                               |
+| **policy**                  | Defines the policy of the poll.                                   |
 | **relayers**                | Defines an array of addresses that are allowed to relay messages. |
 | **initialVoiceCreditProxy** | Defines the type of voice credit proxy to use for this poll.      |
 | **voteOptions**             | Defines how many votes options are valid for this poll.           |
