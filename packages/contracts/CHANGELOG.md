@@ -3,6 +3,441 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.5.0...v3.0.0) (2025-03-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* message processing is changed
+
+* fix(ipoll): add missing parameter
+
+* fix(poll-tests): add missing parameter maxMessagebatchSize
+
+* feat(poll.ts): add chain hash updating
+
+* test(poll tests): add test for checking chain hash computation
+
+* feat(poll.ts): add batch hashes array computation
+
+* feat(poll.sol): pad zeroes to the maximum size of batch
+
+* feat(messageprocessor): update process messages to use chain hash
+
+* refactor(vkregistry): refactor function call
+
+* feat(processmessages.circom): add chainHash feature in circuits and test for that
+
+* test(processmessages): rearrange test for key-change
+
+* refactor(mergemessages): refactor functions calls which include mergemessages
+
+* refactor(mergemessages): add some more changes about functions call which  include mergemessages
+
+* test(all tests): fixing tests after refactoring code
+
+* refactor(accqueue): remove all calls for accqueue
+
+* fix(currentmessagebatchindex): fix message batch indexing
+
+* refactor(circuit tests): refactor code for circuit testing
+
+* test(ceremonyparams.test): correct constants for CeremonyParams test
+
+* perf(processmessages.circom + contracts): optimize last batch padding, remove unused inputs
+
+* docs(padlastbatch method): update doc comment
+
+* docs(poll.ts): remove stale comments
+
+* docs(test comments): fix typos
+
+* ci(treedepths mock): modify interface for mocked function
+
+* fix(ceremony params test): fix circuit inputs
+
+* test(messagevalidator): fix function calls for messagevalidator circuit in tests
+
+* chore(comments): fix unusefull comments
+
+* refactor(poll.sol): replace external contracts with maci only
+
+* perf(messageprocessor.sol): hardcode initialization for batchHashes array
+
+* docs(comments): fix some more comments
+
+* test(test for pr checks): correct some of tests for PR checks
+
+* ci: 🎡 renamed old ProcessMessages_10-2-1-2_test
+
+* ci: 🎡 correct rapidsnark/build/prover path
+
+* style(reviews): solve some reviews for merging
+
+* refactor(messageaqq): remove more message merging and message aqq
+
+* style(messageaqq): remove more message merging and message aqq
+
+* refactor(messageaqq): remove message aqq from subgraph
+
+* test(coordinator): hide NOT_MERGED_MESSAGE_TREE error
+
+* test(coordinator): fix test about message merging
+
+* test(proveonchain): change chainHash calculation
+
+* test(proveonchain): fix chainHashes declaration
+
+* test(proveonchain): fix chainHash calculation
+
+* test(proveonchain): fix chainHashes calculations
+
+* test(proveonchain): fix chainHashes calculation
+
+* test(proveonchain): fix loop limit
+
+* style(review comments): resolve some of review comments
+
+* style(review comments): resolve some of review comments
+
+* test(lint:ts): fix e2e test because of lint:ts check
+
+* docs(wrong changes): fix wrong changes about documentation that is not in our scope
+
+* refactor(batchsizes): change batchSizes struct with messageBatchSize variable
+
+* refactor(contracts): rollback to provide external contract references
+
+* docs(messageprocessor.sol): fix typo
+
+* refactor(messagebatchsize): chenge messageBatchSize location from Params.sol to Poll.sol
+
+* refactor(maxmessages): remove maxMessages from maxValues
+
+* refactor(sltimestemp): remove slTimestamp from circuits
+
+* refactor(review comments): resolve more review comments
+
+* fix(subgraph): fix bug about maxVoteOptions dunction call
+
+* fix(sltimestamp): fix test for removing slTimestap signal
+
+* refactor(promise.all): refactor promise.all for only one async call
+
+* fix(subgraph): try to fix subgraph build
+
+* revert(.nx folder): remove .nx folder from cli folder
+
+* fix(merge): tmp-anon-poll-joining merge
+
+* fix(merge): tmp-anon-poll-joining merge
+
+* test(ceremonyparams): add poll joining in the test
+
+* test(processmessages): add poll joining for the test
+
+without key-change test
+
+* test(polljoining): add poll joining in the test
+
+* test(tallyvotes): add poll joining in the test
+
+* test(core): add joinPoll function in tests
+
+* style(typo): inclusion proof
+
+* style(todo): remove finished todo
+
+* style(merge): after merge style
+
+* style(return): inline return
+
+* style(eslint): remove unnecessary eslint-disable
+
+* refactor(joiningcircuitargs): add interface IJoiningCircuitArgs
+
+* refactor(joinpoll): async read state file
+
+* style(genmacisignup): add function description
+
+* refactor(gensignuptree): add IGenSignUpTreeArgs interface
+
+* style(polljoining): remove extra inlcudes and comments
+
+* feat(pollvkkeys): init
+
+* feat(vkregistry): separate set functions (process/tally/poll)
+
+* test(pollvkkey): adjust test to setPollVkKey
+
+* refactor(vkregistry): use setVerifyingKeys in setVerifyingKeysBatch
+
+* refactor(poll): add verifier and vkRegystry in constructor
+
+* refactor(poll): put verifier and vkRegistry into extContracts
+
+* test(core e2e): fix sanity checks test for incorrect signature
+
+* refactor(test): removing only from tests
+
+* refactor(macistatetree): use LeanIMT instead of QuinTree
+
+* refactor(crypto): export hashLeanIMT from index
+
+* feat(joinpoll): use genSignUpTree instead of genMaciStateFromContract
+
+* feat(joinpoll cli): add optional parameters
+
+* test(coordinator): add pollJoiningZkeyPath in app.test
+
+* refactor(joinpoll): prettier
+
+* test(coordinator): add joinPoll
+
+* fix(poll): joiningCircuitInputs with correct siblings, indices and actualStateTreeDepth
+
+* test(integration): add joinPoll
+
+* build(coordinator): add COORDINATOR_POLL_ZKEY_NAME
+
+* refactor(mergestate): remove Maci from MergeState
+
+* test(e2e): test:e2e add joinPoll
+
+* test(e2e): test:keyChange add joinPoll
+
+* docs(complete documentation): complete documentation of the new workflow
+
+* docs(documentation): add v3 docs, revert v2 docs
+
+* style(docs): prettier
+
+* refactor(joinpoll): add generateAndVerifyProof and getStateIndexAndCreditBalance
+
+* docs(blogpost): blogpost cuvering the latest updates
+
+* docs(blogpost): kudos to our team members!
+
+* style(prettier): blog
+
+* fix(joinpoll): index value of the user in the state tree leaves
+
+* docs(blog): remove poll-joining
+* message processing is changed
+
+* fix(ipoll): add missing parameter
+
+* fix(poll-tests): add missing parameter maxMessagebatchSize
+
+* feat(poll.ts): add chain hash updating
+
+* test(poll tests): add test for checking chain hash computation
+
+* feat(poll.ts): add batch hashes array computation
+
+* feat(poll.sol): pad zeroes to the maximum size of batch
+
+* feat(messageprocessor): update process messages to use chain hash
+
+* refactor(vkregistry): refactor function call
+
+* feat(processmessages.circom): add chainHash feature in circuits and test for that
+
+* test(processmessages): rearrange test for key-change
+
+* refactor(mergemessages): refactor functions calls which include mergemessages
+
+* refactor(mergemessages): add some more changes about functions call which  include mergemessages
+
+* test(all tests): fixing tests after refactoring code
+
+* refactor(accqueue): remove all calls for accqueue
+
+* fix(currentmessagebatchindex): fix message batch indexing
+
+* refactor(circuit tests): refactor code for circuit testing
+
+* test(ceremonyparams.test): correct constants for CeremonyParams test
+
+* perf(processmessages.circom + contracts): optimize last batch padding, remove unused inputs
+
+* docs(padlastbatch method): update doc comment
+
+* docs(poll.ts): remove stale comments
+
+* docs(test comments): fix typos
+
+* ci(treedepths mock): modify interface for mocked function
+
+* fix(ceremony params test): fix circuit inputs
+
+* test(messagevalidator): fix function calls for messagevalidator circuit in tests
+
+* chore(comments): fix unusefull comments
+
+* refactor(poll.sol): replace external contracts with maci only
+
+* perf(messageprocessor.sol): hardcode initialization for batchHashes array
+
+* docs(comments): fix some more comments
+
+* test(test for pr checks): correct some of tests for PR checks
+
+* ci: 🎡 renamed old ProcessMessages_10-2-1-2_test
+
+* ci: 🎡 correct rapidsnark/build/prover path
+
+* style(reviews): solve some reviews for merging
+
+* refactor(messageaqq): remove more message merging and message aqq
+
+* style(messageaqq): remove more message merging and message aqq
+
+* refactor(messageaqq): remove message aqq from subgraph
+
+* test(coordinator): hide NOT_MERGED_MESSAGE_TREE error
+
+* test(coordinator): fix test about message merging
+
+* test(proveonchain): change chainHash calculation
+
+* test(proveonchain): fix chainHashes declaration
+
+* test(proveonchain): fix chainHash calculation
+
+* test(proveonchain): fix chainHashes calculations
+
+* test(proveonchain): fix chainHashes calculation
+
+* test(proveonchain): fix loop limit
+
+* style(review comments): resolve some of review comments
+
+* style(review comments): resolve some of review comments
+
+* test(lint:ts): fix e2e test because of lint:ts check
+
+* docs(wrong changes): fix wrong changes about documentation that is not in our scope
+
+* refactor(batchsizes): change batchSizes struct with messageBatchSize variable
+
+* refactor(contracts): rollback to provide external contract references
+
+* docs(messageprocessor.sol): fix typo
+
+* refactor(messagebatchsize): chenge messageBatchSize location from Params.sol to Poll.sol
+
+* refactor(maxmessages): remove maxMessages from maxValues
+
+* refactor(sltimestemp): remove slTimestamp from circuits
+
+* refactor(review comments): resolve more review comments
+
+* fix(subgraph): fix bug about maxVoteOptions dunction call
+
+* fix(sltimestamp): fix test for removing slTimestap signal
+
+* refactor(promise.all): refactor promise.all for only one async call
+
+* fix(subgraph): try to fix subgraph build
+
+* revert(.nx folder): remove .nx folder from cli folder
+
+### Features
+
+* add logs output option for debugging and auditing ([d638fb6](https://github.com/privacy-scaling-explorations/maci/commit/d638fb67348ce34c2f93222911b0c29c14a6b9b2))
+* add number of valid vote options ([cdba5a3](https://github.com/privacy-scaling-explorations/maci/commit/cdba5a3ca939fab8e51e40b734bd2061a87daa37))
+* add start and end timestmap for poll ([cf67b53](https://github.com/privacy-scaling-explorations/maci/commit/cf67b539d7d5dfd8b83ba3e0becaa20d0292b410))
+* allow to download artifacts on browser ([58a163f](https://github.com/privacy-scaling-explorations/maci/commit/58a163f82c65d440c05200ae3f00e22790d70a4e))
+* allow to fetch state index from contracts ([#2092](https://github.com/privacy-scaling-explorations/maci/issues/2092)) ([cc869fc](https://github.com/privacy-scaling-explorations/maci/commit/cc869fcd58402c3b51af7c6a5e88a14e81ae52e8))
+* anonymous poll joining milestone 1 ([#1625](https://github.com/privacy-scaling-explorations/maci/issues/1625)) ([5566cfe](https://github.com/privacy-scaling-explorations/maci/commit/5566cfece1ed989ececdaad07edb2fc3a0b4741a))
+* anonymous poll joining milestone 2 and 3 ([#1750](https://github.com/privacy-scaling-explorations/maci/issues/1750)) ([47d6937](https://github.com/privacy-scaling-explorations/maci/commit/47d69371113f2b0f07cc9f60208e0601a4f9a065))
+* **circuits:** add poll joined circuit ([30c4f6a](https://github.com/privacy-scaling-explorations/maci/commit/30c4f6a6edbbe8f2a9685e3bb40b9eaa5e893d84))
+* **contracts:** add anon aadhaar gatekeeper checker ([13f14b0](https://github.com/privacy-scaling-explorations/maci/commit/13f14b07fd5fe8433d46b6fc6bab94216b06c97d))
+* **contracts:** add checker and deployment for proxy gatekeepers ([87f6d3b](https://github.com/privacy-scaling-explorations/maci/commit/87f6d3b7f32bf8dddcbf99b855dbe4b7b6c2a58e))
+* **contracts:** add eas gatekeeper checker ([6e90591](https://github.com/privacy-scaling-explorations/maci/commit/6e90591923f8104c06558a8c8a4a5f26d16e63c1))
+* **contracts:** add gitcoin passport gatekeeper checker ([1eef631](https://github.com/privacy-scaling-explorations/maci/commit/1eef63131ccf3ed2ca6f29afe4b5d0d988e14f79))
+* **contracts:** add hats gatekeeper checker ([8ba97ae](https://github.com/privacy-scaling-explorations/maci/commit/8ba97ae09de1cc738df04a7b868d97c74027de3c))
+* **contracts:** add ipfs service and prepare parsing ipfs data ([2a2d0d4](https://github.com/privacy-scaling-explorations/maci/commit/2a2d0d497dbdff80a2258b5baad1daa2c6e36c82))
+* **contracts:** add merkle proof gatekeeper checker ([e386f91](https://github.com/privacy-scaling-explorations/maci/commit/e386f914807a0d82140ae077cdcb866a4f9dc053))
+* **contracts:** add semaphore gatekeeper checker ([b7419c9](https://github.com/privacy-scaling-explorations/maci/commit/b7419c9b53da2ca043696ef25f8902d8c0a736e2))
+* **contracts:** add signup token gatekeeper checker ([8b3556f](https://github.com/privacy-scaling-explorations/maci/commit/8b3556fd3e87a7f2ab6d80c07a13eaf5f4355149))
+* **contracts:** add zupass gatekeeper checker ([d69702b](https://github.com/privacy-scaling-explorations/maci/commit/d69702b7962617aef6b48b7de1c9a2fe4c857676))
+* **contracts:** integrate excubiae for gatekeepers ([fae260b](https://github.com/privacy-scaling-explorations/maci/commit/fae260bbdd4d6b7a8749f61c0310526448a6c030))
+* **contracts:** relay messages ([1f10971](https://github.com/privacy-scaling-explorations/maci/commit/1f1097110909f09b924137d4a2567d4723542eb8))
+* make nullifier not leak identity between polls ([#1974](https://github.com/privacy-scaling-explorations/maci/issues/1974)) ([c9e7efc](https://github.com/privacy-scaling-explorations/maci/commit/c9e7efc825be2d0aaabae014ae51a97e2adaa413))
+* prevent duplicate maci key signup ([#2273](https://github.com/privacy-scaling-explorations/maci/issues/2273)) ([4da7858](https://github.com/privacy-scaling-explorations/maci/commit/4da7858cec86c67f5b452ac3c59ee229fef310e4))
+* rebase anon poll joining with dev ([c384a5b](https://github.com/privacy-scaling-explorations/maci/commit/c384a5b8e53706bb00060f684242e8ba9a4d11e8))
+* **relayer:** add auth guard for message publishing ([813bfc7](https://github.com/privacy-scaling-explorations/maci/commit/813bfc7b25e403902e6779ef4304ee48bb5640e9))
+* **sdk:** add relayer functions ([6273ef8](https://github.com/privacy-scaling-explorations/maci/commit/6273ef8c07675aaebe6d1d73d2c1e51de1ccfc56))
+* use excubiae policies instead of gatekeepers ([a2319b1](https://github.com/privacy-scaling-explorations/maci/commit/a2319b19e473e683a301bd79b3ab2b06e83f9452))
+* use gatekeeper per poll ([#1961](https://github.com/privacy-scaling-explorations/maci/issues/1961)) ([8e1ab15](https://github.com/privacy-scaling-explorations/maci/commit/8e1ab154f8a4f23e7cceac513c8b08da6c4eeb27))
+* voice credits per poll ([#1967](https://github.com/privacy-scaling-explorations/maci/issues/1967)) ([f59e9c3](https://github.com/privacy-scaling-explorations/maci/commit/f59e9c350133efb2fbbc37e5139addf5e34c55e6))
+
+
+### Bug Fixes
+
+* add missing parts after anon poll joining rebase ([6349806](https://github.com/privacy-scaling-explorations/maci/commit/63498069fce87dd615d5be1db84a69332fcefe6e))
+* anon poll joining ([bc6d4c2](https://github.com/privacy-scaling-explorations/maci/commit/bc6d4c28ce19d7d84d86fb6c96ca6a5f26780558))
+* check if poll joining is withing voting deadline ([539bf95](https://github.com/privacy-scaling-explorations/maci/commit/539bf9525b366d3bf5ef7360bae0b2a155856340))
+* **contracts:** use correct param for poll contract verification ([6d7ea86](https://github.com/privacy-scaling-explorations/maci/commit/6d7ea862745aff58c6068e56ba3417e7968fef46))
+* improve sorting of proof files by numeric value ([#2136](https://github.com/privacy-scaling-explorations/maci/issues/2136)) ([bc55826](https://github.com/privacy-scaling-explorations/maci/commit/bc5582667164f297f58336343decd16f30b90b30))
+* remove max vote options param ([765ca42](https://github.com/privacy-scaling-explorations/maci/commit/765ca42d391afc8026895d0e4d269b71435c3f73))
+* tests for poll joining ([e33c5dc](https://github.com/privacy-scaling-explorations/maci/commit/e33c5dc784ae9126a286cc002e5e5128f428bca3))
+
+
+### Code Refactoring
+
+* cleanup anon poll joining ([c94bd8e](https://github.com/privacy-scaling-explorations/maci/commit/c94bd8e52713a976d639aaeac3226cc4c2ea9fb5))
+* cleanup contracts folder ([8c23149](https://github.com/privacy-scaling-explorations/maci/commit/8c23149e79cc9cb608031af019aea1c35060932e))
+* **cli:** move deploy vk registry and testing commands to sdk ([bcd8d12](https://github.com/privacy-scaling-explorations/maci/commit/bcd8d12980067a5d1618fe43c8d3a9b5c5d5be84))
+* **cli:** move prove onchain to sdk ([452a68a](https://github.com/privacy-scaling-explorations/maci/commit/452a68a452ac33f9186ecf735e8d5df852a5c5e1))
+* **cli:** use contract storage for cli ([b417ee7](https://github.com/privacy-scaling-explorations/maci/commit/b417ee7de9c54fb875c363ca38c1c41eb34d8e8e))
+* contract imports and proofs ([#2074](https://github.com/privacy-scaling-explorations/maci/issues/2074)) ([66dfab7](https://github.com/privacy-scaling-explorations/maci/commit/66dfab7e0916f5891f47ae1448b89f7b0fd0ed27))
+* contracts optimisations and cleanup ([a906e8f](https://github.com/privacy-scaling-explorations/maci/commit/a906e8ff0ed77ac4dc4e564ec3fe2a6c2160fc96))
+* deploy maci command ([3eb6915](https://github.com/privacy-scaling-explorations/maci/commit/3eb691568a01e94cbbdb2f4f806efae002b19328))
+* gen proofs ([7bba1c5](https://github.com/privacy-scaling-explorations/maci/commit/7bba1c5ab0abfb0d518400cefbc00a3cd75dadd2))
+* join poll sdk ([52607a7](https://github.com/privacy-scaling-explorations/maci/commit/52607a7df7c73f1b8371035f19fbd2433beab8b5))
+* make separate testing package ([#2229](https://github.com/privacy-scaling-explorations/maci/issues/2229)) ([bd07a7f](https://github.com/privacy-scaling-explorations/maci/commit/bd07a7f0783b2efe2659bc18255f8f4ed2e3c0d3))
+* remove redundant init from poll contract ([d990802](https://github.com/privacy-scaling-explorations/maci/commit/d9908029825b701caa31f9d764ab682af9e2b09c))
+* remove redundant param ([#2161](https://github.com/privacy-scaling-explorations/maci/issues/2161)) ([2cc986f](https://github.com/privacy-scaling-explorations/maci/commit/2cc986fadd91283cd78f3f90bc8825d2aa44e2a5))
+* **zupass-gatekeeper:** improved gatekeeper script to avoid doing conversion on config ([028b203](https://github.com/privacy-scaling-explorations/maci/commit/028b203f41d4de696b76eb41599aa4703f455660))
+
+
+### Miscellaneous
+
+* add logger for contract helpers ([a688400](https://github.com/privacy-scaling-explorations/maci/commit/a6884006427f91f46ee2804fc75bd7a51533cdd6))
+* **blog:** getting started blog post ([6073a78](https://github.com/privacy-scaling-explorations/maci/commit/6073a7887ebd3f19dfb43bd11898cc265d7078a7))
+* **deps-dev:** bump @types/mocha from 10.0.8 to 10.0.10 ([a8b029a](https://github.com/privacy-scaling-explorations/maci/commit/a8b029a140b3bc81c639c26e049a766ce67b8886))
+* **deps-dev:** bump @types/node from 20.17.19 to 22.13.9 ([aa7c356](https://github.com/privacy-scaling-explorations/maci/commit/aa7c356469592547f3d60c05077268267d7ea186))
+* **deps-dev:** bump @types/node from 22.10.7 to 22.12.0 ([#2073](https://github.com/privacy-scaling-explorations/maci/issues/2073)) ([1dcb28e](https://github.com/privacy-scaling-explorations/maci/commit/1dcb28e33699ee91f9691c1073d4da0293e406c0))
+* **deps-dev:** bump @types/node from 22.12.0 to 22.13.1 ([5f06af0](https://github.com/privacy-scaling-explorations/maci/commit/5f06af0180f522f552519529c07d2bb660fdd586))
+* **deps-dev:** bump @types/node from 22.13.1 to 22.13.4 ([dba94f4](https://github.com/privacy-scaling-explorations/maci/commit/dba94f4fe6d405eaca655dfdc8ca01d57664b99b))
+* **deps-dev:** bump @types/node from 22.13.9 to 22.13.10 ([#2241](https://github.com/privacy-scaling-explorations/maci/issues/2241)) ([3f50bb6](https://github.com/privacy-scaling-explorations/maci/commit/3f50bb65db4cd83b5ebe9d4fb1b7a6d650bb1c51))
+* **deps-dev:** bump @types/node from 22.9.0 to 22.10.7 ([3e4a5ae](https://github.com/privacy-scaling-explorations/maci/commit/3e4a5ae43cc57d6ebaedeb5ce95ca6dd1c968ffe))
+* **deps-dev:** bump @types/snarkjs from 0.7.8 to 0.7.9 ([5259169](https://github.com/privacy-scaling-explorations/maci/commit/5259169853cd08431f1b6433e578008b356be342))
+* **deps-dev:** bump typescript and typedoc ([4ee5de5](https://github.com/privacy-scaling-explorations/maci/commit/4ee5de5e29c6326b6728dc2ccd97da3bdea42fd7))
+* **deps-dev:** bump typescript from 5.7.3 to 5.8.2 ([e37f1bf](https://github.com/privacy-scaling-explorations/maci/commit/e37f1bffd8193de316e748d0406cfb606455cb46))
+* **deps:** bump @openzeppelin/contracts from 5.1.0 to 5.2.0 ([513f9c1](https://github.com/privacy-scaling-explorations/maci/commit/513f9c143344b1fc9c2931e27561bbccee1e645d))
+* **deps:** bump @openzeppelin/merkle-tree from 1.0.7 to 1.0.8 ([7af14cc](https://github.com/privacy-scaling-explorations/maci/commit/7af14cc4dcbad74da891e7805ed4583ace49d473))
+* **deps:** bump @zk-kit/lean-imt from 2.2.1 to 2.2.2 ([73fddce](https://github.com/privacy-scaling-explorations/maci/commit/73fddced5d2d008526b8fc027208649368742e56))
+* **deps:** bump @zk-kit/lean-imt from 2.2.2 to 2.2.3 ([a269d5c](https://github.com/privacy-scaling-explorations/maci/commit/a269d5ce4e47145e02a58b30c793672ab43a9c30))
+* **deps:** bump dotenv from 16.4.5 to 16.4.7 ([#2032](https://github.com/privacy-scaling-explorations/maci/issues/2032)) ([43eec88](https://github.com/privacy-scaling-explorations/maci/commit/43eec880410cc48d2435bc4f531276ffc588bcb3))
+* **deps:** bump ethers from 6.13.4 to 6.13.5 ([5e0256c](https://github.com/privacy-scaling-explorations/maci/commit/5e0256c58ff02921a3eeb58b3478a673140ccdff))
+* **deps:** bump hardhat from 2.22.15 to 2.22.18 ([cd2950f](https://github.com/privacy-scaling-explorations/maci/commit/cd2950ff9397e0a569a2b519bb4f9c84f261ac3a))
+* **deps:** bump hardhat from 2.22.18 to 2.22.19 ([49af291](https://github.com/privacy-scaling-explorations/maci/commit/49af2919e353d322808c12ca0d5a77575c73e044))
+* **deps:** bump solady from 0.1.10 to 0.1.12 ([#2238](https://github.com/privacy-scaling-explorations/maci/issues/2238)) ([cacf47a](https://github.com/privacy-scaling-explorations/maci/commit/cacf47af4293368c9980c974d1192d16c199266b))
+* **deps:** bump uuid from 11.0.2 to 11.0.5 ([5ad1afd](https://github.com/privacy-scaling-explorations/maci/commit/5ad1afd3686b4f257db8b2d8768916792e78d8aa))
+* **deps:** bump uuid from 11.0.5 to 11.1.0 ([6ba0eac](https://github.com/privacy-scaling-explorations/maci/commit/6ba0eaca1177df4e76c8f1d8887a9ac81cc37b30))
+* optimize lean imt and minor improvements ([a68701b](https://github.com/privacy-scaling-explorations/maci/commit/a68701b409284a1d6c787aa275a2eaf26b55ee5d))
+* optimize poll contract ([3139d32](https://github.com/privacy-scaling-explorations/maci/commit/3139d323eda920de3c068df06ec80c1a02d5500e))
+* **relayer:** add more e2e tests ([0cbfc40](https://github.com/privacy-scaling-explorations/maci/commit/0cbfc40b2915924cdc6b6fc7db4392868f6f8845))
+* update contracts interfaces ([b735876](https://github.com/privacy-scaling-explorations/maci/commit/b735876513aa5257e3f02736ab7b19d31948c3b7))
+* update solidity version and cli fixes ([e9fd8b0](https://github.com/privacy-scaling-explorations/maci/commit/e9fd8b0816afd6249a88b3c3556411e2c10ab631))
+* use view modifier for verifying poll proof ([b66cda6](https://github.com/privacy-scaling-explorations/maci/commit/b66cda6d8c164b547d1f8ebdb903cb3b7552dd18))
+
+
+
 ## [2.5.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.4.0...v2.5.0) (2024-11-20)
 
 

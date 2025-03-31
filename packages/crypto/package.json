@@ -1,6 +1,6 @@
 {
-  "name": "maci-crypto",
-  "version": "2.5.0",
+  "name": "@maci-protocol/crypto",
+  "version": "3.0.0",
   "description": "A package containing cryptography utilities for MACI",
   "main": "build/ts/index.js",
   "files": [

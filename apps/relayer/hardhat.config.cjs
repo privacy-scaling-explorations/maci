@@ -27,7 +27,15 @@ module.exports = {
     },
   },
   paths: {
-    sources: path.resolve(__dirname, parentDir, "./node_modules/maci-contracts/contracts"),
-    artifacts: path.resolve(__dirname, parentDir, "./node_modules/maci-contracts/artifacts"),
+    sources: path.resolve(
+      __dirname,
+      parentDir,
+      "./node_modules/@maci-protocol/sdk/node_modules/@maci-protocol/contracts/contracts",
+    ),
+    artifacts: path.resolve(
+      __dirname,
+      parentDir,
+      "./node_modules/@maci-protocol/sdk/node_modules/@maci-protocol/contracts/artifacts",
+    ),
   },
 };

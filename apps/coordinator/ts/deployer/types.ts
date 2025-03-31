@@ -1,4 +1,4 @@
-import { EPolicies, EInitialVoiceCreditProxies } from "maci-sdk";
+import { EPolicies, EInitialVoiceCreditProxies } from "@maci-protocol/sdk";
 import { PrepareUserOperationRequestParameters } from "permissionless/actions/smartAccount";
 import { ENTRYPOINT_ADDRESS_V07_TYPE } from "permissionless/types";
 

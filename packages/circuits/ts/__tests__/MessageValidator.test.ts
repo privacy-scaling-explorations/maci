@@ -1,7 +1,7 @@
+import { genRandomSalt } from "@maci-protocol/crypto";
+import { PCommand, Keypair } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
-import { genRandomSalt } from "maci-crypto";
-import { PCommand, Keypair } from "maci-domainobjs";
 
 import { type IMessageValidatorCircuitInputs } from "./utils/types";
 import { getSignal, circomkitInstance } from "./utils/utils";

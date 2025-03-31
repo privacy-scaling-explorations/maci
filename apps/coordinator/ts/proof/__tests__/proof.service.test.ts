@@ -1,6 +1,6 @@
+import { Keypair, PrivKey } from "@maci-protocol/domainobjs";
+import { Deployment, ProofGenerator } from "@maci-protocol/sdk";
 import dotenv from "dotenv";
-import { Keypair, PrivKey } from "maci-domainobjs";
-import { Deployment, ProofGenerator } from "maci-sdk";
 import { zeroAddress } from "viem";
 
 import type { IGenerateArgs } from "../types";
@@ -22,8 +22,8 @@ jest.mock("hardhat", (): unknown => ({
   },
 }));
 
-jest.mock("maci-contracts", (): unknown => ({
-  ...jest.requireActual("maci-contracts"),
+jest.mock("@maci-protocol/contracts", (): unknown => ({
+  ...jest.requireActual("@maci-protocol/contracts"),
   Deployment: {
     getInstance: jest.fn(),
   },

@@ -1,7 +1,7 @@
+import { SNARK_FIELD_SIZE, genRandomSalt } from "@maci-protocol/crypto";
+import { VerifyingKey } from "@maci-protocol/domainobjs";
+import { compareVks, validateSalt } from "@maci-protocol/sdk";
 import { expect } from "chai";
-import { SNARK_FIELD_SIZE, genRandomSalt } from "maci-crypto";
-import { VerifyingKey } from "maci-domainobjs";
-import { compareVks, validateSalt } from "maci-sdk";
 
 import fs from "fs";
 import path from "path";

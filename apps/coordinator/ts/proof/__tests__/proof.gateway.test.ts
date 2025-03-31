@@ -2,7 +2,7 @@ import { Test } from "@nestjs/testing";
 import { Server } from "socket.io";
 
 import type { IGenerateArgs, IGenerateData } from "../types";
-import type { ITallyData, IGenerateProofsOptions } from "maci-sdk";
+import type { ITallyData, IGenerateProofsOptions } from "@maci-protocol/sdk";
 
 import { ProofGateway } from "../proof.gateway";
 import { ProofGeneratorService } from "../proof.service";

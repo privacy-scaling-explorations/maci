@@ -1,5 +1,5 @@
+import { PCommand, Message, Keypair } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
-import { PCommand, Message, Keypair } from "maci-domainobjs";
 
 import fs from "fs";
 

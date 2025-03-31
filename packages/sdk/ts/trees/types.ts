@@ -1,6 +1,6 @@
+import type { PubKey } from "@maci-protocol/domainobjs";
 import type { LeanIMT } from "@zk-kit/lean-imt";
 import type { Provider } from "ethers";
-import type { PubKey } from "maci-domainobjs";
 
 /**
  * An interface that represents arguments of generation sign up tree and state leaves

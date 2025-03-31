@@ -1,3 +1,4 @@
+import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "@maci-protocol/sdk";
 import {
   Logger,
   type CanActivate,
@@ -15,7 +16,6 @@ import flatMap from "lodash/flatMap.js";
 import flatten from "lodash/flatten.js";
 import map from "lodash/map.js";
 import values from "lodash/values.js";
-import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "maci-sdk";
 
 import type { Request as Req } from "express";
 

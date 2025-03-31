@@ -1,5 +1,5 @@
-import { type IIpfsMessage, IpfsService } from "maci-contracts";
-import { PubKey } from "maci-domainobjs";
+import { type IIpfsMessage, IpfsService } from "@maci-protocol/contracts";
+import { PubKey } from "@maci-protocol/domainobjs";
 
 import type { IParseIpfsHashAddedEventsArgs } from "./types";
 

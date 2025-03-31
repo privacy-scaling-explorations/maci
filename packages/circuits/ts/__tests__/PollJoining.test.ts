@@ -1,7 +1,7 @@
+import { MaciState, Poll } from "@maci-protocol/core";
+import { poseidon } from "@maci-protocol/crypto";
+import { Keypair, Message, PCommand } from "@maci-protocol/domainobjs";
 import { type WitnessTester } from "circomkit";
-import { MaciState, Poll } from "maci-core";
-import { poseidon } from "maci-crypto";
-import { Keypair, Message, PCommand } from "maci-domainobjs";
 
 import { IPollJoiningInputs } from "../types";
 

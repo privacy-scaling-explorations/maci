@@ -1,11 +1,11 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-underscore-dangle */
+import { MaciState } from "@maci-protocol/core";
+import { NOTHING_UP_MY_SLEEVE } from "@maci-protocol/crypto";
+import { Keypair, Message, PCommand, PubKey, StateLeaf } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { AbiCoder, decodeBase58, encodeBase58, getBytes, hexlify, Signer, ZeroAddress } from "ethers";
 import { EthereumProvider } from "hardhat/types";
-import { MaciState } from "maci-core";
-import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
-import { Keypair, Message, PCommand, PubKey, StateLeaf } from "maci-domainobjs";
 
 import { EMode } from "../ts/constants";
 import { deployFreeForAllSignUpPolicy } from "../ts/deploy";

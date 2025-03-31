@@ -1,5 +1,5 @@
-import { IncrementalQuinTree } from "maci-crypto";
-import { PubKey, type Keypair, padKey } from "maci-domainobjs";
+import { IncrementalQuinTree } from "@maci-protocol/crypto";
+import { PubKey, type Keypair, padKey } from "@maci-protocol/domainobjs";
 
 import type { IJsonMaciState, IJsonPoll, IMaciState, TreeDepths } from "./utils/types";
 

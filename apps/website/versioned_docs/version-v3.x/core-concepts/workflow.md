@@ -22,10 +22,11 @@ There are two key roles that participate in MACI:
 
 A "User" is any voter in a MACI poll.
 
-In order to participate in a MACI poll, a user will perform at least 2 on-chain transactions:
+In order to participate in a MACI poll, a user will perform at least 3 on-chain transactions (the first time they vote):
 
 1. Sign up with MACI
-2. Vote on a poll
+2. Join a poll
+3. Vote on a poll
 
 <!-- TODO: add flowchart that demonstrates this (but show happy path, not key switching) -->
 <!-- https://miro.medium.com/v2/resize:fit:1400/format:webp/0*whHfC8-xxAwSyaaO -->
@@ -73,7 +74,7 @@ The MACI contract is responsible for registering user signups by recording the i
 
 ### Poll.sol
 
-The Poll contract is where users submit their votes (via the [`publishMessage` function](/docs/technical-references/smart-contracts/solidity-docs/Poll#publishmessage)). One MACI contract can be used for multiple Poll contracts. In other words, a user that signed up to the MACI contract can vote on multiple issues, with each issue represented by a distinct Poll contract.
+The Poll contract is where users submit their votes (via the [`publishMessage` function](/docs/technical-references/smart-contracts/solidity-docs/Poll#publishmessage)). One MACI contract can be used for multiple Poll contracts. In other words, a user that signed up to the MACI contract can vote on multiple issues, with each issue represented by a distinct Poll contract. Each Poll contract will have its own independent state.
 
 ### MessageProcessor.sol and Tally.sol
 

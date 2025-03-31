@@ -1,4 +1,4 @@
-import { G1Point, G2Point } from "maci-crypto";
+import { G1Point, G2Point } from "@maci-protocol/crypto";
 
 import type { IVkContractParams, IVkObjectParams } from "./types";
 

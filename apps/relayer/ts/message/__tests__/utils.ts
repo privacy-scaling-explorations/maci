@@ -1,5 +1,5 @@
+import { Keypair } from "@maci-protocol/domainobjs";
 import { ZeroAddress } from "ethers";
-import { Keypair } from "maci-domainobjs";
 
 import type { ICreateMessages } from "../types.js";
 

@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from "@commander-js/extra-typings";
-import { ZeroAddress, type Signer } from "ethers";
-import { PubKey } from "maci-domainobjs";
+import { PubKey } from "@maci-protocol/domainobjs";
 import {
   generateTallyCommitments,
   getPollParams,
@@ -43,7 +42,8 @@ import {
   deployMaci,
   deployFreeForAllSignUpPolicy,
   genEmptyBallotRoots,
-} from "maci-sdk";
+} from "@maci-protocol/sdk";
+import { ZeroAddress, type Signer } from "ethers";
 
 import fs from "fs";
 import path from "path";
@@ -69,7 +69,7 @@ const { description, version, name } = JSON.parse(
 const program = new Command();
 program.name(name).description(description).version(version);
 
-const getSigner = async (): Promise<Signer> => import("maci-sdk").then((m) => m.getDefaultSigner());
+const getSigner = async (): Promise<Signer> => import("@maci-protocol/sdk").then((m) => m.getDefaultSigner());
 
 // add the commands
 program

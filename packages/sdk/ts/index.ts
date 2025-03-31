@@ -48,7 +48,7 @@ export {
   genEmptyBallotRoots,
   getProxyContract,
   deployProxyClone,
-} from "maci-contracts";
+} from "@maci-protocol/contracts";
 
 export type {
   FullProveResult,
@@ -62,6 +62,6 @@ export type {
   IIpfsMessage,
   IDeployCloneArgs,
   IGetProxyContractArgs,
-} from "maci-contracts";
+} from "@maci-protocol/contracts";
 
-export * from "maci-contracts/typechain-types";
+export * from "@maci-protocol/contracts/typechain-types";

@@ -1,7 +1,7 @@
+import { verifySignature, hash4 } from "@maci-protocol/crypto";
+import { Keypair, PCommand } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
-import { verifySignature, hash4 } from "maci-crypto";
-import { Keypair, PCommand } from "maci-domainobjs";
 
 import { getSignal, circomkitInstance } from "./utils/utils";
 

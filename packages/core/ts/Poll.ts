@@ -1,4 +1,3 @@
-import { LeanIMT, LeanIMTHashFunction } from "@zk-kit/lean-imt";
 import {
   IncrementalQuinTree,
   genRandomSalt,
@@ -12,7 +11,7 @@ import {
   hash2,
   poseidon,
   hashLeanIMT,
-} from "maci-crypto";
+} from "@maci-protocol/crypto";
 import {
   PCommand,
   Keypair,
@@ -26,7 +25,8 @@ import {
   type IJsonPCommand,
   blankStateLeafHash,
   padKey,
-} from "maci-domainobjs";
+} from "@maci-protocol/domainobjs";
+import { LeanIMT, LeanIMTHashFunction } from "@zk-kit/lean-imt";
 
 import assert from "assert";
 
@@ -44,7 +44,7 @@ import type {
 } from "./index";
 import type { MaciState } from "./MaciState";
 import type { IJoinedCircuitArgs, IPollJoinedCircuitInputs } from "./utils/types";
-import type { PathElements } from "maci-crypto";
+import type { PathElements } from "@maci-protocol/crypto";
 
 import { STATE_TREE_ARITY, VOTE_OPTION_TREE_ARITY } from "./utils/constants";
 import { ProcessMessageErrors, ProcessMessageError } from "./utils/errors";

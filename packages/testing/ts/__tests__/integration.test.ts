@@ -1,10 +1,7 @@
 /* eslint-disable no-await-in-loop */
-import chai from "chai";
-import chaiAsPromised from "chai-as-promised";
-import { Signer } from "ethers";
-import { MaciState, TreeDepths, VOTE_OPTION_TREE_ARITY } from "maci-core";
-import { genPubKey, genRandomSalt, poseidon } from "maci-crypto";
-import { Keypair, PCommand, PrivKey, PubKey } from "maci-domainobjs";
+import { MaciState, TreeDepths, VOTE_OPTION_TREE_ARITY } from "@maci-protocol/core";
+import { genPubKey, genRandomSalt, poseidon } from "@maci-protocol/crypto";
+import { Keypair, PCommand, PrivKey, PubKey } from "@maci-protocol/domainobjs";
 import {
   cidToBytes32,
   createCidFromObject,
@@ -32,7 +29,10 @@ import {
   deployFreeForAllSignUpPolicy,
   deployConstantInitialVoiceCreditProxy,
   deployVerifier,
-} from "maci-sdk";
+} from "@maci-protocol/sdk";
+import chai from "chai";
+import chaiAsPromised from "chai-as-promised";
+import { Signer } from "ethers";
 
 import fs from "fs";
 import { homedir } from "os";

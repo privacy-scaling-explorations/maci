@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { Message, Keypair } from "maci-domainobjs";
+import { Message, Keypair } from "@maci-protocol/domainobjs";
 
 import { error, logGreen, logRed, success } from "../../ts/logger";
 import { MACI, Poll } from "../../typechain-types";

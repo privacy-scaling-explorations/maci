@@ -1,6 +1,6 @@
+import { Keypair } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { BaseContract, Signer, ZeroAddress } from "ethers";
-import { Keypair } from "maci-domainobjs";
 
 import { deployPollFactory, genEmptyBallotRoots, getDefaultSigner } from "../ts";
 import { MACI, PollFactory, Verifier, VkRegistry } from "../typechain-types";

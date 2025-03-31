@@ -1,4 +1,4 @@
-import { genTreeCommitment, hash2, hash3, hashLeftRight } from "maci-crypto";
+import { genTreeCommitment, hash2, hash3, hashLeftRight } from "@maci-protocol/crypto";
 
 import type { IGenerateTallyCommitmentsArgs, ITallyCommitments } from "./types";
 

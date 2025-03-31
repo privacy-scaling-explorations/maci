@@ -1,10 +1,15 @@
 import { jest } from "@jest/globals";
+import { Keypair } from "@maci-protocol/domainobjs";
+import {
+  formatProofForVerifierContract,
+  genProofSnarkjs,
+  getDefaultSigner,
+  getPollContracts,
+} from "@maci-protocol/sdk";
+import { TestingClass } from "@maci-protocol/testing";
 import { HttpStatus, ValidationPipe, type INestApplication } from "@nestjs/common";
 import { SchedulerRegistry } from "@nestjs/schedule";
 import { Test } from "@nestjs/testing";
-import { Keypair } from "maci-domainobjs";
-import { formatProofForVerifierContract, genProofSnarkjs, getDefaultSigner, getPollContracts } from "maci-sdk";
-import { TestingClass } from "maci-testing";
 import request from "supertest";
 
 import type { JsonRpcProvider } from "ethers";
@@ -23,7 +28,7 @@ import {
   rapidsnark,
 } from "./constants.js";
 
-jest.unmock("maci-sdk");
+jest.unmock("@maci-protocol/sdk");
 
 describe("Integration message publishing", () => {
   let app: INestApplication<TApp>;

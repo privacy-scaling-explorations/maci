@@ -1,6 +1,6 @@
+import { StateLeaf, Keypair, Message, PubKey } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { BigNumberish, ZeroAddress } from "ethers";
-import { StateLeaf, Keypair, Message, PubKey } from "maci-domainobjs";
 
 import { linkPoseidonLibraries } from "../tasks/helpers/abi";
 import { deployPoseidonContracts, createContractFactory } from "../ts/deploy";

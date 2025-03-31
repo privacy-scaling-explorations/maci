@@ -1,6 +1,6 @@
-import { IJsonMaciState, MaciState } from "maci-core";
-import { poseidon, stringifyBigInts } from "maci-crypto";
-import { Keypair, PrivKey, PubKey } from "maci-domainobjs";
+import { IJsonMaciState, MaciState } from "@maci-protocol/core";
+import { poseidon, stringifyBigInts } from "@maci-protocol/crypto";
+import { Keypair, PrivKey, PubKey } from "@maci-protocol/domainobjs";
 
 import fs from "fs";
 

@@ -1,8 +1,8 @@
 /* eslint-disable no-underscore-dangle */
+import { MACI__factory as MACIFactory } from "@maci-protocol/contracts";
+import { hashLeanIMT, hashLeftRight, PAD_KEY_HASH } from "@maci-protocol/crypto";
+import { PubKey } from "@maci-protocol/domainobjs";
 import { LeanIMT, LeanIMTHashFunction } from "@zk-kit/lean-imt";
-import { MACI__factory as MACIFactory } from "maci-contracts";
-import { hashLeanIMT, hashLeftRight, PAD_KEY_HASH } from "maci-crypto";
-import { PubKey } from "maci-domainobjs";
 
 import { assert } from "console";
 

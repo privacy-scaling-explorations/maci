@@ -1,4 +1,4 @@
-import { Tally__factory as TallyFactory, MACI__factory as MACIFactory } from "maci-contracts/typechain-types";
+import { Tally__factory as TallyFactory, MACI__factory as MACIFactory } from "@maci-protocol/contracts/typechain-types";
 
 import type { IVerifyArgs } from "./types";
 

@@ -1,6 +1,6 @@
 {
-  "name": "maci-sdk",
-  "version": "0.1.0",
+  "name": "@maci-protocol/sdk",
+  "version": "1.0.0",
   "description": "MACI's SDK",
   "main": "build/ts/index.js",
   "exports": {
@@ -33,10 +33,10 @@
   "dependencies": {
     "@zk-kit/lean-imt": "^2.2.3",
     "ethers": "^6.13.4",
-    "maci-contracts": "^2.5.0",
-    "maci-core": "^2.5.0",
-    "maci-crypto": "^2.5.0",
-    "maci-domainobjs": "^2.5.0",
+    "@maci-protocol/contracts": "^3.0.0",
+    "@maci-protocol/core": "^3.0.0",
+    "@maci-protocol/crypto": "^3.0.0",
+    "@maci-protocol/domainobjs": "^3.0.0",
     "multiformats": "9.9.0"
   },
   "devDependencies": {

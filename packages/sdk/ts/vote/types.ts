@@ -1,5 +1,5 @@
+import type { IMessageContractParams, Keypair, Message, PrivKey, PubKey } from "@maci-protocol/domainobjs";
 import type { Signer } from "ethers";
-import type { IMessageContractParams, Keypair, Message, PrivKey, PubKey } from "maci-domainobjs";
 
 /**
  * Interface for the arguments for the generateVote function

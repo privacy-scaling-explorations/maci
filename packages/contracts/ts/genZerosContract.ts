@@ -1,4 +1,4 @@
-import { sha256Hash, hashLeftRight, hash5 } from "maci-crypto";
+import { sha256Hash, hashLeftRight, hash5 } from "@maci-protocol/crypto";
 
 import assert from "assert";
 import fs from "fs";

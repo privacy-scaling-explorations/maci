@@ -3,9 +3,9 @@ import {
   deployFreeForAllSignUpPolicy,
   MACI__factory as MACIFactory,
   IBasePolicy__factory as SignUpPolicyFactory,
-} from "maci-contracts";
-import { VOTE_OPTION_TREE_ARITY } from "maci-core";
-import { PubKey } from "maci-domainobjs";
+} from "@maci-protocol/contracts";
+import { VOTE_OPTION_TREE_ARITY } from "@maci-protocol/core";
+import { PubKey } from "@maci-protocol/domainobjs";
 
 import type { IDeployPollArgs, IPollContractsData } from "./types";
 

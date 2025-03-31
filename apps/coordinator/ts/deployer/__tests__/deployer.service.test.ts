@@ -1,5 +1,3 @@
-import dotenv from "dotenv";
-import { BaseContract, zeroPadBytes } from "ethers";
 import {
   InitialVoiceCreditProxy__factory as VoiceCreditProxyFactory,
   ContractStorage,
@@ -14,7 +12,9 @@ import {
   GitcoinPassportPolicy__factory as GitcoinPassportPolicyFactory,
   MACI__factory as MACIFactory,
   Verifier__factory as VerifierFactory,
-} from "maci-sdk";
+} from "@maci-protocol/sdk";
+import dotenv from "dotenv";
+import { BaseContract, zeroPadBytes } from "ethers";
 import { Hex, zeroAddress } from "viem";
 
 import path from "path";

@@ -1,7 +1,4 @@
-import { Logger, Injectable } from "@nestjs/common";
-import { ZeroAddress } from "ethers";
-import hre from "hardhat";
-import { Keypair, PrivKey, PubKey } from "maci-domainobjs";
+import { Keypair, PrivKey, PubKey } from "@maci-protocol/domainobjs";
 import {
   Deployment,
   EContracts,
@@ -18,8 +15,11 @@ import {
   Tally,
   getPoll,
   mergeSignups,
-} from "maci-sdk";
-import { IProof, ITallyData } from "maci-sdk";
+} from "@maci-protocol/sdk";
+import { IProof, ITallyData } from "@maci-protocol/sdk";
+import { Logger, Injectable } from "@nestjs/common";
+import { ZeroAddress } from "ethers";
+import hre from "hardhat";
 import { Hex } from "viem";
 
 import fs from "fs";

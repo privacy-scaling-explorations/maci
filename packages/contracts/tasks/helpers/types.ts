@@ -1,5 +1,7 @@
 import type { Proof } from "../../ts/types";
 import type { MACI, MessageProcessor, Poll, Tally, Verifier, VkRegistry } from "../../typechain-types";
+import type { Poll as PollWrapper } from "@maci-protocol/core";
+import type { Keypair, PrivKey } from "@maci-protocol/domainobjs";
 import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import type {
   BaseContract,
@@ -12,8 +14,6 @@ import type {
   InterfaceAbi,
 } from "ethers";
 import type { Libraries, TaskArguments } from "hardhat/types";
-import type { Poll as PollWrapper } from "maci-core";
-import type { Keypair, PrivKey } from "maci-domainobjs";
 
 /**
  * Interface that represents deploy params

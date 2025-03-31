@@ -1,5 +1,5 @@
+import { getDefaultSigner, timeTravel } from "@maci-protocol/sdk";
 import { expect } from "chai";
-import { getDefaultSigner, timeTravel } from "maci-sdk";
 
 describe("timeTravel", () => {
   it("should work when given a valid integer number", async () => {

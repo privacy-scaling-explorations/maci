@@ -1,4 +1,4 @@
-import { genRandomSalt, hash5, hashLeftRight, IncrementalQuinTree } from "maci-crypto";
+import { genRandomSalt, hash5, hashLeftRight, IncrementalQuinTree } from "@maci-protocol/crypto";
 
 import assert from "assert";
 

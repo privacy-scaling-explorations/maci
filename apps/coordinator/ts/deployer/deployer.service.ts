@@ -1,7 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
-import { BaseContract, InterfaceAbi, Signer } from "ethers";
-import { extractVk, genEmptyBallotRoots, IVerifyingKeyStruct, VkRegistry } from "maci-contracts";
-import { IVkObjectParams, PubKey, VerifyingKey } from "maci-domainobjs";
+import { IVkObjectParams, PubKey, VerifyingKey } from "@maci-protocol/domainobjs";
 import {
   ConstantInitialVoiceCreditProxy__factory as ConstantInitialVoiceCreditProxyFactory,
   ContractStorage,
@@ -29,9 +26,15 @@ import {
   EInitialVoiceCreditProxies,
   EMode,
   deployPoll,
-  ISetVerifyingKeysArgs,
+  type ISetVerifyingKeysArgs,
   extractAllVks,
-} from "maci-sdk";
+  extractVk,
+  genEmptyBallotRoots,
+  type IVerifyingKeyStruct,
+  VkRegistry,
+} from "@maci-protocol/sdk";
+import { Injectable, Logger } from "@nestjs/common";
+import { BaseContract, InterfaceAbi, Signer } from "ethers";
 import { GetUserOperationReceiptReturnType } from "permissionless";
 import { Abi, encodeFunctionData, type Hex } from "viem";
 

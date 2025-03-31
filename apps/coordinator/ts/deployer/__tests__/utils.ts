@@ -1,5 +1,5 @@
-import { Keypair } from "maci-domainobjs";
-import { EPolicies, EInitialVoiceCreditProxies } from "maci-sdk";
+import { Keypair } from "@maci-protocol/domainobjs";
+import { EPolicies, EInitialVoiceCreditProxies } from "@maci-protocol/sdk";
 
 import {
   IDeployMaciConfig,

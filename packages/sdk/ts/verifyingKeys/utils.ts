@@ -1,5 +1,5 @@
-import { VkRegistry__factory as VkRegistryFactory, extractVk } from "maci-contracts";
-import { IVkContractParams, VerifyingKey } from "maci-domainobjs";
+import { VkRegistry__factory as VkRegistryFactory, extractVk } from "@maci-protocol/contracts";
+import { IVkContractParams, VerifyingKey } from "@maci-protocol/domainobjs";
 
 import fs from "fs";
 

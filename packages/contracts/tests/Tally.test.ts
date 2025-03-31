@@ -1,10 +1,10 @@
 /* eslint-disable no-underscore-dangle */
+import { MaciState, Poll, IProcessMessagesCircuitInputs, ITallyCircuitInputs } from "@maci-protocol/core";
+import { genTreeCommitment, genTreeProof, hashLeftRight, NOTHING_UP_MY_SLEEVE, poseidon } from "@maci-protocol/crypto";
+import { Keypair, Message, PubKey } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { AbiCoder, BigNumberish, Signer, ZeroAddress } from "ethers";
 import { EthereumProvider } from "hardhat/types";
-import { MaciState, Poll, IProcessMessagesCircuitInputs, ITallyCircuitInputs } from "maci-core";
-import { genTreeCommitment, genTreeProof, hashLeftRight, NOTHING_UP_MY_SLEEVE, poseidon } from "maci-crypto";
-import { Keypair, Message, PubKey } from "maci-domainobjs";
 
 import { EMode } from "../ts/constants";
 import { deployFreeForAllSignUpPolicy } from "../ts/deploy";

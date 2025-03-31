@@ -22,7 +22,7 @@ export {
   unlinkFile,
   getBlockTimestamp,
   genEmptyBallotRoots,
-} from "maci-contracts";
+} from "@maci-protocol/contracts";
 
 export type {
   FullProveResult,
@@ -32,6 +32,6 @@ export type {
   IVerifyingKeyStruct,
   SnarkProof,
   IIpfsMessage,
-} from "maci-contracts";
+} from "@maci-protocol/contracts";
 
-export * from "maci-contracts/typechain-types";
+export * from "@maci-protocol/contracts/typechain-types";

@@ -1,7 +1,7 @@
 {
-  "name": "maci-core",
-  "version": "2.5.0",
-  "description": "",
+  "name": "@maci-protocol/core",
+  "version": "3.0.0",
+  "description": "The MACI state machine implemented in TypeScript",
   "main": "build/ts/index.js",
   "types": "build/ts/index.d.ts",
   "files": [
@@ -22,9 +22,9 @@
     "docs": "typedoc --plugin typedoc-plugin-markdown --options ./typedoc.json"
   },
   "dependencies": {
-    "maci-crypto": "^2.5.0",
-    "maci-domainobjs": "^2.5.0",
-    "@zk-kit/lean-imt": "^2.2.3"
+    "@zk-kit/lean-imt": "^2.2.3",
+    "@maci-protocol/crypto": "^3.0.0",
+    "@maci-protocol/domainobjs": "^3.0.0"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",

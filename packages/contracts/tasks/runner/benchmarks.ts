@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
+import { Keypair, PCommand } from "@maci-protocol/domainobjs";
 import { task } from "hardhat/config";
-import { Keypair, PCommand } from "maci-domainobjs";
 
 import { logMagenta, logRed } from "../../ts/logger";
 import { Deployment } from "../helpers/Deployment";

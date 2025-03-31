@@ -1,13 +1,13 @@
 // To only run this file: pnpm exec jest --testPathPattern=tests/e2e.deploy.test.ts
 
+import { genRandomSalt } from "@maci-protocol/crypto";
+import { Keypair } from "@maci-protocol/domainobjs";
+import { joinPoll, publish, signup, sleep } from "@maci-protocol/sdk";
 import { ValidationPipe, type INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import dotenv from "dotenv";
 import { type Signer } from "ethers";
 import hardhat from "hardhat";
-import { genRandomSalt } from "maci-crypto";
-import { Keypair } from "maci-domainobjs";
-import { joinPoll, publish, signup, sleep } from "maci-sdk";
 import { Socket, io } from "socket.io-client";
 import { Hex, zeroAddress } from "viem";
 

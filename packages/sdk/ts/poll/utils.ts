@@ -1,10 +1,10 @@
-import { ZeroAddress } from "ethers";
 import {
   MACI__factory as MACIFactory,
   MessageProcessor__factory as MessageProcessorFactory,
   Poll__factory as PollFactory,
   Tally__factory as TallyFactory,
-} from "maci-contracts/typechain-types";
+} from "@maci-protocol/contracts/typechain-types";
+import { ZeroAddress } from "ethers";
 
 import type { IGetPollArgs, IGetPollContractsData } from "./types";
 

@@ -1,5 +1,5 @@
+import { PubKey } from "@maci-protocol/domainobjs";
 import { ValidatorConstraint, ValidatorConstraintInterface } from "class-validator";
-import { PubKey } from "maci-domainobjs";
 
 /**
  * Validate public key

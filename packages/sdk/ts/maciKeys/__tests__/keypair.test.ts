@@ -1,5 +1,5 @@
-import { genPubKey } from "maci-crypto";
-import { PubKey, PrivKey } from "maci-domainobjs";
+import { genPubKey } from "@maci-protocol/crypto";
+import { PubKey, PrivKey } from "@maci-protocol/domainobjs";
 
 import { generateKeypair } from "../keypair";
 

@@ -1,9 +1,9 @@
 import { jest } from "@jest/globals";
+import { Keypair } from "@maci-protocol/domainobjs";
+import { formatProofForVerifierContract, genProofSnarkjs } from "@maci-protocol/sdk";
+import { TestingClass, User } from "@maci-protocol/testing";
 import { HttpStatus, ValidationPipe, type INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
-import { Keypair } from "maci-domainobjs";
-import { formatProofForVerifierContract, genProofSnarkjs } from "maci-sdk";
-import { TestingClass, User } from "maci-testing";
 import request from "supertest";
 
 import { AppModule } from "../ts/app.module.js";
@@ -20,7 +20,7 @@ import {
   type TApp,
 } from "./constants.js";
 
-jest.unmock("maci-sdk");
+jest.unmock("@maci-protocol/sdk");
 
 describe("Integration message batches", () => {
   let app: INestApplication<TApp>;
