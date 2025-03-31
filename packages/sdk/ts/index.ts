@@ -46,6 +46,8 @@ export {
   warning,
   error,
   genEmptyBallotRoots,
+  getProxyContract,
+  deployProxyClone,
 } from "maci-contracts";
 
 export type {
@@ -58,6 +60,8 @@ export type {
   IVerifyingKeyStruct,
   SnarkProof,
   IIpfsMessage,
+  IDeployCloneArgs,
+  IGetProxyContractArgs,
 } from "maci-contracts";
 
 export * from "maci-contracts/typechain-types";

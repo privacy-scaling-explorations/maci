@@ -1,3 +1,4 @@
+import { deployProxyClone } from "@excubiae/contracts";
 import { type ContractFactory, type Signer, BaseContract, type BigNumberish } from "ethers";
 
 import type {
@@ -93,7 +94,6 @@ import {
 
 import { genEmptyBallotRoots } from "./genEmptyBallotRoots";
 import { logMagenta } from "./logger";
-import { getProxyContract } from "./proxy";
 
 /**
  * Creates contract factory from abi and bytecode
@@ -215,12 +215,10 @@ const deployPolicy = async <
     quiet,
   );
 
-  const checkerReceipt = await checkerProxyFactory.deploy(...checkerArgs).then((tx) => tx.wait());
-
-  const checker = await getProxyContract<C>({
+  const checker = await deployProxyClone<C, unknown>({
     factory: checkerFactory,
     proxyFactory: checkerProxyFactory,
-    receipt: checkerReceipt,
+    args: checkerArgs,
     signer,
   });
 
@@ -230,14 +228,10 @@ const deployPolicy = async <
     quiet,
   );
 
-  const policyReceipt = await policyProxyFactory
-    .deploy(...policyArgs.concat(await checker.getAddress()))
-    .then((tx) => tx.wait());
-
-  const policy = await getProxyContract<T>({
+  const policy = await deployProxyClone<T, unknown>({
     factory: policyFactory,
     proxyFactory: policyProxyFactory,
-    receipt: policyReceipt,
+    args: policyArgs.concat(await checker.getAddress()),
     signer,
   });
 

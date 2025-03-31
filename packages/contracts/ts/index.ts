@@ -1,4 +1,10 @@
 export {
+  getProxyContract,
+  deployProxyClone,
+  type IDeployCloneArgs,
+  type IGetProxyContractArgs,
+} from "@excubiae/contracts";
+export {
   deployMockVerifier,
   deployVkRegistry,
   deployMaci,

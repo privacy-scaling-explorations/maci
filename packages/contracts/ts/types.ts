@@ -16,7 +16,7 @@ import type {
 } from "../typechain-types";
 import type { TypedContractMethod } from "../typechain-types/common";
 import type {} from "@excubiae/contracts/build/typechain-types";
-import type { BigNumberish, Signer, ContractFactory, Provider, TransactionReceipt, BaseContract } from "ethers";
+import type { BigNumberish, Signer, ContractFactory, Provider, BaseContract } from "ethers";
 import type { CircuitInputs } from "maci-core";
 import type { Keypair, Message, PubKey } from "maci-domainobjs";
 import type { PublicSignals } from "snarkjs";
@@ -383,28 +383,3 @@ export type IFactoryLike<P extends unknown[] = []> = Factory &
   BaseContract & {
     deploy: TypedContractMethod<P, [], "nonpayable">;
   };
-
-/**
- * Interface that represents the argument for the get proxy contract function
- */
-export interface IGetProxyContractArgs<F = ContractFactory> {
-  /**
-   * Proxied contract factory
-   */
-  factory: F;
-
-  /**
-   * Proxy contract factory
-   */
-  proxyFactory: Factory;
-
-  /**
-   * Ethereum signer
-   */
-  signer?: Signer;
-
-  /**
-   * Transaction receipt
-   */
-  receipt?: TransactionReceipt | null;
-}
