@@ -54,7 +54,7 @@
     "@maci-protocol/sdk": "^1.0.0",
     "@maci-protocol/subgraph": "^3.0.0",
     "mustache": "^4.2.0",
-    "permissionless": ">=0.1.18 <=0.1.29",
+    "permissionless": ">=0.1.18 <=0.2.40",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.2",
     "socket.io": "^4.7.5",
