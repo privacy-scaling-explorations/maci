@@ -29,7 +29,7 @@
     "docusaurus-plugin-matomo": "^0.0.8",
     "gray-matter": "^4.0.3",
     "prism-react-renderer": "^2.4.1",
-    "react": "^19.0.0",
+    "react": "^19.1.0",
     "react-dom": "^19.0.0",
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0"
@@ -39,7 +39,7 @@
     "@docusaurus/tsconfig": "^3.7.0",
     "@docusaurus/types": "^3.7.0",
     "@types/node": "^22.13.10",
-    "@types/react": "^19.0.11",
+    "@types/react": "^19.0.12",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2"
   },
