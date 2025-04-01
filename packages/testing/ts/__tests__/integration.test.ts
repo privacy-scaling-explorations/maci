@@ -122,9 +122,10 @@ describe("Integration tests", function test() {
       signer,
     });
 
-    const initialVoiceCreditProxy = await deployConstantInitialVoiceCreditProxy(
-      DEFAULT_INITIAL_VOICE_CREDITS,
+    const [initialVoiceCreditProxy] = await deployConstantInitialVoiceCreditProxy(
+      { amount: DEFAULT_INITIAL_VOICE_CREDITS },
       signer,
+      undefined,
       true,
     );
     const initialVoiceCreditProxyContractAddress = await initialVoiceCreditProxy.getAddress();

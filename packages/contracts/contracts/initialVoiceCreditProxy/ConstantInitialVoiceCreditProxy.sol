@@ -1,18 +1,24 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import { InitialVoiceCreditProxy } from "./InitialVoiceCreditProxy.sol";
+import { Clone } from "@excubiae/contracts/contracts/proxy/Clone.sol";
+
+import { IInitialVoiceCreditProxy } from "../interfaces/IInitialVoiceCreditProxy.sol";
 
 /// @title ConstantInitialVoiceCreditProxy
 /// @notice This contract allows to set a constant initial voice credit balance
 /// for MACI's voters.
-contract ConstantInitialVoiceCreditProxy is InitialVoiceCreditProxy {
+contract ConstantInitialVoiceCreditProxy is Clone, IInitialVoiceCreditProxy {
   /// @notice the balance to be returned by getVoiceCredits
-  uint256 internal immutable balance;
+  uint256 internal balance;
 
-  /// @notice creates a new ConstantInitialVoiceCreditProxy
-  /// @param _balance the balance to be returned by getVoiceCredits
-  constructor(uint256 _balance) payable {
+  /// @notice Initializes the contract.
+  function _initialize() internal override {
+    super._initialize();
+
+    bytes memory data = _getAppendedBytes();
+    uint256 _balance = abi.decode(data, (uint256));
+
     balance = _balance;
   }
 

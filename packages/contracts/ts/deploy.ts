@@ -11,7 +11,12 @@ import type {
 import type { TAbi } from "../tasks/helpers/types";
 
 import { Deployment } from "../tasks/helpers/Deployment";
-import { ECheckerFactories, EContracts, EPolicyFactories } from "../tasks/helpers/types";
+import {
+  ECheckerFactories,
+  EContracts,
+  EInitialVoiceCreditProxiesFactories,
+  EPolicyFactories,
+} from "../tasks/helpers/types";
 import {
   type FreeForAllPolicy,
   type MockToken,
@@ -90,6 +95,8 @@ import {
   MACI__factory as MACIFactory,
   MessageProcessorFactory__factory as MessageProcessorFactoryFactory,
   TallyFactory__factory as TallyFactoryFactory,
+  ConstantInitialVoiceCreditProxyFactory as ConstantInitialVoiceCreditProxyFactoryContract,
+  ConstantInitialVoiceCreditProxy__factory as ConstantInitialVoiceCreditProxyFactory,
 } from "../typechain-types";
 
 import { genEmptyBallotRoots } from "./genEmptyBallotRoots";
@@ -162,17 +169,39 @@ export const deployVerifier = async (signer?: Signer, quiet = false): Promise<Ve
 
 /**
  * Deploy a constant initial voice credit proxy contract
+ * @param args - the deploy constant initial voice credit proxy arguments
  * @param signer - the signer to use to deploy the contract
- * @param amount - the amount of initial voice credit to give to each user
+ * @param proxyFactory - the optional proxy factory to reuse for deployment
  * @param quiet - whether to suppress console output
  * @returns the deployed ConstantInitialVoiceCreditProxy contract
  */
 export const deployConstantInitialVoiceCreditProxy = async (
-  amount: number,
+  args: { amount: number },
   signer?: Signer,
+  proxyFactory?: ConstantInitialVoiceCreditProxyFactoryContract,
   quiet = false,
-): Promise<ConstantInitialVoiceCreditProxy> =>
-  deployContract<ConstantInitialVoiceCreditProxy>("ConstantInitialVoiceCreditProxy", signer, quiet, amount.toString());
+): Promise<[ConstantInitialVoiceCreditProxy, ConstantInitialVoiceCreditProxyFactoryContract]> => {
+  if (!signer) {
+    throw new Error("Signer is not provided");
+  }
+
+  const initialVoiceCreditProxyFactory =
+    proxyFactory ??
+    (await deployContract<ConstantInitialVoiceCreditProxyFactoryContract>(
+      EInitialVoiceCreditProxiesFactories.Constant,
+      signer,
+      quiet,
+    ));
+
+  const initialVoiceCreditProxy = await deployProxyClone<ConstantInitialVoiceCreditProxy, number>({
+    factory: new ConstantInitialVoiceCreditProxyFactory(signer),
+    proxyFactory: initialVoiceCreditProxyFactory as unknown as IFactoryLike<number[]>,
+    args: [args.amount],
+    signer,
+  });
+
+  return [initialVoiceCreditProxy, initialVoiceCreditProxyFactory];
+};
 
 /**
  * Deploy a MockToken contract

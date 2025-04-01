@@ -79,9 +79,10 @@ export const deployTestContracts = async ({
     [policyContract] = await deployFreeForAllSignUpPolicy(signer, true);
   }
 
-  const constantInitialVoiceCreditProxyContract = await deployConstantInitialVoiceCreditProxy(
-    initialVoiceCreditBalance,
+  const [constantInitialVoiceCreditProxyContract] = await deployConstantInitialVoiceCreditProxy(
+    { amount: initialVoiceCreditBalance },
     signer,
+    undefined,
     true,
   );
 
