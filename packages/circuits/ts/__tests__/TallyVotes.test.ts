@@ -50,13 +50,13 @@ describe("TallyVotes circuit", function test() {
 
   before(async () => {
     circuit = await circomkitInstance.WitnessTester("tallyVotes", {
-      file: "./core/qv/tallyVotes",
+      file: "./coordinator/qv/tallyVotes",
       template: "TallyVotes",
       params: [10, 1, 2],
     });
 
     circuitNonQv = await circomkitInstance.WitnessTester("tallyVotesNonQv", {
-      file: "./core/non-qv/tallyVotes",
+      file: "./coordinator/non-qv/tallyVotes",
       template: "TallyVotesNonQv",
       params: [10, 1, 2],
     });

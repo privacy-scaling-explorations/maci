@@ -6,8 +6,8 @@ include "./safe-comparators.circom";
 include "./mux1.circom";
 include "./comparators.circom";
 // local import
-include "../utils/hashers.circom";
-include "../utils/calculateTotal.circom";
+include "../hashers.circom";
+include "../calculateTotal.circom";
 
 /**
  * Recomputes a Merkle root from a given leaf and its path in a Merkle tree.

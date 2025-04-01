@@ -61,7 +61,7 @@ describe("Ceremony param tests", () => {
 
     before(async () => {
       circuit = await circomkitInstance.WitnessTester("processMessages", {
-        file: "./core/qv/processMessages",
+        file: "./coordinator/qv/processMessages",
         template: "ProcessMessages",
         params: [params.stateTreeDepth, MESSAGE_BATCH_SIZE, params.voteOptionTreeDepth],
       });
@@ -204,7 +204,7 @@ describe("Ceremony param tests", () => {
 
     before(async () => {
       testCircuit = await circomkitInstance.WitnessTester("tallyVotes", {
-        file: "./core/qv/tallyVotes",
+        file: "./coordinator/qv/tallyVotes",
         template: "TallyVotes",
         params: [14, 1, 3],
       });

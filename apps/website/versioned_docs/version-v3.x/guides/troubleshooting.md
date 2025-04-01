@@ -71,7 +71,7 @@ Error: commitment mismatch
 
 This is because commitments are generated using random salts, thus will differ at each `genProofs` run.
 
-In [core/Poll.ts](/docs/technical-references/typescript-code/typedoc/core/classes/Poll):
+In [core/Poll.ts](https://github.com/privacy-scaling-explorations/maci/blob/dev/packages/core/ts/Poll.ts):
 
 ```
 let newSbSalt = genRandomSalt();

@@ -7,7 +7,7 @@ sidebar_position: 2
 
 # Continuous Integration (CI) Pipeline
 
-CI (Continuous Integration) pipeline is an automated workflow to ensure that software is always in a working state. An event like opening a pull request causes a pipeline to run. The pipeline consists of an automated build process and a suite of automated tests (See [Testing](https://pse.dev/docs/testing) for more details).
+CI (Continuous Integration) pipeline is an automated workflow to ensure that software is always in a working state. An event like opening a pull request causes a pipeline to run. The pipeline consists of an automated build process and a suite of automated tests (See [Testing](https://pse.dev/docs/guides/testing) for more details).
 
 ![cicd-maci drawio-7](https://user-images.githubusercontent.com/1610146/185962260-091cd952-5444-44f3-89e3-be64e81d4c21.png)
 

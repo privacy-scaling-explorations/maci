@@ -16,12 +16,62 @@ The main functions of the contract are as follows:
 - `publishMessage` - This function allows anyone to publish a message, and it accepts the message object as well as an ephemeral public key. This key together with the coordinator public key will be used to generate a shared ECDH key that will encrypt the message.
   Before saving the message, the function will check that the voting deadline has not passed, as well as the max number of messages was not reached.
 - `publisMessageBatch` - This function allows to submit a batch of messages, and it accepts an array of messages with their corresponding public keys used in the encryption step. It will call the `publishMessage` function for each message in the array.
+- `joinPoll` - This function allows a user to join a poll. It will check if the voter is allowed to join the poll based on the sign up policy, as well as allocate voice credits based on the voice credit proxy.
+
+## JoinPoll
+
+The `joinPoll` function looks as follows:
+
+```ts
+  /// @inheritdoc IPoll
+  function joinPoll(
+    uint256 _nullifier,
+    PubKey calldata _pubKey,
+    uint256 _stateRootIndex,
+    uint256[8] calldata _proof,
+    bytes memory _signUpPolicyData,
+    bytes memory _initialVoiceCreditProxyData
+  ) external virtual isWithinVotingDeadline {
+    // Whether the user has already joined
+    if (pollNullifiers[_nullifier]) {
+      revert UserAlreadyJoined();
+    }
+
+    // Set nullifier for user's private key
+    pollNullifiers[_nullifier] = true;
+
+    // Verify user's proof
+    if (!verifyJoiningPollProof(_nullifier, _stateRootIndex, _pubKey, _proof)) {
+      revert InvalidPollProof();
+    }
+
+    // Check if the user is eligible to join the poll
+    extContracts.policy.enforce(msg.sender, _signUpPolicyData);
+
+    // Get the user's voice credit balance.
+    uint256 voiceCreditBalance = extContracts.initialVoiceCreditProxy.getVoiceCredits(
+      msg.sender,
+      _initialVoiceCreditProxyData
+    );
+
+    // Store user in the pollStateTree
+    uint256 stateLeaf = hashStateLeaf(StateLeaf(_pubKey, voiceCreditBalance, block.timestamp));
+
+    uint256 stateRoot = InternalLazyIMT._insert(pollStateTree, stateLeaf);
+
+    // Store the current state tree root in the array
+    pollStateRootsOnJoin.push(stateRoot);
+
+    uint256 pollStateIndex = pollStateTree.numberOfLeaves - 1;
+    emit PollJoined(_pubKey.x, _pubKey.y, voiceCreditBalance, block.timestamp, _nullifier, pollStateIndex);
+  }
+```
 
 ## PublishMessage
 
 The `publishMessage` function looks as follows:
 
-```solidity
+```ts
 function publishMessage(Message calldata _message, PubKey calldata _encPubKey) public virtual isOpenForVoting {
   // check if the public key is on the curve
   if (!CurveBabyJubJub.isOnCurve(_encPubKey.x, _encPubKey.y)) {
@@ -45,7 +95,7 @@ function publishMessage(Message calldata _message, PubKey calldata _encPubKey) p
 
 The `publishMessageBatch` function looks as follows:
 
-```solidity
+```ts
 function publishMessageBatch(Message[] calldata _messages, PubKey[] calldata _encPubKeys) public virtual {
   if (_messages.length != _encPubKeys.length) {
     revert InvalidBatchLength();
@@ -67,7 +117,7 @@ function publishMessageBatch(Message[] calldata _messages, PubKey[] calldata _en
 
 After a Poll's voting period ends, the coordinator's job is to store the main state root, as well as some more information on the Poll contract using `mergeState`:
 
-```solidity
+```ts
 function mergeState() public isAfterVotingDeadline {
   // This function can only be called once per Poll after the voting
   // deadline

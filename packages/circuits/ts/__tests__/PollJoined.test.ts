@@ -36,7 +36,7 @@ describe("Poll Joined circuit", function test() {
 
   before(async () => {
     circuit = await circomkitInstance.WitnessTester("pollJoined", {
-      file: "./anon/poll",
+      file: "./voter/poll",
       template: "PollJoined",
       params: [STATE_TREE_DEPTH],
     });

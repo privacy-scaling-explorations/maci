@@ -169,7 +169,7 @@ Starting another poll doesn't require deploying MACI contracts again, you can ru
 
 ## Poll Finalization
 
-As a coordinator, first you need to merge signups and messages (votes). Messages are stored in a queue so when the poll is over, the coordinator needs to create the merkle tree from the queue ([AccQueue](/docs/core-concepts/merkle-trees#accumulator-queue)). This optimization is needed to reduce gas cost for voters. Then the coordinator generates proofs for the message processing, and tally calculations. This allows to publish the poll results on-chain and then everyone can verify the results when the poll is over. You run a merge with:
+As a coordinator, first you need to merge signups and messages (votes). Messages are stored in a queue so when the poll is over, the coordinator needs to create the merkle tree from the queue ([AccQueue](/docs/v2.x/core-concepts/merkle-trees#accumulator-queue)). This optimization is needed to reduce gas cost for voters. Then the coordinator generates proofs for the message processing, and tally calculations. This allows to publish the poll results on-chain and then everyone can verify the results when the poll is over. You run a merge with:
 
 ```bash
 pnpm merge:[network] --poll [poll-id]

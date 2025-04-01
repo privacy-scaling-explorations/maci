@@ -54,13 +54,13 @@ describe("ProcessMessage circuit", function test() {
 
   before(async () => {
     circuit = await circomkitInstance.WitnessTester("processMessages", {
-      file: "./core/qv/processMessages",
+      file: "./coordinator/qv/processMessages",
       template: "ProcessMessages",
       params: [10, 20, 2],
     });
 
     circuitNonQv = await circomkitInstance.WitnessTester("processMessagesNonQv", {
-      file: "./core/non-qv/processMessages",
+      file: "./coordinator/non-qv/processMessages",
       template: "ProcessMessagesNonQv",
       params: [10, 20, 2],
     });

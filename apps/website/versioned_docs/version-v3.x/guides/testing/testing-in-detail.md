@@ -7,7 +7,7 @@ sidebar_position: 2
 
 # Testing in detail
 
-This doc expands on our [introduction to testing](/docs/testing) doc and explains how MACI tests work in greater detail. This information should be used by MACI's maintainers as well as contributors.
+This doc expands on our [introduction to testing](/docs/guides/testing/testing-introduction) doc and explains how MACI tests work in greater detail. This information should be used by MACI's maintainers as well as contributors.
 
 ## Automated Tests
 
