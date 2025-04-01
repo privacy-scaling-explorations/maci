@@ -13,6 +13,9 @@
     "CHANGELOG.md",
     "README.md"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "hardhat": "hardhat node",
     "build": "nest build",

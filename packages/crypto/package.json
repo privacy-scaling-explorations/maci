@@ -9,6 +9,9 @@
     "README.md",
     "CHANGELOG.md"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "watch": "tsc --watch",
     "benchmarks": "ts-node ts/__benchmarks__/index.ts",
