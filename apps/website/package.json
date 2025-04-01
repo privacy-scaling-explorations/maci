@@ -1,7 +1,6 @@
 {
-  "name": "website",
-  "version": "3.0.0",
-  "private": true,
+  "name": "@maci-protocol/website",
+  "version": "1.0.0",
   "scripts": {
     "setup-typedoc": "ts-node ./src/scripts/setupTypedoc.ts",
     "setup-soliditydocs": "ts-node ./src/scripts/setupSolidityDocs.ts",
