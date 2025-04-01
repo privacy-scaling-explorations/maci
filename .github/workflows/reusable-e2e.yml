@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        command: ["test:e2e", "test:integration"]
+        command: ["test:e2e", "test:integration", "test:unit"]
 
     runs-on: ubuntu-24.04
 
