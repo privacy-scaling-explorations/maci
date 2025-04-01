@@ -26,5 +26,5 @@ import "@excubiae/contracts/contracts/test/extensions/mocks/MockHatsProtocol.sol
 import "@excubiae/contracts/contracts/test/extensions/mocks/MockToken.sol";
 
 /// @title Mocker
-/// @notice import all external contracts for tests
+/// @notice Import all external contracts for tests
 contract Mocker {}
