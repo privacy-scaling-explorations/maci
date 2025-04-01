@@ -623,6 +623,13 @@ export enum EInitialVoiceCreditProxies {
 }
 
 /**
+ * Enum represents initial voice credit proxies factories
+ */
+export enum EInitialVoiceCreditProxiesFactories {
+  Constant = "ConstantInitialVoiceCreditProxyFactory",
+}
+
+/**
  * Enum represents deployed contracts
  */
 export enum EContracts {

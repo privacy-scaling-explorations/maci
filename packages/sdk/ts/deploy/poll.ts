@@ -63,9 +63,10 @@ export const deployPoll = async ({
   let initialVoiceCreditProxyAddress = initialVoiceCreditProxyContractAddress;
 
   if (!initialVoiceCreditProxyAddress) {
-    const contract = await deployConstantInitialVoiceCreditProxy(
-      initialVoiceCredits ?? DEFAULT_INITIAL_VOICE_CREDITS,
+    const [contract] = await deployConstantInitialVoiceCreditProxy(
+      { amount: initialVoiceCredits ?? DEFAULT_INITIAL_VOICE_CREDITS },
       signer,
+      undefined,
       true,
     );
     initialVoiceCreditProxyAddress = await contract.getAddress();

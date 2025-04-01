@@ -1,5 +1,5 @@
 import {
-  InitialVoiceCreditProxy__factory as VoiceCreditProxyFactory,
+  IInitialVoiceCreditProxy__factory as VoiceCreditProxyFactory,
   ContractStorage,
   EContracts,
   EInitialVoiceCreditProxies,

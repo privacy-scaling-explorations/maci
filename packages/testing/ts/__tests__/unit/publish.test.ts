@@ -66,9 +66,10 @@ describe("publish", function test() {
     const [pollPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
     const pollPolicyContractAddress = await pollPolicy.getAddress();
 
-    const initialVoiceCreditProxy = await deployConstantInitialVoiceCreditProxy(
-      DEFAULT_INITIAL_VOICE_CREDITS,
+    const [initialVoiceCreditProxy] = await deployConstantInitialVoiceCreditProxy(
+      { amount: DEFAULT_INITIAL_VOICE_CREDITS },
       signer,
+      undefined,
       true,
     );
     initialVoiceCreditProxyContractAddress = await initialVoiceCreditProxy.getAddress();
