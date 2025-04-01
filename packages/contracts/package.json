@@ -1,6 +1,7 @@
 {
   "name": "@maci-protocol/contracts",
   "version": "3.0.0",
+  "private": false,
   "description": "Solidity Smart Contracts for MACI (Minimal Anti-Collusion Infrastructure)",
   "main": "build/ts/index.js",
   "exports": {

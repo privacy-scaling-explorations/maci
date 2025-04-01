@@ -1,6 +1,7 @@
 {
   "name": "@maci-protocol/circuits",
   "version": "3.0.0",
+  "private": false,
   "description": "zk-SNARK circuits for MACI",
   "main": "build/ts/index.js",
   "files": [

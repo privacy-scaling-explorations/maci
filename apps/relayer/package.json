@@ -1,6 +1,7 @@
 {
   "name": "@maci-protocol/relayer",
   "version": "1.0.0",
+  "private": false,
   "description": "Relayer service for MACI",
   "main": "build/ts/main.js",
   "type": "module",

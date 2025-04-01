@@ -1,6 +1,7 @@
 {
   "name": "@maci-protocol/testing",
   "version": "1.0.0",
+  "private": false,
   "description": "A package with testing utilities for MACI",
   "main": "build/ts/index.js",
   "files": [

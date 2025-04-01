@@ -1,6 +1,7 @@
 {
   "name": "@maci-protocol/maci-coordinator",
   "version": "1.0.0",
+  "private": false,
   "description": "Coordinator service for MACI",
   "main": "build/ts/main.js",
   "type": "module",

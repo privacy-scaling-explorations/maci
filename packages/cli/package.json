@@ -1,6 +1,7 @@
 {
   "name": "@maci-protocol/cli",
   "version": "3.0.0",
+  "private": false,
   "description": "CLI utilities for MACI",
   "main": "build/ts/index.js",
   "exports": {
