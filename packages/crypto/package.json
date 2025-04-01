@@ -2,6 +2,7 @@
   "name": "@maci-protocol/crypto",
   "version": "3.0.0",
   "description": "A package containing cryptography utilities for MACI",
+  "private": false,
   "main": "build/ts/index.js",
   "files": [
     "build",

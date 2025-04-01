@@ -1,6 +1,7 @@
 {
   "name": "@maci-protocol/core",
   "version": "3.0.0",
+  "private": false,
   "description": "The MACI state machine implemented in TypeScript",
   "main": "build/ts/index.js",
   "types": "build/ts/index.d.ts",

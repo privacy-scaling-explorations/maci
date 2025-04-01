@@ -1,7 +1,8 @@
 {
   "name": "@maci-protocol/domainobjs",
   "version": "3.0.0",
-  "description": "",
+  "private": false,
+  "description": "Classes representing domain objects for MACI",
   "main": "build/ts/index.js",
   "files": [
     "build",
