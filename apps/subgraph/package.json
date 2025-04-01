@@ -10,6 +10,9 @@
     "templates",
     "README.md"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "precodegen": "rm -rf ./generated && pnpm generate:schema && pnpm generate:yaml",
     "codegen": "graph codegen",

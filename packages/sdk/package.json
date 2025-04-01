@@ -22,6 +22,9 @@
     "CHANGELOG.md",
     "README.md"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "watch": "tsc --watch",
     "build": "tsc -p tsconfig.build.json",
