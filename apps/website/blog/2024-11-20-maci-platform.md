@@ -46,7 +46,7 @@ Projects applying to be part of a round can submit the required information via 
 Finally, users/voters will be able to access the voting rounds only if they pass the gatekeeping requirements. Currently, it is possible to gate voting rounds using different strategies:
 
 - allowing anyone to participate
-- accepting only users with a certain [EAS](https://docs.attest.sh/docs/) attestation
+- accepting only users with a certain [EAS](https://docs.attest.org/docs) attestation
 - accepting only users part of a [Semaphore](https://semaphore.pse.dev/) group
 - accepting only users with a certain [Hat](https://docs.hatsprotocol.xyz/)
 - accepting only users with a certain [Zupass](https://github.com/proofcarryingdata/zupass) credential
