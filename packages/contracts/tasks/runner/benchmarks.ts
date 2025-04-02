@@ -16,15 +16,14 @@ task("benchmark", "Run benchmarks").setAction(async (_, hre) => {
   const steps = await deployment.start("full", { incremental: true, verify: false });
   await deployment.runSteps(steps, 0);
 
+  // update poll start and end dates to ensure it's in the future and we have time to send votes
+  const timeNow = Math.floor(Date.now() / 1000);
+  deployment.updateDeployConfig(EContracts.Poll, "pollStartDate", timeNow);
+  deployment.updateDeployConfig(EContracts.Poll, "pollEndDate", timeNow + 1000000);
+
   // deploy a Poll
-  // get original tree depth
-  const messageTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageTreeDepth");
-  // update it
-  deployment.updateDeployConfig(EContracts.VkRegistry, "messageTreeDepth", 3);
   const pollSteps = await deployment.start("poll", { incremental: true, verify: false });
   await deployment.runSteps(pollSteps, 0);
-  // restore it
-  deployment.updateDeployConfig(EContracts.VkRegistry, "messageTreeDepth", messageTreeDepth);
 
   try {
     const startBalance = await deployer.provider.getBalance(deployer);
