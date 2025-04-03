@@ -103,9 +103,15 @@ Before a user can cast a vote, they must sign up by generating a MACI keypair an
 This registration process is necessary to fortify MACI against Sybil attacks. The particular criteria used to allow user signups is customizable, and can be configured using any [SignUpPolicy contract](https://github.com/privacy-scaling-explorations/excubiae/tree/main/packages/contracts/contracts/extensions). This contracts dictate the criteria a user must pass in order to participate in a poll. For example, a user might need to prove ownership of a certain NFT, or that they've received some attestation on EAS, or prove that they have passed some sort of proof-of-personhood verification. Note that MACI presumes an identity system where each legitimate member
 controls a unique private key - MACI does not specifically solve for this, but allows for customization on how this is configured.
 
+#### Poll Joining
+
+Once a user has signed up with MACI, they can join open polls by passing any poll specific gatekeeping requirements, as well as providing a zero knowledge proof that they know the private key to their previously signed up MACI public key.
+
+This step must be repeated for each poll that the user wishes to vote on, and will allow them to receive voting power specific to that poll.
+
 #### Vote
 
-Once a user has signed up with MACI, they are eligible to vote on open polls.
+After joining a poll, a user can cast a vote by sending a message to the Poll contract.
 
 To cast a vote, a user will bundle a few variables — including a public key, their vote option, their vote amount, and a few others — into what is called a "command". Then, the user signs the command with the private key they originally used to sign up. After that, the user encrypts the signature and command together so that it is now considered a "message". If the command is properly signed by the user’s MACI public key, then the message is considered valid will be counted in the final tally. Therefore, the MACI public key can be thought of as the user’s voting username, and the signature is the voting password. If they provide the correct signature, they can submit a vote.
 
