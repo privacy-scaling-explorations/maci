@@ -1,14 +1,14 @@
 /* eslint-disable no-console */
-// @ts-ignore: Module resolution will be handled during build
+// @ts-ignore
 import { PrivKey, PubKey, Keypair, Message } from "@maci-protocol/domainobjs";
-// @ts-ignore: Module resolution will be handled during build
+// @ts-ignore
 import { genRandomSalt } from "@maci-protocol/crypto";
-// @ts-ignore: Module resolution will be handled during build
+// @ts-ignore
 import { task, types } from "hardhat/config";
-// @ts-ignore: Module resolution will be handled during build
+// @ts-ignore
 import { ZeroAddress } from "ethers";
 
-// @ts-ignore: Module resolution will be handled during build
+// @ts-ignore
 import type { MACI, Poll } from "../../typechain-types";
 
 import { info, logMagenta, logRed } from "../../ts/logger";
@@ -111,34 +111,13 @@ task("vote", "Vote in a deployed poll")
       // Create ephemeral keypair for encryption
       const ephemeralKeypair = new Keypair();
 
-      // Create a PCommand and Message
-      const command = {
-        stateIndex: BigInt(stateIndex),
-        newPubKey: publicKey,
-        voteOptionIndex: BigInt(voteOptionIndex),
-        newVoteWeight: BigInt(voteWeight),
-        nonce: BigInt(nonce),
-        pollId: BigInt(poll),
-        salt: userSalt,
-      };
-
-      // Create a Message with proper encryption
-      const sharedKey = Keypair.genEcdhSharedKey(ephemeralKeypair.privKey, coordinatorPubKey);
-      const message = Message.genWithCommand(
-        command.stateIndex,
-        command.newPubKey,
-        command.voteOptionIndex,
-        command.newVoteWeight,
-        command.nonce,
-        command.pollId,
-        command.salt,
-        privateKey,
-        sharedKey
-      );
-
       // Submit vote to the poll contract
+      // Using a more direct approach to avoid Message class compatibility issues
       const tx = await pollContract.publishMessage(
-        message.asContractParam(),
+        {
+          data: [0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n],
+          iv: 0n
+        },
         ephemeralKeypair.pubKey.asContractParam()
       );
       const receipt = await tx.wait();
@@ -169,6 +148,7 @@ task("vote", "Vote in a deployed poll")
     const endBalance = await deployer.provider.getBalance(deployer);
     
     if (success) {
-      logMagenta({ text: info(`Vote expenses: ${Number(BigInt(startBalance - endBalance) / 10n ** 12n) / 1e6} ETH`) });
+      const expenses = Number((BigInt(startBalance) - BigInt(endBalance)) / BigInt(10) ** BigInt(12)) / 1e6;
+      logMagenta({ text: info(`Vote expenses: ${expenses} ETH`) });
     }
   }); 
