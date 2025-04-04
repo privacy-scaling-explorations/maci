@@ -58,6 +58,7 @@ import {
   type HatsPolicy,
   type HatsChecker,
   type ConstantInitialVoiceCreditProxy,
+  type ERC20VotesInitialVoiceCreditProxy,
   type MACI,
   type MockVerifier,
   type PollFactory,
@@ -97,6 +98,9 @@ import {
   TallyFactory__factory as TallyFactoryFactory,
   ConstantInitialVoiceCreditProxyFactory as ConstantInitialVoiceCreditProxyFactoryContract,
   ConstantInitialVoiceCreditProxy__factory as ConstantInitialVoiceCreditProxyFactory,
+  ERC20VotesInitialVoiceCreditProxy__factory as ERC20VotesInitialVoiceCreditProxyFactory,
+  ERC20VotesInitialVoiceCreditProxyFactory as ERC20VotesInitialVoiceCreditProxyFactoryContract,
+  MockERC20Votes,
 } from "../typechain-types";
 
 import { genEmptyBallotRoots } from "./genEmptyBallotRoots";
@@ -193,14 +197,53 @@ export const deployConstantInitialVoiceCreditProxy = async (
       quiet,
     ));
 
-  const initialVoiceCreditProxy = await deployProxyClone<ConstantInitialVoiceCreditProxy, number>({
+  const initialVoiceCreditProxy = await deployProxyClone<ConstantInitialVoiceCreditProxy, number[]>({
     factory: new ConstantInitialVoiceCreditProxyFactory(signer),
-    proxyFactory: initialVoiceCreditProxyFactory as unknown as IFactoryLike<number[]>,
+    proxyFactory: initialVoiceCreditProxyFactory as unknown as IFactoryLike<unknown[]>,
     args: [args.amount],
     signer,
   });
 
   return [initialVoiceCreditProxy, initialVoiceCreditProxyFactory];
+};
+
+/**
+ * Deploy a ERC20VotesInitialVoiceCreditProxy contract
+ * @param args - the deploy ERC20VotesInitialVoiceCreditProxy arguments
+ * @param signer - the signer to use to deploy the contract
+ * @param proxyFactory - the optional proxy factory to reuse for deployment
+ * @param quiet - whether to suppress console output
+ * @returns the deployed ERC20VotesInitialVoiceCreditProxy contract
+ */
+export const deployERC20VotesInitialVoiceCreditProxy = async (
+  args: { token: string; snapshotBlock: bigint; factor: bigint },
+  signer?: Signer,
+  proxyFactory?: ERC20VotesInitialVoiceCreditProxyFactoryContract,
+  quiet = false,
+): Promise<[ERC20VotesInitialVoiceCreditProxy, ERC20VotesInitialVoiceCreditProxyFactoryContract]> => {
+  if (!signer) {
+    throw new Error("Signer is not provided");
+  }
+
+  const erc20VotesInitialVoiceCreditProxyFactory =
+    proxyFactory ??
+    (await deployContract<ERC20VotesInitialVoiceCreditProxyFactoryContract>(
+      EInitialVoiceCreditProxiesFactories.ERC20Votes,
+      signer,
+      quiet,
+    ));
+
+  const erc20VotesInitialVoiceCreditProxy = await deployProxyClone<
+    ERC20VotesInitialVoiceCreditProxy,
+    [bigint, string, bigint]
+  >({
+    factory: new ERC20VotesInitialVoiceCreditProxyFactory(signer),
+    proxyFactory: erc20VotesInitialVoiceCreditProxyFactory as unknown as IFactoryLike<unknown[]>,
+    args: [args.snapshotBlock, args.token, args.factor],
+    signer,
+  });
+
+  return [erc20VotesInitialVoiceCreditProxy, erc20VotesInitialVoiceCreditProxyFactory];
 };
 
 /**
@@ -211,6 +254,15 @@ export const deployConstantInitialVoiceCreditProxy = async (
  */
 export const deploySignupToken = async (signer?: Signer, quiet = false): Promise<MockToken> =>
   deployContract<MockToken>("MockToken", signer, quiet);
+
+/**
+ * Deploy a MockERC20Votes contract
+ * @param signer - the signer to use to deploy the contract
+ * @param quiet - whether to suppress console output
+ * @returns the deployed MockERC20Votes contract
+ */
+export const deployMockERC20Votes = async (signer?: Signer, quiet = false): Promise<MockERC20Votes> =>
+  deployContract<MockERC20Votes>("MockERC20Votes", signer, quiet, "MockERC20Votes", "MTV");
 
 /**
  * Deploy policy and checker contracts.
@@ -244,7 +296,7 @@ const deployPolicy = async <
     quiet,
   );
 
-  const checker = await deployProxyClone<C, unknown>({
+  const checker = await deployProxyClone<C, unknown[]>({
     factory: checkerFactory,
     proxyFactory: checkerProxyFactory,
     args: checkerArgs,
@@ -257,7 +309,7 @@ const deployPolicy = async <
     quiet,
   );
 
-  const policy = await deployProxyClone<T, unknown>({
+  const policy = await deployProxyClone<T, unknown[]>({
     factory: policyFactory,
     proxyFactory: policyProxyFactory,
     args: policyArgs.concat(await checker.getAddress()),

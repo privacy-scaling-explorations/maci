@@ -4,6 +4,12 @@
       "deploy": true,
       "amount": 99
     },
+    "ERC20VotesInitialVoiceCreditProxy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "snapshotBlock": 1,
+      "factor": 1
+    },
     "FreeForAllPolicy": {
       "deploy": false
     },
@@ -82,6 +88,12 @@
       "deploy": true,
       "amount": 99
     },
+    "ERC20VotesInitialVoiceCreditProxy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "snapshotBlock": 1,
+      "factor": 1
+    },
     "FreeForAllPolicy": {
       "deploy": false
     },
@@ -158,6 +170,12 @@
     "ConstantInitialVoiceCreditProxy": {
       "deploy": true,
       "amount": 99
+    },
+    "ERC20VotesInitialVoiceCreditProxy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "snapshotBlock": 1,
+      "factor": 1
     },
     "FreeForAllPolicy": {
       "deploy": false
@@ -237,6 +255,12 @@
       "deploy": true,
       "amount": 99
     },
+    "ERC20VotesInitialVoiceCreditProxy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "snapshotBlock": 1,
+      "factor": 1
+    },
     "FreeForAllPolicy": {
       "deploy": true
     },
@@ -314,6 +338,12 @@
     "ConstantInitialVoiceCreditProxy": {
       "deploy": true,
       "amount": 99
+    },
+    "ERC20VotesInitialVoiceCreditProxy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "snapshotBlock": 1,
+      "factor": 1
     },
     "FreeForAllPolicy": {
       "deploy": true
@@ -393,6 +423,12 @@
       "deploy": true,
       "amount": 99
     },
+    "ERC20VotesInitialVoiceCreditProxy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "snapshotBlock": 1,
+      "factor": 1
+    },
     "FreeForAllPolicy": {
       "deploy": true
     },
@@ -470,6 +506,12 @@
     "ConstantInitialVoiceCreditProxy": {
       "deploy": true,
       "amount": 99
+    },
+    "ERC20VotesInitialVoiceCreditProxy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "snapshotBlock": 1,
+      "factor": 1
     },
     "FreeForAllPolicy": {
       "deploy": true
@@ -554,6 +596,12 @@
       "deploy": true,
       "amount": 200
     },
+    "ERC20VotesInitialVoiceCreditProxy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "snapshotBlock": 1,
+      "factor": 1
+    },
     "FreeForAllPolicy": {
       "deploy": true
     },
@@ -636,6 +684,12 @@
     "ConstantInitialVoiceCreditProxy": {
       "deploy": true,
       "amount": 200
+    },
+    "ERC20VotesInitialVoiceCreditProxy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "snapshotBlock": 1,
+      "factor": 1
     },
     "FreeForAllPolicy": {
       "deploy": true
@@ -720,6 +774,12 @@
       "deploy": true,
       "amount": 200
     },
+    "ERC20VotesInitialVoiceCreditProxy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "snapshotBlock": 1,
+      "factor": 1
+    },
     "FreeForAllPolicy": {
       "deploy": true
     },
@@ -802,6 +862,12 @@
     "ConstantInitialVoiceCreditProxy": {
       "deploy": true,
       "amount": 200
+    },
+    "ERC20VotesInitialVoiceCreditProxy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "snapshotBlock": 1,
+      "factor": 1
     },
     "FreeForAllPolicy": {
       "deploy": true
