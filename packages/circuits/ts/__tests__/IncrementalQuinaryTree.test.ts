@@ -23,31 +23,31 @@ describe("Incremental Quinary Tree (IQT)", function test() {
 
   before(async () => {
     circuitLeafExists = await circomkitInstance.WitnessTester("quinLeafExists", {
-      file: "./utils/trees/incrementalQuinaryTree",
+      file: "./trees/quinary/QuinLeafExists",
       template: "QuinLeafExists",
       params: [3],
     });
 
     circuitGeneratePathIndices = await circomkitInstance.WitnessTester("quinGeneratePathIndices", {
-      file: "./utils/trees/incrementalQuinaryTree",
+      file: "./trees/quinary/QuinGeneratePathIndices",
       template: "QuinGeneratePathIndices",
       params: [4],
     });
 
     circuitQuinSelector = await circomkitInstance.WitnessTester("quinSelector", {
-      file: "./utils/trees/incrementalQuinaryTree",
+      file: "./trees/quinary/QuinSelector",
       template: "QuinSelector",
       params: [5],
     });
 
     splicerCircuit = await circomkitInstance.WitnessTester("splicer", {
-      file: "./utils/trees/incrementalQuinaryTree",
+      file: "./trees/quinary/Splicer",
       template: "Splicer",
       params: [4],
     });
 
     quinCheckRoot = await circomkitInstance.WitnessTester("quinCheckRoot", {
-      file: "./utils/trees/incrementalQuinaryTree",
+      file: "./trees/quinary/QuinCheckRoot",
       template: "QuinCheckRoot",
       params: [3],
     });
@@ -121,7 +121,7 @@ describe("Incremental Quinary Tree (IQT)", function test() {
             fc.pre(index >= elements.length);
 
             const circuit = await circomkitInstance.WitnessTester("quinSelector", {
-              file: "./utils/trees/incrementalQuinaryTree",
+              file: "./trees/quinary/QuinSelector",
               template: "QuinSelector",
               params: [elements.length],
             });
@@ -245,7 +245,7 @@ describe("Incremental Quinary Tree (IQT)", function test() {
             fc.pre(BigInt(leavesPerNode) ** levels < input);
 
             const witness = await circomkitInstance.WitnessTester("quinGeneratePathIndices", {
-              file: "./utils/trees/incrementalQuinaryTree",
+              file: "./trees/quinary/QuinGeneratePathIndices",
               template: "QuinGeneratePathIndices",
               params: [levels],
             });
@@ -272,7 +272,7 @@ describe("Incremental Quinary Tree (IQT)", function test() {
             const tree = new IncrementalQuinTree(Number(levels), 0n, 5, hash5);
 
             const circuit = await circomkitInstance.WitnessTester("quinGeneratePathIndices", {
-              file: "./utils/trees/incrementalQuinaryTree",
+              file: "./trees/quinary/QuinGeneratePathIndices",
               template: "QuinGeneratePathIndices",
               params: [levels],
             });
@@ -349,7 +349,7 @@ describe("Incremental Quinary Tree (IQT)", function test() {
           fc.array(fc.bigInt({ min: 0n, max: r - 1n }), { minLength: leavesPerNode, maxLength: leavesPerNode }),
           async (levels: number, index: number, leaves: bigint[]) => {
             const circuit = await circomkitInstance.WitnessTester("quinLeafExists", {
-              file: "./utils/trees/incrementalQuinaryTree",
+              file: "./trees/quinary/QuinLeafExists",
               template: "QuinLeafExists",
               params: [levels],
             });
@@ -423,7 +423,7 @@ describe("Incremental Quinary Tree (IQT)", function test() {
       const quinCheckRootTest = async (leaves: bigint[]): Promise<boolean> => {
         const levels = Math.floor(Math.log(leaves.length) / Math.log(leavesPerNode));
         const circuit = await circomkitInstance.WitnessTester("quinCheckRoot", {
-          file: "./utils/trees/incrementalQuinaryTree",
+          file: "./trees/quinary/QuinCheckRoot",
           template: "QuinCheckRoot",
           params: [levels],
         });

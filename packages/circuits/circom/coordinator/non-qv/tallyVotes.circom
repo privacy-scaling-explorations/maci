@@ -1,14 +1,20 @@
 pragma circom 2.0.0;
 
 // circomlib import
-include "./comparators.circom";
-// zk-kit import
+include "./mux1.circom";
+// zk-kit imports
+include "./safe-comparators.circom";
 include "./unpack-element.circom";
 // local imports
-include "../../utils/trees/incrementalMerkleTree.circom";
-include "../../utils/trees/incrementalQuinaryTree.circom";
-include "../../utils/calculateTotal.circom";
 include "../../utils/hashers.circom";
+include "../../trees/binary/BinaryMerkleRoot.circom";
+include "../../trees/binary/MerkleGeneratePathIndices.circom";
+include "../../trees/quinary/QuinTreeInclusionProof.circom";
+include "../../trees/quinary/QuinGeneratePathIndices.circom";
+include "../../utils/calculateTotal.circom";
+include "../../trees/binary/CheckRoot.circom";
+include "../../trees/binary/LeafExists.circom";
+include "../../trees/quinary/QuinCheckRoot.circom";
 
 /**
  * Processes batches of votes and verifies their validity in a Merkle tree structure.

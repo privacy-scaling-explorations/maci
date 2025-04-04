@@ -3,7 +3,7 @@ pragma circom 2.0.0;
 // local imports
 include "../utils/hashers.circom";
 include "../utils/privToPubKey.circom";
-include "../utils/trees/incrementalMerkleTree.circom";
+include "../trees/binary/BinaryMerkleRoot.circom";
 
 // Poll Joining Circuit
 // Allows a user to prove knowledge of a private key that is signed up to 
