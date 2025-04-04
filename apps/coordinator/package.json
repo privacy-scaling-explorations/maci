@@ -41,7 +41,7 @@
     "@nestjs/websockets": "^11.0.11",
     "@nomicfoundation/hardhat-ethers": "^3.0.8",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
-    "@zerodev/ecdsa-validator": "5.4.4",
+    "@zerodev/ecdsa-validator": "5.4.5",
     "@zerodev/permissions": "5.5.4",
     "@zerodev/sdk": "5.4.26",
     "class-transformer": "^0.5.1",
