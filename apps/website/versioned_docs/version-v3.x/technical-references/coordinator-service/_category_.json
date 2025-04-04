@@ -1,0 +1,8 @@
+{
+  "label": "Coordinator Service",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "The Coordinator Service is a backend service that aims to automate MACI-related operations, such as contracts deployment, proof generation and poll finalisation."
+  }
+}
