@@ -1,4 +1,4 @@
-type MACI @entity {
+type MACI @entity(immutable: true) {
   id: Bytes! # address
   stateTreeDepth: BigInt! # uint8
   updatedAt: BigInt!
@@ -19,7 +19,7 @@ type User @entity(immutable: true) {
   accounts: [Account!]! @derivedFrom(field: "owner")
 }
 
-type Account @entity {
+type Account @entity(immutable: true) {
   id: ID! # stateIndex
   voiceCreditBalance: BigInt! # uint256
   createdAt: BigInt! # uint256
@@ -27,7 +27,7 @@ type Account @entity {
   owner: User!
 }
 
-type Poll @entity {
+type Poll @entity(immutable: true) {
   id: Bytes! # poll address
   pollId: BigInt! # uint256
   startDate: BigInt! # uint256
