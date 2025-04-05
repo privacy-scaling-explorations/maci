@@ -278,25 +278,32 @@ export class ProofGenerator {
         const batchIndex = this.poll.numBatchesTallied;
         const proofPath = path.join(this.outputDir, `tally_${batchIndex}.json`);
 
+        let shouldGenerateNewProof = true;
+        
         // Check if proof exists and incremental flag is set
-        if (this.incremental && fs.existsSync(proofPath)) {
+        if (this.incremental) {
           try {
-            const existingProof = JSON.parse(fs.readFileSync(proofPath, 'utf8'));
-            proofs.push(existingProof);
-            this.poll.numBatchesTallied += 1;
-            continue;
+            const exists = await fs.promises.access(proofPath).then(() => true).catch(() => false);
+            if (exists) {
+              const existingProof = JSON.parse(await fs.promises.readFile(proofPath, "utf8")) as Proof;
+              proofs.push(existingProof);
+              this.poll.numBatchesTallied += 1;
+              shouldGenerateNewProof = false;
+            }
           } catch (error) {
             logMagenta({ text: info(`Error reading existing proof at ${proofPath}, regenerating...`) });
           }
         }
 
-        tallyCircuitInputs = (this.useQuadraticVoting
-          ? this.poll.tallyVotes()
-          : this.poll.tallyVotesNonQv()) as unknown as CircuitInputs;
+        if (shouldGenerateNewProof) {
+          tallyCircuitInputs = (this.useQuadraticVoting
+            ? this.poll.tallyVotes()
+            : this.poll.tallyVotesNonQv()) as unknown as CircuitInputs;
 
-        inputs.push(tallyCircuitInputs);
+          inputs.push(tallyCircuitInputs);
 
-        logMagenta({ text: info(`Progress: ${this.poll.numBatchesTallied} / ${totalTallyBatches}`) });
+          logMagenta({ text: info(`Progress: ${this.poll.numBatchesTallied} / ${totalTallyBatches}`) });
+        }
       }
 
       logMagenta({ text: info("Wait until proof generation is finished") });
