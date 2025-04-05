@@ -31,8 +31,6 @@ export async function generateRsaKeypair(): Promise<void> {
       fs.promises.writeFile(publicKeyPath, publicKey),
       fs.promises.writeFile(privateKeyPath, privateKey),
     ]);
-  } catch (error) {
-    console.error("Error generating RSA keypair:", error);
   }
 }
 
