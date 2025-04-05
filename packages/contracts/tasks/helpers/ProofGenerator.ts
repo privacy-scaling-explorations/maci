@@ -279,13 +279,15 @@ export class ProofGenerator {
         const proofPath = path.join(this.outputDir, `tally_${batchIndex}.json`);
 
         let shouldGenerateNewProof = true;
-        
+
         // Check if proof exists and incremental flag is set
         if (this.incremental) {
           try {
-            const exists = await fs.promises.access(proofPath).then(() => true).catch(() => false);
+            // Use a synchronous approach to avoid await in loop
+            const exists = fs.existsSync(proofPath);
             if (exists) {
-              const existingProof = JSON.parse(await fs.promises.readFile(proofPath, "utf8")) as Proof;
+              // Read file synchronously to avoid await in loop
+              const existingProof = JSON.parse(fs.readFileSync(proofPath, "utf8")) as Proof;
               proofs.push(existingProof);
               this.poll.numBatchesTallied += 1;
               shouldGenerateNewProof = false;
