@@ -153,6 +153,11 @@ export interface IProveParams {
    * Backup files for ipfs messages (name format: ipfsHash1.json, ipfsHash2.json, ..., ipfsHashN.json)
    */
   ipfsMessageBackupFiles?: string;
+
+  /**
+   * Incremental flag
+   */
+  incremental?: boolean;
 }
 
 /**
@@ -223,6 +228,11 @@ export interface IProofGeneratorParams {
    * Whether to use quadratic voting or not
    */
   useQuadraticVoting?: boolean;
+
+  /**
+   * Incremental flag
+   */
+  incremental?: boolean;
 }
 
 /**

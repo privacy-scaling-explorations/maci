@@ -36,6 +36,7 @@ task("prove", "Command to generate proofs")
     undefined,
     types.string,
   )
+  .addFlag("incremental", "Whether to use incremental proof generation")
   .setAction(
     async (
       {
@@ -52,6 +53,7 @@ task("prove", "Command to generate proofs")
         endBlock,
         transactionHash,
         ipfsMessageBackupFiles,
+        incremental,
       }: IProveParams,
       hre,
     ) => {
@@ -158,6 +160,7 @@ task("prove", "Command to generate proofs")
         outputDir,
         tallyOutputFile: tallyFile,
         useQuadraticVoting,
+        incremental,
       });
 
       const data = {

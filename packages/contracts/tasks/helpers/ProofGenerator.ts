@@ -65,6 +65,11 @@ export class ProofGenerator {
   private useQuadraticVoting?: boolean;
 
   /**
+   * Whether to use incremental proof generation
+   */
+  private incremental?: boolean;
+
+  /**
    * Path to the rapidsnark binary
    */
   private rapidsnark?: string;
@@ -163,6 +168,7 @@ export class ProofGenerator {
     outputDir,
     tallyOutputFile,
     useQuadraticVoting,
+    incremental,
   }: IProofGeneratorParams) {
     this.poll = poll;
     this.maciContractAddress = maciContractAddress;
@@ -173,6 +179,7 @@ export class ProofGenerator {
     this.tally = tally;
     this.rapidsnark = rapidsnark;
     this.useQuadraticVoting = useQuadraticVoting;
+    this.incremental = incremental;
   }
 
   /**
@@ -265,8 +272,24 @@ export class ProofGenerator {
     try {
       let tallyCircuitInputs: CircuitInputs;
       const inputs: CircuitInputs[] = [];
+      const proofs: Proof[] = [];
 
       while (this.poll.hasUntalliedBallots()) {
+        const batchIndex = this.poll.numBatchesTallied;
+        const proofPath = path.join(this.outputDir, `tally_${batchIndex}.json`);
+
+        // Check if proof exists and incremental flag is set
+        if (this.incremental && fs.existsSync(proofPath)) {
+          try {
+            const existingProof = JSON.parse(fs.readFileSync(proofPath, 'utf8'));
+            proofs.push(existingProof);
+            this.poll.numBatchesTallied += 1;
+            continue;
+          } catch (error) {
+            logMagenta({ text: info(`Error reading existing proof at ${proofPath}, regenerating...`) });
+          }
+        }
+
         tallyCircuitInputs = (this.useQuadraticVoting
           ? this.poll.tallyVotes()
           : this.poll.tallyVotesNonQv()) as unknown as CircuitInputs;
@@ -280,7 +303,7 @@ export class ProofGenerator {
 
       const tallyVk = await extractVk(this.tally.zkey, false);
 
-      const proofs = await Promise.all(
+      const newProofs = await Promise.all(
         inputs.map((circuitInputs, index) =>
           this.generateProofs(circuitInputs, this.tally, `tally_${index}.json`, tallyVk).then((data) => {
             options?.onBatchComplete?.({ current: index, total: totalTallyBatches, proofs: data });
@@ -288,6 +311,9 @@ export class ProofGenerator {
           }),
         ),
       ).then((data) => data.reduce((acc, x) => acc.concat(x), []));
+
+      // Combine existing proofs with new ones
+      const allProofs = [...proofs, ...newProofs];
 
       logGreen({ text: success("Proof generation is finished") });
 
@@ -371,9 +397,9 @@ export class ProofGenerator {
       performance.mark("tally-proofs-end");
       performance.measure("Generate tally proofs", "tally-proofs-start", "tally-proofs-end");
 
-      options?.onComplete?.(proofs, tallyFileData);
+      options?.onComplete?.(allProofs, tallyFileData);
 
-      return { proofs, tallyData: tallyFileData };
+      return { proofs: allProofs, tallyData: tallyFileData };
     } catch (error) {
       options?.onFail?.(error as Error);
 
