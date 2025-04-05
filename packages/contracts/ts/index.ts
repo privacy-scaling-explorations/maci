@@ -48,6 +48,7 @@ export {
   EContracts,
   EPolicies,
   EInitialVoiceCreditProxies,
+  EInitialVoiceCreditProxiesFactories,
   ECheckers,
   ECheckerFactories,
   EPolicyFactories,
