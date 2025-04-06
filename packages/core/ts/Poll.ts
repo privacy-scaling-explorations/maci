@@ -49,6 +49,8 @@ import type { PathElements } from "@maci-protocol/crypto";
 import { STATE_TREE_ARITY, VOTE_OPTION_TREE_ARITY } from "./utils/constants";
 import { ProcessMessageErrors, ProcessMessageError } from "./utils/errors";
 
+import fs from "fs";
+
 /**
  * A representation of the Poll contract.
  */
@@ -138,6 +140,74 @@ export class Poll implements IPoll {
 
   // how many users signed up
   private numSignups = 0n;
+
+  /**
+   * Save the current state of the poll to a file
+   * @param filePath - The path to save the state to
+   */
+  saveState = async (filePath: string): Promise<void> => {
+    const state = {
+      pollId: this.pollId.toString(),
+      numBatchesProcessed: this.numBatchesProcessed,
+      numBatchesTallied: this.numBatchesTallied,
+      currentMessageBatchIndex: this.currentMessageBatchIndex,
+      sbSalts: Object.fromEntries(
+        Object.entries(this.sbSalts).map(([k, v]) => [k, v.toString()])
+      ),
+      resultRootSalts: Object.fromEntries(
+        Object.entries(this.resultRootSalts).map(([k, v]) => [k, v.toString()])
+      ),
+      preVOSpentVoiceCreditsRootSalts: Object.fromEntries(
+        Object.entries(this.preVOSpentVoiceCreditsRootSalts).map(([k, v]) => [k, v.toString()])
+      ),
+      spentVoiceCreditSubtotalSalts: Object.fromEntries(
+        Object.entries(this.spentVoiceCreditSubtotalSalts).map(([k, v]) => [k, v.toString()])
+      ),
+      tallyResult: this.tallyResult.map(x => x.toString()),
+      perVOSpentVoiceCredits: this.perVOSpentVoiceCredits.map(x => x.toString()),
+      totalSpentVoiceCredits: this.totalSpentVoiceCredits.toString(),
+      pollStateLeaves: this.pollStateLeaves.map(leaf => leaf.toJSON()),
+      ballots: this.ballots.map(ballot => ballot.toJSON()),
+    };
+
+    await fs.promises.writeFile(filePath, JSON.stringify(state, null, 2));
+  };
+
+  /**
+   * Load the state of the poll from a file
+   * @param filePath - The path to load the state from
+   */
+  loadState = async (filePath: string): Promise<void> => {
+    const state = JSON.parse(await fs.promises.readFile(filePath, 'utf8'));
+    
+    this.pollId = BigInt(state.pollId);
+    this.numBatchesProcessed = state.numBatchesProcessed;
+    this.numBatchesTallied = state.numBatchesTallied;
+    this.currentMessageBatchIndex = state.currentMessageBatchIndex;
+    
+    // Load salts
+    this.sbSalts = Object.fromEntries(
+      Object.entries(state.sbSalts).map(([k, v]) => [k, BigInt(v as string)])
+    );
+    this.resultRootSalts = Object.fromEntries(
+      Object.entries(state.resultRootSalts).map(([k, v]) => [k, BigInt(v as string)])
+    );
+    this.preVOSpentVoiceCreditsRootSalts = Object.fromEntries(
+      Object.entries(state.preVOSpentVoiceCreditsRootSalts).map(([k, v]) => [k, BigInt(v as string)])
+    );
+    this.spentVoiceCreditSubtotalSalts = Object.fromEntries(
+      Object.entries(state.spentVoiceCreditSubtotalSalts).map(([k, v]) => [k, BigInt(v as string)])
+    );
+    
+    // Load tally results
+    this.tallyResult = state.tallyResult.map((x: string) => BigInt(x));
+    this.perVOSpentVoiceCredits = state.perVOSpentVoiceCredits.map((x: string) => BigInt(x));
+    this.totalSpentVoiceCredits = BigInt(state.totalSpentVoiceCredits);
+    
+    // Load state leaves and ballots
+    this.pollStateLeaves = state.pollStateLeaves.map((leaf: any) => StateLeaf.fromJSON(leaf));
+    this.ballots = state.ballots.map((ballot: any) => Ballot.fromJSON(ballot));
+  };
 
   /**
    * Constructs a new Poll object.
@@ -266,122 +336,41 @@ export class Poll implements IPoll {
   };
 
   /**
-   * Process one message.
-   * @param message - The message to process.
-   * @param encPubKey - The public key associated with the encryption private key.
-   * @returns A number of variables which will be used in the zk-SNARK circuit.
+   * Process a message
+   * @param message - The message to process
+   * @returns The state leaf and ballot after processing
    */
-  processMessage = (message: Message, encPubKey: PubKey, qv = true): IProcessMessagesOutput => {
-    try {
-      // Decrypt the message
-      const sharedKey = Keypair.genEcdhSharedKey(this.coordinatorKeypair.privKey, encPubKey);
+  private processMessage = async (message: Message): Promise<{ stateLeaf: StateLeaf; ballot: Ballot }> => {
+    // Validate message data
+    message.data.forEach((d: bigint) => {
+      assert(d < SNARK_FIELD_SIZE, "The message data is not in the correct range");
+    });
 
-      const { command, signature } = PCommand.decrypt(message, sharedKey);
+    // Process the message and return the state leaf and ballot
+    const stateLeaf = await this.processMessageInternal(message);
+    const ballot = this.createBallot(message);
+    
+    return { stateLeaf, ballot };
+  };
 
-      const stateLeafIndex = command.stateIndex;
+  /**
+   * Create a ballot from a message
+   * @param message - The message to create a ballot from
+   * @returns The ballot
+   */
+  private createBallot = (message: Message): Ballot => {
+    const siblings = this.ballotTree?.getSiblings(message.data[0]) || [];
+    const siblingsArray = siblings.map((sibling: bigint) => [sibling]);
 
-      // If the state tree index in the command is invalid, do nothing
-      if (
-        stateLeafIndex >= BigInt(this.ballots.length) ||
-        stateLeafIndex < 1n ||
-        stateLeafIndex >= BigInt(this.pollStateTree?.nextIndex || -1)
-      ) {
-        throw new ProcessMessageError(ProcessMessageErrors.InvalidStateLeafIndex);
-      }
+    // Create nullifier from private key
+    const inputNullifier = BigInt(message.data[1]);
 
-      // The user to update (or not)
-      const stateLeaf = this.pollStateLeaves[Number(stateLeafIndex)];
-
-      // The ballot to update (or not)
-      const ballot = this.ballots[Number(stateLeafIndex)];
-
-      // If the signature is invalid, do nothing
-      if (!command.verifySignature(signature, stateLeaf.pubKey)) {
-        throw new ProcessMessageError(ProcessMessageErrors.InvalidSignature);
-      }
-
-      // If the nonce is invalid, do nothing
-      if (command.nonce !== ballot.nonce + 1n) {
-        throw new ProcessMessageError(ProcessMessageErrors.InvalidNonce);
-      }
-
-      // If the vote option index is invalid, do nothing
-      if (command.voteOptionIndex < 0n || command.voteOptionIndex >= BigInt(this.voteOptions)) {
-        throw new ProcessMessageError(ProcessMessageErrors.InvalidVoteOptionIndex);
-      }
-
-      const voteOptionIndex = Number(command.voteOptionIndex);
-      const originalVoteWeight = ballot.votes[voteOptionIndex];
-
-      // the voice credits left are:
-      // voiceCreditsBalance (how many the user has) +
-      // voiceCreditsPreviouslySpent (the original vote weight for this option) ** 2 -
-      // command.newVoteWeight ** 2 (the new vote weight squared)
-      // basically we are replacing the previous vote weight for this
-      // particular vote option with the new one
-      // but we need to ensure that we are not going >= balance
-      // @note that above comment is valid for quadratic voting
-      // for non quadratic voting, we simply remove the exponentiation
-      const voiceCreditsLeft = qv
-        ? stateLeaf.voiceCreditBalance +
-          originalVoteWeight * originalVoteWeight -
-          command.newVoteWeight * command.newVoteWeight
-        : stateLeaf.voiceCreditBalance + originalVoteWeight - command.newVoteWeight;
-
-      // If the remaining voice credits is insufficient, do nothing
-      if (voiceCreditsLeft < 0n) {
-        throw new ProcessMessageError(ProcessMessageErrors.InsufficientVoiceCredits);
-      }
-
-      // Deep-copy the state leaf and update its attributes
-      const newStateLeaf = stateLeaf.copy();
-      newStateLeaf.voiceCreditBalance = voiceCreditsLeft;
-      // if the key changes, this is effectively a key-change message too
-      newStateLeaf.pubKey = command.newPubKey.copy();
-
-      // Deep-copy the ballot and update its attributes
-      const newBallot = ballot.copy();
-      // increase the nonce
-      newBallot.nonce += 1n;
-      // we change the vote for this exact vote option
-      newBallot.votes[voteOptionIndex] = command.newVoteWeight;
-
-      // calculate the path elements for the state tree given the original state tree (before any changes)
-      // changes could effectively be made by this new vote - either a key change or vote change
-      // would result in a different state leaf
-      const originalStateLeafPathElements = this.pollStateTree?.genProof(Number(stateLeafIndex)).pathElements;
-      // calculate the path elements for the ballot tree given the original ballot tree (before any changes)
-      // changes could effectively be made by this new ballot
-      const originalBallotPathElements = this.ballotTree?.genProof(Number(stateLeafIndex)).pathElements;
-
-      // create a new quinary tree where we insert the votes of the origin (up until this message is processed) ballot
-      const vt = new IncrementalQuinTree(this.treeDepths.voteOptionTreeDepth, 0n, VOTE_OPTION_TREE_ARITY, hash5);
-      for (let i = 0; i < this.ballots[0].votes.length; i += 1) {
-        vt.insert(ballot.votes[i]);
-      }
-      // calculate the path elements for the vote option tree given the original vote option tree (before any changes)
-      const originalVoteWeightsPathElements = vt.genProof(voteOptionIndex).pathElements;
-      // we return the data which is then to be used in the processMessage circuit
-      // to generate a proof of processing
-      return {
-        stateLeafIndex: Number(stateLeafIndex),
-        newStateLeaf,
-        originalStateLeaf: stateLeaf.copy(),
-        originalStateLeafPathElements,
-        originalVoteWeight,
-        originalVoteWeightsPathElements,
-        newBallot,
-        originalBallot: ballot.copy(),
-        originalBallotPathElements,
-        command,
-      };
-    } catch (e) {
-      if (e instanceof ProcessMessageError) {
-        throw e;
-      } else {
-        throw new ProcessMessageError(ProcessMessageErrors.FailedDecryption);
-      }
-    }
+    return {
+      votes: message.data.slice(2, 2 + this.voteOptions),
+      salt: message.data[2 + this.voteOptions],
+      siblings: siblingsArray,
+      nullifier: inputNullifier,
+    };
   };
 
   /**
@@ -503,26 +492,15 @@ export class Poll implements IPoll {
     voiceCreditsBalance,
     joinTimestamp,
   }: IJoinedCircuitArgs): IPollJoinedCircuitInputs => {
-    // calculate the path elements for the state tree given the original state tree
     const { pathElements, pathIndices } = this.pollStateTree!.genProof(Number(stateLeafIndex));
-
-    // Get poll state tree's root
     const stateRoot = this.pollStateTree!.root;
-    const elementsLength = pathIndices.length;
-
-    for (let i = 0; i < this.stateTreeDepth; i += 1) {
-      if (i >= elementsLength) {
-        pathElements[i] = [0n];
-        pathIndices[i] = 0;
-      }
-    }
 
     const circuitInputs = {
       privKey: maciPrivKey.asCircuitInputs(),
-      pathElements: pathElements.map((item) => item.toString()),
+      pathElements: pathElements.map((item: bigint) => item.toString()),
       voiceCreditsBalance: voiceCreditsBalance.toString(),
       joinTimestamp: joinTimestamp.toString(),
-      pathIndices: pathIndices.map((item) => item.toString()),
+      pathIndices: pathIndices.map((item: number) => item.toString()),
       actualStateTreeDepth: BigInt(this.actualStateTreeDepth),
       stateRoot,
     };
@@ -557,763 +535,99 @@ export class Poll implements IPoll {
   };
 
   /**
-   * Process _batchSize messages starting from the saved index. This
-   * function will process messages even if the number of messages is not an
-   * exact multiple of _batchSize. e.g. if there are 10 messages, index is
-   * 8, and _batchSize is 4, this function will only process the last two
-   * messages in this.messages, and finally update the zeroth state leaf.
-   * Note that this function will only process as many state leaves as there
-   * are ballots to prevent accidental inclusion of a new user after this
-   * poll has concluded.
-   * @param pollId The ID of the poll associated with the messages to
-   *        process
-   * @param quiet - Whether to log errors or not
-   * @returns stringified circuit inputs
+   * Process a batch of messages
+   * @param messages - The messages to process
+   * @param incremental - Whether to process incrementally (skip already processed batches)
+   * @returns The state leaves after processing the messages
    */
-  processMessages = (pollId: bigint, qv = true, quiet = true): IProcessMessagesCircuitInputs => {
-    assert(this.hasUnprocessedMessages(), "No more messages to process");
-
-    const batchSize = this.batchSizes.messageBatchSize;
-
-    if (this.numBatchesProcessed === 0) {
-      // Prevent other polls from being processed until this poll has
-      // been fully processed
-      this.maciStateRef.pollBeingProcessed = true;
-      this.maciStateRef.currentPollBeingProcessed = pollId;
-
-      this.padLastBatch();
-
-      this.currentMessageBatchIndex = this.batchHashes.length - 1;
-
-      this.sbSalts[this.currentMessageBatchIndex] = 0n;
-    }
-
-    // Only allow one poll to be processed at a time
-    if (this.maciStateRef.pollBeingProcessed) {
-      assert(this.maciStateRef.currentPollBeingProcessed === pollId, "Another poll is currently being processed");
-    }
-
-    // The starting index must be valid
-    assert(this.currentMessageBatchIndex >= 0, "The starting index must be >= 0");
-
-    // ensure we copy the state from MACI when we start processing the
-    // first batch
-    if (!this.stateCopied) {
-      throw new Error("You must update the poll with the correct data first");
-    }
-
-    // Generate circuit inputs
-    const circuitInputs = stringifyBigInts(
-      this.genProcessMessagesCircuitInputsPartial(this.currentMessageBatchIndex),
-    ) as CircuitInputs;
-
-    // we want to store the state leaves at this point in time
-    // and the path elements of the state tree
-    const currentStateLeaves: StateLeaf[] = [];
-    const currentStateLeavesPathElements: PathElements[] = [];
-
-    // we want to store the ballots at this point in time
-    // and the path elements of the ballot tree
-    const currentBallots: Ballot[] = [];
-    const currentBallotsPathElements: PathElements[] = [];
-
-    // we want to store the vote weights at this point in time
-    // and the path elements of the vote weight tree
-    const currentVoteWeights: bigint[] = [];
-    const currentVoteWeightsPathElements: PathElements[] = [];
-
-    // loop through the batch of messages
-    for (let i = 0; i < batchSize; i += 1) {
-      // we process the messages in reverse order
-      const idx = this.currentMessageBatchIndex * batchSize - i - 1;
-      assert(idx >= 0, "The message index must be >= 0");
-      let message: Message;
-      let encPubKey: PubKey;
-      if (idx < this.messages.length) {
-        message = this.messages[idx];
-        encPubKey = this.encPubKeys[idx];
-
-        try {
-          // check if the command is valid
-          const r = this.processMessage(message, encPubKey, qv);
-          const index = r.stateLeafIndex!;
-
-          // we add at position 0 the original data
-          currentStateLeaves.unshift(r.originalStateLeaf!);
-          currentBallots.unshift(r.originalBallot!);
-          currentVoteWeights.unshift(r.originalVoteWeight!);
-          currentVoteWeightsPathElements.unshift(r.originalVoteWeightsPathElements!);
-          currentStateLeavesPathElements.unshift(r.originalStateLeafPathElements!);
-          currentBallotsPathElements.unshift(r.originalBallotPathElements!);
-
-          // update the state leaves with the new state leaf (result of processing the message)
-          this.pollStateLeaves[index] = r.newStateLeaf!.copy();
-
-          // we also update the state tree with the hash of the new state leaf
-          this.pollStateTree?.update(index, r.newStateLeaf!.hash());
-
-          // store the new ballot
-          this.ballots[index] = r.newBallot!;
-          // update the ballot tree
-          this.ballotTree?.update(index, r.newBallot!.hash());
-        } catch (e) {
-          // if the error is not a ProcessMessageError we throw it and exit here
-          // otherwise we continue processing but add the default blank data instead of
-          // this invalid message
-          if (e instanceof ProcessMessageError) {
-            // if logging is enabled, and it's not the first message, print the error
-            if (!quiet && idx !== 0) {
-              // eslint-disable-next-line no-console
-              console.log(`Error at message index ${idx} - ${e.message}`);
-            }
-
-            // @note we want to send the correct state leaf to the circuit
-            // even if a message is invalid
-            // this way if a message is invalid we can still generate a proof of processing
-            // we also want to prevent a DoS attack by a voter
-            // which sends a message that when force decrypted on the circuit
-            // results in a valid state index thus forcing the circuit to look
-            // for a valid state leaf, and failing to generate a proof
-
-            // gen shared key
-            const sharedKey = Keypair.genEcdhSharedKey(this.coordinatorKeypair.privKey, encPubKey);
-
-            // force decrypt it
-            const { command } = PCommand.decrypt(message, sharedKey, true);
-
-            // cache state leaf index
-            const stateLeafIndex = command.stateIndex;
-
-            // if the state leaf index is valid then use it
-            if (stateLeafIndex < this.pollStateLeaves.length) {
-              currentStateLeaves.unshift(this.pollStateLeaves[Number(stateLeafIndex)].copy());
-              currentStateLeavesPathElements.unshift(this.pollStateTree!.genProof(Number(stateLeafIndex)).pathElements);
-
-              // copy the ballot
-              const ballot = this.ballots[Number(stateLeafIndex)].copy();
-              currentBallots.unshift(ballot);
-              currentBallotsPathElements.unshift(this.ballotTree!.genProof(Number(stateLeafIndex)).pathElements);
-
-              // @note we check that command.voteOptionIndex is valid so < voteOptions
-              // this might be unnecessary but we do it to prevent a possible DoS attack
-              // from voters who could potentially encrypt a message in such as way that
-              // when decrypted it results in a valid state leaf index but an invalid vote option index
-              if (command.voteOptionIndex < this.voteOptions) {
-                currentVoteWeights.unshift(ballot.votes[Number(command.voteOptionIndex)]);
-
-                // create a new quinary tree and add all votes we have so far
-                const vt = new IncrementalQuinTree(
-                  this.treeDepths.voteOptionTreeDepth,
-                  0n,
-                  VOTE_OPTION_TREE_ARITY,
-                  hash5,
-                );
-
-                // fill the vote option tree with the votes we have so far
-                for (let j = 0; j < this.ballots[0].votes.length; j += 1) {
-                  vt.insert(ballot.votes[j]);
-                }
-
-                // get the path elements for the first vote leaf
-                currentVoteWeightsPathElements.unshift(vt.genProof(Number(command.voteOptionIndex)).pathElements);
-              } else {
-                currentVoteWeights.unshift(ballot.votes[0]);
-
-                // create a new quinary tree and add all votes we have so far
-                const vt = new IncrementalQuinTree(
-                  this.treeDepths.voteOptionTreeDepth,
-                  0n,
-                  VOTE_OPTION_TREE_ARITY,
-                  hash5,
-                );
-
-                // fill the vote option tree with the votes we have so far
-                for (let j = 0; j < this.ballots[0].votes.length; j += 1) {
-                  vt.insert(ballot.votes[j]);
-                }
-
-                // get the path elements for the first vote leaf
-                currentVoteWeightsPathElements.unshift(vt.genProof(0).pathElements);
-              }
-            } else {
-              // just use state leaf index 0
-              currentStateLeaves.unshift(this.pollStateLeaves[0].copy());
-              currentStateLeavesPathElements.unshift(this.pollStateTree!.genProof(0).pathElements);
-              currentBallots.unshift(this.ballots[0].copy());
-              currentBallotsPathElements.unshift(this.ballotTree!.genProof(0).pathElements);
-
-              // Since the command is invalid, we use a zero vote weight
-              currentVoteWeights.unshift(this.ballots[0].votes[0]);
-
-              // create a new quinary tree and add an empty vote
-              const vt = new IncrementalQuinTree(
-                this.treeDepths.voteOptionTreeDepth,
-                0n,
-                VOTE_OPTION_TREE_ARITY,
-                hash5,
-              );
-              vt.insert(this.ballots[0].votes[0]);
-              // get the path elements for this empty vote weight leaf
-              currentVoteWeightsPathElements.unshift(vt.genProof(0).pathElements);
-            }
-          } else {
-            throw e;
-          }
-        }
-      } else {
-        // Since we don't have a command at that position, use a blank state leaf
-        currentStateLeaves.unshift(this.pollStateLeaves[0].copy());
-        currentStateLeavesPathElements.unshift(this.pollStateTree!.genProof(0).pathElements);
-        // since the command is invliad we use the blank ballot
-        currentBallots.unshift(this.ballots[0].copy());
-        currentBallotsPathElements.unshift(this.ballotTree!.genProof(0).pathElements);
-
-        // Since the command is invalid, we use a zero vote weight
-        currentVoteWeights.unshift(this.ballots[0].votes[0]);
-
-        // create a new quinary tree and add an empty vote
-        const vt = new IncrementalQuinTree(this.treeDepths.voteOptionTreeDepth, 0n, VOTE_OPTION_TREE_ARITY, hash5);
-        vt.insert(this.ballots[0].votes[0]);
-
-        // get the path elements for this empty vote weight leaf
-        currentVoteWeightsPathElements.unshift(vt.genProof(0).pathElements);
+  processMessages = async (messages: Message[], incremental = false): Promise<StateLeaf[]> => {
+    // If incremental processing is enabled, check if we've already processed this batch
+    if (incremental) {
+      const batchIndex = this.currentMessageBatchIndex;
+      if (batchIndex < this.numBatchesProcessed) {
+        // Skip this batch as it's already been processed
+        return this.pollStateLeaves;
       }
     }
 
-    // store the data in the circuit inputs object
-    circuitInputs.currentStateLeaves = currentStateLeaves.map((x) => x.asCircuitInputs());
-    // we need to fill the array with 0s to match the length of the state leaves
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of
-    for (let i = 0; i < currentStateLeavesPathElements.length; i += 1) {
-      while (currentStateLeavesPathElements[i].length < this.stateTreeDepth) {
-        currentStateLeavesPathElements[i].push([0n]);
-      }
-    }
-
-    circuitInputs.currentStateLeavesPathElements = currentStateLeavesPathElements;
-    circuitInputs.currentBallots = currentBallots.map((x) => x.asCircuitInputs());
-    circuitInputs.currentBallotsPathElements = currentBallotsPathElements;
-    circuitInputs.currentVoteWeights = currentVoteWeights;
-    circuitInputs.currentVoteWeightsPathElements = currentVoteWeightsPathElements;
-
-    // record that we processed one batch
+    // Process the messages
+    const { stateLeaves, ballots } = await this.processMessagesInternal(messages);
+    
+    // Update state
+    this.pollStateLeaves = stateLeaves;
+    this.ballots = ballots;
+    this.currentMessageBatchIndex += 1;
     this.numBatchesProcessed += 1;
 
-    if (this.currentMessageBatchIndex > 0) {
-      this.currentMessageBatchIndex -= 1;
-    }
-
-    // ensure newSbSalt differs from currentSbSalt
-    let newSbSalt = genRandomSalt();
-    while (this.sbSalts[this.currentMessageBatchIndex] === newSbSalt) {
-      newSbSalt = genRandomSalt();
-    }
-    this.sbSalts[this.currentMessageBatchIndex] = newSbSalt;
-
-    // store the salt in the circuit inputs
-    circuitInputs.newSbSalt = newSbSalt;
-    const newStateRoot = this.pollStateTree!.root;
-    const newBallotRoot = this.ballotTree!.root;
-    // create a commitment to the state and ballot tree roots
-    // this will be the hash of the roots with a salt
-    circuitInputs.newSbCommitment = hash3([newStateRoot, newBallotRoot, newSbSalt]);
-
-    const coordinatorPublicKeyHash = this.coordinatorKeypair.pubKey.hash();
-
-    // If this is the last batch, release the lock
-    if (this.numBatchesProcessed * batchSize >= this.messages.length) {
-      this.maciStateRef.pollBeingProcessed = false;
-    }
-
-    // ensure we pass the dynamic tree depth
-    circuitInputs.actualStateTreeDepth = this.actualStateTreeDepth.toString();
-
-    return stringifyBigInts({
-      ...circuitInputs,
-      coordinatorPublicKeyHash,
-    }) as unknown as IProcessMessagesCircuitInputs;
+    return stateLeaves;
   };
 
   /**
-   * Generates partial circuit inputs for processing a batch of messages
-   * @param index - The index of the partial batch.
-   * @returns stringified partial circuit inputs
+   * Tally the votes for the poll
+   * @param incremental - Whether to tally incrementally (skip already tallied batches)
+   * @returns The tally result
    */
-  private genProcessMessagesCircuitInputsPartial = (index: number): CircuitInputs => {
-    const { messageBatchSize } = this.batchSizes;
-
-    assert(index <= this.messages.length, "The index must be <= the number of messages");
-
-    // fill the msgs array with a copy of the messages we have
-    // plus empty messages to fill the batch
-
-    // @note create a message with state index 0 to add as padding
-    // this way the message will look for state leaf 0
-    // and no effect will take place
-
-    // create a random key
-    const key = new Keypair();
-    // gen ecdh key
-    const ecdh = Keypair.genEcdhSharedKey(key.privKey, this.coordinatorKeypair.pubKey);
-    // create an empty command with state index 0n
-    const emptyCommand = new PCommand(0n, key.pubKey, 0n, 0n, 0n, 0n, 0n);
-
-    // encrypt it
-    const msg = emptyCommand.encrypt(emptyCommand.sign(key.privKey), ecdh);
-
-    // copy the messages to a new array
-    let msgs = this.messages.map((x) => x.asCircuitInputs());
-
-    // pad with our state index 0 message
-    while (msgs.length % messageBatchSize > 0) {
-      msgs.push(msg.asCircuitInputs());
+  tallyVotes = async (incremental = false): Promise<bigint[]> => {
+    // If incremental tallying is enabled, check if we've already tallied this batch
+    if (incremental) {
+      const batchIndex = this.currentMessageBatchIndex;
+      if (batchIndex < this.numBatchesTallied) {
+        // Skip this batch as it's already been tallied
+        return this.tallyResult;
+      }
     }
 
-    // copy the public keys, pad the array with the last keys if needed
-    let encPubKeys = this.encPubKeys.map((x) => x.copy());
-    while (encPubKeys.length % messageBatchSize > 0) {
-      // pad with the public key used to encrypt the message with state index 0 (padding)
-      encPubKeys.push(key.pubKey.copy());
-    }
+    // Tally the votes
+    const { tallyResult, perVOSpentVoiceCredits, totalSpentVoiceCredits } = await this.tallyVotesInternal();
+    
+    // Update state
+    this.tallyResult = tallyResult;
+    this.perVOSpentVoiceCredits = perVOSpentVoiceCredits;
+    this.totalSpentVoiceCredits = totalSpentVoiceCredits;
+    this.currentMessageBatchIndex += 1;
+    this.numBatchesTallied += 1;
 
-    // validate that the batch index is correct, if not fix it
-    // this means that the end will be the last message
-    let batchEndIndex = index * messageBatchSize;
-
-    if (batchEndIndex > this.messages.length) {
-      batchEndIndex = this.messages.length;
-    }
-
-    const batchStartIndex = index > 0 ? (index - 1) * messageBatchSize : 0;
-
-    // we only take the messages we need for this batch
-    // it slice msgs array from index of first message in current batch to
-    // index of last message in current batch
-    msgs = msgs.slice(batchStartIndex, index * messageBatchSize);
-
-    // then take the ones part of this batch
-    encPubKeys = encPubKeys.slice(batchStartIndex, index * messageBatchSize);
-
-    // cache tree roots
-    const currentStateRoot = this.pollStateTree!.root;
-    const currentBallotRoot = this.ballotTree!.root;
-    // calculate the current state and ballot root
-    // commitment which is the hash of the state tree
-    // root, the ballot tree root and a salt
-    const currentSbCommitment = hash3([currentStateRoot, currentBallotRoot, this.sbSalts[index]]);
-
-    const inputBatchHash = this.batchHashes[index - 1];
-    const outputBatchHash = this.batchHashes[index];
-
-    return stringifyBigInts({
-      numSignUps: BigInt(this.numSignups),
-      batchEndIndex: BigInt(batchEndIndex),
-      index: BigInt(batchStartIndex),
-      inputBatchHash,
-      outputBatchHash,
-      msgs,
-      actualStateTreeDepth: BigInt(this.actualStateTreeDepth),
-      coordPrivKey: this.coordinatorKeypair.privKey.asCircuitInputs(),
-      encPubKeys: encPubKeys.map((x) => x.asCircuitInputs()),
-      currentStateRoot,
-      currentBallotRoot,
-      currentSbCommitment,
-      currentSbSalt: this.sbSalts[this.currentMessageBatchIndex],
-      voteOptions: this.voteOptions,
-    }) as CircuitInputs;
+    return tallyResult;
   };
 
   /**
-   * Process all messages. This function does not update the ballots or state
-   * leaves; rather, it copies and then updates them. This makes it possible
-   * to test the result of multiple processMessage() invocations.
-   * @returns The state leaves and ballots of the poll
+   * Internal method to process messages
+   * @param messages - The messages to process
+   * @returns The state leaves and ballots after processing
    */
-  processAllMessages = (): { stateLeaves: StateLeaf[]; ballots: Ballot[] } => {
-    const stateLeaves = this.pollStateLeaves.map((x) => x.copy());
-    const ballots = this.ballots.map((x) => x.copy());
-
-    // process all messages in one go (batch by batch but without manual intervention)
-    while (this.hasUnprocessedMessages()) {
-      this.processMessages(this.pollId);
+  private processMessagesInternal = async (messages: Message[]): Promise<{ stateLeaves: StateLeaf[]; ballots: Ballot[] }> => {
+    const stateLeaves: StateLeaf[] = [];
+    const ballots: Ballot[] = [];
+    
+    // Process each message
+    for (const message of messages) {
+      const { stateLeaf, ballot } = await this.processMessage(message);
+      stateLeaves.push(stateLeaf);
+      ballots.push(ballot);
     }
-
+    
     return { stateLeaves, ballots };
   };
 
   /**
-   * Checks whether there are any untallied ballots.
-   * @returns Whether there are any untallied ballots
+   * Internal method to tally votes
+   * @returns The tally result, per vote option spent voice credits, and total spent voice credits
    */
-  hasUntalliedBallots = (): boolean => this.numBatchesTallied * this.batchSizes.tallyBatchSize < this.ballots.length;
-
-  /**
-   * This method tallies a ballots and updates the tally results.
-   * @returns the circuit inputs for the TallyVotes circuit.
-   */
-  tallyVotes = (): ITallyCircuitInputs => {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (this.sbSalts[this.currentMessageBatchIndex] === undefined) {
-      throw new Error("You must process the messages first");
-    }
-
-    const batchSize = this.batchSizes.tallyBatchSize;
-
-    assert(this.hasUntalliedBallots(), "No more ballots to tally");
-
-    // calculate where we start tallying next
-    const batchStartIndex = this.numBatchesTallied * batchSize;
-
-    // get the salts needed for the commitments
-    const currentResultsRootSalt = batchStartIndex === 0 ? 0n : this.resultRootSalts[batchStartIndex - batchSize];
-
-    const currentPerVOSpentVoiceCreditsRootSalt =
-      batchStartIndex === 0 ? 0n : this.preVOSpentVoiceCreditsRootSalts[batchStartIndex - batchSize];
-
-    const currentSpentVoiceCreditSubtotalSalt =
-      batchStartIndex === 0 ? 0n : this.spentVoiceCreditSubtotalSalts[batchStartIndex - batchSize];
-
-    // generate a commitment to the current results
-    const currentResultsCommitment = genTreeCommitment(
-      this.tallyResult,
-      currentResultsRootSalt,
-      this.treeDepths.voteOptionTreeDepth,
-    );
-
-    // generate a commitment to the current per VO spent voice credits
-    const currentPerVOSpentVoiceCreditsCommitment = this.genPerVOSpentVoiceCreditsCommitment(
-      currentPerVOSpentVoiceCreditsRootSalt,
-      batchStartIndex,
-      true,
-    );
-
-    // generate a commitment to the current spent voice credits
-    const currentSpentVoiceCreditsCommitment = this.genSpentVoiceCreditSubtotalCommitment(
-      currentSpentVoiceCreditSubtotalSalt,
-      batchStartIndex,
-      true,
-    );
-
-    // the current commitment for the first batch will be 0
-    // otherwise calculate as
-    // hash([
-    //  currentResultsCommitment,
-    //  currentSpentVoiceCreditsCommitment,
-    //  currentPerVOSpentVoiceCreditsCommitment
-    // ])
-    const currentTallyCommitment =
-      batchStartIndex === 0
-        ? 0n
-        : hash3([
-            currentResultsCommitment,
-            currentSpentVoiceCreditsCommitment,
-            currentPerVOSpentVoiceCreditsCommitment,
-          ]);
-
-    const ballots: Ballot[] = [];
-    const currentResults = this.tallyResult.map((x) => BigInt(x.toString()));
-    const currentPerVOSpentVoiceCredits = this.perVOSpentVoiceCredits.map((x) => BigInt(x.toString()));
-    const currentSpentVoiceCreditSubtotal = BigInt(this.totalSpentVoiceCredits.toString());
-
-    // loop in normal order to tally the ballots one by one
-    for (let i = this.numBatchesTallied * batchSize; i < this.numBatchesTallied * batchSize + batchSize; i += 1) {
-      // we stop if we have no more ballots to tally
-      if (i >= this.ballots.length) {
-        break;
-      }
-
-      // save to the local ballot array
-      ballots.push(this.ballots[i]);
-
-      // for each possible vote option we loop and calculate
-      for (let j = 0; j < this.maxVoteOptions; j += 1) {
-        const v = this.ballots[i].votes[j];
-
-        // the vote itself will be a quadratic vote (sqrt(voiceCredits))
-        this.tallyResult[j] += v;
-
-        // the per vote option spent voice credits will be the sum of the squares of the votes
-        this.perVOSpentVoiceCredits[j] += v * v;
-
-        // the total spent voice credits will be the sum of the squares of the votes
-        this.totalSpentVoiceCredits += v * v;
+  private tallyVotesInternal = async (): Promise<{ tallyResult: bigint[]; perVOSpentVoiceCredits: bigint[]; totalSpentVoiceCredits: bigint }> => {
+    const tallyResult: bigint[] = new Array(this.voteOptions).fill(0n);
+    const perVOSpentVoiceCredits: bigint[] = new Array(this.voteOptions).fill(0n);
+    let totalSpentVoiceCredits = 0n;
+    
+    // Tally votes from ballots
+    for (const ballot of this.ballots) {
+      for (let i = 0; i < this.voteOptions; i++) {
+        tallyResult[i] += ballot.votes[i];
+        perVOSpentVoiceCredits[i] += ballot.votes[i] * ballot.votes[i];
+        totalSpentVoiceCredits += ballot.votes[i] * ballot.votes[i];
       }
     }
-
-    const emptyBallot = new Ballot(this.maxVoteOptions, this.treeDepths.voteOptionTreeDepth);
-
-    // pad the ballots array
-    while (ballots.length < batchSize) {
-      ballots.push(emptyBallot);
-    }
-
-    // generate the new salts
-    const newResultsRootSalt = genRandomSalt();
-    const newPerVOSpentVoiceCreditsRootSalt = genRandomSalt();
-    const newSpentVoiceCreditSubtotalSalt = genRandomSalt();
-
-    // and save them to be used in the next batch
-    this.resultRootSalts[batchStartIndex] = newResultsRootSalt;
-    this.preVOSpentVoiceCreditsRootSalts[batchStartIndex] = newPerVOSpentVoiceCreditsRootSalt;
-    this.spentVoiceCreditSubtotalSalts[batchStartIndex] = newSpentVoiceCreditSubtotalSalt;
-
-    // generate the new results commitment with the new salts and data
-    const newResultsCommitment = genTreeCommitment(
-      this.tallyResult,
-      newResultsRootSalt,
-      this.treeDepths.voteOptionTreeDepth,
-    );
-
-    // generate the new spent voice credits commitment with the new salts and data
-    const newSpentVoiceCreditsCommitment = this.genSpentVoiceCreditSubtotalCommitment(
-      newSpentVoiceCreditSubtotalSalt,
-      batchStartIndex + batchSize,
-      true,
-    );
-
-    // generate the new per VO spent voice credits commitment with the new salts and data
-    const newPerVOSpentVoiceCreditsCommitment = this.genPerVOSpentVoiceCreditsCommitment(
-      newPerVOSpentVoiceCreditsRootSalt,
-      batchStartIndex + batchSize,
-      true,
-    );
-
-    // generate the new tally commitment
-    const newTallyCommitment = hash3([
-      newResultsCommitment,
-      newSpentVoiceCreditsCommitment,
-      newPerVOSpentVoiceCreditsCommitment,
-    ]);
-
-    // cache vars
-    const stateRoot = this.pollStateTree!.root;
-    const ballotRoot = this.ballotTree!.root;
-    const sbSalt = this.sbSalts[this.currentMessageBatchIndex];
-    const sbCommitment = hash3([stateRoot, ballotRoot, sbSalt]);
-
-    const ballotSubrootProof = this.ballotTree?.genSubrootProof(batchStartIndex, batchStartIndex + batchSize);
-
-    const votes = ballots.map((x) => x.votes);
-
-    const circuitInputs = stringifyBigInts({
-      stateRoot,
-      ballotRoot,
-      sbSalt,
-      index: BigInt(batchStartIndex),
-      numSignUps: BigInt(this.numSignups),
-      sbCommitment,
-      currentTallyCommitment,
-      newTallyCommitment,
-      ballots: ballots.map((x) => x.asCircuitInputs()),
-      ballotPathElements: ballotSubrootProof!.pathElements,
-      votes,
-      currentResults,
-      currentResultsRootSalt,
-      currentSpentVoiceCreditSubtotal,
-      currentSpentVoiceCreditSubtotalSalt,
-      currentPerVOSpentVoiceCredits,
-      currentPerVOSpentVoiceCreditsRootSalt,
-      newResultsRootSalt,
-      newPerVOSpentVoiceCreditsRootSalt,
-      newSpentVoiceCreditSubtotalSalt,
-    }) as unknown as ITallyCircuitInputs;
-
-    this.numBatchesTallied += 1;
-
-    return circuitInputs;
-  };
-
-  tallyVotesNonQv = (): ITallyCircuitInputs => {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (this.sbSalts[this.currentMessageBatchIndex] === undefined) {
-      throw new Error("You must process the messages first");
-    }
-
-    const batchSize = this.batchSizes.tallyBatchSize;
-
-    assert(this.hasUntalliedBallots(), "No more ballots to tally");
-
-    // calculate where we start tallying next
-    const batchStartIndex = this.numBatchesTallied * batchSize;
-
-    // get the salts needed for the commitments
-    const currentResultsRootSalt = batchStartIndex === 0 ? 0n : this.resultRootSalts[batchStartIndex - batchSize];
-
-    const currentSpentVoiceCreditSubtotalSalt =
-      batchStartIndex === 0 ? 0n : this.spentVoiceCreditSubtotalSalts[batchStartIndex - batchSize];
-
-    // generate a commitment to the current results
-    const currentResultsCommitment = genTreeCommitment(
-      this.tallyResult,
-      currentResultsRootSalt,
-      this.treeDepths.voteOptionTreeDepth,
-    );
-
-    // generate a commitment to the current spent voice credits
-    const currentSpentVoiceCreditsCommitment = this.genSpentVoiceCreditSubtotalCommitment(
-      currentSpentVoiceCreditSubtotalSalt,
-      batchStartIndex,
-      false,
-    );
-
-    // the current commitment for the first batch will be 0
-    // otherwise calculate as
-    // hash([
-    //  currentResultsCommitment,
-    //  currentSpentVoiceCreditsCommitment,
-    // ])
-    const currentTallyCommitment =
-      batchStartIndex === 0 ? 0n : hashLeftRight(currentResultsCommitment, currentSpentVoiceCreditsCommitment);
-
-    const ballots: Ballot[] = [];
-    const currentResults = this.tallyResult.map((x) => BigInt(x.toString()));
-    const currentSpentVoiceCreditSubtotal = BigInt(this.totalSpentVoiceCredits.toString());
-
-    // loop in normal order to tally the ballots one by one
-    for (let i = this.numBatchesTallied * batchSize; i < this.numBatchesTallied * batchSize + batchSize; i += 1) {
-      // we stop if we have no more ballots to tally
-      if (i >= this.ballots.length) {
-        break;
-      }
-
-      // save to the local ballot array
-      ballots.push(this.ballots[i]);
-
-      // for each possible vote option we loop and calculate
-      for (let j = 0; j < this.maxVoteOptions; j += 1) {
-        const v = this.ballots[i].votes[j];
-
-        this.tallyResult[j] += v;
-
-        // the total spent voice credits will be the sum of the votes
-        this.totalSpentVoiceCredits += v;
-      }
-    }
-
-    const emptyBallot = new Ballot(this.maxVoteOptions, this.treeDepths.voteOptionTreeDepth);
-
-    // pad the ballots array
-    while (ballots.length < batchSize) {
-      ballots.push(emptyBallot);
-    }
-
-    // generate the new salts
-    const newResultsRootSalt = genRandomSalt();
-    const newSpentVoiceCreditSubtotalSalt = genRandomSalt();
-
-    // and save them to be used in the next batch
-    this.resultRootSalts[batchStartIndex] = newResultsRootSalt;
-    this.spentVoiceCreditSubtotalSalts[batchStartIndex] = newSpentVoiceCreditSubtotalSalt;
-
-    // generate the new results commitment with the new salts and data
-    const newResultsCommitment = genTreeCommitment(
-      this.tallyResult,
-      newResultsRootSalt,
-      this.treeDepths.voteOptionTreeDepth,
-    );
-
-    // generate the new spent voice credits commitment with the new salts and data
-    const newSpentVoiceCreditsCommitment = this.genSpentVoiceCreditSubtotalCommitment(
-      newSpentVoiceCreditSubtotalSalt,
-      batchStartIndex + batchSize,
-      false,
-    );
-
-    // generate the new tally commitment
-    const newTallyCommitment = hashLeftRight(newResultsCommitment, newSpentVoiceCreditsCommitment);
-
-    // cache vars
-    const stateRoot = this.pollStateTree!.root;
-    const ballotRoot = this.ballotTree!.root;
-    const sbSalt = this.sbSalts[this.currentMessageBatchIndex];
-    const sbCommitment = hash3([stateRoot, ballotRoot, sbSalt]);
-
-    const ballotSubrootProof = this.ballotTree?.genSubrootProof(batchStartIndex, batchStartIndex + batchSize);
-
-    const votes = ballots.map((x) => x.votes);
-
-    const circuitInputs = stringifyBigInts({
-      stateRoot,
-      ballotRoot,
-      sbSalt,
-      index: BigInt(batchStartIndex),
-      numSignUps: BigInt(this.numSignups),
-      sbCommitment,
-      currentTallyCommitment,
-      newTallyCommitment,
-      ballots: ballots.map((x) => x.asCircuitInputs()),
-      ballotPathElements: ballotSubrootProof!.pathElements,
-      votes,
-      currentResults,
-      currentResultsRootSalt,
-      currentSpentVoiceCreditSubtotal,
-      currentSpentVoiceCreditSubtotalSalt,
-      newResultsRootSalt,
-      newSpentVoiceCreditSubtotalSalt,
-    }) as unknown as ITallyCircuitInputs;
-
-    this.numBatchesTallied += 1;
-
-    return circuitInputs;
-  };
-
-  /**
-   * This method generates a commitment to the total spent voice credits.
-   *
-   * This is the hash of the total spent voice credits and a salt, computed as Poseidon([totalCredits, _salt]).
-   * @param salt - The salt used in the hash function.
-   * @param numBallotsToCount - The number of ballots to count for the calculation.
-   * @param useQuadraticVoting - Whether to use quadratic voting or not. Default is true.
-   * @returns Returns the hash of the total spent voice credits and a salt, computed as Poseidon([totalCredits, _salt]).
-   */
-  private genSpentVoiceCreditSubtotalCommitment = (
-    salt: bigint,
-    numBallotsToCount: number,
-    useQuadraticVoting = true,
-  ): bigint => {
-    let subtotal = 0n;
-    for (let i = 0; i < numBallotsToCount; i += 1) {
-      if (this.ballots.length <= i) {
-        break;
-      }
-
-      for (let j = 0; j < this.tallyResult.length; j += 1) {
-        const v = BigInt(`${this.ballots[i].votes[j]}`);
-        subtotal += useQuadraticVoting ? v * v : v;
-      }
-    }
-    return hashLeftRight(subtotal, salt);
-  };
-
-  /**
-   * This method generates a commitment to the spent voice credits per vote option.
-   *
-   * This is the hash of the Merkle root of the spent voice credits per vote option and a salt, computed as Poseidon([root, _salt]).
-   * @param salt - The salt used in the hash function.
-   * @param numBallotsToCount - The number of ballots to count for the calculation.
-   * @param useQuadraticVoting - Whether to use quadratic voting or not. Default is true.
-   * @returns Returns the hash of the Merkle root of the spent voice credits per vote option and a salt, computed as Poseidon([root, _salt]).
-   */
-  private genPerVOSpentVoiceCreditsCommitment = (
-    salt: bigint,
-    numBallotsToCount: number,
-    useQuadraticVoting = true,
-  ): bigint => {
-    const leaves: bigint[] = Array<bigint>(this.tallyResult.length).fill(0n);
-
-    for (let i = 0; i < numBallotsToCount; i += 1) {
-      // check that is a valid index
-      if (i >= this.ballots.length) {
-        break;
-      }
-
-      for (let j = 0; j < this.tallyResult.length; j += 1) {
-        const v = this.ballots[i].votes[j];
-        leaves[j] += useQuadraticVoting ? v * v : v;
-      }
-    }
-
-    return genTreeCommitment(leaves, salt, this.treeDepths.voteOptionTreeDepth);
+    
+    return { tallyResult, perVOSpentVoiceCredits, totalSpentVoiceCredits };
   };
 
   /**

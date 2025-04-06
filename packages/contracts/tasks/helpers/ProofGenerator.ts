@@ -467,4 +467,90 @@ export class ProofGenerator {
 
     return proofs;
   }
+
+  /**
+   * Generate a proof for processing messages
+   * @param pollId - The ID of the poll
+   * @param incremental - Whether to use incremental proof generation
+   * @returns The proof for processing messages
+   */
+  async generateProcessMessagesProof(pollId: bigint, incremental = false): Promise<Proof> {
+    const poll = this.poll.polls.get(pollId);
+    if (!poll) {
+      throw new Error(`Poll ${pollId} not found`);
+    }
+
+    // Load state if incremental mode is enabled
+    if (incremental) {
+      const statePath = path.join(this.outputDir, `poll_${pollId}_state.json`);
+      if (fs.existsSync(statePath)) {
+        await poll.loadState(statePath);
+      }
+    }
+
+    // Process messages
+    const stateLeaves = await poll.processMessages(poll.messages, incremental);
+
+    // Save state if incremental mode is enabled
+    if (incremental) {
+      const statePath = path.join(this.outputDir, `poll_${pollId}_state.json`);
+      await poll.saveState(statePath);
+    }
+
+    // Generate proof
+    const proofPath = path.join(this.outputDir, `processMessages_${pollId}.json`);
+    if (incremental && fs.existsSync(proofPath)) {
+      const existingProof = JSON.parse(await fs.promises.readFile(proofPath, "utf8")) as Proof;
+      return existingProof;
+    }
+
+    const circuitInputs = poll.genProcessMessagesCircuitInputs(pollId);
+    const proofs = await this.generateProofs(circuitInputs, this.mp, `processMessages_${pollId}.json`, await extractVk(this.mp.zkey, false));
+    const proof = proofs[0];
+    await fs.promises.writeFile(proofPath, JSON.stringify(proof, null, 2));
+    return proof;
+  }
+
+  /**
+   * Generate a proof for tallying votes
+   * @param pollId - The ID of the poll
+   * @param incremental - Whether to use incremental proof generation
+   * @returns The proof for tallying votes
+   */
+  async generateTallyProof(pollId: bigint, incremental = false): Promise<Proof> {
+    const poll = this.poll.polls.get(pollId);
+    if (!poll) {
+      throw new Error(`Poll ${pollId} not found`);
+    }
+
+    // Load state if incremental mode is enabled
+    if (incremental) {
+      const statePath = path.join(this.outputDir, `poll_${pollId}_state.json`);
+      if (fs.existsSync(statePath)) {
+        await poll.loadState(statePath);
+      }
+    }
+
+    // Tally votes
+    const tallyResult = await poll.tallyVotes(incremental);
+
+    // Save state if incremental mode is enabled
+    if (incremental) {
+      const statePath = path.join(this.outputDir, `poll_${pollId}_state.json`);
+      await poll.saveState(statePath);
+    }
+
+    // Generate proof
+    const proofPath = path.join(this.outputDir, `tally_${pollId}.json`);
+    if (incremental && fs.existsSync(proofPath)) {
+      const existingProof = JSON.parse(await fs.promises.readFile(proofPath, "utf8")) as Proof;
+      return existingProof;
+    }
+
+    const circuitInputs = poll.genTallyCircuitInputs();
+    const proofs = await this.generateProofs(circuitInputs, this.tally, `tally_${pollId}.json`, await extractVk(this.tally.zkey, false));
+    const proof = proofs[0];
+    await fs.promises.writeFile(proofPath, JSON.stringify(proof, null, 2));
+    return proof;
+  }
 }
