@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "commonjs",
+    "lib": ["es2020"],
+    "declaration": true,
+    "outDir": "./dist",
+    "rootDir": "./",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "typeRoots": ["./types", "./node_modules/@types"],
+    "paths": {
+      "@maci-protocol/crypto": ["./types/maci-protocol__crypto.d.ts"],
+      "@maci-protocol/domainobjs": ["./types/maci-protocol__domainobjs.d.ts"],
+      "@zk-kit/lean-imt": ["./types/zk-kit__lean-imt.d.ts"]
+    }
+  },
+  "include": ["./**/*"],
+  "exclude": ["node_modules", "dist"]
+} 

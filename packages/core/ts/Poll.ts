@@ -347,10 +347,10 @@ export class Poll implements IPoll {
     });
 
     // Process the message and return the state leaf and ballot
-    const stateLeaf = await this.processMessageInternal(message);
+    const { stateLeaves } = await this.processMessagesInternal([message]);
     const ballot = this.createBallot(message);
     
-    return { stateLeaf, ballot };
+    return { stateLeaf: stateLeaves[0], ballot };
   };
 
   /**
@@ -365,9 +365,14 @@ export class Poll implements IPoll {
     // Create nullifier from private key
     const inputNullifier = BigInt(message.data[1]);
 
+    // Calculate vote start and end indices
+    const voteStartIndex = 2;
+    const voteEndIndex = voteStartIndex + Number(this.voteOptions);
+    const saltIndex = voteEndIndex;
+
     return {
-      votes: message.data.slice(2, 2 + this.voteOptions),
-      salt: message.data[2 + this.voteOptions],
+      votes: message.data.slice(voteStartIndex, voteEndIndex),
+      salt: message.data[saltIndex],
       siblings: siblingsArray,
       nullifier: inputNullifier,
     };
@@ -428,9 +433,9 @@ export class Poll implements IPoll {
   };
 
   /**
-   * Create circuit input for pollJoining
-   * @param args Poll joining circuit inputs
-   * @returns stringified circuit inputs
+   * Create circuit input for poll joining
+   * @param args - The arguments for poll joining
+   * @returns The circuit input
    */
   joiningCircuitInputs = ({
     maciPrivKey,
@@ -482,9 +487,9 @@ export class Poll implements IPoll {
   };
 
   /**
-   * Create circuit input for pollJoined
-   * @param args Poll joined circuit inputs
-   * @returns stringified circuit inputs
+   * Create circuit input for poll joining
+   * @param args - The arguments for poll joining
+   * @returns The circuit input
    */
   joinedCircuitInputs = ({
     maciPrivKey,
@@ -495,7 +500,7 @@ export class Poll implements IPoll {
     const { pathElements, pathIndices } = this.pollStateTree!.genProof(Number(stateLeafIndex));
     const stateRoot = this.pollStateTree!.root;
 
-    const circuitInputs = {
+    return stringifyBigInts({
       privKey: maciPrivKey.asCircuitInputs(),
       pathElements: pathElements.map((item: bigint) => item.toString()),
       voiceCreditsBalance: voiceCreditsBalance.toString(),
@@ -503,9 +508,43 @@ export class Poll implements IPoll {
       pathIndices: pathIndices.map((item: number) => item.toString()),
       actualStateTreeDepth: BigInt(this.actualStateTreeDepth),
       stateRoot,
-    };
+    }) as unknown as IPollJoinedCircuitInputs;
+  };
 
-    return stringifyBigInts(circuitInputs) as unknown as IPollJoinedCircuitInputs;
+  /**
+   * Create circuit input for poll results
+   * @returns The circuit input
+   */
+  resultsCircuitInputs = (): IPollResultsCircuitInputs => {
+    const results = this.tallyResult.map((r) => r.toString());
+    const resultsRoot = this.resultsTree!.root;
+    const currentResultsCommitment = this.currentResultsCommitment.toString();
+    const currentVotesForOption = this.currentVotesForOption.map((v) => v.toString());
+    const currentSpentVoiceCreditsCommitment = this.currentSpentVoiceCreditsCommitment.toString();
+    const currentPerVOSpentVoiceCreditsCommitment = this.currentPerVOSpentVoiceCreditsCommitment.toString();
+
+    return stringifyBigInts({
+      results,
+      resultsRoot,
+      currentResultsCommitment,
+      currentVotesForOption,
+      currentSpentVoiceCreditsCommitment,
+      currentPerVOSpentVoiceCreditsCommitment,
+    }) as unknown as IPollResultsCircuitInputs;
+  };
+
+  /**
+   * Create circuit input for poll state
+   * @returns The circuit input
+   */
+  stateCircuitInputs = (): IPollStateCircuitInputs => {
+    const pollStateRoot = this.pollStateTree!.root;
+    const pollBallotRoot = this.ballotTree!.root;
+
+    return stringifyBigInts({
+      pollStateRoot,
+      pollBallotRoot,
+    }) as unknown as IPollStateCircuitInputs;
   };
 
   /**
