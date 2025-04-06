@@ -941,8 +941,14 @@ program
   .option(
     "-u, --use-quadratic-voting <useQuadraticVoting>",
     "whether to use quadratic voting",
-    (value) => value === "true",
+    (value: string) => value === "true",
     true,
+  )
+  .option(
+    "-i, --incremental <incremental>",
+    "whether to reuse existing proofs and salts (only regenerate missing ones)",
+    (value: string) => value === "true",
+    false,
   )
   .option(
     "-b, --ipfs-message-backup-files <ipfsMessageBackupFiles>",
@@ -974,6 +980,7 @@ program
       processWitnessdat,
       wasm,
       rapidsnark,
+      incremental,
     }) => {
       try {
         banner(quiet);
@@ -1012,6 +1019,7 @@ program
           processDatFile: processWitnessdat,
           useWasm: wasm,
           rapidsnark,
+          incremental,
         });
       } catch (error) {
         program.error((error as Error).message, { exitCode: 1 });

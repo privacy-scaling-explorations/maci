@@ -173,6 +173,11 @@ export interface IGenerateProofsArgs {
    * The tally file
    */
   tallyFile: string;
+  
+  /**
+   * Whether to use incremental processing (reuse existing proofs and salts)
+   */
+  incremental?: boolean;
 }
 
 /**

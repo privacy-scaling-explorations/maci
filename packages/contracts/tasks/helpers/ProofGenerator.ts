@@ -201,26 +201,52 @@ export class ProofGenerator {
 
     try {
       const inputs: CircuitInputs[] = [];
+      const proofs: Proof[] = [];
 
       // while we have unprocessed messages, process them
       while (this.poll.hasUnprocessedMessages()) {
-        // process messages in batches
-        const circuitInputs = this.poll.processMessages(
-          BigInt(this.poll.pollId),
-          this.useQuadraticVoting,
-        ) as unknown as CircuitInputs;
+        const batchIndex = this.poll.numBatchesProcessed;
+        const proofPath = path.join(this.outputDir, `process_${batchIndex}.json`);
+        
+        let shouldGenerateNewProof = true;
 
-        // generate the proof for this batch
-        inputs.push(circuitInputs);
+        // Check if proof exists and incremental flag is set
+        if (this.incremental) {
+          try {
+            // Use a synchronous approach to avoid await in loop
+            const exists = fs.existsSync(proofPath);
+            if (exists) {
+              // Read file synchronously to avoid await in loop
+              const existingProof = JSON.parse(fs.readFileSync(proofPath, "utf8")) as Proof;
+              proofs.push(existingProof);
+              this.poll.numBatchesProcessed += 1;
+              shouldGenerateNewProof = false;
+            }
+          } catch (error) {
+            logMagenta({ text: info(`Error reading existing proof at ${proofPath}, regenerating...`) });
+          }
+        }
 
-        logMagenta({ text: info(`Progress: ${this.poll.numBatchesProcessed} / ${totalMessageBatches}`) });
+        if (shouldGenerateNewProof) {
+          // process messages in batches with the incremental flag
+          const circuitInputs = this.poll.processMessages(
+            BigInt(this.poll.pollId),
+            this.useQuadraticVoting,
+            this.incremental
+          );
+
+          // generate the proof for this batch
+          inputs.push(circuitInputs as unknown as CircuitInputs);
+
+          logMagenta({ text: info(`Progress: ${this.poll.numBatchesProcessed} / ${totalMessageBatches}`) });
+        }
       }
 
       logMagenta({ text: info("Wait until proof generation is finished") });
 
       const processZkey = await extractVk(this.mp.zkey, false);
 
-      const proofs = await Promise.all(
+      const newProofs = await Promise.all(
         inputs.map((circuitInputs, index) =>
           this.generateProofs(circuitInputs, this.mp, `process_${index}.json`, processZkey).then((data) => {
             options?.onBatchComplete?.({ current: index, total: totalMessageBatches, proofs: data });
@@ -228,6 +254,9 @@ export class ProofGenerator {
           }),
         ),
       ).then((data) => data.reduce((acc, x) => acc.concat(x), []));
+
+      // Combine existing proofs with new ones
+      const allProofs = [...proofs, ...newProofs];
 
       logGreen({ text: success("Proof generation is finished") });
 
@@ -237,9 +266,9 @@ export class ProofGenerator {
       performance.mark("mp-proofs-end");
       performance.measure("Generate message processor proofs", "mp-proofs-start", "mp-proofs-end");
 
-      options?.onComplete?.(proofs);
+      options?.onComplete?.(allProofs);
 
-      return proofs;
+      return allProofs;
     } catch (error) {
       options?.onFail?.(error as Error);
 
@@ -270,7 +299,7 @@ export class ProofGenerator {
     }
 
     try {
-      let tallyCircuitInputs: CircuitInputs;
+      let tallyCircuitInputs: CircuitInputs | undefined;
       const inputs: CircuitInputs[] = [];
       const proofs: Proof[] = [];
 
@@ -298,14 +327,21 @@ export class ProofGenerator {
         }
 
         if (shouldGenerateNewProof) {
-          tallyCircuitInputs = (this.useQuadraticVoting
-            ? this.poll.tallyVotes()
-            : this.poll.tallyVotesNonQv()) as unknown as CircuitInputs;
+          // Use the updated interface with the incremental flag
+          const circuitInputs = this.useQuadraticVoting
+            ? this.poll.tallyVotes(this.incremental)
+            : this.poll.tallyVotesNonQv();
 
+          tallyCircuitInputs = circuitInputs as unknown as CircuitInputs;
           inputs.push(tallyCircuitInputs);
 
           logMagenta({ text: info(`Progress: ${this.poll.numBatchesTallied} / ${totalTallyBatches}`) });
         }
+      }
+
+      // Make sure we have at least one set of circuit inputs for validation
+      if (!tallyCircuitInputs && inputs.length > 0) {
+        tallyCircuitInputs = inputs[inputs.length - 1];
       }
 
       logMagenta({ text: info("Wait until proof generation is finished") });
@@ -329,8 +365,16 @@ export class ProofGenerator {
       // cleanup threads
       await cleanThreads();
 
-      // verify the results
-      // Compute newResultsCommitment
+      // If no circuit inputs were generated (all from cache), we need to get the tally results from the Poll
+      if (!tallyCircuitInputs) {
+        const statePath = path.join(this.outputDir, `poll_state.json`);
+        if (fs.existsSync(statePath)) {
+          await this.poll.loadState(statePath);
+        }
+      }
+
+      // For validation purposes, we need to compute the various commitments
+      // The rest of the code remains the same
       const newResultsCommitment = genTreeCommitment(
         this.poll.tallyResult,
         BigInt(asHex(tallyCircuitInputs!.newResultsRootSalt as BigNumberish)),
@@ -475,8 +519,9 @@ export class ProofGenerator {
    * @returns The proof for processing messages
    */
   async generateProcessMessagesProof(pollId: bigint, incremental = false): Promise<Proof> {
-    const poll = this.poll.polls.get(pollId);
-    if (!poll) {
+    const poll = this.poll as unknown as MaciState;
+    const foundPoll = poll.polls.get(pollId);
+    if (!foundPoll) {
       throw new Error(`Poll ${pollId} not found`);
     }
 
@@ -484,17 +529,17 @@ export class ProofGenerator {
     if (incremental) {
       const statePath = path.join(this.outputDir, `poll_${pollId}_state.json`);
       if (fs.existsSync(statePath)) {
-        await poll.loadState(statePath);
+        await foundPoll.loadState(statePath);
       }
     }
 
     // Process messages
-    const stateLeaves = await poll.processMessages(poll.messages, incremental);
+    foundPoll.processMessages(pollId, this.useQuadraticVoting, incremental);
 
     // Save state if incremental mode is enabled
     if (incremental) {
       const statePath = path.join(this.outputDir, `poll_${pollId}_state.json`);
-      await poll.saveState(statePath);
+      await foundPoll.saveState(statePath);
     }
 
     // Generate proof
@@ -504,8 +549,13 @@ export class ProofGenerator {
       return existingProof;
     }
 
-    const circuitInputs = poll.genProcessMessagesCircuitInputs(pollId);
-    const proofs = await this.generateProofs(circuitInputs, this.mp, `processMessages_${pollId}.json`, await extractVk(this.mp.zkey, false));
+    const circuitInputs = foundPoll.processMessages(pollId, this.useQuadraticVoting, incremental);
+    const proofs = await this.generateProofs(
+      circuitInputs as unknown as CircuitInputs, 
+      this.mp, 
+      `processMessages_${pollId}.json`, 
+      await extractVk(this.mp.zkey, false)
+    );
     const proof = proofs[0];
     await fs.promises.writeFile(proofPath, JSON.stringify(proof, null, 2));
     return proof;
@@ -518,8 +568,9 @@ export class ProofGenerator {
    * @returns The proof for tallying votes
    */
   async generateTallyProof(pollId: bigint, incremental = false): Promise<Proof> {
-    const poll = this.poll.polls.get(pollId);
-    if (!poll) {
+    const poll = this.poll as unknown as MaciState;
+    const foundPoll = poll.polls.get(pollId);
+    if (!foundPoll) {
       throw new Error(`Poll ${pollId} not found`);
     }
 
@@ -527,17 +578,17 @@ export class ProofGenerator {
     if (incremental) {
       const statePath = path.join(this.outputDir, `poll_${pollId}_state.json`);
       if (fs.existsSync(statePath)) {
-        await poll.loadState(statePath);
+        await foundPoll.loadState(statePath);
       }
     }
 
     // Tally votes
-    const tallyResult = await poll.tallyVotes(incremental);
+    const circuitInputs = foundPoll.tallyVotes(incremental);
 
     // Save state if incremental mode is enabled
     if (incremental) {
       const statePath = path.join(this.outputDir, `poll_${pollId}_state.json`);
-      await poll.saveState(statePath);
+      await foundPoll.saveState(statePath);
     }
 
     // Generate proof
@@ -547,8 +598,12 @@ export class ProofGenerator {
       return existingProof;
     }
 
-    const circuitInputs = poll.genTallyCircuitInputs();
-    const proofs = await this.generateProofs(circuitInputs, this.tally, `tally_${pollId}.json`, await extractVk(this.tally.zkey, false));
+    const proofs = await this.generateProofs(
+      circuitInputs as unknown as CircuitInputs, 
+      this.tally, 
+      `tally_${pollId}.json`, 
+      await extractVk(this.tally.zkey, false)
+    );
     const proof = proofs[0];
     await fs.promises.writeFile(proofPath, JSON.stringify(proof, null, 2));
     return proof;

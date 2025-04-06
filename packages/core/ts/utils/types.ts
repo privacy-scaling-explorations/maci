@@ -70,8 +70,8 @@ export interface IPoll {
   // These methods are used for sending a message to the poll from user
   publishMessage(message: Message, encPubKey: PubKey): void;
   // These methods are used to generate circuit inputs
-  processMessages(pollId: bigint): IProcessMessagesCircuitInputs;
-  tallyVotes(): ITallyCircuitInputs;
+  processMessages(pollId: bigint, useQuadraticVoting?: boolean, incremental?: boolean): IProcessMessagesCircuitInputs;
+  tallyVotes(incremental?: boolean): ITallyCircuitInputs;
   // These methods are helper functions
   hasUnprocessedMessages(): boolean;
   processAllMessages(): { stateLeaves: StateLeaf[]; ballots: Ballot[] };
