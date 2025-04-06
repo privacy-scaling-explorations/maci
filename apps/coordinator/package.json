@@ -31,7 +31,7 @@
     "get-auth-header": "pnpm run run:node ./scripts/getAuthHeader.ts"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "^0.96.0",
+    "@graphprotocol/graph-cli": "^0.97.0",
     "@nestjs/common": "^11.0.13",
     "@nestjs/core": "^11.0.13",
     "@nestjs/platform-express": "^11.0.13",
@@ -67,7 +67,7 @@
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.6",
-    "@nestjs/schematics": "^11.0.2",
+    "@nestjs/schematics": "^11.0.3",
     "@nestjs/testing": "^11.0.13",
     "@types/express": "^5.0.1",
     "@types/jest": "^29.5.2",
@@ -79,7 +79,7 @@
     "socket.io-client": "^4.7.5",
     "supertest": "^7.0.0",
     "ts-jest": "^29.3.0",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.3"
   },
   "jest": {
     "testTimeout": 900000,

@@ -61,7 +61,7 @@
   "devDependencies": {
     "@jest/globals": "^29.7.0",
     "@nestjs/cli": "^11.0.6",
-    "@nestjs/schematics": "^11.0.2",
+    "@nestjs/schematics": "^11.0.3",
     "@nestjs/testing": "^11.0.13",
     "@types/express": "^5.0.1",
     "@types/jest": "^29.5.2",
@@ -73,6 +73,6 @@
     "mongodb-memory-server": "^10.1.4",
     "supertest": "^7.0.0",
     "ts-jest": "^29.3.0",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.3"
   }
 }
