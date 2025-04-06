@@ -68,7 +68,16 @@ export class ContractStorage {
    *
    * @param {IRegisterContract} args - register arguments
    */
-  async register<ID = EContracts>({ id, key, contract, network, args, name }: IRegisterContract<ID>): Promise<void> {
+  async register<ID = EContracts>({
+    id,
+    key,
+    contract,
+    network,
+    args,
+    name,
+    implementation,
+    libraries,
+  }: IRegisterContract<ID>): Promise<void> {
     const contractAddress = await contract.getAddress();
 
     const deploymentTx = contract.deploymentTransaction();
@@ -95,7 +104,9 @@ export class ContractStorage {
     if (args !== undefined) {
       logEntry.verify = {
         name,
+        impl: implementation,
         args: JSON.stringify(args),
+        libraries: libraries ? JSON.stringify(libraries) : undefined,
       };
     }
 

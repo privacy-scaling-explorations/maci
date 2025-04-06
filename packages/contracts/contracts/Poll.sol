@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
+import { Clone } from "@excubiae/contracts/contracts/proxy/Clone.sol";
+
 import { Params } from "./utilities/Params.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { LazyIMTData, InternalLazyIMT } from "./trees/LazyIMT.sol";
@@ -14,23 +16,23 @@ import { CurveBabyJubJub } from "./crypto/BabyJubJub.sol";
 /// which can be either votes or key change messages.
 /// @dev Do not deploy this directly. Use PollFactory.deploy() which performs some
 /// checks on the Poll constructor arguments.
-contract Poll is Params, Utilities, SnarkCommon, IPoll {
+contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
   /// @notice The coordinator's public key
   PubKey public coordinatorPubKey;
 
   /// @notice Hash of the coordinator's public key
-  uint256 public immutable coordinatorPubKeyHash;
+  uint256 public coordinatorPubKeyHash;
 
   /// @notice the state root of the state merkle tree
   uint256 public mergedStateRoot;
 
   /// @notice The start date of the poll
-  uint256 public immutable startDate;
+  uint256 public startDate;
   /// @notice The end date of the poll
-  uint256 public immutable endDate;
+  uint256 public endDate;
 
   /// @notice The root of the empty ballot tree at a given voteOptionTree depth
-  uint256 public immutable emptyBallotRoot;
+  uint256 public emptyBallotRoot;
 
   /// @notice Whether the MACI contract's stateAq has been merged by this contract
   bool public stateMerged;
@@ -56,13 +58,13 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   uint8 public actualStateTreeDepth;
 
   /// @notice The number of valid vote options for the poll
-  uint256 public immutable voteOptions;
+  uint256 public voteOptions;
 
   /// @notice Depths of the merkle trees
   TreeDepths public treeDepths;
 
   /// @notice Message batch size for the poll
-  uint8 public immutable messageBatchSize;
+  uint8 public messageBatchSize;
 
   /// @notice The contracts used by the Poll
   ExtContracts public extContracts;
@@ -95,7 +97,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   mapping(uint256 => bool) public pollNullifiers;
 
   /// @notice The Id of this poll
-  uint256 public immutable pollId;
+  uint256 public pollId;
 
   /// @notice The array of the poll state tree roots for each poll join
   /// For the N'th poll join, the poll state tree root will be stored at the index N
@@ -129,29 +131,29 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   event ChainHashUpdated(uint256 indexed _chainHash);
   event IpfsHashAdded(bytes32 indexed _ipfsHash);
 
-  /// @notice Each MACI instance can have multiple Polls.
+  /// @notice Initializes the contract.
+  /// @dev Each MACI instance can have multiple Polls.
   /// When a Poll is deployed, its voting period starts immediately.
-  /// @param _startDate The start date of the poll
-  /// @param _endDate The end date of the poll
-  /// @param _treeDepths The depths of the merkle trees
-  /// @param _messageBatchSize The message batch size
-  /// @param _coordinatorPubKey The coordinator's public key
-  /// @param _extContracts The external contracts
-  /// @param _emptyBallotRoot The root of the empty ballot tree
-  /// @param _pollId The poll id
-  /// @param _voteOptions The number of valid vote options for the poll
-  constructor(
-    uint256 _startDate,
-    uint256 _endDate,
-    TreeDepths memory _treeDepths,
-    uint8 _messageBatchSize,
-    PubKey memory _coordinatorPubKey,
-    ExtContracts memory _extContracts,
-    uint256 _emptyBallotRoot,
-    uint256 _pollId,
-    address[] memory _relayers,
-    uint256 _voteOptions
-  ) payable {
+  function _initialize() internal override {
+    super._initialize();
+
+    bytes memory data = _getAppendedBytes();
+    (
+      uint256 _startDate,
+      uint256 _endDate,
+      TreeDepths memory _treeDepths,
+      uint8 _messageBatchSize,
+      PubKey memory _coordinatorPubKey,
+      ExtContracts memory _extContracts,
+      uint256 _emptyBallotRoot,
+      uint256 _pollId,
+      address[] memory _relayers,
+      uint256 _voteOptions
+    ) = abi.decode(
+        data,
+        (uint256, uint256, TreeDepths, uint8, PubKey, ExtContracts, uint256, uint256, address[], uint256)
+      );
+
     // check that the coordinator public key is valid
     if (!CurveBabyJubJub.isOnCurve(_coordinatorPubKey.x, _coordinatorPubKey.y)) {
       revert InvalidPubKey();

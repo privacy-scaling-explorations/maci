@@ -60,8 +60,25 @@ task("verify-full", "Verify contracts listed in storage")
       if (!force && verifiedEntity) {
         logYellow({ text: warning("Already verified") });
       } else {
+        if (params?.impl) {
+          // eslint-disable-next-line no-await-in-loop
+          const [ok, err] = await verifier.verify(params.impl, "[]", params.name, params.libraries);
+
+          if (ok) {
+            storage.setVerified(params.impl, hre.network.name, true);
+          } else {
+            summary.push(`${params.impl} ${entry.id} implementation ${params.impl}: ${err}`);
+          }
+        }
+
         // eslint-disable-next-line no-await-in-loop
-        const [ok, err] = await verifier.verify(address, params?.args ?? "", params?.name);
+        const [ok, err] = await verifier.verify(
+          address,
+          params?.args ?? "[]",
+          params?.name,
+          params?.libraries,
+          params?.impl,
+        );
 
         if (ok) {
           storage.setVerified(address, hre.network.name, true);

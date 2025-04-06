@@ -57,10 +57,13 @@ deployment
       const [constantInitialVoiceCreditProxyContract, constantInitialVoiceCreditProxyContractFactory] =
         await deployConstantInitialVoiceCreditProxy({ amount }, deployer, proxyFactory, true);
 
+      const implementation = await constantInitialVoiceCreditProxyContractFactory.IMPLEMENTATION();
+
       await Promise.all([
         storage.register({
           id: EInitialVoiceCreditProxies.Constant,
           contract: constantInitialVoiceCreditProxyContract,
+          implementation,
           args: [],
           network: hre.network.name,
         }),

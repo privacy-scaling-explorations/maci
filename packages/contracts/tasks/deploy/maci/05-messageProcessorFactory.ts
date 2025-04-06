@@ -31,16 +31,18 @@ deployment.deployTask(EDeploySteps.MessageProcessorFactory, "Deploy message proc
     const poseidonT5ContractAddress = storage.mustGetAddress(EContracts.PoseidonT5, hre.network.name);
     const poseidonT6ContractAddress = storage.mustGetAddress(EContracts.PoseidonT6, hre.network.name);
 
+    const libraries = {
+      "contracts/crypto/PoseidonT3.sol:PoseidonT3": poseidonT3ContractAddress,
+      "contracts/crypto/PoseidonT4.sol:PoseidonT4": poseidonT4ContractAddress,
+      "contracts/crypto/PoseidonT5.sol:PoseidonT5": poseidonT5ContractAddress,
+      "contracts/crypto/PoseidonT6.sol:PoseidonT6": poseidonT6ContractAddress,
+    };
+
     const linkedMessageProcessorFactoryContract = await hre.ethers.getContractFactory(
       EContracts.MessageProcessorFactory,
       {
         signer: deployer,
-        libraries: {
-          PoseidonT3: poseidonT3ContractAddress,
-          PoseidonT4: poseidonT4ContractAddress,
-          PoseidonT5: poseidonT5ContractAddress,
-          PoseidonT6: poseidonT6ContractAddress,
-        },
+        libraries,
       },
     );
 
@@ -51,6 +53,7 @@ deployment.deployTask(EDeploySteps.MessageProcessorFactory, "Deploy message proc
     await storage.register({
       id: EContracts.MessageProcessorFactory,
       contract: messageProcessorFactoryContract,
+      libraries,
       args: [],
       network: hre.network.name,
     });
