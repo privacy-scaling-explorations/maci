@@ -202,8 +202,8 @@ importers:
         specifier: ^11.0.6
         version: 11.0.6(@types/node@22.14.0)
       '@nestjs/schematics':
-        specifier: ^11.0.3
-        version: 11.0.3(chokidar@4.0.3)(typescript@5.8.3)
+        specifier: ^11.0.4
+        version: 11.0.4(chokidar@4.0.3)(typescript@5.8.3)
       '@nestjs/testing':
         specifier: ^11.0.13
         version: 11.0.13(@nestjs/common@11.0.13(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.0.13)(@nestjs/platform-express@11.0.13)
@@ -341,8 +341,8 @@ importers:
         specifier: ^11.0.6
         version: 11.0.6(@types/node@22.14.0)
       '@nestjs/schematics':
-        specifier: ^11.0.3
-        version: 11.0.3(chokidar@4.0.3)(typescript@5.8.3)
+        specifier: ^11.0.4
+        version: 11.0.4(chokidar@4.0.3)(typescript@5.8.3)
       '@nestjs/testing':
         specifier: ^11.0.13
         version: 11.0.13(@nestjs/common@11.0.13(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.0.13)(@nestjs/platform-express@11.0.13)
@@ -3028,8 +3028,8 @@ packages:
       '@nestjs/common': ^10.0.0 || ^11.0.0
       '@nestjs/core': ^10.0.0 || ^11.0.0
 
-  '@nestjs/schematics@11.0.3':
-    resolution: {integrity: sha512-enz9Otg1GafzmtpDRB1bs44/kipVKzmoQoJ296rRQMZPivQUBxFlRSwrR+e1jB09n5UVqCf8tUAQnRzxBR5AKw==}
+  '@nestjs/schematics@11.0.4':
+    resolution: {integrity: sha512-DSAdkfEgKsy54eB+iMwalod+dWX3cMNG1xp9QiSGC5GISck/9pJ8Y9/dnYXvC7s2DAwkwL+Jsywi8gXMVl3OGg==}
     peerDependencies:
       typescript: '>=4.8.2'
 
@@ -17092,7 +17092,7 @@ snapshots:
       '@angular-devkit/schematics': 19.2.6(chokidar@4.0.3)
       '@angular-devkit/schematics-cli': 19.2.6(@types/node@22.14.0)(chokidar@4.0.3)
       '@inquirer/prompts': 7.4.1(@types/node@22.14.0)
-      '@nestjs/schematics': 11.0.3(chokidar@4.0.3)(typescript@5.7.3)
+      '@nestjs/schematics': 11.0.4(chokidar@4.0.3)(typescript@5.7.3)
       ansis: 3.17.0
       chokidar: 4.0.3
       cli-table3: 0.6.5
@@ -17184,7 +17184,7 @@ snapshots:
       '@nestjs/core': 11.0.13(@nestjs/common@11.0.13(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.0.13)(@nestjs/websockets@11.0.13)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       cron: 3.5.0
 
-  '@nestjs/schematics@11.0.3(chokidar@4.0.3)(typescript@5.7.3)':
+  '@nestjs/schematics@11.0.4(chokidar@4.0.3)(typescript@5.7.3)':
     dependencies:
       '@angular-devkit/core': 19.2.6(chokidar@4.0.3)
       '@angular-devkit/schematics': 19.2.6(chokidar@4.0.3)
@@ -17195,7 +17195,7 @@ snapshots:
     transitivePeerDependencies:
       - chokidar
 
-  '@nestjs/schematics@11.0.3(chokidar@4.0.3)(typescript@5.8.3)':
+  '@nestjs/schematics@11.0.4(chokidar@4.0.3)(typescript@5.8.3)':
     dependencies:
       '@angular-devkit/core': 19.2.6(chokidar@4.0.3)
       '@angular-devkit/schematics': 19.2.6(chokidar@4.0.3)
