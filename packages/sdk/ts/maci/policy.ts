@@ -1,4 +1,4 @@
-import { EPolicies, MerkleProofChecker__factory as MerkleProofCheckerFactory } from "@maci-protocol/contracts";
+import { EPolicies } from "@maci-protocol/contracts";
 import {
   MACI__factory as MACIFactory,
   IBasePolicy__factory as SignUpPolicyFactory,
@@ -9,6 +9,7 @@ import {
   ZupassChecker__factory as ZupassCheckerFactory,
   EASChecker__factory as EASCheckerFactory,
   SemaphoreChecker__factory as SemaphoreCheckerFactory,
+  MerkleProofChecker__factory as MerkleProofCheckerFactory,
 } from "@maci-protocol/contracts/typechain-types";
 
 import type {
