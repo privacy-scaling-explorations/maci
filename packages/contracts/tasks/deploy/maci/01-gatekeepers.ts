@@ -88,28 +88,39 @@ deployment.deployTask(EDeploySteps.Policies, "Deploy policies").then((task) =>
         freeForAllCheckerFactoryContract,
       ] = await deployFreeForAllSignUpPolicy(deployer);
 
+      const [policyContractImplementation, checkerContractImplementation] = await Promise.all([
+        freeForAllPolicyFactoryContract.IMPLEMENTATION(),
+        freeForAllCheckerFactoryContract.IMPLEMENTATION(),
+      ]);
+
       await Promise.all([
         storage.register({
           id: EPolicies.FreeForAll,
           contract: freeForAllPolicyContract,
+          name: EPolicies.FreeForAll,
+          implementation: policyContractImplementation,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: ECheckers.FreeForAll,
           contract: freeForAllCheckerContract,
+          name: ECheckers.FreeForAll,
+          implementation: checkerContractImplementation,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: EPolicyFactories.FreeForAll,
           contract: freeForAllPolicyFactoryContract,
+          name: EPolicyFactories.FreeForAll,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: ECheckerFactories.FreeForAll,
           contract: freeForAllCheckerFactoryContract,
+          name: ECheckerFactories.FreeForAll,
           args: [],
           network: hre.network.name,
         }),
@@ -136,28 +147,39 @@ deployment.deployTask(EDeploySteps.Policies, "Deploy policies").then((task) =>
           true,
         );
 
+      const [policyContractImplementation, checkerContractImplementation] = await Promise.all([
+        easPolicyFactoryContract.IMPLEMENTATION(),
+        easCheckerFactoryContract.IMPLEMENTATION(),
+      ]);
+
       await Promise.all([
         storage.register({
           id: EPolicies.EAS,
           contract: easPolicyContract,
+          name: EPolicies.EAS,
+          implementation: policyContractImplementation,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: ECheckers.EAS,
           contract: easCheckerContract,
+          name: ECheckers.EAS,
+          implementation: checkerContractImplementation,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: EPolicyFactories.EAS,
           contract: easPolicyFactoryContract,
+          name: EPolicyFactories.EAS,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: ECheckerFactories.EAS,
           contract: easCheckerFactoryContract,
+          name: ECheckerFactories.EAS,
           args: [],
           network: hre.network.name,
         }),
@@ -196,28 +218,39 @@ deployment.deployTask(EDeploySteps.Policies, "Deploy policies").then((task) =>
         true,
       );
 
+      const [policyContractImplementation, checkerContractImplementation] = await Promise.all([
+        gitcoinPolicyFactoryContract.IMPLEMENTATION(),
+        gitcoinCheckerFactoryContract.IMPLEMENTATION(),
+      ]);
+
       await Promise.all([
         storage.register({
           id: EPolicies.GitcoinPassport,
           contract: gitcoinPolicyContract,
+          name: EPolicies.GitcoinPassport,
+          implementation: policyContractImplementation,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: ECheckers.GitcoinPassport,
           contract: gitcoinCheckerContract,
+          name: ECheckers.GitcoinPassport,
+          implementation: checkerContractImplementation,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: EPolicyFactories.GitcoinPassport,
           contract: gitcoinPolicyFactoryContract,
+          name: EPolicyFactories.GitcoinPassport,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: ECheckerFactories.GitcoinPassport,
           contract: gitcoinCheckerFactoryContract,
+          name: ECheckerFactories.GitcoinPassport,
           args: [],
           network: hre.network.name,
         }),
@@ -247,28 +280,39 @@ deployment.deployTask(EDeploySteps.Policies, "Deploy policies").then((task) =>
           deployer,
         );
 
+      const [policyContractImplementation, checkerContractImplementation] = await Promise.all([
+        zupassPolicyFactoryContract.IMPLEMENTATION(),
+        zupassCheckerFactoryContract.IMPLEMENTATION(),
+      ]);
+
       await Promise.all([
         storage.register({
-          id: ECheckers.Zupass,
-          contract: zupassCheckerContract,
+          id: EPolicies.Zupass,
+          contract: zupassPolicyContract,
+          name: EPolicies.Zupass,
+          implementation: policyContractImplementation,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
-          id: EPolicies.Zupass,
-          contract: zupassPolicyContract,
+          id: ECheckers.Zupass,
+          contract: zupassCheckerContract,
+          name: ECheckers.Zupass,
+          implementation: checkerContractImplementation,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: ECheckerFactories.Zupass,
           contract: zupassCheckerFactoryContract,
+          name: ECheckerFactories.Zupass,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: EPolicyFactories.Zupass,
           contract: zupassPolicyFactoryContract,
+          name: EPolicyFactories.Zupass,
           args: [],
           network: hre.network.name,
         }),
@@ -290,28 +334,39 @@ deployment.deployTask(EDeploySteps.Policies, "Deploy policies").then((task) =>
         semaphoreCheckerFactoryContract,
       ] = await deploySemaphoreSignupPolicy({ semaphore: semaphoreContractAddress, groupId }, deployer, true);
 
+      const [policyContractImplementation, checkerContractImplementation] = await Promise.all([
+        semaphorePolicyFactoryContract.IMPLEMENTATION(),
+        semaphoreCheckerFactoryContract.IMPLEMENTATION(),
+      ]);
+
       await Promise.all([
         storage.register({
           id: EPolicies.Semaphore,
           contract: semaphorePolicyContract,
+          name: EPolicies.Semaphore,
+          implementation: policyContractImplementation,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: ECheckers.Semaphore,
           contract: semaphoreCheckerContract,
+          name: ECheckers.Semaphore,
+          implementation: checkerContractImplementation,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: EPolicyFactories.Semaphore,
           contract: semaphorePolicyFactoryContract,
+          name: EPolicyFactories.Semaphore,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: ECheckerFactories.Semaphore,
           contract: semaphoreCheckerFactoryContract,
+          name: ECheckerFactories.Semaphore,
           args: [],
           network: hre.network.name,
         }),
@@ -330,28 +385,39 @@ deployment.deployTask(EDeploySteps.Policies, "Deploy policies").then((task) =>
       const [hatsPolicyContract, hatsCheckerContract, hatsPolicyFactoryContract, hatsCheckerFactoryContract] =
         await deployHatsSignupPolicy({ hats: hatsProtocolAddress, criterionHats }, deployer, true);
 
+      const [policyContractImplementation, checkerContractImplementation] = await Promise.all([
+        hatsPolicyFactoryContract.IMPLEMENTATION(),
+        hatsCheckerFactoryContract.IMPLEMENTATION(),
+      ]);
+
       await Promise.all([
         storage.register({
           id: EPolicies.Hats,
           contract: hatsPolicyContract,
+          name: EPolicies.Hats,
+          implementation: policyContractImplementation,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: ECheckers.Hats,
           contract: hatsCheckerContract,
+          name: ECheckers.Hats,
+          implementation: checkerContractImplementation,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: EPolicyFactories.Hats,
           contract: hatsPolicyFactoryContract,
+          name: EPolicyFactories.Hats,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: ECheckerFactories.Hats,
           contract: hatsCheckerFactoryContract,
+          name: ECheckerFactories.Hats,
           args: [],
           network: hre.network.name,
         }),
@@ -368,28 +434,39 @@ deployment.deployTask(EDeploySteps.Policies, "Deploy policies").then((task) =>
         merkleProofCheckerFactoryContract,
       ] = await deployMerkleProofPolicy({ root }, deployer, true);
 
+      const [policyContractImplementation, checkerContractImplementation] = await Promise.all([
+        merkleProofPolicyFactoryContract.IMPLEMENTATION(),
+        merkleProofCheckerFactoryContract.IMPLEMENTATION(),
+      ]);
+
       await Promise.all([
         storage.register({
           id: EPolicies.MerkleProof,
           contract: merkleProofPolicyContract,
+          name: EPolicies.MerkleProof,
+          implementation: policyContractImplementation,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: ECheckers.MerkleProof,
           contract: merkleProofCheckerContract,
+          name: ECheckers.MerkleProof,
+          implementation: checkerContractImplementation,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: EPolicyFactories.MerkleProof,
           contract: merkleProofPolicyFactoryContract,
+          name: EPolicyFactories.MerkleProof,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: ECheckerFactories.MerkleProof,
           contract: merkleProofCheckerFactoryContract,
+          name: ECheckerFactories.MerkleProof,
           args: [],
           network: hre.network.name,
         }),

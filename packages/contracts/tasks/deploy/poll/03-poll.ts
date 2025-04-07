@@ -2,10 +2,10 @@
 import { PubKey } from "@maci-protocol/domainobjs";
 import { ZeroAddress } from "ethers";
 
-import type { MACI, Poll, IBasePolicy } from "../../../typechain-types";
+import type { MACI, Poll, IBasePolicy, PollFactory } from "../../../typechain-types";
 
 import { EMode } from "../../../ts/constants";
-import { EDeploySteps } from "../../helpers/constants";
+import { EDeploySteps, FULL_POLICY_NAMES } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
 import { EContracts } from "../../helpers/types";
@@ -57,7 +57,8 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
 
     const policy =
       deployment.getDeployConfigField<EContracts | null>(EContracts.Poll, "policy") || EContracts.FreeForAllPolicy;
-    const policyContractAddress = storage.mustGetAddress(policy, hre.network.name, `poll-${pollId}`);
+    const fullPolicyName = FULL_POLICY_NAMES[policy as keyof typeof FULL_POLICY_NAMES] as unknown as EContracts;
+    const policyContractAddress = storage.mustGetAddress(fullPolicyName, hre.network.name, `poll-${pollId}`);
     const initialVoiceCreditProxyContractAddress = storage.mustGetAddress(
       EContracts.ConstantInitialVoiceCreditProxy,
       hre.network.name,
@@ -95,10 +96,9 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
     const tallyContractAddress = pollContracts.tally;
 
     const pollContract = await deployment.getContract<Poll>({ name: EContracts.Poll, address: pollContractAddress });
-    const extContracts = await pollContract.extContracts();
 
     const policyContract = await deployment.getContract<IBasePolicy>({
-      name: policy,
+      name: fullPolicyName,
       address: policyContractAddress,
     });
 
@@ -114,50 +114,49 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
       address: tallyContractAddress,
     });
 
-    // get the empty ballot root
-    const emptyBallotRoot = await pollContract.emptyBallotRoot();
+    const [pollFactory, messageProcessorFactory, tallyFactory] = await Promise.all([
+      deployment.getContract<PollFactory>({
+        name: EContracts.PollFactory,
+      }),
+      deployment.getContract<PollFactory>({
+        name: EContracts.MessageProcessorFactory,
+      }),
+      deployment.getContract<PollFactory>({
+        name: EContracts.TallyFactory,
+      }),
+    ]);
+
+    const [pollImplementation, messageProcessorImplementation, tallyImplementation] = await Promise.all([
+      pollFactory.IMPLEMENTATION(),
+      messageProcessorFactory.IMPLEMENTATION(),
+      tallyFactory.IMPLEMENTATION(),
+    ]);
 
     await Promise.all([
       storage.register({
         id: EContracts.Poll,
         key: `poll-${pollId}`,
+        implementation: pollImplementation,
         contract: pollContract,
-        args: [
-          pollStartTimestamp,
-          pollEndTimestamp,
-          {
-            intStateTreeDepth,
-            voteOptionTreeDepth,
-          },
-          messageBatchSize,
-          unserializedKey.asContractParam(),
-          extContracts,
-          emptyBallotRoot.toString(),
-          policyContractAddress,
-          initialVoiceCreditProxyContractAddress,
-        ],
+        args: [],
         network: hre.network.name,
       }),
 
       storage.register({
         id: EContracts.MessageProcessor,
         key: `poll-${pollId}`,
+        implementation: messageProcessorImplementation,
         contract: messageProcessorContract,
-        args: [verifierContractAddress, vkRegistryContractAddress, pollContractAddress, mode],
+        args: [],
         network: hre.network.name,
       }),
 
       storage.register({
         id: EContracts.Tally,
         key: `poll-${pollId}`,
+        implementation: tallyImplementation,
         contract: tallyContract,
-        args: [
-          verifierContractAddress,
-          vkRegistryContractAddress,
-          pollContractAddress,
-          messageProcessorContractAddress,
-          mode,
-        ],
+        args: [],
         network: hre.network.name,
       }),
     ]);

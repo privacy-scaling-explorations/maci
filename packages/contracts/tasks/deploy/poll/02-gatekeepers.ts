@@ -109,23 +109,33 @@ deployment.deployTask(EDeploySteps.PollPolicy, "Deploy Poll policies").then((tas
         freeForAllCheckerFactoryContract,
       ] = await deployFreeForAllSignUpPolicy(deployer);
 
+      const [policyContractImplementation, checkerContractImplementation] = await Promise.all([
+        freeForAllPolicyFactoryContract.IMPLEMENTATION(),
+        freeForAllCheckerFactoryContract.IMPLEMENTATION(),
+      ]);
+
       await Promise.all([
         storage.register({
-          id: EContracts.FreeForAllPolicy,
+          id: EPolicies.FreeForAll,
           key: `poll-${pollId}`,
+          name: EPolicies.FreeForAll,
+          implementation: policyContractImplementation,
           contract: freeForAllPolicyContract,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: ECheckers.FreeForAll,
+          name: ECheckers.FreeForAll,
           key: `poll-${pollId}`,
+          implementation: checkerContractImplementation,
           contract: freeForAllCheckerContract,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: EPolicyFactories.FreeForAll,
+          name: EPolicyFactories.FreeForAll,
           key: `poll-${pollId}`,
           contract: freeForAllPolicyFactoryContract,
           args: [],
@@ -133,6 +143,7 @@ deployment.deployTask(EDeploySteps.PollPolicy, "Deploy Poll policies").then((tas
         }),
         storage.register({
           id: ECheckerFactories.FreeForAll,
+          name: ECheckerFactories.FreeForAll,
           key: `poll-${pollId}`,
           contract: freeForAllCheckerFactoryContract,
           args: [],
@@ -161,23 +172,33 @@ deployment.deployTask(EDeploySteps.PollPolicy, "Deploy Poll policies").then((tas
           true,
         );
 
+      const [policyContractImplementation, checkerContractImplementation] = await Promise.all([
+        easPolicyFactoryContract.IMPLEMENTATION(),
+        easCheckerFactoryContract.IMPLEMENTATION(),
+      ]);
+
       await Promise.all([
         storage.register({
           id: EPolicies.EAS,
+          name: EPolicies.EAS,
           key: `poll-${pollId}`,
+          implementation: policyContractImplementation,
           contract: easPolicyContract,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: ECheckers.EAS,
+          name: ECheckers.EAS,
           key: `poll-${pollId}`,
+          implementation: checkerContractImplementation,
           contract: easCheckerContract,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: EPolicyFactories.EAS,
+          name: EPolicyFactories.EAS,
           key: `poll-${pollId}`,
           contract: easPolicyFactoryContract,
           args: [],
@@ -185,6 +206,7 @@ deployment.deployTask(EDeploySteps.PollPolicy, "Deploy Poll policies").then((tas
         }),
         storage.register({
           id: ECheckerFactories.EAS,
+          name: ECheckerFactories.EAS,
           key: `poll-${pollId}`,
           contract: easCheckerFactoryContract,
           args: [],
@@ -225,23 +247,33 @@ deployment.deployTask(EDeploySteps.PollPolicy, "Deploy Poll policies").then((tas
         true,
       );
 
+      const [policyContractImplementation, checkerContractImplementation] = await Promise.all([
+        gitcoinPolicyFactoryContract.IMPLEMENTATION(),
+        gitcoinCheckerFactoryContract.IMPLEMENTATION(),
+      ]);
+
       await Promise.all([
         storage.register({
           id: EPolicies.GitcoinPassport,
+          name: EPolicies.GitcoinPassport,
           key: `poll-${pollId}`,
+          implementation: policyContractImplementation,
           contract: gitcoinPolicyContract,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: ECheckers.GitcoinPassport,
+          name: ECheckers.GitcoinPassport,
           key: `poll-${pollId}`,
+          implementation: checkerContractImplementation,
           contract: gitcoinCheckerContract,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: EPolicyFactories.GitcoinPassport,
+          name: EPolicyFactories.GitcoinPassport,
           key: `poll-${pollId}`,
           contract: gitcoinPolicyFactoryContract,
           args: [],
@@ -249,6 +281,7 @@ deployment.deployTask(EDeploySteps.PollPolicy, "Deploy Poll policies").then((tas
         }),
         storage.register({
           id: ECheckerFactories.GitcoinPassport,
+          name: ECheckerFactories.GitcoinPassport,
           key: `poll-${pollId}`,
           contract: gitcoinCheckerFactoryContract,
           args: [],
@@ -280,23 +313,33 @@ deployment.deployTask(EDeploySteps.PollPolicy, "Deploy Poll policies").then((tas
           deployer,
         );
 
+      const [policyContractImplementation, checkerContractImplementation] = await Promise.all([
+        zupassPolicyFactoryContract.IMPLEMENTATION(),
+        zupassCheckerFactoryContract.IMPLEMENTATION(),
+      ]);
+
       await Promise.all([
         storage.register({
           id: EPolicies.Zupass,
+          name: EPolicies.Zupass,
           key: `poll-${pollId}`,
+          implementation: policyContractImplementation,
           contract: zupassPolicyContract,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: ECheckers.Zupass,
+          name: ECheckers.Zupass,
           key: `poll-${pollId}`,
+          implementation: checkerContractImplementation,
           contract: zupassCheckerContract,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: EPolicyFactories.Zupass,
+          name: EPolicyFactories.Zupass,
           key: `poll-${pollId}`,
           contract: zupassPolicyFactoryContract,
           args: [],
@@ -304,6 +347,7 @@ deployment.deployTask(EDeploySteps.PollPolicy, "Deploy Poll policies").then((tas
         }),
         storage.register({
           id: ECheckerFactories.Zupass,
+          name: ECheckerFactories.Zupass,
           key: `poll-${pollId}`,
           contract: zupassCheckerFactoryContract,
           args: [],
@@ -327,23 +371,33 @@ deployment.deployTask(EDeploySteps.PollPolicy, "Deploy Poll policies").then((tas
         semaphoreCheckerFactoryContract,
       ] = await deploySemaphoreSignupPolicy({ semaphore: semaphoreContractAddress, groupId }, deployer, true);
 
+      const [policyContractImplementation, checkerContractImplementation] = await Promise.all([
+        semaphorePolicyFactoryContract.IMPLEMENTATION(),
+        semaphoreCheckerFactoryContract.IMPLEMENTATION(),
+      ]);
+
       await Promise.all([
         storage.register({
           id: EPolicies.Semaphore,
+          name: EPolicies.Semaphore,
           key: `poll-${pollId}`,
+          implementation: policyContractImplementation,
           contract: semaphorePolicyContract,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: ECheckers.Semaphore,
+          name: ECheckers.Semaphore,
           key: `poll-${pollId}`,
+          implementation: checkerContractImplementation,
           contract: semaphoreCheckerContract,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: EPolicyFactories.Semaphore,
+          name: EPolicyFactories.Semaphore,
           key: `poll-${pollId}`,
           contract: semaphorePolicyFactoryContract,
           args: [],
@@ -351,6 +405,7 @@ deployment.deployTask(EDeploySteps.PollPolicy, "Deploy Poll policies").then((tas
         }),
         storage.register({
           id: ECheckerFactories.Semaphore,
+          name: ECheckerFactories.Semaphore,
           key: `poll-${pollId}`,
           contract: semaphoreCheckerFactoryContract,
           args: [],
@@ -371,23 +426,33 @@ deployment.deployTask(EDeploySteps.PollPolicy, "Deploy Poll policies").then((tas
       const [hatsPolicyContract, hatsCheckerContract, hatsPolicyFactoryContract, hatsCheckerFactoryContract] =
         await deployHatsSignupPolicy({ hats: hatsProtocolAddress, criterionHats }, deployer, true);
 
+      const [policyContractImplementation, checkerContractImplementation] = await Promise.all([
+        hatsPolicyFactoryContract.IMPLEMENTATION(),
+        hatsCheckerFactoryContract.IMPLEMENTATION(),
+      ]);
+
       await Promise.all([
         storage.register({
           id: EPolicies.Hats,
+          name: EPolicies.Hats,
           key: `poll-${pollId}`,
+          implementation: policyContractImplementation,
           contract: hatsPolicyContract,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: ECheckers.Hats,
+          name: ECheckers.Hats,
           key: `poll-${pollId}`,
+          implementation: checkerContractImplementation,
           contract: hatsCheckerContract,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: EPolicyFactories.Hats,
+          name: EPolicyFactories.Hats,
           key: `poll-${pollId}`,
           contract: hatsPolicyFactoryContract,
           args: [],
@@ -395,6 +460,7 @@ deployment.deployTask(EDeploySteps.PollPolicy, "Deploy Poll policies").then((tas
         }),
         storage.register({
           id: ECheckerFactories.Hats,
+          name: ECheckerFactories.Hats,
           key: `poll-${pollId}`,
           contract: hatsCheckerFactoryContract,
           args: [],
@@ -413,23 +479,33 @@ deployment.deployTask(EDeploySteps.PollPolicy, "Deploy Poll policies").then((tas
         merkleProofCheckerFactoryContract,
       ] = await deployMerkleProofPolicy({ root }, deployer, true);
 
+      const [policyContractImplementation, checkerContractImplementation] = await Promise.all([
+        merkleProofPolicyFactoryContract.IMPLEMENTATION(),
+        merkleProofCheckerFactoryContract.IMPLEMENTATION(),
+      ]);
+
       await Promise.all([
         storage.register({
           id: EPolicies.MerkleProof,
+          name: EPolicies.MerkleProof,
           key: `poll-${pollId}`,
+          implementation: policyContractImplementation,
           contract: merkleProofPolicyContract,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: ECheckers.MerkleProof,
+          name: ECheckers.MerkleProof,
           key: `poll-${pollId}`,
+          implementation: checkerContractImplementation,
           contract: merkleProofCheckerContract,
           args: [],
           network: hre.network.name,
         }),
         storage.register({
           id: EPolicyFactories.MerkleProof,
+          name: EPolicyFactories.MerkleProof,
           key: `poll-${pollId}`,
           contract: merkleProofPolicyFactoryContract,
           args: [],
@@ -437,6 +513,7 @@ deployment.deployTask(EDeploySteps.PollPolicy, "Deploy Poll policies").then((tas
         }),
         storage.register({
           id: ECheckerFactories.MerkleProof,
+          name: ECheckerFactories.MerkleProof,
           key: `poll-${pollId}`,
           contract: merkleProofCheckerFactoryContract,
           args: [],

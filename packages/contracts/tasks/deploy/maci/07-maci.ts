@@ -2,7 +2,7 @@ import type { MACI, IBasePolicy } from "../../../typechain-types";
 
 import { genEmptyBallotRoots } from "../../../ts/genEmptyBallotRoots";
 import { info, logGreen } from "../../../ts/logger";
-import { EDeploySteps } from "../../helpers/constants";
+import { EDeploySteps, FULL_POLICY_NAMES } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
 import { EContracts, IDeployParams } from "../../helpers/types";
@@ -33,19 +33,22 @@ deployment.deployTask(EDeploySteps.Maci, "Deploy MACI contract").then((task) =>
     const poseidonT5ContractAddress = storage.mustGetAddress(EContracts.PoseidonT5, hre.network.name);
     const poseidonT6ContractAddress = storage.mustGetAddress(EContracts.PoseidonT6, hre.network.name);
 
+    const libraries = {
+      "contracts/crypto/PoseidonT3.sol:PoseidonT3": poseidonT3ContractAddress,
+      "contracts/crypto/PoseidonT4.sol:PoseidonT4": poseidonT4ContractAddress,
+      "contracts/crypto/PoseidonT5.sol:PoseidonT5": poseidonT5ContractAddress,
+      "contracts/crypto/PoseidonT6.sol:PoseidonT6": poseidonT6ContractAddress,
+    };
+
     const maciContractFactory = await hre.ethers.getContractFactory(EContracts.MACI, {
       signer: deployer,
-      libraries: {
-        PoseidonT3: poseidonT3ContractAddress,
-        PoseidonT4: poseidonT4ContractAddress,
-        PoseidonT5: poseidonT5ContractAddress,
-        PoseidonT6: poseidonT6ContractAddress,
-      },
+      libraries,
     });
 
     const policy =
       deployment.getDeployConfigField<EContracts | null>(EContracts.MACI, "policy") || EContracts.FreeForAllPolicy;
-    const policyContractAddress = storage.mustGetAddress(policy, hre.network.name);
+    const fullPolicyName = FULL_POLICY_NAMES[policy as keyof typeof FULL_POLICY_NAMES] as unknown as EContracts;
+    const policyContractAddress = storage.mustGetAddress(fullPolicyName, hre.network.name);
     const pollFactoryContractAddress = storage.mustGetAddress(EContracts.PollFactory, hre.network.name);
     const messageProcessorFactoryContractAddress = storage.mustGetAddress(
       EContracts.MessageProcessorFactory,
@@ -69,7 +72,7 @@ deployment.deployTask(EDeploySteps.Maci, "Deploy MACI contract").then((task) =>
     );
 
     const policyContract = await deployment.getContract<IBasePolicy>({
-      name: policy,
+      name: fullPolicyName,
       address: policyContractAddress,
     });
     const maciInstanceAddress = await maciContract.getAddress();
@@ -79,6 +82,7 @@ deployment.deployTask(EDeploySteps.Maci, "Deploy MACI contract").then((task) =>
     await storage.register({
       id: EContracts.MACI,
       contract: maciContract,
+      libraries,
       args: [
         pollFactoryContractAddress,
         messageProcessorFactoryContractAddress,

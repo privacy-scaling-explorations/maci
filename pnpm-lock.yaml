@@ -139,7 +139,7 @@ importers:
         version: 3.0.8(ethers@6.13.5)(hardhat@2.22.19(ts-node@10.9.2(@types/node@22.14.0)(typescript@5.8.3))(typescript@5.8.3))
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
-        version: 5.0.0(roz2saurld4lqdw6ix333x74nm)
+        version: 5.0.0(b97983278a443d774ac498131468112c)
       '@zerodev/ecdsa-validator':
         specifier: 5.4.5
         version: 5.4.5(@zerodev/sdk@5.4.26(viem@2.25.0(typescript@5.8.3)(zod@3.24.2)))(viem@2.25.0(typescript@5.8.3)(zod@3.24.2))
@@ -287,7 +287,7 @@ importers:
         version: 3.0.8(ethers@6.13.5)(hardhat@2.22.19(ts-node@10.9.2(@types/node@22.14.0)(typescript@5.8.3))(typescript@5.8.3))
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
-        version: 5.0.0(roz2saurld4lqdw6ix333x74nm)
+        version: 5.0.0(b97983278a443d774ac498131468112c)
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
@@ -555,7 +555,7 @@ importers:
         version: link:../sdk
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
-        version: 5.0.0(roz2saurld4lqdw6ix333x74nm)
+        version: 5.0.0(b97983278a443d774ac498131468112c)
       commander:
         specifier: ^13.1.0
         version: 13.1.0
@@ -631,7 +631,10 @@ importers:
         version: 3.0.8(ethers@6.13.5)(hardhat@2.22.19(ts-node@10.9.2(@types/node@22.14.0)(typescript@5.8.3))(typescript@5.8.3))
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
-        version: 5.0.0(roz2saurld4lqdw6ix333x74nm)
+        version: 5.0.0(b97983278a443d774ac498131468112c)
+      '@nomicfoundation/hardhat-verify':
+        specifier: ^2.0.13
+        version: 2.0.13(hardhat@2.22.19(ts-node@10.9.2(@types/node@22.14.0)(typescript@5.8.3))(typescript@5.8.3))
       '@openzeppelin/contracts':
         specifier: ^5.2.0
         version: 5.2.0
@@ -906,7 +909,7 @@ importers:
         version: link:../sdk
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
-        version: 5.0.0(roz2saurld4lqdw6ix333x74nm)
+        version: 5.0.0(b97983278a443d774ac498131468112c)
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.20
@@ -17434,7 +17437,7 @@ snapshots:
       ethereumjs-util: 7.1.5
       hardhat: 2.22.19(ts-node@10.9.2(@types/node@22.14.0)(typescript@5.8.3))(typescript@5.8.3)
 
-  '@nomicfoundation/hardhat-toolbox@5.0.0(roz2saurld4lqdw6ix333x74nm)':
+  '@nomicfoundation/hardhat-toolbox@5.0.0(b97983278a443d774ac498131468112c)':
     dependencies:
       '@nomicfoundation/hardhat-chai-matchers': 2.0.8(@nomicfoundation/hardhat-ethers@3.0.8(ethers@6.13.5)(hardhat@2.22.19(ts-node@10.9.2(@types/node@22.14.0)(typescript@5.8.3))(typescript@5.8.3)))(chai@4.5.0)(ethers@6.13.5)(hardhat@2.22.19(ts-node@10.9.2(@types/node@22.14.0)(typescript@5.8.3))(typescript@5.8.3))
       '@nomicfoundation/hardhat-ethers': 3.0.8(ethers@6.13.5)(hardhat@2.22.19(ts-node@10.9.2(@types/node@22.14.0)(typescript@5.8.3))(typescript@5.8.3))
@@ -24000,7 +24003,7 @@ snapshots:
 
   jest-diff@29.7.0:
     dependencies:
-      chalk: 4.1.0
+      chalk: 4.1.2
       diff-sequences: 29.6.3
       jest-get-type: 29.6.3
       pretty-format: 29.7.0
@@ -26171,7 +26174,7 @@ snapshots:
       '@yarnpkg/parsers': 3.0.2
       '@zkochan/js-yaml': 0.0.7
       axios: 1.8.4(debug@4.4.0)
-      chalk: 4.1.0
+      chalk: 4.1.2
       cli-cursor: 3.1.0
       cli-spinners: 2.6.1
       cliui: 8.0.1

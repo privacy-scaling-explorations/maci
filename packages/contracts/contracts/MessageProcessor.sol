@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
+import { Clone } from "@excubiae/contracts/contracts/proxy/Clone.sol";
+
 import { IMACI } from "./interfaces/IMACI.sol";
 import { IPoll } from "./interfaces/IPoll.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
@@ -14,7 +16,7 @@ import { DomainObjs } from "./utilities/DomainObjs.sol";
 /// @dev MessageProcessor is used to process messages published by signup users.
 /// It will process message by batch due to large size of messages.
 /// After it finishes processing, the sbCommitment will be used for Tally and Subsidy contracts.
-contract MessageProcessor is SnarkCommon, Hasher, IMessageProcessor, DomainObjs {
+contract MessageProcessor is Clone, SnarkCommon, Hasher, IMessageProcessor, DomainObjs {
   /// @notice custom errors
   error NoMoreMessages();
   error StateNotMerged();
@@ -35,17 +37,21 @@ contract MessageProcessor is SnarkCommon, Hasher, IMessageProcessor, DomainObjs 
   /// @inheritdoc IMessageProcessor
   uint256 public sbCommitment;
 
-  IPoll public immutable poll;
-  IVerifier public immutable verifier;
-  IVkRegistry public immutable vkRegistry;
-  Mode public immutable mode;
+  IPoll public poll;
+  IVerifier public verifier;
+  IVkRegistry public vkRegistry;
+  Mode public mode;
 
-  /// @notice Create a new instance
-  /// @param _verifier The Verifier contract address
-  /// @param _vkRegistry The VkRegistry contract address
-  /// @param _poll The Poll contract address
-  /// @param _mode Voting mode
-  constructor(address _verifier, address _vkRegistry, address _poll, Mode _mode) payable {
+  /// @notice Initializes the contract.
+  function _initialize() internal override {
+    super._initialize();
+
+    bytes memory data = _getAppendedBytes();
+    (address _verifier, address _vkRegistry, address _poll, Mode _mode) = abi.decode(
+      data,
+      (address, address, address, Mode)
+    );
+
     verifier = IVerifier(_verifier);
     vkRegistry = IVkRegistry(_vkRegistry);
     poll = IPoll(_poll);
