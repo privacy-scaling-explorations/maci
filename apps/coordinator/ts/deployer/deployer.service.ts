@@ -19,6 +19,7 @@ import {
   PollFactory__factory as PollFactoryFactory,
   MessageProcessorFactory__factory as MessageProcessorFactoryFactory,
   MessageProcessor__factory as MessageProcessorFactory,
+  ERC20VotesPolicy__factory as ERC20VotesPolicyFactory,
   Tally__factory as TallyFactory,
   Poll__factory as PollFactory,
   MACI__factory as MACIFactory,
@@ -59,6 +60,7 @@ import {
   IUserOperation,
   IVkRegistryArgs,
   IZupassPolicyArgs,
+  IERC20VotesPolicyArgs,
 } from "./types";
 import { estimateExtraGasLimit } from "./utils";
 
@@ -194,6 +196,23 @@ export class DeployerService {
           address: isAlreadyDeployed ? address : undefined,
           abi: GitcoinPassportPolicyFactory.abi,
           bytecode: GitcoinPassportPolicyFactory.bytecode,
+          alreadyDeployed: isAlreadyDeployed,
+        };
+      }
+
+      case EPolicies.ERC20Votes: {
+        storedArgs = this.storage.getContractArgs(policyType as unknown as EContracts, network);
+        isAlreadyDeployed =
+          !!storedArgs &&
+          storedArgs.length === 3 &&
+          storedArgs[0] === (args as IERC20VotesPolicyArgs).token &&
+          storedArgs[1] === (args as IERC20VotesPolicyArgs).factor &&
+          storedArgs[2] === (args as IERC20VotesPolicyArgs).snapshotBlock;
+
+        return {
+          address: isAlreadyDeployed ? address : undefined,
+          abi: ERC20VotesPolicyFactory.abi,
+          bytecode: ERC20VotesPolicyFactory.bytecode,
           alreadyDeployed: isAlreadyDeployed,
         };
       }
