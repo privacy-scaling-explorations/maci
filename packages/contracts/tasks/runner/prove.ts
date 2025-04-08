@@ -36,7 +36,11 @@ task("prove", "Command to generate proofs")
     undefined,
     types.string,
   )
+<<<<<<< HEAD
   .addFlag("incremental", "Whether to use incremental proof generation")
+=======
+  .addFlag("incremental", "Whether to use incremental mode")
+>>>>>>> 7ae18878 (redo: added incremental flag implementation)
   .setAction(
     async (
       {

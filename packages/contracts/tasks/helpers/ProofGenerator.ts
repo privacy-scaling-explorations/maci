@@ -75,6 +75,11 @@ export class ProofGenerator {
   private rapidsnark?: string;
 
   /**
+   * Whether to use incremental mode
+   */
+  private incremental?: boolean;
+
+  /**
    * Get maci state from local file or from contract
    *
    * @param {IPrepareStateParams} params - params to prepare maci state
@@ -183,6 +188,46 @@ export class ProofGenerator {
   }
 
   /**
+<<<<<<< HEAD
+=======
+   * Save the current salts to a file
+   */
+  private async saveSalts(): Promise<void> {
+    const salts: {
+      resultRootSalts: Record<number | string, bigint>;
+      preVOSpentVoiceCreditsRootSalts: Record<number | string, bigint>;
+      spentVoiceCreditSubtotalSalts: Record<number | string, bigint>;
+    } = this.poll.getSalts();
+    const saltsFile: string = path.join(this.outputDir, "salts.json");
+    try {
+      await fs.promises.writeFile(saltsFile, JSON.stringify(salts, null, 2));
+    } catch (error: unknown) {
+      console.error("Failed to save salts:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Load salts from a file
+   */
+  private async loadSalts(): Promise<void> {
+    const saltsFile: string = path.join(this.outputDir, "salts.json");
+    try {
+      const content: string = await fs.promises.readFile(saltsFile, "utf8");
+      const salts: {
+        resultRootSalts: Record<number | string, bigint>;
+        preVOSpentVoiceCreditsRootSalts: Record<number | string, bigint>;
+        spentVoiceCreditSubtotalSalts: Record<number | string, bigint>;
+      } = JSON.parse(content);
+      this.poll.setSalts(salts);
+    } catch (error: unknown) {
+      // If file doesn't exist or is invalid, continue with empty salts
+      console.warn("No existing salts file found, will generate new salts");
+    }
+  }
+
+  /**
+>>>>>>> d4bfa6ac (redo: added missing strict typing)
    * Generate message processing proofs
    *
    * @returns message processing proofs
@@ -192,14 +237,14 @@ export class ProofGenerator {
     performance.mark("mp-proofs-start");
 
     const { messageBatchSize } = this.poll.batchSizes;
-    const numMessages = this.poll.messages.length;
-    let totalMessageBatches = numMessages <= messageBatchSize ? 1 : Math.floor(numMessages / messageBatchSize);
-
+    const numMessages: number = this.poll.messages.length;
+    let totalMessageBatches: number = numMessages <= messageBatchSize ? 1 : Math.floor(numMessages / messageBatchSize);
     if (numMessages > messageBatchSize && numMessages % messageBatchSize > 0) {
       totalMessageBatches += 1;
     }
 
     try {
+      let mpCircuitInputs: CircuitInputs;
       const inputs: CircuitInputs[] = [];
       const proofs: Proof[] = [];
 
@@ -292,8 +337,8 @@ export class ProofGenerator {
     performance.mark("tally-proofs-start");
 
     const { tallyBatchSize } = this.poll.batchSizes;
-    const numStateLeaves = this.poll.pollStateLeaves.length;
-    let totalTallyBatches = numStateLeaves <= tallyBatchSize ? 1 : Math.floor(numStateLeaves / tallyBatchSize);
+    const numStateLeaves: number = this.poll.pollStateLeaves.length;
+    let totalTallyBatches: number = numStateLeaves <= tallyBatchSize ? 1 : Math.floor(numStateLeaves / tallyBatchSize);
     if (numStateLeaves > tallyBatchSize && numStateLeaves % tallyBatchSize > 0) {
       totalTallyBatches += 1;
     }
@@ -302,6 +347,11 @@ export class ProofGenerator {
       let tallyCircuitInputs: CircuitInputs | undefined;
       const inputs: CircuitInputs[] = [];
       const proofs: Proof[] = [];
+
+      // Load existing salts if in incremental mode
+      if (this.incremental) {
+        await this.loadSalts();
+      }
 
       while (this.poll.hasUntalliedBallots()) {
         const batchIndex = this.poll.numBatchesTallied;

@@ -895,4 +895,32 @@ export class Poll implements IPoll {
    * @returns The number of signups
    */
   getNumSignups = (): bigint => this.numSignups;
+
+  /**
+   * Get the current salts
+   */
+  getSalts(): {
+    resultRootSalts: Record<number | string, bigint>;
+    preVOSpentVoiceCreditsRootSalts: Record<number | string, bigint>;
+    spentVoiceCreditSubtotalSalts: Record<number | string, bigint>;
+  } {
+    return {
+      resultRootSalts: this.resultRootSalts,
+      preVOSpentVoiceCreditsRootSalts: this.preVOSpentVoiceCreditsRootSalts,
+      spentVoiceCreditSubtotalSalts: this.spentVoiceCreditSubtotalSalts,
+    };
+  }
+
+  /**
+   * Set the current salts
+   */
+  setSalts(salts: {
+    resultRootSalts: Record<number | string, bigint>;
+    preVOSpentVoiceCreditsRootSalts: Record<number | string, bigint>;
+    spentVoiceCreditSubtotalSalts: Record<number | string, bigint>;
+  }): void {
+    this.resultRootSalts = salts.resultRootSalts;
+    this.preVOSpentVoiceCreditsRootSalts = salts.preVOSpentVoiceCreditsRootSalts;
+    this.spentVoiceCreditSubtotalSalts = salts.spentVoiceCreditSubtotalSalts;
+  }
 }
