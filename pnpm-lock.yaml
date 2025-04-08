@@ -139,7 +139,7 @@ importers:
         version: 3.0.8(ethers@6.13.5)(hardhat@2.22.19(ts-node@10.9.2(@types/node@22.14.0)(typescript@5.8.3))(typescript@5.8.3))
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
-        version: 5.0.0(roz2saurld4lqdw6ix333x74nm)
+        version: 5.0.0(b97983278a443d774ac498131468112c)
       '@zerodev/ecdsa-validator':
         specifier: 5.4.5
         version: 5.4.5(@zerodev/sdk@5.4.26(viem@2.26.0(typescript@5.8.3)(zod@3.24.2)))(viem@2.26.0(typescript@5.8.3)(zod@3.24.2))
@@ -287,7 +287,7 @@ importers:
         version: 3.0.8(ethers@6.13.5)(hardhat@2.22.19(ts-node@10.9.2(@types/node@22.14.0)(typescript@5.8.3))(typescript@5.8.3))
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
-        version: 5.0.0(roz2saurld4lqdw6ix333x74nm)
+        version: 5.0.0(b97983278a443d774ac498131468112c)
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
@@ -555,7 +555,7 @@ importers:
         version: link:../sdk
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
-        version: 5.0.0(roz2saurld4lqdw6ix333x74nm)
+        version: 5.0.0(b97983278a443d774ac498131468112c)
       commander:
         specifier: ^13.1.0
         version: 13.1.0
@@ -615,8 +615,8 @@ importers:
   packages/contracts:
     dependencies:
       '@excubiae/contracts':
-        specifier: ^0.7.0
-        version: 0.7.0
+        specifier: ^0.9.2
+        version: 0.9.2
       '@maci-protocol/core':
         specifier: ^3.0.0
         version: link:../core
@@ -631,7 +631,7 @@ importers:
         version: 3.0.8(ethers@6.13.5)(hardhat@2.22.19(ts-node@10.9.2(@types/node@22.14.0)(typescript@5.8.3))(typescript@5.8.3))
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
-        version: 5.0.0(roz2saurld4lqdw6ix333x74nm)
+        version: 5.0.0(b97983278a443d774ac498131468112c)
       '@nomicfoundation/hardhat-verify':
         specifier: ^2.0.13
         version: 2.0.13(hardhat@2.22.19(ts-node@10.9.2(@types/node@22.14.0)(typescript@5.8.3))(typescript@5.8.3))
@@ -912,7 +912,7 @@ importers:
         version: link:../sdk
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
-        version: 5.0.0(roz2saurld4lqdw6ix333x74nm)
+        version: 5.0.0(b97983278a443d774ac498131468112c)
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.20
@@ -2456,8 +2456,8 @@ packages:
   '@ethersproject/wordlists@5.8.0':
     resolution: {integrity: sha512-2df9bbXicZws2Sb5S6ET493uJ0Z84Fjr3pC4tu/qlnZERibZCeUVuqdtt+7Tv9xxhUxHoIekIA7avrKUWHrezg==}
 
-  '@excubiae/contracts@0.7.0':
-    resolution: {integrity: sha512-vK9uLgAD2WzH7HZlebQSPgC0UdYBJQti/1wCX34j0P3dLf6s+DdLpQ37drjs9XnDgzUUpHcI2UJikhbx8l3Hfg==}
+  '@excubiae/contracts@0.9.2':
+    resolution: {integrity: sha512-OJyQSdabHks+S3RNhuOYhWFNJIBLObTgp40Orn+c3+RtoJpVFGEKYEL1N/8HCU1NwMJFqqDwcBRi1EPpnrvdJg==}
 
   '@fastify/busboy@2.1.1':
     resolution: {integrity: sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==}
@@ -15891,7 +15891,7 @@ snapshots:
       '@ethersproject/properties': 5.8.0
       '@ethersproject/strings': 5.8.0
 
-  '@excubiae/contracts@0.7.0':
+  '@excubiae/contracts@0.9.2':
     dependencies:
       '@openzeppelin/contracts': 5.2.0
       '@semaphore-protocol/contracts': 4.9.2
@@ -17440,7 +17440,7 @@ snapshots:
       ethereumjs-util: 7.1.5
       hardhat: 2.22.19(ts-node@10.9.2(@types/node@22.14.0)(typescript@5.8.3))(typescript@5.8.3)
 
-  '@nomicfoundation/hardhat-toolbox@5.0.0(roz2saurld4lqdw6ix333x74nm)':
+  '@nomicfoundation/hardhat-toolbox@5.0.0(b97983278a443d774ac498131468112c)':
     dependencies:
       '@nomicfoundation/hardhat-chai-matchers': 2.0.8(@nomicfoundation/hardhat-ethers@3.0.8(ethers@6.13.5)(hardhat@2.22.19(ts-node@10.9.2(@types/node@22.14.0)(typescript@5.8.3))(typescript@5.8.3)))(chai@4.5.0)(ethers@6.13.5)(hardhat@2.22.19(ts-node@10.9.2(@types/node@22.14.0)(typescript@5.8.3))(typescript@5.8.3))
       '@nomicfoundation/hardhat-ethers': 3.0.8(ethers@6.13.5)(hardhat@2.22.19(ts-node@10.9.2(@types/node@22.14.0)(typescript@5.8.3))(typescript@5.8.3))

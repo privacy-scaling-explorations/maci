@@ -379,7 +379,7 @@ export interface IDeployPolicyArgs<
 /**
  * Type for the factory like contract
  */
-export type IFactoryLike<P extends unknown[] = []> = Factory &
+export type IFactoryLike = Factory &
   BaseContract & {
-    deploy: TypedContractMethod<P, [], "nonpayable">;
+    deploy: TypedContractMethod<unknown[], [], "nonpayable">;
   };

@@ -193,9 +193,9 @@ export const deployConstantInitialVoiceCreditProxy = async (
       quiet,
     ));
 
-  const initialVoiceCreditProxy = await deployProxyClone<ConstantInitialVoiceCreditProxy, number>({
+  const initialVoiceCreditProxy = await deployProxyClone<ConstantInitialVoiceCreditProxy, number[]>({
     factory: new ConstantInitialVoiceCreditProxyFactory(signer),
-    proxyFactory: initialVoiceCreditProxyFactory as unknown as IFactoryLike<number[]>,
+    proxyFactory: initialVoiceCreditProxyFactory as unknown as IFactoryLike,
     args: [args.amount],
     signer,
   });
@@ -235,32 +235,26 @@ const deployPolicy = async <
 }: IDeployPolicyArgs): Promise<{
   checker: C;
   policy: T;
-  checkerProxyFactory: IFactoryLike<typeof checkerArgs> & FC;
-  policyProxyFactory: IFactoryLike<typeof policyArgs> & FG;
+  checkerProxyFactory: IFactoryLike & FC;
+  policyProxyFactory: IFactoryLike & FG;
 }> => {
-  const checkerProxyFactory = await deployContract<IFactoryLike<typeof checkerArgs> & FC>(
-    checkerFactoryName,
-    signer,
-    quiet,
-  );
+  const checkerProxyFactory = await deployContract<IFactoryLike & FC>(checkerFactoryName, signer, quiet);
 
-  const checker = await deployProxyClone<C, unknown>({
+  const checker = await deployProxyClone<C, typeof checkerArgs>({
     factory: checkerFactory,
     proxyFactory: checkerProxyFactory,
     args: checkerArgs,
     signer,
   });
 
-  const policyProxyFactory = await deployContract<IFactoryLike<typeof policyArgs> & FG>(
-    policyFactoryName,
-    signer,
-    quiet,
-  );
+  const policyProxyFactory = await deployContract<IFactoryLike & FG>(policyFactoryName, signer, quiet);
 
-  const policy = await deployProxyClone<T, unknown>({
+  const args = policyArgs.concat(await checker.getAddress());
+
+  const policy = await deployProxyClone<T, typeof args>({
     factory: policyFactory,
     proxyFactory: policyProxyFactory,
-    args: policyArgs.concat(await checker.getAddress()),
+    args,
     signer,
   });
 
