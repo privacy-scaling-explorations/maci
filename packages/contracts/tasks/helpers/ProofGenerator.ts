@@ -188,46 +188,6 @@ export class ProofGenerator {
   }
 
   /**
-<<<<<<< HEAD
-=======
-   * Save the current salts to a file
-   */
-  private async saveSalts(): Promise<void> {
-    const salts: {
-      resultRootSalts: Record<number | string, bigint>;
-      preVOSpentVoiceCreditsRootSalts: Record<number | string, bigint>;
-      spentVoiceCreditSubtotalSalts: Record<number | string, bigint>;
-    } = this.poll.getSalts();
-    const saltsFile: string = path.join(this.outputDir, "salts.json");
-    try {
-      await fs.promises.writeFile(saltsFile, JSON.stringify(salts, null, 2));
-    } catch (error: unknown) {
-      console.error("Failed to save salts:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Load salts from a file
-   */
-  private async loadSalts(): Promise<void> {
-    const saltsFile: string = path.join(this.outputDir, "salts.json");
-    try {
-      const content: string = await fs.promises.readFile(saltsFile, "utf8");
-      const salts: {
-        resultRootSalts: Record<number | string, bigint>;
-        preVOSpentVoiceCreditsRootSalts: Record<number | string, bigint>;
-        spentVoiceCreditSubtotalSalts: Record<number | string, bigint>;
-      } = JSON.parse(content);
-      this.poll.setSalts(salts);
-    } catch (error: unknown) {
-      // If file doesn't exist or is invalid, continue with empty salts
-      console.warn("No existing salts file found, will generate new salts");
-    }
-  }
-
-  /**
->>>>>>> d4bfa6ac (redo: added missing strict typing)
    * Generate message processing proofs
    *
    * @returns message processing proofs
