@@ -41,7 +41,8 @@
     "@maci-protocol/core": "^3.0.0",
     "@maci-protocol/crypto": "^3.0.0",
     "@maci-protocol/domainobjs": "^3.0.0",
-    "multiformats": "9.9.0"
+    "multiformats": "9.9.0",
+    "snarkjs": "^0.7.5"
   },
   "devDependencies": {
     "@types/jest": "^29.5.2",

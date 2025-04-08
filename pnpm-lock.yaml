@@ -861,6 +861,9 @@ importers:
       multiformats:
         specifier: 9.9.0
         version: 9.9.0
+      snarkjs:
+        specifier: ^0.7.5
+        version: 0.7.5
     devDependencies:
       '@types/jest':
         specifier: ^29.5.2

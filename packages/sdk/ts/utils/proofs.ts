@@ -1,13 +1,13 @@
 import {
-  extractVk,
-  formatProofForVerifierContract,
-  genProofRapidSnark,
-  genProofSnarkjs,
-  verifyProof,
   type FullProveResult,
+  formatProofForVerifierContract,
+  verifyProof,
+  genProofRapidSnark,
+  extractVk,
+  genProofSnarkjs,
 } from "@maci-protocol/contracts";
 
-import type { CircuitInputs } from "./types";
+import { CircuitInputs } from "./types";
 
 /**
  * Generate and verify poll proof
