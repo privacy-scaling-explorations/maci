@@ -631,6 +631,7 @@ export enum ECheckerFactories {
  */
 export enum EInitialVoiceCreditProxies {
   Constant = "ConstantInitialVoiceCreditProxy",
+  ERC20Votes = "ERC20VotesInitialVoiceCreditProxy",
 }
 
 /**
@@ -638,6 +639,7 @@ export enum EInitialVoiceCreditProxies {
  */
 export enum EInitialVoiceCreditProxiesFactories {
   Constant = "ConstantInitialVoiceCreditProxyFactory",
+  ERC20Votes = "ERC20VotesInitialVoiceCreditProxyFactory",
 }
 
 /**
@@ -645,6 +647,9 @@ export enum EInitialVoiceCreditProxiesFactories {
  */
 export enum EContracts {
   ConstantInitialVoiceCreditProxy = "ConstantInitialVoiceCreditProxy",
+  ConstantInitialVoiceCreditProxyFactory = "ConstantInitialVoiceCreditProxyFactory",
+  ERC20VotesInitialVoiceCreditProxy = "ERC20VotesInitialVoiceCreditProxy",
+  ERC20VotesInitialVoiceCreditProxyFactory = "ERC20VotesInitialVoiceCreditProxyFactory",
   FreeForAllPolicy = "FreeForAllPolicy",
   AnonAadhaarPolicy = "AnonAadhaarPolicy",
   EASPolicy = "EASPolicy",
