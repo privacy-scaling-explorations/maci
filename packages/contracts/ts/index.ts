@@ -24,6 +24,7 @@ export {
   createContractFactory,
   deployPoseidonContracts,
   deployVerifier,
+  getDeployedPolicyProxyFactories,
 } from "./deploy";
 export { genMaciStateFromContract } from "./genMaciState";
 export { genEmptyBallotRoots } from "./genEmptyBallotRoots";
@@ -74,5 +75,6 @@ export type {
   FullProveResult,
   IGenProofOptions,
   IIpfsMessage,
+  TDeployedProxyFactories,
 } from "./types";
 export * from "../typechain-types";

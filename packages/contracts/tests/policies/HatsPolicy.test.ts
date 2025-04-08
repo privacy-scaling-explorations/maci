@@ -39,6 +39,7 @@ describe("HatsProtocol", () => {
     // deploy policies
     [hatsPolicy, hatsChecker] = await deployHatsSignupPolicy(
       { hats: mockHatsAddress, criterionHats: [hatId, thirdHatId] },
+      {},
       signer,
       true,
     );

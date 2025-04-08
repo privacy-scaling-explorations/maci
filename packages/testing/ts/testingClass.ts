@@ -146,10 +146,21 @@ export class TestingClass {
       signer,
     });
 
-    const [signupPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+    const [signupPolicy, , signupPolicyFactory, signupCheckerFactory] = await deployFreeForAllSignUpPolicy(
+      {},
+      signer,
+      true,
+    );
     const signupPolicyContractAddress = await signupPolicy.getAddress();
 
-    const [pollPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+    const [pollPolicy] = await deployFreeForAllSignUpPolicy(
+      {
+        policy: signupPolicyFactory,
+        checker: signupCheckerFactory,
+      },
+      signer,
+      true,
+    );
     const pollPolicyContractAddress = await pollPolicy.getAddress();
 
     const maciAddresses = await deployMaci({

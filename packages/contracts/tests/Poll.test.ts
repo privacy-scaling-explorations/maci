@@ -81,7 +81,7 @@ describe("Poll", () => {
         await maciContract.signUp(user.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [1]));
       }
 
-      [pollPolicyContract] = await deployFreeForAllSignUpPolicy(signer, true);
+      [pollPolicyContract] = await deployFreeForAllSignUpPolicy({}, signer, true);
 
       // deploy on chain poll
       const receipt = await maciContract

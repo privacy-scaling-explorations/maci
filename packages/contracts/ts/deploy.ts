@@ -7,9 +7,12 @@ import type {
   IDeployedMaci,
   IDeployedPoseidonContracts,
   IFactoryLike,
+  IGetDeployedPolicyProxyFactoriesArgs,
+  TDeployedProxyFactories,
 } from "./types";
 import type { TAbi } from "../tasks/helpers/types";
 
+import { ContractStorage } from "../tasks/helpers/ContractStorage";
 import { Deployment } from "../tasks/helpers/Deployment";
 import {
   ECheckerFactories,
@@ -101,6 +104,7 @@ import {
   ERC20VotesInitialVoiceCreditProxy__factory as ERC20VotesInitialVoiceCreditProxyFactory,
   ERC20VotesInitialVoiceCreditProxyFactory as ERC20VotesInitialVoiceCreditProxyFactoryContract,
   MockERC20Votes,
+  Factory,
 } from "../typechain-types";
 
 import { genEmptyBallotRoots } from "./genEmptyBallotRoots";
@@ -199,7 +203,8 @@ export const deployConstantInitialVoiceCreditProxy = async (
 
   const initialVoiceCreditProxy = await deployProxyClone<ConstantInitialVoiceCreditProxy, number[]>({
     factory: new ConstantInitialVoiceCreditProxyFactory(signer),
-    proxyFactory: initialVoiceCreditProxyFactory as unknown as IFactoryLike<unknown[]>,
+    proxyFactory:
+      initialVoiceCreditProxyFactory as unknown as IFactoryLike<ConstantInitialVoiceCreditProxyFactoryContract>,
     args: [args.amount],
     signer,
   });
@@ -238,7 +243,8 @@ export const deployERC20VotesInitialVoiceCreditProxy = async (
     [bigint, string, bigint]
   >({
     factory: new ERC20VotesInitialVoiceCreditProxyFactory(signer),
-    proxyFactory: erc20VotesInitialVoiceCreditProxyFactory as unknown as IFactoryLike<unknown[]>,
+    proxyFactory:
+      erc20VotesInitialVoiceCreditProxyFactory as unknown as IFactoryLike<ERC20VotesInitialVoiceCreditProxyFactoryContract>,
     args: [args.snapshotBlock, args.token, args.factor],
     signer,
   });
@@ -283,35 +289,30 @@ const deployPolicy = async <
   signer,
   policyArgs = [],
   checkerArgs = [],
+  factories,
   quiet = true,
-}: IDeployPolicyArgs): Promise<{
+}: IDeployPolicyArgs<FC, FG>): Promise<{
   checker: C;
   policy: T;
-  checkerProxyFactory: IFactoryLike<typeof checkerArgs> & FC;
-  policyProxyFactory: IFactoryLike<typeof policyArgs> & FG;
+  checkerProxyFactory: FC;
+  policyProxyFactory: FG;
 }> => {
-  const checkerProxyFactory = await deployContract<IFactoryLike<typeof checkerArgs> & FC>(
-    checkerFactoryName,
-    signer,
-    quiet,
-  );
+  const checkerProxyFactory =
+    factories?.checker ?? (await deployContract<IFactoryLike<FC>>(checkerFactoryName, signer, quiet));
 
   const checker = await deployProxyClone<C, unknown[]>({
     factory: checkerFactory,
-    proxyFactory: checkerProxyFactory,
+    proxyFactory: checkerProxyFactory as IFactoryLike<FC>,
     args: checkerArgs,
     signer,
   });
 
-  const policyProxyFactory = await deployContract<IFactoryLike<typeof policyArgs> & FG>(
-    policyFactoryName,
-    signer,
-    quiet,
-  );
+  const policyProxyFactory =
+    factories?.policy ?? (await deployContract<IFactoryLike<FG>>(policyFactoryName, signer, quiet));
 
   const policy = await deployProxyClone<T, unknown[]>({
     factory: policyFactory,
-    proxyFactory: policyProxyFactory,
+    proxyFactory: policyProxyFactory as IFactoryLike<FG>,
     args: policyArgs.concat(await checker.getAddress()),
     signer,
   });
@@ -325,12 +326,55 @@ const deployPolicy = async <
 };
 
 /**
+ * Get deployed proxy factories for policy contracts to reuse them.
+ *
+ * @param args - the argument to get deployed policy proxy factories
+ * @returns reusable policy proxy factories or undefined if not deployed
+ */
+export const getDeployedPolicyProxyFactories = async <C extends Factory, P extends Factory>({
+  policy,
+  checker,
+  signer,
+  network,
+}: IGetDeployedPolicyProxyFactoriesArgs): Promise<TDeployedProxyFactories<C, P>> => {
+  const contractStorage = ContractStorage.getInstance();
+  const deployment = Deployment.getInstance();
+
+  const [policyFactoryAddress, checkerFactoryAddress] = contractStorage.getAddresses([policy, checker], network);
+
+  const [policyFactory, checkerFactory] = await Promise.all([
+    policyFactoryAddress
+      ? await deployment.getContract<P>({
+          name: policy.toString() as EContracts,
+          address: policyFactoryAddress,
+          signer,
+        })
+      : undefined,
+
+    checkerFactoryAddress
+      ? await deployment.getContract<C>({
+          name: checker.toString() as EContracts,
+          address: checkerFactoryAddress,
+          signer,
+        })
+      : undefined,
+  ]);
+
+  return {
+    checker: checkerFactory,
+    policy: policyFactory,
+  };
+};
+
+/**
  * Deploy a FreeForAllPolicy contract
+ * @param factories - the optional proxy factories to reuse for deployment
  * @param signer - the signer to use to deploy the contract
  * @param quiet - whether to suppress console output
  * @returns the deployed FreeForAllPolicy contracts
  */
 export const deployFreeForAllSignUpPolicy = async (
+  factories?: TDeployedProxyFactories<FreeForAllCheckerFactoryContract, FreeForAllPolicyFactoryContract>,
   signer?: Signer,
   quiet = false,
 ): Promise<
@@ -346,6 +390,7 @@ export const deployFreeForAllSignUpPolicy = async (
     checkerFactoryName: ECheckerFactories.FreeForAll,
     checkerFactory: new FreeForAllCheckerFactory(signer),
     policyFactory: new FreeForAllPolicyFactory(signer),
+    factories,
     signer: signer!,
     quiet,
   });
@@ -356,6 +401,7 @@ export const deployFreeForAllSignUpPolicy = async (
 /**
  * Deploy a EASPolicy contract
  * @param args - the arguments to deploy policy
+ * @param factories - the optional proxy factories to reuse for deployment
  * @param signer - the signer to use to deploy the contract
  * @param quiet - whether to suppress console output
  * @returns the deployed EASPolicy contracts
@@ -366,6 +412,7 @@ export const deployEASSignUpPolicy = async (
     attester: string;
     schema: Uint8Array | string;
   },
+  factories?: TDeployedProxyFactories<EASCheckerFactoryContract, EASPolicyFactoryContract>,
   signer?: Signer,
   quiet = false,
 ): Promise<[EASPolicy, EASChecker, EASPolicyFactoryContract, EASCheckerFactoryContract]> => {
@@ -380,6 +427,7 @@ export const deployEASSignUpPolicy = async (
     checkerFactory: new EASCheckerFactory(signer),
     policyFactory: new EASPolicyFactory(signer),
     checkerArgs: [args.eas, args.attester, args.schema],
+    factories,
     signer: signer!,
     quiet,
   });
@@ -390,6 +438,7 @@ export const deployEASSignUpPolicy = async (
 /**
  * Deploy a ZupassPolicy contract
  * @param args - the arguments to deploy policy
+ * @param factories - the optional proxy factories to reuse for deployment
  * @param signer - the signer to use to deploy the contract
  * @param quiet - whether to suppress console output
  * @returns the deployed ZupassPolicy contracts
@@ -401,6 +450,7 @@ export const deployZupassSignUpPolicy = async (
     signer2: BigNumberish;
     verifier: string;
   },
+  factories?: TDeployedProxyFactories<ZupassCheckerFactoryContract, ZupassPolicyFactoryContract>,
   signer?: Signer,
   quiet = false,
 ): Promise<[ZupassPolicy, ZupassChecker, ZupassPolicyFactoryContract, ZupassCheckerFactoryContract]> => {
@@ -416,6 +466,7 @@ export const deployZupassSignUpPolicy = async (
     policyFactory: new ZupassPolicyFactory(signer),
     signer: signer!,
     checkerArgs: [args.eventId, args.signer1, args.signer2, args.verifier],
+    factories,
     quiet,
   });
 
@@ -425,12 +476,14 @@ export const deployZupassSignUpPolicy = async (
 /**
  * Deploy a GitcoinPassportPolicy contract
  * @param args - the arguments to deploy policy
+ * @param factories - the optional proxy factories to reuse for deployment
  * @param signer - the signer to use to deploy the contract
  * @param quiet - whether to suppress console output
  * @returns the deployed GitcoinPassportPolicy contracts
  */
 export const deployGitcoinPassportPolicy = async (
   args: { decoderAddress: string; minimumScore: number },
+  factories?: TDeployedProxyFactories<GitcoinPassportCheckerFactoryContract, GitcoinPassportPolicyFactoryContract>,
   signer?: Signer,
   quiet = false,
 ): Promise<
@@ -453,6 +506,7 @@ export const deployGitcoinPassportPolicy = async (
     policyFactory: new GitcoinPassportPolicyFactory(signer),
     signer: signer!,
     checkerArgs: [args.decoderAddress, args.minimumScore.toString()],
+    factories,
     quiet,
   });
 
@@ -462,12 +516,14 @@ export const deployGitcoinPassportPolicy = async (
 /**
  * Deploy a MerkleProofPolicy contract
  * @param args - the arguments to deploy policy
+ * @param factories - the optional proxy factories to reuse for deployment
  * @param signer - the signer to use to deploy the contract
  * @param quiet - whether to suppress console output
  * @returns the deployed MerkleProofPolicy contracts
  */
 export const deployMerkleProofPolicy = async (
   args: { root: Uint8Array | string },
+  factories?: TDeployedProxyFactories<MerkleProofCheckerFactoryContract, MerkleProofPolicyFactoryContract>,
   signer?: Signer,
   quiet = false,
 ): Promise<
@@ -483,8 +539,9 @@ export const deployMerkleProofPolicy = async (
     checkerFactoryName: ECheckerFactories.MerkleProof,
     checkerFactory: new MerkleProofCheckerFactory(signer),
     policyFactory: new MerkleProofPolicyFactory(signer),
-    signer: signer!,
     checkerArgs: [args.root],
+    factories,
+    signer: signer!,
     quiet,
   });
 
@@ -494,6 +551,7 @@ export const deployMerkleProofPolicy = async (
 /**
  * Deploy a SemaphorePolicy contract
  * @param args - the arguments to deploy policy
+ * @param factories - the optional proxy factories to reuse for deployment
  * @param signer - the signer to use to deploy the contract
  * @param quiet - whether to suppress console output
  * @returns the deployed SemaphorePolicy contracts
@@ -503,6 +561,7 @@ export const deploySemaphoreSignupPolicy = async (
     semaphore: string;
     groupId: BigNumberish;
   },
+  factories?: TDeployedProxyFactories<SemaphoreCheckerFactoryContract, SemaphorePolicyFactoryContract>,
   signer?: Signer,
   quiet = false,
 ): Promise<[SemaphorePolicy, SemaphoreChecker, SemaphorePolicyFactoryContract, SemaphoreCheckerFactoryContract]> => {
@@ -516,8 +575,9 @@ export const deploySemaphoreSignupPolicy = async (
     checkerFactoryName: ECheckerFactories.Semaphore,
     checkerFactory: new SemaphoreCheckerFactory(signer),
     policyFactory: new SemaphorePolicyFactory(signer),
-    signer: signer!,
     checkerArgs: [args.semaphore, args.groupId.toString()],
+    factories,
+    signer: signer!,
     quiet,
   });
 
@@ -527,6 +587,7 @@ export const deploySemaphoreSignupPolicy = async (
 /**
  * Deploy a HatsPolicy contract
  * @param args - the arguments to deploy policy
+ * @param factories - the optional proxy factories to reuse for deployment
  * @param signer - the signer to use to deploy the contract
  * @param quiet - whether to suppress console output
  * @returns the deployed HatsPolicy contracts
@@ -536,6 +597,7 @@ export const deployHatsSignupPolicy = async (
     hats: string;
     criterionHats: BigNumberish[];
   },
+  factories?: TDeployedProxyFactories<HatsCheckerFactoryContract, HatsPolicyFactoryContract>,
   signer?: Signer,
   quiet = false,
 ): Promise<[HatsPolicy, HatsChecker, HatsPolicyFactoryContract, HatsCheckerFactoryContract]> => {
@@ -549,16 +611,18 @@ export const deployHatsSignupPolicy = async (
     checkerFactoryName: ECheckerFactories.Hats,
     checkerFactory: new HatsCheckerFactory(signer),
     policyFactory: new HatsPolicyFactory(signer),
-    signer: signer!,
     checkerArgs: [args.hats, args.criterionHats],
+    factories,
+    signer: signer!,
     quiet,
   });
 
   return [policy, checker, policyProxyFactory, checkerProxyFactory];
 };
 /**
- * Deploy a SignupTokenPolicy contract
+ * Deploy a TokenPolicy contract
  * @param args - the arguments to deploy policy
+ * @param factories - the optional proxy factories to reuse for deployment
  * @param signer - the signer to use to deploy the contract
  * @param quiet - whether to suppress console output
  * @returns the deployed SignupTokenPolicy contract
@@ -567,6 +631,7 @@ export const deploySignupTokenPolicy = async (
   args: {
     token: string;
   },
+  factories?: TDeployedProxyFactories<TokenCheckerFactoryContract, TokenPolicyFactoryContract>,
   signer?: Signer,
   quiet = false,
 ): Promise<[TokenPolicy, TokenChecker, TokenPolicyFactoryContract, TokenCheckerFactoryContract]> => {
@@ -580,8 +645,9 @@ export const deploySignupTokenPolicy = async (
     checkerFactoryName: ECheckerFactories.Token,
     checkerFactory: new TokenCheckerFactory(signer),
     policyFactory: new TokenPolicyFactory(signer),
-    signer: signer!,
     checkerArgs: [args.token],
+    factories,
+    signer: signer!,
     quiet,
   });
 
@@ -591,6 +657,9 @@ export const deploySignupTokenPolicy = async (
 /**
  * Deploy an AnonAadhaarPolicy contract
  * @param args - the arguments to deploy policy
+ * @param factories - the optional proxy factories to reuse for deployment
+ * @param signer - the signer to use to deploy the contract
+ * @param quiet - whether to suppress console output
  * @returns the deployed AnonAadhaarPolicy contracts
  */
 export const deployAnonAadhaarPolicy = async (
@@ -598,6 +667,7 @@ export const deployAnonAadhaarPolicy = async (
     verifierAddress: string;
     nullifierSeed: string;
   },
+  factories?: TDeployedProxyFactories<AnonAadhaarCheckerFactoryContract, AnonAadhaarPolicyFactoryContract>,
   signer?: Signer,
   quiet = false,
 ): Promise<
@@ -613,8 +683,9 @@ export const deployAnonAadhaarPolicy = async (
     checkerFactoryName: ECheckerFactories.AnonAadhaar,
     checkerFactory: new AnonAadhaarCheckerFactory(signer),
     policyFactory: new AnonAadhaarPolicyFactory(signer),
-    signer: signer!,
     checkerArgs: [args.verifierAddress, args.nullifierSeed],
+    factories,
+    signer: signer!,
     quiet,
   });
 

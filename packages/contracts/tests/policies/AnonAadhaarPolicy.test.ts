@@ -45,6 +45,7 @@ describe("AnonAadhaar", () => {
         verifierAddress: mockAnonAadhaarAddress,
         nullifierSeed: nullifierSeed.toString(),
       },
+      {},
       signer,
       true,
     );
