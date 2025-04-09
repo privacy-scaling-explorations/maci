@@ -1,3 +1,4 @@
+import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "@maci-protocol/contracts/typechain-types";
 import { IJsonMaciState, MaciState } from "@maci-protocol/core";
 import { poseidon, stringifyBigInts } from "@maci-protocol/crypto";
 import { Keypair, PrivKey, PubKey } from "@maci-protocol/domainobjs";
@@ -10,11 +11,14 @@ import type {
   IParsePollJoinEventsArgs,
   IParseSignupEventsArgs,
   IPollJoiningCircuitInputs,
+  IJoinedUserArgs,
+  IIsNullifierOnChainArgs,
 } from "./types";
+import type { IGenerateSignUpTree } from "../trees/types";
+import type { CircuitInputs } from "../utils/types";
 
-import { generateSignUpTree, IGenerateSignUpTree } from "../trees";
+import { generateSignUpTree } from "../trees/stateTree";
 import { BLOCKS_STEP } from "../utils/constants";
-import { CircuitInputs } from "../utils/types";
 
 /**
  * Parse the poll joining events from the Poll contract
@@ -52,6 +56,58 @@ export const parsePollJoinEvents = async ({
     pollStateIndex: undefined,
     voiceCredits: undefined,
   };
+};
+
+/**
+ * Checks if user is joined to a poll with their public key and get its data
+ * @param {IJoinedUserArgs} - The arguments for the join check command
+ * @returns user joined or not and poll state index, voice credit balance
+ */
+export const getJoinedUserData = async ({
+  maciAddress,
+  pollId,
+  pollPubKey,
+  signer,
+  startBlock,
+}: IJoinedUserArgs): Promise<{ isJoined: boolean; pollStateIndex?: string; voiceCredits?: string }> => {
+  const maciContract = MACIFactory.connect(maciAddress, signer);
+  const pollContracts = await maciContract.getPoll(pollId);
+  const pollContract = PollFactory.connect(pollContracts.poll, signer);
+
+  const pollPublicKey = PubKey.deserialize(pollPubKey);
+  const startBlockNumber = startBlock || 0;
+  const currentBlock = await signer.provider!.getBlockNumber();
+
+  const { pollStateIndex, voiceCredits } = await parsePollJoinEvents({
+    pollContract,
+    startBlock: startBlockNumber,
+    currentBlock,
+    pollPublicKey,
+  });
+
+  return {
+    isJoined: pollStateIndex !== undefined,
+    pollStateIndex,
+    voiceCredits,
+  };
+};
+
+/**
+ * Checks if a user joined a poll with a given nullifier
+ * @param {IIsNullifierOnChainArgs} args - The arguments for the is nullifier on chain command
+ * @returns whether the nullifier is on chain or not
+ */
+export const hasUserJoinedPoll = async ({
+  maciAddress,
+  pollId,
+  nullifier,
+  signer,
+}: IIsNullifierOnChainArgs): Promise<boolean> => {
+  const maciContract = MACIFactory.connect(maciAddress, signer);
+  const pollContracts = await maciContract.getPoll(pollId);
+  const pollContract = PollFactory.connect(pollContracts.poll, signer);
+
+  return pollContract.pollNullifiers(nullifier);
 };
 
 /**

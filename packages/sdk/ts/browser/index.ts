@@ -5,7 +5,8 @@ export * from "../tally";
 export * from "../trees";
 export * from "../vote";
 export * from "../maciKeys";
-export { getSignedupUserData, signup, getJoinedUserData, hasUserJoinedPoll, hasUserSignedUp } from "../user";
+export { getSignedupUserData, signup, hasUserSignedUp } from "../user/signup";
+export { getJoinedUserData, hasUserJoinedPoll } from "../user/utils";
 
 export * from "./joinPoll";
 

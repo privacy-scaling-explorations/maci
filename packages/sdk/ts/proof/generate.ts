@@ -5,7 +5,7 @@ import fs from "fs";
 
 import type { IGenerateProofsArgs, IGenerateProofsData } from "./types";
 
-import { getPollContracts } from "../poll";
+import { getPollContracts } from "../poll/utils";
 import { doesPathExist } from "../utils/files";
 
 /**
