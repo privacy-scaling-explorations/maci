@@ -3,7 +3,7 @@ import { PubKey } from "@maci-protocol/domainobjs";
 
 import type { IParseIpfsHashAddedEventsArgs } from "./types";
 
-import { BLOCKS_STEP } from "../utils";
+import { BLOCKS_STEP } from "../utils/constants";
 
 /**
  * Parse the ipfs hash events from the Poll contract

@@ -1,4 +1,6 @@
-export { getSignedupUserData, signup, getJoinedUserData, joinPoll, hasUserJoinedPoll, hasUserSignedUp } from "./user";
+export { joinPoll } from "./joinPoll";
+export { getSignedupUserData, signup, hasUserSignedUp } from "./signup";
+export { getJoinedUserData, hasUserJoinedPoll } from "./utils";
 export type {
   IJoinedUserArgs,
   IIsRegisteredUser,

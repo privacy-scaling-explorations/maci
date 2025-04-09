@@ -11,7 +11,7 @@ import { PubKey } from "@maci-protocol/domainobjs";
 
 import type { IDeployPollArgs, IPollContractsData } from "./types";
 
-import { contractExists } from "../utils";
+import { contractExists } from "../utils/contracts";
 
 import { DEFAULT_INITIAL_VOICE_CREDITS } from "./utils";
 

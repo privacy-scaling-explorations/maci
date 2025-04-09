@@ -3,12 +3,13 @@ import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "@mac
 import { poseidon } from "@maci-protocol/crypto";
 import { Keypair, PrivKey } from "@maci-protocol/domainobjs";
 
-import { hasUserJoinedPoll, IJoinPollArgs, IJoinPollData } from "../user";
-import { getPollJoiningCircuitEvents, getPollJoiningCircuitInputsFromStateFile } from "../user/utils";
-import { contractExists } from "../utils/contracts";
-import { CircuitInputs } from "../utils/types";
+import type { IJoinPollData, IJoinPollArgs } from "./types";
+import type { CircuitInputs } from "../utils/types";
 
-import { genProofSnarkjs, formatProofForVerifierContract } from "./utils";
+import { contractExists } from "../utils/contracts";
+import { generateAndVerifyProof } from "../utils/proofs";
+
+import { getPollJoiningCircuitEvents, getPollJoiningCircuitInputsFromStateFile, hasUserJoinedPoll } from "./utils";
 
 /**
  * Join Poll user to the Poll contract
@@ -25,6 +26,9 @@ export const joinPoll = async ({
   endBlock,
   blocksPerBatch,
   pollJoiningZkey,
+  useWasm,
+  rapidsnark,
+  pollWitgen,
   pollWasm,
   sgDataArg,
   ivcpDataArg,
@@ -91,14 +95,14 @@ export const joinPoll = async ({
   const currentStateRootIndex = Number.parseInt((await maciContract.numSignUps()).toString(), 10) - 1;
 
   // generate the proof for this batch
-  const { proof } = await genProofSnarkjs({ inputs: circuitInputs, zkeyPath: pollJoiningZkey, wasmPath: pollWasm });
+  const proof = await generateAndVerifyProof(circuitInputs, pollJoiningZkey, useWasm, rapidsnark, pollWitgen, pollWasm);
 
   // submit the message onchain as well as the encryption public key
   const tx = await pollContract.joinPoll(
     nullifier,
     userMaciPubKey.asContractParam(),
     currentStateRootIndex,
-    formatProofForVerifierContract(proof),
+    proof,
     sgDataArg,
     ivcpDataArg,
   );
