@@ -124,3 +124,9 @@ CI pipeline ensures that we have automated tests that constantly validate. For m
 [relayer-npm-link]: https://www.npmjs.com/package/maci-relayer
 [relayer-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/relayer-build.yml/badge.svg
 [relayer-actions-link]: https://github.com/privacy-scaling-explorations/maci/actions?query=workflow%3Arelayer
+
+## Hardhat Tasks
+
+In addition to the CLI commands, MACI provides Hardhat tasks that allow developers to interact with the protocol directly from the Hardhat environment.
+
+For more details, see the [hardhat tasks documentation](./packages/contracts/tasks/runner/README.md).

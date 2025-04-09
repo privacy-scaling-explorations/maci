@@ -17,6 +17,7 @@ import "./tasks/runner/merge";
 import "./tasks/runner/prove";
 import "./tasks/runner/submitOnChain";
 import "./tasks/runner/verifyFull";
+import "./tasks/voting";
 
 dotenv.config();
 

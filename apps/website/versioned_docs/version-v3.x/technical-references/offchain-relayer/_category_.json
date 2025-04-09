@@ -1,0 +1,8 @@
+{
+  "label": "Offchain Relayer",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "The Offchain Relayer is a service that allows users to vote on MACI polls free of charge."
+  }
+}

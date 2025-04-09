@@ -849,3 +849,88 @@ export interface IDeployContractWithLinkedLibrariesParams {
    */
   signer?: Signer;
 }
+
+/**
+ * Interface for the vote task arguments
+ */
+export interface IVoteTaskArgs {
+  /**
+   * The ID of the poll to vote in
+   */
+  pollId: number;
+
+  /**
+   * The user's private key
+   */
+  privkey: string;
+
+  /**
+   * The user's state index (from signup or joinPoll)
+   */
+  stateIndex: number;
+
+  /**
+   * The vote option index to vote for
+   */
+  voteOptionIndex: number;
+
+  /**
+   * The weight of the vote
+   */
+  voteWeight: number;
+
+  /**
+   * The nonce for the vote message (default: 1)
+   */
+  nonce?: number;
+
+  /**
+   * The salt for the vote message (defaults to random)
+   */
+  salt?: string;
+
+  /**
+   * MACI contract address (default: from deployment config)
+   */
+  maci?: string;
+}
+
+/**
+ * Interface for the poll-flow task arguments
+ */
+export interface IPollFlowTaskArgs {
+  /**
+   * The user's private key
+   */
+  privkey: string;
+
+  /**
+   * The vote option index to vote for
+   */
+  voteOptionIndex: number;
+
+  /**
+   * The weight of the vote
+   */
+  voteWeight: number;
+
+  /**
+   * Poll parameters JSON file path
+   */
+  pollParams?: string;
+}
+
+/**
+ * Interface for the vote task return data
+ */
+export interface IVoteTaskReturn {
+  /**
+   * Transaction hash of the published vote
+   */
+  hash: string;
+
+  /**
+   * Encrypted message content
+   */
+  encryptedMessage: string;
+}

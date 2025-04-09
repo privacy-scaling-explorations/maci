@@ -1,8 +1,9 @@
-# Coordinator service
-
-Please refer to [Offchain relayer service documentation](https://maci.pse.dev/docs/category/offchain-relayer) for more information.
-
-## Instructions
+---
+title: Installation and setup
+description: Learn how to install and setup the Coordinator Service.
+sidebar_label: Installation
+sidebar_position: 2
+---
 
 1. Add `.env` file (see `.env.example`).
 2. Generate RSA key pair with `pnpm run generate-keypair`.
