@@ -579,6 +579,7 @@ export enum EPolicies {
   Semaphore = "@excubiae/contracts/contracts/extensions/semaphore/SemaphorePolicy.sol:SemaphorePolicy",
   MerkleProof = "@excubiae/contracts/contracts/extensions/merkle/MerkleProofPolicy.sol:MerkleProofPolicy",
   AnonAadhaar = "@excubiae/contracts/contracts/extensions/anonAadhaar/AnonAadhaarPolicy.sol:AnonAadhaarPolicy",
+  ERC20Votes = "@excubiae/contracts/contracts/extensions/erc20Votes/ERC20VotesPolicy.sol:ERC20VotesPolicy",
 }
 
 /**
@@ -594,6 +595,7 @@ export enum EPolicyFactories {
   Semaphore = "@excubiae/contracts/contracts/extensions/semaphore/SemaphorePolicyFactory.sol:SemaphorePolicyFactory",
   MerkleProof = "@excubiae/contracts/contracts/extensions/merkle/MerkleProofPolicyFactory.sol:MerkleProofPolicyFactory",
   AnonAadhaar = "@excubiae/contracts/contracts/extensions/anonAadhaar/AnonAadhaarPolicyFactory.sol:AnonAadhaarPolicyFactory",
+  ERC20Votes = "@excubiae/contracts/contracts/extensions/erc20votes/ERC20VotesPolicyFactory.sol:ERC20VotesPolicyFactory",
 }
 
 /**
@@ -609,6 +611,7 @@ export enum ECheckers {
   Semaphore = "@excubiae/contracts/contracts/extensions/semaphore/SemaphoreChecker.sol:SemaphoreChecker",
   MerkleProof = "@excubiae/contracts/contracts/extensions/merkle/MerkleProofChecker.sol:MerkleProofChecker",
   AnonAadhaar = "@excubiae/contracts/contracts/extensions/anonAadhaar/AnonAadhaarChecker.sol:AnonAadhaarChecker",
+  ERC20Votes = "@excubiae/contracts/contracts/extensions/erc20Votes/ERC20VotesChecker.sol:ERC20VotesChecker",
 }
 
 /**
@@ -624,6 +627,7 @@ export enum ECheckerFactories {
   Semaphore = "@excubiae/contracts/contracts/extensions/semaphore/SemaphoreCheckerFactory.sol:SemaphoreCheckerFactory",
   MerkleProof = "@excubiae/contracts/contracts/extensions/merkle/MerkleProofCheckerFactory.sol:MerkleProofCheckerFactory",
   AnonAadhaar = "@excubiae/contracts/contracts/extensions/anonAadhaar/AnonAadhaarCheckerFactory.sol:AnonAadhaarCheckerFactory",
+  ERC20Votes = "@excubiae/contracts/contracts/extensions/erc20votes/ERC20VotesCheckerFactory.sol:ERC20VotesCheckerFactory",
 }
 
 /**
@@ -657,6 +661,7 @@ export enum EContracts {
   HatsPolicy = "HatsPolicy",
   ZupassPolicy = "ZupassPolicy",
   TokenPolicy = "TokenPolicy",
+  ERC20VotesPolicy = "ERC20VotesPolicy",
   ZupassGroth16Verifier = "ZupassGroth16Verifier",
   SemaphorePolicy = "SemaphorePolicy",
   MerkleProofPolicy = "MerkleProofPolicy",

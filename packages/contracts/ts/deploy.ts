@@ -35,6 +35,8 @@ import {
   type AnonAadhaarPolicyFactory as AnonAadhaarPolicyFactoryContract,
   type EASPolicyFactory as EASPolicyFactoryContract,
   type EASCheckerFactory as EASCheckerFactoryContract,
+  type ERC20VotesPolicyFactory as ERC20VotesPolicyFactoryContract,
+  type ERC20VotesCheckerFactory as ERC20VotesCheckerFactoryContract,
   type GitcoinPassportCheckerFactory as GitcoinPassportCheckerFactoryContract,
   type GitcoinPassportPolicyFactory as GitcoinPassportPolicyFactoryContract,
   type MerkleProofCheckerFactory as MerkleProofCheckerFactoryContract,
@@ -73,6 +75,10 @@ import {
   type PoseidonT6,
   type Verifier,
   type VkRegistry,
+  type ERC20VotesChecker,
+  type ERC20VotesPolicy,
+  ERC20VotesChecker__factory as ERC20VotesCheckerFactory,
+  ERC20VotesPolicy__factory as ERC20VotesPolicyFactory,
   FreeForAllPolicy__factory as FreeForAllPolicyFactory,
   FreeForAllChecker__factory as FreeForAllCheckerFactory,
   ZupassPolicy__factory as ZupassPolicyFactory,
@@ -648,6 +654,45 @@ export const deploySignupTokenPolicy = async (
     checkerArgs: [args.token],
     factories,
     signer: signer!,
+    quiet,
+  });
+
+  return [policy, checker, policyProxyFactory, checkerProxyFactory];
+};
+
+/**
+ * Deploy a ERC20VotesPolicy contract
+ * @param args - the arguments to deploy policy
+ * @param factories - the optional proxy factories to reuse for deployment
+ * @param signer - the signer to use to deploy the contract
+ * @param quiet - whether to suppress console output
+ * @returns the deployed ERC20VotesPolicy contracts
+ */
+export const deployERC20VotesPolicy = async (
+  args: {
+    snapshotBlock: bigint;
+    token: string;
+    threshold: bigint;
+  },
+  factories?: TDeployedProxyFactories<ERC20VotesCheckerFactoryContract, ERC20VotesPolicyFactoryContract>,
+  signer?: Signer,
+  quiet = false,
+): Promise<
+  [ERC20VotesPolicy, ERC20VotesChecker, ERC20VotesPolicyFactoryContract, ERC20VotesCheckerFactoryContract]
+> => {
+  const { policy, checker, checkerProxyFactory, policyProxyFactory } = await deployPolicy<
+    ERC20VotesChecker,
+    ERC20VotesPolicy,
+    ERC20VotesCheckerFactoryContract,
+    ERC20VotesPolicyFactoryContract
+  >({
+    policyFactoryName: EPolicyFactories.ERC20Votes,
+    checkerFactoryName: ECheckerFactories.ERC20Votes,
+    checkerFactory: new ERC20VotesCheckerFactory(signer),
+    policyFactory: new ERC20VotesPolicyFactory(signer),
+    signer: signer!,
+    checkerArgs: [args.token, args.snapshotBlock, args.threshold],
+    factories,
     quiet,
   });
 

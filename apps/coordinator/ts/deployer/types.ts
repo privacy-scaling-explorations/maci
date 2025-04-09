@@ -157,6 +157,26 @@ export interface IGitcoinPassportPolicyArgs {
 }
 
 /**
+ * IERC20VotesPolicyArgs represents the arguments for deploying an ERC20 votes policy
+ */
+export interface IERC20VotesPolicyArgs {
+  /**
+   * The token address
+   */
+  token: string;
+
+  /**
+   * The factor
+   */
+  factor: string;
+
+  /**
+   * The snapshot block
+   */
+  snapshotBlock: string;
+}
+
+/**
  * IVkRegistryArgs represents the arguments for deploying a VkRegistry
  */
 export interface IVkRegistryArgs {
@@ -189,7 +209,8 @@ export type IPolicyArgs =
   | IZupassPolicyArgs
   | IHatsPolicyArgs
   | ISemaphorePolicyArgs
-  | IGitcoinPassportPolicyArgs;
+  | IGitcoinPassportPolicyArgs
+  | IERC20VotesPolicyArgs;
 
 export type IInitialVoiceCreditProxyArgs = IConstantInitialVoiceCreditProxyArgs;
 /**

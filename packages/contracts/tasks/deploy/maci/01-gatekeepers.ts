@@ -3,6 +3,8 @@ import { hexToBigInt, uuidToBigInt } from "@pcd/util";
 import type {
   EASCheckerFactory,
   EASPolicyFactory,
+  ERC20VotesCheckerFactory,
+  ERC20VotesPolicyFactory,
   FreeForAllCheckerFactory,
   FreeForAllPolicyFactory,
   GitcoinPassportCheckerFactory,
@@ -50,6 +52,7 @@ deployment.deployTask(EDeploySteps.Policies, "Deploy policies").then((task) =>
       deploySemaphoreSignupPolicy,
       deployHatsSignupPolicy,
       getDeployedPolicyProxyFactories,
+      deployERC20VotesPolicy,
     } = await import("../../../ts/deploy");
 
     const freeForAllPolicyContractAddress = storage.getAddress(EContracts.FreeForAllPolicy, hre.network.name);
@@ -59,6 +62,7 @@ deployment.deployTask(EDeploySteps.Policies, "Deploy policies").then((task) =>
     const zupassPolicyContractAddress = storage.getAddress(EContracts.ZupassPolicy, hre.network.name);
     const semaphorePolicyContractAddress = storage.getAddress(EContracts.SemaphorePolicy, hre.network.name);
     const merkleProofPolicyContractAddress = storage.getAddress(EContracts.MerkleProofPolicy, hre.network.name);
+    const erc20VotesPolicyContractAddress = storage.getAddress(EContracts.ERC20VotesPolicy, hre.network.name);
     const deployFreeForAllPolicy = deployment.getDeployConfigField(EContracts.FreeForAllPolicy, "deploy");
     const deployEASPolicy = deployment.getDeployConfigField(EContracts.EASPolicy, "deploy");
     const deployGitcoinPolicy = deployment.getDeployConfigField(EContracts.GitcoinPassportPolicy, "deploy");
@@ -66,6 +70,7 @@ deployment.deployTask(EDeploySteps.Policies, "Deploy policies").then((task) =>
     const deploySemaphorePolicy = deployment.getDeployConfigField(EContracts.SemaphorePolicy, "deploy");
     const deployHatsSinglePolicy = deployment.getDeployConfigField(EContracts.HatsPolicy, "deploy");
     const deployMerkleGateekeper = deployment.getDeployConfigField(EContracts.MerkleProofPolicy, "deploy");
+    const deployERC20Policy = deployment.getDeployConfigField(EContracts.ERC20VotesPolicy, "deploy");
 
     const skipDeployFreeForAllPolicy = deployFreeForAllPolicy !== true;
     const skipDeployEASPolicy = deployEASPolicy !== true;
@@ -74,7 +79,7 @@ deployment.deployTask(EDeploySteps.Policies, "Deploy policies").then((task) =>
     const skipDeploySemaphorePolicy = deploySemaphorePolicy !== true;
     const skipDeployHatsPolicy = deployHatsSinglePolicy !== true;
     const skipDeployMerkleProofPolicy = deployMerkleGateekeper !== true;
-
+    const skipDeployERC20VotesPolicy = deployERC20Policy !== true;
     const canSkipDeploy =
       incremental &&
       (freeForAllPolicyContractAddress || skipDeployFreeForAllPolicy) &&
@@ -84,13 +89,15 @@ deployment.deployTask(EDeploySteps.Policies, "Deploy policies").then((task) =>
       (semaphorePolicyContractAddress || skipDeploySemaphorePolicy) &&
       (hatsPolicyContractAddress || skipDeployHatsPolicy) &&
       (merkleProofPolicyContractAddress || skipDeployMerkleProofPolicy) &&
+      (erc20VotesPolicyContractAddress || skipDeployERC20VotesPolicy) &&
       (!skipDeployFreeForAllPolicy ||
         !skipDeployEASPolicy ||
         !skipDeployGitcoinPolicy ||
         !skipDeployZupassPolicy ||
         !skipDeploySemaphorePolicy ||
         !skipDeployHatsPolicy ||
-        !skipDeployMerkleProofPolicy);
+        !skipDeployMerkleProofPolicy ||
+        !skipDeployERC20VotesPolicy);
 
     if (canSkipDeploy) {
       // eslint-disable-next-line no-console
@@ -545,6 +552,73 @@ deployment.deployTask(EDeploySteps.Policies, "Deploy policies").then((task) =>
           id: ECheckerFactories.MerkleProof,
           contract: merkleProofCheckerFactoryContract,
           name: ECheckerFactories.MerkleProof,
+          args: [],
+          network: hre.network.name,
+        }),
+      ]);
+    }
+
+    if (!skipDeployERC20VotesPolicy) {
+      const token = deployment.getDeployConfigField<string>(EContracts.ERC20VotesPolicy, "token", true);
+      const threshold = deployment.getDeployConfigField<number>(EContracts.ERC20VotesPolicy, "threshold", true);
+      const snapshotBlock = deployment.getDeployConfigField<number>(EContracts.ERC20VotesPolicy, "snapshotBlock", true);
+
+      const factories = await getDeployedPolicyProxyFactories<ERC20VotesCheckerFactory, ERC20VotesPolicyFactory>({
+        policy: EPolicyFactories.ERC20Votes,
+        checker: ECheckerFactories.ERC20Votes,
+        network: hre.network.name,
+        signer: deployer,
+      });
+
+      const [
+        erc20VotesPolicyContract,
+        erc20VotesCheckerContract,
+        erc20VotesPolicyFactoryContract,
+        erc20VotesCheckerFactoryContract,
+      ] = await deployERC20VotesPolicy(
+        {
+          token,
+          threshold: BigInt(threshold),
+          snapshotBlock: BigInt(snapshotBlock),
+        },
+        factories,
+        deployer,
+        true,
+      );
+
+      const [policyContractImplementation, checkerContractImplementation] = await Promise.all([
+        erc20VotesPolicyFactoryContract.IMPLEMENTATION(),
+        erc20VotesCheckerFactoryContract.IMPLEMENTATION(),
+      ]);
+
+      await Promise.all([
+        storage.register({
+          id: EPolicies.ERC20Votes,
+          contract: erc20VotesPolicyContract,
+          name: EPolicies.ERC20Votes,
+          implementation: policyContractImplementation,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: ECheckers.ERC20Votes,
+          contract: erc20VotesCheckerContract,
+          name: ECheckers.ERC20Votes,
+          implementation: checkerContractImplementation,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: EPolicyFactories.ERC20Votes,
+          contract: erc20VotesPolicyFactoryContract,
+          name: EPolicyFactories.ERC20Votes,
+          args: [],
+          network: hre.network.name,
+        }),
+        storage.register({
+          id: ECheckerFactories.ERC20Votes,
+          contract: erc20VotesCheckerFactoryContract,
+          name: ECheckerFactories.ERC20Votes,
           args: [],
           network: hre.network.name,
         }),

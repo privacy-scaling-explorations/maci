@@ -63,6 +63,7 @@
     "test:semaphore_policy": "pnpm run test ./tests/policies/SemaphorePolicy.test.ts",
     "test:anon_aadhaar_policy": "pnpm run test ./tests/policies/AnonAadhaarPolicy.test.ts",
     "test:erc20_votes_initial_voice_credits_proxy": "pnpm run test ./tests/ERC20VotesInitialVoiceCreditsProxy.test.ts",
+    "test:erc20_votes_policy": "pnpm run test ./tests/policies/ERC20Votes.test.ts",
     "deploy": "hardhat deploy-full",
     "deploy-poll": "hardhat deploy-poll",
     "verify": "hardhat verify-full",

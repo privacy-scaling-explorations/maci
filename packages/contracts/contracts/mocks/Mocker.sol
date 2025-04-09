@@ -24,6 +24,10 @@ import "@excubiae/contracts/contracts/test/extensions/mocks/MockEAS.sol";
 import "@excubiae/contracts/contracts/test/extensions/mocks/MockGitcoinPassportDecoder.sol";
 import "@excubiae/contracts/contracts/test/extensions/mocks/MockHatsProtocol.sol";
 import "@excubiae/contracts/contracts/test/extensions/mocks/MockToken.sol";
+import "@excubiae/contracts/contracts/extensions/erc20votes/ERC20VotesPolicy.sol";
+import "@excubiae/contracts/contracts/extensions/erc20votes/ERC20VotesPolicyFactory.sol";
+import "@excubiae/contracts/contracts/extensions/erc20votes/ERC20VotesChecker.sol";
+import "@excubiae/contracts/contracts/extensions/erc20votes/ERC20VotesCheckerFactory.sol";
 
 /// @title Mocker
 /// @notice Import all external contracts for tests
