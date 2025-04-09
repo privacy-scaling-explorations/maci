@@ -15,7 +15,6 @@ import type {
   IBasePolicy,
 } from "../typechain-types";
 import type { TypedContractMethod } from "../typechain-types/common";
-import type {} from "@excubiae/contracts/build/typechain-types";
 import type { CircuitInputs } from "@maci-protocol/core";
 import type { Keypair, Message, PubKey } from "@maci-protocol/domainobjs";
 import type { BigNumberish, Signer, ContractFactory, Provider, BaseContract } from "ethers";
@@ -331,10 +330,7 @@ export interface ILogArgs {
 /**
  * Interface for the deploy policy arguments
  */
-export interface IDeployPolicyArgs<
-  G extends ContractFactory = ContractFactory,
-  C extends ContractFactory = ContractFactory,
-> {
+export interface IDeployPolicyArgs<FC extends BaseContract = BaseContract, FG extends BaseContract = BaseContract> {
   /**
    * Policy factory name
    */
@@ -348,12 +344,12 @@ export interface IDeployPolicyArgs<
   /**
    * Policy factory
    */
-  policyFactory: G;
+  policyFactory: ContractFactory;
 
   /**
    * Checker factory
    */
-  checkerFactory: C;
+  checkerFactory: ContractFactory;
 
   /**
    * Ethereum signer
@@ -371,15 +367,60 @@ export interface IDeployPolicyArgs<
   checkerArgs?: unknown[];
 
   /**
+   * Proxy factories to reuse
+   */
+  factories?: TDeployedProxyFactories<FC, FG>;
+
+  /**
    * Whether to suppress console output
    */
   quiet?: boolean;
 }
 
 /**
+ * Type for the deployed proxy factories
+ */
+export type TDeployedProxyFactories<C extends BaseContract, P extends BaseContract> = Partial<{
+  /**
+   * Checker proxy factory
+   */
+  checker: C;
+
+  /**
+   * Policy proxy factory
+   */
+  policy: P;
+}>;
+
+/**
+ * Interface for the get deployed policy proxy factories arguments
+ */
+export interface IGetDeployedPolicyProxyFactoriesArgs {
+  /**
+   * Policy proxy factory name
+   */
+  policy: EPolicyFactories;
+
+  /**
+   * Checker proxy factory name
+   */
+  checker: ECheckerFactories;
+
+  /**
+   * Ethereum signer
+   */
+  signer: Signer;
+
+  /**
+   * Network name
+   */
+  network: string;
+}
+
+/**
  * Type for the factory like contract
  */
-export type IFactoryLike<P extends unknown[] = []> = Factory &
-  BaseContract & {
-    deploy: TypedContractMethod<P, [], "nonpayable">;
+export type IFactoryLike<T extends BaseContract> = Factory &
+  T & {
+    deploy: TypedContractMethod<unknown[], unknown, "nonpayable">;
   };

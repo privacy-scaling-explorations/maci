@@ -233,7 +233,7 @@ describe("TallyVotes", () => {
         );
       }
 
-      const [pollPolicyContract] = await deployFreeForAllSignUpPolicy(signer, true);
+      const [pollPolicyContract] = await deployFreeForAllSignUpPolicy({}, signer, true);
 
       // deploy a poll
       // deploy on chain poll
@@ -554,7 +554,7 @@ describe("TallyVotes", () => {
         );
       }
 
-      const [pollPolicyContract] = await deployFreeForAllSignUpPolicy(signer, true);
+      const [pollPolicyContract] = await deployFreeForAllSignUpPolicy({}, signer, true);
 
       // deploy a poll
       // deploy on chain poll

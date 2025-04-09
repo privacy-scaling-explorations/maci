@@ -1,5 +1,22 @@
 import { hexToBigInt, uuidToBigInt } from "@pcd/util";
 
+import type {
+  EASCheckerFactory,
+  EASPolicyFactory,
+  FreeForAllCheckerFactory,
+  FreeForAllPolicyFactory,
+  GitcoinPassportCheckerFactory,
+  GitcoinPassportPolicyFactory,
+  HatsCheckerFactory,
+  HatsPolicyFactory,
+  MerkleProofCheckerFactory,
+  MerkleProofPolicyFactory,
+  SemaphoreCheckerFactory,
+  SemaphorePolicyFactory,
+  ZupassCheckerFactory,
+  ZupassPolicyFactory,
+} from "../../../typechain-types";
+
 import { info, logGreen } from "../../../ts/logger";
 import { EDeploySteps, ESupportedChains } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
@@ -32,6 +49,7 @@ deployment.deployTask(EDeploySteps.Policies, "Deploy policies").then((task) =>
       deployMerkleProofPolicy,
       deploySemaphoreSignupPolicy,
       deployHatsSignupPolicy,
+      getDeployedPolicyProxyFactories,
     } = await import("../../../ts/deploy");
 
     const freeForAllPolicyContractAddress = storage.getAddress(EContracts.FreeForAllPolicy, hre.network.name);
@@ -81,12 +99,19 @@ deployment.deployTask(EDeploySteps.Policies, "Deploy policies").then((task) =>
     }
 
     if (!skipDeployFreeForAllPolicy) {
+      const factories = await getDeployedPolicyProxyFactories<FreeForAllCheckerFactory, FreeForAllPolicyFactory>({
+        policy: EPolicyFactories.FreeForAll,
+        checker: ECheckerFactories.FreeForAll,
+        network: hre.network.name,
+        signer: deployer,
+      });
+
       const [
         freeForAllPolicyContract,
         freeForAllCheckerContract,
         freeForAllPolicyFactoryContract,
         freeForAllCheckerFactoryContract,
-      ] = await deployFreeForAllSignUpPolicy(deployer);
+      ] = await deployFreeForAllSignUpPolicy(factories, deployer);
 
       const [policyContractImplementation, checkerContractImplementation] = await Promise.all([
         freeForAllPolicyFactoryContract.IMPLEMENTATION(),
@@ -136,6 +161,13 @@ deployment.deployTask(EDeploySteps.Policies, "Deploy policies").then((task) =>
       const encodedSchema = deployment.getDeployConfigField<string>(EContracts.EASPolicy, "schema", true);
       const attester = deployment.getDeployConfigField<string>(EContracts.EASPolicy, "attester", true);
 
+      const factories = await getDeployedPolicyProxyFactories<EASCheckerFactory, EASPolicyFactory>({
+        policy: EPolicyFactories.EAS,
+        checker: ECheckerFactories.EAS,
+        network: hre.network.name,
+        signer: deployer,
+      });
+
       const [easPolicyContract, easCheckerContract, easPolicyFactoryContract, easCheckerFactoryContract] =
         await deployEASSignUpPolicy(
           {
@@ -143,6 +175,7 @@ deployment.deployTask(EDeploySteps.Policies, "Deploy policies").then((task) =>
             attester,
             schema: encodedSchema,
           },
+          factories,
           deployer,
           true,
         );
@@ -204,6 +237,16 @@ deployment.deployTask(EDeploySteps.Policies, "Deploy policies").then((task) =>
         true,
       );
 
+      const factories = await getDeployedPolicyProxyFactories<
+        GitcoinPassportCheckerFactory,
+        GitcoinPassportPolicyFactory
+      >({
+        policy: EPolicyFactories.GitcoinPassport,
+        checker: ECheckerFactories.GitcoinPassport,
+        network: hre.network.name,
+        signer: deployer,
+      });
+
       const [
         gitcoinPolicyContract,
         gitcoinCheckerContract,
@@ -214,6 +257,7 @@ deployment.deployTask(EDeploySteps.Policies, "Deploy policies").then((task) =>
           decoderAddress: gitcoinPolicyDecoderAddress,
           minimumScore: gitcoinPolicyPassingScore,
         },
+        factories,
         deployer,
         true,
       );
@@ -274,9 +318,17 @@ deployment.deployTask(EDeploySteps.Policies, "Deploy policies").then((task) =>
         verifier = await verifierContract.getAddress();
       }
 
+      const factories = await getDeployedPolicyProxyFactories<ZupassCheckerFactory, ZupassPolicyFactory>({
+        policy: EPolicyFactories.Zupass,
+        checker: ECheckerFactories.Zupass,
+        network: hre.network.name,
+        signer: deployer,
+      });
+
       const [zupassPolicyContract, zupassCheckerContract, zupassPolicyFactoryContract, zupassCheckerFactoryContract] =
         await deployZupassSignUpPolicy(
           { eventId: validEventId, signer1: validSigner1, signer2: validSigner2, verifier },
+          factories,
           deployer,
         );
 
@@ -327,12 +379,24 @@ deployment.deployTask(EDeploySteps.Policies, "Deploy policies").then((task) =>
       );
       const groupId = deployment.getDeployConfigField<number>(EContracts.SemaphorePolicy, "groupId", true);
 
+      const factories = await getDeployedPolicyProxyFactories<SemaphoreCheckerFactory, SemaphorePolicyFactory>({
+        policy: EPolicyFactories.Semaphore,
+        checker: ECheckerFactories.Semaphore,
+        network: hre.network.name,
+        signer: deployer,
+      });
+
       const [
         semaphorePolicyContract,
         semaphoreCheckerContract,
         semaphorePolicyFactoryContract,
         semaphoreCheckerFactoryContract,
-      ] = await deploySemaphoreSignupPolicy({ semaphore: semaphoreContractAddress, groupId }, deployer, true);
+      ] = await deploySemaphoreSignupPolicy(
+        { semaphore: semaphoreContractAddress, groupId },
+        factories,
+        deployer,
+        true,
+      );
 
       const [policyContractImplementation, checkerContractImplementation] = await Promise.all([
         semaphorePolicyFactoryContract.IMPLEMENTATION(),
@@ -382,8 +446,15 @@ deployment.deployTask(EDeploySteps.Policies, "Deploy policies").then((task) =>
         true,
       );
 
+      const factories = await getDeployedPolicyProxyFactories<HatsCheckerFactory, HatsPolicyFactory>({
+        policy: EPolicyFactories.Hats,
+        checker: ECheckerFactories.Hats,
+        network: hre.network.name,
+        signer: deployer,
+      });
+
       const [hatsPolicyContract, hatsCheckerContract, hatsPolicyFactoryContract, hatsCheckerFactoryContract] =
-        await deployHatsSignupPolicy({ hats: hatsProtocolAddress, criterionHats }, deployer, true);
+        await deployHatsSignupPolicy({ hats: hatsProtocolAddress, criterionHats }, factories, deployer, true);
 
       const [policyContractImplementation, checkerContractImplementation] = await Promise.all([
         hatsPolicyFactoryContract.IMPLEMENTATION(),
@@ -427,12 +498,19 @@ deployment.deployTask(EDeploySteps.Policies, "Deploy policies").then((task) =>
     if (!skipDeployMerkleProofPolicy) {
       const root = deployment.getDeployConfigField<string>(EContracts.MerkleProofPolicy, "root", true);
 
+      const factories = await getDeployedPolicyProxyFactories<MerkleProofCheckerFactory, MerkleProofPolicyFactory>({
+        policy: EPolicyFactories.MerkleProof,
+        checker: ECheckerFactories.MerkleProof,
+        network: hre.network.name,
+        signer: deployer,
+      });
+
       const [
         merkleProofPolicyContract,
         merkleProofCheckerContract,
         merkleProofPolicyFactoryContract,
         merkleProofCheckerFactoryContract,
-      ] = await deployMerkleProofPolicy({ root }, deployer, true);
+      ] = await deployMerkleProofPolicy({ root }, factories, deployer, true);
 
       const [policyContractImplementation, checkerContractImplementation] = await Promise.all([
         merkleProofPolicyFactoryContract.IMPLEMENTATION(),

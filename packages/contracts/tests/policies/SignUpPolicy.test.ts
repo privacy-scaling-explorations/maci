@@ -2,7 +2,15 @@ import { Keypair } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { AbiCoder, ZeroAddress, Signer } from "ethers";
 
-import type { MACI, FreeForAllPolicy, MockToken, TokenChecker, TokenPolicy } from "../../typechain-types";
+import type {
+  MACI,
+  FreeForAllPolicy,
+  MockToken,
+  TokenChecker,
+  TokenPolicy,
+  TokenCheckerFactory,
+  TokenPolicyFactory,
+} from "../../typechain-types";
 
 import { deploySignupToken, deploySignupTokenPolicy, deployFreeForAllSignUpPolicy } from "../../ts/deploy";
 import { getDefaultSigner } from "../../ts/utils";
@@ -14,14 +22,17 @@ describe("SignUpPolicy", () => {
   let freeForAllContract: FreeForAllPolicy;
   let tokenPolicyContract: TokenPolicy;
   let tokenChecker: TokenChecker;
+  let tokenCheckerFactory: TokenCheckerFactory;
+  let tokenPolicyFactory: TokenPolicyFactory;
   let signer: Signer;
 
   before(async () => {
     signer = await getDefaultSigner();
-    [freeForAllContract] = await deployFreeForAllSignUpPolicy(signer, true);
+    [freeForAllContract] = await deployFreeForAllSignUpPolicy({}, signer, true);
     signUpToken = await deploySignupToken(signer, true);
-    [tokenPolicyContract, tokenChecker] = await deploySignupTokenPolicy(
+    [tokenPolicyContract, tokenChecker, tokenPolicyFactory, tokenCheckerFactory] = await deploySignupTokenPolicy(
       { token: await signUpToken.getAddress() },
+      {},
       signer,
       true,
     );
@@ -47,6 +58,7 @@ describe("SignUpPolicy", () => {
       signUpToken = await deploySignupToken(signer, true);
       [tokenPolicyContract, tokenChecker] = await deploySignupTokenPolicy(
         { token: await signUpToken.getAddress() },
+        { checker: tokenCheckerFactory, policy: tokenPolicyFactory },
         signer,
         true,
       );

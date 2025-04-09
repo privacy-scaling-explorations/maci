@@ -42,6 +42,8 @@ import {
   deployMaci,
   deployFreeForAllSignUpPolicy,
   genEmptyBallotRoots,
+  FreeForAllCheckerFactory__factory as FreeForAllCheckerFactoryFactory,
+  FreeForAllPolicyFactory__factory as FreeForAllPolicyFactoryFactory,
 } from "@maci-protocol/sdk";
 import { ZeroAddress, type Signer } from "ethers";
 
@@ -80,6 +82,14 @@ program
   .option("--poseidonT5Address <poseidonT5Address>", "PoseidonT5 contract address")
   .option("--poseidonT6Address <poseidonT6Address>", "PoseidonT6 contract address")
   .option("-g, --signupPolicyAddress <signupPolicyAddress>", "the signup policy contract address")
+  .option(
+    "--freeForAllCheckerFactoryAddress <freeForAllCheckerFactoryAddress>",
+    "the free for all checker factory address (optional, using for deployment optimization)",
+  )
+  .option(
+    "--freeForAllPolicyFactoryAddress <freeForAllPolicyFactoryAddress>",
+    "the free for all policy factory address (optional, using for deployment optimization)",
+  )
   .requiredOption("--signupPolicyContractName <signupPolicyContractName>", "the signup policy contract name")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
@@ -103,7 +113,19 @@ program
       });
 
       if (!signupPolicyContractAddress) {
-        const [contract] = await deployFreeForAllSignUpPolicy(signer, true);
+        const checkerFactory = cmdOptions.freeForAllCheckerFactoryAddress
+          ? FreeForAllCheckerFactoryFactory.connect(cmdOptions.freeForAllCheckerFactoryAddress, signer)
+          : undefined;
+
+        const policyFactory = cmdOptions.freeForAllPolicyFactoryAddress
+          ? FreeForAllPolicyFactoryFactory.connect(cmdOptions.freeForAllPolicyFactoryAddress, signer)
+          : undefined;
+
+        const [contract] = await deployFreeForAllSignUpPolicy(
+          { checker: checkerFactory, policy: policyFactory },
+          signer,
+          true,
+        );
         signupPolicyContractAddress = await contract.getAddress();
       }
 

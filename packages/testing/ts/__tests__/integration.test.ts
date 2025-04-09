@@ -106,10 +106,21 @@ describe("Integration tests", function test() {
 
   // the code that we run before each test
   beforeEach(async () => {
-    const [signUpPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
-    const signupPolicyAddress = await signUpPolicy.getAddress();
+    const [signupPolicy, , signupPolicyFactory, signupCheckerFactory] = await deployFreeForAllSignUpPolicy(
+      {},
+      signer,
+      true,
+    );
+    const signupPolicyAddress = await signupPolicy.getAddress();
 
-    const [pollPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+    const [pollPolicy] = await deployFreeForAllSignUpPolicy(
+      {
+        policy: signupPolicyFactory,
+        checker: signupCheckerFactory,
+      },
+      signer,
+      true,
+    );
     const pollPolicyAddress = await pollPolicy.getAddress();
 
     // create a new maci state

@@ -83,6 +83,16 @@ export interface IDeployPollArgs {
   initialVoiceCredits?: number;
 
   /**
+   * Free for all checker factory address (using for deployment optimization if there is no signup policy)
+   */
+  freeForAllCheckerFactoryAddress?: string;
+
+  /**
+   * Free for all policy factory address (using for deployment optimization if there is no signup policy)
+   */
+  freeForAllPolicyFactoryAddress?: string;
+
+  /**
    * The signer
    */
   signer: Signer;

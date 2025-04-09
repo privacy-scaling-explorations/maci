@@ -134,10 +134,18 @@ describe("e2e tests", function test() {
     const user = new Keypair();
 
     before(async () => {
-      const [signupPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+      const [signupPolicy, , signupPolicyFactory, signupCheckerFactory] = await deployFreeForAllSignUpPolicy(
+        {},
+        signer,
+        true,
+      );
       const signupPolicyContractAddress = await signupPolicy.getAddress();
 
-      const [pollPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+      const [pollPolicy] = await deployFreeForAllSignUpPolicy(
+        { policy: signupPolicyFactory, checker: signupCheckerFactory },
+        signer,
+        true,
+      );
       const pollPolicyContractAddress = await pollPolicy.getAddress();
 
       // deploy the smart contracts
@@ -236,10 +244,18 @@ describe("e2e tests", function test() {
     const users = [new Keypair(), new Keypair(), new Keypair(), new Keypair()];
 
     before(async () => {
-      const [signupPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+      const [signupPolicy, , signupPolicyFactory, signupCheckerFactory] = await deployFreeForAllSignUpPolicy(
+        {},
+        signer,
+        true,
+      );
       const signupPolicyContractAddress = await signupPolicy.getAddress();
 
-      const [pollPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+      const [pollPolicy] = await deployFreeForAllSignUpPolicy(
+        { policy: signupPolicyFactory, checker: signupCheckerFactory },
+        signer,
+        true,
+      );
       const pollPolicyContractAddress = await pollPolicy.getAddress();
 
       // deploy the smart contracts
@@ -542,10 +558,18 @@ describe("e2e tests", function test() {
     const users = Array.from({ length: 30 }, () => new Keypair());
 
     before(async () => {
-      const [signupPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+      const [signupPolicy, , signupPolicyFactory, signupCheckerFactory] = await deployFreeForAllSignUpPolicy(
+        {},
+        signer,
+        true,
+      );
       const signupPolicyContractAddress = await signupPolicy.getAddress();
 
-      const [pollPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+      const [pollPolicy] = await deployFreeForAllSignUpPolicy(
+        { policy: signupPolicyFactory, checker: signupCheckerFactory },
+        signer,
+        true,
+      );
       const pollPolicyContractAddress = await pollPolicy.getAddress();
 
       // deploy the smart contracts
@@ -669,10 +693,18 @@ describe("e2e tests", function test() {
     const users = Array.from({ length: 30 }, () => new Keypair());
 
     before(async () => {
-      const [signupPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+      const [signupPolicy, , signupPolicyFactory, signupCheckerFactory] = await deployFreeForAllSignUpPolicy(
+        {},
+        signer,
+        true,
+      );
       const signupPolicyContractAddress = await signupPolicy.getAddress();
 
-      const [pollPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+      const [pollPolicy] = await deployFreeForAllSignUpPolicy(
+        { policy: signupPolicyFactory, checker: signupCheckerFactory },
+        signer,
+        true,
+      );
       const pollPolicyContractAddress = await pollPolicy.getAddress();
 
       // deploy the smart contracts
@@ -773,10 +805,18 @@ describe("e2e tests", function test() {
     const users = Array.from({ length: 30 }, () => new Keypair());
 
     before(async () => {
-      const [signupPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+      const [signupPolicy, , signupPolicyFactory, signupCheckerFactory] = await deployFreeForAllSignUpPolicy(
+        {},
+        signer,
+        true,
+      );
       const signupPolicyContractAddress = await signupPolicy.getAddress();
 
-      const [pollPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+      const [pollPolicy] = await deployFreeForAllSignUpPolicy(
+        { policy: signupPolicyFactory, checker: signupCheckerFactory },
+        signer,
+        true,
+      );
       const pollPolicyContractAddress = await pollPolicy.getAddress();
 
       // deploy the smart contracts
@@ -932,10 +972,18 @@ describe("e2e tests", function test() {
     const users = Array.from({ length: 5 }, () => new Keypair());
 
     before(async () => {
-      const [signupPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+      const [signupPolicy, , signupPolicyFactory, signupCheckerFactory] = await deployFreeForAllSignUpPolicy(
+        {},
+        signer,
+        true,
+      );
       const signupPolicyContractAddress = await signupPolicy.getAddress();
 
-      const [pollPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+      const [pollPolicy] = await deployFreeForAllSignUpPolicy(
+        { policy: signupPolicyFactory, checker: signupCheckerFactory },
+        signer,
+        true,
+      );
       const pollPolicyContractAddress = await pollPolicy.getAddress();
 
       // deploy the smart contracts
@@ -1071,7 +1119,7 @@ describe("e2e tests", function test() {
     });
 
     it("should deploy a new poll", async () => {
-      const [pollPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+      const [pollPolicy] = await deployFreeForAllSignUpPolicy({}, signer, true);
       const pollPolicyContractAddress = await pollPolicy.getAddress();
 
       const startDate = await getBlockTimestamp(signer);
@@ -1242,7 +1290,7 @@ describe("e2e tests", function test() {
     });
 
     before(async () => {
-      const [signupPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+      const [signupPolicy] = await deployFreeForAllSignUpPolicy({}, signer, true);
       const signupPolicyContractAddress = await signupPolicy.getAddress();
 
       // deploy the smart contracts
@@ -1254,7 +1302,7 @@ describe("e2e tests", function test() {
     });
 
     it("should run the first poll", async () => {
-      const [pollPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+      const [pollPolicy] = await deployFreeForAllSignUpPolicy({}, signer, true);
       const pollPolicyContractAddress = await pollPolicy.getAddress();
 
       const startDate = await getBlockTimestamp(signer);
@@ -1387,7 +1435,7 @@ describe("e2e tests", function test() {
       const startDate = await getBlockTimestamp(signer);
 
       {
-        const [pollPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+        const [pollPolicy] = await deployFreeForAllSignUpPolicy({}, signer, true);
         const pollPolicyContractAddress = await pollPolicy.getAddress();
 
         // deploy a poll contract
@@ -1406,7 +1454,7 @@ describe("e2e tests", function test() {
       }
 
       {
-        const [pollPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+        const [pollPolicy] = await deployFreeForAllSignUpPolicy({}, signer, true);
         const pollPolicyContractAddress = await pollPolicy.getAddress();
 
         // deploy a poll contract
@@ -1676,10 +1724,10 @@ describe("e2e tests", function test() {
     });
 
     before(async () => {
-      const [signupPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+      const [signupPolicy] = await deployFreeForAllSignUpPolicy({}, signer, true);
       const signupPolicyContractAddress = await signupPolicy.getAddress();
 
-      const [pollPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+      const [pollPolicy] = await deployFreeForAllSignUpPolicy({}, signer, true);
       const pollPolicyContractAddress = await pollPolicy.getAddress();
 
       // deploy the smart contracts

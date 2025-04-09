@@ -1,6 +1,8 @@
 import {
   deployConstantInitialVoiceCreditProxy,
   deployFreeForAllSignUpPolicy,
+  FreeForAllCheckerFactory__factory as FreeForAllCheckerFactoryFactory,
+  FreeForAllPolicyFactory__factory as FreeForAllPolicyFactoryFactory,
   MACI__factory as MACIFactory,
   IBasePolicy__factory as SignUpPolicyFactory,
 } from "@maci-protocol/contracts";
@@ -34,6 +36,8 @@ export const deployPoll = async ({
   relayers,
   voteOptions,
   initialVoiceCredits,
+  freeForAllCheckerFactoryAddress,
+  freeForAllPolicyFactoryAddress,
   signer,
 }: IDeployPollArgs): Promise<IPollContractsData> => {
   if (!vkRegistryContractAddress) {
@@ -56,7 +60,19 @@ export const deployPoll = async ({
   let signupPolicyContractAddress = policyContractAddress;
 
   if (!signupPolicyContractAddress) {
-    const [contract] = await deployFreeForAllSignUpPolicy(signer, true);
+    const checkerFactory = freeForAllCheckerFactoryAddress
+      ? FreeForAllCheckerFactoryFactory.connect(freeForAllCheckerFactoryAddress, signer)
+      : undefined;
+
+    const policyFactory = freeForAllPolicyFactoryAddress
+      ? FreeForAllPolicyFactoryFactory.connect(freeForAllPolicyFactoryAddress, signer)
+      : undefined;
+
+    const [contract] = await deployFreeForAllSignUpPolicy(
+      { checker: checkerFactory, policy: policyFactory },
+      signer,
+      true,
+    );
     signupPolicyContractAddress = await contract.getAddress();
   }
 
