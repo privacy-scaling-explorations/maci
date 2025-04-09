@@ -1,5 +1,5 @@
 {
-  "name": "@maci-protocol/maci-coordinator",
+  "name": "@maci-protocol/coordinator",
   "version": "1.0.0",
   "private": false,
   "description": "Coordinator service for MACI",

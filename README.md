@@ -15,19 +15,19 @@ We welcome contributions to this project. Please join our
 
 Below you can find a list of the packages included in this repository.
 
-| package                                 | npm                                                         | tests                                                                  |
-| --------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------- |
-| [maci-circuits][circuits-package]       | [![NPM Package][circuits-npm-badge]][circuits-npm-link]     | [![Actions Status][circuits-actions-badge]][circuits-actions-link]     |
-| [maci-cli][cli-package]                 | [![NPM Package][cli-npm-badge]][cli-npm-link]               | [![Actions Status][cli-actions-badge]][cli-actions-link]               |
-| [maci-contracts][contracts-package]     | [![NPM Package][contracts-npm-badge]][contracts-npm-link]   | [![Actions Status][contracts-actions-badge]][contracts-actions-link]   |
-| [maci-core][core-package]               | [![NPM Package][core-npm-badge]][core-npm-link]             | [![Actions Status][core-actions-badge]][core-actions-link]             |
-| [maci-crypto][crypto-package]           | [![NPM Package][crypto-npm-badge]][crypto-npm-link]         | [![Actions Status][crypto-actions-badge]][crypto-actions-link]         |
-| [maci-domainobjs][domainobjs-package]   | [![NPM Package][domainobjs-npm-badge]][domainobjs-npm-link] | [![Actions Status][domainobjs-actions-badge]][domainobjs-actions-link] |
-| [maci-testing][testing-package]         | [![NPM Package][testing-npm-badge]][testing-npm-link]       | [![Actions Status][testing-actions-badge]][testing-actions-link]       |
-| [maci-subgraph][subgraph-package]       | [![NPM Package][subgraph-npm-badge]][subgraph-npm-link]     | [![Actions Status][subgraph-actions-badge]][subgraph-actions-link]     |
-| [maci-sdk][sdk-package]                 | [![NPM Package][sdk-npm-badge]][sdk-npm-link]               | [![Actions Status][sdk-actions-badge]][sdk-actions-link]               |
-| [maci-coordinator][coordinator-package] |                                                             |                                                                        |
-| [maci-relayer][relayer-package]         |                                                             | [![Actions Status][relayer-actions-badge]][relayer-actions-link]       |
+| package                                 | npm                                                           | tests                                                                  |
+| --------------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| [maci-circuits][circuits-package]       | [![NPM Package][circuits-npm-badge]][circuits-npm-link]       | [![Actions Status][circuits-actions-badge]][circuits-actions-link]     |
+| [maci-cli][cli-package]                 | [![NPM Package][cli-npm-badge]][cli-npm-link]                 | [![Actions Status][cli-actions-badge]][cli-actions-link]               |
+| [maci-contracts][contracts-package]     | [![NPM Package][contracts-npm-badge]][contracts-npm-link]     | [![Actions Status][contracts-actions-badge]][contracts-actions-link]   |
+| [maci-core][core-package]               | [![NPM Package][core-npm-badge]][core-npm-link]               | [![Actions Status][core-actions-badge]][core-actions-link]             |
+| [maci-crypto][crypto-package]           | [![NPM Package][crypto-npm-badge]][crypto-npm-link]           | [![Actions Status][crypto-actions-badge]][crypto-actions-link]         |
+| [maci-domainobjs][domainobjs-package]   | [![NPM Package][domainobjs-npm-badge]][domainobjs-npm-link]   | [![Actions Status][domainobjs-actions-badge]][domainobjs-actions-link] |
+| [maci-testing][testing-package]         | [![NPM Package][testing-npm-badge]][testing-npm-link]         | [![Actions Status][testing-actions-badge]][testing-actions-link]       |
+| [maci-subgraph][subgraph-package]       | [![NPM Package][subgraph-npm-badge]][subgraph-npm-link]       | [![Actions Status][subgraph-actions-badge]][subgraph-actions-link]     |
+| [maci-sdk][sdk-package]                 | [![NPM Package][sdk-npm-badge]][sdk-npm-link]                 | [![Actions Status][sdk-actions-badge]][sdk-actions-link]               |
+| [maci-coordinator][coordinator-package] | [![NPM Package][coordinator-npm-badge]][coordinator-npm-link] |                                                                        |
+| [maci-relayer][relayer-package]         | [![NPM Package][relayer-npm-badge]][relayer-npm-link]         | [![Actions Status][relayer-actions-badge]][relayer-actions-link]       |
 
 ## Development and testing
 
@@ -74,53 +74,55 @@ CI pipeline ensures that we have automated tests that constantly validate. For m
 [telegram-badge]: https://badges.aleen42.com/src/telegram.svg
 [telegram-link]: https://t.me/joinchat/LUgOpE7J2gstRcZqdERyvw
 [circuits-package]: ./packages/circuits
-[circuits-npm-badge]: https://img.shields.io/npm/v/maci-circuits.svg
-[circuits-npm-link]: https://www.npmjs.com/package/maci-circuits
+[circuits-npm-badge]: https://img.shields.io/npm/v/@maci-protocol/circuits.svg
+[circuits-npm-link]: https://www.npmjs.com/package/@maci-protocol/circuits
 [circuits-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/circuit-build.yml/badge.svg
 [circuits-actions-link]: https://github.com/privacy-scaling-explorations/maci/actions?query=workflow%3ACircuit
 [cli-package]: ./packages/cli
-[cli-npm-badge]: https://img.shields.io/npm/v/maci-cli.svg
+[cli-npm-badge]: https://img.shields.io/npm/v/@maci-protocol/cli.svg
 [cli-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/e2e.yml/badge.svg
-[cli-npm-link]: https://www.npmjs.com/package/maci-cli
+[cli-npm-link]: https://www.npmjs.com/package/@maci-protocol/cli
 [cli-actions-link]: https://github.com/privacy-scaling-explorations/maci/actions?query=workflow%3ACI
 [contracts-package]: ./packages/contracts
-[contracts-npm-badge]: https://img.shields.io/npm/v/maci-contracts.svg
-[contracts-npm-link]: https://www.npmjs.com/package/maci-contracts
+[contracts-npm-badge]: https://img.shields.io/npm/v/@maci-protocol/contracts.svg
+[contracts-npm-link]: https://www.npmjs.com/package/@maci-protocol/contracts
 [contracts-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/contracts-build.yml/badge.svg
 [contracts-actions-link]: https://github.com/privacy-scaling-explorations/maci/actions?query=workflow%3Acontracts
 [core-package]: ./packages/core
-[core-npm-badge]: https://img.shields.io/npm/v/maci-core.svg
-[core-npm-link]: https://www.npmjs.com/package/maci-core
+[core-npm-badge]: https://img.shields.io/npm/v/@maci-protocol/core.svg
+[core-npm-link]: https://www.npmjs.com/package/@maci-protocol/core
 [core-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/core-build.yml/badge.svg
 [core-actions-link]: https://github.com/privacy-scaling-explorations/maci/actions?query=workflow%3Acore
 [crypto-package]: ./packages/crypto
-[crypto-npm-badge]: https://img.shields.io/npm/v/maci-crypto.svg
-[crypto-npm-link]: https://www.npmjs.com/package/maci-crypto
+[crypto-npm-badge]: https://img.shields.io/npm/v/@maci-protocol/crypto.svg
+[crypto-npm-link]: https://www.npmjs.com/package/@maci-protocol/crypto
 [crypto-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/crypto-build.yml/badge.svg
 [crypto-actions-link]: https://github.com/privacy-scaling-explorations/maci/actions?query=workflow%3Acrypto
 [domainobjs-package]: ./packages/domainobjs
-[domainobjs-npm-badge]: https://img.shields.io/npm/v/maci-domainobjs.svg
-[domainobjs-npm-link]: https://www.npmjs.com/package/maci-domainobjs
+[domainobjs-npm-badge]: https://img.shields.io/npm/v/@maci-protocol/domainobjs.svg
+[domainobjs-npm-link]: https://www.npmjs.com/package/@maci-protocol/domainobjs
 [domainobjs-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/domainobjs-build.yml/badge.svg
 [domainobjs-actions-link]: https://github.com/privacy-scaling-explorations/maci/actions?query=workflow%3Adomainobjs
 [testing-package]: ./packages/testing
-[testing-npm-badge]: https://img.shields.io/npm/v/maci-testing.svg
-[testing-npm-link]: https://www.npmjs.com/package/maci-testing
+[testing-npm-badge]: https://img.shields.io/npm/v/@maci-protocol/testing.svg
+[testing-npm-link]: https://www.npmjs.com/package/@maci-protocol/testing
 [testing-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/e2e.yml/badge.svg
 [testing-actions-link]: https://github.com/privacy-scaling-explorations/maci/actions?query=workflow%3ACI
 [subgraph-package]: ./apps/subgraph
-[subgraph-npm-badge]: https://img.shields.io/npm/v/maci-subgraph.svg
-[subgraph-npm-link]: https://www.npmjs.com/package/maci-subgraph
+[subgraph-npm-badge]: https://img.shields.io/npm/v/@maci-protocol/subgraph.svg
+[subgraph-npm-link]: https://www.npmjs.com/package/@maci-protocol/subgraph
 [subgraph-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/subgraph-build.yml/badge.svg
 [subgraph-actions-link]: https://github.com/privacy-scaling-explorations/maci/actions?query=workflow%3Asubgraph
 [sdk-package]: ./packages/sdk
-[sdk-npm-badge]: https://img.shields.io/npm/v/maci-sdk.svg
-[sdk-npm-link]: https://www.npmjs.com/package/maci-sdk
-[sdk-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/sdk.yml/badge.svg
+[sdk-npm-badge]: https://img.shields.io/npm/v/@maci-protocol/sdk.svg
+[sdk-npm-link]: https://www.npmjs.com/package/@maci-protocol/sdk
+[sdk-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/e2e.yml/badge.svg
 [sdk-actions-link]: https://github.com/privacy-scaling-explorations/maci/actions?query=workflow%3Asdk
 [coordinator-package]: ./apps/coordinator
+[coordinator-npm-badge]: https://img.shields.io/npm/v/@maci-protocol/coordinator.svg
+[coordinator-npm-link]: https://www.npmjs.com/package/@maci-protocol/coordinator
 [relayer-package]: ./apps/relayer
-[relayer-npm-badge]: https://img.shields.io/npm/v/maci-relayer.svg
-[relayer-npm-link]: https://www.npmjs.com/package/maci-relayer
+[relayer-npm-badge]: https://img.shields.io/npm/v/@maci-protocol/relayer.svg
+[relayer-npm-link]: https://www.npmjs.com/package/@maci-protocol/relayer
 [relayer-actions-badge]: https://github.com/privacy-scaling-explorations/maci/actions/workflows/relayer-build.yml/badge.svg
 [relayer-actions-link]: https://github.com/privacy-scaling-explorations/maci/actions?query=workflow%3Arelayer
