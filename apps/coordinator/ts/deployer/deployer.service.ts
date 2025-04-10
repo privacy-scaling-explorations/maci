@@ -20,6 +20,7 @@ import {
   MessageProcessorFactory__factory as MessageProcessorFactoryFactory,
   MessageProcessor__factory as MessageProcessorFactory,
   ERC20VotesPolicy__factory as ERC20VotesPolicyFactory,
+  ERC20Policy__factory as ERC20PolicyFactory,
   Tally__factory as TallyFactory,
   Poll__factory as PollFactory,
   MACI__factory as MACIFactory,
@@ -61,6 +62,7 @@ import {
   IVkRegistryArgs,
   IZupassPolicyArgs,
   IERC20VotesPolicyArgs,
+  IERC20PolicyArgs,
 } from "./types";
 import { estimateExtraGasLimit } from "./utils";
 
@@ -213,6 +215,22 @@ export class DeployerService {
           address: isAlreadyDeployed ? address : undefined,
           abi: ERC20VotesPolicyFactory.abi,
           bytecode: ERC20VotesPolicyFactory.bytecode,
+          alreadyDeployed: isAlreadyDeployed,
+        };
+      }
+
+      case EPolicies.ERC20: {
+        storedArgs = this.storage.getContractArgs(policyType as unknown as EContracts, network);
+        isAlreadyDeployed =
+          !!storedArgs &&
+          storedArgs.length === 2 &&
+          storedArgs[0] === (args as IERC20PolicyArgs).token &&
+          storedArgs[1] === (args as IERC20PolicyArgs).threshold;
+
+        return {
+          address: isAlreadyDeployed ? address : undefined,
+          abi: ERC20PolicyFactory.abi,
+          bytecode: ERC20PolicyFactory.bytecode,
           alreadyDeployed: isAlreadyDeployed,
         };
       }

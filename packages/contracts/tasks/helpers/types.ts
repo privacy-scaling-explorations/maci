@@ -580,6 +580,7 @@ export enum EPolicies {
   MerkleProof = "@excubiae/contracts/contracts/extensions/merkle/MerkleProofPolicy.sol:MerkleProofPolicy",
   AnonAadhaar = "@excubiae/contracts/contracts/extensions/anonAadhaar/AnonAadhaarPolicy.sol:AnonAadhaarPolicy",
   ERC20Votes = "@excubiae/contracts/contracts/extensions/erc20Votes/ERC20VotesPolicy.sol:ERC20VotesPolicy",
+  ERC20 = "@excubiae/contracts/contracts/extensions/erc20/ERC20Policy.sol:ERC20Policy",
 }
 
 /**
@@ -596,6 +597,7 @@ export enum EPolicyFactories {
   MerkleProof = "@excubiae/contracts/contracts/extensions/merkle/MerkleProofPolicyFactory.sol:MerkleProofPolicyFactory",
   AnonAadhaar = "@excubiae/contracts/contracts/extensions/anonAadhaar/AnonAadhaarPolicyFactory.sol:AnonAadhaarPolicyFactory",
   ERC20Votes = "@excubiae/contracts/contracts/extensions/erc20votes/ERC20VotesPolicyFactory.sol:ERC20VotesPolicyFactory",
+  ERC20 = "@excubiae/contracts/contracts/extensions/erc20/ERC20PolicyFactory.sol:ERC20PolicyFactory",
 }
 
 /**
@@ -612,6 +614,7 @@ export enum ECheckers {
   MerkleProof = "@excubiae/contracts/contracts/extensions/merkle/MerkleProofChecker.sol:MerkleProofChecker",
   AnonAadhaar = "@excubiae/contracts/contracts/extensions/anonAadhaar/AnonAadhaarChecker.sol:AnonAadhaarChecker",
   ERC20Votes = "@excubiae/contracts/contracts/extensions/erc20Votes/ERC20VotesChecker.sol:ERC20VotesChecker",
+  ERC20 = "@excubiae/contracts/contracts/extensions/erc20/ERC20Checker.sol:ERC20Checker",
 }
 
 /**
@@ -628,6 +631,7 @@ export enum ECheckerFactories {
   MerkleProof = "@excubiae/contracts/contracts/extensions/merkle/MerkleProofCheckerFactory.sol:MerkleProofCheckerFactory",
   AnonAadhaar = "@excubiae/contracts/contracts/extensions/anonAadhaar/AnonAadhaarCheckerFactory.sol:AnonAadhaarCheckerFactory",
   ERC20Votes = "@excubiae/contracts/contracts/extensions/erc20votes/ERC20VotesCheckerFactory.sol:ERC20VotesCheckerFactory",
+  ERC20 = "@excubiae/contracts/contracts/extensions/erc20/ERC20CheckerFactory.sol:ERC20CheckerFactory",
 }
 
 /**
@@ -654,6 +658,7 @@ export enum EContracts {
   ConstantInitialVoiceCreditProxyFactory = "ConstantInitialVoiceCreditProxyFactory",
   ERC20VotesInitialVoiceCreditProxy = "ERC20VotesInitialVoiceCreditProxy",
   ERC20VotesInitialVoiceCreditProxyFactory = "ERC20VotesInitialVoiceCreditProxyFactory",
+  ERC20Policy = "ERC20Policy",
   FreeForAllPolicy = "FreeForAllPolicy",
   AnonAadhaarPolicy = "AnonAadhaarPolicy",
   EASPolicy = "EASPolicy",

@@ -10,6 +10,11 @@
       "snapshotBlock": 1,
       "factor": 1
     },
+    "ERC20Policy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1
+    },
     "FreeForAllPolicy": {
       "deploy": false
     },
@@ -100,6 +105,11 @@
       "snapshotBlock": 1,
       "factor": 1
     },
+    "ERC20Policy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1
+    },
     "FreeForAllPolicy": {
       "deploy": false
     },
@@ -188,6 +198,11 @@
       "token": "0x0000000000000000000000000000000000000000",
       "snapshotBlock": 1,
       "factor": 1
+    },
+    "ERC20Policy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1
     },
     "FreeForAllPolicy": {
       "deploy": false
@@ -279,6 +294,11 @@
       "snapshotBlock": 1,
       "factor": 1
     },
+    "ERC20Policy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1
+    },
     "FreeForAllPolicy": {
       "deploy": true
     },
@@ -368,6 +388,11 @@
       "token": "0x0000000000000000000000000000000000000000",
       "snapshotBlock": 1,
       "factor": 1
+    },
+    "ERC20Policy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1
     },
     "FreeForAllPolicy": {
       "deploy": true
@@ -459,6 +484,11 @@
       "snapshotBlock": 1,
       "factor": 1
     },
+    "ERC20Policy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1
+    },
     "FreeForAllPolicy": {
       "deploy": true
     },
@@ -548,6 +578,11 @@
       "token": "0x0000000000000000000000000000000000000000",
       "snapshotBlock": 1,
       "factor": 1
+    },
+    "ERC20Policy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1
     },
     "FreeForAllPolicy": {
       "deploy": true
@@ -644,6 +679,11 @@
       "snapshotBlock": 1,
       "factor": 1
     },
+    "ERC20Policy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1
+    },
     "FreeForAllPolicy": {
       "deploy": true
     },
@@ -738,6 +778,11 @@
       "token": "0x0000000000000000000000000000000000000000",
       "snapshotBlock": 1,
       "factor": 1
+    },
+    "ERC20Policy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1
     },
     "FreeForAllPolicy": {
       "deploy": true
@@ -834,6 +879,11 @@
       "snapshotBlock": 1,
       "factor": 1
     },
+    "ERC20Policy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1
+    },
     "FreeForAllPolicy": {
       "deploy": true
     },
@@ -928,6 +978,11 @@
       "token": "0x0000000000000000000000000000000000000000",
       "snapshotBlock": 1,
       "factor": 1
+    },
+    "ERC20Policy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1
     },
     "FreeForAllPolicy": {
       "deploy": true
