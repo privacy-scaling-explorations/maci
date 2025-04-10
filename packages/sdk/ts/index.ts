@@ -37,6 +37,7 @@ export {
   deployVerifier,
   genMaciStateFromContract,
   deployPoseidonContracts,
+  deployERC20VotesPolicy,
   deployAnonAadhaarPolicy,
   deployEASSignUpPolicy,
   deployGitcoinPassportPolicy,

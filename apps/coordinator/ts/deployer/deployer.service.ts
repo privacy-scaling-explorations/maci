@@ -16,6 +16,7 @@ import {
   extractAllVks,
   deployConstantInitialVoiceCreditProxy,
   deployFreeForAllSignUpPolicy,
+  deployERC20VotesPolicy,
   deployAnonAadhaarPolicy,
   deploySignupTokenPolicy,
   deployMerkleProofPolicy,
@@ -55,6 +56,7 @@ import {
   ISemaphorePolicyArgs,
   IMerkleProofPolicyArgs,
   ISignUpPolicyArgs,
+  IERC20VotesPolicyArgs,
 } from "./types";
 
 /**
@@ -100,7 +102,7 @@ export class DeployerService {
     // based on the policy type, we need to deploy the correct policy
     switch (policyType) {
       case EPolicies.FreeForAll: {
-        [contract] = await deployFreeForAllSignUpPolicy(signer, true);
+        [contract] = await deployFreeForAllSignUpPolicy({}, signer, true);
         break;
       }
       case EPolicies.EAS: {
@@ -110,6 +112,7 @@ export class DeployerService {
             attester: (args as IEASPolicyArgs).attester,
             schema: (args as IEASPolicyArgs).schema,
           },
+          {},
           signer,
           true,
         );
@@ -121,6 +124,7 @@ export class DeployerService {
             decoderAddress: (args as IGitcoinPassportPolicyArgs).decoderAddress,
             minimumScore: Number((args as IGitcoinPassportPolicyArgs).passingScore),
           },
+          {},
           signer,
           true,
         );
@@ -132,6 +136,7 @@ export class DeployerService {
             hats: (args as IHatsPolicyArgs).hatsProtocolAddress,
             criterionHats: (args as IHatsPolicyArgs).critrionHats.map((c) => BigInt(c)),
           },
+          {},
           signer,
           true,
         );
@@ -145,6 +150,7 @@ export class DeployerService {
             signer2: (args as IZupassPolicyArgs).signer2,
             verifier: (args as IZupassPolicyArgs).zupassVerifier,
           },
+          {},
           signer,
           true,
         );
@@ -156,6 +162,7 @@ export class DeployerService {
             semaphore: (args as ISemaphorePolicyArgs).semaphoreContract,
             groupId: BigInt((args as ISemaphorePolicyArgs).groupId),
           },
+          {},
           signer,
           true,
         );
@@ -166,6 +173,7 @@ export class DeployerService {
           {
             root: (args as IMerkleProofPolicyArgs).root,
           },
+          {},
           signer,
           true,
         );
@@ -176,6 +184,7 @@ export class DeployerService {
           {
             token: (args as ISignUpPolicyArgs).token,
           },
+          {},
           signer,
           true,
         );
@@ -187,6 +196,20 @@ export class DeployerService {
             verifierAddress: (args as IAnonAadhaarPolicyArgs).verifier,
             nullifierSeed: (args as IAnonAadhaarPolicyArgs).nullifierSeed,
           },
+          {},
+          signer,
+          true,
+        );
+        break;
+      }
+      case EPolicies.ERC20Votes: {
+        [contract] = await deployERC20VotesPolicy(
+          {
+            snapshotBlock: BigInt((args as IERC20VotesPolicyArgs).snapshotBlock),
+            threshold: BigInt((args as IERC20VotesPolicyArgs).threshold),
+            token: (args as IERC20VotesPolicyArgs).token,
+          },
+          {},
           signer,
           true,
         );

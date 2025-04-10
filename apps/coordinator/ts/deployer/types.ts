@@ -199,14 +199,14 @@ export interface IERC20VotesPolicyArgs {
   token: string;
 
   /**
-   * The factor
+   * The threshold
    */
-  factor: string;
+  threshold: bigint | string;
 
   /**
    * The snapshot block
    */
-  snapshotBlock: string;
+  snapshotBlock: bigint | string;
 }
 
 /**

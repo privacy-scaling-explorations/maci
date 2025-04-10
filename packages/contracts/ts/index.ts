@@ -19,6 +19,7 @@ export {
   deployHatsSignupPolicy,
   deployEASSignUpPolicy,
   deployMerkleProofPolicy,
+  deployERC20VotesPolicy,
   deployAnonAadhaarPolicy,
   deployZupassSignUpPolicy,
   deployPollFactory,
