@@ -3,8 +3,13 @@ import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "@mac
 import { poseidon } from "@maci-protocol/crypto";
 import { Keypair, PrivKey } from "@maci-protocol/domainobjs";
 
-import { hasUserJoinedPoll, IJoinPollArgs, IJoinPollData } from "../user";
-import { getPollJoiningCircuitEvents, getPollJoiningCircuitInputsFromStateFile } from "../user/utils";
+import type { IJoinPollArgs, IJoinPollData } from "../user/types";
+
+import {
+  getPollJoiningCircuitEvents,
+  getPollJoiningCircuitInputsFromStateFile,
+  hasUserJoinedPoll,
+} from "../user/utils";
 import { contractExists } from "../utils/contracts";
 import { CircuitInputs } from "../utils/types";
 
