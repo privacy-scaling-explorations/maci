@@ -28,6 +28,10 @@ import "@excubiae/contracts/contracts/extensions/erc20votes/ERC20VotesPolicy.sol
 import "@excubiae/contracts/contracts/extensions/erc20votes/ERC20VotesPolicyFactory.sol";
 import "@excubiae/contracts/contracts/extensions/erc20votes/ERC20VotesChecker.sol";
 import "@excubiae/contracts/contracts/extensions/erc20votes/ERC20VotesCheckerFactory.sol";
+import "@excubiae/contracts/contracts/extensions/erc20/ERC20Checker.sol";
+import "@excubiae/contracts/contracts/extensions/erc20/ERC20CheckerFactory.sol";
+import "@excubiae/contracts/contracts/extensions/erc20/ERC20Policy.sol";
+import "@excubiae/contracts/contracts/extensions/erc20/ERC20PolicyFactory.sol";
 
 /// @title Mocker
 /// @notice Import all external contracts for tests

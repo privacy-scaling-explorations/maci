@@ -64,6 +64,7 @@
     "test:anon_aadhaar_policy": "pnpm run test ./tests/policies/AnonAadhaarPolicy.test.ts",
     "test:erc20_votes_initial_voice_credits_proxy": "pnpm run test ./tests/ERC20VotesInitialVoiceCreditsProxy.test.ts",
     "test:erc20_votes_policy": "pnpm run test ./tests/policies/ERC20Votes.test.ts",
+    "test:erc20_policy": "pnpm run test ./tests/policies/ERC20.test.ts",
     "deploy": "hardhat deploy-full",
     "deploy-poll": "hardhat deploy-poll",
     "verify": "hardhat verify-full",
@@ -168,7 +169,7 @@
     "benchmark:polygon-amoy": "pnpm run benchmark --network polygon_amoy"
   },
   "dependencies": {
-    "@excubiae/contracts": "^0.9.2",
+    "@excubiae/contracts": "^0.10.0",
     "@maci-protocol/core": "^3.0.0",
     "@maci-protocol/crypto": "^3.0.0",
     "@maci-protocol/domainobjs": "^3.0.0",
