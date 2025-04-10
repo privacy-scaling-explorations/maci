@@ -4,7 +4,7 @@ import { hashLeanIMT, hashLeftRight, PAD_KEY_HASH } from "@maci-protocol/crypto"
 import { PubKey } from "@maci-protocol/domainobjs";
 import { LeanIMT, LeanIMTHashFunction } from "@zk-kit/lean-imt";
 
-import { assert } from "console";
+import assert from "assert";
 
 import type { IGenerateSignUpTreeArgs, IGenerateSignUpTree } from "./types";
 
