@@ -12,12 +12,12 @@ export interface IDeployMaciArgs {
   /**
    * The address of the session key
    */
-  sessionKeyAddress: Hex;
+  sessionKeyAddress?: Hex;
 
   /**
    * The approval for the session key
    */
-  approval: string;
+  approval?: string;
 
   /**
    * The chain name
@@ -37,12 +37,12 @@ export interface IDeployPollArgs {
   /**
    * The address of the session key
    */
-  sessionKeyAddress: Hex;
+  sessionKeyAddress?: Hex;
 
   /**
    * The approval for the session key
    */
-  approval: string;
+  approval?: string;
 
   /**
    * The chain name

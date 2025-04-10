@@ -1,21 +1,17 @@
-// To only run this file: pnpm exec jest --testPathPattern=tests/e2e.deploy.test.ts
-
 import { Keypair } from "@maci-protocol/domainobjs";
 import { joinPoll, signup, sleep } from "@maci-protocol/sdk";
 import { ValidationPipe, type INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import dotenv from "dotenv";
 import { type Signer } from "ethers";
-import hardhat from "hardhat";
 import { Socket, io } from "socket.io-client";
 import { Hex, zeroAddress } from "viem";
 
 import { AppModule } from "../ts/app.module";
-import { ESupportedNetworks } from "../ts/common";
+import { ESupportedNetworks, getSigner } from "../ts/common";
 import { getPublicClient } from "../ts/common/accountAbstraction";
 import {
   coordinatorMACIKeyPair,
-  pollDuration,
   pollStartDateExtraSeconds,
   testMaciDeploymentConfig,
   testPollDeploymentConfig,
@@ -65,9 +61,11 @@ describe("E2E Deployment Tests", () => {
   let maciAddress: Hex;
   let pollId: bigint;
 
+  const pollDuration = 600;
+
   // set up coordinator address
   beforeAll(async () => {
-    [signer] = await hardhat.ethers.getSigners();
+    signer = getSigner(CHAIN);
     encryptedHeader = await getAuthorizationHeader(signer);
     process.env.COORDINATOR_ADDRESSES = await signer.getAddress();
     await rechargeGasIfNeeded(process.env.COORDINATOR_ADDRESSES as Hex, "0.007", "0.007");
@@ -83,6 +81,7 @@ describe("E2E Deployment Tests", () => {
     await app.init();
     await app.listen(3000);
   });
+
   afterAll(async () => {
     await app.close();
     /*
@@ -154,8 +153,6 @@ describe("E2E Deployment Tests", () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        approval,
-        sessionKeyAddress,
         chain: CHAIN,
         config,
       } as IDeployMaciArgs),
@@ -184,8 +181,6 @@ describe("E2E Deployment Tests", () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        approval,
-        sessionKeyAddress,
         chain: CHAIN,
         config,
       } as IDeployPollArgs),
@@ -279,7 +274,7 @@ describe("E2E Deployment Tests", () => {
     expect(regex.test(url)).toBe(true);
   });
 
-  test.skip("should merge correctly", async () => {
+  test("should merge correctly", async () => {
     await sleep(pollDuration * 2000);
     const response = await fetch(`${TEST_URL}/proof/merge`, {
       method: "POST",
@@ -299,7 +294,7 @@ describe("E2E Deployment Tests", () => {
     expect(response.status).toBe(201);
   });
 
-  test.skip("should generate proofs correctly", async () => {
+  test("should generate proofs correctly", async () => {
     const blockNumber = await publicClient.getBlockNumber();
     const encryptedCoordinatorPrivKey = await encryptWithCoordinatorRSAPubKey(
       coordinatorMACIKeyPair.privKey.serialize(),
@@ -335,7 +330,7 @@ describe("E2E Deployment Tests", () => {
     expect(body.tallyData.results).toBeDefined();
   });
 
-  test.skip("should submit results on-chain correctly", async () => {
+  test("should submit results on-chain correctly", async () => {
     const response = await fetch(`${TEST_URL}/proof/submit`, {
       method: "POST",
       headers: {

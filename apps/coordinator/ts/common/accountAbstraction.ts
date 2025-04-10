@@ -7,34 +7,13 @@ import { createPublicClient, http, type Hex } from "viem";
 import { createBundlerClient } from "viem/account-abstraction";
 import { privateKeyToAccount } from "viem/accounts";
 
+import type { BundlerClientType, KernelClientType, PublicClientHTTPType } from "./types";
+
+import { genAlchemyRPCUrl } from "./chain";
 import { ErrorCodes } from "./errors";
 import { ESupportedNetworks, viemChain } from "./networks";
-import { BundlerClientType, KernelClientType, PublicClientHTTPType } from "./types";
 
 dotenv.config();
-
-/**
- * Generate the RPCUrl for Alchemy based on the chain we need to interact with
- *
- * @param network - the network we want to interact with
- * @returns the RPCUrl for the network
- */
-export const genAlchemyRPCUrl = (network: ESupportedNetworks): string => {
-  const rpcAPIKey = process.env.RPC_API_KEY;
-
-  if (!rpcAPIKey) {
-    throw new Error(ErrorCodes.RPC_API_KEY_NOT_SET.toString());
-  }
-
-  switch (network) {
-    case ESupportedNetworks.OPTIMISM_SEPOLIA:
-      return `https://opt-sepolia.g.alchemy.com/v2/${rpcAPIKey}`;
-    case ESupportedNetworks.ETHEREUM_SEPOLIA:
-      return `https://eth-sepolia.g.alchemy.com/v2/${rpcAPIKey}`;
-    default:
-      throw new Error(ErrorCodes.UNSUPPORTED_NETWORK.toString());
-  }
-};
 
 /**
  * Get a public client

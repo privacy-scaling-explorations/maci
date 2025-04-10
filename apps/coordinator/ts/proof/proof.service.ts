@@ -1,3 +1,4 @@
+import { AASigner } from "@maci-protocol/contracts";
 import { Keypair, PrivKey, PubKey } from "@maci-protocol/domainobjs";
 import {
   Deployment,
@@ -16,7 +17,7 @@ import path from "path";
 
 import type { IGenerateArgs, IGenerateData, IMergeArgs, ISubmitProofsArgs } from "./types";
 
-import { ErrorCodes } from "../common";
+import { ErrorCodes, getSigner } from "../common";
 import { CryptoService } from "../crypto/crypto.service";
 import { FileService } from "../file/file.service";
 import { SessionKeysService } from "../sessionKeys/sessionKeys.service";
@@ -89,12 +90,18 @@ export class ProofGeneratorService {
     options?: IGenerateProofsOptions,
   ): Promise<IGenerateData> {
     try {
-      const kernelClient = await this.sessionKeysService.generateClientFromSessionKey(
-        sessionKeyAddress,
-        approval,
-        chain,
-      );
-      const signer = await this.sessionKeysService.getKernelClientSigner(kernelClient);
+      let signer: AASigner;
+
+      if (sessionKeyAddress && approval) {
+        const kernelClient = await this.sessionKeysService.generateClientFromSessionKey(
+          sessionKeyAddress,
+          approval,
+          chain,
+        );
+        signer = await this.sessionKeysService.getKernelClientSigner(kernelClient);
+      } else {
+        signer = getSigner(chain);
+      }
 
       const pollData = await getPoll({
         maciAddress: maciContractAddress,
@@ -166,8 +173,18 @@ export class ProofGeneratorService {
    * @returns whether the proofs were successfully merged
    */
   async merge({ maciContractAddress, pollId, approval, sessionKeyAddress, chain }: IMergeArgs): Promise<boolean> {
-    const kernelClient = await this.sessionKeysService.generateClientFromSessionKey(sessionKeyAddress, approval, chain);
-    const signer = await this.sessionKeysService.getKernelClientSigner(kernelClient);
+    let signer: AASigner;
+
+    if (sessionKeyAddress && approval) {
+      const kernelClient = await this.sessionKeysService.generateClientFromSessionKey(
+        sessionKeyAddress,
+        approval,
+        chain,
+      );
+      signer = await this.sessionKeysService.getKernelClientSigner(kernelClient);
+    } else {
+      signer = getSigner(chain);
+    }
 
     await mergeSignups({
       maciAddress: maciContractAddress,
@@ -190,8 +207,18 @@ export class ProofGeneratorService {
     approval,
     chain,
   }: ISubmitProofsArgs): Promise<ITallyData> {
-    const kernelClient = await this.sessionKeysService.generateClientFromSessionKey(sessionKeyAddress, approval, chain);
-    const signer = await this.sessionKeysService.getKernelClientSigner(kernelClient);
+    let signer: AASigner;
+
+    if (sessionKeyAddress && approval) {
+      const kernelClient = await this.sessionKeysService.generateClientFromSessionKey(
+        sessionKeyAddress,
+        approval,
+        chain,
+      );
+      signer = await this.sessionKeysService.getKernelClientSigner(kernelClient);
+    } else {
+      signer = getSigner(chain);
+    }
 
     const tallyData = await proveOnChain({
       pollId: BigInt(pollId),

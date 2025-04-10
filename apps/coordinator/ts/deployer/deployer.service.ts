@@ -1,8 +1,8 @@
+import { AASigner, deployVerifier } from "@maci-protocol/contracts";
 import { PubKey } from "@maci-protocol/domainobjs";
 import {
   ContractStorage,
   EPolicies,
-  Verifier__factory as VerifierFactory,
   VkRegistry__factory as VkRegistryFactory,
   MessageProcessor__factory as MessageProcessorFactory,
   Tally__factory as TallyFactory,
@@ -39,6 +39,7 @@ import { type Hex } from "viem";
 import path from "path";
 
 import { ErrorCodes, ESupportedNetworks } from "../common";
+import { getSigner } from "../common/chain";
 import { FileService } from "../file/file.service";
 import { SessionKeysService } from "../sessionKeys/sessionKeys.service";
 
@@ -350,14 +351,23 @@ export class DeployerService {
    * @returns the address of the deployed maci contract
    */
   async deployMaci({ approval, sessionKeyAddress, chain, config }: IDeployMaciArgs): Promise<{ address: string }> {
-    const kernelClient = await this.sessionKeysService.generateClientFromSessionKey(sessionKeyAddress, approval, chain);
-    const signer = await this.sessionKeysService.getKernelClientSigner(kernelClient);
+    let signer: AASigner;
+
+    if (sessionKeyAddress && approval) {
+      const kernelClient = await this.sessionKeysService.generateClientFromSessionKey(
+        sessionKeyAddress,
+        approval,
+        chain,
+      );
+      signer = await this.sessionKeysService.getKernelClientSigner(kernelClient);
+    } else {
+      signer = getSigner(chain);
+    }
 
     const policyContract = await this.deployAndSavePolicy(signer, config.policy.type, chain, config.policy.args);
     const policyAddress = await policyContract.getAddress();
 
-    const verifierFactory = new VerifierFactory(signer);
-    const verifierContract = await verifierFactory.deploy();
+    const verifierContract = await deployVerifier(signer, true);
 
     const vkRegistryAddress = await deployVkRegistryContract({ signer });
 
@@ -410,8 +420,18 @@ export class DeployerService {
    * @returns poll id
    */
   async deployPoll({ approval, sessionKeyAddress, chain, config }: IDeployPollArgs): Promise<{ pollId: string }> {
-    const kernelClient = await this.sessionKeysService.generateClientFromSessionKey(sessionKeyAddress, approval, chain);
-    const signer = await this.sessionKeysService.getKernelClientSigner(kernelClient);
+    let signer: AASigner;
+
+    if (sessionKeyAddress && approval) {
+      const kernelClient = await this.sessionKeysService.generateClientFromSessionKey(
+        sessionKeyAddress,
+        approval,
+        chain,
+      );
+      signer = await this.sessionKeysService.getKernelClientSigner(kernelClient);
+    } else {
+      signer = getSigner(chain);
+    }
 
     // check if there is a maci contract deployed on this chain
     const maciAddress = this.storage.getAddress(EContracts.MACI, chain);
@@ -474,9 +494,6 @@ export class DeployerService {
       await deployPoll(deployPollArgs);
 
     const poll = PollFactory.connect(pollContractAddress, signer);
-    // read the emptyBallotRoot and extContracts
-    const emptyBallotRoot = await poll.emptyBallotRoot();
-    const extContracts = await poll.extContracts();
 
     // store to storage
     await Promise.all([
@@ -484,35 +501,24 @@ export class DeployerService {
         id: EContracts.Poll,
         key: `poll-${pollId}`,
         contract: poll,
-        args: [
-          deployPollArgs.pollStartTimestamp,
-          deployPollArgs.pollEndTimestamp,
-          {
-            intStateTreeDepth: deployPollArgs.intStateTreeDepth,
-            voteOptionTreeDepth: deployPollArgs.intStateTreeDepth,
-          },
-          deployPollArgs.messageBatchSize,
-          deployPollArgs.coordinatorPubKey.asContractParam(),
-          extContracts,
-          emptyBallotRoot.toString(),
-          pollId.toString(),
-          deployPollArgs.relayers,
-          deployPollArgs.voteOptions,
-        ],
+        // clones do not have args for verification
+        args: [],
         network: chain,
       }),
       this.storage.register({
         id: EContracts.MessageProcessor,
         key: `poll-${pollId}`,
-        contract: new BaseContract(messageProcessorContractAddress, MessageProcessorFactory.abi),
-        args: [verifierAddress, vkRegistryAddress, pollContractAddress, mode],
+        contract: MessageProcessorFactory.connect(messageProcessorContractAddress, signer),
+        // clones do not have args for verification
+        args: [],
         network: chain,
       }),
       this.storage.register({
         id: EContracts.Tally,
         key: `poll-${pollId}`,
-        contract: new BaseContract(tallyContractAddress, TallyFactory.abi),
-        args: [verifierAddress, vkRegistryAddress, pollContractAddress, messageProcessorContractAddress, mode],
+        contract: TallyFactory.connect(tallyContractAddress, signer),
+        // clones do not have args for verification
+        args: [],
         network: chain,
       }),
     ]);

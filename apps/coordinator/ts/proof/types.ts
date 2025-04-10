@@ -35,11 +35,11 @@ export interface IGenerateArgs {
   /**
    * Approval for the session key
    */
-  approval: string;
+  approval?: string;
   /**
    * Session key address
    */
-  sessionKeyAddress: Hex;
+  sessionKeyAddress?: Hex;
   /**
    * Chain
    */
@@ -131,11 +131,11 @@ export interface IMergeArgs {
   /**
    * Approval for the session key
    */
-  approval: string;
+  approval?: string;
   /**
    * Session key address
    */
-  sessionKeyAddress: Hex;
+  sessionKeyAddress?: Hex;
   /**
    * Chain
    */
@@ -157,11 +157,11 @@ export interface ISubmitProofsArgs {
   /**
    * Approval for the session key
    */
-  approval: string;
+  approval?: string;
   /**
    * Session key address
    */
-  sessionKeyAddress: Hex;
+  sessionKeyAddress?: Hex;
   /**
    * Chain
    */

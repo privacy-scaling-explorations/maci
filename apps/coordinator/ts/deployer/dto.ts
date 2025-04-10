@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEnum, IsString } from "class-validator";
+import { IsEnum, IsOptional, IsString } from "class-validator";
 
 import type { IDeployMaciConfig, IDeployPollConfig } from "./types";
 import type { Hex } from "viem";
@@ -16,9 +16,11 @@ export class DeployerServiceDeployMaciDto {
   @ApiProperty({
     description: "Session Key Approval string",
     type: String,
+    required: false,
   })
+  @IsOptional()
   @IsString()
-  approval!: string;
+  approval?: string;
 
   /**
    * Address of the session key
@@ -26,9 +28,11 @@ export class DeployerServiceDeployMaciDto {
   @ApiProperty({
     description: "Address of the session key",
     type: String,
+    required: false,
   })
+  @IsOptional()
   @IsString()
-  sessionKeyAddress!: Hex;
+  sessionKeyAddress?: Hex;
 
   /**
    * Chain Name
@@ -60,9 +64,11 @@ export class DeployerServiceDeployPollDto {
   @ApiProperty({
     description: "Session Key Approval string",
     type: String,
+    required: false,
   })
+  @IsOptional()
   @IsString()
-  approval!: string;
+  approval?: string;
 
   /**
    * Address of the session key
@@ -70,9 +76,11 @@ export class DeployerServiceDeployPollDto {
   @ApiProperty({
     description: "Address of the session key",
     type: String,
+    required: false,
   })
+  @IsOptional()
   @IsString()
-  sessionKeyAddress!: Hex;
+  sessionKeyAddress?: Hex;
 
   /**
    * Chain Name

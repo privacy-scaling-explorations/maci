@@ -17,7 +17,8 @@ import {
   optimismSepolia,
 } from "viem/chains";
 
-import { genAlchemyRPCUrl, getBundlerClient, getPublicClient, getZeroDevBundlerRPCUrl } from "../accountAbstraction";
+import { getBundlerClient, getPublicClient, getZeroDevBundlerRPCUrl } from "../accountAbstraction";
+import { genAlchemyRPCUrl } from "../chain";
 import { ErrorCodes } from "../errors";
 import { ESupportedNetworks, viemChain } from "../networks";
 

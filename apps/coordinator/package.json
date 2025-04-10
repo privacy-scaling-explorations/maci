@@ -25,6 +25,7 @@
     "test": "jest --testPathIgnorePatterns=e2e.aa.test.ts --forceExit",
     "test:coverage": "jest --coverage --forceExit",
     "test:e2e": "jest ./tests/e2e.deploy.test.ts --forceExit",
+    "test:aa": "jest ./tests/e2e.aa.test.ts --forceExit",
     "types": "tsc -p tsconfig.json --noEmit",
     "generate-maci-keypair": "pnpm run run:node ./scripts/generateMaciKeypair.ts",
     "generate-keypair": "pnpm run run:node ./scripts/generateKeypair.ts",

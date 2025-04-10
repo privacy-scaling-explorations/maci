@@ -98,16 +98,20 @@ export class GenerateProofDto {
   @ApiProperty({
     description: "Session key address",
     type: String,
+    required: false,
   })
+  @IsOptional()
   @IsEthereumAddress()
-  sessionKeyAddress!: Hex;
+  sessionKeyAddress?: Hex;
 
   @ApiProperty({
     description: "Approval",
     type: String,
+    required: false,
   })
+  @IsOptional()
   @IsString()
-  approval!: string;
+  approval?: string;
 
   /**
    * Chain Name
@@ -146,16 +150,20 @@ export class MergeTreesDto {
   @ApiProperty({
     description: "Session key address",
     type: String,
+    required: false,
   })
+  @IsOptional()
   @IsEthereumAddress()
-  sessionKeyAddress!: string;
+  sessionKeyAddress?: string;
 
   @ApiProperty({
     description: "Approval",
     type: String,
+    required: false,
   })
+  @IsOptional()
   @IsString()
-  approval!: string;
+  approval?: string;
 
   /**
    * Chain Name
@@ -194,16 +202,20 @@ export class SubmitProofsDto {
   @ApiProperty({
     description: "Session key address",
     type: String,
+    required: false,
   })
+  @IsOptional()
   @IsEthereumAddress()
-  sessionKeyAddress!: Hex;
+  sessionKeyAddress?: Hex;
 
   @ApiProperty({
     description: "Approval",
     type: String,
+    required: false,
   })
+  @IsOptional()
   @IsString()
-  approval!: string;
+  approval?: string;
 
   /**
    * Chain Name
