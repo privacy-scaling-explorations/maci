@@ -16,9 +16,10 @@ contract ERC20VotesInitialVoiceCreditProxyFactory is Factory {
   /// @param snapshotBlock the block number to be used for the initial voice credits
   /// @param token the token to be used for the initial voice credits
   /// @param factor the factor to be used for the initial voice credits
-  function deploy(uint256 snapshotBlock, address token, uint256 factor) public {
+  /// @return clone the address of the new clone
+  function deploy(uint256 snapshotBlock, address token, uint256 factor) public returns (address clone) {
     bytes memory data = abi.encode(snapshotBlock, token, factor);
-    address clone = super._deploy(data);
+    clone = super._deploy(data);
 
     ERC20VotesInitialVoiceCreditProxy(clone).initialize();
   }
