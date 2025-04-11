@@ -37,7 +37,7 @@ export const parsePollJoinEvents = async ({
     const pubKey = pollPublicKey.asArray();
     // eslint-disable-next-line no-await-in-loop
     const newEvents = await pollContract.queryFilter(
-      pollContract.filters.PollJoined(pubKey[0], pubKey[1], undefined, undefined, undefined, undefined),
+      pollContract.filters.PollJoined(pubKey[0], pubKey[1], undefined, undefined, undefined),
       block,
       toBlock,
     );
@@ -46,7 +46,7 @@ export const parsePollJoinEvents = async ({
       const [event] = newEvents;
 
       return {
-        pollStateIndex: event.args[5].toString(),
+        pollStateIndex: event.args[4].toString(),
         voiceCredits: event.args[2].toString(),
       };
     }

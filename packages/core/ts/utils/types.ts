@@ -152,7 +152,6 @@ export interface IJoinedCircuitArgs {
   maciPrivKey: PrivKey;
   stateLeafIndex: bigint;
   voiceCreditsBalance: bigint;
-  joinTimestamp: bigint;
 }
 
 /**
@@ -176,7 +175,6 @@ export interface IPollJoiningCircuitInputs {
 export interface IPollJoinedCircuitInputs {
   privKey: string;
   voiceCreditsBalance: string;
-  joinTimestamp: string;
   stateLeaf: string[];
   pathElements: string[][];
   pathIndices: string[];

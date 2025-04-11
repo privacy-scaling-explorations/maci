@@ -57,7 +57,6 @@ describe("Integration message batches", () => {
       maciPrivKey: user.keypair.privKey,
       stateLeafIndex: user.stateLeafIndex!,
       voiceCreditsBalance: user.voiceCreditBalance,
-      joinTimestamp: user.timestamp!,
     });
 
     const { proof } = await genProofSnarkjs({

@@ -17,31 +17,18 @@ export class User {
   stateLeafIndex?: bigint;
 
   /**
-   * The timestamp of when the user joined the poll
-   */
-  timestamp?: bigint;
-
-  /**
    * Create a new instance of a UserCommand object
-   * @param _keypair the keypair of the user
+   * @param keypair the keypair of the user
    * @param votes the votes casted by the user
    * @param voiceCreditBalance the voice credit balance of the user
    * @param nonce the nonce of the user
-   * @param timestamp the timestamp of when the user joined the poll
+   * @param stateLeafIndex the state leaf index
    */
-  constructor(
-    _keypair: Keypair,
-    votes: IVote[],
-    voiceCreditBalance: bigint,
-    nonce: bigint,
-    timestamp?: bigint,
-    stateLeafIndex?: bigint,
-  ) {
-    this.keypair = _keypair;
+  constructor(keypair: Keypair, votes: IVote[], voiceCreditBalance: bigint, nonce: bigint, stateLeafIndex?: bigint) {
+    this.keypair = keypair;
     this.votes = votes;
     this.voiceCreditBalance = voiceCreditBalance;
     this.nonce = nonce;
-    this.timestamp = timestamp;
     this.stateLeafIndex = stateLeafIndex;
   }
 

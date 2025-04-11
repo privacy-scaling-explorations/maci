@@ -100,9 +100,8 @@ describe("ProcessMessage circuit", function test() {
         const { pubKey: pollPubKey } = user;
 
         const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-        const timestamp = BigInt(Math.floor(Date.now() / 1000));
 
-        poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp);
+        poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance);
       });
 
       const nothing = new Message([
@@ -187,9 +186,8 @@ describe("ProcessMessage circuit", function test() {
       const { privKey, pubKey: pollPubKey } = userKeypair;
 
       const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-      const timestamp = BigInt(Math.floor(Date.now() / 1000));
 
-      stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp));
+      stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance));
 
       // First command (valid)
       const command = new PCommand(
@@ -292,9 +290,8 @@ describe("ProcessMessage circuit", function test() {
       const { privKey, pubKey: pollPubKey } = userKeypair;
 
       const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-      const timestamp = BigInt(1);
 
-      const stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp));
+      const stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance));
 
       const command = new PCommand(
         stateIndex,
@@ -375,9 +372,8 @@ describe("ProcessMessage circuit", function test() {
       const { privKey, pubKey: pollPubKey } = userKeypair;
 
       const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-      const timestamp = BigInt(1);
 
-      const stateIndex = poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp);
+      const stateIndex = poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance);
 
       // Vote for option 0
       const command = new PCommand(
@@ -496,9 +492,8 @@ describe("ProcessMessage circuit", function test() {
       const { privKey, pubKey: pollPubKey } = userKeypair;
 
       const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-      const timestamp = BigInt(Math.floor(Date.now() / 1000));
 
-      stateIndex = poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp);
+      stateIndex = poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance);
 
       // Second batch is not a full batch
       const numMessages = messageBatchSize * NUM_BATCHES - 1;
@@ -560,9 +555,8 @@ describe("ProcessMessage circuit", function test() {
       const { privKey, pubKey: pollPubKey } = userKeypair;
 
       const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-      const timestamp = BigInt(Math.floor(Date.now() / 1000));
 
-      stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp));
+      stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance));
 
       const nothing = new Message([
         8370432830353022751713833565135785980866757267633941821328460903436894336785n,
@@ -683,9 +677,8 @@ describe("ProcessMessage circuit", function test() {
       const { privKey, pubKey: pollPubKey } = userKeypair;
 
       const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-      const timestamp = BigInt(Math.floor(Date.now() / 1000));
 
-      stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp));
+      stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance));
 
       const nothing = new Message([
         8370432830353022751713833565135785980866757267633941821328460903436894336785n,
@@ -813,9 +806,8 @@ describe("ProcessMessage circuit", function test() {
       const { privKey, pubKey: pollPubKey } = userKeypair;
 
       const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-      const timestamp = BigInt(Math.floor(Date.now() / 1000));
 
-      stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp));
+      stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance));
 
       const nothing = new Message([
         8370432830353022751713833565135785980866757267633941821328460903436894336785n,

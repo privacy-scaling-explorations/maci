@@ -50,9 +50,9 @@ describe("Poll", () => {
 
   const maciState = new MaciState(STATE_TREE_DEPTH);
 
-  const keypair = new Keypair();
-
   const NUM_USERS = 3;
+
+  const users = new Array(NUM_USERS).fill(0).map(() => new Keypair());
 
   describe("deployment", () => {
     before(async () => {
@@ -74,7 +74,7 @@ describe("Poll", () => {
       await signupPolicyContract.setTarget(await maciContract.getAddress()).then((tx) => tx.wait());
 
       for (let i = 0; i < NUM_USERS; i += 1) {
-        const user = new Keypair();
+        const user = users[i];
         maciState.signUp(user.pubKey);
 
         // eslint-disable-next-line no-await-in-loop
@@ -215,10 +215,11 @@ describe("Poll", () => {
 
   describe("Poll join", () => {
     it("should let users join the poll", async () => {
-      const pubkey = keypair.pubKey.asContractParam();
       const mockProof = [0, 0, 0, 0, 0, 0, 0, 0];
 
       for (let i = 0; i < NUM_USERS; i += 1) {
+        const user = users[i];
+        const pubkey = user.pubKey.asContractParam();
         const mockNullifier = AbiCoder.defaultAbiCoder().encode(["uint256"], [i]);
 
         const response = await pollContract.joinPoll(
@@ -240,17 +241,16 @@ describe("Poll", () => {
 
         expect(receipt!.status).to.eq(1);
 
-        const block = await signer.provider!.getBlock(receipt!.blockHash);
-        const { timestamp } = block!;
-
         const expectedIndex = maciState.polls
           .get(pollId)
-          ?.joinPoll(BigInt(mockNullifier), keypair.pubKey, voiceCredits, BigInt(timestamp));
+          ?.joinPoll(BigInt(mockNullifier), users[i].pubKey, voiceCredits);
 
         expect(index).to.eq(expectedIndex);
 
         // get the index with getStateIndex
-        const stateLeaf = new StateLeaf(keypair.pubKey, voiceCredits, BigInt(timestamp));
+        const stateLeaf = new StateLeaf(users[i].pubKey, voiceCredits);
+
+        expect(maciState.polls.get(pollId)?.pollStateLeaves[Number(index)].hash()).to.eq(stateLeaf.hash());
         expect(await pollContract.getStateIndex(stateLeaf.hash())).to.eq(index);
       }
     });
@@ -267,7 +267,7 @@ describe("Poll", () => {
 
     it("should not allow a user to join twice", async () => {
       const mockNullifier = AbiCoder.defaultAbiCoder().encode(["uint256"], [0]);
-      const pubkey = keypair.pubKey.asContractParam();
+      const pubkey = users[0].pubKey.asContractParam();
       const mockProof = [0, 0, 0, 0, 0, 0, 0, 0];
 
       await expect(
@@ -295,23 +295,23 @@ describe("Poll", () => {
     });
 
     it("should publish a message to the Poll contract", async () => {
-      const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, 0n);
+      const command = new PCommand(1n, users[0].pubKey, 0n, 9n, 1n, pollId, 0n);
 
-      const signature = command.sign(keypair.privKey);
-      const sharedKey = Keypair.genEcdhSharedKey(keypair.privKey, coordinator.pubKey);
+      const signature = command.sign(users[0].privKey);
+      const sharedKey = Keypair.genEcdhSharedKey(users[0].privKey, coordinator.pubKey);
       const message = command.encrypt(signature, sharedKey);
-      const tx = await pollContract.publishMessage(message.asContractParam(), keypair.pubKey.asContractParam());
+      const tx = await pollContract.publishMessage(message.asContractParam(), users[0].pubKey.asContractParam());
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
 
-      maciState.polls.get(pollId)?.publishMessage(message, keypair.pubKey);
+      maciState.polls.get(pollId)?.publishMessage(message, users[0].pubKey);
     });
 
     it("should throw when the encPubKey is not a point on the baby jubjub curve", async () => {
-      const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, 0n);
+      const command = new PCommand(1n, users[0].pubKey, 0n, 9n, 1n, pollId, 0n);
 
-      const signature = command.sign(keypair.privKey);
-      const sharedKey = Keypair.genEcdhSharedKey(keypair.privKey, coordinator.pubKey);
+      const signature = command.sign(users[0].privKey);
+      const sharedKey = Keypair.genEcdhSharedKey(users[0].privKey, coordinator.pubKey);
       const message = command.encrypt(signature, sharedKey);
       await expect(
         pollContract.publishMessage(message.asContractParam(), {
@@ -322,26 +322,26 @@ describe("Poll", () => {
     });
 
     it("should emit an event when publishing a message", async () => {
-      const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, 0n);
+      const command = new PCommand(1n, users[0].pubKey, 0n, 9n, 1n, pollId, 0n);
 
-      const signature = command.sign(keypair.privKey);
-      const sharedKey = Keypair.genEcdhSharedKey(keypair.privKey, coordinator.pubKey);
+      const signature = command.sign(users[0].privKey);
+      const sharedKey = Keypair.genEcdhSharedKey(users[0].privKey, coordinator.pubKey);
       const message = command.encrypt(signature, sharedKey);
-      expect(await pollContract.publishMessage(message.asContractParam(), keypair.pubKey.asContractParam()))
+      expect(await pollContract.publishMessage(message.asContractParam(), users[0].pubKey.asContractParam()))
         .to.emit(pollContract, "PublishMessage")
-        .withArgs(message.asContractParam(), keypair.pubKey.asContractParam());
+        .withArgs(message.asContractParam(), users[0].pubKey.asContractParam());
 
-      maciState.polls.get(pollId)?.publishMessage(message, keypair.pubKey);
+      maciState.polls.get(pollId)?.publishMessage(message, users[0].pubKey);
     });
 
     it("should allow to publish a message batch", async () => {
       const messages: [Message, PubKey][] = [];
       for (let i = 0; i < 2; i += 1) {
-        const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, BigInt(i));
-        const signature = command.sign(keypair.privKey);
-        const sharedKey = Keypair.genEcdhSharedKey(keypair.privKey, coordinator.pubKey);
+        const command = new PCommand(1n, users[0].pubKey, 0n, 9n, 1n, pollId, BigInt(i));
+        const signature = command.sign(users[0].privKey);
+        const sharedKey = Keypair.genEcdhSharedKey(users[0].privKey, coordinator.pubKey);
         const message = command.encrypt(signature, sharedKey);
-        messages.push([message, keypair.pubKey]);
+        messages.push([message, users[0].pubKey]);
       }
 
       const tx = await pollContract.publishMessageBatch(
@@ -359,11 +359,11 @@ describe("Poll", () => {
     it("should allow to relay a messages batch", async () => {
       const messages: [Message, PubKey][] = [];
       for (let i = 0; i < 2; i += 1) {
-        const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, BigInt(i));
-        const signature = command.sign(keypair.privKey);
-        const sharedKey = Keypair.genEcdhSharedKey(keypair.privKey, coordinator.pubKey);
+        const command = new PCommand(1n, users[0].pubKey, 0n, 9n, 1n, pollId, BigInt(i));
+        const signature = command.sign(users[0].privKey);
+        const sharedKey = Keypair.genEcdhSharedKey(users[0].privKey, coordinator.pubKey);
         const message = command.encrypt(signature, sharedKey);
-        messages.push([message, keypair.pubKey]);
+        messages.push([message, users[0].pubKey]);
       }
 
       const messageHashes = await Promise.all(
@@ -382,13 +382,13 @@ describe("Poll", () => {
     });
 
     it("should throw an error if non-relayer tries to relay messages batch", async () => {
-      const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, 0n);
-      const signature = command.sign(keypair.privKey);
-      const sharedKey = Keypair.genEcdhSharedKey(keypair.privKey, coordinator.pubKey);
+      const command = new PCommand(1n, users[0].pubKey, 0n, 9n, 1n, pollId, 0n);
+      const signature = command.sign(users[0].privKey);
+      const sharedKey = Keypair.genEcdhSharedKey(users[0].privKey, coordinator.pubKey);
       const message = command.encrypt(signature, sharedKey);
       const messageHash = await pollContract.hashMessageAndEncPubKey(
         message.asContractParam(),
-        keypair.pubKey.asContractParam(),
+        users[0].pubKey.asContractParam(),
       );
 
       const [, user] = await getSigners();
@@ -399,14 +399,14 @@ describe("Poll", () => {
     });
 
     it("should throw when the message batch has messages length != encPubKeys length", async () => {
-      const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, 0n);
-      const signature = command.sign(keypair.privKey);
-      const sharedKey = Keypair.genEcdhSharedKey(keypair.privKey, coordinator.pubKey);
+      const command = new PCommand(1n, users[0].pubKey, 0n, 9n, 1n, pollId, 0n);
+      const signature = command.sign(users[0].privKey);
+      const sharedKey = Keypair.genEcdhSharedKey(users[0].privKey, coordinator.pubKey);
       const message = command.encrypt(signature, sharedKey);
       await expect(
         pollContract.publishMessageBatch(
           [message.asContractParam(), message.asContractParam()],
-          [keypair.pubKey.asContractParam()],
+          [users[0].pubKey.asContractParam()],
         ),
       ).to.be.revertedWithCustomError(pollContract, "InvalidBatchLength");
     });
@@ -415,35 +415,35 @@ describe("Poll", () => {
       const sd = await pollContract.startDate();
       await timeTravel(signer.provider as unknown as EthereumProvider, Number(sd) + 10);
 
-      const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, 0n);
+      const command = new PCommand(1n, users[0].pubKey, 0n, 9n, 1n, pollId, 0n);
 
-      const signature = command.sign(keypair.privKey);
-      const sharedKey = Keypair.genEcdhSharedKey(keypair.privKey, coordinator.pubKey);
+      const signature = command.sign(users[0].privKey);
+      const sharedKey = Keypair.genEcdhSharedKey(users[0].privKey, coordinator.pubKey);
       const message = command.encrypt(signature, sharedKey);
 
       await expect(
-        pollContract.publishMessage(message.asContractParam(), keypair.pubKey.asContractParam()),
+        pollContract.publishMessage(message.asContractParam(), users[0].pubKey.asContractParam()),
       ).to.be.revertedWithCustomError(pollContract, "VotingPeriodOver");
     });
 
     it("should not allow to publish a message batch after the voting period ends", async () => {
-      const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, 0n);
-      const signature = command.sign(keypair.privKey);
-      const sharedKey = Keypair.genEcdhSharedKey(keypair.privKey, coordinator.pubKey);
+      const command = new PCommand(1n, users[0].pubKey, 0n, 9n, 1n, pollId, 0n);
+      const signature = command.sign(users[0].privKey);
+      const sharedKey = Keypair.genEcdhSharedKey(users[0].privKey, coordinator.pubKey);
       const message = command.encrypt(signature, sharedKey);
       await expect(
-        pollContract.publishMessageBatch([message.asContractParam()], [keypair.pubKey.asContractParam()]),
+        pollContract.publishMessageBatch([message.asContractParam()], [users[0].pubKey.asContractParam()]),
       ).to.be.revertedWithCustomError(pollContract, "VotingPeriodOver");
     });
 
     it("should not allow to relay a messages batch after the voting period ends", async () => {
-      const command = new PCommand(1n, keypair.pubKey, 0n, 9n, 1n, pollId, 0n);
-      const signature = command.sign(keypair.privKey);
-      const sharedKey = Keypair.genEcdhSharedKey(keypair.privKey, coordinator.pubKey);
+      const command = new PCommand(1n, users[0].pubKey, 0n, 9n, 1n, pollId, 0n);
+      const signature = command.sign(users[0].privKey);
+      const sharedKey = Keypair.genEcdhSharedKey(users[0].privKey, coordinator.pubKey);
       const message = command.encrypt(signature, sharedKey);
       const messageHash = await pollContract.hashMessageAndEncPubKey(
         message.asContractParam(),
-        keypair.pubKey.asContractParam(),
+        users[0].pubKey.asContractParam(),
       );
 
       await expect(pollContract.relayMessagesBatch([messageHash], ipfsHash)).to.be.revertedWithCustomError(

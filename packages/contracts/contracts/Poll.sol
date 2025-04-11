@@ -89,7 +89,7 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
 
   /// @notice The hash of a blank state leaf
   uint256 internal constant BLANK_STATE_LEAF_HASH =
-    uint256(6769006970205099520508948723718471724660867171122235270773600567925038008762);
+    uint256(11672248758340751985123309654953904206381780234474872690580702076708041504880);
 
   uint8 internal constant VOTE_TREE_ARITY = 5;
 
@@ -124,7 +124,6 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
     uint256 indexed _pollPubKeyX,
     uint256 indexed _pollPubKeyY,
     uint256 _voiceCreditBalance,
-    uint256 _timestamp,
     uint256 _nullifier,
     uint256 _pollStateIndex
   );
@@ -379,7 +378,7 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
     );
 
     // Store user in the pollStateTree
-    uint256 stateLeaf = hashStateLeaf(StateLeaf(_pubKey, voiceCreditBalance, block.timestamp));
+    uint256 stateLeaf = hashStateLeaf(StateLeaf(_pubKey, voiceCreditBalance));
 
     uint256 stateRoot = InternalLazyIMT._insert(pollStateTree, stateLeaf);
 
@@ -387,7 +386,7 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
     pollStateRootsOnJoin.push(stateRoot);
 
     uint256 pollStateIndex = pollStateTree.numberOfLeaves - 1;
-    emit PollJoined(_pubKey.x, _pubKey.y, voiceCreditBalance, block.timestamp, _nullifier, pollStateIndex);
+    emit PollJoined(_pubKey.x, _pubKey.y, voiceCreditBalance, _nullifier, pollStateIndex);
   }
 
   /// @notice Verify the proof for Poll joining

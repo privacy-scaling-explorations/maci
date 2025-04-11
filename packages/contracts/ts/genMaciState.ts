@@ -159,7 +159,6 @@ export const genMaciStateFromContract = async ({
 
       const pubKeyX = BigInt(event.args._pollPubKeyX);
       const pubKeyY = BigInt(event.args._pollPubKeyY);
-      const timestamp = Number(event.args._timestamp);
 
       const voiceCreditBalance = BigInt(event.args._voiceCreditBalance);
 
@@ -170,7 +169,6 @@ export const genMaciStateFromContract = async ({
         data: {
           pubKey: new PubKey([pubKeyX, pubKeyY]),
           newVoiceCreditBalance: voiceCreditBalance,
-          timestamp,
           nullifier,
         },
       });
@@ -284,8 +282,8 @@ export const genMaciStateFromContract = async ({
       }
 
       case action.type === "PollJoined": {
-        const { pubKey, newVoiceCreditBalance, timestamp, nullifier } = action.data;
-        maciState.polls.get(pollId)?.joinPoll(nullifier!, pubKey!, newVoiceCreditBalance!, BigInt(timestamp!));
+        const { pubKey, newVoiceCreditBalance, nullifier } = action.data;
+        maciState.polls.get(pollId)?.joinPoll(nullifier!, pubKey!, newVoiceCreditBalance!);
         break;
       }
 

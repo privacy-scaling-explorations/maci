@@ -44,6 +44,7 @@
     "types": "tsc -p tsconfig.json --noEmit",
     "docs": "hardhat docgen",
     "test": "hardhat test --network hardhat",
+    "test:hardhat": "bash ./testScriptLocalhost.sh",
     "test:maci": "pnpm run test ./tests/MACI.test.ts",
     "test:poll": "pnpm run test ./tests/Poll.test.ts",
     "test:messageProcessor": "pnpm run test ./tests/MessageProcessor.test.ts",

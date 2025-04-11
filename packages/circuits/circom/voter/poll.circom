@@ -65,8 +65,6 @@ template PollJoined(stateTreeDepth) {
     signal input privKey;
     // User's voice credits balance
     signal input voiceCreditsBalance;
-    // Poll's joined timestamp
-    signal input joinTimestamp;
     // Path elements
     signal input pathElements[stateTreeDepth][STATE_TREE_ARITY - 1];
     // Path indices
@@ -79,7 +77,7 @@ template PollJoined(stateTreeDepth) {
      // User private to public key
     var derivedPubKey[2] = PrivToPubKey()(privKey);
 
-    var stateLeaf = PoseidonHasher(4)([derivedPubKey[0], derivedPubKey[1], voiceCreditsBalance, joinTimestamp]);
+    var stateLeaf = PoseidonHasher(3)([derivedPubKey[0], derivedPubKey[1], voiceCreditsBalance]);
 
     // Inclusion proof  
     var stateLeafQip = BinaryMerkleRoot(stateTreeDepth)(

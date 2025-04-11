@@ -244,11 +244,6 @@ export interface IPollJoinedCircuitInputs {
   voiceCreditsBalance: string;
 
   /**
-   * The join timestamp
-   */
-  joinTimestamp: string;
-
-  /**
    * The state leaf
    */
   stateLeaf: string[];
@@ -372,11 +367,6 @@ export interface IJoinPollData {
    * Voice credits balance
    */
   voiceCredits: string;
-
-  /**
-   * Joining poll timestamp
-   */
-  timestamp: string;
 
   /**
    * Private key nullifier

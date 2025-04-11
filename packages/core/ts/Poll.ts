@@ -191,11 +191,10 @@ export class Poll implements IPoll {
    * @param nullifier - Hashed private key used as nullifier
    * @param pubKey - The poll public key.
    * @param newVoiceCreditBalance - New voice credit balance of the user.
-   * @param timestamp - The timestamp of the sign-up.
    * @returns The index of added state leaf
    */
-  joinPoll = (nullifier: bigint, pubKey: PubKey, newVoiceCreditBalance: bigint, timestamp: bigint): number => {
-    const stateLeaf = new StateLeaf(pubKey, newVoiceCreditBalance, timestamp);
+  joinPoll = (nullifier: bigint, pubKey: PubKey, newVoiceCreditBalance: bigint): number => {
+    const stateLeaf = new StateLeaf(pubKey, newVoiceCreditBalance);
 
     if (this.hasJoined(nullifier)) {
       throw new Error("UserAlreadyJoined");
@@ -501,13 +500,10 @@ export class Poll implements IPoll {
     maciPrivKey,
     stateLeafIndex,
     voiceCreditsBalance,
-    joinTimestamp,
   }: IJoinedCircuitArgs): IPollJoinedCircuitInputs => {
     // calculate the path elements for the state tree given the original state tree
-    const { pathElements, pathIndices } = this.pollStateTree!.genProof(Number(stateLeafIndex));
+    const { root: stateRoot, pathElements, pathIndices } = this.pollStateTree!.genProof(Number(stateLeafIndex));
 
-    // Get poll state tree's root
-    const stateRoot = this.pollStateTree!.root;
     const elementsLength = pathIndices.length;
 
     for (let i = 0; i < this.stateTreeDepth; i += 1) {
@@ -521,7 +517,6 @@ export class Poll implements IPoll {
       privKey: maciPrivKey.asCircuitInputs(),
       pathElements: pathElements.map((item) => item.toString()),
       voiceCreditsBalance: voiceCreditsBalance.toString(),
-      joinTimestamp: joinTimestamp.toString(),
       pathIndices: pathIndices.map((item) => item.toString()),
       actualStateTreeDepth: BigInt(this.actualStateTreeDepth),
       stateRoot,

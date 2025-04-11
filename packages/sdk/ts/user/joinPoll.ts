@@ -121,7 +121,6 @@ export const joinPoll = async ({
   return {
     pollStateIndex: args._pollStateIndex.toString(),
     voiceCredits: args._voiceCreditBalance.toString(),
-    timestamp: args._timestamp.toString(),
     nullifier: nullifier.toString(),
     hash: receipt.hash,
   };

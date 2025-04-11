@@ -24,7 +24,6 @@ describe("Poll Joined circuit", function test() {
   type PollJoinedCircuitInputs = [
     "privKey",
     "voiceCreditsBalance",
-    "joinTimestamp",
     "stateLeaf",
     "pathElements",
     "pathIndices",
@@ -75,7 +74,7 @@ describe("Poll Joined circuit", function test() {
 
       const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
 
-      const stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp));
+      const stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance));
 
       // First command (valid)
       const command = new PCommand(
@@ -107,13 +106,12 @@ describe("Poll Joined circuit", function test() {
       const { privKey: privateKey, pubKey: pollPubKey } = users[0];
       const nullifier = poseidon([BigInt(privateKey.asCircuitInputs()), poll.pollId]);
 
-      const stateLeafIndex = poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp);
+      const stateLeafIndex = poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance);
 
       const inputs = poll.joinedCircuitInputs({
         maciPrivKey: privateKey,
         stateLeafIndex: BigInt(stateLeafIndex),
         voiceCreditsBalance: voiceCreditBalance,
-        joinTimestamp: timestamp,
       }) as unknown as IPollJoinedInputs;
 
       const witness = await circuit.calculateWitness(inputs);
@@ -124,13 +122,12 @@ describe("Poll Joined circuit", function test() {
       const { privKey: privateKey, pubKey: pollPubKey } = users[1];
       const nullifier = poseidon([BigInt(privateKey.asCircuitInputs()), poll.pollId]);
 
-      const stateLeafIndex = poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp);
+      const stateLeafIndex = poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance);
 
       const inputs = poll.joinedCircuitInputs({
         maciPrivKey: privateKey,
         stateLeafIndex: BigInt(stateLeafIndex),
         voiceCreditsBalance: voiceCreditBalance,
-        joinTimestamp: timestamp,
       }) as unknown as IPollJoinedInputs;
       const witness = await circuit.calculateWitness(inputs);
 
