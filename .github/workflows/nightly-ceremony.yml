@@ -46,6 +46,7 @@ jobs:
 
       - name: Run hardhat fork
         run: |
+          cp ./deploy-config-example.json ./deploy-config.json
           cd packages/contracts
           pnpm run hardhat &
 

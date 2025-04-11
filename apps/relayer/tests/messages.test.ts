@@ -53,7 +53,6 @@ describe("Integration messages", () => {
       maciPrivKey: user.keypair.privKey,
       stateLeafIndex: user.stateLeafIndex!,
       voiceCreditsBalance: user.voiceCreditBalance,
-      joinTimestamp: user.timestamp!,
     }) as unknown as typeof circuitInputs;
 
     const moduleFixture = await Test.createTestingModule({

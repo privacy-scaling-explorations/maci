@@ -37,13 +37,11 @@ describe("MaciState/Poll e2e", function test() {
     const { privKey: pollPrivKey1, pubKey: pollPubKey1 } = new Keypair();
 
     const nullifier1 = poseidon([BigInt(privKey1.rawPrivKey.toString())]);
-    const timestamp1 = BigInt(1);
 
     const { privKey: privKey2 } = user2Keypair;
     const { privKey: pollPrivKey2, pubKey: pollPubKey2 } = new Keypair();
 
     const nullifier2 = poseidon([BigInt(privKey2.rawPrivKey.toString())]);
-    const timestamp2 = BigInt(1);
 
     const { pubKey: pollPubKey1Second } = new Keypair();
 
@@ -68,9 +66,10 @@ describe("MaciState/Poll e2e", function test() {
 
         maciState.polls.get(pollId)?.updatePoll(BigInt(maciState.pubKeys.length));
       });
+
       it("should submit a vote for each user", () => {
         const poll = maciState.polls.get(pollId)!;
-        user1StateIndex = poll.joinPoll(nullifier1, pollPubKey1, voiceCreditBalance, timestamp1);
+        user1StateIndex = poll.joinPoll(nullifier1, pollPubKey1, voiceCreditBalance);
         const command1 = new PCommand(
           BigInt(user1StateIndex),
           pollPubKey1,
@@ -88,7 +87,7 @@ describe("MaciState/Poll e2e", function test() {
         const message1 = command1.encrypt(signature1, sharedKey1);
         poll.publishMessage(message1, ecdhKeypair1.pubKey);
 
-        user2StateIndex = poll.joinPoll(nullifier2, pollPubKey2, voiceCreditBalance, timestamp2);
+        user2StateIndex = poll.joinPoll(nullifier2, pollPubKey2, voiceCreditBalance);
         const command2 = new PCommand(
           BigInt(user2StateIndex),
           pollPubKey2,
@@ -166,7 +165,7 @@ describe("MaciState/Poll e2e", function test() {
         poll.updatePoll(BigInt(maciState.pubKeys.length));
       });
       it("should submit a vote for each user", () => {
-        user1StateIndex = poll.joinPoll(nullifier1, pollPubKey1, voiceCreditBalance, timestamp1);
+        user1StateIndex = poll.joinPoll(nullifier1, pollPubKey1, voiceCreditBalance);
         const command1 = new PCommand(
           BigInt(user1StateIndex),
           pollPubKey1,
@@ -184,7 +183,7 @@ describe("MaciState/Poll e2e", function test() {
         const message1 = command1.encrypt(signature1, sharedKey1);
         poll.publishMessage(message1, ecdhKeypair1.pubKey);
 
-        user2StateIndex = poll.joinPoll(nullifier2, pollPubKey2, voiceCreditBalance, timestamp2);
+        user2StateIndex = poll.joinPoll(nullifier2, pollPubKey2, voiceCreditBalance);
         const command2 = new PCommand(
           BigInt(user2StateIndex),
           pollPubKey2,
@@ -278,7 +277,7 @@ describe("MaciState/Poll e2e", function test() {
       });
 
       it("should submit a vote for one user in one batch", () => {
-        user1StateIndex = poll.joinPoll(nullifier1, pollPubKey1, voiceCreditBalance, timestamp1);
+        user1StateIndex = poll.joinPoll(nullifier1, pollPubKey1, voiceCreditBalance);
         const command1 = new PCommand(
           BigInt(user1StateIndex),
           pollPubKey1,
@@ -386,9 +385,8 @@ describe("MaciState/Poll e2e", function test() {
       const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
 
       const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-      const timestamp = BigInt(1);
 
-      stateIndex = poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp);
+      stateIndex = poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance);
 
       const command = new PCommand(BigInt(stateIndex), pollPubKey, voteOptionIndex, voteWeight, 1n, BigInt(pollId));
 
@@ -458,8 +456,7 @@ describe("MaciState/Poll e2e", function test() {
 
       for (let i = 0; i < messageBatchSize - 1; i += 1) {
         const nullifier = poseidon([BigInt(pollKeys[i].privKey.rawPrivKey.toString())]);
-        const timestamp = BigInt(1);
-        const stateIndex = poll.joinPoll(nullifier, pollKeys[i].pubKey, voiceCreditBalance, timestamp);
+        const stateIndex = poll.joinPoll(nullifier, pollKeys[i].pubKey, voiceCreditBalance);
         stateIndices.push(stateIndex);
       }
     });
@@ -613,9 +610,8 @@ describe("MaciState/Poll e2e", function test() {
       const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
 
       const pollNullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-      const pollTimestamp = BigInt(1);
 
-      stateIndex = poll.joinPoll(pollNullifier, pollPubKey, voiceCreditBalance, pollTimestamp);
+      stateIndex = poll.joinPoll(pollNullifier, pollPubKey, voiceCreditBalance);
 
       const command = new PCommand(BigInt(stateIndex), pollPubKey, voteOptionIndex, voteWeight, 1n, BigInt(pollId));
 
@@ -674,9 +670,8 @@ describe("MaciState/Poll e2e", function test() {
       const pollKeypair = new Keypair();
 
       const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-      const timestamp = BigInt(1);
 
-      const pollStateIndex = testHarness.joinPoll(nullifier, pollKeypair.pubKey, voiceCreditBalance, timestamp);
+      const pollStateIndex = testHarness.joinPoll(nullifier, pollKeypair.pubKey, voiceCreditBalance);
       testHarness.vote(pollKeypair, pollStateIndex, voteOptionIndex, voteWeight, nonce);
       testHarness.finalizePoll();
 
@@ -700,9 +695,8 @@ describe("MaciState/Poll e2e", function test() {
       const pollKeypair = new Keypair();
 
       const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-      const timestamp = BigInt(1);
 
-      const pollStateIndex = testHarness.joinPoll(nullifier, pollKeypair.pubKey, voiceCreditBalance, timestamp);
+      const pollStateIndex = testHarness.joinPoll(nullifier, pollKeypair.pubKey, voiceCreditBalance);
       testHarness.vote(pollKeypair, pollStateIndex, voteOptionIndex, voteWeight, nonce);
 
       poll.updatePoll(BigInt(testHarness.maciState.pubKeys.length));
@@ -739,9 +733,8 @@ describe("MaciState/Poll e2e", function test() {
         const pollKeypair = new Keypair();
 
         const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-        const timestamp = BigInt(1);
 
-        const pollStateIndex = testHarness.joinPoll(nullifier, pollKeypair.pubKey, voiceCreditBalance, timestamp);
+        const pollStateIndex = testHarness.joinPoll(nullifier, pollKeypair.pubKey, voiceCreditBalance);
         testHarness.vote(pollKeypair, pollStateIndex, voteOptionIndex, voteWeight, nonce);
       });
 
@@ -777,9 +770,8 @@ describe("MaciState/Poll e2e", function test() {
         const pollKeypair = new Keypair();
 
         const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-        const timestamp = BigInt(1);
 
-        const pollStateIndex = testHarness.joinPoll(nullifier, pollKeypair.pubKey, voiceCreditBalance, timestamp);
+        const pollStateIndex = testHarness.joinPoll(nullifier, pollKeypair.pubKey, voiceCreditBalance);
 
         testHarness.vote(pollKeypair, pollStateIndex, voteOptionIndex, voteWeight, nonce);
       });
@@ -809,9 +801,8 @@ describe("MaciState/Poll e2e", function test() {
         const pollKeypair = new Keypair();
 
         const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-        const timestamp = BigInt(1);
 
-        const pollStateIndex = testHarness.joinPoll(nullifier, pollKeypair.pubKey, voiceCreditBalance, timestamp);
+        const pollStateIndex = testHarness.joinPoll(nullifier, pollKeypair.pubKey, voiceCreditBalance);
         testHarness.vote(pollKeypair, pollStateIndex + 1, voteOptionIndex, voteWeight, nonce);
       });
 
@@ -837,9 +828,8 @@ describe("MaciState/Poll e2e", function test() {
       const pollKeypair1 = new Keypair();
 
       const nullifier1 = poseidon([BigInt(privKey1.rawPrivKey.toString())]);
-      const timestamp1 = BigInt(1);
 
-      const pollStateIndex1 = testHarness.joinPoll(nullifier1, pollKeypair1.pubKey, voiceCreditBalance, timestamp1);
+      const pollStateIndex1 = testHarness.joinPoll(nullifier1, pollKeypair1.pubKey, voiceCreditBalance);
 
       const { command } = testHarness.createCommand(pollKeypair1, pollStateIndex1, voteOptionIndex, voteWeight, nonce);
 
@@ -847,9 +837,8 @@ describe("MaciState/Poll e2e", function test() {
       const pollKeypair2 = new Keypair();
 
       const nullifier2 = poseidon([BigInt(privKey2.rawPrivKey.toString())]);
-      const timestamp2 = BigInt(1);
 
-      testHarness.joinPoll(nullifier2, pollKeypair2.pubKey, voiceCreditBalance, timestamp2);
+      testHarness.joinPoll(nullifier2, pollKeypair2.pubKey, voiceCreditBalance);
 
       // create an invalid signature
       const { signature: invalidSignature } = testHarness.createCommand(
@@ -890,9 +879,8 @@ describe("MaciState/Poll e2e", function test() {
       const pollKeypair = new Keypair();
 
       const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-      const timestamp = BigInt(1);
 
-      const pollStateIndex = testHarness.joinPoll(nullifier, pollKeypair.pubKey, voiceCreditBalance, timestamp);
+      const pollStateIndex = testHarness.joinPoll(nullifier, pollKeypair.pubKey, voiceCreditBalance);
 
       const { command, signature } = testHarness.createCommand(
         pollKeypair,

@@ -362,8 +362,8 @@ export class Prover {
    * @param commitmentOnChain - on-chain commitment
    * @throws error if commitments don't match
    */
-  private validateCommitment(currentSbCommitment: BigNumberish, currentSbCommitmentOnChain: BigNumberish) {
-    if (currentSbCommitmentOnChain.toString() !== currentSbCommitment.toString()) {
+  private validateCommitment(value: BigNumberish, onchainValue: BigNumberish) {
+    if (onchainValue.toString() !== value.toString()) {
       throw new Error("commitment mismatch");
     }
   }

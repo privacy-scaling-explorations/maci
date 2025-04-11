@@ -35,6 +35,5 @@ contract DomainObjs {
   struct StateLeaf {
     PubKey pubKey;
     uint256 voiceCreditBalance;
-    uint256 timestamp;
   }
 }

@@ -207,7 +207,7 @@ export class TestingClass {
       signer,
     });
 
-    const { pollStateIndex, voiceCredits, timestamp } = await joinPoll({
+    const { pollStateIndex, voiceCredits } = await joinPoll({
       maciAddress: maciAddresses.maciContractAddress,
       pollId: 0n,
       privateKey: user.privKey.serialize(),
@@ -232,9 +232,7 @@ export class TestingClass {
     this.contractsData.maciState = maciState;
     this.contractsData.maciContractAddress = maciAddresses.maciContractAddress;
     this.contractsData.users = [];
-    this.contractsData.users.push(
-      new User(user, [], BigInt(voiceCredits), 0n, BigInt(timestamp), BigInt(pollStateIndex)),
-    );
+    this.contractsData.users.push(new User(user, [], BigInt(voiceCredits), 0n, BigInt(pollStateIndex)));
     this.contractsData.initialized = true;
     this.contractsData.polls?.push(pollContractAddress);
   }

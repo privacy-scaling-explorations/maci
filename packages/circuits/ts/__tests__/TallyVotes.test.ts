@@ -90,9 +90,8 @@ describe("TallyVotes circuit", function test() {
 
       // Join the poll
       const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString()), pollId]);
-      const timestamp = BigInt(Math.floor(Date.now() / 1000));
 
-      stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp));
+      stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance));
 
       // First command (valid)
       const command = new PCommand(
@@ -167,9 +166,8 @@ describe("TallyVotes circuit", function test() {
 
       // Join the poll
       const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString()), pollId]);
-      const timestamp = BigInt(Math.floor(Date.now() / 1000));
 
-      stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp));
+      stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance));
 
       // First command (valid)
       const command = new PCommand(
@@ -249,9 +247,8 @@ describe("TallyVotes circuit", function test() {
         const { privKey: userPrivKey } = user;
 
         const nullifier = poseidon([BigInt(userPrivKey.rawPrivKey.toString())]);
-        const timestamp = BigInt(Math.floor(Date.now() / 1000));
 
-        poll.joinPoll(nullifier, user.pubKey, voiceCreditBalance, timestamp);
+        poll.joinPoll(nullifier, user.pubKey, voiceCreditBalance);
       });
 
       // Commands

@@ -217,7 +217,6 @@ describe("Integration tests", function test() {
       // loop through all users and generate keypair + signup
       for (let i = 0; i < users.length; i += 1) {
         const user = users[i];
-        const timestamp = Date.now();
         // signup
         const stateIndex = BigInt(
           await signup({
@@ -250,7 +249,7 @@ describe("Integration tests", function test() {
         const inputNullifier = BigInt(user.keypair.privKey.asCircuitInputs());
         const nullifier = poseidon([inputNullifier]);
         const poll = maciState.polls.get(pollId);
-        poll?.joinPoll(nullifier, user.keypair.pubKey, BigInt(DEFAULT_INITIAL_VOICE_CREDITS), BigInt(timestamp));
+        poll?.joinPoll(nullifier, user.keypair.pubKey, BigInt(DEFAULT_INITIAL_VOICE_CREDITS));
 
         // publish messages
         for (let j = 0; j < user.votes.length; j += 1) {

@@ -86,14 +86,30 @@ jobs:
           chmod +x ${{ github.workspace }}/circom
           sudo mv ${{ github.workspace }}/circom /bin/circom
 
+      - name: Calculate circuits hash
+        id: hash_circuits
+        run: |
+          CIRCUIT_HASH=$(find packages/circuits -type f -name '*.circom' -exec sha1sum {} \; | sort | sha1sum | cut -d ' ' -f1)
+          echo "CIRCUIT_HASH=$CIRCUIT_HASH" >> $GITHUB_ENV
+          echo "CIRCUIT_HASH=$CIRCUIT_HASH" >> $GITHUB_OUTPUT
+
+      - name: Cache zkeys
+        id: cache_zkeys
+        uses: actions/cache@v4
+        with:
+          path: apps/relayer/zkeys
+          key: zkeys-${{ steps.hash_circuits.outputs.CIRCUIT_HASH }}
+          restore-keys: |
+            zkeys-
+
       - name: Compile Circuits And Generate zkeys
-        if: ${{ env.CHANGED == 'true' }}
+        if: ${{ env.CHANGED == 'true' && steps.cache_zkeys.outputs.cache-hit != 'true' }}
         run: |
           pnpm build:circuits-c -- --outPath ../../apps/relayer/zkeys
           pnpm setup:zkeys -- --outPath ../../apps/relayer/zkeys
 
       - name: Download zkeys
-        if: ${{ env.CHANGED == 'false' }}
+        if: ${{ env.CHANGED == 'false' && steps.cache_zkeys.outputs.cache-hit != 'true' }}
         run: |
           pnpm download-zkeys:test:relayer
 

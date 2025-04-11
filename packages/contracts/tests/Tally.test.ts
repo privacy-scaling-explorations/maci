@@ -323,10 +323,9 @@ describe("TallyVotes", () => {
 
       // join all user to the Poll
       for (let i = 0; i < users.length; i += 1) {
-        const timestamp = Math.floor(Date.now() / 1000);
         // join locally
         const nullifier = poseidon([BigInt(users[i].privKey.rawPrivKey)]);
-        poll.joinPoll(nullifier, pollKeys[i].pubKey, BigInt(initialVoiceCreditBalance), BigInt(timestamp));
+        poll.joinPoll(nullifier, pollKeys[i].pubKey, BigInt(initialVoiceCreditBalance));
 
         // join on chain
         // eslint-disable-next-line no-await-in-loop
@@ -646,10 +645,9 @@ describe("TallyVotes", () => {
 
       // join all user to the Poll
       for (let i = 0; i < users.length; i += 1) {
-        const timestamp = Math.floor(Date.now() / 1000);
         // join locally
         const nullifier = poseidon([BigInt(users[i].privKey.rawPrivKey), pollId]);
-        poll.joinPoll(nullifier, pollKeys[i].pubKey, BigInt(initialVoiceCreditBalance), BigInt(timestamp));
+        poll.joinPoll(nullifier, pollKeys[i].pubKey, BigInt(initialVoiceCreditBalance));
 
         // join on chain
         // eslint-disable-next-line no-await-in-loop

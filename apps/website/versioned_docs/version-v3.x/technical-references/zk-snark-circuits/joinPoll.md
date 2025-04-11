@@ -46,7 +46,6 @@ Users will use this circuit to anonymously prove that they joined a poll. This c
 | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `privKey`              | The user's private key                                                                                                                                                             |
 | `voiceCreditsBalance`  | The user's initial voice credits balance                                                                                                                                           |
-| `joinTimestamp`        | The timestamp of when the user joined the poll                                                                                                                                     |
 | `pathElements`         | The path elements for the merkle tree inclusion proof                                                                                                                              |
 | `pathIndices`          | The path indices for the merkle tree inclusion proof                                                                                                                               |
 | `stateRoot`            | The MACI state tree root                                                                                                                                                           |

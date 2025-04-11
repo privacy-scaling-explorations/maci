@@ -18,13 +18,12 @@ contract Utilities is SnarkConstants, DomainObjs, Hasher {
   /// @param _stateLeaf the state leaf to be hashed
   /// @return ciphertext The hash of the state leaf
   function hashStateLeaf(StateLeaf memory _stateLeaf) public pure returns (uint256 ciphertext) {
-    uint256[4] memory plaintext;
+    uint256[3] memory plaintext;
     plaintext[0] = _stateLeaf.pubKey.x;
     plaintext[1] = _stateLeaf.pubKey.y;
     plaintext[2] = _stateLeaf.voiceCreditBalance;
-    plaintext[3] = _stateLeaf.timestamp;
 
-    ciphertext = hash4(plaintext);
+    ciphertext = hash3(plaintext);
   }
 
   /// @notice An utility function used to pad and hash a MACI message
