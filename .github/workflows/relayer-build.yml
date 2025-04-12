@@ -109,7 +109,7 @@ jobs:
           pnpm setup:zkeys -- --outPath ../../apps/relayer/zkeys
 
       - name: Download zkeys
-        if: ${{ env.CHANGED == 'false' && steps.cache_zkeys.outputs.cache-hit != 'true' }}
+        if: ${{ env.CHANGED == 'false' }}
         run: |
           pnpm download-zkeys:test:relayer
 
