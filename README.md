@@ -1,5 +1,6 @@
 # Minimal Anti-Collusion Infrastructure
 
+[![Github release](https://img.shields.io/github/v/release/privacy-scaling-explorations/maci.svg?sort=semver)](https://github.com/privacy-scaling-explorations/maci/releases)
 [![CI][cli-actions-badge]][cli-actions-link]
 [![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/privacy-scaling-explorations/maci/blob/dev/LICENSE)
 
