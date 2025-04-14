@@ -105,44 +105,26 @@ contract VkRegistry is Ownable(msg.sender), DomainObjs, SnarkCommon, IVkRegistry
 
   /// @notice Set the process and tally verifying keys for a certain combination
   /// of parameters and modes
-  /// @param _stateTreeDepth The state tree depth
-  /// @param _intStateTreeDepth The intermediate state tree depth
-  /// @param _voteOptionTreeDepth The vote option tree depth
-  /// @param _messageBatchSize The message batch size
-  /// @param _modes Array of QV or Non-QV modes (must have the same length as process and tally keys)
-  /// @param _pollJoiningVk The poll joining verifying key
-  /// @param _pollJoinedVk The poll joined verifying key
-  /// @param _processVks The process verifying keys (must have the same length as modes)
-  /// @param _tallyVks The tally verifying keys (must have the same length as modes)
-  function setVerifyingKeysBatch(
-    uint256 _stateTreeDepth,
-    uint256 _intStateTreeDepth,
-    uint256 _voteOptionTreeDepth,
-    uint8 _messageBatchSize,
-    Mode[] calldata _modes,
-    VerifyingKey calldata _pollJoiningVk,
-    VerifyingKey calldata _pollJoinedVk,
-    VerifyingKey[] calldata _processVks,
-    VerifyingKey[] calldata _tallyVks
-  ) public onlyOwner {
-    if (_modes.length != _processVks.length || _modes.length != _tallyVks.length) {
+  /// @param _args The verifying keys arguments
+  function setVerifyingKeysBatch(SetVerifyingKeysBatchArgs calldata _args) public onlyOwner {
+    if (_args.modes.length != _args.processVks.length || _args.modes.length != _args.tallyVks.length) {
       revert InvalidKeysParams();
     }
 
-    uint256 length = _modes.length;
+    uint256 length = _args.modes.length;
 
-    setPollJoiningVkKey(_stateTreeDepth, _pollJoiningVk);
-    setPollJoinedVkKey(_stateTreeDepth, _pollJoinedVk);
+    setPollJoiningVkKey(_args.pollStateTreeDepth, _args.pollJoiningVk);
+    setPollJoinedVkKey(_args.pollStateTreeDepth, _args.pollJoinedVk);
 
     for (uint256 index = 0; index < length; ) {
       setVerifyingKeys(
-        _stateTreeDepth,
-        _intStateTreeDepth,
-        _voteOptionTreeDepth,
-        _messageBatchSize,
-        _modes[index],
-        _processVks[index],
-        _tallyVks[index]
+        _args.stateTreeDepth,
+        _args.intStateTreeDepth,
+        _args.voteOptionTreeDepth,
+        _args.messageBatchSize,
+        _args.modes[index],
+        _args.processVks[index],
+        _args.tallyVks[index]
       );
 
       unchecked {

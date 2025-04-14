@@ -300,13 +300,13 @@ describe("TallyVotes", () => {
       poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       await vkRegistryContract.setPollJoiningVkKey(
-        STATE_TREE_DEPTH,
+        treeDepths.stateTreeDepth,
         testPollJoiningVk.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 10000000 },
       );
 
       await vkRegistryContract.setPollJoinedVkKey(
-        STATE_TREE_DEPTH,
+        treeDepths.stateTreeDepth,
         testPollJoinedVk.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 10000000 },
       );
@@ -621,14 +621,14 @@ describe("TallyVotes", () => {
 
       // set the verification keys on the vk smart contract
       await vkRegistryContract.setPollJoiningVkKey(
-        STATE_TREE_DEPTH,
+        treeDepths.stateTreeDepth,
         testPollJoiningVk.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 10000000 },
       );
 
       // set the verification keys on the vk smart contract
       await vkRegistryContract.setPollJoinedVkKey(
-        STATE_TREE_DEPTH,
+        treeDepths.stateTreeDepth,
         testPollJoinedVk.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 10000000 },
       );

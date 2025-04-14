@@ -28,6 +28,7 @@ export type CircuitInputs = Record<string, string | bigint | bigint[] | bigint[]
 export interface TreeDepths {
   intStateTreeDepth: number;
   voteOptionTreeDepth: number;
+  stateTreeDepth: number;
 }
 
 /**
@@ -88,6 +89,7 @@ export interface IPoll {
  * This interface defines the JSON representation of a Poll
  */
 export interface IJsonPoll {
+  stateTreeDepth: number;
   pollEndTimestamp: string;
   treeDepths: TreeDepths;
   batchSizes: BatchSizes;

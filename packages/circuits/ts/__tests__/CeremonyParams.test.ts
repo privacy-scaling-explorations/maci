@@ -22,6 +22,7 @@ describe("Ceremony param tests", () => {
   const treeDepths = {
     intStateTreeDepth: 1,
     voteOptionTreeDepth: params.voteOptionTreeDepth,
+    stateTreeDepth: params.stateTreeDepth,
   };
 
   const voiceCreditBalance = BigInt(100);

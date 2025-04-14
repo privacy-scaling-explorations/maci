@@ -133,14 +133,14 @@ describe("Poll", () => {
 
       // set the verification keys on the vk smart contract
       await vkRegistryContract.setPollJoiningVkKey(
-        STATE_TREE_DEPTH,
+        treeDepths.stateTreeDepth,
         testPollJoiningVk.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 10000000 },
       );
 
       // set the verification keys on the vk smart contract
       await vkRegistryContract.setPollJoinedVkKey(
-        STATE_TREE_DEPTH,
+        treeDepths.stateTreeDepth,
         testPollJoinedVk.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 10000000 },
       );
@@ -280,6 +280,83 @@ describe("Poll", () => {
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
         ),
       ).to.be.revertedWithCustomError(pollContract, "UserAlreadyJoined");
+    });
+
+    it("should not allow to sign up more than the supported amount of users (2 ** stateTreeDepth)", async () => {
+      const stateTreeDepthTest = 1;
+      const startDate = await getBlockTimestamp(signer);
+
+      const [policyContract] = await deployFreeForAllSignUpPolicy({}, signer, true);
+
+      const receipt = await maciContract
+        .deployPoll({
+          startDate,
+          endDate: startDate + duration,
+          treeDepths: { ...treeDepths, stateTreeDepth: stateTreeDepthTest },
+          messageBatchSize,
+          coordinatorPubKey: coordinator.pubKey.asContractParam(),
+          verifier: verifierContract,
+          vkRegistry: vkRegistryContract,
+          mode: EMode.QV,
+          policy: policyContract,
+          initialVoiceCreditProxy: initialVoiceCreditProxyContract,
+          relayers: [signer],
+          voteOptions: maxVoteOptions,
+        })
+        .then((tx) => tx.wait());
+
+      expect(receipt?.status).to.eq(1);
+
+      const id = (await maciContract.nextPollId()) - 1n;
+
+      const pollContracts = await maciContract.getPoll(id);
+      const contract = PollFactory.connect(pollContracts.poll, signer);
+
+      await policyContract.setTarget(pollContracts.poll).then((tx) => tx.wait());
+
+      // set the verification keys on the vk smart contract
+      await vkRegistryContract.setPollJoiningVkKey(
+        stateTreeDepthTest,
+        testPollJoiningVk.asContractParam() as IVerifyingKeyStruct,
+        { gasLimit: 10000000 },
+      );
+
+      await vkRegistryContract.setPollJoinedVkKey(
+        stateTreeDepthTest,
+        testPollJoinedVk.asContractParam() as IVerifyingKeyStruct,
+        { gasLimit: 10000000 },
+      );
+
+      const maxUsers = 2 ** stateTreeDepthTest;
+      const mockProof = [0, 0, 0, 0, 0, 0, 0, 0];
+
+      for (let i = 1; i < maxUsers; i += 1) {
+        const user = new Keypair();
+        const pubkey = user.pubKey.asContractParam();
+        const mockNullifier = AbiCoder.defaultAbiCoder().encode(["uint256"], [i]);
+
+        await contract
+          .joinPoll(
+            mockNullifier,
+            pubkey,
+            i,
+            mockProof,
+            AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
+            AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
+          )
+          .then((tx) => tx.wait());
+      }
+
+      await expect(
+        contract.joinPoll(
+          AbiCoder.defaultAbiCoder().encode(["uint256"], [maxUsers]),
+          new Keypair().pubKey.asContractParam(),
+          maxUsers,
+          mockProof,
+          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
+          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
+        ),
+      ).to.be.revertedWithCustomError(contract, "TooManySignups");
     });
   });
 

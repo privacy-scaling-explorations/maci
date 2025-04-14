@@ -137,6 +137,7 @@ export const genMaciStateFromContract = async ({
   const treeDepths = {
     intStateTreeDepth: Number(onChainTreeDepths.intStateTreeDepth),
     voteOptionTreeDepth: Number(onChainTreeDepths.voteOptionTreeDepth),
+    stateTreeDepth: Number(onChainTreeDepths.stateTreeDepth),
   };
 
   const messageBatchSize = Number(msgBatchSize);

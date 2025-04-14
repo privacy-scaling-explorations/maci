@@ -31,6 +31,8 @@ deployment.deployTask(EDeploySteps.VkRegistry, "Deploy Vk Registry and set keys"
     }
 
     const stateTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "stateTreeDepth");
+    const pollStateTreeDepth =
+      deployment.getDeployConfigField<number>(EContracts.Poll, "stateTreeDepth") || stateTreeDepth;
     const intStateTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "intStateTreeDepth");
     const messageBatchSize = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageBatchSize");
     const voteOptionTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "voteOptionTreeDepth");
@@ -105,17 +107,18 @@ deployment.deployTask(EDeploySteps.VkRegistry, "Deploy Vk Registry and set keys"
     }
 
     await vkRegistryContract
-      .setVerifyingKeysBatch(
+      .setVerifyingKeysBatch({
         stateTreeDepth,
+        pollStateTreeDepth,
         intStateTreeDepth,
         voteOptionTreeDepth,
         messageBatchSize,
         modes,
-        pollJoiningVk as IVerifyingKeyStruct,
-        pollJoinedVk as IVerifyingKeyStruct,
-        processZkeys,
-        tallyZkeys,
-      )
+        pollJoiningVk: pollJoiningVk as IVerifyingKeyStruct,
+        pollJoinedVk: pollJoinedVk as IVerifyingKeyStruct,
+        processVks: processZkeys,
+        tallyVks: tallyZkeys,
+      })
       .then((tx) => tx.wait());
 
     await storage.register({

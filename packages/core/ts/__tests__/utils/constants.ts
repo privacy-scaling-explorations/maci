@@ -9,5 +9,6 @@ export const coordinatorKeypair = new Keypair();
 export const treeDepths = {
   intStateTreeDepth: 2,
   voteOptionTreeDepth: 4,
+  stateTreeDepth: 10,
 };
 export const maxVoteOptions = BigInt(VOTE_OPTION_TREE_ARITY ** treeDepths.voteOptionTreeDepth);

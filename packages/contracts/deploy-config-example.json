@@ -91,7 +91,8 @@
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
-      "voteOptions": 2
+      "voteOptions": 2,
+      "stateTreeDepth": 10
     }
   },
   "scroll_sepolia": {
@@ -185,7 +186,8 @@
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
-      "voteOptions": 2
+      "voteOptions": 2,
+      "stateTreeDepth": 10
     }
   },
   "optimism": {
@@ -280,7 +282,8 @@
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
-      "voteOptions": 2
+      "voteOptions": 2,
+      "stateTreeDepth": 10
     }
   },
   "arbitrum_sepolia": {
@@ -375,7 +378,8 @@
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
-      "voteOptions": 2
+      "voteOptions": 2,
+      "stateTreeDepth": 10
     }
   },
   "localhost": {
@@ -470,7 +474,8 @@
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
-      "voteOptions": 2
+      "voteOptions": 2,
+      "stateTreeDepth": 10
     }
   },
   "base_sepolia": {
@@ -565,7 +570,8 @@
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
-      "voteOptions": 2
+      "voteOptions": 2,
+      "stateTreeDepth": 10
     }
   },
   "optimism_sepolia": {
@@ -665,7 +671,8 @@
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
-      "voteOptions": 2
+      "voteOptions": 2,
+      "stateTreeDepth": 10
     }
   },
   "gnosis_chiado": {
@@ -765,7 +772,8 @@
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
-      "voteOptions": 2
+      "voteOptions": 2,
+      "stateTreeDepth": 10
     }
   },
   "gnosis": {
@@ -865,7 +873,8 @@
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
-      "voteOptions": 2
+      "voteOptions": 2,
+      "stateTreeDepth": 10
     }
   },
   "polygon_amoy": {
@@ -965,7 +974,8 @@
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
-      "voteOptions": 2
+      "voteOptions": 2,
+      "stateTreeDepth": 10
     }
   },
   "polygon": {
@@ -1065,7 +1075,8 @@
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
-      "voteOptions": 2
+      "voteOptions": 2,
+      "stateTreeDepth": 10
     }
   }
 }

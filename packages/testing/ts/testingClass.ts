@@ -27,6 +27,7 @@ import {
   DEFAULT_INITIAL_VOICE_CREDITS,
   DEFAULT_SG_DATA,
   DEFAULT_IVCP_DATA,
+  POLL_STATE_TREE_DEPTH,
 } from "./constants";
 import { User } from "./user";
 
@@ -138,6 +139,7 @@ export class TestingClass {
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
+      pollStateTreeDepth: POLL_STATE_TREE_DEPTH,
       pollJoiningVk: pollJoiningVk!,
       pollJoinedVk: pollJoinedVk!,
       processMessagesVk: processVk!,
@@ -187,6 +189,7 @@ export class TestingClass {
       pollEndTimestamp: startDate + 130,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
+      stateTreeDepth: POLL_STATE_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       coordinatorPubKey: coordinatorKeypair.pubKey,
       mode: EMode.NON_QV,

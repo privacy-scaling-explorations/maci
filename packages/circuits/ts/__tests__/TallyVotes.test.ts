@@ -14,6 +14,7 @@ describe("TallyVotes circuit", function test() {
   const treeDepths = {
     intStateTreeDepth: 1,
     voteOptionTreeDepth: 2,
+    stateTreeDepth: 10,
   };
 
   const coordinatorKeypair = new Keypair();
