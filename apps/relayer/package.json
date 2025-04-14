@@ -29,7 +29,7 @@
   "dependencies": {
     "@helia/json": "^4.0.3",
     "@nestjs/common": "^11.0.13",
-    "@nestjs/core": "^11.0.13",
+    "@nestjs/core": "^11.0.17",
     "@nestjs/mongoose": "^11.0.3",
     "@nestjs/platform-express": "^11.0.13",
     "@nestjs/platform-socket.io": "^11.0.17",
