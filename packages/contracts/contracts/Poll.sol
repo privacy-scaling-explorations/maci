@@ -17,6 +17,12 @@ import { CurveBabyJubJub } from "./crypto/BabyJubJub.sol";
 /// @dev Do not deploy this directly. Use PollFactory.deploy() which performs some
 /// checks on the Poll constructor arguments.
 contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
+  /// @notice The max number of poll signups
+  uint256 public maxSignups;
+
+  /// @notice The state tree arity
+  uint8 internal constant STATE_TREE_ARITY = 2;
+
   /// @notice The coordinator's public key
   PubKey public coordinatorPubKey;
 
@@ -117,6 +123,7 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
   error NotRelayer();
   error StateLeafNotFound();
   error TooManyVoteOptions();
+  error TooManySignups();
 
   event PublishMessage(Message _message, PubKey _encPubKey);
   event MergeState(uint256 indexed _stateRoot, uint256 indexed _numSignups);
@@ -190,6 +197,8 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
     // store the poll id
     pollId = _pollId;
 
+    maxSignups = uint256(STATE_TREE_ARITY) ** uint256(_treeDepths.stateTreeDepth);
+
     // set relayers
     for (uint256 index = 0; index < _relayers.length; ) {
       relayers[_relayers[index]] = true;
@@ -213,7 +222,7 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
     batchHashes.push(NOTHING_UP_MY_SLEEVE);
     updateChainHash(placeholderLeaf);
 
-    InternalLazyIMT._init(pollStateTree, extContracts.maci.stateTreeDepth());
+    InternalLazyIMT._init(pollStateTree, treeDepths.stateTreeDepth);
     InternalLazyIMT._insert(pollStateTree, BLANK_STATE_LEAF_HASH);
     pollStateRootsOnJoin.push(BLANK_STATE_LEAF_HASH);
 
@@ -355,6 +364,11 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
     bytes memory _signUpPolicyData,
     bytes memory _initialVoiceCreditProxyData
   ) external virtual isWithinVotingDeadline {
+    // ensure we do not have more signups than what the circuits support
+    if (pollStateTree.numberOfLeaves >= maxSignups) {
+      revert TooManySignups();
+    }
+
     // Whether the user has already joined
     if (pollNullifiers[_nullifier]) {
       revert UserAlreadyJoined();
@@ -402,7 +416,7 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
     uint256[8] memory _proof
   ) public view returns (bool isValid) {
     // Get the verifying key from the VkRegistry
-    VerifyingKey memory vk = extContracts.vkRegistry.getPollJoiningVk(extContracts.maci.stateTreeDepth());
+    VerifyingKey memory vk = extContracts.vkRegistry.getPollJoiningVk(treeDepths.stateTreeDepth);
 
     // Generate the circuit public input
     uint256[] memory circuitPublicInputs = getPublicJoiningCircuitInputs(_nullifier, _index, _pubKey);
@@ -416,7 +430,7 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
   /// @return isValid Whether the proof is valid
   function verifyJoinedPollProof(uint256 _index, uint256[8] memory _proof) public view returns (bool isValid) {
     // Get the verifying key from the VkRegistry
-    VerifyingKey memory vk = extContracts.vkRegistry.getPollJoinedVk(extContracts.maci.stateTreeDepth());
+    VerifyingKey memory vk = extContracts.vkRegistry.getPollJoinedVk(treeDepths.stateTreeDepth);
 
     // Generate the circuit public input
     uint256[] memory circuitPublicInputs = getPublicJoinedCircuitInputs(_index);

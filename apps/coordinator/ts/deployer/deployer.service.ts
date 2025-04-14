@@ -471,7 +471,8 @@ export class DeployerService {
       processMessagesZkeyPath,
       tallyVotesZkeyPath,
     });
-    const { stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth, messageBatchSize } = vkRegistryArgs;
+    const { stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth, pollStateTreeDepth, messageBatchSize } =
+      vkRegistryArgs;
     return {
       pollJoiningVk: pollJoiningVk!,
       pollJoinedVk: pollJoinedVk!,
@@ -481,6 +482,7 @@ export class DeployerService {
       intStateTreeDepth: Number(intStateTreeDepth),
       voteOptionTreeDepth: Number(voteOptionTreeDepth),
       messageBatchSize: Number(messageBatchSize),
+      pollStateTreeDepth: Number(pollStateTreeDepth),
       signer,
       mode,
       vkRegistryAddress: await vkRegistryContract.getAddress(),
@@ -745,6 +747,7 @@ export class DeployerService {
           "setVerifyingKeysBatch",
           [
             config.VkRegistry.args.stateTreeDepth,
+            config.VkRegistry.args.pollStateTreeDepth,
             config.VkRegistry.args.intStateTreeDepth,
             config.VkRegistry.args.voteOptionTreeDepth,
             config.VkRegistry.args.messageBatchSize,
@@ -887,6 +890,7 @@ export class DeployerService {
       intStateTreeDepth: config.intStateTreeDepth,
       voteOptionTreeDepth: config.voteOptionTreeDepth,
       messageBatchSize: config.messageBatchSize,
+      stateTreeDepth: config.pollStateTreeDepth,
       coordinatorPubKey: PubKey.deserialize(config.coordinatorPubkey),
       verifierContractAddress: verifierAddress,
       vkRegistryContractAddress: vkRegistryAddress,

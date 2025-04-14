@@ -27,6 +27,7 @@ export const deployPoll = async ({
   intStateTreeDepth,
   voteOptionTreeDepth,
   messageBatchSize,
+  stateTreeDepth,
   coordinatorPubKey,
   verifierContractAddress,
   vkRegistryContractAddress,
@@ -128,6 +129,7 @@ export const deployPoll = async ({
       treeDepths: {
         intStateTreeDepth,
         voteOptionTreeDepth,
+        stateTreeDepth,
       },
       messageBatchSize,
       coordinatorPubKey: coordinatorPubKey.asContractParam(),

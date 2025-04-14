@@ -201,6 +201,11 @@ export interface IVkRegistryArgs {
   stateTreeDepth: bigint | string;
 
   /**
+   * The poll state tree depth
+   */
+  pollStateTreeDepth: bigint | string;
+
+  /**
    * The int state tree depth determines the tally batch size
    */
   intStateTreeDepth: bigint | string;
@@ -300,6 +305,11 @@ export interface IDeployPollConfig {
    * Message batch size
    */
   messageBatchSize: number;
+
+  /**
+   * Poll state tree depth
+   */
+  pollStateTreeDepth: number;
 
   /**
    * Vote option tree depth

@@ -38,6 +38,11 @@ export interface IDeployPollArgs {
   messageBatchSize: number;
 
   /**
+   * The poll state tree depth
+   */
+  stateTreeDepth: number;
+
+  /**
    * The coordinator public key
    */
   coordinatorPubKey: PubKey;

@@ -328,6 +328,7 @@ program
   .requiredOption("-e, --end <pollEndDate>", "the poll end date", parseInt)
   .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the int state tree depth", parseInt)
   .requiredOption("-b, --msg-batch-size <messageBatchSize>", "the message batch size", parseInt)
+  .requiredOption("-s, --state-tree-depth <stateTreeDepth>", "the state tree depth", parseInt)
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
   .requiredOption("-p, --pubkey <coordinatorPubkey>", "the coordinator public key")
   .option(
@@ -390,6 +391,7 @@ program
         pollEndTimestamp: cmdObj.end,
         intStateTreeDepth: cmdObj.intStateTreeDepth,
         messageBatchSize: cmdObj.msgBatchSize,
+        stateTreeDepth: cmdObj.stateTreeDepth,
         voteOptionTreeDepth: cmdObj.voteOptionTreeDepth,
         coordinatorPubKey: PubKey.deserialize(cmdObj.pubkey),
         maciAddress,
@@ -495,6 +497,7 @@ program
   .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the intermediate state tree depth", parseInt)
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
   .requiredOption("-b, --msg-batch-size <messageBatchSize>", "the message batch size", parseInt)
+  .option("--poll-state-tree-depth <pollStateTreeDepth>", "the poll state tree depth", parseInt)
   .option(
     "--poll-joining-zkey <pollJoiningZkeyPath>",
     "the poll joining zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
@@ -552,6 +555,7 @@ program
         intStateTreeDepth: cmdObj.intStateTreeDepth,
         voteOptionTreeDepth: cmdObj.voteOptionTreeDepth,
         messageBatchSize: cmdObj.msgBatchSize,
+        pollStateTreeDepth: cmdObj.pollStateTreeDepth || cmdObj.stateTreeDepth,
         pollJoiningVk: pollJoiningVk!,
         pollJoinedVk: pollJoinedVk!,
         processMessagesVk: processVk!,

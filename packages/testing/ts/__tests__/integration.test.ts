@@ -48,6 +48,7 @@ import {
   pollDuration,
   maxMessages,
   maxVoteOptions,
+  POLL_STATE_TREE_DEPTH,
 } from "../constants";
 import { ITestSuite } from "../types";
 import { expectTally, genTestUserCommands, isArm, writeBackupFile, backupFolder } from "../utils";
@@ -91,6 +92,7 @@ describe("Integration tests", function test() {
 
     await setVerifyingKeys({
       stateTreeDepth: STATE_TREE_DEPTH,
+      pollStateTreeDepth: POLL_STATE_TREE_DEPTH,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
@@ -151,6 +153,7 @@ describe("Integration tests", function test() {
       pollStartTimestamp: startDate,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
+      stateTreeDepth: POLL_STATE_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       coordinatorPubKey: coordinatorKeypair.pubKey,
       maciAddress: contracts.maciContractAddress,
@@ -168,6 +171,7 @@ describe("Integration tests", function test() {
     const treeDepths: TreeDepths = {
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
+      stateTreeDepth: POLL_STATE_TREE_DEPTH,
     };
 
     const messageBatchSize = MESSAGE_BATCH_SIZE;

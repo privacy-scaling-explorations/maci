@@ -7,6 +7,7 @@ export const duration = 30;
 export const treeDepths = {
   intStateTreeDepth: 5,
   voteOptionTreeDepth: 2,
+  stateTreeDepth: 10,
 };
 
 export const messageBatchSize = 20;
