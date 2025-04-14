@@ -10,7 +10,12 @@ include "../../utils/messageToCommand.circom";
 include "../../utils/privToPubKey.circom";
 include "../../utils/qv/stateLeafAndBallotTransformer.circom";
 include "../../utils/trees/incrementalQuinaryTree.circom";
-include "../../utils/trees/incrementalMerkleTree.circom";
+// Merkle tree utilities (split from incrementalMerkleTree.circom)
+include "../../utils/trees/MerkleTreeInclusionProof.circom";
+include "../../utils/trees/LeafExists.circom";
+include "../../utils/trees/CheckRoot.circom";
+include "../../utils/trees/MerkleGeneratePathIndices.circom";
+include "../../utils/trees/BinaryMerkleRoot.circom";
 
 /**
  * Proves the correctness of processing a batch of MACI messages.
@@ -443,3 +448,4 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
 
     newBallotRoot <== computedNewBallotQip;
 }
+
