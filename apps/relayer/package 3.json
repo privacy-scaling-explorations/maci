@@ -1,0 +1,78 @@
+{
+  "name": "@maci-protocol/relayer",
+  "version": "1.0.0",
+  "private": false,
+  "description": "Relayer service for MACI",
+  "main": "build/ts/main.js",
+  "type": "module",
+  "exports": {
+    ".": "./build/ts/main.js"
+  },
+  "files": [
+    "build",
+    "CHANGELOG.md",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "hardhat": "hardhat node",
+    "build": "nest build",
+    "run:node": "node --import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(\"ts-node/esm\", pathToFileURL(\"./\"));'",
+    "start": "nest start",
+    "start:prod": "pnpm run run:node build/ts/main.js",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --forceExit",
+    "test:coverage": "pnpm run test --coverage",
+    "types": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@helia/json": "^4.0.3",
+    "@nestjs/common": "^11.0.13",
+    "@nestjs/core": "^11.0.17",
+    "@nestjs/mongoose": "^11.0.3",
+    "@nestjs/platform-express": "^11.0.13",
+    "@nestjs/platform-socket.io": "^11.0.17",
+    "@nestjs/schedule": "^5.0.1",
+    "@nestjs/swagger": "^11.1.1",
+    "@nestjs/throttler": "^6.4.0",
+    "@nestjs/websockets": "^11.0.17",
+    "@nomicfoundation/hardhat-ethers": "^3.0.8",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "date-fns": "^4.1.0",
+    "dotenv": "^16.4.7",
+    "ethers": "^6.13.5",
+    "hardhat": "^2.22.19",
+    "helia": "^5.3.0",
+    "helmet": "^8.1.0",
+    "lodash": "^4.17.21",
+    "@maci-protocol/domainobjs": "^3.0.0",
+    "@maci-protocol/sdk": "^1.0.0",
+    "@maci-protocol/testing": "^1.0.0",
+    "mongoose": "^8.13.2",
+    "multiformats": "^13.3.2",
+    "mustache": "^4.2.0",
+    "reflect-metadata": "^0.2.0",
+    "rxjs": "^7.8.2",
+    "ts-node": "^10.9.1"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "@nestjs/cli": "^11.0.6",
+    "@nestjs/schematics": "^11.0.4",
+    "@nestjs/testing": "^11.0.13",
+    "@types/express": "^5.0.1",
+    "@types/jest": "^29.5.2",
+    "@types/lodash": "^4.17.16",
+    "@types/node": "^22.14.0",
+    "@types/supertest": "^6.0.2",
+    "fast-check": "^4.1.0",
+    "jest": "^29.5.0",
+    "mongodb-memory-server": "^10.1.4",
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.3.0",
+    "typescript": "^5.8.3"
+  }
+}
