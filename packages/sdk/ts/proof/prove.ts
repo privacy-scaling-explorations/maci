@@ -12,8 +12,8 @@ import fs from "fs";
 import type { ITallyData } from "../tally";
 import type { IProveOnChainArgs, IProof } from "./types";
 
-import { getPollContracts } from "../poll";
-import { contractExists } from "../utils";
+import { getPollContracts } from "../poll/utils";
+import { contractExists } from "../utils/contracts";
 
 /**
  * Command to prove the result of a poll on-chain

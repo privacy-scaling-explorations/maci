@@ -37,7 +37,6 @@ export type IJsonPublicKey = Pick<IJsonKeyPair, "pubKey">;
 export interface IJsonStateLeaf {
   pubKey: string;
   voiceCreditBalance: string;
-  timestamp: string;
 }
 
 export type BigNumberish = number | string | bigint;
@@ -75,7 +74,6 @@ export interface IVkObjectParams {
 export interface IStateLeafContractParams {
   pubKey: IG1ContractParams;
   voiceCreditBalance: BigNumberish;
-  timestamp: BigNumberish;
 }
 
 export interface IMessageContractParams {

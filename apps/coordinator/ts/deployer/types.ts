@@ -157,6 +157,41 @@ export interface IGitcoinPassportPolicyArgs {
 }
 
 /**
+ * IERC20VotesPolicyArgs represents the arguments for deploying an ERC20 votes policy
+ */
+export interface IERC20VotesPolicyArgs {
+  /**
+   * The token address
+   */
+  token: string;
+
+  /**
+   * The factor
+   */
+  factor: string;
+
+  /**
+   * The snapshot block
+   */
+  snapshotBlock: string;
+}
+
+/**
+ * IERC20PolicyArgs represents the arguments for deploying an ERC20 policy
+ */
+export interface IERC20PolicyArgs {
+  /**
+   * The token address
+   */
+  token: string;
+
+  /**
+   * The threshold
+   */
+  threshold: string;
+}
+
+/**
  * IVkRegistryArgs represents the arguments for deploying a VkRegistry
  */
 export interface IVkRegistryArgs {
@@ -164,6 +199,11 @@ export interface IVkRegistryArgs {
    * The state tree depth
    */
   stateTreeDepth: bigint | string;
+
+  /**
+   * The poll state tree depth
+   */
+  pollStateTreeDepth: bigint | string;
 
   /**
    * The int state tree depth determines the tally batch size
@@ -189,7 +229,9 @@ export type IPolicyArgs =
   | IZupassPolicyArgs
   | IHatsPolicyArgs
   | ISemaphorePolicyArgs
-  | IGitcoinPassportPolicyArgs;
+  | IGitcoinPassportPolicyArgs
+  | IERC20VotesPolicyArgs
+  | IERC20PolicyArgs;
 
 export type IInitialVoiceCreditProxyArgs = IConstantInitialVoiceCreditProxyArgs;
 /**
@@ -263,6 +305,11 @@ export interface IDeployPollConfig {
    * Message batch size
    */
   messageBatchSize: number;
+
+  /**
+   * Poll state tree depth
+   */
+  pollStateTreeDepth: number;
 
   /**
    * Vote option tree depth

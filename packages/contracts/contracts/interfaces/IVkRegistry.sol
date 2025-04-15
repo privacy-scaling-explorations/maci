@@ -7,6 +7,29 @@ import { DomainObjs } from "../utilities/DomainObjs.sol";
 /// @title IVkRegistry
 /// @notice VkRegistry interface
 interface IVkRegistry {
+  struct SetVerifyingKeysBatchArgs {
+    /// @param stateTreeDepth The state tree depth
+    uint256 stateTreeDepth;
+    /// @param pollStateTreeDepth The poll state tree depth
+    uint256 pollStateTreeDepth;
+    /// @param intStateTreeDepth The intermediate state tree depth
+    uint256 intStateTreeDepth;
+    /// @param voteOptionTreeDepth The vote option tree depth
+    uint256 voteOptionTreeDepth;
+    /// @param messageBatchSize The message batch size
+    uint8 messageBatchSize;
+    /// @param modes Array of QV or Non-QV modes (must have the same length as process and tally keys)
+    DomainObjs.Mode[] modes;
+    /// @param pollJoiningVk The poll joining verifying key
+    SnarkCommon.VerifyingKey pollJoiningVk;
+    /// @param pollJoinedVk The poll joined verifying key
+    SnarkCommon.VerifyingKey pollJoinedVk;
+    /// @param processVks The process verifying keys (must have the same length as modes)
+    SnarkCommon.VerifyingKey[] processVks;
+    /// @param tallyVks The tally verifying keys (must have the same length as modes)
+    SnarkCommon.VerifyingKey[] tallyVks;
+  }
+
   /// @notice Get the tally verifying key
   /// @param _stateTreeDepth The state tree depth
   /// @param _intStateTreeDepth The intermediate state tree depth

@@ -36,7 +36,7 @@ describe("MerkleProof", () => {
     signerAddress = await signer.getAddress();
     allowedAddress.push([signerAddress]);
     tree = generateMerkleTree(allowedAddress);
-    [merkleProofPolicy, merkleProofChecker] = await deployMerkleProofPolicy({ root: tree.root }, signer, true);
+    [merkleProofPolicy, merkleProofChecker] = await deployMerkleProofPolicy({ root: tree.root }, {}, signer, true);
   });
 
   describe("Deployment", () => {
@@ -46,7 +46,7 @@ describe("MerkleProof", () => {
     });
 
     it("should fail to deploy when the root is not valid", async () => {
-      await expect(deployMerkleProofPolicy({ root: invalidRoot }, signer, true)).to.be.revertedWithCustomError(
+      await expect(deployMerkleProofPolicy({ root: invalidRoot }, {}, signer, true)).to.be.revertedWithCustomError(
         merkleProofChecker,
         "InvalidRoot",
       );

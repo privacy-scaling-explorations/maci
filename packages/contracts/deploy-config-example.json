@@ -4,12 +4,29 @@
       "deploy": true,
       "amount": 99
     },
+    "ERC20VotesInitialVoiceCreditProxy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "snapshotBlock": 1,
+      "factor": 1
+    },
+    "ERC20Policy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1
+    },
     "FreeForAllPolicy": {
       "deploy": false
     },
     "MerkleProofPolicy": {
       "deploy": false,
       "root": "0x2461fcc4c0965cb7f482dd28f1ca8057b7a62a35e8b7a86bb3ad6523f4bb21c0"
+    },
+    "ERC20VotesPolicy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1,
+      "snapshotBlock": 1
     },
     "EASPolicy": {
       "deploy": true,
@@ -74,7 +91,8 @@
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
-      "voteOptions": 2
+      "voteOptions": 2,
+      "stateTreeDepth": 10
     }
   },
   "scroll_sepolia": {
@@ -82,12 +100,29 @@
       "deploy": true,
       "amount": 99
     },
+    "ERC20VotesInitialVoiceCreditProxy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "snapshotBlock": 1,
+      "factor": 1
+    },
+    "ERC20Policy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1
+    },
     "FreeForAllPolicy": {
       "deploy": false
     },
     "MerkleProofPolicy": {
       "deploy": false,
       "root": "0x2461fcc4c0965cb7f482dd28f1ca8057b7a62a35e8b7a86bb3ad6523f4bb21c0"
+    },
+    "ERC20VotesPolicy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1,
+      "snapshotBlock": 1
     },
     "EASPolicy": {
       "deploy": false,
@@ -151,7 +186,8 @@
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
-      "voteOptions": 2
+      "voteOptions": 2,
+      "stateTreeDepth": 10
     }
   },
   "optimism": {
@@ -159,8 +195,25 @@
       "deploy": true,
       "amount": 99
     },
+    "ERC20VotesInitialVoiceCreditProxy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "snapshotBlock": 1,
+      "factor": 1
+    },
+    "ERC20Policy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1
+    },
     "FreeForAllPolicy": {
       "deploy": false
+    },
+    "ERC20VotesPolicy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1,
+      "snapshotBlock": 1
     },
     "MerkleProofPolicy": {
       "deploy": false,
@@ -229,7 +282,8 @@
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
-      "voteOptions": 2
+      "voteOptions": 2,
+      "stateTreeDepth": 10
     }
   },
   "arbitrum_sepolia": {
@@ -237,8 +291,25 @@
       "deploy": true,
       "amount": 99
     },
+    "ERC20VotesInitialVoiceCreditProxy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "snapshotBlock": 1,
+      "factor": 1
+    },
+    "ERC20Policy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1
+    },
     "FreeForAllPolicy": {
       "deploy": true
+    },
+    "ERC20VotesPolicy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1,
+      "snapshotBlock": 1
     },
     "MerkleProofPolicy": {
       "deploy": false,
@@ -307,7 +378,8 @@
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
-      "voteOptions": 2
+      "voteOptions": 2,
+      "stateTreeDepth": 10
     }
   },
   "localhost": {
@@ -315,8 +387,25 @@
       "deploy": true,
       "amount": 99
     },
+    "ERC20VotesInitialVoiceCreditProxy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "snapshotBlock": 1,
+      "factor": 1
+    },
+    "ERC20Policy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1
+    },
     "FreeForAllPolicy": {
       "deploy": true
+    },
+    "ERC20VotesPolicy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1,
+      "snapshotBlock": 1
     },
     "MerkleProofPolicy": {
       "deploy": false,
@@ -385,7 +474,8 @@
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
-      "voteOptions": 2
+      "voteOptions": 2,
+      "stateTreeDepth": 10
     }
   },
   "base_sepolia": {
@@ -393,8 +483,25 @@
       "deploy": true,
       "amount": 99
     },
+    "ERC20VotesInitialVoiceCreditProxy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "snapshotBlock": 1,
+      "factor": 1
+    },
+    "ERC20Policy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1
+    },
     "FreeForAllPolicy": {
       "deploy": true
+    },
+    "ERC20VotesPolicy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1,
+      "snapshotBlock": 1
     },
     "MerkleProofPolicy": {
       "deploy": false,
@@ -463,7 +570,8 @@
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
-      "voteOptions": 2
+      "voteOptions": 2,
+      "stateTreeDepth": 10
     }
   },
   "optimism_sepolia": {
@@ -471,12 +579,29 @@
       "deploy": true,
       "amount": 99
     },
+    "ERC20VotesInitialVoiceCreditProxy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "snapshotBlock": 1,
+      "factor": 1
+    },
+    "ERC20Policy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1
+    },
     "FreeForAllPolicy": {
       "deploy": true
     },
     "MerkleProofPolicy": {
       "deploy": false,
       "root": "0x2461fcc4c0965cb7f482dd28f1ca8057b7a62a35e8b7a86bb3ad6523f4bb21c0"
+    },
+    "ERC20VotesPolicy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1,
+      "snapshotBlock": 1
     },
     "HatsPolicy": {
       "deploy": false,
@@ -546,7 +671,8 @@
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
-      "voteOptions": 2
+      "voteOptions": 2,
+      "stateTreeDepth": 10
     }
   },
   "gnosis_chiado": {
@@ -554,8 +680,25 @@
       "deploy": true,
       "amount": 200
     },
+    "ERC20VotesInitialVoiceCreditProxy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "snapshotBlock": 1,
+      "factor": 1
+    },
+    "ERC20Policy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1
+    },
     "FreeForAllPolicy": {
       "deploy": true
+    },
+    "ERC20VotesPolicy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1,
+      "snapshotBlock": 1
     },
     "MerkleProofPolicy": {
       "deploy": false,
@@ -629,7 +772,8 @@
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
-      "voteOptions": 2
+      "voteOptions": 2,
+      "stateTreeDepth": 10
     }
   },
   "gnosis": {
@@ -637,8 +781,25 @@
       "deploy": true,
       "amount": 200
     },
+    "ERC20VotesInitialVoiceCreditProxy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "snapshotBlock": 1,
+      "factor": 1
+    },
+    "ERC20Policy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1
+    },
     "FreeForAllPolicy": {
       "deploy": true
+    },
+    "ERC20VotesPolicy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1,
+      "snapshotBlock": 1
     },
     "MerkleProofPolicy": {
       "deploy": false,
@@ -712,7 +873,8 @@
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
-      "voteOptions": 2
+      "voteOptions": 2,
+      "stateTreeDepth": 10
     }
   },
   "polygon_amoy": {
@@ -720,8 +882,25 @@
       "deploy": true,
       "amount": 200
     },
+    "ERC20VotesInitialVoiceCreditProxy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "snapshotBlock": 1,
+      "factor": 1
+    },
+    "ERC20Policy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1
+    },
     "FreeForAllPolicy": {
       "deploy": true
+    },
+    "ERC20VotesPolicy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1,
+      "snapshotBlock": 1
     },
     "MerkleProofPolicy": {
       "deploy": false,
@@ -795,7 +974,8 @@
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
-      "voteOptions": 2
+      "voteOptions": 2,
+      "stateTreeDepth": 10
     }
   },
   "polygon": {
@@ -803,8 +983,25 @@
       "deploy": true,
       "amount": 200
     },
+    "ERC20VotesInitialVoiceCreditProxy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "snapshotBlock": 1,
+      "factor": 1
+    },
+    "ERC20Policy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1
+    },
     "FreeForAllPolicy": {
       "deploy": true
+    },
+    "ERC20VotesPolicy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1,
+      "snapshotBlock": 1
     },
     "MerkleProofPolicy": {
       "deploy": false,
@@ -878,7 +1075,8 @@
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
       "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
-      "voteOptions": 2
+      "voteOptions": 2,
+      "stateTreeDepth": 10
     }
   }
 }

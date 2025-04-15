@@ -9,7 +9,12 @@ include "../../utils/hashers.circom";
 include "../../utils/messageToCommand.circom";
 include "../../utils/privToPubKey.circom";
 include "../../utils/non-qv/stateLeafAndBallotTransformer.circom";
-include "../../utils/trees/incrementalMerkleTree.circom";
+// Merkle tree utilities (split from incrementalMerkleTree.circom)
+include "../../utils/trees/MerkleTreeInclusionProof.circom";
+include "../../utils/trees/LeafExists.circom";
+include "../../utils/trees/CheckRoot.circom";
+include "../../utils/trees/MerkleGeneratePathIndices.circom";
+include "../../utils/trees/BinaryMerkleRoot.circom";
 include "../../utils/trees/incrementalQuinaryTree.circom";
 
 /**
@@ -32,14 +37,13 @@ include "../../utils/trees/incrementalQuinaryTree.circom";
     var STATE_TREE_ARITY = 2;
     var MSG_LENGTH = 10;
     var PACKED_CMD_LENGTH = 4;
-    var STATE_LEAF_LENGTH = 4;
+    var STATE_LEAF_LENGTH = 3;
     var BALLOT_LENGTH = 2;
     var BALLOT_NONCE_IDX = 0;
     var BALLOT_VO_ROOT_IDX = 1;
     var STATE_LEAF_PUB_X_IDX = 0;
     var STATE_LEAF_PUB_Y_IDX = 1;
     var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
-    var STATE_LEAF_TIMESTAMP_IDX = 3;
     var msgTreeZeroValue = 8370432830353022751713833565135785980866757267633941821328460903436894336785;
     // Number of options for this poll.
     var maxVoteOptions = VOTE_OPTION_TREE_ARITY ** voteOptionTreeDepth;
@@ -266,7 +270,7 @@ include "../../utils/trees/incrementalQuinaryTree.circom";
  */
 template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     // Constants defining the structure and size of state and ballots.
-    var STATE_LEAF_LENGTH = 4;
+    var STATE_LEAF_LENGTH = 3;
     var BALLOT_LENGTH = 2;
     var MSG_LENGTH = 10;
     var PACKED_CMD_LENGTH = 4;
@@ -282,8 +286,6 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     var STATE_LEAF_PUB_Y_IDX = 1;
     // Voice Credit balance.
     var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
-    // Timestamp.
-    var STATE_LEAF_TIMESTAMP_IDX = 3;
     var N_BITS = 252;
 
     // Number of users that have completed the sign up.
@@ -357,7 +359,7 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     var computedStateLeafPathIndices[stateTreeDepth] = MerkleGeneratePathIndices(stateTreeDepth)(stateIndexMux);
 
     // 3. Verify that the original state leaf exists in the given state root.
-    var stateLeafHash = PoseidonHasher(4)(stateLeaf);
+    var stateLeafHash = PoseidonHasher(3)(stateLeaf);
     var stateLeafQip = BinaryMerkleRoot(stateTreeDepth)(
         stateLeafHash,
         actualStateTreeDepth,
@@ -419,11 +421,10 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     newBallotVoRoot <== newBallotVoRootMux;
 
     // 6. Generate a new state root.
-    var computedNewStateLeafhash = PoseidonHasher(4)([
+    var computedNewStateLeafhash = PoseidonHasher(3)([
         computedNewSlPubKey[STATE_LEAF_PUB_X_IDX],
         computedNewSlPubKey[STATE_LEAF_PUB_Y_IDX],
-        voiceCreditBalanceMux,
-        stateLeaf[STATE_LEAF_TIMESTAMP_IDX]
+        voiceCreditBalanceMux
     ]);
 
     var computedNewStateLeafQip = BinaryMerkleRoot(stateTreeDepth)(
@@ -445,3 +446,4 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
 
     newBallotRoot <== computedNewBallotQip;
 }
+

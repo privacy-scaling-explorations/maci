@@ -1,4 +1,4 @@
-import { Poll__factory as PollFactory } from "@maci-protocol/contracts";
+import { Poll__factory as PollFactory } from "@maci-protocol/contracts/typechain-types";
 import { SNARK_FIELD_SIZE } from "@maci-protocol/crypto";
 import { PubKey } from "@maci-protocol/domainobjs";
 

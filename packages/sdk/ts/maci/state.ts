@@ -11,7 +11,7 @@ import fs from "fs";
 import type { IGenerateMaciStateArgs } from "./types";
 import type { MaciState } from "@maci-protocol/core";
 
-import { contractExists } from "../utils";
+import { contractExists } from "../utils/contracts";
 
 /**
  * Generate a local MACI state from the smart contracts events

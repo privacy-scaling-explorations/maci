@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        command: ["test:e2e", "test:integration", "test:unit"]
+        command: ["test:e2e", "test:integration", "test:unit", "test:hardhat"]
 
     runs-on: ubuntu-24.04
 
@@ -73,8 +73,24 @@ jobs:
           chmod +x ${{ github.workspace }}/circom
           sudo mv ${{ github.workspace }}/circom /bin/circom
 
+      - name: Calculate circuits hash
+        id: hash_circuits
+        run: |
+          CIRCUIT_HASH=$(find packages/circuits -type f -name '*.circom' -exec sha1sum {} \; | sort | sha1sum | cut -d ' ' -f1)
+          echo "CIRCUIT_HASH=$CIRCUIT_HASH" >> $GITHUB_ENV
+          echo "CIRCUIT_HASH=$CIRCUIT_HASH" >> $GITHUB_OUTPUT
+
+      - name: Cache zkeys
+        id: cache_zkeys
+        uses: actions/cache@v4
+        with:
+          path: packages/testing/zkeys
+          key: zkeys-${{ steps.hash_circuits.outputs.CIRCUIT_HASH }}
+          restore-keys: |
+            zkeys-
+
       - name: Compile Circuits And Generate zkeys
-        if: ${{ env.CHANGED == 'true' }}
+        if: ${{ env.CHANGED == 'true' && steps.cache_zkeys.outputs.cache-hit != 'true' }}
         run: |
           pnpm build:circuits-c -- --outPath ../testing/zkeys
           pnpm setup:zkeys -- --outPath ../testing/zkeys
@@ -86,6 +102,7 @@ jobs:
 
       - name: Run hardhat fork
         run: |
+          cp ./deploy-config-example.json ./deploy-config.json
           pnpm run hardhat &
           sleep 5
         working-directory: packages/contracts

@@ -27,6 +27,7 @@ import {
   DEFAULT_INITIAL_VOICE_CREDITS,
   DEFAULT_SG_DATA,
   DEFAULT_IVCP_DATA,
+  POLL_STATE_TREE_DEPTH,
 } from "./constants";
 import { User } from "./user";
 
@@ -138,6 +139,7 @@ export class TestingClass {
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
+      pollStateTreeDepth: POLL_STATE_TREE_DEPTH,
       pollJoiningVk: pollJoiningVk!,
       pollJoinedVk: pollJoinedVk!,
       processMessagesVk: processVk!,
@@ -146,10 +148,21 @@ export class TestingClass {
       signer,
     });
 
-    const [signupPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+    const [signupPolicy, , signupPolicyFactory, signupCheckerFactory] = await deployFreeForAllSignUpPolicy(
+      {},
+      signer,
+      true,
+    );
     const signupPolicyContractAddress = await signupPolicy.getAddress();
 
-    const [pollPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+    const [pollPolicy] = await deployFreeForAllSignUpPolicy(
+      {
+        policy: signupPolicyFactory,
+        checker: signupCheckerFactory,
+      },
+      signer,
+      true,
+    );
     const pollPolicyContractAddress = await pollPolicy.getAddress();
 
     const maciAddresses = await deployMaci({
@@ -176,6 +189,7 @@ export class TestingClass {
       pollEndTimestamp: startDate + 130,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
+      stateTreeDepth: POLL_STATE_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       coordinatorPubKey: coordinatorKeypair.pubKey,
       mode: EMode.NON_QV,
@@ -196,7 +210,7 @@ export class TestingClass {
       signer,
     });
 
-    const { pollStateIndex, voiceCredits, timestamp } = await joinPoll({
+    const { pollStateIndex, voiceCredits } = await joinPoll({
       maciAddress: maciAddresses.maciContractAddress,
       pollId: 0n,
       privateKey: user.privKey.serialize(),
@@ -221,9 +235,7 @@ export class TestingClass {
     this.contractsData.maciState = maciState;
     this.contractsData.maciContractAddress = maciAddresses.maciContractAddress;
     this.contractsData.users = [];
-    this.contractsData.users.push(
-      new User(user, [], BigInt(voiceCredits), 0n, BigInt(timestamp), BigInt(pollStateIndex)),
-    );
+    this.contractsData.users.push(new User(user, [], BigInt(voiceCredits), 0n, BigInt(pollStateIndex)));
     this.contractsData.initialized = true;
     this.contractsData.polls?.push(pollContractAddress);
   }

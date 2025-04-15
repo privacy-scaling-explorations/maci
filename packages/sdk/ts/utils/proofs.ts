@@ -1,10 +1,10 @@
 import {
-  extractVk,
-  formatProofForVerifierContract,
-  genProofRapidSnark,
-  genProofSnarkjs,
-  verifyProof,
   type FullProveResult,
+  verifyProof,
+  genProofRapidSnark,
+  extractVk,
+  genProofSnarkjs,
+  formatProofForVerifierContract,
 } from "@maci-protocol/contracts";
 
 import type { CircuitInputs } from "./types";

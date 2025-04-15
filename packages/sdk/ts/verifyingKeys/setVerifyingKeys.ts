@@ -1,4 +1,5 @@
-import { EMode, IVerifyingKeyStruct, VkRegistry__factory as VkRegistryFactory } from "@maci-protocol/contracts";
+import { EMode, type IVerifyingKeyStruct } from "@maci-protocol/contracts";
+import { VkRegistry__factory as VkRegistryFactory } from "@maci-protocol/contracts/typechain-types";
 import { genPollJoinedVkSig, genPollJoiningVkSig, genProcessVkSig, genTallyVkSig } from "@maci-protocol/core";
 
 import type { ISetVerifyingKeysArgs } from "./types";
@@ -17,6 +18,7 @@ export const setVerifyingKeys = async ({
   processMessagesVk,
   tallyVotesVk,
   stateTreeDepth,
+  pollStateTreeDepth,
   intStateTreeDepth,
   voteOptionTreeDepth,
   messageBatchSize,
@@ -71,17 +73,18 @@ export const setVerifyingKeys = async ({
   }
 
   // set them onchain
-  const tx = await vkRegistryContract.setVerifyingKeysBatch(
+  const tx = await vkRegistryContract.setVerifyingKeysBatch({
     stateTreeDepth,
+    pollStateTreeDepth,
     intStateTreeDepth,
     voteOptionTreeDepth,
     messageBatchSize,
-    [mode],
-    pollJoiningVk.asContractParam() as IVerifyingKeyStruct,
-    pollJoinedVk.asContractParam() as IVerifyingKeyStruct,
-    [processMessagesVk.asContractParam() as IVerifyingKeyStruct],
-    [tallyVotesVk.asContractParam() as IVerifyingKeyStruct],
-  );
+    modes: [mode],
+    pollJoiningVk: pollJoiningVk.asContractParam() as IVerifyingKeyStruct,
+    pollJoinedVk: pollJoinedVk.asContractParam() as IVerifyingKeyStruct,
+    processVks: [processMessagesVk.asContractParam() as IVerifyingKeyStruct],
+    tallyVks: [tallyVotesVk.asContractParam() as IVerifyingKeyStruct],
+  });
 
   const receipt = await tx.wait();
 

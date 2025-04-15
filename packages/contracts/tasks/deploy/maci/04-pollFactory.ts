@@ -28,14 +28,16 @@ deployment.deployTask(EDeploySteps.PollFactory, "Deploy poll factory").then((tas
     const poseidonT5ContractAddress = storage.mustGetAddress(EContracts.PoseidonT5, hre.network.name);
     const poseidonT6ContractAddress = storage.mustGetAddress(EContracts.PoseidonT6, hre.network.name);
 
+    const libraries = {
+      "contracts/crypto/PoseidonT3.sol:PoseidonT3": poseidonT3ContractAddress,
+      "contracts/crypto/PoseidonT4.sol:PoseidonT4": poseidonT4ContractAddress,
+      "contracts/crypto/PoseidonT5.sol:PoseidonT5": poseidonT5ContractAddress,
+      "contracts/crypto/PoseidonT6.sol:PoseidonT6": poseidonT6ContractAddress,
+    };
+
     const linkedPollFactoryContract = await hre.ethers.getContractFactory(EContracts.PollFactory, {
       signer: deployer,
-      libraries: {
-        PoseidonT3: poseidonT3ContractAddress,
-        PoseidonT4: poseidonT4ContractAddress,
-        PoseidonT5: poseidonT5ContractAddress,
-        PoseidonT6: poseidonT6ContractAddress,
-      },
+      libraries,
     });
 
     const pollFactoryContract = await deployment.deployContractWithLinkedLibraries({
@@ -45,6 +47,7 @@ deployment.deployTask(EDeploySteps.PollFactory, "Deploy poll factory").then((tas
     await storage.register({
       id: EContracts.PollFactory,
       contract: pollFactoryContract,
+      libraries,
       args: [],
       network: hre.network.name,
     });

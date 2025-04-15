@@ -1,28 +1,14 @@
-export * from "../verifyingKeys";
-export * from "../maci";
-export * from "../relayer";
 export * from "../poll";
-export * from "../proof";
+export * from "../proof/download";
+export * from "../proof/types";
 export * from "../tally";
 export * from "../trees";
 export * from "../vote";
-export * from "../utils";
-export * from "../user";
 export * from "../maciKeys";
-export {
-  EMode,
-  EContracts,
-  EPolicies,
-  EInitialVoiceCreditProxies,
-  extractVk,
-  genProofSnarkjs,
-  formatProofForVerifierContract,
-  verifyProof,
-  cleanThreads,
-  unlinkFile,
-  getBlockTimestamp,
-  genEmptyBallotRoots,
-} from "@maci-protocol/contracts";
+export { getSignedupUserData, signup, hasUserSignedUp } from "../user/signup";
+export { getJoinedUserData, hasUserJoinedPoll } from "../user/utils";
+
+export * from "./joinPoll";
 
 export type {
   FullProveResult,

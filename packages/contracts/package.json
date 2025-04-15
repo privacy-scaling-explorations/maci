@@ -44,6 +44,7 @@
     "types": "tsc -p tsconfig.json --noEmit",
     "docs": "hardhat docgen",
     "test": "hardhat test --network hardhat",
+    "test:hardhat": "bash ./testScriptLocalhost.sh",
     "test:maci": "pnpm run test ./tests/MACI.test.ts",
     "test:poll": "pnpm run test ./tests/Poll.test.ts",
     "test:messageProcessor": "pnpm run test ./tests/MessageProcessor.test.ts",
@@ -62,6 +63,9 @@
     "test:zupass_policy": "pnpm run test ./tests/policies/ZupassPolicy.test.ts",
     "test:semaphore_policy": "pnpm run test ./tests/policies/SemaphorePolicy.test.ts",
     "test:anon_aadhaar_policy": "pnpm run test ./tests/policies/AnonAadhaarPolicy.test.ts",
+    "test:erc20_votes_initial_voice_credits_proxy": "pnpm run test ./tests/ERC20VotesInitialVoiceCreditsProxy.test.ts",
+    "test:erc20_votes_policy": "pnpm run test ./tests/policies/ERC20Votes.test.ts",
+    "test:erc20_policy": "pnpm run test ./tests/policies/ERC20.test.ts",
     "deploy": "hardhat deploy-full",
     "deploy-poll": "hardhat deploy-poll",
     "verify": "hardhat verify-full",
@@ -166,9 +170,13 @@
     "benchmark:polygon-amoy": "pnpm run benchmark --network polygon_amoy"
   },
   "dependencies": {
-    "@excubiae/contracts": "^0.7.0",
+    "@excubiae/contracts": "^0.10.0",
+    "@maci-protocol/core": "^3.0.0",
+    "@maci-protocol/crypto": "^3.0.0",
+    "@maci-protocol/domainobjs": "^3.0.0",
     "@nomicfoundation/hardhat-ethers": "^3.0.8",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@nomicfoundation/hardhat-verify": "^2.0.13",
     "@openzeppelin/contracts": "^5.2.0",
     "@openzeppelin/merkle-tree": "^1.0.8",
     "@pcd/util": "^0.9.0",
@@ -178,11 +186,8 @@
     "ethers": "^6.13.5",
     "hardhat": "^2.22.19",
     "lowdb": "^1.0.0",
-    "@maci-protocol/core": "^3.0.0",
-    "@maci-protocol/crypto": "^3.0.0",
-    "@maci-protocol/domainobjs": "^3.0.0",
     "snarkjs": "^0.7.5",
-    "solady": "^0.1.12",
+    "solady": "^0.1.14",
     "solidity-docgen": "^0.6.0-beta.36",
     "uuid": "^11.1.0"
   },
@@ -192,7 +197,7 @@
     "@types/circomlibjs": "^0.1.6",
     "@types/lowdb": "^1.0.15",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^22.13.10",
+    "@types/node": "^22.14.0",
     "@types/snarkjs": "^0.7.9",
     "@types/uuid": "^10.0.0",
     "chai": "^4.3.10",
@@ -201,6 +206,6 @@
     "hardhat-artifactor": "^0.2.0",
     "hardhat-contract-sizer": "^2.10.0",
     "ts-node": "^10.9.1",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.3"
   }
 }

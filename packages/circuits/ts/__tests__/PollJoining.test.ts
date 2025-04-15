@@ -74,9 +74,8 @@ describe("Poll Joining circuit", function test() {
       const { privKey, pubKey } = users[0];
 
       const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-      const timestamp = BigInt(Math.floor(Date.now() / 1000));
 
-      const stateIndex = BigInt(poll.joinPoll(nullifier, pubKey, voiceCreditBalance, timestamp));
+      const stateIndex = BigInt(poll.joinPoll(nullifier, pubKey, voiceCreditBalance));
 
       // First command (valid)
       const command = new PCommand(

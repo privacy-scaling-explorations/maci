@@ -43,6 +43,7 @@ describe("Zupass", () => {
         signer2: zupassSigner[1],
         verifier: verifierAddress,
       },
+      {},
       signer,
       true,
     );

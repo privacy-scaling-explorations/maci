@@ -27,6 +27,7 @@ export const testMaciDeploymentConfig: IDeployMaciConfig = {
   VkRegistry: {
     args: {
       stateTreeDepth: 10n,
+      pollStateTreeDepth: 10n,
       messageBatchSize: MSG_BATCH_SIZE,
       voteOptionTreeDepth: 2n,
       intStateTreeDepth: 1n,
@@ -51,6 +52,7 @@ export const testPollDeploymentConfig: IDeployPollConfig = {
   coordinatorPubkey: new Keypair().pubKey.serialize(),
   intStateTreeDepth: 1,
   messageBatchSize: MSG_BATCH_SIZE,
+  pollStateTreeDepth: 10,
   voteOptionTreeDepth: 2,
   policy: {
     type: EPolicies.FreeForAll,

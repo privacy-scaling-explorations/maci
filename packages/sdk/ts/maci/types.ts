@@ -12,6 +12,8 @@ export enum EPolicyTrait {
   Token = "Token",
   Zupass = "Zupass",
   MerkleProof = "MerkleProof",
+  ERC20 = "ERC20",
+  ERC20Votes = "ERC20Votes",
 }
 
 /**
@@ -107,6 +109,41 @@ export interface IMerkleProofPolicyData {
    * The merkle tree root
    */
   root: string;
+}
+
+/**
+ * Interface for the erc20 policy data
+ */
+export interface IERC20PolicyData {
+  /**
+   * The token address
+   */
+  token: string;
+
+  /**
+   * The threshold
+   */
+  threshold: string;
+}
+
+/**
+ * Interface for the erc20 votes policy data
+ */
+export interface IERC20VotesPolicyData {
+  /**
+   * The token address
+   */
+  token: string;
+
+  /**
+   * The threshold
+   */
+  threshold: string;
+
+  /**
+   * The snapshot block
+   */
+  snapshotBlock: string;
 }
 
 /**

@@ -41,9 +41,8 @@ describe("Poll", function test() {
     const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
 
     const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-    const timestamp = BigInt(1);
 
-    const stateIndex = poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp);
+    const stateIndex = poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance);
 
     it("should throw if a message has an invalid state index", () => {
       const command = new PCommand(
@@ -263,9 +262,8 @@ describe("Poll", function test() {
     const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
 
     const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-    const timestamp = BigInt(1);
 
-    const stateIndex = poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp);
+    const stateIndex = poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance);
 
     it("should throw if the state has not been copied prior to calling processMessages", () => {
       const tmpPoll = maciState.deployPoll(
@@ -342,9 +340,8 @@ describe("Poll", function test() {
     const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
 
     const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-    const timestamp = BigInt(1);
 
-    const stateIndex = poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp);
+    const stateIndex = poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance);
 
     it("it should succeed even if send an invalid message", () => {
       const command = new PCommand(
@@ -440,15 +437,13 @@ describe("Poll", function test() {
     const { privKey: pollPrivKey1, pubKey: pollPubKey1 } = new Keypair();
 
     const nullifier1 = poseidon([BigInt(privKey1.rawPrivKey.toString())]);
-    const timestamp1 = BigInt(1);
 
-    const stateIndex1 = poll.joinPoll(nullifier1, pollPubKey1, voiceCreditBalance, timestamp1);
+    const stateIndex1 = poll.joinPoll(nullifier1, pollPubKey1, voiceCreditBalance);
 
     const { privKey: privKey2 } = user2Keypair;
     const { privKey: pollPrivKey2, pubKey: pollPubKey2 } = new Keypair();
 
     const nullifier2 = poseidon([BigInt(privKey2.rawPrivKey.toString())]);
-    const timestamp2 = BigInt(1);
 
     const voteWeight = 5n;
     const voteOption = 0n;
@@ -496,7 +491,7 @@ describe("Poll", function test() {
       const secondPoll = maciState.polls.get(secondPollId)!;
       secondPoll.updatePoll(BigInt(maciState.pubKeys.length));
 
-      const stateIndex2 = secondPoll.joinPoll(nullifier2, pollPubKey2, voiceCreditBalance, timestamp2);
+      const stateIndex2 = secondPoll.joinPoll(nullifier2, pollPubKey2, voiceCreditBalance);
 
       const secondVoteWeight = 10n;
       const secondVoteOption = 1n;

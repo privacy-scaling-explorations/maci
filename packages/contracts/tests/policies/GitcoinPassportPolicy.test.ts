@@ -37,6 +37,7 @@ describe("GitcoinPassport", () => {
     decoderAddress = await mockDecoder.getAddress();
     [gitcoinPolicy, gitcoinChecker] = await deployGitcoinPassportPolicy(
       { decoderAddress, minimumScore: passingScore },
+      {},
       signer,
       true,
     );

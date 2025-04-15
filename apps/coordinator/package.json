@@ -1,5 +1,5 @@
 {
-  "name": "@maci-protocol/maci-coordinator",
+  "name": "@maci-protocol/coordinator",
   "version": "1.0.0",
   "private": false,
   "description": "Coordinator service for MACI",
@@ -31,17 +31,17 @@
     "get-auth-header": "pnpm run run:node ./scripts/getAuthHeader.ts"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "^0.96.0",
-    "@nestjs/common": "^11.0.12",
-    "@nestjs/core": "^11.0.11",
-    "@nestjs/platform-express": "^11.0.12",
-    "@nestjs/platform-socket.io": "^11.0.11",
-    "@nestjs/swagger": "^11.0.6",
+    "@graphprotocol/graph-cli": "^0.97.0",
+    "@nestjs/common": "^11.0.13",
+    "@nestjs/core": "^11.0.17",
+    "@nestjs/platform-express": "^11.0.13",
+    "@nestjs/platform-socket.io": "^11.0.17",
+    "@nestjs/swagger": "^11.1.1",
     "@nestjs/throttler": "^6.4.0",
-    "@nestjs/websockets": "^11.0.11",
+    "@nestjs/websockets": "^11.0.17",
     "@nomicfoundation/hardhat-ethers": "^3.0.8",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
-    "@zerodev/ecdsa-validator": "5.4.4",
+    "@zerodev/ecdsa-validator": "5.4.5",
     "@zerodev/permissions": "5.5.4",
     "@zerodev/sdk": "5.4.26",
     "class-transformer": "^0.5.1",
@@ -63,23 +63,23 @@
     "socket.io": "^4.7.5",
     "tar": "^7.4.1",
     "ts-node": "^10.9.1",
-    "viem": "^2.23.12"
+    "viem": "^2.26.0"
   },
   "devDependencies": {
-    "@nestjs/cli": "^11.0.5",
-    "@nestjs/schematics": "^11.0.2",
-    "@nestjs/testing": "^11.0.11",
+    "@nestjs/cli": "^11.0.6",
+    "@nestjs/schematics": "^11.0.4",
+    "@nestjs/testing": "^11.0.13",
     "@types/express": "^5.0.1",
     "@types/jest": "^29.5.2",
     "@types/lowdb": "^1.0.15",
-    "@types/node": "^22.13.10",
+    "@types/node": "^22.14.0",
     "@types/supertest": "^6.0.2",
-    "fast-check": "^4.0.0",
+    "fast-check": "^4.1.0",
     "jest": "^29.5.0",
     "socket.io-client": "^4.7.5",
     "supertest": "^7.0.0",
     "ts-jest": "^29.3.0",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.3"
   },
   "jest": {
     "testTimeout": 900000,

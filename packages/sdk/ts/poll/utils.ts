@@ -8,7 +8,7 @@ import { ZeroAddress } from "ethers";
 
 import type { IGetPollArgs, IGetPollContractsData } from "./types";
 
-import { contractExists } from "../utils";
+import { contractExists } from "../utils/contracts";
 
 /**
  * Get poll contracts

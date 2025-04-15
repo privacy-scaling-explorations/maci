@@ -82,7 +82,11 @@ interface IPoll {
   /// @notice Get the depths of the merkle trees
   /// @return intStateTreeDepth The depth of the state tree
   /// @return voteOptionTreeDepth The subdepth of the vote option tree
-  function treeDepths() external view returns (uint8 intStateTreeDepth, uint8 voteOptionTreeDepth);
+  /// @return stateTreeDepth The poll state tree depth
+  function treeDepths()
+    external
+    view
+    returns (uint8 intStateTreeDepth, uint8 voteOptionTreeDepth, uint8 stateTreeDepth);
 
   /// @notice Get the number of vote options for the poll
   /// @return voteOptions The number of vote options

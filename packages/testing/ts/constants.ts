@@ -23,6 +23,7 @@ import type { Signer } from "ethers";
 import { readJSONFile } from "./utils";
 
 export const STATE_TREE_DEPTH = 10;
+export const POLL_STATE_TREE_DEPTH = 10;
 export const INT_STATE_TREE_DEPTH = 1;
 export const VOTE_OPTION_TREE_DEPTH = 2;
 export const MESSAGE_BATCH_SIZE = 20;
@@ -189,6 +190,7 @@ export const verifyingKeysArgs = async (
 
   return {
     stateTreeDepth: STATE_TREE_DEPTH,
+    pollStateTreeDepth: POLL_STATE_TREE_DEPTH,
     intStateTreeDepth: INT_STATE_TREE_DEPTH,
     voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
     messageBatchSize: MESSAGE_BATCH_SIZE,
@@ -219,6 +221,7 @@ export const deployPollArgs: Omit<
 > = {
   intStateTreeDepth: INT_STATE_TREE_DEPTH,
   messageBatchSize: MESSAGE_BATCH_SIZE,
+  stateTreeDepth: POLL_STATE_TREE_DEPTH,
   voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
   coordinatorPubKey: coordinatorKeypair.pubKey,
   initialVoiceCredits: DEFAULT_INITIAL_VOICE_CREDITS,

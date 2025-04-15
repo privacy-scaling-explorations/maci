@@ -1,5 +1,7 @@
 # Coordinator service
 
+Please refer to [Offchain relayer service documentation](https://maci.pse.dev/docs/category/offchain-relayer) for more information.
+
 ## Instructions
 
 1. Add `.env` file (see `.env.example`).

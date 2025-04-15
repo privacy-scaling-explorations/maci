@@ -72,6 +72,7 @@ export const maxVoteOptions = 25;
 export const treeDepths: TreeDepths = {
   intStateTreeDepth: 1,
   voteOptionTreeDepth: 2,
+  stateTreeDepth: 10,
 };
 
 export const tallyBatchSize = STATE_TREE_ARITY ** treeDepths.intStateTreeDepth;

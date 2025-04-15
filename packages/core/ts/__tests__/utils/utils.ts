@@ -66,8 +66,16 @@ export class TestHarness {
    */
   signup = (user: Keypair): number => this.maciState.signUp(user.pubKey);
 
-  joinPoll = (nullifier: bigint, pubKey: PubKey, newVoiceCreditBalance: bigint, timestamp: bigint): number =>
-    this.poll.joinPoll(nullifier, pubKey, newVoiceCreditBalance, timestamp);
+  /**
+   * Join a poll.
+   *
+   * @param nullifier - The nullifier
+   * @param pubKey - The public key
+   * @param newVoiceCreditBalance - The new voice credit balance
+   * @returns The index of added state leaf
+   */
+  joinPoll = (nullifier: bigint, pubKey: PubKey, newVoiceCreditBalance: bigint): number =>
+    this.poll.joinPoll(nullifier, pubKey, newVoiceCreditBalance);
 
   /**
    * Publishes a message to the MACI poll instance.

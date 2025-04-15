@@ -1,5 +1,5 @@
 ---
-slug: Getting Started MACI
+slug: getting-started-with-maci
 title: Getting Started with MACI
 description: Guide to use MACI
 authors:

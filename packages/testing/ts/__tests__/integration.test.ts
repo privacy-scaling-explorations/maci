@@ -48,6 +48,7 @@ import {
   pollDuration,
   maxMessages,
   maxVoteOptions,
+  POLL_STATE_TREE_DEPTH,
 } from "../constants";
 import { ITestSuite } from "../types";
 import { expectTally, genTestUserCommands, isArm, writeBackupFile, backupFolder } from "../utils";
@@ -91,6 +92,7 @@ describe("Integration tests", function test() {
 
     await setVerifyingKeys({
       stateTreeDepth: STATE_TREE_DEPTH,
+      pollStateTreeDepth: POLL_STATE_TREE_DEPTH,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
@@ -106,10 +108,21 @@ describe("Integration tests", function test() {
 
   // the code that we run before each test
   beforeEach(async () => {
-    const [signUpPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
-    const signupPolicyAddress = await signUpPolicy.getAddress();
+    const [signupPolicy, , signupPolicyFactory, signupCheckerFactory] = await deployFreeForAllSignUpPolicy(
+      {},
+      signer,
+      true,
+    );
+    const signupPolicyAddress = await signupPolicy.getAddress();
 
-    const [pollPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+    const [pollPolicy] = await deployFreeForAllSignUpPolicy(
+      {
+        policy: signupPolicyFactory,
+        checker: signupCheckerFactory,
+      },
+      signer,
+      true,
+    );
     const pollPolicyAddress = await pollPolicy.getAddress();
 
     // create a new maci state
@@ -140,6 +153,7 @@ describe("Integration tests", function test() {
       pollStartTimestamp: startDate,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
+      stateTreeDepth: POLL_STATE_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       coordinatorPubKey: coordinatorKeypair.pubKey,
       maciAddress: contracts.maciContractAddress,
@@ -157,6 +171,7 @@ describe("Integration tests", function test() {
     const treeDepths: TreeDepths = {
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
+      stateTreeDepth: POLL_STATE_TREE_DEPTH,
     };
 
     const messageBatchSize = MESSAGE_BATCH_SIZE;
@@ -206,7 +221,6 @@ describe("Integration tests", function test() {
       // loop through all users and generate keypair + signup
       for (let i = 0; i < users.length; i += 1) {
         const user = users[i];
-        const timestamp = Date.now();
         // signup
         const stateIndex = BigInt(
           await signup({
@@ -239,7 +253,7 @@ describe("Integration tests", function test() {
         const inputNullifier = BigInt(user.keypair.privKey.asCircuitInputs());
         const nullifier = poseidon([inputNullifier]);
         const poll = maciState.polls.get(pollId);
-        poll?.joinPoll(nullifier, user.keypair.pubKey, BigInt(DEFAULT_INITIAL_VOICE_CREDITS), BigInt(timestamp));
+        poll?.joinPoll(nullifier, user.keypair.pubKey, BigInt(DEFAULT_INITIAL_VOICE_CREDITS));
 
         // publish messages
         for (let j = 0; j < user.votes.length; j += 1) {

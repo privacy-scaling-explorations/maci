@@ -1,11 +1,13 @@
 /* eslint-disable no-console */
-import { PubKey } from "@maci-protocol/domainobjs";
+import { IVkObjectParams, PubKey, VerifyingKey } from "@maci-protocol/domainobjs";
 import { ZeroAddress } from "ethers";
 
-import type { MACI, Poll, IBasePolicy } from "../../../typechain-types";
+import type { IVerifyingKeyStruct } from "../../../ts/types";
+import type { MACI, Poll, IBasePolicy, PollFactory, VkRegistry } from "../../../typechain-types";
 
 import { EMode } from "../../../ts/constants";
-import { EDeploySteps } from "../../helpers/constants";
+import { extractVk } from "../../../ts/proofs";
+import { EDeploySteps, FULL_POLICY_NAMES } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
 import { EContracts } from "../../helpers/types";
@@ -44,6 +46,9 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
     const pollEndTimestamp = deployment.getDeployConfigField<number>(EContracts.Poll, "pollEndDate");
     const intStateTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "intStateTreeDepth");
     const messageBatchSize = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageBatchSize");
+    const stateTreeDepth =
+      deployment.getDeployConfigField<number>(EContracts.Poll, "stateTreeDepth") ||
+      (await maciContract.stateTreeDepth());
     const voteOptionTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "voteOptionTreeDepth");
     const relayers = deployment
       .getDeployConfigField<string | undefined>(EContracts.Poll, "relayers")
@@ -57,13 +62,66 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
 
     const policy =
       deployment.getDeployConfigField<EContracts | null>(EContracts.Poll, "policy") || EContracts.FreeForAllPolicy;
-    const policyContractAddress = storage.mustGetAddress(policy, hre.network.name, `poll-${pollId}`);
+    const fullPolicyName = FULL_POLICY_NAMES[policy as keyof typeof FULL_POLICY_NAMES] as unknown as EContracts;
+    const policyContractAddress = storage.mustGetAddress(fullPolicyName, hre.network.name, `poll-${pollId}`);
     const initialVoiceCreditProxyContractAddress = storage.mustGetAddress(
       EContracts.ConstantInitialVoiceCreditProxy,
       hre.network.name,
     );
 
     const voteOptions = deployment.getDeployConfigField<number>(EContracts.Poll, "voteOptions");
+
+    const vkRegistryContract = await deployment.getContract<VkRegistry>({
+      name: EContracts.VkRegistry,
+      address: vkRegistryContractAddress,
+    });
+
+    const pollJoiningZkeyPath = deployment.getDeployConfigField<string>(
+      EContracts.VkRegistry,
+      "zkeys.pollJoiningZkey.zkey",
+    );
+    const pollJoinedZkeyPath = deployment.getDeployConfigField<string>(
+      EContracts.VkRegistry,
+      "zkeys.pollJoinedZkey.zkey",
+    );
+
+    const [pollJoiningVk, pollJoinedVk] = await Promise.all([
+      pollJoiningZkeyPath && extractVk(pollJoiningZkeyPath),
+      pollJoinedZkeyPath && extractVk(pollJoinedZkeyPath),
+    ]).then((vks) => vks.map((vk: IVkObjectParams | "" | undefined) => vk && VerifyingKey.fromObj(vk)));
+
+    if (!pollJoiningVk) {
+      throw new Error("Poll joining zkey is not set");
+    }
+
+    if (!pollJoinedVk) {
+      throw new Error("Poll joined zkey is not set");
+    }
+
+    const [pollJoiningVkSig, pollJoinedVkSig] = await Promise.all([
+      vkRegistryContract.genPollJoiningVkSig(stateTreeDepth),
+      vkRegistryContract.genPollJoinedVkSig(stateTreeDepth),
+    ]);
+    const [pollJoiningVkOnchain, pollJoinedVkOnchain] = await Promise.all([
+      vkRegistryContract.getPollJoiningVkBySig(pollJoiningVkSig),
+      vkRegistryContract.getPollJoinedVkBySig(pollJoinedVkSig),
+    ]);
+
+    const isPollJoiningVkSet = pollJoiningVk.equals(VerifyingKey.fromContract(pollJoiningVkOnchain));
+
+    if (!isPollJoiningVkSet) {
+      await vkRegistryContract
+        .setPollJoiningVkKey(stateTreeDepth, pollJoiningVk.asContractParam() as IVerifyingKeyStruct)
+        .then((tx) => tx.wait());
+    }
+
+    const isPollJoinedVkSet = pollJoinedVk.equals(VerifyingKey.fromContract(pollJoinedVkOnchain));
+
+    if (!isPollJoinedVkSet) {
+      await vkRegistryContract
+        .setPollJoinedVkKey(stateTreeDepth, pollJoinedVk.asContractParam() as IVerifyingKeyStruct)
+        .then((tx) => tx.wait());
+    }
 
     const receipt = await maciContract
       .deployPoll({
@@ -72,6 +130,7 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
         treeDepths: {
           intStateTreeDepth,
           voteOptionTreeDepth,
+          stateTreeDepth,
         },
         messageBatchSize,
         coordinatorPubKey: unserializedKey.asContractParam(),
@@ -95,10 +154,9 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
     const tallyContractAddress = pollContracts.tally;
 
     const pollContract = await deployment.getContract<Poll>({ name: EContracts.Poll, address: pollContractAddress });
-    const extContracts = await pollContract.extContracts();
 
     const policyContract = await deployment.getContract<IBasePolicy>({
-      name: policy,
+      name: fullPolicyName,
       address: policyContractAddress,
     });
 
@@ -114,50 +172,49 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
       address: tallyContractAddress,
     });
 
-    // get the empty ballot root
-    const emptyBallotRoot = await pollContract.emptyBallotRoot();
+    const [pollFactory, messageProcessorFactory, tallyFactory] = await Promise.all([
+      deployment.getContract<PollFactory>({
+        name: EContracts.PollFactory,
+      }),
+      deployment.getContract<PollFactory>({
+        name: EContracts.MessageProcessorFactory,
+      }),
+      deployment.getContract<PollFactory>({
+        name: EContracts.TallyFactory,
+      }),
+    ]);
+
+    const [pollImplementation, messageProcessorImplementation, tallyImplementation] = await Promise.all([
+      pollFactory.IMPLEMENTATION(),
+      messageProcessorFactory.IMPLEMENTATION(),
+      tallyFactory.IMPLEMENTATION(),
+    ]);
 
     await Promise.all([
       storage.register({
         id: EContracts.Poll,
         key: `poll-${pollId}`,
+        implementation: pollImplementation,
         contract: pollContract,
-        args: [
-          pollStartTimestamp,
-          pollEndTimestamp,
-          {
-            intStateTreeDepth,
-            voteOptionTreeDepth,
-          },
-          messageBatchSize,
-          unserializedKey.asContractParam(),
-          extContracts,
-          emptyBallotRoot.toString(),
-          policyContractAddress,
-          initialVoiceCreditProxyContractAddress,
-        ],
+        args: [],
         network: hre.network.name,
       }),
 
       storage.register({
         id: EContracts.MessageProcessor,
         key: `poll-${pollId}`,
+        implementation: messageProcessorImplementation,
         contract: messageProcessorContract,
-        args: [verifierContractAddress, vkRegistryContractAddress, pollContractAddress, mode],
+        args: [],
         network: hre.network.name,
       }),
 
       storage.register({
         id: EContracts.Tally,
         key: `poll-${pollId}`,
+        implementation: tallyImplementation,
         contract: tallyContract,
-        args: [
-          verifierContractAddress,
-          vkRegistryContractAddress,
-          pollContractAddress,
-          messageProcessorContractAddress,
-          mode,
-        ],
+        args: [],
         network: hre.network.name,
       }),
     ]);

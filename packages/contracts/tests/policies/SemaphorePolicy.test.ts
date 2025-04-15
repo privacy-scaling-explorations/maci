@@ -55,6 +55,7 @@ describe("Semaphore", () => {
 
     [semaphorePolicy, semaphoreChecker] = await deploySemaphoreSignupPolicy(
       { semaphore: mockSemaphoreAddress, groupId: validGroupId },
+      {},
       signer,
       true,
     );

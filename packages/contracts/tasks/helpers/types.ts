@@ -517,6 +517,7 @@ export interface IStorageInstanceEntry {
     name?: string;
     impl?: string;
     subType?: string;
+    libraries?: string;
   };
 }
 
@@ -545,6 +546,16 @@ export interface IRegisterContract<ID = EContracts> {
   args?: unknown[];
 
   /**
+   * Implementation address
+   */
+  implementation?: string;
+
+  /**
+   * Linked libraries
+   */
+  libraries?: Libraries;
+
+  /**
    * Group key for same contracts
    */
   key?: BigNumberish;
@@ -559,60 +570,68 @@ export interface IRegisterContract<ID = EContracts> {
  * Enum represents policy types
  */
 export enum EPolicies {
-  FreeForAll = "FreeForAllPolicy",
-  Token = "TokenPolicy",
-  EAS = "EASPolicy",
-  GitcoinPassport = "GitcoinPassportPolicy",
-  Hats = "HatsPolicy",
-  Zupass = "ZupassPolicy",
-  Semaphore = "SemaphorePolicy",
-  MerkleProof = "MerkleProofPolicy",
-  AnonAadhaar = "AnonAadhaarPolicy",
+  FreeForAll = "@excubiae/contracts/contracts/extensions/freeForAll/FreeForAllPolicy.sol:FreeForAllPolicy",
+  Token = "@excubiae/contracts/contracts/extensions/token/TokenPolicy.sol:TokenPolicy",
+  EAS = "@excubiae/contracts/contracts/extensions/eas/EASPolicy.sol:EASPolicy",
+  GitcoinPassport = "@excubiae/contracts/contracts/extensions/gitcoint/GitcoinPassportPolicy.sol:GitcoinPassportPolicy",
+  Hats = "@excubiae/contracts/contracts/extensions/hats/HatsPolicy.sol:HatsPolicy",
+  Zupass = "@excubiae/contracts/contracts/extensions/zupass/ZupassPolicy.sol:ZupassPolicy",
+  Semaphore = "@excubiae/contracts/contracts/extensions/semaphore/SemaphorePolicy.sol:SemaphorePolicy",
+  MerkleProof = "@excubiae/contracts/contracts/extensions/merkle/MerkleProofPolicy.sol:MerkleProofPolicy",
+  AnonAadhaar = "@excubiae/contracts/contracts/extensions/anonAadhaar/AnonAadhaarPolicy.sol:AnonAadhaarPolicy",
+  ERC20Votes = "@excubiae/contracts/contracts/extensions/erc20Votes/ERC20VotesPolicy.sol:ERC20VotesPolicy",
+  ERC20 = "@excubiae/contracts/contracts/extensions/erc20/ERC20Policy.sol:ERC20Policy",
 }
 
 /**
  * Enum represents policyfactory types
  */
 export enum EPolicyFactories {
-  FreeForAll = "FreeForAllPolicyFactory",
-  Token = "TokenPolicyFactory",
-  EAS = "EASPolicyFactory",
-  GitcoinPassport = "GitcoinPassportPolicyFactory",
-  Hats = "HatsPolicyFactory",
-  Zupass = "ZupassPolicyFactory",
-  Semaphore = "SemaphorePolicyFactory",
-  MerkleProof = "MerkleProofPolicyFactory",
-  AnonAadhaar = "AnonAadhaarPolicyFactory",
+  FreeForAll = "@excubiae/contracts/contracts/extensions/freeForAll/FreeForAllPolicyFactory.sol:FreeForAllPolicyFactory",
+  Token = "@excubiae/contracts/contracts/extensions/token/TokenPolicyFactory.sol:TokenPolicyFactory",
+  EAS = "@excubiae/contracts/contracts/extensions/eas/EASPolicyFactory.sol:EASPolicyFactory",
+  GitcoinPassport = "@excubiae/contracts/contracts/extensions/gitcoin/GitcoinPassportPolicyFactory.sol:GitcoinPassportPolicyFactory",
+  Hats = "@excubiae/contracts/contracts/extensions/hats/HatsPolicyFactory.sol:HatsPolicyFactory",
+  Zupass = "@excubiae/contracts/contracts/extensions/zupass/ZupassPolicyFactory.sol:ZupassPolicyFactory",
+  Semaphore = "@excubiae/contracts/contracts/extensions/semaphore/SemaphorePolicyFactory.sol:SemaphorePolicyFactory",
+  MerkleProof = "@excubiae/contracts/contracts/extensions/merkle/MerkleProofPolicyFactory.sol:MerkleProofPolicyFactory",
+  AnonAadhaar = "@excubiae/contracts/contracts/extensions/anonAadhaar/AnonAadhaarPolicyFactory.sol:AnonAadhaarPolicyFactory",
+  ERC20Votes = "@excubiae/contracts/contracts/extensions/erc20votes/ERC20VotesPolicyFactory.sol:ERC20VotesPolicyFactory",
+  ERC20 = "@excubiae/contracts/contracts/extensions/erc20/ERC20PolicyFactory.sol:ERC20PolicyFactory",
 }
 
 /**
  * Enum represents checker types
  */
 export enum ECheckers {
-  FreeForAll = "FreeForAllChecker",
-  Token = "TokenChecker",
-  EAS = "EASChecker",
-  GitcoinPassport = "GitcoinPassportChecker",
-  Hats = "HatsChecker",
-  Zupass = "ZupassChecker",
-  Semaphore = "SemaphoreChecker",
-  MerkleProof = "MerkleProofChecker",
-  AnonAadhaar = "AnonAadhaarChecker",
+  FreeForAll = "@excubiae/contracts/contracts/extensions/freeForAll/FreeForAllChecker.sol:FreeForAllChecker",
+  Token = "@excubiae/contracts/contracts/extensions/token/TokenChecker.sol:TokenChecker",
+  EAS = "@excubiae/contracts/contracts/extensions/eas/EASChecker.sol:EASChecker",
+  GitcoinPassport = "@excubiae/contracts/contracts/extensions/gitcoin/GitcoinPassportChecker.sol:GitcoinPassportChecker",
+  Hats = "@excubiae/contracts/contracts/extensions/hats/HatsChecker.sol:HatsChecker",
+  Zupass = "@excubiae/contracts/contracts/extensions/zupass/ZupassChecker.sol:ZupassChecker",
+  Semaphore = "@excubiae/contracts/contracts/extensions/semaphore/SemaphoreChecker.sol:SemaphoreChecker",
+  MerkleProof = "@excubiae/contracts/contracts/extensions/merkle/MerkleProofChecker.sol:MerkleProofChecker",
+  AnonAadhaar = "@excubiae/contracts/contracts/extensions/anonAadhaar/AnonAadhaarChecker.sol:AnonAadhaarChecker",
+  ERC20Votes = "@excubiae/contracts/contracts/extensions/erc20Votes/ERC20VotesChecker.sol:ERC20VotesChecker",
+  ERC20 = "@excubiae/contracts/contracts/extensions/erc20/ERC20Checker.sol:ERC20Checker",
 }
 
 /**
  * Enum represents checker factory types
  */
 export enum ECheckerFactories {
-  FreeForAll = "FreeForAllCheckerFactory",
-  Token = "TokenCheckerFactory",
-  EAS = "EASCheckerFactory",
-  GitcoinPassport = "GitcoinPassportCheckerFactory",
-  Hats = "HatsCheckerFactory",
-  Zupass = "ZupassCheckerFactory",
-  Semaphore = "SemaphoreCheckerFactory",
-  MerkleProof = "MerkleProofCheckerFactory",
-  AnonAadhaar = "AnonAadhaarCheckerFactory",
+  FreeForAll = "@excubiae/contracts/contracts/extensions/freeForAll/FreeForAllCheckerFactory.sol:FreeForAllCheckerFactory",
+  Token = "@excubiae/contracts/contracts/extensions/token/TokenCheckerFactory.sol:TokenCheckerFactory",
+  EAS = "@excubiae/contracts/contracts/extensions/eas/EASCheckerFactory.sol:EASCheckerFactory",
+  GitcoinPassport = "@excubiae/contracts/contracts/extensions/gitcoin/GitcoinPassportCheckerFactory.sol:GitcoinPassportCheckerFactory",
+  Hats = "@excubiae/contracts/contracts/extensions/hats/HatsCheckerFactory.sol:HatsCheckerFactory",
+  Zupass = "@excubiae/contracts/contracts/extensions/zupass/ZupassCheckerFactory.sol:ZupassCheckerFactory",
+  Semaphore = "@excubiae/contracts/contracts/extensions/semaphore/SemaphoreCheckerFactory.sol:SemaphoreCheckerFactory",
+  MerkleProof = "@excubiae/contracts/contracts/extensions/merkle/MerkleProofCheckerFactory.sol:MerkleProofCheckerFactory",
+  AnonAadhaar = "@excubiae/contracts/contracts/extensions/anonAadhaar/AnonAadhaarCheckerFactory.sol:AnonAadhaarCheckerFactory",
+  ERC20Votes = "@excubiae/contracts/contracts/extensions/erc20votes/ERC20VotesCheckerFactory.sol:ERC20VotesCheckerFactory",
+  ERC20 = "@excubiae/contracts/contracts/extensions/erc20/ERC20CheckerFactory.sol:ERC20CheckerFactory",
 }
 
 /**
@@ -620,6 +639,7 @@ export enum ECheckerFactories {
  */
 export enum EInitialVoiceCreditProxies {
   Constant = "ConstantInitialVoiceCreditProxy",
+  ERC20Votes = "ERC20VotesInitialVoiceCreditProxy",
 }
 
 /**
@@ -627,6 +647,7 @@ export enum EInitialVoiceCreditProxies {
  */
 export enum EInitialVoiceCreditProxiesFactories {
   Constant = "ConstantInitialVoiceCreditProxyFactory",
+  ERC20Votes = "ERC20VotesInitialVoiceCreditProxyFactory",
 }
 
 /**
@@ -634,12 +655,18 @@ export enum EInitialVoiceCreditProxiesFactories {
  */
 export enum EContracts {
   ConstantInitialVoiceCreditProxy = "ConstantInitialVoiceCreditProxy",
+  ConstantInitialVoiceCreditProxyFactory = "ConstantInitialVoiceCreditProxyFactory",
+  ERC20VotesInitialVoiceCreditProxy = "ERC20VotesInitialVoiceCreditProxy",
+  ERC20VotesInitialVoiceCreditProxyFactory = "ERC20VotesInitialVoiceCreditProxyFactory",
+  ERC20Policy = "ERC20Policy",
   FreeForAllPolicy = "FreeForAllPolicy",
+  AnonAadhaarPolicy = "AnonAadhaarPolicy",
   EASPolicy = "EASPolicy",
   GitcoinPassportPolicy = "GitcoinPassportPolicy",
   HatsPolicy = "HatsPolicy",
   ZupassPolicy = "ZupassPolicy",
   TokenPolicy = "TokenPolicy",
+  ERC20VotesPolicy = "ERC20VotesPolicy",
   ZupassGroth16Verifier = "ZupassGroth16Verifier",
   SemaphorePolicy = "SemaphorePolicy",
   MerkleProofPolicy = "MerkleProofPolicy",

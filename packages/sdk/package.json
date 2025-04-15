@@ -41,16 +41,17 @@
     "@maci-protocol/core": "^3.0.0",
     "@maci-protocol/crypto": "^3.0.0",
     "@maci-protocol/domainobjs": "^3.0.0",
-    "multiformats": "9.9.0"
+    "multiformats": "9.9.0",
+    "snarkjs": "^0.7.5"
   },
   "devDependencies": {
     "@types/jest": "^29.5.2",
-    "@types/node": "^22.13.10",
+    "@types/node": "^22.14.0",
     "@types/snarkjs": "^0.7.9",
     "jest": "^29.5.0",
     "mocha": "^11.1.0",
     "nyc": "^17.1.0",
     "ts-jest": "^29.3.0",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.3"
   }
 }

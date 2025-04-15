@@ -2,6 +2,8 @@
 
 This repository contains the setup and instructions to run the MACI Relayer service along with MongoDB using Docker.
 
+For more details on how to use and integrate the offchain relayer service into your application, please refer to this [guide](/docs/category/offchain-relayer).
+
 ## Flow Diagram
 
 Below is a high-level diagram illustrating the flow of the Relayer Service:

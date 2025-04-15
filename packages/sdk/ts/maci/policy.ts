@@ -1,4 +1,4 @@
-import { EPolicies, MerkleProofChecker__factory as MerkleProofCheckerFactory } from "@maci-protocol/contracts";
+import { EPolicies } from "@maci-protocol/contracts";
 import {
   MACI__factory as MACIFactory,
   IBasePolicy__factory as SignUpPolicyFactory,
@@ -9,6 +9,9 @@ import {
   ZupassChecker__factory as ZupassCheckerFactory,
   EASChecker__factory as EASCheckerFactory,
   SemaphoreChecker__factory as SemaphoreCheckerFactory,
+  MerkleProofChecker__factory as MerkleProofCheckerFactory,
+  ERC20Checker__factory as ERC20CheckerFactory,
+  ERC20VotesChecker__factory as ERC20VotesCheckerFactory,
 } from "@maci-protocol/contracts/typechain-types";
 
 import type {
@@ -18,6 +21,8 @@ import type {
   IZupassPolicyData,
   IEASPolicyData,
   IMerkleProofPolicyData,
+  IERC20PolicyData,
+  IERC20VotesPolicyData,
 } from "./types";
 
 import { EPolicyTrait } from "./types";
@@ -49,6 +54,8 @@ const POLICY_CONTRACT_NAMES_BY_TRAIT = {
   [EPolicyTrait.Token]: EPolicies.Token,
   [EPolicyTrait.Zupass]: EPolicies.Zupass,
   [EPolicyTrait.MerkleProof]: EPolicies.MerkleProof,
+  [EPolicyTrait.ERC20]: EPolicies.ERC20,
+  [EPolicyTrait.ERC20Votes]: EPolicies.ERC20Votes,
 };
 
 /**
@@ -166,5 +173,53 @@ export const getMerkleProofPolicyData = async ({
 
   return {
     root: validRoot.toString(),
+  };
+};
+
+/**
+ * Get the ERC20 policy data
+ * @param IGetPolicyDataArgs - The arguments for the get erc20 policy data command
+ * @returns The erc20 policy data
+ */
+export const getERC20PolicyData = async ({ maciAddress, signer }: IGetPolicyDataArgs): Promise<IERC20PolicyData> => {
+  const maciContract = MACIFactory.connect(maciAddress, signer);
+
+  const policyContractAddress = await maciContract.signUpPolicy();
+
+  const policyContract = ERC20CheckerFactory.connect(policyContractAddress, signer);
+
+  const [token, threshold] = await Promise.all([policyContract.token(), policyContract.threshold()]);
+
+  return {
+    token: token.toString(),
+    threshold: threshold.toString(),
+  };
+};
+
+/**
+ * Get the ERC20 votes policy data
+ * @param IGetPolicyDataArgs - The arguments for the get erc20 votes policy data command
+ * @returns The erc20 votes policy data
+ */
+export const getERC20VotesPolicyData = async ({
+  maciAddress,
+  signer,
+}: IGetPolicyDataArgs): Promise<IERC20VotesPolicyData> => {
+  const maciContract = MACIFactory.connect(maciAddress, signer);
+
+  const policyContractAddress = await maciContract.signUpPolicy();
+
+  const policyContract = ERC20VotesCheckerFactory.connect(policyContractAddress, signer);
+
+  const [token, threshold, snapshotBlock] = await Promise.all([
+    policyContract.token(),
+    policyContract.threshold(),
+    policyContract.snapshotBlock(),
+  ]);
+
+  return {
+    token: token.toString(),
+    threshold: threshold.toString(),
+    snapshotBlock: snapshotBlock.toString(),
   };
 };

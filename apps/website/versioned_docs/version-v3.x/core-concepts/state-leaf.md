@@ -24,13 +24,13 @@ $sl = poseidon_4([sl_{A_x}, sl_{A_y}, sl_{v}, sl_{t}])$
 
 A blank state leaf $sl_B$ has the following value:
 
-$6769006970205099520508948723718471724660867171122235270773600567925038008762$
+$11672248758340751985123309654953904206381780234474872690580702076708041504880$
 
 This value is computed as such:
 
 $A_{b_x} = 10457101036533406547632367118273992217979173478358440826365724437999023779287$
 $A_{b_y} = 19824078218392094440610104313265183977899662750282163392862422243483260492317$
-$sl_B = poseidon_4([A_{b0}, A_{b1}, 0, 0])$
+$sl_B = poseidon_3([A_{b0}, A_{b1}, 0])$
 
 The code to derive $A_{b_x}$ and $A_{b_y}$ is [here](https://github.com/iden3/circomlib/blob/d5ed1c3ce4ca137a6b3ca48bec4ac12c1b38957a/src/pedersen_printbases.js). The function call required is `pedersenHash.getBasePoint('blake', 0)`
 

@@ -165,7 +165,6 @@ export interface IPollJoiningInputs {
 export interface IPollJoinedInputs {
   privKey: bigint;
   voiceCreditsBalance: bigint;
-  joinTimestamp: bigint;
   stateLeaf: bigint[];
   pathElements: bigint[][];
   pathIndices: bigint[];

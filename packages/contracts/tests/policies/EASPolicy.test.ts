@@ -34,6 +34,7 @@ describe("EAS", () => {
     easAddress = await mockEAS.getAddress();
     [easPolicy, easChecker] = await deployEASSignUpPolicy(
       { eas: easAddress, attester: signerAddress, schema: toBeArray(schema) },
+      {},
       signer,
       true,
     );

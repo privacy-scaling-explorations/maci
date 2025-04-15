@@ -19,6 +19,8 @@ import {
   PollFactory__factory as PollFactoryFactory,
   MessageProcessorFactory__factory as MessageProcessorFactoryFactory,
   MessageProcessor__factory as MessageProcessorFactory,
+  ERC20VotesPolicy__factory as ERC20VotesPolicyFactory,
+  ERC20Policy__factory as ERC20PolicyFactory,
   Tally__factory as TallyFactory,
   Poll__factory as PollFactory,
   MACI__factory as MACIFactory,
@@ -59,6 +61,8 @@ import {
   IUserOperation,
   IVkRegistryArgs,
   IZupassPolicyArgs,
+  IERC20VotesPolicyArgs,
+  IERC20PolicyArgs,
 } from "./types";
 import { estimateExtraGasLimit } from "./utils";
 
@@ -194,6 +198,39 @@ export class DeployerService {
           address: isAlreadyDeployed ? address : undefined,
           abi: GitcoinPassportPolicyFactory.abi,
           bytecode: GitcoinPassportPolicyFactory.bytecode,
+          alreadyDeployed: isAlreadyDeployed,
+        };
+      }
+
+      case EPolicies.ERC20Votes: {
+        storedArgs = this.storage.getContractArgs(policyType as unknown as EContracts, network);
+        isAlreadyDeployed =
+          !!storedArgs &&
+          storedArgs.length === 3 &&
+          storedArgs[0] === (args as IERC20VotesPolicyArgs).token &&
+          storedArgs[1] === (args as IERC20VotesPolicyArgs).factor &&
+          storedArgs[2] === (args as IERC20VotesPolicyArgs).snapshotBlock;
+
+        return {
+          address: isAlreadyDeployed ? address : undefined,
+          abi: ERC20VotesPolicyFactory.abi,
+          bytecode: ERC20VotesPolicyFactory.bytecode,
+          alreadyDeployed: isAlreadyDeployed,
+        };
+      }
+
+      case EPolicies.ERC20: {
+        storedArgs = this.storage.getContractArgs(policyType as unknown as EContracts, network);
+        isAlreadyDeployed =
+          !!storedArgs &&
+          storedArgs.length === 2 &&
+          storedArgs[0] === (args as IERC20PolicyArgs).token &&
+          storedArgs[1] === (args as IERC20PolicyArgs).threshold;
+
+        return {
+          address: isAlreadyDeployed ? address : undefined,
+          abi: ERC20PolicyFactory.abi,
+          bytecode: ERC20PolicyFactory.bytecode,
           alreadyDeployed: isAlreadyDeployed,
         };
       }
@@ -434,7 +471,8 @@ export class DeployerService {
       processMessagesZkeyPath,
       tallyVotesZkeyPath,
     });
-    const { stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth, messageBatchSize } = vkRegistryArgs;
+    const { stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth, pollStateTreeDepth, messageBatchSize } =
+      vkRegistryArgs;
     return {
       pollJoiningVk: pollJoiningVk!,
       pollJoinedVk: pollJoinedVk!,
@@ -444,6 +482,7 @@ export class DeployerService {
       intStateTreeDepth: Number(intStateTreeDepth),
       voteOptionTreeDepth: Number(voteOptionTreeDepth),
       messageBatchSize: Number(messageBatchSize),
+      pollStateTreeDepth: Number(pollStateTreeDepth),
       signer,
       mode,
       vkRegistryAddress: await vkRegistryContract.getAddress(),
@@ -708,6 +747,7 @@ export class DeployerService {
           "setVerifyingKeysBatch",
           [
             config.VkRegistry.args.stateTreeDepth,
+            config.VkRegistry.args.pollStateTreeDepth,
             config.VkRegistry.args.intStateTreeDepth,
             config.VkRegistry.args.voteOptionTreeDepth,
             config.VkRegistry.args.messageBatchSize,
@@ -850,6 +890,7 @@ export class DeployerService {
       intStateTreeDepth: config.intStateTreeDepth,
       voteOptionTreeDepth: config.voteOptionTreeDepth,
       messageBatchSize: config.messageBatchSize,
+      stateTreeDepth: config.pollStateTreeDepth,
       coordinatorPubKey: PubKey.deserialize(config.coordinatorPubkey),
       verifierContractAddress: verifierAddress,
       vkRegistryContractAddress: vkRegistryAddress,

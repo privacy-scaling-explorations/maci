@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
+import { Clone } from "@excubiae/contracts/contracts/proxy/Clone.sol";
+
 import { IMACI } from "./interfaces/IMACI.sol";
 import { Hasher } from "./crypto/Hasher.sol";
 import { IPoll } from "./interfaces/IPoll.sol";
@@ -14,7 +16,7 @@ import { DomainObjs } from "./utilities/DomainObjs.sol";
 /// @title Tally
 /// @notice The Tally contract is used during votes tallying
 /// and by users to verify the tally results.
-contract Tally is SnarkCommon, Hasher, DomainObjs, ITally {
+contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
   uint256 internal constant TREE_ARITY = 2;
   uint256 internal constant VOTE_OPTION_TREE_ARITY = 5;
 
@@ -52,11 +54,11 @@ contract Tally is SnarkCommon, Hasher, DomainObjs, ITally {
   // The final commitment to the state and ballot roots
   uint256 public sbCommitment;
 
-  IVerifier public immutable verifier;
-  IVkRegistry public immutable vkRegistry;
-  IPoll public immutable poll;
-  IMessageProcessor public immutable messageProcessor;
-  Mode public immutable mode;
+  IVerifier public verifier;
+  IVkRegistry public vkRegistry;
+  IPoll public poll;
+  IMessageProcessor public messageProcessor;
+  Mode public mode;
 
   // The tally results
   mapping(uint256 => TallyResult) public tallyResults;
@@ -78,13 +80,16 @@ contract Tally is SnarkCommon, Hasher, DomainObjs, ITally {
   error VotesNotTallied();
   error IncorrectSpentVoiceCredits();
 
-  /// @notice Create a new Tally contract
-  /// @param _verifier The Verifier contract
-  /// @param _vkRegistry The VkRegistry contract
-  /// @param _poll The Poll contract
-  /// @param _mp The MessageProcessor contract
-  /// @param _mode The mode of the poll
-  constructor(address _verifier, address _vkRegistry, address _poll, address _mp, Mode _mode) payable {
+  /// @notice Initializes the contract.
+  function _initialize() internal override {
+    super._initialize();
+
+    bytes memory data = _getAppendedBytes();
+    (address _verifier, address _vkRegistry, address _poll, address _mp, Mode _mode) = abi.decode(
+      data,
+      (address, address, address, address, Mode)
+    );
+
     verifier = IVerifier(_verifier);
     vkRegistry = IVkRegistry(_vkRegistry);
     poll = IPoll(_poll);
@@ -95,7 +100,7 @@ contract Tally is SnarkCommon, Hasher, DomainObjs, ITally {
   /// @notice Check if all ballots are tallied
   /// @return tallied whether all ballots are tallied
   function isTallied() public view returns (bool tallied) {
-    (uint8 intStateTreeDepth, ) = poll.treeDepths();
+    (uint8 intStateTreeDepth, , ) = poll.treeDepths();
     (uint256 numSignUps, ) = poll.numSignUpsAndMessages();
 
     // Require that there are untallied ballots left
@@ -121,7 +126,7 @@ contract Tally is SnarkCommon, Hasher, DomainObjs, ITally {
     updateSbCommitment();
 
     // get the batch size and start index
-    (uint8 intStateTreeDepth, ) = poll.treeDepths();
+    (uint8 intStateTreeDepth, , ) = poll.treeDepths();
     uint256 tallyBatchSize = TREE_ARITY ** intStateTreeDepth;
     uint256 batchStartIndex = tallyBatchNum * tallyBatchSize;
 
@@ -173,7 +178,7 @@ contract Tally is SnarkCommon, Hasher, DomainObjs, ITally {
     uint256 _newTallyCommitment,
     uint256[8] calldata _proof
   ) public view returns (bool isValid) {
-    (uint8 intStateTreeDepth, uint8 voteOptionTreeDepth) = poll.treeDepths();
+    (uint8 intStateTreeDepth, uint8 voteOptionTreeDepth, ) = poll.treeDepths();
     uint256[] memory circuitPublicInputs = getPublicCircuitInputs(_batchStartIndex, _newTallyCommitment);
     IMACI maci = poll.getMaciContract();
 
@@ -362,7 +367,7 @@ contract Tally is SnarkCommon, Hasher, DomainObjs, ITally {
       revert VotesNotTallied();
     }
 
-    (, uint8 voteOptionTreeDepth) = poll.treeDepths();
+    (, uint8 voteOptionTreeDepth, ) = poll.treeDepths();
     uint256 voteOptionsLength = args.voteOptionIndices.length;
 
     for (uint256 i = 0; i < voteOptionsLength; ) {

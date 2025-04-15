@@ -28,14 +28,14 @@
   "devDependencies": {
     "@types/chai-as-promised": "^7.1.8",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^22.13.10",
+    "@types/node": "^22.14.0",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.2",
     "hardhat-artifactor": "^0.2.0",
     "hardhat-contract-sizer": "^2.0.3",
     "mocha": "^11.1.0",
     "ts-mocha": "^11.1.0",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.3"
   },
   "dependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",

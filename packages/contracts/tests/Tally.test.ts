@@ -233,7 +233,7 @@ describe("TallyVotes", () => {
         );
       }
 
-      const [pollPolicyContract] = await deployFreeForAllSignUpPolicy(signer, true);
+      const [pollPolicyContract] = await deployFreeForAllSignUpPolicy({}, signer, true);
 
       // deploy a poll
       // deploy on chain poll
@@ -300,13 +300,13 @@ describe("TallyVotes", () => {
       poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       await vkRegistryContract.setPollJoiningVkKey(
-        STATE_TREE_DEPTH,
+        treeDepths.stateTreeDepth,
         testPollJoiningVk.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 10000000 },
       );
 
       await vkRegistryContract.setPollJoinedVkKey(
-        STATE_TREE_DEPTH,
+        treeDepths.stateTreeDepth,
         testPollJoinedVk.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 10000000 },
       );
@@ -323,10 +323,9 @@ describe("TallyVotes", () => {
 
       // join all user to the Poll
       for (let i = 0; i < users.length; i += 1) {
-        const timestamp = Math.floor(Date.now() / 1000);
         // join locally
         const nullifier = poseidon([BigInt(users[i].privKey.rawPrivKey)]);
-        poll.joinPoll(nullifier, pollKeys[i].pubKey, BigInt(initialVoiceCreditBalance), BigInt(timestamp));
+        poll.joinPoll(nullifier, pollKeys[i].pubKey, BigInt(initialVoiceCreditBalance));
 
         // join on chain
         // eslint-disable-next-line no-await-in-loop
@@ -554,7 +553,7 @@ describe("TallyVotes", () => {
         );
       }
 
-      const [pollPolicyContract] = await deployFreeForAllSignUpPolicy(signer, true);
+      const [pollPolicyContract] = await deployFreeForAllSignUpPolicy({}, signer, true);
 
       // deploy a poll
       // deploy on chain poll
@@ -622,14 +621,14 @@ describe("TallyVotes", () => {
 
       // set the verification keys on the vk smart contract
       await vkRegistryContract.setPollJoiningVkKey(
-        STATE_TREE_DEPTH,
+        treeDepths.stateTreeDepth,
         testPollJoiningVk.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 10000000 },
       );
 
       // set the verification keys on the vk smart contract
       await vkRegistryContract.setPollJoinedVkKey(
-        STATE_TREE_DEPTH,
+        treeDepths.stateTreeDepth,
         testPollJoinedVk.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 10000000 },
       );
@@ -646,10 +645,9 @@ describe("TallyVotes", () => {
 
       // join all user to the Poll
       for (let i = 0; i < users.length; i += 1) {
-        const timestamp = Math.floor(Date.now() / 1000);
         // join locally
         const nullifier = poseidon([BigInt(users[i].privKey.rawPrivKey), pollId]);
-        poll.joinPoll(nullifier, pollKeys[i].pubKey, BigInt(initialVoiceCreditBalance), BigInt(timestamp));
+        poll.joinPoll(nullifier, pollKeys[i].pubKey, BigInt(initialVoiceCreditBalance));
 
         // join on chain
         // eslint-disable-next-line no-await-in-loop

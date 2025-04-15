@@ -3,7 +3,7 @@ pragma circom 2.0.0;
 // local imports
 include "../utils/hashers.circom";
 include "../utils/privToPubKey.circom";
-include "../utils/trees/incrementalMerkleTree.circom";
+include "../utils/trees/BinaryMerkleRoot.circom";
 
 // Poll Joining Circuit
 // Allows a user to prove knowledge of a private key that is signed up to 
@@ -65,8 +65,6 @@ template PollJoined(stateTreeDepth) {
     signal input privKey;
     // User's voice credits balance
     signal input voiceCreditsBalance;
-    // Poll's joined timestamp
-    signal input joinTimestamp;
     // Path elements
     signal input pathElements[stateTreeDepth][STATE_TREE_ARITY - 1];
     // Path indices
@@ -79,7 +77,7 @@ template PollJoined(stateTreeDepth) {
      // User private to public key
     var derivedPubKey[2] = PrivToPubKey()(privKey);
 
-    var stateLeaf = PoseidonHasher(4)([derivedPubKey[0], derivedPubKey[1], voiceCreditsBalance, joinTimestamp]);
+    var stateLeaf = PoseidonHasher(3)([derivedPubKey[0], derivedPubKey[1], voiceCreditsBalance]);
 
     // Inclusion proof  
     var stateLeafQip = BinaryMerkleRoot(stateTreeDepth)(
@@ -91,3 +89,4 @@ template PollJoined(stateTreeDepth) {
 
     stateLeafQip === stateRoot;
 }
+

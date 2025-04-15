@@ -42,6 +42,8 @@ import {
   deployMaci,
   deployFreeForAllSignUpPolicy,
   genEmptyBallotRoots,
+  FreeForAllCheckerFactory__factory as FreeForAllCheckerFactoryFactory,
+  FreeForAllPolicyFactory__factory as FreeForAllPolicyFactoryFactory,
 } from "@maci-protocol/sdk";
 import { ZeroAddress, type Signer } from "ethers";
 
@@ -80,6 +82,14 @@ program
   .option("--poseidonT5Address <poseidonT5Address>", "PoseidonT5 contract address")
   .option("--poseidonT6Address <poseidonT6Address>", "PoseidonT6 contract address")
   .option("-g, --signupPolicyAddress <signupPolicyAddress>", "the signup policy contract address")
+  .option(
+    "--freeForAllCheckerFactoryAddress <freeForAllCheckerFactoryAddress>",
+    "the free for all checker factory address (optional, using for deployment optimization)",
+  )
+  .option(
+    "--freeForAllPolicyFactoryAddress <freeForAllPolicyFactoryAddress>",
+    "the free for all policy factory address (optional, using for deployment optimization)",
+  )
   .requiredOption("--signupPolicyContractName <signupPolicyContractName>", "the signup policy contract name")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
@@ -103,7 +113,19 @@ program
       });
 
       if (!signupPolicyContractAddress) {
-        const [contract] = await deployFreeForAllSignUpPolicy(signer, true);
+        const checkerFactory = cmdOptions.freeForAllCheckerFactoryAddress
+          ? FreeForAllCheckerFactoryFactory.connect(cmdOptions.freeForAllCheckerFactoryAddress, signer)
+          : undefined;
+
+        const policyFactory = cmdOptions.freeForAllPolicyFactoryAddress
+          ? FreeForAllPolicyFactoryFactory.connect(cmdOptions.freeForAllPolicyFactoryAddress, signer)
+          : undefined;
+
+        const [contract] = await deployFreeForAllSignUpPolicy(
+          { checker: checkerFactory, policy: policyFactory },
+          signer,
+          true,
+        );
         signupPolicyContractAddress = await contract.getAddress();
       }
 
@@ -306,6 +328,7 @@ program
   .requiredOption("-e, --end <pollEndDate>", "the poll end date", parseInt)
   .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the int state tree depth", parseInt)
   .requiredOption("-b, --msg-batch-size <messageBatchSize>", "the message batch size", parseInt)
+  .requiredOption("-s, --state-tree-depth <stateTreeDepth>", "the state tree depth", parseInt)
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
   .requiredOption("-p, --pubkey <coordinatorPubkey>", "the coordinator public key")
   .option(
@@ -368,6 +391,7 @@ program
         pollEndTimestamp: cmdObj.end,
         intStateTreeDepth: cmdObj.intStateTreeDepth,
         messageBatchSize: cmdObj.msgBatchSize,
+        stateTreeDepth: cmdObj.stateTreeDepth,
         voteOptionTreeDepth: cmdObj.voteOptionTreeDepth,
         coordinatorPubKey: PubKey.deserialize(cmdObj.pubkey),
         maciAddress,
@@ -473,6 +497,7 @@ program
   .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the intermediate state tree depth", parseInt)
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
   .requiredOption("-b, --msg-batch-size <messageBatchSize>", "the message batch size", parseInt)
+  .option("--poll-state-tree-depth <pollStateTreeDepth>", "the poll state tree depth", parseInt)
   .option(
     "--poll-joining-zkey <pollJoiningZkeyPath>",
     "the poll joining zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
@@ -530,6 +555,7 @@ program
         intStateTreeDepth: cmdObj.intStateTreeDepth,
         voteOptionTreeDepth: cmdObj.voteOptionTreeDepth,
         messageBatchSize: cmdObj.msgBatchSize,
+        pollStateTreeDepth: cmdObj.pollStateTreeDepth || cmdObj.stateTreeDepth,
         pollJoiningVk: pollJoiningVk!,
         pollJoinedVk: pollJoinedVk!,
         processMessagesVk: processVk!,

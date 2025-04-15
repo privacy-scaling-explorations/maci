@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
+import { Clone } from "@excubiae/contracts/contracts/proxy/Clone.sol";
+
 import { Params } from "./utilities/Params.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { LazyIMTData, InternalLazyIMT } from "./trees/LazyIMT.sol";
@@ -14,23 +16,29 @@ import { CurveBabyJubJub } from "./crypto/BabyJubJub.sol";
 /// which can be either votes or key change messages.
 /// @dev Do not deploy this directly. Use PollFactory.deploy() which performs some
 /// checks on the Poll constructor arguments.
-contract Poll is Params, Utilities, SnarkCommon, IPoll {
+contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
+  /// @notice The max number of poll signups
+  uint256 public maxSignups;
+
+  /// @notice The state tree arity
+  uint8 internal constant STATE_TREE_ARITY = 2;
+
   /// @notice The coordinator's public key
   PubKey public coordinatorPubKey;
 
   /// @notice Hash of the coordinator's public key
-  uint256 public immutable coordinatorPubKeyHash;
+  uint256 public coordinatorPubKeyHash;
 
   /// @notice the state root of the state merkle tree
   uint256 public mergedStateRoot;
 
   /// @notice The start date of the poll
-  uint256 public immutable startDate;
+  uint256 public startDate;
   /// @notice The end date of the poll
-  uint256 public immutable endDate;
+  uint256 public endDate;
 
   /// @notice The root of the empty ballot tree at a given voteOptionTree depth
-  uint256 public immutable emptyBallotRoot;
+  uint256 public emptyBallotRoot;
 
   /// @notice Whether the MACI contract's stateAq has been merged by this contract
   bool public stateMerged;
@@ -56,13 +64,13 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   uint8 public actualStateTreeDepth;
 
   /// @notice The number of valid vote options for the poll
-  uint256 public immutable voteOptions;
+  uint256 public voteOptions;
 
   /// @notice Depths of the merkle trees
   TreeDepths public treeDepths;
 
   /// @notice Message batch size for the poll
-  uint8 public immutable messageBatchSize;
+  uint8 public messageBatchSize;
 
   /// @notice The contracts used by the Poll
   ExtContracts public extContracts;
@@ -87,7 +95,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
 
   /// @notice The hash of a blank state leaf
   uint256 internal constant BLANK_STATE_LEAF_HASH =
-    uint256(6769006970205099520508948723718471724660867171122235270773600567925038008762);
+    uint256(11672248758340751985123309654953904206381780234474872690580702076708041504880);
 
   uint8 internal constant VOTE_TREE_ARITY = 5;
 
@@ -95,7 +103,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   mapping(uint256 => bool) public pollNullifiers;
 
   /// @notice The Id of this poll
-  uint256 public immutable pollId;
+  uint256 public pollId;
 
   /// @notice The array of the poll state tree roots for each poll join
   /// For the N'th poll join, the poll state tree root will be stored at the index N
@@ -115,6 +123,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   error NotRelayer();
   error StateLeafNotFound();
   error TooManyVoteOptions();
+  error TooManySignups();
 
   event PublishMessage(Message _message, PubKey _encPubKey);
   event MergeState(uint256 indexed _stateRoot, uint256 indexed _numSignups);
@@ -122,36 +131,35 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     uint256 indexed _pollPubKeyX,
     uint256 indexed _pollPubKeyY,
     uint256 _voiceCreditBalance,
-    uint256 _timestamp,
     uint256 _nullifier,
     uint256 _pollStateIndex
   );
   event ChainHashUpdated(uint256 indexed _chainHash);
   event IpfsHashAdded(bytes32 indexed _ipfsHash);
 
-  /// @notice Each MACI instance can have multiple Polls.
+  /// @notice Initializes the contract.
+  /// @dev Each MACI instance can have multiple Polls.
   /// When a Poll is deployed, its voting period starts immediately.
-  /// @param _startDate The start date of the poll
-  /// @param _endDate The end date of the poll
-  /// @param _treeDepths The depths of the merkle trees
-  /// @param _messageBatchSize The message batch size
-  /// @param _coordinatorPubKey The coordinator's public key
-  /// @param _extContracts The external contracts
-  /// @param _emptyBallotRoot The root of the empty ballot tree
-  /// @param _pollId The poll id
-  /// @param _voteOptions The number of valid vote options for the poll
-  constructor(
-    uint256 _startDate,
-    uint256 _endDate,
-    TreeDepths memory _treeDepths,
-    uint8 _messageBatchSize,
-    PubKey memory _coordinatorPubKey,
-    ExtContracts memory _extContracts,
-    uint256 _emptyBallotRoot,
-    uint256 _pollId,
-    address[] memory _relayers,
-    uint256 _voteOptions
-  ) payable {
+  function _initialize() internal override {
+    super._initialize();
+
+    bytes memory data = _getAppendedBytes();
+    (
+      uint256 _startDate,
+      uint256 _endDate,
+      TreeDepths memory _treeDepths,
+      uint8 _messageBatchSize,
+      PubKey memory _coordinatorPubKey,
+      ExtContracts memory _extContracts,
+      uint256 _emptyBallotRoot,
+      uint256 _pollId,
+      address[] memory _relayers,
+      uint256 _voteOptions
+    ) = abi.decode(
+        data,
+        (uint256, uint256, TreeDepths, uint8, PubKey, ExtContracts, uint256, uint256, address[], uint256)
+      );
+
     // check that the coordinator public key is valid
     if (!CurveBabyJubJub.isOnCurve(_coordinatorPubKey.x, _coordinatorPubKey.y)) {
       revert InvalidPubKey();
@@ -189,6 +197,8 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     // store the poll id
     pollId = _pollId;
 
+    maxSignups = uint256(STATE_TREE_ARITY) ** uint256(_treeDepths.stateTreeDepth);
+
     // set relayers
     for (uint256 index = 0; index < _relayers.length; ) {
       relayers[_relayers[index]] = true;
@@ -212,7 +222,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     batchHashes.push(NOTHING_UP_MY_SLEEVE);
     updateChainHash(placeholderLeaf);
 
-    InternalLazyIMT._init(pollStateTree, extContracts.maci.stateTreeDepth());
+    InternalLazyIMT._init(pollStateTree, treeDepths.stateTreeDepth);
     InternalLazyIMT._insert(pollStateTree, BLANK_STATE_LEAF_HASH);
     pollStateRootsOnJoin.push(BLANK_STATE_LEAF_HASH);
 
@@ -354,6 +364,11 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     bytes memory _signUpPolicyData,
     bytes memory _initialVoiceCreditProxyData
   ) external virtual isWithinVotingDeadline {
+    // ensure we do not have more signups than what the circuits support
+    if (pollStateTree.numberOfLeaves >= maxSignups) {
+      revert TooManySignups();
+    }
+
     // Whether the user has already joined
     if (pollNullifiers[_nullifier]) {
       revert UserAlreadyJoined();
@@ -377,7 +392,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     );
 
     // Store user in the pollStateTree
-    uint256 stateLeaf = hashStateLeaf(StateLeaf(_pubKey, voiceCreditBalance, block.timestamp));
+    uint256 stateLeaf = hashStateLeaf(StateLeaf(_pubKey, voiceCreditBalance));
 
     uint256 stateRoot = InternalLazyIMT._insert(pollStateTree, stateLeaf);
 
@@ -385,7 +400,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     pollStateRootsOnJoin.push(stateRoot);
 
     uint256 pollStateIndex = pollStateTree.numberOfLeaves - 1;
-    emit PollJoined(_pubKey.x, _pubKey.y, voiceCreditBalance, block.timestamp, _nullifier, pollStateIndex);
+    emit PollJoined(_pubKey.x, _pubKey.y, voiceCreditBalance, _nullifier, pollStateIndex);
   }
 
   /// @notice Verify the proof for Poll joining
@@ -401,7 +416,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
     uint256[8] memory _proof
   ) public view returns (bool isValid) {
     // Get the verifying key from the VkRegistry
-    VerifyingKey memory vk = extContracts.vkRegistry.getPollJoiningVk(extContracts.maci.stateTreeDepth());
+    VerifyingKey memory vk = extContracts.vkRegistry.getPollJoiningVk(treeDepths.stateTreeDepth);
 
     // Generate the circuit public input
     uint256[] memory circuitPublicInputs = getPublicJoiningCircuitInputs(_nullifier, _index, _pubKey);
@@ -415,7 +430,7 @@ contract Poll is Params, Utilities, SnarkCommon, IPoll {
   /// @return isValid Whether the proof is valid
   function verifyJoinedPollProof(uint256 _index, uint256[8] memory _proof) public view returns (bool isValid) {
     // Get the verifying key from the VkRegistry
-    VerifyingKey memory vk = extContracts.vkRegistry.getPollJoinedVk(extContracts.maci.stateTreeDepth());
+    VerifyingKey memory vk = extContracts.vkRegistry.getPollJoinedVk(treeDepths.stateTreeDepth);
 
     // Generate the circuit public input
     uint256[] memory circuitPublicInputs = getPublicJoinedCircuitInputs(_index);

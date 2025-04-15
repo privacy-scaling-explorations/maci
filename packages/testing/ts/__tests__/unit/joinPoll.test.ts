@@ -49,10 +49,18 @@ describe("joinPoll", function test() {
   before(async () => {
     signer = await getDefaultSigner();
 
-    const [signupPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+    const [signupPolicy, , signupPolicyFactory, signupCheckerFactory] = await deployFreeForAllSignUpPolicy(
+      {},
+      signer,
+      true,
+    );
     const signupPolicyContractAddress = await signupPolicy.getAddress();
 
-    const [pollPolicy] = await deployFreeForAllSignUpPolicy(signer, true);
+    const [pollPolicy] = await deployFreeForAllSignUpPolicy(
+      { policy: signupPolicyFactory, checker: signupCheckerFactory },
+      signer,
+      true,
+    );
     const pollPolicyContractAddress = await pollPolicy.getAddress();
 
     const [initialVoiceCreditProxy] = await deployConstantInitialVoiceCreditProxy(
