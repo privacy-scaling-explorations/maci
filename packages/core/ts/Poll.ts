@@ -49,6 +49,15 @@ import type { PathElements } from "@maci-protocol/crypto";
 import { STATE_TREE_ARITY, VOTE_OPTION_TREE_ARITY } from "./utils/constants";
 import { ProcessMessageErrors, ProcessMessageError } from "./utils/errors";
 
+// Define voting modes for TypeScript logic
+export const VotingMode = {
+  QV: 0,
+  NON_QV: 1,
+  FULL_CREDIT: 2,
+} as const;
+
+export type VotingMode = (typeof VotingMode)[keyof typeof VotingMode];
+
 /**
  * A representation of the Poll contract.
  */
@@ -136,6 +145,9 @@ export class Poll implements IPoll {
   // Poll voting nullifier
   pollNullifiers: Map<bigint, boolean>;
 
+  // Add a mode property to the Poll class
+  mode: VotingMode;
+
   // how many users signed up
   private numSignups = 0n;
 
@@ -147,6 +159,7 @@ export class Poll implements IPoll {
    * @param batchSizes - The sizes of the batches used in the poll.
    * @param maciStateRef - The reference to the MACI state.
    * @param pollId - The poll id
+   * @param mode - The voting mode for the poll
    */
   constructor(
     pollEndTimestamp: bigint,
@@ -155,11 +168,13 @@ export class Poll implements IPoll {
     batchSizes: BatchSizes,
     maciStateRef: MaciState,
     voteOptions: bigint,
+    mode: VotingMode = VotingMode.QV, // Default to QV for backward compatibility
   ) {
     this.pollEndTimestamp = pollEndTimestamp;
     this.coordinatorKeypair = coordinatorKeypair;
     this.treeDepths = treeDepths;
     this.batchSizes = batchSizes;
+    this.mode = mode; // Set the mode
     if (voteOptions > VOTE_OPTION_TREE_ARITY ** treeDepths.voteOptionTreeDepth) {
       throw new Error("Vote options cannot be greater than the number of leaves in the vote option tree");
     }
@@ -270,7 +285,7 @@ export class Poll implements IPoll {
    * @param encPubKey - The public key associated with the encryption private key.
    * @returns A number of variables which will be used in the zk-SNARK circuit.
    */
-  processMessage = (message: Message, encPubKey: PubKey, qv = true): IProcessMessagesOutput => {
+  processMessage = (message: Message, encPubKey: PubKey): IProcessMessagesOutput => {
     try {
       // Decrypt the message
       const sharedKey = Keypair.genEcdhSharedKey(this.coordinatorKeypair.privKey, encPubKey);
@@ -321,13 +336,30 @@ export class Poll implements IPoll {
       // but we need to ensure that we are not going >= balance
       // @note that above comment is valid for quadratic voting
       // for non quadratic voting, we simply remove the exponentiation
-      const voiceCreditsLeft = qv
-        ? stateLeaf.voiceCreditBalance +
+
+      let voiceCreditsLeft: bigint;
+
+      if (this.mode === VotingMode.QV) {
+        voiceCreditsLeft =
+          stateLeaf.voiceCreditBalance +
           originalVoteWeight * originalVoteWeight -
-          command.newVoteWeight * command.newVoteWeight
-        : stateLeaf.voiceCreditBalance + originalVoteWeight - command.newVoteWeight;
+          command.newVoteWeight * command.newVoteWeight;
+      } else if (this.mode === VotingMode.NON_QV) {
+        voiceCreditsLeft = stateLeaf.voiceCreditBalance + originalVoteWeight - command.newVoteWeight;
+      } else if (this.mode === VotingMode.FULL_CREDIT) {
+        // Check if the new vote weight equals the available balance
+        if (command.newVoteWeight !== stateLeaf.voiceCreditBalance + originalVoteWeight) {
+          throw new ProcessMessageError(ProcessMessageErrors.IncorrectVoteWeightForFullCredit);
+        }
+        // After voting with full credits, the balance should be 0
+        voiceCreditsLeft = 0n;
+      } else {
+        // Should not happen
+        throw new Error("Invalid voting mode");
+      }
 
       // If the remaining voice credits is insufficient, do nothing
+      // (This check might be redundant for FULL_CREDIT if the above check is correct)
       if (voiceCreditsLeft < 0n) {
         throw new ProcessMessageError(ProcessMessageErrors.InsufficientVoiceCredits);
       }
@@ -1329,6 +1361,7 @@ export class Poll implements IPoll {
       },
       this.maciStateRef,
       this.voteOptions,
+      this.mode,
     );
 
     copied.pubKeys = this.pubKeys.map((x) => x.copy());
@@ -1454,6 +1487,7 @@ export class Poll implements IPoll {
       json.batchSizes,
       maciState,
       BigInt(json.voteOptions),
+      json.mode as VotingMode,
     );
 
     // set all properties

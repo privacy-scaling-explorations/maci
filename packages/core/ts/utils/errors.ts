@@ -10,6 +10,7 @@ export enum ProcessMessageErrors {
   InsufficientVoiceCredits = "insufficient voice credits",
   InvalidVoteOptionIndex = "invalid vote option index",
   FailedDecryption = "failed decryption due to either wrong encryption public key or corrupted ciphertext",
+  IncorrectVoteWeightForFullCredit = "Vote weight must equal full available balance in FULL_CREDIT mode",
 }
 
 /**

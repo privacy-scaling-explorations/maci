@@ -11,7 +11,8 @@ contract DomainObjs {
   /// @notice voting modes
   enum Mode {
     QV,
-    NON_QV
+    NON_QV,
+    FULL_CREDIT
   }
 
   /// @title Message
