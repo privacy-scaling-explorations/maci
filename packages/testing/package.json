@@ -40,7 +40,7 @@
   "dependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "ethers": "^6.13.5",
-    "hardhat": "^2.22.19",
+    "hardhat": "^2.23.0",
     "@maci-protocol/circuits": "^3.0.0",
     "@maci-protocol/cli": "^3.0.0",
     "@maci-protocol/core": "^3.0.0",
