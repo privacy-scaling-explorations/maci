@@ -21,22 +21,22 @@ To install MACI you need to run the following commands:
 ```bash
 git clone https://github.com/privacy-scaling-explorations/maci.git && \
 cd maci && \
-git checkout v2.4.0 && \
+git checkout v2.5.0 && \
 pnpm i && \
 pnpm run build
 ```
 
 :::note
-We suggest you use the latest released version. You can verify the [latest here](https://github.com/privacy-scaling-explorations/maci/releases).
+We suggest you use the latest released version. You can check all the releases [here](https://github.com/privacy-scaling-explorations/maci/releases).
 :::
 
 #### Decide whether you need to compile new circuits or use the test ones
 
 If you are going to be making any changes to the circom circuits, then you can follow the [compile circuits guide](./guides/compile-circuits.md) and skip the next section.
 
-### Download the `.zkey` files
+### Download the zero knowledge artifacts
 
-MACI has two main zk-SNARK circuits. Each circuit is parameterised. There should be one
+MACI has two main zk-SNARK circuits, and each of them is parameterized. There should be one
 `.zkey` file for each circuit and set of parameters.
 
 Unless you wish to generate a fresh set of `.zkey` files, you should obtain
@@ -44,12 +44,12 @@ them from someone who has performed a multi-party trusted setup for said
 circuits. For more details on which artifacts have undergone a trusted setup, please refer to the [Trusted Setup](/docs/security/trusted-setup) page.
 
 :::important
-Note the locations of the `.zkey` files as the CLI requires them as command-line flags.
+Note the locations of the `.zkey` files cause you will need it when deploying contracts.
 :::
 
 #### Download test artifacts
 
-For quickly testing MACI or trying it on a testnet we suggest using the test artifacts, using the latest dev updates you can do it by running:
+For all but production use cases, we suggest using the test artifacts, with the latest dev updates you can do it by running:
 
 ```bash
 pnpm download-zkeys:test
@@ -57,7 +57,7 @@ pnpm download-zkeys:test
 
 #### Download ceremony artifacts
 
-For production you need to use the ceremony artifacts which have undergone a trusted setup, you can download it with the command:
+For production you need to use the ceremony artifacts which have undergone a trusted setup, you can download them with the command:
 
 ```bash
 pnpm download-zkeys:ceremony
@@ -82,19 +82,13 @@ Make sure to include a mnemonic and RPC url (make sure to replace NETWORK with t
 
 ```js
 MNEMONIC = "your_ethereum_secret_key";
-{
-  NETWORK;
-}
-_RPC_URL = "the_eth_provider_url";
-{
-  NETWORK;
-}
-_ETHERSCAN_API_KEY = "etherscan api key";
+NETWORK_RPC_URL = "the_eth_provider_url";
+NETWORK_ETHERSCAN_API_KEY = "etherscan api key";
 ```
 
 ### Generate Coordinator Keys
 
-Before deploying a Poll, make sure you have set the coordinator public to which you own the private key. You can generate a new one using maci-cli by running the following commands:
+In order to run MACI polls, a coordinator is required to publish their MACI public key. You will need to generate a MACI keypair, and treat the private key just as your ethereum private keys. Please store them in a safe place as you won't be able to finish a round if you lose access, or if compromised a bad actor could decrypt the vote and publish them online. You can generate a new key pair using maci-cli by running the following commands:
 
 ```bash
 cd packages/cli && \
@@ -113,27 +107,23 @@ cp deploy-config-example.json deploy-config.json
 
 #### ConstantInitialVoiceCreditProxy
 
-Defines how many credits will get each voter.
+Specifies the number of credits allocated to each voter.
 
 | Property   | Description                                              |
 | ---------- | -------------------------------------------------------- |
-| **deploy** | Defines if the contract is needs to be deployed.         |
-| **amount** | Defines how many vote credits will get each participant. |
-
-:::important
-The current deployed contract has **99** as the voice credits amount.
-:::
+| **deploy** | Defines if the contract needs to be deployed.            |
+| **amount** | Defines how many vote credits each participant will get. |
 
 #### Gatekeeper
 
-MACI uses a "gatekeeper" contract to configure and enforce the eligibility criteria of voters who can participate in MACI polls. In other words, it is a way to allowlist signups to the system. Operators of MACI can use the gatekeeper contract to configure signup eligibility and to protect against sybil attacks in their polls. Please refer to the [gatekeepers section](/docs/technical-references/smart-contracts/Gatekeepers) for more information on the supported Gatekeepers.
+MACI uses a "gatekeeper" contract to configure and enforce the eligibility criteria of voters who can participate in MACI polls. In other words, it is a way to allowlist signups to the system to protect against sybil attacks. Please refer to the [gatekeeper page in the documentation](/docs/technical-references/smart-contracts/Gatekeepers) for more information on the supported Gatekeepers.
 
 | Property   | Description                                      |
 | ---------- | ------------------------------------------------ |
 | **deploy** | Defines if the contract is going to be deployed. |
 
 :::important
-For testing we suggest using the **FreeForAllGatekeeper**.
+For testing we suggest using the **FreeForAllGatekeeper** as it allows anyone to signup on MACI.
 :::
 
 #### MACI
@@ -141,11 +131,11 @@ For testing we suggest using the **FreeForAllGatekeeper**.
 | Property           | Description                                 |
 | ------------------ | ------------------------------------------- |
 | **stateTreeDepth** | Defines how many users the system supports. |
-| **gatekeeper**     | Defines which gatekeeper will use.          |
+| **gatekeeper**     | Defines which gatekeeper to use.            |
 
 #### VkRegistry
 
-Verifying key registry used for generating proofs.
+The VkRegistry hold the verifying keys used to verify the proofs, on the zkeys field we define the path to the zero knowledge artifacts we downloaded in the previous steps.
 
 | Property                | Description                                                                    |
 | ----------------------- | ------------------------------------------------------------------------------ |
@@ -190,19 +180,19 @@ pnpm deploy:NETWORK --incremental
 
 ### Deploy Poll
 
-To deploy your first Poll you can run the following command:
+Before deploying a Poll, make sure you have set the coordinator MACI public key to which you own the private key. To deploy your first Poll you can run the following command:
 
 ```sh
 pnpm deploy-poll:NETWORK
 ```
 
 :::important
-Making another poll doesn't require deploying MACI contracts again, you can deploy another poll running the `pnpm deploy-poll:NETWORK` command and then use the updated poll-id.
+Starting another poll doesn't require deploying MACI contracts again, you can run `pnpm deploy-poll:NETWORK` command and then use the new poll-id.
 :::
 
 ## Poll Finalization
 
-As a coordinator, first you need to merge signups and messages (votes). Messages are stored in a queue so when the poll is over, the coordinator needs to create the tree from the queue ([AccQueue](/docs/core-concepts/merkle-trees#accumulator-queue)). This optimization is needed to reduce gas cost for voters. Then coordinator generates proofs for the message processing, and tally calculations. This allows to publish the poll results on-chain and then everyone can verify the results when the poll is over. You run a merge with:
+As a coordinator, first you need to merge signups and messages (votes). Messages are stored in a queue so when the poll is over, the coordinator needs to create the merkle tree from the queue ([AccQueue](/docs/v2.x/core-concepts/merkle-trees#accumulator-queue)). This optimization is needed to reduce gas cost for voters. Then the coordinator generates proofs for the message processing, and tally calculations. This allows to publish the poll results on-chain and then everyone can verify the results when the poll is over. You run a merge with:
 
 ```bash
 pnpm merge:[network] --poll [poll-id]
@@ -216,15 +206,26 @@ pnpm run prove:[network] --poll [poll-id] \
     --tally-file ../results/tally.json \
     --output-dir ../results/proofs/ \
     --start-block [block-number]
+    --blocks-per-batch [number-of-blocks]
 ```
 
 :::important
-We suggest including the --start-block flag, proving requires fetching all events from the smart contracts and by default starts from block zero, this would take a lot of time and is error-prone due to RPC provider limitations.
+You can reduce the time of the proving by including more blocks per batch, you can try with 500.
 :::
+
+#### Submit On-chain
+
+Now it's time to submit the poll results on-chain so that everyone can verify the results:
+
+```bash
+pnpm submitOnChain:[network] --poll [poll-id] \
+    --output-dir proofs/ \
+    --tally-file proofs/tally.json
+```
 
 ### Tally
 
-After proofs are generated, and results tallied, the results (Tally) is written to a file. This file contains the result of a Poll. Let's take a look at one:
+Once the proofs are generated, and results tallied, the results (Tally) are written to a file. Let's take a look at one:
 
 ```json
 {
@@ -305,7 +306,7 @@ After proofs are generated, and results tallied, the results (Tally) is written 
 }
 ```
 
-We see that there is an array named results, this contains the aggregated votes for each option, where each option is represented by an index in the array. In this case above, the first option (index 0) received a total of 9 votes, where every other option did not receive any votes.
+We observe an array named results, which holds the aggregated votes for each option. Each option corresponds to an index in the array. In the example above, the first option (index 0) received a total of 9 votes, while all other options received no votes
 
 The `totalSpentVoiceCredits` object contains the total amount of voice credits spent in the poll. This is the sum of all voice credits spent by all voters, and in quadratic voting, is the sum of the squares of all votes.
 

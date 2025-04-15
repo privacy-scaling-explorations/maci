@@ -1,8 +1,6 @@
 /* eslint-disable no-console */
-import { Network } from "hardhat/types";
-import { cleanThreads, extractVk, genProof, verifyProof } from "maci-circuits";
-import { CircuitInputs, IJsonMaciState, MaciState, Poll } from "maci-core";
-import { genTreeCommitment, hash3, hashLeftRight } from "maci-crypto";
+import { CircuitInputs, IJsonMaciState, MaciState, Poll } from "@maci-protocol/core";
+import { genTreeCommitment, hash3, hashLeftRight } from "@maci-protocol/crypto";
 
 import fs from "fs";
 import path from "path";
@@ -15,10 +13,12 @@ import type {
   TallyData,
 } from "./types";
 import type { Proof } from "../../ts/types";
+import type { IVkObjectParams } from "@maci-protocol/domainobjs";
 import type { BigNumberish } from "ethers";
-import type { IVkObjectParams } from "maci-domainobjs";
 
-import { asHex } from "../../ts/utils";
+import { logMagenta, info, logGreen, success } from "../../ts/logger";
+import { extractVk, genProofSnarkjs, genProofRapidSnark, verifyProof } from "../../ts/proofs";
+import { asHex, cleanThreads } from "../../ts/utils";
 
 /**
  * Proof generator class for message processing and tally.
@@ -82,6 +82,7 @@ export class ProofGenerator {
     maciPrivateKey,
     coordinatorKeypair,
     signer,
+    ipfsMessageBackupFiles,
     outputDir,
     options: { transactionHash, stateFile, startBlock, endBlock, blocksPerBatch },
   }: IPrepareStateParams): Promise<MaciState> {
@@ -129,20 +130,21 @@ export class ProofGenerator {
       fromBlock = tx?.blockNumber ?? defaultStartBlock;
     }
 
-    console.log(`starting to fetch logs from block ${fromBlock}`);
+    logMagenta({ text: info(`Starting to fetch logs from block ${fromBlock}`) });
 
     const maciContractAddress = await maciContract.getAddress();
 
     return import("../../ts/genMaciState").then(({ genMaciStateFromContract }) =>
-      genMaciStateFromContract(
-        signer.provider!,
-        maciContractAddress,
+      genMaciStateFromContract({
+        provider: signer.provider!,
+        address: maciContractAddress,
         coordinatorKeypair,
-        BigInt(pollId),
+        pollId: BigInt(pollId),
         fromBlock,
-        blocksPerBatch,
-        endBlock || defaultEndBlock,
-      ),
+        blocksPerRequest: blocksPerBatch,
+        endBlock: endBlock || defaultEndBlock,
+        ipfsMessageBackupFiles,
+      }),
     );
   }
 
@@ -179,9 +181,9 @@ export class ProofGenerator {
    * @returns message processing proofs
    */
   async generateMpProofs(options?: IGenerateProofsOptions): Promise<Proof[]> {
+    logMagenta({ text: info(`Generating proofs of message processing...`) });
     performance.mark("mp-proofs-start");
 
-    console.log(`Generating proofs of message processing...`);
     const { messageBatchSize } = this.poll.batchSizes;
     const numMessages = this.poll.messages.length;
     let totalMessageBatches = numMessages <= messageBatchSize ? 1 : Math.floor(numMessages / messageBatchSize);
@@ -204,10 +206,10 @@ export class ProofGenerator {
         // generate the proof for this batch
         inputs.push(circuitInputs);
 
-        console.log(`Progress: ${this.poll.numBatchesProcessed} / ${totalMessageBatches}`);
+        logMagenta({ text: info(`Progress: ${this.poll.numBatchesProcessed} / ${totalMessageBatches}`) });
       }
 
-      console.log("Wait until proof generation is finished");
+      logMagenta({ text: info("Wait until proof generation is finished") });
 
       const processZkey = await extractVk(this.mp.zkey, false);
 
@@ -220,7 +222,7 @@ export class ProofGenerator {
         ),
       ).then((data) => data.reduce((acc, x) => acc.concat(x), []));
 
-      console.log("Proof generation is finished");
+      logGreen({ text: success("Proof generation is finished") });
 
       // cleanup threads
       await cleanThreads();
@@ -241,18 +243,20 @@ export class ProofGenerator {
   /**
    * Generate tally proofs
    *
-   * @param network - current network
+   * @param networkName - current network name
+   * @param chainId - current chain id
    * @returns tally proofs
    */
   async generateTallyProofs(
-    network: Network,
+    networkName: string,
+    chainId?: string,
     options?: IGenerateProofsOptions,
   ): Promise<{ proofs: Proof[]; tallyData: TallyData }> {
+    logMagenta({ text: info(`Generating proofs of vote tallying...`) });
     performance.mark("tally-proofs-start");
 
-    console.log(`Generating proofs of vote tallying...`);
     const { tallyBatchSize } = this.poll.batchSizes;
-    const numStateLeaves = this.poll.stateLeaves.length;
+    const numStateLeaves = this.poll.pollStateLeaves.length;
     let totalTallyBatches = numStateLeaves <= tallyBatchSize ? 1 : Math.floor(numStateLeaves / tallyBatchSize);
     if (numStateLeaves > tallyBatchSize && numStateLeaves % tallyBatchSize > 0) {
       totalTallyBatches += 1;
@@ -269,10 +273,10 @@ export class ProofGenerator {
 
         inputs.push(tallyCircuitInputs);
 
-        console.log(`Progress: ${this.poll.numBatchesTallied} / ${totalTallyBatches}`);
+        logMagenta({ text: info(`Progress: ${this.poll.numBatchesTallied} / ${totalTallyBatches}`) });
       }
 
-      console.log("Wait until proof generation is finished");
+      logMagenta({ text: info("Wait until proof generation is finished") });
 
       const tallyVk = await extractVk(this.tally.zkey, false);
 
@@ -285,7 +289,7 @@ export class ProofGenerator {
         ),
       ).then((data) => data.reduce((acc, x) => acc.concat(x), []));
 
-      console.log("Proof generation is finished");
+      logGreen({ text: success("Proof generation is finished") });
 
       // cleanup threads
       await cleanThreads();
@@ -311,8 +315,8 @@ export class ProofGenerator {
       const tallyFileData: TallyData = {
         maci: this.maciContractAddress,
         pollId: this.poll.pollId.toString(),
-        network: network.name,
-        chainId: network.config.chainId?.toString(),
+        network: networkName,
+        chainId,
         isQuadratic: Boolean(this.useQuadraticVoting),
         tallyAddress: this.tallyContractAddress,
         newTallyCommitment: asHex(tallyCircuitInputs!.newTallyCommitment as BigNumberish),
@@ -355,11 +359,11 @@ export class ProofGenerator {
 
       await fs.promises.writeFile(this.tallyOutputFile, JSON.stringify(tallyFileData, null, 4));
 
-      console.log(`Tally file:\n${JSON.stringify(tallyFileData, null, 4)}\n`);
+      logGreen({ text: success(`Tally file:\n${JSON.stringify(tallyFileData, null, 4)}\n`) });
 
       // compare the commitments
       if (asHex(newTallyCommitment) === tallyFileData.newTallyCommitment) {
-        console.log("The tally commitment is correct");
+        logGreen({ text: success("The tally commitment is correct") });
       } else {
         throw new Error("Error: the newTallyCommitment is invalid.");
       }
@@ -393,14 +397,19 @@ export class ProofGenerator {
   ): Promise<Proof[]> {
     const proofs: Proof[] = [];
 
-    const { proof, publicSignals } = await genProof({
-      inputs: circuitInputs,
-      useWasm: Boolean(circuitFiles.wasm),
-      zkeyPath: circuitFiles.zkey,
-      rapidsnarkExePath: this.rapidsnark,
-      witnessExePath: circuitFiles.witgen,
-      wasmPath: circuitFiles.wasm,
-    });
+    const { proof, publicSignals } = circuitFiles.wasm
+      ? await genProofSnarkjs({
+          inputs: circuitInputs,
+          zkeyPath: circuitFiles.zkey,
+          silent: true,
+          wasmPath: circuitFiles.wasm,
+        })
+      : await genProofRapidSnark({
+          inputs: circuitInputs,
+          zkeyPath: circuitFiles.zkey,
+          rapidsnarkExePath: this.rapidsnark,
+          witnessExePath: circuitFiles.witgen,
+        });
 
     // verify it
     // eslint-disable-next-line no-await-in-loop

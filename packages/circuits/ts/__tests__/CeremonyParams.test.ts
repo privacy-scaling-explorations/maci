@@ -1,11 +1,12 @@
+import { MaciState, Poll, STATE_TREE_ARITY, MESSAGE_BATCH_SIZE } from "@maci-protocol/core";
+import { hash5, IncrementalQuinTree, poseidon } from "@maci-protocol/crypto";
+import { PrivKey, Keypair, PCommand, Message, Ballot } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
-import { MaciState, Poll, STATE_TREE_ARITY, MESSAGE_BATCH_SIZE } from "maci-core";
-import { hash5, IncrementalQuinTree, poseidon } from "maci-crypto";
-import { PrivKey, Keypair, PCommand, Message, Ballot } from "maci-domainobjs";
 
 import { IProcessMessagesInputs, ITallyVotesInputs } from "../types";
 
+import { maxVoteOptions } from "./utils/constants";
 import { generateRandomIndex, circomkitInstance } from "./utils/utils";
 
 describe("Ceremony param tests", () => {
@@ -21,6 +22,7 @@ describe("Ceremony param tests", () => {
   const treeDepths = {
     intStateTreeDepth: 1,
     voteOptionTreeDepth: params.voteOptionTreeDepth,
+    stateTreeDepth: params.stateTreeDepth,
   };
 
   const voiceCreditBalance = BigInt(100);
@@ -54,12 +56,13 @@ describe("Ceremony param tests", () => {
         "currentBallotsPathElements",
         "currentVoteWeights",
         "currentVoteWeightsPathElements",
+        "voteOptions",
       ]
     >;
 
     before(async () => {
       circuit = await circomkitInstance.WitnessTester("processMessages", {
-        file: "./core/qv/processMessages",
+        file: "./coordinator/qv/processMessages",
         template: "ProcessMessages",
         params: [params.stateTreeDepth, MESSAGE_BATCH_SIZE, params.voteOptionTreeDepth],
       });
@@ -78,28 +81,28 @@ describe("Ceremony param tests", () => {
       before(() => {
         // Sign up and publish
         const userKeypair = new Keypair(new PrivKey(BigInt(1)));
-        maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+        maciState.signUp(userKeypair.pubKey);
 
         pollId = maciState.deployPoll(
           BigInt(Math.floor(Date.now() / 1000) + duration),
           treeDepths,
           MESSAGE_BATCH_SIZE,
           coordinatorKeypair,
+          maxVoteOptions,
         );
 
         poll = maciState.polls.get(pollId)!;
 
         // update the state
-        poll.updatePoll(BigInt(maciState.stateLeaves.length));
+        poll.updatePoll(BigInt(maciState.pubKeys.length));
 
         // Join the poll
         const { privKey } = userKeypair;
         const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
 
         const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-        const timestamp = BigInt(Math.floor(Date.now() / 1000));
 
-        stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp));
+        stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance));
 
         // First command (valid)
         const command = new PCommand(
@@ -201,7 +204,7 @@ describe("Ceremony param tests", () => {
 
     before(async () => {
       testCircuit = await circomkitInstance.WitnessTester("tallyVotes", {
-        file: "./core/qv/tallyVotes",
+        file: "./coordinator/qv/tallyVotes",
         template: "TallyVotes",
         params: [14, 1, 3],
       });
@@ -221,28 +224,28 @@ describe("Ceremony param tests", () => {
         const commands: PCommand[] = [];
         // Sign up and publish
         const userKeypair = new Keypair();
-        maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+        maciState.signUp(userKeypair.pubKey);
 
         pollId = maciState.deployPoll(
           BigInt(Math.floor(Date.now() / 1000) + duration),
           treeDepths,
           MESSAGE_BATCH_SIZE,
           coordinatorKeypair,
+          maxVoteOptions,
         );
 
         poll = maciState.polls.get(pollId)!;
 
         // update the state
-        poll.updatePoll(BigInt(maciState.stateLeaves.length));
+        poll.updatePoll(BigInt(maciState.pubKeys.length));
 
         // Join the poll
         const { privKey } = userKeypair;
         const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
 
         const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-        const timestamp = BigInt(Math.floor(Date.now() / 1000));
 
-        stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp));
+        stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance));
 
         // First command (valid)
         const command = new PCommand(

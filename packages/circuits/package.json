@@ -1,6 +1,7 @@
 {
-  "name": "maci-circuits",
-  "version": "2.5.0",
+  "name": "@maci-protocol/circuits",
+  "version": "3.0.0",
+  "private": false,
   "description": "zk-SNARK circuits for MACI",
   "main": "build/ts/index.js",
   "files": [
@@ -11,6 +12,9 @@
     "README.md",
     "CHANGELOG.md"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build-test-circuits-c": "ts-node ./ts/compile.ts --cWitness",
     "build-test-circuits-wasm": "ts-node ./ts/compile.ts",
@@ -35,31 +39,32 @@
     "test:tallyVotes": "pnpm run mocha-test ts/__tests__/TallyVotes.test.ts",
     "test:ceremonyParams": "pnpm run mocha-test ts/__tests__/CeremonyParams.test.ts",
     "test:incrementalQuinaryTree": "pnpm run mocha-test ts/__tests__/IncrementalQuinaryTree.test.ts",
-    "test:pollJoining": "pnpm run mocha-test ts/__tests__/PollJoining.test.ts"
+    "test:pollJoining": "pnpm run mocha-test ts/__tests__/PollJoining.test.ts",
+    "test:pollJoined": "pnpm run mocha-test ts/__tests__/PollJoined.test.ts"
   },
   "dependencies": {
     "@zk-kit/circuits": "^0.4.0",
-    "circomkit": "^0.3.1",
+    "circomkit": "^0.3.2",
     "circomlib": "^2.0.5",
-    "maci-core": "^2.5.0",
-    "maci-crypto": "^2.5.0",
-    "maci-domainobjs": "^2.5.0",
-    "snarkjs": "^0.7.5"
+    "@maci-protocol/core": "^3.0.0",
+    "@maci-protocol/crypto": "^3.0.0",
+    "@maci-protocol/domainobjs": "^3.0.0",
+    "@maci-protocol/sdk": "^1.0.0"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
     "@types/chai-as-promised": "^7.1.8",
-    "@types/mocha": "^10.0.8",
-    "@types/node": "^22.9.0",
-    "@types/snarkjs": "^0.7.8",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.14.0",
+    "@types/snarkjs": "^0.7.9",
     "@zk-kit/baby-jubjub": "^1.0.3",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.2",
-    "fast-check": "^3.23.1",
-    "glob": "^11.0.0",
-    "mocha": "^10.7.3",
-    "ts-mocha": "^10.0.0",
+    "fast-check": "^4.1.0",
+    "glob": "^11.0.1",
+    "mocha": "^11.1.0",
+    "ts-mocha": "^11.1.0",
     "ts-node": "^10.9.1",
-    "typescript": "^5.6.3"
+    "typescript": "^5.8.3"
   }
 }

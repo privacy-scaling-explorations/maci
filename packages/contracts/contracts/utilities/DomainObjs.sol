@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.28;
 
 /// @title DomainObjs
 /// @notice An utility contract that holds
@@ -35,6 +35,5 @@ contract DomainObjs {
   struct StateLeaf {
     PubKey pubKey;
     uint256 voiceCreditBalance;
-    uint256 timestamp;
   }
 }

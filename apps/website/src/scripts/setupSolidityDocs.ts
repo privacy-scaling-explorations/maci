@@ -6,10 +6,10 @@ import { copyDirectory, generateToC, insertIndexPage } from "./utils";
 // where to move the solidity doc files over
 const solidityDocDir = path.resolve(
   __dirname,
-  "../../versioned_docs/version-v2.x/technical-references/smart-contracts/solidity-docs",
+  "../../versioned_docs/version-v3.x/technical-references/smart-contracts/solidity-docs",
 );
 // the origin folder (from the contracts package)
-const sourceDir = path.resolve(__dirname, "../../../packages/contracts/docs");
+const sourceDir = path.resolve(__dirname, "../../../../packages/contracts/docs");
 
 /**
  * Currently, Solidity docgen generates the same heading for all files.

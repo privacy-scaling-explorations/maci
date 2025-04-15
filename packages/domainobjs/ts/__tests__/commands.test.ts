@@ -1,5 +1,5 @@
+import { genRandomSalt } from "@maci-protocol/crypto";
 import { expect } from "chai";
-import { genRandomSalt } from "maci-crypto";
 
 import { PCommand, Keypair } from "..";
 

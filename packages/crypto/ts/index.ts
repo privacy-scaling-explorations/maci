@@ -4,7 +4,7 @@ export { IncrementalQuinTree } from "./quinTree";
 
 export { bigInt2Buffer, stringifyBigInts, unstringifyBigInts, deepCopyBigIntArray } from "./bigIntUtils";
 
-export { NOTHING_UP_MY_SLEEVE, SNARK_FIELD_SIZE } from "./constants";
+export { NOTHING_UP_MY_SLEEVE, SNARK_FIELD_SIZE, PAD_KEY_HASH } from "./constants";
 
 export {
   genPrivKey,

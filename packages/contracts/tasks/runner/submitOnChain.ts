@@ -7,36 +7,12 @@ import fs from "fs";
 import type { Proof } from "../../ts/types";
 import type { VkRegistry, Verifier, MACI, Poll, MessageProcessor, Tally } from "../../typechain-types";
 
+import { logMagenta, info } from "../../ts/logger";
+import { readProofs } from "../../ts/proofs";
 import { ContractStorage } from "../helpers/ContractStorage";
 import { Deployment } from "../helpers/Deployment";
 import { Prover } from "../helpers/Prover";
 import { EContracts, TallyData, type ISubmitOnChainParams } from "../helpers/types";
-
-/**
- * Interface that represents read proofs arguments
- */
-interface IReadProofsArgs {
-  files: string[];
-  folder: string;
-  type: "tally" | "process";
-}
-
-/**
- * Read and parse proofs
- *
- * @param args - read proofs arguments
- * @returns proofs
- */
-async function readProofs({ files, folder, type }: IReadProofsArgs): Promise<Proof[]> {
-  return Promise.all(
-    files
-      .filter((f) => f.startsWith(`${type}_`) && f.endsWith(".json"))
-      .sort()
-      .map(async (file) =>
-        fs.promises.readFile(`${folder}/${file}`, "utf8").then((result) => JSON.parse(result) as Proof),
-      ),
-  );
-}
 
 /**
  * Prove hardhat task for submitting proofs on-chain as well as uploading tally results
@@ -66,7 +42,7 @@ task("submitOnChain", "Command to prove the result of a poll on-chain")
 
     const startBalance = await signer.provider.getBalance(signer);
 
-    console.log("Start balance: ", Number(startBalance / 10n ** 12n) / 1e6);
+    logMagenta({ text: info(`Start balance: ${Number(startBalance / 10n ** 12n) / 1e6}`) });
 
     const maciContractAddress = storage.mustGetAddress(EContracts.MACI, network.name);
     const [maciContract, vkRegistryContract, verifierContract] = await Promise.all([
@@ -132,10 +108,12 @@ task("submitOnChain", "Command to prove the result of a poll on-chain")
 
     await prover.proveTally(data.tallyProofs);
 
-    await prover.submitResults(tallyData);
+    const voteOptions = await pollContract.voteOptions();
+
+    await prover.submitResults(tallyData, Number.parseInt(voteOptions.toString(), 10));
 
     const endBalance = await signer.provider.getBalance(signer);
 
-    console.log("End balance: ", Number(endBalance / 10n ** 12n) / 1e6);
-    console.log("Prove expenses: ", Number((startBalance - endBalance) / 10n ** 12n) / 1e6);
+    logMagenta({ text: info(`End balance: ${Number(endBalance / 10n ** 12n) / 1e6}`) });
+    logMagenta({ text: info(`Prove expenses: ${Number((startBalance - endBalance) / 10n ** 12n) / 1e6}`) });
   });

@@ -3,6 +3,8 @@ import type { ITreeMergeParams } from "./types";
 import type { Poll } from "../../typechain-types";
 import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 
+import { info, logGreen, logMagenta, success } from "../../ts/logger";
+
 /**
  * @notice Tree merger keeps merging simple for hardhat task.
  * This class is using for merging signups and messages.
@@ -33,8 +35,7 @@ export class TreeMerger {
    */
   async checkPollDuration(): Promise<void> {
     // check if it's time to merge the message AQ
-    const [deployTime, duration] = await this.pollContract.getDeployTimeAndDuration();
-    const deadline = Number(deployTime) + Number(duration);
+    const deadline = await this.pollContract.endDate();
 
     const blockNum = await this.deployer.provider.getBlockNumber();
     const block = await this.deployer.provider.getBlock(blockNum);
@@ -52,19 +53,21 @@ export class TreeMerger {
    */
   async mergeSignups(): Promise<void> {
     // check if the state tree has been fully merged
-    if (!(await this.pollContract.stateMerged())) {
+    const isMerged = await this.pollContract.stateMerged();
+
+    if (!isMerged) {
       // go and merge the state tree
-      console.log("Merging subroots to a main state root...");
+      logMagenta({ text: info("Merging subroots to a main state root...") });
       const receipt = await this.pollContract.mergeState().then((tx) => tx.wait());
 
       if (receipt?.status !== 1) {
         throw new Error("Error merging signup state subroots");
       }
 
-      console.log(`Transaction hash: ${receipt.hash}`);
-      console.log(`Executed mergeStateAq(); gas used: ${receipt.gasUsed.toString()}`);
+      logGreen({ text: success(`Merge state transaction hash: ${receipt.hash}`) });
+      logMagenta({ text: info(`Gas used: ${receipt.gasUsed.toString()}`) });
     } else {
-      console.log("The state tree has already been merged.");
+      logMagenta({ text: info("The state tree has already been merged.") });
     }
   }
 }

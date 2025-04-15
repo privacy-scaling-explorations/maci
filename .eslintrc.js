@@ -32,7 +32,9 @@ module.exports = {
       version: "999.999.999",
     },
     "import/resolver": {
-      typescript: {},
+      typescript: {
+        project: path.resolve(__dirname, "./tsconfig.json"),
+      },
       node: {
         extensions: [".ts", ".js"],
         moduleDirectory: ["node_modules", "ts", "src"],
@@ -101,7 +103,7 @@ module.exports = {
       "error",
       {
         builtinGlobals: true,
-        allow: ["location", "event", "history", "name", "status", "Option", "test", "expect"],
+        allow: ["location", "event", "history", "name", "status", "Option", "test", "expect", "jest"],
       },
     ],
     "@typescript-eslint/restrict-template-expressions": ["error", { allowNumber: true }],

@@ -50,22 +50,25 @@ function parseAndRenameDirectory(dir: string) {
       updateMdFiles(modulesFile, generateSidebarString({ title: `${label} Module`, label: "module", position: 1 }));
     }
 
-    const innerDirs = fs.readdirSync(dirname);
-    innerDirs.forEach((innerDir) => {
-      const innerDirname = path.resolve(dirname, innerDir);
-
-      if (fs.statSync(innerDirname).isDirectory()) {
-        const innerFiles = fs.readdirSync(innerDirname);
-        innerFiles.forEach((innerFile) => {
-          const innerLabel = innerFile.split(".")[0];
-          updateMdFiles(
-            path.resolve(innerDirname, innerFile),
-            generateSidebarString({ title: innerLabel, label: innerLabel }),
-          );
-        });
-      }
-    });
+    processDirectory(dirname);
   }
+}
+
+/**
+ * A function that processes a directory and updates the markdown files.
+ * @param directory - the directory being processed
+ */
+function processDirectory(directory: string) {
+  const items = fs.readdirSync(directory);
+  items.forEach((item) => {
+    const itemPath = path.resolve(directory, item);
+    if (fs.statSync(itemPath).isDirectory()) {
+      processDirectory(itemPath); // Recursively process subdirectories
+    } else if (fs.statSync(itemPath).isFile()) {
+      const itemLabel = item.split(".")[0];
+      updateMdFiles(itemPath, generateSidebarString({ title: itemLabel, label: itemLabel }));
+    }
+  });
 }
 
 /**

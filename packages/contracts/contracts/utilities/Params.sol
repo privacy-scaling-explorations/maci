@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.28;
+
+import { IBasePolicy } from "@excubiae/contracts/contracts/interfaces/IBasePolicy.sol";
 
 import { IMACI } from "../interfaces/IMACI.sol";
 import { IVerifier } from "../interfaces/IVerifier.sol";
 import { IVkRegistry } from "../interfaces/IVkRegistry.sol";
+import { IInitialVoiceCreditProxy } from "../interfaces/IInitialVoiceCreditProxy.sol";
 
 /// @title Params
 /// @notice This contracts contains a number of structures
@@ -15,6 +18,7 @@ contract Params {
   struct TreeDepths {
     uint8 intStateTreeDepth;
     uint8 voteOptionTreeDepth;
+    uint8 stateTreeDepth;
   }
 
   /// @notice A struct holding the external contracts
@@ -24,5 +28,7 @@ contract Params {
     IMACI maci;
     IVerifier verifier;
     IVkRegistry vkRegistry;
+    IBasePolicy policy;
+    IInitialVoiceCreditProxy initialVoiceCreditProxy;
   }
 }

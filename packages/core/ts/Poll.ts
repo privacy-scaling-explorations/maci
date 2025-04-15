@@ -1,4 +1,3 @@
-import { LeanIMT, LeanIMTHashFunction } from "@zk-kit/lean-imt";
 import {
   IncrementalQuinTree,
   genRandomSalt,
@@ -12,7 +11,7 @@ import {
   hash2,
   poseidon,
   hashLeanIMT,
-} from "maci-crypto";
+} from "@maci-protocol/crypto";
 import {
   PCommand,
   Keypair,
@@ -25,7 +24,9 @@ import {
   type IMessageContractParams,
   type IJsonPCommand,
   blankStateLeafHash,
-} from "maci-domainobjs";
+  padKey,
+} from "@maci-protocol/domainobjs";
+import { LeanIMT, LeanIMTHashFunction } from "@zk-kit/lean-imt";
 
 import assert from "assert";
 
@@ -42,7 +43,8 @@ import type {
   IJoiningCircuitArgs,
 } from "./index";
 import type { MaciState } from "./MaciState";
-import type { PathElements } from "maci-crypto";
+import type { IJoinedCircuitArgs, IPollJoinedCircuitInputs } from "./utils/types";
+import type { PathElements } from "@maci-protocol/crypto";
 
 import { STATE_TREE_ARITY, VOTE_OPTION_TREE_ARITY } from "./utils/constants";
 import { ProcessMessageErrors, ProcessMessageError } from "./utils/errors";
@@ -59,10 +61,9 @@ export class Poll implements IPoll {
 
   batchSizes: BatchSizes;
 
-  maxVoteOptions: number;
+  voteOptions: bigint;
 
-  // the depth of the state tree
-  stateTreeDepth: number;
+  maxVoteOptions: number;
 
   // the actual depth of the state tree (can be <= stateTreeDepth)
   actualStateTreeDepth: number;
@@ -81,7 +82,7 @@ export class Poll implements IPoll {
 
   stateCopied = false;
 
-  stateLeaves: StateLeaf[] = [blankStateLeaf];
+  pubKeys: PubKey[] = [padKey];
 
   stateTree?: LeanIMT;
 
@@ -142,6 +143,7 @@ export class Poll implements IPoll {
    * @param treeDepths - The depths of the trees used in the poll.
    * @param batchSizes - The sizes of the batches used in the poll.
    * @param maciStateRef - The reference to the MACI state.
+   * @param pollId - The poll id
    */
   constructor(
     pollEndTimestamp: bigint,
@@ -149,16 +151,20 @@ export class Poll implements IPoll {
     treeDepths: TreeDepths,
     batchSizes: BatchSizes,
     maciStateRef: MaciState,
+    voteOptions: bigint,
   ) {
     this.pollEndTimestamp = pollEndTimestamp;
     this.coordinatorKeypair = coordinatorKeypair;
     this.treeDepths = treeDepths;
     this.batchSizes = batchSizes;
+    if (voteOptions > VOTE_OPTION_TREE_ARITY ** treeDepths.voteOptionTreeDepth) {
+      throw new Error("Vote options cannot be greater than the number of leaves in the vote option tree");
+    }
+    this.voteOptions = voteOptions;
     this.maxVoteOptions = VOTE_OPTION_TREE_ARITY ** treeDepths.voteOptionTreeDepth;
     this.maciStateRef = maciStateRef;
     this.pollId = BigInt(maciStateRef.polls.size);
-    this.stateTreeDepth = maciStateRef.stateTreeDepth;
-    this.actualStateTreeDepth = maciStateRef.stateTreeDepth;
+    this.actualStateTreeDepth = treeDepths.stateTreeDepth;
     this.currentMessageBatchIndex = 0;
 
     this.pollNullifiers = new Map<bigint, boolean>();
@@ -181,11 +187,10 @@ export class Poll implements IPoll {
    * @param nullifier - Hashed private key used as nullifier
    * @param pubKey - The poll public key.
    * @param newVoiceCreditBalance - New voice credit balance of the user.
-   * @param timestamp - The timestamp of the sign-up.
    * @returns The index of added state leaf
    */
-  joinPoll = (nullifier: bigint, pubKey: PubKey, newVoiceCreditBalance: bigint, timestamp: bigint): number => {
-    const stateLeaf = new StateLeaf(pubKey, newVoiceCreditBalance, timestamp);
+  joinPoll = (nullifier: bigint, pubKey: PubKey, newVoiceCreditBalance: bigint): number => {
+    const stateLeaf = new StateLeaf(pubKey, newVoiceCreditBalance);
 
     if (this.hasJoined(nullifier)) {
       throw new Error("UserAlreadyJoined");
@@ -202,6 +207,9 @@ export class Poll implements IPoll {
    * Update a Poll with data from MaciState.
    * This is the step where we copy the state from the MaciState instance,
    * and set the number of signups we have so far.
+   * @note It should be called to generate the state for poll joining with numSignups set as
+   * the number of signups in the MaciState. For message processing, you should set numSignups as
+   * the number of users who joined the poll.
    */
   updatePoll = (numSignups: bigint): void => {
     // there might be occasions where we fetch logs after new signups have been made
@@ -215,14 +223,15 @@ export class Poll implements IPoll {
     // start by setting the number of signups
     this.setNumSignups(numSignups);
     // copy up to numSignups state leaves
-    this.stateLeaves = this.maciStateRef.stateLeaves.slice(0, Number(this.numSignups)).map((x) => x.copy());
+    this.pubKeys = this.maciStateRef.pubKeys.slice(0, Number(this.numSignups)).map((x) => x.copy());
     // ensure we have the correct actual state tree depth value
     this.actualStateTreeDepth = Math.max(1, Math.ceil(Math.log2(Number(this.numSignups))));
 
     this.stateTree = new LeanIMT(hashLeanIMT as LeanIMTHashFunction);
+
     // add all leaves
-    this.stateLeaves.forEach((stateLeaf) => {
-      this.stateTree?.insert(stateLeaf.hash());
+    this.pubKeys.forEach((pubKey) => {
+      this.stateTree?.insert(pubKey.hash());
     });
 
     // create a poll state tree
@@ -239,11 +248,16 @@ export class Poll implements IPoll {
 
     // Create as many ballots as state leaves
     this.emptyBallotHash = this.emptyBallot.hash();
-    this.ballotTree = new IncrementalQuinTree(this.stateTreeDepth, this.emptyBallotHash, STATE_TREE_ARITY, hash2);
+    this.ballotTree = new IncrementalQuinTree(
+      Number(this.treeDepths.stateTreeDepth),
+      this.emptyBallotHash,
+      STATE_TREE_ARITY,
+      hash2,
+    );
     this.ballotTree.insert(this.emptyBallotHash);
 
     // we fill the ballotTree with empty ballots hashes to match the number of signups in the tree
-    while (this.ballots.length < this.stateLeaves.length) {
+    while (this.ballots.length < this.pubKeys.length) {
       this.ballotTree.insert(this.emptyBallotHash);
       this.ballots.push(this.emptyBallot);
     }
@@ -292,7 +306,7 @@ export class Poll implements IPoll {
       }
 
       // If the vote option index is invalid, do nothing
-      if (command.voteOptionIndex < 0n || command.voteOptionIndex >= BigInt(this.maxVoteOptions)) {
+      if (command.voteOptionIndex < 0n || command.voteOptionIndex >= BigInt(this.voteOptions)) {
         throw new ProcessMessageError(ProcessMessageErrors.InvalidVoteOptionIndex);
       }
 
@@ -426,40 +440,25 @@ export class Poll implements IPoll {
 
   /**
    * Create circuit input for pollJoining
-   * @param maciPrivKey User's private key for signing up
-   * @param stateLeafIndex Index where the user is stored in the state leaves
-   * @param credits Credits for voting
-   * @param pollPrivKey Poll's private key for the poll joining
-   * @param pollPubKey Poll's public key for the poll joining
+   * @param args Poll joining circuit inputs
    * @returns stringified circuit inputs
    */
   joiningCircuitInputs = ({
     maciPrivKey,
     stateLeafIndex,
-    credits,
-    pollPrivKey,
     pollPubKey,
   }: IJoiningCircuitArgs): IPollJoiningCircuitInputs => {
-    // Get the state leaf on the index position
-    const stateLeaf = this.stateLeaves[Number(stateLeafIndex)];
-    const { pubKey, voiceCreditBalance, timestamp } = stateLeaf;
-    const pubKeyX = pubKey.asArray()[0];
-    const pubKeyY = pubKey.asArray()[1];
-    const stateLeafArray = [pubKeyX, pubKeyY, voiceCreditBalance, timestamp];
-
-    assert(credits <= voiceCreditBalance, "Credits must be lower than signed up credits");
-
     // calculate the path elements for the state tree given the original state tree
     const { siblings, index } = this.stateTree!.generateProof(Number(stateLeafIndex));
     const siblingsLength = siblings.length;
 
     // The index must be converted to a list of indices, 1 for each tree level.
-    // The circuit tree depth is this.stateTreeDepth, so the number of siblings must be this.stateTreeDepth,
+    // The circuit tree depth is this.treeDepths.stateTreeDepth, so the number of siblings must be this.treeDepths.stateTreeDepth,
     // even if the tree depth is actually 3. The missing siblings can be set to 0, as they
     // won't be used to calculate the root in the circuit.
     const indices: bigint[] = [];
 
-    for (let i = 0; i < this.stateTreeDepth; i += 1) {
+    for (let i = 0; i < this.treeDepths.stateTreeDepth; i += 1) {
       // eslint-disable-next-line no-bitwise
       indices.push(BigInt((index >> i) & 1));
 
@@ -471,9 +470,9 @@ export class Poll implements IPoll {
 
     // Create nullifier from private key
     const inputNullifier = BigInt(maciPrivKey.asCircuitInputs());
-    const nullifier = poseidon([inputNullifier]);
+    const nullifier = poseidon([inputNullifier, this.pollId]);
 
-    // Get pll state tree's root
+    // Get state tree's root
     const stateRoot = this.stateTree!.root;
 
     // Set actualStateTreeDepth as number of initial siblings length
@@ -481,18 +480,50 @@ export class Poll implements IPoll {
 
     const circuitInputs = {
       privKey: maciPrivKey.asCircuitInputs(),
-      pollPrivKey: pollPrivKey.asCircuitInputs(),
       pollPubKey: pollPubKey.asCircuitInputs(),
-      stateLeaf: stateLeafArray,
       siblings: siblingsArray,
       indices,
       nullifier,
-      credits,
       stateRoot,
       actualStateTreeDepth,
+      pollId: this.pollId,
     };
 
     return stringifyBigInts(circuitInputs) as unknown as IPollJoiningCircuitInputs;
+  };
+
+  /**
+   * Create circuit input for pollJoined
+   * @param args Poll joined circuit inputs
+   * @returns stringified circuit inputs
+   */
+  joinedCircuitInputs = ({
+    maciPrivKey,
+    stateLeafIndex,
+    voiceCreditsBalance,
+  }: IJoinedCircuitArgs): IPollJoinedCircuitInputs => {
+    // calculate the path elements for the state tree given the original state tree
+    const { root: stateRoot, pathElements, pathIndices } = this.pollStateTree!.genProof(Number(stateLeafIndex));
+
+    const elementsLength = pathIndices.length;
+
+    for (let i = 0; i < this.treeDepths.stateTreeDepth; i += 1) {
+      if (i >= elementsLength) {
+        pathElements[i] = [0n];
+        pathIndices[i] = 0;
+      }
+    }
+
+    const circuitInputs = {
+      privKey: maciPrivKey.asCircuitInputs(),
+      pathElements: pathElements.map((item) => item.toString()),
+      voiceCreditsBalance: voiceCreditsBalance.toString(),
+      pathIndices: pathIndices.map((item) => item.toString()),
+      actualStateTreeDepth: BigInt(this.actualStateTreeDepth),
+      stateRoot,
+    };
+
+    return stringifyBigInts(circuitInputs) as unknown as IPollJoinedCircuitInputs;
   };
 
   /**
@@ -659,11 +690,11 @@ export class Poll implements IPoll {
               currentBallots.unshift(ballot);
               currentBallotsPathElements.unshift(this.ballotTree!.genProof(Number(stateLeafIndex)).pathElements);
 
-              // @note we check that command.voteOptionIndex is valid so < maxVoteOptions
+              // @note we check that command.voteOptionIndex is valid so < voteOptions
               // this might be unnecessary but we do it to prevent a possible DoS attack
               // from voters who could potentially encrypt a message in such as way that
               // when decrypted it results in a valid state leaf index but an invalid vote option index
-              if (command.voteOptionIndex < this.maxVoteOptions) {
+              if (command.voteOptionIndex < this.voteOptions) {
                 currentVoteWeights.unshift(ballot.votes[Number(command.voteOptionIndex)]);
 
                 // create a new quinary tree and add all votes we have so far
@@ -750,7 +781,7 @@ export class Poll implements IPoll {
     // we need to fill the array with 0s to match the length of the state leaves
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < currentStateLeavesPathElements.length; i += 1) {
-      while (currentStateLeavesPathElements[i].length < this.stateTreeDepth) {
+      while (currentStateLeavesPathElements[i].length < this.treeDepths.stateTreeDepth) {
         currentStateLeavesPathElements[i].push([0n]);
       }
     }
@@ -833,25 +864,6 @@ export class Poll implements IPoll {
     while (msgs.length % messageBatchSize > 0) {
       msgs.push(msg.asCircuitInputs());
     }
-    // we only take the messages we need for this batch
-    // it slice msgs array from index of first message in current batch to
-    // index of last message in current batch
-    msgs = msgs.slice((index - 1) * messageBatchSize, index * messageBatchSize);
-
-    // validate that the batch index is correct, if not fix it
-    // this means that the end will be the last message
-
-    let batchEndIndex = index * messageBatchSize;
-
-    if (batchEndIndex > this.messages.length) {
-      batchEndIndex = this.messages.length - (index - 1) * messageBatchSize;
-    }
-
-    let batchStartIndex = batchEndIndex - messageBatchSize;
-
-    if (batchStartIndex < 0) {
-      batchStartIndex = 0;
-    }
 
     // copy the public keys, pad the array with the last keys if needed
     let encPubKeys = this.encPubKeys.map((x) => x.copy());
@@ -860,8 +872,23 @@ export class Poll implements IPoll {
       encPubKeys.push(key.pubKey.copy());
     }
 
+    // validate that the batch index is correct, if not fix it
+    // this means that the end will be the last message
+    let batchEndIndex = index * messageBatchSize;
+
+    if (batchEndIndex > this.messages.length) {
+      batchEndIndex = this.messages.length;
+    }
+
+    const batchStartIndex = index > 0 ? (index - 1) * messageBatchSize : 0;
+
+    // we only take the messages we need for this batch
+    // it slice msgs array from index of first message in current batch to
+    // index of last message in current batch
+    msgs = msgs.slice(batchStartIndex, index * messageBatchSize);
+
     // then take the ones part of this batch
-    encPubKeys = encPubKeys.slice((index - 1) * messageBatchSize, index * messageBatchSize);
+    encPubKeys = encPubKeys.slice(batchStartIndex, index * messageBatchSize);
 
     // cache tree roots
     const currentStateRoot = this.pollStateTree!.root;
@@ -888,6 +915,7 @@ export class Poll implements IPoll {
       currentBallotRoot,
       currentSbCommitment,
       currentSbSalt: this.sbSalts[this.currentMessageBatchIndex],
+      voteOptions: this.voteOptions,
     }) as CircuitInputs;
   };
 
@@ -1295,15 +1323,17 @@ export class Poll implements IPoll {
       {
         intStateTreeDepth: Number(this.treeDepths.intStateTreeDepth),
         voteOptionTreeDepth: Number(this.treeDepths.voteOptionTreeDepth),
+        stateTreeDepth: Number(this.treeDepths.stateTreeDepth),
       },
       {
         tallyBatchSize: Number(this.batchSizes.tallyBatchSize.toString()),
         messageBatchSize: Number(this.batchSizes.messageBatchSize.toString()),
       },
       this.maciStateRef,
+      this.voteOptions,
     );
 
-    copied.stateLeaves = this.stateLeaves.map((x) => x.copy());
+    copied.pubKeys = this.pubKeys.map((x) => x.copy());
     copied.pollStateLeaves = this.pollStateLeaves.map((x) => x.copy());
     copied.messages = this.messages.map((x) => x.copy());
     copied.commands = this.commands.map((x) => x.copy());
@@ -1391,21 +1421,24 @@ export class Poll implements IPoll {
    */
   toJSON(): IJsonPoll {
     return {
+      stateTreeDepth: Number(this.treeDepths.stateTreeDepth),
       pollEndTimestamp: this.pollEndTimestamp.toString(),
       treeDepths: this.treeDepths,
       batchSizes: this.batchSizes,
       maxVoteOptions: this.maxVoteOptions,
+      voteOptions: this.voteOptions.toString(),
       messages: this.messages.map((message) => message.toJSON()),
       commands: this.commands.map((command) => command.toJSON()),
       ballots: this.ballots.map((ballot) => ballot.toJSON()),
       encPubKeys: this.encPubKeys.map((encPubKey) => encPubKey.serialize()),
       currentMessageBatchIndex: this.currentMessageBatchIndex,
-      stateLeaves: this.stateLeaves.map((leaf) => leaf.toJSON()),
+      pubKeys: this.pubKeys.map((leaf) => leaf.toJSON()),
       pollStateLeaves: this.pollStateLeaves.map((leaf) => leaf.toJSON()),
       results: this.tallyResult.map((result) => result.toString()),
       numBatchesProcessed: this.numBatchesProcessed,
       numSignups: this.numSignups.toString(),
       chainHash: this.chainHash.toString(),
+      pollNullifiers: [...this.pollNullifiers.keys()].map((nullifier) => nullifier.toString()),
       batchHashes: this.batchHashes.map((batchHash) => batchHash.toString()),
     };
   }
@@ -1417,7 +1450,14 @@ export class Poll implements IPoll {
    * @returns a new Poll instance
    */
   static fromJSON(json: IJsonPoll, maciState: MaciState): Poll {
-    const poll = new Poll(BigInt(json.pollEndTimestamp), new Keypair(), json.treeDepths, json.batchSizes, maciState);
+    const poll = new Poll(
+      BigInt(json.pollEndTimestamp),
+      new Keypair(),
+      json.treeDepths,
+      json.batchSizes,
+      maciState,
+      BigInt(json.voteOptions),
+    );
 
     // set all properties
     poll.pollStateLeaves = json.pollStateLeaves.map((leaf) => StateLeaf.fromJSON(leaf));
@@ -1430,6 +1470,7 @@ export class Poll implements IPoll {
     poll.numBatchesProcessed = json.numBatchesProcessed;
     poll.chainHash = BigInt(json.chainHash);
     poll.batchHashes = json.batchHashes.map((batchHash: string) => BigInt(batchHash));
+    poll.pollNullifiers = new Map(json.pollNullifiers.map((nullifier) => [BigInt(nullifier), true]));
 
     // copy maci state
     poll.updatePoll(BigInt(json.numSignups));

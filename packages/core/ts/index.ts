@@ -2,7 +2,7 @@ export { MaciState } from "./MaciState";
 
 export { Poll } from "./Poll";
 
-export { genPollVkSig, genProcessVkSig, genTallyVkSig } from "./utils/utils";
+export { genPollJoiningVkSig, genPollJoinedVkSig, genProcessVkSig, genTallyVkSig } from "./utils/utils";
 
 export type {
   IJoiningCircuitArgs,

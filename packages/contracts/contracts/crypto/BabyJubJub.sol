@@ -5,7 +5,7 @@
 // https://eips.ethereum.org/EIPS/eip-2494#implementation
 
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.28;
 
 library CurveBabyJubJub {
   // Curve parameters

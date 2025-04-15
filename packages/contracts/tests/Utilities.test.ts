@@ -1,6 +1,6 @@
+import { StateLeaf, Keypair, Message, PubKey } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { BigNumberish, ZeroAddress } from "ethers";
-import { StateLeaf, Keypair, Message, PubKey } from "maci-domainobjs";
 
 import { linkPoseidonLibraries } from "../tasks/helpers/abi";
 import { deployPoseidonContracts, createContractFactory } from "../ts/deploy";
@@ -55,7 +55,7 @@ describe("Utilities", () => {
     it("should correctly hash a StateLeaf", async () => {
       const keypair = new Keypair();
       const voiceCreditBalance = BigInt(1234);
-      const stateLeaf = new StateLeaf(keypair.pubKey, voiceCreditBalance, BigInt(456546345));
+      const stateLeaf = new StateLeaf(keypair.pubKey, voiceCreditBalance);
       const onChainHash = await utilitiesContract.hashStateLeaf(stateLeaf.asContractParam());
       const expectedHash = stateLeaf.hash();
 

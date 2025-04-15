@@ -1,0 +1,4 @@
+tests
+build/tests 
+.etherlime-store
+.env 

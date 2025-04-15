@@ -2,6 +2,8 @@ import { useColorMode } from "@docusaurus/theme-common";
 import Heading from "@theme/Heading";
 import clsx from "clsx";
 
+import type { ReactElement } from "react";
+
 import boxImage from "../../../static/img/box.png";
 import boxDarkImage from "../../../static/img/box_dark.png";
 import chainImage from "../../../static/img/chain.png";
@@ -15,7 +17,7 @@ interface FeatureItem {
   title: string;
   img: string;
   imgDark: string;
-  description: JSX.Element;
+  description: ReactElement;
 }
 
 const FeatureList: FeatureItem[] = [
@@ -74,7 +76,7 @@ const Feature = ({ title, img, imgDark, description }: FeatureItem) => {
   );
 };
 
-const HomepageFeatures = (): JSX.Element => (
+const HomepageFeatures = (): ReactElement => (
   <section className={styles.features}>
     <div className="container">
       <div className="row">

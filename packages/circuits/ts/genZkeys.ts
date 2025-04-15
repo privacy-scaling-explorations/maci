@@ -1,11 +1,10 @@
+import { cleanThreads } from "@maci-protocol/sdk";
 import { type CircomkitConfig, type CircuitConfig, Circomkit } from "circomkit";
 
 import fs from "fs";
 import path from "path";
 
 import type { CircuitConfigWithName } from "./types";
-
-import { cleanThreads } from "./utils";
 
 /**
  * Generate the zkeys for MACI's circuits using circomkit

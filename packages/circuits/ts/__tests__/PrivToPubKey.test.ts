@@ -1,8 +1,8 @@
+import { Keypair, PrivKey, PubKey } from "@maci-protocol/domainobjs";
 import { Base8, inCurve, mulPointEscalar, r } from "@zk-kit/baby-jubjub";
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
 import fc from "fast-check";
-import { Keypair, PrivKey, PubKey } from "maci-domainobjs";
 
 import { L } from "./utils/constants";
 import { circomkitInstance, getSignal } from "./utils/utils";

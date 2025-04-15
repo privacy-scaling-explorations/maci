@@ -1,5 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import "@nomicfoundation/hardhat-toolbox";
+import "@nomicfoundation/hardhat-verify";
 import dotenv from "dotenv";
 import "hardhat-artifactor";
 import "hardhat-contract-sizer";
@@ -37,14 +38,14 @@ const getCommonNetworkConfig = (networkName: ESupportedChains, chainId: number, 
   accounts: {
     mnemonic: mnemonic || process.env.MNEMONIC || TEST_MNEMONIC,
     path: "m/44'/60'/0'/0",
-    initialIndex: 0,
+    initialIndex: process.env.INITIAL_INDEX ? Number(process.env.INITIAL_INDEX) : 0,
     count: 20,
   },
 });
 
 const config: HardhatUserConfig = {
   solidity: {
-    version: "0.8.20",
+    version: "0.8.28",
     settings: {
       optimizer: {
         enabled: true,

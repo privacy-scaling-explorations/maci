@@ -18,16 +18,19 @@ export function handleDeployPoll(event: DeployPollEvent): void {
   const contracts = maciContract.getPoll(id);
   const poll = new Poll(contracts.poll);
   const pollContract = PollContract.bind(contracts.poll);
-  const maxVoteOptions = pollContract.maxVoteOptions();
+  const voteOptions = pollContract.voteOptions();
   const treeDepths = pollContract.treeDepths();
-  const durations = pollContract.getDeployTimeAndDuration();
+  const durations = pollContract.getStartAndEndDate();
+  const duration = durations.value1.minus(durations.value0);
 
   poll.pollId = event.params._pollId;
   poll.messageProcessor = contracts.messageProcessor;
   poll.tally = contracts.tally;
-  poll.maxVoteOption = maxVoteOptions;
+  poll.voteOptions = voteOptions;
   poll.treeDepth = GraphBN.fromI32(treeDepths.value0);
-  poll.duration = durations.value1;
+  poll.duration = duration;
+  poll.startDate = durations.value0;
+  poll.endDate = durations.value1;
   poll.mode = GraphBN.fromI32(event.params._mode);
 
   poll.createdAt = event.block.timestamp;
@@ -51,7 +54,7 @@ export function handleDeployPoll(event: DeployPollEvent): void {
 
 export function handleSignUp(event: SignUpEvent): void {
   const user = createOrLoadUser(event.params._userPubKeyX, event.params._userPubKeyY, event);
-  createOrLoadAccount(event.params._stateIndex, event, user.id, event.params._voiceCreditBalance);
+  createOrLoadAccount(event.params._stateIndex, event, user.id);
 
   const maci = createOrLoadMACI(event);
   maci.numSignUps = maci.numSignUps.plus(ONE_BIG_INT);

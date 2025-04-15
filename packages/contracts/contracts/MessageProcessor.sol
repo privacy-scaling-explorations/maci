@@ -1,27 +1,26 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.28;
+
+import { Clone } from "@excubiae/contracts/contracts/proxy/Clone.sol";
 
 import { IMACI } from "./interfaces/IMACI.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { IPoll } from "./interfaces/IPoll.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { Hasher } from "./crypto/Hasher.sol";
 import { IVerifier } from "./interfaces/IVerifier.sol";
 import { IVkRegistry } from "./interfaces/IVkRegistry.sol";
 import { IMessageProcessor } from "./interfaces/IMessageProcessor.sol";
-import { CommonUtilities } from "./utilities/CommonUtilities.sol";
 import { DomainObjs } from "./utilities/DomainObjs.sol";
 
 /// @title MessageProcessor
 /// @dev MessageProcessor is used to process messages published by signup users.
 /// It will process message by batch due to large size of messages.
 /// After it finishes processing, the sbCommitment will be used for Tally and Subsidy contracts.
-contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMessageProcessor, DomainObjs {
+contract MessageProcessor is Clone, SnarkCommon, Hasher, IMessageProcessor, DomainObjs {
   /// @notice custom errors
   error NoMoreMessages();
   error StateNotMerged();
   error InvalidProcessMessageProof();
-  error MaxVoteOptionsTooLarge();
   error NumSignUpsTooLarge();
   error CurrentMessageBatchIndexTooLarge();
   error BatchEndIndexTooLarge();
@@ -38,24 +37,21 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
   /// @inheritdoc IMessageProcessor
   uint256 public sbCommitment;
 
-  IPoll public immutable poll;
-  IVerifier public immutable verifier;
-  IVkRegistry public immutable vkRegistry;
-  Mode public immutable mode;
+  IPoll public poll;
+  IVerifier public verifier;
+  IVkRegistry public vkRegistry;
+  Mode public mode;
 
-  /// @notice Create a new instance
-  /// @param _verifier The Verifier contract address
-  /// @param _vkRegistry The VkRegistry contract address
-  /// @param _poll The Poll contract address
-  /// @param _mpOwner The owner of the MessageProcessor contract
-  /// @param _mode Voting mode
-  constructor(
-    address _verifier,
-    address _vkRegistry,
-    address _poll,
-    address _mpOwner,
-    Mode _mode
-  ) payable Ownable(_mpOwner) {
+  /// @notice Initializes the contract.
+  function _initialize() internal override {
+    super._initialize();
+
+    bytes memory data = _getAppendedBytes();
+    (address _verifier, address _vkRegistry, address _poll, Mode _mode) = abi.decode(
+      data,
+      (address, address, address, Mode)
+    );
+
     verifier = IVerifier(_verifier);
     vkRegistry = IVkRegistry(_vkRegistry);
     poll = IPoll(_poll);
@@ -67,16 +63,13 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
   /// @param _newSbCommitment The new state root and ballot root commitment
   ///                         after all messages are processed
   /// @param _proof The zk-SNARK proof
-  function processMessages(uint256 _newSbCommitment, uint256[8] calldata _proof) external onlyOwner {
-    // ensure the voting period is over
-    _votingPeriodOver(poll);
-
+  function processMessages(uint256 _newSbCommitment, uint256[8] calldata _proof) external {
     // There must be unprocessed messages
     if (processingComplete) {
       revert NoMoreMessages();
     }
 
-    (, uint8 voteOptionTreeDepth) = poll.treeDepths();
+    (, uint8 voteOptionTreeDepth, ) = poll.treeDepths();
     uint8 messageBatchSize = poll.messageBatchSize();
 
     uint256[] memory batchHashes;
@@ -86,6 +79,8 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
       uint256 currentSbCommitment = poll.currentSbCommitment();
       sbCommitment = currentSbCommitment;
 
+      /// @notice this also checks that the voting period is over so we do not
+      /// need to check it in this function
       poll.padLastBatch();
       batchHashes = poll.getBatchHashes();
       currentBatchIndex = batchHashes.length - 1;
@@ -128,17 +123,18 @@ contract MessageProcessor is Ownable, SnarkCommon, Hasher, CommonUtilities, IMes
       batchEndIndex = numMessages;
     }
 
-    uint256 batchStartIndex = batchEndIndex > messageBatchSize ? batchEndIndex - messageBatchSize : 0;
+    uint256 batchStartIndex = _currentMessageBatchIndex > 0 ? (_currentMessageBatchIndex - 1) * messageBatchSize : 0;
 
-    publicInputs = new uint256[](8);
+    publicInputs = new uint256[](9);
     publicInputs[0] = numSignUps;
     publicInputs[1] = _outputBatchHash;
     publicInputs[2] = poll.actualStateTreeDepth();
     publicInputs[3] = coordinatorPubKeyHash;
-    publicInputs[4] = (sbCommitment == 0 ? poll.currentSbCommitment() : sbCommitment);
-    publicInputs[5] = _newSbCommitment;
-    publicInputs[6] = batchStartIndex;
-    publicInputs[7] = batchEndIndex;
+    publicInputs[4] = poll.voteOptions();
+    publicInputs[5] = (sbCommitment == 0 ? poll.currentSbCommitment() : sbCommitment);
+    publicInputs[6] = _newSbCommitment;
+    publicInputs[7] = batchStartIndex;
+    publicInputs[8] = batchEndIndex;
   }
 
   /// @notice Verify the proof for processMessage

@@ -1,26 +1,31 @@
 /* eslint-disable no-underscore-dangle */
+import { MaciState, Poll, IProcessMessagesCircuitInputs } from "@maci-protocol/core";
+import { NOTHING_UP_MY_SLEEVE } from "@maci-protocol/crypto";
+import { Keypair, Message, PubKey } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
-import { Signer } from "ethers";
+import { Signer, ZeroAddress } from "ethers";
 import { EthereumProvider } from "hardhat/types";
-import { MaciState, Poll, IProcessMessagesCircuitInputs } from "maci-core";
-import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
-import { Keypair, Message, PubKey } from "maci-domainobjs";
 
 import { EMode } from "../ts/constants";
 import { IVerifyingKeyStruct } from "../ts/types";
-import { getDefaultSigner } from "../ts/utils";
+import { getDefaultSigner, getBlockTimestamp } from "../ts/utils";
 import {
   MACI,
   MessageProcessor,
+  Poll as PollContract,
   MessageProcessor__factory as MessageProcessorFactory,
+  Poll__factory as PollFactory,
   Verifier,
   VkRegistry,
+  IBasePolicy,
+  ConstantInitialVoiceCreditProxy,
 } from "../typechain-types";
 
 import {
   STATE_TREE_DEPTH,
   duration,
   initialVoiceCreditBalance,
+  maxVoteOptions,
   messageBatchSize,
   testProcessVk,
   testTallyVk,
@@ -34,7 +39,9 @@ describe("MessageProcessor", () => {
   let verifierContract: Verifier;
   let vkRegistryContract: VkRegistry;
   let mpContract: MessageProcessor;
-
+  let pollContract: PollContract;
+  let signupPolicyContract: IBasePolicy;
+  let initialVoiceCreditProxyContract: ConstantInitialVoiceCreditProxy;
   let pollId: bigint;
 
   // local poll and maci state
@@ -47,6 +54,8 @@ describe("MessageProcessor", () => {
 
   before(async () => {
     signer = await getDefaultSigner();
+    const startTime = await getBlockTimestamp(signer);
+
     // deploy test contracts
     const r = await deployTestContracts({
       initialVoiceCreditBalance,
@@ -57,17 +66,24 @@ describe("MessageProcessor", () => {
     signer = await getDefaultSigner();
     verifierContract = r.mockVerifierContract as Verifier;
     vkRegistryContract = r.vkRegistryContract;
+    signupPolicyContract = r.policyContract;
+    initialVoiceCreditProxyContract = r.constantInitialVoiceCreditProxyContract;
 
     // deploy on chain poll
-    const tx = await maciContract.deployPoll(
-      duration,
+    const tx = await maciContract.deployPoll({
+      startDate: startTime,
+      endDate: startTime + duration,
       treeDepths,
       messageBatchSize,
-      coordinator.pubKey.asContractParam(),
-      verifierContract,
-      vkRegistryContract,
-      EMode.QV,
-    );
+      coordinatorPubKey: coordinator.pubKey.asContractParam(),
+      verifier: verifierContract,
+      vkRegistry: vkRegistryContract,
+      mode: EMode.QV,
+      policy: signupPolicyContract,
+      initialVoiceCreditProxy: initialVoiceCreditProxyContract,
+      relayers: [ZeroAddress],
+      voteOptions: maxVoteOptions,
+    });
     let receipt = await tx.wait();
 
     // extract poll id
@@ -77,12 +93,15 @@ describe("MessageProcessor", () => {
 
     const pollContracts = await maciContract.getPoll(pollId);
     mpContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
-
-    const block = await signer.provider!.getBlock(receipt!.blockHash);
-    const deployTime = block!.timestamp;
-
+    pollContract = PollFactory.connect(pollContracts.poll, signer);
     // deploy local poll
-    const p = maciState.deployPoll(BigInt(deployTime + duration), treeDepths, messageBatchSize, coordinator);
+    const p = maciState.deployPoll(
+      BigInt(startTime + duration),
+      treeDepths,
+      messageBatchSize,
+      coordinator,
+      BigInt(maxVoteOptions),
+    );
     expect(p.toString()).to.eq(pollId.toString());
 
     const messages = [];
@@ -105,7 +124,7 @@ describe("MessageProcessor", () => {
     }
 
     // update the poll state
-    poll.updatePoll(BigInt(maciState.stateLeaves.length));
+    poll.updatePoll(BigInt(maciState.pubKeys.length));
 
     generatedInputs = poll.processMessages(pollId);
 
@@ -123,12 +142,15 @@ describe("MessageProcessor", () => {
     expect(receipt?.status).to.eq(1);
   });
 
-  describe("testing with more messages", () => {
-    before(async () => {
-      await timeTravel(signer.provider! as unknown as EthereumProvider, duration + 1);
+  describe("processMessages()", () => {
+    it("should fail if the voting period is not over", async () => {
+      await expect(
+        mpContract.processMessages(BigInt(generatedInputs.newSbCommitment), [0, 0, 0, 0, 0, 0, 0, 0]),
+      ).to.be.revertedWithCustomError(pollContract, "VotingPeriodNotOver");
     });
 
-    it("processMessages() should update the state and ballot root commitment", async () => {
+    it("should update the state and ballot root commitment", async () => {
+      await timeTravel(signer.provider! as unknown as EthereumProvider, duration + 1);
       // Submit the proof
       const tx = await mpContract.processMessages(BigInt(generatedInputs.newSbCommitment), [0, 0, 0, 0, 0, 0, 0, 0]);
 
@@ -140,6 +162,12 @@ describe("MessageProcessor", () => {
 
       const onChainNewSbCommitment = await mpContract.sbCommitment();
       expect(generatedInputs.newSbCommitment).to.eq(onChainNewSbCommitment.toString());
+    });
+
+    it("should fail if the messages have already been processed", async () => {
+      await expect(
+        mpContract.processMessages(BigInt(generatedInputs.newSbCommitment), [0, 0, 0, 0, 0, 0, 0, 0]),
+      ).to.be.revertedWithCustomError(mpContract, "NoMoreMessages");
     });
   });
 });

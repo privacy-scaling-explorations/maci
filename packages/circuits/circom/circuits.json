@@ -1,12 +1,18 @@
 {
   "PollJoining_10_test": {
-    "file": "./anon/pollJoining",
+    "file": "./voter/poll",
     "template": "PollJoining",
     "params": [10],
-    "pubs": ["nullifier", "credits", "stateRoot", "pollPubKey"]
+    "pubs": ["nullifier", "stateRoot", "pollPubKey", "pollId"]
+  },
+  "PollJoined_10_test": {
+    "file": "./voter/poll",
+    "template": "PollJoined",
+    "params": [10],
+    "pubs": ["stateRoot"]
   },
   "ProcessMessages_10-20-2_test": {
-    "file": "./core/qv/processMessages",
+    "file": "./coordinator/qv/processMessages",
     "template": "ProcessMessages",
     "params": [10, 20, 2],
     "pubs": [
@@ -17,11 +23,12 @@
       "newSbCommitment",
       "outputBatchHash",
       "actualStateTreeDepth",
-      "coordinatorPublicKeyHash"
+      "coordinatorPublicKeyHash",
+      "voteOptions"
     ]
   },
   "ProcessMessagesNonQv_10-20-2_test": {
-    "file": "./core/non-qv/processMessages",
+    "file": "./coordinator/non-qv/processMessages",
     "template": "ProcessMessagesNonQv",
     "params": [10, 20, 2],
     "pubs": [
@@ -32,17 +39,18 @@
       "newSbCommitment",
       "outputBatchHash",
       "actualStateTreeDepth",
-      "coordinatorPublicKeyHash"
+      "coordinatorPublicKeyHash",
+      "voteOptions"
     ]
   },
   "TallyVotes_10-1-2_test": {
-    "file": "./core/qv/tallyVotes",
+    "file": "./coordinator/qv/tallyVotes",
     "template": "TallyVotes",
     "params": [10, 1, 2],
     "pubs": ["index", "numSignUps", "sbCommitment", "currentTallyCommitment", "newTallyCommitment"]
   },
   "TallyVotesNonQv_10-1-2_test": {
-    "file": "./core/non-qv/tallyVotes",
+    "file": "./coordinator/non-qv/tallyVotes",
     "template": "TallyVotesNonQv",
     "params": [10, 1, 2],
     "pubs": ["index", "numSignUps", "sbCommitment", "currentTallyCommitment", "newTallyCommitment"]

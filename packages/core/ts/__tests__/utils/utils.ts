@@ -1,11 +1,11 @@
-import { Signature } from "maci-crypto";
-import { PCommand, Message, Keypair, PubKey } from "maci-domainobjs";
+import { Signature } from "@maci-protocol/crypto";
+import { PCommand, Message, Keypair, PubKey } from "@maci-protocol/domainobjs";
 
 import { MaciState } from "../../MaciState";
 import { Poll } from "../../Poll";
 import { STATE_TREE_DEPTH } from "../../utils/constants";
 
-import { duration, messageBatchSize, treeDepths, voiceCreditBalance } from "./constants";
+import { duration, maxVoteOptions, messageBatchSize, treeDepths } from "./constants";
 
 /**
  * Calculates the total of a tally result
@@ -39,6 +39,7 @@ export class TestHarness {
       treeDepths,
       messageBatchSize,
       this.coordinatorKeypair,
+      maxVoteOptions,
     );
     this.poll = this.maciState.polls.get(this.pollId)!;
   }
@@ -63,14 +64,18 @@ export class TestHarness {
    * @param user - The keypair of the user.
    * @returns The index of the newly signed-up user in the state tree.
    */
-  signup = (user: Keypair): number => {
-    const timestamp = BigInt(Math.floor(Date.now() / 1000));
-    const stateIndex = this.maciState.signUp(user.pubKey, voiceCreditBalance, timestamp);
-    return stateIndex;
-  };
+  signup = (user: Keypair): number => this.maciState.signUp(user.pubKey);
 
-  joinPoll = (nullifier: bigint, pubKey: PubKey, newVoiceCreditBalance: bigint, timestamp: bigint): number =>
-    this.poll.joinPoll(nullifier, pubKey, newVoiceCreditBalance, timestamp);
+  /**
+   * Join a poll.
+   *
+   * @param nullifier - The nullifier
+   * @param pubKey - The public key
+   * @param newVoiceCreditBalance - The new voice credit balance
+   * @returns The index of added state leaf
+   */
+  joinPoll = (nullifier: bigint, pubKey: PubKey, newVoiceCreditBalance: bigint): number =>
+    this.poll.joinPoll(nullifier, pubKey, newVoiceCreditBalance);
 
   /**
    * Publishes a message to the MACI poll instance.
@@ -142,7 +147,7 @@ export class TestHarness {
    * This should be called after all votes have been cast.
    */
   finalizePoll = (): void => {
-    this.poll.updatePoll(BigInt(this.maciState.stateLeaves.length));
+    this.poll.updatePoll(BigInt(this.maciState.pubKeys.length));
     this.poll.processMessages(this.pollId);
     this.poll.tallyVotes();
   };

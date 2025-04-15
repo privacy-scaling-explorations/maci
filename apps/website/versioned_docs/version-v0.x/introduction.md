@@ -31,7 +31,7 @@ Even if Alice reveals the cleartext of her vote to Bob, she just needs to not sh
 
 ## Technical process
 
-Refer to the [Glossary](#Glossary) for definitions of terms.
+Refer to the [Glossary](#glossary) for definitions of terms.
 
 1. The coordinator deploys the MACI contract to an Ethereum blockchain and starts the sign-up period. The same transaction that deploys the contract also stores the value of an empty vote option tree.
 2. To sign up, each user creates an EdDSA keypair and invokes the contract's `signUp()` function. Alternatively, there is a mechanism where some contract function checks if the user owns a particular ERC721 token and adds them to the whitelist. It in turn generates a new leaf to the state tree and updates the state tree root.

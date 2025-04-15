@@ -1,7 +1,7 @@
+import { genRandomSalt } from "@maci-protocol/crypto";
+import { PCommand, Keypair } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
-import { genRandomSalt } from "maci-crypto";
-import { PCommand, Keypair } from "maci-domainobjs";
 
 import { getSignal, circomkitInstance } from "./utils/utils";
 
@@ -34,7 +34,7 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
   let circuit: WitnessTester<
     [
       "numSignUps",
-      "maxVoteOptions",
+      "voteOptions",
       "slPubKey",
       "slVoiceCreditBalance",
       "ballotNonce",
@@ -56,7 +56,7 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
   let circuitNonQv: WitnessTester<
     [
       "numSignUps",
-      "maxVoteOptions",
+      "voteOptions",
       "slPubKey",
       "slVoiceCreditBalance",
       "ballotNonce",
@@ -90,7 +90,7 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
   it("should output new state leaf and ballot values if the command is valid", async () => {
     const circuitInputs = {
       numSignUps,
-      maxVoteOptions,
+      voteOptions: maxVoteOptions,
       slPubKey: slPubKey.asCircuitInputs() as unknown as [bigint, bigint],
       slVoiceCreditBalance,
       ballotNonce,
@@ -125,7 +125,7 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
   it("should output new state leaf and ballot values if the command is valid (non-quadratic voting)", async () => {
     const circuitInputs = {
       numSignUps,
-      maxVoteOptions,
+      voteOptions: maxVoteOptions,
       slPubKey: slPubKey.asCircuitInputs() as unknown as [bigint, bigint],
       slVoiceCreditBalance,
       ballotNonce,
@@ -160,7 +160,7 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
   it("should output existing state leaf and ballot values if the command is invalid", async () => {
     const circuitInputs = {
       numSignUps,
-      maxVoteOptions,
+      voteOptions: maxVoteOptions,
       slPubKey: slPubKey.asCircuitInputs() as unknown as [bigint, bigint],
       slVoiceCreditBalance,
       ballotNonce,
@@ -195,7 +195,7 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
   it("should output existing state leaf and ballot values if the command is invalid (non quadratic-voting)", async () => {
     const circuitInputs = {
       numSignUps,
-      maxVoteOptions,
+      voteOptions: maxVoteOptions,
       slPubKey: slPubKey.asCircuitInputs() as unknown as [bigint, bigint],
       slVoiceCreditBalance,
       ballotNonce,

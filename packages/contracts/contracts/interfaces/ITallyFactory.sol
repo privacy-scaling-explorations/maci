@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.28;
 
 import { DomainObjs } from "../utilities/DomainObjs.sol";
 
@@ -11,7 +11,6 @@ interface ITallyFactory {
   /// @param _vkRegistry VkRegistry contract
   /// @param _poll Poll contract
   /// @param _messageProcessor MessageProcessor contract
-  /// @param _owner Owner of the contract
   /// @param _mode Voting mode
   /// @return The deployed contract
   function deploy(
@@ -19,7 +18,6 @@ interface ITallyFactory {
     address _vkRegistry,
     address _poll,
     address _messageProcessor,
-    address _owner,
     DomainObjs.Mode _mode
   ) external returns (address);
 }

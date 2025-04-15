@@ -1,9 +1,9 @@
+import { genRandomSalt, hash5, hash4, hash3, hash2 } from "@maci-protocol/crypto";
+import { PCommand, Keypair } from "@maci-protocol/domainobjs";
 import { r } from "@zk-kit/baby-jubjub";
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
 import fc from "fast-check";
-import { genRandomSalt, hash5, hash4, hash3, hash2 } from "maci-crypto";
-import { PCommand, Keypair } from "maci-domainobjs";
 
 import { getSignal, circomkitInstance } from "./utils/utils";
 

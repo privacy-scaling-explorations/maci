@@ -1,13 +1,17 @@
 {
-  "name": "maci-domainobjs",
-  "version": "2.5.0",
-  "description": "",
+  "name": "@maci-protocol/domainobjs",
+  "version": "3.0.0",
+  "private": false,
+  "description": "Classes representing domain objects for MACI",
   "main": "build/ts/index.js",
   "files": [
     "build",
     "README.md",
     "CHANGELOG.md"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "watch": "tsc --watch",
     "build": "tsc -p tsconfig.build.json",
@@ -17,15 +21,15 @@
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
-    "@types/mocha": "^10.0.8",
-    "@types/node": "^22.9.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.14.0",
     "chai": "^4.3.10",
-    "mocha": "^10.7.3",
+    "mocha": "^11.1.0",
     "nyc": "^17.1.0",
-    "ts-mocha": "^10.0.0"
+    "ts-mocha": "^11.1.0"
   },
   "dependencies": {
-    "maci-crypto": "^2.5.0"
+    "@maci-protocol/crypto": "^3.0.0"
   },
   "nyc": {
     "reporter": [

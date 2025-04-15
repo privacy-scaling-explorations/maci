@@ -1,7 +1,8 @@
+import { Keypair, PCommand } from "@maci-protocol/domainobjs";
 import benny from "benny";
-import { Keypair, PCommand } from "maci-domainobjs";
 
 import { MaciState } from "..";
+import { maxVoteOptions } from "../__tests__/utils/constants";
 
 import {
   COORDINATOR_KEYPAIR,
@@ -29,7 +30,7 @@ export default function runCore(): void {
         const userKeypair = new Keypair();
         users.push(userKeypair);
 
-        maciState.signUp(userKeypair.pubKey, VOICE_CREDIT_BALANCE, BigInt(Math.floor(Date.now() / 1000)));
+        maciState.signUp(userKeypair.pubKey);
       }
 
       const pollId = maciState.deployPoll(
@@ -37,10 +38,11 @@ export default function runCore(): void {
         TREE_DEPTHS,
         MESSAGE_BATCH_SIZE,
         COORDINATOR_KEYPAIR,
+        maxVoteOptions,
       );
       const poll = maciState.polls.get(pollId)!;
 
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       // 4 valid votes
       for (let i = 0; i < MESSAGE_BATCH_SIZE - 1; i += 1) {

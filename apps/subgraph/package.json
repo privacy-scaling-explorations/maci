@@ -1,6 +1,6 @@
 {
-  "name": "maci-subgraph",
-  "version": "2.5.0",
+  "name": "@maci-protocol/subgraph",
+  "version": "3.0.0",
   "description": "A subgraph to index data from MACI protocol to serve as data layer for frontend integration",
   "private": false,
   "files": [
@@ -10,6 +10,9 @@
     "templates",
     "README.md"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "precodegen": "rm -rf ./generated && pnpm generate:schema && pnpm generate:yaml",
     "codegen": "graph codegen",
@@ -26,14 +29,14 @@
     "test:coverage": "graph test && graph test -c"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "^0.88.0",
-    "@graphprotocol/graph-ts": "^0.35.1",
-    "maci-contracts": "^2.5.0"
+    "@graphprotocol/graph-cli": "^0.97.0",
+    "@graphprotocol/graph-ts": "^0.38.0",
+    "@maci-protocol/contracts": "^3.0.0"
   },
   "devDependencies": {
     "assemblyscript": "0.19.23",
     "matchstick-as": "^0.6.0",
     "mustache": "^4.2.0",
-    "wabt": "^1.0.36"
+    "wabt": "^1.0.37"
   }
 }

@@ -1,12 +1,19 @@
+import { poseidon } from "@maci-protocol/crypto";
+import { PCommand, Keypair, StateLeaf, PrivKey, Ballot } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
-import { poseidon } from "maci-crypto";
-import { PCommand, Keypair, StateLeaf, PrivKey, Ballot } from "maci-domainobjs";
 
 import { MaciState } from "../MaciState";
 import { Poll } from "../Poll";
 import { STATE_TREE_DEPTH, VOTE_OPTION_TREE_ARITY } from "../utils/constants";
 
-import { coordinatorKeypair, duration, messageBatchSize, treeDepths, voiceCreditBalance } from "./utils/constants";
+import {
+  coordinatorKeypair,
+  duration,
+  maxVoteOptions,
+  messageBatchSize,
+  treeDepths,
+  voiceCreditBalance,
+} from "./utils/constants";
 
 describe("Poll", function test() {
   this.timeout(90000);
@@ -18,24 +25,24 @@ describe("Poll", function test() {
       treeDepths,
       messageBatchSize,
       coordinatorKeypair,
+      maxVoteOptions,
     );
 
     const poll = maciState.polls.get(pollId)!;
 
     const user1Keypair = new Keypair();
     // signup the user
-    maciState.signUp(user1Keypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+    maciState.signUp(user1Keypair.pubKey);
 
     // copy the state from the MaciState ref
-    poll.updatePoll(BigInt(maciState.stateLeaves.length));
+    poll.updatePoll(BigInt(maciState.pubKeys.length));
 
     const { privKey } = user1Keypair;
     const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
 
     const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-    const timestamp = BigInt(1);
 
-    const stateIndex = poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp);
+    const stateIndex = poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance);
 
     it("should throw if a message has an invalid state index", () => {
       const command = new PCommand(
@@ -241,22 +248,22 @@ describe("Poll", function test() {
       treeDepths,
       messageBatchSize,
       coordinatorKeypair,
+      maxVoteOptions,
     );
 
     const poll = maciState.polls.get(pollId)!;
-    poll.updatePoll(BigInt(maciState.stateLeaves.length));
+    poll.updatePoll(BigInt(maciState.pubKeys.length));
 
     const user1Keypair = new Keypair();
     // signup the user
-    maciState.signUp(user1Keypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+    maciState.signUp(user1Keypair.pubKey);
 
     const { privKey } = user1Keypair;
     const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
 
     const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-    const timestamp = BigInt(1);
 
-    const stateIndex = poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp);
+    const stateIndex = poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance);
 
     it("should throw if the state has not been copied prior to calling processMessages", () => {
       const tmpPoll = maciState.deployPoll(
@@ -264,6 +271,7 @@ describe("Poll", function test() {
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
+        maxVoteOptions,
       );
 
       expect(() => maciState.polls.get(tmpPoll)?.processMessages(pollId)).to.throw(
@@ -291,7 +299,7 @@ describe("Poll", function test() {
 
       poll.publishMessage(message, ecdhKeypair.pubKey);
       poll.publishMessage(message, ecdhKeypair.pubKey);
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       expect(() => {
         poll.processMessage(message, ecdhKeypair.pubKey);
@@ -317,23 +325,23 @@ describe("Poll", function test() {
       treeDepths,
       messageBatchSize,
       coordinatorKeypair,
+      maxVoteOptions,
     );
 
     const poll = maciState.polls.get(pollId)!;
 
     const user1Keypair = new Keypair();
     // signup the user
-    maciState.signUp(user1Keypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+    maciState.signUp(user1Keypair.pubKey);
 
-    poll.updatePoll(BigInt(maciState.stateLeaves.length));
+    poll.updatePoll(BigInt(maciState.pubKeys.length));
 
     const { privKey } = user1Keypair;
     const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
 
     const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-    const timestamp = BigInt(1);
 
-    const stateIndex = poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp);
+    const stateIndex = poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance);
 
     it("it should succeed even if send an invalid message", () => {
       const command = new PCommand(
@@ -410,6 +418,7 @@ describe("Poll", function test() {
       treeDepths,
       messageBatchSize,
       coordinatorKeypair,
+      maxVoteOptions,
     );
 
     const poll = maciState.polls.get(pollId)!;
@@ -418,25 +427,23 @@ describe("Poll", function test() {
     const user2Keypair = new Keypair();
 
     // signup the user
-    maciState.signUp(user1Keypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+    maciState.signUp(user1Keypair.pubKey);
 
-    maciState.signUp(user2Keypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+    maciState.signUp(user2Keypair.pubKey);
 
-    poll.updatePoll(BigInt(maciState.stateLeaves.length));
+    poll.updatePoll(BigInt(maciState.pubKeys.length));
 
     const { privKey: privKey1 } = user1Keypair;
     const { privKey: pollPrivKey1, pubKey: pollPubKey1 } = new Keypair();
 
     const nullifier1 = poseidon([BigInt(privKey1.rawPrivKey.toString())]);
-    const timestamp1 = BigInt(1);
 
-    const stateIndex1 = poll.joinPoll(nullifier1, pollPubKey1, voiceCreditBalance, timestamp1);
+    const stateIndex1 = poll.joinPoll(nullifier1, pollPubKey1, voiceCreditBalance);
 
     const { privKey: privKey2 } = user2Keypair;
     const { privKey: pollPrivKey2, pubKey: pollPubKey2 } = new Keypair();
 
     const nullifier2 = poseidon([BigInt(privKey2.rawPrivKey.toString())]);
-    const timestamp2 = BigInt(1);
 
     const voteWeight = 5n;
     const voteOption = 0n;
@@ -478,12 +485,13 @@ describe("Poll", function test() {
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
+        maxVoteOptions,
       );
 
       const secondPoll = maciState.polls.get(secondPollId)!;
-      secondPoll.updatePoll(BigInt(maciState.stateLeaves.length));
+      secondPoll.updatePoll(BigInt(maciState.pubKeys.length));
 
-      const stateIndex2 = secondPoll.joinPoll(nullifier2, pollPubKey2, voiceCreditBalance, timestamp2);
+      const stateIndex2 = secondPoll.joinPoll(nullifier2, pollPubKey2, voiceCreditBalance);
 
       const secondVoteWeight = 10n;
       const secondVoteOption = 1n;
@@ -528,6 +536,7 @@ describe("Poll", function test() {
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
+        maxVoteOptions,
       );
 
       const poll = maciState.polls.get(pollId)!;
@@ -546,13 +555,14 @@ describe("Poll", function test() {
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
+        maxVoteOptions,
       );
 
-      maciState.signUp(new Keypair().pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+      maciState.signUp(new Keypair().pubKey);
 
       const poll = maciState.polls.get(pollId)!;
 
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       expect(poll.getNumSignups()).to.eq(2n);
 
@@ -571,6 +581,7 @@ describe("Poll", function test() {
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
+        maxVoteOptions,
       );
 
       const poll = maciState.polls.get(pollId)!;

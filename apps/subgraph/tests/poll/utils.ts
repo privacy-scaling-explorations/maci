@@ -1,8 +1,8 @@
-import { Address, BigInt as GraphBN, ethereum } from "@graphprotocol/graph-ts";
+import { Address, Bytes, BigInt as GraphBN, ethereum } from "@graphprotocol/graph-ts";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { newMockEvent } from "matchstick-as";
 
-import { MergeState, PublishMessage } from "../../generated/templates/Poll/Poll";
+import { MergeState, PublishMessage, ChainHashUpdated, IpfsHashAdded } from "../../generated/templates/Poll/Poll";
 
 export function createMergeStateEvent(address: Address, stateRoot: GraphBN, numSignups: GraphBN): MergeState {
   const event = changetype<MergeState>(newMockEvent());
@@ -22,6 +22,8 @@ export function createPublishMessageEvent(
 ): PublishMessage {
   const event = changetype<PublishMessage>(newMockEvent());
 
+  const encPubKey = [ethereum.Value.fromUnsignedBigInt(encPubKeyX), ethereum.Value.fromUnsignedBigInt(encPubKeyY)];
+
   event.parameters.push(
     new ethereum.EventParam(
       "_message",
@@ -29,13 +31,26 @@ export function createPublishMessageEvent(
     ),
   );
   event.parameters.push(
-    new ethereum.EventParam(
-      "_encPubKey",
-      ethereum.Value.fromTuple(
-        changetype<ethereum.Tuple>(ethereum.Value.fromUnsignedBigIntArray([encPubKeyX, encPubKeyY])),
-      ),
-    ),
+    new ethereum.EventParam("_encPubKey", ethereum.Value.fromTuple(changetype<ethereum.Tuple>(encPubKey))),
   );
+  event.address = address;
+
+  return event;
+}
+
+export function createChainHashUpdatedEvent(address: Address, chainHash: GraphBN): ChainHashUpdated {
+  const event = changetype<ChainHashUpdated>(newMockEvent());
+
+  event.parameters.push(new ethereum.EventParam("_chainHash", ethereum.Value.fromUnsignedBigInt(chainHash)));
+  event.address = address;
+
+  return event;
+}
+
+export function createIpfsHashAddedEvent(address: Address, ipfsHash: Bytes): IpfsHashAdded {
+  const event = changetype<IpfsHashAdded>(newMockEvent());
+
+  event.parameters.push(new ethereum.EventParam("_ipfsHash", ethereum.Value.fromBytes(ipfsHash)));
   event.address = address;
 
   return event;

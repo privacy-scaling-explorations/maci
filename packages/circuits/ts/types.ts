@@ -1,6 +1,4 @@
 import type { CircuitConfig } from "circomkit";
-import type { CircuitInputs } from "maci-core";
-import type { Groth16Proof, PublicSignals } from "snarkjs";
 
 export type BigNumberish = number | string | bigint;
 
@@ -20,37 +18,30 @@ export interface ISnarkJSVerificationKey {
 }
 
 /**
- * Return type for proof generation function
- */
-export interface FullProveResult {
-  proof: Groth16Proof;
-  publicSignals: PublicSignals;
-}
-
-/**
- * Parameters for the genProof function
- */
-export interface IGenProofOptions {
-  inputs: CircuitInputs;
-  zkeyPath: string;
-  useWasm?: boolean;
-  rapidsnarkExePath?: string;
-  witnessExePath?: string;
-  wasmPath?: string;
-  silent?: boolean;
-}
-
-/**
  * Inputs for circuit PollJoining
  */
 export interface IPollJoiningInputs {
   privKey: bigint;
-  pollPrivKey: bigint;
   pollPubKey: bigint[][];
   stateLeaf: bigint[];
   siblings: bigint[][];
   indices: bigint[];
   nullifier: bigint;
+  credits: bigint;
+  stateRoot: bigint;
+  actualStateTreeDepth: bigint;
+  pollId: bigint;
+}
+
+/**
+ * Inputs for circuit PollJoined
+ */
+export interface IPollJoinedInputs {
+  privKey: bigint;
+  voiceCreditsBalance: bigint;
+  stateLeaf: bigint[];
+  pathElements: bigint[][];
+  pathIndices: bigint[];
   credits: bigint;
   stateRoot: bigint;
   actualStateTreeDepth: bigint;
@@ -82,6 +73,7 @@ export interface IProcessMessagesInputs {
   currentBallotsPathElements: bigint[][];
   currentVoteWeights: bigint[];
   currentVoteWeightsPathElements: bigint[][];
+  voteOptions: bigint;
 }
 
 /**

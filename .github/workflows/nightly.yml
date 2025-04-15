@@ -9,9 +9,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        command: ["test:cli", "test:integration"]
+        command: ["test:unit", "test:integration", "test:e2e", "test:hardhat"]
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@v4
@@ -47,6 +47,7 @@ jobs:
 
       - name: Run hardhat fork
         run: |
+          cp ./deploy-config-example.json ./deploy-config.json
           cd packages/contracts
           pnpm run hardhat &
 
@@ -62,15 +63,10 @@ jobs:
           chmod +x ${{ github.workspace }}/circom
           sudo mv ${{ github.workspace }}/circom /bin/circom
 
-      - name: Create zkeys folder
-        run: |
-          cd packages/cli
-          mkdir -p zkeys
-
       - name: Compile Circuits And Generate zkeys
         run: |
-          pnpm build:circuits-c -- --outPath ../cli/zkeys
-          pnpm setup:zkeys -- --outPath ../cli/zkeys
+          pnpm build:circuits-c -- --outPath ../testing/zkeys
+          pnpm setup:zkeys -- --outPath ../testing/zkeys
 
       - name: ${{ matrix.command }}
         run: pnpm run ${{ matrix.command }}
@@ -80,7 +76,7 @@ jobs:
         run: kill $(lsof -t -i:8545)
 
   unit:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:

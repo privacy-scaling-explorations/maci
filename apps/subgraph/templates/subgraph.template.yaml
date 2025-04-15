@@ -5,6 +5,8 @@ indexerHints:
   prune: auto
 schema:
   file: ./schema.graphql
+features:
+  - ipfsOnEthereumContracts
 dataSources:
   - kind: ethereum
     name: MACI
@@ -25,13 +27,13 @@ dataSources:
         - Poll
       abis:
         - name: MACI
-          file: ./node_modules/maci-contracts/build/artifacts/contracts/MACI.sol/MACI.json
+          file: ./node_modules/@maci-protocol/contracts/build/artifacts/contracts/MACI.sol/MACI.json
         - name: Poll
-          file: ./node_modules/maci-contracts/build/artifacts/contracts/Poll.sol/Poll.json
+          file: ./node_modules/@maci-protocol/contracts/build/artifacts/contracts/Poll.sol/Poll.json
       eventHandlers:
         - event: DeployPoll(uint256,indexed uint256,indexed uint256,uint8)
           handler: handleDeployPoll
-        - event: SignUp(uint256,indexed uint256,indexed uint256,uint256,uint256,uint256)
+        - event: SignUp(uint256,uint256,indexed uint256,indexed uint256)
           handler: handleSignUp
       file: ./src/maci.ts
 templates:
@@ -52,10 +54,14 @@ templates:
         - TopupCredit
       abis:
         - name: Poll
-          file: ./node_modules/maci-contracts/build/artifacts/contracts/Poll.sol/Poll.json
+          file: ./node_modules/@maci-protocol/contracts/build/artifacts/contracts/Poll.sol/Poll.json
       eventHandlers:
         - event: MergeState(indexed uint256,indexed uint256)
           handler: handleMergeState
         - event: PublishMessage((uint256[10]),(uint256,uint256))
           handler: handlePublishMessage
+        - event: ChainHashUpdated(indexed uint256)
+          handler: handleChainHashUpdate
+        - event: IpfsHashAdded(indexed bytes32)
+          handler: handleIpfsHashAdded
       file: ./src/poll.ts

@@ -1,11 +1,11 @@
+import { MaciState, Poll } from "@maci-protocol/core";
+import { poseidon } from "@maci-protocol/crypto";
+import { Keypair, PCommand, Message } from "@maci-protocol/domainobjs";
 import { type WitnessTester } from "circomkit";
-import { MaciState, Poll } from "maci-core";
-import { poseidon } from "maci-crypto";
-import { Keypair, PCommand, Message } from "maci-domainobjs";
 
 import { ITallyVotesInputs } from "../types";
 
-import { STATE_TREE_DEPTH, duration, messageBatchSize, voiceCreditBalance } from "./utils/constants";
+import { STATE_TREE_DEPTH, duration, maxVoteOptions, messageBatchSize, voiceCreditBalance } from "./utils/constants";
 import { generateRandomIndex, circomkitInstance } from "./utils/utils";
 
 describe("TallyVotes circuit", function test() {
@@ -14,6 +14,7 @@ describe("TallyVotes circuit", function test() {
   const treeDepths = {
     intStateTreeDepth: 1,
     voteOptionTreeDepth: 2,
+    stateTreeDepth: 10,
   };
 
   const coordinatorKeypair = new Keypair();
@@ -45,15 +46,18 @@ describe("TallyVotes circuit", function test() {
 
   let circuitNonQv: WitnessTester<TallyVotesCircuitInputs>;
 
+  const userKeypair = new Keypair();
+  const { privKey, pubKey: pollPubKey } = userKeypair;
+
   before(async () => {
     circuit = await circomkitInstance.WitnessTester("tallyVotes", {
-      file: "./core/qv/tallyVotes",
+      file: "./coordinator/qv/tallyVotes",
       template: "TallyVotes",
       params: [10, 1, 2],
     });
 
     circuitNonQv = await circomkitInstance.WitnessTester("tallyVotesNonQv", {
-      file: "./core/non-qv/tallyVotes",
+      file: "./coordinator/non-qv/tallyVotes",
       template: "TallyVotesNonQv",
       params: [10, 1, 2],
     });
@@ -72,27 +76,23 @@ describe("TallyVotes circuit", function test() {
       const messages: Message[] = [];
       const commands: PCommand[] = [];
       // Sign up and publish
-      const userKeypair = new Keypair();
-      maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+      maciState.signUp(userKeypair.pubKey);
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
+        maxVoteOptions,
       );
 
       poll = maciState.polls.get(pollId)!;
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       // Join the poll
-      const { privKey } = userKeypair;
-      const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
+      const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString()), pollId]);
 
-      const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-      const timestamp = BigInt(Math.floor(Date.now() / 1000));
-
-      stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp));
+      stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance));
 
       // First command (valid)
       const command = new PCommand(
@@ -104,7 +104,7 @@ describe("TallyVotes circuit", function test() {
         BigInt(pollId),
       );
 
-      const signature = command.sign(pollPrivKey);
+      const signature = command.sign(privKey);
 
       const ecdhKeypair = new Keypair();
       const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
@@ -152,27 +152,23 @@ describe("TallyVotes circuit", function test() {
       const messages: Message[] = [];
       const commands: PCommand[] = [];
       // Sign up and publish
-      const userKeypair = new Keypair();
-      maciState.signUp(userKeypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+      maciState.signUp(userKeypair.pubKey);
 
       pollId = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
+        maxVoteOptions,
       );
 
       poll = maciState.polls.get(pollId)!;
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       // Join the poll
-      const { privKey } = userKeypair;
-      const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
+      const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString()), pollId]);
 
-      const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-      const timestamp = BigInt(Math.floor(Date.now() / 1000));
-
-      stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance, timestamp));
+      stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance));
 
       // First command (valid)
       const command = new PCommand(
@@ -184,7 +180,7 @@ describe("TallyVotes circuit", function test() {
         BigInt(pollId),
       );
 
-      const signature = command.sign(pollPrivKey);
+      const signature = command.sign(privKey);
 
       const ecdhKeypair = new Keypair();
       const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
@@ -227,14 +223,12 @@ describe("TallyVotes circuit", function test() {
     it("should produce the correct state root and ballot root", async () => {
       const maciState = new MaciState(STATE_TREE_DEPTH);
       const userKeypairs: Keypair[] = [];
-      const pollKeypairs: Keypair[] = [];
 
       // Sign up
       for (let i = 0; i < x; i += 1) {
         const k = new Keypair();
         userKeypairs.push(k);
-        pollKeypairs.push(new Keypair());
-        maciState.signUp(k.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000) + duration));
+        maciState.signUp(k.pubKey);
       }
 
       // Deploy poll
@@ -243,34 +237,34 @@ describe("TallyVotes circuit", function test() {
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
+        maxVoteOptions,
       );
 
       const poll = maciState.polls.get(pollId)!;
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       // Join the poll
-      for (let i = 0; i < x; i += 1) {
-        const { privKey } = userKeypairs[i];
+      userKeypairs.forEach((user) => {
+        const { privKey: userPrivKey } = user;
 
-        const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
-        const timestamp = BigInt(Math.floor(Date.now() / 1000));
+        const nullifier = poseidon([BigInt(userPrivKey.rawPrivKey.toString())]);
 
-        poll.joinPoll(nullifier, pollKeypairs[i].pubKey, voiceCreditBalance, timestamp);
-      }
+        poll.joinPoll(nullifier, user.pubKey, voiceCreditBalance);
+      });
 
       // Commands
       const numMessages = messageBatchSize * NUM_BATCHES;
       for (let i = 0; i < numMessages; i += 1) {
         const command = new PCommand(
           BigInt(i),
-          pollKeypairs[i].pubKey,
+          userKeypairs[i].pubKey,
           BigInt(i), // vote option index
           BigInt(1), // vote weight
           BigInt(1), // nonce
           BigInt(pollId),
         );
 
-        const signature = command.sign(pollKeypairs[i].privKey);
+        const signature = command.sign(userKeypairs[i].privKey);
 
         const ecdhKeypair = new Keypair();
         const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);

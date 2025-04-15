@@ -1,13 +1,17 @@
 {
-  "name": "maci-crypto",
-  "version": "2.5.0",
+  "name": "@maci-protocol/crypto",
+  "version": "3.0.0",
   "description": "A package containing cryptography utilities for MACI",
+  "private": false,
   "main": "build/ts/index.js",
   "files": [
     "build",
     "README.md",
     "CHANGELOG.md"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "watch": "tsc --watch",
     "benchmarks": "ts-node ts/__benchmarks__/index.ts",
@@ -23,19 +27,19 @@
     "@zk-kit/baby-jubjub": "^1.0.3",
     "@zk-kit/eddsa-poseidon": "^1.1.0",
     "@zk-kit/poseidon-cipher": "^0.3.2",
-    "ethers": "^6.13.4"
+    "ethers": "^6.13.5"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
-    "@types/mocha": "^10.0.8",
-    "@types/node": "^22.9.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.14.0",
     "benny": "^3.7.1",
     "chai": "^4.3.10",
-    "mocha": "^10.7.3",
+    "mocha": "^11.1.0",
     "nyc": "^17.1.0",
-    "ts-mocha": "^10.0.0",
+    "ts-mocha": "^11.1.0",
     "ts-node": "^10.9.1",
-    "typescript": "^5.6.3"
+    "typescript": "^5.8.3"
   },
   "nyc": {
     "reporter": [

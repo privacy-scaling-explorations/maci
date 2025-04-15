@@ -1,10 +1,11 @@
 import type { MaciState } from "../MaciState";
 import type { Poll } from "../Poll";
-import type { PathElements } from "maci-crypto";
+import type { PathElements } from "@maci-protocol/crypto";
 import type {
   Ballot,
   IJsonBallot,
   IJsonPCommand,
+  IJsonPublicKey,
   IJsonStateLeaf,
   Keypair,
   Message,
@@ -12,7 +13,7 @@ import type {
   PrivKey,
   PubKey,
   StateLeaf,
-} from "maci-domainobjs";
+} from "@maci-protocol/domainobjs";
 
 /**
  * A circuit inputs for the circom circuit
@@ -27,6 +28,7 @@ export type CircuitInputs = Record<string, string | bigint | bigint[] | bigint[]
 export interface TreeDepths {
   intStateTreeDepth: number;
   voteOptionTreeDepth: number;
+  stateTreeDepth: number;
 }
 
 /**
@@ -51,6 +53,7 @@ export interface IMaciState {
     treeDepths: TreeDepths,
     messageBatchSize: number,
     coordinatorKeypair: Keypair,
+    voteOptions: bigint,
   ): bigint;
   // These methods are helper functions.
   deployNullPoll(): void;
@@ -86,21 +89,24 @@ export interface IPoll {
  * This interface defines the JSON representation of a Poll
  */
 export interface IJsonPoll {
+  stateTreeDepth: number;
   pollEndTimestamp: string;
   treeDepths: TreeDepths;
   batchSizes: BatchSizes;
   maxVoteOptions: number;
+  voteOptions: string;
   messages: unknown[];
   commands: IJsonPCommand[];
   ballots: IJsonBallot[];
   encPubKeys: string[];
   currentMessageBatchIndex: number;
-  stateLeaves: IJsonStateLeaf[];
+  pubKeys: IJsonPublicKey[];
   pollStateLeaves: IJsonStateLeaf[];
   results: string[];
   numBatchesProcessed: number;
   numSignups: string;
   chainHash: string;
+  pollNullifiers: string[];
   batchHashes: string[];
 }
 
@@ -110,7 +116,7 @@ export interface IJsonPoll {
 export interface IJsonMaciState {
   stateTreeDepth: number;
   polls: IJsonPoll[];
-  stateLeaves: IJsonStateLeaf[];
+  pubKeys: IJsonPublicKey[];
   pollBeingProcessed: boolean;
   currentPollBeingProcessed: string;
   numSignUps: number;
@@ -138,25 +144,46 @@ export interface IProcessMessagesOutput {
 export interface IJoiningCircuitArgs {
   maciPrivKey: PrivKey;
   stateLeafIndex: bigint;
-  credits: bigint;
-  pollPrivKey: PrivKey;
   pollPubKey: PubKey;
 }
+
+/**
+ * An interface describing the joinedCircuitInputs function arguments
+ */
+export interface IJoinedCircuitArgs {
+  maciPrivKey: PrivKey;
+  stateLeafIndex: bigint;
+  voiceCreditsBalance: bigint;
+}
+
 /**
  * An interface describing the circuit inputs to the PollJoining circuit
  */
 export interface IPollJoiningCircuitInputs {
   privKey: string;
-  pollPrivKey: string;
   pollPubKey: string[];
   stateLeaf: string[];
   siblings: string[][];
   indices: string[];
   nullifier: string;
-  credits: string;
+  stateRoot: string;
+  actualStateTreeDepth: string;
+  pollId: string;
+}
+
+/**
+ * An interface describing the circuit inputs to the PollJoined circuit
+ */
+export interface IPollJoinedCircuitInputs {
+  privKey: string;
+  voiceCreditsBalance: string;
+  stateLeaf: string[];
+  pathElements: string[][];
+  pathIndices: string[];
   stateRoot: string;
   actualStateTreeDepth: string;
 }
+
 /**
  * An interface describing the circuit inputs to the ProcessMessage circuit
  */
@@ -184,6 +211,7 @@ export interface IProcessMessagesCircuitInputs {
   currentVoteWeightsPathElements: string[][];
   newSbSalt: string;
   newSbCommitment: string;
+  voteOptions: bigint;
 }
 
 /**

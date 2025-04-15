@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.5.0...v3.0.0) (2025-03-28)
+
+
+### Features
+
+* voice credits per poll ([#1967](https://github.com/privacy-scaling-explorations/maci/issues/1967)) ([f59e9c3](https://github.com/privacy-scaling-explorations/maci/commit/f59e9c350133efb2fbbc37e5139addf5e34c55e6))
+
+
+### Miscellaneous
+
+* **deps-dev:** bump @types/mocha from 10.0.8 to 10.0.10 ([a8b029a](https://github.com/privacy-scaling-explorations/maci/commit/a8b029a140b3bc81c639c26e049a766ce67b8886))
+* **deps-dev:** bump @types/node from 20.17.19 to 22.13.9 ([aa7c356](https://github.com/privacy-scaling-explorations/maci/commit/aa7c356469592547f3d60c05077268267d7ea186))
+* **deps-dev:** bump @types/node from 22.10.7 to 22.12.0 ([#2073](https://github.com/privacy-scaling-explorations/maci/issues/2073)) ([1dcb28e](https://github.com/privacy-scaling-explorations/maci/commit/1dcb28e33699ee91f9691c1073d4da0293e406c0))
+* **deps-dev:** bump @types/node from 22.12.0 to 22.13.1 ([5f06af0](https://github.com/privacy-scaling-explorations/maci/commit/5f06af0180f522f552519529c07d2bb660fdd586))
+* **deps-dev:** bump @types/node from 22.13.1 to 22.13.4 ([dba94f4](https://github.com/privacy-scaling-explorations/maci/commit/dba94f4fe6d405eaca655dfdc8ca01d57664b99b))
+* **deps-dev:** bump @types/node from 22.13.9 to 22.13.10 ([#2241](https://github.com/privacy-scaling-explorations/maci/issues/2241)) ([3f50bb6](https://github.com/privacy-scaling-explorations/maci/commit/3f50bb65db4cd83b5ebe9d4fb1b7a6d650bb1c51))
+* **deps-dev:** bump @types/node from 22.9.0 to 22.10.7 ([3e4a5ae](https://github.com/privacy-scaling-explorations/maci/commit/3e4a5ae43cc57d6ebaedeb5ce95ca6dd1c968ffe))
+* **deps-dev:** bump mocha from 10.7.3 to 11.0.1 ([457a504](https://github.com/privacy-scaling-explorations/maci/commit/457a5048580a5460ad012b10486a65df0dacae0e))
+* **deps-dev:** bump mocha from 10.8.2 to 11.1.0 ([f524a07](https://github.com/privacy-scaling-explorations/maci/commit/f524a07f5a3b1e94eaf6f230ecf16476f4c6810d))
+* **deps-dev:** bump ts-mocha from 10.0.0 to 11.1.0 ([df84193](https://github.com/privacy-scaling-explorations/maci/commit/df84193a1ad0980523aba66f5b43b5a6cdd74307))
+
+
+
 ## [2.5.0](https://github.com/privacy-scaling-explorations/maci/compare/v2.4.0...v2.5.0) (2024-11-20)
 
 

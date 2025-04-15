@@ -11,6 +11,8 @@ import type { TAbi } from "./types";
 import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import type { ConfigurableTaskDefinition, HardhatRuntimeEnvironment, TaskArguments } from "hardhat/types";
 
+import { error, info, success, warning, logGreen, logMagenta, logRed, logYellow } from "../../ts/logger";
+
 import { ContractStorage } from "./ContractStorage";
 import {
   EContracts,
@@ -107,22 +109,22 @@ export class Deployment {
     const deployerAddress = await deployer.getAddress();
     const startBalance = await deployer.provider.getBalance(deployer);
 
-    console.log("Deployer address:", deployerAddress);
-    console.log("Deployer start balance: ", Number(startBalance / 10n ** 12n) / 1e6);
+    logMagenta({ text: `Deployer address: ${deployerAddress}` });
+    logMagenta({ text: `Deployer start balance: ${Number(startBalance / 10n ** 12n) / 1e6}` });
 
     if (incremental) {
-      console.log("======================================================================");
-      console.log("======================================================================");
-      console.log("====================    ATTENTION! INCREMENTAL MODE    ===============");
-      console.log("======================================================================");
-      console.log("====== Delete 'deployed-contracts.json' to start a new deployment ====");
-      console.log("======================================================================");
-      console.log("======================================================================");
+      logMagenta({ text: "======================================================================" });
+      logMagenta({ text: "======================================================================" });
+      logMagenta({ text: "====================    ATTENTION! INCREMENTAL MODE    ===============" });
+      logMagenta({ text: "======================================================================" });
+      logMagenta({ text: "====== Delete 'deployed-contracts.json' to start a new deployment ====" });
+      logMagenta({ text: "======================================================================" });
+      logMagenta({ text: "======================================================================" });
     } else {
       this.storage.cleanup(this.hre!.network.name);
     }
 
-    console.log("Deployment started\n");
+    logMagenta({ text: info("Deployment started\n") });
 
     return this.getDeploySteps(catolog, {
       incremental,
@@ -140,12 +142,12 @@ export class Deployment {
     // eslint-disable-next-line no-restricted-syntax
     for (const step of steps) {
       const stepId = `0${step.id}`;
-      console.log("\n======================================================================");
-      console.log(stepId.slice(stepId.length - 2), step.name);
-      console.log("======================================================================\n");
+      logMagenta({ text: "\n======================================================================" });
+      logMagenta({ text: `${stepId.slice(stepId.length - 2)} ${step.name}` });
+      logMagenta({ text: "======================================================================\n" });
 
       if (step.id <= skip) {
-        console.log(`STEP ${step.id} WAS SKIPPED`);
+        logYellow({ text: warning(`STEP ${step.id} WAS SKIPPED`) });
       } else {
         // eslint-disable-next-line no-await-in-loop
         await this.hre!.run(step.taskName, step.args);
@@ -166,16 +168,16 @@ export class Deployment {
     let hasWarn = false;
 
     if (multiCount > 0) {
-      console.warn("WARNING: multi-deployed contract(s) detected");
+      logYellow({ text: warning("WARNING: multi-deployed contract(s) detected") });
       hasWarn = true;
     } else if (entryMap.size !== instanceCount) {
-      console.warn("WARNING: unknown contract(s) detected");
+      logYellow({ text: warning("WARNING: unknown contract(s) detected") });
       hasWarn = true;
     }
 
     entryMap.forEach((_, key) => {
       if (key.startsWith("Mock")) {
-        console.warn("WARNING: mock contract detected:", key);
+        logYellow({ text: warning(`WARNING: mock contract detected: ${key}`) });
         hasWarn = true;
       }
     });
@@ -189,29 +191,29 @@ export class Deployment {
    * Finish deployment with console log information
    *
    * @param startBalance - start deployer balance
-   * @param success - success or not
+   * @param isSuccess - success or not
    */
-  async finish(startBalance: bigint, success: boolean): Promise<void> {
+  async finish(startBalance: bigint, isSuccess: boolean): Promise<void> {
     const deployer = await this.getDeployer();
     const { gasPrice } = this.hre!.network.config;
     const endBalance = await deployer.provider.getBalance(deployer);
 
-    console.log("======================================================================");
-    console.log("Deployer end balance: ", Number(endBalance / 10n ** 12n) / 1e6);
-    console.log("Deploy expenses: ", Number((startBalance - endBalance) / 10n ** 12n) / 1e6);
+    logMagenta({ text: "======================================================================" });
+    logMagenta({ text: `Deployer end balance: ${Number(endBalance / 10n ** 12n) / 1e6}` });
+    logMagenta({ text: `Deploy expenses: ${Number((startBalance - endBalance) / 10n ** 12n) / 1e6}` });
 
     if (gasPrice !== "auto") {
-      console.log("Deploy gas: ", Number(startBalance - endBalance) / gasPrice, "@", gasPrice / 1e9, " gwei");
+      logMagenta({ text: `Deploy gas: ${(Number(startBalance - endBalance) / gasPrice, "@", gasPrice / 1e9)} gwei` });
     }
 
-    console.log("======================================================================");
+    logMagenta({ text: "======================================================================" });
 
-    if (!success) {
-      console.log("\nDeployment has failed");
+    if (!isSuccess) {
+      logRed({ text: error("\nDeployment has failed") });
       await import("process").then((m) => m.exit(1));
     }
 
-    console.log("\nDeployment has finished");
+    logGreen({ text: success("\nDeployment has finished") });
   }
 
   /**

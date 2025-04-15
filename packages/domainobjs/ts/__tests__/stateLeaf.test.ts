@@ -7,17 +7,16 @@ describe("stateLeaf", () => {
 
   describe("constructor", () => {
     it("should create a state leaf", () => {
-      const stateLeaf = new StateLeaf(pubKey, BigInt(123), BigInt(1231267));
+      const stateLeaf = new StateLeaf(pubKey, BigInt(123));
       expect(stateLeaf).to.not.eq(null);
       expect(stateLeaf.pubKey.equals(pubKey)).to.eq(true);
       expect(stateLeaf.voiceCreditBalance).to.eq(BigInt(123));
-      expect(stateLeaf.timestamp).to.eq(BigInt(1231267));
     });
   });
 
   describe("copy", () => {
     it("should create an exact copy of the state leaf", () => {
-      const stateLeaf = new StateLeaf(pubKey, BigInt(123), BigInt(1231267));
+      const stateLeaf = new StateLeaf(pubKey, BigInt(123));
 
       const copy = stateLeaf.copy();
 
@@ -35,7 +34,6 @@ describe("stateLeaf", () => {
         BigInt("19824078218392094440610104313265183977899662750282163392862422243483260492317"),
       );
       expect(blankLeaf.voiceCreditBalance).to.eq(BigInt(0));
-      expect(blankLeaf.timestamp).to.eq(BigInt(0));
     });
   });
 
@@ -49,17 +47,17 @@ describe("stateLeaf", () => {
 
   describe("equals", () => {
     it("should return true when comparing two equal state leaves", () => {
-      const stateLeaf = new StateLeaf(pubKey, BigInt(123), BigInt(1231267));
+      const stateLeaf = new StateLeaf(pubKey, BigInt(123));
 
-      const stateLeaf2 = new StateLeaf(pubKey, BigInt(123), BigInt(1231267));
+      const stateLeaf2 = new StateLeaf(pubKey, BigInt(123));
 
       expect(stateLeaf.equals(stateLeaf2)).to.eq(true);
     });
 
     it("should return false when comparing two different state leaves", () => {
-      const stateLeaf = new StateLeaf(pubKey, BigInt(123), BigInt(1231267));
+      const stateLeaf = new StateLeaf(pubKey, BigInt(1234));
 
-      const stateLeaf2 = new StateLeaf(pubKey, BigInt(123), BigInt(1231268));
+      const stateLeaf2 = new StateLeaf(pubKey, BigInt(1235));
 
       expect(stateLeaf.equals(stateLeaf2)).to.eq(false);
     });
@@ -68,7 +66,7 @@ describe("stateLeaf", () => {
   describe("serialization", () => {
     describe("serialize", () => {
       it("should work correctly", () => {
-        const stateLeaf = new StateLeaf(pubKey, BigInt(123), BigInt(1231267));
+        const stateLeaf = new StateLeaf(pubKey, BigInt(123));
 
         const serialized = stateLeaf.serialize();
         expect(serialized).to.not.eq(null);
@@ -77,7 +75,7 @@ describe("stateLeaf", () => {
 
     describe("deserialize", () => {
       it("should work correctly", () => {
-        const stateLeaf = new StateLeaf(pubKey, BigInt(123), BigInt(1231267));
+        const stateLeaf = new StateLeaf(pubKey, BigInt(123));
 
         const serialized = stateLeaf.serialize();
         const deserialized = StateLeaf.deserialize(serialized);
@@ -87,18 +85,18 @@ describe("stateLeaf", () => {
 
     describe("toJSON", () => {
       it("should produce an object with the correct properties", () => {
-        const stateLeaf = new StateLeaf(pubKey, BigInt(123), BigInt(1231267));
+        const stateLeaf = new StateLeaf(pubKey, BigInt(123));
 
         const json = stateLeaf.toJSON();
         expect(json).to.not.eq(null);
 
-        expect(Object.keys(json)).to.deep.eq(["pubKey", "voiceCreditBalance", "timestamp"]);
+        expect(Object.keys(json)).to.deep.eq(["pubKey", "voiceCreditBalance"]);
       });
     });
 
     describe("fromJSON", () => {
       it("should produce a state leaf from a JSON object", () => {
-        const stateLeaf = new StateLeaf(pubKey, BigInt(123), BigInt(1231267));
+        const stateLeaf = new StateLeaf(pubKey, BigInt(123));
 
         const json = stateLeaf.toJSON();
         const deserialized = StateLeaf.fromJSON(json);
@@ -109,29 +107,28 @@ describe("stateLeaf", () => {
 
   describe("asCircuitInputs", () => {
     it("should return an array", () => {
-      const stateLeaf = new StateLeaf(pubKey, BigInt(123), BigInt(1231267));
+      const stateLeaf = new StateLeaf(pubKey, BigInt(123));
 
       const arr = stateLeaf.asCircuitInputs();
       expect(arr).to.be.instanceOf(Array);
-      expect(arr.length).to.eq(4);
+      expect(arr.length).to.eq(3);
     });
   });
 
   describe("asContractParam", () => {
     it("should return an object with the correct properties and values", () => {
-      const stateLeaf = new StateLeaf(pubKey, BigInt(123), BigInt(1231267));
+      const stateLeaf = new StateLeaf(pubKey, BigInt(123));
       const obj = stateLeaf.asContractParam();
       expect(obj).to.not.eq(null);
-      expect(Object.keys(obj)).to.deep.eq(["pubKey", "voiceCreditBalance", "timestamp"]);
+      expect(Object.keys(obj)).to.deep.eq(["pubKey", "voiceCreditBalance"]);
       expect(obj.pubKey).to.deep.eq(pubKey.asContractParam());
       expect(obj.voiceCreditBalance).to.eq("123");
-      expect(obj.timestamp).to.eq("1231267");
     });
   });
 
   describe("hash", () => {
     it("should hash into a single bigint value which is not null", () => {
-      const stateLeaf = new StateLeaf(pubKey, BigInt(123), BigInt(1231267));
+      const stateLeaf = new StateLeaf(pubKey, BigInt(123));
 
       const hash = stateLeaf.hash();
       expect(hash).to.not.eq(null);

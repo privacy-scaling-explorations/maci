@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.28;
+
+import { Factory } from "@excubiae/contracts/contracts/proxy/Factory.sol";
 
 import { Params } from "./utilities/Params.sol";
 import { DomainObjs } from "./utilities/DomainObjs.sol";
@@ -9,33 +11,28 @@ import { IPollFactory } from "./interfaces/IPollFactory.sol";
 /// @title PollFactory
 /// @notice A factory contract which deploys Poll contracts. It allows the MACI contract
 /// size to stay within the limit set by EIP-170.
-contract PollFactory is Params, DomainObjs, IPollFactory {
-  /// @notice The PollFactory constructor
-  // solhint-disable-next-line no-empty-blocks
-  constructor() payable {}
+contract PollFactory is Factory, Params, DomainObjs, IPollFactory {
+  /// @notice Initializes the factory with the Poll implementation.
+  constructor() Factory(address(new Poll())) {}
 
   /// @inheritdoc IPollFactory
-  function deploy(
-    uint256 _duration,
-    Params.TreeDepths calldata _treeDepths,
-    uint8 _messageBatchSize,
-    DomainObjs.PubKey calldata _coordinatorPubKey,
-    Params.ExtContracts calldata _extContracts,
-    uint256 _emptyBallotRoot
-  ) public virtual returns (address pollAddr) {
-    // deploy the poll
-    Poll poll = new Poll(
-      _duration,
-      _treeDepths,
-      _messageBatchSize,
-      _coordinatorPubKey,
-      _extContracts,
-      _emptyBallotRoot
+  function deploy(DeployPollArgs calldata _args) public virtual returns (address pollAddr) {
+    bytes memory data = abi.encode(
+      _args.startDate,
+      _args.endDate,
+      _args.treeDepths,
+      _args.messageBatchSize,
+      _args.coordinatorPubKey,
+      _args.extContracts,
+      _args.emptyBallotRoot,
+      _args.pollId,
+      _args.relayers,
+      _args.voteOptions
     );
+    address clone = super._deploy(data);
 
-    // init Poll
-    poll.init();
+    Poll(clone).initialize();
 
-    pollAddr = address(poll);
+    pollAddr = clone;
   }
 }

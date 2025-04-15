@@ -1,20 +1,23 @@
-import { LeanIMT } from "@zk-kit/lean-imt";
-
+import type { ECheckerFactories, EPolicyFactories } from "../tasks/helpers/types";
 import type {
+  Factory,
   ConstantInitialVoiceCreditProxy,
-  FreeForAllGatekeeper,
   MACI,
   MockVerifier,
+  MessageProcessorFactory,
+  TallyFactory,
   PollFactory,
   PoseidonT3,
   PoseidonT4,
   PoseidonT5,
   PoseidonT6,
   VkRegistry,
+  IBasePolicy,
 } from "../typechain-types";
-import type { BigNumberish, Provider, Signer, ContractFactory } from "ethers";
-import type { CircuitInputs } from "maci-core";
-import type { Message, PubKey, StateLeaf } from "maci-domainobjs";
+import type { TypedContractMethod } from "../typechain-types/common";
+import type { CircuitInputs } from "@maci-protocol/core";
+import type { Keypair, Message, PubKey } from "@maci-protocol/domainobjs";
+import type { BigNumberish, Signer, ContractFactory, Provider, BaseContract } from "ethers";
 import type { PublicSignals } from "snarkjs";
 
 /**
@@ -80,7 +83,7 @@ export interface IDeployedTestContractsArgs {
   stateTreeDepth: number;
   signer?: Signer;
   quiet?: boolean;
-  gatekeeper?: FreeForAllGatekeeper;
+  policy?: IBasePolicy;
   factories?: [ContractFactory, ContractFactory, ContractFactory, ContractFactory];
 }
 
@@ -89,7 +92,7 @@ export interface IDeployedTestContractsArgs {
  */
 export interface IDeployedTestContracts {
   mockVerifierContract: MockVerifier;
-  gatekeeperContract: FreeForAllGatekeeper;
+  policyContract: IBasePolicy;
   constantInitialVoiceCreditProxyContract: ConstantInitialVoiceCreditProxy;
   maciContract: MACI;
   vkRegistryContract: VkRegistry;
@@ -116,6 +119,7 @@ export interface Action {
     pollAddr: string;
     stateLeaf: bigint;
     messageRoot: bigint;
+    ipfsHash: string;
   }>;
   blockNumber: number;
   transactionIndex: number;
@@ -136,14 +140,9 @@ export interface IDeployedPoseidonContracts {
  */
 export interface IDeployMaciArgs {
   /**
-   * The address of the SignUpTokenGatekeeper contract
+   * The address of the policy contract
    */
-  signUpTokenGatekeeperContractAddress: string;
-
-  /**
-   * The address of the ConstantInitialVoiceCreditProxy contract
-   */
-  initialVoiceCreditBalanceAddress: string;
+  policyContractAddress: string;
 
   /**
    * The signer to use to deploy the contract
@@ -182,6 +181,8 @@ export interface IDeployMaciArgs {
 export interface IDeployedMaci {
   maciContract: MACI;
   pollFactoryContract: PollFactory;
+  messageProcessorFactoryContract: MessageProcessorFactory;
+  tallyFactoryContract: TallyFactory;
   poseidonAddrs: {
     poseidonT3: string;
     poseidonT4: string;
@@ -191,18 +192,94 @@ export interface IDeployedMaci {
 }
 
 /**
- * An interface that represents arguments of generation sign up tree and state leaves
+ * Interface that represents Verification key
  */
-export interface IGenSignUpTreeArgs {
+export interface ISnarkJSVerificationKey {
+  protocol: BigNumberish;
+  curve: BigNumberish;
+  nPublic: BigNumberish;
+  vk_alpha_1: BigNumberish[];
+  vk_beta_2: BigNumberish[][];
+  vk_gamma_2: BigNumberish[][];
+  vk_delta_2: BigNumberish[][];
+  vk_alphabeta_12: BigNumberish[][][];
+  IC: BigNumberish[][];
+}
+
+/**
+ * Return type for proof generation function
+ */
+export interface FullProveResult {
+  proof: Groth16Proof;
+  publicSignals: PublicSignals;
+}
+
+/**
+ * Parameters for the genProof function
+ */
+export interface IGenProofOptions {
+  inputs: CircuitInputs;
+  zkeyPath: string;
+  useWasm?: boolean;
+  rapidsnarkExePath?: string;
+  witnessExePath?: string;
+  wasmPath?: string;
+  silent?: boolean;
+}
+
+/**
+ * Interface that represents IPFS message
+ */
+export interface IIpfsMessage {
   /**
-   * The etherum provider
+   * User public key
+   */
+  publicKey: BigNumberish[];
+
+  /**
+   * Message data
+   */
+  data: string[];
+
+  /**
+   * Message hash
+   */
+  hash: string;
+
+  /**
+   * MACI contract address
+   */
+  maciAddress: string;
+
+  /**
+   * Poll id
+   */
+  poll: number;
+}
+
+/**
+ * Interface that represents maci state generation arguments
+ */
+export interface IGenMaciStateFromContractArgs {
+  /**
+   * The ethereum provider
    */
   provider: Provider;
 
   /**
-   * The address of MACI contract
+   * The address of the MACI contract
    */
   address: string;
+
+  /**
+   * The keypair of the coordinator
+   */
+  coordinatorKeypair: Keypair;
+
+  /**
+   * The id of the poll for which we are fetching events
+   */
+  pollId: bigint;
 
   /**
    * The block number from which to start fetching events
@@ -223,19 +300,127 @@ export interface IGenSignUpTreeArgs {
    * The amount of time to sleep between each request
    */
   sleepAmount?: number;
+
+  /**
+   * Backup files for ipfs messages (name format: ipfsHash.json)
+   */
+  ipfsMessageBackupFiles?: string[];
+
+  /**
+   * The file path where to save the logs for debugging and auditing purposes
+   */
+  logsOutputPath?: string;
 }
 
 /**
- * An interface that represents sign up tree and state leaves
+ * Interface that represents log arguments
  */
-export interface IGenSignUpTree {
+export interface ILogArgs {
   /**
-   * Sign up tree
+   * Text to log
    */
-  signUpTree: LeanIMT;
+  text: string;
 
   /**
-   * State leaves
+   * Whether to log the output
    */
-  stateLeaves: StateLeaf[];
+  quiet?: boolean;
 }
+
+/**
+ * Interface for the deploy policy arguments
+ */
+export interface IDeployPolicyArgs<FC extends BaseContract = BaseContract, FG extends BaseContract = BaseContract> {
+  /**
+   * Policy factory name
+   */
+  policyFactoryName: EPolicyFactories;
+
+  /**
+   * Checker factory name
+   */
+  checkerFactoryName: ECheckerFactories;
+
+  /**
+   * Policy factory
+   */
+  policyFactory: ContractFactory;
+
+  /**
+   * Checker factory
+   */
+  checkerFactory: ContractFactory;
+
+  /**
+   * Ethereum signer
+   */
+  signer: Signer;
+
+  /**
+   * Policy deploy args
+   */
+  policyArgs?: unknown[];
+
+  /**
+   * Checker deploy args
+   */
+  checkerArgs?: unknown[];
+
+  /**
+   * Proxy factories to reuse
+   */
+  factories?: TDeployedProxyFactories<FC, FG>;
+
+  /**
+   * Whether to suppress console output
+   */
+  quiet?: boolean;
+}
+
+/**
+ * Type for the deployed proxy factories
+ */
+export type TDeployedProxyFactories<C extends BaseContract, P extends BaseContract> = Partial<{
+  /**
+   * Checker proxy factory
+   */
+  checker: C;
+
+  /**
+   * Policy proxy factory
+   */
+  policy: P;
+}>;
+
+/**
+ * Interface for the get deployed policy proxy factories arguments
+ */
+export interface IGetDeployedPolicyProxyFactoriesArgs {
+  /**
+   * Policy proxy factory name
+   */
+  policy: EPolicyFactories;
+
+  /**
+   * Checker proxy factory name
+   */
+  checker: ECheckerFactories;
+
+  /**
+   * Ethereum signer
+   */
+  signer: Signer;
+
+  /**
+   * Network name
+   */
+  network: string;
+}
+
+/**
+ * Type for the factory like contract
+ */
+export type IFactoryLike<T extends BaseContract> = Factory &
+  T & {
+    deploy: TypedContractMethod<unknown[], unknown, "nonpayable">;
+  };

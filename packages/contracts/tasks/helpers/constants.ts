@@ -1,9 +1,10 @@
+import { EContracts, EPolicies } from "./types";
+
 /**
  * Deploy steps
  */
 export enum EDeploySteps {
-  ConstantInitialVoiceCreditProxy = "full:deploy-constant-initial-voice-credit-proxy",
-  Gatekeepers = "full:deploy-gatekeepers",
+  Policies = "full:deploy-policies",
   Verifier = "full:deploy-verifier",
   Poseidon = "full:deploy-poseidon",
   PollFactory = "full:deploy-poll-factory",
@@ -11,6 +12,8 @@ export enum EDeploySteps {
   TallyFactory = "full:deploy-tally-factory",
   Maci = "full:deploy-maci",
   VkRegistry = "full:deploy-vk-registry",
+  InitialVoiceCreditProxy = "poll:deploy-initial-voice-credit-proxy",
+  PollPolicy = "poll:deploy-policy",
   Poll = "poll:deploy-poll",
 }
 
@@ -112,3 +115,28 @@ export const getEtherscanApiKeys = (): Record<ESupportedChains, string | undefin
   [ESupportedChains.Coverage]: undefined,
   [ESupportedChains.Hardhat]: undefined,
 });
+
+export const FULL_POLICY_NAMES: Record<
+  | EContracts.FreeForAllPolicy
+  | EContracts.TokenPolicy
+  | EContracts.EASPolicy
+  | EContracts.GitcoinPassportPolicy
+  | EContracts.HatsPolicy
+  | EContracts.ZupassPolicy
+  | EContracts.SemaphorePolicy
+  | EContracts.MerkleProofPolicy
+  | EContracts.AnonAadhaarPolicy
+  | EContracts.ERC20VotesPolicy,
+  EPolicies
+> = {
+  [EContracts.FreeForAllPolicy]: EPolicies.FreeForAll,
+  [EContracts.TokenPolicy]: EPolicies.Token,
+  [EContracts.EASPolicy]: EPolicies.EAS,
+  [EContracts.GitcoinPassportPolicy]: EPolicies.GitcoinPassport,
+  [EContracts.HatsPolicy]: EPolicies.Hats,
+  [EContracts.ZupassPolicy]: EPolicies.Zupass,
+  [EContracts.SemaphorePolicy]: EPolicies.Semaphore,
+  [EContracts.MerkleProofPolicy]: EPolicies.MerkleProof,
+  [EContracts.AnonAadhaarPolicy]: EPolicies.AnonAadhaar,
+  [EContracts.ERC20VotesPolicy]: EPolicies.ERC20Votes,
+};

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.28;
 
 /// @title SnarkConstants
 /// @notice This contract contains constants related to the SNARK
@@ -15,8 +15,6 @@ contract SnarkConstants {
   /// confident that no-one knows the private key associated with this
   /// public key. See:
   /// https://github.com/iden3/circomlib/blob/d5ed1c3ce4ca137a6b3ca48bec4ac12c1b38957a/src/pedersen_printbases.js
-  /// Its hash should equal
-  /// 6769006970205099520508948723718471724660867171122235270773600567925038008762.
   uint256 internal constant PAD_PUBKEY_X =
     10457101036533406547632367118273992217979173478358440826365724437999023779287;
   uint256 internal constant PAD_PUBKEY_Y =

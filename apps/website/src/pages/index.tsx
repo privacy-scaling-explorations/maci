@@ -3,6 +3,8 @@ import Layout from "@theme/Layout";
 import LayoutProvider from "@theme/Layout/Provider";
 import clsx from "clsx";
 
+import type { ReactElement } from "react";
+
 import HomepageFeatures from "../components/HomepageFeatures";
 
 import styles from "./index.module.css";
@@ -24,7 +26,7 @@ const HomepageHeader = ({ tagline, title }: HomepageHeaderProps) => (
   </header>
 );
 
-const Home = (): JSX.Element => {
+const Home = (): ReactElement => {
   const { siteConfig } = useDocusaurusContext();
 
   return (

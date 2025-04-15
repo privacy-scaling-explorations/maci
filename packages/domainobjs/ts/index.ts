@@ -10,7 +10,7 @@ export { Keypair } from "./keyPair";
 
 export { StateLeaf } from "./stateLeaf";
 
-export { blankStateLeaf, blankStateLeafHash } from "./constants";
+export { blankStateLeaf, blankStateLeafHash, padKey } from "./constants";
 
 export type {
   Proof,

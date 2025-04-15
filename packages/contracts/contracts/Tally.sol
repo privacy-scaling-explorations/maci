@@ -1,22 +1,22 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.28;
+
+import { Clone } from "@excubiae/contracts/contracts/proxy/Clone.sol";
 
 import { IMACI } from "./interfaces/IMACI.sol";
 import { Hasher } from "./crypto/Hasher.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { IPoll } from "./interfaces/IPoll.sol";
 import { ITally } from "./interfaces/ITally.sol";
 import { IMessageProcessor } from "./interfaces/IMessageProcessor.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { IVerifier } from "./interfaces/IVerifier.sol";
 import { IVkRegistry } from "./interfaces/IVkRegistry.sol";
-import { CommonUtilities } from "./utilities/CommonUtilities.sol";
 import { DomainObjs } from "./utilities/DomainObjs.sol";
 
 /// @title Tally
 /// @notice The Tally contract is used during votes tallying
 /// and by users to verify the tally results.
-contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITally {
+contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
   uint256 internal constant TREE_ARITY = 2;
   uint256 internal constant VOTE_OPTION_TREE_ARITY = 5;
 
@@ -54,11 +54,11 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
   // The final commitment to the state and ballot roots
   uint256 public sbCommitment;
 
-  IVerifier public immutable verifier;
-  IVkRegistry public immutable vkRegistry;
-  IPoll public immutable poll;
-  IMessageProcessor public immutable messageProcessor;
-  Mode public immutable mode;
+  IVerifier public verifier;
+  IVkRegistry public vkRegistry;
+  IPoll public poll;
+  IMessageProcessor public messageProcessor;
+  Mode public mode;
 
   // The tally results
   mapping(uint256 => TallyResult) public tallyResults;
@@ -80,21 +80,16 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
   error VotesNotTallied();
   error IncorrectSpentVoiceCredits();
 
-  /// @notice Create a new Tally contract
-  /// @param _verifier The Verifier contract
-  /// @param _vkRegistry The VkRegistry contract
-  /// @param _poll The Poll contract
-  /// @param _mp The MessageProcessor contract
-  /// @param _tallyOwner The owner of the Tally contract
-  /// @param _mode The mode of the poll
-  constructor(
-    address _verifier,
-    address _vkRegistry,
-    address _poll,
-    address _mp,
-    address _tallyOwner,
-    Mode _mode
-  ) payable Ownable(_tallyOwner) {
+  /// @notice Initializes the contract.
+  function _initialize() internal override {
+    super._initialize();
+
+    bytes memory data = _getAppendedBytes();
+    (address _verifier, address _vkRegistry, address _poll, address _mp, Mode _mode) = abi.decode(
+      data,
+      (address, address, address, address, Mode)
+    );
+
     verifier = IVerifier(_verifier);
     vkRegistry = IVkRegistry(_vkRegistry);
     poll = IPoll(_poll);
@@ -105,7 +100,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
   /// @notice Check if all ballots are tallied
   /// @return tallied whether all ballots are tallied
   function isTallied() public view returns (bool tallied) {
-    (uint8 intStateTreeDepth, ) = poll.treeDepths();
+    (uint8 intStateTreeDepth, , ) = poll.treeDepths();
     (uint256 numSignUps, ) = poll.numSignUpsAndMessages();
 
     // Require that there are untallied ballots left
@@ -113,7 +108,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
   }
 
   /// @notice Update the state and ballot root commitment
-  function updateSbCommitment() public onlyOwner {
+  function updateSbCommitment() public {
     // Require that all messages have been processed
     if (!messageProcessor.processingComplete()) {
       revert ProcessingNotComplete();
@@ -127,12 +122,11 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
   /// @notice Verify the result of a tally batch
   /// @param _newTallyCommitment the new tally commitment to be verified
   /// @param _proof the proof generated after tallying this batch
-  function tallyVotes(uint256 _newTallyCommitment, uint256[8] calldata _proof) public onlyOwner {
-    _votingPeriodOver(poll);
+  function tallyVotes(uint256 _newTallyCommitment, uint256[8] calldata _proof) public {
     updateSbCommitment();
 
     // get the batch size and start index
-    (uint8 intStateTreeDepth, ) = poll.treeDepths();
+    (uint8 intStateTreeDepth, , ) = poll.treeDepths();
     uint256 tallyBatchSize = TREE_ARITY ** intStateTreeDepth;
     uint256 batchStartIndex = tallyBatchNum * tallyBatchSize;
 
@@ -184,7 +178,7 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
     uint256 _newTallyCommitment,
     uint256[8] calldata _proof
   ) public view returns (bool isValid) {
-    (uint8 intStateTreeDepth, uint8 voteOptionTreeDepth) = poll.treeDepths();
+    (uint8 intStateTreeDepth, uint8 voteOptionTreeDepth, ) = poll.treeDepths();
     uint256[] memory circuitPublicInputs = getPublicCircuitInputs(_batchStartIndex, _newTallyCommitment);
     IMACI maci = poll.getMaciContract();
 
@@ -368,12 +362,12 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
    * @notice Add and verify tally results by batch.
    * @param args add tally result args
    */
-  function addTallyResults(ITally.AddTallyResultsArgs calldata args) public virtual onlyOwner {
+  function addTallyResults(ITally.AddTallyResultsArgs calldata args) public virtual {
     if (!isTallied()) {
       revert VotesNotTallied();
     }
 
-    (, uint8 voteOptionTreeDepth) = poll.treeDepths();
+    (, uint8 voteOptionTreeDepth, ) = poll.treeDepths();
     uint256 voteOptionsLength = args.voteOptionIndices.length;
 
     for (uint256 i = 0; i < voteOptionsLength; ) {
@@ -442,10 +436,10 @@ contract Tally is Ownable, SnarkCommon, CommonUtilities, Hasher, DomainObjs, ITa
     TallyResult storage previous = tallyResults[_voteOptionIndex];
 
     if (!previous.flag) {
+      previous.flag = true;
       totalTallyResults++;
     }
 
-    previous.flag = true;
     previous.value = _tallyResult;
   }
 }

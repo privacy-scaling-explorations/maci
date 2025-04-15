@@ -12,6 +12,8 @@
 
 ## Confirmation
 
+> [!IMPORTANT]
+> We do not accept minor grammatical fixes (e.g., correcting typos, rewording sentences) unless they significantly improve clarity in technical documentation. These contributions, while appreciated, are not a priority for merging. If there is a grammatical error feel free to message the team.
+
 - [ ] I have read and understand MACI's [contributor guidelines](https://maci.pse.dev/docs/contributing) and [code of conduct](https://maci.pse.dev/docs/contributing/code-of-conduct).
-- [ ] I have read and understand MACI's [GitHub processes](https://github.com/privacy-scaling-explorations/maci/discussions/847).
-- [ ] I have read and understand MACI's [testing guide](https://maci.pse.dev/docs/testing).
+- [ ] I ran and verified that all tests pass according to MACI's [testing guide](https://maci.pse.dev/docs/guides/testing).

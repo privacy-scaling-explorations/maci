@@ -62,6 +62,7 @@ async function getConfig(): Promise<Config> {
             editUrl: ({ blogDirPath, blogPath }) => `${GITHUB_URL}/edit/dev/website/${blogDirPath}/${blogPath}`,
             remarkPlugins: [remarkMath],
             rehypePlugins: [rehypeKatex],
+            onUntruncatedBlogPosts: "ignore",
           },
           theme: {
             customCss: "./src/css/custom.css",

@@ -1,14 +1,15 @@
 /* eslint-disable no-underscore-dangle */
+import { MaciState, Poll, IProcessMessagesCircuitInputs, ITallyCircuitInputs } from "@maci-protocol/core";
+import { genTreeCommitment, genTreeProof, hashLeftRight, NOTHING_UP_MY_SLEEVE, poseidon } from "@maci-protocol/crypto";
+import { Keypair, Message, PubKey } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
-import { AbiCoder, BigNumberish, Signer } from "ethers";
+import { AbiCoder, BigNumberish, Signer, ZeroAddress } from "ethers";
 import { EthereumProvider } from "hardhat/types";
-import { MaciState, Poll, IProcessMessagesCircuitInputs, ITallyCircuitInputs } from "maci-core";
-import { genTreeCommitment, genTreeProof, hashLeftRight, NOTHING_UP_MY_SLEEVE, poseidon } from "maci-crypto";
-import { Keypair, Message, PubKey } from "maci-domainobjs";
 
 import { EMode } from "../ts/constants";
+import { deployFreeForAllSignUpPolicy } from "../ts/deploy";
 import { IVerifyingKeyStruct } from "../ts/types";
-import { asHex, getDefaultSigner } from "../ts/utils";
+import { asHex, getDefaultSigner, getBlockTimestamp } from "../ts/utils";
 import {
   Tally,
   MACI,
@@ -19,14 +20,18 @@ import {
   MessageProcessor__factory as MessageProcessorFactory,
   Poll__factory as PollFactory,
   Tally__factory as TallyFactory,
+  IBasePolicy,
+  ConstantInitialVoiceCreditProxy,
 } from "../typechain-types";
 
 import {
   STATE_TREE_DEPTH,
   duration,
   initialVoiceCreditBalance,
+  maxVoteOptions,
   messageBatchSize,
-  testPollVk,
+  testPollJoinedVk,
+  testPollJoiningVk,
   testProcessVk,
   testTallyVk,
   treeDepths,
@@ -41,6 +46,8 @@ describe("TallyVotes", () => {
   let mpContract: MessageProcessor;
   let verifierContract: Verifier;
   let vkRegistryContract: VkRegistry;
+  let signupPolicyContract: IBasePolicy;
+  let initialVoiceCreditProxyContract: ConstantInitialVoiceCreditProxy;
 
   const coordinator = new Keypair();
   let users: Keypair[];
@@ -59,26 +66,33 @@ describe("TallyVotes", () => {
 
     signer = await getDefaultSigner();
 
+    const startTime = await getBlockTimestamp(signer);
+
     const r = await deployTestContracts({ initialVoiceCreditBalance: 100, stateTreeDepth: STATE_TREE_DEPTH, signer });
     maciContract = r.maciContract;
     verifierContract = r.mockVerifierContract as Verifier;
     vkRegistryContract = r.vkRegistryContract;
+    signupPolicyContract = r.policyContract;
+    initialVoiceCreditProxyContract = r.constantInitialVoiceCreditProxyContract;
 
     // deploy a poll
     // deploy on chain poll
-    const tx = await maciContract.deployPoll(
-      duration,
-      treeDepths,
-      messageBatchSize,
-      coordinator.pubKey.asContractParam(),
-      verifierContract,
-      vkRegistryContract,
-      EMode.QV,
-    );
-    const receipt = await tx.wait();
-
-    const block = await signer.provider!.getBlock(receipt!.blockHash);
-    const deployTime = block!.timestamp;
+    const receipt = await maciContract
+      .deployPoll({
+        startDate: startTime,
+        endDate: startTime + duration,
+        treeDepths,
+        messageBatchSize,
+        coordinatorPubKey: coordinator.pubKey.asContractParam(),
+        verifier: verifierContract,
+        vkRegistry: vkRegistryContract,
+        mode: EMode.QV,
+        policy: signupPolicyContract,
+        initialVoiceCreditProxy: initialVoiceCreditProxyContract,
+        relayers: [ZeroAddress],
+        voteOptions: maxVoteOptions,
+      })
+      .then((tx) => tx.wait());
 
     expect(receipt?.status).to.eq(1);
 
@@ -89,8 +103,16 @@ describe("TallyVotes", () => {
     mpContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
     tallyContract = TallyFactory.connect(pollContracts.tally, signer);
 
+    await signupPolicyContract.setTarget(pollContracts.poll).then((tx) => tx.wait());
+
     // deploy local poll
-    const p = maciState.deployPoll(BigInt(deployTime + duration), treeDepths, messageBatchSize, coordinator);
+    const p = maciState.deployPoll(
+      BigInt(startTime + duration),
+      treeDepths,
+      messageBatchSize,
+      coordinator,
+      BigInt(maxVoteOptions),
+    );
     expect(p.toString()).to.eq(pollId.toString());
     // publish the NOTHING_UP_MY_SLEEVE message
     const messageData = [NOTHING_UP_MY_SLEEVE];
@@ -109,7 +131,7 @@ describe("TallyVotes", () => {
     poll.publishMessage(message, padKey);
 
     // update the poll state
-    poll.updatePoll(BigInt(maciState.stateLeaves.length));
+    poll.updatePoll(BigInt(maciState.pubKeys.length));
 
     // process messages locally
     generatedInputs = poll.processMessages(pollId);
@@ -129,21 +151,13 @@ describe("TallyVotes", () => {
   it("should not be possible to tally votes before the poll has ended", async () => {
     await expect(tallyContract.tallyVotes(0n, [0, 0, 0, 0, 0, 0, 0, 0])).to.be.revertedWithCustomError(
       tallyContract,
-      "VotingPeriodNotPassed",
-    );
-  });
-
-  it("updateSbCommitment() should revert when the messages have not been processed yet", async () => {
-    // go forward in time
-    await timeTravel(signer.provider! as unknown as EthereumProvider, duration + 1);
-
-    await expect(tallyContract.updateSbCommitment()).to.be.revertedWithCustomError(
-      tallyContract,
       "ProcessingNotComplete",
     );
   });
 
   it("tallyVotes() should fail as the messages have not been processed yet", async () => {
+    await timeTravel(signer.provider! as unknown as EthereumProvider, duration + 1);
+
     await expect(tallyContract.tallyVotes(0n, [0, 0, 0, 0, 0, 0, 0, 0])).to.be.revertedWithCustomError(
       tallyContract,
       "ProcessingNotComplete",
@@ -188,6 +202,8 @@ describe("TallyVotes", () => {
 
   describe("ballots === tallyBatchSize", () => {
     before(async () => {
+      const startTime = await getBlockTimestamp(signer);
+
       // create 24 users (total 25 - 24 + 1 nothing up my sleeve)
       users = Array.from({ length: 24 }, () => new Keypair());
       pollKeys = Array.from({ length: 24 }, () => new Keypair());
@@ -201,41 +217,45 @@ describe("TallyVotes", () => {
       maciContract = r.maciContract;
       verifierContract = r.mockVerifierContract as Verifier;
       vkRegistryContract = r.vkRegistryContract;
+      await r.policyContract.setTarget(await maciContract.getAddress()).then((tx) => tx.wait());
 
       // signup all users
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < users.length; i += 1) {
-        const timestamp = Math.floor(Date.now() / 1000);
         // signup locally
-        maciState.signUp(users[i].pubKey, BigInt(initialVoiceCreditBalance), BigInt(timestamp));
+        maciState.signUp(users[i].pubKey);
         // signup on chain
 
         // eslint-disable-next-line no-await-in-loop
         await maciContract.signUp(
           users[i].pubKey.asContractParam(),
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
         );
       }
 
+      const [pollPolicyContract] = await deployFreeForAllSignUpPolicy({}, signer, true);
+
       // deploy a poll
       // deploy on chain poll
-      const tx = await maciContract.deployPoll(
-        updatedDuration,
-        {
-          ...treeDepths,
-          intStateTreeDepth,
-        },
-        messageBatchSize,
-        coordinator.pubKey.asContractParam(),
-        verifierContract,
-        vkRegistryContract,
-        EMode.QV,
-      );
-      const receipt = await tx.wait();
-
-      const block = await signer.provider!.getBlock(receipt!.blockHash);
-      const deployTime = block!.timestamp;
+      const receipt = await maciContract
+        .deployPoll({
+          startDate: startTime,
+          endDate: startTime + updatedDuration,
+          treeDepths: {
+            ...treeDepths,
+            intStateTreeDepth,
+          },
+          messageBatchSize,
+          coordinatorPubKey: coordinator.pubKey.asContractParam(),
+          verifier: verifierContract,
+          vkRegistry: vkRegistryContract,
+          mode: EMode.QV,
+          policy: pollPolicyContract,
+          initialVoiceCreditProxy: initialVoiceCreditProxyContract,
+          relayers: [ZeroAddress],
+          voteOptions: maxVoteOptions,
+        })
+        .then((tx) => tx.wait());
 
       expect(receipt?.status).to.eq(1);
 
@@ -246,15 +266,18 @@ describe("TallyVotes", () => {
       mpContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
       tallyContract = TallyFactory.connect(pollContracts.tally, signer);
 
+      await pollPolicyContract.setTarget(pollContracts.poll).then((tx) => tx.wait());
+
       // deploy local poll
       const p = maciState.deployPoll(
-        BigInt(deployTime + updatedDuration),
+        BigInt(startTime + updatedDuration),
         {
           ...treeDepths,
           intStateTreeDepth,
         },
         messageBatchSize,
         coordinator,
+        BigInt(maxVoteOptions),
       );
       expect(p.toString()).to.eq(pollId.toString());
       // publish the NOTHING_UP_MY_SLEEVE message
@@ -274,12 +297,17 @@ describe("TallyVotes", () => {
       poll.publishMessage(message, padKey);
 
       // update the poll state
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
-      await vkRegistryContract.setPollVkKey(
-        STATE_TREE_DEPTH,
-        treeDepths.voteOptionTreeDepth,
-        testPollVk.asContractParam() as IVerifyingKeyStruct,
+      await vkRegistryContract.setPollJoiningVkKey(
+        treeDepths.stateTreeDepth,
+        testPollJoiningVk.asContractParam() as IVerifyingKeyStruct,
+        { gasLimit: 10000000 },
+      );
+
+      await vkRegistryContract.setPollJoinedVkKey(
+        treeDepths.stateTreeDepth,
+        testPollJoinedVk.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 10000000 },
       );
 
@@ -295,19 +323,19 @@ describe("TallyVotes", () => {
 
       // join all user to the Poll
       for (let i = 0; i < users.length; i += 1) {
-        const timestamp = Math.floor(Date.now() / 1000);
         // join locally
         const nullifier = poseidon([BigInt(users[i].privKey.rawPrivKey)]);
-        poll.joinPoll(nullifier, pollKeys[i].pubKey, BigInt(initialVoiceCreditBalance), BigInt(timestamp));
+        poll.joinPoll(nullifier, pollKeys[i].pubKey, BigInt(initialVoiceCreditBalance));
 
         // join on chain
         // eslint-disable-next-line no-await-in-loop
         await pollContract.joinPoll(
           nullifier,
           pollKeys[i].pubKey.asContractParam(),
-          BigInt(initialVoiceCreditBalance),
           i,
           [0, 0, 0, 0, 0, 0, 0, 0],
+          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
+          AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
         );
       }
 
@@ -494,13 +522,13 @@ describe("TallyVotes", () => {
 
   describe("ballots > tallyBatchSize", () => {
     before(async () => {
+      const startTime = await getBlockTimestamp(signer);
+
       // create 25 users (and thus 26 ballots) (total 26 - 25 + 1 nothing up my sleeve)
       users = Array.from({ length: 25 }, () => new Keypair());
       pollKeys = Array.from({ length: 25 }, () => new Keypair());
 
       maciState = new MaciState(STATE_TREE_DEPTH);
-
-      const updatedDuration = 5000000;
 
       const intStateTreeDepth = 2;
 
@@ -509,40 +537,45 @@ describe("TallyVotes", () => {
       verifierContract = r.mockVerifierContract as Verifier;
       vkRegistryContract = r.vkRegistryContract;
 
+      await r.policyContract.setTarget(await maciContract.getAddress()).then((tx) => tx.wait());
+
       // signup all users
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < users.length; i += 1) {
-        const timestamp = Math.floor(Date.now() / 1000);
         // signup locally
-        maciState.signUp(users[i].pubKey, BigInt(initialVoiceCreditBalance), BigInt(timestamp));
+        maciState.signUp(users[i].pubKey);
         // signup on chain
 
         // eslint-disable-next-line no-await-in-loop
         await maciContract.signUp(
           users[i].pubKey.asContractParam(),
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
-          AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
         );
       }
 
+      const [pollPolicyContract] = await deployFreeForAllSignUpPolicy({}, signer, true);
+
       // deploy a poll
       // deploy on chain poll
-      const tx = await maciContract.deployPoll(
-        updatedDuration,
-        {
-          ...treeDepths,
-          intStateTreeDepth,
-        },
-        messageBatchSize,
-        coordinator.pubKey.asContractParam(),
-        verifierContract,
-        vkRegistryContract,
-        EMode.QV,
-      );
-      const receipt = await tx.wait();
-
-      const block = await signer.provider!.getBlock(receipt!.blockHash);
-      const deployTime = block!.timestamp;
+      const receipt = await maciContract
+        .deployPoll({
+          startDate: startTime,
+          endDate: startTime + duration,
+          treeDepths: {
+            ...treeDepths,
+            intStateTreeDepth,
+          },
+          messageBatchSize,
+          coordinatorPubKey: coordinator.pubKey.asContractParam(),
+          verifier: verifierContract,
+          vkRegistry: vkRegistryContract,
+          mode: EMode.QV,
+          policy: pollPolicyContract,
+          initialVoiceCreditProxy: initialVoiceCreditProxyContract,
+          relayers: [ZeroAddress],
+          voteOptions: maxVoteOptions,
+        })
+        .then((tx) => tx.wait());
 
       expect(receipt?.status).to.eq(1);
 
@@ -553,15 +586,18 @@ describe("TallyVotes", () => {
       mpContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
       tallyContract = TallyFactory.connect(pollContracts.tally, signer);
 
+      await pollPolicyContract.setTarget(pollContracts.poll).then((tx) => tx.wait());
+
       // deploy local poll
       const p = maciState.deployPoll(
-        BigInt(deployTime + updatedDuration),
+        BigInt(startTime + duration),
         {
           ...treeDepths,
           intStateTreeDepth,
         },
         messageBatchSize,
         coordinator,
+        BigInt(maxVoteOptions),
       );
       expect(p.toString()).to.eq(pollId.toString());
       // publish the NOTHING_UP_MY_SLEEVE message
@@ -581,13 +617,19 @@ describe("TallyVotes", () => {
       poll.publishMessage(message, padKey);
 
       // update the poll state
-      poll.updatePoll(BigInt(maciState.stateLeaves.length));
+      poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       // set the verification keys on the vk smart contract
-      await vkRegistryContract.setPollVkKey(
-        STATE_TREE_DEPTH,
-        treeDepths.voteOptionTreeDepth,
-        testPollVk.asContractParam() as IVerifyingKeyStruct,
+      await vkRegistryContract.setPollJoiningVkKey(
+        treeDepths.stateTreeDepth,
+        testPollJoiningVk.asContractParam() as IVerifyingKeyStruct,
+        { gasLimit: 10000000 },
+      );
+
+      // set the verification keys on the vk smart contract
+      await vkRegistryContract.setPollJoinedVkKey(
+        treeDepths.stateTreeDepth,
+        testPollJoinedVk.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 10000000 },
       );
 
@@ -603,23 +645,23 @@ describe("TallyVotes", () => {
 
       // join all user to the Poll
       for (let i = 0; i < users.length; i += 1) {
-        const timestamp = Math.floor(Date.now() / 1000);
         // join locally
-        const nullifier = poseidon([BigInt(users[i].privKey.rawPrivKey)]);
-        poll.joinPoll(nullifier, pollKeys[i].pubKey, BigInt(initialVoiceCreditBalance), BigInt(timestamp));
+        const nullifier = poseidon([BigInt(users[i].privKey.rawPrivKey), pollId]);
+        poll.joinPoll(nullifier, pollKeys[i].pubKey, BigInt(initialVoiceCreditBalance));
 
         // join on chain
         // eslint-disable-next-line no-await-in-loop
         await pollContract.joinPoll(
           nullifier,
           pollKeys[i].pubKey.asContractParam(),
-          BigInt(initialVoiceCreditBalance),
           i,
           [0, 0, 0, 0, 0, 0, 0, 0],
+          AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
+          AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
         );
       }
 
-      await timeTravel(signer.provider! as unknown as EthereumProvider, updatedDuration);
+      await timeTravel(signer.provider! as unknown as EthereumProvider, duration);
       await pollContract.mergeState();
 
       const processMessagesInputs = poll.processMessages(pollId);

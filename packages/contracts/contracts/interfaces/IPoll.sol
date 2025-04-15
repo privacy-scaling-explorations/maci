@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.28;
 
 import { DomainObjs } from "../utilities/DomainObjs.sol";
 import { IMACI } from "./IMACI.sol";
@@ -7,13 +7,20 @@ import { IMACI } from "./IMACI.sol";
 /// @title IPoll
 /// @notice Poll interface
 interface IPoll {
-  /// @notice Join the poll
+  /// @notice Join the poll for voting
+  /// @param _nullifier Hashed user's private key to check whether user has already voted
+  /// @param _pubKey Poll user's public key
+  /// @param _stateRootIndex Index of the MACI's stateRootOnSignUp for which the inclusion proof is generated
+  /// @param _proof The zk-SNARK proof
+  /// @param _signUpPolicyData Data to pass to the signup policy
+  /// @param _initialVoiceCreditProxyData Data to pass to the InitialVoiceCreditProxy
   function joinPoll(
     uint256 _nullifier,
     DomainObjs.PubKey calldata _pubKey,
-    uint256 _newVoiceCreditBalance,
     uint256 _stateRootIndex,
-    uint256[8] calldata _proof
+    uint256[8] calldata _proof,
+    bytes memory _signUpPolicyData,
+    bytes memory _initialVoiceCreditProxyData
   ) external;
 
   /// @notice The number of messages which have been processed and the number of signups
@@ -34,17 +41,39 @@ interface IPoll {
   /// @param _encPubKey An ephemeral public key which can be combined with the
   /// coordinator's private key to generate an ECDH shared key with which
   /// to encrypt the message.
-  function publishMessage(DomainObjs.Message memory _message, DomainObjs.PubKey calldata _encPubKey) external;
+  function publishMessage(DomainObjs.Message calldata _message, DomainObjs.PubKey calldata _encPubKey) external;
+
+  /// @notice Submit a message batch
+  /// @dev Can only be submitted before the voting deadline
+  /// @param _messages the messages
+  /// @param _encPubKeys the encrypted public keys
+  function publishMessageBatch(
+    DomainObjs.Message[] calldata _messages,
+    DomainObjs.PubKey[] calldata _encPubKeys
+  ) external;
+
+  /// @notice Allows relayer to publish messages using IPFS.
+  /// @param _messageHashes The message hashes
+  /// @param _ipfsHash The IPFS hash of the messages batch
+  function relayMessagesBatch(uint256[] calldata _messageHashes, bytes32 _ipfsHash) external;
 
   /// @notice The second step of merging the poll state. This allows the
   /// ProcessMessages circuit to access the latest state tree and ballots via
   /// currentSbCommitment.
   function mergeState() external;
 
-  /// @notice Returns the Poll's deploy time and duration
-  /// @return _deployTime The deployment timestamp
-  /// @return _duration The duration of the poll
-  function getDeployTimeAndDuration() external view returns (uint256 _deployTime, uint256 _duration);
+  /// @notice Returns the Poll's start and end dates
+  /// @return _startDate The start date of the poll
+  /// @return _endDate The end date of the poll
+  function getStartAndEndDate() external view returns (uint256 _startDate, uint256 _endDate);
+
+  /// @notice Returns the Poll's end date
+  /// @return _endDate The end date of the poll
+  function endDate() external view returns (uint256);
+
+  /// @notice Returns the Poll's start date
+  /// @return _startDate The start date of the poll
+  function startDate() external view returns (uint256);
 
   /// @notice Get the result of whether the MACI contract's stateAq has been merged by this contract
   /// @return Whether the MACI contract's stateAq has been merged by this contract
@@ -53,11 +82,15 @@ interface IPoll {
   /// @notice Get the depths of the merkle trees
   /// @return intStateTreeDepth The depth of the state tree
   /// @return voteOptionTreeDepth The subdepth of the vote option tree
-  function treeDepths() external view returns (uint8 intStateTreeDepth, uint8 voteOptionTreeDepth);
+  /// @return stateTreeDepth The poll state tree depth
+  function treeDepths()
+    external
+    view
+    returns (uint8 intStateTreeDepth, uint8 voteOptionTreeDepth, uint8 stateTreeDepth);
 
-  /// @notice Get the max vote options for the poll
-  /// @return maxVoteOptions The maximum number of vote options
-  function maxVoteOptions() external view returns (uint256);
+  /// @notice Get the number of vote options for the poll
+  /// @return voteOptions The number of vote options
+  function voteOptions() external view returns (uint256);
 
   /// @notice Get message batch size for the poll
   /// @return The message batch size
@@ -84,4 +117,9 @@ interface IPoll {
   /// @notice Get the external contracts
   /// @return maci The IMACI contract
   function getMaciContract() external view returns (IMACI maci);
+
+  /// @notice Get the index of a state leaf in the state tree
+  /// @param element The hash of thestate leaf
+  /// @return index The index of the state leaf in the state tree
+  function getStateIndex(uint256 element) external view returns (uint40);
 }

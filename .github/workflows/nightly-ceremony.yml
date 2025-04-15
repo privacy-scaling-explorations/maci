@@ -9,7 +9,7 @@ env:
 
 jobs:
   test-with-ceremony-keys:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@v4
@@ -46,6 +46,7 @@ jobs:
 
       - name: Run hardhat fork
         run: |
+          cp ./deploy-config-example.json ./deploy-config.json
           cd packages/contracts
           pnpm run hardhat &
 
@@ -59,7 +60,7 @@ jobs:
         run: pnpm download-zkeys:ceremony
 
       - name: Run e2e tests
-        run: pnpm test:cli-ceremony
+        run: pnpm test:ceremony
 
       - name: Stop Hardhat
         if: always()

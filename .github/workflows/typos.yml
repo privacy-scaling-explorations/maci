@@ -12,10 +12,10 @@ concurrency:
 jobs:
   typos:
     name: Spell Check with Typos
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Use typos with config file
-        uses: crate-ci/typos@v1.28.2
+        uses: crate-ci/typos@v1.31.1
         with:
           config: .github/workflows/config/typos.toml

@@ -154,3 +154,7 @@ packages/cli/contractAddresses.old.json
 packages/circuits/circom/test
 
 **/ts/__benchmarks__/results/**
+
+proofs
+
+inputs.json 

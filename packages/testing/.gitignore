@@ -1,0 +1,7 @@
+!ts/__tests__/data/
+cache
+deploy-config.json
+deployed-contracts.json
+backup
+zkeys/
+state.json

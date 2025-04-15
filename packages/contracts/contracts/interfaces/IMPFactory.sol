@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.28;
 
 import { DomainObjs } from "../utilities/DomainObjs.sol";
 
@@ -10,14 +10,12 @@ interface IMessageProcessorFactory {
   /// @param _verifier Verifier contract
   /// @param _vkRegistry VkRegistry contract
   /// @param _poll Poll contract
-  /// @param _owner Owner of the MessageProcessor contract
   /// @param _mode Voting mode
   /// @return The deployed MessageProcessor contract
   function deploy(
     address _verifier,
     address _vkRegistry,
     address _poll,
-    address _owner,
     DomainObjs.Mode _mode
   ) external returns (address);
 }

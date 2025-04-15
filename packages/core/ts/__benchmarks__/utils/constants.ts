@@ -1,4 +1,4 @@
-import { Keypair } from "maci-domainobjs";
+import { Keypair } from "@maci-protocol/domainobjs";
 
 export const VOICE_CREDIT_BALANCE = 100n;
 export const DURATION = 30;
@@ -13,4 +13,5 @@ export const MAX_VALUES = {
 export const TREE_DEPTHS = {
   intStateTreeDepth: 2,
   voteOptionTreeDepth: 4,
+  stateTreeDepth: 10,
 };

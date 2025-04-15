@@ -1,7 +1,7 @@
+import { genRandomSalt } from "@maci-protocol/crypto";
+import { PCommand, Keypair } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
-import { genRandomSalt } from "maci-crypto";
-import { PCommand, Keypair } from "maci-domainobjs";
 
 import { type IMessageValidatorCircuitInputs } from "./utils/types";
 import { getSignal, circomkitInstance } from "./utils/utils";
@@ -17,7 +17,7 @@ describe("MessageValidator circuit", function test() {
         "stateTreeIndex",
         "numSignUps",
         "voteOptionIndex",
-        "maxVoteOptions",
+        "voteOptions",
         "originalNonce",
         "nonce",
         "cmd",
@@ -58,7 +58,7 @@ describe("MessageValidator circuit", function test() {
         stateTreeIndex: 0n,
         numSignUps: 1n,
         voteOptionIndex: 0n,
-        maxVoteOptions: 1n,
+        voteOptions: 1n,
         originalNonce: 1n,
         nonce: 2n,
         cmd: command.asCircuitInputs(),
@@ -182,7 +182,7 @@ describe("MessageValidator circuit", function test() {
         "stateTreeIndex",
         "numSignUps",
         "voteOptionIndex",
-        "maxVoteOptions",
+        "voteOptions",
         "originalNonce",
         "nonce",
         "cmd",
@@ -223,7 +223,7 @@ describe("MessageValidator circuit", function test() {
         stateTreeIndex: 0n,
         numSignUps: 1n,
         voteOptionIndex: 0n,
-        maxVoteOptions: 1n,
+        voteOptions: 1n,
         originalNonce: 1n,
         nonce: 2n,
         cmd: command.asCircuitInputs(),

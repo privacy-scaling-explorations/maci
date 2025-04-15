@@ -1,7 +1,8 @@
 {
-  "name": "maci-core",
-  "version": "2.5.0",
-  "description": "",
+  "name": "@maci-protocol/core",
+  "version": "3.0.0",
+  "private": false,
+  "description": "The MACI state machine implemented in TypeScript",
   "main": "build/ts/index.js",
   "types": "build/ts/index.d.ts",
   "files": [
@@ -9,6 +10,9 @@
     "README.md",
     "CHANGELOG.md"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "watch": "tsc --watch",
     "build": "tsc -p tsconfig.build.json",
@@ -22,21 +26,21 @@
     "docs": "typedoc --plugin typedoc-plugin-markdown --options ./typedoc.json"
   },
   "dependencies": {
-    "maci-crypto": "^2.5.0",
-    "maci-domainobjs": "^2.5.0",
-    "@zk-kit/lean-imt": "^2.2.1"
+    "@zk-kit/lean-imt": "^2.2.3",
+    "@maci-protocol/crypto": "^3.0.0",
+    "@maci-protocol/domainobjs": "^3.0.0"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
-    "@types/mocha": "^10.0.8",
-    "@types/node": "^22.9.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.14.0",
     "benny": "^3.7.1",
     "chai": "^4.3.10",
-    "mocha": "^10.7.3",
+    "mocha": "^11.1.0",
     "nyc": "^17.1.0",
-    "ts-mocha": "^10.0.0",
+    "ts-mocha": "^11.1.0",
     "ts-node": "^10.9.1",
-    "typescript": "^5.6.3"
+    "typescript": "^5.8.3"
   },
   "nyc": {
     "reporter": [

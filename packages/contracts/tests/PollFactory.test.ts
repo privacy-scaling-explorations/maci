@@ -1,6 +1,6 @@
+import { Keypair } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
-import { BaseContract, Signer } from "ethers";
-import { Keypair } from "maci-domainobjs";
+import { BaseContract, Signer, ZeroAddress } from "ethers";
 
 import { deployPollFactory, genEmptyBallotRoots, getDefaultSigner } from "../ts";
 import { MACI, PollFactory, Verifier, VkRegistry } from "../typechain-types";
@@ -11,6 +11,7 @@ import {
   STATE_TREE_DEPTH,
   treeDepths,
   ExtContractsStruct,
+  maxVoteOptions,
 } from "./constants";
 import { deployTestContracts } from "./utils";
 
@@ -33,21 +34,31 @@ describe("pollFactory", () => {
     maciContract = r.maciContract;
     verifierContract = r.mockVerifierContract as Verifier;
     vkRegistryContract = r.vkRegistryContract;
-    extContracts = { maci: maciContract, verifier: verifierContract, vkRegistry: vkRegistryContract };
+    extContracts = {
+      maci: maciContract,
+      verifier: verifierContract,
+      vkRegistry: vkRegistryContract,
+      policy: r.policyContract,
+      initialVoiceCreditProxy: r.constantInitialVoiceCreditProxyContract,
+    };
 
     pollFactory = (await deployPollFactory(signer, undefined, true)) as BaseContract as PollFactory;
   });
 
   describe("deployment", () => {
     it("should allow anyone to deploy a new poll", async () => {
-      const tx = await pollFactory.deploy(
-        "100",
+      const tx = await pollFactory.deploy({
+        startDate: new Date().getTime(),
+        endDate: new Date().getTime() + 100,
         treeDepths,
         messageBatchSize,
-        coordinatorPubKey.asContractParam(),
+        coordinatorPubKey: coordinatorPubKey.asContractParam(),
         extContracts,
         emptyBallotRoot,
-      );
+        pollId: 0n,
+        relayers: [ZeroAddress],
+        voteOptions: maxVoteOptions,
+      });
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
     });

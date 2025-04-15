@@ -1,14 +1,16 @@
 /* eslint-disable no-underscore-dangle */
-import { type Provider } from "ethers";
-import { MaciState } from "maci-core";
-import { type Keypair, PubKey, Message } from "maci-domainobjs";
+import { MaciState } from "@maci-protocol/core";
+import { PubKey, Message } from "@maci-protocol/domainobjs";
 
 import assert from "assert";
+import fs from "fs";
+import path from "path";
 
-import type { Action } from "./types";
+import type { Action, IGenMaciStateFromContractArgs, IIpfsMessage } from "./types";
 
 import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "../typechain-types";
 
+import { IpfsService } from "./ipfs";
 import { sleep, sortActions } from "./utils";
 
 /**
@@ -21,21 +23,26 @@ import { sleep, sortActions } from "./utils";
  * @param blocksPerRequest - the number of blocks to fetch in each request
  * @param endBlock - the block number at which to stop fetching events
  * @param sleepAmount - the amount of time to sleep between each request
+ * @param ipfsMessageBackupFiles - backup files for ipfs messages
+ * @param logsOutputPath - the file path where to save the logs for debugging and auditing purposes
  * @returns an instance of MaciState
  */
-export const genMaciStateFromContract = async (
-  provider: Provider,
-  address: string,
-  coordinatorKeypair: Keypair,
-  pollId: bigint,
+export const genMaciStateFromContract = async ({
+  provider,
+  address,
+  coordinatorKeypair,
+  pollId,
   fromBlock = 0,
   blocksPerRequest = 50,
-  endBlock: number | undefined = undefined,
-  sleepAmount: number | undefined = undefined,
-): Promise<MaciState> => {
+  endBlock,
+  sleepAmount,
+  ipfsMessageBackupFiles = [],
+  logsOutputPath,
+}: IGenMaciStateFromContractArgs): Promise<MaciState> => {
   // ensure the pollId is valid
   assert(pollId >= 0);
 
+  const ipfsService = IpfsService.getInstance();
   const maciContract = MACIFactory.connect(address, provider);
 
   // Check stateTreeDepth
@@ -52,6 +59,8 @@ export const genMaciStateFromContract = async (
   const actions: Action[] = [];
   const foundPollIds = new Set<number>();
   const pollContractAddresses = new Map<bigint, string>();
+
+  const backupMessagesByIpfsHash = await extractBackupIpfsMessages(ipfsMessageBackupFiles);
 
   // Fetch event logs in batches (lastBlock inclusive)
   for (let i = fromBlock; i <= lastBlock; i += blocksPerRequest + 1) {
@@ -76,9 +85,7 @@ export const genMaciStateFromContract = async (
         data: {
           stateIndex: Number(event.args._stateIndex),
           pubKey: new PubKey([BigInt(event.args._userPubKeyX), BigInt(event.args._userPubKeyY)]),
-          voiceCreditBalance: Number(event.args._voiceCreditBalance),
           timestamp: Number(event.args._timestamp),
-          stateLeaf: BigInt(event.args._stateLeaf),
         },
       });
     });
@@ -117,9 +124,9 @@ export const genMaciStateFromContract = async (
   const pollContractAddress = pollContractAddresses.get(pollId)!;
   const pollContract = PollFactory.connect(pollContractAddress, provider);
 
-  const [coordinatorPubKeyOnChain, [deployTime, duration], onChainTreeDepths, msgBatchSize] = await Promise.all([
+  const [coordinatorPubKeyOnChain, pollEndTimestamp, onChainTreeDepths, msgBatchSize] = await Promise.all([
     pollContract.coordinatorPubKey(),
-    pollContract.getDeployTimeAndDuration().then((values) => values.map(Number)),
+    pollContract.endDate(),
     pollContract.treeDepths(),
     pollContract.messageBatchSize(),
   ]);
@@ -130,6 +137,7 @@ export const genMaciStateFromContract = async (
   const treeDepths = {
     intStateTreeDepth: Number(onChainTreeDepths.intStateTreeDepth),
     voteOptionTreeDepth: Number(onChainTreeDepths.voteOptionTreeDepth),
+    stateTreeDepth: Number(onChainTreeDepths.stateTreeDepth),
   };
 
   const messageBatchSize = Number(msgBatchSize);
@@ -139,10 +147,11 @@ export const genMaciStateFromContract = async (
     const toBlock = i + blocksPerRequest >= lastBlock ? lastBlock : i + blocksPerRequest;
 
     // eslint-disable-next-line no-await-in-loop
-    const publishMessageLogs = await pollContract.queryFilter(pollContract.filters.PublishMessage(), i, toBlock);
-
-    // eslint-disable-next-line no-await-in-loop
-    const joinPollLogs = await pollContract.queryFilter(pollContract.filters.PollJoined(), i, toBlock);
+    const [publishMessageLogs, joinPollLogs, ipfsHashAddedLogs] = await Promise.all([
+      pollContract.queryFilter(pollContract.filters.PublishMessage(), i, toBlock),
+      pollContract.queryFilter(pollContract.filters.PollJoined(), i, toBlock),
+      pollContract.queryFilter(pollContract.filters.IpfsHashAdded(), i, toBlock),
+    ]);
 
     joinPollLogs.forEach((event) => {
       assert(!!event);
@@ -151,9 +160,8 @@ export const genMaciStateFromContract = async (
 
       const pubKeyX = BigInt(event.args._pollPubKeyX);
       const pubKeyY = BigInt(event.args._pollPubKeyY);
-      const timestamp = Number(event.args._timestamp);
 
-      const newVoiceCreditBalance = BigInt(event.args._newVoiceCreditBalance);
+      const voiceCreditBalance = BigInt(event.args._voiceCreditBalance);
 
       actions.push({
         type: "PollJoined",
@@ -161,10 +169,64 @@ export const genMaciStateFromContract = async (
         transactionIndex: event.transactionIndex,
         data: {
           pubKey: new PubKey([pubKeyX, pubKeyY]),
-          newVoiceCreditBalance,
-          timestamp,
+          newVoiceCreditBalance: voiceCreditBalance,
           nullifier,
         },
+      });
+    });
+
+    // eslint-disable-next-line no-await-in-loop
+    const ipfsMessages = await Promise.all(
+      ipfsHashAddedLogs.map(async (event) => {
+        assert(!!event);
+
+        return ipfsService
+          .read<IIpfsMessage[]>(event.args._ipfsHash)
+          .then((data) => {
+            const messages = data && data.length > 0 ? data : backupMessagesByIpfsHash.get(event.args._ipfsHash);
+
+            if (!messages || messages.length === 0) {
+              throw new Error(`invalid json for cid ${event.args._ipfsHash}`);
+            }
+
+            return messages;
+          })
+          .then((messages) => ({
+            data: messages.map((value) => ({
+              message: new Message(value.data.map(BigInt)),
+              encPubKey: new PubKey([BigInt(value.publicKey[0]), BigInt(value.publicKey[1])]),
+            })),
+            blockNumber: event.blockNumber,
+            transactionIndex: event.transactionIndex,
+          }));
+      }),
+    );
+
+    ipfsHashAddedLogs.forEach((event) => {
+      assert(!!event);
+      const ipfsHash = event.args._ipfsHash;
+
+      actions.push({
+        type: "IpfsHashAdded",
+        blockNumber: event.blockNumber,
+        transactionIndex: event.transactionIndex,
+        data: {
+          ipfsHash,
+        },
+      });
+    });
+
+    ipfsMessages.forEach(({ data, blockNumber, transactionIndex }) => {
+      data.forEach(({ message, encPubKey }) => {
+        actions.push({
+          type: "PublishMessage",
+          blockNumber,
+          transactionIndex,
+          data: {
+            message,
+            encPubKey,
+          },
+        });
       });
     });
 
@@ -192,18 +254,20 @@ export const genMaciStateFromContract = async (
     }
   }
 
+  const voteOptions = await pollContract.voteOptions();
+
   // Reconstruct MaciState in order
   sortActions(actions).forEach((action) => {
     switch (true) {
       case action.type === "SignUp": {
-        const { pubKey, voiceCreditBalance, timestamp, stateLeaf } = action.data;
+        const { pubKey } = action.data;
 
-        maciState.signUp(pubKey!, BigInt(voiceCreditBalance!), BigInt(timestamp!), stateLeaf);
+        maciState.signUp(pubKey!);
         break;
       }
 
       case action.type === "DeployPoll" && action.data.pollId?.toString() === pollId.toString(): {
-        maciState.deployPoll(BigInt(deployTime + duration), treeDepths, messageBatchSize, coordinatorKeypair);
+        maciState.deployPoll(pollEndTimestamp, treeDepths, messageBatchSize, coordinatorKeypair, voteOptions);
         break;
       }
 
@@ -219,8 +283,8 @@ export const genMaciStateFromContract = async (
       }
 
       case action.type === "PollJoined": {
-        const { pubKey, newVoiceCreditBalance, timestamp, nullifier } = action.data;
-        maciState.polls.get(pollId)?.joinPoll(nullifier!, pubKey!, newVoiceCreditBalance!, BigInt(timestamp!));
+        const { pubKey, newVoiceCreditBalance, nullifier } = action.data;
+        maciState.polls.get(pollId)?.joinPoll(nullifier!, pubKey!, newVoiceCreditBalance!);
         break;
       }
 
@@ -241,5 +305,46 @@ export const genMaciStateFromContract = async (
 
   maciState.polls.set(pollId, poll);
 
+  // Save logs if output path is provided
+  if (logsOutputPath) {
+    const logsOutputDirectory = path.resolve(logsOutputPath);
+
+    if (!fs.existsSync(logsOutputDirectory)) {
+      await fs.promises.mkdir(logsOutputDirectory, { recursive: true });
+    }
+
+    const logs = {
+      maciAddress: address,
+      pollId: pollId.toString(),
+      fromBlock,
+      toBlock: lastBlock,
+      timestamp: new Date().toISOString(),
+      actions,
+    };
+
+    await fs.promises.writeFile(logsOutputPath, JSON.stringify(logs, null, 2));
+  }
+
   return maciState;
 };
+
+async function extractBackupIpfsMessages(ipfsMessageBackupFiles: string[]): Promise<Map<string, IIpfsMessage[]>> {
+  try {
+    const data = await Promise.all(
+      ipfsMessageBackupFiles.map((file) =>
+        fs.promises
+          .readFile(file, "utf-8")
+          .then((res) => JSON.parse(res) as IIpfsMessage[])
+          .then((messages) => ({ ipfsHash: path.parse(file).base.replace(".json", ""), messages })),
+      ),
+    );
+
+    return data.reduce((acc, { ipfsHash, messages }) => {
+      acc.set(ipfsHash, messages);
+
+      return acc;
+    }, new Map());
+  } catch (error) {
+    return new Map();
+  }
+}

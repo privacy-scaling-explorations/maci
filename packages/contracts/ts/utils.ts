@@ -1,8 +1,25 @@
 import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
 
+import fs from "fs";
+import os from "os";
+
 import type { Action, SnarkProof, Groth16Proof } from "./types";
 import type { Ownable } from "../typechain-types";
 import type { BigNumberish, FeeData, Network, Signer } from "ethers";
+
+import { info, logGreen } from "./logger";
+
+declare global {
+  interface ITerminatable {
+    terminate: () => Promise<unknown>;
+  }
+
+  // eslint-disable-next-line vars-on-top, no-var, camelcase
+  var curve_bn128: ITerminatable | undefined;
+
+  // eslint-disable-next-line vars-on-top, no-var, camelcase
+  var curve_bls12381: ITerminatable | undefined;
+}
 
 /**
  * Format a SnarkProof type to an array of strings
@@ -63,18 +80,6 @@ export function sortActions(actions: Action[]): Action[] {
 }
 
 /**
- * Print to the console
- * @param msg - the message to print
- * @param quiet - whether to suppress console output
- */
-export const log = (msg: string, quiet: boolean): void => {
-  if (!quiet) {
-    // eslint-disable-next-line no-console
-    console.log(msg);
-  }
-};
-
-/**
  * Get the default signer from the hardhat node
  * @returns the default signer
  */
@@ -128,7 +133,8 @@ export const transferOwnership = async <T extends Ownable>(
   newOwner: string,
   quiet = false,
 ): Promise<void> => {
-  log(`Transferring ownership of ${await contract.getAddress()} to ${newOwner}`, quiet);
+  logGreen({ text: info(`Transferring ownership of ${await contract.getAddress()} to ${newOwner}`), quiet });
+
   const tx = await contract.transferOwnership(newOwner, {
     maxFeePerGas: await getFeeData().then((res) => res?.maxFeePerGas),
   });
@@ -149,3 +155,47 @@ export function asHex(value: BigNumberish): string {
 export function generateMerkleTree(elements: string[][]): StandardMerkleTree<string[]> {
   return StandardMerkleTree.of(elements, ["address"]);
 }
+
+/**
+ * Check if we are running on an arm chip
+ * @returns whether we are running on an arm chip
+ */
+export const isArm = (): boolean => os.arch().includes("arm");
+
+/*
+ * https://github.com/iden3/snarkjs/issues/152
+ * Need to cleanup the threads to avoid stalling
+ */
+export const cleanThreads = async (): Promise<void> => {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (!globalThis) {
+    return;
+  }
+
+  const curves = ["curve_bn128", "curve_bls12381"];
+  await Promise.all(
+    curves.map((curve) => globalThis[curve as "curve_bn128" | "curve_bls12381"]?.terminate()).filter(Boolean),
+  );
+};
+
+/**
+ * Remove a file
+ * @param filepath - the path to the file
+ */
+export const unlinkFile = async (filepath: string): Promise<void> => {
+  const isFileExists = fs.existsSync(filepath);
+
+  if (isFileExists) {
+    await fs.promises.unlink(filepath);
+  }
+};
+
+/**
+ * Get the timestamp of the current block
+ * @param signer - the signer to use
+ * @returns the start time of the current block or the current time
+ */
+export const getBlockTimestamp = async (signer: Signer): Promise<number> => {
+  const block = await signer.provider?.getBlock("latest");
+  return block?.timestamp ?? Math.floor(Date.now() / 1000);
+};

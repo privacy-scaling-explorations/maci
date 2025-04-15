@@ -152,8 +152,15 @@ const ProjectList: React.FC = () => {
         <div className={styles.pagination}>
           <span
             className={`${styles.paginationArrow} ${currentPage === 0 ? styles.disabled : ""}`}
+            role="button"
+            tabIndex={0}
             onClick={() => {
               setCurrentPage((prev) => Math.max(0, prev - 1));
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                setCurrentPage((prev) => Math.max(0, prev - 1));
+              }
             }}
           >
             ←
@@ -161,10 +168,17 @@ const ProjectList: React.FC = () => {
 
           {filteredProjects.map((_, index) => (
             <span
-              key={index}
+              key={`page-${String(index)}`}
               className={`${styles.paginationNumber} ${currentPage === index ? styles.active : ""}`}
+              role="button"
+              tabIndex={0}
               onClick={() => {
                 setCurrentPage(index);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  setCurrentPage((prev) => Math.max(0, prev - 1));
+                }
               }}
             >
               {index + 1}
@@ -173,8 +187,15 @@ const ProjectList: React.FC = () => {
 
           <span
             className={`${styles.paginationArrow} ${currentPage === filteredProjects.length - 1 ? styles.disabled : ""}`}
+            role="button"
+            tabIndex={0}
             onClick={() => {
               setCurrentPage((prev) => Math.min(filteredProjects.length - 1, prev + 1));
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                setCurrentPage((prev) => Math.min(filteredProjects.length - 1, prev + 1));
+              }
             }}
           >
             →

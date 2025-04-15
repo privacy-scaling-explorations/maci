@@ -1,13 +1,14 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-console */
+import { Keypair, PrivKey } from "@maci-protocol/domainobjs";
 import { task, types } from "hardhat/config";
-import { Keypair, PrivKey } from "maci-domainobjs";
 
 import fs from "fs";
 
 import type { Proof } from "../../ts/types";
 import type { MACI, Poll, Tally } from "../../typechain-types";
 
+import { logMagenta, info } from "../../ts/logger";
 import { ContractStorage } from "../helpers/ContractStorage";
 import { Deployment } from "../helpers/Deployment";
 import { ProofGenerator } from "../helpers/ProofGenerator";
@@ -29,6 +30,12 @@ task("prove", "Command to generate proofs")
   .addOptionalParam("blocksPerBatch", "The number of blocks to fetch logs from", undefined, types.int)
   .addOptionalParam("endBlock", "The block number to stop fetching logs from", undefined, types.int)
   .addOptionalParam("transactionHash", "The transaction hash of the first transaction", undefined, types.int)
+  .addOptionalParam(
+    "ipfsMessageBackupFiles",
+    "Backup files for ipfs messages (name format: ipfsHash1.json, ipfsHash2.json, ..., ipfsHashN.json)",
+    undefined,
+    types.string,
+  )
   .setAction(
     async (
       {
@@ -44,6 +51,7 @@ task("prove", "Command to generate proofs")
         blocksPerBatch,
         endBlock,
         transactionHash,
+        ipfsMessageBackupFiles,
       }: IProveParams,
       hre,
     ) => {
@@ -66,7 +74,7 @@ task("prove", "Command to generate proofs")
 
       const startBalance = await signer.provider.getBalance(signer);
 
-      console.log("Start balance: ", Number(startBalance / 10n ** 12n) / 1e6);
+      logMagenta({ text: info(`Start balance: ${Number(startBalance / 10n ** 12n) / 1e6}`) });
 
       const maciContractAddress = storage.mustGetAddress(EContracts.MACI, network.name);
       const maciContract = await deployment.getContract<MACI>({ name: EContracts.MACI, address: maciContractAddress });
@@ -91,6 +99,7 @@ task("prove", "Command to generate proofs")
         pollId: poll,
         signer,
         outputDir,
+        ipfsMessageBackupFiles: ipfsMessageBackupFiles?.split(/\s*,\s*/),
         options: {
           stateFile,
           transactionHash,
@@ -157,15 +166,19 @@ task("prove", "Command to generate proofs")
       };
 
       data.processProofs = await proofGenerator.generateMpProofs();
-      data.tallyProofs = await proofGenerator.generateTallyProofs(network).then(({ proofs }) => proofs);
+      data.tallyProofs = await proofGenerator
+        .generateTallyProofs(network.name, network.config.chainId?.toString())
+        .then(({ proofs }) => proofs);
 
       const endBalance = await signer.provider.getBalance(signer);
 
-      console.log("End balance: ", Number(endBalance / 10n ** 12n) / 1e6);
-      console.log("Prove expenses: ", Number((startBalance - endBalance) / 10n ** 12n) / 1e6);
+      logMagenta({ text: info(`End balance: ${Number(endBalance / 10n ** 12n) / 1e6}`) });
+      logMagenta({ text: info(`Prove expenses: ${Number((startBalance - endBalance) / 10n ** 12n) / 1e6}`) });
 
-      console.log(
-        "Please make sure that you do not delete the proofs from the proof directory until they are all submitted on-chain.\nRegenerating proofs will result in overwriting the existing proofs and commitments which will be different due to the use of random salts.",
-      );
+      logMagenta({
+        text: info(
+          "Please make sure that you do not delete the proofs from the proof directory until they are all submitted on-chain.\nRegenerating proofs will result in overwriting the existing proofs and commitments which will be different due to the use of random salts.",
+        ),
+      });
     },
   );

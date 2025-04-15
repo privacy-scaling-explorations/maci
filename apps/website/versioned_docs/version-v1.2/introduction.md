@@ -6,7 +6,7 @@ sidebar_position: 1
 ---
 
 :::info
-For a more secure and stable protocol, please refer to MACI v2.x
+For a more secure and stable protocol, please refer to MACI v3.x
 :::
 
 # Welcome to MACI

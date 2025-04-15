@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        command: ["test:cli", "test:integration"]
+        command: ["test:unit", "test:integration", "test:e2e", "test:hardhat"]
 
     runs-on: macos-14
 
@@ -37,6 +37,7 @@ jobs:
 
       - name: Run hardhat fork
         run: |
+          cp ./deploy-config-example.json ./deploy-config.json
           cd packages/contracts
           pnpm run hardhat &
 
@@ -46,15 +47,10 @@ jobs:
           chmod +x ${{ github.workspace }}/circom
           echo "${{ github.workspace }}" >> $GITHUB_PATH
 
-      - name: Create zkeys folder
-        run: |
-          cd packages/cli
-          mkdir -p zkeys
-
       - name: Compile Circuits And Generate zkeys
         run: |
-          pnpm build:circuits-wasm -- --outPath ../cli/zkeys
-          pnpm setup:zkeys -- --outPath ../cli/zkeys
+          pnpm build:circuits-wasm -- --outPath ../testing/zkeys
+          pnpm setup:zkeys -- --outPath ../testing/zkeys
 
       - name: ${{ matrix.command }}
         run: pnpm run ${{ matrix.command }}

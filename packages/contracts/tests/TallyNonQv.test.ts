@@ -1,14 +1,14 @@
 /* eslint-disable no-underscore-dangle */
+import { MaciState, Poll, IProcessMessagesCircuitInputs, ITallyCircuitInputs } from "@maci-protocol/core";
+import { NOTHING_UP_MY_SLEEVE } from "@maci-protocol/crypto";
+import { Keypair, Message, PubKey } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
-import { Signer } from "ethers";
+import { Signer, ZeroAddress } from "ethers";
 import { EthereumProvider } from "hardhat/types";
-import { MaciState, Poll, IProcessMessagesCircuitInputs, ITallyCircuitInputs } from "maci-core";
-import { NOTHING_UP_MY_SLEEVE } from "maci-crypto";
-import { Keypair, Message, PubKey } from "maci-domainobjs";
 
 import { EMode } from "../ts/constants";
 import { IVerifyingKeyStruct } from "../ts/types";
-import { getDefaultSigner } from "../ts/utils";
+import { getDefaultSigner, getBlockTimestamp } from "../ts/utils";
 import {
   Tally,
   MACI,
@@ -19,9 +19,19 @@ import {
   MessageProcessor__factory as MessageProcessorFactory,
   Poll__factory as PollFactory,
   Tally__factory as TallyFactory,
+  IBasePolicy,
+  ConstantInitialVoiceCreditProxy,
 } from "../typechain-types";
 
-import { STATE_TREE_DEPTH, duration, messageBatchSize, testProcessVk, testTallyVk, treeDepths } from "./constants";
+import {
+  STATE_TREE_DEPTH,
+  duration,
+  maxVoteOptions,
+  messageBatchSize,
+  testProcessVk,
+  testTallyVk,
+  treeDepths,
+} from "./constants";
 import { timeTravel, deployTestContracts } from "./utils";
 
 describe("TallyVotesNonQv", () => {
@@ -32,7 +42,8 @@ describe("TallyVotesNonQv", () => {
   let mpContract: MessageProcessor;
   let verifierContract: Verifier;
   let vkRegistryContract: VkRegistry;
-
+  let policyContract: IBasePolicy;
+  let initialVoiceCreditProxyContract: ConstantInitialVoiceCreditProxy;
   const coordinator = new Keypair();
   let maciState: MaciState;
 
@@ -46,26 +57,32 @@ describe("TallyVotesNonQv", () => {
 
     signer = await getDefaultSigner();
 
+    const startTime = await getBlockTimestamp(signer);
+
     const r = await deployTestContracts({ initialVoiceCreditBalance: 100, stateTreeDepth: STATE_TREE_DEPTH, signer });
     maciContract = r.maciContract;
     verifierContract = r.mockVerifierContract as Verifier;
     vkRegistryContract = r.vkRegistryContract;
+    policyContract = r.policyContract;
+    initialVoiceCreditProxyContract = r.constantInitialVoiceCreditProxyContract;
 
     // deploy a poll
     // deploy on chain poll
-    const tx = await maciContract.deployPoll(
-      duration,
+    const tx = await maciContract.deployPoll({
+      startDate: startTime,
+      endDate: startTime + duration,
       treeDepths,
       messageBatchSize,
-      coordinator.pubKey.asContractParam(),
-      verifierContract,
-      vkRegistryContract,
-      EMode.NON_QV,
-    );
+      coordinatorPubKey: coordinator.pubKey.asContractParam(),
+      verifier: verifierContract,
+      vkRegistry: vkRegistryContract,
+      mode: EMode.NON_QV,
+      policy: policyContract,
+      initialVoiceCreditProxy: initialVoiceCreditProxyContract,
+      relayers: [ZeroAddress],
+      voteOptions: maxVoteOptions,
+    });
     const receipt = await tx.wait();
-
-    const block = await signer.provider!.getBlock(receipt!.blockHash);
-    const deployTime = block!.timestamp;
 
     expect(receipt?.status).to.eq(1);
 
@@ -77,7 +94,13 @@ describe("TallyVotesNonQv", () => {
     tallyContract = TallyFactory.connect(pollContracts.tally, signer);
 
     // deploy local poll
-    const p = maciState.deployPoll(BigInt(deployTime + duration), treeDepths, messageBatchSize, coordinator);
+    const p = maciState.deployPoll(
+      BigInt(startTime + duration),
+      treeDepths,
+      messageBatchSize,
+      coordinator,
+      BigInt(maxVoteOptions),
+    );
     expect(p.toString()).to.eq(pollId.toString());
     // publish the NOTHING_UP_MY_SLEEVE message
     const messageData = [NOTHING_UP_MY_SLEEVE];
@@ -96,7 +119,7 @@ describe("TallyVotesNonQv", () => {
     poll.publishMessage(message, padKey);
 
     // update the poll state
-    poll.updatePoll(BigInt(maciState.stateLeaves.length));
+    poll.updatePoll(BigInt(maciState.pubKeys.length));
 
     // process messages locally
     generatedInputs = poll.processMessages(pollId, false);
@@ -116,21 +139,12 @@ describe("TallyVotesNonQv", () => {
   it("should not be possible to tally votes before the poll has ended", async () => {
     await expect(tallyContract.tallyVotes(0n, [0, 0, 0, 0, 0, 0, 0, 0])).to.be.revertedWithCustomError(
       tallyContract,
-      "VotingPeriodNotPassed",
-    );
-  });
-
-  it("updateSbCommitment() should revert when the messages have not been processed yet", async () => {
-    // go forward in time
-    await timeTravel(signer.provider! as unknown as EthereumProvider, duration + 1);
-
-    await expect(tallyContract.updateSbCommitment()).to.be.revertedWithCustomError(
-      tallyContract,
       "ProcessingNotComplete",
     );
   });
 
   it("tallyVotes() should fail as the messages have not been processed yet", async () => {
+    await timeTravel(signer.provider! as unknown as EthereumProvider, duration + 1);
     await expect(tallyContract.tallyVotes(0n, [0, 0, 0, 0, 0, 0, 0, 0])).to.be.revertedWithCustomError(
       tallyContract,
       "ProcessingNotComplete",

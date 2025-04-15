@@ -6,7 +6,8 @@ import { EMode } from "../ts/constants";
 
 import {
   messageBatchSize,
-  testPollVk,
+  testPollJoinedVk,
+  testPollJoiningVk,
   testProcessVk,
   testProcessVkNonQv,
   testTallyVk,
@@ -20,6 +21,7 @@ describe("VkRegistry", () => {
   let vkRegistryContract: VkRegistry;
 
   const stateTreeDepth = 10;
+  const pollStateTreeDepth = 10;
 
   describe("deployment", () => {
     before(async () => {
@@ -32,12 +34,11 @@ describe("VkRegistry", () => {
     });
   });
 
-  describe("setPollVkKey", () => {
+  describe("setPollJoiningVkKey", () => {
     it("should set the poll vk", async () => {
-      const tx = await vkRegistryContract.setPollVkKey(
+      const tx = await vkRegistryContract.setPollJoiningVkKey(
         stateTreeDepth + 1,
-        treeDepths.voteOptionTreeDepth,
-        testPollVk.asContractParam() as IVerifyingKeyStruct,
+        testPollJoiningVk.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 1000000 },
       );
       const receipt = await tx.wait();
@@ -46,13 +47,34 @@ describe("VkRegistry", () => {
 
     it("should throw when trying to set another vk for the same params", async () => {
       await expect(
-        vkRegistryContract.setPollVkKey(
+        vkRegistryContract.setPollJoiningVkKey(
           stateTreeDepth + 1,
-          treeDepths.voteOptionTreeDepth,
-          testPollVk.asContractParam() as IVerifyingKeyStruct,
+          testPollJoiningVk.asContractParam() as IVerifyingKeyStruct,
           { gasLimit: 1000000 },
         ),
-      ).to.be.revertedWithCustomError(vkRegistryContract, "PollVkAlreadySet");
+      ).to.be.revertedWithCustomError(vkRegistryContract, "VkAlreadySet");
+    });
+  });
+
+  describe("setPollJoinedVkKey", () => {
+    it("should set the poll vk", async () => {
+      const tx = await vkRegistryContract.setPollJoinedVkKey(
+        stateTreeDepth + 1,
+        testPollJoinedVk.asContractParam() as IVerifyingKeyStruct,
+        { gasLimit: 1000000 },
+      );
+      const receipt = await tx.wait();
+      expect(receipt?.status).to.eq(1);
+    });
+
+    it("should throw when trying to set another vk for the same params", async () => {
+      await expect(
+        vkRegistryContract.setPollJoinedVkKey(
+          stateTreeDepth + 1,
+          testPollJoinedVk.asContractParam() as IVerifyingKeyStruct,
+          { gasLimit: 1000000 },
+        ),
+      ).to.be.revertedWithCustomError(vkRegistryContract, "VkAlreadySet");
     });
   });
 
@@ -82,7 +104,7 @@ describe("VkRegistry", () => {
           testProcessVk.asContractParam() as IVerifyingKeyStruct,
           testTallyVk.asContractParam() as IVerifyingKeyStruct,
         ),
-      ).to.be.revertedWithCustomError(vkRegistryContract, "ProcessVkAlreadySet");
+      ).to.be.revertedWithCustomError(vkRegistryContract, "VkAlreadySet");
     });
 
     it("should allow to set vks for different params", async () => {
@@ -116,16 +138,18 @@ describe("VkRegistry", () => {
 
   describe("setVerifyingKeysBatch", () => {
     it("should set the process, tally, poll vks", async () => {
-      const tx = await vkRegistryContract.setVerifyingKeysBatch(
+      const tx = await vkRegistryContract.setVerifyingKeysBatch({
         stateTreeDepth,
-        treeDepths.intStateTreeDepth,
-        treeDepths.voteOptionTreeDepth,
+        pollStateTreeDepth,
+        intStateTreeDepth: treeDepths.intStateTreeDepth,
+        voteOptionTreeDepth: treeDepths.voteOptionTreeDepth,
         messageBatchSize,
-        [EMode.NON_QV],
-        testPollVk.asContractParam() as IVerifyingKeyStruct,
-        [testProcessVkNonQv.asContractParam() as IVerifyingKeyStruct],
-        [testTallyVkNonQv.asContractParam() as IVerifyingKeyStruct],
-      );
+        modes: [EMode.NON_QV],
+        pollJoiningVk: testPollJoiningVk.asContractParam() as IVerifyingKeyStruct,
+        pollJoinedVk: testPollJoinedVk.asContractParam() as IVerifyingKeyStruct,
+        processVks: [testProcessVkNonQv.asContractParam() as IVerifyingKeyStruct],
+        tallyVks: [testTallyVkNonQv.asContractParam() as IVerifyingKeyStruct],
+      });
 
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
@@ -133,19 +157,21 @@ describe("VkRegistry", () => {
 
     it("should throw when zkeys doesn't have the same length", async () => {
       await expect(
-        vkRegistryContract.setVerifyingKeysBatch(
+        vkRegistryContract.setVerifyingKeysBatch({
           stateTreeDepth,
-          treeDepths.intStateTreeDepth,
-          treeDepths.voteOptionTreeDepth,
+          pollStateTreeDepth,
+          intStateTreeDepth: treeDepths.intStateTreeDepth,
+          voteOptionTreeDepth: treeDepths.voteOptionTreeDepth,
           messageBatchSize,
-          [EMode.QV],
-          testPollVk.asContractParam() as IVerifyingKeyStruct,
-          [
+          modes: [EMode.QV],
+          pollJoiningVk: testPollJoiningVk.asContractParam() as IVerifyingKeyStruct,
+          pollJoinedVk: testPollJoinedVk.asContractParam() as IVerifyingKeyStruct,
+          processVks: [
             testProcessVk.asContractParam() as IVerifyingKeyStruct,
             testProcessVkNonQv.asContractParam() as IVerifyingKeyStruct,
           ],
-          [testTallyVk.asContractParam() as IVerifyingKeyStruct],
-        ),
+          tallyVks: [testTallyVk.asContractParam() as IVerifyingKeyStruct],
+        }),
       ).to.be.revertedWithCustomError(vkRegistryContract, "InvalidKeysParams");
     });
   });
@@ -201,11 +227,19 @@ describe("VkRegistry", () => {
   });
 
   describe("genSignatures", () => {
-    describe("genPollVkSig", () => {
+    describe("genPollJoiningVkSig", () => {
       it("should generate a valid signature", async () => {
-        const sig = await vkRegistryContract.genPollVkSig(stateTreeDepth, treeDepths.voteOptionTreeDepth);
-        const vk = await vkRegistryContract.getPollVkBySig(sig);
-        compareVks(testPollVk, vk);
+        const sig = await vkRegistryContract.genPollJoiningVkSig(pollStateTreeDepth);
+        const vk = await vkRegistryContract.getPollJoiningVkBySig(sig);
+        compareVks(testPollJoiningVk, vk);
+      });
+    });
+
+    describe("genPollJoinedVkSig", () => {
+      it("should generate a valid signature", async () => {
+        const sig = await vkRegistryContract.genPollJoinedVkSig(pollStateTreeDepth);
+        const vk = await vkRegistryContract.getPollJoinedVkBySig(sig);
+        compareVks(testPollJoinedVk, vk);
       });
     });
 

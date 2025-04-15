@@ -1,12 +1,13 @@
 /* eslint-disable no-console, no-await-in-loop */
-import { STATE_TREE_ARITY } from "maci-core";
-import { G1Point, G2Point, genTreeProof } from "maci-crypto";
-import { VerifyingKey } from "maci-domainobjs";
+import { STATE_TREE_ARITY } from "@maci-protocol/core";
+import { G1Point, G2Point, genTreeProof } from "@maci-protocol/crypto";
+import { VerifyingKey } from "@maci-protocol/domainobjs";
 
 import type { IVerifyingKeyStruct, Proof } from "../../ts/types";
 import type { MACI, MessageProcessor, Poll, Tally, Verifier, VkRegistry } from "../../typechain-types";
 import type { BigNumberish } from "ethers";
 
+import { info, logGreen, logMagenta, success } from "../../ts/logger";
 import { asHex, formatProofForVerifierContract } from "../../ts/utils";
 
 import { IProverParams, TallyData } from "./types";
@@ -107,7 +108,7 @@ export class Prover {
     );
 
     if (numberBatchesProcessed < totalMessageBatches) {
-      console.log("Submitting proofs of message processing...");
+      logMagenta({ text: info("Submitting proofs of message processing...") });
     }
 
     // process all batches left
@@ -131,7 +132,7 @@ export class Prover {
       }
 
       if (numberBatchesProcessed > 0 && currentMessageBatchIndex > 0) {
-        currentMessageBatchIndex -= messageBatchSize;
+        currentMessageBatchIndex /= messageBatchSize;
       }
 
       const { proof, circuitInputs, publicInputs } = proofs[i];
@@ -202,20 +203,20 @@ export class Prover {
           throw new Error("processMessages() failed.");
         }
 
-        console.log(`Transaction hash: ${receipt.hash}`);
+        logGreen({ text: success(`Process messages transaction hash: ${receipt.hash}`) });
 
         // Wait for the node to catch up
 
         numberBatchesProcessed = await this.mpContract.numBatchesProcessed().then(Number);
 
-        console.log(`Progress: ${numberBatchesProcessed} / ${totalMessageBatches}`);
+        logMagenta({ text: info(`Progress: ${numberBatchesProcessed} / ${totalMessageBatches}`) });
       } catch (err) {
         throw new Error(`processMessages() failed: ${(err as Error).message}`);
       }
     }
 
     if (numberBatchesProcessed === totalMessageBatches) {
-      console.log("All message processing proofs have been submitted.");
+      logGreen({ text: success("All message processing proofs have been submitted.") });
     }
   }
 
@@ -252,7 +253,7 @@ export class Prover {
     let tallyBatchNum = tallyBatchNumber;
 
     if (tallyBatchNum < totalTallyBatches) {
-      console.log("Submitting proofs of vote tallying...");
+      logMagenta({ text: info("Submitting proofs of vote tallying...") });
     }
 
     for (let i = tallyBatchNum; i < totalTallyBatches; i += 1) {
@@ -305,14 +306,14 @@ export class Prover {
         throw new Error("tallyVotes() failed");
       }
 
-      console.log(`Progress: ${tallyBatchNum + 1} / ${totalTallyBatches}`);
-      console.log(`Transaction hash: ${receipt.hash}`);
+      logMagenta({ text: info(`Progress: ${tallyBatchNum + 1} / ${totalTallyBatches}`) });
+      logGreen({ text: success(`Tally votes transaction hash: ${receipt.hash}`) });
 
       tallyBatchNum = Number(await this.tallyContract.tallyBatchNum());
     }
 
     if (tallyBatchNum === totalTallyBatches) {
-      console.log("All vote tallying proofs have been submitted.");
+      logGreen({ text: success("All vote tallying proofs have been submitted.") });
     }
   }
 
@@ -323,7 +324,7 @@ export class Prover {
    * @param recipients - number of recipients
    */
   async submitResults(tallyData: TallyData, recipients?: number): Promise<void> {
-    console.log("Submitting results...");
+    logMagenta({ text: info("Submitting results...") });
 
     const tallyResults = tallyData.results.tally.map((t) => BigInt(t));
     const resultLength = recipients ?? tallyResults.length;
@@ -351,7 +352,7 @@ export class Prover {
       })
       .then((tx) => tx.wait());
 
-    console.log("Results have been submitted.");
+    logGreen({ text: success("Results have been submitted.") });
   }
 
   /**
@@ -361,8 +362,8 @@ export class Prover {
    * @param commitmentOnChain - on-chain commitment
    * @throws error if commitments don't match
    */
-  private validateCommitment(currentSbCommitment: BigNumberish, currentSbCommitmentOnChain: BigNumberish) {
-    if (currentSbCommitmentOnChain.toString() !== currentSbCommitment.toString()) {
+  private validateCommitment(value: BigNumberish, onchainValue: BigNumberish) {
+    if (onchainValue.toString() !== value.toString()) {
       throw new Error("commitment mismatch");
     }
   }
