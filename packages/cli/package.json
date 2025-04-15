@@ -32,7 +32,7 @@
     "@commander-js/extra-typings": "^13.1.0",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "commander": "^13.1.0",
-    "dotenv": "^16.4.7",
+    "dotenv": "^16.5.0",
     "ethers": "^6.13.5",
     "hardhat": "^2.23.0",
     "@maci-protocol/domainobjs": "^3.0.0",
