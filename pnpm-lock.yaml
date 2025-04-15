@@ -177,8 +177,8 @@ importers:
         specifier: ^4.2.0
         version: 4.2.0
       permissionless:
-        specifier: '>=0.1.18 <=0.1.29'
-        version: 0.1.29(viem@2.26.0(typescript@5.8.3)(zod@3.24.2))
+        specifier: '>=0.1.18 <=0.2.43'
+        version: 0.2.42(viem@2.26.0(typescript@5.8.3)(zod@3.24.2))
       reflect-metadata:
         specifier: ^0.2.0
         version: 0.2.2
@@ -10407,10 +10407,14 @@ packages:
   pend@1.2.0:
     resolution: {integrity: sha512-F3asv42UuXchdzt+xXqfW1OGlVBe+mxa2mqI0pg5yAHZPvFmY3Y6drSf/GQ1A86WgWEN9Kzh/WrgKa6iGcHXLg==}
 
-  permissionless@0.1.29:
-    resolution: {integrity: sha512-jKkgl3G2b4hv5DvX2U8v0OI3JfX+nEzj9a6zsrcXuJaLZdS14td4tExnlmBY93nUN6lRC6NfPZjdLbi8Dkzz7w==}
+  permissionless@0.2.42:
+    resolution: {integrity: sha512-B2UgDhTD+CKpQdhqLu1KOMmgxL4ot/C0yrioTlz20wGbVRsFQuru+LDBT0edf7XkTc9W7cbQ7jeY3+46sDgFpw==}
     peerDependencies:
-      viem: ^2.9.17
+      ox: 0.6.7
+      viem: ^2.23.2
+    peerDependenciesMeta:
+      ox:
+        optional: true
 
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
@@ -27002,7 +27006,7 @@ snapshots:
 
   pend@1.2.0: {}
 
-  permissionless@0.1.29(viem@2.26.0(typescript@5.8.3)(zod@3.24.2)):
+  permissionless@0.2.42(viem@2.26.0(typescript@5.8.3)(zod@3.24.2)):
     dependencies:
       viem: 2.26.0(typescript@5.8.3)(zod@3.24.2)
 
