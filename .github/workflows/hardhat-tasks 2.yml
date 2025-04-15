@@ -1,0 +1,50 @@
+name: Hardhat Tasks
+
+on:
+  push:
+    branches: [dev]
+  pull_request:
+
+jobs:
+  hardhat-tasks:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install
+        run: |
+          pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Build
+        run: |
+          pnpm run build
+
+      - name: Run hardhat fork
+        run: |
+          cd packages/contracts
+          pnpm run hardhat &
+          sleep 5
+
+      - name: Download zkeys
+        run: |
+          pnpm download-zkeys:test
+
+      - name: hardhat tasks
+        run: |
+          cp ./deploy-config-example.json ./deploy-config.json
+          bash ./testScriptLocalhost.sh
+        working-directory: packages/contracts
+
+      - name: Stop Hardhat
+        if: always()
+        run: kill $(lsof -t -i:8545)

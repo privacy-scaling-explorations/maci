@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+  service:
+    build:
+      context: ../..
+      dockerfile: apps/relayer/Dockerfile
+    volumes:
+      - .:/app
+    ports:
+      - "3000:3000"
+    environment:
+      - RELAYER_RPC_URL=${RELAYER_RPC_URL}
+      - TTL=${TTL}
+      - LIMIT=${LIMIT}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+      - MAX_MESSAGES=${MAX_MESSAGES}
+      - MONGO_DB_URI=mongodb://mongodb:27017
+      - MONGODB_USER=${MONGODB_USER}
+      - MONGODB_PASSWORD=${MONGODB_PASSWORD}
+      - MONGODB_DATABASE=${MONGODB_DATABASE}
+      - MNEMONIC=${MNEMONIC}
+      - CRON_EXPRESSION=${CRON_EXPRESSION}
+    depends_on:
+      - mongodb
+    networks:
+      - mongo-net
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGODB_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_PASSWORD}
+      - MONGO_INITDB_DATABASE=${MONGODB_DATABASE}
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - mongo-net
+
+networks:
+  mongo-net:
+    driver: bridge
+
+volumes:
+  mongodb-data:
+    driver: local

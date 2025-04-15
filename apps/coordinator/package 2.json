@@ -1,0 +1,123 @@
+{
+  "name": "@maci-protocol/coordinator",
+  "version": "1.0.0",
+  "private": false,
+  "description": "Coordinator service for MACI",
+  "main": "build/ts/main.js",
+  "type": "module",
+  "exports": {
+    ".": "./build/ts/main.js"
+  },
+  "files": [
+    "build",
+    "CHANGELOG.md",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "hardhat": "hardhat node",
+    "build": "nest build",
+    "run:node": "node --import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(\"ts-node/esm\", pathToFileURL(\"./\"));'",
+    "start": "pnpm run run:node ./ts/main.ts",
+    "start:prod": "pnpm run run:node build/ts/main.js",
+    "test": "jest --testPathIgnorePatterns=e2e.aa.test.ts --forceExit",
+    "test:coverage": "jest --coverage --forceExit",
+    "test:e2e": "jest --forceExit ./tests/e2e.aa.test.ts",
+    "types": "tsc -p tsconfig.json --noEmit",
+    "generate-maci-keypair": "pnpm run run:node ./scripts/generateMaciKeypair.ts",
+    "generate-keypair": "pnpm run run:node ./scripts/generateKeypair.ts",
+    "get-auth-header": "pnpm run run:node ./scripts/getAuthHeader.ts"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "^0.97.0",
+    "@nestjs/common": "^11.0.13",
+    "@nestjs/core": "^11.0.17",
+    "@nestjs/platform-express": "^11.0.13",
+    "@nestjs/platform-socket.io": "^11.0.17",
+    "@nestjs/swagger": "^11.1.1",
+    "@nestjs/throttler": "^6.4.0",
+    "@nestjs/websockets": "^11.0.17",
+    "@nomicfoundation/hardhat-ethers": "^3.0.8",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@zerodev/ecdsa-validator": "5.4.5",
+    "@zerodev/permissions": "5.5.4",
+    "@zerodev/sdk": "5.4.26",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "date-fns": "^4.1.0",
+    "dotenv": "^16.4.7",
+    "ethers": "^6.13.5",
+    "hardhat": "^2.22.19",
+    "helmet": "^8.1.0",
+    "lowdb": "^1.0.0",
+    "@maci-protocol/crypto": "^3.0.0",
+    "@maci-protocol/domainobjs": "^3.0.0",
+    "@maci-protocol/sdk": "^1.0.0",
+    "@maci-protocol/subgraph": "^3.0.0",
+    "mustache": "^4.2.0",
+    "permissionless": ">=0.1.18 <=0.1.29",
+    "reflect-metadata": "^0.2.0",
+    "rxjs": "^7.8.2",
+    "socket.io": "^4.7.5",
+    "tar": "^7.4.1",
+    "ts-node": "^10.9.1",
+    "viem": "^2.26.0"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.6",
+    "@nestjs/schematics": "^11.0.4",
+    "@nestjs/testing": "^11.0.13",
+    "@types/express": "^5.0.1",
+    "@types/jest": "^29.5.2",
+    "@types/lowdb": "^1.0.15",
+    "@types/node": "^22.14.0",
+    "@types/supertest": "^6.0.2",
+    "fast-check": "^4.1.0",
+    "jest": "^29.5.0",
+    "socket.io-client": "^4.7.5",
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.3.0",
+    "typescript": "^5.8.3"
+  },
+  "jest": {
+    "testTimeout": 900000,
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": ".",
+    "roots": [
+      "<rootDir>/ts",
+      "<rootDir>/tests"
+    ],
+    "testRegex": ".*\\.test\\.ts$",
+    "transform": {
+      "^.+\\.js$": [
+        "<rootDir>/ts/jest/transform.js",
+        {
+          "useESM": true
+        }
+      ],
+      "^.+\\.(t|j)s$": [
+        "ts-jest",
+        {
+          "useESM": true
+        }
+      ]
+    },
+    "collectCoverageFrom": [
+      "**/*.(t|j)s",
+      "!<rootDir>/ts/main.ts",
+      "!<rootDir>/ts/jest/*.js",
+      "!<rootDir>/hardhat.config.js"
+    ],
+    "coveragePathIgnorePatterns": [
+      "<rootDir>/ts/sessionKeys/__tests__/utils.ts"
+    ],
+    "coverageDirectory": "<rootDir>/coverage",
+    "testEnvironment": "node"
+  }
+}
