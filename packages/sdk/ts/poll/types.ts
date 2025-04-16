@@ -147,8 +147,8 @@ export interface IPollParams {
  * Inputs for circuit PollJoining
  */
 export interface IPollJoiningInputs {
-  privKey: bigint;
-  pollPubKey: bigint[][];
+  privateKey: bigint;
+  pollPublicKey: bigint[][];
   stateLeaf: bigint[];
   siblings: bigint[][];
   indices: bigint[];
@@ -163,7 +163,7 @@ export interface IPollJoiningInputs {
  * Inputs for circuit PollJoined
  */
 export interface IPollJoinedInputs {
-  privKey: bigint;
+  privateKey: bigint;
   voiceCreditsBalance: bigint;
   stateLeaf: bigint[];
   pathElements: bigint[][];

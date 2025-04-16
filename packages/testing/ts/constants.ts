@@ -33,8 +33,8 @@ export const DEFAULT_SG_DATA = "0x0000000000000000000000000000000000000000000000
 export const DEFAULT_IVCP_DATA = "0x0000000000000000000000000000000000000000000000000000000000000000";
 
 export const coordinatorKeypair = new Keypair();
-export const coordinatorPubKey = coordinatorKeypair.pubKey.serialize();
-export const coordinatorPrivKey = coordinatorKeypair.privKey.serialize();
+export const coordinatorPublicKey = coordinatorKeypair.publicKey.serialize();
+export const coordinatorPrivateKey = coordinatorKeypair.privateKey.serialize();
 export const pollDuration = 2000;
 export const maxMessages = 25;
 export const maxVoteOptions = 25;
@@ -223,7 +223,7 @@ export const deployPollArgs: Omit<
   messageBatchSize: MESSAGE_BATCH_SIZE,
   stateTreeDepth: POLL_STATE_TREE_DEPTH,
   voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
-  coordinatorPubKey: coordinatorKeypair.pubKey,
+  coordinatorPublicKey: coordinatorKeypair.publicKey,
   initialVoiceCredits: DEFAULT_INITIAL_VOICE_CREDITS,
   mode: EMode.QV,
   voteOptions: DEFAULT_VOTE_OPTIONS,

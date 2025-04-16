@@ -45,7 +45,7 @@ describe("signup", function test() {
 
     const signUpData = await signup({
       maciAddress: maciAddresses.maciContractAddress,
-      maciPubKey: user.pubKey.serialize(),
+      maciPublicKey: user.publicKey.serialize(),
       sgData: DEFAULT_SG_DATA,
       signer,
     });
@@ -53,7 +53,7 @@ describe("signup", function test() {
     const registeredUserData = await getSignedupUserData({
       maciAddress: maciAddresses.maciContractAddress,
       startBlock,
-      maciPubKey: user.pubKey.serialize(),
+      maciPublicKey: user.publicKey.serialize(),
       signer,
     });
 
@@ -65,7 +65,7 @@ describe("signup", function test() {
     const registeredUserData = await getSignedupUserData({
       maciAddress: maciAddresses.maciContractAddress,
       startBlock: await signer.provider?.getBlockNumber(),
-      maciPubKey: new Keypair().pubKey.serialize(),
+      maciPublicKey: new Keypair().publicKey.serialize(),
       signer,
     });
 
@@ -75,7 +75,7 @@ describe("signup", function test() {
   it("should start fetchig from block zero if the start block is not provided", async () => {
     const registeredUserData = await getSignedupUserData({
       maciAddress: maciAddresses.maciContractAddress,
-      maciPubKey: user.pubKey.serialize(),
+      maciPublicKey: user.publicKey.serialize(),
       signer,
     });
 

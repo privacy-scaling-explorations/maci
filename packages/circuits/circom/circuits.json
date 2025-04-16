@@ -1,12 +1,12 @@
 {
   "PollJoining_10_test": {
-    "file": "./voter/poll",
+    "file": "./voter/PollJoining",
     "template": "PollJoining",
     "params": [10],
-    "pubs": ["nullifier", "stateRoot", "pollPubKey", "pollId"]
+    "pubs": ["nullifier", "stateRoot", "pollPublicKey", "pollId"]
   },
   "PollJoined_10_test": {
-    "file": "./voter/poll",
+    "file": "./voter/PollJoined",
     "template": "PollJoined",
     "params": [10],
     "pubs": ["stateRoot"]

@@ -1,4 +1,4 @@
-import { IVkObjectParams, PubKey, VerifyingKey } from "@maci-protocol/domainobjs";
+import { IVkObjectParams, PublicKey, VerifyingKey } from "@maci-protocol/domainobjs";
 import {
   ConstantInitialVoiceCreditProxy__factory as ConstantInitialVoiceCreditProxyFactory,
   ContractStorage,
@@ -891,7 +891,7 @@ export class DeployerService {
       voteOptionTreeDepth: config.voteOptionTreeDepth,
       messageBatchSize: config.messageBatchSize,
       stateTreeDepth: config.pollStateTreeDepth,
-      coordinatorPubKey: PubKey.deserialize(config.coordinatorPubkey),
+      coordinatorPublicKey: PublicKey.deserialize(config.coordinatorPublicKey),
       verifierContractAddress: verifierAddress,
       vkRegistryContractAddress: vkRegistryAddress,
       mode,

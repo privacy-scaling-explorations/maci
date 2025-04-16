@@ -531,35 +531,35 @@ describe("Crypto", function test() {
     });
     describe("genKeypair", () => {
       it("should produce a public key which is < SNARK_FIELD_SIZE", () => {
-        const { pubKey } = genKeypair();
-        expect(pubKey[0] < SNARK_FIELD_SIZE).to.eq(true);
-        expect(pubKey[1] < SNARK_FIELD_SIZE).to.eq(true);
+        const { publicKey } = genKeypair();
+        expect(publicKey[0] < SNARK_FIELD_SIZE).to.eq(true);
+        expect(publicKey[1] < SNARK_FIELD_SIZE).to.eq(true);
       });
     });
     describe("genEcdhSharedKey", () => {
       it("should produce a shared key which is < SNARK_FIELD_SIZE", () => {
-        const { privKey, pubKey } = genKeypair();
-        const sharedKey = genEcdhSharedKey(privKey, pubKey);
+        const { privateKey, publicKey } = genKeypair();
+        const sharedKey = genEcdhSharedKey(privateKey, publicKey);
         expect(sharedKey[0] < SNARK_FIELD_SIZE).to.eq(true);
         expect(sharedKey[1] < SNARK_FIELD_SIZE).to.eq(true);
       });
-      it("should generate a key which is different than the both privKey and pubKey", () => {
-        const { privKey, pubKey } = genKeypair();
-        const sharedKey = genEcdhSharedKey(privKey, pubKey);
-        expect(sharedKey[0]).to.not.eq(privKey);
-        expect(sharedKey[1]).to.not.eq(privKey);
-        expect(sharedKey[0]).to.not.eq(pubKey[0]);
-        expect(sharedKey[1]).to.not.eq(pubKey[1]);
+      it("should generate a key which is different than the both privateKey and publicKey", () => {
+        const { privateKey, publicKey } = genKeypair();
+        const sharedKey = genEcdhSharedKey(privateKey, publicKey);
+        expect(sharedKey[0]).to.not.eq(privateKey);
+        expect(sharedKey[1]).to.not.eq(privateKey);
+        expect(sharedKey[0]).to.not.eq(publicKey[0]);
+        expect(sharedKey[1]).to.not.eq(publicKey[1]);
       });
       it("should generate non zero points", () => {
-        const { privKey, pubKey } = genKeypair();
-        const sharedKey = genEcdhSharedKey(privKey, pubKey);
+        const { privateKey, publicKey } = genKeypair();
+        const sharedKey = genEcdhSharedKey(privateKey, publicKey);
         expect(sharedKey[0]).to.not.eq(BigInt(0));
         expect(sharedKey[1]).to.not.eq(BigInt(0));
       });
       it("should produce consistent results", () => {
-        const { privKey: privKey1, pubKey: pubKey1 } = genKeypair();
-        const { privKey: privKey2, pubKey: pubKey2 } = genKeypair();
+        const { privateKey: privKey1, publicKey: pubKey1 } = genKeypair();
+        const { privateKey: privKey2, publicKey: pubKey2 } = genKeypair();
 
         const sharedKey1 = genEcdhSharedKey(privKey1, pubKey2);
         const sharedKey2 = genEcdhSharedKey(privKey2, pubKey1);

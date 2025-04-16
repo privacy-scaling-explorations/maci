@@ -1,4 +1,4 @@
-import type { IMessageContractParams, Keypair, Message, PrivKey, PubKey } from "@maci-protocol/domainobjs";
+import type { IMessageContractParams, Keypair, Message, PrivateKey, PublicKey } from "@maci-protocol/domainobjs";
 import type { Signer } from "ethers";
 
 /**
@@ -28,7 +28,7 @@ export interface IGenerateVoteArgs {
   /**
    * The private key for the vote
    */
-  privateKey: PrivKey;
+  privateKey: PrivateKey;
 
   /**
    * The state index for the vote
@@ -43,7 +43,7 @@ export interface IGenerateVoteArgs {
   /**
    * The coordinator public key
    */
-  coordinatorPubKey: PubKey;
+  coordinatorPublicKey: PublicKey;
 
   /**
    * The largest vote option index
@@ -58,7 +58,7 @@ export interface IGenerateVoteArgs {
   /**
    * New key in case of key change message
    */
-  newPubKey?: PubKey;
+  newPublicKey?: PublicKey;
 }
 
 /**
@@ -209,7 +209,7 @@ export interface IPublishArgs extends IPublishMessage {
   /**
    * The poll public key
    */
-  pubkey: string;
+  publicKey: string;
 
   /**
    * The poll private key
@@ -274,7 +274,7 @@ export interface IInvalidateVotesArgs {
   /**
    * MACI private key
    */
-  maciPrivateKey: PrivKey;
+  maciPrivateKey: PrivateKey;
 
   /**
    * State index

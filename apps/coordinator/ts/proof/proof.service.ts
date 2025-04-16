@@ -1,4 +1,4 @@
-import { Keypair, PrivKey, PubKey } from "@maci-protocol/domainobjs";
+import { Keypair, PrivateKey, PublicKey } from "@maci-protocol/domainobjs";
 import {
   Deployment,
   EContracts,
@@ -115,7 +115,7 @@ export class ProofGeneratorService {
         address: pollData.address,
       });
       const [coordinatorPublicKey, isStateAqMerged] = await Promise.all([
-        pollContract.coordinatorPubKey(),
+        pollContract.coordinatorPublicKey(),
         pollContract.stateMerged(),
       ]);
 
@@ -125,16 +125,16 @@ export class ProofGeneratorService {
       }
 
       const { privateKey } = await this.fileService.getPrivateKey();
-      const maciPrivateKey = PrivKey.deserialize(
+      const maciPrivateKey = PrivateKey.deserialize(
         this.cryptoService.decrypt(privateKey, encryptedCoordinatorPrivateKey),
       );
       const coordinatorKeypair = new Keypair(maciPrivateKey);
-      const publicKey = new PubKey([
+      const publicKey = new PublicKey([
         BigInt(coordinatorPublicKey.x.toString()),
         BigInt(coordinatorPublicKey.y.toString()),
       ]);
 
-      if (!coordinatorKeypair.pubKey.equals(publicKey)) {
+      if (!coordinatorKeypair.publicKey.equals(publicKey)) {
         this.logger.error(`Error: ${ErrorCodes.PRIVATE_KEY_MISMATCH}, wrong private key`);
         throw new Error(ErrorCodes.PRIVATE_KEY_MISMATCH.toString());
       }

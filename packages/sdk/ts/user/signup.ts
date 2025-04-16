@@ -1,5 +1,5 @@
 import { MACI__factory as MACIFactory } from "@maci-protocol/contracts/typechain-types";
-import { PubKey } from "@maci-protocol/domainobjs";
+import { PublicKey } from "@maci-protocol/domainobjs";
 import { ContractTransactionReceipt, isBytesLike } from "ethers";
 
 import type { IIsRegisteredUser, ISignupArgs, ISignupData, IRegisteredUserArgs, IHasUserSignedUpArgs } from "./types";
@@ -15,12 +15,12 @@ import { parseSignupEvents } from "./utils";
  */
 export const getSignedupUserData = async ({
   maciAddress,
-  maciPubKey,
+  maciPublicKey,
   signer,
   startBlock,
 }: IRegisteredUserArgs): Promise<IIsRegisteredUser> => {
   const maciContract = MACIFactory.connect(maciAddress, signer);
-  const publicKey = PubKey.deserialize(maciPubKey);
+  const publicKey = PublicKey.deserialize(maciPublicKey);
   const startBlockNumber = startBlock || 0;
   const currentBlock = await signer.provider!.getBlockNumber();
 
@@ -42,13 +42,13 @@ export const getSignedupUserData = async ({
  * @param {SignupArgs} args - The arguments for the signup command
  * @returns {ISignupData} The state index of the user and transaction hash
  */
-export const signup = async ({ maciPubKey, maciAddress, sgData, signer }: ISignupArgs): Promise<ISignupData> => {
+export const signup = async ({ maciPublicKey, maciAddress, sgData, signer }: ISignupArgs): Promise<ISignupData> => {
   // validate user key
-  if (!PubKey.isValidSerializedPubKey(maciPubKey)) {
+  if (!PublicKey.isValidSerializedPubKey(maciPublicKey)) {
     throw new Error("Invalid MACI public key");
   }
 
-  const userMaciPubKey = PubKey.deserialize(maciPubKey);
+  const userMaciPubKey = PublicKey.deserialize(maciPublicKey);
 
   const validContract = await contractExists(signer.provider!, maciAddress);
 
@@ -94,10 +94,14 @@ export const signup = async ({ maciPubKey, maciAddress, sgData, signer }: ISignu
  * @param {IIsSignedUpArgs} args - The arguments for the is signed up command
  * @returns {boolean} Whether the user is signed up or not
  */
-export const hasUserSignedUp = async ({ maciAddress, maciPubKey, signer }: IHasUserSignedUpArgs): Promise<boolean> => {
+export const hasUserSignedUp = async ({
+  maciAddress,
+  maciPublicKey,
+  signer,
+}: IHasUserSignedUpArgs): Promise<boolean> => {
   const maciContract = MACIFactory.connect(maciAddress, signer);
 
-  const stateIndex = await maciContract.getStateIndex(PubKey.deserialize(maciPubKey).hash());
+  const stateIndex = await maciContract.getStateIndex(PublicKey.deserialize(maciPublicKey).hash());
 
   return stateIndex !== 0n;
 };

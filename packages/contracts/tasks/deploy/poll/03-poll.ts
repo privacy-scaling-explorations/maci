@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { IVkObjectParams, PubKey, VerifyingKey } from "@maci-protocol/domainobjs";
+import { IVkObjectParams, PublicKey, VerifyingKey } from "@maci-protocol/domainobjs";
 import { ZeroAddress } from "ethers";
 
 import type { IVerifyingKeyStruct } from "../../../ts/types";
@@ -41,7 +41,7 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
     const maciContract = await deployment.getContract<MACI>({ name: EContracts.MACI });
     const pollId = await maciContract.nextPollId();
 
-    const coordinatorPubkey = deployment.getDeployConfigField<string>(EContracts.Poll, "coordinatorPubkey");
+    const coordinatorPublicKey = deployment.getDeployConfigField<string>(EContracts.Poll, "coordinatorPublicKey");
     const pollStartTimestamp = deployment.getDeployConfigField<number>(EContracts.Poll, "pollStartDate");
     const pollEndTimestamp = deployment.getDeployConfigField<number>(EContracts.Poll, "pollEndDate");
     const intStateTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "intStateTreeDepth");
@@ -57,7 +57,7 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
 
     const useQuadraticVoting =
       deployment.getDeployConfigField<boolean | null>(EContracts.Poll, "useQuadraticVoting") ?? false;
-    const unserializedKey = PubKey.deserialize(coordinatorPubkey);
+    const unserializedKey = PublicKey.deserialize(coordinatorPublicKey);
     const mode = useQuadraticVoting ? EMode.QV : EMode.NON_QV;
 
     const policy =
@@ -133,7 +133,7 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
           stateTreeDepth,
         },
         messageBatchSize,
-        coordinatorPubKey: unserializedKey.asContractParam(),
+        coordinatorPublicKey: unserializedKey.asContractParam(),
         verifier: verifierContractAddress,
         vkRegistry: vkRegistryContractAddress,
         mode,

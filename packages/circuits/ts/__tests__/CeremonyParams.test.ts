@@ -1,6 +1,6 @@
 import { MaciState, Poll, STATE_TREE_ARITY, MESSAGE_BATCH_SIZE } from "@maci-protocol/core";
 import { hash5, IncrementalQuinTree, poseidon } from "@maci-protocol/crypto";
-import { PrivKey, Keypair, PCommand, Message, Ballot } from "@maci-protocol/domainobjs";
+import { PrivateKey, Keypair, PCommand, Message, Ballot } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
 
@@ -40,10 +40,10 @@ describe("Ceremony param tests", () => {
         "index",
         "inputBatchHash",
         "outputBatchHash",
-        "msgs",
-        "coordPrivKey",
+        "messages",
+        "coordinatorPrivateKey",
         "coordinatorPublicKeyHash",
-        "encPubKeys",
+        "encryptionPublicKeys",
         "currentStateRoot",
         "currentStateLeaves",
         "currentStateLeavesPathElements",
@@ -80,8 +80,8 @@ describe("Ceremony param tests", () => {
 
       before(() => {
         // Sign up and publish
-        const userKeypair = new Keypair(new PrivKey(BigInt(1)));
-        maciState.signUp(userKeypair.pubKey);
+        const userKeypair = new Keypair(new PrivateKey(BigInt(1)));
+        maciState.signUp(userKeypair.publicKey);
 
         pollId = maciState.deployPoll(
           BigInt(Math.floor(Date.now() / 1000) + duration),
@@ -97,50 +97,50 @@ describe("Ceremony param tests", () => {
         poll.updatePoll(BigInt(maciState.pubKeys.length));
 
         // Join the poll
-        const { privKey } = userKeypair;
-        const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
+        const { privateKey } = userKeypair;
+        const { privateKey: pollPrivateKey, publicKey: pollPublicKey } = new Keypair();
 
-        const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
+        const nullifier = poseidon([BigInt(privateKey.rawPrivKey.toString())]);
 
-        stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance));
+        stateIndex = BigInt(poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance));
 
         // First command (valid)
         const command = new PCommand(
           stateIndex, // BigInt(1),
-          pollPubKey,
+          pollPublicKey,
           voteOptionIndex, // voteOptionIndex,
           voteWeight, // vote weight
           BigInt(2), // nonce
           BigInt(pollId),
         );
 
-        const signature = command.sign(pollPrivKey);
+        const signature = command.sign(pollPrivateKey);
 
         const ecdhKeypair = new Keypair();
-        const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+        const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
         const message = command.encrypt(signature, sharedKey);
         messages.push(message);
         commands.push(command);
 
-        poll.publishMessage(message, ecdhKeypair.pubKey);
+        poll.publishMessage(message, ecdhKeypair.publicKey);
 
         // Second command (valid)
         const command2 = new PCommand(
           stateIndex,
-          userKeypair.pubKey,
+          userKeypair.publicKey,
           voteOptionIndex, // voteOptionIndex,
           BigInt(1), // vote weight
           BigInt(1), // nonce
           BigInt(pollId),
         );
-        const signature2 = command2.sign(pollPrivKey);
+        const signature2 = command2.sign(pollPrivateKey);
 
         const ecdhKeypair2 = new Keypair();
-        const sharedKey2 = Keypair.genEcdhSharedKey(ecdhKeypair2.privKey, coordinatorKeypair.pubKey);
+        const sharedKey2 = Keypair.genEcdhSharedKey(ecdhKeypair2.privateKey, coordinatorKeypair.publicKey);
         const message2 = command2.encrypt(signature2, sharedKey2);
         messages.push(message2);
         commands.push(command2);
-        poll.publishMessage(message2, ecdhKeypair2.pubKey);
+        poll.publishMessage(message2, ecdhKeypair2.publicKey);
       });
 
       it("should produce the correct state root and ballot root", async () => {
@@ -224,7 +224,7 @@ describe("Ceremony param tests", () => {
         const commands: PCommand[] = [];
         // Sign up and publish
         const userKeypair = new Keypair();
-        maciState.signUp(userKeypair.pubKey);
+        maciState.signUp(userKeypair.publicKey);
 
         pollId = maciState.deployPoll(
           BigInt(Math.floor(Date.now() / 1000) + duration),
@@ -240,32 +240,32 @@ describe("Ceremony param tests", () => {
         poll.updatePoll(BigInt(maciState.pubKeys.length));
 
         // Join the poll
-        const { privKey } = userKeypair;
-        const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
+        const { privateKey } = userKeypair;
+        const { privateKey: pollPrivateKey, publicKey: pollPublicKey } = new Keypair();
 
-        const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
+        const nullifier = poseidon([BigInt(privateKey.rawPrivKey.toString())]);
 
-        stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance));
+        stateIndex = BigInt(poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance));
 
         // First command (valid)
         const command = new PCommand(
           stateIndex,
-          pollPubKey,
+          pollPublicKey,
           voteOptionIndex, // voteOptionIndex,
           voteWeight, // vote weight
           BigInt(1), // nonce
           BigInt(pollId),
         );
 
-        const signature = command.sign(pollPrivKey);
+        const signature = command.sign(pollPrivateKey);
 
         const ecdhKeypair = new Keypair();
-        const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+        const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
         const message = command.encrypt(signature, sharedKey);
         messages.push(message);
         commands.push(command);
 
-        poll.publishMessage(message, ecdhKeypair.pubKey);
+        poll.publishMessage(message, ecdhKeypair.publicKey);
 
         // Process messages
         poll.processMessages(pollId);

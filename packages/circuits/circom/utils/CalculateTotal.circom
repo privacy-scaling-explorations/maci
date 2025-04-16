@@ -8,7 +8,9 @@ pragma circom 2.0.0;
  * final output reflects the cumulative total of the inputs provided.
  */
 template CalculateTotal(n) {
+    // Array of values.
     signal input nums[n];
+    // Total sum.
     signal output sum;
 
     signal sums[n];

@@ -2,7 +2,7 @@ import { hash12 } from "@maci-protocol/crypto";
 
 import assert from "assert";
 
-import type { PubKey } from "./publicKey";
+import type { PublicKey } from "./publicKey";
 import type { IMessageContractParams } from "./types";
 
 /**
@@ -45,10 +45,10 @@ export class Message {
 
   /**
    * Hash the message data and a public key
-   * @param encPubKey the public key that is used to encrypt this message
+   * @param encryptionPublicKey the public key that is used to encrypt this message
    * @returns the hash of the message data and the public key
    */
-  hash = (encPubKey: PubKey): bigint => hash12([...this.data, ...encPubKey.rawPubKey]);
+  hash = (encryptionPublicKey: PublicKey): bigint => hash12([...this.data, ...encryptionPublicKey.rawPubKey]);
 
   /**
    * Create a copy of the message

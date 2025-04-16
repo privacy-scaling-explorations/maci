@@ -93,7 +93,7 @@ describe("MerkleProof", () => {
     it("should throw when the proof is invalid", async () => {
       await expect(
         maciContract.signUp(
-          user.pubKey.asContractParam(),
+          user.publicKey.asContractParam(),
           AbiCoder.defaultAbiCoder().encode(["bytes32[]"], [invalidProof]),
         ),
       ).to.be.revertedWithCustomError(merkleProofChecker, "InvalidProof");
@@ -102,7 +102,7 @@ describe("MerkleProof", () => {
     it("should register a user if the register function is called with the valid data", async () => {
       // signup via MACI
       const tx = await maciContract.signUp(
-        user.pubKey.asContractParam(),
+        user.publicKey.asContractParam(),
         AbiCoder.defaultAbiCoder().encode(["bytes32[]"], [validProof]),
       );
 
@@ -114,7 +114,7 @@ describe("MerkleProof", () => {
     it("should prevent signing up twice", async () => {
       await expect(
         maciContract.signUp(
-          user.pubKey.asContractParam(),
+          user.publicKey.asContractParam(),
           AbiCoder.defaultAbiCoder().encode(["bytes32[]"], [validProof]),
         ),
       ).to.be.revertedWithCustomError(merkleProofPolicy, "AlreadyEnforced");

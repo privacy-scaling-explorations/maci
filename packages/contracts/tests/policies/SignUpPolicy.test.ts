@@ -86,7 +86,7 @@ describe("SignUpPolicy", () => {
       await signUpToken.giveToken(await signer.getAddress(), 0);
 
       await expect(
-        maciContract.signUp(user.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [1])),
+        maciContract.signUp(user.publicKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [1])),
       ).to.be.revertedWithCustomError(tokenPolicyContract, "TargetOnly");
     });
 
@@ -99,7 +99,7 @@ describe("SignUpPolicy", () => {
       await tokenPolicyContract.setTarget(maciAddress).then((tx) => tx.wait());
 
       const tx = await maciContract.signUp(
-        user.pubKey.asContractParam(),
+        user.publicKey.asContractParam(),
         AbiCoder.defaultAbiCoder().encode(["uint256"], [0]),
       );
       const receipt = await tx.wait();

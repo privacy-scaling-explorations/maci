@@ -287,9 +287,9 @@ export interface IDeployPollConfig {
   endDate: number;
 
   /**
-   * The coordinator pubkey
+   * The coordinator publicKey
    */
-  coordinatorPubkey: string;
+  coordinatorPublicKey: string;
 
   /**
    * Whether to use quadratic voting

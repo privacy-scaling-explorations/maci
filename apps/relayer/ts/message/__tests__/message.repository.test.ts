@@ -11,7 +11,7 @@ import { defaultSaveMessagesArgs } from "./utils.js";
 describe("MessageRepository", () => {
   const defaultMessages: Message[] = [
     {
-      publicKey: new Keypair().pubKey.serialize(),
+      publicKey: new Keypair().publicKey.serialize(),
       data: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
       hash: "hash",
       maciContractAddress: ZeroAddress,

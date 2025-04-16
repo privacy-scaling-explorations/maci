@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { MaciState } from "@maci-protocol/core";
 import { NOTHING_UP_MY_SLEEVE } from "@maci-protocol/crypto";
-import { Keypair, PubKey, Message } from "@maci-protocol/domainobjs";
+import { Keypair, PublicKey, Message } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { AbiCoder, BigNumberish, Signer, ZeroAddress } from "ethers";
 
@@ -82,7 +82,7 @@ describe("MACI", function test() {
 
         // eslint-disable-next-line no-await-in-loop
         const tx = await maciContract.signUp(
-          user.pubKey.asContractParam(),
+          user.publicKey.asContractParam(),
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
         );
         // eslint-disable-next-line no-await-in-loop
@@ -98,11 +98,11 @@ describe("MACI", function test() {
 
         expect(event.args._stateIndex.toString()).to.eq((index + 1).toString());
 
-        maciState.signUp(user.pubKey);
+        maciState.signUp(user.publicKey);
       }
     });
 
-    it("should fail when given an invalid pubkey (x >= p)", async () => {
+    it("should fail when given an invalid publicKey (x >= p)", async () => {
       await expect(
         maciContract.signUp(
           {
@@ -114,7 +114,7 @@ describe("MACI", function test() {
       ).to.be.revertedWithCustomError(maciContract, "InvalidPubKey");
     });
 
-    it("should fail when given an invalid pubkey (y >= p)", async () => {
+    it("should fail when given an invalid publicKey (y >= p)", async () => {
       await expect(
         maciContract.signUp(
           {
@@ -126,7 +126,7 @@ describe("MACI", function test() {
       ).to.be.revertedWithCustomError(maciContract, "InvalidPubKey");
     });
 
-    it("should fail when given an invalid pubkey (x >= p and y >= p)", async () => {
+    it("should fail when given an invalid publicKey (x >= p and y >= p)", async () => {
       await expect(
         maciContract.signUp(
           {
@@ -163,12 +163,12 @@ describe("MACI", function test() {
       // start from one as we already have one signup (blank state leaf)
       for (let i = 1; i < maxUsers; i += 1) {
         // eslint-disable-next-line no-await-in-loop
-        await maci.signUp(keypair.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [1]));
+        await maci.signUp(keypair.publicKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [1]));
       }
 
       // the next signup should fail
       await expect(
-        maci.signUp(keypair.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [1])),
+        maci.signUp(keypair.publicKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [1])),
       ).to.be.revertedWithCustomError(maciContract, "TooManySignups");
     });
 
@@ -186,14 +186,14 @@ describe("MACI", function test() {
       for (let i = 1; i < maxUsers; i += 1) {
         const keypair = new Keypair();
         // eslint-disable-next-line no-await-in-loop
-        await maci.signUp(keypair.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [1]));
+        await maci.signUp(keypair.publicKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [1]));
       }
     });
   });
 
   describe("getStateIndex", () => {
     it("should return the index of a state leaf", async () => {
-      const index = await maciContract.getStateIndex(users[0].pubKey.hash());
+      const index = await maciContract.getStateIndex(users[0].publicKey.hash());
       expect(index.toString()).to.eq("1");
     });
 
@@ -212,7 +212,7 @@ describe("MACI", function test() {
         endDate: startTime + duration,
         treeDepths,
         messageBatchSize,
-        coordinatorPubKey: coordinator.pubKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
+        coordinatorPublicKey: coordinator.publicKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
         verifier: verifierContract,
         vkRegistry: vkRegistryContract,
         mode: EMode.QV,
@@ -241,7 +241,7 @@ describe("MACI", function test() {
         messageData.push(BigInt(0));
       }
       const message = new Message(messageData);
-      const padKey = new PubKey([
+      const padKey = new PublicKey([
         BigInt("10457101036533406547632367118273992217979173478358440826365724437999023779287"),
         BigInt("19824078218392094440610104313265183977899662750282163392862422243483260492317"),
       ]);
@@ -254,7 +254,7 @@ describe("MACI", function test() {
         endDate: Math.floor(Date.now() / 1000) + duration,
         treeDepths,
         messageBatchSize,
-        coordinatorPubKey: coordinator.pubKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
+        coordinatorPublicKey: coordinator.publicKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
         verifier: verifierContract,
         vkRegistry: vkRegistryContract,
         mode: EMode.QV,
@@ -275,7 +275,7 @@ describe("MACI", function test() {
         endDate: Math.floor(Date.now() / 1000) + duration,
         treeDepths,
         messageBatchSize,
-        coordinatorPubKey: users[0].pubKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
+        coordinatorPublicKey: users[0].publicKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
         verifier: verifierContract,
         vkRegistry: vkRegistryContract,
         mode: EMode.QV,

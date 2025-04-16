@@ -22,7 +22,7 @@ describe("Poll Joined circuit", function test() {
   const coordinatorKeypair = new Keypair();
 
   type PollJoinedCircuitInputs = [
-    "privKey",
+    "privateKey",
     "voiceCreditsBalance",
     "stateLeaf",
     "pathElements",
@@ -35,7 +35,7 @@ describe("Poll Joined circuit", function test() {
 
   before(async () => {
     circuit = await circomkitInstance.WitnessTester("pollJoined", {
-      file: "./voter/poll",
+      file: "./voter/PollJoined",
       template: "PollJoined",
       params: [STATE_TREE_DEPTH],
     });
@@ -56,7 +56,7 @@ describe("Poll Joined circuit", function test() {
       users = new Array(NUM_USERS).fill(0).map(() => new Keypair());
 
       users.forEach((userKeypair) => {
-        maciState.signUp(userKeypair.pubKey);
+        maciState.signUp(userKeypair.publicKey);
       });
 
       pollId = maciState.deployPoll(
@@ -70,31 +70,31 @@ describe("Poll Joined circuit", function test() {
       poll = maciState.polls.get(pollId)!;
 
       // Join the poll
-      const { privKey, pubKey: pollPubKey } = users[0];
+      const { privateKey, publicKey: pollPublicKey } = users[0];
 
-      const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
+      const nullifier = poseidon([BigInt(privateKey.rawPrivKey.toString())]);
 
-      const stateIndex = BigInt(poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance));
+      const stateIndex = BigInt(poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance));
 
       // First command (valid)
       const command = new PCommand(
         stateIndex,
-        pollPubKey,
+        pollPublicKey,
         BigInt(0), // voteOptionIndex,
         BigInt(9), // vote weight
         BigInt(1), // nonce
         BigInt(pollId),
       );
 
-      const signature = command.sign(privKey);
+      const signature = command.sign(privateKey);
 
       const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
       const message = command.encrypt(signature, sharedKey);
       messages.push(message);
       commands.push(command);
 
-      poll.publishMessage(message, ecdhKeypair.pubKey);
+      poll.publishMessage(message, ecdhKeypair.publicKey);
 
       poll.updatePoll(BigInt(maciState.pubKeys.length));
 
@@ -103,13 +103,13 @@ describe("Poll Joined circuit", function test() {
     });
 
     it("should produce a proof", async () => {
-      const { privKey: privateKey, pubKey: pollPubKey } = users[0];
+      const { privateKey, publicKey: pollPublicKey } = users[0];
       const nullifier = poseidon([BigInt(privateKey.asCircuitInputs()), poll.pollId]);
 
-      const stateLeafIndex = poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance);
+      const stateLeafIndex = poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance);
 
       const inputs = poll.joinedCircuitInputs({
-        maciPrivKey: privateKey,
+        maciPrivateKey: privateKey,
         stateLeafIndex: BigInt(stateLeafIndex),
         voiceCreditsBalance: voiceCreditBalance,
       }) as unknown as IPollJoinedInputs;
@@ -119,13 +119,13 @@ describe("Poll Joined circuit", function test() {
     });
 
     it("should fail for fake witness", async () => {
-      const { privKey: privateKey, pubKey: pollPubKey } = users[1];
+      const { privateKey, publicKey: pollPublicKey } = users[1];
       const nullifier = poseidon([BigInt(privateKey.asCircuitInputs()), poll.pollId]);
 
-      const stateLeafIndex = poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance);
+      const stateLeafIndex = poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance);
 
       const inputs = poll.joinedCircuitInputs({
-        maciPrivKey: privateKey,
+        maciPrivateKey: privateKey,
         stateLeafIndex: BigInt(stateLeafIndex),
         voiceCreditsBalance: voiceCreditBalance,
       }) as unknown as IPollJoinedInputs;

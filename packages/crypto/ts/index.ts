@@ -40,8 +40,8 @@ export { poseidonDecrypt, poseidonDecryptWithoutCheck, poseidonEncrypt } from "@
 export { verifySignature, signMessage as sign } from "@zk-kit/eddsa-poseidon";
 
 export type {
-  PrivKey,
-  PubKey,
+  PrivateKey,
+  PublicKey,
   Point,
   EcdhSharedKey,
   Plaintext,

@@ -49,7 +49,7 @@ export const testPollDeploymentConfig: IDeployPollConfig = {
   startDate: 100,
   endDate: 200,
   useQuadraticVoting: false,
-  coordinatorPubkey: new Keypair().pubKey.serialize(),
+  coordinatorPublicKey: new Keypair().publicKey.serialize(),
   intStateTreeDepth: 1,
   messageBatchSize: MSG_BATCH_SIZE,
   pollStateTreeDepth: 10,

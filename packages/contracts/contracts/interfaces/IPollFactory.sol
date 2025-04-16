@@ -17,8 +17,8 @@ interface IPollFactory {
     Params.TreeDepths treeDepths;
     /// @param messageBatchSize The size of message batch
     uint8 messageBatchSize;
-    /// @param coordinatorPubKey The coordinator's public key
-    DomainObjs.PubKey coordinatorPubKey;
+    /// @param coordinatorPublicKey The coordinator's public key
+    DomainObjs.PublicKey coordinatorPublicKey;
     /// @param extContracts The external contracts interface references
     Params.ExtContracts extContracts;
     /// @param emptyBallotRoot The root of the empty ballot tree

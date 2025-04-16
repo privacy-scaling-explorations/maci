@@ -3,7 +3,7 @@ pragma circom 2.0.0;
 // zk-kit imports
 include "./safe-comparators.circom";
 // local imports
-include "../verifySignature.circom";
+include "../VerifySignature.circom";
 
 /**
  * Checks if a MACI message is valid or not.
@@ -28,7 +28,7 @@ template MessageValidator() {
     // Packed command.
     signal input cmd[PACKED_CMD_LENGTH];
     // Public key of the state leaf (user).
-    signal input pubKey[2];
+    signal input publicKey[2];
     // ECDSA signature of the command (R part).
     signal input sigR8[2];
     // ECDSA signature of the command (S part).
@@ -60,7 +60,7 @@ template MessageValidator() {
     var computedIsNonceValid = IsEqual()([originalNonce + 1, nonce]);
 
     // Check (4) - The signature must be correct.    
-    var computedIsSignatureValid = VerifySignature()(pubKey, sigR8, sigS, cmd);
+    var computedIsSignatureValid = VerifySignature()(publicKey, sigR8, sigS, cmd);
 
     // Check (5) - There must be sufficient voice credits.
     // The check ensure that the voteWeight is < sqrt(field size)

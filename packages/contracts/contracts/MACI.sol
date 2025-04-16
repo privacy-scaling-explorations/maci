@@ -111,7 +111,7 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
   }
 
   /// @inheritdoc IMACI
-  function signUp(PubKey memory _pubKey, bytes memory _signUpPolicyData) public virtual {
+  function signUp(PublicKey memory _pubKey, bytes memory _signUpPolicyData) public virtual {
     // ensure we do not have more signups than what the circuits support
     if (leanIMTData.size >= maxSignups) revert TooManySignups();
 
@@ -146,7 +146,7 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
     }
 
     // check coordinator key is a valid point on the curve
-    if (!CurveBabyJubJub.isOnCurve(args.coordinatorPubKey.x, args.coordinatorPubKey.y)) {
+    if (!CurveBabyJubJub.isOnCurve(args.coordinatorPublicKey.x, args.coordinatorPublicKey.y)) {
       revert InvalidPubKey();
     }
 
@@ -163,7 +163,7 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
       endDate: args.endDate,
       treeDepths: args.treeDepths,
       messageBatchSize: args.messageBatchSize,
-      coordinatorPubKey: args.coordinatorPubKey,
+      coordinatorPublicKey: args.coordinatorPublicKey,
       extContracts: extContracts,
       emptyBallotRoot: emptyBallotRoots[args.treeDepths.voteOptionTreeDepth - 1],
       pollId: pollId,
@@ -180,7 +180,7 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
 
     polls[pollId] = pollAddr;
 
-    emit DeployPoll(pollId, args.coordinatorPubKey.x, args.coordinatorPubKey.y, args.mode);
+    emit DeployPoll(pollId, args.coordinatorPublicKey.x, args.coordinatorPublicKey.y, args.mode);
 
     return pollAddr;
   }

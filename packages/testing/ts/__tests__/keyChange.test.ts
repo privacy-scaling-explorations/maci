@@ -35,7 +35,7 @@ import {
   DEFAULT_IVCP_DATA,
   DEFAULT_SG_DATA,
   DEFAULT_INITIAL_VOICE_CREDITS,
-  coordinatorPrivKey,
+  coordinatorPrivateKey,
   deployArgs,
   deployPollArgs,
   processMessageTestZkeyPath,
@@ -83,7 +83,7 @@ describe("keyChange tests", function test() {
     processDatFile: testProcessMessagesWitnessDatPath,
     tallyWitgen: testTallyVotesWitnessPath,
     tallyDatFile: testTallyVotesWitnessDatPath,
-    coordinatorPrivateKey: coordinatorPrivKey,
+    coordinatorPrivateKey,
     processWasm: testProcessMessagesWasmPath,
     tallyWasm: testTallyVotesWasmPath,
     useWasm,
@@ -118,8 +118,8 @@ describe("keyChange tests", function test() {
     });
 
     const user1Keypair = new Keypair();
-    const { privKey: pollPrivKey1, pubKey: pollPubKey1 } = user1Keypair;
-    const { pubKey: pollPubKey2 } = new Keypair();
+    const { privateKey: pollPrivateKey, publicKey: pollPubKey1 } = user1Keypair;
+    const { publicKey: pollPublicKey2 } = new Keypair();
 
     const initialNonce = 1n;
     const initialVoteOption = 0n;
@@ -172,14 +172,14 @@ describe("keyChange tests", function test() {
       stateIndex = BigInt(
         await signup({
           maciAddress: maciAddresses.maciContractAddress,
-          maciPubKey: user1Keypair.pubKey.serialize(),
+          maciPublicKey: user1Keypair.publicKey.serialize(),
           sgData: DEFAULT_SG_DATA,
           signer,
         }).then((result) => result.stateIndex),
       );
       await joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
-        privateKey: user1Keypair.privKey.serialize(),
+        privateKey: user1Keypair.privateKey.serialize(),
         stateIndex,
         pollId,
         pollJoiningZkey: pollJoiningTestZkeyPath,
@@ -192,7 +192,7 @@ describe("keyChange tests", function test() {
         signer,
       });
       await publish({
-        pubkey: pollPubKey1.serialize(),
+        publicKey: pollPubKey1.serialize(),
         stateIndex,
         voteOptionIndex: initialVoteOption,
         nonce: initialNonce,
@@ -200,7 +200,7 @@ describe("keyChange tests", function test() {
         newVoteWeight: initialVoteAmount,
         maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
-        privateKey: pollPrivKey1.serialize(),
+        privateKey: pollPrivateKey.serialize(),
         signer,
       });
     });
@@ -212,12 +212,12 @@ describe("keyChange tests", function test() {
           voteOptionIndex: initialVoteOption,
           salt: genRandomSalt(),
           nonce: initialNonce,
-          privateKey: pollPrivKey1,
+          privateKey: pollPrivateKey,
           stateIndex,
           voteWeight: initialVoteAmount - 2n,
-          coordinatorPubKey: coordinatorKeypair.pubKey,
+          coordinatorPublicKey: coordinatorKeypair.publicKey,
           maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
-          newPubKey: pollPubKey2,
+          newPublicKey: pollPublicKey2,
         },
       ];
 
@@ -227,8 +227,8 @@ describe("keyChange tests", function test() {
           maciAddress: maciAddresses.maciContractAddress,
           poll: Number(pollId),
           data: message.data.map(String),
-          publicKey: ephemeralKeypair.pubKey.asArray().map(String),
-          hash: message.hash(ephemeralKeypair.pubKey).toString(),
+          publicKey: ephemeralKeypair.publicKey.asArray().map(String),
+          hash: message.hash(ephemeralKeypair.publicKey).toString(),
         }));
 
       await relayTestMessages({
@@ -241,7 +241,7 @@ describe("keyChange tests", function test() {
 
     it("should publish a message to change the poll key and cast a new vote", async () => {
       await publish({
-        pubkey: pollPubKey2.serialize(),
+        publicKey: pollPublicKey2.serialize(),
         stateIndex,
         voteOptionIndex: initialVoteOption,
         nonce: initialNonce,
@@ -249,7 +249,7 @@ describe("keyChange tests", function test() {
         newVoteWeight: initialVoteAmount - 1n,
         maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
-        privateKey: pollPrivKey1.serialize(),
+        privateKey: pollPrivateKey.serialize(),
         signer,
       });
     });
@@ -283,7 +283,7 @@ describe("keyChange tests", function test() {
     });
 
     const user1Keypair = new Keypair();
-    const { pubKey: pollPubKey2 } = new Keypair();
+    const { publicKey: pollPublicKey2 } = new Keypair();
 
     const initialNonce = 1n;
     const initialVoteOption = 0n;
@@ -336,14 +336,14 @@ describe("keyChange tests", function test() {
       stateIndex = BigInt(
         await signup({
           maciAddress: maciAddresses.maciContractAddress,
-          maciPubKey: user1Keypair.pubKey.serialize(),
+          maciPublicKey: user1Keypair.publicKey.serialize(),
           sgData: DEFAULT_SG_DATA,
           signer,
         }).then((result) => result.stateIndex),
       );
       await joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
-        privateKey: user1Keypair.privKey.serialize(),
+        privateKey: user1Keypair.privateKey.serialize(),
         stateIndex,
         pollId,
         pollJoiningZkey: pollJoiningTestZkeyPath,
@@ -362,12 +362,12 @@ describe("keyChange tests", function test() {
           voteOptionIndex: initialVoteOption,
           salt: genRandomSalt(),
           nonce: initialNonce,
-          privateKey: user1Keypair.privKey,
+          privateKey: user1Keypair.privateKey,
           stateIndex,
           voteWeight: initialVoteAmount,
-          coordinatorPubKey: coordinatorKeypair.pubKey,
+          coordinatorPublicKey: coordinatorKeypair.publicKey,
           maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
-          newPubKey: user1Keypair.pubKey,
+          newPublicKey: user1Keypair.publicKey,
         },
       ];
 
@@ -377,8 +377,8 @@ describe("keyChange tests", function test() {
           maciAddress: maciAddresses.maciContractAddress,
           poll: Number(pollId),
           data: message.data.map(String),
-          publicKey: ephemeralKeypair.pubKey.asArray().map(String),
-          hash: message.hash(ephemeralKeypair.pubKey).toString(),
+          publicKey: ephemeralKeypair.publicKey.asArray().map(String),
+          hash: message.hash(ephemeralKeypair.publicKey).toString(),
         }));
 
       await relayTestMessages({
@@ -391,7 +391,7 @@ describe("keyChange tests", function test() {
 
     it("should publish a message to change the key and cast a new vote", async () => {
       await publish({
-        pubkey: pollPubKey2.serialize(),
+        publicKey: pollPublicKey2.serialize(),
         stateIndex,
         voteOptionIndex: initialVoteOption + 1n,
         nonce: initialNonce + 1n,
@@ -399,7 +399,7 @@ describe("keyChange tests", function test() {
         newVoteWeight: initialVoteAmount - 1n,
         maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
-        privateKey: user1Keypair.privKey.serialize(),
+        privateKey: user1Keypair.privateKey.serialize(),
         signer,
       });
     });
@@ -486,14 +486,14 @@ describe("keyChange tests", function test() {
       stateIndex = BigInt(
         await signup({
           maciAddress: maciAddresses.maciContractAddress,
-          maciPubKey: user1Keypair.pubKey.serialize(),
+          maciPublicKey: user1Keypair.publicKey.serialize(),
           sgData: DEFAULT_SG_DATA,
           signer,
         }).then((result) => result.stateIndex),
       );
       await joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
-        privateKey: user1Keypair.privKey.serialize(),
+        privateKey: user1Keypair.privateKey.serialize(),
         stateIndex,
         pollId,
         pollJoiningZkey: pollJoiningTestZkeyPath,
@@ -507,7 +507,7 @@ describe("keyChange tests", function test() {
       });
 
       await publish({
-        pubkey: user1Keypair.pubKey.serialize(),
+        publicKey: user1Keypair.publicKey.serialize(),
         stateIndex,
         voteOptionIndex: initialVoteOption,
         nonce: initialNonce,
@@ -515,7 +515,7 @@ describe("keyChange tests", function test() {
         newVoteWeight: initialVoteAmount,
         maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
-        privateKey: user1Keypair.privKey.serialize(),
+        privateKey: user1Keypair.privateKey.serialize(),
         signer,
       });
     });
@@ -527,12 +527,12 @@ describe("keyChange tests", function test() {
           voteOptionIndex: initialVoteOption + 2n,
           salt: genRandomSalt(),
           nonce: initialNonce,
-          privateKey: user1Keypair.privKey,
+          privateKey: user1Keypair.privateKey,
           stateIndex,
           voteWeight: initialVoteAmount - 2n,
-          coordinatorPubKey: coordinatorKeypair.pubKey,
+          coordinatorPublicKey: coordinatorKeypair.publicKey,
           maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
-          newPubKey: secondKeypair.pubKey,
+          newPublicKey: secondKeypair.publicKey,
         },
       ];
 
@@ -542,8 +542,8 @@ describe("keyChange tests", function test() {
           maciAddress: maciAddresses.maciContractAddress,
           poll: Number(pollId),
           data: message.data.map(String),
-          publicKey: ephemeralKeypair.pubKey.asArray().map(String),
-          hash: message.hash(ephemeralKeypair.pubKey).toString(),
+          publicKey: ephemeralKeypair.publicKey.asArray().map(String),
+          hash: message.hash(ephemeralKeypair.publicKey).toString(),
         }));
 
       await relayTestMessages({
@@ -556,7 +556,7 @@ describe("keyChange tests", function test() {
 
     it("should publish a message to change the poll key, and a new vote", async () => {
       await publish({
-        pubkey: secondKeypair.pubKey.serialize(),
+        publicKey: secondKeypair.publicKey.serialize(),
         stateIndex,
         voteOptionIndex: initialVoteOption + 2n,
         nonce: initialNonce,
@@ -564,7 +564,7 @@ describe("keyChange tests", function test() {
         newVoteWeight: initialVoteAmount - 3n,
         maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
-        privateKey: user1Keypair.privKey.serialize(),
+        privateKey: user1Keypair.privateKey.serialize(),
         signer,
       });
     });

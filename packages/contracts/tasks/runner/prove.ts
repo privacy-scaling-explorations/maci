@@ -1,6 +1,6 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-console */
-import { Keypair, PrivKey } from "@maci-protocol/domainobjs";
+import { Keypair, PrivateKey } from "@maci-protocol/domainobjs";
 import { task, types } from "hardhat/config";
 
 import fs from "fs";
@@ -66,7 +66,7 @@ task("prove", "Command to generate proofs")
         await fs.promises.mkdir(outputDir);
       }
 
-      const maciPrivateKey = PrivKey.deserialize(coordinatorPrivateKey);
+      const maciPrivateKey = PrivateKey.deserialize(coordinatorPrivateKey);
       const coordinatorKeypair = new Keypair(maciPrivateKey);
 
       const signer = await deployment.getDeployer();

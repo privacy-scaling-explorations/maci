@@ -4,7 +4,7 @@ pragma circom 2.0.0;
 include "./mux1.circom";
 include "./comparators.circom";
 // local import
-include "../hashers.circom";
+include "../PoseidonHasher.circom";
 
 // @note taken from @zk-kit/circuits
 // if used directly in processMessages circom complains about duplicated
@@ -21,8 +21,16 @@ include "../hashers.circom";
 // NOTE: This circuit will successfully verify `out = 0` for `depth > MAX_DEPTH`.
 // Make sure to enforce `depth <= MAX_DEPTH` outside the circuit.
 template BinaryMerkleRoot(MAX_DEPTH) {
-    signal input leaf, depth, indices[MAX_DEPTH], siblings[MAX_DEPTH][1];
+    // The leaf node of the Merkle tree.
+    signal input leaf;
+    // The depth of the Merkle tree.
+    signal input depth;
+    // The indices of the leaf node in the Merkle tree.
+    signal input indices[MAX_DEPTH];
+    // The sibling nodes of the leaf node in the Merkle tree.
+    signal input siblings[MAX_DEPTH][1];
 
+    // The output of the Merkle tree root.
     signal output out;
 
     signal nodes[MAX_DEPTH + 1];

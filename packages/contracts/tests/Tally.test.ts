@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { MaciState, Poll, IProcessMessagesCircuitInputs, ITallyCircuitInputs } from "@maci-protocol/core";
 import { genTreeCommitment, genTreeProof, hashLeftRight, NOTHING_UP_MY_SLEEVE, poseidon } from "@maci-protocol/crypto";
-import { Keypair, Message, PubKey } from "@maci-protocol/domainobjs";
+import { Keypair, Message, PublicKey } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { AbiCoder, BigNumberish, Signer, ZeroAddress } from "ethers";
 import { EthereumProvider } from "hardhat/types";
@@ -83,7 +83,7 @@ describe("TallyVotes", () => {
         endDate: startTime + duration,
         treeDepths,
         messageBatchSize,
-        coordinatorPubKey: coordinator.pubKey.asContractParam(),
+        coordinatorPublicKey: coordinator.publicKey.asContractParam(),
         verifier: verifierContract,
         vkRegistry: vkRegistryContract,
         mode: EMode.QV,
@@ -120,7 +120,7 @@ describe("TallyVotes", () => {
       messageData.push(BigInt(0));
     }
     const message = new Message(messageData);
-    const padKey = new PubKey([
+    const padKey = new PublicKey([
       BigInt("10457101036533406547632367118273992217979173478358440826365724437999023779287"),
       BigInt("19824078218392094440610104313265183977899662750282163392862422243483260492317"),
     ]);
@@ -223,12 +223,12 @@ describe("TallyVotes", () => {
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < users.length; i += 1) {
         // signup locally
-        maciState.signUp(users[i].pubKey);
+        maciState.signUp(users[i].publicKey);
         // signup on chain
 
         // eslint-disable-next-line no-await-in-loop
         await maciContract.signUp(
-          users[i].pubKey.asContractParam(),
+          users[i].publicKey.asContractParam(),
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
         );
       }
@@ -246,7 +246,7 @@ describe("TallyVotes", () => {
             intStateTreeDepth,
           },
           messageBatchSize,
-          coordinatorPubKey: coordinator.pubKey.asContractParam(),
+          coordinatorPublicKey: coordinator.publicKey.asContractParam(),
           verifier: verifierContract,
           vkRegistry: vkRegistryContract,
           mode: EMode.QV,
@@ -286,7 +286,7 @@ describe("TallyVotes", () => {
         messageData.push(BigInt(0));
       }
       const message = new Message(messageData);
-      const padKey = new PubKey([
+      const padKey = new PublicKey([
         BigInt("10457101036533406547632367118273992217979173478358440826365724437999023779287"),
         BigInt("19824078218392094440610104313265183977899662750282163392862422243483260492317"),
       ]);
@@ -324,14 +324,14 @@ describe("TallyVotes", () => {
       // join all user to the Poll
       for (let i = 0; i < users.length; i += 1) {
         // join locally
-        const nullifier = poseidon([BigInt(users[i].privKey.rawPrivKey)]);
-        poll.joinPoll(nullifier, pollKeys[i].pubKey, BigInt(initialVoiceCreditBalance));
+        const nullifier = poseidon([BigInt(users[i].privateKey.rawPrivKey)]);
+        poll.joinPoll(nullifier, pollKeys[i].publicKey, BigInt(initialVoiceCreditBalance));
 
         // join on chain
         // eslint-disable-next-line no-await-in-loop
         await pollContract.joinPoll(
           nullifier,
-          pollKeys[i].pubKey.asContractParam(),
+          pollKeys[i].publicKey.asContractParam(),
           i,
           [0, 0, 0, 0, 0, 0, 0, 0],
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
@@ -543,12 +543,12 @@ describe("TallyVotes", () => {
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < users.length; i += 1) {
         // signup locally
-        maciState.signUp(users[i].pubKey);
+        maciState.signUp(users[i].publicKey);
         // signup on chain
 
         // eslint-disable-next-line no-await-in-loop
         await maciContract.signUp(
-          users[i].pubKey.asContractParam(),
+          users[i].publicKey.asContractParam(),
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
         );
       }
@@ -566,7 +566,7 @@ describe("TallyVotes", () => {
             intStateTreeDepth,
           },
           messageBatchSize,
-          coordinatorPubKey: coordinator.pubKey.asContractParam(),
+          coordinatorPublicKey: coordinator.publicKey.asContractParam(),
           verifier: verifierContract,
           vkRegistry: vkRegistryContract,
           mode: EMode.QV,
@@ -606,7 +606,7 @@ describe("TallyVotes", () => {
         messageData.push(BigInt(0));
       }
       const message = new Message(messageData);
-      const padKey = new PubKey([
+      const padKey = new PublicKey([
         BigInt("10457101036533406547632367118273992217979173478358440826365724437999023779287"),
         BigInt("19824078218392094440610104313265183977899662750282163392862422243483260492317"),
       ]);
@@ -646,14 +646,14 @@ describe("TallyVotes", () => {
       // join all user to the Poll
       for (let i = 0; i < users.length; i += 1) {
         // join locally
-        const nullifier = poseidon([BigInt(users[i].privKey.rawPrivKey), pollId]);
-        poll.joinPoll(nullifier, pollKeys[i].pubKey, BigInt(initialVoiceCreditBalance));
+        const nullifier = poseidon([BigInt(users[i].privateKey.rawPrivKey), pollId]);
+        poll.joinPoll(nullifier, pollKeys[i].publicKey, BigInt(initialVoiceCreditBalance));
 
         // join on chain
         // eslint-disable-next-line no-await-in-loop
         await pollContract.joinPoll(
           nullifier,
-          pollKeys[i].pubKey.asContractParam(),
+          pollKeys[i].publicKey.asContractParam(),
           i,
           [0, 0, 0, 0, 0, 0, 0, 0],
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),

@@ -1,5 +1,5 @@
 import { genRandomSalt, genPrivKey } from "@maci-protocol/crypto";
-import { Keypair, PCommand, PrivKey } from "@maci-protocol/domainobjs";
+import { Keypair, PCommand, PrivateKey } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
 
@@ -9,44 +9,43 @@ describe("MessageToCommand circuit", function test() {
   this.timeout(900000);
 
   let circuit: WitnessTester<
-    ["message", "encPubKey", "encPubKey"],
+    ["message", "encryptionPublicKey", "encryptionPublicKey"],
     [
       "stateIndex",
-      "newPubKey",
+      "newPublicKey",
       "voteOptionIndex",
       "newVoteWeight",
       "nonce",
       "pollId",
       "salt",
-      "sigR8",
-      "sigS",
+      "signaturePoint",
+      "signatureScalar",
       "packedCommandOut",
     ]
   >;
 
   before(async () => {
     circuit = await circomkitInstance.WitnessTester("messageToCommand", {
-      file: "./utils/messageToCommand",
+      file: "./utils/MessageToCommand",
       template: "MessageToCommand",
     });
   });
 
   it("should decrypt a Message and output the fields of a Command", async () => {
-    const { privKey } = new Keypair();
-    const k = new Keypair();
+    const { privateKey } = new Keypair();
+    const keypair = new Keypair();
 
-    const pubKey1 = k.pubKey;
+    const { publicKey } = keypair;
+    const newPublicKey = keypair.publicKey;
 
-    const newPubKey = k.pubKey;
-
-    const ecdhSharedKey = Keypair.genEcdhSharedKey(privKey, pubKey1);
+    const ecdhSharedKey = Keypair.genEcdhSharedKey(privateKey, publicKey);
     const random50bitBigInt = (): bigint =>
       // eslint-disable-next-line no-bitwise
       ((BigInt(1) << BigInt(50)) - BigInt(1)) & BigInt(genRandomSalt().toString());
 
     const command: PCommand = new PCommand(
       random50bitBigInt(),
-      newPubKey,
+      newPublicKey,
       random50bitBigInt(),
       random50bitBigInt(),
       random50bitBigInt(),
@@ -54,13 +53,13 @@ describe("MessageToCommand circuit", function test() {
       // genRandomSalt(),
       BigInt(123),
     );
-    const signature = command.sign(privKey);
+    const signature = command.sign(privateKey);
     const message = command.encrypt(signature, ecdhSharedKey);
 
     const circuitInputs = {
       message: message.asCircuitInputs(),
-      encPrivKey: privKey.asCircuitInputs() as unknown as bigint,
-      encPubKey: pubKey1.asCircuitInputs() as unknown as bigint[],
+      encryptionPrivateKey: privateKey.asCircuitInputs() as unknown as bigint,
+      encryptionPublicKey: publicKey.asCircuitInputs() as unknown as bigint[],
     };
 
     const witness = await circuit.calculateWitness(circuitInputs);
@@ -69,11 +68,11 @@ describe("MessageToCommand circuit", function test() {
     const stateIndexOut = await getSignal(circuit, witness, "stateIndex");
     expect(command.stateIndex.toString()).to.be.eq(stateIndexOut.toString());
 
-    const newPubKey0 = await getSignal(circuit, witness, "newPubKey[0]");
-    expect(command.newPubKey.rawPubKey[0].toString()).to.be.eq(newPubKey0.toString());
+    const newPublicKeyX = await getSignal(circuit, witness, "newPublicKey[0]");
+    expect(command.newPublicKey.rawPubKey[0].toString()).to.be.eq(newPublicKeyX.toString());
 
-    const newPubKey1 = await getSignal(circuit, witness, "newPubKey[1]");
-    expect(command.newPubKey.rawPubKey[1].toString()).to.be.eq(newPubKey1.toString());
+    const newPublicKeyY = await getSignal(circuit, witness, "newPublicKey[1]");
+    expect(command.newPublicKey.rawPubKey[1].toString()).to.be.eq(newPublicKeyY.toString());
 
     const voteOptionIndex = await getSignal(circuit, witness, "voteOptionIndex");
     expect(command.voteOptionIndex.toString()).to.be.eq(voteOptionIndex.toString());
@@ -90,32 +89,31 @@ describe("MessageToCommand circuit", function test() {
     const salt = await getSignal(circuit, witness, "salt");
     expect(command.salt.toString()).to.be.eq(salt.toString());
 
-    const sigR80 = await getSignal(circuit, witness, "sigR8[0]");
-    expect(signature.R8[0].toString()).to.be.eq(sigR80.toString());
+    const signaturePointX = await getSignal(circuit, witness, "signaturePoint[0]");
+    expect(signature.R8[0].toString()).to.be.eq(signaturePointX.toString());
 
-    const sigR81 = await getSignal(circuit, witness, "sigR8[1]");
-    expect(signature.R8[1].toString()).to.be.eq(sigR81.toString());
+    const signaturePointY = await getSignal(circuit, witness, "signaturePoint[1]");
+    expect(signature.R8[1].toString()).to.be.eq(signaturePointY.toString());
 
-    const sigS = await getSignal(circuit, witness, "sigS");
-    expect(signature.S.toString()).to.be.eq(sigS.toString());
+    const signatureScalar = await getSignal(circuit, witness, "signatureScalar");
+    expect(signature.S.toString()).to.be.eq(signatureScalar.toString());
   });
 
   it("should not throw when given an invalid key which cannot decrypt a Message", async () => {
-    const { privKey } = new Keypair();
-    const k = new Keypair();
+    const { privateKey } = new Keypair();
+    const keypair = new Keypair();
 
-    const pubKey1 = k.pubKey;
+    const { publicKey } = keypair;
+    const newPublicKey = keypair.publicKey;
 
-    const newPubKey = k.pubKey;
-
-    const ecdhSharedKey = Keypair.genEcdhSharedKey(privKey, pubKey1);
+    const ecdhSharedKey = Keypair.genEcdhSharedKey(privateKey, publicKey);
     const random50bitBigInt = (): bigint =>
       // eslint-disable-next-line no-bitwise
       ((BigInt(1) << BigInt(50)) - BigInt(1)) & BigInt(genRandomSalt().toString());
 
     const command: PCommand = new PCommand(
       random50bitBigInt(),
-      newPubKey,
+      newPublicKey,
       random50bitBigInt(),
       random50bitBigInt(),
       random50bitBigInt(),
@@ -123,14 +121,14 @@ describe("MessageToCommand circuit", function test() {
       // genRandomSalt(),
       BigInt(123),
     );
-    const signature = command.sign(privKey);
+    const signature = command.sign(privateKey);
     const message = command.encrypt(signature, ecdhSharedKey);
 
     const circuitInputs = {
       message: message.asCircuitInputs(),
       // invalid private key
-      encPrivKey: new PrivKey(genPrivKey()).asCircuitInputs() as unknown as bigint,
-      encPubKey: pubKey1.asCircuitInputs() as unknown as [bigint, bigint],
+      encryptionPrivateKey: new PrivateKey(genPrivKey()).asCircuitInputs() as unknown as bigint,
+      encryptionPublicKey: publicKey.asCircuitInputs() as unknown as [bigint, bigint],
     };
 
     const witness = await circuit.calculateWitness(circuitInputs);

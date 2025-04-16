@@ -1,4 +1,4 @@
-import type { PubKey } from "@maci-protocol/domainobjs";
+import type { PublicKey } from "@maci-protocol/domainobjs";
 import type { LeanIMT } from "@zk-kit/lean-imt";
 import type { Provider } from "ethers";
 
@@ -49,5 +49,5 @@ export interface IGenerateSignUpTree {
   /**
    * State leaves
    */
-  pubKeys: PubKey[];
+  pubKeys: PublicKey[];
 }

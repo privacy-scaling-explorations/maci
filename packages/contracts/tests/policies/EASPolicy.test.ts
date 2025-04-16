@@ -82,31 +82,31 @@ describe("EAS", () => {
 
     it("should throw when the attestation is not owned by the caller (mocking maci.signUp call)", async () => {
       await expect(
-        maciContract.signUp(user.pubKey.asContractParam(), invalidRecipientAttestation),
+        maciContract.signUp(user.publicKey.asContractParam(), invalidRecipientAttestation),
       ).to.be.revertedWithCustomError(easChecker, "NotYourAttestation");
     });
 
     it("should throw when the attestation has been revoked", async () => {
       await expect(
-        maciContract.signUp(user.pubKey.asContractParam(), revokedAttestation),
+        maciContract.signUp(user.publicKey.asContractParam(), revokedAttestation),
       ).to.be.revertedWithCustomError(easChecker, "AttestationRevoked");
     });
 
     it("should throw when the attestation schema is not the one expected by the policy", async () => {
       await expect(
-        maciContract.signUp(user.pubKey.asContractParam(), invalidSchemaAttestation),
+        maciContract.signUp(user.publicKey.asContractParam(), invalidSchemaAttestation),
       ).to.be.revertedWithCustomError(easChecker, "InvalidSchema");
     });
 
     it("should throw when the attestation is not signed by the attestation owner", async () => {
       await expect(
-        maciContract.signUp(user.pubKey.asContractParam(), invalidAttesterAttestation),
+        maciContract.signUp(user.publicKey.asContractParam(), invalidAttesterAttestation),
       ).to.be.revertedWithCustomError(easChecker, "AttesterNotTrusted");
     });
 
     it("should register a user if the register function is called with the valid data", async () => {
       // signup via MACI
-      const tx = await maciContract.signUp(user.pubKey.asContractParam(), attestation);
+      const tx = await maciContract.signUp(user.publicKey.asContractParam(), attestation);
 
       const receipt = await tx.wait();
 
@@ -114,7 +114,7 @@ describe("EAS", () => {
     });
 
     it("should prevent signing up twice", async () => {
-      await expect(maciContract.signUp(user.pubKey.asContractParam(), attestation)).to.be.revertedWithCustomError(
+      await expect(maciContract.signUp(user.publicKey.asContractParam(), attestation)).to.be.revertedWithCustomError(
         easPolicy,
         "AlreadyEnforced",
       );

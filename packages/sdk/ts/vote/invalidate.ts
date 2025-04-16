@@ -28,7 +28,7 @@ export const invalidateVotes = async ({
   const { poll: pollContract } = await getPollContracts({ maciAddress, pollId, signer });
 
   const [maxVoteOption, pollAddress] = await Promise.all([pollContract.voteOptions(), pollContract.getAddress()]);
-  const coordinatorPubKey = await getCoordinatorPubKey(pollAddress, signer);
+  const coordinatorPublicKey = await getCoordinatorPubKey(pollAddress, signer);
 
   // generate the key change message
   const message = generateVote({
@@ -38,9 +38,9 @@ export const invalidateVotes = async ({
     privateKey: maciPrivateKey,
     stateIndex,
     // use a random key to invalidate the previous votes
-    newPubKey: new Keypair().pubKey,
+    newPublicKey: new Keypair().publicKey,
     voteWeight: 0n,
-    coordinatorPubKey,
+    coordinatorPublicKey,
     maxVoteOption,
   });
 

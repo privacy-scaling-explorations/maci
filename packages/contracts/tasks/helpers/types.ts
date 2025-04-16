@@ -1,7 +1,7 @@
 import type { Proof } from "../../ts/types";
 import type { MACI, MessageProcessor, Poll, Tally, Verifier, VkRegistry } from "../../typechain-types";
 import type { Poll as PollWrapper } from "@maci-protocol/core";
-import type { Keypair, PrivKey } from "@maci-protocol/domainobjs";
+import type { Keypair, PrivateKey } from "@maci-protocol/domainobjs";
 import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import type {
   BaseContract,
@@ -267,7 +267,7 @@ export interface IPrepareStateParams {
   /**
    * MACI private key
    */
-  maciPrivateKey: PrivKey;
+  maciPrivateKey: PrivateKey;
 
   /**
    * Coordinator keypair
