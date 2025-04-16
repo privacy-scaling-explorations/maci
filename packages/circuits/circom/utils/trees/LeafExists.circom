@@ -6,7 +6,7 @@ include "./MerkleTreeInclusionProof.circom";
 /**
  * Ensures that a leaf exists within a Merkle tree with a given root.
  */
-template LeafExists(levels){
+template LeafExists(levels) {
   // The leaf whose existence within the tree is being verified.
   signal input leaf;
 

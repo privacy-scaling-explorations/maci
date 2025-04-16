@@ -86,7 +86,7 @@ while true:
     if rand >= min:
         break
 
-privKey = rand % p
+privateKey = rand % p
 ```
 
 #### 1.3. Private key formatting

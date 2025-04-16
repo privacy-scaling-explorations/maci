@@ -3,7 +3,7 @@ import {
   Poll__factory as PollFactory,
   genMaciStateFromContract,
 } from "@maci-protocol/contracts";
-import { Keypair, PrivKey } from "@maci-protocol/domainobjs";
+import { Keypair, PrivateKey } from "@maci-protocol/domainobjs";
 import { JsonRpcProvider } from "ethers";
 
 import fs from "fs";
@@ -43,11 +43,11 @@ export const generateMaciState = async ({
   }
 
   // if no private key is passed we ask it securely
-  if (!PrivKey.isValidSerializedPrivKey(coordinatorPrivateKey)) {
+  if (!PrivateKey.isValidSerializedPrivKey(coordinatorPrivateKey)) {
     throw new Error("Invalid MACI private key");
   }
 
-  const coordinatorMaciPrivKey = PrivKey.deserialize(coordinatorPrivateKey);
+  const coordinatorMaciPrivKey = PrivateKey.deserialize(coordinatorPrivateKey);
   const coordinatorKeypair = new Keypair(coordinatorMaciPrivKey);
 
   const maciContract = MACIFactory.connect(maciAddress, signer);

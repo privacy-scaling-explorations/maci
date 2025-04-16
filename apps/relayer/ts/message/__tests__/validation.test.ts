@@ -7,7 +7,7 @@ describe("PublicKeyValidator", () => {
     const keypair = new Keypair();
     const validator = new PublicKeyValidator();
 
-    const result = validator.validate(keypair.pubKey.serialize());
+    const result = validator.validate(keypair.publicKey.serialize());
 
     expect(result).toBe(true);
   });

@@ -34,7 +34,7 @@ export async function publishBatch(
   });
 
   const messageBatch = Array.from({ length: batchSize }, () => message.asContractParam());
-  const pubKeyBatch = Array.from({ length: batchSize }, () => keypair.pubKey.asContractParam());
+  const pubKeyBatch = Array.from({ length: batchSize }, () => keypair.publicKey.asContractParam());
 
   let optimalBatchSize = batchSize;
 

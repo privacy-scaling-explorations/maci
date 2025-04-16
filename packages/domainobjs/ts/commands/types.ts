@@ -12,7 +12,7 @@ export interface IJsonTCommand {
  */
 export interface IJsonPCommand {
   stateIndex: string;
-  newPubKey: string;
+  newPublicKey: string;
   voteOptionIndex: string;
   newVoteWeight: string;
   nonce: string;

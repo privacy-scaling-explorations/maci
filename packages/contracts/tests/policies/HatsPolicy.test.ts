@@ -94,7 +94,7 @@ describe("HatsProtocol", () => {
       await expect(
         maciContract
           .connect(voter)
-          .signUp(user.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [secondHatId])),
+          .signUp(user.publicKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [secondHatId])),
       ).to.be.revertedWithCustomError(hatsChecker, "NotCriterionHat");
     });
 
@@ -102,7 +102,7 @@ describe("HatsProtocol", () => {
       // signup via MACI
       const tx = await maciContract
         .connect(voter)
-        .signUp(user.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [hatId]));
+        .signUp(user.publicKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [hatId]));
 
       const receipt = await tx.wait();
 
@@ -116,7 +116,7 @@ describe("HatsProtocol", () => {
       await expect(
         maciContract
           .connect(another)
-          .signUp(user.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [thirdHatId])),
+          .signUp(user.publicKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [thirdHatId])),
       ).to.be.revertedWithCustomError(hatsChecker, "NotWearingCriterionHat");
     });
 
@@ -124,7 +124,7 @@ describe("HatsProtocol", () => {
       await expect(
         maciContract
           .connect(voter)
-          .signUp(user.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [hatId])),
+          .signUp(user.publicKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [hatId])),
       ).to.be.revertedWithCustomError(hatsPolicy, "AlreadyEnforced");
     });
   });

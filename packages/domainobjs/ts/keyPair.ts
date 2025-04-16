@@ -4,8 +4,8 @@ import assert from "assert";
 
 import type { IJsonKeyPair } from "./types";
 
-import { PrivKey } from "./privateKey";
-import { PubKey } from "./publicKey";
+import { PrivateKey } from "./privateKey";
+import { PublicKey } from "./publicKey";
 
 /**
  * @notice A KeyPair is a pair of public and private keys
@@ -14,23 +14,23 @@ import { PubKey } from "./publicKey";
  * A MACI keypair is comprised of a MACI public key and a MACI private key
  */
 export class Keypair {
-  privKey: PrivKey;
+  privateKey: PrivateKey;
 
-  pubKey: PubKey;
+  publicKey: PublicKey;
 
   /**
    * Create a new instance of a Keypair
-   * @param privKey the private key (optional)
-   * @notice if no privKey is passed, it will automatically generate a new private key
+   * @param privateKey the private key (optional)
+   * @notice if no privateKey is passed, it will automatically generate a new private key
    */
-  constructor(privKey?: PrivKey) {
-    if (privKey) {
-      this.privKey = privKey;
-      this.pubKey = new PubKey(genPubKey(privKey.rawPrivKey));
+  constructor(privateKey?: PrivateKey) {
+    if (privateKey) {
+      this.privateKey = privateKey;
+      this.publicKey = new PublicKey(genPubKey(privateKey.rawPrivKey));
     } else {
       const rawKeyPair = genKeypair();
-      this.privKey = new PrivKey(rawKeyPair.privKey);
-      this.pubKey = new PubKey(rawKeyPair.pubKey);
+      this.privateKey = new PrivateKey(rawKeyPair.privateKey);
+      this.publicKey = new PublicKey(rawKeyPair.publicKey);
     }
   }
 
@@ -38,16 +38,16 @@ export class Keypair {
    * Create a deep clone of this Keypair
    * @returns a copy of the Keypair
    */
-  copy = (): Keypair => new Keypair(this.privKey.copy());
+  copy = (): Keypair => new Keypair(this.privateKey.copy());
 
   /**
    * Generate a shared key
-   * @param privKey
-   * @param pubKey
+   * @param privateKey
+   * @param publicKey
    * @returns
    */
-  static genEcdhSharedKey(privKey: PrivKey, pubKey: PubKey): EcdhSharedKey {
-    return genEcdhSharedKey(privKey.rawPrivKey, pubKey.rawPubKey);
+  static genEcdhSharedKey(privateKey: PrivateKey, publicKey: PublicKey): EcdhSharedKey {
+    return genEcdhSharedKey(privateKey.rawPrivKey, publicKey.rawPubKey);
   }
 
   /**
@@ -56,10 +56,10 @@ export class Keypair {
    * @returns whether they are equal or not
    */
   equals(keypair: Keypair): boolean {
-    const equalPrivKey = this.privKey.rawPrivKey === keypair.privKey.rawPrivKey;
+    const equalPrivKey = this.privateKey.rawPrivKey === keypair.privateKey.rawPrivKey;
     const equalPubKey =
-      this.pubKey.rawPubKey[0] === keypair.pubKey.rawPubKey[0] &&
-      this.pubKey.rawPubKey[1] === keypair.pubKey.rawPubKey[1];
+      this.publicKey.rawPubKey[0] === keypair.publicKey.rawPubKey[0] &&
+      this.publicKey.rawPubKey[1] === keypair.publicKey.rawPubKey[1];
 
     // If this assertion fails, something is very wrong and this function
     // should not return anything
@@ -74,8 +74,8 @@ export class Keypair {
    */
   toJSON(): IJsonKeyPair {
     return {
-      privKey: this.privKey.serialize(),
-      pubKey: this.pubKey.serialize(),
+      privateKey: this.privateKey.serialize(),
+      publicKey: this.publicKey.serialize(),
     };
   }
 
@@ -85,6 +85,6 @@ export class Keypair {
    * @returns a keypair instance
    */
   static fromJSON(json: IJsonKeyPair): Keypair {
-    return new Keypair(PrivKey.deserialize(json.privKey));
+    return new Keypair(PrivateKey.deserialize(json.privateKey));
   }
 }

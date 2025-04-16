@@ -1,7 +1,7 @@
 /* eslint-disable no-await-in-loop */
 import { MaciState, TreeDepths, VOTE_OPTION_TREE_ARITY } from "@maci-protocol/core";
 import { genPubKey, genRandomSalt, poseidon } from "@maci-protocol/crypto";
-import { Keypair, PCommand, PrivKey, PubKey } from "@maci-protocol/domainobjs";
+import { Keypair, PCommand, PrivateKey, PublicKey } from "@maci-protocol/domainobjs";
 import {
   cidToBytes32,
   createCidFromObject,
@@ -155,7 +155,7 @@ describe("Integration tests", function test() {
       messageBatchSize: MESSAGE_BATCH_SIZE,
       stateTreeDepth: POLL_STATE_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
-      coordinatorPubKey: coordinatorKeypair.pubKey,
+      coordinatorPublicKey: coordinatorKeypair.publicKey,
       maciAddress: contracts.maciContractAddress,
       signer,
       mode: EMode.QV,
@@ -224,7 +224,7 @@ describe("Integration tests", function test() {
         // signup
         const stateIndex = BigInt(
           await signup({
-            maciPubKey: user.keypair.pubKey.serialize(),
+            maciPublicKey: user.keypair.publicKey.serialize(),
             maciAddress: contracts.maciContractAddress,
             sgData: DEFAULT_SG_DATA,
             signer,
@@ -233,7 +233,7 @@ describe("Integration tests", function test() {
 
         await joinPoll({
           maciAddress: contracts.maciContractAddress,
-          privateKey: user.keypair.privKey.serialize(),
+          privateKey: user.keypair.privateKey.serialize(),
           stateIndex,
           pollId,
           pollJoiningZkey: "./zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey",
@@ -247,13 +247,13 @@ describe("Integration tests", function test() {
         });
 
         // signup on local maci state
-        maciState.signUp(user.keypair.pubKey);
+        maciState.signUp(user.keypair.publicKey);
 
         // join the poll on local
-        const inputNullifier = BigInt(user.keypair.privKey.asCircuitInputs());
+        const inputNullifier = BigInt(user.keypair.privateKey.asCircuitInputs());
         const nullifier = poseidon([inputNullifier]);
         const poll = maciState.polls.get(pollId);
-        poll?.joinPoll(nullifier, user.keypair.pubKey, BigInt(DEFAULT_INITIAL_VOICE_CREDITS));
+        poll?.joinPoll(nullifier, user.keypair.publicKey, BigInt(DEFAULT_INITIAL_VOICE_CREDITS));
 
         // publish messages
         for (let j = 0; j < user.votes.length; j += 1) {
@@ -278,12 +278,12 @@ describe("Integration tests", function test() {
             voteOptionIndex: voteOptionIndex!,
             salt,
             nonce,
-            privateKey: isKeyChange ? oldKeypair.privKey : user.keypair.privKey,
+            privateKey: isKeyChange ? oldKeypair.privateKey : user.keypair.privateKey,
             stateIndex,
             voteWeight: newVoteWeight!,
-            coordinatorPubKey: coordinatorKeypair.pubKey,
+            coordinatorPublicKey: coordinatorKeypair.publicKey,
             maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** VOTE_OPTION_TREE_DEPTH),
-            newPubKey: user.keypair.pubKey,
+            newPublicKey: user.keypair.publicKey,
           });
 
           const messages = [
@@ -291,8 +291,8 @@ describe("Integration tests", function test() {
               maciAddress: contracts.maciContractAddress,
               poll: Number(pollId),
               data: vote.message.data.map(String),
-              publicKey: vote.ephemeralKeypair.pubKey.asArray().map(String),
-              hash: vote.message.hash(vote.ephemeralKeypair.pubKey).toString(),
+              publicKey: vote.ephemeralKeypair.publicKey.asArray().map(String),
+              hash: vote.message.hash(vote.ephemeralKeypair.publicKey).toString(),
             },
           ];
 
@@ -305,7 +305,7 @@ describe("Integration tests", function test() {
           const encryptionKey =
             nonce % 2n === 0n
               ? await publish({
-                  pubkey: user.keypair.pubKey.serialize(),
+                  publicKey: user.keypair.publicKey.serialize(),
                   stateIndex,
                   voteOptionIndex: voteOptionIndex!,
                   nonce,
@@ -314,7 +314,7 @@ describe("Integration tests", function test() {
                   maciAddress: contracts.maciContractAddress,
                   salt,
                   // if it's a key change command, then we pass the old private key otherwise just pass the current
-                  privateKey: isKeyChange ? oldKeypair.privKey.serialize() : user.keypair.privKey.serialize(),
+                  privateKey: isKeyChange ? oldKeypair.privateKey.serialize() : user.keypair.privateKey.serialize(),
                   signer,
                 }).then(({ privateKey }) => privateKey)
               : await relayMessages({
@@ -323,24 +323,27 @@ describe("Integration tests", function test() {
                   messages,
                   pollId: Number(pollId),
                   signer,
-                }).then(() => vote.ephemeralKeypair.privKey.serialize());
+                }).then(() => vote.ephemeralKeypair.privateKey.serialize());
 
-          const encPrivKey = PrivKey.deserialize(encryptionKey);
-          const encPubKey = new PubKey(genPubKey(encPrivKey.rawPrivKey));
+          const encryptionPrivateKey = PrivateKey.deserialize(encryptionKey);
+          const encryptionPublicKey = new PublicKey(genPubKey(encryptionPrivateKey.rawPrivKey));
 
           // create the command to add to the local state
           const command = new PCommand(
             stateIndex,
-            user.keypair.pubKey,
+            user.keypair.publicKey,
             voteOptionIndex!,
             newVoteWeight!,
             nonce,
             pollId,
             salt,
           );
-          const signature = command.sign(isKeyChange ? oldKeypair.privKey : user.keypair.privKey);
-          const message = command.encrypt(signature, Keypair.genEcdhSharedKey(encPrivKey, coordinatorKeypair.pubKey));
-          maciState.polls.get(pollId)?.publishMessage(message, encPubKey);
+          const signature = command.sign(isKeyChange ? oldKeypair.privateKey : user.keypair.privateKey);
+          const message = command.encrypt(
+            signature,
+            Keypair.genEcdhSharedKey(encryptionPrivateKey, coordinatorKeypair.publicKey),
+          );
+          maciState.polls.get(pollId)?.publishMessage(message, encryptionPublicKey);
         }
       }
 
@@ -369,7 +372,7 @@ describe("Integration tests", function test() {
           "./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_cpp/ProcessMessages_10-20-2_test.dat",
         tallyWitgen: "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_cpp/TallyVotes_10-1-2_test",
         tallyDatFile: "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_cpp/TallyVotes_10-1-2_test.dat",
-        coordinatorPrivateKey: coordinatorKeypair.privKey.serialize(),
+        coordinatorPrivateKey: coordinatorKeypair.privateKey.serialize(),
         maciAddress: contracts.maciContractAddress,
         processWasm:
           "./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_js/ProcessMessages_10-20-2_test.wasm",

@@ -15,10 +15,10 @@ import {
 import assert from "assert";
 
 import type { IJsonPCommand } from "./types";
-import type { PrivKey } from "../privateKey";
+import type { PrivateKey } from "../privateKey";
 
 import { Message } from "../message";
-import { PubKey } from "../publicKey";
+import { PublicKey } from "../publicKey";
 
 export interface IDecryptMessage {
   command: PCommand;
@@ -32,7 +32,7 @@ export interface IDecryptMessage {
 export class PCommand {
   stateIndex: bigint;
 
-  newPubKey: PubKey;
+  newPublicKey: PublicKey;
 
   voteOptionIndex: bigint;
 
@@ -47,7 +47,7 @@ export class PCommand {
   /**
    * Create a new PCommand
    * @param stateIndex the state index of the user
-   * @param newPubKey the new public key of the user
+   * @param newPublicKey the new public key of the user
    * @param voteOptionIndex the index of the vote option
    * @param newVoteWeight the new vote weight of the user
    * @param nonce the nonce of the message
@@ -56,7 +56,7 @@ export class PCommand {
    */
   constructor(
     stateIndex: bigint,
-    newPubKey: PubKey,
+    newPublicKey: PublicKey,
     voteOptionIndex: bigint,
     newVoteWeight: bigint,
     nonce: bigint,
@@ -71,7 +71,7 @@ export class PCommand {
     assert(limit50Bits >= pollId);
 
     this.stateIndex = stateIndex;
-    this.newPubKey = newPubKey;
+    this.newPublicKey = newPublicKey;
     this.voteOptionIndex = voteOptionIndex;
     this.newVoteWeight = newVoteWeight;
     this.nonce = nonce;
@@ -86,7 +86,7 @@ export class PCommand {
   copy = <T extends PCommand>(): T =>
     new PCommand(
       BigInt(this.stateIndex.toString()),
-      this.newPubKey.copy(),
+      this.newPublicKey.copy(),
       BigInt(this.voteOptionIndex.toString()),
       BigInt(this.newVoteWeight.toString()),
       BigInt(this.nonce.toString()),
@@ -110,7 +110,7 @@ export class PCommand {
       (BigInt(this.pollId) << BigInt(200));
     /* eslint-enable no-bitwise */
 
-    const command = [params, ...this.newPubKey.asArray(), this.salt];
+    const command = [params, ...this.newPublicKey.asArray(), this.salt];
     assert(command.length === 4);
 
     return command;
@@ -123,7 +123,7 @@ export class PCommand {
    */
   equals = (command: PCommand): boolean =>
     this.stateIndex === command.stateIndex &&
-    this.newPubKey.equals(command.newPubKey) &&
+    this.newPublicKey.equals(command.newPublicKey) &&
     this.voteOptionIndex === command.voteOptionIndex &&
     this.newVoteWeight === command.newVoteWeight &&
     this.nonce === command.nonce &&
@@ -135,15 +135,15 @@ export class PCommand {
   /**
    * @notice Signs this command and returns a Signature.
    */
-  sign = (privKey: PrivKey): Signature => sign(privKey.rawPrivKey.toString(), this.hash());
+  sign = (privateKey: PrivateKey): Signature => sign(privateKey.rawPrivKey.toString(), this.hash());
 
   /**
    * @notice Returns true if the given signature is a correct signature of this
    * command and signed by the private key associated with the given public
    * key.
    */
-  verifySignature = (signature: Signature, pubKey: PubKey): boolean =>
-    verifySignature(this.hash(), signature, pubKey.rawPubKey);
+  verifySignature = (signature: Signature, publicKey: PublicKey): boolean =>
+    verifySignature(this.hash(), signature, publicKey.rawPubKey);
 
   /**
    * @notice Encrypts this command along with a signature to produce a Message.
@@ -204,11 +204,11 @@ export class PCommand {
     const pollId = extract(p, 200);
 
     // create new public key but allow it to be invalid (as when passing an mismatched
-    // encPubKey, a message will not decrypt resulting in potentially invalid public keys)
-    const newPubKey = new PubKey([decrypted[1], decrypted[2]], true);
+    // encryptionPublicKey, a message will not decrypt resulting in potentially invalid public keys)
+    const newPublicKey = new PublicKey([decrypted[1], decrypted[2]], true);
     const salt = decrypted[3];
 
-    const command = new PCommand(stateIndex, newPubKey, voteOptionIndex, newVoteWeight, nonce, pollId, salt);
+    const command = new PCommand(stateIndex, newPublicKey, voteOptionIndex, newVoteWeight, nonce, pollId, salt);
 
     const signature = {
       R8: [decrypted[4], decrypted[5]] as Point,
@@ -224,7 +224,7 @@ export class PCommand {
   toJSON(): IJsonPCommand {
     return {
       stateIndex: this.stateIndex.toString(),
-      newPubKey: this.newPubKey.serialize(),
+      newPublicKey: this.newPublicKey.serialize(),
       voteOptionIndex: this.voteOptionIndex.toString(),
       newVoteWeight: this.newVoteWeight.toString(),
       nonce: this.nonce.toString(),
@@ -241,7 +241,7 @@ export class PCommand {
   static fromJSON(json: IJsonPCommand): PCommand {
     const command = new PCommand(
       BigInt(json.stateIndex),
-      PubKey.deserialize(json.newPubKey),
+      PublicKey.deserialize(json.newPublicKey),
       BigInt(json.voteOptionIndex),
       BigInt(json.newVoteWeight),
       BigInt(json.nonce),

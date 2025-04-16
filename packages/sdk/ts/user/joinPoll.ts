@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "@maci-protocol/contracts/typechain-types";
 import { poseidon } from "@maci-protocol/crypto";
-import { Keypair, PrivKey } from "@maci-protocol/domainobjs";
+import { Keypair, PrivateKey } from "@maci-protocol/domainobjs";
 
 import type { IJoinPollData, IJoinPollArgs } from "./types";
 import type { CircuitInputs } from "../utils/types";
@@ -39,7 +39,7 @@ export const joinPoll = async ({
     throw new Error("MACI contract does not exist");
   }
 
-  if (!PrivKey.isValidSerializedPrivKey(privateKey)) {
+  if (!PrivateKey.isValidSerializedPrivKey(privateKey)) {
     throw new Error("Invalid MACI private key");
   }
 
@@ -47,8 +47,8 @@ export const joinPoll = async ({
     throw new Error("Invalid poll id");
   }
 
-  const userMaciPrivKey = PrivKey.deserialize(privateKey);
-  const userMaciPubKey = new Keypair(userMaciPrivKey).pubKey;
+  const userMaciPrivKey = PrivateKey.deserialize(privateKey);
+  const userMaciPubKey = new Keypair(userMaciPrivKey).publicKey;
   const nullifier = poseidon([BigInt(userMaciPrivKey.asCircuitInputs()), pollId]);
 
   // check if the user has already joined the poll based on the nullifier

@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { MaciState } from "@maci-protocol/core";
-import { PubKey, Message } from "@maci-protocol/domainobjs";
+import { PublicKey, Message } from "@maci-protocol/domainobjs";
 
 import assert from "assert";
 import fs from "fs";
@@ -84,7 +84,7 @@ export const genMaciStateFromContract = async ({
         transactionIndex: event.transactionIndex,
         data: {
           stateIndex: Number(event.args._stateIndex),
-          pubKey: new PubKey([BigInt(event.args._userPubKeyX), BigInt(event.args._userPubKeyY)]),
+          publicKey: new PublicKey([BigInt(event.args._userPubKeyX), BigInt(event.args._userPubKeyY)]),
           timestamp: Number(event.args._timestamp),
         },
       });
@@ -97,7 +97,7 @@ export const genMaciStateFromContract = async ({
 
       const id = event.args._pollId;
 
-      const pubKey = new PubKey([BigInt(event.args._coordinatorPubKeyX), BigInt(event.args._coordinatorPubKeyY)]);
+      const publicKey = new PublicKey([BigInt(event.args._coordinatorPubKeyX), BigInt(event.args._coordinatorPubKeyY)]);
       // eslint-disable-next-line no-await-in-loop
       const pollContracts = await maciContract.getPoll(id);
 
@@ -105,7 +105,7 @@ export const genMaciStateFromContract = async ({
         type: "DeployPoll",
         blockNumber: event.blockNumber,
         transactionIndex: event.transactionIndex,
-        data: { pollId: id, pollAddr: pollContracts.poll, pubKey },
+        data: { pollId: id, pollAddr: pollContracts.poll, publicKey },
       });
 
       foundPollIds.add(Number(id));
@@ -124,15 +124,15 @@ export const genMaciStateFromContract = async ({
   const pollContractAddress = pollContractAddresses.get(pollId)!;
   const pollContract = PollFactory.connect(pollContractAddress, provider);
 
-  const [coordinatorPubKeyOnChain, pollEndTimestamp, onChainTreeDepths, msgBatchSize] = await Promise.all([
-    pollContract.coordinatorPubKey(),
+  const [coordinatorPubKeyOnChain, pollEndTimestamp, onChainTreeDepths, messageBatchSizeOnChain] = await Promise.all([
+    pollContract.coordinatorPublicKey(),
     pollContract.endDate(),
     pollContract.treeDepths(),
     pollContract.messageBatchSize(),
   ]);
 
-  assert(coordinatorPubKeyOnChain[0].toString() === coordinatorKeypair.pubKey.rawPubKey[0].toString());
-  assert(coordinatorPubKeyOnChain[1].toString() === coordinatorKeypair.pubKey.rawPubKey[1].toString());
+  assert(coordinatorPubKeyOnChain[0].toString() === coordinatorKeypair.publicKey.rawPubKey[0].toString());
+  assert(coordinatorPubKeyOnChain[1].toString() === coordinatorKeypair.publicKey.rawPubKey[1].toString());
 
   const treeDepths = {
     intStateTreeDepth: Number(onChainTreeDepths.intStateTreeDepth),
@@ -140,7 +140,7 @@ export const genMaciStateFromContract = async ({
     stateTreeDepth: Number(onChainTreeDepths.stateTreeDepth),
   };
 
-  const messageBatchSize = Number(msgBatchSize);
+  const messageBatchSize = Number(messageBatchSizeOnChain);
 
   // fetch poll contract logs
   for (let i = fromBlock; i <= lastBlock; i += blocksPerRequest + 1) {
@@ -168,7 +168,7 @@ export const genMaciStateFromContract = async ({
         blockNumber: event.blockNumber,
         transactionIndex: event.transactionIndex,
         data: {
-          pubKey: new PubKey([pubKeyX, pubKeyY]),
+          publicKey: new PublicKey([pubKeyX, pubKeyY]),
           newVoiceCreditBalance: voiceCreditBalance,
           nullifier,
         },
@@ -194,7 +194,7 @@ export const genMaciStateFromContract = async ({
           .then((messages) => ({
             data: messages.map((value) => ({
               message: new Message(value.data.map(BigInt)),
-              encPubKey: new PubKey([BigInt(value.publicKey[0]), BigInt(value.publicKey[1])]),
+              encryptionPublicKey: new PublicKey([BigInt(value.publicKey[0]), BigInt(value.publicKey[1])]),
             })),
             blockNumber: event.blockNumber,
             transactionIndex: event.transactionIndex,
@@ -217,14 +217,14 @@ export const genMaciStateFromContract = async ({
     });
 
     ipfsMessages.forEach(({ data, blockNumber, transactionIndex }) => {
-      data.forEach(({ message, encPubKey }) => {
+      data.forEach(({ message, encryptionPublicKey }) => {
         actions.push({
           type: "PublishMessage",
           blockNumber,
           transactionIndex,
           data: {
             message,
-            encPubKey,
+            encryptionPublicKey,
           },
         });
       });
@@ -235,7 +235,9 @@ export const genMaciStateFromContract = async ({
 
       const message = new Message(event.args._message[0].map((x) => BigInt(x)));
 
-      const encPubKey = new PubKey(event.args._encPubKey.map((x) => BigInt(x.toString())) as [bigint, bigint]);
+      const encryptionPublicKey = new PublicKey(
+        event.args._encPubKey.map((x) => BigInt(x.toString())) as [bigint, bigint],
+      );
 
       actions.push({
         type: "PublishMessage",
@@ -243,7 +245,7 @@ export const genMaciStateFromContract = async ({
         transactionIndex: event.transactionIndex,
         data: {
           message,
-          encPubKey,
+          encryptionPublicKey,
         },
       });
     });
@@ -260,9 +262,9 @@ export const genMaciStateFromContract = async ({
   sortActions(actions).forEach((action) => {
     switch (true) {
       case action.type === "SignUp": {
-        const { pubKey } = action.data;
+        const { publicKey } = action.data;
 
-        maciState.signUp(pubKey!);
+        maciState.signUp(publicKey!);
         break;
       }
 
@@ -277,14 +279,14 @@ export const genMaciStateFromContract = async ({
       }
 
       case action.type === "PublishMessage": {
-        const { encPubKey, message } = action.data;
-        maciState.polls.get(pollId)?.publishMessage(message!, encPubKey!);
+        const { encryptionPublicKey, message } = action.data;
+        maciState.polls.get(pollId)?.publishMessage(message!, encryptionPublicKey!);
         break;
       }
 
       case action.type === "PollJoined": {
-        const { pubKey, newVoiceCreditBalance, nullifier } = action.data;
-        maciState.polls.get(pollId)?.joinPoll(nullifier!, pubKey!, newVoiceCreditBalance!);
+        const { publicKey, newVoiceCreditBalance, nullifier } = action.data;
+        maciState.polls.get(pollId)?.joinPoll(nullifier!, publicKey!, newVoiceCreditBalance!);
         break;
       }
 

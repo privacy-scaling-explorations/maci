@@ -1,4 +1,4 @@
-import { PubKey } from "@maci-protocol/domainobjs";
+import { PublicKey } from "@maci-protocol/domainobjs";
 import { ValidatorConstraint, ValidatorConstraintInterface } from "class-validator";
 
 /**
@@ -14,8 +14,8 @@ export class PublicKeyValidator implements ValidatorConstraintInterface {
    */
   validate(text: string): boolean {
     try {
-      const [x, y] = PubKey.deserialize(text).asArray();
-      return Boolean(new PubKey([x, y]));
+      const [x, y] = PublicKey.deserialize(text).asArray();
+      return Boolean(new PublicKey([x, y]));
     } catch (error) {
       return false;
     }

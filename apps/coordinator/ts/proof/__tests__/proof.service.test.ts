@@ -1,4 +1,4 @@
-import { Keypair, PrivKey } from "@maci-protocol/domainobjs";
+import { Keypair, PrivateKey } from "@maci-protocol/domainobjs";
 import { Deployment, ProofGenerator } from "@maci-protocol/sdk";
 import dotenv from "dotenv";
 import { zeroAddress } from "viem";
@@ -52,7 +52,7 @@ describe("ProofGeneratorService", () => {
     treeDepths: jest.fn(),
     extContracts: jest.fn(),
     stateMerged: jest.fn(),
-    coordinatorPubKey: jest.fn(),
+    coordinatorPublicKey: jest.fn(),
   };
 
   let defaultProofGenerator = {
@@ -83,7 +83,7 @@ describe("ProofGeneratorService", () => {
       treeDepths: jest.fn(() => Promise.resolve([1, 2, 3])),
       extContracts: jest.fn(() => Promise.resolve({ messageAq: zeroAddress })),
       stateMerged: jest.fn(() => Promise.resolve(true)),
-      coordinatorPubKey: jest.fn(() =>
+      coordinatorPublicKey: jest.fn(() =>
         Promise.resolve({
           x: 21424602586933317770306541383681754745261216801634012235464162098738462892814n,
           y: 11917647526382221762393892566678210317414189429046519403585863973939713533473n,
@@ -127,8 +127,8 @@ describe("ProofGeneratorService", () => {
   });
 
   test("should throw error if private key is wrong", async () => {
-    const keypair = new Keypair(new PrivKey(0n));
-    mockContract.coordinatorPubKey.mockResolvedValue(keypair.pubKey.asContractParam());
+    const keypair = new Keypair(new PrivateKey(0n));
+    mockContract.coordinatorPublicKey.mockResolvedValue(keypair.publicKey.asContractParam());
 
     const service = new ProofGeneratorService(defaultCryptoService, fileService, sessionKeysService);
 

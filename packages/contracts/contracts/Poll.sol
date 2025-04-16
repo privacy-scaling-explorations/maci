@@ -24,7 +24,7 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
   uint8 internal constant STATE_TREE_ARITY = 2;
 
   /// @notice The coordinator's public key
-  PubKey public coordinatorPubKey;
+  PublicKey public coordinatorPublicKey;
 
   /// @notice Hash of the coordinator's public key
   uint256 public coordinatorPubKeyHash;
@@ -125,7 +125,7 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
   error TooManyVoteOptions();
   error TooManySignups();
 
-  event PublishMessage(Message _message, PubKey _encPubKey);
+  event PublishMessage(Message _message, PublicKey _encPubKey);
   event MergeState(uint256 indexed _stateRoot, uint256 indexed _numSignups);
   event PollJoined(
     uint256 indexed _pollPubKeyX,
@@ -149,7 +149,7 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
       uint256 _endDate,
       TreeDepths memory _treeDepths,
       uint8 _messageBatchSize,
-      PubKey memory _coordinatorPubKey,
+      PublicKey memory _coordinatorPubKey,
       ExtContracts memory _extContracts,
       uint256 _emptyBallotRoot,
       uint256 _pollId,
@@ -157,7 +157,7 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
       uint256 _voteOptions
     ) = abi.decode(
         data,
-        (uint256, uint256, TreeDepths, uint8, PubKey, ExtContracts, uint256, uint256, address[], uint256)
+        (uint256, uint256, TreeDepths, uint8, PublicKey, ExtContracts, uint256, uint256, address[], uint256)
       );
 
     // check that the coordinator public key is valid
@@ -166,7 +166,7 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
     }
 
     // store the pub key as object then calculate the hash
-    coordinatorPubKey = _coordinatorPubKey;
+    coordinatorPublicKey = _coordinatorPubKey;
 
     // we hash it ourselves to ensure we store the correct value
     coordinatorPubKeyHash = hashLeftRight(_coordinatorPubKey.x, _coordinatorPubKey.y);
@@ -217,7 +217,7 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
     dat[0] = NOTHING_UP_MY_SLEEVE;
     dat[1] = 0;
 
-    (Message memory _message, PubKey memory _padKey, uint256 placeholderLeaf) = padAndHashMessage(dat);
+    (Message memory _message, PublicKey memory _padKey, uint256 placeholderLeaf) = padAndHashMessage(dat);
     chainHash = NOTHING_UP_MY_SLEEVE;
     batchHashes.push(NOTHING_UP_MY_SLEEVE);
     updateChainHash(placeholderLeaf);
@@ -266,7 +266,7 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
   }
 
   /// @inheritdoc IPoll
-  function publishMessage(Message calldata _message, PubKey calldata _encPubKey) public virtual isOpenForVoting {
+  function publishMessage(Message calldata _message, PublicKey calldata _encPubKey) public virtual isOpenForVoting {
     // check if the public key is on the curve
     if (!CurveBabyJubJub.isOnCurve(_encPubKey.x, _encPubKey.y)) {
       revert InvalidPubKey();
@@ -339,15 +339,18 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
   }
 
   /// @inheritdoc IPoll
-  function publishMessageBatch(Message[] calldata _messages, PubKey[] calldata _encPubKeys) public virtual {
-    if (_messages.length != _encPubKeys.length) {
+  function publishMessageBatch(
+    Message[] calldata _messages,
+    PublicKey[] calldata _encryptionPublicKeys
+  ) public virtual {
+    if (_messages.length != _encryptionPublicKeys.length) {
       revert InvalidBatchLength();
     }
 
     uint256 len = _messages.length;
     for (uint256 i = 0; i < len; ) {
       // an event will be published by this function already
-      publishMessage(_messages[i], _encPubKeys[i]);
+      publishMessage(_messages[i], _encryptionPublicKeys[i]);
 
       unchecked {
         i++;
@@ -358,7 +361,7 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
   /// @inheritdoc IPoll
   function joinPoll(
     uint256 _nullifier,
-    PubKey calldata _pubKey,
+    PublicKey calldata _pubKey,
     uint256 _stateRootIndex,
     uint256[8] calldata _proof,
     bytes memory _signUpPolicyData,
@@ -412,7 +415,7 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
   function verifyJoiningPollProof(
     uint256 _nullifier,
     uint256 _index,
-    PubKey calldata _pubKey,
+    PublicKey calldata _pubKey,
     uint256[8] memory _proof
   ) public view returns (bool isValid) {
     // Get the verifying key from the VkRegistry
@@ -446,7 +449,7 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
   function getPublicJoiningCircuitInputs(
     uint256 _nullifier,
     uint256 _index,
-    PubKey calldata _pubKey
+    PublicKey calldata _pubKey
   ) public view returns (uint256[] memory publicInputs) {
     publicInputs = new uint256[](5);
 

@@ -22,7 +22,7 @@ contract PollFactory is Factory, Params, DomainObjs, IPollFactory {
       _args.endDate,
       _args.treeDepths,
       _args.messageBatchSize,
-      _args.coordinatorPubKey,
+      _args.coordinatorPublicKey,
       _args.extContracts,
       _args.emptyBallotRoot,
       _args.pollId,

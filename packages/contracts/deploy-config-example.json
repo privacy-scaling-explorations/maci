@@ -86,7 +86,7 @@
     "Poll": {
       "pollStartDate": 3600,
       "pollEndDate": 3600,
-      "coordinatorPubkey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
+      "coordinatorPublicKey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
       "useQuadraticVoting": false,
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
@@ -181,7 +181,7 @@
     "Poll": {
       "pollStartDate": 3600,
       "pollEndDate": 3600,
-      "coordinatorPubkey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
+      "coordinatorPublicKey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
       "useQuadraticVoting": false,
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
@@ -277,7 +277,7 @@
     "Poll": {
       "pollStartDate": 3600,
       "pollEndDate": 3600,
-      "coordinatorPubkey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
+      "coordinatorPublicKey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
       "useQuadraticVoting": false,
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
@@ -373,7 +373,7 @@
     "Poll": {
       "pollStartDate": 3600,
       "pollEndDate": 3600,
-      "coordinatorPubkey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
+      "coordinatorPublicKey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
       "useQuadraticVoting": false,
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
@@ -469,7 +469,7 @@
     "Poll": {
       "pollStartDate": 3600,
       "pollEndDate": 3600,
-      "coordinatorPubkey": "macipk.29add77d27341c4cdfc2fb623175ecfd6527a286e3e7ded785d9fd7afbbdf399",
+      "coordinatorPublicKey": "macipk.29add77d27341c4cdfc2fb623175ecfd6527a286e3e7ded785d9fd7afbbdf399",
       "useQuadraticVoting": false,
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
@@ -565,7 +565,7 @@
     "Poll": {
       "pollStartDate": 3600,
       "pollEndDate": 3600,
-      "coordinatorPubkey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
+      "coordinatorPublicKey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
       "useQuadraticVoting": false,
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
@@ -666,7 +666,7 @@
     "Poll": {
       "pollStartDate": 3600,
       "pollEndDate": 3600,
-      "coordinatorPubkey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
+      "coordinatorPublicKey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
       "useQuadraticVoting": false,
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
@@ -767,7 +767,7 @@
     "Poll": {
       "pollStartDate": 3600,
       "pollEndDate": 3600,
-      "coordinatorPubkey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
+      "coordinatorPublicKey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
       "useQuadraticVoting": false,
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
@@ -868,7 +868,7 @@
     "Poll": {
       "pollStartDate": 3600,
       "pollEndDate": 3600,
-      "coordinatorPubkey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
+      "coordinatorPublicKey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
       "useQuadraticVoting": false,
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
@@ -969,7 +969,7 @@
     "Poll": {
       "pollStartDate": 3600,
       "pollEndDate": 3600,
-      "coordinatorPubkey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
+      "coordinatorPublicKey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
       "useQuadraticVoting": true,
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",
@@ -1070,7 +1070,7 @@
     "Poll": {
       "pollStartDate": 3600,
       "pollEndDate": 3600,
-      "coordinatorPubkey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
+      "coordinatorPublicKey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
       "useQuadraticVoting": true,
       "policy": "FreeForAllPolicy",
       "relayers": "0x0000000000000000000000000000000000000000",

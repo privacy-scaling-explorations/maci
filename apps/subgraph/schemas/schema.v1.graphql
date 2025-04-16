@@ -13,7 +13,7 @@ type MACI @entity(immutable: true) {
 }
 
 type User @entity(immutable: true) {
-  id: ID! # pubkey
+  id: ID! # publicKey
   createdAt: BigInt! # uint256
   "relations"
   accounts: [Account!]! @derivedFrom(field: "owner")

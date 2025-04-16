@@ -21,8 +21,8 @@ export interface ISnarkJSVerificationKey {
  * Inputs for circuit PollJoining
  */
 export interface IPollJoiningInputs {
-  privKey: bigint;
-  pollPubKey: bigint[][];
+  privateKey: bigint;
+  pollPublicKey: bigint[][];
   stateLeaf: bigint[];
   siblings: bigint[][];
   indices: bigint[];
@@ -37,7 +37,7 @@ export interface IPollJoiningInputs {
  * Inputs for circuit PollJoined
  */
 export interface IPollJoinedInputs {
-  privKey: bigint;
+  privateKey: bigint;
   voiceCreditsBalance: bigint;
   stateLeaf: bigint[];
   pathElements: bigint[][];
@@ -57,10 +57,10 @@ export interface IProcessMessagesInputs {
   index: bigint;
   inputBatchHash: bigint;
   outputBatchHash: bigint;
-  msgs: bigint[];
-  coordPrivKey: bigint;
+  messages: bigint[];
+  coordinatorPrivateKey: bigint;
   coordinatorPublicKeyHash: bigint;
-  encPubKeys: bigint[];
+  encryptionPublicKeys: bigint[];
   currentStateRoot: bigint;
   currentStateLeaves: bigint[];
   currentStateLeavesPathElements: bigint[][];

@@ -1,4 +1,4 @@
-import { Keypair, PrivKey } from "@maci-protocol/domainobjs";
+import { Keypair, PrivateKey } from "@maci-protocol/domainobjs";
 
 import type { IGenerateKeypairArgs, IGenerateKeypairData } from "./types";
 
@@ -10,10 +10,10 @@ import type { IGenerateKeypairArgs, IGenerateKeypairData } from "./types";
  */
 export const generateKeypair = ({ seed }: IGenerateKeypairArgs = {}): IGenerateKeypairData => {
   // create the new random keypair if there is no seed value
-  const keypair = new Keypair(seed ? new PrivKey(seed) : undefined);
+  const keypair = new Keypair(seed ? new PrivateKey(seed) : undefined);
 
   return {
-    publicKey: keypair.pubKey.serialize(),
-    privateKey: keypair.privKey.serialize(),
+    publicKey: keypair.publicKey.serialize(),
+    privateKey: keypair.privateKey.serialize(),
   };
 };

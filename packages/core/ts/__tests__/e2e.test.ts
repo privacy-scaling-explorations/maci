@@ -33,27 +33,27 @@ describe("MaciState/Poll e2e", function test() {
     const user1NewVoteWeight = 5n;
     const user2NewVoteWeight = 7n;
 
-    const { privKey: privKey1 } = user1Keypair;
-    const { privKey: pollPrivKey1, pubKey: pollPubKey1 } = new Keypair();
+    const { privateKey: privKey1 } = user1Keypair;
+    const { privateKey: pollPrivateKey, publicKey: pollPubKey1 } = new Keypair();
 
     const nullifier1 = poseidon([BigInt(privKey1.rawPrivKey.toString())]);
 
-    const { privKey: privKey2 } = user2Keypair;
-    const { privKey: pollPrivKey2, pubKey: pollPubKey2 } = new Keypair();
+    const { privateKey: privKey2 } = user2Keypair;
+    const { privateKey: pollPrivKey2, publicKey: pollPublicKey2 } = new Keypair();
 
     const nullifier2 = poseidon([BigInt(privKey2.rawPrivKey.toString())]);
 
-    const { pubKey: pollPubKey1Second } = new Keypair();
+    const { publicKey: pollPubKey1Second } = new Keypair();
 
-    const { pubKey: pollPubKey2Second } = new Keypair();
+    const { publicKey: pollPubKey2Second } = new Keypair();
 
     describe("only user 1 changes key", () => {
       const maciState: MaciState = new MaciState(STATE_TREE_DEPTH);
 
       before(() => {
         // Sign up
-        maciState.signUp(user1Keypair.pubKey);
-        maciState.signUp(user2Keypair.pubKey);
+        maciState.signUp(user1Keypair.publicKey);
+        maciState.signUp(user2Keypair.publicKey);
 
         // deploy a poll
         pollId = maciState.deployPoll(
@@ -79,18 +79,18 @@ describe("MaciState/Poll e2e", function test() {
           BigInt(pollId),
         );
 
-        const signature1 = command1.sign(pollPrivKey1);
+        const signature1 = command1.sign(pollPrivateKey);
 
         const ecdhKeypair1 = new Keypair();
-        const sharedKey1 = Keypair.genEcdhSharedKey(ecdhKeypair1.privKey, coordinatorKeypair.pubKey);
+        const sharedKey1 = Keypair.genEcdhSharedKey(ecdhKeypair1.privateKey, coordinatorKeypair.publicKey);
 
         const message1 = command1.encrypt(signature1, sharedKey1);
-        poll.publishMessage(message1, ecdhKeypair1.pubKey);
+        poll.publishMessage(message1, ecdhKeypair1.publicKey);
 
-        user2StateIndex = poll.joinPoll(nullifier2, pollPubKey2, voiceCreditBalance);
+        user2StateIndex = poll.joinPoll(nullifier2, pollPublicKey2, voiceCreditBalance);
         const command2 = new PCommand(
           BigInt(user2StateIndex),
-          pollPubKey2,
+          pollPublicKey2,
           user2VoteOptionIndex,
           user2VoteWeight,
           1n,
@@ -100,10 +100,10 @@ describe("MaciState/Poll e2e", function test() {
         const signature2 = command2.sign(pollPrivKey2);
 
         const ecdhKeypair2 = new Keypair();
-        const sharedKey2 = Keypair.genEcdhSharedKey(ecdhKeypair2.privKey, coordinatorKeypair.pubKey);
+        const sharedKey2 = Keypair.genEcdhSharedKey(ecdhKeypair2.privateKey, coordinatorKeypair.publicKey);
 
         const message2 = command2.encrypt(signature2, sharedKey2);
-        poll.publishMessage(message2, ecdhKeypair2.pubKey);
+        poll.publishMessage(message2, ecdhKeypair2.publicKey);
       });
 
       it("user1 sends a keychange message with a new vote", () => {
@@ -117,13 +117,13 @@ describe("MaciState/Poll e2e", function test() {
           BigInt(pollId),
         );
 
-        const signature = command.sign(pollPrivKey1);
+        const signature = command.sign(pollPrivateKey);
 
         const ecdhKeypair = new Keypair();
-        const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+        const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
 
         const message = command.encrypt(signature, sharedKey);
-        poll.publishMessage(message, ecdhKeypair.pubKey);
+        poll.publishMessage(message, ecdhKeypair.publicKey);
       });
 
       it("should perform the processing and tallying correctly", () => {
@@ -138,8 +138,8 @@ describe("MaciState/Poll e2e", function test() {
         const poll = maciState.polls.get(pollId)!;
         const stateLeaf1 = poll.pollStateLeaves[user1StateIndex];
         const stateLeaf2 = poll.pollStateLeaves[user2StateIndex];
-        expect(stateLeaf1.pubKey.equals(pollPubKey1Second)).to.eq(true);
-        expect(stateLeaf2.pubKey.equals(pollPubKey2)).to.eq(true);
+        expect(stateLeaf1.publicKey.equals(pollPubKey1Second)).to.eq(true);
+        expect(stateLeaf2.publicKey.equals(pollPublicKey2)).to.eq(true);
       });
     });
 
@@ -149,8 +149,8 @@ describe("MaciState/Poll e2e", function test() {
 
       before(() => {
         // Sign up
-        maciState.signUp(user1Keypair.pubKey);
-        maciState.signUp(user2Keypair.pubKey);
+        maciState.signUp(user1Keypair.publicKey);
+        maciState.signUp(user2Keypair.publicKey);
 
         // deploy a poll
         pollId = maciState.deployPoll(
@@ -175,18 +175,18 @@ describe("MaciState/Poll e2e", function test() {
           BigInt(pollId),
         );
 
-        const signature1 = command1.sign(pollPrivKey1);
+        const signature1 = command1.sign(pollPrivateKey);
 
         const ecdhKeypair1 = new Keypair();
-        const sharedKey1 = Keypair.genEcdhSharedKey(ecdhKeypair1.privKey, coordinatorKeypair.pubKey);
+        const sharedKey1 = Keypair.genEcdhSharedKey(ecdhKeypair1.privateKey, coordinatorKeypair.publicKey);
 
         const message1 = command1.encrypt(signature1, sharedKey1);
-        poll.publishMessage(message1, ecdhKeypair1.pubKey);
+        poll.publishMessage(message1, ecdhKeypair1.publicKey);
 
-        user2StateIndex = poll.joinPoll(nullifier2, pollPubKey2, voiceCreditBalance);
+        user2StateIndex = poll.joinPoll(nullifier2, pollPublicKey2, voiceCreditBalance);
         const command2 = new PCommand(
           BigInt(user2StateIndex),
-          pollPubKey2,
+          pollPublicKey2,
           user2VoteOptionIndex,
           user2VoteWeight,
           1n,
@@ -196,10 +196,10 @@ describe("MaciState/Poll e2e", function test() {
         const signature2 = command2.sign(pollPrivKey2);
 
         const ecdhKeypair2 = new Keypair();
-        const sharedKey2 = Keypair.genEcdhSharedKey(ecdhKeypair2.privKey, coordinatorKeypair.pubKey);
+        const sharedKey2 = Keypair.genEcdhSharedKey(ecdhKeypair2.privateKey, coordinatorKeypair.publicKey);
 
         const message2 = command2.encrypt(signature2, sharedKey2);
-        poll.publishMessage(message2, ecdhKeypair2.pubKey);
+        poll.publishMessage(message2, ecdhKeypair2.publicKey);
       });
 
       it("user1 sends a keychange message with a new vote", () => {
@@ -212,13 +212,13 @@ describe("MaciState/Poll e2e", function test() {
           BigInt(pollId),
         );
 
-        const signature = command.sign(pollPrivKey1);
+        const signature = command.sign(pollPrivateKey);
 
         const ecdhKeypair = new Keypair();
-        const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+        const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
 
         const message = command.encrypt(signature, sharedKey);
-        poll.publishMessage(message, ecdhKeypair.pubKey);
+        poll.publishMessage(message, ecdhKeypair.publicKey);
       });
 
       it("user2 sends a keychange message with a new vote", () => {
@@ -234,10 +234,10 @@ describe("MaciState/Poll e2e", function test() {
         const signature = command.sign(pollPrivKey2);
 
         const ecdhKeypair = new Keypair();
-        const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+        const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
 
         const message = command.encrypt(signature, sharedKey);
-        poll.publishMessage(message, ecdhKeypair.pubKey);
+        poll.publishMessage(message, ecdhKeypair.publicKey);
       });
 
       it("should perform the processing and tallying correctly", () => {
@@ -250,8 +250,8 @@ describe("MaciState/Poll e2e", function test() {
       it("should confirm that the users key pairs were changed", () => {
         const pollStateLeaf1 = poll.pollStateLeaves[user1StateIndex];
         const pollStateLeaf2 = poll.pollStateLeaves[user2StateIndex];
-        expect(pollStateLeaf1.pubKey.equals(pollPubKey1Second)).to.eq(true);
-        expect(pollStateLeaf2.pubKey.equals(pollPubKey2Second)).to.eq(true);
+        expect(pollStateLeaf1.publicKey.equals(pollPubKey1Second)).to.eq(true);
+        expect(pollStateLeaf2.publicKey.equals(pollPubKey2Second)).to.eq(true);
       });
     });
 
@@ -261,7 +261,7 @@ describe("MaciState/Poll e2e", function test() {
 
       before(() => {
         // Sign up
-        maciState.signUp(user1Keypair.pubKey);
+        maciState.signUp(user1Keypair.publicKey);
 
         // deploy a poll
         pollId = maciState.deployPoll(
@@ -287,26 +287,26 @@ describe("MaciState/Poll e2e", function test() {
           BigInt(pollId),
         );
 
-        const signature1 = command1.sign(pollPrivKey1);
+        const signature1 = command1.sign(pollPrivateKey);
 
         const ecdhKeypair1 = new Keypair();
-        const sharedKey1 = Keypair.genEcdhSharedKey(ecdhKeypair1.privKey, coordinatorKeypair.pubKey);
+        const sharedKey1 = Keypair.genEcdhSharedKey(ecdhKeypair1.privateKey, coordinatorKeypair.publicKey);
 
         const message1 = command1.encrypt(signature1, sharedKey1);
-        poll.publishMessage(message1, ecdhKeypair1.pubKey);
+        poll.publishMessage(message1, ecdhKeypair1.publicKey);
       });
 
       it("should fill the batch with random messages", () => {
         for (let i = 0; i < messageBatchSize - 1; i += 1) {
           const command = new PCommand(1n, pollPubKey1, user1VoteOptionIndex, user1VoteWeight, 2n, BigInt(pollId));
 
-          const signature = command.sign(pollPrivKey1);
+          const signature = command.sign(pollPrivateKey);
 
           const ecdhKeypair = new Keypair();
-          const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+          const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
 
           const message = command.encrypt(signature, sharedKey);
-          poll.publishMessage(message, ecdhKeypair.pubKey);
+          poll.publishMessage(message, ecdhKeypair.publicKey);
         }
       });
 
@@ -320,13 +320,13 @@ describe("MaciState/Poll e2e", function test() {
           BigInt(pollId),
         );
 
-        const signature1 = command1.sign(pollPrivKey1);
+        const signature1 = command1.sign(pollPrivateKey);
 
         const ecdhKeypair1 = new Keypair();
-        const sharedKey1 = Keypair.genEcdhSharedKey(ecdhKeypair1.privKey, coordinatorKeypair.pubKey);
+        const sharedKey1 = Keypair.genEcdhSharedKey(ecdhKeypair1.privateKey, coordinatorKeypair.publicKey);
 
         const message1 = command1.encrypt(signature1, sharedKey1);
-        poll.publishMessage(message1, ecdhKeypair1.pubKey);
+        poll.publishMessage(message1, ecdhKeypair1.publicKey);
       });
 
       it("should perform the processing and tallying correctly", () => {
@@ -337,7 +337,7 @@ describe("MaciState/Poll e2e", function test() {
 
       it("should confirm that the user key pair was changed", () => {
         const pollStateLeaf1 = poll.pollStateLeaves[user1StateIndex];
-        expect(pollStateLeaf1.pubKey.equals(pollPubKey1Second)).to.eq(true);
+        expect(pollStateLeaf1.publicKey.equals(pollPubKey1Second)).to.eq(true);
       });
     });
   });
@@ -368,35 +368,35 @@ describe("MaciState/Poll e2e", function test() {
     // The end result should be that option 0 gets 3 votes
     // because the user spends 9 voice credits on it
     it("the state root should be correct", () => {
-      stateIndex = maciState.signUp(userKeypair.pubKey);
+      stateIndex = maciState.signUp(userKeypair.publicKey);
       poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       const stateTree = new LeanIMT(hashLeanIMT as LeanIMTHashFunction);
 
       stateTree.insert(PAD_KEY_HASH);
-      stateTree.insert(userKeypair.pubKey.hash());
+      stateTree.insert(userKeypair.publicKey.hash());
 
       expect(stateIndex.toString()).to.eq("1");
       expect(stateTree.root.toString()).to.eq(poll.stateTree?.root.toString());
     });
 
     it("Process a batch of messages (though only 1 message is in the batch)", () => {
-      const { privKey } = userKeypair;
-      const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
+      const { privateKey } = userKeypair;
+      const { privateKey: pollPrivKey, publicKey: pollPublicKey } = new Keypair();
 
-      const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
+      const nullifier = poseidon([BigInt(privateKey.rawPrivKey.toString())]);
 
-      stateIndex = poll.joinPoll(nullifier, pollPubKey, voiceCreditBalance);
+      stateIndex = poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance);
 
-      const command = new PCommand(BigInt(stateIndex), pollPubKey, voteOptionIndex, voteWeight, 1n, BigInt(pollId));
+      const command = new PCommand(BigInt(stateIndex), pollPublicKey, voteOptionIndex, voteWeight, 1n, BigInt(pollId));
 
       const signature = command.sign(pollPrivKey);
 
       const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
       const message = command.encrypt(signature, sharedKey);
 
-      poll.publishMessage(message, ecdhKeypair.pubKey);
+      poll.publishMessage(message, ecdhKeypair.publicKey);
 
       poll.processMessages(pollId);
 
@@ -441,7 +441,7 @@ describe("MaciState/Poll e2e", function test() {
         const pollKeypair = new Keypair();
         pollKeys.push(pollKeypair);
 
-        maciState.signUp(userKeypair.pubKey);
+        maciState.signUp(userKeypair.publicKey);
       }
 
       pollId = maciState.deployPoll(
@@ -455,8 +455,8 @@ describe("MaciState/Poll e2e", function test() {
       poll.updatePoll(BigInt(maciState.pubKeys.length));
 
       for (let i = 0; i < messageBatchSize - 1; i += 1) {
-        const nullifier = poseidon([BigInt(pollKeys[i].privKey.rawPrivKey.toString())]);
-        const stateIndex = poll.joinPoll(nullifier, pollKeys[i].pubKey, voiceCreditBalance);
+        const nullifier = poseidon([BigInt(pollKeys[i].privateKey.rawPrivKey.toString())]);
+        const stateIndex = poll.joinPoll(nullifier, pollKeys[i].publicKey, voiceCreditBalance);
         stateIndices.push(stateIndex);
       }
     });
@@ -468,19 +468,19 @@ describe("MaciState/Poll e2e", function test() {
 
         const command = new PCommand(
           BigInt(stateIndices[i]),
-          pollKeypair.pubKey,
+          pollKeypair.publicKey,
           BigInt(i), // vote option index
           voteWeight,
           1n,
           BigInt(pollId),
         );
 
-        const signature = command.sign(pollKeypair.privKey);
+        const signature = command.sign(pollKeypair.privateKey);
 
         const ecdhKeypair = new Keypair();
-        const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+        const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
         const message = command.encrypt(signature, sharedKey);
-        poll.publishMessage(message, ecdhKeypair.pubKey);
+        poll.publishMessage(message, ecdhKeypair.publicKey);
       }
 
       expect(poll.messages.length).to.eq(messageBatchSize - 1);
@@ -491,19 +491,19 @@ describe("MaciState/Poll e2e", function test() {
 
         const command = new PCommand(
           BigInt(stateIndices[i]),
-          pollKeypair.pubKey,
+          pollKeypair.publicKey,
           BigInt(i), // vote option index
           voiceCreditBalance * 2n, // invalid vote weight
           1n,
           BigInt(pollId),
         );
 
-        const signature = command.sign(pollKeypair.privKey);
+        const signature = command.sign(pollKeypair.privateKey);
 
         const ecdhKeypair = new Keypair();
-        const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+        const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
         const message = command.encrypt(signature, sharedKey);
-        poll.publishMessage(message, ecdhKeypair.pubKey);
+        poll.publishMessage(message, ecdhKeypair.publicKey);
       }
 
       // 38 messages in total
@@ -600,28 +600,28 @@ describe("MaciState/Poll e2e", function test() {
 
       poll = maciState.polls.get(pollId)!;
 
-      maciState.signUp(userKeypair.pubKey);
+      maciState.signUp(userKeypair.publicKey);
       stateTree.insert(PAD_KEY_HASH);
-      stateTree.insert(userKeypair.pubKey.hash());
+      stateTree.insert(userKeypair.publicKey.hash());
 
       poll.updatePoll(BigInt(maciState.pubKeys.length));
 
-      const { privKey } = userKeypair;
-      const { privKey: pollPrivKey, pubKey: pollPubKey } = new Keypair();
+      const { privateKey } = userKeypair;
+      const { privateKey: pollPrivKey, publicKey: pollPublicKey } = new Keypair();
 
-      const pollNullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
+      const pollNullifier = poseidon([BigInt(privateKey.rawPrivKey.toString())]);
 
-      stateIndex = poll.joinPoll(pollNullifier, pollPubKey, voiceCreditBalance);
+      stateIndex = poll.joinPoll(pollNullifier, pollPublicKey, voiceCreditBalance);
 
-      const command = new PCommand(BigInt(stateIndex), pollPubKey, voteOptionIndex, voteWeight, 1n, BigInt(pollId));
+      const command = new PCommand(BigInt(stateIndex), pollPublicKey, voteOptionIndex, voteWeight, 1n, BigInt(pollId));
 
       const signature = command.sign(pollPrivKey);
 
       const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
       const message = command.encrypt(signature, sharedKey);
 
-      poll.publishMessage(message, ecdhKeypair.pubKey);
+      poll.publishMessage(message, ecdhKeypair.publicKey);
     });
 
     it("Process a batch of messages (though only 1 message is in the batch)", () => {
@@ -666,12 +666,12 @@ describe("MaciState/Poll e2e", function test() {
 
       const users = testHarness.createUsers(1);
 
-      const { privKey } = users[0];
+      const { privateKey } = users[0];
       const pollKeypair = new Keypair();
 
-      const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
+      const nullifier = poseidon([BigInt(privateKey.rawPrivKey.toString())]);
 
-      const pollStateIndex = testHarness.joinPoll(nullifier, pollKeypair.pubKey, voiceCreditBalance);
+      const pollStateIndex = testHarness.joinPoll(nullifier, pollKeypair.publicKey, voiceCreditBalance);
       testHarness.vote(pollKeypair, pollStateIndex, voteOptionIndex, voteWeight, nonce);
       testHarness.finalizePoll();
 
@@ -691,12 +691,12 @@ describe("MaciState/Poll e2e", function test() {
 
       const users = testHarness.createUsers(1);
 
-      const { privKey } = users[0];
+      const { privateKey } = users[0];
       const pollKeypair = new Keypair();
 
-      const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
+      const nullifier = poseidon([BigInt(privateKey.rawPrivKey.toString())]);
 
-      const pollStateIndex = testHarness.joinPoll(nullifier, pollKeypair.pubKey, voiceCreditBalance);
+      const pollStateIndex = testHarness.joinPoll(nullifier, pollKeypair.publicKey, voiceCreditBalance);
       testHarness.vote(pollKeypair, pollStateIndex, voteOptionIndex, voteWeight, nonce);
 
       poll.updatePoll(BigInt(testHarness.maciState.pubKeys.length));
@@ -729,12 +729,12 @@ describe("MaciState/Poll e2e", function test() {
           nonce = BigInt(Math.floor(Math.random() * 100) - 50);
         } while (nonce === 1n);
 
-        const { privKey } = user;
+        const { privateKey } = user;
         const pollKeypair = new Keypair();
 
-        const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
+        const nullifier = poseidon([BigInt(privateKey.rawPrivKey.toString())]);
 
-        const pollStateIndex = testHarness.joinPoll(nullifier, pollKeypair.pubKey, voiceCreditBalance);
+        const pollStateIndex = testHarness.joinPoll(nullifier, pollKeypair.publicKey, voiceCreditBalance);
         testHarness.vote(pollKeypair, pollStateIndex, voteOptionIndex, voteWeight, nonce);
       });
 
@@ -766,12 +766,12 @@ describe("MaciState/Poll e2e", function test() {
           voteWeight = BigInt(Math.floor(Math.random() * 100) - 50);
         } while (voteWeight >= 1n && voteWeight <= 10n);
 
-        const { privKey } = user;
+        const { privateKey } = user;
         const pollKeypair = new Keypair();
 
-        const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
+        const nullifier = poseidon([BigInt(privateKey.rawPrivKey.toString())]);
 
-        const pollStateIndex = testHarness.joinPoll(nullifier, pollKeypair.pubKey, voiceCreditBalance);
+        const pollStateIndex = testHarness.joinPoll(nullifier, pollKeypair.publicKey, voiceCreditBalance);
 
         testHarness.vote(pollKeypair, pollStateIndex, voteOptionIndex, voteWeight, nonce);
       });
@@ -797,12 +797,12 @@ describe("MaciState/Poll e2e", function test() {
 
       users.forEach((user) => {
         // generate a bunch of invalid votes with incorrect state tree index
-        const { privKey } = user;
+        const { privateKey } = user;
         const pollKeypair = new Keypair();
 
-        const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
+        const nullifier = poseidon([BigInt(privateKey.rawPrivKey.toString())]);
 
-        const pollStateIndex = testHarness.joinPoll(nullifier, pollKeypair.pubKey, voiceCreditBalance);
+        const pollStateIndex = testHarness.joinPoll(nullifier, pollKeypair.publicKey, voiceCreditBalance);
         testHarness.vote(pollKeypair, pollStateIndex + 1, voteOptionIndex, voteWeight, nonce);
       });
 
@@ -824,21 +824,21 @@ describe("MaciState/Poll e2e", function test() {
 
       const users = testHarness.createUsers(2);
 
-      const { privKey: privKey1 } = users[0];
+      const { privateKey: privKey1 } = users[0];
       const pollKeypair1 = new Keypair();
 
       const nullifier1 = poseidon([BigInt(privKey1.rawPrivKey.toString())]);
 
-      const pollStateIndex1 = testHarness.joinPoll(nullifier1, pollKeypair1.pubKey, voiceCreditBalance);
+      const pollStateIndex1 = testHarness.joinPoll(nullifier1, pollKeypair1.publicKey, voiceCreditBalance);
 
       const { command } = testHarness.createCommand(pollKeypair1, pollStateIndex1, voteOptionIndex, voteWeight, nonce);
 
-      const { privKey: privKey2 } = users[1];
+      const { privateKey: privKey2 } = users[1];
       const pollKeypair2 = new Keypair();
 
       const nullifier2 = poseidon([BigInt(privKey2.rawPrivKey.toString())]);
 
-      testHarness.joinPoll(nullifier2, pollKeypair2.pubKey, voiceCreditBalance);
+      testHarness.joinPoll(nullifier2, pollKeypair2.publicKey, voiceCreditBalance);
 
       // create an invalid signature
       const { signature: invalidSignature } = testHarness.createCommand(
@@ -850,13 +850,13 @@ describe("MaciState/Poll e2e", function test() {
       );
 
       // sign the command with the invalid signature
-      const { message, encPubKey } = testHarness.createMessage(
+      const { message, encryptionPublicKey } = testHarness.createMessage(
         command,
         invalidSignature,
         testHarness.coordinatorKeypair,
       );
 
-      testHarness.poll.publishMessage(message, encPubKey);
+      testHarness.poll.publishMessage(message, encryptionPublicKey);
       testHarness.finalizePoll();
 
       const messageLengthResult = poll.messages.length;
@@ -875,12 +875,12 @@ describe("MaciState/Poll e2e", function test() {
 
       const users = testHarness.createUsers(1);
 
-      const { privKey } = users[0];
+      const { privateKey } = users[0];
       const pollKeypair = new Keypair();
 
-      const nullifier = poseidon([BigInt(privKey.rawPrivKey.toString())]);
+      const nullifier = poseidon([BigInt(privateKey.rawPrivKey.toString())]);
 
-      const pollStateIndex = testHarness.joinPoll(nullifier, pollKeypair.pubKey, voiceCreditBalance);
+      const pollStateIndex = testHarness.joinPoll(nullifier, pollKeypair.publicKey, voiceCreditBalance);
 
       const { command, signature } = testHarness.createCommand(
         pollKeypair,
@@ -890,9 +890,9 @@ describe("MaciState/Poll e2e", function test() {
         nonce,
       );
 
-      const { message, encPubKey } = testHarness.createMessage(command, signature, new Keypair());
+      const { message, encryptionPublicKey } = testHarness.createMessage(command, signature, new Keypair());
 
-      testHarness.poll.publishMessage(message, encPubKey);
+      testHarness.poll.publishMessage(message, encryptionPublicKey);
       testHarness.finalizePoll();
 
       const messageLengthResult = poll.messages.length;

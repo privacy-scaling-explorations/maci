@@ -1,5 +1,5 @@
 import { type IIpfsMessage, IpfsService } from "@maci-protocol/contracts";
-import { PubKey } from "@maci-protocol/domainobjs";
+import { PublicKey } from "@maci-protocol/domainobjs";
 
 import type { IParseIpfsHashAddedEventsArgs } from "./types";
 
@@ -39,8 +39,8 @@ export const parseIpfsHashAddedEvents = async ({
             .filter((message) =>
               publicKeys && publicKeys.length > 0
                 ? publicKeys.some((publicKey) =>
-                    PubKey.deserialize(publicKey).equals(
-                      new PubKey([BigInt(message.publicKey[0]), BigInt(message.publicKey[1])]),
+                    PublicKey.deserialize(publicKey).equals(
+                      new PublicKey([BigInt(message.publicKey[0]), BigInt(message.publicKey[1])]),
                     ),
                   )
                 : true,

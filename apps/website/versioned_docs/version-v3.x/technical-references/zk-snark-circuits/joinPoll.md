@@ -21,7 +21,7 @@ Users need to provide a valid proof to the Poll smart contract to join a poll, a
 
 | Input signal           | Description                                                                                                                                                                        |
 | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `privKey`              | The user's private key                                                                                                                                                             |
+| `privateKey`           | The user's private key                                                                                                                                                             |
 | `pollPubKey`           | The poll's public key                                                                                                                                                              |
 | `siblings`             | The siblings for the merkle tree inclusion proof                                                                                                                                   |
 | `indices`              | The indices for the merkle tree inclusion proof                                                                                                                                    |
@@ -44,7 +44,7 @@ Users will use this circuit to anonymously prove that they joined a poll. This c
 
 | Input signal           | Description                                                                                                                                                                        |
 | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `privKey`              | The user's private key                                                                                                                                                             |
+| `privateKey`           | The user's private key                                                                                                                                                             |
 | `voiceCreditsBalance`  | The user's initial voice credits balance                                                                                                                                           |
 | `pathElements`         | The path elements for the merkle tree inclusion proof                                                                                                                              |
 | `pathIndices`          | The path indices for the merkle tree inclusion proof                                                                                                                               |

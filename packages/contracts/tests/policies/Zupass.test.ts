@@ -91,12 +91,12 @@ describe("Zupass", () => {
 
     it("should not register a user if the register function is called with invalid watermark", async () => {
       await expect(
-        maciContract.signUp(user.pubKey.asContractParam(), dataWithInvalidWatermark),
+        maciContract.signUp(user.publicKey.asContractParam(), dataWithInvalidWatermark),
       ).to.be.revertedWithCustomError(zupassChecker, "InvalidWatermark");
     });
 
     it("should register a user if the register function is called with the valid data", async () => {
-      const tx = await maciContract.signUp(user.pubKey.asContractParam(), data);
+      const tx = await maciContract.signUp(user.publicKey.asContractParam(), data);
 
       const receipt = await tx.wait();
 
@@ -104,7 +104,7 @@ describe("Zupass", () => {
     });
 
     it("should prevent signing up twice", async () => {
-      await expect(maciContract.signUp(user.pubKey.asContractParam(), data)).to.be.revertedWithCustomError(
+      await expect(maciContract.signUp(user.publicKey.asContractParam(), data)).to.be.revertedWithCustomError(
         zupassPolicy,
         "AlreadyEnforced",
       );

@@ -3,7 +3,7 @@ pragma circom 2.0.0;
 // circomlib import
 include "./mux1.circom";
 // local import
-include "../hashers.circom";
+include "../PoseidonHasher.circom";
 
 /**
  * Recomputes a Merkle root from a given leaf and its path in a Merkle tree.
@@ -16,6 +16,7 @@ template MerkleTreeInclusionProof(n_levels) {
     // Sibling node values required to compute the hash at each level.
     signal input path_elements[n_levels][1];
 
+    // The merkle root.
     signal output root;
 
      // Stores the hash at each level starting from the leaf to the root.
@@ -28,17 +29,17 @@ template MerkleTreeInclusionProof(n_levels) {
         path_index[i] * (1 - path_index[i]) === 0;
 
         // Configure the multiplexer based on the path index for the current level.
-        var c[2][2] = [
+        var multiplexer[2][2] = [
             [levelHashes[i], path_elements[i][0]],
             [path_elements[i][0], levelHashes[i]]
         ];
 
-        var mux[2] = MultiMux1(2)(
-            c,
+        var multiplexerResult[2] = MultiMux1(2)(
+            multiplexer,
             path_index[i]
         );
 
-        var computedLevelHash = PoseidonHasher(2)([mux[0], mux[1]]);
+        var computedLevelHash = PoseidonHasher(2)([multiplexerResult[0], multiplexerResult[1]]);
 
         // Store the resulting hash as the next level's hash.
         levelHashes[i + 1] <== computedLevelHash;

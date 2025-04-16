@@ -10,7 +10,7 @@ export const submitVote = async ({ pollAddress, vote, signer }: ISubmitVoteArgs)
   const pollContract = PollFactory.connect(pollAddress, signer);
 
   const receipt = await pollContract
-    .publishMessage(vote.message, vote.ephemeralKeypair.pubKey.asContractParam())
+    .publishMessage(vote.message, vote.ephemeralKeypair.publicKey.asContractParam())
     .then((tx) => tx.wait());
 
   if (receipt?.status === 0) {
@@ -35,7 +35,7 @@ export const submitVoteBatch = async ({
   const receipt = await pollContract
     .publishMessageBatch(
       votes.map((vote) => vote.message),
-      votes.map((vote) => vote.ephemeralKeypair.pubKey.asContractParam()),
+      votes.map((vote) => vote.ephemeralKeypair.publicKey.asContractParam()),
     )
     .then((tx) => tx.wait());
 

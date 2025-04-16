@@ -1,4 +1,4 @@
-import { PrivKey, PubKey } from "@maci-protocol/domainobjs";
+import { PrivateKey, PublicKey } from "@maci-protocol/domainobjs";
 
 import type { IPublishBatchArgs, IPublishBatchData, IPublishArgs, IPublishData } from "./types";
 
@@ -14,7 +14,6 @@ import { getCoordinatorPubKey } from "./utils";
  * @returns {IPublishData} The ephemeral private key used to encrypt the message, transaction hash
  */
 export const publish = async ({
-  pubkey,
   stateIndex,
   voteOptionIndex,
   nonce,
@@ -22,36 +21,37 @@ export const publish = async ({
   newVoteWeight,
   maciAddress,
   salt,
-  privateKey,
+  publicKey: serializedPublicKey,
+  privateKey: serializedPrivateKey,
   signer,
 }: IPublishArgs): Promise<IPublishData> => {
-  if (!PubKey.isValidSerializedPubKey(pubkey)) {
+  if (!PublicKey.isValidSerializedPubKey(serializedPublicKey)) {
     throw new Error("Invalid MACI public key");
   }
 
-  if (!PrivKey.isValidSerializedPrivKey(privateKey)) {
+  if (!PrivateKey.isValidSerializedPrivKey(serializedPrivateKey)) {
     throw new Error("Invalid MACI private key");
   }
 
   const { poll: pollContract } = await getPollContracts({ maciAddress, pollId, signer });
 
-  const votePubKey = PubKey.deserialize(pubkey);
-  const privKey = PrivKey.deserialize(privateKey);
+  const votePubKey = PublicKey.deserialize(serializedPublicKey);
+  const privateKey = PrivateKey.deserialize(serializedPrivateKey);
 
   const [maxVoteOption, pollAddress] = await Promise.all([pollContract.voteOptions(), pollContract.getAddress()]);
-  const coordinatorPubKey = await getCoordinatorPubKey(pollAddress, signer);
+  const coordinatorPublicKey = await getCoordinatorPubKey(pollAddress, signer);
 
   const vote = generateVote({
     pollId,
     voteOptionIndex,
     salt,
     nonce,
-    privateKey: privKey,
+    privateKey,
     stateIndex,
     voteWeight: newVoteWeight,
-    coordinatorPubKey,
+    coordinatorPublicKey,
     maxVoteOption,
-    newPubKey: votePubKey,
+    newPublicKey: votePubKey,
   });
 
   const txHash = await submitVote({ pollAddress, vote, signer });
@@ -59,7 +59,7 @@ export const publish = async ({
   return {
     hash: txHash!,
     encryptedMessage: vote.message,
-    privateKey: vote.ephemeralKeypair.privKey.serialize(),
+    privateKey: vote.ephemeralKeypair.privateKey.serialize(),
   };
 };
 
@@ -76,21 +76,21 @@ export const publishBatch = async ({
   privateKey,
   signer,
 }: IPublishBatchArgs): Promise<IPublishBatchData> => {
-  if (!PubKey.isValidSerializedPubKey(publicKey)) {
+  if (!PublicKey.isValidSerializedPubKey(publicKey)) {
     throw new Error("Invalid MACI public key");
   }
 
-  if (!PrivKey.isValidSerializedPrivKey(privateKey)) {
+  if (!PrivateKey.isValidSerializedPrivKey(privateKey)) {
     throw new Error("Invalid MACI private key");
   }
 
   const { poll: pollContract } = await getPollContracts({ maciAddress, pollId, signer });
 
-  const userMaciPubKey = PubKey.deserialize(publicKey);
-  const userMaciPrivKey = PrivKey.deserialize(privateKey);
+  const userMaciPubKey = PublicKey.deserialize(publicKey);
+  const userMaciPrivKey = PrivateKey.deserialize(privateKey);
 
   const [maxVoteOption, pollAddress] = await Promise.all([pollContract.voteOptions(), pollContract.getAddress()]);
-  const coordinatorPubKey = await getCoordinatorPubKey(pollAddress, signer);
+  const coordinatorPublicKey = await getCoordinatorPubKey(pollAddress, signer);
 
   // validate the vote options index against the max leaf index on-chain
   const votes = messages.map(({ stateIndex, voteOptionIndex, salt, nonce, newVoteWeight }) =>
@@ -103,8 +103,8 @@ export const publishBatch = async ({
       maxVoteOption: BigInt(maxVoteOption),
       salt,
       voteWeight: newVoteWeight,
-      coordinatorPubKey,
-      newPubKey: userMaciPubKey,
+      coordinatorPublicKey,
+      newPublicKey: userMaciPubKey,
     }),
   );
 
@@ -117,6 +117,6 @@ export const publishBatch = async ({
   return {
     hash: txHash!,
     encryptedMessages: votes.map((vote) => vote.message),
-    privateKeys: votes.map((vote) => vote.ephemeralKeypair.privKey.serialize()),
+    privateKeys: votes.map((vote) => vote.ephemeralKeypair.privateKey.serialize()),
   };
 };

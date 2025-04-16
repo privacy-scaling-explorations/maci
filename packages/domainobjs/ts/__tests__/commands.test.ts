@@ -4,9 +4,9 @@ import { expect } from "chai";
 import { PCommand, Keypair } from "..";
 
 describe("Commands", () => {
-  const { privKey, pubKey } = new Keypair();
+  const { privateKey, publicKey } = new Keypair();
 
-  const ecdhSharedKey = Keypair.genEcdhSharedKey(privKey, pubKey);
+  const ecdhSharedKey = Keypair.genEcdhSharedKey(privateKey, publicKey);
   // eslint-disable-next-line no-bitwise
   const random50bitBigInt = (): bigint => ((BigInt(1) << BigInt(50)) - BigInt(1)) & BigInt(genRandomSalt().toString());
 
@@ -14,7 +14,7 @@ describe("Commands", () => {
     it("should create a PCommand", () => {
       const command: PCommand = new PCommand(
         random50bitBigInt(),
-        pubKey,
+        publicKey,
         random50bitBigInt(),
         random50bitBigInt(),
         random50bitBigInt(),
@@ -28,7 +28,7 @@ describe("Commands", () => {
   describe("signature", () => {
     const command: PCommand = new PCommand(
       random50bitBigInt(),
-      pubKey,
+      publicKey,
       random50bitBigInt(),
       random50bitBigInt(),
       random50bitBigInt(),
@@ -36,15 +36,15 @@ describe("Commands", () => {
       genRandomSalt(),
     );
     it("should produce a valid signature", () => {
-      const signature = command.sign(privKey);
-      expect(command.verifySignature(signature, pubKey)).to.eq(true);
+      const signature = command.sign(privateKey);
+      expect(command.verifySignature(signature, publicKey)).to.eq(true);
     });
   });
 
   describe("encryption", () => {
     const command: PCommand = new PCommand(
       random50bitBigInt(),
-      pubKey,
+      publicKey,
       random50bitBigInt(),
       random50bitBigInt(),
       random50bitBigInt(),
@@ -52,7 +52,7 @@ describe("Commands", () => {
       genRandomSalt(),
     );
 
-    const signature = command.sign(privKey);
+    const signature = command.sign(privateKey);
 
     describe("encrypt", () => {
       it("should encrypt a command", () => {
@@ -77,10 +77,10 @@ describe("Commands", () => {
       it("should have a valid signature after decryption", () => {
         const decryptedForce = PCommand.decrypt(message, ecdhSharedKey, true);
 
-        const isValid = decrypted.command.verifySignature(decrypted.signature, pubKey);
+        const isValid = decrypted.command.verifySignature(decrypted.signature, publicKey);
         expect(isValid).to.eq(true);
 
-        const isValidForce = decryptedForce.command.verifySignature(decryptedForce.signature, pubKey);
+        const isValidForce = decryptedForce.command.verifySignature(decryptedForce.signature, publicKey);
         expect(isValidForce).to.eq(true);
       });
     });
@@ -88,7 +88,7 @@ describe("Commands", () => {
 
   describe("copy", () => {
     it("should produce a deep copy for PCommand", () => {
-      const c1: PCommand = new PCommand(BigInt(10), pubKey, BigInt(0), BigInt(9), BigInt(1), BigInt(123));
+      const c1: PCommand = new PCommand(BigInt(10), publicKey, BigInt(0), BigInt(9), BigInt(1), BigInt(123));
 
       // shallow copy
       const c2 = c1;
@@ -106,7 +106,7 @@ describe("Commands", () => {
   describe("deserialization/serialization", () => {
     describe("toJSON", () => {
       it("should produce a JSON object with valid values", () => {
-        const c1: PCommand = new PCommand(BigInt(10), pubKey, BigInt(0), BigInt(9), BigInt(1), BigInt(123));
+        const c1: PCommand = new PCommand(BigInt(10), publicKey, BigInt(0), BigInt(9), BigInt(1), BigInt(123));
         const json = c1.toJSON();
         expect(json).to.not.eq(null);
         expect(json.stateIndex).to.eq("10");
@@ -119,7 +119,7 @@ describe("Commands", () => {
 
     describe("fromJSON", () => {
       it("should produce a PCommand from a JSON object", () => {
-        const c1: PCommand = new PCommand(BigInt(10), pubKey, BigInt(0), BigInt(9), BigInt(1), BigInt(123));
+        const c1: PCommand = new PCommand(BigInt(10), publicKey, BigInt(0), BigInt(9), BigInt(1), BigInt(123));
         const json = c1.toJSON();
         const c2 = PCommand.fromJSON(json);
         expect(c2.equals(c1)).to.eq(true);
