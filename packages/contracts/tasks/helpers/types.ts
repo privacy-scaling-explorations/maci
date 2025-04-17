@@ -579,7 +579,7 @@ export enum EPolicies {
   Semaphore = "@excubiae/contracts/contracts/extensions/semaphore/SemaphorePolicy.sol:SemaphorePolicy",
   MerkleProof = "@excubiae/contracts/contracts/extensions/merkle/MerkleProofPolicy.sol:MerkleProofPolicy",
   AnonAadhaar = "@excubiae/contracts/contracts/extensions/anonAadhaar/AnonAadhaarPolicy.sol:AnonAadhaarPolicy",
-  ERC20Votes = "@excubiae/contracts/contracts/extensions/erc20Votes/ERC20VotesPolicy.sol:ERC20VotesPolicy",
+  ERC20Votes = "@excubiae/contracts/contracts/extensions/erc20votes/ERC20VotesPolicy.sol:ERC20VotesPolicy",
   ERC20 = "@excubiae/contracts/contracts/extensions/erc20/ERC20Policy.sol:ERC20Policy",
 }
 

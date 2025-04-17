@@ -64,10 +64,11 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
       deployment.getDeployConfigField<EContracts | null>(EContracts.Poll, "policy") || EContracts.FreeForAllPolicy;
     const fullPolicyName = FULL_POLICY_NAMES[policy as keyof typeof FULL_POLICY_NAMES] as unknown as EContracts;
     const policyContractAddress = storage.mustGetAddress(fullPolicyName, hre.network.name, `poll-${pollId}`);
-    const initialVoiceCreditProxyContractAddress = storage.mustGetAddress(
-      EContracts.ConstantInitialVoiceCreditProxy,
-      hre.network.name,
-    );
+
+    const initialVoiceCreditProxy =
+      deployment.getDeployConfigField<EContracts | null>(EContracts.Poll, "initialVoiceCreditProxy") ||
+      EContracts.ConstantInitialVoiceCreditProxy;
+    const initialVoiceCreditProxyContractAddress = storage.mustGetAddress(initialVoiceCreditProxy, hre.network.name);
 
     const voteOptions = deployment.getDeployConfigField<number>(EContracts.Poll, "voteOptions");
 
