@@ -69,7 +69,7 @@ contract MessageProcessor is Clone, SnarkCommon, Hasher, IMessageProcessor, Doma
       revert NoMoreMessages();
     }
 
-    (, uint8 voteOptionTreeDepth) = poll.treeDepths();
+    (, uint8 voteOptionTreeDepth, ) = poll.treeDepths();
     uint8 messageBatchSize = poll.messageBatchSize();
 
     uint256[] memory batchHashes;

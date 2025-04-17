@@ -59,7 +59,7 @@ describe("Integration message publishing", () => {
     maciContractAddress = testDeploy.contractsData.maciContractAddress!;
 
     circuitInputs = poll!.joinedCircuitInputs({
-      maciPrivKey: user.keypair.privKey,
+      maciPrivateKey: user.keypair.privateKey,
       stateLeafIndex: user.stateLeafIndex!,
       voiceCreditsBalance: user.voiceCreditBalance,
     }) as unknown as typeof circuitInputs;
@@ -91,7 +91,7 @@ describe("Integration message publishing", () => {
       messages: [
         {
           data: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
-          publicKey: keypair.pubKey.serialize(),
+          publicKey: keypair.publicKey.serialize(),
         },
       ],
     };

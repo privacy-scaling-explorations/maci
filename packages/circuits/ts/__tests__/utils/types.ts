@@ -15,7 +15,7 @@ export interface IMessageValidatorCircuitInputs {
   originalNonce: SignalValueType;
   nonce: SignalValueType;
   cmd: SignalValueType;
-  pubKey: SignalValueType;
+  publicKey: SignalValueType;
   sigR8: SignalValueType;
   sigS: SignalValueType;
   currentVoiceCreditBalance: SignalValueType;

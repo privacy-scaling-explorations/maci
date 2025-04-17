@@ -130,7 +130,7 @@ describe("AnonAadhaar", () => {
       );
 
       await expect(
-        maciContract.signUp(user.pubKey.asContractParam(), encodedInvalidNullifierSeedProof),
+        maciContract.signUp(user.publicKey.asContractParam(), encodedInvalidNullifierSeedProof),
       ).to.be.revertedWithCustomError(anonAadhaarChecker, "InvalidNullifierSeed");
     });
 
@@ -147,13 +147,13 @@ describe("AnonAadhaar", () => {
         ],
       );
       await expect(
-        maciContract.signUp(user.pubKey.asContractParam(), encodedInvalidProof),
+        maciContract.signUp(user.publicKey.asContractParam(), encodedInvalidProof),
       ).to.be.revertedWithCustomError(anonAadhaarChecker, "InvalidSignal");
     });
 
     it("should revert if the proof is invalid (mock)", async () => {
       await mockAnonAadhaar.flipValid();
-      await expect(maciContract.signUp(user.pubKey.asContractParam(), encodedProof)).to.be.revertedWithCustomError(
+      await expect(maciContract.signUp(user.publicKey.asContractParam(), encodedProof)).to.be.revertedWithCustomError(
         anonAadhaarChecker,
         "InvalidProof",
       );
@@ -161,7 +161,7 @@ describe("AnonAadhaar", () => {
     });
 
     it("should register a user if the register function is called with the valid data", async () => {
-      const tx = await maciContract.signUp(user.pubKey.asContractParam(), encodedProof);
+      const tx = await maciContract.signUp(user.publicKey.asContractParam(), encodedProof);
 
       const receipt = await tx.wait();
 
@@ -169,7 +169,7 @@ describe("AnonAadhaar", () => {
     });
 
     it("should prevent signing up twice", async () => {
-      await expect(maciContract.signUp(user.pubKey.asContractParam(), encodedProof)).to.be.revertedWithCustomError(
+      await expect(maciContract.signUp(user.publicKey.asContractParam(), encodedProof)).to.be.revertedWithCustomError(
         anonAadhaarPolicy,
         "AlreadyEnforced",
       );

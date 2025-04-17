@@ -18,6 +18,7 @@ contract Params {
   struct TreeDepths {
     uint8 intStateTreeDepth;
     uint8 voteOptionTreeDepth;
+    uint8 stateTreeDepth;
   }
 
   /// @notice A struct holding the external contracts

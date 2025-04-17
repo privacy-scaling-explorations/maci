@@ -23,7 +23,7 @@ describe("pollFactory", () => {
   let pollFactory: PollFactory;
   let signer: Signer;
 
-  const { pubKey: coordinatorPubKey } = new Keypair();
+  const { publicKey: coordinatorPublicKey } = new Keypair();
 
   const emptyBallotRoots = genEmptyBallotRoots(STATE_TREE_DEPTH);
   const emptyBallotRoot = emptyBallotRoots[treeDepths.voteOptionTreeDepth];
@@ -52,7 +52,7 @@ describe("pollFactory", () => {
         endDate: new Date().getTime() + 100,
         treeDepths,
         messageBatchSize,
-        coordinatorPubKey: coordinatorPubKey.asContractParam(),
+        coordinatorPublicKey: coordinatorPublicKey.asContractParam(),
         extContracts,
         emptyBallotRoot,
         pollId: 0n,

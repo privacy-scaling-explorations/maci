@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from "@commander-js/extra-typings";
-import { PubKey } from "@maci-protocol/domainobjs";
+import { PublicKey } from "@maci-protocol/domainobjs";
 import {
   generateTallyCommitments,
   getPollParams,
@@ -202,7 +202,7 @@ program
   .requiredOption("-s, --state-tree-depth <stateTreeDepth>", "the state tree depth", parseInt)
   .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the intermediate state tree depth", parseInt)
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
-  .requiredOption("-b, --msg-batch-size <messageBatchSize>", "the message batch size", parseInt)
+  .requiredOption("-b, --message-batch-size <messageBatchSize>", "the message batch size", parseInt)
   .requiredOption(
     "-p, --process-messages-zkey <processMessagesZkeyPath>",
     "the process messages zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
@@ -235,7 +235,7 @@ program
         stateTreeDepth: cmdOptions.stateTreeDepth,
         intStateTreeDepth: cmdOptions.intStateTreeDepth,
         voteOptionTreeDepth: cmdOptions.voteOptionTreeDepth,
-        messageBatchSize: cmdOptions.msgBatchSize,
+        messageBatchSize: cmdOptions.messageBatchSize,
         processMessagesZkeyPath: cmdOptions.processMessagesZkey,
         tallyVotesZkeyPath: cmdOptions.tallyVotesZkey,
         pollJoiningZkeyPath: cmdOptions.pollJoiningZkey,
@@ -253,11 +253,11 @@ program
 program
   .command("genMaciPubKey")
   .description("generate a new MACI public key")
-  .requiredOption("-k, --privkey <privkey>", "the private key")
+  .requiredOption("-k, --private-key <privateKey>", "the private key")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .action((cmdObj) => {
-    const publicKey = generateMaciPublicKey(cmdObj.privkey);
+    const publicKey = generateMaciPublicKey(cmdObj.privateKey);
     logGreen({ quiet: cmdObj.quiet, text: success(`Public key: ${publicKey}`) });
   });
 program
@@ -327,9 +327,10 @@ program
   .requiredOption("-s, --start <pollStartDate>", "the poll start date", parseInt)
   .requiredOption("-e, --end <pollEndDate>", "the poll end date", parseInt)
   .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the int state tree depth", parseInt)
-  .requiredOption("-b, --msg-batch-size <messageBatchSize>", "the message batch size", parseInt)
+  .requiredOption("-b, --message-batch-size <messageBatchSize>", "the message batch size", parseInt)
+  .requiredOption("-s, --state-tree-depth <stateTreeDepth>", "the state tree depth", parseInt)
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
-  .requiredOption("-p, --pubkey <coordinatorPubkey>", "the coordinator public key")
+  .requiredOption("-p, --public-key <publicKey>", "the coordinator public key")
   .option(
     "-u, --use-quadratic-voting <useQuadraticVoting>",
     "whether to use quadratic voting",
@@ -389,9 +390,10 @@ program
         pollStartTimestamp: cmdObj.start,
         pollEndTimestamp: cmdObj.end,
         intStateTreeDepth: cmdObj.intStateTreeDepth,
-        messageBatchSize: cmdObj.msgBatchSize,
+        messageBatchSize: cmdObj.messageBatchSize,
+        stateTreeDepth: cmdObj.stateTreeDepth,
         voteOptionTreeDepth: cmdObj.voteOptionTreeDepth,
-        coordinatorPubKey: PubKey.deserialize(cmdObj.pubkey),
+        coordinatorPublicKey: PublicKey.deserialize(cmdObj.publicKey),
         maciAddress,
         vkRegistryContractAddress: vkRegistryAddress,
         relayers: cmdObj.relayers ?? [ZeroAddress],
@@ -425,7 +427,7 @@ program
 program
   .command("joinPoll")
   .description("join the poll")
-  .requiredOption("-k, --priv-key <privKey>", "the private key")
+  .requiredOption("-k, --private-key <privateKey>", "the private key")
   .option("-i, --state-index <stateIndex>", "the user's state index", BigInt)
   .option("-s, --sg-data <sgData>", "the signup policy data")
   .option("-v, --ivcp-data <ivcpData>", "the initial voice credit proxy data")
@@ -460,7 +462,7 @@ program
         network: network?.name,
         defaultAddresses: [cmdObj.maciAddress],
       });
-      const privateKey = cmdObj.privKey || (await promptSensitiveValue("Insert your MACI private key"));
+      const privateKey = cmdObj.privateKey || (await promptSensitiveValue("Insert your MACI private key"));
 
       const data = await joinPoll({
         maciAddress,
@@ -494,7 +496,8 @@ program
   .requiredOption("-s, --state-tree-depth <stateTreeDepth>", "the state tree depth", parseInt)
   .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the intermediate state tree depth", parseInt)
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
-  .requiredOption("-b, --msg-batch-size <messageBatchSize>", "the message batch size", parseInt)
+  .requiredOption("-b, --message-batch-size <messageBatchSize>", "the message batch size", parseInt)
+  .option("--poll-state-tree-depth <pollStateTreeDepth>", "the poll state tree depth", parseInt)
   .option(
     "--poll-joining-zkey <pollJoiningZkeyPath>",
     "the poll joining zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
@@ -551,7 +554,8 @@ program
         stateTreeDepth: cmdObj.stateTreeDepth,
         intStateTreeDepth: cmdObj.intStateTreeDepth,
         voteOptionTreeDepth: cmdObj.voteOptionTreeDepth,
-        messageBatchSize: cmdObj.msgBatchSize,
+        messageBatchSize: cmdObj.messageBatchSize,
+        pollStateTreeDepth: cmdObj.pollStateTreeDepth || cmdObj.stateTreeDepth,
         pollJoiningVk: pollJoiningVk!,
         pollJoinedVk: pollJoinedVk!,
         processMessagesVk: processVk!,
@@ -568,11 +572,11 @@ program
   .command("publish")
   .description("publish a new message to a MACI Poll contract")
   .requiredOption(
-    "-p, --pubkey <pubkey>",
+    "-p, --public-key <publicKey>",
     "the MACI public key which should replace the user's public key in the state tree",
   )
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
-  .option("-k, --privkey <privkey>", "your serialized MACI private key")
+  .option("-k, --private-key <privateKey>", "your serialized MACI private key")
   .requiredOption("-i, --state-index <stateIndex>", "the user's state index", BigInt)
   .requiredOption("-v, --vote-option-index <voteOptionIndex>", "the vote option index", BigInt)
   .requiredOption("-n, --nonce <nonce>", "the message nonce", BigInt)
@@ -591,10 +595,10 @@ program
         network: network?.name,
         defaultAddresses: [cmdObj.maciAddress],
       });
-      const privateKey = cmdObj.privkey || (await promptSensitiveValue("Insert your MACI private key"));
+      const privateKey = cmdObj.privateKey || (await promptSensitiveValue("Insert your MACI private key"));
 
       await publish({
-        pubkey: cmdObj.pubkey,
+        publicKey: cmdObj.publicKey,
         stateIndex: cmdObj.stateIndex,
         voteOptionIndex: cmdObj.voteOptionIndex,
         nonce: cmdObj.nonce,
@@ -707,7 +711,7 @@ program
 program
   .command("signup")
   .description("Sign up to a MACI contract")
-  .requiredOption("-p, --pubkey <maciPubKey>", "the MACI public key")
+  .requiredOption("-p, --public-key <publicKey>", "the MACI public key")
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .option("-s, --sg-data <sgData>", "the signup gateway data")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
@@ -724,7 +728,7 @@ program
       });
 
       const data = await signup({
-        maciPubKey: cmdObj.pubkey,
+        maciPublicKey: cmdObj.publicKey,
         maciAddress,
         sgData: cmdObj.sgData ?? DEFAULT_SG_DATA,
         signer,
@@ -741,7 +745,7 @@ program
 program
   .command("isRegisteredUser")
   .description("Checks if user is registered with their public key and get their data")
-  .requiredOption("-p, --pubkey <maciPubKey>", "the MACI public key")
+  .requiredOption("-p, --public-key <publicKey>", "the MACI public key")
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .action(async (cmdObj) => {
@@ -756,7 +760,7 @@ program
       });
 
       const data = await getSignedupUserData({
-        maciPubKey: cmdObj.pubkey,
+        maciPublicKey: cmdObj.publicKey,
         maciAddress,
         signer,
       });
@@ -773,7 +777,7 @@ program
 program
   .command("isJoinedUser")
   .description("Checks if user is joined to the poll with public key")
-  .requiredOption("-p, --pubkey <pubkey>", "the MACI public key")
+  .requiredOption("-p, --public-key <publicKey>", "the MACI public key")
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .requiredOption("-o, --poll-id <pollId>", "the poll id", BigInt)
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
@@ -792,7 +796,7 @@ program
       });
 
       const data = await getJoinedUserData({
-        pollPubKey: cmdObj.pubkey,
+        pollPublicKey: cmdObj.publicKey,
         startBlock: cmdObj.startBlock!,
         maciAddress,
         pollId: cmdObj.pollId,
@@ -934,7 +938,7 @@ program
 program
   .command("genProofs")
   .description("generate the proofs for a poll")
-  .option("-k, --privkey <privkey>", "your serialized MACI private key")
+  .option("-k, --private-key <privateKey>", "your serialized MACI private key")
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .requiredOption("-o, --poll-id <pollId>", "the poll id", BigInt)
   .requiredOption(
@@ -981,7 +985,7 @@ program
       startBlock,
       endBlock,
       blocksPerBatch,
-      privkey,
+      privateKey,
       transactionHash,
       output,
       tallyFile,
@@ -1008,7 +1012,7 @@ program
           defaultAddresses: [maciAddress],
         });
 
-        const coordinatorPrivateKey = privkey || (await promptSensitiveValue("Insert your MACI private key"));
+        const coordinatorPrivateKey = privateKey || (await promptSensitiveValue("Insert your MACI private key"));
 
         await generateProofs({
           maciAddress: maciContractAddress,
@@ -1046,7 +1050,7 @@ program
   .requiredOption("-o, --output <outputPath>", "the path where to write the state")
   .requiredOption("-p, --poll-id <pollId>", "the id of the poll", BigInt)
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
-  .option("-k, --privkey <privkey>", "your serialized MACI private key")
+  .option("-k, --private-key <privateKey>", "your serialized MACI private key")
   .option("--start-block <startBlock>", "the start block number", parseInt)
   .option("--end-block <endBlock>", "the end block number", parseInt)
   .option("--blocks-per-batch <blockPerBatch>", "the blocks per batch", parseInt)
@@ -1071,7 +1075,7 @@ program
         defaultAddresses: [cmdObj.maciAddress],
       });
 
-      const coordinatorPrivateKey = cmdObj.privkey || (await promptSensitiveValue("Insert your MACI private key"));
+      const coordinatorPrivateKey = cmdObj.privateKey || (await promptSensitiveValue("Insert your MACI private key"));
 
       await generateMaciState({
         outputPath: cmdObj.output.toString(),

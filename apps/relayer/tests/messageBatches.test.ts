@@ -54,7 +54,7 @@ describe("Integration message batches", () => {
     await app.listen(3001);
 
     const circuitInputs = poll!.joinedCircuitInputs({
-      maciPrivKey: user.keypair.privKey,
+      maciPrivateKey: user.keypair.privateKey,
       stateLeafIndex: user.stateLeafIndex!,
       voiceCreditsBalance: user.voiceCreditBalance,
     });
@@ -73,7 +73,7 @@ describe("Integration message batches", () => {
         messages: [
           {
             data: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
-            publicKey: keypair.pubKey.serialize(),
+            publicKey: keypair.publicKey.serialize(),
           },
         ],
         poll: 0,
@@ -125,7 +125,7 @@ describe("Integration message batches", () => {
           skip: 0,
           poll: 0,
           maciContractAddress,
-          publicKeys: [user!.keypair.pubKey.serialize()],
+          publicKeys: [user!.keypair.publicKey.serialize()],
         })
         .expect(HttpStatus.OK);
 

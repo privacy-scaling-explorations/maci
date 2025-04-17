@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { MaciState, Poll, IProcessMessagesCircuitInputs, ITallyCircuitInputs } from "@maci-protocol/core";
 import { NOTHING_UP_MY_SLEEVE } from "@maci-protocol/crypto";
-import { Keypair, Message, PubKey } from "@maci-protocol/domainobjs";
+import { Keypair, Message, PublicKey } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { Signer, ZeroAddress } from "ethers";
 import { EthereumProvider } from "hardhat/types";
@@ -73,7 +73,7 @@ describe("TallyVotesNonQv", () => {
       endDate: startTime + duration,
       treeDepths,
       messageBatchSize,
-      coordinatorPubKey: coordinator.pubKey.asContractParam(),
+      coordinatorPublicKey: coordinator.publicKey.asContractParam(),
       verifier: verifierContract,
       vkRegistry: vkRegistryContract,
       mode: EMode.NON_QV,
@@ -108,7 +108,7 @@ describe("TallyVotesNonQv", () => {
       messageData.push(BigInt(0));
     }
     const message = new Message(messageData);
-    const padKey = new PubKey([
+    const padKey = new PublicKey([
       BigInt("10457101036533406547632367118273992217979173478358440826365724437999023779287"),
       BigInt("19824078218392094440610104313265183977899662750282163392862422243483260492317"),
     ]);

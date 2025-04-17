@@ -26,7 +26,7 @@ describe("MaciState", function test() {
 
     before(() => {
       m1 = new MaciState(STATE_TREE_DEPTH);
-      m1.signUp(userKeypair.pubKey);
+      m1.signUp(userKeypair.publicKey);
       pollId = m1.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
         treeDepths,
@@ -34,15 +34,15 @@ describe("MaciState", function test() {
         coordinatorKeypair,
         maxVoteOptions,
       );
-      const command = new PCommand(0n, userKeypair.pubKey, 0n, 0n, 0n, BigInt(pollId), 0n);
+      const command = new PCommand(0n, userKeypair.publicKey, 0n, 0n, 0n, BigInt(pollId), 0n);
 
       const encKeypair = new Keypair();
-      const signature = command.sign(encKeypair.privKey);
-      const sharedKey = Keypair.genEcdhSharedKey(encKeypair.privKey, coordinatorKeypair.pubKey);
+      const signature = command.sign(encKeypair.privateKey);
+      const sharedKey = Keypair.genEcdhSharedKey(encKeypair.privateKey, coordinatorKeypair.publicKey);
       const message: Message = command.encrypt(signature, sharedKey);
 
-      m1.polls.get(pollId)!.publishMessage(message, encKeypair.pubKey);
-      m1.polls.get(pollId)!.publishMessage(message, encKeypair.pubKey);
+      m1.polls.get(pollId)!.publishMessage(message, encKeypair.publicKey);
+      m1.polls.get(pollId)!.publishMessage(message, encKeypair.publicKey);
     });
 
     it("should correctly deep-copy a MaciState object", () => {
@@ -52,9 +52,9 @@ describe("MaciState", function test() {
       m2.stateTreeDepth += 1;
       expect(m1.equals(m2)).not.to.eq(true);
 
-      // modify user.pubKey
+      // modify user.publicKey
       const m3 = m1.copy();
-      m3.pubKeys[0] = new Keypair().pubKey;
+      m3.pubKeys[0] = new Keypair().publicKey;
       expect(m1.equals(m3)).not.to.eq(true);
 
       // modify poll.coordinatorKeypair
@@ -92,9 +92,9 @@ describe("MaciState", function test() {
       m14.polls.get(pollId)!.messages[0].data[0] = BigInt(m14.polls.get(pollId)!.messages[0].data[0]) + 1n;
       expect(m1.equals(m14)).not.to.eq(true);
 
-      // modify poll.encPubKeys
+      // modify poll.encryptionPublicKeys
       const m15 = m1.copy();
-      m15.polls.get(pollId)!.encPubKeys[0] = new Keypair().pubKey;
+      m15.polls.get(pollId)!.encryptionPublicKeys[0] = new Keypair().publicKey;
       expect(m1.equals(m15)).not.to.eq(true);
     });
 
@@ -104,7 +104,7 @@ describe("MaciState", function test() {
       const content = JSON.parse(fs.readFileSync(stateFile).toString()) as IJsonMaciState;
       const state = MaciState.fromJSON(content);
       state.polls.forEach((poll) => {
-        poll.setCoordinatorKeypair(coordinatorKeypair.privKey.serialize());
+        poll.setCoordinatorKeypair(coordinatorKeypair.privateKey.serialize());
         expect(poll.coordinatorKeypair.equals(coordinatorKeypair)).to.eq(true);
       });
       expect(state.equals(m1)).to.eq(true);

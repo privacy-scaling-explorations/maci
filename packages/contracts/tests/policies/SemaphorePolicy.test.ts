@@ -105,7 +105,7 @@ describe("Semaphore", () => {
 
     it("should not register a user if the register function is called with invalid groupId", async () => {
       await expect(
-        maciContract.signUp(user.pubKey.asContractParam(), encodedProofInvalidGroupId),
+        maciContract.signUp(user.publicKey.asContractParam(), encodedProofInvalidGroupId),
       ).to.be.revertedWithCustomError(semaphoreChecker, "InvalidGroup");
     });
 
@@ -124,7 +124,7 @@ describe("Semaphore", () => {
 
       await mockSemaphore.flipValid();
       await expect(
-        maciContract.signUp(user.pubKey.asContractParam(), encodedInvalidProof),
+        maciContract.signUp(user.publicKey.asContractParam(), encodedInvalidProof),
       ).to.be.revertedWithCustomError(semaphoreChecker, "InvalidProof");
       await mockSemaphore.flipValid();
     });
@@ -135,7 +135,7 @@ describe("Semaphore", () => {
         [proof.merkleTreeDepth, proof.merkleTreeRoot, proof.nullifier, proof.message, proof.scope, proof.points],
       );
 
-      const tx = await maciContract.signUp(user.pubKey.asContractParam(), encodedProof);
+      const tx = await maciContract.signUp(user.publicKey.asContractParam(), encodedProof);
 
       const receipt = await tx.wait();
 
@@ -148,7 +148,7 @@ describe("Semaphore", () => {
         [proof.merkleTreeDepth, proof.merkleTreeRoot, proof.nullifier, proof.message, proof.scope, proof.points],
       );
 
-      await expect(maciContract.signUp(user.pubKey.asContractParam(), encodedProof)).to.be.revertedWithCustomError(
+      await expect(maciContract.signUp(user.publicKey.asContractParam(), encodedProof)).to.be.revertedWithCustomError(
         semaphorePolicy,
         "AlreadyEnforced",
       );

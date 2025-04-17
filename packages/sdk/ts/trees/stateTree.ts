@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { MACI__factory as MACIFactory } from "@maci-protocol/contracts/typechain-types";
 import { hashLeanIMT, hashLeftRight, PAD_KEY_HASH } from "@maci-protocol/crypto";
-import { PubKey } from "@maci-protocol/domainobjs";
+import { PublicKey } from "@maci-protocol/domainobjs";
 import { LeanIMT, LeanIMTHashFunction } from "@zk-kit/lean-imt";
 
 import assert from "assert";
@@ -33,7 +33,7 @@ export const generateSignUpTree = async ({
   const maciContract = MACIFactory.connect(address, provider);
   const signUpTree = new LeanIMT(hashLeanIMT as LeanIMTHashFunction);
   signUpTree.insert(PAD_KEY_HASH);
-  const pubKeys: PubKey[] = [];
+  const pubKeys: PublicKey[] = [];
 
   // Fetch event logs in batches (lastBlock inclusive)
   for (let i = fromBlock; i <= lastBlock; i += blocksPerRequest + 1) {
@@ -48,9 +48,9 @@ export const generateSignUpTree = async ({
       const pubKeyX = event.args._userPubKeyX;
       const pubKeyY = event.args._userPubKeyY;
 
-      const pubKey = new PubKey([pubKeyX, pubKeyY]);
+      const publicKey = new PublicKey([pubKeyX, pubKeyY]);
 
-      pubKeys.push(pubKey);
+      pubKeys.push(publicKey);
       signUpTree.insert(hashLeftRight(pubKeyX, pubKeyY));
     });
 

@@ -79,8 +79,8 @@ As seen above, we expect the first vote weight 9 to not be counted, but instead 
 ```ts
 const maciState: MaciState = new MaciState(STATE_TREE_DEPTH);
 // Sign up
-user1StateIndex = maciState.signUp(user1Keypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
-user2StateIndex = maciState.signUp(user2Keypair.pubKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+user1StateIndex = maciState.signUp(user1Keypair.publicKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
+user2StateIndex = maciState.signUp(user2Keypair.publicKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
 // deploy a poll
 pollId = maciState.deployPoll(
   duration,
@@ -97,37 +97,37 @@ pollId = maciState.deployPoll(
 const poll = maciState.polls[pollId];
 const command1 = new PCommand(
   BigInt(user1StateIndex),
-  user1Keypair.pubKey,
+  user1Keypair.publicKey,
   user1VoteOptionIndex,
   user1VoteWeight,
   BigInt(1),
   BigInt(pollId),
 );
 
-const signature1 = command1.sign(user1Keypair.privKey);
+const signature1 = command1.sign(user1Keypair.privateKey);
 
 const ecdhKeypair1 = new Keypair();
-const sharedKey1 = Keypair.genEcdhSharedKey(ecdhKeypair1.privKey, coordinatorKeypair.pubKey);
+const sharedKey1 = Keypair.genEcdhSharedKey(ecdhKeypair1.privateKey, coordinatorKeypair.publicKey);
 
 const message1 = command1.encrypt(signature1, sharedKey1);
-poll.publishMessage(message1, ecdhKeypair1.pubKey);
+poll.publishMessage(message1, ecdhKeypair1.publicKey);
 
 const command2 = new PCommand(
   BigInt(user2StateIndex),
-  user2Keypair.pubKey,
+  user2Keypair.publicKey,
   user2VoteOptionIndex,
   user2VoteWeight,
   BigInt(1),
   BigInt(pollId),
 );
 
-const signature2 = command2.sign(user2Keypair.privKey);
+const signature2 = command2.sign(user2Keypair.privateKey);
 
 const ecdhKeypair2 = new Keypair();
-const sharedKey2 = Keypair.genEcdhSharedKey(ecdhKeypair2.privKey, coordinatorKeypair.pubKey);
+const sharedKey2 = Keypair.genEcdhSharedKey(ecdhKeypair2.privateKey, coordinatorKeypair.publicKey);
 
 const message2 = command2.encrypt(signature2, sharedKey2);
-poll.publishMessage(message2, ecdhKeypair2.pubKey);
+poll.publishMessage(message2, ecdhKeypair2.publicKey);
 ```
 
 - User1 submits a key change message with the new vote
@@ -136,20 +136,20 @@ poll.publishMessage(message2, ecdhKeypair2.pubKey);
 const poll = maciState.polls[pollId];
 const command = new PCommand(
   BigInt(user1StateIndex),
-  secondKeyPair.pubKey,
+  secondKeyPair.publicKey,
   user1VoteOptionIndex,
   user1NewVoteWeight,
   BigInt(1),
   BigInt(pollId),
 );
 
-const signature = command.sign(user1Keypair.privKey);
+const signature = command.sign(user1Keypair.privateKey);
 
 const ecdhKeypair = new Keypair();
-const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
 
 const message = command.encrypt(signature, sharedKey);
-poll.publishMessage(message, ecdhKeypair.pubKey);
+poll.publishMessage(message, ecdhKeypair.publicKey);
 ```
 
 - We process the votes and check that the result is as expected (`user1NewVoteWeight` was 5 and `user2VoteWeight` 3)
@@ -168,8 +168,8 @@ expect(poll.perVOSpentVoiceCredits[1].toString()).to.eq((user2VoteWeight * user2
 const poll = maciState.polls[pollId];
 const stateLeaf1 = poll.stateLeaves[user1StateIndex];
 const stateLeaf2 = poll.stateLeaves[user2StateIndex];
-expect(stateLeaf1.pubKey.equals(user1SecondKeypair.pubKey)).to.eq(true);
-expect(stateLeaf2.pubKey.equals(user2Keypair.pubKey)).to.eq(true);
+expect(stateLeaf1.publicKey.equals(user1SecondKeypair.publicKey)).to.eq(true);
+expect(stateLeaf2.publicKey.equals(user2Keypair.publicKey)).to.eq(true);
 ```
 
 We see that is important that we set the final message (the one with the new vote) with nonce 1, as this vote would be counted as the first vote.

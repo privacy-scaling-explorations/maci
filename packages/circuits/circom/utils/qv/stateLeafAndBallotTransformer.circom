@@ -85,8 +85,8 @@ template StateLeafAndBallotTransformer() {
     );
 
     // If the message is valid then we swap out the public key.
-    // This means using a Mux1() for pubKey[0] and another one
-    // for pubKey[1].
+    // This means using a Mux1() for publicKey[0] and another one
+    // for publicKey[1].
     var computedNewSlPubKey0Mux = Mux1()([slPubKey[0], cmdNewPubKey[0]], computedMessageValidator);
     var computedNewSlPubKey1Mux = Mux1()([slPubKey[1], cmdNewPubKey[1]], computedMessageValidator);
 

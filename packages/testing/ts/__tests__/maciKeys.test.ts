@@ -1,5 +1,5 @@
 import { genPrivKey, genPubKey } from "@maci-protocol/crypto";
-import { Keypair, PrivKey, PubKey } from "@maci-protocol/domainobjs";
+import { Keypair, PrivateKey, PublicKey } from "@maci-protocol/domainobjs";
 import { Poll__factory as PollFactory, type Poll, getDefaultSigner } from "@maci-protocol/sdk";
 import { expect } from "chai";
 
@@ -21,10 +21,10 @@ describe("integration tests private/public/keypair", () => {
     it("should serialize and deserialize a private key correctly", () => {
       const privateKeyCrypto = genPrivKey();
 
-      const privKeyDomainobjs = new PrivKey(privateKeyCrypto);
+      const privKeyDomainobjs = new PrivateKey(privateKeyCrypto);
       const privKeyDomainobjsSerialized = privKeyDomainobjs.serialize();
 
-      const privKeyDomainobjsDeserialized = PrivKey.deserialize(privKeyDomainobjsSerialized);
+      const privKeyDomainobjsDeserialized = PrivateKey.deserialize(privKeyDomainobjsSerialized);
 
       expect(privKeyDomainobjsDeserialized.rawPrivKey.toString()).to.eq(privateKeyCrypto.toString());
     });
@@ -34,10 +34,10 @@ describe("integration tests private/public/keypair", () => {
 
       const publicKeyCrypto = genPubKey(privateKeyCrypto);
 
-      const pubKeyDomainobjs = new PubKey(publicKeyCrypto);
+      const pubKeyDomainobjs = new PublicKey(publicKeyCrypto);
 
       const pubKeyDomainobjsSerialized = pubKeyDomainobjs.serialize();
-      const pubKeyDomainobjsDeserialized = PubKey.deserialize(pubKeyDomainobjsSerialized);
+      const pubKeyDomainobjsDeserialized = PublicKey.deserialize(pubKeyDomainobjsSerialized);
 
       expect(pubKeyDomainobjsDeserialized.rawPubKey[0].toString()).to.eq(publicKeyCrypto[0].toString());
       expect(pubKeyDomainobjsDeserialized.rawPubKey[1].toString()).to.eq(publicKeyCrypto[1].toString());
@@ -46,20 +46,20 @@ describe("integration tests private/public/keypair", () => {
     it("should serialize and deserialize a private key correct after serializing as contract params", () => {
       const privateKeyCrypto = genPrivKey();
 
-      const privKeyDomainobjs = new PrivKey(privateKeyCrypto);
+      const privKeyDomainobjs = new PrivateKey(privateKeyCrypto);
       const keypairDomainobjs = new Keypair(privKeyDomainobjs);
 
-      const pubKeyDomainobjsAsContractParam = keypairDomainobjs.pubKey.asContractParam();
+      const pubKeyDomainobjsAsContractParam = keypairDomainobjs.publicKey.asContractParam();
 
       const privKeyDomainobjsSerialized = privKeyDomainobjs.serialize();
 
-      const privKeyDomainobjsDeserialized = PrivKey.deserialize(privKeyDomainobjsSerialized);
+      const privKeyDomainobjsDeserialized = PrivateKey.deserialize(privKeyDomainobjsSerialized);
       const keypairDomainobjsDeserialized = new Keypair(privKeyDomainobjsDeserialized);
 
-      expect(keypairDomainobjsDeserialized.pubKey.rawPubKey[0].toString()).to.eq(
+      expect(keypairDomainobjsDeserialized.publicKey.rawPubKey[0].toString()).to.eq(
         pubKeyDomainobjsAsContractParam.x.toString(),
       );
-      expect(keypairDomainobjsDeserialized.pubKey.rawPubKey[1].toString()).to.eq(
+      expect(keypairDomainobjsDeserialized.publicKey.rawPubKey[1].toString()).to.eq(
         pubKeyDomainobjsAsContractParam.y.toString(),
       );
     });
@@ -91,25 +91,25 @@ describe("integration tests private/public/keypair", () => {
     });
 
     it("should have the correct coordinator pub key set on chain", async () => {
-      const onChainKey = await pollContract.coordinatorPubKey();
-      expect(onChainKey.x.toString()).to.eq(coordinatorKeypair.pubKey.rawPubKey[0].toString());
-      expect(onChainKey.y.toString()).to.eq(coordinatorKeypair.pubKey.rawPubKey[1].toString());
+      const onChainKey = await pollContract.coordinatorPublicKey();
+      expect(onChainKey.x.toString()).to.eq(coordinatorKeypair.publicKey.rawPubKey[0].toString());
+      expect(onChainKey.y.toString()).to.eq(coordinatorKeypair.publicKey.rawPubKey[1].toString());
     });
 
     it("should serialize and deserialize the coordinator private key to match the on chain key", async () => {
-      const onChainKey = await pollContract.coordinatorPubKey();
+      const onChainKey = await pollContract.coordinatorPublicKey();
 
-      const coordinatorPrivKeySerialized = coordinatorKeypair.privKey.serialize();
-      const coordinatorPrivKeyDeserialized = PrivKey.deserialize(coordinatorPrivKeySerialized);
+      const coordinatorPrivKeySerialized = coordinatorKeypair.privateKey.serialize();
+      const coordinatorPrivKeyDeserialized = PrivateKey.deserialize(coordinatorPrivKeySerialized);
       const coordinatorKeypairDeserialized = new Keypair(coordinatorPrivKeyDeserialized);
 
-      expect(coordinatorKeypairDeserialized.pubKey.rawPubKey[0].toString()).to.eq(onChainKey.x.toString());
-      expect(coordinatorKeypairDeserialized.pubKey.rawPubKey[1].toString()).to.eq(onChainKey.y.toString());
+      expect(coordinatorKeypairDeserialized.publicKey.rawPubKey[0].toString()).to.eq(onChainKey.x.toString());
+      expect(coordinatorKeypairDeserialized.publicKey.rawPubKey[1].toString()).to.eq(onChainKey.y.toString());
     });
 
     it("should have a matching coordinator public key hash", async () => {
       const onChainKeyHash = await pollContract.coordinatorPubKeyHash();
-      const coordinatorPubKeyHash = coordinatorKeypair.pubKey.hash();
+      const coordinatorPubKeyHash = coordinatorKeypair.publicKey.hash();
 
       expect(onChainKeyHash.toString()).to.eq(coordinatorPubKeyHash.toString());
     });

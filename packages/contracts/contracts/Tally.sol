@@ -100,7 +100,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
   /// @notice Check if all ballots are tallied
   /// @return tallied whether all ballots are tallied
   function isTallied() public view returns (bool tallied) {
-    (uint8 intStateTreeDepth, ) = poll.treeDepths();
+    (uint8 intStateTreeDepth, , ) = poll.treeDepths();
     (uint256 numSignUps, ) = poll.numSignUpsAndMessages();
 
     // Require that there are untallied ballots left
@@ -126,7 +126,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
     updateSbCommitment();
 
     // get the batch size and start index
-    (uint8 intStateTreeDepth, ) = poll.treeDepths();
+    (uint8 intStateTreeDepth, , ) = poll.treeDepths();
     uint256 tallyBatchSize = TREE_ARITY ** intStateTreeDepth;
     uint256 batchStartIndex = tallyBatchNum * tallyBatchSize;
 
@@ -178,7 +178,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
     uint256 _newTallyCommitment,
     uint256[8] calldata _proof
   ) public view returns (bool isValid) {
-    (uint8 intStateTreeDepth, uint8 voteOptionTreeDepth) = poll.treeDepths();
+    (uint8 intStateTreeDepth, uint8 voteOptionTreeDepth, ) = poll.treeDepths();
     uint256[] memory circuitPublicInputs = getPublicCircuitInputs(_batchStartIndex, _newTallyCommitment);
     IMACI maci = poll.getMaciContract();
 
@@ -367,7 +367,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
       revert VotesNotTallied();
     }
 
-    (, uint8 voteOptionTreeDepth) = poll.treeDepths();
+    (, uint8 voteOptionTreeDepth, ) = poll.treeDepths();
     uint256 voteOptionsLength = args.voteOptionIndices.length;
 
     for (uint256 i = 0; i < voteOptionsLength; ) {

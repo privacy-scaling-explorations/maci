@@ -3,10 +3,10 @@
 export type SnarkBigNumber = bigint | string;
 
 // a private key is a single BigNumber
-export type PrivKey = SnarkBigNumber;
+export type PrivateKey = SnarkBigNumber;
 
 // a public key is a pair of BigNumbers
-export type PubKey<N = bigint> = [N, N];
+export type PublicKey<N = bigint> = [N, N];
 
 // a shared key is a pair of BigNumbers
 export type EcdhSharedKey<N = bigint> = [N, N];
@@ -35,8 +35,8 @@ export interface Queue {
  * A private key and a public key
  */
 export interface Keypair {
-  privKey: PrivKey;
-  pubKey: PubKey;
+  privateKey: PrivateKey;
+  publicKey: PublicKey;
 }
 
 // An EdDSA signature.

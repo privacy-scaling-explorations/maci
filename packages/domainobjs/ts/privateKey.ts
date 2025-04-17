@@ -1,17 +1,17 @@
-import { formatPrivKeyForBabyJub, type PrivKey as RawPrivKey } from "@maci-protocol/crypto";
+import { formatPrivKeyForBabyJub, type PrivateKey as RawPrivKey } from "@maci-protocol/crypto";
 
 import type { IJsonPrivateKey } from "./types";
 
 export const SERIALIZED_PRIV_KEY_PREFIX = "macisk.";
 
 /**
- * @notice PrivKey is a TS Class representing a MACI PrivateKey
+ * @notice PrivateKey is a TS Class representing a MACI PrivateKey
  * which is a seed to be used to generate a public key (point on the curve)
  * This is a MACI private key, which is not to be
  * confused with an Ethereum private key.
  * A serialized MACI private key is prefixed by 'macisk.'
  */
-export class PrivKey {
+export class PrivateKey {
   rawPrivKey: RawPrivKey;
 
   /**
@@ -26,7 +26,7 @@ export class PrivKey {
    * Create a copy of this Private key
    * @returns a copy of the Private key
    */
-  copy = (): PrivKey => new PrivKey(BigInt(this.rawPrivKey.toString()));
+  copy = (): PrivateKey => new PrivateKey(BigInt(this.rawPrivKey.toString()));
 
   /**
    * Return this Private key as a circuit input
@@ -52,9 +52,9 @@ export class PrivKey {
    * @param s the serialized private key
    * @returns the deserialized private key
    */
-  static deserialize = (s: string): PrivKey => {
+  static deserialize = (s: string): PrivateKey => {
     const x = s.slice(SERIALIZED_PRIV_KEY_PREFIX.length);
-    return new PrivKey(BigInt(`0x${x}`));
+    return new PrivateKey(BigInt(`0x${x}`));
   };
 
   /**
@@ -74,16 +74,16 @@ export class PrivKey {
    */
   toJSON(): IJsonPrivateKey {
     return {
-      privKey: this.serialize(),
+      privateKey: this.serialize(),
     };
   }
 
   /**
    * Deserialize this object from a JSON object
    * @param json - the json object
-   * @returns the deserialized object as a PrivKey instance
+   * @returns the deserialized object as a PrivateKey instance
    */
-  static fromJSON(json: IJsonPrivateKey): PrivKey {
-    return PrivKey.deserialize(json.privKey);
+  static fromJSON(json: IJsonPrivateKey): PrivateKey {
+    return PrivateKey.deserialize(json.privateKey);
   }
 }

@@ -41,14 +41,14 @@ describe("message", () => {
     const keypair = new Keypair();
     it("should produce a hash", () => {
       const msg = new Message(Array<bigint>(10).fill(BigInt(0)));
-      const h = msg.hash(keypair.pubKey);
+      const h = msg.hash(keypair.publicKey);
       expect(h).to.not.eq(null);
     });
     it("should produce the same hash for the same ballot", () => {
       const msg1 = new Message(Array<bigint>(10).fill(BigInt(0)));
       const msg2 = new Message(Array<bigint>(10).fill(BigInt(0)));
-      const h1 = msg1.hash(keypair.pubKey);
-      const h2 = msg2.hash(keypair.pubKey);
+      const h1 = msg1.hash(keypair.publicKey);
+      const h2 = msg2.hash(keypair.publicKey);
       expect(h1).to.eq(h2);
     });
   });

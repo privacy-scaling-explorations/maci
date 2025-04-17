@@ -7,7 +7,7 @@ import {
   IBasePolicy__factory as SignUpPolicyFactory,
 } from "@maci-protocol/contracts";
 import { VOTE_OPTION_TREE_ARITY } from "@maci-protocol/core";
-import { PubKey } from "@maci-protocol/domainobjs";
+import { PublicKey } from "@maci-protocol/domainobjs";
 
 import type { IDeployPollArgs, IPollContractsData } from "./types";
 
@@ -27,7 +27,8 @@ export const deployPoll = async ({
   intStateTreeDepth,
   voteOptionTreeDepth,
   messageBatchSize,
-  coordinatorPubKey,
+  stateTreeDepth,
+  coordinatorPublicKey,
   verifierContractAddress,
   vkRegistryContractAddress,
   mode,
@@ -117,7 +118,7 @@ export const deployPoll = async ({
   }
 
   // we check that the coordinator's public key is valid
-  if (!PubKey.isValidSerializedPubKey(coordinatorPubKey.serialize())) {
+  if (!PublicKey.isValidSerializedPubKey(coordinatorPublicKey.serialize())) {
     throw new Error("Invalid MACI public key");
   }
 
@@ -128,9 +129,10 @@ export const deployPoll = async ({
       treeDepths: {
         intStateTreeDepth,
         voteOptionTreeDepth,
+        stateTreeDepth,
       },
       messageBatchSize,
-      coordinatorPubKey: coordinatorPubKey.asContractParam(),
+      coordinatorPublicKey: coordinatorPublicKey.asContractParam(),
       verifier: verifierContractAddress,
       vkRegistry: vkRegistryContractAddress,
       mode,

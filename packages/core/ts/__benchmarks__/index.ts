@@ -30,7 +30,7 @@ export default function runCore(): void {
         const userKeypair = new Keypair();
         users.push(userKeypair);
 
-        maciState.signUp(userKeypair.pubKey);
+        maciState.signUp(userKeypair.publicKey);
       }
 
       const pollId = maciState.deployPoll(
@@ -50,19 +50,19 @@ export default function runCore(): void {
 
         const command = new PCommand(
           BigInt(i + 1),
-          userKeypair.pubKey,
+          userKeypair.publicKey,
           BigInt(i), // vote option index
           voteWeight,
           1n,
           BigInt(pollId),
         );
 
-        const signature = command.sign(userKeypair.privKey);
+        const signature = command.sign(userKeypair.privateKey);
 
         const ecdhKeypair = new Keypair();
-        const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, COORDINATOR_KEYPAIR.pubKey);
+        const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, COORDINATOR_KEYPAIR.publicKey);
         const message = command.encrypt(signature, sharedKey);
-        poll.publishMessage(message, ecdhKeypair.pubKey);
+        poll.publishMessage(message, ecdhKeypair.publicKey);
       }
 
       // 4 invalid votes
@@ -70,19 +70,19 @@ export default function runCore(): void {
         const userKeypair = users[i];
         const command = new PCommand(
           BigInt(i + 1),
-          userKeypair.pubKey,
+          userKeypair.publicKey,
           BigInt(i), // vote option index
           VOICE_CREDIT_BALANCE * 2n, // invalid vote weight
           1n,
           BigInt(pollId),
         );
 
-        const signature = command.sign(userKeypair.privKey);
+        const signature = command.sign(userKeypair.privateKey);
 
         const ecdhKeypair = new Keypair();
-        const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, COORDINATOR_KEYPAIR.pubKey);
+        const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, COORDINATOR_KEYPAIR.publicKey);
         const message = command.encrypt(signature, sharedKey);
-        poll.publishMessage(message, ecdhKeypair.pubKey);
+        poll.publishMessage(message, ecdhKeypair.publicKey);
       }
 
       // Process messages

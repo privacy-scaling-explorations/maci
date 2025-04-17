@@ -19,8 +19,8 @@ contract Utilities is SnarkConstants, DomainObjs, Hasher {
   /// @return ciphertext The hash of the state leaf
   function hashStateLeaf(StateLeaf memory _stateLeaf) public pure returns (uint256 ciphertext) {
     uint256[3] memory plaintext;
-    plaintext[0] = _stateLeaf.pubKey.x;
-    plaintext[1] = _stateLeaf.pubKey.y;
+    plaintext[0] = _stateLeaf.publicKey.x;
+    plaintext[1] = _stateLeaf.publicKey.y;
     plaintext[2] = _stateLeaf.voiceCreditBalance;
 
     ciphertext = hash3(plaintext);
@@ -33,13 +33,13 @@ contract Utilities is SnarkConstants, DomainObjs, Hasher {
   /// @return msgHash The hash of the padded message and encryption key
   function padAndHashMessage(
     uint256[2] memory dataToPad
-  ) public pure returns (Message memory message, PubKey memory padKey, uint256 msgHash) {
+  ) public pure returns (Message memory message, PublicKey memory padKey, uint256 msgHash) {
     // add data and pad it to 10 elements (automatically cause it's the default value)
     uint256[10] memory dat;
     dat[0] = dataToPad[0];
     dat[1] = dataToPad[1];
 
-    padKey = PubKey(PAD_PUBKEY_X, PAD_PUBKEY_Y);
+    padKey = PublicKey(PAD_PUBKEY_X, PAD_PUBKEY_Y);
     message = Message({ data: dat });
     msgHash = hashMessageAndEncPubKey(message, padKey);
   }
@@ -50,7 +50,7 @@ contract Utilities is SnarkConstants, DomainObjs, Hasher {
   /// @return msgHash The hash of the message and the encryption public key
   function hashMessageAndEncPubKey(
     Message memory _message,
-    PubKey memory _encPubKey
+    PublicKey memory _encPubKey
   ) public pure returns (uint256 msgHash) {
     if (_message.data.length != 10) {
       revert InvalidMessage();

@@ -1,10 +1,12 @@
 /* eslint-disable no-console */
-import { PubKey } from "@maci-protocol/domainobjs";
+import { IVkObjectParams, PublicKey, VerifyingKey } from "@maci-protocol/domainobjs";
 import { ZeroAddress } from "ethers";
 
-import type { MACI, Poll, IBasePolicy, PollFactory } from "../../../typechain-types";
+import type { IVerifyingKeyStruct } from "../../../ts/types";
+import type { MACI, Poll, IBasePolicy, PollFactory, VkRegistry } from "../../../typechain-types";
 
 import { EMode } from "../../../ts/constants";
+import { extractVk } from "../../../ts/proofs";
 import { EDeploySteps, FULL_POLICY_NAMES } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
@@ -39,11 +41,14 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
     const maciContract = await deployment.getContract<MACI>({ name: EContracts.MACI });
     const pollId = await maciContract.nextPollId();
 
-    const coordinatorPubkey = deployment.getDeployConfigField<string>(EContracts.Poll, "coordinatorPubkey");
+    const coordinatorPublicKey = deployment.getDeployConfigField<string>(EContracts.Poll, "coordinatorPublicKey");
     const pollStartTimestamp = deployment.getDeployConfigField<number>(EContracts.Poll, "pollStartDate");
     const pollEndTimestamp = deployment.getDeployConfigField<number>(EContracts.Poll, "pollEndDate");
     const intStateTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "intStateTreeDepth");
     const messageBatchSize = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageBatchSize");
+    const stateTreeDepth =
+      deployment.getDeployConfigField<number>(EContracts.Poll, "stateTreeDepth") ||
+      (await maciContract.stateTreeDepth());
     const voteOptionTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "voteOptionTreeDepth");
     const relayers = deployment
       .getDeployConfigField<string | undefined>(EContracts.Poll, "relayers")
@@ -52,7 +57,7 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
 
     const useQuadraticVoting =
       deployment.getDeployConfigField<boolean | null>(EContracts.Poll, "useQuadraticVoting") ?? false;
-    const unserializedKey = PubKey.deserialize(coordinatorPubkey);
+    const unserializedKey = PublicKey.deserialize(coordinatorPublicKey);
     const mode = useQuadraticVoting ? EMode.QV : EMode.NON_QV;
 
     const policy =
@@ -66,6 +71,58 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
 
     const voteOptions = deployment.getDeployConfigField<number>(EContracts.Poll, "voteOptions");
 
+    const vkRegistryContract = await deployment.getContract<VkRegistry>({
+      name: EContracts.VkRegistry,
+      address: vkRegistryContractAddress,
+    });
+
+    const pollJoiningZkeyPath = deployment.getDeployConfigField<string>(
+      EContracts.VkRegistry,
+      "zkeys.pollJoiningZkey.zkey",
+    );
+    const pollJoinedZkeyPath = deployment.getDeployConfigField<string>(
+      EContracts.VkRegistry,
+      "zkeys.pollJoinedZkey.zkey",
+    );
+
+    const [pollJoiningVk, pollJoinedVk] = await Promise.all([
+      pollJoiningZkeyPath && extractVk(pollJoiningZkeyPath),
+      pollJoinedZkeyPath && extractVk(pollJoinedZkeyPath),
+    ]).then((vks) => vks.map((vk: IVkObjectParams | "" | undefined) => vk && VerifyingKey.fromObj(vk)));
+
+    if (!pollJoiningVk) {
+      throw new Error("Poll joining zkey is not set");
+    }
+
+    if (!pollJoinedVk) {
+      throw new Error("Poll joined zkey is not set");
+    }
+
+    const [pollJoiningVkSig, pollJoinedVkSig] = await Promise.all([
+      vkRegistryContract.genPollJoiningVkSig(stateTreeDepth),
+      vkRegistryContract.genPollJoinedVkSig(stateTreeDepth),
+    ]);
+    const [pollJoiningVkOnchain, pollJoinedVkOnchain] = await Promise.all([
+      vkRegistryContract.getPollJoiningVkBySig(pollJoiningVkSig),
+      vkRegistryContract.getPollJoinedVkBySig(pollJoinedVkSig),
+    ]);
+
+    const isPollJoiningVkSet = pollJoiningVk.equals(VerifyingKey.fromContract(pollJoiningVkOnchain));
+
+    if (!isPollJoiningVkSet) {
+      await vkRegistryContract
+        .setPollJoiningVkKey(stateTreeDepth, pollJoiningVk.asContractParam() as IVerifyingKeyStruct)
+        .then((tx) => tx.wait());
+    }
+
+    const isPollJoinedVkSet = pollJoinedVk.equals(VerifyingKey.fromContract(pollJoinedVkOnchain));
+
+    if (!isPollJoinedVkSet) {
+      await vkRegistryContract
+        .setPollJoinedVkKey(stateTreeDepth, pollJoinedVk.asContractParam() as IVerifyingKeyStruct)
+        .then((tx) => tx.wait());
+    }
+
     const receipt = await maciContract
       .deployPoll({
         startDate: pollStartTimestamp,
@@ -73,9 +130,10 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
         treeDepths: {
           intStateTreeDepth,
           voteOptionTreeDepth,
+          stateTreeDepth,
         },
         messageBatchSize,
-        coordinatorPubKey: unserializedKey.asContractParam(),
+        coordinatorPublicKey: unserializedKey.asContractParam(),
         verifier: verifierContractAddress,
         vkRegistry: vkRegistryContractAddress,
         mode,

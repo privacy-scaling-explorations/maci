@@ -1,4 +1,4 @@
-import { PubKey } from "@maci-protocol/domainobjs";
+import { PublicKey } from "@maci-protocol/domainobjs";
 import { getDefaultSigner, MACI__factory as MACIFactory, Poll__factory as PollFactory } from "@maci-protocol/sdk";
 import { Injectable, Logger } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
@@ -46,7 +46,7 @@ export class MessageService {
 
     const hashes = await Promise.all(
       args.messages.map(({ data, publicKey }) =>
-        pollContract.hashMessageAndEncPubKey({ data }, PubKey.deserialize(publicKey).asContractParam()),
+        pollContract.hashMessageAndEncPubKey({ data }, PublicKey.deserialize(publicKey).asContractParam()),
       ),
     );
 

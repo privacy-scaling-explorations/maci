@@ -21,7 +21,7 @@ describe("MessageValidator circuit", function test() {
         "originalNonce",
         "nonce",
         "cmd",
-        "pubKey",
+        "publicKey",
         "sigR8",
         "sigS",
         "currentVoiceCreditBalance",
@@ -39,12 +39,12 @@ describe("MessageValidator circuit", function test() {
     });
 
     before(() => {
-      const { privKey, pubKey } = new Keypair();
+      const { privateKey, publicKey } = new Keypair();
 
       // Note that the command fields don't matter in this test
       const command: PCommand = new PCommand(
         BigInt(1),
-        pubKey,
+        publicKey,
         BigInt(2),
         BigInt(3),
         BigInt(4),
@@ -52,7 +52,7 @@ describe("MessageValidator circuit", function test() {
         genRandomSalt(),
       );
 
-      const signature = command.sign(privKey);
+      const signature = command.sign(privateKey);
 
       circuitInputs = {
         stateTreeIndex: 0n,
@@ -62,7 +62,7 @@ describe("MessageValidator circuit", function test() {
         originalNonce: 1n,
         nonce: 2n,
         cmd: command.asCircuitInputs(),
-        pubKey: pubKey.asCircuitInputs() as unknown as [bigint, bigint],
+        publicKey: publicKey.asCircuitInputs() as unknown as [bigint, bigint],
         sigR8: signature.R8 as unknown as bigint,
         sigS: signature.S as bigint,
         currentVoiceCreditBalance: 100n,
@@ -95,9 +95,9 @@ describe("MessageValidator circuit", function test() {
       expect(isVoteOptionIndexValid.toString()).to.be.eq("1");
     });
 
-    it("should be invalid if the pubkey is invalid", async () => {
+    it("should be invalid if the publicKey is invalid", async () => {
       const circuitInputs2 = circuitInputs;
-      circuitInputs2.pubKey = [0n, 1n];
+      circuitInputs2.publicKey = [0n, 1n];
       const witness = await circuit.calculateWitness(circuitInputs2);
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
@@ -186,7 +186,7 @@ describe("MessageValidator circuit", function test() {
         "originalNonce",
         "nonce",
         "cmd",
-        "pubKey",
+        "publicKey",
         "sigR8",
         "sigS",
         "currentVoiceCreditBalance",
@@ -204,12 +204,12 @@ describe("MessageValidator circuit", function test() {
     });
 
     before(() => {
-      const { privKey, pubKey } = new Keypair();
+      const { privateKey, publicKey } = new Keypair();
 
       // Note that the command fields don't matter in this test
       const command: PCommand = new PCommand(
         BigInt(1),
-        pubKey,
+        publicKey,
         BigInt(2),
         BigInt(3),
         BigInt(4),
@@ -217,7 +217,7 @@ describe("MessageValidator circuit", function test() {
         genRandomSalt(),
       );
 
-      const signature = command.sign(privKey);
+      const signature = command.sign(privateKey);
 
       circuitInputs = {
         stateTreeIndex: 0n,
@@ -227,7 +227,7 @@ describe("MessageValidator circuit", function test() {
         originalNonce: 1n,
         nonce: 2n,
         cmd: command.asCircuitInputs(),
-        pubKey: pubKey.asCircuitInputs() as unknown as [bigint, bigint],
+        publicKey: publicKey.asCircuitInputs() as unknown as [bigint, bigint],
         sigR8: signature.R8 as unknown as bigint,
         sigS: signature.S as bigint,
         currentVoiceCreditBalance: 100n,
@@ -260,9 +260,9 @@ describe("MessageValidator circuit", function test() {
       expect(isVoteOptionIndexValid.toString()).to.be.eq("1");
     });
 
-    it("should be invalid if the pubkey is invalid", async () => {
+    it("should be invalid if the publicKey is invalid", async () => {
       const circuitInputs2 = circuitInputs;
-      circuitInputs2.pubKey = [0n, 1n];
+      circuitInputs2.publicKey = [0n, 1n];
       const witness = await circuit.calculateWitness(circuitInputs2);
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");

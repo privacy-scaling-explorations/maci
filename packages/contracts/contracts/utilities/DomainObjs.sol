@@ -22,9 +22,9 @@ contract DomainObjs {
     uint256[MESSAGE_DATA_LENGTH] data;
   }
 
-  /// @title PubKey
+  /// @title PublicKey
   /// @notice A MACI public key
-  struct PubKey {
+  struct PublicKey {
     uint256 x;
     uint256 y;
   }
@@ -34,7 +34,7 @@ contract DomainObjs {
   /// @dev used to represent a user's state
   /// in the state Merkle tree
   struct StateLeaf {
-    PubKey pubKey;
+    PublicKey publicKey;
     uint256 voiceCreditBalance;
   }
 }

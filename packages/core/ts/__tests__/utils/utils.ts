@@ -1,5 +1,5 @@
 import { Signature } from "@maci-protocol/crypto";
-import { PCommand, Message, Keypair, PubKey } from "@maci-protocol/domainobjs";
+import { PCommand, Message, Keypair, PublicKey } from "@maci-protocol/domainobjs";
 
 import { MaciState } from "../../MaciState";
 import { Poll } from "../../Poll";
@@ -64,18 +64,18 @@ export class TestHarness {
    * @param user - The keypair of the user.
    * @returns The index of the newly signed-up user in the state tree.
    */
-  signup = (user: Keypair): number => this.maciState.signUp(user.pubKey);
+  signup = (user: Keypair): number => this.maciState.signUp(user.publicKey);
 
   /**
    * Join a poll.
    *
    * @param nullifier - The nullifier
-   * @param pubKey - The public key
+   * @param publicKey - The public key
    * @param newVoiceCreditBalance - The new voice credit balance
    * @returns The index of added state leaf
    */
-  joinPoll = (nullifier: bigint, pubKey: PubKey, newVoiceCreditBalance: bigint): number =>
-    this.poll.joinPoll(nullifier, pubKey, newVoiceCreditBalance);
+  joinPoll = (nullifier: bigint, publicKey: PublicKey, newVoiceCreditBalance: bigint): number =>
+    this.poll.joinPoll(nullifier, publicKey, newVoiceCreditBalance);
 
   /**
    * Publishes a message to the MACI poll instance.
@@ -88,9 +88,9 @@ export class TestHarness {
   vote = (user: Keypair, stateIndex: number, voteOptionIndex: bigint, voteWeight: bigint, nonce: bigint): void => {
     const { command, signature } = this.createCommand(user, stateIndex, voteOptionIndex, voteWeight, nonce);
 
-    const { message, encPubKey } = this.createMessage(command, signature, this.coordinatorKeypair);
+    const { message, encryptionPublicKey } = this.createMessage(command, signature, this.coordinatorKeypair);
 
-    this.poll.publishMessage(message, encPubKey);
+    this.poll.publishMessage(message, encryptionPublicKey);
   };
 
   /**
@@ -104,11 +104,11 @@ export class TestHarness {
     command: PCommand,
     signature: Signature,
     coordinatorKeypair: Keypair,
-  ): { message: Message; encPubKey: PubKey } => {
+  ): { message: Message; encryptionPublicKey: PublicKey } => {
     const ecdhKeypair = new Keypair();
-    const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privKey, coordinatorKeypair.pubKey);
+    const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
     const message = command.encrypt(signature, sharedKey);
-    return { message, encPubKey: ecdhKeypair.pubKey };
+    return { message, encryptionPublicKey: ecdhKeypair.publicKey };
   };
 
   /**
@@ -129,14 +129,14 @@ export class TestHarness {
   ): { command: PCommand; signature: Signature } => {
     const command = new PCommand(
       BigInt(stateIndex),
-      user.pubKey,
+      user.publicKey,
       voteOptionIndex,
       voteWeight,
       nonce,
       BigInt(this.pollId),
     );
 
-    const signature = command.sign(user.privKey);
+    const signature = command.sign(user.privateKey);
 
     return { command, signature };
   };

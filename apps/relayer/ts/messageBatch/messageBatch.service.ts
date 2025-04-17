@@ -1,4 +1,4 @@
-import { PubKey } from "@maci-protocol/domainobjs";
+import { PublicKey } from "@maci-protocol/domainobjs";
 import { Injectable, Logger } from "@nestjs/common";
 import { validate } from "class-validator";
 import flatten from "lodash/flatten.js";
@@ -76,7 +76,7 @@ export class MessageBatchService {
       data: message.data,
       hash: message.hash,
       maciAddress: message.maciContractAddress,
-      publicKey: PubKey.deserialize(message.publicKey).asArray().map(String),
+      publicKey: PublicKey.deserialize(message.publicKey).asArray().map(String),
     }));
 
     const ipfsHash = await this.ipfsService.add(allMessages).catch((error) => {

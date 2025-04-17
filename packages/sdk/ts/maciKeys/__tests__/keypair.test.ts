@@ -1,5 +1,5 @@
 import { genPubKey } from "@maci-protocol/crypto";
-import { PubKey, PrivKey } from "@maci-protocol/domainobjs";
+import { PublicKey, PrivateKey } from "@maci-protocol/domainobjs";
 
 import { generateKeypair } from "../keypair";
 
@@ -13,13 +13,13 @@ describe("generateKeypair", () => {
     // Invoking the same command twice should result in different private keys
     expect(keypair1.privateKey).not.toBe(keypair2.privateKey);
     expect(keypair1.publicKey).not.toBe(keypair2.publicKey);
-    expect(PrivKey.deserialize(keypair1.privateKey)).toBeInstanceOf(PrivKey);
-    expect(PubKey.deserialize(keypair1.publicKey)).toBeInstanceOf(PubKey);
-    expect(PrivKey.deserialize(keypair2.privateKey)).toBeInstanceOf(PrivKey);
-    expect(PubKey.deserialize(keypair2.publicKey)).toBeInstanceOf(PubKey);
+    expect(PrivateKey.deserialize(keypair1.privateKey)).toBeInstanceOf(PrivateKey);
+    expect(PublicKey.deserialize(keypair1.publicKey)).toBeInstanceOf(PublicKey);
+    expect(PrivateKey.deserialize(keypair2.privateKey)).toBeInstanceOf(PrivateKey);
+    expect(PublicKey.deserialize(keypair2.publicKey)).toBeInstanceOf(PublicKey);
 
-    const publicKey2 = genPubKey(PrivKey.deserialize(keypair2.privateKey).rawPrivKey);
-    expect(PubKey.deserialize(keypair2.publicKey).rawPubKey[0].toString()).toBe(publicKey2[0].toString());
-    expect(PubKey.deserialize(keypair2.publicKey).rawPubKey[1].toString()).toBe(publicKey2[1].toString());
+    const publicKey2 = genPubKey(PrivateKey.deserialize(keypair2.privateKey).rawPrivKey);
+    expect(PublicKey.deserialize(keypair2.publicKey).rawPubKey[0].toString()).toBe(publicKey2[0].toString());
+    expect(PublicKey.deserialize(keypair2.publicKey).rawPubKey[1].toString()).toBe(publicKey2[1].toString());
   });
 });

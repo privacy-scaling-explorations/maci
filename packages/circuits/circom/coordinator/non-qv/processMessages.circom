@@ -5,11 +5,16 @@ include "./mux1.circom";
 // zk-kit imports
 include "./safe-comparators.circom";
 // local imports
-include "../../utils/hashers.circom";
-include "../../utils/messageToCommand.circom";
-include "../../utils/privToPubKey.circom";
+include "../../utils/PoseidonHasher.circom";
+include "../../utils/MessageHasher.circom";
+include "../../utils/MessageToCommand.circom";
+include "../../utils/PrivateToPublicKey.circom";
 include "../../utils/non-qv/stateLeafAndBallotTransformer.circom";
-include "../../utils/trees/incrementalMerkleTree.circom";
+include "../../utils/trees/MerkleTreeInclusionProof.circom";
+include "../../utils/trees/LeafExists.circom";
+include "../../utils/trees/CheckRoot.circom";
+include "../../utils/trees/MerkleGeneratePathIndices.circom";
+include "../../utils/trees/BinaryMerkleRoot.circom";
 include "../../utils/trees/incrementalQuinaryTree.circom";
 
 /**
@@ -50,11 +55,11 @@ include "../../utils/trees/incrementalQuinaryTree.circom";
     // Value of chainHash at end of batch
     signal input outputBatchHash;
     // The messages.
-    signal input msgs[batchSize][MSG_LENGTH];
+    signal input messages[batchSize][MSG_LENGTH];
     // The coordinator's private key.
-    signal input coordPrivKey;
+    signal input coordinatorPrivateKey;
     // The ECDH public key per message.
-    signal input encPubKeys[batchSize][2];
+    signal input encryptionPublicKeys[batchSize][2];
     // The current state root (before the processing).
     signal input currentStateRoot;
     // The actual tree depth (might be <= stateTreeDepth).
@@ -135,7 +140,7 @@ include "../../utils/trees/incrementalQuinaryTree.circom";
     chainHash[0] = inputBatchHash;
     for (var i = 0; i < batchSize; i++) {
         // calculate message hash
-        computedMessageHashers[i] = MessageHasher()(msgs[i], encPubKeys[i]);
+        computedMessageHashers[i] = MessageHasher()(messages[i], encryptionPublicKeys[i]);
         // check if message is valid or not (if index of message is less than index of last valid message in batch)
         var batchStartIndexValid = SafeLessThan(32)([index + i, batchEndIndex]);
         // calculate chain hash if message is valid
@@ -160,7 +165,7 @@ include "../../utils/trees/incrementalQuinaryTree.circom";
     // Ensure that the coordinator's public key from the contract is correct
     // based on the given private key - that is, the prover knows the
     // coordinator's private key.
-    var derivedPubKey[2] = PrivToPubKey()(coordPrivKey);
+    var derivedPubKey[2] = PrivateToPublicKey()(coordinatorPrivateKey);
     var derivedPubKeyHash = PoseidonHasher(2)(derivedPubKey);
     derivedPubKeyHash === coordinatorPublicKeyHash;
 
@@ -191,7 +196,7 @@ include "../../utils/trees/incrementalQuinaryTree.circom";
             computedCommandsSigR8[i],
             computedCommandsSigS[i],
             computedCommandsPackedCommandOut[i]
-        ) = MessageToCommand()(msgs[i], coordPrivKey, encPubKeys[i]);
+        ) = MessageToCommand()(messages[i], coordinatorPrivateKey, encryptionPublicKeys[i]);
     }
 
     // Process messages in reverse order.
@@ -441,3 +446,4 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
 
     newBallotRoot <== computedNewBallotQip;
 }
+

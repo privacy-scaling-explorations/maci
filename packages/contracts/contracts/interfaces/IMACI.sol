@@ -23,8 +23,8 @@ interface IMACI {
     Params.TreeDepths treeDepths;
     /// @param messageBatchSize The message batch size
     uint8 messageBatchSize;
-    /// @param coordinatorPubKey The coordinator's public key
-    DomainObjs.PubKey coordinatorPubKey;
+    /// @param coordinatorPublicKey The coordinator's public key
+    DomainObjs.PublicKey coordinatorPublicKey;
     /// @param verifier The Verifier Contract
     address verifier;
     /// @param vkRegistry The VkRegistry Contract
@@ -66,7 +66,7 @@ interface IMACI {
   ///     register() function. For instance, the POAPPolicy or
   ///     TokenPolicy requires this value to be the ABI-encoded
   ///     token ID.
-  function signUp(DomainObjs.PubKey memory _pubKey, bytes memory _signUpPolicyData) external;
+  function signUp(DomainObjs.PublicKey memory _pubKey, bytes memory _signUpPolicyData) external;
 
   /// @notice Return the state root when the '_index' user signed up
   /// @param _index The serial number when the user signed up
