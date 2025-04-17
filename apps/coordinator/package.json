@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "^0.97.0",
-    "@nestjs/common": "^11.0.17",
+    "@nestjs/common": "^11.0.20",
     "@nestjs/core": "^11.0.20",
     "@nestjs/platform-express": "^11.0.20",
     "@nestjs/platform-socket.io": "^11.0.20",
