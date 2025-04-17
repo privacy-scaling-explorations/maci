@@ -615,8 +615,8 @@ importers:
   packages/contracts:
     dependencies:
       '@excubiae/contracts':
-        specifier: ^0.10.0
-        version: 0.10.0
+        specifier: ^0.11.0
+        version: 0.11.0
       '@maci-protocol/core':
         specifier: ^3.0.0
         version: link:../core
@@ -2471,8 +2471,8 @@ packages:
   '@ethersproject/wordlists@5.8.0':
     resolution: {integrity: sha512-2df9bbXicZws2Sb5S6ET493uJ0Z84Fjr3pC4tu/qlnZERibZCeUVuqdtt+7Tv9xxhUxHoIekIA7avrKUWHrezg==}
 
-  '@excubiae/contracts@0.10.0':
-    resolution: {integrity: sha512-gHHpQRP0KDUfSa/a9v4EMZWVmcHytyUf5r87gp4hfeJwg1CNITJMYToghzFwPkQFAlpco6+aNqOzYR9PAS3I1A==}
+  '@excubiae/contracts@0.11.0':
+    resolution: {integrity: sha512-3knjyD7ILrCmZv89g1ha4ijm6nkb7clGm6qAiGWooNwDOPzwxBj8SlNJ2MzrzdwQJfSWhcqKdzRI4JkU3/iQxg==}
 
   '@fastify/busboy@2.1.1':
     resolution: {integrity: sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==}
@@ -15925,7 +15925,7 @@ snapshots:
       '@ethersproject/properties': 5.8.0
       '@ethersproject/strings': 5.8.0
 
-  '@excubiae/contracts@0.10.0':
+  '@excubiae/contracts@0.11.0':
     dependencies:
       '@openzeppelin/contracts': 5.3.0
       '@semaphore-protocol/contracts': 4.9.2
