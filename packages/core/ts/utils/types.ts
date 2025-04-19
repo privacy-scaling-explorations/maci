@@ -108,6 +108,7 @@ export interface IJsonPoll {
   chainHash: string;
   pollNullifiers: string[];
   batchHashes: string[];
+  mode?: string;
 }
 
 /**

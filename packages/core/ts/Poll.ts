@@ -56,7 +56,7 @@ export const VotingMode = {
   FULL_CREDIT: 2,
 } as const;
 
-export type VotingMode = (typeof VotingMode)[keyof typeof VotingMode];
+export type IVotingMode = (typeof VotingMode)[keyof typeof VotingMode];
 
 /**
  * A representation of the Poll contract.
@@ -143,7 +143,7 @@ export class Poll implements IPoll {
   pollNullifiers: Map<bigint, boolean>;
 
   // Add a mode property to the Poll class
-  mode: VotingMode;
+  mode: IVotingMode;
 
   // how many users signed up
   private numSignups = 0n;
@@ -165,7 +165,7 @@ export class Poll implements IPoll {
     batchSizes: BatchSizes,
     maciStateRef: MaciState,
     voteOptions: bigint,
-    mode: VotingMode = VotingMode.QV, // Default to QV for backward compatibility
+    mode: IVotingMode = VotingMode.QV, // Default to QV for backward compatibility
   ) {
     this.pollEndTimestamp = pollEndTimestamp;
     this.coordinatorKeypair = coordinatorKeypair;
@@ -286,7 +286,7 @@ export class Poll implements IPoll {
    * @param encryptionPublicKey - The public key associated with the encryption private key.
    * @returns A number of variables which will be used in the zk-SNARK circuit.
    */
-  processMessage = (message: Message, encryptionPublicKey: PubKey): IProcessMessagesOutput => {
+  processMessage = (message: Message, encryptionPublicKey: PublicKey): IProcessMessagesOutput => {
     try {
       // Decrypt the message
       const sharedKey = Keypair.genEcdhSharedKey(this.coordinatorKeypair.privateKey, encryptionPublicKey);
@@ -347,21 +347,20 @@ export class Poll implements IPoll {
           command.newVoteWeight * command.newVoteWeight;
       } else if (this.mode === VotingMode.NON_QV) {
         voiceCreditsLeft = stateLeaf.voiceCreditBalance + originalVoteWeight - command.newVoteWeight;
-      } else if (this.mode === VotingMode.FULL_CREDIT) {
+      } else {
+        // Mode must be FULL_CREDIT
         // Check if the new vote weight equals the available balance
         if (command.newVoteWeight !== stateLeaf.voiceCreditBalance + originalVoteWeight) {
           throw new ProcessMessageError(ProcessMessageErrors.IncorrectVoteWeightForFullCredit);
         }
         // After voting with full credits, the balance should be 0
         voiceCreditsLeft = 0n;
-      } else {
-        // Should not happen
-        throw new Error("Invalid voting mode");
       }
 
       // If the remaining voice credits is insufficient, do nothing
-      // (This check might be redundant for FULL_CREDIT if the above check is correct)
-      if (voiceCreditsLeft < 0n) {
+      // This check is necessary for QV and NON_QV modes.
+      // For FULL_CREDIT mode, voiceCreditsLeft is always 0n, so this check is skipped.
+      if (this.mode !== VotingMode.FULL_CREDIT && voiceCreditsLeft < 0n) {
         throw new ProcessMessageError(ProcessMessageErrors.InsufficientVoiceCredits);
       }
 
@@ -598,7 +597,7 @@ export class Poll implements IPoll {
    * @param quiet - Whether to log errors or not
    * @returns stringified circuit inputs
    */
-  processMessages = (pollId: bigint, qv = true, quiet = true): IProcessMessagesCircuitInputs => {
+  processMessages = (pollId: bigint, quiet = true): IProcessMessagesCircuitInputs => {
     assert(this.hasUnprocessedMessages(), "No more messages to process");
 
     const batchSize = this.batchSizes.messageBatchSize;
@@ -663,7 +662,7 @@ export class Poll implements IPoll {
 
         try {
           // check if the command is valid
-          const r = this.processMessage(message, encryptionPublicKey, qv);
+          const r = this.processMessage(message, encryptionPublicKey);
           const index = r.stateLeafIndex!;
 
           // we add at position 0 the original data
@@ -1483,6 +1482,15 @@ export class Poll implements IPoll {
    * @returns a new Poll instance
    */
   static fromJSON(json: IJsonPoll, maciState: MaciState): Poll {
+    // Safely determine the voting mode, default to QV if missing or invalid
+    let mode: IVotingMode = VotingMode.QV;
+    if (json.mode !== undefined) {
+      const modeKey = json.mode.toUpperCase() as keyof typeof VotingMode;
+      if (modeKey in VotingMode) {
+        mode = VotingMode[modeKey];
+      }
+    }
+
     const poll = new Poll(
       BigInt(json.pollEndTimestamp),
       new Keypair(),
@@ -1490,7 +1498,7 @@ export class Poll implements IPoll {
       json.batchSizes,
       maciState,
       BigInt(json.voteOptions),
-      json.mode as VotingMode,
+      mode, // Use the determined mode
     );
 
     // set all properties
