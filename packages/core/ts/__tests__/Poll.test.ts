@@ -215,7 +215,7 @@ describe("Poll", function test() {
       const message = command.encrypt(signature, sharedKey);
       poll.publishMessage(message, ecdhKeypair.publicKey);
       expect(() => {
-        poll.processMessage(message, ecdhKeypair.publicKey, false);
+        poll.processMessage(message, ecdhKeypair.publicKey);
       }).to.throw("insufficient voice credits");
     });
 
@@ -237,7 +237,7 @@ describe("Poll", function test() {
 
       const message = command.encrypt(signature, sharedKey);
       poll.publishMessage(message, ecdhKeypair.publicKey);
-      poll.processMessage(message, ecdhKeypair.publicKey, false);
+      poll.processMessage(message, ecdhKeypair.publicKey);
     });
   });
 
