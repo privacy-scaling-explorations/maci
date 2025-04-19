@@ -1,7 +1,7 @@
 import assert from "assert";
 import { randomBytes } from "crypto";
 
-import type { PrivKey } from "./types";
+import type { PrivateKey } from "./types";
 
 import { SNARK_FIELD_SIZE } from "./constants";
 
@@ -118,15 +118,15 @@ export const genRandomBabyJubValue = (): bigint => {
   // const min = (lim - SNARK_FIELD_SIZE) % SNARK_FIELD_SIZE
   const min = BigInt("6350874878119819312338956282401532410528162663560392320966563075034087161851");
 
-  let privKey: PrivKey = SNARK_FIELD_SIZE;
+  let privateKey: PrivateKey = SNARK_FIELD_SIZE;
 
   do {
     const rand = BigInt(`0x${randomBytes(32).toString("hex")}`);
 
     if (rand >= min) {
-      privKey = rand % SNARK_FIELD_SIZE;
+      privateKey = rand % SNARK_FIELD_SIZE;
     }
-  } while (privKey >= SNARK_FIELD_SIZE);
+  } while (privateKey >= SNARK_FIELD_SIZE);
 
-  return privKey;
+  return privateKey;
 };

@@ -1,5 +1,5 @@
 import { EMode, TAbi } from "@maci-protocol/contracts";
-import { PubKey } from "@maci-protocol/domainobjs";
+import { PublicKey } from "@maci-protocol/domainobjs";
 
 import type { Signer } from "ethers";
 
@@ -38,9 +38,14 @@ export interface IDeployPollArgs {
   messageBatchSize: number;
 
   /**
+   * The poll state tree depth
+   */
+  stateTreeDepth: number;
+
+  /**
    * The coordinator public key
    */
-  coordinatorPubKey: PubKey;
+  coordinatorPublicKey: PublicKey;
 
   /**
    * The address of the verifier contract

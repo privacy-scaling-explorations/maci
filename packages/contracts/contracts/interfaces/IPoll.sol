@@ -16,7 +16,7 @@ interface IPoll {
   /// @param _initialVoiceCreditProxyData Data to pass to the InitialVoiceCreditProxy
   function joinPoll(
     uint256 _nullifier,
-    DomainObjs.PubKey calldata _pubKey,
+    DomainObjs.PublicKey calldata _pubKey,
     uint256 _stateRootIndex,
     uint256[8] calldata _proof,
     bytes memory _signUpPolicyData,
@@ -41,15 +41,15 @@ interface IPoll {
   /// @param _encPubKey An ephemeral public key which can be combined with the
   /// coordinator's private key to generate an ECDH shared key with which
   /// to encrypt the message.
-  function publishMessage(DomainObjs.Message calldata _message, DomainObjs.PubKey calldata _encPubKey) external;
+  function publishMessage(DomainObjs.Message calldata _message, DomainObjs.PublicKey calldata _encPubKey) external;
 
   /// @notice Submit a message batch
   /// @dev Can only be submitted before the voting deadline
   /// @param _messages the messages
-  /// @param _encPubKeys the encrypted public keys
+  /// @param _encryptionPublicKeys the encryption public keys
   function publishMessageBatch(
     DomainObjs.Message[] calldata _messages,
-    DomainObjs.PubKey[] calldata _encPubKeys
+    DomainObjs.PublicKey[] calldata _encryptionPublicKeys
   ) external;
 
   /// @notice Allows relayer to publish messages using IPFS.
@@ -82,7 +82,11 @@ interface IPoll {
   /// @notice Get the depths of the merkle trees
   /// @return intStateTreeDepth The depth of the state tree
   /// @return voteOptionTreeDepth The subdepth of the vote option tree
-  function treeDepths() external view returns (uint8 intStateTreeDepth, uint8 voteOptionTreeDepth);
+  /// @return stateTreeDepth The poll state tree depth
+  function treeDepths()
+    external
+    view
+    returns (uint8 intStateTreeDepth, uint8 voteOptionTreeDepth, uint8 stateTreeDepth);
 
   /// @notice Get the number of vote options for the poll
   /// @return voteOptions The number of vote options

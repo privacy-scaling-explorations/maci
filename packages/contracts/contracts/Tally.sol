@@ -39,7 +39,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
   ///   hashLeftRight(merkle root of the no. of spent voice credits per vote option, salt2)
   /// )
   ///
-  /// Non-QV:
+  /// Non-QV / Full-Credit:
   /// hash2(
   ///   hashLeftRight(merkle root of current results, salt0)
   ///   hashLeftRight(number of spent voice credits, salt1),
@@ -100,7 +100,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
   /// @notice Check if all ballots are tallied
   /// @return tallied whether all ballots are tallied
   function isTallied() public view returns (bool tallied) {
-    (uint8 intStateTreeDepth, ) = poll.treeDepths();
+    (uint8 intStateTreeDepth, , ) = poll.treeDepths();
     (uint256 numSignUps, ) = poll.numSignUpsAndMessages();
 
     // Require that there are untallied ballots left
@@ -126,7 +126,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
     updateSbCommitment();
 
     // get the batch size and start index
-    (uint8 intStateTreeDepth, ) = poll.treeDepths();
+    (uint8 intStateTreeDepth, , ) = poll.treeDepths();
     uint256 tallyBatchSize = TREE_ARITY ** intStateTreeDepth;
     uint256 batchStartIndex = tallyBatchNum * tallyBatchSize;
 
@@ -178,7 +178,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
     uint256 _newTallyCommitment,
     uint256[8] calldata _proof
   ) public view returns (bool isValid) {
-    (uint8 intStateTreeDepth, uint8 voteOptionTreeDepth) = poll.treeDepths();
+    (uint8 intStateTreeDepth, uint8 voteOptionTreeDepth, ) = poll.treeDepths();
     uint256[] memory circuitPublicInputs = getPublicCircuitInputs(_batchStartIndex, _newTallyCommitment);
     IMACI maci = poll.getMaciContract();
 
@@ -241,7 +241,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
   ) public view returns (bool isValid) {
     if (mode == Mode.QV) {
       isValid = verifyQvSpentVoiceCredits(_totalSpent, _totalSpentSalt, _resultCommitment, _perVOSpentVoiceCreditsHash);
-    } else if (mode == Mode.NON_QV) {
+    } else if (mode == Mode.NON_QV || mode == Mode.FULL_CREDIT) {
       isValid = verifyNonQvSpentVoiceCredits(_totalSpent, _totalSpentSalt, _resultCommitment);
     }
   }
@@ -349,7 +349,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
       tally[2] = _perVOSpentVoiceCreditsHash;
 
       isValid = hash3(tally) == tallyCommitment;
-    } else if (mode == Mode.NON_QV) {
+    } else if (mode == Mode.NON_QV || mode == Mode.FULL_CREDIT) {
       uint256[2] memory tally;
       tally[0] = hashLeftRight(computedRoot, _tallyResultSalt);
       tally[1] = _spentVoiceCreditsHash;
@@ -367,7 +367,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
       revert VotesNotTallied();
     }
 
-    (, uint8 voteOptionTreeDepth) = poll.treeDepths();
+    (, uint8 voteOptionTreeDepth, ) = poll.treeDepths();
     uint256 voteOptionsLength = args.voteOptionIndices.length;
 
     for (uint256 i = 0; i < voteOptionsLength; ) {

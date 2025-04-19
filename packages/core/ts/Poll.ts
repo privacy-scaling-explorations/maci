@@ -16,8 +16,8 @@ import {
   PCommand,
   Keypair,
   Ballot,
-  PubKey,
-  PrivKey,
+  PublicKey,
+  PrivateKey,
   Message,
   StateLeaf,
   blankStateLeaf,
@@ -49,11 +49,20 @@ import type { PathElements } from "@maci-protocol/crypto";
 import { STATE_TREE_ARITY, VOTE_OPTION_TREE_ARITY } from "./utils/constants";
 import { ProcessMessageErrors, ProcessMessageError } from "./utils/errors";
 
+// Define voting modes for TypeScript logic
+export const VotingMode = {
+  QV: 0,
+  NON_QV: 1,
+  FULL_CREDIT: 2,
+} as const;
+
+export type IVotingMode = (typeof VotingMode)[keyof typeof VotingMode];
+
 /**
  * A representation of the Poll contract.
  */
 export class Poll implements IPoll {
-  // Note that we only store the PubKey on-chain while this class stores the
+  // Note that we only store the PublicKey on-chain while this class stores the
   // Keypair for the sake of convenience
   coordinatorKeypair: Keypair;
 
@@ -64,9 +73,6 @@ export class Poll implements IPoll {
   voteOptions: bigint;
 
   maxVoteOptions: number;
-
-  // the depth of the state tree
-  stateTreeDepth: number;
 
   // the actual depth of the state tree (can be <= stateTreeDepth)
   actualStateTreeDepth: number;
@@ -81,11 +87,11 @@ export class Poll implements IPoll {
 
   commands: PCommand[] = [];
 
-  encPubKeys: PubKey[] = [];
+  encryptionPublicKeys: PublicKey[] = [];
 
   stateCopied = false;
 
-  pubKeys: PubKey[] = [padKey];
+  pubKeys: PublicKey[] = [padKey];
 
   stateTree?: LeanIMT;
 
@@ -136,6 +142,9 @@ export class Poll implements IPoll {
   // Poll voting nullifier
   pollNullifiers: Map<bigint, boolean>;
 
+  // Add a mode property to the Poll class
+  mode: IVotingMode;
+
   // how many users signed up
   private numSignups = 0n;
 
@@ -147,6 +156,7 @@ export class Poll implements IPoll {
    * @param batchSizes - The sizes of the batches used in the poll.
    * @param maciStateRef - The reference to the MACI state.
    * @param pollId - The poll id
+   * @param mode - The voting mode for the poll
    */
   constructor(
     pollEndTimestamp: bigint,
@@ -155,11 +165,13 @@ export class Poll implements IPoll {
     batchSizes: BatchSizes,
     maciStateRef: MaciState,
     voteOptions: bigint,
+    mode: IVotingMode = VotingMode.QV, // Default to QV for backward compatibility
   ) {
     this.pollEndTimestamp = pollEndTimestamp;
     this.coordinatorKeypair = coordinatorKeypair;
     this.treeDepths = treeDepths;
     this.batchSizes = batchSizes;
+    this.mode = mode; // Set the mode
     if (voteOptions > VOTE_OPTION_TREE_ARITY ** treeDepths.voteOptionTreeDepth) {
       throw new Error("Vote options cannot be greater than the number of leaves in the vote option tree");
     }
@@ -167,8 +179,7 @@ export class Poll implements IPoll {
     this.maxVoteOptions = VOTE_OPTION_TREE_ARITY ** treeDepths.voteOptionTreeDepth;
     this.maciStateRef = maciStateRef;
     this.pollId = BigInt(maciStateRef.polls.size);
-    this.stateTreeDepth = maciStateRef.stateTreeDepth;
-    this.actualStateTreeDepth = maciStateRef.stateTreeDepth;
+    this.actualStateTreeDepth = treeDepths.stateTreeDepth;
     this.currentMessageBatchIndex = 0;
 
     this.pollNullifiers = new Map<bigint, boolean>();
@@ -189,12 +200,12 @@ export class Poll implements IPoll {
   /**
    * Join the anonymous user to the Poll (to the tree)
    * @param nullifier - Hashed private key used as nullifier
-   * @param pubKey - The poll public key.
+   * @param publicKey - The poll public key.
    * @param newVoiceCreditBalance - New voice credit balance of the user.
    * @returns The index of added state leaf
    */
-  joinPoll = (nullifier: bigint, pubKey: PubKey, newVoiceCreditBalance: bigint): number => {
-    const stateLeaf = new StateLeaf(pubKey, newVoiceCreditBalance);
+  joinPoll = (nullifier: bigint, publicKey: PublicKey, newVoiceCreditBalance: bigint): number => {
+    const stateLeaf = new StateLeaf(publicKey, newVoiceCreditBalance);
 
     if (this.hasJoined(nullifier)) {
       throw new Error("UserAlreadyJoined");
@@ -234,8 +245,8 @@ export class Poll implements IPoll {
     this.stateTree = new LeanIMT(hashLeanIMT as LeanIMTHashFunction);
 
     // add all leaves
-    this.pubKeys.forEach((pubKey) => {
-      this.stateTree?.insert(pubKey.hash());
+    this.pubKeys.forEach((publicKey) => {
+      this.stateTree?.insert(publicKey.hash());
     });
 
     // create a poll state tree
@@ -252,7 +263,12 @@ export class Poll implements IPoll {
 
     // Create as many ballots as state leaves
     this.emptyBallotHash = this.emptyBallot.hash();
-    this.ballotTree = new IncrementalQuinTree(this.stateTreeDepth, this.emptyBallotHash, STATE_TREE_ARITY, hash2);
+    this.ballotTree = new IncrementalQuinTree(
+      Number(this.treeDepths.stateTreeDepth),
+      this.emptyBallotHash,
+      STATE_TREE_ARITY,
+      hash2,
+    );
     this.ballotTree.insert(this.emptyBallotHash);
 
     // we fill the ballotTree with empty ballots hashes to match the number of signups in the tree
@@ -267,13 +283,13 @@ export class Poll implements IPoll {
   /**
    * Process one message.
    * @param message - The message to process.
-   * @param encPubKey - The public key associated with the encryption private key.
+   * @param encryptionPublicKey - The public key associated with the encryption private key.
    * @returns A number of variables which will be used in the zk-SNARK circuit.
    */
-  processMessage = (message: Message, encPubKey: PubKey, qv = true): IProcessMessagesOutput => {
+  processMessage = (message: Message, encryptionPublicKey: PublicKey): IProcessMessagesOutput => {
     try {
       // Decrypt the message
-      const sharedKey = Keypair.genEcdhSharedKey(this.coordinatorKeypair.privKey, encPubKey);
+      const sharedKey = Keypair.genEcdhSharedKey(this.coordinatorKeypair.privateKey, encryptionPublicKey);
 
       const { command, signature } = PCommand.decrypt(message, sharedKey);
 
@@ -295,7 +311,7 @@ export class Poll implements IPoll {
       const ballot = this.ballots[Number(stateLeafIndex)];
 
       // If the signature is invalid, do nothing
-      if (!command.verifySignature(signature, stateLeaf.pubKey)) {
+      if (!command.verifySignature(signature, stateLeaf.publicKey)) {
         throw new ProcessMessageError(ProcessMessageErrors.InvalidSignature);
       }
 
@@ -321,14 +337,30 @@ export class Poll implements IPoll {
       // but we need to ensure that we are not going >= balance
       // @note that above comment is valid for quadratic voting
       // for non quadratic voting, we simply remove the exponentiation
-      const voiceCreditsLeft = qv
-        ? stateLeaf.voiceCreditBalance +
+
+      let voiceCreditsLeft: bigint;
+
+      if (this.mode === VotingMode.QV) {
+        voiceCreditsLeft =
+          stateLeaf.voiceCreditBalance +
           originalVoteWeight * originalVoteWeight -
-          command.newVoteWeight * command.newVoteWeight
-        : stateLeaf.voiceCreditBalance + originalVoteWeight - command.newVoteWeight;
+          command.newVoteWeight * command.newVoteWeight;
+      } else if (this.mode === VotingMode.NON_QV) {
+        voiceCreditsLeft = stateLeaf.voiceCreditBalance + originalVoteWeight - command.newVoteWeight;
+      } else {
+        // Mode must be FULL_CREDIT
+        // Check if the new vote weight equals the available balance
+        if (command.newVoteWeight !== stateLeaf.voiceCreditBalance + originalVoteWeight) {
+          throw new ProcessMessageError(ProcessMessageErrors.IncorrectVoteWeightForFullCredit);
+        }
+        // After voting with full credits, the balance should be 0
+        voiceCreditsLeft = 0n;
+      }
 
       // If the remaining voice credits is insufficient, do nothing
-      if (voiceCreditsLeft < 0n) {
+      // This check is necessary for QV and NON_QV modes.
+      // For FULL_CREDIT mode, voiceCreditsLeft is always 0n, so this check is skipped.
+      if (this.mode !== VotingMode.FULL_CREDIT && voiceCreditsLeft < 0n) {
         throw new ProcessMessageError(ProcessMessageErrors.InsufficientVoiceCredits);
       }
 
@@ -336,7 +368,7 @@ export class Poll implements IPoll {
       const newStateLeaf = stateLeaf.copy();
       newStateLeaf.voiceCreditBalance = voiceCreditsLeft;
       // if the key changes, this is effectively a key-change message too
-      newStateLeaf.pubKey = command.newPubKey.copy();
+      newStateLeaf.publicKey = command.newPublicKey.copy();
 
       // Deep-copy the ballot and update its attributes
       const newBallot = ballot.copy();
@@ -387,11 +419,11 @@ export class Poll implements IPoll {
    * Inserts a Message and the corresponding public key used to generate the
    * ECDH shared key which was used to encrypt said message.
    * @param message - The message to insert
-   * @param encPubKey - The public key used to encrypt the message
+   * @param encryptionPublicKey - The public key used to encrypt the message
    */
-  publishMessage = (message: Message, encPubKey: PubKey): void => {
+  publishMessage = (message: Message, encryptionPublicKey: PublicKey): void => {
     assert(
-      encPubKey.rawPubKey[0] < SNARK_FIELD_SIZE && encPubKey.rawPubKey[1] < SNARK_FIELD_SIZE,
+      encryptionPublicKey.rawPubKey[0] < SNARK_FIELD_SIZE && encryptionPublicKey.rawPubKey[1] < SNARK_FIELD_SIZE,
       "The public key is not in the correct range",
     );
 
@@ -400,17 +432,17 @@ export class Poll implements IPoll {
     });
 
     // store the encryption pub key
-    this.encPubKeys.push(encPubKey);
+    this.encryptionPublicKeys.push(encryptionPublicKey);
     // store the message locally
     this.messages.push(message);
     // add the message hash to the message tree
-    const messageHash = message.hash(encPubKey);
+    const messageHash = message.hash(encryptionPublicKey);
     // update chain hash
     this.updateChainHash(messageHash);
 
     // Decrypt the message and store the Command
     // step 1. we generate the shared key
-    const sharedKey = Keypair.genEcdhSharedKey(this.coordinatorKeypair.privKey, encPubKey);
+    const sharedKey = Keypair.genEcdhSharedKey(this.coordinatorKeypair.privateKey, encryptionPublicKey);
     try {
       // step 2. we decrypt it
       const { command } = PCommand.decrypt(message, sharedKey);
@@ -419,14 +451,14 @@ export class Poll implements IPoll {
     } catch (e) {
       // if there is an error we store an empty command
       const keyPair = new Keypair();
-      const command = new PCommand(0n, keyPair.pubKey, 0n, 0n, 0n, 0n, 0n);
+      const command = new PCommand(0n, keyPair.publicKey, 0n, 0n, 0n, 0n, 0n);
       this.commands.push(command);
     }
   };
 
   /**
    * Updates message chain hash
-   * @param messageHash hash of message with encPubKey
+   * @param messageHash hash of message with encryptionPublicKey
    */
   updateChainHash = (messageHash: bigint): void => {
     this.chainHash = hash2([this.chainHash, messageHash]);
@@ -443,21 +475,21 @@ export class Poll implements IPoll {
    * @returns stringified circuit inputs
    */
   joiningCircuitInputs = ({
-    maciPrivKey,
+    maciPrivateKey,
     stateLeafIndex,
-    pollPubKey,
+    pollPublicKey,
   }: IJoiningCircuitArgs): IPollJoiningCircuitInputs => {
     // calculate the path elements for the state tree given the original state tree
     const { siblings, index } = this.stateTree!.generateProof(Number(stateLeafIndex));
     const siblingsLength = siblings.length;
 
     // The index must be converted to a list of indices, 1 for each tree level.
-    // The circuit tree depth is this.stateTreeDepth, so the number of siblings must be this.stateTreeDepth,
+    // The circuit tree depth is this.treeDepths.stateTreeDepth, so the number of siblings must be this.treeDepths.stateTreeDepth,
     // even if the tree depth is actually 3. The missing siblings can be set to 0, as they
     // won't be used to calculate the root in the circuit.
     const indices: bigint[] = [];
 
-    for (let i = 0; i < this.stateTreeDepth; i += 1) {
+    for (let i = 0; i < this.treeDepths.stateTreeDepth; i += 1) {
       // eslint-disable-next-line no-bitwise
       indices.push(BigInt((index >> i) & 1));
 
@@ -468,7 +500,7 @@ export class Poll implements IPoll {
     const siblingsArray = siblings.map((sibling) => [sibling]);
 
     // Create nullifier from private key
-    const inputNullifier = BigInt(maciPrivKey.asCircuitInputs());
+    const inputNullifier = BigInt(maciPrivateKey.asCircuitInputs());
     const nullifier = poseidon([inputNullifier, this.pollId]);
 
     // Get state tree's root
@@ -478,8 +510,8 @@ export class Poll implements IPoll {
     const actualStateTreeDepth = BigInt(siblingsLength);
 
     const circuitInputs = {
-      privKey: maciPrivKey.asCircuitInputs(),
-      pollPubKey: pollPubKey.asCircuitInputs(),
+      privateKey: maciPrivateKey.asCircuitInputs(),
+      pollPublicKey: pollPublicKey.asCircuitInputs(),
       siblings: siblingsArray,
       indices,
       nullifier,
@@ -497,7 +529,7 @@ export class Poll implements IPoll {
    * @returns stringified circuit inputs
    */
   joinedCircuitInputs = ({
-    maciPrivKey,
+    maciPrivateKey,
     stateLeafIndex,
     voiceCreditsBalance,
   }: IJoinedCircuitArgs): IPollJoinedCircuitInputs => {
@@ -506,7 +538,7 @@ export class Poll implements IPoll {
 
     const elementsLength = pathIndices.length;
 
-    for (let i = 0; i < this.stateTreeDepth; i += 1) {
+    for (let i = 0; i < this.treeDepths.stateTreeDepth; i += 1) {
       if (i >= elementsLength) {
         pathElements[i] = [0n];
         pathIndices[i] = 0;
@@ -514,7 +546,7 @@ export class Poll implements IPoll {
     }
 
     const circuitInputs = {
-      privKey: maciPrivKey.asCircuitInputs(),
+      privateKey: maciPrivateKey.asCircuitInputs(),
       pathElements: pathElements.map((item) => item.toString()),
       voiceCreditsBalance: voiceCreditsBalance.toString(),
       pathIndices: pathIndices.map((item) => item.toString()),
@@ -565,7 +597,7 @@ export class Poll implements IPoll {
    * @param quiet - Whether to log errors or not
    * @returns stringified circuit inputs
    */
-  processMessages = (pollId: bigint, qv = true, quiet = true): IProcessMessagesCircuitInputs => {
+  processMessages = (pollId: bigint, quiet = true): IProcessMessagesCircuitInputs => {
     assert(this.hasUnprocessedMessages(), "No more messages to process");
 
     const batchSize = this.batchSizes.messageBatchSize;
@@ -623,14 +655,14 @@ export class Poll implements IPoll {
       const idx = this.currentMessageBatchIndex * batchSize - i - 1;
       assert(idx >= 0, "The message index must be >= 0");
       let message: Message;
-      let encPubKey: PubKey;
+      let encryptionPublicKey: PublicKey;
       if (idx < this.messages.length) {
         message = this.messages[idx];
-        encPubKey = this.encPubKeys[idx];
+        encryptionPublicKey = this.encryptionPublicKeys[idx];
 
         try {
           // check if the command is valid
-          const r = this.processMessage(message, encPubKey, qv);
+          const r = this.processMessage(message, encryptionPublicKey);
           const index = r.stateLeafIndex!;
 
           // we add at position 0 the original data
@@ -671,7 +703,7 @@ export class Poll implements IPoll {
             // for a valid state leaf, and failing to generate a proof
 
             // gen shared key
-            const sharedKey = Keypair.genEcdhSharedKey(this.coordinatorKeypair.privKey, encPubKey);
+            const sharedKey = Keypair.genEcdhSharedKey(this.coordinatorKeypair.privateKey, encryptionPublicKey);
 
             // force decrypt it
             const { command } = PCommand.decrypt(message, sharedKey, true);
@@ -780,7 +812,7 @@ export class Poll implements IPoll {
     // we need to fill the array with 0s to match the length of the state leaves
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < currentStateLeavesPathElements.length; i += 1) {
-      while (currentStateLeavesPathElements[i].length < this.stateTreeDepth) {
+      while (currentStateLeavesPathElements[i].length < this.treeDepths.stateTreeDepth) {
         currentStateLeavesPathElements[i].push([0n]);
       }
     }
@@ -813,7 +845,7 @@ export class Poll implements IPoll {
     // this will be the hash of the roots with a salt
     circuitInputs.newSbCommitment = hash3([newStateRoot, newBallotRoot, newSbSalt]);
 
-    const coordinatorPublicKeyHash = this.coordinatorKeypair.pubKey.hash();
+    const coordinatorPublicKeyHash = this.coordinatorKeypair.publicKey.hash();
 
     // If this is the last batch, release the lock
     if (this.numBatchesProcessed * batchSize >= this.messages.length) {
@@ -839,7 +871,7 @@ export class Poll implements IPoll {
 
     assert(index <= this.messages.length, "The index must be <= the number of messages");
 
-    // fill the msgs array with a copy of the messages we have
+    // fill the messages array with a copy of the messages we have
     // plus empty messages to fill the batch
 
     // @note create a message with state index 0 to add as padding
@@ -849,26 +881,26 @@ export class Poll implements IPoll {
     // create a random key
     const key = new Keypair();
     // gen ecdh key
-    const ecdh = Keypair.genEcdhSharedKey(key.privKey, this.coordinatorKeypair.pubKey);
+    const ecdh = Keypair.genEcdhSharedKey(key.privateKey, this.coordinatorKeypair.publicKey);
     // create an empty command with state index 0n
-    const emptyCommand = new PCommand(0n, key.pubKey, 0n, 0n, 0n, 0n, 0n);
+    const emptyCommand = new PCommand(0n, key.publicKey, 0n, 0n, 0n, 0n, 0n);
 
     // encrypt it
-    const msg = emptyCommand.encrypt(emptyCommand.sign(key.privKey), ecdh);
+    const msg = emptyCommand.encrypt(emptyCommand.sign(key.privateKey), ecdh);
 
     // copy the messages to a new array
-    let msgs = this.messages.map((x) => x.asCircuitInputs());
+    let messages = this.messages.map((x) => x.asCircuitInputs());
 
     // pad with our state index 0 message
-    while (msgs.length % messageBatchSize > 0) {
-      msgs.push(msg.asCircuitInputs());
+    while (messages.length % messageBatchSize > 0) {
+      messages.push(msg.asCircuitInputs());
     }
 
     // copy the public keys, pad the array with the last keys if needed
-    let encPubKeys = this.encPubKeys.map((x) => x.copy());
-    while (encPubKeys.length % messageBatchSize > 0) {
+    let encryptionPublicKeys = this.encryptionPublicKeys.map((x) => x.copy());
+    while (encryptionPublicKeys.length % messageBatchSize > 0) {
       // pad with the public key used to encrypt the message with state index 0 (padding)
-      encPubKeys.push(key.pubKey.copy());
+      encryptionPublicKeys.push(key.publicKey.copy());
     }
 
     // validate that the batch index is correct, if not fix it
@@ -882,12 +914,12 @@ export class Poll implements IPoll {
     const batchStartIndex = index > 0 ? (index - 1) * messageBatchSize : 0;
 
     // we only take the messages we need for this batch
-    // it slice msgs array from index of first message in current batch to
+    // it slice messages array from index of first message in current batch to
     // index of last message in current batch
-    msgs = msgs.slice(batchStartIndex, index * messageBatchSize);
+    messages = messages.slice(batchStartIndex, index * messageBatchSize);
 
     // then take the ones part of this batch
-    encPubKeys = encPubKeys.slice(batchStartIndex, index * messageBatchSize);
+    encryptionPublicKeys = encryptionPublicKeys.slice(batchStartIndex, index * messageBatchSize);
 
     // cache tree roots
     const currentStateRoot = this.pollStateTree!.root;
@@ -906,10 +938,10 @@ export class Poll implements IPoll {
       index: BigInt(batchStartIndex),
       inputBatchHash,
       outputBatchHash,
-      msgs,
+      messages,
       actualStateTreeDepth: BigInt(this.actualStateTreeDepth),
-      coordPrivKey: this.coordinatorKeypair.privKey.asCircuitInputs(),
-      encPubKeys: encPubKeys.map((x) => x.asCircuitInputs()),
+      coordinatorPrivateKey: this.coordinatorKeypair.privateKey.asCircuitInputs(),
+      encryptionPublicKeys: encryptionPublicKeys.map((x) => x.asCircuitInputs()),
       currentStateRoot,
       currentBallotRoot,
       currentSbCommitment,
@@ -1322,6 +1354,7 @@ export class Poll implements IPoll {
       {
         intStateTreeDepth: Number(this.treeDepths.intStateTreeDepth),
         voteOptionTreeDepth: Number(this.treeDepths.voteOptionTreeDepth),
+        stateTreeDepth: Number(this.treeDepths.stateTreeDepth),
       },
       {
         tallyBatchSize: Number(this.batchSizes.tallyBatchSize.toString()),
@@ -1329,6 +1362,7 @@ export class Poll implements IPoll {
       },
       this.maciStateRef,
       this.voteOptions,
+      this.mode,
     );
 
     copied.pubKeys = this.pubKeys.map((x) => x.copy());
@@ -1336,7 +1370,7 @@ export class Poll implements IPoll {
     copied.messages = this.messages.map((x) => x.copy());
     copied.commands = this.commands.map((x) => x.copy());
     copied.ballots = this.ballots.map((x) => x.copy());
-    copied.encPubKeys = this.encPubKeys.map((x) => x.copy());
+    copied.encryptionPublicKeys = this.encryptionPublicKeys.map((x) => x.copy());
 
     if (this.ballotTree) {
       copied.ballotTree = this.ballotTree.copy();
@@ -1393,7 +1427,7 @@ export class Poll implements IPoll {
       this.batchSizes.messageBatchSize === p.batchSizes.messageBatchSize &&
       this.maxVoteOptions === p.maxVoteOptions &&
       this.messages.length === p.messages.length &&
-      this.encPubKeys.length === p.encPubKeys.length &&
+      this.encryptionPublicKeys.length === p.encryptionPublicKeys.length &&
       this.numSignups === p.numSignups;
 
     if (!result) {
@@ -1405,8 +1439,8 @@ export class Poll implements IPoll {
         return false;
       }
     }
-    for (let i = 0; i < this.encPubKeys.length; i += 1) {
-      if (!this.encPubKeys[i].equals(p.encPubKeys[i])) {
+    for (let i = 0; i < this.encryptionPublicKeys.length; i += 1) {
+      if (!this.encryptionPublicKeys[i].equals(p.encryptionPublicKeys[i])) {
         return false;
       }
     }
@@ -1419,6 +1453,7 @@ export class Poll implements IPoll {
    */
   toJSON(): IJsonPoll {
     return {
+      stateTreeDepth: Number(this.treeDepths.stateTreeDepth),
       pollEndTimestamp: this.pollEndTimestamp.toString(),
       treeDepths: this.treeDepths,
       batchSizes: this.batchSizes,
@@ -1427,7 +1462,7 @@ export class Poll implements IPoll {
       messages: this.messages.map((message) => message.toJSON()),
       commands: this.commands.map((command) => command.toJSON()),
       ballots: this.ballots.map((ballot) => ballot.toJSON()),
-      encPubKeys: this.encPubKeys.map((encPubKey) => encPubKey.serialize()),
+      encryptionPublicKeys: this.encryptionPublicKeys.map((encryptionPublicKey) => encryptionPublicKey.serialize()),
       currentMessageBatchIndex: this.currentMessageBatchIndex,
       pubKeys: this.pubKeys.map((leaf) => leaf.toJSON()),
       pollStateLeaves: this.pollStateLeaves.map((leaf) => leaf.toJSON()),
@@ -1447,6 +1482,15 @@ export class Poll implements IPoll {
    * @returns a new Poll instance
    */
   static fromJSON(json: IJsonPoll, maciState: MaciState): Poll {
+    // Safely determine the voting mode, default to QV if missing or invalid
+    let mode: IVotingMode = VotingMode.QV;
+    if (json.mode !== undefined) {
+      const modeKey = json.mode.toUpperCase() as keyof typeof VotingMode;
+      if (modeKey in VotingMode) {
+        mode = VotingMode[modeKey];
+      }
+    }
+
     const poll = new Poll(
       BigInt(json.pollEndTimestamp),
       new Keypair(),
@@ -1454,12 +1498,13 @@ export class Poll implements IPoll {
       json.batchSizes,
       maciState,
       BigInt(json.voteOptions),
+      mode, // Use the determined mode
     );
 
     // set all properties
     poll.pollStateLeaves = json.pollStateLeaves.map((leaf) => StateLeaf.fromJSON(leaf));
     poll.ballots = json.ballots.map((ballot) => Ballot.fromJSON(ballot));
-    poll.encPubKeys = json.encPubKeys.map((key: string) => PubKey.deserialize(key));
+    poll.encryptionPublicKeys = json.encryptionPublicKeys.map((key: string) => PublicKey.deserialize(key));
     poll.messages = json.messages.map((message) => Message.fromJSON(message as IMessageContractParams));
     poll.commands = json.commands.map((command: IJsonPCommand) => PCommand.fromJSON(command));
     poll.tallyResult = json.results.map((result: string) => BigInt(result));
@@ -1480,7 +1525,7 @@ export class Poll implements IPoll {
    * @param serializedPrivateKey - the serialized private key
    */
   setCoordinatorKeypair = (serializedPrivateKey: string): void => {
-    this.coordinatorKeypair = new Keypair(PrivKey.deserialize(serializedPrivateKey));
+    this.coordinatorKeypair = new Keypair(PrivateKey.deserialize(serializedPrivateKey));
   };
 
   /**

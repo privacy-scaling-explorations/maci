@@ -38,8 +38,8 @@ describe("joinPoll", function test() {
   let verifierContractAddress: string;
 
   const user = new Keypair();
-  const userPrivateKey = user.privKey.serialize();
-  const userPublicKey = user.pubKey.serialize();
+  const userPrivateKey = user.privateKey.serialize();
+  const userPublicKey = user.publicKey.serialize();
 
   const mockStateIndex = 1n;
   const mockPollId = 9000n;
@@ -90,7 +90,7 @@ describe("joinPoll", function test() {
     // signup the user
     await signup({
       maciAddress: maciAddresses.maciContractAddress,
-      maciPubKey: userPublicKey,
+      maciPublicKey: userPublicKey,
       sgData: DEFAULT_SG_DATA,
       signer,
     });
@@ -131,7 +131,7 @@ describe("joinPoll", function test() {
     const registeredUserData = await getJoinedUserData({
       maciAddress: maciAddresses.maciContractAddress,
       pollId: 0n,
-      pollPubKey: user.pubKey.serialize(),
+      pollPublicKey: user.publicKey.serialize(),
       signer,
       startBlock: startBlock || 0,
     });
@@ -161,7 +161,7 @@ describe("joinPoll", function test() {
     await expect(
       joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
-        privateKey: keypair.privKey.serialize(),
+        privateKey: keypair.privateKey.serialize(),
         stateIndex: -1n,
         signer,
         pollId: 0n,

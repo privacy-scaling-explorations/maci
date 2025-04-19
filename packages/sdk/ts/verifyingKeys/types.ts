@@ -135,6 +135,11 @@ export interface ISetVerifyingKeysArgs {
   stateTreeDepth: number;
 
   /**
+   * The poll state tree depth
+   */
+  pollStateTreeDepth: number;
+
+  /**
    * The intermediate state tree depth (ballot tree)
    */
   intStateTreeDepth: number;

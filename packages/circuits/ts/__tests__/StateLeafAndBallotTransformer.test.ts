@@ -11,7 +11,7 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
   // variables needed for testing
   const keypair = new Keypair();
   const stateIndex = BigInt(1);
-  const newPubKey = keypair.pubKey;
+  const newPublicKey = keypair.publicKey;
   const voteOptionIndex = BigInt(0);
   const newVoteWeight = BigInt(9);
   const nonce = BigInt(1);
@@ -21,15 +21,15 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
   const maxVoteOptions = 25n;
 
   const slKeypair = new Keypair();
-  const slPubKey = slKeypair.pubKey;
+  const slPubKey = slKeypair.publicKey;
 
   const slVoiceCreditBalance = BigInt(100);
   const ballotNonce = BigInt(0);
   const ballotCurrentVotesForOption = BigInt(0);
 
-  const command: PCommand = new PCommand(stateIndex, newPubKey, voteOptionIndex, newVoteWeight, nonce, pollId, salt);
+  const command: PCommand = new PCommand(stateIndex, newPublicKey, voteOptionIndex, newVoteWeight, nonce, pollId, salt);
 
-  const signature = command.sign(slKeypair.privKey);
+  const signature = command.sign(slKeypair.privateKey);
 
   let circuit: WitnessTester<
     [
@@ -96,7 +96,7 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
       ballotNonce,
       ballotCurrentVotesForOption,
       cmdStateIndex: command.stateIndex,
-      cmdNewPubKey: command.newPubKey.asCircuitInputs() as unknown as [bigint, bigint],
+      cmdNewPubKey: command.newPublicKey.asCircuitInputs() as unknown as [bigint, bigint],
       cmdVoteOptionIndex: command.voteOptionIndex,
       cmdNewVoteWeight: command.newVoteWeight,
       cmdNonce: command.nonce,
@@ -114,8 +114,8 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
     const newSlPubKey1 = await getSignal(circuit, witness, "newSlPubKey[1]");
     const newBallotNonce = await getSignal(circuit, witness, "newBallotNonce");
 
-    expect(newSlPubKey0.toString()).to.be.eq(command.newPubKey.rawPubKey[0].toString());
-    expect(newSlPubKey1.toString()).to.be.eq(command.newPubKey.rawPubKey[1].toString());
+    expect(newSlPubKey0.toString()).to.be.eq(command.newPublicKey.rawPubKey[0].toString());
+    expect(newSlPubKey1.toString()).to.be.eq(command.newPublicKey.rawPubKey[1].toString());
     expect(newBallotNonce.toString()).to.be.eq(command.nonce.toString());
 
     const isValid = await getSignal(circuit, witness, "isValid");
@@ -131,7 +131,7 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
       ballotNonce,
       ballotCurrentVotesForOption,
       cmdStateIndex: command.stateIndex,
-      cmdNewPubKey: command.newPubKey.asCircuitInputs() as unknown as [bigint, bigint],
+      cmdNewPubKey: command.newPublicKey.asCircuitInputs() as unknown as [bigint, bigint],
       cmdVoteOptionIndex: command.voteOptionIndex,
       cmdNewVoteWeight: command.newVoteWeight,
       cmdNonce: command.nonce,
@@ -149,8 +149,8 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
     const newSlPubKey1 = await getSignal(circuitNonQv, witness, "newSlPubKey[1]");
     const newBallotNonce = await getSignal(circuitNonQv, witness, "newBallotNonce");
 
-    expect(newSlPubKey0.toString()).to.be.eq(command.newPubKey.rawPubKey[0].toString());
-    expect(newSlPubKey1.toString()).to.be.eq(command.newPubKey.rawPubKey[1].toString());
+    expect(newSlPubKey0.toString()).to.be.eq(command.newPublicKey.rawPubKey[0].toString());
+    expect(newSlPubKey1.toString()).to.be.eq(command.newPublicKey.rawPubKey[1].toString());
     expect(newBallotNonce.toString()).to.be.eq(command.nonce.toString());
 
     const isValid = await getSignal(circuitNonQv, witness, "isValid");
@@ -166,7 +166,7 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
       ballotNonce,
       ballotCurrentVotesForOption,
       cmdStateIndex: command.stateIndex,
-      cmdNewPubKey: command.newPubKey.asCircuitInputs() as unknown as [bigint, bigint],
+      cmdNewPubKey: command.newPublicKey.asCircuitInputs() as unknown as [bigint, bigint],
       cmdVoteOptionIndex: command.voteOptionIndex,
       cmdNewVoteWeight: command.newVoteWeight,
       cmdNonce: 2n, // invalid
@@ -201,7 +201,7 @@ describe("StateLeafAndBallotTransformer circuit", function test() {
       ballotNonce,
       ballotCurrentVotesForOption,
       cmdStateIndex: command.stateIndex,
-      cmdNewPubKey: command.newPubKey.asCircuitInputs() as unknown as [bigint, bigint],
+      cmdNewPubKey: command.newPublicKey.asCircuitInputs() as unknown as [bigint, bigint],
       cmdVoteOptionIndex: command.voteOptionIndex,
       cmdNewVoteWeight: command.newVoteWeight,
       cmdNonce: 2n, // invalid

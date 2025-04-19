@@ -147,7 +147,7 @@ describe("E2E Deployment Tests", () => {
 
   test("should deploy a poll correctly", async () => {
     const config = testPollDeploymentConfig;
-    config.coordinatorPubkey = coordinatorKeypair.pubKey.serialize();
+    config.coordinatorPublicKey = coordinatorKeypair.publicKey.serialize();
     config.voteOptions = config.voteOptions.toString();
 
     const startDate = Math.floor(Date.now() / 1000) + 10;
@@ -202,15 +202,15 @@ describe("E2E Deployment Tests", () => {
   test("should allow voting on a poll", async () => {
     for (let i = 0; i < NUM_USERS; i += 1) {
       const keypairUser = new Keypair();
-      const pubkeyUser = keypairUser.pubKey.serialize();
-      const privkeyUser = keypairUser.privKey.serialize();
+      const pubkeyUser = keypairUser.publicKey.serialize();
+      const privkeyUser = keypairUser.privateKey.serialize();
       const vote = i % 2;
       voteOptions[String(vote)] += 1;
       // user signs up to MACI
       // eslint-disable-next-line no-await-in-loop
       await signup({
         maciAddress,
-        maciPubKey: pubkeyUser,
+        maciPublicKey: pubkeyUser,
         sgData: zeroUint256Encoded,
         signer,
       });
@@ -235,7 +235,7 @@ describe("E2E Deployment Tests", () => {
       // user publishes a vote
       // eslint-disable-next-line no-await-in-loop
       const publishData = await publish({
-        pubkey: pubkeyUser,
+        publicKey: pubkeyUser,
         stateIndex: 1n,
         voteOptionIndex: BigInt(vote),
         nonce: 1n,

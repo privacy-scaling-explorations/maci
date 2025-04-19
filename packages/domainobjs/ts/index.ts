@@ -2,9 +2,9 @@ export { Ballot } from "./ballot";
 
 export { Message } from "./message";
 
-export { PrivKey, SERIALIZED_PRIV_KEY_PREFIX } from "./privateKey";
+export { PrivateKey, SERIALIZED_PRIV_KEY_PREFIX } from "./privateKey";
 
-export { PubKey, SERIALIZED_PUB_KEY_PREFIX } from "./publicKey";
+export { PublicKey, SERIALIZED_PUB_KEY_PREFIX } from "./publicKey";
 
 export { Keypair } from "./keyPair";
 

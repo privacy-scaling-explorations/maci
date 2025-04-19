@@ -16,7 +16,7 @@ import type {
 } from "../typechain-types";
 import type { TypedContractMethod } from "../typechain-types/common";
 import type { CircuitInputs } from "@maci-protocol/core";
-import type { Keypair, Message, PubKey } from "@maci-protocol/domainobjs";
+import type { Keypair, Message, PublicKey } from "@maci-protocol/domainobjs";
 import type { BigNumberish, Signer, ContractFactory, Provider, BaseContract } from "ethers";
 import type { PublicSignals } from "snarkjs";
 
@@ -106,8 +106,8 @@ export interface IDeployedTestContracts {
 export interface Action {
   type: string;
   data: Partial<{
-    pubKey: PubKey;
-    encPubKey: PubKey;
+    publicKey: PublicKey;
+    encryptionPublicKey: PublicKey;
     message: Message;
     voiceCreditBalance: number;
     timestamp: number;

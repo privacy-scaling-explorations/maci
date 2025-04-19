@@ -1,5 +1,5 @@
 import { ProofGenerator } from "@maci-protocol/contracts";
-import { Keypair, PrivKey } from "@maci-protocol/domainobjs";
+import { Keypair, PrivateKey } from "@maci-protocol/domainobjs";
 
 import fs from "fs";
 
@@ -89,7 +89,7 @@ export const generateProofs = async ({
   }
 
   // the coordinator's MACI private key
-  if (!PrivKey.isValidSerializedPrivKey(coordinatorPrivateKey)) {
+  if (!PrivateKey.isValidSerializedPrivKey(coordinatorPrivateKey)) {
     throw new Error("Invalid MACI private key");
   }
 
@@ -101,7 +101,7 @@ export const generateProofs = async ({
     await fs.promises.mkdir(outputDir);
   }
 
-  const maciPrivateKey = PrivKey.deserialize(coordinatorPrivateKey);
+  const maciPrivateKey = PrivateKey.deserialize(coordinatorPrivateKey);
   const coordinatorKeypair = new Keypair(maciPrivateKey);
 
   const {

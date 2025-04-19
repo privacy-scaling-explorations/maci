@@ -84,7 +84,7 @@ describe("ERC20Votes", () => {
     it("should allow a user to signup", async () => {
       const tx = await maciContract
         .connect(subject)
-        .signUp(key1.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode([], []));
+        .signUp(key1.publicKey.asContractParam(), AbiCoder.defaultAbiCoder().encode([], []));
 
       const receipt = await tx.wait();
 
@@ -93,7 +93,9 @@ describe("ERC20Votes", () => {
 
     it("should prevent a user from signing up twice", async () => {
       await expect(
-        maciContract.connect(subject).signUp(key1.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode([], [])),
+        maciContract
+          .connect(subject)
+          .signUp(key1.publicKey.asContractParam(), AbiCoder.defaultAbiCoder().encode([], [])),
       ).to.be.revertedWithCustomError(policy, "AlreadyEnforced");
     });
 
@@ -102,7 +104,7 @@ describe("ERC20Votes", () => {
       await expect(
         maciContract
           .connect(notSubject)
-          .signUp(key2.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode([], [])),
+          .signUp(key2.publicKey.asContractParam(), AbiCoder.defaultAbiCoder().encode([], [])),
       ).to.be.revertedWithCustomError(checker, "BalanceTooLow");
     });
   });

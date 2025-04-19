@@ -1,5 +1,5 @@
 import type { MACI, Poll } from "@maci-protocol/contracts/typechain-types";
-import type { PrivKey, PubKey } from "@maci-protocol/domainobjs";
+import type { PrivateKey, PublicKey } from "@maci-protocol/domainobjs";
 import type { Signer } from "ethers";
 
 /**
@@ -19,7 +19,7 @@ export interface IJoinedUserArgs {
   /**
    * Poll public key for the poll
    */
-  pollPubKey: string;
+  pollPublicKey: string;
 
   /**
    * A signer object
@@ -71,7 +71,7 @@ export interface ISignupArgs {
   /**
    * The public key of the user
    */
-  maciPubKey: string;
+  maciPublicKey: string;
 
   /**
    * A signer object
@@ -116,7 +116,7 @@ export interface IRegisteredUserArgs {
   /**
    * The public key of the user
    */
-  maciPubKey: string;
+  maciPublicKey: string;
 
   /**
    * The address of the MACI contract
@@ -151,7 +151,7 @@ export interface IParsePollJoinEventsArgs {
   /**
    * The public key
    */
-  pollPublicKey: PubKey;
+  pollPublicKey: PublicKey;
 }
 
 /**
@@ -176,7 +176,7 @@ export interface IParseSignupEventsArgs {
   /**
    * The public key
    */
-  publicKey: PubKey;
+  publicKey: PublicKey;
 }
 
 /**
@@ -186,12 +186,12 @@ export interface IPollJoiningCircuitInputs {
   /**
    * The private key
    */
-  privKey: string;
+  privateKey: string;
 
   /**
    * The poll public key
    */
-  pollPubKey: string[];
+  pollPublicKey: string[];
 
   /**
    * The state leaf
@@ -236,7 +236,7 @@ export interface IPollJoinedCircuitInputs {
   /**
    * The private key
    */
-  privKey: string;
+  privateKey: string;
 
   /**
    * The voice credits balance
@@ -423,7 +423,7 @@ export interface IGetPollJoiningCircuitEventsArgs {
   /**
    * The user's maci private key
    */
-  userMaciPrivKey: PrivKey;
+  userMaciPrivKey: PrivateKey;
 
   /**
    * The signer
@@ -468,7 +468,7 @@ export interface IGetPollJoiningCircuitInputsFromStateFileArgs {
   /**
    * The user's maci private key
    */
-  userMaciPrivKey: PrivKey;
+  userMaciPrivKey: PrivateKey;
 }
 
 /**
@@ -483,7 +483,7 @@ export interface IHasUserSignedUpArgs {
   /**
    * The public key of the user
    */
-  maciPubKey: string;
+  maciPublicKey: string;
 
   /**
    * The signer to use for the transaction

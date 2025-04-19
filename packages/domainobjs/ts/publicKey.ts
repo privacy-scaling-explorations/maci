@@ -1,4 +1,4 @@
-import { inCurve, hashLeftRight, packPubKey, unpackPubKey, type PubKey as RawPubKey } from "@maci-protocol/crypto";
+import { inCurve, hashLeftRight, packPubKey, unpackPubKey, type PublicKey as RawPubKey } from "@maci-protocol/crypto";
 
 import assert from "assert";
 
@@ -14,7 +14,7 @@ export const SERIALIZED_PUB_KEY_PREFIX = "macipk.";
  * A raw MACI public key can be thought as a pair of
  * BigIntegers (x, y) representing a point on the baby jubjub curve
  */
-export class PubKey {
+export class PublicKey {
   rawPubKey: RawPubKey;
 
   /**
@@ -29,7 +29,7 @@ export class PubKey {
    */
   constructor(rawPubKey: RawPubKey, allowInvalid = false) {
     if (!allowInvalid) {
-      assert(inCurve(rawPubKey), "PubKey not on curve");
+      assert(inCurve(rawPubKey), "PublicKey not on curve");
     }
     this.rawPubKey = rawPubKey;
   }
@@ -38,7 +38,7 @@ export class PubKey {
    * Create a copy of the public key
    * @returns a copy of the public key
    */
-  copy = (): PubKey => new PubKey([BigInt(this.rawPubKey[0].toString()), BigInt(this.rawPubKey[1].toString())]);
+  copy = (): PublicKey => new PublicKey([BigInt(this.rawPubKey[0].toString()), BigInt(this.rawPubKey[1].toString())]);
 
   /**
    * Return this public key as smart contract parameters
@@ -90,16 +90,16 @@ export class PubKey {
    * @param p the public key to compare with
    * @returns whether they match
    */
-  equals = (p: PubKey): boolean => this.rawPubKey[0] === p.rawPubKey[0] && this.rawPubKey[1] === p.rawPubKey[1];
+  equals = (p: PublicKey): boolean => this.rawPubKey[0] === p.rawPubKey[0] && this.rawPubKey[1] === p.rawPubKey[1];
 
   /**
    * Deserialize a serialized public key
    * @param s the serialized public key
    * @returns the deserialized public key
    */
-  static deserialize = (s: string): PubKey => {
+  static deserialize = (s: string): PublicKey => {
     const len = SERIALIZED_PUB_KEY_PREFIX.length;
-    return new PubKey(unpackPubKey(BigInt(`0x${s.slice(len).toString()}`)));
+    return new PublicKey(unpackPubKey(BigInt(`0x${s.slice(len).toString()}`)));
   };
 
   /**
@@ -111,7 +111,7 @@ export class PubKey {
     const correctPrefix = s.startsWith(SERIALIZED_PUB_KEY_PREFIX);
 
     try {
-      PubKey.deserialize(s);
+      PublicKey.deserialize(s);
       return correctPrefix;
     } catch {
       return false;
@@ -123,31 +123,31 @@ export class PubKey {
    */
   toJSON(): IJsonPublicKey {
     return {
-      pubKey: this.serialize(),
+      publicKey: this.serialize(),
     };
   }
 
   /**
-   * Deserialize a JSON object into a PubKey instance
+   * Deserialize a JSON object into a PublicKey instance
    * @param json - the json object
-   * @returns PubKey
+   * @returns PublicKey
    */
-  static fromJSON(json: IJsonPublicKey): PubKey {
-    return PubKey.deserialize(json.pubKey);
+  static fromJSON(json: IJsonPublicKey): PublicKey {
+    return PublicKey.deserialize(json.publicKey);
   }
 
   /**
    * Generate a default pad key
    * @returns a default pad key
    */
-  static genPadKey(): PubKey {
+  static genPadKey(): PublicKey {
     // This public key is the first Pedersen base
     // point from iden3's circomlib implementation of the Pedersen hash.
     // Since it is generated using a hash-to-curve function, we are
     // confident that no-one knows the private key associated with this
     // public key. See:
     // https://github.com/iden3/circomlib/blob/d5ed1c3ce4ca137a6b3ca48bec4ac12c1b38957a/src/pedersen_printbases.js
-    return new PubKey([
+    return new PublicKey([
       BigInt("10457101036533406547632367118273992217979173478358440826365724437999023779287"),
       BigInt("19824078218392094440610104313265183977899662750282163392862422243483260492317"),
     ]);

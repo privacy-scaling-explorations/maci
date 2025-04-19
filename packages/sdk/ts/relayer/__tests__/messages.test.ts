@@ -26,7 +26,7 @@ describe("messages", () => {
 
   const defaultMessages: IIpfsMessage[] = [
     {
-      publicKey: keypair.pubKey.asArray().map(String) as [string, string],
+      publicKey: keypair.publicKey.asArray().map(String) as [string, string],
       data: new Array(10).fill("0") as string[],
       hash: "hash",
       maciAddress: ZeroAddress,

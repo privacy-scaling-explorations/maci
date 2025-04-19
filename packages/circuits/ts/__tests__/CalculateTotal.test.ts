@@ -11,7 +11,7 @@ describe("CalculateTotal circuit", function test() {
 
   before(async () => {
     circuit = await circomkitInstance.WitnessTester("calculateTotal", {
-      file: "./utils/calculateTotal",
+      file: "./utils/CalculateTotal",
       template: "CalculateTotal",
       params: [6],
     });
@@ -58,7 +58,7 @@ describe("CalculateTotal circuit", function test() {
         fc.pre(sum <= r - 1n);
 
         const testCircuit = await circomkitInstance.WitnessTester("calculateTotal", {
-          file: "./utils/calculateTotal",
+          file: "./utils/CalculateTotal",
           template: "CalculateTotal",
           params: [nums.length],
         });

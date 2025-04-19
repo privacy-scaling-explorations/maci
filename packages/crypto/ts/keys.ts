@@ -4,7 +4,7 @@ import { derivePublicKey, deriveSecretScalar, packPublicKey, unpackPublicKey } f
 import { randomBytes } from "crypto";
 
 import { genRandomBabyJubValue } from "./babyjub";
-import { EcdhSharedKey, Keypair, Point, PrivKey, PubKey } from "./types";
+import { EcdhSharedKey, Keypair, Point, PrivateKey, PublicKey } from "./types";
 
 /**
  * Generate a private key
@@ -21,35 +21,36 @@ export const genRandomSalt = (): bigint => genRandomBabyJubValue();
 /**
  * An internal function which formats a random private key to be compatible
  * with the BabyJub curve. This is the format which should be passed into the
- * PubKey and other circuits.
- * @param privKey A private key generated using genPrivKey()
+ * PublicKey and other circuits.
+ * @param privateKey A private key generated using genPrivKey()
  * @returns A BabyJub-compatible private key.
  */
-export const formatPrivKeyForBabyJub = (privKey: PrivKey): bigint => BigInt(deriveSecretScalar(privKey.toString()));
+export const formatPrivKeyForBabyJub = (privateKey: PrivateKey): bigint =>
+  BigInt(deriveSecretScalar(privateKey.toString()));
 
 /**
  * Losslessly reduces the size of the representation of a public key
- * @param pubKey The public key to pack
+ * @param publicKey The public key to pack
  * @returns A packed public key
  */
-export const packPubKey = (pubKey: PubKey): bigint => BigInt(packPublicKey(pubKey));
+export const packPubKey = (publicKey: PublicKey): bigint => BigInt(packPublicKey(publicKey));
 
 /**
- * Restores the original PubKey from its packed representation
+ * Restores the original PublicKey from its packed representation
  * @param packed The value to unpack
  * @returns The unpacked public key
  */
-export const unpackPubKey = (packed: bigint): PubKey => {
-  const pubKey = unpackPublicKey(packed);
-  return pubKey.map((x) => BigInt(x)) as PubKey;
+export const unpackPubKey = (packed: bigint): PublicKey => {
+  const publicKey = unpackPublicKey(packed);
+  return publicKey.map((x) => BigInt(x)) as PublicKey;
 };
 
 /**
- * @param privKey A private key generated using genPrivKey()
+ * @param privateKey A private key generated using genPrivKey()
  * @returns A public key associated with the private key
  */
-export const genPubKey = (privKey: PrivKey): PubKey => {
-  const key = derivePublicKey(privKey.toString());
+export const genPubKey = (privateKey: PrivateKey): PublicKey => {
+  const key = derivePublicKey(privateKey.toString());
   return [BigInt(key[0]), BigInt(key[1])];
 };
 
@@ -58,10 +59,10 @@ export const genPubKey = (privKey: PrivKey): PubKey => {
  * @returns a keypair
  */
 export const genKeypair = (): Keypair => {
-  const privKey = genPrivKey();
-  const pubKey = genPubKey(privKey);
+  const privateKey = genPrivKey();
+  const publicKey = genPubKey(privateKey);
 
-  const keypair: Keypair = { privKey, pubKey };
+  const keypair: Keypair = { privateKey, publicKey };
 
   return keypair;
 };
@@ -69,9 +70,9 @@ export const genKeypair = (): Keypair => {
 /**
  * Generates an Elliptic-Curve Diffie–Hellman (ECDH) shared key given a private
  * key and a public key.
- * @param privKey A private key generated using genPrivKey()
- * @param pubKey A public key generated using genPubKey()
+ * @param privateKey A private key generated using genPrivKey()
+ * @param publicKey A public key generated using genPubKey()
  * @returns The ECDH shared key.
  */
-export const genEcdhSharedKey = (privKey: PrivKey, pubKey: PubKey): EcdhSharedKey =>
-  mulPointEscalar(pubKey as Point<bigint>, formatPrivKeyForBabyJub(privKey));
+export const genEcdhSharedKey = (privateKey: PrivateKey, publicKey: PublicKey): EcdhSharedKey =>
+  mulPointEscalar(publicKey as Point<bigint>, formatPrivKeyForBabyJub(privateKey));

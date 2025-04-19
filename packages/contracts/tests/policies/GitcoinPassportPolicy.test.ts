@@ -79,7 +79,7 @@ describe("GitcoinPassport", () => {
     });
 
     it("should throw when the score is not high enough", async () => {
-      await expect(maciContract.signUp(user.pubKey.asContractParam(), "0x")).to.be.revertedWithCustomError(
+      await expect(maciContract.signUp(user.publicKey.asContractParam(), "0x")).to.be.revertedWithCustomError(
         gitcoinChecker,
         "ScoreTooLow",
       );
@@ -87,13 +87,13 @@ describe("GitcoinPassport", () => {
 
     it("should allow to signup when the score is high enough", async () => {
       await mockDecoder.changeScore(passingScore * 100).then((tx) => tx.wait());
-      await maciContract.signUp(user.pubKey.asContractParam(), "0x").then((tx) => tx.wait());
+      await maciContract.signUp(user.publicKey.asContractParam(), "0x").then((tx) => tx.wait());
 
       expect(await gitcoinPolicy.enforcedUsers(signerAddress)).to.eq(true);
     });
 
     it("should prevent signing up twice", async () => {
-      await expect(maciContract.signUp(user.pubKey.asContractParam(), "0x")).to.be.revertedWithCustomError(
+      await expect(maciContract.signUp(user.publicKey.asContractParam(), "0x")).to.be.revertedWithCustomError(
         gitcoinPolicy,
         "AlreadyEnforced",
       );
@@ -104,7 +104,7 @@ describe("GitcoinPassport", () => {
 
       const tx = await maciContract
         .connect(secondSigner)
-        .signUp(secondUser.pubKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [1]));
+        .signUp(secondUser.publicKey.asContractParam(), AbiCoder.defaultAbiCoder().encode(["uint256"], [1]));
 
       const receipt = await tx.wait();
 

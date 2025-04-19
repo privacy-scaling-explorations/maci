@@ -27,6 +27,7 @@ import {
   DEFAULT_INITIAL_VOICE_CREDITS,
   DEFAULT_SG_DATA,
   DEFAULT_IVCP_DATA,
+  POLL_STATE_TREE_DEPTH,
 } from "./constants";
 import { User } from "./user";
 
@@ -138,6 +139,7 @@ export class TestingClass {
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
+      pollStateTreeDepth: POLL_STATE_TREE_DEPTH,
       pollJoiningVk: pollJoiningVk!,
       pollJoinedVk: pollJoinedVk!,
       processMessagesVk: processVk!,
@@ -187,8 +189,9 @@ export class TestingClass {
       pollEndTimestamp: startDate + 130,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
+      stateTreeDepth: POLL_STATE_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
-      coordinatorPubKey: coordinatorKeypair.pubKey,
+      coordinatorPublicKey: coordinatorKeypair.publicKey,
       mode: EMode.NON_QV,
       relayers: [await signer.getAddress()],
       signer,
@@ -202,7 +205,7 @@ export class TestingClass {
 
     await signup({
       maciAddress: maciAddresses.maciContractAddress,
-      maciPubKey: user.pubKey.serialize(),
+      maciPublicKey: user.publicKey.serialize(),
       sgData: DEFAULT_SG_DATA,
       signer,
     });
@@ -210,7 +213,7 @@ export class TestingClass {
     const { pollStateIndex, voiceCredits } = await joinPoll({
       maciAddress: maciAddresses.maciContractAddress,
       pollId: 0n,
-      privateKey: user.privKey.serialize(),
+      privateKey: user.privateKey.serialize(),
       stateIndex: 1n,
       pollJoiningZkey: this.pollJoiningZkeyPath,
       pollWasm: this.pollWasm,

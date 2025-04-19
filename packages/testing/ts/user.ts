@@ -1,4 +1,4 @@
-import { Keypair, type PrivKey } from "@maci-protocol/domainobjs";
+import { Keypair, type PrivateKey } from "@maci-protocol/domainobjs";
 
 import type { IVote } from "./types";
 
@@ -36,9 +36,9 @@ export class User {
    * Helper function that can be used to change the keypair of the user
    * @returns
    */
-  changeKeypair(): PrivKey {
+  changeKeypair(): PrivateKey {
     const newUserKeypair = new Keypair();
-    const oldPrivateKey = this.keypair.privKey;
+    const oldPrivateKey = this.keypair.privateKey;
     this.keypair = !newUserKeypair.equals(this.keypair) ? newUserKeypair : this.keypair;
     return oldPrivateKey;
   }

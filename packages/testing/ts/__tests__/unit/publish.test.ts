@@ -125,8 +125,8 @@ describe("publish", function test() {
     before(async () => {
       defaultArgs = {
         maciAddress: maciAddresses.maciContractAddress,
-        publicKey: user.pubKey.serialize(),
-        privateKey: user.privKey.serialize(),
+        publicKey: user.publicKey.serialize(),
+        privateKey: user.privateKey.serialize(),
         messages,
         pollId: 0n,
         signer,
@@ -134,7 +134,7 @@ describe("publish", function test() {
 
       await signup({
         maciAddress: maciAddresses.maciContractAddress,
-        maciPubKey: user.pubKey.serialize(),
+        maciPublicKey: user.publicKey.serialize(),
         sgData: DEFAULT_SG_DATA,
         signer,
       });

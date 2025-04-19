@@ -1,4 +1,4 @@
-import { StateLeaf, Keypair, Message, PubKey } from "@maci-protocol/domainobjs";
+import { StateLeaf, Keypair, Message, PublicKey } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { BigNumberish, ZeroAddress } from "ethers";
 
@@ -55,7 +55,7 @@ describe("Utilities", () => {
     it("should correctly hash a StateLeaf", async () => {
       const keypair = new Keypair();
       const voiceCreditBalance = BigInt(1234);
-      const stateLeaf = new StateLeaf(keypair.pubKey, voiceCreditBalance);
+      const stateLeaf = new StateLeaf(keypair.publicKey, voiceCreditBalance);
       const onChainHash = await utilitiesContract.hashStateLeaf(stateLeaf.asContractParam());
       const expectedHash = stateLeaf.hash();
 
@@ -87,7 +87,7 @@ describe("Utilities", () => {
 
     it("should produce the same hash locally", async () => {
       const message = new Message([0n, 0n, 1234n, 1234n, 0n, 0n, 0n, 0n, 0n, 0n]);
-      const padKey = new PubKey([
+      const padKey = new PublicKey([
         10457101036533406547632367118273992217979173478358440826365724437999023779287n,
         19824078218392094440610104313265183977899662750282163392862422243483260492317n,
       ]);

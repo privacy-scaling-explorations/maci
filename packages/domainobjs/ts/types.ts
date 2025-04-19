@@ -1,4 +1,4 @@
-import type { PubKey } from "./publicKey";
+import type { PublicKey } from "./publicKey";
 import type { G1Point, G2Point } from "@maci-protocol/crypto";
 
 /**
@@ -14,7 +14,7 @@ export interface Proof {
  * @notice An interface representing a MACI state leaf
  */
 export interface IStateLeaf {
-  pubKey: PubKey;
+  publicKey: PublicKey;
   voiceCreditBalance: bigint;
 }
 
@@ -26,16 +26,16 @@ export interface VoteOptionTreeLeaf {
 }
 
 export interface IJsonKeyPair {
-  privKey: string;
-  pubKey: string;
+  privateKey: string;
+  publicKey: string;
 }
 
-export type IJsonPrivateKey = Pick<IJsonKeyPair, "privKey">;
+export type IJsonPrivateKey = Pick<IJsonKeyPair, "privateKey">;
 
-export type IJsonPublicKey = Pick<IJsonKeyPair, "pubKey">;
+export type IJsonPublicKey = Pick<IJsonKeyPair, "publicKey">;
 
 export interface IJsonStateLeaf {
-  pubKey: string;
+  publicKey: string;
   voiceCreditBalance: string;
 }
 
@@ -72,7 +72,7 @@ export interface IVkObjectParams {
 }
 
 export interface IStateLeafContractParams {
-  pubKey: IG1ContractParams;
+  publicKey: IG1ContractParams;
   voiceCreditBalance: BigNumberish;
 }
 

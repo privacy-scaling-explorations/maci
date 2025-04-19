@@ -31,7 +31,7 @@ import {
   DEFAULT_INITIAL_VOICE_CREDITS,
   DEFAULT_SG_DATA,
   deployPollArgs,
-  coordinatorPrivKey,
+  coordinatorPrivateKey,
   pollDuration,
   proveOnChainArgs,
   verifyArgs,
@@ -79,7 +79,7 @@ describe("e2e tests with non quadratic voting", function test() {
     processDatFile: testProcessMessagesNonQvWitnessDatPath,
     tallyWitgen: testTallyVotesNonQvWitnessPath,
     tallyDatFile: testTallyVotesNonQvWitnessDatPath,
-    coordinatorPrivateKey: coordinatorPrivKey,
+    coordinatorPrivateKey,
     processWasm: testProcessMessagesNonQvWasmPath,
     tallyWasm: testTallyVotesNonQvWasmPath,
     useWasm,
@@ -160,7 +160,7 @@ describe("e2e tests with non quadratic voting", function test() {
     it("should signup one user", async () => {
       await signup({
         maciAddress: maciAddresses.maciContractAddress,
-        maciPubKey: user.pubKey.serialize(),
+        maciPublicKey: user.publicKey.serialize(),
         sgData: DEFAULT_SG_DATA,
         signer,
       });
@@ -168,7 +168,7 @@ describe("e2e tests with non quadratic voting", function test() {
 
     it("should publish one message", async () => {
       await publish({
-        pubkey: user.pubKey.serialize(),
+        publicKey: user.publicKey.serialize(),
         stateIndex: 1n,
         voteOptionIndex: 0n,
         nonce: 1n,
@@ -176,7 +176,7 @@ describe("e2e tests with non quadratic voting", function test() {
         newVoteWeight: 9n,
         maciAddress: maciAddresses.maciContractAddress,
         salt: genRandomSalt(),
-        privateKey: user.privKey.serialize(),
+        privateKey: user.privateKey.serialize(),
         signer,
       });
     });
@@ -249,7 +249,7 @@ describe("e2e tests with non quadratic voting", function test() {
     it("should signup one user", async () => {
       await signup({
         maciAddress: maciAddresses.maciContractAddress,
-        maciPubKey: user.pubKey.serialize(),
+        maciPublicKey: user.publicKey.serialize(),
         sgData: DEFAULT_SG_DATA,
         signer,
       });
@@ -261,12 +261,12 @@ describe("e2e tests with non quadratic voting", function test() {
         voteOptionIndex: 0n,
         salt: genRandomSalt(),
         nonce: 1n,
-        privateKey: user.privKey,
+        privateKey: user.privateKey,
         stateIndex: 1n,
         voteWeight: 9n,
-        coordinatorPubKey: coordinatorKeypair.pubKey,
+        coordinatorPublicKey: coordinatorKeypair.publicKey,
         maxVoteOption: BigInt(VOTE_OPTION_TREE_ARITY ** deployPollArgs.voteOptionTreeDepth),
-        newPubKey: user.pubKey,
+        newPublicKey: user.publicKey,
       });
 
       const messages = [
@@ -274,8 +274,8 @@ describe("e2e tests with non quadratic voting", function test() {
           maciAddress: maciAddresses.maciContractAddress,
           poll: 0,
           data: message.data.map(String),
-          publicKey: ephemeralKeypair.pubKey.asArray().map(String),
-          hash: message.hash(ephemeralKeypair.pubKey).toString(),
+          publicKey: ephemeralKeypair.publicKey.asArray().map(String),
+          hash: message.hash(ephemeralKeypair.publicKey).toString(),
         },
       ];
 

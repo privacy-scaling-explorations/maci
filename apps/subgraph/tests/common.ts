@@ -13,9 +13,10 @@ export function mockPollContract(): void {
     ethereum.Value.fromI32(20),
   ]);
 
-  createMockedFunction(DEFAULT_POLL_ADDRESS, "treeDepths", "treeDepths():(uint8,uint8)").returns([
+  createMockedFunction(DEFAULT_POLL_ADDRESS, "treeDepths", "treeDepths():(uint8,uint8,uint8)").returns([
     ethereum.Value.fromI32(1),
     ethereum.Value.fromI32(2),
+    ethereum.Value.fromI32(10),
   ]);
 
   createMockedFunction(

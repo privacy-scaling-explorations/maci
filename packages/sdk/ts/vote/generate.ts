@@ -18,10 +18,10 @@ export const generateVote = ({
   privateKey,
   stateIndex,
   voteWeight,
-  coordinatorPubKey,
+  coordinatorPublicKey,
   maxVoteOption,
   ephemeralKeypair,
-  newPubKey,
+  newPublicKey,
 }: IGenerateVoteArgs): IVote => {
   const keypair = new Keypair(privateKey);
 
@@ -55,7 +55,7 @@ export const generateVote = ({
   // create the command object
   const command = new PCommand(
     stateIndex,
-    newPubKey ?? keypair.pubKey,
+    newPublicKey ?? keypair.publicKey,
     voteOptionIndex,
     voteWeight,
     nonce,
@@ -67,7 +67,7 @@ export const generateVote = ({
   const signature = command.sign(privateKey);
 
   // encrypt the command using a shared key between the user and the coordinator
-  const message = command.encrypt(signature, Keypair.genEcdhSharedKey(encKeypair.privKey, coordinatorPubKey));
+  const message = command.encrypt(signature, Keypair.genEcdhSharedKey(encKeypair.privateKey, coordinatorPublicKey));
 
   return {
     message,
