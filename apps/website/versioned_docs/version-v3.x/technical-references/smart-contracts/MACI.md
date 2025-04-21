@@ -62,12 +62,12 @@ This function does the following:
 - hashes the public key and inserts it into the state tree.
 
 ```ts
-function signUp(PubKey memory _pubKey, bytes memory _signUpPolicyData) public virtual {
+function signUp(PublicKey memory _publicKey, bytes memory _signUpPolicyData) public virtual {
   // ensure we do not have more signups than what the circuits support
   if (leanIMTData.size >= maxSignups) revert TooManySignups();
 
   // ensure that the public key is on the baby jubjub curve
-  if (!CurveBabyJubJub.isOnCurve(_pubKey.x, _pubKey.y)) {
+  if (!CurveBabyJubJub.isOnCurve(_publicKey.x, _publicKey.y)) {
     revert InvalidPubKey();
   }
 
@@ -76,13 +76,13 @@ function signUp(PubKey memory _pubKey, bytes memory _signUpPolicyData) public vi
   signUpPolicy.register(msg.sender, _signUpPolicyData);
 
   // Hash the public key and insert it into the tree.
-  uint256 pubKeyHash = hashLeftRight(_pubKey.x, _pubKey.y);
+  uint256 pubKeyHash = hashLeftRight(_publicKey.x, _publicKey.y);
   uint256 stateRoot = InternalLeanIMT._insert(leanIMTData, pubKeyHash);
 
   // Store the current state tree root in the array
   stateRootsOnSignUp.push(stateRoot);
 
-  emit SignUp(leanIMTData.size - 1, block.timestamp, _pubKey.x, _pubKey.y);
+  emit SignUp(leanIMTData.size - 1, block.timestamp, _publicKey.x, _publicKey.y);
 }
 ```
 
@@ -156,5 +156,5 @@ Polls require the following information:
 - `voteOptions`: the number of vote options for the poll
 
 :::info
-Please be advised that the number of signups in the MACI contract (number of leaves in the merkle tree holding MACI's state) considers the initial zero leaf as one signup. For this reason, when accounting for the real users signed up to MACI, you should subtract one from the value returned from the `numSignUps` function.
+Please be advised that the number of signups in the MACI contract (number of leaves in the merkle tree holding MACI's state) considers the initial zero leaf as one signup. For this reason, when accounting for the real users signed up to MACI, you should subtract one from the value returned from the `totalSignups` function.
 :::

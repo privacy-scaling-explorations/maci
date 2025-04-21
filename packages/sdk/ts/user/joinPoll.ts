@@ -4,7 +4,7 @@ import { poseidon } from "@maci-protocol/crypto";
 import { Keypair, PrivateKey } from "@maci-protocol/domainobjs";
 
 import type { IJoinPollData, IJoinPollArgs } from "./types";
-import type { CircuitInputs } from "../utils/types";
+import type { TCircuitInputs } from "../utils/types";
 
 import { contractExists } from "../utils/contracts";
 import { generateAndVerifyProof } from "../utils/proofs";
@@ -39,7 +39,7 @@ export const joinPoll = async ({
     throw new Error("MACI contract does not exist");
   }
 
-  if (!PrivateKey.isValidSerializedPrivKey(privateKey)) {
+  if (!PrivateKey.isValidSerialized(privateKey)) {
     throw new Error("Invalid MACI private key");
   }
 
@@ -47,9 +47,9 @@ export const joinPoll = async ({
     throw new Error("Invalid poll id");
   }
 
-  const userMaciPrivKey = PrivateKey.deserialize(privateKey);
-  const userMaciPubKey = new Keypair(userMaciPrivKey).publicKey;
-  const nullifier = poseidon([BigInt(userMaciPrivKey.asCircuitInputs()), pollId]);
+  const userMaciPrivateKey = PrivateKey.deserialize(privateKey);
+  const userMaciPublicKey = new Keypair(userMaciPrivateKey).publicKey;
+  const nullifier = poseidon([BigInt(userMaciPrivateKey.asCircuitInputs()), pollId]);
 
   // check if the user has already joined the poll based on the nullifier
   const hasUserJoinedAlready = await hasUserJoinedPoll({
@@ -68,23 +68,23 @@ export const joinPoll = async ({
   const pollContract = PollFactory.connect(pollContracts.poll, signer);
 
   // get the state index from the MACI contract
-  const stateIndex = await maciContract.getStateIndex(userMaciPubKey.hash()).catch(() => -1n);
+  const stateIndex = await maciContract.getStateIndex(userMaciPublicKey.hash()).catch(() => -1n);
 
-  let circuitInputs: CircuitInputs;
+  let circuitInputs: TCircuitInputs;
 
   if (stateFile) {
     circuitInputs = await getPollJoiningCircuitInputsFromStateFile({
       stateFile,
       pollId,
       stateIndex,
-      userMaciPrivKey,
+      userMaciPrivateKey,
     });
   } else {
     circuitInputs = await getPollJoiningCircuitEvents({
       maciContract,
       stateIndex,
       pollId,
-      userMaciPrivKey,
+      userMaciPrivateKey,
       signer,
       startBlock,
       endBlock,
@@ -92,7 +92,7 @@ export const joinPoll = async ({
     });
   }
 
-  const currentStateRootIndex = Number.parseInt((await maciContract.numSignUps()).toString(), 10) - 1;
+  const currentStateRootIndex = Number.parseInt((await maciContract.totalSignups()).toString(), 10) - 1;
 
   // generate the proof for this batch
   const proof = await generateAndVerifyProof(circuitInputs, pollJoiningZkey, useWasm, rapidsnark, pollWitgen, pollWasm);
@@ -100,7 +100,7 @@ export const joinPoll = async ({
   // submit the message onchain as well as the encryption public key
   const tx = await pollContract.joinPoll(
     nullifier,
-    userMaciPubKey.asContractParam(),
+    userMaciPublicKey.asContractParam(),
     currentStateRootIndex,
     proof,
     sgDataArg,

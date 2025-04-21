@@ -1,12 +1,12 @@
 /* eslint-disable no-console */
-import { IVkObjectParams, PublicKey, VerifyingKey } from "@maci-protocol/domainobjs";
+import { IVerifyingKeyObjectParams, PublicKey, VerifyingKey } from "@maci-protocol/domainobjs";
 import { ZeroAddress } from "ethers";
 
 import type { IVerifyingKeyStruct } from "../../../ts/types";
-import type { MACI, Poll, IBasePolicy, PollFactory, VkRegistry } from "../../../typechain-types";
+import type { MACI, Poll, IBasePolicy, PollFactory, VerifyingKeysRegistry } from "../../../typechain-types";
 
 import { EMode } from "../../../ts/constants";
-import { extractVk } from "../../../ts/proofs";
+import { extractVerifyingKey } from "../../../ts/proofs";
 import { EDeploySteps, FULL_POLICY_NAMES } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
 import { Deployment } from "../../helpers/Deployment";
@@ -24,7 +24,7 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
 
     const maciContractAddress = storage.getAddress(EContracts.MACI, hre.network.name);
     const verifierContractAddress = storage.getAddress(EContracts.Verifier, hre.network.name);
-    const vkRegistryContractAddress = storage.getAddress(EContracts.VkRegistry, hre.network.name);
+    const verifyingKeysRegistryContractAddress = storage.getAddress(EContracts.VerifyingKeysRegistry, hre.network.name);
 
     if (!maciContractAddress) {
       throw new Error("Need to deploy MACI contract first");
@@ -34,8 +34,8 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
       throw new Error("Need to deploy Verifier contract first");
     }
 
-    if (!vkRegistryContractAddress) {
-      throw new Error("Need to deploy VkRegistry contract first");
+    if (!verifyingKeysRegistryContractAddress) {
+      throw new Error("Need to deploy VerifyingKeysRegistry contract first");
     }
 
     const maciContract = await deployment.getContract<MACI>({ name: EContracts.MACI });
@@ -44,12 +44,21 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
     const coordinatorPublicKey = deployment.getDeployConfigField<string>(EContracts.Poll, "coordinatorPublicKey");
     const pollStartTimestamp = deployment.getDeployConfigField<number>(EContracts.Poll, "pollStartDate");
     const pollEndTimestamp = deployment.getDeployConfigField<number>(EContracts.Poll, "pollEndDate");
-    const intStateTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "intStateTreeDepth");
-    const messageBatchSize = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "messageBatchSize");
+    const intStateTreeDepth = deployment.getDeployConfigField<number>(
+      EContracts.VerifyingKeysRegistry,
+      "intStateTreeDepth",
+    );
+    const messageBatchSize = deployment.getDeployConfigField<number>(
+      EContracts.VerifyingKeysRegistry,
+      "messageBatchSize",
+    );
     const stateTreeDepth =
       deployment.getDeployConfigField<number>(EContracts.Poll, "stateTreeDepth") ||
       (await maciContract.stateTreeDepth());
-    const voteOptionTreeDepth = deployment.getDeployConfigField<number>(EContracts.VkRegistry, "voteOptionTreeDepth");
+    const voteOptionTreeDepth = deployment.getDeployConfigField<number>(
+      EContracts.VerifyingKeysRegistry,
+      "voteOptionTreeDepth",
+    );
     const relayers = deployment
       .getDeployConfigField<string | undefined>(EContracts.Poll, "relayers")
       ?.split(",")
@@ -72,55 +81,64 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
 
     const voteOptions = deployment.getDeployConfigField<number>(EContracts.Poll, "voteOptions");
 
-    const vkRegistryContract = await deployment.getContract<VkRegistry>({
-      name: EContracts.VkRegistry,
-      address: vkRegistryContractAddress,
+    const verifyingKeysRegistryContract = await deployment.getContract<VerifyingKeysRegistry>({
+      name: EContracts.VerifyingKeysRegistry,
+      address: verifyingKeysRegistryContractAddress,
     });
 
     const pollJoiningZkeyPath = deployment.getDeployConfigField<string>(
-      EContracts.VkRegistry,
+      EContracts.VerifyingKeysRegistry,
       "zkeys.pollJoiningZkey.zkey",
     );
     const pollJoinedZkeyPath = deployment.getDeployConfigField<string>(
-      EContracts.VkRegistry,
+      EContracts.VerifyingKeysRegistry,
       "zkeys.pollJoinedZkey.zkey",
     );
 
-    const [pollJoiningVk, pollJoinedVk] = await Promise.all([
-      pollJoiningZkeyPath && extractVk(pollJoiningZkeyPath),
-      pollJoinedZkeyPath && extractVk(pollJoinedZkeyPath),
-    ]).then((vks) => vks.map((vk: IVkObjectParams | "" | undefined) => vk && VerifyingKey.fromObj(vk)));
+    const [pollJoiningVerifyingKey, pollJoinedVerifyingKey] = await Promise.all([
+      pollJoiningZkeyPath && extractVerifyingKey(pollJoiningZkeyPath),
+      pollJoinedZkeyPath && extractVerifyingKey(pollJoinedZkeyPath),
+    ]).then((verifyingKeys) =>
+      verifyingKeys.map(
+        (verifyingKey: IVerifyingKeyObjectParams | "" | undefined) =>
+          verifyingKey && VerifyingKey.fromObj(verifyingKey),
+      ),
+    );
 
-    if (!pollJoiningVk) {
+    if (!pollJoiningVerifyingKey) {
       throw new Error("Poll joining zkey is not set");
     }
 
-    if (!pollJoinedVk) {
+    if (!pollJoinedVerifyingKey) {
       throw new Error("Poll joined zkey is not set");
     }
 
-    const [pollJoiningVkSig, pollJoinedVkSig] = await Promise.all([
-      vkRegistryContract.genPollJoiningVkSig(stateTreeDepth),
-      vkRegistryContract.genPollJoinedVkSig(stateTreeDepth),
+    const [pollJoiningVerifyingKeySignature, pollJoinedVerifyingKeySignature] = await Promise.all([
+      verifyingKeysRegistryContract.generatePollJoiningVerifyingKeySignature(stateTreeDepth),
+      verifyingKeysRegistryContract.generatePollJoinedVerifyingKeySignature(stateTreeDepth),
     ]);
-    const [pollJoiningVkOnchain, pollJoinedVkOnchain] = await Promise.all([
-      vkRegistryContract.getPollJoiningVkBySig(pollJoiningVkSig),
-      vkRegistryContract.getPollJoinedVkBySig(pollJoinedVkSig),
+    const [pollJoiningVerifyingKeyOnchain, pollJoinedVerifyingKeyOnchain] = await Promise.all([
+      verifyingKeysRegistryContract.getPollJoiningVerifyingKeyBySignature(pollJoiningVerifyingKeySignature),
+      verifyingKeysRegistryContract.getPollJoinedVerifyingKeyBySignature(pollJoinedVerifyingKeySignature),
     ]);
 
-    const isPollJoiningVkSet = pollJoiningVk.equals(VerifyingKey.fromContract(pollJoiningVkOnchain));
+    const isPollJoiningVerifyingKeySet = pollJoiningVerifyingKey.equals(
+      VerifyingKey.fromContract(pollJoiningVerifyingKeyOnchain),
+    );
 
-    if (!isPollJoiningVkSet) {
-      await vkRegistryContract
-        .setPollJoiningVkKey(stateTreeDepth, pollJoiningVk.asContractParam() as IVerifyingKeyStruct)
+    if (!isPollJoiningVerifyingKeySet) {
+      await verifyingKeysRegistryContract
+        .setPollJoiningVerifyingKeyKey(stateTreeDepth, pollJoiningVerifyingKey.asContractParam() as IVerifyingKeyStruct)
         .then((tx) => tx.wait());
     }
 
-    const isPollJoinedVkSet = pollJoinedVk.equals(VerifyingKey.fromContract(pollJoinedVkOnchain));
+    const isPollJoinedVerifyingKeySet = pollJoinedVerifyingKey.equals(
+      VerifyingKey.fromContract(pollJoinedVerifyingKeyOnchain),
+    );
 
-    if (!isPollJoinedVkSet) {
-      await vkRegistryContract
-        .setPollJoinedVkKey(stateTreeDepth, pollJoinedVk.asContractParam() as IVerifyingKeyStruct)
+    if (!isPollJoinedVerifyingKeySet) {
+      await verifyingKeysRegistryContract
+        .setPollJoinedVerifyingKeyKey(stateTreeDepth, pollJoinedVerifyingKey.asContractParam() as IVerifyingKeyStruct)
         .then((tx) => tx.wait());
     }
 
@@ -136,7 +154,7 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
         messageBatchSize,
         coordinatorPublicKey: unserializedKey.asContractParam(),
         verifier: verifierContractAddress,
-        vkRegistry: vkRegistryContractAddress,
+        verifyingKeysRegistry: verifyingKeysRegistryContractAddress,
         mode,
         policy: policyContractAddress,
         initialVoiceCreditProxy: initialVoiceCreditProxyContractAddress,

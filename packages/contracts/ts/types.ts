@@ -11,11 +11,11 @@ import type {
   PoseidonT4,
   PoseidonT5,
   PoseidonT6,
-  VkRegistry,
+  VerifyingKeysRegistry,
   IBasePolicy,
 } from "../typechain-types";
 import type { TypedContractMethod } from "../typechain-types/common";
-import type { CircuitInputs } from "@maci-protocol/core";
+import type { TCircuitInputs } from "@maci-protocol/core";
 import type { Keypair, Message, PublicKey } from "@maci-protocol/domainobjs";
 import type { BigNumberish, Signer, ContractFactory, Provider, BaseContract } from "ethers";
 import type { PublicSignals } from "snarkjs";
@@ -71,7 +71,7 @@ export interface Groth16Proof {
  */
 export interface Proof {
   proof: SnarkProof | Groth16Proof;
-  circuitInputs: CircuitInputs;
+  circuitInputs: TCircuitInputs;
   publicInputs: PublicSignals;
 }
 
@@ -95,13 +95,13 @@ export interface IDeployedTestContracts {
   policyContract: IBasePolicy;
   constantInitialVoiceCreditProxyContract: ConstantInitialVoiceCreditProxy;
   maciContract: MACI;
-  vkRegistryContract: VkRegistry;
+  verifyingKeysRegistryContract: VerifyingKeysRegistry;
 }
 
 /**
  * An interface that represents an action that should
  * be applied to a MaciState and its Polls within the
- * genMaciState function.
+ * generateMaciState function.
  */
 export interface Action {
   type: string;
@@ -116,7 +116,7 @@ export interface Action {
     stateIndex: number;
     numSrQueueOps: number;
     pollId: bigint;
-    pollAddr: string;
+    pollAddresses: string;
     stateLeaf: bigint;
     messageRoot: bigint;
     ipfsHash: string;
@@ -218,7 +218,7 @@ export interface FullProveResult {
  * Parameters for the genProof function
  */
 export interface IGenProofOptions {
-  inputs: CircuitInputs;
+  inputs: TCircuitInputs;
   zkeyPath: string;
   useWasm?: boolean;
   rapidsnarkExePath?: string;

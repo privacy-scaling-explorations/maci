@@ -1,15 +1,15 @@
 ---
-title: VkRegistry Smart Contract
-description: VkRegistry smart contract
-sidebar_label: VkRegistry
+title: VerifyingKeysRegistry Smart Contract
+description: VerifyingKeysRegistry smart contract
+sidebar_label: VerifyingKeysRegistry
 sidebar_position: 8
 ---
 
 :::info
-Code location: [VkRegistry.sol](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/VkRegistry.sol)
+Code location: [VerifyingKeysRegistry.sol](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/VerifyingKeysRegistry.sol)
 :::
 
-The VkRegistry is a contract that holds the verifying keys for the zk-SNARK circuits. It holds four different sets of keys:
+The VerifyingKeysRegistry is a contract that holds the verifying keys for the zk-SNARK circuits. It holds four different sets of keys:
 
 - `processVks` - The keys for the processMessages circuit
 - `tallyVks` - The keys for the tallyVotes circuit

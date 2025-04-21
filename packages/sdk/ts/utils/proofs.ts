@@ -1,13 +1,13 @@
 import {
   type FullProveResult,
   verifyProof,
-  genProofRapidSnark,
-  extractVk,
-  genProofSnarkjs,
+  generateProofRapidSnark,
+  extractVerifyingKey,
+  generateProofSnarkjs,
   formatProofForVerifierContract,
 } from "@maci-protocol/contracts";
 
-import type { CircuitInputs } from "./types";
+import type { TCircuitInputs } from "./types";
 
 /**
  * Generate and verify poll proof
@@ -20,7 +20,7 @@ import type { CircuitInputs } from "./types";
  * @returns proof - an array of strings
  */
 export const generateAndVerifyProof = async (
-  inputs: CircuitInputs,
+  inputs: TCircuitInputs,
   zkeyPath: string,
   useWasm: boolean | undefined,
   rapidsnarkExePath: string | undefined,
@@ -29,16 +29,16 @@ export const generateAndVerifyProof = async (
 ): Promise<string[]> => {
   let r: FullProveResult;
 
-  const vk = await extractVk(zkeyPath);
+  const verifyingKey = await extractVerifyingKey(zkeyPath);
 
   if (useWasm === true || useWasm === undefined) {
-    r = await genProofSnarkjs({
+    r = await generateProofSnarkjs({
       inputs,
       zkeyPath,
       wasmPath,
     });
   } else {
-    r = await genProofRapidSnark({
+    r = await generateProofRapidSnark({
       inputs,
       zkeyPath,
       rapidsnarkExePath,
@@ -47,7 +47,7 @@ export const generateAndVerifyProof = async (
   }
 
   // verify it
-  const isValid = await verifyProof(r.publicSignals, r.proof, vk);
+  const isValid = await verifyProof(r.publicSignals, r.proof, verifyingKey);
 
   if (!isValid) {
     throw new Error("Generated an invalid proof");

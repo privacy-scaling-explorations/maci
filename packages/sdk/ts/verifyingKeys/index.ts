@@ -1,11 +1,16 @@
 export { checkVerifyingKeys } from "./checkVerifyingKeys";
 export { setVerifyingKeys } from "./setVerifyingKeys";
-export { getAllOnChainVks, compareVks, extractAllVks, extractVkToFile } from "./utils";
+export {
+  getAllOnChainVerifyingKeys,
+  compareVerifyingKeys,
+  extractAllVerifyingKeys,
+  extractVerifyingKeyToFile,
+} from "./utils";
 export type {
-  IGetAllVksArgs,
+  IGetAllVerifyingKeysArgs,
+  IMaciVerifyingKeysOnchain,
+  IExtractAllVerifyingKeysArgs,
   IMaciVerifyingKeys,
-  IExtractAllVksArgs,
-  IMaciVks,
   ISetVerifyingKeysArgs,
   ICheckVerifyingKeysArgs,
 } from "./types";

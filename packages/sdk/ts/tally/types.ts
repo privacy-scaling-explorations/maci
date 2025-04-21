@@ -81,21 +81,21 @@ export interface ITallyData {
   };
 
   /**
-   * The per VO spent voice credits.
+   * The per vote option spent voice credits.
    */
-  perVOSpentVoiceCredits?: {
+  perVoteOptionSpentVoiceCredits?: {
     /**
-     * The tally of the per VO spent voice credits.
+     * The tally of the per vote option spent voice credits.
      */
     tally: string[];
 
     /**
-     * The salt of the per VO spent voice credits.
+     * The salt of the per vote option spent voice credits.
      */
     salt: string;
 
     /**
-     * The commitment of the per VO spent voice credits.
+     * The commitment of the per vote option spent voice credits.
      */
     commitment: string;
   };
@@ -133,7 +133,7 @@ export interface IVerifyArgs {
   /**
    * The number of vote options
    */
-  numVoteOptions: number;
+  totalVoteOptions: number;
 
   /**
    * The vote option tree depth
@@ -185,7 +185,7 @@ export interface ITallyVotesInputs {
   ballotRoot: bigint;
   sbSalt: bigint;
   index: bigint;
-  numSignUps: bigint;
+  totalSignups: bigint;
   sbCommitment: bigint;
   currentTallyCommitment: bigint;
   newTallyCommitment: bigint;

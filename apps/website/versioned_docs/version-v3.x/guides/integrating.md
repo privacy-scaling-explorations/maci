@@ -17,12 +17,12 @@ As an example, a [contract](https://github.com/ctrlc03/minimalQF/blob/main/contr
 
 ```javascript
 /// @inheritdoc IMACI
-function signUp(PubKey memory _pubKey, bytes memory _signUpPolicyData) public virtual {
+function signUp(PublicKey memory _publicKey, bytes memory _signUpPolicyData) public virtual {
   // ensure we do not have more signups than what the circuits support
   if (leanIMTData.size >= maxSignups) revert TooManySignups();
 
   // ensure that the public key is on the baby jubjub curve
-  if (!CurveBabyJubJub.isOnCurve(_pubKey.x, _pubKey.y)) {
+  if (!CurveBabyJubJub.isOnCurve(_publicKey.x, _publicKey.y)) {
     revert InvalidPubKey();
   }
 
@@ -31,13 +31,13 @@ function signUp(PubKey memory _pubKey, bytes memory _signUpPolicyData) public vi
   signUpPolicy.enforce(msg.sender, _signUpPolicyData);
 
   // Hash the public key and insert it into the tree.
-  uint256 pubKeyHash = hashLeftRight(_pubKey.x, _pubKey.y);
+  uint256 pubKeyHash = hashLeftRight(_publicKey.x, _publicKey.y);
   uint256 stateRoot = InternalLeanIMT._insert(leanIMTData, pubKeyHash);
 
   // Store the current state tree root in the array
   stateRootsOnSignUp.push(stateRoot);
 
-  emit SignUp(leanIMTData.size - 1, block.timestamp, _pubKey.x, _pubKey.y);
+  emit SignUp(leanIMTData.size - 1, block.timestamp, _publicKey.x, _publicKey.y);
 }
 ```
 
@@ -71,7 +71,7 @@ On the other hand, the Poll contract can be inherited to expand functionality su
 ```javascript
 function joinPoll(
   uint256 _nullifier,
-  PubKey calldata _pubKey,
+  PublicKey calldata _publicKey,
   uint256 _stateRootIndex,
   uint256[8] calldata _proof,
   bytes memory _signUpPolicyData,
@@ -86,7 +86,7 @@ function joinPoll(
   pollNullifiers[_nullifier] = true;
 
   // Verify user's proof
-  if (!verifyJoiningPollProof(_nullifier, _stateRootIndex, _pubKey, _proof)) {
+  if (!verifyJoiningPollProof(_nullifier, _stateRootIndex, _publicKey, _proof)) {
     revert InvalidPollProof();
   }
 
@@ -100,7 +100,7 @@ function joinPoll(
   );
 
   // Store user in the pollStateTree
-  uint256 stateLeaf = hashStateLeaf(StateLeaf(_pubKey, voiceCreditBalance, block.timestamp));
+  uint256 stateLeaf = hashStateLeaf(StateLeaf(_publicKey, voiceCreditBalance, block.timestamp));
 
   uint256 stateRoot = InternalLazyIMT._insert(pollStateTree, stateLeaf);
 
@@ -108,7 +108,7 @@ function joinPoll(
   pollStateRootsOnJoin.push(stateRoot);
 
   uint256 pollStateIndex = pollStateTree.numberOfLeaves - 1;
-  emit PollJoined(_pubKey.x, _pubKey.y, voiceCreditBalance, block.timestamp, _nullifier, pollStateIndex);
+  emit PollJoined(_publicKey.x, _publicKey.y, voiceCreditBalance, block.timestamp, _nullifier, pollStateIndex);
 }
 ```
 

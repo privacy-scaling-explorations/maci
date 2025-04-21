@@ -9,7 +9,7 @@
     "build": "lerna run build --ignore=website",
     "build:circuits-c": "lerna run build-test-circuits-c --scope \"@maci-protocol/circuits\"",
     "build:circuits-wasm": "lerna run build-test-circuits-wasm --scope \"@maci-protocol/circuits\"",
-    "setup:zkeys": "NODE_OPTIONS=--max-old-space-size=4096 lerna run gen-zkeys --scope \"@maci-protocol/circuits\"",
+    "setup:zkeys": "NODE_OPTIONS=--max-old-space-size=4096 lerna run generate-zkeys --scope \"@maci-protocol/circuits\"",
     "clean": "lerna exec -- rm -rf node_modules build && rm -rf node_modules",
     "commit": "git cz",
     "download-zkeys:test": "ts-node ./.github/scripts/downloadZkeys.ts test ./packages/testing/zkeys",
@@ -33,7 +33,7 @@
     "types": "lerna run types",
     "docs": "lerna run docs",
     "prepare": "is-ci || husky",
-    "genMaciKeyPair": "node packages/cli/build/ts/index.js genMaciKeyPair"
+    "generateMaciKeyPair": "node packages/cli/build/ts/index.js generateMaciKeyPair"
   },
   "author": "PSE",
   "devDependencies": {

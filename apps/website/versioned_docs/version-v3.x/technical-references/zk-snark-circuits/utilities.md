@@ -15,7 +15,7 @@ It outputs one field element, which is the SHA256 hash of the following inputs:
 
 1. `packedVals`
 2. `pollEndTimestamp`
-3. `msgRoot`
+3. `messageRoot`
 4. `coordinatorPubKeyHash`
 5. `newSbCommitment`
 6. `currentSbCommitment`

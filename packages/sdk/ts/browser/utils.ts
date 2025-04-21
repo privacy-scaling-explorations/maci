@@ -29,7 +29,11 @@ export const formatProofForVerifierContract = (proof: SnarkProof | Groth16Proof)
  * @param wasmPath - the path to the wasm witness
  * @returns the zk-SNARK proof and public signals
  */
-export const genProofSnarkjs = async ({ inputs, zkeyPath, wasmPath }: IGenProofOptions): Promise<FullProveResult> => {
+export const generateProofSnarkjs = async ({
+  inputs,
+  zkeyPath,
+  wasmPath,
+}: IGenProofOptions): Promise<FullProveResult> => {
   if (!wasmPath) {
     throw new Error("wasmPath must be specified");
   }

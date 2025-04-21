@@ -125,18 +125,22 @@ task("prove", "Command to generate proofs")
         deployment.getDeployConfigField<boolean | null>(EContracts.Poll, "useQuadraticVoting") ?? false;
       const mode = useQuadraticVoting ? "qv" : "nonQv";
       const tallyZkey = deployment.getDeployConfigField<string>(
-        EContracts.VkRegistry,
+        EContracts.VerifyingKeysRegistry,
         `zkeys.${mode}.tallyVotesZkey`,
         true,
       );
-      const tallyWasm = deployment.getDeployConfigField<string>(EContracts.VkRegistry, `zkeys.${mode}.tallyWasm`, true);
+      const tallyWasm = deployment.getDeployConfigField<string>(
+        EContracts.VerifyingKeysRegistry,
+        `zkeys.${mode}.tallyWasm`,
+        true,
+      );
       const processZkey = deployment.getDeployConfigField<string>(
-        EContracts.VkRegistry,
+        EContracts.VerifyingKeysRegistry,
         `zkeys.${mode}.processMessagesZkey`,
         true,
       );
       const processWasm = deployment.getDeployConfigField<string>(
-        EContracts.VkRegistry,
+        EContracts.VerifyingKeysRegistry,
         `zkeys.${mode}.processWasm`,
         true,
       );
@@ -150,7 +154,7 @@ task("prove", "Command to generate proofs")
           witgen: tallyWitgen,
           wasm: tallyWasm,
         },
-        mp: {
+        messageProcessor: {
           zkey: processZkey,
           witgen: processWitgen,
           wasm: processWasm,

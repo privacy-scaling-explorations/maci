@@ -25,7 +25,7 @@ describe("MessageService", () => {
   };
 
   const mockPollContract = {
-    hashMessageAndEncPubKey: jest.fn().mockImplementation(() => Promise.resolve("hash")),
+    hashMessageAndPublicKey: jest.fn().mockImplementation(() => Promise.resolve("hash")),
     relayMessagesBatch: jest
       .fn()
       .mockImplementation(() => Promise.resolve({ wait: jest.fn().mockImplementation(() => Promise.resolve()) })),

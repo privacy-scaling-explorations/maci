@@ -1,7 +1,7 @@
 #! /bin/bash
 # rm -r ./proofs
 # rm tally.json
-node build/ts/index.js deployVkRegistry
+node build/ts/index.js deployVerifyingKeysRegistry
 node build/ts/index.js setVerifyingKeys \
     --state-tree-depth 10 \
     --int-state-tree-depth 1 \
@@ -39,7 +39,7 @@ node build/ts/index.js publish \
     --poll-id 0
 node build/ts/index.js timeTravel -s 100
 node build/ts/index.js mergeSignups --poll-id 0
-node build/ts/index.js genProofs \
+node build/ts/index.js generateProofs \
     --private-key macisk.bf92af7614b07e2ba19dce65bb7fef2b93d83b84da2cf2e3af690104fbc52511 \
     --poll-id 0 \
     --process-zkey ./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey \

@@ -2,7 +2,7 @@ import { expect } from "chai";
 
 import { bigInt2Buffer, fromRprLE, fromString, shiftRight, stringifyBigInts, unstringifyBigInts } from "../bigIntUtils";
 import { SNARK_FIELD_SIZE } from "../constants";
-import { genTreeCommitment, genTreeProof } from "../utils";
+import { generateTreeCommitment, genTreeProof } from "../utils";
 
 describe("Utils", () => {
   describe("stringifyBigInts", () => {
@@ -160,23 +160,23 @@ describe("Utils", () => {
     });
   });
 
-  describe("genTreeCommitment", () => {
+  describe("generateTreeCommitment", () => {
     const leaves = [BigInt(1), BigInt(2), BigInt(3), BigInt(4), BigInt(5)];
     const salt = BigInt(6);
     const depth = 3;
 
     it("should generate a commitment to the tree root using the provided salt", () => {
-      const commitment = genTreeCommitment(leaves, salt, depth);
+      const commitment = generateTreeCommitment(leaves, salt, depth);
       expect(commitment).to.satisfy((num: bigint) => num > 0);
       expect(commitment).to.satisfy((num: bigint) => num < SNARK_FIELD_SIZE);
     });
 
     it("should always generate the same commitment for the same inputs", () => {
-      const commitment = genTreeCommitment(leaves, salt, depth);
+      const commitment = generateTreeCommitment(leaves, salt, depth);
       expect(commitment).to.satisfy((num: bigint) => num > 0);
       expect(commitment).to.satisfy((num: bigint) => num < SNARK_FIELD_SIZE);
 
-      const commitment2 = genTreeCommitment(leaves, salt, depth);
+      const commitment2 = generateTreeCommitment(leaves, salt, depth);
       expect(commitment2).to.satisfy((num: bigint) => num > 0);
       expect(commitment2).to.satisfy((num: bigint) => num < SNARK_FIELD_SIZE);
       expect(commitment).to.eq(commitment2);

@@ -4,7 +4,7 @@ import { G1Point, G2Point, genTreeProof } from "@maci-protocol/crypto";
 import { VerifyingKey } from "@maci-protocol/domainobjs";
 
 import type { IVerifyingKeyStruct, Proof } from "../../ts/types";
-import type { MACI, MessageProcessor, Poll, Tally, Verifier, VkRegistry } from "../../typechain-types";
+import type { MACI, MessageProcessor, Poll, Tally, Verifier, VerifyingKeysRegistry } from "../../typechain-types";
 import type { BigNumberish } from "ethers";
 
 import { info, logGreen, logMagenta, success } from "../../ts/logger";
@@ -32,9 +32,9 @@ export class Prover {
   private maciContract: MACI;
 
   /**
-   * VkRegistry contract typechain wrapper
+   * VerifyingKeysRegistry contract typechain wrapper
    */
-  private vkRegistryContract: VkRegistry;
+  private verifyingKeysRegistryContract: VerifyingKeysRegistry;
 
   /**
    * Verifier contract typechain wrapper
@@ -55,14 +55,14 @@ export class Prover {
     pollContract,
     mpContract,
     maciContract,
-    vkRegistryContract,
+    verifyingKeysRegistryContract,
     verifierContract,
     tallyContract,
   }: IProverParams) {
     this.pollContract = pollContract;
     this.mpContract = mpContract;
     this.maciContract = maciContract;
-    this.vkRegistryContract = vkRegistryContract;
+    this.verifyingKeysRegistryContract = verifyingKeysRegistryContract;
     this.verifierContract = verifierContract;
     this.tallyContract = tallyContract;
   }
@@ -77,30 +77,30 @@ export class Prover {
     const [
       treeDepths,
       messageBatchSize,
-      numSignUpsAndMessages,
+      totalSignupsAndMessages,
       numBatchesProcessed,
       stateTreeDepth,
-      coordinatorPubKeyHash,
+      coordinatorPublicKeyHash,
       mode,
       batchHashes,
       lastChainHash,
     ] = await Promise.all([
       this.pollContract.treeDepths(),
       this.pollContract.messageBatchSize().then(Number),
-      this.pollContract.numSignUpsAndMessages(),
+      this.pollContract.totalSignupsAndMessages(),
       this.mpContract.numBatchesProcessed().then(Number),
       this.maciContract.stateTreeDepth().then(Number),
-      this.pollContract.coordinatorPubKeyHash(),
+      this.pollContract.coordinatorPublicKeyHash(),
       this.mpContract.mode(),
       this.pollContract.getBatchHashes().then((res) => [...res]),
       this.pollContract.chainHash(),
     ]);
 
-    const numMessages = Number(numSignUpsAndMessages[1]);
+    const numMessages = Number(totalSignupsAndMessages[1]);
     const totalMessageBatches = batchHashes.length;
     let numberBatchesProcessed = numBatchesProcessed;
 
-    const onChainProcessVk = await this.vkRegistryContract.getProcessVk(
+    const onChainProcessVerifyingKey = await this.verifyingKeysRegistryContract.getProcessVerifyingKey(
       stateTreeDepth,
       treeDepths.voteOptionTreeDepth,
       messageBatchSize,
@@ -159,8 +159,8 @@ export class Prover {
 
       this.validateCommitment(circuitInputs.currentSbCommitment as BigNumberish, currentSbCommitmentOnChain);
 
-      if (circuitInputs.coordinatorPublicKeyHash.toString() !== coordinatorPubKeyHash.toString()) {
-        throw new Error("coordPubKey mismatch.");
+      if (circuitInputs.coordinatorPublicKeyHash.toString() !== coordinatorPublicKeyHash.toString()) {
+        throw new Error("Coordinator public key mismatch.");
       }
 
       const formattedProof = formatProofForVerifierContract(proof);
@@ -174,18 +174,18 @@ export class Prover {
         .then((value) => [...value]);
       this.validatePublicInput(publicInputs, publicInputsOnChain);
 
-      const vk = new VerifyingKey(
-        new G1Point(onChainProcessVk.alpha1[0], onChainProcessVk.alpha1[1]),
-        new G2Point(onChainProcessVk.beta2[0], onChainProcessVk.beta2[1]),
-        new G2Point(onChainProcessVk.gamma2[0], onChainProcessVk.gamma2[1]),
-        new G2Point(onChainProcessVk.delta2[0], onChainProcessVk.delta2[1]),
-        onChainProcessVk.ic.map(([x, y]) => new G1Point(x, y)),
+      const verifyingKey = new VerifyingKey(
+        new G1Point(onChainProcessVerifyingKey.alpha1[0], onChainProcessVerifyingKey.alpha1[1]),
+        new G2Point(onChainProcessVerifyingKey.beta2[0], onChainProcessVerifyingKey.beta2[1]),
+        new G2Point(onChainProcessVerifyingKey.gamma2[0], onChainProcessVerifyingKey.gamma2[1]),
+        new G2Point(onChainProcessVerifyingKey.delta2[0], onChainProcessVerifyingKey.delta2[1]),
+        onChainProcessVerifyingKey.ic.map(([x, y]) => new G1Point(x, y)),
       );
 
       // verify the proof on chain using the verifier contract
       const isValidOnChain = await this.verifierContract.verify(
         formattedProof,
-        vk.asContractParam() as IVerifyingKeyStruct,
+        verifyingKey.asContractParam() as IVerifyingKeyStruct,
         [...publicInputsOnChain],
       );
 
@@ -226,29 +226,29 @@ export class Prover {
    * @param proofs tally proofs
    */
   async proveTally(proofs: Proof[]): Promise<void> {
-    const [treeDepths, numSignUpsAndMessages, tallyBatchNumber, mode, stateTreeDepth] = await Promise.all([
+    const [treeDepths, totalSignupsAndMessages, tallyBatchNumber, mode, stateTreeDepth] = await Promise.all([
       this.pollContract.treeDepths(),
-      this.pollContract.numSignUpsAndMessages(),
+      this.pollContract.totalSignupsAndMessages(),
       this.tallyContract.tallyBatchNum().then(Number),
       this.tallyContract.mode(),
       this.maciContract.stateTreeDepth().then(Number),
     ]);
 
-    const onChainTallyVk = await this.vkRegistryContract.getTallyVk(
+    const onChainTallyVerifyingKey = await this.verifyingKeysRegistryContract.getTallyVerifyingKey(
       stateTreeDepth,
       treeDepths.intStateTreeDepth,
       treeDepths.voteOptionTreeDepth,
       mode,
     );
 
-    const numSignUps = Number(numSignUpsAndMessages[0]);
+    const totalSignups = Number(totalSignupsAndMessages[0]);
     const tallyBatchSize = STATE_TREE_ARITY ** Number(treeDepths.intStateTreeDepth);
 
     // vote tallying proofs
     const totalTallyBatches =
-      numSignUps % tallyBatchSize === 0
-        ? Math.floor(numSignUps / tallyBatchSize)
-        : Math.floor(numSignUps / tallyBatchSize) + 1;
+      totalSignups % tallyBatchSize === 0
+        ? Math.floor(totalSignups / tallyBatchSize)
+        : Math.floor(totalSignups / tallyBatchSize) + 1;
 
     let tallyBatchNum = tallyBatchNumber;
 
@@ -279,17 +279,17 @@ export class Prover {
       // format the tally proof so it can be verified on chain
       const formattedProof = formatProofForVerifierContract(proof);
 
-      const vk = new VerifyingKey(
-        new G1Point(onChainTallyVk.alpha1[0], onChainTallyVk.alpha1[1]),
-        new G2Point(onChainTallyVk.beta2[0], onChainTallyVk.beta2[1]),
-        new G2Point(onChainTallyVk.gamma2[0], onChainTallyVk.gamma2[1]),
-        new G2Point(onChainTallyVk.delta2[0], onChainTallyVk.delta2[1]),
-        onChainTallyVk.ic.map(([x, y]) => new G1Point(x, y)),
+      const verifyingKey = new VerifyingKey(
+        new G1Point(onChainTallyVerifyingKey.alpha1[0], onChainTallyVerifyingKey.alpha1[1]),
+        new G2Point(onChainTallyVerifyingKey.beta2[0], onChainTallyVerifyingKey.beta2[1]),
+        new G2Point(onChainTallyVerifyingKey.gamma2[0], onChainTallyVerifyingKey.gamma2[1]),
+        new G2Point(onChainTallyVerifyingKey.delta2[0], onChainTallyVerifyingKey.delta2[1]),
+        onChainTallyVerifyingKey.ic.map(([x, y]) => new G1Point(x, y)),
       );
 
       const isValidOnChain = await this.verifierContract.verify(
         formattedProof,
-        vk.asContractParam() as IVerifyingKeyStruct,
+        verifyingKey.asContractParam() as IVerifyingKeyStruct,
         [...publicInputsOnChain],
       );
 
@@ -348,7 +348,7 @@ export class Prover {
         tallyResultSalt: tallyData.results.salt,
         newResultsCommitment: tallyData.results.commitment,
         spentVoiceCreditsHash: tallyData.totalSpentVoiceCredits.commitment,
-        perVOSpentVoiceCreditsHash: tallyData.perVOSpentVoiceCredits?.commitment ?? 0n,
+        perVOSpentVoiceCreditsHash: tallyData.perVoteOptionSpentVoiceCredits?.commitment ?? 0n,
       })
       .then((tx) => tx.wait());
 

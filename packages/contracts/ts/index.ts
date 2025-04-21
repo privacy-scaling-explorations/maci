@@ -6,7 +6,7 @@ export {
 } from "@excubiae/contracts";
 export {
   deployMockVerifier,
-  deployVkRegistry,
+  deployVerifyingKeysRegistry,
   deployMaci,
   deployContract,
   deployContractWithLinkedLibraries,
@@ -26,8 +26,8 @@ export {
   deployVerifier,
   getDeployedPolicyProxyFactories,
 } from "./deploy";
-export { genMaciStateFromContract } from "./genMaciState";
-export { genEmptyBallotRoots } from "./genEmptyBallotRoots";
+export { generateMaciStateFromContract } from "./generateMaciState";
+export { generateEmptyBallotRoots } from "./generateEmptyBallotRoots";
 export {
   formatProofForVerifierContract,
   getDefaultSigner,
@@ -37,7 +37,7 @@ export {
   unlinkFile,
   getBlockTimestamp,
 } from "./utils";
-export { extractVk, genProofRapidSnark, genProofSnarkjs, verifyProof, readProofs } from "./proofs";
+export { extractVerifyingKey, generateProofRapidSnark, generateProofSnarkjs, verifyProof, readProofs } from "./proofs";
 export { EMode } from "./constants";
 export { EDeploySteps } from "../tasks/helpers/constants";
 export { Deployment } from "../tasks/helpers/Deployment";

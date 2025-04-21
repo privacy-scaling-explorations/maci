@@ -38,7 +38,7 @@ describe("MaciState", function test() {
 
       const encKeypair = new Keypair();
       const signature = command.sign(encKeypair.privateKey);
-      const sharedKey = Keypair.genEcdhSharedKey(encKeypair.privateKey, coordinatorKeypair.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(encKeypair.privateKey, coordinatorKeypair.publicKey);
       const message: Message = command.encrypt(signature, sharedKey);
 
       m1.polls.get(pollId)!.publishMessage(message, encKeypair.publicKey);
@@ -54,7 +54,7 @@ describe("MaciState", function test() {
 
       // modify user.publicKey
       const m3 = m1.copy();
-      m3.pubKeys[0] = new Keypair().publicKey;
+      m3.publicKeys[0] = new Keypair().publicKey;
       expect(m1.equals(m3)).not.to.eq(true);
 
       // modify poll.coordinatorKeypair

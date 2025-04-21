@@ -76,7 +76,7 @@ import {
   type PoseidonT5,
   type PoseidonT6,
   type Verifier,
-  type VkRegistry,
+  type VerifyingKeysRegistry,
   type ERC20VotesChecker,
   type ERC20VotesPolicy,
   type ERC20Checker,
@@ -119,7 +119,7 @@ import {
   Factory,
 } from "../typechain-types";
 
-import { genEmptyBallotRoots } from "./genEmptyBallotRoots";
+import { generateEmptyBallotRoots } from "./generateEmptyBallotRoots";
 import { logMagenta } from "./logger";
 
 /**
@@ -161,13 +161,13 @@ export const deployContract = async <T extends BaseContract>(
 };
 
 /**
- * Deploy a VkRegistry contract
+ * Deploy a VerifyingKeysRegistry contract
  * @param signer - the signer to use to deploy the contract
  * @param quiet - whether to suppress console output
- * @returns the deployed VkRegistry contract
+ * @returns the deployed VerifyingKeysRegistry contract
  */
-export const deployVkRegistry = async (signer?: Signer, quiet = false): Promise<VkRegistry> =>
-  deployContract<VkRegistry>("VkRegistry", signer, quiet);
+export const deployVerifyingKeysRegistry = async (signer?: Signer, quiet = false): Promise<VerifyingKeysRegistry> =>
+  deployContract<VerifyingKeysRegistry>("VerifyingKeysRegistry", signer, quiet);
 
 /**
  * Deploy a MockVerifier contract (testing only)
@@ -881,7 +881,7 @@ export const deployMaci = async ({
   factories,
   quiet = true,
 }: IDeployMaciArgs): Promise<IDeployedMaci> => {
-  const emptyBallotRoots = genEmptyBallotRoots(stateTreeDepth);
+  const emptyBallotRoots = generateEmptyBallotRoots(stateTreeDepth);
 
   const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } =
     await deployPoseidonContracts(signer, poseidonAddresses, quiet);

@@ -10,7 +10,7 @@ include "../CalculateTotal.circom";
  * Given a node index within an IMT and the total tree levels, it outputs the path indices leading to that node.
  * The template handles the modulo and division operations to break down the tree index into its constituent path indices.
  */
-template MerkleGeneratePathIndices(levels) {
+template MerklePathIndicesGenerator(levels) {
     // The base used for the modulo and division operations, set to 2 for binary trees.
     var BASE = 2;
 

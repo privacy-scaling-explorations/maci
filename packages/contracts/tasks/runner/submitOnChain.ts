@@ -5,7 +5,7 @@ import { task, types } from "hardhat/config";
 import fs from "fs";
 
 import type { Proof } from "../../ts/types";
-import type { VkRegistry, Verifier, MACI, Poll, MessageProcessor, Tally } from "../../typechain-types";
+import type { VerifyingKeysRegistry, Verifier, MACI, Poll, MessageProcessor, Tally } from "../../typechain-types";
 
 import { logMagenta, info } from "../../ts/logger";
 import { readProofs } from "../../ts/proofs";
@@ -45,12 +45,12 @@ task("submitOnChain", "Command to prove the result of a poll on-chain")
     logMagenta({ text: info(`Start balance: ${Number(startBalance / 10n ** 12n) / 1e6}`) });
 
     const maciContractAddress = storage.mustGetAddress(EContracts.MACI, network.name);
-    const [maciContract, vkRegistryContract, verifierContract] = await Promise.all([
+    const [maciContract, verifyingKeysRegistryContract, verifierContract] = await Promise.all([
       deployment.getContract<MACI>({
         name: EContracts.MACI,
         address: maciContractAddress,
       }),
-      deployment.getContract<VkRegistry>({ name: EContracts.VkRegistry }),
+      deployment.getContract<VerifyingKeysRegistry>({ name: EContracts.VerifyingKeysRegistry }),
       deployment.getContract<Verifier>({ name: EContracts.Verifier }),
     ]);
 
@@ -94,7 +94,7 @@ task("submitOnChain", "Command to prove the result of a poll on-chain")
       maciContract,
       mpContract,
       pollContract,
-      vkRegistryContract,
+      verifyingKeysRegistryContract,
       verifierContract,
       tallyContract,
     });

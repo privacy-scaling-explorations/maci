@@ -6,7 +6,7 @@ import { Factory } from "@excubiae/contracts/contracts/proxy/Factory.sol";
 import { Params } from "./utilities/Params.sol";
 import { DomainObjs } from "./utilities/DomainObjs.sol";
 import { MessageProcessor } from "./MessageProcessor.sol";
-import { IMessageProcessorFactory } from "./interfaces/IMPFactory.sol";
+import { IMessageProcessorFactory } from "./interfaces/IMessageProcessorFactory.sol";
 
 /// @title MessageProcessorFactory
 /// @notice Factory contract for deploying minimal proxy instances of MessageProcessor.
@@ -18,15 +18,15 @@ contract MessageProcessorFactory is Factory, Params, DomainObjs, IMessageProcess
   /// @inheritdoc IMessageProcessorFactory
   function deploy(
     address _verifier,
-    address _vkRegistry,
+    address _verifyingKeysRegistry,
     address _poll,
     Mode _mode
-  ) public returns (address messageProcessorAddr) {
-    bytes memory data = abi.encode(_verifier, _vkRegistry, _poll, _mode);
+  ) public returns (address messageProcessorAddress) {
+    bytes memory data = abi.encode(_verifier, _verifyingKeysRegistry, _poll, _mode);
     address clone = super._deploy(data);
 
     MessageProcessor(clone).initialize();
 
-    messageProcessorAddr = clone;
+    messageProcessorAddress = clone;
   }
 }

@@ -1,15 +1,15 @@
 import type { EMode } from "@maci-protocol/contracts";
-import type { IVkContractParams, VerifyingKey } from "@maci-protocol/domainobjs";
+import type { IVerifyingKeyContractParams, VerifyingKey } from "@maci-protocol/domainobjs";
 import type { Signer } from "ethers";
 
 /**
- * Arguments for the getAllVks function
+ * Arguments for the getAllVerifyingKeys function
  */
-export interface IGetAllVksArgs {
+export interface IGetAllVerifyingKeysArgs {
   /**
-   * The address of the VkRegistry contract
+   * The address of the VerifyingKeysRegistry contract
    */
-  vkRegistryAddress: string;
+  verifyingKeysRegistryAddress: string;
   /**
    * The signer to use for the contract calls
    */
@@ -39,29 +39,29 @@ export interface IGetAllVksArgs {
 /**
  * MACI's verifying keys
  */
-export interface IMaciVerifyingKeys {
+export interface IMaciVerifyingKeysOnchain {
   /**
    * The verifying key for the poll joining circuit
    */
-  pollJoiningVkOnChain: IVkContractParams;
+  pollJoiningVerifyingKeyOnChain: IVerifyingKeyContractParams;
   /**
    * The verifying key for the poll joined circuit
    */
-  pollJoinedVkOnChain: IVkContractParams;
+  pollJoinedVerifyingKeyOnChain: IVerifyingKeyContractParams;
   /**
    * The verifying key for the process messages circuit
    */
-  processVkOnChain: IVkContractParams;
+  processVerifyingKeyOnChain: IVerifyingKeyContractParams;
   /**
    * The verifying key for the tally votes circuit
    */
-  tallyVkOnChain: IVkContractParams;
+  tallyVerifyingKeyOnChain: IVerifyingKeyContractParams;
 }
 
 /**
- * Arguments for the extractAllVks function
+ * Arguments for the extractAllVerifyingKeys function
  */
-export interface IExtractAllVksArgs {
+export interface IExtractAllVerifyingKeysArgs {
   /**
    * The path to the poll joining zkey
    */
@@ -83,26 +83,26 @@ export interface IExtractAllVksArgs {
 /**
  * Maci verifying keys
  */
-export interface IMaciVks {
+export interface IMaciVerifyingKeys {
   /**
    * The poll joining verifying key
    */
-  pollJoiningVk?: VerifyingKey;
+  pollJoiningVerifyingKey?: VerifyingKey;
 
   /**
    * The poll joined verifying key
    */
-  pollJoinedVk?: VerifyingKey;
+  pollJoinedVerifyingKey?: VerifyingKey;
 
   /**
    * The message processing verifying key
    */
-  processVk?: VerifyingKey;
+  processVerifyingKey?: VerifyingKey;
 
   /**
    * The tally verifying key
    */
-  tallyVk?: VerifyingKey;
+  tallyVerifyingKey?: VerifyingKey;
 }
 
 /**
@@ -110,24 +110,24 @@ export interface IMaciVks {
  */
 export interface ISetVerifyingKeysArgs {
   /**
-   * The polll joining Vk object
+   * The polll joining verifying key object
    */
-  pollJoiningVk: VerifyingKey;
+  pollJoiningVerifyingKey: VerifyingKey;
 
   /**
-   * The poll joined Vk object
+   * The poll joined verifying key object
    */
-  pollJoinedVk: VerifyingKey;
+  pollJoinedVerifyingKey: VerifyingKey;
 
   /**
-   * The process messages Vk object
+   * The process messages verifying key object
    */
-  processMessagesVk: VerifyingKey;
+  processMessagesVerifyingKey: VerifyingKey;
 
   /**
-   * The tally votes Vk object
+   * The tally votes verifying key object
    */
-  tallyVotesVk: VerifyingKey;
+  tallyVotesVerifyingKey: VerifyingKey;
 
   /**
    * The state tree depth
@@ -155,9 +155,9 @@ export interface ISetVerifyingKeysArgs {
   messageBatchSize: number;
 
   /**
-   * The VkRegistry contract address
+   * The VerifyingKeysRegistry contract address
    */
-  vkRegistryAddress: string;
+  verifyingKeysRegistryAddress: string;
 
   /**
    * The signer
@@ -220,9 +220,9 @@ export interface ICheckVerifyingKeysArgs {
   signer: Signer;
 
   /**
-   * The address of the VkRegistry contract
+   * The address of the VerifyingKeysRegistry contract
    */
-  vkRegistry: string;
+  verifyingKeysRegistry: string;
 
   /**
    * Whether to use quadratic voting or not
@@ -231,9 +231,9 @@ export interface ICheckVerifyingKeysArgs {
 }
 
 /**
- * Interface for the arguments to the extractVkToFile command
+ * Interface for the arguments to the extractVerifyingKeyToFile command
  */
-export interface IExtractVkToFileArgs {
+export interface IExtractVerifyingKeyToFileArgs {
   /**
    * File path for poll joining zkey
    */
@@ -265,7 +265,7 @@ export interface IExtractVkToFileArgs {
   tallyVotesZkeyPathNonQv: string;
 
   /**
-   * Output file path of extracted vkeys
+   * Output file path of extracted verifying keys
    */
   outputFilePath: string;
 }

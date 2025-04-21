@@ -1,4 +1,4 @@
-import { genRandomSalt, hash3 } from "@maci-protocol/crypto";
+import { generateRandomSalt, hash3 } from "@maci-protocol/crypto";
 
 import type { IJsonStateLeaf, IStateLeaf, IStateLeafContractParams } from "./types";
 
@@ -60,7 +60,7 @@ export class StateLeaf implements IStateLeaf {
    */
   static genRandomLeaf(): StateLeaf {
     const keypair = new Keypair();
-    return new StateLeaf(keypair.publicKey, genRandomSalt());
+    return new StateLeaf(keypair.publicKey, generateRandomSalt());
   }
 
   /**

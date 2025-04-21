@@ -1,4 +1,4 @@
-import { genPubKey } from "@maci-protocol/crypto";
+import { generatePublicKey } from "@maci-protocol/crypto";
 import { PrivateKey, PublicKey } from "@maci-protocol/domainobjs";
 
 /**
@@ -9,12 +9,12 @@ import { PrivateKey, PublicKey } from "@maci-protocol/domainobjs";
  */
 export const generateMaciPublicKey = (privateKey: string): string => {
   // we check that the provided private key is valid
-  if (!PrivateKey.isValidSerializedPrivKey(privateKey)) {
+  if (!PrivateKey.isValidSerialized(privateKey)) {
     throw new Error("Invalid private key");
   }
 
   const unserializedKey = PrivateKey.deserialize(privateKey);
-  const publicKey = new PublicKey(genPubKey(unserializedKey.rawPrivKey));
+  const publicKey = new PublicKey(generatePublicKey(unserializedKey.raw));
 
   // we give back the serialized public key
   return publicKey.serialize();

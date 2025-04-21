@@ -2,8 +2,8 @@ import { Keypair } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { BaseContract, Signer, ZeroAddress } from "ethers";
 
-import { deployPollFactory, genEmptyBallotRoots, getDefaultSigner } from "../ts";
-import { MACI, PollFactory, Verifier, VkRegistry } from "../typechain-types";
+import { deployPollFactory, generateEmptyBallotRoots, getDefaultSigner } from "../ts";
+import { MACI, PollFactory, Verifier, VerifyingKeysRegistry } from "../typechain-types";
 
 import {
   messageBatchSize,
@@ -18,14 +18,14 @@ import { deployTestContracts } from "./utils";
 describe("pollFactory", () => {
   let maciContract: MACI;
   let verifierContract: Verifier;
-  let vkRegistryContract: VkRegistry;
+  let verifyingKeysRegistryContract: VerifyingKeysRegistry;
   let extContracts: ExtContractsStruct;
   let pollFactory: PollFactory;
   let signer: Signer;
 
   const { publicKey: coordinatorPublicKey } = new Keypair();
 
-  const emptyBallotRoots = genEmptyBallotRoots(STATE_TREE_DEPTH);
+  const emptyBallotRoots = generateEmptyBallotRoots(STATE_TREE_DEPTH);
   const emptyBallotRoot = emptyBallotRoots[treeDepths.voteOptionTreeDepth];
 
   before(async () => {
@@ -33,11 +33,11 @@ describe("pollFactory", () => {
     const r = await deployTestContracts({ initialVoiceCreditBalance, stateTreeDepth: STATE_TREE_DEPTH, signer });
     maciContract = r.maciContract;
     verifierContract = r.mockVerifierContract as Verifier;
-    vkRegistryContract = r.vkRegistryContract;
+    verifyingKeysRegistryContract = r.verifyingKeysRegistryContract;
     extContracts = {
       maci: maciContract,
       verifier: verifierContract,
-      vkRegistry: vkRegistryContract,
+      verifyingKeysRegistry: verifyingKeysRegistryContract,
       policy: r.policyContract,
       initialVoiceCreditProxy: r.constantInitialVoiceCreditProxyContract,
     };

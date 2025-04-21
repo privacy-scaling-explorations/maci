@@ -7,7 +7,7 @@ import {
   signup,
   deployMaci,
   deployFreeForAllSignUpPolicy,
-  deployVkRegistryContract,
+  deployVerifyingKeysRegistryContract,
 } from "@maci-protocol/sdk";
 import { expect } from "chai";
 import { Signer } from "ethers";
@@ -21,16 +21,16 @@ describe("signup", function test() {
   let maciAddresses: IMaciContracts;
 
   const user = new Keypair();
-  // before all tests we deploy the vk registry contract and set the verifying keys
+  // before all tests we deploy the verifying keys registry contract and set the verifying keys
   before(async () => {
     signer = await getDefaultSigner();
     const [signupPolicy] = await deployFreeForAllSignUpPolicy({}, signer, true);
     const signupPolicyContractAddress = await signupPolicy.getAddress();
 
-    // we deploy the vk registry contract
-    const vkRegistryAddress = await deployVkRegistryContract({ signer });
+    // we deploy the verifying keys registry contract
+    const verifyingKeysRegistryAddress = await deployVerifyingKeysRegistryContract({ signer });
     // we set the verifying keys
-    await setVerifyingKeys({ ...(await verifyingKeysArgs(signer)), vkRegistryAddress });
+    await setVerifyingKeys({ ...(await verifyingKeysArgs(signer)), verifyingKeysRegistryAddress });
 
     // deploy the smart contracts
     maciAddresses = await deployMaci({

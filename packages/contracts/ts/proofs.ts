@@ -1,5 +1,5 @@
 import { stringifyBigInts } from "@maci-protocol/crypto";
-import { IVkObjectParams } from "@maci-protocol/domainobjs";
+import { IVerifyingKeyObjectParams } from "@maci-protocol/domainobjs";
 import { groth16, type PublicSignals, type Groth16Proof, zKey } from "snarkjs";
 
 import childProcess from "child_process";
@@ -18,7 +18,11 @@ import { cleanThreads, unlinkFile } from "./utils";
  * @param wasmPath - the path to the wasm witness
  * @returns the zk-SNARK proof and public signals
  */
-export const genProofSnarkjs = async ({ inputs, zkeyPath, wasmPath }: IGenProofOptions): Promise<FullProveResult> => {
+export const generateProofSnarkjs = async ({
+  inputs,
+  zkeyPath,
+  wasmPath,
+}: IGenProofOptions): Promise<FullProveResult> => {
   if (!wasmPath) {
     throw new Error("wasmPath must be specified");
   }
@@ -35,7 +39,7 @@ export const genProofSnarkjs = async ({ inputs, zkeyPath, wasmPath }: IGenProofO
  * @param rapidsnarkExePath - the path to the rapidnsark binary
  * @returns the zk-SNARK proof and public signals
  */
-export const genProofRapidSnark = async ({
+export const generateProofRapidSnark = async ({
   inputs,
   zkeyPath,
   witnessExePath,
@@ -97,17 +101,17 @@ export const genProofRapidSnark = async ({
  * Verify a zk-SNARK proof using snarkjs
  * @param publicInputs - the public inputs to the circuit
  * @param proof - the proof
- * @param vk - the verification key
+ * @param verifyingKey - the verification key
  * @param cleanup - whether to cleanup the threads or not
  * @returns whether the proof is valid or not
  */
 export const verifyProof = async (
   publicInputs: PublicSignals,
   proof: Groth16Proof,
-  vk: ISnarkJSVerificationKey,
+  verifyingKey: ISnarkJSVerificationKey,
   cleanup = true,
 ): Promise<boolean> => {
-  const isValid = await groth16.verify(vk, publicInputs, proof);
+  const isValid = await groth16.verify(verifyingKey, publicInputs, proof);
   if (cleanup) {
     await cleanThreads();
   }
@@ -120,10 +124,10 @@ export const verifyProof = async (
  * @param cleanup - whether to cleanup the threads or not
  * @returns the verification key
  */
-export const extractVk = async (zkeyPath: string, cleanup = true): Promise<IVkObjectParams> =>
+export const extractVerifyingKey = async (zkeyPath: string, cleanup = true): Promise<IVerifyingKeyObjectParams> =>
   zKey
     .exportVerificationKey(zkeyPath)
-    .then((vk) => vk as IVkObjectParams)
+    .then((verifyingKey) => verifyingKey as IVerifyingKeyObjectParams)
     .finally(() => {
       if (cleanup) {
         cleanThreads();

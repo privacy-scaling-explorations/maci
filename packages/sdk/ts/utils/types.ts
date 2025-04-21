@@ -3,7 +3,7 @@ import type { BigNumberish, Signer } from "ethers";
 /**
  * A circuit inputs for the circom circuit
  */
-export type CircuitInputs = Record<string, string | bigint | bigint[] | bigint[][] | string[] | bigint[][][]>;
+export type TCircuitInputs = Record<string, string | bigint | bigint[] | bigint[][] | string[] | bigint[][][]>;
 
 /**
  * Circuit parameters

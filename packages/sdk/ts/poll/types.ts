@@ -83,7 +83,7 @@ export interface IGetPollData {
   /**
    * The poll number of signups
    */
-  numSignups: BigNumberish;
+  totalSignups: BigNumberish;
 
   /**
    * Whether the MACI contract's state root has been merged
@@ -125,7 +125,7 @@ export interface IPollParams {
   /**
    * The number of vote options
    */
-  numVoteOptions: number;
+  totalVoteOptions: number;
 
   /**
    * Tally Batch Size

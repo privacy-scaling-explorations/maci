@@ -2,7 +2,7 @@ import { jest } from "@jest/globals";
 import { Keypair } from "@maci-protocol/domainobjs";
 import {
   formatProofForVerifierContract,
-  genProofSnarkjs,
+  generateProofSnarkjs,
   getDefaultSigner,
   getPollContracts,
 } from "@maci-protocol/sdk";
@@ -50,7 +50,7 @@ describe("Integration message publishing", () => {
     });
     const poll = testDeploy.contractsData.maciState!.polls.get(0n);
 
-    poll!.updatePoll(BigInt(testDeploy.contractsData.maciState!.pubKeys.length));
+    poll!.updatePoll(BigInt(testDeploy.contractsData.maciState!.publicKeys.length));
 
     const [user] = testDeploy.contractsData.users!;
 
@@ -96,7 +96,7 @@ describe("Integration message publishing", () => {
       ],
     };
 
-    const { proof } = await genProofSnarkjs({
+    const { proof } = await generateProofSnarkjs({
       inputs: circuitInputs,
       zkeyPath: pollJoinedZkey,
       wasmPath: pollJoinedWasm,

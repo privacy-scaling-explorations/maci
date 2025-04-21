@@ -1,4 +1,4 @@
-import { formatPrivKeyForBabyJub, type PrivateKey as RawPrivKey } from "@maci-protocol/crypto";
+import { formatPrivateKeyForBabyJub, type PrivateKey as RawPrivateKey } from "@maci-protocol/crypto";
 
 import type { IJsonPrivateKey } from "./types";
 
@@ -12,34 +12,34 @@ export const SERIALIZED_PRIV_KEY_PREFIX = "macisk.";
  * A serialized MACI private key is prefixed by 'macisk.'
  */
 export class PrivateKey {
-  rawPrivKey: RawPrivKey;
+  raw: RawPrivateKey;
 
   /**
    * Generate a new Private key object
-   * @param rawPrivKey the raw private key (a bigint)
+   * @param raw the raw private key (a bigint)
    */
-  constructor(rawPrivKey: RawPrivKey) {
-    this.rawPrivKey = rawPrivKey;
+  constructor(raw: RawPrivateKey) {
+    this.raw = raw;
   }
 
   /**
    * Create a copy of this Private key
    * @returns a copy of the Private key
    */
-  copy = (): PrivateKey => new PrivateKey(BigInt(this.rawPrivKey.toString()));
+  copy = (): PrivateKey => new PrivateKey(BigInt(this.raw.toString()));
 
   /**
    * Return this Private key as a circuit input
    * @returns the Private key as a circuit input
    */
-  asCircuitInputs = (): string => formatPrivKeyForBabyJub(this.rawPrivKey).toString();
+  asCircuitInputs = (): string => formatPrivateKeyForBabyJub(this.raw).toString();
 
   /**
    * Serialize the private key
    * @returns the serialized private key
    */
   serialize = (): string => {
-    let x = this.rawPrivKey.toString(16);
+    let x = this.raw.toString(16);
     if (x.length % 2 !== 0) {
       x = `0${x}`;
     }
@@ -59,14 +59,14 @@ export class PrivateKey {
 
   /**
    * Check if the serialized private key is valid
-   * @param s the serialized private key
+   * @param serialized the serialized private key
    * @returns whether it is a valid serialized private key
    */
-  static isValidSerializedPrivKey = (s: string): boolean => {
-    const correctPrefix = s.startsWith(SERIALIZED_PRIV_KEY_PREFIX);
-    const x = s.slice(SERIALIZED_PRIV_KEY_PREFIX.length);
+  static isValidSerialized = (serialized: string): boolean => {
+    const correctPrefix = serialized.startsWith(SERIALIZED_PRIV_KEY_PREFIX);
+    const body = serialized.slice(SERIALIZED_PRIV_KEY_PREFIX.length);
 
-    return correctPrefix && x.length === 64;
+    return correctPrefix && body.length === 64;
   };
 
   /**

@@ -27,10 +27,10 @@ describe("stateLeaf", () => {
   describe("genBlankLeaf", () => {
     it("should return a blank leaf", () => {
       const blankLeaf = StateLeaf.genBlankLeaf();
-      expect(blankLeaf.publicKey.rawPubKey[0]).to.eq(
+      expect(blankLeaf.publicKey.raw[0]).to.eq(
         BigInt("10457101036533406547632367118273992217979173478358440826365724437999023779287"),
       );
-      expect(blankLeaf.publicKey.rawPubKey[1]).to.eq(
+      expect(blankLeaf.publicKey.raw[1]).to.eq(
         BigInt("19824078218392094440610104313265183977899662750282163392862422243483260492317"),
       );
       expect(blankLeaf.voiceCreditBalance).to.eq(BigInt(0));

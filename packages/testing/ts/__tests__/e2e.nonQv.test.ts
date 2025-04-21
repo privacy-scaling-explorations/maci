@@ -1,5 +1,5 @@
 import { VOTE_OPTION_TREE_ARITY } from "@maci-protocol/core";
-import { genRandomSalt } from "@maci-protocol/crypto";
+import { generateRandomSalt } from "@maci-protocol/crypto";
 import { Keypair } from "@maci-protocol/domainobjs";
 import {
   generateVote,
@@ -14,7 +14,7 @@ import {
   publish,
   deployPoll,
   generateProofs,
-  deployVkRegistryContract,
+  deployVerifyingKeysRegistryContract,
   timeTravel,
   type IGenerateProofsArgs,
   isArm,
@@ -66,7 +66,7 @@ describe("e2e tests with non quadratic voting", function test() {
   let initialVoiceCreditProxyContractAddress: string;
   let verifierContractAddress: string;
   let signer: Signer;
-  let vkRegistryAddress: string;
+  let verifyingKeysRegistryAddress: string;
 
   const generateProofsArgs: Omit<IGenerateProofsArgs, "maciAddress" | "signer"> = {
     outputDir: testProofsDirPath,
@@ -86,12 +86,12 @@ describe("e2e tests with non quadratic voting", function test() {
     useQuadraticVoting: false,
   };
 
-  // before all tests we deploy the vk registry contract and set the verifying keys
+  // before all tests we deploy the verifying keys registry contract and set the verifying keys
   before(async () => {
     signer = await getDefaultSigner();
 
-    // we deploy the vk registry contract
-    vkRegistryAddress = await deployVkRegistryContract({ signer });
+    // we deploy the verifying keys registry contract
+    verifyingKeysRegistryAddress = await deployVerifyingKeysRegistryContract({ signer });
 
     const [initialVoiceCreditProxy] = await deployConstantInitialVoiceCreditProxy(
       { amount: DEFAULT_INITIAL_VOICE_CREDITS },
@@ -104,10 +104,10 @@ describe("e2e tests with non quadratic voting", function test() {
     const verifier = await deployVerifier(signer, true);
     verifierContractAddress = await verifier.getAddress();
 
-    // we deploy the vk registry contract
-    vkRegistryAddress = await deployVkRegistryContract({ signer });
+    // we deploy the verifying keys registry contract
+    verifyingKeysRegistryAddress = await deployVerifyingKeysRegistryContract({ signer });
     // we set the verifying keys
-    await setVerifyingKeys({ ...(await verifyingKeysArgs(signer, EMode.NON_QV)), vkRegistryAddress });
+    await setVerifyingKeys({ ...(await verifyingKeysArgs(signer, EMode.NON_QV)), verifyingKeysRegistryAddress });
   });
 
   describe("1 signup, 1 message", () => {
@@ -150,7 +150,7 @@ describe("e2e tests with non quadratic voting", function test() {
         relayers: [await signer.getAddress()],
         maciAddress: maciAddresses.maciContractAddress,
         verifierContractAddress,
-        vkRegistryContractAddress: vkRegistryAddress,
+        verifyingKeysRegistryContractAddress: verifyingKeysRegistryAddress,
         policyContractAddress: pollPolicyContractAddress,
         initialVoiceCreditProxyContractAddress,
         mode: EMode.NON_QV,
@@ -175,7 +175,7 @@ describe("e2e tests with non quadratic voting", function test() {
         pollId: 0n,
         newVoteWeight: 9n,
         maciAddress: maciAddresses.maciContractAddress,
-        salt: genRandomSalt(),
+        salt: generateRandomSalt(),
         privateKey: user.privateKey.serialize(),
         signer,
       });
@@ -239,7 +239,7 @@ describe("e2e tests with non quadratic voting", function test() {
         relayers: [await signer.getAddress()],
         maciAddress: maciAddresses.maciContractAddress,
         verifierContractAddress,
-        vkRegistryContractAddress: vkRegistryAddress,
+        verifyingKeysRegistryContractAddress: verifyingKeysRegistryAddress,
         policyContractAddress: pollPolicyContractAddress,
         initialVoiceCreditProxyContractAddress,
         mode: EMode.NON_QV,
@@ -259,7 +259,7 @@ describe("e2e tests with non quadratic voting", function test() {
       const { message, ephemeralKeypair } = generateVote({
         pollId: 0n,
         voteOptionIndex: 0n,
-        salt: genRandomSalt(),
+        salt: generateRandomSalt(),
         nonce: 1n,
         privateKey: user.privateKey,
         stateIndex: 1n,

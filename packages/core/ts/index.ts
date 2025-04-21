@@ -2,16 +2,21 @@ export { MaciState } from "./MaciState";
 
 export { Poll } from "./Poll";
 
-export { genPollJoiningVkSig, genPollJoinedVkSig, genProcessVkSig, genTallyVkSig } from "./utils/utils";
+export {
+  generatePollJoiningVerifyingKeySignature,
+  generatePollJoinedVerifyingKeySignature,
+  generateProcessVerifyingKeySignature,
+  generateTallyVerifyingKeySignature,
+} from "./utils/utils";
 
 export type {
   IJoiningCircuitArgs,
   IPollJoiningCircuitInputs,
   ITallyCircuitInputs,
   IProcessMessagesCircuitInputs,
-  CircuitInputs,
-  TreeDepths,
-  BatchSizes,
+  TCircuitInputs,
+  ITreeDepths,
+  IBatchSizes,
   IJsonMaciState,
   IPoll,
   IJsonPoll,

@@ -9,7 +9,7 @@ import {
   Poll__factory as PollFactory,
   MACI__factory as MACIFactory,
   Prover,
-  VkRegistry,
+  VerifyingKeysRegistry,
   Verifier,
   MessageProcessor,
   Tally,
@@ -168,7 +168,10 @@ export class ProofGeneratorService {
         maciContractAddress,
         tallyContractAddress,
         tally: this.fileService.getZkeyFilePaths(process.env.COORDINATOR_TALLY_ZKEY_NAME!, useQuadraticVoting),
-        mp: this.fileService.getZkeyFilePaths(process.env.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME!, useQuadraticVoting),
+        messageProcessor: this.fileService.getZkeyFilePaths(
+          process.env.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME!,
+          useQuadraticVoting,
+        ),
         rapidsnark: process.env.COORDINATOR_RAPIDSNARK_EXE,
         outputDir,
         tallyOutputFile: path.resolve("./tally.json"),
@@ -246,7 +249,7 @@ export class ProofGeneratorService {
       throw new Error(ErrorCodes.NOT_MERGED_STATE_TREE.toString());
     }
 
-    const [maciContract, mpContract, pollContract, tallyContract, vkRegistryContract, verifierContract] =
+    const [maciContract, mpContract, pollContract, tallyContract, verifyingKeysRegistryContract, verifierContract] =
       await Promise.all([
         this.deployment.getContract<MACI>({
           name: EContracts.MACI,
@@ -264,7 +267,7 @@ export class ProofGeneratorService {
           name: EContracts.Tally,
           address: pollContracts.tally,
         }),
-        this.deployment.getContract<VkRegistry>({ name: EContracts.VkRegistry }),
+        this.deployment.getContract<VerifyingKeysRegistry>({ name: EContracts.VerifyingKeysRegistry }),
         this.deployment.getContract<Verifier>({ name: EContracts.Verifier }),
       ]);
     const prover = new Prover({
@@ -272,7 +275,7 @@ export class ProofGeneratorService {
       mpContract,
       pollContract,
       tallyContract,
-      vkRegistryContract,
+      verifyingKeysRegistryContract,
       verifierContract,
     });
 

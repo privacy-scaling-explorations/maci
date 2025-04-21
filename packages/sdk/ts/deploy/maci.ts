@@ -1,6 +1,6 @@
 import {
   deployPoseidonContracts,
-  genEmptyBallotRoots,
+  generateEmptyBallotRoots,
   PollFactory__factory as PollFactoryFactory,
   TallyFactory__factory as TallyFactoryFactory,
   MACI__factory as MACIFactory,
@@ -26,7 +26,7 @@ export const deployMaci = async ({
   signer,
   poseidonAddresses,
 }: IDeployMaciArgs): Promise<IMaciContracts> => {
-  const emptyBallotRoots = genEmptyBallotRoots(stateTreeDepth);
+  const emptyBallotRoots = generateEmptyBallotRoots(stateTreeDepth);
 
   const { PoseidonT3Contract, PoseidonT4Contract, PoseidonT5Contract, PoseidonT6Contract } =
     await deployPoseidonContracts(signer, poseidonAddresses, true);

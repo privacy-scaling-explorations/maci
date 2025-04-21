@@ -7,7 +7,7 @@ sidebar_position: 3
 
 [**Repo link**](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/core)
 
-This circuit allows the coordinator to prove that they have correctly processed each message in reverse order, in a consecutive batch of 5 ^ msgBatchDepth messages to the respective state leaf within the state tree. Coordinators would use this circuit to prove correct execution at the end of each Poll.
+This circuit allows the coordinator to prove that they have correctly processed each message in reverse order, in a consecutive batch of 5 ^ messageBatchDepth messages to the respective state leaf within the state tree. Coordinators would use this circuit to prove correct execution at the end of each Poll.
 
 The [`processMessages`](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/core/qv/processMessages.circom) circuit will try to decrypt the messages, and based on the content of the message, update within itself the trees, to generate a proof that the coordinator's off-chain processing was done correctly. In other words, the circuit takes a final state, an initial state, and the leaves (messages and user signups) - it processes these messages via the different state transitions to finally check that the expected state is correct.
 The pre-requisites for this circuit are:
@@ -36,17 +36,17 @@ A version working with non quadratic voting (non-qv) is also [available](https:/
 
 | Input signal                     | Description                                                                             |
 | -------------------------------- | --------------------------------------------------------------------------------------- |
-| `numSignUps`                     | Number of users that have completed the sign up                                         |
+| `totalSignups`                   | Number of users that have completed the sign up                                         |
 | `index`                          | The batch index of current message batch                                                |
 | `pollEndTimestamp`               | The Unix timestamp at which the poll ends                                               |
-| `msgRoot`                        | The root of the message tree                                                            |
-| `msgs`                           | The batch of messages as an array of arrays                                             |
-| `msgSubrootPathElements`         | As described below                                                                      |
+| `messageRoot`                    | The root of the message tree                                                            |
+| `messages`                       | The batch of messages as an array of arrays                                             |
+| `messageSubrootPathElements`     | As described below                                                                      |
 | `coordinatorPublicKeyHash`       | $\mathsf{poseidon_2}([cPk_x, cPk_y])$                                                   |
 | `newSbCommitment`                | As described below                                                                      |
-| `coordPrivKey`                   | The coordinator's private key                                                           |
+| `coordinatorPrivateKey`          | The coordinator's private key                                                           |
 | `batchEndIndex`                  | The last batch index                                                                    |
-| `encPubKeys`                     | The public keys used to generate shared ECDH encryption keys to encrypt the messages    |
+| `encryptionPublicKeys`           | The public keys used to generate shared ECDH encryption keys to encrypt the messages    |
 | `currentStateRoot`               | The state root before the commands are applied                                          |
 | `currentStateLeaves`             | The state leaves upon which messages are applied                                        |
 | `currentStateLeavesPathElements` | The Merkle path to each incremental state root                                          |
@@ -74,9 +74,9 @@ The salt used to produce `currentSbCommitment` (see above).
 
 The salt used to produce `newSbCommitment` (see above).
 
-##### `msgSubrootPathElements`
+##### `messageSubrootPathElements`
 
-The index of each message in `msgs` is consecutive. As such, in order to prove that each message in `msgs` is indeed a leaf of the message tree, we compute the subtree root of `msgs`, and then verify that the subtree root is indeed a subroot of `msgRoot`.
+The index of each message in `messages` is consecutive. As such, in order to prove that each message in `messages` is indeed a leaf of the message tree, we compute the subtree root of `messages`, and then verify that the subtree root is indeed a subroot of `messageRoot`.
 
 A simplified example using a tree of arity 2:
 
@@ -100,7 +100,7 @@ This method requires fewer circuit constraints than if we verified a Merkle proo
 
 1. That the prover knows the preimage to `currentSbCommitment` (that is, the state root, ballot root, and `currentSbSalt`)
 2. That `maxVoteOptions <= (5 ^ voteOptionTreeDepth)`
-3. That `numSignUps <= (2 ^ stateTreeDepth)`
-4. That `coordinatorPublicKeyHash` is a hash of public key that is correctly derived from `coordPrivKey`
-5. That each message in `msgs` exists in the message tree
+3. That `totalSignups <= (2 ^ stateTreeDepth)`
+4. That `coordinatorPublicKeyHash` is a hash of public key that is correctly derived from `coordinatorPrivateKey`
+5. That each message in `messages` exists in the message tree
 6. That after decrypting and applying each message, in reverse order, to the corresponding state and ballot leaves, the new state root, new ballot root, and `newSbSalt` are the preimage to `newSbCommitment`

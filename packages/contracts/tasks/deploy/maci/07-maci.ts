@@ -1,6 +1,6 @@
 import type { MACI, IBasePolicy } from "../../../typechain-types";
 
-import { genEmptyBallotRoots } from "../../../ts/genEmptyBallotRoots";
+import { generateEmptyBallotRoots } from "../../../ts/generateEmptyBallotRoots";
 import { info, logGreen } from "../../../ts/logger";
 import { EDeploySteps, FULL_POLICY_NAMES } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
@@ -59,7 +59,7 @@ deployment.deployTask(EDeploySteps.Maci, "Deploy MACI contract").then((task) =>
     const stateTreeDepth =
       deployment.getDeployConfigField<number | null>(EContracts.MACI, "stateTreeDepth") ?? DEFAULT_STATE_TREE_DEPTH;
 
-    const emptyBallotRoots = genEmptyBallotRoots(stateTreeDepth);
+    const emptyBallotRoots = generateEmptyBallotRoots(stateTreeDepth);
 
     const maciContract = await deployment.deployContractWithLinkedLibraries<MACI>(
       { contractFactory: maciContractFactory },

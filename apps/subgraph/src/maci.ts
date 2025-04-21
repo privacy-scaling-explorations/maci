@@ -37,7 +37,7 @@ export function handleDeployPoll(event: DeployPollEvent): void {
   poll.updatedAt = event.block.timestamp;
   poll.owner = event.transaction.from;
 
-  poll.numSignups = maci.numSignUps;
+  poll.totalSignups = maci.totalSignups;
   poll.numMessages = GraphBN.zero();
   poll.maci = maci.id;
   poll.save();
@@ -47,24 +47,24 @@ export function handleDeployPoll(event: DeployPollEvent): void {
   maci.updatedAt = event.block.timestamp;
   maci.save();
 
-  // Start indexing the poll; `event.params.pollAddr.poll` is the
+  // Start indexing the poll; `event.params.pollAddresses.poll` is the
   // address of the new poll contract
   PollTemplate.create(Address.fromBytes(poll.id));
 }
 
 export function handleSignUp(event: SignUpEvent): void {
-  const user = createOrLoadUser(event.params._userPubKeyX, event.params._userPubKeyY, event);
+  const user = createOrLoadUser(event.params._userPublicKeyX, event.params._userPublicKeyY, event);
   createOrLoadAccount(event.params._stateIndex, event, user.id);
 
   const maci = createOrLoadMACI(event);
-  maci.numSignUps = maci.numSignUps.plus(ONE_BIG_INT);
+  maci.totalSignups = maci.totalSignups.plus(ONE_BIG_INT);
   maci.updatedAt = event.block.timestamp;
   maci.save();
 
   const poll = Poll.load(maci.latestPoll);
 
   if (poll) {
-    poll.numSignups = poll.numSignups.plus(ONE_BIG_INT);
+    poll.totalSignups = poll.totalSignups.plus(ONE_BIG_INT);
     poll.updatedAt = event.block.timestamp;
     poll.save();
   }

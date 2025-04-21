@@ -16,7 +16,7 @@ import {
   MACI,
   Poll as PollContract,
   Verifier,
-  VkRegistry,
+  VerifyingKeysRegistry,
   IBasePolicy,
   ConstantInitialVoiceCreditProxy,
 } from "../typechain-types";
@@ -27,10 +27,10 @@ import {
   initialVoiceCreditBalance,
   maxVoteOptions,
   messageBatchSize,
-  testPollJoinedVk,
-  testPollJoiningVk,
-  testProcessVk,
-  testTallyVk,
+  testPollJoinedVerifyingKey,
+  testPollJoiningVerifyingKey,
+  testProcessVerifyingKey,
+  testTallyVerifyingKey,
   treeDepths,
 } from "./constants";
 import { timeTravel, deployTestContracts } from "./utils";
@@ -40,7 +40,7 @@ describe("Poll", () => {
   let pollId: bigint;
   let pollContract: PollContract;
   let verifierContract: Verifier;
-  let vkRegistryContract: VkRegistry;
+  let verifyingKeysRegistryContract: VerifyingKeysRegistry;
   let signupPolicyContract: IBasePolicy;
   let pollPolicyContract: IBasePolicy;
   let initialVoiceCreditProxyContract: ConstantInitialVoiceCreditProxy;
@@ -67,7 +67,7 @@ describe("Poll", () => {
       });
       maciContract = r.maciContract;
       verifierContract = r.mockVerifierContract as Verifier;
-      vkRegistryContract = r.vkRegistryContract;
+      verifyingKeysRegistryContract = r.verifyingKeysRegistryContract;
       signupPolicyContract = r.policyContract;
       initialVoiceCreditProxyContract = r.constantInitialVoiceCreditProxyContract;
 
@@ -95,7 +95,7 @@ describe("Poll", () => {
           messageBatchSize,
           coordinatorPublicKey: coordinator.publicKey.asContractParam(),
           verifier: verifierContract,
-          vkRegistry: vkRegistryContract,
+          verifyingKeysRegistry: verifyingKeysRegistryContract,
           mode: EMode.QV,
           policy: pollPolicyContract,
           initialVoiceCreditProxy: initialVoiceCreditProxyContract,
@@ -114,14 +114,14 @@ describe("Poll", () => {
       await pollPolicyContract.setTarget(pollContracts.poll).then((tx) => tx.wait());
 
       // deploy local poll
-      const p = maciState.deployPoll(
+      const deployedPollId = maciState.deployPoll(
         BigInt(startDate + duration),
         treeDepths,
         messageBatchSize,
         coordinator,
         BigInt(maxVoteOptions),
       );
-      expect(p.toString()).to.eq(pollId.toString());
+      expect(deployedPollId.toString()).to.eq(pollId.toString());
       // publish the NOTHING_UP_MY_SLEEVE message
       const messageData = [NOTHING_UP_MY_SLEEVE];
       for (let i = 1; i < 10; i += 1) {
@@ -134,39 +134,39 @@ describe("Poll", () => {
       ]);
       maciState.polls.get(pollId)?.publishMessage(message, padKey);
 
-      // set the verification keys on the vk smart contract
-      await vkRegistryContract.setPollJoiningVkKey(
+      // set the verification keys on the registry smart contract
+      await verifyingKeysRegistryContract.setPollJoiningVerifyingKeyKey(
         treeDepths.stateTreeDepth,
-        testPollJoiningVk.asContractParam() as IVerifyingKeyStruct,
+        testPollJoiningVerifyingKey.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 10000000 },
       );
 
-      // set the verification keys on the vk smart contract
-      await vkRegistryContract.setPollJoinedVkKey(
+      // set the verification keys on the registry smart contract
+      await verifyingKeysRegistryContract.setPollJoinedVerifyingKeyKey(
         treeDepths.stateTreeDepth,
-        testPollJoinedVk.asContractParam() as IVerifyingKeyStruct,
+        testPollJoinedVerifyingKey.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 10000000 },
       );
 
-      await vkRegistryContract.setVerifyingKeys(
+      await verifyingKeysRegistryContract.setVerifyingKeys(
         STATE_TREE_DEPTH,
         treeDepths.intStateTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
         EMode.QV,
-        testProcessVk.asContractParam() as IVerifyingKeyStruct,
-        testTallyVk.asContractParam() as IVerifyingKeyStruct,
+        testProcessVerifyingKey.asContractParam() as IVerifyingKeyStruct,
+        testTallyVerifyingKey.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 10000000 },
       );
     });
 
     it("should have the correct coordinator public key set", async () => {
       const coordinatorPublicKey = await pollContract.coordinatorPublicKey();
-      expect(coordinatorPublicKey[0].toString()).to.eq(coordinator.publicKey.rawPubKey[0].toString());
-      expect(coordinatorPublicKey[1].toString()).to.eq(coordinator.publicKey.rawPubKey[1].toString());
+      expect(coordinatorPublicKey[0].toString()).to.eq(coordinator.publicKey.raw[0].toString());
+      expect(coordinatorPublicKey[1].toString()).to.eq(coordinator.publicKey.raw[1].toString());
 
-      const coordinatorPubKeyHash = await pollContract.coordinatorPubKeyHash();
-      expect(coordinatorPubKeyHash.toString()).to.eq(coordinator.publicKey.hash().toString());
+      const coordinatorPublicKeyHash = await pollContract.coordinatorPublicKeyHash();
+      expect(coordinatorPublicKeyHash.toString()).to.eq(coordinator.publicKey.hash().toString());
     });
 
     it("should have the correct start date and end date set", async () => {
@@ -205,14 +205,14 @@ describe("Poll", () => {
             y: "1",
           },
           verifier: r.mockVerifierContract as Verifier,
-          vkRegistry: r.vkRegistryContract,
+          verifyingKeysRegistry: r.verifyingKeysRegistryContract,
           mode: EMode.QV,
           policy: pollPolicyContract,
           initialVoiceCreditProxy: initialVoiceCreditProxyContract,
           relayers: [ZeroAddress],
           voteOptions: maxVoteOptions,
         }),
-      ).to.be.revertedWithCustomError(testMaciContract, "InvalidPubKey");
+      ).to.be.revertedWithCustomError(testMaciContract, "InvalidPublicKey");
     });
   });
 
@@ -299,7 +299,7 @@ describe("Poll", () => {
           messageBatchSize,
           coordinatorPublicKey: coordinator.publicKey.asContractParam(),
           verifier: verifierContract,
-          vkRegistry: vkRegistryContract,
+          verifyingKeysRegistry: verifyingKeysRegistryContract,
           mode: EMode.QV,
           policy: policyContract,
           initialVoiceCreditProxy: initialVoiceCreditProxyContract,
@@ -317,16 +317,16 @@ describe("Poll", () => {
 
       await policyContract.setTarget(pollContracts.poll).then((tx) => tx.wait());
 
-      // set the verification keys on the vk smart contract
-      await vkRegistryContract.setPollJoiningVkKey(
+      // set the verification keys on the registry smart contract
+      await verifyingKeysRegistryContract.setPollJoiningVerifyingKeyKey(
         stateTreeDepthTest,
-        testPollJoiningVk.asContractParam() as IVerifyingKeyStruct,
+        testPollJoiningVerifyingKey.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 10000000 },
       );
 
-      await vkRegistryContract.setPollJoinedVkKey(
+      await verifyingKeysRegistryContract.setPollJoinedVerifyingKeyKey(
         stateTreeDepthTest,
-        testPollJoinedVk.asContractParam() as IVerifyingKeyStruct,
+        testPollJoinedVerifyingKey.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 10000000 },
       );
 
@@ -378,7 +378,7 @@ describe("Poll", () => {
       const command = new PCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, 0n);
 
       const signature = command.sign(users[0].privateKey);
-      const sharedKey = Keypair.genEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
       const message = command.encrypt(signature, sharedKey);
       const tx = await pollContract.publishMessage(message.asContractParam(), users[0].publicKey.asContractParam());
       const receipt = await tx.wait();
@@ -391,21 +391,21 @@ describe("Poll", () => {
       const command = new PCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, 0n);
 
       const signature = command.sign(users[0].privateKey);
-      const sharedKey = Keypair.genEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
       const message = command.encrypt(signature, sharedKey);
       await expect(
         pollContract.publishMessage(message.asContractParam(), {
           x: "1",
           y: "1",
         }),
-      ).to.be.revertedWithCustomError(pollContract, "InvalidPubKey");
+      ).to.be.revertedWithCustomError(pollContract, "InvalidPublicKey");
     });
 
     it("should emit an event when publishing a message", async () => {
       const command = new PCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, 0n);
 
       const signature = command.sign(users[0].privateKey);
-      const sharedKey = Keypair.genEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
       const message = command.encrypt(signature, sharedKey);
       expect(await pollContract.publishMessage(message.asContractParam(), users[0].publicKey.asContractParam()))
         .to.emit(pollContract, "PublishMessage")
@@ -419,7 +419,7 @@ describe("Poll", () => {
       for (let i = 0; i < 2; i += 1) {
         const command = new PCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, BigInt(i));
         const signature = command.sign(users[0].privateKey);
-        const sharedKey = Keypair.genEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
+        const sharedKey = Keypair.generateEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
         const message = command.encrypt(signature, sharedKey);
         messages.push([message, users[0].publicKey]);
       }
@@ -441,14 +441,14 @@ describe("Poll", () => {
       for (let i = 0; i < 2; i += 1) {
         const command = new PCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, BigInt(i));
         const signature = command.sign(users[0].privateKey);
-        const sharedKey = Keypair.genEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
+        const sharedKey = Keypair.generateEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
         const message = command.encrypt(signature, sharedKey);
         messages.push([message, users[0].publicKey]);
       }
 
       const messageHashes = await Promise.all(
         messages.map(([message, publicKey]) =>
-          pollContract.hashMessageAndEncPubKey(message.asContractParam(), publicKey.asContractParam()),
+          pollContract.hashMessageAndPublicKey(message.asContractParam(), publicKey.asContractParam()),
         ),
       );
 
@@ -464,9 +464,9 @@ describe("Poll", () => {
     it("should throw an error if non-relayer tries to relay messages batch", async () => {
       const command = new PCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, 0n);
       const signature = command.sign(users[0].privateKey);
-      const sharedKey = Keypair.genEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
       const message = command.encrypt(signature, sharedKey);
-      const messageHash = await pollContract.hashMessageAndEncPubKey(
+      const messageHash = await pollContract.hashMessageAndPublicKey(
         message.asContractParam(),
         users[0].publicKey.asContractParam(),
       );
@@ -481,7 +481,7 @@ describe("Poll", () => {
     it("should throw when the message batch has messages length != encryptionPublicKeys length", async () => {
       const command = new PCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, 0n);
       const signature = command.sign(users[0].privateKey);
-      const sharedKey = Keypair.genEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
       const message = command.encrypt(signature, sharedKey);
       await expect(
         pollContract.publishMessageBatch(
@@ -498,7 +498,7 @@ describe("Poll", () => {
       const command = new PCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, 0n);
 
       const signature = command.sign(users[0].privateKey);
-      const sharedKey = Keypair.genEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
       const message = command.encrypt(signature, sharedKey);
 
       await expect(
@@ -509,7 +509,7 @@ describe("Poll", () => {
     it("should not allow to publish a message batch after the voting period ends", async () => {
       const command = new PCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, 0n);
       const signature = command.sign(users[0].privateKey);
-      const sharedKey = Keypair.genEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
       const message = command.encrypt(signature, sharedKey);
       await expect(
         pollContract.publishMessageBatch([message.asContractParam()], [users[0].publicKey.asContractParam()]),
@@ -519,9 +519,9 @@ describe("Poll", () => {
     it("should not allow to relay a messages batch after the voting period ends", async () => {
       const command = new PCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, 0n);
       const signature = command.sign(users[0].privateKey);
-      const sharedKey = Keypair.genEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
       const message = command.encrypt(signature, sharedKey);
-      const messageHash = await pollContract.hashMessageAndEncPubKey(
+      const messageHash = await pollContract.hashMessageAndPublicKey(
         message.asContractParam(),
         users[0].publicKey.asContractParam(),
       );
@@ -563,10 +563,10 @@ describe("Poll", () => {
       expect(await pollContract.stateMerged()).to.eq(true);
     });
 
-    it("should get the correct numSignUps", async () => {
-      const numSignUps = await pollContract.numSignups();
-      expect(numSignUps).to.be.eq(maciState.polls.get(pollId)?.pollStateLeaves.length);
-      maciState.polls.get(pollId)?.updatePoll(numSignUps);
+    it("should get the correct totalSignups", async () => {
+      const totalSignups = await pollContract.totalSignups();
+      expect(totalSignups).to.be.eq(maciState.polls.get(pollId)?.pollStateLeaves.length);
+      maciState.polls.get(pollId)?.updatePoll(totalSignups);
     });
 
     it("should get the correct mergedStateRoot", async () => {

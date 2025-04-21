@@ -30,7 +30,7 @@ export const deployPoll = async ({
   stateTreeDepth,
   coordinatorPublicKey,
   verifierContractAddress,
-  vkRegistryContractAddress,
+  verifyingKeysRegistryContractAddress,
   mode,
   policyContractAddress,
   initialVoiceCreditProxyContractAddress,
@@ -41,8 +41,8 @@ export const deployPoll = async ({
   freeForAllPolicyFactoryAddress,
   signer,
 }: IDeployPollArgs): Promise<IPollContractsData> => {
-  if (!vkRegistryContractAddress) {
-    throw new Error("Please provide a VkRegistry contract address");
+  if (!verifyingKeysRegistryContractAddress) {
+    throw new Error("Please provide a VerifyingKeysRegistry contract address");
   }
 
   if (!maciAddress) {
@@ -118,7 +118,7 @@ export const deployPoll = async ({
   }
 
   // we check that the coordinator's public key is valid
-  if (!PublicKey.isValidSerializedPubKey(coordinatorPublicKey.serialize())) {
+  if (!PublicKey.isValidSerialized(coordinatorPublicKey.serialize())) {
     throw new Error("Invalid MACI public key");
   }
 
@@ -134,7 +134,7 @@ export const deployPoll = async ({
       messageBatchSize,
       coordinatorPublicKey: coordinatorPublicKey.asContractParam(),
       verifier: verifierContractAddress,
-      vkRegistry: vkRegistryContractAddress,
+      verifyingKeysRegistry: verifyingKeysRegistryContractAddress,
       mode,
       policy: signupPolicyContractAddress,
       initialVoiceCreditProxy: initialVoiceCreditProxyAddress,

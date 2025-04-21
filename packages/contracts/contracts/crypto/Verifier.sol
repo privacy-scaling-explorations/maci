@@ -25,7 +25,7 @@ contract Verifier is IVerifier, SnarkConstants, SnarkCommon {
 
   /// @notice Verify a zk-SNARK proof
   /// @param _proof The proof
-  /// @param vk The verifying key
+  /// @param verifyingKey The verifying key
   /// @param inputs The public inputs to the circuit
   /// @return isValid Whether the proof is valid given the verifying key and public
   ///          input. Note that this function only supports one public input.
@@ -33,7 +33,7 @@ contract Verifier is IVerifier, SnarkConstants, SnarkCommon {
   ///          multiple public inputs.
   function verify(
     uint256[8] memory _proof,
-    VerifyingKey memory vk,
+    VerifyingKey memory verifyingKey,
     uint256[] calldata inputs
   ) public view override returns (bool isValid) {
     Proof memory proof;
@@ -51,8 +51,8 @@ contract Verifier is IVerifier, SnarkConstants, SnarkCommon {
     checkPoint(proof.c.x);
     checkPoint(proof.c.y);
 
-    // Compute the linear combination vk_x
-    Pairing.G1Point memory vkX = Pairing.G1Point(0, 0);
+    // Compute the linear combination verifying key X
+    Pairing.G1Point memory x = Pairing.G1Point(0, 0);
 
     uint256 inputsLength = inputs.length;
 
@@ -64,24 +64,24 @@ contract Verifier is IVerifier, SnarkConstants, SnarkCommon {
         revert InvalidInputVal();
       }
 
-      vkX = Pairing.plus(vkX, Pairing.scalarMul(vk.ic[i + 1], input));
+      x = Pairing.plus(x, Pairing.scalarMul(verifyingKey.ic[i + 1], input));
 
       unchecked {
         i++;
       }
     }
 
-    vkX = Pairing.plus(vkX, vk.ic[0]);
+    x = Pairing.plus(x, verifyingKey.ic[0]);
 
     isValid = Pairing.pairing(
       Pairing.negate(proof.a),
       proof.b,
-      vk.alpha1,
-      vk.beta2,
-      vkX,
-      vk.gamma2,
+      verifyingKey.alpha1,
+      verifyingKey.beta2,
+      x,
+      verifyingKey.gamma2,
       proof.c,
-      vk.delta2
+      verifyingKey.delta2
     );
   }
 

@@ -68,12 +68,12 @@ describe("Poll Joining circuit", function test() {
       );
 
       poll = maciState.polls.get(pollId)!;
-      poll.updatePoll(BigInt(maciState.pubKeys.length));
+      poll.updatePoll(BigInt(maciState.publicKeys.length));
 
       // Join the poll
       const { privateKey, publicKey } = users[0];
 
-      const nullifier = poseidon([BigInt(privateKey.rawPrivKey.toString())]);
+      const nullifier = poseidon([BigInt(privateKey.raw.toString())]);
 
       const stateIndex = BigInt(poll.joinPoll(nullifier, publicKey, voiceCreditBalance));
 
@@ -90,7 +90,7 @@ describe("Poll Joining circuit", function test() {
       const signature = command.sign(privateKey);
 
       const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
       const message = command.encrypt(signature, sharedKey);
       messages.push(message);
       commands.push(command);

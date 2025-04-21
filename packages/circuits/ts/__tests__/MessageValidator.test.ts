@@ -1,4 +1,4 @@
-import { genRandomSalt } from "@maci-protocol/crypto";
+import { generateRandomSalt } from "@maci-protocol/crypto";
 import { PCommand, Keypair } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
@@ -15,15 +15,15 @@ describe("MessageValidator circuit", function test() {
     let circuit: WitnessTester<
       [
         "stateTreeIndex",
-        "numSignUps",
+        "totalSignups",
         "voteOptionIndex",
         "voteOptions",
         "originalNonce",
         "nonce",
-        "cmd",
+        "command",
         "publicKey",
-        "sigR8",
-        "sigS",
+        "signaturePoint",
+        "signatureScalar",
         "currentVoiceCreditBalance",
         "currentVotesForOption",
         "voteWeight",
@@ -32,8 +32,8 @@ describe("MessageValidator circuit", function test() {
     >;
 
     before(async () => {
-      circuit = await circomkitInstance.WitnessTester("messageValidator", {
-        file: "./utils/qv/messageValidator",
+      circuit = await circomkitInstance.WitnessTester("MessageValidator", {
+        file: "./utils/qv/MessageValidator",
         template: "MessageValidator",
       });
     });
@@ -49,22 +49,22 @@ describe("MessageValidator circuit", function test() {
         BigInt(3),
         BigInt(4),
         BigInt(5),
-        genRandomSalt(),
+        generateRandomSalt(),
       );
 
       const signature = command.sign(privateKey);
 
       circuitInputs = {
         stateTreeIndex: 0n,
-        numSignUps: 1n,
+        totalSignups: 1n,
         voteOptionIndex: 0n,
         voteOptions: 1n,
         originalNonce: 1n,
         nonce: 2n,
-        cmd: command.asCircuitInputs(),
+        command: command.asCircuitInputs(),
         publicKey: publicKey.asCircuitInputs() as unknown as [bigint, bigint],
-        sigR8: signature.R8 as unknown as bigint,
-        sigS: signature.S as bigint,
+        signaturePoint: signature.R8 as unknown as bigint,
+        signatureScalar: signature.S as bigint,
         currentVoiceCreditBalance: 100n,
         currentVotesForOption: 0n,
         voteWeight: 9n,
@@ -84,7 +84,7 @@ describe("MessageValidator circuit", function test() {
 
     it("should be invalid if the signature is invalid", async () => {
       const circuitInputs2 = circuitInputs;
-      circuitInputs2.sigS = 0n;
+      circuitInputs2.signatureScalar = 0n;
       const witness = await circuit.calculateWitness(circuitInputs2);
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
@@ -180,15 +180,15 @@ describe("MessageValidator circuit", function test() {
     let circuit: WitnessTester<
       [
         "stateTreeIndex",
-        "numSignUps",
+        "totalSignups",
         "voteOptionIndex",
         "voteOptions",
         "originalNonce",
         "nonce",
-        "cmd",
+        "command",
         "publicKey",
-        "sigR8",
-        "sigS",
+        "signaturePoint",
+        "signatureScalar",
         "currentVoiceCreditBalance",
         "currentVotesForOption",
         "voteWeight",
@@ -197,8 +197,8 @@ describe("MessageValidator circuit", function test() {
     >;
 
     before(async () => {
-      circuit = await circomkitInstance.WitnessTester("messageValidatorNonQv", {
-        file: "./utils/non-qv/messageValidator",
+      circuit = await circomkitInstance.WitnessTester("MessageValidatorNonQv", {
+        file: "./utils/non-qv/MessageValidator",
         template: "MessageValidatorNonQv",
       });
     });
@@ -214,22 +214,22 @@ describe("MessageValidator circuit", function test() {
         BigInt(3),
         BigInt(4),
         BigInt(5),
-        genRandomSalt(),
+        generateRandomSalt(),
       );
 
       const signature = command.sign(privateKey);
 
       circuitInputs = {
         stateTreeIndex: 0n,
-        numSignUps: 1n,
+        totalSignups: 1n,
         voteOptionIndex: 0n,
         voteOptions: 1n,
         originalNonce: 1n,
         nonce: 2n,
-        cmd: command.asCircuitInputs(),
+        command: command.asCircuitInputs(),
         publicKey: publicKey.asCircuitInputs() as unknown as [bigint, bigint],
-        sigR8: signature.R8 as unknown as bigint,
-        sigS: signature.S as bigint,
+        signaturePoint: signature.R8 as unknown as bigint,
+        signatureScalar: signature.S as bigint,
         currentVoiceCreditBalance: 100n,
         currentVotesForOption: 0n,
         voteWeight: 9n,
@@ -249,7 +249,7 @@ describe("MessageValidator circuit", function test() {
 
     it("should be invalid if the signature is invalid", async () => {
       const circuitInputs2 = circuitInputs;
-      circuitInputs2.sigS = 0n;
+      circuitInputs2.signatureScalar = 0n;
       const witness = await circuit.calculateWitness(circuitInputs2);
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");

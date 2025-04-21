@@ -192,9 +192,9 @@ export interface IERC20PolicyArgs {
 }
 
 /**
- * IVkRegistryArgs represents the arguments for deploying a VkRegistry
+ * IVerifyingKeysRegistryArgs represents the arguments for deploying a VerifyingKeysRegistry
  */
-export interface IVkRegistryArgs {
+export interface IVerifyingKeysRegistryArgs {
   /**
    * The state tree depth
    */
@@ -255,10 +255,10 @@ export interface IDeployMaciConfig {
   };
 
   /**
-   * The VkRegistry configuration
+   * The VerifyingKeysRegistry configuration
    */
-  VkRegistry: {
-    args: IVkRegistryArgs;
+  VerifyingKeysRegistry: {
+    args: IVerifyingKeysRegistryArgs;
   };
 
   /**

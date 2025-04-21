@@ -35,7 +35,7 @@ describe("Ceremony param tests", () => {
 
     let circuit: WitnessTester<
       [
-        "numSignUps",
+        "totalSignups",
         "batchEndIndex",
         "index",
         "inputBatchHash",
@@ -94,13 +94,13 @@ describe("Ceremony param tests", () => {
         poll = maciState.polls.get(pollId)!;
 
         // update the state
-        poll.updatePoll(BigInt(maciState.pubKeys.length));
+        poll.updatePoll(BigInt(maciState.publicKeys.length));
 
         // Join the poll
         const { privateKey } = userKeypair;
         const { privateKey: pollPrivateKey, publicKey: pollPublicKey } = new Keypair();
 
-        const nullifier = poseidon([BigInt(privateKey.rawPrivKey.toString())]);
+        const nullifier = poseidon([BigInt(privateKey.raw.toString())]);
 
         stateIndex = BigInt(poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance));
 
@@ -117,7 +117,7 @@ describe("Ceremony param tests", () => {
         const signature = command.sign(pollPrivateKey);
 
         const ecdhKeypair = new Keypair();
-        const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
+        const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
         const message = command.encrypt(signature, sharedKey);
         messages.push(message);
         commands.push(command);
@@ -136,7 +136,7 @@ describe("Ceremony param tests", () => {
         const signature2 = command2.sign(pollPrivateKey);
 
         const ecdhKeypair2 = new Keypair();
-        const sharedKey2 = Keypair.genEcdhSharedKey(ecdhKeypair2.privateKey, coordinatorKeypair.publicKey);
+        const sharedKey2 = Keypair.generateEcdhSharedKey(ecdhKeypair2.privateKey, coordinatorKeypair.publicKey);
         const message2 = command2.encrypt(signature2, sharedKey2);
         messages.push(message2);
         commands.push(command2);
@@ -184,7 +184,7 @@ describe("Ceremony param tests", () => {
         "sbSalt",
         "sbCommitment",
         "index",
-        "numSignUps",
+        "totalSignups",
         "currentTallyCommitment",
         "newTallyCommitment",
         "ballots",
@@ -237,13 +237,13 @@ describe("Ceremony param tests", () => {
         poll = maciState.polls.get(pollId)!;
 
         // update the state
-        poll.updatePoll(BigInt(maciState.pubKeys.length));
+        poll.updatePoll(BigInt(maciState.publicKeys.length));
 
         // Join the poll
         const { privateKey } = userKeypair;
         const { privateKey: pollPrivateKey, publicKey: pollPublicKey } = new Keypair();
 
-        const nullifier = poseidon([BigInt(privateKey.rawPrivKey.toString())]);
+        const nullifier = poseidon([BigInt(privateKey.raw.toString())]);
 
         stateIndex = BigInt(poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance));
 
@@ -260,7 +260,7 @@ describe("Ceremony param tests", () => {
         const signature = command.sign(pollPrivateKey);
 
         const ecdhKeypair = new Keypair();
-        const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
+        const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
         const message = command.encrypt(signature, sharedKey);
         messages.push(message);
         commands.push(command);

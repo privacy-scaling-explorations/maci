@@ -39,18 +39,18 @@ contract Utilities is SnarkConstants, DomainObjs, Hasher {
     dat[0] = dataToPad[0];
     dat[1] = dataToPad[1];
 
-    padKey = PublicKey(PAD_PUBKEY_X, PAD_PUBKEY_Y);
+    padKey = PublicKey(PAD_PUBLIC_KEY_X, PAD_PUBLIC_KEY_Y);
     message = Message({ data: dat });
-    msgHash = hashMessageAndEncPubKey(message, padKey);
+    msgHash = hashMessageAndPublicKey(message, padKey);
   }
 
   /// @notice An utility function used to hash a MACI message and an encryption public key
   /// @param _message the message to be hashed
-  /// @param _encPubKey the encryption public key to be hashed
+  /// @param _encryptionPublicKey the encryption public key to be hashed
   /// @return msgHash The hash of the message and the encryption public key
-  function hashMessageAndEncPubKey(
+  function hashMessageAndPublicKey(
     Message memory _message,
-    PublicKey memory _encPubKey
+    PublicKey memory _encryptionPublicKey
   ) public pure returns (uint256 msgHash) {
     if (_message.data.length != 10) {
       revert InvalidMessage();
@@ -70,6 +70,6 @@ contract Utilities is SnarkConstants, DomainObjs, Hasher {
     m[3] = _message.data[8];
     m[4] = _message.data[9];
 
-    msgHash = hash4([hash5(n), hash5(m), _encPubKey.x, _encPubKey.y]);
+    msgHash = hash4([hash5(n), hash5(m), _encryptionPublicKey.x, _encryptionPublicKey.y]);
   }
 }

@@ -176,7 +176,7 @@ This script contains a number of actions which touch all of the parts of MACI, a
 
 Looking at this in more details we do the following:
 
-1. Deploy a `VkRegistry` contract
+1. Deploy a `VerifyingKeysRegistry` contract
 2. Set the verification keys on this smart contract
 3. Deploy a `MACI` contract (and associated utility contracts)
 4. Deploy a Poll from the MACI contract.

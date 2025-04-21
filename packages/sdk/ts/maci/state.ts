@@ -1,7 +1,7 @@
 import {
   MACI__factory as MACIFactory,
   Poll__factory as PollFactory,
-  genMaciStateFromContract,
+  generateMaciStateFromContract,
 } from "@maci-protocol/contracts";
 import { Keypair, PrivateKey } from "@maci-protocol/domainobjs";
 import { JsonRpcProvider } from "ethers";
@@ -15,7 +15,7 @@ import { contractExists } from "../utils/contracts";
 
 /**
  * Generate a local MACI state from the smart contracts events
- * @param args The arguments for the genLocalState command
+ * @param args The arguments for the generateLocalState command
  */
 export const generateMaciState = async ({
   outputPath,
@@ -43,12 +43,12 @@ export const generateMaciState = async ({
   }
 
   // if no private key is passed we ask it securely
-  if (!PrivateKey.isValidSerializedPrivKey(coordinatorPrivateKey)) {
+  if (!PrivateKey.isValidSerialized(coordinatorPrivateKey)) {
     throw new Error("Invalid MACI private key");
   }
 
-  const coordinatorMaciPrivKey = PrivateKey.deserialize(coordinatorPrivateKey);
-  const coordinatorKeypair = new Keypair(coordinatorMaciPrivKey);
+  const coordinatorMaciPrivateKey = PrivateKey.deserialize(coordinatorPrivateKey);
+  const coordinatorKeypair = new Keypair(coordinatorMaciPrivateKey);
 
   const maciContract = MACIFactory.connect(maciAddress, signer);
   const pollContracts = await maciContract.polls(pollId);
@@ -61,20 +61,20 @@ export const generateMaciState = async ({
 
   const pollContract = PollFactory.connect(pollContracts.poll, signer);
 
-  const [defaultStartBlockSignup, defaultStartBlockPoll, stateRoot, numSignups] = await Promise.all([
+  const [defaultStartBlockSignup, defaultStartBlockPoll, stateRoot, totalSignups] = await Promise.all([
     maciContract.queryFilter(maciContract.filters.SignUp(), startBlock).then((events) => events[0]?.blockNumber ?? 0),
     maciContract
       .queryFilter(maciContract.filters.DeployPoll(), startBlock)
       .then((events) => events[0]?.blockNumber ?? 0),
     maciContract.getStateTreeRoot(),
-    maciContract.numSignUps(),
+    maciContract.totalSignups(),
   ]);
   const defaultStartBlock = Math.min(defaultStartBlockPoll, defaultStartBlockSignup);
   let fromBlock = startBlock ? Number(startBlock) : defaultStartBlock;
 
   const defaultEndBlock = await Promise.all([
     pollContract
-      .queryFilter(pollContract.filters.MergeState(stateRoot, numSignups), fromBlock)
+      .queryFilter(pollContract.filters.MergeState(stateRoot, totalSignups), fromBlock)
       .then((events) => events[events.length - 1]?.blockNumber),
   ]).then((blocks) => Math.max(...blocks));
 
@@ -91,7 +91,7 @@ export const generateMaciState = async ({
     fromBlock = tx?.blockNumber ?? defaultStartBlock;
   }
 
-  const maciState = await genMaciStateFromContract({
+  const maciState = await generateMaciStateFromContract({
     provider: provider ? new JsonRpcProvider(provider) : signer.provider!,
     address: maciAddress,
     coordinatorKeypair,

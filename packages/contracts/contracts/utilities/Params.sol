@@ -5,7 +5,7 @@ import { IBasePolicy } from "@excubiae/contracts/contracts/interfaces/IBasePolic
 
 import { IMACI } from "../interfaces/IMACI.sol";
 import { IVerifier } from "../interfaces/IVerifier.sol";
-import { IVkRegistry } from "../interfaces/IVkRegistry.sol";
+import { IVerifyingKeysRegistry } from "../interfaces/IVerifyingKeysRegistry.sol";
 import { IInitialVoiceCreditProxy } from "../interfaces/IInitialVoiceCreditProxy.sol";
 
 /// @title Params
@@ -27,7 +27,7 @@ contract Params {
   struct ExtContracts {
     IMACI maci;
     IVerifier verifier;
-    IVkRegistry vkRegistry;
+    IVerifyingKeysRegistry verifyingKeysRegistry;
     IBasePolicy policy;
     IInitialVoiceCreditProxy initialVoiceCreditProxy;
   }

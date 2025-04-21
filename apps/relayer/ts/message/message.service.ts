@@ -46,7 +46,7 @@ export class MessageService {
 
     const hashes = await Promise.all(
       args.messages.map(({ data, publicKey }) =>
-        pollContract.hashMessageAndEncPubKey({ data }, PublicKey.deserialize(publicKey).asContractParam()),
+        pollContract.hashMessageAndPublicKey({ data }, PublicKey.deserialize(publicKey).asContractParam()),
       ),
     );
 

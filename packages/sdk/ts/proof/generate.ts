@@ -10,7 +10,7 @@ import { doesPathExist } from "../utils/files";
 
 /**
  * Generate proofs for the message processing and tally calculations
- * @param args - The arguments for the genProofs command
+ * @param args - The arguments for the generateProofs command
  * @returns The tally data
  */
 export const generateProofs = async ({
@@ -89,7 +89,7 @@ export const generateProofs = async ({
   }
 
   // the coordinator's MACI private key
-  if (!PrivateKey.isValidSerializedPrivKey(coordinatorPrivateKey)) {
+  if (!PrivateKey.isValidSerialized(coordinatorPrivateKey)) {
     throw new Error("Invalid MACI private key");
   }
 
@@ -158,7 +158,7 @@ export const generateProofs = async ({
       witgen: tallyWitgen,
       wasm: tallyWasm,
     },
-    mp: {
+    messageProcessor: {
       zkey: processZkey,
       witgen: processWitgen,
       wasm: processWasm,

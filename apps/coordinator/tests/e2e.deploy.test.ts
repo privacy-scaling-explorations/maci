@@ -1,6 +1,6 @@
 // To only run this file: pnpm exec jest --testPathPattern=tests/e2e.deploy.test.ts
 
-import { genRandomSalt } from "@maci-protocol/crypto";
+import { generateRandomSalt } from "@maci-protocol/crypto";
 import { Keypair } from "@maci-protocol/domainobjs";
 import { joinPoll, publish, signup, sleep } from "@maci-protocol/sdk";
 import { ValidationPipe, type INestApplication } from "@nestjs/common";
@@ -120,9 +120,11 @@ describe("E2E Deployment Tests", () => {
 
   test("should deploy MACI correctly", async () => {
     const config = testMaciDeploymentConfig;
-    config.VkRegistry.args.stateTreeDepth = config.VkRegistry.args.stateTreeDepth.toString();
-    config.VkRegistry.args.intStateTreeDepth = config.VkRegistry.args.intStateTreeDepth.toString();
-    config.VkRegistry.args.voteOptionTreeDepth = config.VkRegistry.args.voteOptionTreeDepth.toString();
+    config.VerifyingKeysRegistry.args.stateTreeDepth = config.VerifyingKeysRegistry.args.stateTreeDepth.toString();
+    config.VerifyingKeysRegistry.args.intStateTreeDepth =
+      config.VerifyingKeysRegistry.args.intStateTreeDepth.toString();
+    config.VerifyingKeysRegistry.args.voteOptionTreeDepth =
+      config.VerifyingKeysRegistry.args.voteOptionTreeDepth.toString();
     const response = await fetch(`${LOCALHOST}/v1/deploy/maci`, {
       method: "POST",
       headers: {
@@ -202,15 +204,15 @@ describe("E2E Deployment Tests", () => {
   test("should allow voting on a poll", async () => {
     for (let i = 0; i < NUM_USERS; i += 1) {
       const keypairUser = new Keypair();
-      const pubkeyUser = keypairUser.publicKey.serialize();
-      const privkeyUser = keypairUser.privateKey.serialize();
+      const userPublicKey = keypairUser.publicKey.serialize();
+      const userPrivateKey = keypairUser.privateKey.serialize();
       const vote = i % 2;
       voteOptions[String(vote)] += 1;
       // user signs up to MACI
       // eslint-disable-next-line no-await-in-loop
       await signup({
         maciAddress,
-        maciPublicKey: pubkeyUser,
+        maciPublicKey: userPublicKey,
         sgData: zeroUint256Encoded,
         signer,
       });
@@ -219,7 +221,7 @@ describe("E2E Deployment Tests", () => {
       // eslint-disable-next-line no-await-in-loop
       await joinPoll({
         maciAddress,
-        privateKey: privkeyUser,
+        privateKey: userPrivateKey,
         stateIndex: 1n,
         pollId: BigInt(pollId),
         pollJoiningZkey: pollJoiningTestZkeyPath,
@@ -235,15 +237,15 @@ describe("E2E Deployment Tests", () => {
       // user publishes a vote
       // eslint-disable-next-line no-await-in-loop
       const publishData = await publish({
-        publicKey: pubkeyUser,
+        publicKey: userPublicKey,
         stateIndex: 1n,
         voteOptionIndex: BigInt(vote),
         nonce: 1n,
         pollId: BigInt(pollId),
         newVoteWeight: 1n,
         maciAddress,
-        salt: genRandomSalt(),
-        privateKey: privkeyUser,
+        salt: generateRandomSalt(),
+        privateKey: userPrivateKey,
         signer,
       });
 

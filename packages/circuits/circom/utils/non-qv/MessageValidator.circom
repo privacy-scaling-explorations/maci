@@ -11,12 +11,14 @@ include "../VerifySignature.circom";
  */
 template MessageValidatorNonQv() {
     // Length of the packed command.
-    var PACKED_CMD_LENGTH = 4;
+    var PACKED_COMMAND_LENGTH = 4;
+    // Number of checks to be performed.
+    var TOTAL_CHECKS = 5;
 
     // State index of the user.
     signal input stateTreeIndex;
     // Number of user sign-ups in the state tree.
-    signal input numSignUps;
+    signal input totalSignups;
     // Vote option index.
     signal input voteOptionIndex;
     // Number of valid vote options for the poll.
@@ -26,13 +28,13 @@ template MessageValidatorNonQv() {
     // Command nonce.
     signal input nonce;
     // Packed command.
-    signal input cmd[PACKED_CMD_LENGTH];
+    signal input command[PACKED_COMMAND_LENGTH];
     // Public key of the state leaf (user).
     signal input publicKey[2];
     // ECDSA signature of the command (R part).
-    signal input sigR8[2];
+    signal input signaturePoint[2];
     // ECDSA signature of the command (S part).
-    signal input sigS;
+    signal input signatureScalar;
     // State leaf current voice credit balance.
     signal input currentVoiceCreditBalance;
     // Current number of votes for specific option. 
@@ -48,10 +50,10 @@ template MessageValidatorNonQv() {
     signal output isVoteOptionIndexValid;
 
     // Check (1) - The state leaf index must be valid.
-    // The check ensure that the stateTreeIndex < numSignUps as first validation.
+    // The check ensure that the stateTreeIndex < totalSignups as first validation.
     // Must be < because the stateTreeIndex is 0-based. Zero is for blank state leaf
     // while 1 is for the first actual user.
-    var computedIsStateLeafIndexValid = SafeLessThan(252)([stateTreeIndex, numSignUps]);
+    var computedIsStateLeafIndexValid = SafeLessThan(252)([stateTreeIndex, totalSignups]);
 
     // Check (2) - The vote option index must be less than the number of valid vote options (0 indexed).
     var computedIsVoteOptionIndexValid = SafeLessThan(252)([voteOptionIndex, voteOptions]);
@@ -60,7 +62,7 @@ template MessageValidatorNonQv() {
     var computedIsNonceValid = IsEqual()([originalNonce + 1, nonce]);
 
     // Check (4) - The signature must be correct.    
-    var computedIsSignatureValid = VerifySignature()(publicKey, sigR8, sigS, cmd);
+    var computedIsSignatureValid = VerifySignature()(publicKey, signaturePoint, signatureScalar, command);
  
     // Check (5) - There must be sufficient voice credits.
     // The check ensure that currentVoiceCreditBalance + (currentVotesForOption) >= (voteWeight).
@@ -74,7 +76,7 @@ template MessageValidatorNonQv() {
     // When all five checks are correct, then isValid = 1.
     var computedIsUpdateValid = IsEqual()(
         [
-            5,
+            TOTAL_CHECKS,
             computedIsSignatureValid + 
             computedAreVoiceCreditsSufficient +
             computedIsNonceValid +

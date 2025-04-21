@@ -18,7 +18,7 @@
   "scripts": {
     "build-test-circuits-c": "ts-node ./ts/compile.ts --cWitness",
     "build-test-circuits-wasm": "ts-node ./ts/compile.ts",
-    "gen-zkeys": "ts-node ./ts/genZkeys.ts",
+    "generate-zkeys": "ts-node ./ts/generateZkeys.ts",
     "info": "NODE_OPTIONS=--max-old-space-size=4096 ts-node ./ts/info.ts",
     "watch": "tsc --watch",
     "build": "tsc -p tsconfig.build.json",

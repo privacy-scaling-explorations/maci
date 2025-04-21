@@ -1,4 +1,4 @@
-import { EcdhSharedKey, genEcdhSharedKey, genKeypair, genPubKey } from "@maci-protocol/crypto";
+import { EcdhSharedKey, generateEcdhSharedKey, generateKeypair, generatePublicKey } from "@maci-protocol/crypto";
 
 import assert from "assert";
 
@@ -26,11 +26,11 @@ export class Keypair {
   constructor(privateKey?: PrivateKey) {
     if (privateKey) {
       this.privateKey = privateKey;
-      this.publicKey = new PublicKey(genPubKey(privateKey.rawPrivKey));
+      this.publicKey = new PublicKey(generatePublicKey(privateKey.raw));
     } else {
-      const rawKeyPair = genKeypair();
-      this.privateKey = new PrivateKey(rawKeyPair.privateKey);
-      this.publicKey = new PublicKey(rawKeyPair.publicKey);
+      const rawKeypair = generateKeypair();
+      this.privateKey = new PrivateKey(rawKeypair.privateKey);
+      this.publicKey = new PublicKey(rawKeypair.publicKey);
     }
   }
 
@@ -46,8 +46,8 @@ export class Keypair {
    * @param publicKey
    * @returns
    */
-  static genEcdhSharedKey(privateKey: PrivateKey, publicKey: PublicKey): EcdhSharedKey {
-    return genEcdhSharedKey(privateKey.rawPrivKey, publicKey.rawPubKey);
+  static generateEcdhSharedKey(privateKey: PrivateKey, publicKey: PublicKey): EcdhSharedKey {
+    return generateEcdhSharedKey(privateKey.raw, publicKey.raw);
   }
 
   /**
@@ -56,17 +56,16 @@ export class Keypair {
    * @returns whether they are equal or not
    */
   equals(keypair: Keypair): boolean {
-    const equalPrivKey = this.privateKey.rawPrivKey === keypair.privateKey.rawPrivKey;
-    const equalPubKey =
-      this.publicKey.rawPubKey[0] === keypair.publicKey.rawPubKey[0] &&
-      this.publicKey.rawPubKey[1] === keypair.publicKey.rawPubKey[1];
+    const equalPrivateKey = this.privateKey.raw === keypair.privateKey.raw;
+    const equalPublic =
+      this.publicKey.raw[0] === keypair.publicKey.raw[0] && this.publicKey.raw[1] === keypair.publicKey.raw[1];
 
     // If this assertion fails, something is very wrong and this function
     // should not return anything
     // eslint-disable-next-line no-bitwise
-    assert(!(+equalPrivKey ^ +equalPubKey));
+    assert(!(+equalPrivateKey ^ +equalPublic));
 
-    return equalPrivKey;
+    return equalPrivateKey;
   }
 
   /**

@@ -1,4 +1,4 @@
-import { genRandomSalt, hash5, hashLeftRight, IncrementalQuinTree } from "@maci-protocol/crypto";
+import { generateRandomSalt, hash5, hashLeftRight, IncrementalQuinTree } from "@maci-protocol/crypto";
 
 import assert from "assert";
 
@@ -17,14 +17,14 @@ export class Ballot {
 
   /**
    * Create a new Ballot instance
-   * @param _numVoteOptions How many vote options are available in the poll
+   * @param _totalVoteOptions How many vote options are available in the poll
    * @param _voteOptionTreeDepth The depth of the merkle tree holding the vote options
    */
-  constructor(_numVoteOptions: number, _voteOptionTreeDepth: number) {
+  constructor(_totalVoteOptions: number, _voteOptionTreeDepth: number) {
     this.voteOptionTreeDepth = _voteOptionTreeDepth;
-    assert(5 ** _voteOptionTreeDepth >= _numVoteOptions);
-    assert(_numVoteOptions >= 0);
-    for (let i = 0; i < _numVoteOptions; i += 1) {
+    assert(5 ** _voteOptionTreeDepth >= _totalVoteOptions);
+    assert(_totalVoteOptions >= 0);
+    for (let i = 0; i < _totalVoteOptions; i += 1) {
       this.votes.push(BigInt(0));
     }
   }
@@ -85,24 +85,24 @@ export class Ballot {
 
   /**
    * Generate a random ballot
-   * @param numVoteOptions How many vote options are available
+   * @param totalVoteOptions How many vote options are available
    * @param voteOptionTreeDepth How deep is the merkle tree holding the vote options
    * @returns a random Ballot
    */
-  static genRandomBallot(numVoteOptions: number, voteOptionTreeDepth: number): Ballot {
-    const ballot = new Ballot(numVoteOptions, voteOptionTreeDepth);
-    ballot.nonce = genRandomSalt();
+  static genRandomBallot(totalVoteOptions: number, voteOptionTreeDepth: number): Ballot {
+    const ballot = new Ballot(totalVoteOptions, voteOptionTreeDepth);
+    ballot.nonce = generateRandomSalt();
     return ballot;
   }
 
   /**
    * Generate a blank ballot
-   * @param numVoteOptions How many vote options are available
+   * @param totalVoteOptions How many vote options are available
    * @param voteOptionTreeDepth How deep is the merkle tree holding the vote options
    * @returns a Blank Ballot object
    */
-  static genBlankBallot(numVoteOptions: number, voteOptionTreeDepth: number): Ballot {
-    const ballot = new Ballot(numVoteOptions, voteOptionTreeDepth);
+  static genBlankBallot(totalVoteOptions: number, voteOptionTreeDepth: number): Ballot {
+    const ballot = new Ballot(totalVoteOptions, voteOptionTreeDepth);
     return ballot;
   }
 

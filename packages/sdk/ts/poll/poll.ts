@@ -25,7 +25,7 @@ export const getPoll = async ({ maciAddress, signer, provider, pollId }: IGetPol
     pollContract.getAddress(),
   ]);
   const isMerged = mergedStateRoot !== BigInt(0);
-  const numSignups = await (isMerged ? pollContract.numSignups() : maciContract.numSignUps());
+  const totalSignups = await (isMerged ? pollContract.totalSignups() : maciContract.totalSignups());
 
   // get the poll mode
   const mode = await tallyContract.mode();
@@ -35,7 +35,7 @@ export const getPoll = async ({ maciAddress, signer, provider, pollId }: IGetPol
     address: pollAddress,
     startDate,
     endDate,
-    numSignups,
+    totalSignups,
     isMerged,
     mode,
   };
@@ -60,7 +60,7 @@ export const getPollParams = async ({
 
   const treeDepths = await pollContract.treeDepths();
   const voteOptionTreeDepth = Number(treeDepths.voteOptionTreeDepth);
-  const numVoteOptions = 5 ** voteOptionTreeDepth;
+  const totalVoteOptions = 5 ** voteOptionTreeDepth;
 
   const messageBatchSize = Number.parseInt((await pollContract.messageBatchSize()).toString(), 10);
 
@@ -69,7 +69,7 @@ export const getPollParams = async ({
 
   return {
     messageBatchSize,
-    numVoteOptions,
+    totalVoteOptions,
     tallyBatchSize,
     voteOptionTreeDepth,
     intStateTreeDepth,

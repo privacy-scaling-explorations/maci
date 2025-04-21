@@ -16,7 +16,7 @@ import {
   MessageProcessor__factory as MessageProcessorFactory,
   Poll__factory as PollFactory,
   Verifier,
-  VkRegistry,
+  VerifyingKeysRegistry,
   IBasePolicy,
   ConstantInitialVoiceCreditProxy,
 } from "../typechain-types";
@@ -27,8 +27,8 @@ import {
   initialVoiceCreditBalance,
   maxVoteOptions,
   messageBatchSize,
-  testProcessVk,
-  testTallyVk,
+  testProcessVerifyingKey,
+  testTallyVerifyingKey,
   treeDepths,
 } from "./constants";
 import { timeTravel, deployTestContracts } from "./utils";
@@ -37,7 +37,7 @@ describe("MessageProcessor", () => {
   // contracts
   let maciContract: MACI;
   let verifierContract: Verifier;
-  let vkRegistryContract: VkRegistry;
+  let verifyingKeysRegistryContract: VerifyingKeysRegistry;
   let mpContract: MessageProcessor;
   let pollContract: PollContract;
   let signupPolicyContract: IBasePolicy;
@@ -65,7 +65,7 @@ describe("MessageProcessor", () => {
     maciContract = r.maciContract;
     signer = await getDefaultSigner();
     verifierContract = r.mockVerifierContract as Verifier;
-    vkRegistryContract = r.vkRegistryContract;
+    verifyingKeysRegistryContract = r.verifyingKeysRegistryContract;
     signupPolicyContract = r.policyContract;
     initialVoiceCreditProxyContract = r.constantInitialVoiceCreditProxyContract;
 
@@ -77,7 +77,7 @@ describe("MessageProcessor", () => {
       messageBatchSize,
       coordinatorPublicKey: coordinator.publicKey.asContractParam(),
       verifier: verifierContract,
-      vkRegistry: vkRegistryContract,
+      verifyingKeysRegistry: verifyingKeysRegistryContract,
       mode: EMode.QV,
       policy: signupPolicyContract,
       initialVoiceCreditProxy: initialVoiceCreditProxyContract,
@@ -95,14 +95,14 @@ describe("MessageProcessor", () => {
     mpContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
     pollContract = PollFactory.connect(pollContracts.poll, signer);
     // deploy local poll
-    const p = maciState.deployPoll(
+    const deployedPollId = maciState.deployPoll(
       BigInt(startTime + duration),
       treeDepths,
       messageBatchSize,
       coordinator,
       BigInt(maxVoteOptions),
     );
-    expect(p.toString()).to.eq(pollId.toString());
+    expect(deployedPollId.toString()).to.eq(pollId.toString());
 
     const messages = [];
     for (let i = 0; i <= 24; i += 1) {
@@ -124,19 +124,19 @@ describe("MessageProcessor", () => {
     }
 
     // update the poll state
-    poll.updatePoll(BigInt(maciState.pubKeys.length));
+    poll.updatePoll(BigInt(maciState.publicKeys.length));
 
     generatedInputs = poll.processMessages(pollId);
 
-    // set the verification keys on the vk smart contract
-    await vkRegistryContract.setVerifyingKeys(
+    // set the verification keys on the registry smart contract
+    await verifyingKeysRegistryContract.setVerifyingKeys(
       STATE_TREE_DEPTH,
       treeDepths.intStateTreeDepth,
       treeDepths.voteOptionTreeDepth,
       messageBatchSize,
       EMode.QV,
-      testProcessVk.asContractParam() as IVerifyingKeyStruct,
-      testTallyVk.asContractParam() as IVerifyingKeyStruct,
+      testProcessVerifyingKey.asContractParam() as IVerifyingKeyStruct,
+      testTallyVerifyingKey.asContractParam() as IVerifyingKeyStruct,
     );
     receipt = await tx.wait();
     expect(receipt?.status).to.eq(1);

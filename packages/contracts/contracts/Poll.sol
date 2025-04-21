@@ -27,7 +27,7 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
   PublicKey public coordinatorPublicKey;
 
   /// @notice Hash of the coordinator's public key
-  uint256 public coordinatorPubKeyHash;
+  uint256 public coordinatorPublicKeyHash;
 
   /// @notice the state root of the state merkle tree
   uint256 public mergedStateRoot;
@@ -57,7 +57,7 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
 
   /// @notice The number of signups that have been processed
   /// before the Poll ended (stateAq merged)
-  uint256 public numSignups;
+  uint256 public totalSignups;
 
   /// @notice The actual depth of the state tree
   /// to be used as public input for the circuit
@@ -114,7 +114,7 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
   error VotingPeriodNotStarted();
   error PollAlreadyInit();
   error TooManyMessages();
-  error InvalidPubKey();
+  error InvalidPublicKey();
   error StateAlreadyMerged();
   error InvalidBatchLength();
   error BatchHashesAlreadyPadded();
@@ -125,11 +125,11 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
   error TooManyVoteOptions();
   error TooManySignups();
 
-  event PublishMessage(Message _message, PublicKey _encPubKey);
-  event MergeState(uint256 indexed _stateRoot, uint256 indexed _numSignups);
+  event PublishMessage(Message _message, PublicKey _encryptionPublicKey);
+  event MergeState(uint256 indexed _stateRoot, uint256 indexed _totalSignups);
   event PollJoined(
-    uint256 indexed _pollPubKeyX,
-    uint256 indexed _pollPubKeyY,
+    uint256 indexed _pollPublicKeyX,
+    uint256 indexed _pollPublicKeyY,
     uint256 _voiceCreditBalance,
     uint256 _nullifier,
     uint256 _pollStateIndex
@@ -149,7 +149,7 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
       uint256 _endDate,
       TreeDepths memory _treeDepths,
       uint8 _messageBatchSize,
-      PublicKey memory _coordinatorPubKey,
+      PublicKey memory _coordinatorPublicKey,
       ExtContracts memory _extContracts,
       uint256 _emptyBallotRoot,
       uint256 _pollId,
@@ -161,15 +161,15 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
       );
 
     // check that the coordinator public key is valid
-    if (!CurveBabyJubJub.isOnCurve(_coordinatorPubKey.x, _coordinatorPubKey.y)) {
-      revert InvalidPubKey();
+    if (!CurveBabyJubJub.isOnCurve(_coordinatorPublicKey.x, _coordinatorPublicKey.y)) {
+      revert InvalidPublicKey();
     }
 
-    // store the pub key as object then calculate the hash
-    coordinatorPublicKey = _coordinatorPubKey;
+    // store the public key as object then calculate the hash
+    coordinatorPublicKey = _coordinatorPublicKey;
 
     // we hash it ourselves to ensure we store the correct value
-    coordinatorPubKeyHash = hashLeftRight(_coordinatorPubKey.x, _coordinatorPubKey.y);
+    coordinatorPublicKeyHash = hashLeftRight(_coordinatorPublicKey.x, _coordinatorPublicKey.y);
 
     // store the external contracts to interact with
     extContracts = _extContracts;
@@ -266,10 +266,13 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
   }
 
   /// @inheritdoc IPoll
-  function publishMessage(Message calldata _message, PublicKey calldata _encPubKey) public virtual isOpenForVoting {
+  function publishMessage(
+    Message calldata _message,
+    PublicKey calldata _encryptionPublicKey
+  ) public virtual isOpenForVoting {
     // check if the public key is on the curve
-    if (!CurveBabyJubJub.isOnCurve(_encPubKey.x, _encPubKey.y)) {
-      revert InvalidPubKey();
+    if (!CurveBabyJubJub.isOnCurve(_encryptionPublicKey.x, _encryptionPublicKey.y)) {
+      revert InvalidPublicKey();
     }
 
     // cannot realistically overflow
@@ -278,12 +281,12 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
     }
 
     // compute current message hash
-    uint256 messageHash = hashMessageAndEncPubKey(_message, _encPubKey);
+    uint256 messageHash = hashMessageAndPublicKey(_message, _encryptionPublicKey);
 
     // update current message chain hash
     updateChainHash(messageHash);
 
-    emit PublishMessage(_message, _encPubKey);
+    emit PublishMessage(_message, _encryptionPublicKey);
   }
 
   /// @inheritdoc IPoll
@@ -361,7 +364,7 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
   /// @inheritdoc IPoll
   function joinPoll(
     uint256 _nullifier,
-    PublicKey calldata _pubKey,
+    PublicKey calldata _publicKey,
     uint256 _stateRootIndex,
     uint256[8] calldata _proof,
     bytes memory _signUpPolicyData,
@@ -381,7 +384,7 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
     pollNullifiers[_nullifier] = true;
 
     // Verify user's proof
-    if (!verifyJoiningPollProof(_nullifier, _stateRootIndex, _pubKey, _proof)) {
+    if (!verifyJoiningPollProof(_nullifier, _stateRootIndex, _publicKey, _proof)) {
       revert InvalidPollProof();
     }
 
@@ -395,7 +398,7 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
     );
 
     // Store user in the pollStateTree
-    uint256 stateLeaf = hashStateLeaf(StateLeaf(_pubKey, voiceCreditBalance));
+    uint256 stateLeaf = hashStateLeaf(StateLeaf(_publicKey, voiceCreditBalance));
 
     uint256 stateRoot = InternalLazyIMT._insert(pollStateTree, stateLeaf);
 
@@ -403,28 +406,30 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
     pollStateRootsOnJoin.push(stateRoot);
 
     uint256 pollStateIndex = pollStateTree.numberOfLeaves - 1;
-    emit PollJoined(_pubKey.x, _pubKey.y, voiceCreditBalance, _nullifier, pollStateIndex);
+    emit PollJoined(_publicKey.x, _publicKey.y, voiceCreditBalance, _nullifier, pollStateIndex);
   }
 
   /// @notice Verify the proof for Poll joining
   /// @param _nullifier Hashed user's private key to check whether user has already voted
   /// @param _index Index of the MACI's stateRootOnSignUp when the user signed up
-  /// @param _pubKey Poll user's public key
+  /// @param _publicKey Poll user's public key
   /// @param _proof The zk-SNARK proof
   /// @return isValid Whether the proof is valid
   function verifyJoiningPollProof(
     uint256 _nullifier,
     uint256 _index,
-    PublicKey calldata _pubKey,
+    PublicKey calldata _publicKey,
     uint256[8] memory _proof
   ) public view returns (bool isValid) {
-    // Get the verifying key from the VkRegistry
-    VerifyingKey memory vk = extContracts.vkRegistry.getPollJoiningVk(treeDepths.stateTreeDepth);
+    // Get the verifying key from the VerifyingKeysRegistry
+    VerifyingKey memory verifyingKey = extContracts.verifyingKeysRegistry.getPollJoiningVerifyingKey(
+      treeDepths.stateTreeDepth
+    );
 
     // Generate the circuit public input
-    uint256[] memory circuitPublicInputs = getPublicJoiningCircuitInputs(_nullifier, _index, _pubKey);
+    uint256[] memory circuitPublicInputs = getPublicJoiningCircuitInputs(_nullifier, _index, _publicKey);
 
-    isValid = extContracts.verifier.verify(_proof, vk, circuitPublicInputs);
+    isValid = extContracts.verifier.verify(_proof, verifyingKey, circuitPublicInputs);
   }
 
   /// @notice Verify the proof for joined Poll
@@ -432,29 +437,31 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
   /// @param _proof The zk-SNARK proof
   /// @return isValid Whether the proof is valid
   function verifyJoinedPollProof(uint256 _index, uint256[8] memory _proof) public view returns (bool isValid) {
-    // Get the verifying key from the VkRegistry
-    VerifyingKey memory vk = extContracts.vkRegistry.getPollJoinedVk(treeDepths.stateTreeDepth);
+    // Get the verifying key from the VerifyingKeysRegistry
+    VerifyingKey memory verifyingKey = extContracts.verifyingKeysRegistry.getPollJoinedVerifyingKey(
+      treeDepths.stateTreeDepth
+    );
 
     // Generate the circuit public input
     uint256[] memory circuitPublicInputs = getPublicJoinedCircuitInputs(_index);
 
-    isValid = extContracts.verifier.verify(_proof, vk, circuitPublicInputs);
+    isValid = extContracts.verifier.verify(_proof, verifyingKey, circuitPublicInputs);
   }
 
   /// @notice Get public circuit inputs for poll joining circuit
   /// @param _nullifier Hashed user's private key to check whether user has already voted
   /// @param _index Index of the MACI's stateRootOnSignUp when the user signed up
-  /// @param _pubKey Poll user's public key
+  /// @param _publicKey Poll user's public key
   /// @return publicInputs Public circuit inputs
   function getPublicJoiningCircuitInputs(
     uint256 _nullifier,
     uint256 _index,
-    PublicKey calldata _pubKey
+    PublicKey calldata _publicKey
   ) public view returns (uint256[] memory publicInputs) {
     publicInputs = new uint256[](5);
 
-    publicInputs[0] = _pubKey.x;
-    publicInputs[1] = _pubKey.y;
+    publicInputs[0] = _publicKey.x;
+    publicInputs[1] = _publicKey.y;
     publicInputs[2] = _nullifier;
     publicInputs[3] = extContracts.maci.getStateRootOnIndexedSignUp(_index);
     publicInputs[4] = pollId;
@@ -490,18 +497,18 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
     currentSbCommitment = hash3(sb);
 
     // get number of joined users and cache in a var for later use
-    uint256 _numSignups = pollStateTree.numberOfLeaves;
-    numSignups = _numSignups;
+    uint256 _totalSignups = pollStateTree.numberOfLeaves;
+    totalSignups = _totalSignups;
 
     // dynamically determine the actual depth of the state tree
     uint8 depth = 1;
-    while (uint40(1 << depth) < _numSignups) {
+    while (uint40(1 << depth) < _totalSignups) {
       depth++;
     }
 
     actualStateTreeDepth = depth;
 
-    emit MergeState(mergedStateRoot, numSignups);
+    emit MergeState(mergedStateRoot, totalSignups);
   }
 
   /// @inheritdoc IPoll
@@ -511,8 +518,8 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
   }
 
   /// @inheritdoc IPoll
-  function numSignUpsAndMessages() public view returns (uint256 numSUps, uint256 numMsgs) {
-    numSUps = numSignups;
+  function totalSignupsAndMessages() public view returns (uint256 numSUps, uint256 numMsgs) {
+    numSUps = totalSignups;
     numMsgs = numMessages;
   }
 

@@ -53,9 +53,9 @@ export interface IDeployPollArgs {
   verifierContractAddress: string;
 
   /**
-   * The address of the VK registry contract
+   * The address of the verifying keys registry contract
    */
-  vkRegistryContractAddress: string;
+  verifyingKeysRegistryContractAddress: string;
 
   /**
    * The mode of the poll
@@ -219,9 +219,9 @@ export interface IMaciContracts {
 }
 
 /**
- * Interface for the arguments to the DeployVkRegistry command
+ * Interface for the arguments to the DeployVerifyingKeyRegistry command
  */
-export interface IDeployVkRegistryArgs {
+export interface IDeployVerifyingKeyRegistryArgs {
   /**
    * A signer object
    */

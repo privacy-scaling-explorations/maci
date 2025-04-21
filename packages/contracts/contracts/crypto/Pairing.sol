@@ -41,13 +41,13 @@ library Pairing {
   error PairingMulFailed();
   error PairingOpcodeFailed();
 
-  /// @notice The negation of p, i.e. p.plus(p.negate()) should be zero.
-  function negate(G1Point memory p) internal pure returns (G1Point memory) {
+  /// @notice The negation of point, i.e. point.plus(point.negate()) should be zero.
+  function negate(G1Point memory point) internal pure returns (G1Point memory) {
     // The prime q in the base field F_q for G1
-    if (p.x == 0 && p.y == 0) {
+    if (point.x == 0 && point.y == 0) {
       return G1Point(0, 0);
     } else {
-      return G1Point(p.x, PRIME_Q - (p.y % PRIME_Q));
+      return G1Point(point.x, PRIME_Q - (point.y % PRIME_Q));
     }
   }
 
@@ -76,12 +76,12 @@ library Pairing {
   }
 
   /// @notice r Return the product of a point on G1 and a scalar, i.e.
-  ///         p == p.scalarMul(1) and p.plus(p) == p.scalarMul(2) for all
-  ///         points p.
-  function scalarMul(G1Point memory p, uint256 s) internal view returns (G1Point memory r) {
+  ///         point == point.scalarMul(1) and point.plus(point) == point.scalarMul(2) for all
+  ///         points point.
+  function scalarMul(G1Point memory point, uint256 s) internal view returns (G1Point memory r) {
     uint256[3] memory input;
-    input[0] = p.x;
-    input[1] = p.y;
+    input[0] = point.x;
+    input[1] = point.y;
     input[2] = s;
     bool success;
     // solhint-disable-next-line no-inline-assembly

@@ -11,7 +11,7 @@ export const createOrLoadMACI = (event: ethereum.Event, stateTreeDepth: GraphBN 
     maci.stateTreeDepth = stateTreeDepth;
     maci.updatedAt = event.block.timestamp;
     maci.numPoll = GraphBN.zero();
-    maci.numSignUps = GraphBN.zero();
+    maci.totalSignups = GraphBN.zero();
     maci.latestPoll = Bytes.empty();
     maci.save();
   }

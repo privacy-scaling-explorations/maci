@@ -6,7 +6,7 @@ include "./comparators.circom";
 include "./unpack-element.circom";
 // local imports
 include "../../utils/trees/CheckRoot.circom";
-include "../../utils/trees/MerkleGeneratePathIndices.circom";
+include "../../utils/trees/MerklePathIndicesGenerator.circom";
 include "../../utils/trees/LeafExists.circom";
 include "../../utils/trees/incrementalQuinaryTree.circom";
 include "../../utils/CalculateTotal.circom";
@@ -35,16 +35,16 @@ template TallyVotes(
     // The number of ballots processed at once, determined by the depth of the intermediate state tree.
     var batchSize = BALLOT_TREE_ARITY ** intStateTreeDepth;
     // Number of voting options available, determined by the depth of the vote option tree.
-    var numVoteOptions = TREE_ARITY ** voteOptionTreeDepth;
+    var totalVoteOptions = TREE_ARITY ** voteOptionTreeDepth;
 
     // Number of elements in each ballot.
     var BALLOT_LENGTH = 2;
     // Index for the nonce in the ballot array.
-    var BALLOT_NONCE_IDX = 0;
+    var BALLOT_NONCE_INDEX = 0;
     // Index for the voting option root in the ballot array.
-    var BALLOT_VO_ROOT_IDX = 1;
+    var BALLOT_VOTE_OPTION_ROOT_INDEX = 1;
     // Difference in tree depths, used in path calculations.
-    var k = stateTreeDepth - intStateTreeDepth;
+    var STATE_INT_TREE_DEPTH_DIFFERENCE = stateTreeDepth - intStateTreeDepth;
 
     // Root of the state Merkle tree, representing the overall state before voting.
     signal input stateRoot;
@@ -61,13 +61,13 @@ template TallyVotes(
     // Start index of given batch
     signal input index;
     // Number of users that signup
-    signal input numSignUps;
+    signal input totalSignups;
     // Ballots and their corresponding path elements for verification in the tree.
     signal input ballots[batchSize][BALLOT_LENGTH];
-    signal input ballotPathElements[k][BALLOT_TREE_ARITY - 1];
-    signal input votes[batchSize][numVoteOptions];
+    signal input ballotPathElements[STATE_INT_TREE_DEPTH_DIFFERENCE][BALLOT_TREE_ARITY - 1];
+    signal input votes[batchSize][totalVoteOptions];
     // Current results for each vote option.
-    signal input currentResults[numVoteOptions];
+    signal input currentResults[totalVoteOptions];
     // Salt for the root of the current results.
     signal input currentResultsRootSalt;
     // Total voice credits spent so far.
@@ -75,7 +75,7 @@ template TallyVotes(
     // Salt for the total spent voice credits.
     signal input currentSpentVoiceCreditSubtotalSalt;
     // Spent voice credits per vote option.
-    signal input currentPerVOSpentVoiceCredits[numVoteOptions];
+    signal input currentPerVOSpentVoiceCredits[totalVoteOptions];
     // Salt for the root of spent credits per option.
     signal input currentPerVOSpentVoiceCreditsRootSalt;
     // Salt for the root of the new results.
@@ -90,21 +90,21 @@ template TallyVotes(
     computedSbCommitment === sbCommitment;
 
     // Validates that the index is within the valid range of sign-ups.
-    var numSignUpsValid = LessEqThan(50)([index, numSignUps]);
-    numSignUpsValid === 1;
+    var totalSignupsValid = LessEqThan(50)([index, totalSignups]);
+    totalSignupsValid === 1;
 
     // Hashes each ballot for subroot generation, and checks the existence of the leaf in the Merkle tree.    
     var computedBallotHashers[batchSize];
     
     for (var i = 0; i < batchSize; i++) {
-        computedBallotHashers[i] = PoseidonHasher(2)([ballots[i][BALLOT_NONCE_IDX], ballots[i][BALLOT_VO_ROOT_IDX]]);
+        computedBallotHashers[i] = PoseidonHasher(2)([ballots[i][BALLOT_NONCE_INDEX], ballots[i][BALLOT_VOTE_OPTION_ROOT_INDEX]]);
     }
 
     var computedBallotSubroot = CheckRoot(intStateTreeDepth)(computedBallotHashers);
-    var computedBallotPathIndices[k] = MerkleGeneratePathIndices(k)(index / batchSize);
+    var computedBallotPathIndices[STATE_INT_TREE_DEPTH_DIFFERENCE] = MerklePathIndicesGenerator(STATE_INT_TREE_DEPTH_DIFFERENCE)(index / batchSize);
 
     // Verifies each ballot's existence within the ballot tree.
-    LeafExists(k)(
+    LeafExists(STATE_INT_TREE_DEPTH_DIFFERENCE)(
         computedBallotSubroot,
         ballotPathElements,
         computedBallotPathIndices,
@@ -115,7 +115,7 @@ template TallyVotes(
     var computedVoteTree[batchSize];
     for (var i = 0; i < batchSize; i++) {
         computedVoteTree[i] = QuinCheckRoot(voteOptionTreeDepth)(votes[i]);
-        computedVoteTree[i] === ballots[i][BALLOT_VO_ROOT_IDX];
+        computedVoteTree[i] === ballots[i][BALLOT_VOTE_OPTION_ROOT_INDEX];
     }
 
     // Calculates new results and spent voice credits based on the current and incoming votes.
@@ -123,8 +123,8 @@ template TallyVotes(
     var computedIsZero = IsZero()(computedIsFirstBatch);
 
     // Tally the new results.
-    var computedCalculateTotalResult[numVoteOptions];
-    for (var i = 0; i < numVoteOptions; i++) {
+    var computedCalculateTotalResult[totalVoteOptions];
+    for (var i = 0; i < totalVoteOptions; i++) {
         var numsRC[batchSize + 1];
         numsRC[batchSize] = currentResults[i] * computedIsZero;
         for (var j = 0; j < batchSize; j++) {
@@ -135,20 +135,20 @@ template TallyVotes(
     }
 
     // Tally the new spent voice credit total.
-    var numsSVC[batchSize * numVoteOptions + 1];
-    numsSVC[batchSize * numVoteOptions] = currentSpentVoiceCreditSubtotal * computedIsZero;
+    var numsSVC[batchSize * totalVoteOptions + 1];
+    numsSVC[batchSize * totalVoteOptions] = currentSpentVoiceCreditSubtotal * computedIsZero;
     for (var i = 0; i < batchSize; i++) {
-        for (var j = 0; j < numVoteOptions; j++) {
-            numsSVC[i * numVoteOptions + j] = votes[i][j] * votes[i][j];
+        for (var j = 0; j < totalVoteOptions; j++) {
+            numsSVC[i * totalVoteOptions + j] = votes[i][j] * votes[i][j];
         }
     }
 
-    var computedNewSpentVoiceCreditSubtotal = CalculateTotal(batchSize * numVoteOptions + 1)(numsSVC);
+    var computedNewSpentVoiceCreditSubtotal = CalculateTotal(batchSize * totalVoteOptions + 1)(numsSVC);
 
     // Tally the spent voice credits per vote option.
-    var computedNewPerVOSpentVoiceCredits[numVoteOptions];
+    var computedNewPerVOSpentVoiceCredits[totalVoteOptions];
 
-    for (var i = 0; i < numVoteOptions; i++) {
+    for (var i = 0; i < totalVoteOptions; i++) {
         var computedNumsSVC[batchSize + 1];
         computedNumsSVC[batchSize] = currentPerVOSpentVoiceCredits[i] * computedIsZero;
         for (var j = 0; j < batchSize; j++) {
@@ -187,7 +187,7 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     // Number of children per node in the tree, defining the tree's branching factor.
     var TREE_ARITY = 5;
     // Number of voting options available, determined by the depth of the vote option tree.
-    var numVoteOptions = TREE_ARITY ** voteOptionTreeDepth;
+    var totalVoteOptions = TREE_ARITY ** voteOptionTreeDepth;
 
     // Equal to 1 if this is the first batch, otherwise 0.
     signal input isFirstBatch;
@@ -197,12 +197,12 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     signal input newTallyCommitment;
 
     // Current results for each vote option.
-    signal input currentResults[numVoteOptions];
+    signal input currentResults[totalVoteOptions];
     // Salt for the root of the current results.
     signal input currentResultsRootSalt;
 
     // New results for each vote option.
-    signal input newResults[numVoteOptions];
+    signal input newResults[totalVoteOptions];
     // Salt for the root of the new results.
     signal input newResultsRootSalt;
 
@@ -217,12 +217,12 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     signal input newSpentVoiceCreditSubtotalSalt;
 
     // Spent voice credits per vote option.
-    signal input currentPerVOSpentVoiceCredits[numVoteOptions];
+    signal input currentPerVOSpentVoiceCredits[totalVoteOptions];
     // Salt for the root of spent credits per option.
     signal input currentPerVOSpentVoiceCreditsRootSalt;
 
     // New spent voice credits per vote option.
-    signal input newPerVOSpentVoiceCredits[numVoteOptions];
+    signal input newPerVOSpentVoiceCredits[totalVoteOptions];
     // Salt for the root of new spent credits per option.
     signal input newPerVOSpentVoiceCreditsRootSalt;
 
@@ -251,11 +251,11 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     // computedIsZero.out is 0 if this is the first batch.
     var computedIsZero = IsZero()(isFirstBatch);
 
-    // hz is 0 if this is the first batch, currentTallyCommitment should be 0 if this is the first batch.
-    // hz is 1 if this is not the first batch, currentTallyCommitment should not be 0 if this is the first batch.
-    signal hz;
-    hz <== computedIsZero * computedCurrentTallyCommitment;
-    hz === currentTallyCommitment;
+    // isFirstCommitment is 0 if this is the first batch, currentTallyCommitment should be 0 if this is the first batch.
+    // isFirstCommitment is 1 if this is not the first batch, currentTallyCommitment should not be 0 if this is the first batch.
+    signal isFirstCommitment;
+    isFirstCommitment <== computedIsZero * computedCurrentTallyCommitment;
+    isFirstCommitment === currentTallyCommitment;
 
     // Compute the root of the new results.
     var computedNewResultsRoot = QuinCheckRoot(voteOptionTreeDepth)(newResults);

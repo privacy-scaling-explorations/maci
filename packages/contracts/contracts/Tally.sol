@@ -10,7 +10,7 @@ import { ITally } from "./interfaces/ITally.sol";
 import { IMessageProcessor } from "./interfaces/IMessageProcessor.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { IVerifier } from "./interfaces/IVerifier.sol";
-import { IVkRegistry } from "./interfaces/IVkRegistry.sol";
+import { IVerifyingKeysRegistry } from "./interfaces/IVerifyingKeysRegistry.sol";
 import { DomainObjs } from "./utilities/DomainObjs.sol";
 
 /// @title Tally
@@ -55,7 +55,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
   uint256 public sbCommitment;
 
   IVerifier public verifier;
-  IVkRegistry public vkRegistry;
+  IVerifyingKeysRegistry public verifyingKeysRegistry;
   IPoll public poll;
   IMessageProcessor public messageProcessor;
   Mode public mode;
@@ -73,7 +73,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
   error ProcessingNotComplete();
   error InvalidTallyVotesProof();
   error AllBallotsTallied();
-  error NumSignUpsTooLarge();
+  error totalSignupsTooLarge();
   error BatchStartIndexTooLarge();
   error TallyBatchSizeTooLarge();
   error NotSupported();
@@ -85,13 +85,13 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
     super._initialize();
 
     bytes memory data = _getAppendedBytes();
-    (address _verifier, address _vkRegistry, address _poll, address _mp, Mode _mode) = abi.decode(
+    (address _verifier, address _verifyingKeysRegistry, address _poll, address _mp, Mode _mode) = abi.decode(
       data,
       (address, address, address, address, Mode)
     );
 
     verifier = IVerifier(_verifier);
-    vkRegistry = IVkRegistry(_vkRegistry);
+    verifyingKeysRegistry = IVerifyingKeysRegistry(_verifyingKeysRegistry);
     poll = IPoll(_poll);
     messageProcessor = IMessageProcessor(_mp);
     mode = _mode;
@@ -101,10 +101,10 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
   /// @return tallied whether all ballots are tallied
   function isTallied() public view returns (bool tallied) {
     (uint8 intStateTreeDepth, , ) = poll.treeDepths();
-    (uint256 numSignUps, ) = poll.numSignUpsAndMessages();
+    (uint256 totalSignups, ) = poll.totalSignupsAndMessages();
 
     // Require that there are untallied ballots left
-    tallied = tallyBatchNum * (TREE_ARITY ** intStateTreeDepth) >= numSignUps;
+    tallied = tallyBatchNum * (TREE_ARITY ** intStateTreeDepth) >= totalSignups;
   }
 
   /// @notice Update the state and ballot root commitment
@@ -130,10 +130,10 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
     uint256 tallyBatchSize = TREE_ARITY ** intStateTreeDepth;
     uint256 batchStartIndex = tallyBatchNum * tallyBatchSize;
 
-    (uint256 numSignUps, ) = poll.numSignUpsAndMessages();
+    (uint256 totalSignups, ) = poll.totalSignupsAndMessages();
 
     // Require that there are untallied ballots left
-    if (batchStartIndex >= numSignUps) {
+    if (batchStartIndex >= totalSignups) {
       revert AllBallotsTallied();
     }
 
@@ -158,14 +158,14 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
     uint256 _batchStartIndex,
     uint256 _newTallyCommitment
   ) public view returns (uint256[] memory publicInputs) {
-    (uint256 numSignUps, ) = poll.numSignUpsAndMessages();
+    (uint256 totalSignups, ) = poll.totalSignupsAndMessages();
 
     publicInputs = new uint256[](5);
     publicInputs[0] = sbCommitment;
     publicInputs[1] = tallyCommitment;
     publicInputs[2] = _newTallyCommitment;
     publicInputs[3] = _batchStartIndex;
-    publicInputs[4] = numSignUps;
+    publicInputs[4] = totalSignups;
   }
 
   /// @notice Verify the tally proof using the verifying key
@@ -183,9 +183,14 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
     IMACI maci = poll.getMaciContract();
 
     // Get the verifying key
-    VerifyingKey memory vk = vkRegistry.getTallyVk(maci.stateTreeDepth(), intStateTreeDepth, voteOptionTreeDepth, mode);
+    VerifyingKey memory verifyingKey = verifyingKeysRegistry.getTallyVerifyingKey(
+      maci.stateTreeDepth(),
+      intStateTreeDepth,
+      voteOptionTreeDepth,
+      mode
+    );
     // Verify the proof
-    isValid = verifier.verify(_proof, vk, circuitPublicInputs);
+    isValid = verifier.verify(_proof, verifyingKey, circuitPublicInputs);
   }
 
   /// @notice Compute the merkle root from the path elements
@@ -231,16 +236,21 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
   /// @param _totalSpent spent field retrieved in the totalSpentVoiceCredits object
   /// @param _totalSpentSalt the corresponding salt in the totalSpentVoiceCredit object
   /// @param _resultCommitment hashLeftRight(merkle root of the results.tally, results.salt) in tally.json file
-  /// @param _perVOSpentVoiceCreditsHash only for QV - hashLeftRight(merkle root of the no spent voice credits, salt)
+  /// @param _perVoteOptionSpentVoiceCreditsHash only for QV - hashLeftRight(merkle root of the no spent voice credits, salt)
   /// @return isValid Whether the provided values are valid
   function verifySpentVoiceCredits(
     uint256 _totalSpent,
     uint256 _totalSpentSalt,
     uint256 _resultCommitment,
-    uint256 _perVOSpentVoiceCreditsHash
+    uint256 _perVoteOptionSpentVoiceCreditsHash
   ) public view returns (bool isValid) {
     if (mode == Mode.QV) {
-      isValid = verifyQvSpentVoiceCredits(_totalSpent, _totalSpentSalt, _resultCommitment, _perVOSpentVoiceCreditsHash);
+      isValid = verifyQvSpentVoiceCredits(
+        _totalSpent,
+        _totalSpentSalt,
+        _resultCommitment,
+        _perVoteOptionSpentVoiceCreditsHash
+      );
     } else if (mode == Mode.NON_QV) {
       isValid = verifyNonQvSpentVoiceCredits(_totalSpent, _totalSpentSalt, _resultCommitment);
     }
@@ -250,18 +260,18 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
   /// @param _totalSpent spent field retrieved in the totalSpentVoiceCredits object
   /// @param _totalSpentSalt the corresponding salt in the totalSpentVoiceCredit object
   /// @param _resultCommitment hashLeftRight(merkle root of the results.tally, results.salt) in tally.json file
-  /// @param _perVOSpentVoiceCreditsHash hashLeftRight(merkle root of the no spent voice credits per vote option, salt)
+  /// @param _perVoteOptionSpentVoiceCreditsHash hashLeftRight(merkle root of the no spent voice credits per vote option, salt)
   /// @return isValid Whether the provided values are valid
   function verifyQvSpentVoiceCredits(
     uint256 _totalSpent,
     uint256 _totalSpentSalt,
     uint256 _resultCommitment,
-    uint256 _perVOSpentVoiceCreditsHash
+    uint256 _perVoteOptionSpentVoiceCreditsHash
   ) internal view returns (bool isValid) {
     uint256[3] memory tally;
     tally[0] = _resultCommitment;
     tally[1] = hashLeftRight(_totalSpent, _totalSpentSalt);
-    tally[2] = _perVOSpentVoiceCreditsHash;
+    tally[2] = _perVoteOptionSpentVoiceCreditsHash;
 
     isValid = hash3(tally) == tallyCommitment;
   }
@@ -286,8 +296,8 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
   /// @notice Verify the number of spent voice credits per vote option from the tally.json
   /// @param _voteOptionIndex the index of the vote option where credits were spent
   /// @param _spent the spent voice credits for a given vote option index
-  /// @param _spentProof proof generated for the perVOSpentVoiceCredits
-  /// @param _spentSalt the corresponding salt given in the tally perVOSpentVoiceCredits object
+  /// @param _spentProof proof generated for the perVoteOptionSpentVoiceCredits
+  /// @param _spentSalt the corresponding salt given in the tally perVoteOptionSpentVoiceCredits object
   /// @param _voteOptionTreeDepth depth of the vote option tree
   /// @param _spentVoiceCreditsHash hashLeftRight(number of spent voice credits, spent salt)
   /// @param _resultCommitment hashLeftRight(merkle root of the results.tally, results.salt)
@@ -323,8 +333,8 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
   /// @param _tallyResultSalt the respective salt in the results object in the tally.json
   /// @param _voteOptionTreeDepth depth of the vote option tree
   /// @param _spentVoiceCreditsHash hashLeftRight(number of spent voice credits, spent salt)
-  /// @param _perVOSpentVoiceCreditsHash hashLeftRight(merkle root of the no spent voice
-  /// credits per vote option, perVOSpentVoiceCredits salt)
+  /// @param _perVoteOptionSpentVoiceCreditsHash hashLeftRight(merkle root of the no spent voice
+  /// credits per vote option, perVoteOptionSpentVoiceCredits salt)
   /// @return isValid Whether the provided proof is valid
   function verifyTallyResult(
     uint256 _voteOptionIndex,
@@ -333,7 +343,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
     uint256 _tallyResultSalt,
     uint8 _voteOptionTreeDepth,
     uint256 _spentVoiceCreditsHash,
-    uint256 _perVOSpentVoiceCreditsHash
+    uint256 _perVoteOptionSpentVoiceCreditsHash
   ) public view returns (bool isValid) {
     uint256 computedRoot = computeMerkleRootFromPath(
       _voteOptionTreeDepth,
@@ -346,7 +356,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
       uint256[3] memory tally;
       tally[0] = hashLeftRight(computedRoot, _tallyResultSalt);
       tally[1] = _spentVoiceCreditsHash;
-      tally[2] = _perVOSpentVoiceCreditsHash;
+      tally[2] = _perVoteOptionSpentVoiceCreditsHash;
 
       isValid = hash3(tally) == tallyCommitment;
     } else if (mode == Mode.NON_QV) {
@@ -407,7 +417,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
    * @param _tallyResultProof Proofs of correctness of the vote tally results.
    * @param _tallyResultSalt the respective salt in the results object in the tally.json
    * @param _spentVoiceCreditsHash hashLeftRight(number of spent voice credits, spent salt)
-   * @param _perVOSpentVoiceCreditsHash hashLeftRight(root of noSpentVoiceCreditsPerVoteOption, perVOSpentVoiceCredits)
+   * @param _perVoteOptionSpentVoiceCreditsHash hashLeftRight(root of noSpentVoiceCreditsPerVoteOption, perVoteOptionSpentVoiceCredits)
    * @param _voteOptionTreeDepth vote option tree depth
    */
   function addTallyResult(
@@ -416,7 +426,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
     uint256[][] calldata _tallyResultProof,
     uint256 _tallyResultSalt,
     uint256 _spentVoiceCreditsHash,
-    uint256 _perVOSpentVoiceCreditsHash,
+    uint256 _perVoteOptionSpentVoiceCreditsHash,
     uint8 _voteOptionTreeDepth
   ) internal virtual {
     bool isValid = verifyTallyResult(
@@ -426,7 +436,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
       _tallyResultSalt,
       _voteOptionTreeDepth,
       _spentVoiceCreditsHash,
-      _perVOSpentVoiceCreditsHash
+      _perVoteOptionSpentVoiceCreditsHash
     );
 
     if (!isValid) {

@@ -9,15 +9,15 @@ export type SignalValueType = IntegerValueType | SignalValueType[];
  */
 export interface IMessageValidatorCircuitInputs {
   stateTreeIndex: SignalValueType;
-  numSignUps: SignalValueType;
+  totalSignups: SignalValueType;
   voteOptionIndex: SignalValueType;
   voteOptions: SignalValueType;
   originalNonce: SignalValueType;
   nonce: SignalValueType;
-  cmd: SignalValueType;
+  command: SignalValueType;
   publicKey: SignalValueType;
-  sigR8: SignalValueType;
-  sigS: SignalValueType;
+  signaturePoint: SignalValueType;
+  signatureScalar: SignalValueType;
   currentVoiceCreditBalance: SignalValueType;
   currentVotesForOption: SignalValueType;
   voteWeight: SignalValueType;

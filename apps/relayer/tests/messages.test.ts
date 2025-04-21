@@ -1,6 +1,6 @@
 import { jest } from "@jest/globals";
 import { Keypair } from "@maci-protocol/domainobjs";
-import { formatProofForVerifierContract, genProofSnarkjs } from "@maci-protocol/sdk";
+import { formatProofForVerifierContract, generateProofSnarkjs } from "@maci-protocol/sdk";
 import { TestingClass } from "@maci-protocol/testing";
 import { HttpStatus, ValidationPipe, type INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
@@ -41,7 +41,7 @@ describe("Integration messages", () => {
     });
     const poll = testDeploy.contractsData.maciState!.polls.get(0n);
 
-    poll!.updatePoll(BigInt(testDeploy.contractsData.maciState!.pubKeys.length));
+    poll!.updatePoll(BigInt(testDeploy.contractsData.maciState!.publicKeys.length));
 
     const [user] = testDeploy.contractsData.users!;
 
@@ -104,7 +104,7 @@ describe("Integration messages", () => {
     });
 
     test("should throw an error if dto is invalid", async () => {
-      const { proof } = await genProofSnarkjs({
+      const { proof } = await generateProofSnarkjs({
         inputs: circuitInputs,
         zkeyPath: pollJoinedZkey,
         wasmPath: pollJoinedWasm,
@@ -134,7 +134,7 @@ describe("Integration messages", () => {
     });
 
     test("should throw an error if messages dto is invalid", async () => {
-      const { proof } = await genProofSnarkjs({
+      const { proof } = await generateProofSnarkjs({
         inputs: circuitInputs,
         zkeyPath: pollJoinedZkey,
         wasmPath: pollJoinedWasm,
@@ -159,7 +159,7 @@ describe("Integration messages", () => {
     });
 
     test("should publish user messages properly", async () => {
-      const { proof } = await genProofSnarkjs({
+      const { proof } = await generateProofSnarkjs({
         inputs: circuitInputs,
         zkeyPath: pollJoinedZkey,
         wasmPath: pollJoinedWasm,

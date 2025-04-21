@@ -16,7 +16,7 @@
     "template": "ProcessMessages",
     "params": [10, 20, 2],
     "pubs": [
-      "numSignUps",
+      "totalSignups",
       "index",
       "batchEndIndex",
       "currentSbCommitment",
@@ -32,7 +32,7 @@
     "template": "ProcessMessagesNonQv",
     "params": [10, 20, 2],
     "pubs": [
-      "numSignUps",
+      "totalSignups",
       "index",
       "batchEndIndex",
       "currentSbCommitment",
@@ -47,12 +47,12 @@
     "file": "./coordinator/qv/tallyVotes",
     "template": "TallyVotes",
     "params": [10, 1, 2],
-    "pubs": ["index", "numSignUps", "sbCommitment", "currentTallyCommitment", "newTallyCommitment"]
+    "pubs": ["index", "totalSignups", "sbCommitment", "currentTallyCommitment", "newTallyCommitment"]
   },
   "TallyVotesNonQv_10-1-2_test": {
     "file": "./coordinator/non-qv/tallyVotes",
     "template": "TallyVotesNonQv",
     "params": [10, 1, 2],
-    "pubs": ["index", "numSignUps", "sbCommitment", "currentTallyCommitment", "newTallyCommitment"]
+    "pubs": ["index", "totalSignups", "sbCommitment", "currentTallyCommitment", "newTallyCommitment"]
   }
 }

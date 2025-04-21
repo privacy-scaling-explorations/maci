@@ -1,4 +1,4 @@
-import { SNARK_FIELD_SIZE, unpackPubKey } from "@maci-protocol/crypto";
+import { SNARK_FIELD_SIZE, unpackPublicKey } from "@maci-protocol/crypto";
 import { expect } from "chai";
 
 import { Keypair, PublicKey } from "..";
@@ -6,16 +6,18 @@ import { Keypair, PublicKey } from "..";
 describe("public key", () => {
   describe("constructor", () => {
     it("should create a public key", () => {
-      const k = new Keypair();
-      const pk = new PublicKey(k.publicKey.rawPubKey);
-      expect(pk).to.not.eq(null);
+      const keypair = new Keypair();
+      const publicKey = new PublicKey(keypair.publicKey.raw);
+      expect(publicKey).to.not.eq(null);
     });
+
     it("should create the same public key object for the same raw key", () => {
-      const k = new Keypair();
-      const pk1 = new PublicKey(k.publicKey.rawPubKey);
-      const pk2 = new PublicKey(k.publicKey.rawPubKey);
-      expect(pk1.rawPubKey.toString()).to.eq(pk2.rawPubKey.toString());
+      const keypair = new Keypair();
+      const publicKey1 = new PublicKey(keypair.publicKey.raw);
+      const publicKey2 = new PublicKey(keypair.publicKey.raw);
+      expect(publicKey1.raw.toString()).to.eq(publicKey2.raw.toString());
     });
+
     it("should fail to create a public key if the raw key is invalid", () => {
       expect(() => new PublicKey([BigInt(0), BigInt(SNARK_FIELD_SIZE)])).to.throw();
       expect(() => new PublicKey([BigInt(SNARK_FIELD_SIZE), BigInt(0)])).to.throw();
@@ -25,157 +27,164 @@ describe("public key", () => {
 
   describe("copy", () => {
     it("should produce a deep copy", () => {
-      const k = new Keypair();
-      const pk1 = k.publicKey;
+      const keypair = new Keypair();
+      const publicKey1 = keypair.publicKey;
 
       // shallow copy
-      const pk2 = pk1;
+      const publicKey2 = publicKey1;
 
-      expect(pk1.rawPubKey.toString()).to.eq(pk2.rawPubKey.toString());
-      pk1.rawPubKey = [BigInt(0), BigInt(0)];
-      expect(pk1.rawPubKey.toString()).to.eq(pk2.rawPubKey.toString());
+      expect(publicKey1.raw.toString()).to.eq(publicKey2.raw.toString());
+      publicKey1.raw = [BigInt(0), BigInt(0)];
+      expect(publicKey1.raw.toString()).to.eq(publicKey2.raw.toString());
 
       // deep copy
-      const k1 = new Keypair();
-      const pk3 = k1.publicKey;
-      const pk4 = pk3.copy();
-      expect(pk3.rawPubKey.toString()).to.eq(pk4.rawPubKey.toString());
-      pk4.rawPubKey = [BigInt(0), BigInt(0)];
-      expect(pk3.rawPubKey.toString()).not.to.eq(pk4.rawPubKey.toString());
+      const keypair1 = new Keypair();
+      const publicKey3 = keypair1.publicKey;
+      const publicKey4 = publicKey3.copy();
+      expect(publicKey3.raw.toString()).to.eq(publicKey4.raw.toString());
+      publicKey4.raw = [BigInt(0), BigInt(0)];
+      expect(publicKey3.raw.toString()).not.to.eq(publicKey4.raw.toString());
     });
   });
 
   describe("serialization", () => {
     describe("serialize", () => {
       it("should serialize into a string", () => {
-        const k = new Keypair();
-        const pk1 = k.publicKey;
+        const keypair = new Keypair();
+        const publicKey1 = keypair.publicKey;
 
-        const s = pk1.serialize();
-        expect(s.startsWith("macipk.")).to.eq(true);
+        const serialized = publicKey1.serialize();
+        expect(serialized.startsWith("macipk.")).to.eq(true);
 
-        const unpacked = unpackPubKey(BigInt(`0x${s.slice(7).toString()}`));
+        const unpacked = unpackPublicKey(BigInt(`0x${serialized.slice(7).toString()}`));
 
-        expect(unpacked[0].toString()).to.eq(pk1.rawPubKey[0].toString());
-        expect(unpacked[1].toString()).to.eq(pk1.rawPubKey[1].toString());
+        expect(unpacked[0].toString()).to.eq(publicKey1.raw[0].toString());
+        expect(unpacked[1].toString()).to.eq(publicKey1.raw[1].toString());
       });
     });
 
     describe("deserialize", () => {
       it("should deserialize the public key", () => {
-        const k = new Keypair();
-        const pk1 = k.publicKey;
-        const s = pk1.serialize();
-        const pk2 = PublicKey.deserialize(s);
-        expect(pk1.rawPubKey.toString()).to.eq(pk2.rawPubKey.toString());
+        const keypair = new Keypair();
+        const publicKey1 = keypair.publicKey;
+        const serialized = publicKey1.serialize();
+        const publicKey2 = PublicKey.deserialize(serialized);
+        expect(publicKey1.raw.toString()).to.eq(publicKey2.raw.toString());
       });
     });
 
-    describe("isValidSerializedPubKey", () => {
-      const k = new Keypair();
-      const s = k.publicKey.serialize();
+    describe("isValidSerialized", () => {
+      const keypair = new Keypair();
+      const serialized = keypair.publicKey.serialize();
       it("should return true for keys that are serialized in the correct format", () => {
-        expect(PublicKey.isValidSerializedPubKey(s)).to.eq(true);
+        expect(PublicKey.isValidSerialized(serialized)).to.eq(true);
       });
 
       it("should return false for keys that are not serialized in the correct format", () => {
-        expect(PublicKey.isValidSerializedPubKey(`${s}ffffffffffffffffffffffffffffff`)).to.eq(false);
-        expect(PublicKey.isValidSerializedPubKey(s.slice(1))).to.eq(false);
+        expect(PublicKey.isValidSerialized(`${serialized}ffffffffffffffffffffffffffffff`)).to.eq(false);
+        expect(PublicKey.isValidSerialized(serialized.slice(1))).to.eq(false);
       });
     });
 
     describe("toJSON", () => {
       it("should produce a JSON object", () => {
-        const k = new Keypair();
-        const pk1 = k.publicKey;
-        const json = pk1.toJSON();
+        const keypair = new Keypair();
+        const publicKey1 = keypair.publicKey;
+        const json = publicKey1.toJSON();
         expect(json).to.not.eq(null);
       });
+
       it("should produce a JSON object with the correct keys", () => {
-        const k = new Keypair();
-        const pk1 = k.publicKey;
-        const json = pk1.toJSON();
+        const keypair = new Keypair();
+        const publicKey1 = keypair.publicKey;
+        const json = publicKey1.toJSON();
         expect(Object.keys(json)).to.deep.eq(["publicKey"]);
       });
-      it("should preserve the data correctly", () => {
-        const k = new Keypair();
-        const pk1 = k.publicKey;
-        const json = pk1.toJSON();
 
-        expect(pk1.serialize()).to.eq(json.publicKey);
+      it("should preserve the data correctly", () => {
+        const keypair = new Keypair();
+        const publicKey1 = keypair.publicKey;
+        const json = publicKey1.toJSON();
+
+        expect(publicKey1.serialize()).to.eq(json.publicKey);
       });
     });
+
     describe("fromJSON", () => {
       it("should produce a public key", () => {
-        const k = new Keypair();
-        const pk1 = k.publicKey;
-        const json = pk1.toJSON();
-        const pk2 = PublicKey.fromJSON(json);
-        expect(pk2).to.not.eq(null);
+        const keypair = new Keypair();
+        const publicKey1 = keypair.publicKey;
+        const json = publicKey1.toJSON();
+        const publicKey2 = PublicKey.fromJSON(json);
+        expect(publicKey2).to.not.eq(null);
       });
+
       it("should produce the same public key object for the same raw key", () => {
-        const k = new Keypair();
-        const pk1 = k.publicKey;
-        const json = pk1.toJSON();
-        const pk2 = PublicKey.fromJSON(json);
-        expect(pk1.rawPubKey.toString()).to.eq(pk2.rawPubKey.toString());
+        const keypair = new Keypair();
+        const publicKey1 = keypair.publicKey;
+        const json = publicKey1.toJSON();
+        const publicKey2 = PublicKey.fromJSON(json);
+        expect(publicKey1.raw.toString()).to.eq(publicKey2.raw.toString());
       });
     });
   });
 
   describe("asContractParam", () => {
     it("should produce an object with the correct values", () => {
-      const k = new Keypair();
-      const pk1 = k.publicKey;
-      const obj = pk1.asContractParam();
-      expect(obj.x).to.eq(pk1.rawPubKey[0].toString());
-      expect(obj.y).to.eq(pk1.rawPubKey[1].toString());
+      const keypair = new Keypair();
+      const publicKey1 = keypair.publicKey;
+      const obj = publicKey1.asContractParam();
+      expect(obj.x).to.eq(publicKey1.raw[0].toString());
+      expect(obj.y).to.eq(publicKey1.raw[1].toString());
     });
   });
 
   describe("asCircuitInputs", () => {
     it("should produce an array with the two points of the public key", () => {
-      const k = new Keypair();
-      const pk1 = k.publicKey;
-      const arr = pk1.asCircuitInputs();
-      expect(arr).to.be.instanceOf(Array);
-      expect(arr.length).to.eq(2);
+      const keypair = new Keypair();
+      const publicKey1 = keypair.publicKey;
+      const array = publicKey1.asCircuitInputs();
+
+      expect(array).to.be.instanceOf(Array);
+      expect(array.length).to.eq(2);
     });
   });
 
   describe("asArray", () => {
     it("should produce an array with the two points of the public key", () => {
-      const k = new Keypair();
-      const pk1 = k.publicKey;
-      const arr = pk1.asArray();
-      expect(arr).to.be.instanceOf(Array);
-      expect(arr.length).to.eq(2);
-      expect(arr).to.deep.eq(pk1.rawPubKey);
+      const keypair = new Keypair();
+      const publicKey1 = keypair.publicKey;
+      const array = publicKey1.asArray();
+
+      expect(array).to.be.instanceOf(Array);
+      expect(array.length).to.eq(2);
+      expect(array).to.deep.eq(publicKey1.raw);
     });
   });
 
   describe("hash", () => {
     it("should produce a hash", () => {
-      const k = new Keypair();
-      const pk1 = k.publicKey;
-      const h = pk1.hash();
-      expect(h).to.not.eq(null);
+      const keypair = new Keypair();
+      const publicKey1 = keypair.publicKey;
+      const hash = publicKey1.hash();
+      expect(hash).to.not.eq(null);
     });
   });
 
   describe("equals", () => {
     it("should return false for public keys that are not equal", () => {
-      const k1 = new Keypair();
-      const pk1 = k1.publicKey;
-      const k2 = new Keypair();
-      const pk2 = k2.publicKey;
-      expect(pk1.equals(pk2)).to.eq(false);
+      const keypair1 = new Keypair();
+      const publicKey1 = keypair1.publicKey;
+      const keypair2 = new Keypair();
+      const publicKey2 = keypair2.publicKey;
+      expect(publicKey1.equals(publicKey2)).to.eq(false);
     });
+
     it("should return true for public keys that are equal", () => {
-      const k1 = new Keypair();
-      const pk1 = k1.publicKey;
-      const pk2 = pk1.copy();
-      expect(pk1.equals(pk2)).to.eq(true);
+      const keypair1 = new Keypair();
+      const publicKey1 = keypair1.publicKey;
+      const publicKey2 = publicKey1.copy();
+      expect(publicKey1.equals(publicKey2)).to.eq(true);
     });
   });
 });

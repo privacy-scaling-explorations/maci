@@ -1,33 +1,37 @@
-import { SNARK_FIELD_SIZE, genRandomSalt } from "@maci-protocol/crypto";
+import { SNARK_FIELD_SIZE, generateRandomSalt } from "@maci-protocol/crypto";
 import { VerifyingKey } from "@maci-protocol/domainobjs";
-import { compareVks, validateSalt } from "@maci-protocol/sdk";
+import { compareVerifyingKeys, validateSalt } from "@maci-protocol/sdk";
 import { expect } from "chai";
 
 import fs from "fs";
 import path from "path";
 
 describe("utils", () => {
-  describe("vks", () => {
-    it("should return true for two equal VKs", async () => {
-      const vkPath = path.resolve(__dirname, "..", "data", "testVk.json");
-      const vk1 = VerifyingKey.fromJSON(await fs.promises.readFile(vkPath).then((res) => res.toString()));
+  describe("verifying keys", () => {
+    it("should return true for two equal verifying keys", async () => {
+      const verifyingKeyPath = path.resolve(__dirname, "..", "data", "testVk.json");
+      const verifyingKey = VerifyingKey.fromJSON(
+        await fs.promises.readFile(verifyingKeyPath).then((res) => res.toString()),
+      );
 
-      expect(compareVks(vk1, vk1.asContractParam())).to.eq(true);
+      expect(compareVerifyingKeys(verifyingKey, verifyingKey.asContractParam())).to.eq(true);
     });
 
-    it("should return false for two unequal VKs", async () => {
-      const vkPath = path.resolve(__dirname, "..", "data", "testVk.json");
-      const vk1 = VerifyingKey.fromJSON(await fs.promises.readFile(vkPath).then((res) => res.toString()));
+    it("should return false for two unequal verifying keys", async () => {
+      const verifyingKeyPath = path.resolve(__dirname, "..", "data", "testVk.json");
+      const verifyingKey = VerifyingKey.fromJSON(
+        await fs.promises.readFile(verifyingKeyPath).then((res) => res.toString()),
+      );
 
-      const vk2 = vk1.asContractParam();
-      vk2.alpha1.x = 9999n;
-      expect(compareVks(vk1, vk2)).to.eq(false);
+      const verifyingKeyCopy = verifyingKey.asContractParam();
+      verifyingKeyCopy.alpha1.x = 9999n;
+      expect(compareVerifyingKeys(verifyingKey, verifyingKeyCopy)).to.eq(false);
     });
   });
 
   describe("validateSalt", () => {
     it("should return true for a valid salt", () => {
-      expect(validateSalt(genRandomSalt())).to.eq(true);
+      expect(validateSalt(generateRandomSalt())).to.eq(true);
     });
 
     it("should return false for an invalid salt", () => {

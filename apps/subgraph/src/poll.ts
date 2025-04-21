@@ -9,8 +9,8 @@ import {
   PublishMessage as PublishMessageEvent,
   ChainHashUpdated as ChainHashUpdatedEvent,
   IpfsHashAdded as IpfsHashAddedEvent,
-  Poll__hashMessageAndEncPubKeyInput_messageStruct as HashMessageAndEncPubKeyInputMessageStruct,
-  Poll__hashMessageAndEncPubKeyInput_encPubKeyStruct as HashMessageAndEncPubKeyInputEncPubKeyStruct,
+  Poll__hashMessageAndPublicKeyInput_messageStruct as HashMessageAndPublicKeyInputMessageStruct,
+  Poll__hashMessageAndPublicKeyInput_encryptionPublicKeyStruct as HashMessageAndPublicKeyInputPublicKeyStruct,
 } from "../generated/templates/Poll/Poll";
 
 import { ONE_BIG_INT } from "./utils/constants";
@@ -20,14 +20,14 @@ export function handleMergeState(event: MergeStateEvent): void {
 
   if (poll) {
     poll.stateRoot = event.params._stateRoot;
-    poll.numSignups = event.params._numSignups;
+    poll.totalSignups = event.params._totalSignups;
     poll.updatedAt = event.block.timestamp;
     poll.save();
 
     const maci = MACI.load(poll.maci);
 
     if (maci) {
-      maci.numSignUps = event.params._numSignups;
+      maci.totalSignups = event.params._totalSignups;
       maci.updatedAt = event.block.timestamp;
       maci.save();
     }
@@ -39,11 +39,11 @@ export function handlePublishMessage(event: PublishMessageEvent): void {
   const pollContract = PollContract.bind(event.address);
   vote.data = event.params._message.data;
   vote.poll = event.address;
-  vote.hash = pollContract.hashMessageAndEncPubKey(
-    changetype<HashMessageAndEncPubKeyInputMessageStruct>(event.params._message),
-    changetype<HashMessageAndEncPubKeyInputEncPubKeyStruct>(event.params._encPubKey),
+  vote.hash = pollContract.hashMessageAndPublicKey(
+    changetype<HashMessageAndPublicKeyInputMessageStruct>(event.params._message),
+    changetype<HashMessageAndPublicKeyInputPublicKeyStruct>(event.params._encryptionPublicKey),
   );
-  vote.publicKey = [event.params._encPubKey.x, event.params._encPubKey.y];
+  vote.publicKey = [event.params._encryptionPublicKey.x, event.params._encryptionPublicKey.y];
   vote.timestamp = event.block.timestamp;
   vote.save();
 

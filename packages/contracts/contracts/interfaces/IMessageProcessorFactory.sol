@@ -8,13 +8,13 @@ import { DomainObjs } from "../utilities/DomainObjs.sol";
 interface IMessageProcessorFactory {
   /// @notice Deploy a new MessageProcessor contract and return the address.
   /// @param _verifier Verifier contract
-  /// @param _vkRegistry VkRegistry contract
+  /// @param _verifyingKeysRegistry VerifyingKeysRegistry contract
   /// @param _poll Poll contract
   /// @param _mode Voting mode
   /// @return The deployed MessageProcessor contract
   function deploy(
     address _verifier,
-    address _vkRegistry,
+    address _verifyingKeysRegistry,
     address _poll,
     DomainObjs.Mode _mode
   ) external returns (address);

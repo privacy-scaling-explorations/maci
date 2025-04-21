@@ -39,7 +39,7 @@ task("benchmark", "Run benchmarks").setAction(async (_, hre) => {
     const command = new PCommand(1n, keypair.publicKey, 0n, 9n, 1n, 0n, 0n);
     const signature = command.sign(keypair.privateKey);
     // not recommended to use the same key for the message but this is just for benchmarking
-    const sharedKey = Keypair.genEcdhSharedKey(keypair.privateKey, coordinatorKeypair.publicKey);
+    const sharedKey = Keypair.generateEcdhSharedKey(keypair.privateKey, coordinatorKeypair.publicKey);
     const message = command.encrypt(signature, sharedKey);
 
     const { publishBatch } = await import("../helpers/benchmarks");

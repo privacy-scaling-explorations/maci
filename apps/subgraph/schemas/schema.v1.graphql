@@ -4,7 +4,7 @@ type MACI @entity(immutable: true) {
   updatedAt: BigInt!
 
   "state"
-  numSignUps: BigInt!
+  totalSignups: BigInt!
   numPoll: BigInt!
   latestPoll: Bytes!
 
@@ -42,7 +42,7 @@ type Poll @entity(immutable: true) {
   mode: BigInt! # uint8
   "merge state after ended"
   stateRoot: BigInt # uint256
-  numSignups: BigInt! # uint256
+  totalSignups: BigInt! # uint256
   numMessages: BigInt! # uint256
   "relations"
   owner: Bytes!

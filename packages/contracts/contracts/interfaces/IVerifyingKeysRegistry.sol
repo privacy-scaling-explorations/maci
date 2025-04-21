@@ -4,9 +4,9 @@ pragma solidity ^0.8.28;
 import { SnarkCommon } from "../crypto/SnarkCommon.sol";
 import { DomainObjs } from "../utilities/DomainObjs.sol";
 
-/// @title IVkRegistry
-/// @notice VkRegistry interface
-interface IVkRegistry {
+/// @title IVerifyingKeysRegistry
+/// @notice VerifyingKeysRegistry interface
+interface IVerifyingKeysRegistry {
   struct SetVerifyingKeysBatchArgs {
     /// @param stateTreeDepth The state tree depth
     uint256 stateTreeDepth;
@@ -20,14 +20,14 @@ interface IVkRegistry {
     uint8 messageBatchSize;
     /// @param modes Array of QV or Non-QV modes (must have the same length as process and tally keys)
     DomainObjs.Mode[] modes;
-    /// @param pollJoiningVk The poll joining verifying key
-    SnarkCommon.VerifyingKey pollJoiningVk;
-    /// @param pollJoinedVk The poll joined verifying key
-    SnarkCommon.VerifyingKey pollJoinedVk;
-    /// @param processVks The process verifying keys (must have the same length as modes)
-    SnarkCommon.VerifyingKey[] processVks;
-    /// @param tallyVks The tally verifying keys (must have the same length as modes)
-    SnarkCommon.VerifyingKey[] tallyVks;
+    /// @param pollJoiningVerifyingKey The poll joining verifying key
+    SnarkCommon.VerifyingKey pollJoiningVerifyingKey;
+    /// @param pollJoinedVerifyingKey The poll joined verifying key
+    SnarkCommon.VerifyingKey pollJoinedVerifyingKey;
+    /// @param processVerifyingKeys The process verifying keys (must have the same length as modes)
+    SnarkCommon.VerifyingKey[] processVerifyingKeys;
+    /// @param tallyVerifyingKeys The tally verifying keys (must have the same length as modes)
+    SnarkCommon.VerifyingKey[] tallyVerifyingKeys;
   }
 
   /// @notice Get the tally verifying key
@@ -36,7 +36,7 @@ interface IVkRegistry {
   /// @param _voteOptionTreeDepth The vote option tree depth
   /// @param _mode QV or Non-QV
   /// @return The verifying key
-  function getTallyVk(
+  function getTallyVerifyingKey(
     uint256 _stateTreeDepth,
     uint256 _intStateTreeDepth,
     uint256 _voteOptionTreeDepth,
@@ -49,7 +49,7 @@ interface IVkRegistry {
   /// @param _messageBatchSize The message batch size
   /// @param _mode QV or Non-QV
   /// @return The verifying key
-  function getProcessVk(
+  function getProcessVerifyingKey(
     uint256 _stateTreeDepth,
     uint256 _voteOptionTreeDepth,
     uint8 _messageBatchSize,
@@ -59,10 +59,10 @@ interface IVkRegistry {
   /// @notice Get the poll joining verifying key
   /// @param _stateTreeDepth The state tree depth
   /// @return The verifying key
-  function getPollJoiningVk(uint256 _stateTreeDepth) external view returns (SnarkCommon.VerifyingKey memory);
+  function getPollJoiningVerifyingKey(uint256 _stateTreeDepth) external view returns (SnarkCommon.VerifyingKey memory);
 
   /// @notice Get the poll joined verifying key
   /// @param _stateTreeDepth The state tree depth
   /// @return The verifying key
-  function getPollJoinedVk(uint256 _stateTreeDepth) external view returns (SnarkCommon.VerifyingKey memory);
+  function getPollJoinedVerifyingKey(uint256 _stateTreeDepth) external view returns (SnarkCommon.VerifyingKey memory);
 }

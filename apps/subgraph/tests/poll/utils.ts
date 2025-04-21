@@ -4,11 +4,11 @@ import { newMockEvent } from "matchstick-as";
 
 import { MergeState, PublishMessage, ChainHashUpdated, IpfsHashAdded } from "../../generated/templates/Poll/Poll";
 
-export function createMergeStateEvent(address: Address, stateRoot: GraphBN, numSignups: GraphBN): MergeState {
+export function createMergeStateEvent(address: Address, stateRoot: GraphBN, totalSignups: GraphBN): MergeState {
   const event = changetype<MergeState>(newMockEvent());
 
   event.parameters.push(new ethereum.EventParam("_stateRoot", ethereum.Value.fromUnsignedBigInt(stateRoot)));
-  event.parameters.push(new ethereum.EventParam("_numSignups", ethereum.Value.fromUnsignedBigInt(numSignups)));
+  event.parameters.push(new ethereum.EventParam("_totalSignups", ethereum.Value.fromUnsignedBigInt(totalSignups)));
   event.address = address;
 
   return event;
@@ -17,14 +17,14 @@ export function createMergeStateEvent(address: Address, stateRoot: GraphBN, numS
 export function createPublishMessageEvent(
   address: Address,
   data: GraphBN[],
-  encPubKeyX: GraphBN,
-  encPubKeyY: GraphBN,
+  encryptionPublicKeyX: GraphBN,
+  encryptionPublicKeyY: GraphBN,
 ): PublishMessage {
   const event = changetype<PublishMessage>(newMockEvent());
 
   const encryptionPublicKey = [
-    ethereum.Value.fromUnsignedBigInt(encPubKeyX),
-    ethereum.Value.fromUnsignedBigInt(encPubKeyY),
+    ethereum.Value.fromUnsignedBigInt(encryptionPublicKeyX),
+    ethereum.Value.fromUnsignedBigInt(encryptionPublicKeyY),
   ];
 
   event.parameters.push(
@@ -34,7 +34,10 @@ export function createPublishMessageEvent(
     ),
   );
   event.parameters.push(
-    new ethereum.EventParam("_encPubKey", ethereum.Value.fromTuple(changetype<ethereum.Tuple>(encryptionPublicKey))),
+    new ethereum.EventParam(
+      "_encryptionPublicKey",
+      ethereum.Value.fromTuple(changetype<ethereum.Tuple>(encryptionPublicKey)),
+    ),
   );
   event.address = address;
 

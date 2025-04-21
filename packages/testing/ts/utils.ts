@@ -127,14 +127,14 @@ export const genTestUserCommands = (
  * Assertion function to validate that the tally results are as expected
  * @param maxMessages - the max number of messages
  * @param expectedTally - the expected tally values
- * @param expectedPerVOSpentVoiceCredits - the expected per VO spent voice credits
+ * @param expectedPerVoteOptionSpentVoiceCredits - the expected per vote option spent voice credits
  * @param expectedTotalSpentVoiceCredits - the expected total spent voice credits
  * @param tallyFile the tally file itself as an object
  */
 export const expectTally = (
   maxMessages: number,
   expectedTally: number[],
-  expectedPerVOSpentVoiceCredits: number[],
+  expectedPerVoteOptionSpentVoiceCredits: number[],
   expectedTotalSpentVoiceCredits: number,
   tallyFile: ITallyData,
 ): void => {
@@ -147,14 +147,14 @@ export const expectTally = (
     }
   });
 
-  expectedPerVOSpentVoiceCredits.forEach((spentCredit, index) => {
+  expectedPerVoteOptionSpentVoiceCredits.forEach((spentCredit, index) => {
     if (spentCredit !== 0) {
       genPerVOSpentVoiceCredits[index] = spentCredit.toString();
     }
   });
 
   expect(tallyFile.results.tally).to.deep.equal(genTally);
-  expect(tallyFile.perVOSpentVoiceCredits?.tally).to.deep.equal(genPerVOSpentVoiceCredits);
+  expect(tallyFile.perVoteOptionSpentVoiceCredits?.tally).to.deep.equal(genPerVOSpentVoiceCredits);
   expect(tallyFile.totalSpentVoiceCredits.spent).to.eq(expectedTotalSpentVoiceCredits.toString());
 };
 

@@ -55,7 +55,7 @@
     "test:signup_policy": "pnpm run test ./tests/policies/SignUpPolicy.test.ts",
     "test:verifier": "pnpm run test ./tests/Verifier.test.ts",
     "test:hasherBenchmarks": "pnpm run test ./tests/HasherBenchmarks.test.ts",
-    "test:vkRegistry": "pnpm run test ./tests/VkRegistry.test.ts",
+    "test:verifyingKeysRegistry": "pnpm run test ./tests/VerifyingKeysRegistry.test.ts",
     "test:pollFactory": "pnpm run test ./tests/PollFactory.test.ts",
     "test:eas_policy": "pnpm run test ./tests/policies/EASPolicy.test.ts",
     "test:hats_policy": "pnpm run test ./tests/policies/HatsPolicy.test.ts",

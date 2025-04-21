@@ -9,12 +9,12 @@ include "../../utils/PoseidonHasher.circom";
 include "../../utils/MessageHasher.circom";
 include "../../utils/MessageToCommand.circom";
 include "../../utils/PrivateToPublicKey.circom";
-include "../../utils/qv/stateLeafAndBallotTransformer.circom";
+include "../../utils/qv/StateLeafAndBallotTransformer.circom";
 include "../../utils/trees/incrementalQuinaryTree.circom";
 include "../../utils/trees/MerkleTreeInclusionProof.circom";
 include "../../utils/trees/LeafExists.circom";
 include "../../utils/trees/CheckRoot.circom";
-include "../../utils/trees/MerkleGeneratePathIndices.circom";
+include "../../utils/trees/MerklePathIndicesGenerator.circom";
 include "../../utils/trees/BinaryMerkleRoot.circom";
 
 /**
@@ -35,27 +35,27 @@ template ProcessMessages(
     var VOTE_OPTION_TREE_ARITY = 5;
     // Default for binary trees.
     var STATE_TREE_ARITY = 2;
-    var MSG_LENGTH = 10;
-    var PACKED_CMD_LENGTH = 4;
+    var MESSAGE_LENGTH = 10;
+    var PACKED_COMMAND_LENGTH = 4;
     var STATE_LEAF_LENGTH = 3;
     var BALLOT_LENGTH = 2;
-    var BALLOT_NONCE_IDX = 0;
-    var BALLOT_VO_ROOT_IDX = 1;
-    var STATE_LEAF_PUB_X_IDX = 0;
-    var STATE_LEAF_PUB_Y_IDX = 1;
-    var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
-    var msgTreeZeroValue = 8370432830353022751713833565135785980866757267633941821328460903436894336785;
+    var BALLOT_NONCE_INDEX = 0;
+    var BALLOT_VOTE_OPTION_ROOT_INDEX = 1;
+    var STATE_LEAF_PUBLIC_X_INDEX = 0;
+    var STATE_LEAF_PUBLIC_Y_INDEX = 1;
+    var STATE_LEAF_VOICE_CREDIT_BALANCE_INDEX = 2;
+    var MESSAGE_TREE_ZERO_VALUE = 8370432830353022751713833565135785980866757267633941821328460903436894336785;
     // Number of options for this poll.
     var maxVoteOptions = VOTE_OPTION_TREE_ARITY ** voteOptionTreeDepth;
 
     // Number of users that have completed the sign up.
-    signal input numSignUps;
+    signal input totalSignups;
     // Value of chainHash at beginning of batch
     signal input inputBatchHash;
     // Value of chainHash at end of batch
     signal input outputBatchHash;
     // The messages.
-    signal input messages[batchSize][MSG_LENGTH];
+    signal input messages[batchSize][MESSAGE_LENGTH];
     // The coordinator's private key.
     signal input coordinatorPrivateKey;
     // The ECDH public key per message.
@@ -122,10 +122,10 @@ template ProcessMessages(
     var voteOptionsValid = LessEqThan(32)([voteOptions, VOTE_OPTION_TREE_ARITY ** voteOptionTreeDepth]);
     voteOptionsValid === 1;
 
-    // Check numSignUps <= the max number of users (i.e., number of state leaves
+    // Check totalSignups <= the max number of users (i.e., number of state leaves
     // that can fit the state tree).
-    var numSignUpsValid = LessEqThan(32)([numSignUps, STATE_TREE_ARITY ** stateTreeDepth]);
-    numSignUpsValid === 1;
+    var totalSignupsValid = LessEqThan(32)([totalSignups, STATE_TREE_ARITY ** stateTreeDepth]);
+    totalSignupsValid === 1;
 
     // Hash each Message to check their existence in the Message tree.
     var computedMessageHashers[batchSize];
@@ -159,36 +159,36 @@ template ProcessMessages(
     // Ensure that the coordinator's public key from the contract is correct
     // based on the given private key - that is, the prover knows the
     // coordinator's private key.
-    var derivedPubKey[2] = PrivateToPublicKey()(coordinatorPrivateKey);
-    var derivedPubKeyHash = PoseidonHasher(2)(derivedPubKey);
-    derivedPubKeyHash === coordinatorPublicKeyHash;
+    var derivedPublicKey[2] = PrivateToPublicKey()(coordinatorPrivateKey);
+    var derivedPublicKeyHash = PoseidonHasher(2)(derivedPublicKey);
+    derivedPublicKeyHash === coordinatorPublicKeyHash;
 
     // Decrypt each Message into a Command.
     // The command i-th is composed by the following fields.
     // e.g., command 0 is made of commandsStateIndex[0], 
-    // commandsNewPubKey[0], ..., commandsPackedCommandOut[0]
+    // commandsNewPublicKey[0], ..., commandsPackedCommandOut[0]
     var computedCommandsStateIndex[batchSize];
-    var computedCommandsNewPubKey[batchSize][2];
+    var computedCommandsNewPublicKey[batchSize][2];
     var computedCommandsVoteOptionIndex[batchSize];
     var computedCommandsNewVoteWeight[batchSize];
     var computedCommandsNonce[batchSize];
     var computedCommandsPollId[batchSize];
     var computedCommandsSalt[batchSize];
-    var computedCommandsSigR8[batchSize][2];
-    var computedCommandsSigS[batchSize];
-    var computedCommandsPackedCommandOut[batchSize][PACKED_CMD_LENGTH];
+    var computedCommandsSignaturePoint[batchSize][2];
+    var computedCommandsSignatureScalar[batchSize];
+    var computedCommandsPackedCommandOut[batchSize][PACKED_COMMAND_LENGTH];
 
     for (var i = 0; i < batchSize; i++) {
         (
             computedCommandsStateIndex[i],
-            computedCommandsNewPubKey[i],
+            computedCommandsNewPublicKey[i],
             computedCommandsVoteOptionIndex[i],
             computedCommandsNewVoteWeight[i],
             computedCommandsNonce[i],
             computedCommandsPollId[i],
             computedCommandsSalt[i],
-            computedCommandsSigR8[i],
-            computedCommandsSigS[i],
+            computedCommandsSignaturePoint[i],
+            computedCommandsSignatureScalar[i],
             computedCommandsPackedCommandOut[i]
         ) = MessageToCommand()(messages[i], coordinatorPrivateKey, encryptionPublicKeys[i]);
     }
@@ -223,7 +223,7 @@ template ProcessMessages(
         }
         
         (computedNewVoteStateRoot[i], computedNewVoteBallotRoot[i]) = ProcessOne(stateTreeDepth, voteOptionTreeDepth)(
-            numSignUps,
+            totalSignups,
             stateRoots[i + 1],
             ballotRoots[i + 1],
             actualStateTreeDepth,
@@ -234,14 +234,14 @@ template ProcessMessages(
             currentVoteWeights[i],
             currentVoteWeightsPathElement,
             computedCommandsStateIndex[i],
-            computedCommandsNewPubKey[i],
+            computedCommandsNewPublicKey[i],
             computedCommandsVoteOptionIndex[i],
             computedCommandsNewVoteWeight[i],
             computedCommandsNonce[i],
             computedCommandsPollId[i],
             computedCommandsSalt[i],
-            computedCommandsSigR8[i],
-            computedCommandsSigS[i],
+            computedCommandsSignaturePoint[i],
+            computedCommandsSignatureScalar[i],
             computedCommandsPackedCommandOut[i],
             voteOptions
         );
@@ -266,24 +266,24 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     // Constants defining the structure and size of state and ballots.
     var STATE_LEAF_LENGTH = 3;
     var BALLOT_LENGTH = 2;
-    var MSG_LENGTH = 10;
-    var PACKED_CMD_LENGTH = 4;
+    var MESSAGE_LENGTH = 10;
+    var PACKED_COMMAND_LENGTH = 4;
     var VOTE_OPTION_TREE_ARITY = 5;
     var STATE_TREE_ARITY = 2;
-    var BALLOT_NONCE_IDX = 0;
-    // Ballot vote option (VO) root index.
-    var BALLOT_VO_ROOT_IDX = 1;
+    var BALLOT_NONCE_INDEX = 0;
+    // Ballot vote option (vote option) root index.
+    var BALLOT_VOTE_OPTION_ROOT_INDEX = 1;
 
     // Indices for elements within a state leaf.
     // Public key.
-    var STATE_LEAF_PUB_X_IDX = 0;
-    var STATE_LEAF_PUB_Y_IDX = 1;
+    var STATE_LEAF_PUBLIC_X_INDEX = 0;
+    var STATE_LEAF_PUBLIC_Y_INDEX = 1;
     // Voice Credit balance.
-    var STATE_LEAF_VOICE_CREDIT_BALANCE_IDX = 2;
-    var N_BITS = 252;
+    var STATE_LEAF_VOICE_CREDIT_BALANCE_INDEX = 2;
+    var NUMBER_BITS = 252;
 
     // Number of users that have completed the sign up.
-    signal input numSignUps;
+    signal input totalSignups;
     // The current value of the state tree root.
     signal input currentStateRoot;
     // The current value of the ballot tree root.
@@ -305,16 +305,16 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     signal input currentVoteWeightsPathElements[voteOptionTreeDepth][VOTE_OPTION_TREE_ARITY - 1];
 
     // Inputs related to the command being processed.
-    signal input cmdStateIndex;
-    signal input cmdNewPubKey[2];
-    signal input cmdVoteOptionIndex;
-    signal input cmdNewVoteWeight;
-    signal input cmdNonce;
-    signal input cmdPollId;
-    signal input cmdSalt;
-    signal input cmdSigR8[2];
-    signal input cmdSigS;
-    signal input packedCmd[PACKED_CMD_LENGTH];
+    signal input commandStateIndex;
+    signal input commandPublicKey[2];
+    signal input commandVoteOptionIndex;
+    signal input commandNewVoteWeight;
+    signal input commandNonce;
+    signal input commandPollId;
+    signal input commandSalt;
+    signal input commandSignaturePoint[2];
+    signal input commandSignatureScalar;
+    signal input packedCommand[PACKED_COMMAND_LENGTH];
 
     // The number of valid vote options for the poll.
     signal input voteOptions;
@@ -325,37 +325,37 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     // Intermediate signals.
     // currentVoteWeight * currentVoteWeight.
     signal currentVoteWeightSquare;
-    // cmdNewVoteWeight * cmdNewVoteWeight.
-    signal cmdNewVoteWeightSquare;
-    // equal to newBallotVoRootMux (Mux1).
+    // commandNewVoteWeight * commandNewVoteWeight.
+    signal commandNewVoteWeightSquare;
+    // equal to newBallotVoteOptionRootMux (Mux1).
     signal newBallotVoRoot;
 
     // 1. Transform a state leaf and a ballot with a command.
     // The result is a new state leaf, a new ballot, and an isValid signal (0 or 1).
-    var computedNewSlPubKey[2], computedNewBallotNonce, computedIsValid, computedIsStateLeafIndexValid, computedIsVoteOptionIndexValid;
-    (computedNewSlPubKey, computedNewBallotNonce, computedIsValid, computedIsStateLeafIndexValid, computedIsVoteOptionIndexValid) = StateLeafAndBallotTransformer()(
-        numSignUps,
+    var computedNewstateLeafPublicKey[2], computedNewBallotNonce, computedIsValid, computedIsStateLeafIndexValid, computedIsVoteOptionIndexValid;
+    (computedNewstateLeafPublicKey, computedNewBallotNonce, computedIsValid, computedIsStateLeafIndexValid, computedIsVoteOptionIndexValid) = StateLeafAndBallotTransformer()(
+        totalSignups,
         voteOptions,
-        [stateLeaf[STATE_LEAF_PUB_X_IDX], stateLeaf[STATE_LEAF_PUB_Y_IDX]],
-        stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX],
-        ballot[BALLOT_NONCE_IDX],
+        [stateLeaf[STATE_LEAF_PUBLIC_X_INDEX], stateLeaf[STATE_LEAF_PUBLIC_Y_INDEX]],
+        stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_INDEX],
+        ballot[BALLOT_NONCE_INDEX],
         currentVoteWeight,
-        cmdStateIndex,
-        cmdNewPubKey,
-        cmdVoteOptionIndex,
-        cmdNewVoteWeight,
-        cmdNonce,
-        cmdPollId,
-        cmdSalt,
-        cmdSigR8,
-        cmdSigS,
-        packedCmd
+        commandStateIndex,
+        commandPublicKey,
+        commandVoteOptionIndex,
+        commandNewVoteWeight,
+        commandNonce,
+        commandPollId,
+        commandSalt,
+        commandSignaturePoint,
+        commandSignatureScalar,
+        packedCommand
     );
 
     // 2. If computedIsStateLeafIndexValid is equal to zero, generate indices for leaf zero.
     // Otherwise, generate indices for command.stateIndex.
-    var stateIndexMux = Mux1()([0, cmdStateIndex], computedIsStateLeafIndexValid);
-    var computedStateLeafPathIndices[stateTreeDepth] = MerkleGeneratePathIndices(stateTreeDepth)(stateIndexMux);
+    var stateIndexMux = Mux1()([0, commandStateIndex], computedIsStateLeafIndexValid);
+    var computedStateLeafPathIndices[stateTreeDepth] = MerklePathIndicesGenerator(stateTreeDepth)(stateIndexMux);
 
     // 3. Verify that the original state leaf exists in the given state root.
     var stateLeafHash = PoseidonHasher(3)(stateLeaf);
@@ -370,8 +370,8 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
 
     // 4. Verify that the original ballot exists in the given ballot root.
     var computedBallot = PoseidonHasher(2)([
-        ballot[BALLOT_NONCE_IDX], 
-        ballot[BALLOT_VO_ROOT_IDX]
+        ballot[BALLOT_NONCE_INDEX], 
+        ballot[BALLOT_VOTE_OPTION_ROOT_INDEX]
     ]);
 
     var computedBallotQip = MerkleTreeInclusionProof(stateTreeDepth)(
@@ -383,12 +383,12 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     computedBallotQip === currentBallotRoot;
 
     // 5. Verify that currentVoteWeight exists in the ballot's vote option root
-    // at cmdVoteOptionIndex.
+    // at commandVoteOptionIndex.
     currentVoteWeightSquare <== currentVoteWeight * currentVoteWeight;
-    cmdNewVoteWeightSquare <== cmdNewVoteWeight * cmdNewVoteWeight;
+    commandNewVoteWeightSquare <== commandNewVoteWeight * commandNewVoteWeight;
 
-    var cmdVoteOptionIndexMux = Mux1()([0, cmdVoteOptionIndex], computedIsVoteOptionIndexValid);
-    var computedCurrentVoteWeightPathIndices[voteOptionTreeDepth] = QuinGeneratePathIndices(voteOptionTreeDepth)(cmdVoteOptionIndexMux);
+    var commandVoteOptionIndexMux = Mux1()([0, commandVoteOptionIndex], computedIsVoteOptionIndexValid);
+    var computedCurrentVoteWeightPathIndices[voteOptionTreeDepth] = QuinGeneratePathIndices(voteOptionTreeDepth)(commandVoteOptionIndexMux);
 
     var computedCurrentVoteWeightQip = QuinTreeInclusionProof(voteOptionTreeDepth)(
         currentVoteWeight,
@@ -396,13 +396,13 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
         currentVoteWeightsPathElements
     );
 
-    computedCurrentVoteWeightQip === ballot[BALLOT_VO_ROOT_IDX];
+    computedCurrentVoteWeightQip === ballot[BALLOT_VOTE_OPTION_ROOT_INDEX];
 
-    var voteWeightMux = Mux1()([currentVoteWeight, cmdNewVoteWeight], computedIsValid);
+    var voteWeightMux = Mux1()([currentVoteWeight, commandNewVoteWeight], computedIsValid);
     var voiceCreditBalanceMux = Mux1()(
         [
-            stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX],
-            stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_IDX] + currentVoteWeightSquare - cmdNewVoteWeightSquare
+            stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_INDEX],
+            stateLeaf[STATE_LEAF_VOICE_CREDIT_BALANCE_INDEX] + currentVoteWeightSquare - commandNewVoteWeightSquare
         ],
         computedIsValid
     );
@@ -415,17 +415,17 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     );
 
     // The new vote option root in the ballot
-    var newBallotVoRootMux = Mux1()(
-        [ballot[BALLOT_VO_ROOT_IDX], computedNewVoteOptionTreeQip],
+    var newBallotVoteOptionRootMux = Mux1()(
+        [ballot[BALLOT_VOTE_OPTION_ROOT_INDEX], computedNewVoteOptionTreeQip],
         computedIsValid
     );
 
-    newBallotVoRoot <== newBallotVoRootMux;
+    newBallotVoRoot <== newBallotVoteOptionRootMux;
 
     // 6. Generate a new state root.
     var computedNewStateLeafhash = PoseidonHasher(3)([
-        computedNewSlPubKey[STATE_LEAF_PUB_X_IDX],
-        computedNewSlPubKey[STATE_LEAF_PUB_Y_IDX],
+        computedNewstateLeafPublicKey[STATE_LEAF_PUBLIC_X_INDEX],
+        computedNewstateLeafPublicKey[STATE_LEAF_PUBLIC_Y_INDEX],
         voiceCreditBalanceMux
     ]);
 

@@ -1,7 +1,7 @@
 import {
   poseidonDecrypt,
   poseidonEncrypt,
-  genRandomSalt,
+  generateRandomSalt,
   hash4,
   sign,
   verifySignature,
@@ -61,7 +61,7 @@ export class PCommand {
     newVoteWeight: bigint,
     nonce: bigint,
     pollId: bigint,
-    salt: bigint = genRandomSalt(),
+    salt: bigint = generateRandomSalt(),
   ) {
     const limit50Bits = BigInt(2 ** 50);
     assert(limit50Bits >= stateIndex);
@@ -135,7 +135,7 @@ export class PCommand {
   /**
    * @notice Signs this command and returns a Signature.
    */
-  sign = (privateKey: PrivateKey): Signature => sign(privateKey.rawPrivKey.toString(), this.hash());
+  sign = (privateKey: PrivateKey): Signature => sign(privateKey.raw.toString(), this.hash());
 
   /**
    * @notice Returns true if the given signature is a correct signature of this
@@ -143,7 +143,7 @@ export class PCommand {
    * key.
    */
   verifySignature = (signature: Signature, publicKey: PublicKey): boolean =>
-    verifySignature(this.hash(), signature, publicKey.rawPubKey);
+    verifySignature(this.hash(), signature, publicKey.raw);
 
   /**
    * @notice Encrypts this command along with a signature to produce a Message.
@@ -180,7 +180,7 @@ export class PCommand {
       ? poseidonDecryptWithoutCheck(message.data, sharedKey, BigInt(0), 7)
       : poseidonDecrypt(message.data, sharedKey, BigInt(0), 7);
 
-    const p = BigInt(decrypted[0].toString());
+    const data = BigInt(decrypted[0].toString());
 
     // Returns the value of the 50 bits at position `pos` in `val`
     // create 50 '1' bits
@@ -191,17 +191,17 @@ export class PCommand {
       // eslint-disable-next-line no-bitwise
       BigInt((((BigInt(1) << BigInt(50)) - BigInt(1)) << BigInt(pos)) & val) >> BigInt(pos);
 
-    // p is a packed value
+    // data is a packed value
     // bits 0 - 50:    stateIndex
     // bits 51 - 100:  voteOptionIndex
     // bits 101 - 150: newVoteWeight
     // bits 151 - 200: nonce
     // bits 201 - 250: pollId
-    const stateIndex = extract(p, 0);
-    const voteOptionIndex = extract(p, 50);
-    const newVoteWeight = extract(p, 100);
-    const nonce = extract(p, 150);
-    const pollId = extract(p, 200);
+    const stateIndex = extract(data, 0);
+    const voteOptionIndex = extract(data, 50);
+    const newVoteWeight = extract(data, 100);
+    const nonce = extract(data, 150);
+    const pollId = extract(data, 200);
 
     // create new public key but allow it to be invalid (as when passing an mismatched
     // encryptionPublicKey, a message will not decrypt resulting in potentially invalid public keys)

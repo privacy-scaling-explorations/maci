@@ -4,10 +4,10 @@ pragma solidity ^0.8.28;
 import { IBasePolicy } from "@excubiae/contracts/contracts/interfaces/IBasePolicy.sol";
 
 import { IPollFactory } from "./interfaces/IPollFactory.sol";
-import { IMessageProcessorFactory } from "./interfaces/IMPFactory.sol";
+import { IMessageProcessorFactory } from "./interfaces/IMessageProcessorFactory.sol";
 import { ITallyFactory } from "./interfaces/ITallyFactory.sol";
 import { IVerifier } from "./interfaces/IVerifier.sol";
-import { IVkRegistry } from "./interfaces/IVkRegistry.sol";
+import { IVerifyingKeysRegistry } from "./interfaces/IVerifyingKeysRegistry.sol";
 import { IInitialVoiceCreditProxy } from "./interfaces/IInitialVoiceCreditProxy.sol";
 import { IMACI } from "./interfaces/IMACI.sol";
 import { Params } from "./utilities/Params.sol";
@@ -64,18 +64,23 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
   uint256[] public stateRootsOnSignUp;
 
   // Events
-  event SignUp(uint256 _stateIndex, uint256 _timestamp, uint256 indexed _userPubKeyX, uint256 indexed _userPubKeyY);
+  event SignUp(
+    uint256 _stateIndex,
+    uint256 _timestamp,
+    uint256 indexed _userPublicKeyX,
+    uint256 indexed _userPublicKeyY
+  );
   event DeployPoll(
     uint256 _pollId,
-    uint256 indexed _coordinatorPubKeyX,
-    uint256 indexed _coordinatorPubKeyY,
+    uint256 indexed _coordinatorPublicKeyX,
+    uint256 indexed _coordinatorPublicKeyY,
     Mode _mode
   );
 
   /// @notice custom errors
   error PoseidonHashLibrariesNotLinked();
   error TooManySignups();
-  error InvalidPubKey();
+  error InvalidPublicKey();
   error PollDoesNotExist(uint256 pollId);
   error UserNotSignedUp();
 
@@ -111,13 +116,13 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
   }
 
   /// @inheritdoc IMACI
-  function signUp(PublicKey memory _pubKey, bytes memory _signUpPolicyData) public virtual {
+  function signUp(PublicKey memory _publicKey, bytes memory _signUpPolicyData) public virtual {
     // ensure we do not have more signups than what the circuits support
     if (leanIMTData.size >= maxSignups) revert TooManySignups();
 
     // ensure that the public key is on the baby jubjub curve
-    if (!CurveBabyJubJub.isOnCurve(_pubKey.x, _pubKey.y)) {
-      revert InvalidPubKey();
+    if (!CurveBabyJubJub.isOnCurve(_publicKey.x, _publicKey.y)) {
+      revert InvalidPublicKey();
     }
 
     // Register the user via the sign-up policy. This function should
@@ -125,13 +130,13 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
     signUpPolicy.enforce(msg.sender, _signUpPolicyData);
 
     // Hash the public key and insert it into the tree.
-    uint256 pubKeyHash = hashLeftRight(_pubKey.x, _pubKey.y);
-    uint256 stateRoot = InternalLeanIMT._insert(leanIMTData, pubKeyHash);
+    uint256 publicKeyHash = hashLeftRight(_publicKey.x, _publicKey.y);
+    uint256 stateRoot = InternalLeanIMT._insert(leanIMTData, publicKeyHash);
 
     // Store the current state tree root in the array
     stateRootsOnSignUp.push(stateRoot);
 
-    emit SignUp(leanIMTData.size - 1, block.timestamp, _pubKey.x, _pubKey.y);
+    emit SignUp(leanIMTData.size - 1, block.timestamp, _publicKey.x, _publicKey.y);
   }
 
   /// @inheritdoc IMACI
@@ -147,13 +152,13 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
 
     // check coordinator key is a valid point on the curve
     if (!CurveBabyJubJub.isOnCurve(args.coordinatorPublicKey.x, args.coordinatorPublicKey.y)) {
-      revert InvalidPubKey();
+      revert InvalidPublicKey();
     }
 
     ExtContracts memory extContracts = ExtContracts({
       maci: IMACI(address(this)),
       verifier: IVerifier(args.verifier),
-      vkRegistry: IVkRegistry(args.vkRegistry),
+      verifyingKeysRegistry: IVerifyingKeysRegistry(args.verifyingKeysRegistry),
       policy: IBasePolicy(args.policy),
       initialVoiceCreditProxy: IInitialVoiceCreditProxy(args.initialVoiceCreditProxy)
     });
@@ -171,18 +176,27 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
       voteOptions: args.voteOptions
     });
 
-    address p = pollFactory.deploy(deployPollArgs);
-    address mp = messageProcessorFactory.deploy(args.verifier, args.vkRegistry, p, args.mode);
-    address tally = tallyFactory.deploy(args.verifier, args.vkRegistry, p, mp, args.mode);
+    address poll = pollFactory.deploy(deployPollArgs);
+    address messageProcessor = messageProcessorFactory.deploy(
+      args.verifier,
+      args.verifyingKeysRegistry,
+      poll,
+      args.mode
+    );
+    address tally = tallyFactory.deploy(args.verifier, args.verifyingKeysRegistry, poll, messageProcessor, args.mode);
 
     // store the addresses in a struct so they can be returned
-    PollContracts memory pollAddr = PollContracts({ poll: p, messageProcessor: mp, tally: tally });
+    PollContracts memory pollAddresses = PollContracts({
+      poll: poll,
+      messageProcessor: messageProcessor,
+      tally: tally
+    });
 
-    polls[pollId] = pollAddr;
+    polls[pollId] = pollAddresses;
 
     emit DeployPoll(pollId, args.coordinatorPublicKey.x, args.coordinatorPublicKey.y, args.mode);
 
-    return pollAddr;
+    return pollAddresses;
   }
 
   /// @inheritdoc IMACI
@@ -199,7 +213,7 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
   }
 
   /// @inheritdoc IMACI
-  function numSignUps() public view returns (uint256 signUps) {
+  function totalSignups() public view returns (uint256 signUps) {
     signUps = leanIMTData.size;
   }
 
@@ -209,8 +223,8 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
   }
 
   /// @inheritdoc IMACI
-  function getStateIndex(uint256 _pubKeyHash) external view returns (uint256) {
-    uint256 index = leanIMTData.leaves[_pubKeyHash];
+  function getStateIndex(uint256 _publicKeyHash) external view returns (uint256) {
+    uint256 index = leanIMTData.leaves[_publicKeyHash];
 
     if (index == 0) revert UserNotSignedUp();
 

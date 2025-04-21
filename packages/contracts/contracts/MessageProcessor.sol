@@ -8,7 +8,7 @@ import { IPoll } from "./interfaces/IPoll.sol";
 import { SnarkCommon } from "./crypto/SnarkCommon.sol";
 import { Hasher } from "./crypto/Hasher.sol";
 import { IVerifier } from "./interfaces/IVerifier.sol";
-import { IVkRegistry } from "./interfaces/IVkRegistry.sol";
+import { IVerifyingKeysRegistry } from "./interfaces/IVerifyingKeysRegistry.sol";
 import { IMessageProcessor } from "./interfaces/IMessageProcessor.sol";
 import { DomainObjs } from "./utilities/DomainObjs.sol";
 
@@ -21,7 +21,7 @@ contract MessageProcessor is Clone, SnarkCommon, Hasher, IMessageProcessor, Doma
   error NoMoreMessages();
   error StateNotMerged();
   error InvalidProcessMessageProof();
-  error NumSignUpsTooLarge();
+  error totalSignupsTooLarge();
   error CurrentMessageBatchIndexTooLarge();
   error BatchEndIndexTooLarge();
 
@@ -39,7 +39,7 @@ contract MessageProcessor is Clone, SnarkCommon, Hasher, IMessageProcessor, Doma
 
   IPoll public poll;
   IVerifier public verifier;
-  IVkRegistry public vkRegistry;
+  IVerifyingKeysRegistry public verifyingKeysRegistry;
   Mode public mode;
 
   /// @notice Initializes the contract.
@@ -47,13 +47,13 @@ contract MessageProcessor is Clone, SnarkCommon, Hasher, IMessageProcessor, Doma
     super._initialize();
 
     bytes memory data = _getAppendedBytes();
-    (address _verifier, address _vkRegistry, address _poll, Mode _mode) = abi.decode(
+    (address _verifier, address _verifyingKeysRegistry, address _poll, Mode _mode) = abi.decode(
       data,
       (address, address, address, Mode)
     );
 
     verifier = IVerifier(_verifier);
-    vkRegistry = IVkRegistry(_vkRegistry);
+    verifyingKeysRegistry = IVerifyingKeysRegistry(_verifyingKeysRegistry);
     poll = IPoll(_poll);
     mode = _mode;
     currentBatchIndex = 1;
@@ -103,7 +103,7 @@ contract MessageProcessor is Clone, SnarkCommon, Hasher, IMessageProcessor, Doma
       revert InvalidProcessMessageProof();
     }
 
-    (, uint256 numMessages) = poll.numSignUpsAndMessages();
+    (, uint256 numMessages) = poll.totalSignupsAndMessages();
 
     updateMessageProcessingData(_newSbCommitment, numMessages <= messageBatchSize * (numBatchesProcessed + 1));
   }
@@ -114,9 +114,9 @@ contract MessageProcessor is Clone, SnarkCommon, Hasher, IMessageProcessor, Doma
     uint256 _newSbCommitment,
     uint256 _outputBatchHash
   ) public view override returns (uint256[] memory publicInputs) {
-    uint256 coordinatorPubKeyHash = poll.coordinatorPubKeyHash();
+    uint256 coordinatorPublicKeyHash = poll.coordinatorPublicKeyHash();
     uint8 messageBatchSize = poll.messageBatchSize();
-    (uint256 numSignUps, uint256 numMessages) = poll.numSignUpsAndMessages();
+    (uint256 totalSignups, uint256 numMessages) = poll.totalSignupsAndMessages();
     uint256 batchEndIndex = _currentMessageBatchIndex * messageBatchSize;
 
     if (batchEndIndex > numMessages) {
@@ -126,10 +126,10 @@ contract MessageProcessor is Clone, SnarkCommon, Hasher, IMessageProcessor, Doma
     uint256 batchStartIndex = _currentMessageBatchIndex > 0 ? (_currentMessageBatchIndex - 1) * messageBatchSize : 0;
 
     publicInputs = new uint256[](9);
-    publicInputs[0] = numSignUps;
+    publicInputs[0] = totalSignups;
     publicInputs[1] = _outputBatchHash;
     publicInputs[2] = poll.actualStateTreeDepth();
-    publicInputs[3] = coordinatorPubKeyHash;
+    publicInputs[3] = coordinatorPublicKeyHash;
     publicInputs[4] = poll.voteOptions();
     publicInputs[5] = (sbCommitment == 0 ? poll.currentSbCommitment() : sbCommitment);
     publicInputs[6] = _newSbCommitment;
@@ -165,15 +165,15 @@ contract MessageProcessor is Clone, SnarkCommon, Hasher, IMessageProcessor, Doma
       _outputBatchHash
     );
 
-    // Get the verifying key from the VkRegistry
-    VerifyingKey memory vk = vkRegistry.getProcessVk(
+    // Get the verifying key from the VerifyingKeysRegistry
+    VerifyingKey memory verifyingKey = verifyingKeysRegistry.getProcessVerifyingKey(
       maci.stateTreeDepth(),
       _voteOptionTreeDepth,
       _messageBatchSize,
       mode
     );
 
-    isValid = verifier.verify(_proof, vk, publicCircuitInputs);
+    isValid = verifier.verify(_proof, verifyingKey, publicCircuitInputs);
   }
 
   /// @notice update message processing state variables

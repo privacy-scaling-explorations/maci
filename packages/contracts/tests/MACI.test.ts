@@ -7,7 +7,13 @@ import { AbiCoder, BigNumberish, Signer, ZeroAddress } from "ethers";
 
 import { EMode } from "../ts/constants";
 import { getDefaultSigner, getSigners, getBlockTimestamp } from "../ts/utils";
-import { MACI, Verifier, VkRegistry, IBasePolicy, ConstantInitialVoiceCreditProxy } from "../typechain-types";
+import {
+  MACI,
+  Verifier,
+  VerifyingKeysRegistry,
+  IBasePolicy,
+  ConstantInitialVoiceCreditProxy,
+} from "../typechain-types";
 
 import {
   STATE_TREE_DEPTH,
@@ -23,7 +29,7 @@ describe("MACI", function test() {
   this.timeout(90000);
 
   let maciContract: MACI;
-  let vkRegistryContract: VkRegistry;
+  let verifyingKeysRegistryContract: VerifyingKeysRegistry;
   let verifierContract: Verifier;
   let signuPolicyContract: IBasePolicy;
   let initialVoiceCreditProxy: ConstantInitialVoiceCreditProxy;
@@ -46,7 +52,7 @@ describe("MACI", function test() {
       });
 
       maciContract = r.maciContract;
-      vkRegistryContract = r.vkRegistryContract;
+      verifyingKeysRegistryContract = r.verifyingKeysRegistryContract;
       verifierContract = r.mockVerifierContract as Verifier;
       signuPolicyContract = r.policyContract;
       initialVoiceCreditProxy = r.constantInitialVoiceCreditProxyContract;
@@ -111,7 +117,7 @@ describe("MACI", function test() {
           },
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
         ),
-      ).to.be.revertedWithCustomError(maciContract, "InvalidPubKey");
+      ).to.be.revertedWithCustomError(maciContract, "InvalidPublicKey");
     });
 
     it("should fail when given an invalid publicKey (y >= p)", async () => {
@@ -123,7 +129,7 @@ describe("MACI", function test() {
           },
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
         ),
-      ).to.be.revertedWithCustomError(maciContract, "InvalidPubKey");
+      ).to.be.revertedWithCustomError(maciContract, "InvalidPublicKey");
     });
 
     it("should fail when given an invalid publicKey (x >= p and y >= p)", async () => {
@@ -135,7 +141,7 @@ describe("MACI", function test() {
           },
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
         ),
-      ).to.be.revertedWithCustomError(maciContract, "InvalidPubKey");
+      ).to.be.revertedWithCustomError(maciContract, "InvalidPublicKey");
     });
 
     it("should fail when given an invalid public key (not on the curve)", async () => {
@@ -147,7 +153,7 @@ describe("MACI", function test() {
           },
           AbiCoder.defaultAbiCoder().encode(["uint256"], [1]),
         ),
-      ).to.be.revertedWithCustomError(maciContract, "InvalidPubKey");
+      ).to.be.revertedWithCustomError(maciContract, "InvalidPublicKey");
     });
 
     it("should not allow to sign up more than the supported amount of users (2 ** stateTreeDepth)", async () => {
@@ -214,7 +220,7 @@ describe("MACI", function test() {
         messageBatchSize,
         coordinatorPublicKey: coordinator.publicKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
         verifier: verifierContract,
-        vkRegistry: vkRegistryContract,
+        verifyingKeysRegistry: verifyingKeysRegistryContract,
         mode: EMode.QV,
         policy: signuPolicyContract,
         initialVoiceCreditProxy,
@@ -226,14 +232,14 @@ describe("MACI", function test() {
       expect(receipt?.status).to.eq(1);
       pollId = (await maciContract.nextPollId()) - 1n;
 
-      const p = maciState.deployPoll(
+      const poll = maciState.deployPoll(
         BigInt(startTime + duration),
         treeDepths,
         messageBatchSize,
         coordinator,
         BigInt(maxVoteOptions),
       );
-      expect(p.toString()).to.eq(pollId.toString());
+      expect(poll.toString()).to.eq(pollId.toString());
 
       // publish the NOTHING_UP_MY_SLEEVE message
       const messageData = [NOTHING_UP_MY_SLEEVE];
@@ -256,7 +262,7 @@ describe("MACI", function test() {
         messageBatchSize,
         coordinatorPublicKey: coordinator.publicKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
         verifier: verifierContract,
-        vkRegistry: vkRegistryContract,
+        verifyingKeysRegistry: verifyingKeysRegistryContract,
         mode: EMode.QV,
         policy: signuPolicyContract,
         initialVoiceCreditProxy,
@@ -277,7 +283,7 @@ describe("MACI", function test() {
         messageBatchSize,
         coordinatorPublicKey: users[0].publicKey.asContractParam() as { x: BigNumberish; y: BigNumberish },
         verifier: verifierContract,
-        vkRegistry: vkRegistryContract,
+        verifyingKeysRegistry: verifyingKeysRegistryContract,
         mode: EMode.QV,
         policy: signuPolicyContract,
         initialVoiceCreditProxy,

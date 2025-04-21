@@ -7,7 +7,7 @@ import { DomainObjs } from "../utilities/DomainObjs.sol";
 /// @title IMACI
 /// @notice MACI interface
 interface IMACI {
-  /// @notice A struct holding the addresses of poll, mp and tally
+  /// @notice A struct holding the addresses of poll, messageProcessor and tally
   struct PollContracts {
     address poll;
     address messageProcessor;
@@ -27,8 +27,8 @@ interface IMACI {
     DomainObjs.PublicKey coordinatorPublicKey;
     /// @param verifier The Verifier Contract
     address verifier;
-    /// @param vkRegistry The VkRegistry Contract
-    address vkRegistry;
+    /// @param verifyingKeysRegistry The VerifyingKeysRegistry Contract
+    address verifyingKeysRegistry;
     /// @param mode Voting mode
     DomainObjs.Mode mode;
     /// @param policy The policy contract
@@ -50,9 +50,9 @@ interface IMACI {
   function getStateTreeRoot() external view returns (uint256);
 
   /// @notice Get the index of a public key in the state tree
-  /// @param _pubKeyHash The hash of the public key
+  /// @param _publicKeyHash The hash of the public key
   /// @return index The index of the public key in the state tree
-  function getStateIndex(uint256 _pubKeyHash) external view returns (uint256);
+  function getStateIndex(uint256 _publicKeyHash) external view returns (uint256);
 
   /// @notice Deploy a new Poll contract.
   /// @param _pollArgs The deploy poll args
@@ -61,12 +61,12 @@ interface IMACI {
   /// @notice Allows any eligible user sign up. The sign-up policy should prevent
   /// double sign-ups or ineligible users from doing so.  This function will
   /// only succeed if the sign-up deadline has not passed.
-  /// @param _pubKey The user's desired public key.
+  /// @param _publicKey The user's desired public key.
   /// @param _signUpPolicyData Data to pass to the sign-up policy
   ///     register() function. For instance, the POAPPolicy or
   ///     TokenPolicy requires this value to be the ABI-encoded
   ///     token ID.
-  function signUp(DomainObjs.PublicKey memory _pubKey, bytes memory _signUpPolicyData) external;
+  function signUp(DomainObjs.PublicKey memory _publicKey, bytes memory _signUpPolicyData) external;
 
   /// @notice Return the state root when the '_index' user signed up
   /// @param _index The serial number when the user signed up
@@ -74,8 +74,8 @@ interface IMACI {
   function getStateRootOnIndexedSignUp(uint256 _index) external view returns (uint256);
 
   /// @notice Get the number of signups
-  /// @return numsignUps The number of signups
-  function numSignUps() external view returns (uint256);
+  /// @return totalSignups The number of signups
+  function totalSignups() external view returns (uint256);
 
   /// @notice Get the next poll ID
   /// @return The next poll ID

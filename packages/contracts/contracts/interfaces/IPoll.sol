@@ -9,14 +9,14 @@ import { IMACI } from "./IMACI.sol";
 interface IPoll {
   /// @notice Join the poll for voting
   /// @param _nullifier Hashed user's private key to check whether user has already voted
-  /// @param _pubKey Poll user's public key
+  /// @param _publicKey Poll user's public key
   /// @param _stateRootIndex Index of the MACI's stateRootOnSignUp for which the inclusion proof is generated
   /// @param _proof The zk-SNARK proof
   /// @param _signUpPolicyData Data to pass to the signup policy
   /// @param _initialVoiceCreditProxyData Data to pass to the InitialVoiceCreditProxy
   function joinPoll(
     uint256 _nullifier,
-    DomainObjs.PublicKey calldata _pubKey,
+    DomainObjs.PublicKey calldata _publicKey,
     uint256 _stateRootIndex,
     uint256[8] calldata _proof,
     bytes memory _signUpPolicyData,
@@ -24,9 +24,9 @@ interface IPoll {
   ) external;
 
   /// @notice The number of messages which have been processed and the number of signups
-  /// @return numSignups The number of signups
+  /// @return totalSignups The number of signups
   /// @return numMsgs The number of messages sent by voters
-  function numSignUpsAndMessages() external view returns (uint256 numSignups, uint256 numMsgs);
+  function totalSignupsAndMessages() external view returns (uint256 totalSignups, uint256 numMsgs);
 
   /// @notice Get all message batch hashes
   /// @return betchHashes array containing all batch hashes
@@ -38,10 +38,13 @@ interface IPoll {
   /// @notice Allows anyone to publish a message (an encrypted command and signature).
   /// This function also enqueues the message.
   /// @param _message The message to publish
-  /// @param _encPubKey An ephemeral public key which can be combined with the
+  /// @param _encryptionPublicKey An ephemeral public key which can be combined with the
   /// coordinator's private key to generate an ECDH shared key with which
   /// to encrypt the message.
-  function publishMessage(DomainObjs.Message calldata _message, DomainObjs.PublicKey calldata _encPubKey) external;
+  function publishMessage(
+    DomainObjs.Message calldata _message,
+    DomainObjs.PublicKey calldata _encryptionPublicKey
+  ) external;
 
   /// @notice Submit a message batch
   /// @dev Can only be submitted before the voting deadline
@@ -97,8 +100,8 @@ interface IPoll {
   function messageBatchSize() external view returns (uint8);
 
   /// @notice Get the hash of coordinator's public key
-  /// @return _coordinatorPubKeyHash the hash of coordinator's public key
-  function coordinatorPubKeyHash() external view returns (uint256 _coordinatorPubKeyHash);
+  /// @return _coordinatorPublicKeyHash the hash of coordinator's public key
+  function coordinatorPublicKeyHash() external view returns (uint256 _coordinatorPublicKeyHash);
 
   /// @notice Get the commitment to the state leaves and the ballots. This is
   /// hash3(stateRoot, ballotRoot, salt).

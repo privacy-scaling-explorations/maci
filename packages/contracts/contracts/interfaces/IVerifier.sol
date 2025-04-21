@@ -8,7 +8,7 @@ import { SnarkCommon } from "../crypto/SnarkCommon.sol";
 interface IVerifier {
   /// @notice Verify a zk-SNARK proof
   /// @param _proof The proof
-  /// @param vk The verifying key
+  /// @param verifyingKey The verifying key
   /// @param inputs The public inputs to the circuit
   /// @return Whether the proof is valid given the verifying key and public
   ///          input. Note that this function only supports one public input.
@@ -16,7 +16,7 @@ interface IVerifier {
   ///          multiple public inputs.
   function verify(
     uint256[8] memory _proof,
-    SnarkCommon.VerifyingKey memory vk,
+    SnarkCommon.VerifyingKey memory verifyingKey,
     uint256[] memory inputs
   ) external view returns (bool);
 }

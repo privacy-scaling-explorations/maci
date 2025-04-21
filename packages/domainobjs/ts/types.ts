@@ -51,7 +51,7 @@ export interface IG2ContractParams {
   y: BigNumberish[];
 }
 
-export interface IVkContractParams {
+export interface IVerifyingKeyContractParams {
   alpha1: IG1ContractParams;
   beta2: IG2ContractParams;
   gamma2: IG2ContractParams;
@@ -59,7 +59,7 @@ export interface IVkContractParams {
   ic: IG1ContractParams[];
 }
 
-export interface IVkObjectParams {
+export interface IVerifyingKeyObjectParams {
   protocol: BigNumberish;
   curve: BigNumberish;
   nPublic: BigNumberish;

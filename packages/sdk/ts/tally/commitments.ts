@@ -1,4 +1,4 @@
-import { genTreeCommitment, hash2, hash3, hashLeftRight } from "@maci-protocol/crypto";
+import { generateTreeCommitment, hash2, hash3, hashLeftRight } from "@maci-protocol/crypto";
 
 import type { IGenerateTallyCommitmentsArgs, ITallyCommitments } from "./types";
 
@@ -13,7 +13,7 @@ export const generateTallyCommitments = ({
   voteOptionTreeDepth,
 }: IGenerateTallyCommitmentsArgs): ITallyCommitments => {
   // compute newResultsCommitment
-  const newResultsCommitment = genTreeCommitment(
+  const newResultsCommitment = generateTreeCommitment(
     tallyData.results.tally.map((x) => BigInt(x)),
     BigInt(tallyData.results.salt),
     voteOptionTreeDepth,
@@ -30,9 +30,9 @@ export const generateTallyCommitments = ({
 
   if (tallyData.isQuadratic) {
     // compute newPerVOSpentVoiceCreditsCommitment
-    newPerVOSpentVoiceCreditsCommitment = genTreeCommitment(
-      tallyData.perVOSpentVoiceCredits!.tally.map((x) => BigInt(x)),
-      BigInt(tallyData.perVOSpentVoiceCredits!.salt),
+    newPerVOSpentVoiceCreditsCommitment = generateTreeCommitment(
+      tallyData.perVoteOptionSpentVoiceCredits!.tally.map((x) => BigInt(x)),
+      BigInt(tallyData.perVoteOptionSpentVoiceCredits!.salt),
       voteOptionTreeDepth,
     );
 
