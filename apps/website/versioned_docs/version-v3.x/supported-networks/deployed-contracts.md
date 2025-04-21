@@ -7,7 +7,7 @@ sidebar_position: 2
 
 There are a number of MACI's smart contracts which can be re-used by different deployments. These are the following:
 
-- [VkRegistry](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/VkRegistry.sol)
+- [VerifyingKeysRegistry](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/VerifyingKeysRegistry.sol)
 - [PoseidonHashers](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/crypto/Hasher.sol)
 - [PollFactory](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/PollFactory.sol)
 - [MessageProcessorFactory](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/MessageProcessorFactory.sol)
@@ -29,7 +29,7 @@ cd cli && node build/ts/index.js checkVerifyingKeys -q false -vk 0x74569d524a193
 ```
 
 :::info
-You should change the -vk parameter to the VkRegistry address for the chain you are deploying to. Also you might need to modify the parameters based on the circuit configuration. Please refer to the [circuits page](/docs/technical-references/zk-snark-circuits/setup) for more information. Also you can add `-uq false` if you want to check non quadratic voting keys.
+You should change the -vk parameter to the VerifyingKeysRegistry address for the chain you are deploying to. Also you might need to modify the parameters based on the circuit configuration. Please refer to the [circuits page](/docs/technical-references/zk-snark-circuits/setup) for more information. Also you can add `-uq false` if you want to check non quadratic voting keys.
 :::
 
 ## Contract Addresses

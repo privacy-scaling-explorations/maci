@@ -42,7 +42,7 @@ export default function runCore(): void {
       );
       const poll = maciState.polls.get(pollId)!;
 
-      poll.updatePoll(BigInt(maciState.pubKeys.length));
+      poll.updatePoll(BigInt(maciState.publicKeys.length));
 
       // 4 valid votes
       for (let i = 0; i < MESSAGE_BATCH_SIZE - 1; i += 1) {
@@ -60,7 +60,7 @@ export default function runCore(): void {
         const signature = command.sign(userKeypair.privateKey);
 
         const ecdhKeypair = new Keypair();
-        const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, COORDINATOR_KEYPAIR.publicKey);
+        const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, COORDINATOR_KEYPAIR.publicKey);
         const message = command.encrypt(signature, sharedKey);
         poll.publishMessage(message, ecdhKeypair.publicKey);
       }
@@ -80,7 +80,7 @@ export default function runCore(): void {
         const signature = command.sign(userKeypair.privateKey);
 
         const ecdhKeypair = new Keypair();
-        const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, COORDINATOR_KEYPAIR.publicKey);
+        const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, COORDINATOR_KEYPAIR.publicKey);
         const message = command.encrypt(signature, sharedKey);
         poll.publishMessage(message, ecdhKeypair.publicKey);
       }

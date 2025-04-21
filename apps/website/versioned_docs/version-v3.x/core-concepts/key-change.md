@@ -23,14 +23,14 @@ Reverse processing was introduced to prevent a type of attack where a briber wou
 
 Let's take as an example the following:
 
-1. Alice signs up with pub key $pub1$
-2. Bob (Briber) bribes Alice and asks her to submit a key change message to $pub2$ (owned by Bob)
-3. Bob submits a vote with $pub2$
-4. Alice submits a vote with $pub1$
+1. Alice signs up with public key $public1$
+2. Bob (Briber) bribes Alice and asks her to submit a key change message to $public2$ (owned by Bob)
+3. Bob submits a vote with $public2$
+4. Alice submits a vote with $public1$
 
 If messages were processed in the same order as they were submitted, Alice's vote would not be valid, due to it being signed with a private key $priv1$ - which now would not be valid.
 
-On the other hand, due to messages being processed in reverse order, Alice's last message would be counted as valid as the key change would have not been processed yet. Then, Bob's vote would not be counted as valid as the current key for Alice would be $pub1$.
+On the other hand, due to messages being processed in reverse order, Alice's last message would be counted as valid as the key change would have not been processed yet. Then, Bob's vote would not be counted as valid as the current key for Alice would be $public1$.
 
 > Note that a key change message should have the nonce set to 1 in order for it to be valid. We'll see a code example in the next sections.
 
@@ -47,7 +47,7 @@ Let's take a look into a code example:
 ```ts
 const user1Keypair = new Keypair();
 const user2Keypair = new Keypair();
-const secondKeyPair = new Keypair();
+const secondKeypair = new Keypair();
 ```
 
 - Votes will be
@@ -77,7 +77,7 @@ As seen above, we expect the first vote weight 9 to not be counted, but instead 
 - Deploy a MaciState locally and sign up
 
 ```ts
-const maciState: MaciState = new MaciState(STATE_TREE_DEPTH);
+const maciState = new MaciState(STATE_TREE_DEPTH);
 // Sign up
 user1StateIndex = maciState.signUp(user1Keypair.publicKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
 user2StateIndex = maciState.signUp(user2Keypair.publicKey, voiceCreditBalance, BigInt(Math.floor(Date.now() / 1000)));
@@ -136,7 +136,7 @@ poll.publishMessage(message2, ecdhKeypair2.publicKey);
 const poll = maciState.polls[pollId];
 const command = new PCommand(
   BigInt(user1StateIndex),
-  secondKeyPair.publicKey,
+  secondKeypair.publicKey,
   user1VoteOptionIndex,
   user1NewVoteWeight,
   BigInt(1),
@@ -158,8 +158,8 @@ poll.publishMessage(message, ecdhKeypair.publicKey);
 const poll = maciState.polls[pollId];
 poll.processMessages(pollId);
 poll.tallyVotes();
-expect(poll.perVOSpentVoiceCredits[0].toString()).to.eq((user1NewVoteWeight * user1NewVoteWeight).toString());
-expect(poll.perVOSpentVoiceCredits[1].toString()).to.eq((user2VoteWeight * user2VoteWeight).toString());
+expect(poll.perVoteOptionSpentVoiceCredits[0].toString()).to.eq((user1NewVoteWeight * user1NewVoteWeight).toString());
+expect(poll.perVoteOptionSpentVoiceCredits[1].toString()).to.eq((user2VoteWeight * user2VoteWeight).toString());
 ```
 
 - Finally confirm that the keypair was changed for the user1

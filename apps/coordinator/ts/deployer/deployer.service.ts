@@ -1,4 +1,4 @@
-import { IVkObjectParams, PublicKey, VerifyingKey } from "@maci-protocol/domainobjs";
+import { IVerifyingKeyObjectParams, PublicKey, VerifyingKey } from "@maci-protocol/domainobjs";
 import {
   ConstantInitialVoiceCreditProxy__factory as ConstantInitialVoiceCreditProxyFactory,
   ContractStorage,
@@ -14,7 +14,7 @@ import {
   PoseidonT4__factory as PoseidonT4Factory,
   PoseidonT5__factory as PoseidonT5Factory,
   PoseidonT6__factory as PoseidonT6Factory,
-  VkRegistry__factory as VkRegistryFactory,
+  VerifyingKeysRegistry__factory as VerifyingKeysRegistryFactory,
   TallyFactory__factory as TallyFactoryFactory,
   PollFactory__factory as PollFactoryFactory,
   MessageProcessorFactory__factory as MessageProcessorFactoryFactory,
@@ -29,11 +29,11 @@ import {
   EMode,
   deployPoll,
   type ISetVerifyingKeysArgs,
-  extractAllVks,
-  extractVk,
-  genEmptyBallotRoots,
+  extractAllVerifyingKeys,
+  extractVerifyingKey,
+  generateEmptyBallotRoots,
   type IVerifyingKeyStruct,
-  VkRegistry,
+  VerifyingKeysRegistry,
 } from "@maci-protocol/sdk";
 import { Injectable, Logger } from "@nestjs/common";
 import { BaseContract, InterfaceAbi, Signer } from "ethers";
@@ -59,7 +59,7 @@ import {
   IInitialVoiceCreditProxyArgs,
   ISemaphorePolicyArgs,
   IUserOperation,
-  IVkRegistryArgs,
+  IVerifyingKeysRegistryArgs,
   IZupassPolicyArgs,
   IERC20VotesPolicyArgs,
   IERC20PolicyArgs,
@@ -438,15 +438,15 @@ export class DeployerService {
   /**
    * Get verifying keys arguments (specially zkey paths)
    * @param signer - the signer
-   * @param vkRegistryContract - the deployed vk registry contract
-   * @param vkRegistryArgs - the arguments send to the endpoint
+   * @param verifyingKeysRegistryContract - the deployed verifyingKey registry contract
+   * @param verifyingKeysRegistryArgs - the arguments send to the endpoint
    * @param mode - use QV or NON_QV
    * @returns SetVerifyingKeysArgs
    */
   async getVerifyingKeysArgs(
     signer: Signer,
-    vkRegistryContract: VkRegistry,
-    vkRegistryArgs: IVkRegistryArgs,
+    verifyingKeysRegistryContract: VerifyingKeysRegistry,
+    verifyingKeysRegistryArgs: IVerifyingKeysRegistryArgs,
     mode: EMode,
   ): Promise<ISetVerifyingKeysArgs> {
     const pollJoiningZkeyPath = this.fileService.getZkeyFilePaths(
@@ -465,19 +465,20 @@ export class DeployerService {
       process.env.COORDINATOR_TALLY_ZKEY_NAME!,
       mode === EMode.QV,
     ).zkey;
-    const { pollJoiningVk, pollJoinedVk, processVk, tallyVk } = await extractAllVks({
-      pollJoiningZkeyPath,
-      pollJoinedZkeyPath,
-      processMessagesZkeyPath,
-      tallyVotesZkeyPath,
-    });
+    const { pollJoiningVerifyingKey, pollJoinedVerifyingKey, processVerifyingKey, tallyVerifyingKey } =
+      await extractAllVerifyingKeys({
+        pollJoiningZkeyPath,
+        pollJoinedZkeyPath,
+        processMessagesZkeyPath,
+        tallyVotesZkeyPath,
+      });
     const { stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth, pollStateTreeDepth, messageBatchSize } =
-      vkRegistryArgs;
+      verifyingKeysRegistryArgs;
     return {
-      pollJoiningVk: pollJoiningVk!,
-      pollJoinedVk: pollJoinedVk!,
-      processMessagesVk: processVk!,
-      tallyVotesVk: tallyVk!,
+      pollJoiningVerifyingKey: pollJoiningVerifyingKey!,
+      pollJoinedVerifyingKey: pollJoinedVerifyingKey!,
+      processMessagesVerifyingKey: processVerifyingKey!,
+      tallyVotesVerifyingKey: tallyVerifyingKey!,
       stateTreeDepth: Number(stateTreeDepth),
       intStateTreeDepth: Number(intStateTreeDepth),
       voteOptionTreeDepth: Number(voteOptionTreeDepth),
@@ -485,7 +486,7 @@ export class DeployerService {
       pollStateTreeDepth: Number(pollStateTreeDepth),
       signer,
       mode,
-      vkRegistryAddress: await vkRegistryContract.getAddress(),
+      verifyingKeysRegistryAddress: await verifyingKeysRegistryContract.getAddress(),
     };
   }
 
@@ -637,12 +638,12 @@ export class DeployerService {
       chain,
     );
 
-    // 4. VkRegistry
-    const vkRegistryAddress = await this.deployAndStore(
-      EContracts.VkRegistry,
+    // 4. VerifyingKeysRegistry
+    const verifyingKeysRegistryAddress = await this.deployAndStore(
+      EContracts.VerifyingKeysRegistry,
       [],
-      VkRegistryFactory.abi,
-      VkRegistryFactory.bytecode,
+      VerifyingKeysRegistryFactory.abi,
+      VerifyingKeysRegistryFactory.bytecode,
       kernelClient,
       bundlerClient,
       publicClient,
@@ -672,103 +673,120 @@ export class DeployerService {
         true,
       );
 
-      const [qvProcessVk, qvTallyVk, nonQvProcessVk, nonQvTallyVk, pollJoiningVk, pollJoinedVk] = await Promise.all([
-        extractVk(processMessagesZkeyPathQv.zkey),
-        extractVk(tallyVotesZkeyPathQv.zkey),
-        extractVk(processMessagesZkeyPathNonQv.zkey),
-        extractVk(tallyVotesZkeyPathNonQv.zkey),
-        extractVk(pollJoiningZkeyPath.zkey),
-        extractVk(pollJoinedZkeyPath.zkey),
-      ]).then((vks) =>
-        vks.map(
-          (vk: IVkObjectParams | "" | undefined) =>
-            vk && (VerifyingKey.fromObj(vk).asContractParam() as IVerifyingKeyStruct),
+      const [
+        qvProcessVerifyingKey,
+        qvTallyVerifyingKey,
+        nonQvProcessVerifyingKey,
+        nonQvTallyVerifyingKey,
+        pollJoiningVerifyingKey,
+        pollJoinedVerifyingKey,
+      ] = await Promise.all([
+        extractVerifyingKey(processMessagesZkeyPathQv.zkey),
+        extractVerifyingKey(tallyVotesZkeyPathQv.zkey),
+        extractVerifyingKey(processMessagesZkeyPathNonQv.zkey),
+        extractVerifyingKey(tallyVotesZkeyPathNonQv.zkey),
+        extractVerifyingKey(pollJoiningZkeyPath.zkey),
+        extractVerifyingKey(pollJoinedZkeyPath.zkey),
+      ]).then((verifyingKeys) =>
+        verifyingKeys.map(
+          (verifyingKey: IVerifyingKeyObjectParams | "" | undefined) =>
+            verifyingKey && (VerifyingKey.fromObj(verifyingKey).asContractParam() as IVerifyingKeyStruct),
         ),
       );
 
-      const processZkeys = [qvProcessVk, nonQvProcessVk].filter(Boolean) as IVerifyingKeyStruct[];
-      const tallyZkeys = [qvTallyVk, nonQvTallyVk].filter(Boolean) as IVerifyingKeyStruct[];
+      const processZkeys = [qvProcessVerifyingKey, nonQvProcessVerifyingKey].filter(Boolean) as IVerifyingKeyStruct[];
+      const tallyZkeys = [qvTallyVerifyingKey, nonQvTallyVerifyingKey].filter(Boolean) as IVerifyingKeyStruct[];
 
       // check if the keys are already set
-      const [isProcessVkSet, isProcessNonQvVkSet, isTallyVkSet, isTallyNonQvVkSet] = await Promise.all([
+      const [
+        isProcessVerifyingKeySet,
+        isProcessNonQvVerifyingKeySet,
+        isTallyVerifyingKeySet,
+        isTallyNonQvVerifyingKeySet,
+      ] = await Promise.all([
         publicClient.readContract({
-          address: vkRegistryAddress,
-          abi: VkRegistryFactory.abi,
-          functionName: "hasProcessVk",
+          address: verifyingKeysRegistryAddress,
+          abi: VerifyingKeysRegistryFactory.abi,
+          functionName: "hasProcessVerifyingKey",
           args: [
-            config.VkRegistry.args.stateTreeDepth as bigint,
-            config.VkRegistry.args.voteOptionTreeDepth as bigint,
-            config.VkRegistry.args.messageBatchSize,
+            config.VerifyingKeysRegistry.args.stateTreeDepth as bigint,
+            config.VerifyingKeysRegistry.args.voteOptionTreeDepth as bigint,
+            config.VerifyingKeysRegistry.args.messageBatchSize,
             EMode.QV,
           ],
         }),
         publicClient.readContract({
-          address: vkRegistryAddress,
-          abi: VkRegistryFactory.abi,
-          functionName: "hasProcessVk",
+          address: verifyingKeysRegistryAddress,
+          abi: VerifyingKeysRegistryFactory.abi,
+          functionName: "hasProcessVerifyingKey",
           args: [
-            config.VkRegistry.args.stateTreeDepth as bigint,
-            config.VkRegistry.args.voteOptionTreeDepth as bigint,
-            config.VkRegistry.args.messageBatchSize,
+            config.VerifyingKeysRegistry.args.stateTreeDepth as bigint,
+            config.VerifyingKeysRegistry.args.voteOptionTreeDepth as bigint,
+            config.VerifyingKeysRegistry.args.messageBatchSize,
             EMode.NON_QV,
           ],
         }),
         publicClient.readContract({
-          address: vkRegistryAddress,
-          abi: VkRegistryFactory.abi,
-          functionName: "hasTallyVk",
+          address: verifyingKeysRegistryAddress,
+          abi: VerifyingKeysRegistryFactory.abi,
+          functionName: "hasTallyVerifyingKey",
           args: [
-            config.VkRegistry.args.stateTreeDepth as bigint,
-            config.VkRegistry.args.intStateTreeDepth as bigint,
-            config.VkRegistry.args.voteOptionTreeDepth as bigint,
+            config.VerifyingKeysRegistry.args.stateTreeDepth as bigint,
+            config.VerifyingKeysRegistry.args.intStateTreeDepth as bigint,
+            config.VerifyingKeysRegistry.args.voteOptionTreeDepth as bigint,
             EMode.QV,
           ],
         }),
         publicClient.readContract({
-          address: vkRegistryAddress,
-          abi: VkRegistryFactory.abi,
-          functionName: "hasTallyVk",
+          address: verifyingKeysRegistryAddress,
+          abi: VerifyingKeysRegistryFactory.abi,
+          functionName: "hasTallyVerifyingKey",
           args: [
-            config.VkRegistry.args.stateTreeDepth as bigint,
-            config.VkRegistry.args.intStateTreeDepth as bigint,
-            config.VkRegistry.args.voteOptionTreeDepth as bigint,
+            config.VerifyingKeysRegistry.args.stateTreeDepth as bigint,
+            config.VerifyingKeysRegistry.args.intStateTreeDepth as bigint,
+            config.VerifyingKeysRegistry.args.voteOptionTreeDepth as bigint,
             EMode.NON_QV,
           ],
         }),
       ]);
 
-      if (isProcessVkSet && isProcessNonQvVkSet && isTallyVkSet && isTallyNonQvVkSet) {
-        this.logger.debug("Verifying keys are already set on the vk registry");
+      if (
+        isProcessVerifyingKeySet &&
+        isProcessNonQvVerifyingKeySet &&
+        isTallyVerifyingKeySet &&
+        isTallyNonQvVerifyingKeySet
+      ) {
+        this.logger.debug("Verifying keys are already set on the verifyingKey registry");
       } else {
         await this.estimateGasAndSend(
-          vkRegistryAddress,
+          verifyingKeysRegistryAddress,
           0n,
-          VkRegistryFactory.abi,
+          VerifyingKeysRegistryFactory.abi,
           "setVerifyingKeysBatch",
           [
-            config.VkRegistry.args.stateTreeDepth,
-            config.VkRegistry.args.pollStateTreeDepth,
-            config.VkRegistry.args.intStateTreeDepth,
-            config.VkRegistry.args.voteOptionTreeDepth,
-            config.VkRegistry.args.messageBatchSize,
+            config.VerifyingKeysRegistry.args.stateTreeDepth,
+            config.VerifyingKeysRegistry.args.pollStateTreeDepth,
+            config.VerifyingKeysRegistry.args.intStateTreeDepth,
+            config.VerifyingKeysRegistry.args.voteOptionTreeDepth,
+            config.VerifyingKeysRegistry.args.messageBatchSize,
             [EMode.QV, EMode.NON_QV],
-            pollJoiningVk as IVerifyingKeyStruct,
-            pollJoinedVk as IVerifyingKeyStruct,
+            pollJoiningVerifyingKey as IVerifyingKeyStruct,
+            pollJoinedVerifyingKey as IVerifyingKeyStruct,
             processZkeys,
             tallyZkeys,
           ],
-          ErrorCodes.FAILED_TO_SET_VERIFYING_KEYS_ON_VK_REGISTRY.toString(),
+          ErrorCodes.FAILED_TO_SET_VERIFYING_KEYS.toString(),
           kernelClient,
           bundlerClient,
         );
       }
     } catch (error) {
-      this.logger.error("Failed to set verifying keys on vk registry: ", error);
+      this.logger.error("Failed to set verifying keys on verifyingKey registry: ", error);
       throw error;
     }
 
     // 5. maci (here we don't check whether one is already deployed, we just deploy it)
-    const emptyBallotRoots = genEmptyBallotRoots(config.MACI.stateTreeDepth);
+    const emptyBallotRoots = generateEmptyBallotRoots(config.MACI.stateTreeDepth);
     const maciAddress = await this.deployAndStore(
       EContracts.MACI,
       [
@@ -831,10 +849,10 @@ export class DeployerService {
       throw new Error(ErrorCodes.VERIFIER_NOT_DEPLOYED.toString());
     }
 
-    // check if there is a vk registry deployed on this chain
-    const vkRegistryAddress = this.storage.getAddress(EContracts.VkRegistry, chain);
-    if (!vkRegistryAddress) {
-      throw new Error(ErrorCodes.VK_REGISTRY_NOT_DEPLOYED.toString());
+    // check if there is a verifyingKey registry deployed on this chain
+    const verifyingKeysRegistryAddress = this.storage.getAddress(EContracts.VerifyingKeysRegistry, chain);
+    if (!verifyingKeysRegistryAddress) {
+      throw new Error(ErrorCodes.VERIFYING_KEYS_REGISTRY_NOT_DEPLOYED.toString());
     }
 
     // check if policy address was given
@@ -893,7 +911,7 @@ export class DeployerService {
       stateTreeDepth: config.pollStateTreeDepth,
       coordinatorPublicKey: PublicKey.deserialize(config.coordinatorPublicKey),
       verifierContractAddress: verifierAddress,
-      vkRegistryContractAddress: vkRegistryAddress,
+      verifyingKeysRegistryContractAddress: verifyingKeysRegistryAddress,
       mode,
       policyContractAddress: policyAddress,
       initialVoiceCreditProxyContractAddress: initialVoiceCreditProxyAddress,
@@ -929,14 +947,20 @@ export class DeployerService {
         id: EContracts.MessageProcessor,
         key: `poll-${pollId}`,
         contract: new BaseContract(messageProcessorContractAddress, MessageProcessorFactory.abi),
-        args: [verifierAddress, vkRegistryAddress, pollContractAddress, mode],
+        args: [verifierAddress, verifyingKeysRegistryAddress, pollContractAddress, mode],
         network: chain,
       }),
       this.storage.register({
         id: EContracts.Tally,
         key: `poll-${pollId}`,
         contract: new BaseContract(tallyContractAddress, TallyFactory.abi),
-        args: [verifierAddress, vkRegistryAddress, pollContractAddress, messageProcessorContractAddress, mode],
+        args: [
+          verifierAddress,
+          verifyingKeysRegistryAddress,
+          pollContractAddress,
+          messageProcessorContractAddress,
+          mode,
+        ],
         network: chain,
       }),
     ]);

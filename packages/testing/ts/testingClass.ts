@@ -1,14 +1,14 @@
 import { Keypair } from "@maci-protocol/domainobjs";
 import {
   EMode,
-  extractAllVks,
-  genMaciStateFromContract,
+  extractAllVerifyingKeys,
+  generateMaciStateFromContract,
   setVerifyingKeys,
   signup,
   joinPoll,
   deployMaci,
   deployPoll,
-  deployVkRegistryContract,
+  deployVerifyingKeysRegistryContract,
   ContractStorage,
   deployFreeForAllSignUpPolicy,
   deployVerifier,
@@ -125,25 +125,26 @@ export class TestingClass {
     const coordinatorKeypair = new Keypair();
     const user = new Keypair();
 
-    const { pollJoiningVk, pollJoinedVk, processVk, tallyVk } = await extractAllVks({
-      pollJoiningZkeyPath: this.pollJoiningZkeyPath,
-      pollJoinedZkeyPath: this.pollJoinedZkeyPath,
-      processMessagesZkeyPath: this.processMessagesZkeyPath,
-      tallyVotesZkeyPath: this.tallyVotesZkeyPath,
-    });
+    const { pollJoiningVerifyingKey, pollJoinedVerifyingKey, processVerifyingKey, tallyVerifyingKey } =
+      await extractAllVerifyingKeys({
+        pollJoiningZkeyPath: this.pollJoiningZkeyPath,
+        pollJoinedZkeyPath: this.pollJoinedZkeyPath,
+        processMessagesZkeyPath: this.processMessagesZkeyPath,
+        tallyVotesZkeyPath: this.tallyVotesZkeyPath,
+      });
 
-    const vkRegistry = await deployVkRegistryContract({ signer });
+    const verifyingKeysRegistry = await deployVerifyingKeysRegistryContract({ signer });
     await setVerifyingKeys({
-      vkRegistryAddress: vkRegistry,
+      verifyingKeysRegistryAddress: verifyingKeysRegistry,
       stateTreeDepth: STATE_TREE_DEPTH,
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
       pollStateTreeDepth: POLL_STATE_TREE_DEPTH,
-      pollJoiningVk: pollJoiningVk!,
-      pollJoinedVk: pollJoinedVk!,
-      processMessagesVk: processVk!,
-      tallyVotesVk: tallyVk!,
+      pollJoiningVerifyingKey: pollJoiningVerifyingKey!,
+      pollJoinedVerifyingKey: pollJoinedVerifyingKey!,
+      processMessagesVerifyingKey: processVerifyingKey!,
+      tallyVotesVerifyingKey: tallyVerifyingKey!,
       mode: EMode.NON_QV,
       signer,
     });
@@ -200,7 +201,7 @@ export class TestingClass {
       policyContractAddress: pollPolicyContractAddress,
       initialVoiceCreditProxyContractAddress,
       voteOptions: DEFAULT_VOTE_OPTIONS,
-      vkRegistryContractAddress: vkRegistry,
+      verifyingKeysRegistryContractAddress: verifyingKeysRegistry,
     });
 
     await signup({
@@ -225,7 +226,7 @@ export class TestingClass {
       ivcpDataArg: DEFAULT_IVCP_DATA,
     });
 
-    const maciState = await genMaciStateFromContract({
+    const maciState = await generateMaciStateFromContract({
       provider: signer.provider,
       address: maciAddresses.maciContractAddress,
       coordinatorKeypair,

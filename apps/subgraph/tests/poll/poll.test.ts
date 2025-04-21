@@ -52,9 +52,9 @@ describe("Poll", () => {
     const maci = MACI.load(poll.maci)!;
 
     assert.fieldEquals("Poll", poll.id.toHex(), "stateRoot", "1");
-    assert.fieldEquals("Poll", poll.id.toHex(), "numSignups", "3");
+    assert.fieldEquals("Poll", poll.id.toHex(), "totalSignups", "3");
     assert.fieldEquals("MACI", maci.id.toHexString(), "numPoll", "1");
-    assert.fieldEquals("MACI", maci.id.toHexString(), "numSignUps", "3");
+    assert.fieldEquals("MACI", maci.id.toHexString(), "totalSignups", "3");
     assert.fieldEquals("MACI", maci.id.toHexString(), "latestPoll", poll.id.toHex());
     assert.assertTrue(maci.polls.load().length === 1);
   });

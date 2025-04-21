@@ -78,7 +78,7 @@ Serialized, these will look like **macipk.0e5194a54562ea4d440ac6a0049a41d4b600e3
 After successfully [installing](/docs/quick-start#installation) MACI, you can easily generate your MACI key pair by running:
 
 ```bash
-pnpm run genMaciKeyPair
+pnpm run generateMaciKeyPair
 ```
 
 This command will create the necessary public and private keys required for running various MACI operations.

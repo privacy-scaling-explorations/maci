@@ -1,6 +1,6 @@
 import { jest } from "@jest/globals";
 import { Keypair } from "@maci-protocol/domainobjs";
-import { formatProofForVerifierContract, genProofSnarkjs } from "@maci-protocol/sdk";
+import { formatProofForVerifierContract, generateProofSnarkjs } from "@maci-protocol/sdk";
 import { TestingClass, User } from "@maci-protocol/testing";
 import { HttpStatus, ValidationPipe, type INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
@@ -40,7 +40,7 @@ describe("Integration message batches", () => {
     });
     const poll = testDeploy.contractsData.maciState!.polls.get(0n);
 
-    poll!.updatePoll(BigInt(testDeploy.contractsData.maciState!.pubKeys.length));
+    poll!.updatePoll(BigInt(testDeploy.contractsData.maciState!.publicKeys.length));
 
     maciContractAddress = testDeploy.contractsData.maciContractAddress!;
     [user] = testDeploy.contractsData.users!;
@@ -59,7 +59,7 @@ describe("Integration message batches", () => {
       voiceCreditsBalance: user.voiceCreditBalance,
     });
 
-    const { proof } = await genProofSnarkjs({
+    const { proof } = await generateProofSnarkjs({
       inputs: circuitInputs as unknown as Record<string, bigint>,
       zkeyPath: pollJoinedZkey,
       wasmPath: pollJoinedWasm,

@@ -15,7 +15,7 @@ import type {
   IIsNullifierOnChainArgs,
 } from "./types";
 import type { IGenerateSignUpTree } from "../trees/types";
-import type { CircuitInputs } from "../utils/types";
+import type { TCircuitInputs } from "../utils/types";
 
 import { generateSignUpTree } from "../trees/stateTree";
 import { BLOCKS_STEP } from "../utils/constants";
@@ -123,7 +123,7 @@ export const parseSignupEvents = async ({
     const toBlock = Math.min(block + BLOCKS_STEP - 1, currentBlock);
     // eslint-disable-next-line no-await-in-loop
     const newEvents = await maciContract.queryFilter(
-      maciContract.filters.SignUp(undefined, undefined, publicKey.rawPubKey[0], publicKey.rawPubKey[1]),
+      maciContract.filters.SignUp(undefined, undefined, publicKey.raw[0], publicKey.raw[1]),
       block,
       toBlock,
     );
@@ -144,18 +144,18 @@ export const parseSignupEvents = async ({
 
 /**
  * Get state index from maci state leaves or from sign up leaves
- * @param pubKeys Public keys from maci state or sign up tree
- * @param userMaciPubKey Public key of the maci user
+ * @param publicKeys Public keys from maci state or sign up tree
+ * @param userMaciPublicKey Public key of the maci user
  * @param stateIndex State index from the command
  * @returns State index
  */
 export const getStateIndex = (
-  pubKeys: PublicKey[],
-  userMaciPubKey: PublicKey,
+  publicKeys: PublicKey[],
+  userMaciPublicKey: PublicKey,
   stateIndex?: bigint,
 ): bigint | undefined => {
   if (!stateIndex) {
-    const index = pubKeys.findIndex((key) => key.equals(userMaciPubKey));
+    const index = publicKeys.findIndex((key) => key.equals(userMaciPublicKey));
 
     if (index > 0) {
       return BigInt(index);
@@ -171,9 +171,9 @@ export const getStateIndex = (
  * Create circuit input for pollJoining
  * @param signUpData Sign up tree and state leaves
  * @param stateTreeDepth Maci state tree depth
- * @param maciPrivKey User's private key for signing up
+ * @param maciPrivateKey User's private key for signing up
  * @param stateLeafIndex Index where the user is stored in the state leaves
- * @param pollPrivKey Poll's private key for the poll joining
+ * @param pollPrivateKey Poll's private key for the poll joining
  * @param pollPublicKey Poll's public key for the poll joining
  * @param pollId Poll's id
  * @returns stringified circuit inputs
@@ -181,7 +181,7 @@ export const getStateIndex = (
 export const joiningCircuitInputs = (
   signUpData: IGenerateSignUpTree,
   stateTreeDepth: bigint,
-  maciPrivKey: PrivateKey,
+  maciPrivateKey: PrivateKey,
   stateLeafIndex: bigint,
   pollPublicKey: PublicKey,
   pollId: bigint,
@@ -211,7 +211,7 @@ export const joiningCircuitInputs = (
   const siblingsArray = siblings.map((sibling) => [sibling]);
 
   // Create nullifier from private key
-  const inputNullifier = BigInt(maciPrivKey.asCircuitInputs());
+  const inputNullifier = BigInt(maciPrivateKey.asCircuitInputs());
   const nullifier = poseidon([inputNullifier, pollId]);
 
   // Get pll state tree's root
@@ -223,7 +223,7 @@ export const joiningCircuitInputs = (
   // Calculate public input hash from nullifier, credits and current root
 
   const circuitInputs = {
-    privateKey: maciPrivKey.asCircuitInputs(),
+    privateKey: maciPrivateKey.asCircuitInputs(),
     pollPublicKey: pollPublicKey.asCircuitInputs(),
     siblings: siblingsArray,
     indices,
@@ -245,29 +245,29 @@ export const getPollJoiningCircuitInputsFromStateFile = async ({
   stateFile,
   pollId,
   stateIndex,
-  userMaciPrivKey,
-}: IGetPollJoiningCircuitInputsFromStateFileArgs): Promise<CircuitInputs> => {
+  userMaciPrivateKey,
+}: IGetPollJoiningCircuitInputsFromStateFileArgs): Promise<TCircuitInputs> => {
   const file = await fs.promises.readFile(stateFile);
   const content = JSON.parse(file.toString()) as unknown as IJsonMaciState;
 
   const maciState = MaciState.fromJSON(content);
   const poll = maciState.polls.get(pollId)!;
 
-  const { publicKey: userPubKey } = new Keypair(userMaciPrivKey);
-  const loadedStateIndex = getStateIndex(maciState.pubKeys, userPubKey, stateIndex);
+  const { publicKey: userPublicKey } = new Keypair(userMaciPrivateKey);
+  const loadedStateIndex = getStateIndex(maciState.publicKeys, userPublicKey, stateIndex);
 
   // check < 1 cause index zero is a blank state leaf
   if (loadedStateIndex! < 1) {
     throw new Error("Invalid state index");
   }
 
-  poll.updatePoll(BigInt(maciState.pubKeys.length));
+  poll.updatePoll(BigInt(maciState.publicKeys.length));
 
   const circuitInputs = poll.joiningCircuitInputs({
-    maciPrivateKey: userMaciPrivKey,
+    maciPrivateKey: userMaciPrivateKey,
     stateLeafIndex: stateIndex,
-    pollPublicKey: userPubKey,
-  }) as unknown as CircuitInputs;
+    pollPublicKey: userPublicKey,
+  }) as unknown as TCircuitInputs;
 
   return circuitInputs;
 };
@@ -283,12 +283,12 @@ export const getPollJoiningCircuitEvents = async ({
   maciContract,
   stateIndex,
   pollId,
-  userMaciPrivKey,
+  userMaciPrivateKey,
   signer,
   startBlock,
   endBlock,
   blocksPerBatch,
-}: IGetPollJoiningCircuitEventsArgs): Promise<CircuitInputs> => {
+}: IGetPollJoiningCircuitEventsArgs): Promise<TCircuitInputs> => {
   // build an off-chain representation of the MACI contract using data in the contract storage
   const [defaultStartBlockSignup, defaultStartBlockPoll, stateTreeDepth] = await Promise.all([
     maciContract
@@ -311,8 +311,8 @@ export const getPollJoiningCircuitEvents = async ({
     sleepAmount: 0,
   });
 
-  const { publicKey: userPubKey } = new Keypair(userMaciPrivKey);
-  const loadedStateIndex = getStateIndex(signUpData.pubKeys, userPubKey, stateIndex);
+  const { publicKey: userPublicKey } = new Keypair(userMaciPrivateKey);
+  const loadedStateIndex = getStateIndex(signUpData.publicKeys, userPublicKey, stateIndex);
 
   if (loadedStateIndex! < 1) {
     throw new Error("Invalid state index");
@@ -321,9 +321,9 @@ export const getPollJoiningCircuitEvents = async ({
   return joiningCircuitInputs(
     signUpData,
     stateTreeDepth,
-    userMaciPrivKey,
+    userMaciPrivateKey,
     stateIndex,
-    userPubKey,
+    userPublicKey,
     pollId,
-  ) as unknown as CircuitInputs;
+  ) as unknown as TCircuitInputs;
 };

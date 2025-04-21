@@ -423,7 +423,7 @@ export interface IGetPollJoiningCircuitEventsArgs {
   /**
    * The user's maci private key
    */
-  userMaciPrivKey: PrivateKey;
+  userMaciPrivateKey: PrivateKey;
 
   /**
    * The signer
@@ -468,7 +468,7 @@ export interface IGetPollJoiningCircuitInputsFromStateFileArgs {
   /**
    * The user's maci private key
    */
-  userMaciPrivKey: PrivateKey;
+  userMaciPrivateKey: PrivateKey;
 }
 
 /**

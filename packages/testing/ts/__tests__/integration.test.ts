@@ -1,6 +1,6 @@
 /* eslint-disable no-await-in-loop */
-import { MaciState, TreeDepths, VOTE_OPTION_TREE_ARITY } from "@maci-protocol/core";
-import { genPubKey, genRandomSalt, poseidon } from "@maci-protocol/crypto";
+import { MaciState, ITreeDepths, VOTE_OPTION_TREE_ARITY } from "@maci-protocol/core";
+import { generatePublicKey, generateRandomSalt, poseidon } from "@maci-protocol/crypto";
 import { Keypair, PCommand, PrivateKey, PublicKey } from "@maci-protocol/domainobjs";
 import {
   cidToBytes32,
@@ -16,13 +16,13 @@ import {
   getPollParams,
   setVerifyingKeys,
   EMode,
-  extractAllVks,
+  extractAllVerifyingKeys,
   proveOnChain,
   joinPoll,
   publish,
   deployPoll,
   generateProofs,
-  deployVkRegistryContract,
+  deployVerifyingKeysRegistryContract,
   timeTravel,
   deployMaci,
   type IMaciContracts,
@@ -75,20 +75,21 @@ describe("Integration tests", function test() {
   let signer: Signer;
   const coordinatorKeypair = new Keypair();
 
-  let vkRegistryAddress: string;
+  let verifyingKeysRegistryAddress: string;
 
   // the code that we run before all tests
   before(async () => {
     signer = await getDefaultSigner();
-    // 1. deploy Vk Registry
-    vkRegistryAddress = await deployVkRegistryContract({ signer });
+    // 1. deploy verifying key Registry
+    verifyingKeysRegistryAddress = await deployVerifyingKeysRegistryContract({ signer });
     // 2. set verifying keys
-    const { pollJoiningVk, pollJoinedVk, processVk, tallyVk } = await extractAllVks({
-      pollJoiningZkeyPath: "./zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey",
-      pollJoinedZkeyPath: "./zkeys/PollJoined_10_test/PollJoined_10_test.0.zkey",
-      processMessagesZkeyPath: "./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey",
-      tallyVotesZkeyPath: "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey",
-    });
+    const { pollJoiningVerifyingKey, pollJoinedVerifyingKey, processVerifyingKey, tallyVerifyingKey } =
+      await extractAllVerifyingKeys({
+        pollJoiningZkeyPath: "./zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey",
+        pollJoinedZkeyPath: "./zkeys/PollJoined_10_test/PollJoined_10_test.0.zkey",
+        processMessagesZkeyPath: "./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey",
+        tallyVotesZkeyPath: "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey",
+      });
 
     await setVerifyingKeys({
       stateTreeDepth: STATE_TREE_DEPTH,
@@ -97,11 +98,11 @@ describe("Integration tests", function test() {
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
       mode: EMode.QV,
-      pollJoiningVk: pollJoiningVk!,
-      pollJoinedVk: pollJoinedVk!,
-      processMessagesVk: processVk!,
-      tallyVotesVk: tallyVk!,
-      vkRegistryAddress,
+      pollJoiningVerifyingKey: pollJoiningVerifyingKey!,
+      pollJoinedVerifyingKey: pollJoinedVerifyingKey!,
+      processMessagesVerifyingKey: processVerifyingKey!,
+      tallyVotesVerifyingKey: tallyVerifyingKey!,
+      verifyingKeysRegistryAddress,
       signer,
     });
   });
@@ -161,14 +162,14 @@ describe("Integration tests", function test() {
       mode: EMode.QV,
       initialVoiceCreditProxyContractAddress,
       verifierContractAddress,
-      vkRegistryContractAddress: vkRegistryAddress,
+      verifyingKeysRegistryContractAddress: verifyingKeysRegistryAddress,
       policyContractAddress: pollPolicyAddress,
       initialVoiceCredits: DEFAULT_INITIAL_VOICE_CREDITS,
       voteOptions: DEFAULT_VOTE_OPTIONS,
       relayers: [await signer.getAddress()],
     });
 
-    const treeDepths: TreeDepths = {
+    const treeDepths: ITreeDepths = {
       intStateTreeDepth: INT_STATE_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       stateTreeDepth: POLL_STATE_TREE_DEPTH,
@@ -263,7 +264,7 @@ describe("Integration tests", function test() {
             : user.votes[j].voteOptionIndex;
           const newVoteWeight = isKeyChange ? testCase.changeUsersKeys?.[i][j].voteWeight : user.votes[j].voteWeight;
           const { nonce } = user.votes[j];
-          const salt = genRandomSalt();
+          const salt = generateRandomSalt();
 
           // store the previous keypair
           const oldKeypair = user.keypair;
@@ -326,7 +327,7 @@ describe("Integration tests", function test() {
                 }).then(() => vote.ephemeralKeypair.privateKey.serialize());
 
           const encryptionPrivateKey = PrivateKey.deserialize(encryptionKey);
-          const encryptionPublicKey = new PublicKey(genPubKey(encryptionPrivateKey.rawPrivKey));
+          const encryptionPublicKey = new PublicKey(generatePublicKey(encryptionPrivateKey.raw));
 
           // create the command to add to the local state
           const command = new PCommand(
@@ -341,7 +342,7 @@ describe("Integration tests", function test() {
           const signature = command.sign(isKeyChange ? oldKeypair.privateKey : user.keypair.privateKey);
           const message = command.encrypt(
             signature,
-            Keypair.genEcdhSharedKey(encryptionPrivateKey, coordinatorKeypair.publicKey),
+            Keypair.generateEcdhSharedKey(encryptionPrivateKey, coordinatorKeypair.publicKey),
           );
           maciState.polls.get(pollId)?.publishMessage(message, encryptionPublicKey);
         }
@@ -417,7 +418,7 @@ describe("Integration tests", function test() {
           tallyData,
           maciAddress: contracts.maciContractAddress,
           tallyCommitments,
-          numVoteOptions: pollParams.numVoteOptions,
+          totalVoteOptions: pollParams.totalVoteOptions,
           voteOptionTreeDepth: pollParams.voteOptionTreeDepth,
           signer,
         }),

@@ -1,6 +1,6 @@
 import { G1Point, G2Point } from "@maci-protocol/crypto";
 
-import type { IVkContractParams, IVkObjectParams } from "./types";
+import type { IVerifyingKeyContractParams, IVerifyingKeyObjectParams } from "./types";
 
 /**
  * @notice A TS Class representing a zk-SNARK VerifyingKey
@@ -37,7 +37,7 @@ export class VerifyingKey {
    * to the smart contract
    * @returns the object representation of this
    */
-  asContractParam(): IVkContractParams {
+  asContractParam(): IVerifyingKeyContractParams {
     return {
       alpha1: this.alpha1.asContractParam(),
       beta2: this.beta2.asContractParam(),
@@ -48,12 +48,12 @@ export class VerifyingKey {
   }
 
   /**
-   * Create a new verifying key from a contract representation of the VK
+   * Create a new verifying key from a contract representation of the verifying key
    * @param data the object representation
    * @returns a new VerifyingKey
    */
-  static fromContract(data: IVkContractParams): VerifyingKey {
-    const convertG2 = (point: IVkContractParams["beta2"]): G2Point =>
+  static fromContract(data: IVerifyingKeyContractParams): VerifyingKey {
+    const convertG2 = (point: IVerifyingKeyContractParams["beta2"]): G2Point =>
       new G2Point([BigInt(point.x[0]), BigInt(point.x[1])], [BigInt(point.y[0]), BigInt(point.y[1])]);
 
     return new VerifyingKey(
@@ -67,22 +67,22 @@ export class VerifyingKey {
 
   /**
    * Check whether this is equal to another verifying key
-   * @param vk the other verifying key
+   * @param verifyingKey the other verifying key
    * @returns whether this is equal to the other verifying key
    */
-  equals(vk: VerifyingKey): boolean {
+  equals(verifyingKey: VerifyingKey): boolean {
     // Immediately return false if the length doesn't match
-    if (this.ic.length !== vk.ic.length) {
+    if (this.ic.length !== verifyingKey.ic.length) {
       return false;
     }
 
-    const icEqual = this.ic.every((ic, index) => ic.equals(vk.ic[index]));
+    const icEqual = this.ic.every((ic, index) => ic.equals(verifyingKey.ic[index]));
 
     return (
-      this.alpha1.equals(vk.alpha1) &&
-      this.beta2.equals(vk.beta2) &&
-      this.gamma2.equals(vk.gamma2) &&
-      this.delta2.equals(vk.delta2) &&
+      this.alpha1.equals(verifyingKey.alpha1) &&
+      this.beta2.equals(verifyingKey.beta2) &&
+      this.gamma2.equals(verifyingKey.gamma2) &&
+      this.delta2.equals(verifyingKey.delta2) &&
       icEqual
     );
   }
@@ -113,7 +113,7 @@ export class VerifyingKey {
    * @returns the VerifyingKey
    */
   static fromJSON = (json: string): VerifyingKey => {
-    const data = JSON.parse(json) as IVkObjectParams;
+    const data = JSON.parse(json) as IVerifyingKeyObjectParams;
     return VerifyingKey.fromObj(data);
   };
 
@@ -122,7 +122,7 @@ export class VerifyingKey {
    * @param data the object representation
    * @returns the VerifyingKey
    */
-  static fromObj = (data: IVkObjectParams): VerifyingKey => {
+  static fromObj = (data: IVerifyingKeyObjectParams): VerifyingKey => {
     const alpha1 = new G1Point(BigInt(data.vk_alpha_1[0]), BigInt(data.vk_alpha_1[1]));
     const beta2 = new G2Point(
       [BigInt(data.vk_beta_2[0][1]), BigInt(data.vk_beta_2[0][0])],

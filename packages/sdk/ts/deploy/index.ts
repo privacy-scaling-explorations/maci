@@ -1,5 +1,5 @@
 export { deployPoll } from "./poll";
-export { deployVkRegistryContract } from "./vkRegistry";
+export { deployVerifyingKeysRegistryContract } from "./verifyingKeysRegistry";
 export { deployMaci } from "./maci";
 export { deployFactoryWithLinkedLibraries } from "./utils";
 
@@ -8,5 +8,5 @@ export type {
   IPollContractsData,
   IDeployMaciArgs,
   IMaciContracts,
-  IDeployVkRegistryArgs,
+  IDeployVerifyingKeyRegistryArgs,
 } from "./types";

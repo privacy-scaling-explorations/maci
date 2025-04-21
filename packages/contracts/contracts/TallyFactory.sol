@@ -17,16 +17,16 @@ contract TallyFactory is Factory, ITallyFactory, DomainObjs {
   /// @inheritdoc ITallyFactory
   function deploy(
     address _verifier,
-    address _vkRegistry,
+    address _verifyingKeysRegistry,
     address _poll,
     address _messageProcessor,
     Mode _mode
-  ) public virtual returns (address tallyAddr) {
-    bytes memory data = abi.encode(_verifier, _vkRegistry, _poll, _messageProcessor, _mode);
+  ) public virtual returns (address tallyAddress) {
+    bytes memory data = abi.encode(_verifier, _verifyingKeysRegistry, _poll, _messageProcessor, _mode);
     address clone = super._deploy(data);
 
     Tally(clone).initialize();
 
-    tallyAddr = clone;
+    tallyAddress = clone;
   }
 }

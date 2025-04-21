@@ -52,7 +52,7 @@ export interface IPollJoinedInputs {
  */
 export interface IProcessMessagesInputs {
   actualStateTreeDepth: bigint;
-  numSignUps: bigint;
+  totalSignups: bigint;
   batchEndIndex: bigint;
   index: bigint;
   inputBatchHash: bigint;
@@ -84,7 +84,7 @@ export interface ITallyVotesInputs {
   ballotRoot: bigint;
   sbSalt: bigint;
   index: bigint;
-  numSignUps: bigint;
+  totalSignups: bigint;
   sbCommitment: bigint;
   currentTallyCommitment: bigint;
   newTallyCommitment: bigint;

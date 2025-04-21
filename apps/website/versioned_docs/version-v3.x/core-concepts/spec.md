@@ -550,88 +550,22 @@ To make these processes easy to use, we provide command-line interface tools.
 
 The integration tests and shell scripts in the `cli` directory provide examples of the order in which to execute them.
 
-| Command            | Description                                              | Notes                                                                                                                                        |
-| ------------------ | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `genMaciPubkey`    | Generate a MACI public key from a private key            | Only the coordinator needs to run this, as users should generate their keys in the browser and should be automated by the client application |
-| `genMaciKeypair`   | Generates a MACI private key and public key              | Only the coordinator needs to run this, as users should generate their keys in the browser and should be automated by the client application |
-| `deployVkRegistry` | Deploy the `VkRegistry` contract                         | Executed only the coordinator                                                                                                                |
-| `setVerifyingKeys` | Set verifying keys to the `VkRegistry`                   | Executed only the coordinator                                                                                                                |
-| `create`           | Deploy a new instance of MACI                            | Executed only the coordinator                                                                                                                |
-| `deployPoll`       | Deploy a new poll on a MACI instance                     | Executed only the coordinator                                                                                                                |
-| `signup`           | Sign up a user                                           | Mainly for testing; as users are more likely to use the client application instead of the CLI                                                |
-| `publish`          | Submit a message to a poll                               | Mainly for testing; as users are more likely to use the client application instead of the CLI                                                |
-| `mergeMessages`    | Must be executed before generating proofs                | Executed only the coordinator                                                                                                                |
-| `mergeSignups`     | Must be executed before generating proofs                | Executed only the coordinator                                                                                                                |
-| `genProofs`        | Generate all message processing and vote tallying proofs | Executed only the coordinator                                                                                                                |
-| `proveOnChain`     | Submit proofs to the `PollProcessorAndTallyer` contract  | Executed only the coordinator                                                                                                                |
+| Command                       | Description                                                   | Notes                                                                                                                                        |
+| ----------------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `generateMaciPublicKey`       | Generate a MACI public key from a private key                 | Only the coordinator needs to run this, as users should generate their keys in the browser and should be automated by the client application |
+| `generateMaciKeypair`         | Generates a MACI private key and public key                   | Only the coordinator needs to run this, as users should generate their keys in the browser and should be automated by the client application |
+| `deployVerifyingKeysRegistry` | Deploy the `deployVerifyingKeysRegistry` contract             | Executed only the coordinator                                                                                                                |
+| `setVerifyingKeys`            | Set verifying keys to the `deployVerifyingKeysRegistry`       | Executed only the coordinator                                                                                                                |
+| `create`                      | Deploy a new instance of MACI                                 | Executed only the coordinator                                                                                                                |
+| `deployPoll`                  | Deploy a new poll on a MACI instance                          | Executed only the coordinator                                                                                                                |
+| `signup`                      | Sign up a user                                                | Mainly for testing; as users are more likely to use the client application instead of the CLI                                                |
+| `publish`                     | Submit a message to a poll                                    | Mainly for testing; as users are more likely to use the client application instead of the CLI                                                |
+| `mergeMessages`               | Must be executed before generating proofs                     | Executed only the coordinator                                                                                                                |
+| `mergeSignups`                | Must be executed before generating proofs                     | Executed only the coordinator                                                                                                                |
+| `generateProofs`              | Generate all message processing and vote tallying proofs      | Executed only the coordinator                                                                                                                |
+| `proveOnChain`                | Submit proofs to the `MessageProcessor` and `Tally` contracts | Executed only the coordinator                                                                                                                |
 
-## 5. Ethereum contracts
-
-### 5.1. MACI
-
-| Function                                                                                                   | Permissions                                                         | Notes                                                                        |
-| ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `init(VkRegistry _vkRegistry, MessageAqFactory _messageAqFactory)`                                         | Coordinator only                                                    | Initialise factory, helper and registry contracts that share equal ownership |
-| `signUp(PubKey memory _pubKey, bytes memory _signUpPolicyData, bytes memory _initialVoiceCreditProxyData)` | Executable only during the sign-up period and after initialisation  | Participant registration and voice credit assignment                         |
-| `mergeStateAqSubRoots(uint256 _numSrQueueOps, uint256 _pollId)`                                            | Executable only by poll contract `_pollId` and after initialisation | Merge queued state leaves to form the state tree subroots                    |
-| `mergeStateAq(uint256 _pollId)`                                                                            | Executable only by poll contract `_pollId` and after initialisation | Merge the state subroots to form the state root                              |
-| `getStateTreeRoot()`                                                                                       | Non-applicable                                                      | Query the state root                                                         |
-| `deployPoll(uint256 _duration, TreeDepths memory _treeDepths, PubKey memory _coordinatorPubKey)`           | Executable only after initialisation                                | Create a new poll                                                            |
-| `getPoll(uint256 _pollId)`                                                                                 | Non-applicable                                                      | Query a poll address                                                         |
-
-### 5.2. Poll
-
-| Function                                                                     | Permissions                                                                            | Notes                                                                                           |
-| ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `getDeployTimeAndDuration()`                                                 | Non-applicable                                                                         | Query the deployment timestamp and duration                                                     |
-| `numSignUpsAndMessages()`                                                    | Non-applicable                                                                         | Query the number of participants and messages cast                                              |
-| `currentSbAndTallyCommitments()`                                             | Non-applicable                                                                         | Query the current state-ballot and tally commitments hashes                                     |
-| `publishMessage(Message memory _message, PubKey memory _encPubKey)`          | Executable only during the voting period and if the message limit has not been not met | Submit a message (whether valid or not) to the message queue                                    |
-| `hashMessageAndEncPubKey(Message memory _message, PubKey memory _encPubKey)` | Non-applicable                                                                         | Query a hash of a message and public key coordinates                                            |
-| `mergeMaciStateAqSubRoots( uint256 _numSrQueueOps, uint256 _pollId)`         | Executable only by the coordinator and after the voting period                         | Merge queued state leaves to form the state subroots                                            |
-| `mergeMaciStateAq(uint256 _pollId)`                                          | Executable only by the coordinator and after the voting period                         | Merge the state subroots to form the state root and initialise the state-ballot commitment hash |
-| `mergeMessageAqSubRoots(uint256 _numSrQueueOps)`                             | Executable only by the coordinator and after the voting period                         | Merge the queued message leaves to form the message tree subroots                               |
-| `mergeMessageAq()`                                                           | Executable only by the coordinator and after the voting period                         | Merge the message tree subroots to form the message tree root                                   |
-| `batchEnqueueMessage(uint256 _messageSubRoot)`                               | Executable only by the coordinator and after the voting period                         | Submit a batch of messages to the queue                                                         |
-
-### 5.3. PollFactory
-
-| Function                                                                                                                                                                             | Permissions      | Notes                                   |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------- | --------------------------------------- |
-| `setMessageAqFactory(MessageAqFactory _messageAqFactory)`                                                                                                                            | Coordinator only | Initialise the message factory contract |
-| `deploy(uint256 _duration, TreeDepths memory _treeDepths, BatchSizes memory _batchSizes, PubKey memory _coordinatorPubKey, VkRegistry _vkRegistry, IMACI _maci, address _pollOwner)` | Coordinator only | Create a new poll                       |
-
-### 5.4. VkRegistry
-
-| Function                                                                                                                                                                                                                   | Permissions      | Notes                                                                                                                                |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `isProcessVkSet(uint256 _sig)`                                                                                                                                                                                             | Non-applicable   | Query whether a signature is valid for message processing                                                                            |
-| `isTallyVkSet(uint256 _sig)`                                                                                                                                                                                               | Non-applicable   | Query whether a signature valid for tallying votes                                                                                   |
-| `genProcessVkSig(uint256 _stateTreeDepth, uint256 _messageTreeDepth, uint256 _voteOptionTreeDepth, uint256 _messageBatchSize)`                                                                                             | Non-applicable   | Generate a signature (used for verifying key mapping lookups) for message processing by compressing parameters into a singular value |
-| `genTallyVkSig(uint256 _stateTreeDepth, uint256 _intStateTreeDepth, uint256 _voteOptionTreeDepth)`                                                                                                                         | Non-applicable   | Generate a signature (used for verifying key mapping lookups) for vote tallying by compressing parameters into a singular value      |
-| `setVerifyingKeys( uint256 _stateTreeDepth, uint256 _intStateTreeDepth, uint256 _messageTreeDepth, uint256 _voteOptionTreeDepth, uint256 _messageBatchSize, VerifyingKey memory _processVk, VerifyingKey memory _tallyVk)` | Coordinator only | Initialise verifying keys for processing and tallying to the contract alongside specifying each tree depth                           |
-| `hasProcessVk(uint256 _stateTreeDepth, uint256 _messageTreeDepth, uint256 _voteOptionTreeDepth, uint256 _messageBatchSize)`                                                                                                | Non-applicable   | Query whether the signature of the parameters is valid for message processing                                                        |
-| `getProcessVkBySig(uint256 _sig)`                                                                                                                                                                                          | Non-applicable   | Query a processing verifying key by providing a valid signature                                                                      |
-| `getProcessVk(uint256 _stateTreeDepth, uint256 _messageTreeDepth, uint256 _voteOptionTreeDepth, uint256 _messageBatchSize)`                                                                                                | Non-applicable   | Query a processing verifying key by providing parameters to generate a valid signature                                               |
-| `hasTallyVk(uint256 _stateTreeDepth, uint256 _intStateTreeDepth, uint256 _voteOptionTreeDepth)`                                                                                                                            | Non-applicable   | Query whether the signature of the parameters is valid for vote tallying                                                             |
-| `getTallyVkBySig(uint256 _sig)`                                                                                                                                                                                            | Non-applicable   | Query a tallying verifying key by providing a valid signature                                                                        |
-| `getTallyVk(uint256 _stateTreeDepth, uint256 _intStateTreeDepth, uint256 _voteOptionTreeDepth)`                                                                                                                            | Non-applicable   | Query a tallying verifying key by providing parameters to generate a valid signature                                                 |
-
-### 5.5. PollProcessorAndTallyer
-
-| Function                                                                                                                                                                              | Permissions                                                    | Notes                                                                                                        |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `sha256Hash(uint256[] memory array)`                                                                                                                                                  | Non-applicable                                                 | Hash an array of values (using SHA256) moduluo the snark field size                                          |
-| `processMessages(Poll _poll, uint256 _newSbCommitment, uint256[8] memory _proof)`                                                                                                     | Executable only by the coordinator and after the voting period | Process state messages relative to a new state-ballot commitment given that the proof is valid               |
-| `verifyProcessProof(Poll _poll, uint256 _currentMessageBatchIndex, uint256 _messageRoot, uint256 _currentSbCommitment, uint256 _newSbCommitment, uint256[8] memory _proof)`           | Non-applicable                                                 | Query whether a message processing proof is valid                                                            |
-| `genProcessMessagesPublicInputHash(Poll _poll, uint256 _currentMessageBatchIndex, uint256 _messageRoot, uint256 _numSignUps, uint256 _currentSbCommitment, uint256 _newSbCommitment)` | Non-applicable                                                 | Hash of the coordinators public key, `packedVals`, current state-ballot commitment and message root          |
-| `genProcessMessagesPackedVals( Poll _poll, uint256 _currentMessageBatchIndex, uint256 _numSignUps)`                                                                                   | Non-applicable                                                 | Generate a packed 250-bit value `packedVals` for message processing                                          |
-| `genTallyVotesPackedVals( uint256 _numSignUps, uint256 _batchStartIndex, uint256 _tallyBatchSize)`                                                                                    | Non-applicable                                                 | Generate a packed 100-bit value `packedVals` for vote tallying                                               |
-| `genTallyVotesPublicInputHash( uint256 _numSignUps, uint256 _batchStartIndex, uint256 _tallyBatchSize, uint256 _newTallyCommitment )`                                                 | Non-applicable                                                 | Hash of the current tally commitment, the new tally commitment, `packedVals` and the state-ballot commitment |
-| `tallyVotes(Poll _poll, uint256 _newTallyCommitment, uint256[8] memory _proof)`                                                                                                       | Executable only by the coordinator and after the voting period | Tally votes relative to a new tally commitment given that the proof is valid                                 |
-| `verifyTallyProof(Poll _poll, uint256[8] memory _proof, uint256 _numSignUps, uint256 _batchStartIndex, uint256 _tallyBatchSize, uint256 _newTallyCommitment)`                         | Non-applicable                                                 | Query whether a vote tallying proof is valid                                                                 |
-
-## 6. zk-SNARKs
+## 5. zk-SNARKs
 
 The zk-SNARK circuits in MACI are written in the [circom](https://github.com/iden3/circom) language. Proofs are [Groth16](https://eprint.iacr.org/2016/260.pdf) and are generated using the [`rapidsnark`](https://github.com/iden3/rapidsnark) prover.
 
@@ -646,15 +580,15 @@ Please note that MACI requires the coordinator to generate proofs on an x86 mach
 
 ### 6.1. Message processing circuit
 
-The message processing circuit, defined in `circuits/circom/processMessages.circom`, allows the coordinator to prove that they have correctly applied each message in reverse order, in a consecutive batch of `5 ^ msgBatchDepth` messages to the respective state leaf within the state tree.
+The message processing circuit, defined in `circuits/circom/processMessages.circom`, allows the coordinator to prove that they have correctly applied each message in reverse order, in a consecutive batch of `5 ^ messageBatchDepth` messages to the respective state leaf within the state tree.
 
 #### Parameters
 
 | Parameter             | Description                                                                                                                                                   |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `stateTreeDepth`      | Depth of the state tree, this value must be equal to `10`                                                                                                     |
-| `msgTreeDepth`        | Depth of the message tree, this must be the same value passed to the `deployPoll()` contract function of `MACI.sol`                                           |
-| `msgBatchDepth`       | Depth of a tree that exactly fits the number of messages in a batch, this must be the same value passed to the `deployPoll()` contract function of `MACI.sol` |
+| `messageTreeDepth`    | Depth of the message tree, this must be the same value passed to the `deployPoll()` contract function of `MACI.sol`                                           |
+| `messageBatchDepth`   | Depth of a tree that exactly fits the number of messages in a batch, this must be the same value passed to the `deployPoll()` contract function of `MACI.sol` |
 | `voteOptionTreeDepth` | Depth of the vote option tree, this must be the same value passed to the `deployPoll()` contract function of `MACI.sol`                                       |
 
 The state tree, message tree, and vote option trees all have an arity of 5. As such, it is possible to calculate the maximum number of signups, messages per poll, and vote options per poll.
@@ -663,17 +597,17 @@ The state tree, message tree, and vote option trees all have an arity of 5. As s
 
 | Input signal                     | Description                                                                             |
 | -------------------------------- | --------------------------------------------------------------------------------------- |
-| `numSignUps`                     | Number of users that have completed the sign up                                         |
+| `totalSignups`                   | Number of users that have completed the sign up                                         |
 | `index`                          | The batch index of current message batch                                                |
 | `pollEndTimestamp`               | The Unix timestamp at which the poll ends                                               |
-| `msgRoot`                        | The root of the message tree                                                            |
-| `msgs`                           | The batch of messages as an array of arrays                                             |
-| `msgSubrootPathElements`         | As described below                                                                      |
+| `messageRoot`                    | The root of the message tree                                                            |
+| `messages`                       | The batch of messages as an array of arrays                                             |
+| `messageSubrootPathElements`     | As described below                                                                      |
 | `coordinatorPublicKeyHash`       | $\mathsf{poseidon_2}([cPk_x, cPk_y])$                                                   |
 | `newSbCommitment`                | As described below                                                                      |
-| `coordPrivKey`                   | The coordinator's private key                                                           |
+| `coordinatorPrivateKey`          | The coordinator's private key                                                           |
 | `batchEndIndex`                  | The last batch index                                                                    |
-| `encPubKeys`                     | The public keys used to generate shared ECDH encryption keys to encrypt the messages    |
+| `encryptionPublicKeys`           | The public keys used to generate shared ECDH encryption keys to encrypt the messages    |
 | `currentStateRoot`               | The state root before the commands are applied                                          |
 | `currentStateLeaves`             | The state leaves upon which messages are applied                                        |
 | `currentStateLeavesPathElements` | The Merkle path to each incremental state root                                          |
@@ -701,9 +635,9 @@ The salt used to produce `currentSbCommitment` (see above).
 
 The salt used to produce `newSbCommitment` (see above).
 
-##### `msgSubrootPathElements`
+##### `messageSubrootPathElements`
 
-The index of each message in `msgs` is consecutive. As such, in order to prove that each message in `msgs` is indeed a leaf of the message tree, we compute the subtree root of `msgs`, and then verify that the subtree root is indeed a subroot of `msgRoot`.
+The index of each message in `messages` is consecutive. As such, in order to prove that each message in `messages` is indeed a leaf of the message tree, we compute the subtree root of `messages`, and then verify that the subtree root is indeed a subroot of `messageRoot`.
 
 A simplified example using a tree of arity 2:
 
@@ -727,9 +661,9 @@ This method requires fewer circuit constraints than if we verified a Merkle proo
 
 1. That the prover knows the preimage to `currentSbCommitment` (that is, the state root, ballot root, and `currentSbSalt`)
 2. That `maxVoteOptions <= (5 ^ voteOptionTreeDepth)`
-3. That `numSignUps <== (5 ^ stateTreeDepth)`
-4. That `coordinatorPublicKeyHash` is a hash of public key that is correctly derived from `coordPrivKey`
-5. That each message in `msgs` exists in the message tree
+3. That `totalSignups <== (5 ^ stateTreeDepth)`
+4. That `coordinatorPublicKeyHash` is a hash of public key that is correctly derived from `coordinatorPrivateKey`
+5. That each message in `messages` exists in the message tree
 6. That after decrypting and applying each message, in reverse order, to the corresponding state and ballot leaves, the new state root, new ballot root, and `newSbSalt` are the preimage to `newSbCommitment`
 
 #### How messages are decrypted and applied
@@ -827,7 +761,7 @@ The coordinator uses the ballot tallying circuit (`tallyVotes.circom`) to genera
 
 | Input signal                            | Description                                                      |
 | --------------------------------------- | ---------------------------------------------------------------- |
-| `numSignUps`                            | The number of users that signup                                  |
+| `totalSignups`                          | The number of users that signup                                  |
 | `index`                                 | Start index of given batch                                       |
 | `sbCommitment`                          | As described below                                               |
 | `currentTallyCommitment`                | As described below                                               |
@@ -874,7 +808,7 @@ $\mathsf{poseidon_3}([tc_r, tc_t, tc_p])$
 #### Statements that the circuit proves
 
 1. That the coordinator knows the preimage of `sbCommitment` (see above)
-2. That `index` is less than or equal to `numSignUps`
+2. That `index` is less than or equal to `totalSignups`
 3. That each ballot in `ballots` is in a member of the ballot tree with the Merkle root `ballotRoot` at indices `batchStartIndex` to `batchStartIndex + (5 ** intStateTreeDepth)`
 4. That each set of votes (`votes[i]`) has the Merkle root $blt_r$ whose value equals `ballots[i][1]`
 5. That the tally is valid, which is:

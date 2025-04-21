@@ -22,7 +22,7 @@ In the deploy-config.json file set the `useQuadraticVoting` value to **true**.
 ```json
 "Poll": {
     "pollDuration": 604800,
-    "coordinatorPubkey": "macipk",
+    "coordinatorPublicKey": "macipk",
     "useQuadraticVoting": true
 }
 ```
@@ -46,7 +46,7 @@ In the deploy-config.json file set the `useQuadraticVoting` value to **false**.
 ```json
 "Poll": {
     "pollDuration": 604800,
-    "coordinatorPubkey": "macipk",
+    "coordinatorPublicKey": "macipk",
     "useQuadraticVoting": false
 }
 ```

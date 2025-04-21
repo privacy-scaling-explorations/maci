@@ -1,5 +1,5 @@
 import { VOTE_OPTION_TREE_ARITY } from "@maci-protocol/core";
-import { genRandomSalt } from "@maci-protocol/crypto";
+import { generateRandomSalt } from "@maci-protocol/crypto";
 import { Keypair } from "@maci-protocol/domainobjs";
 import {
   generateVote,
@@ -17,7 +17,7 @@ import {
   publish,
   deployPoll,
   generateProofs,
-  deployVkRegistryContract,
+  deployVerifyingKeysRegistryContract,
   timeTravel,
   type IGenerateProofsArgs,
   isArm,
@@ -81,7 +81,7 @@ describe("e2e tests", function test() {
   this.timeout(900000);
 
   let maciAddresses: IMaciContracts;
-  let vkRegistryAddress: string;
+  let verifyingKeysRegistryAddress: string;
   let initialVoiceCreditProxyContractAddress: string;
   let verifierContractAddress: string;
   let signer: Signer;
@@ -104,12 +104,12 @@ describe("e2e tests", function test() {
     useQuadraticVoting: true,
   };
 
-  // before all tests we deploy the vk registry contract and set the verifying keys
+  // before all tests we deploy the verifying keys registry contract and set the verifying keys
   before(async () => {
     signer = await getDefaultSigner();
 
-    // we deploy the vk registry contract
-    vkRegistryAddress = await deployVkRegistryContract({ signer });
+    // we deploy the verifying keys registry contract
+    verifyingKeysRegistryAddress = await deployVerifyingKeysRegistryContract({ signer });
 
     const [initialVoiceCreditProxy] = await deployConstantInitialVoiceCreditProxy(
       { amount: DEFAULT_INITIAL_VOICE_CREDITS },
@@ -123,7 +123,7 @@ describe("e2e tests", function test() {
     verifierContractAddress = await verifier.getAddress();
 
     // we set the verifying keys
-    await setVerifyingKeys({ ...(await verifyingKeysArgs(signer)), vkRegistryAddress });
+    await setVerifyingKeys({ ...(await verifyingKeysArgs(signer)), verifyingKeysRegistryAddress });
   });
 
   describe("2 signups (1 after stateAq is merged and logs are fetched), 1 message", () => {
@@ -166,7 +166,7 @@ describe("e2e tests", function test() {
         relayers: [await signer.getAddress()],
         maciAddress: maciAddresses.maciContractAddress,
         verifierContractAddress,
-        vkRegistryContractAddress: vkRegistryAddress,
+        verifyingKeysRegistryContractAddress: verifyingKeysRegistryAddress,
         policyContractAddress: pollPolicyContractAddress,
         initialVoiceCreditProxyContractAddress,
       });
@@ -207,7 +207,7 @@ describe("e2e tests", function test() {
         pollId: 0n,
         newVoteWeight: 9n,
         maciAddress: maciAddresses.maciContractAddress,
-        salt: genRandomSalt(),
+        salt: generateRandomSalt(),
         privateKey: user.privateKey.serialize(),
         signer,
       });
@@ -276,7 +276,7 @@ describe("e2e tests", function test() {
         relayers: [await signer.getAddress()],
         maciAddress: maciAddresses.maciContractAddress,
         verifierContractAddress,
-        vkRegistryContractAddress: vkRegistryAddress,
+        verifyingKeysRegistryContractAddress: verifyingKeysRegistryAddress,
         policyContractAddress: pollPolicyContractAddress,
         initialVoiceCreditProxyContractAddress,
       });
@@ -325,7 +325,7 @@ describe("e2e tests", function test() {
         pollId: 0n,
         newVoteWeight: 4n,
         maciAddress: maciAddresses.maciContractAddress,
-        salt: genRandomSalt(),
+        salt: generateRandomSalt(),
         privateKey: users[0].privateKey.serialize(),
         signer,
       });
@@ -338,7 +338,7 @@ describe("e2e tests", function test() {
         pollId: 0n,
         newVoteWeight: 3n,
         maciAddress: maciAddresses.maciContractAddress,
-        salt: genRandomSalt(),
+        salt: generateRandomSalt(),
         privateKey: users[0].privateKey.serialize(),
         signer,
       });
@@ -351,7 +351,7 @@ describe("e2e tests", function test() {
         pollId: 0n,
         newVoteWeight: 9n,
         maciAddress: maciAddresses.maciContractAddress,
-        salt: genRandomSalt(),
+        salt: generateRandomSalt(),
         privateKey: users[0].privateKey.serialize(),
         signer,
       });
@@ -364,7 +364,7 @@ describe("e2e tests", function test() {
         pollId: 0n,
         newVoteWeight: 9n,
         maciAddress: maciAddresses.maciContractAddress,
-        salt: genRandomSalt(),
+        salt: generateRandomSalt(),
         privateKey: users[1].privateKey.serialize(),
         signer,
       });
@@ -377,7 +377,7 @@ describe("e2e tests", function test() {
         pollId: 0n,
         newVoteWeight: 9n,
         maciAddress: maciAddresses.maciContractAddress,
-        salt: genRandomSalt(),
+        salt: generateRandomSalt(),
         privateKey: users[2].privateKey.serialize(),
         signer,
       });
@@ -390,7 +390,7 @@ describe("e2e tests", function test() {
         pollId: 0n,
         newVoteWeight: 3n,
         maciAddress: maciAddresses.maciContractAddress,
-        salt: genRandomSalt(),
+        salt: generateRandomSalt(),
         privateKey: users[3].privateKey.serialize(),
         signer,
       });
@@ -403,7 +403,7 @@ describe("e2e tests", function test() {
         pollId: 0n,
         newVoteWeight: 2n,
         maciAddress: maciAddresses.maciContractAddress,
-        salt: genRandomSalt(),
+        salt: generateRandomSalt(),
         privateKey: users[3].privateKey.serialize(),
         signer,
       });
@@ -416,7 +416,7 @@ describe("e2e tests", function test() {
         pollId: 0n,
         newVoteWeight: 9n,
         maciAddress: maciAddresses.maciContractAddress,
-        salt: genRandomSalt(),
+        salt: generateRandomSalt(),
         privateKey: users[3].privateKey.serialize(),
         signer,
       });
@@ -427,7 +427,7 @@ describe("e2e tests", function test() {
         {
           pollId: 0n,
           voteOptionIndex: 1n,
-          salt: genRandomSalt(),
+          salt: generateRandomSalt(),
           nonce: 2n,
           privateKey: users[0].privateKey,
           stateIndex: 1n,
@@ -439,7 +439,7 @@ describe("e2e tests", function test() {
         {
           pollId: 0n,
           voteOptionIndex: 1n,
-          salt: genRandomSalt(),
+          salt: generateRandomSalt(),
           nonce: 2n,
           privateKey: users[0].privateKey,
           stateIndex: 1n,
@@ -451,7 +451,7 @@ describe("e2e tests", function test() {
         {
           pollId: 0n,
           voteOptionIndex: 1n,
-          salt: genRandomSalt(),
+          salt: generateRandomSalt(),
           nonce: 1n,
           privateKey: users[0].privateKey,
           stateIndex: 1n,
@@ -463,7 +463,7 @@ describe("e2e tests", function test() {
         {
           pollId: 0n,
           voteOptionIndex: 1n,
-          salt: genRandomSalt(),
+          salt: generateRandomSalt(),
           nonce: 1n,
           privateKey: users[1].privateKey,
           stateIndex: 2n,
@@ -475,7 +475,7 @@ describe("e2e tests", function test() {
         {
           pollId: 0n,
           voteOptionIndex: 1n,
-          salt: genRandomSalt(),
+          salt: generateRandomSalt(),
           nonce: 1n,
           privateKey: users[2].privateKey,
           stateIndex: 3n,
@@ -487,7 +487,7 @@ describe("e2e tests", function test() {
         {
           pollId: 0n,
           voteOptionIndex: 0n,
-          salt: genRandomSalt(),
+          salt: generateRandomSalt(),
           nonce: 3n,
           privateKey: users[3].privateKey,
           stateIndex: 4n,
@@ -499,7 +499,7 @@ describe("e2e tests", function test() {
         {
           pollId: 0n,
           voteOptionIndex: 0n,
-          salt: genRandomSalt(),
+          salt: generateRandomSalt(),
           nonce: 2n,
           privateKey: users[3].privateKey,
           stateIndex: 4n,
@@ -511,7 +511,7 @@ describe("e2e tests", function test() {
         {
           pollId: 0n,
           voteOptionIndex: 0n,
-          salt: genRandomSalt(),
+          salt: generateRandomSalt(),
           nonce: 1n,
           privateKey: users[3].privateKey,
           stateIndex: 4n,
@@ -590,7 +590,7 @@ describe("e2e tests", function test() {
         relayers: [await signer.getAddress()],
         maciAddress: maciAddresses.maciContractAddress,
         verifierContractAddress,
-        vkRegistryContractAddress: vkRegistryAddress,
+        verifyingKeysRegistryContractAddress: verifyingKeysRegistryAddress,
         policyContractAddress: pollPolicyContractAddress,
         initialVoiceCreditProxyContractAddress,
       });
@@ -633,7 +633,7 @@ describe("e2e tests", function test() {
           generateVote({
             pollId: 0n,
             voteOptionIndex: 0n,
-            salt: genRandomSalt(),
+            salt: generateRandomSalt(),
             nonce: 1n,
             privateKey: users[0].privateKey,
             stateIndex: 1n,
@@ -663,7 +663,7 @@ describe("e2e tests", function test() {
           pollId: 0n,
           newVoteWeight: 9n,
           maciAddress: maciAddresses.maciContractAddress,
-          salt: genRandomSalt(),
+          salt: generateRandomSalt(),
           privateKey: users[0].privateKey.serialize(),
           signer,
         });
@@ -725,7 +725,7 @@ describe("e2e tests", function test() {
         relayers: [await signer.getAddress()],
         maciAddress: maciAddresses.maciContractAddress,
         verifierContractAddress,
-        vkRegistryContractAddress: vkRegistryAddress,
+        verifyingKeysRegistryContractAddress: verifyingKeysRegistryAddress,
         policyContractAddress: pollPolicyContractAddress,
         initialVoiceCreditProxyContractAddress,
       });
@@ -777,7 +777,7 @@ describe("e2e tests", function test() {
           nonce: 1n,
           pollId: 0n,
           newVoteWeight: 9n,
-          salt: genRandomSalt(),
+          salt: generateRandomSalt(),
           privateKey: users[i].privateKey.serialize(),
           signer,
         });
@@ -837,7 +837,7 @@ describe("e2e tests", function test() {
         relayers: [await signer.getAddress()],
         maciAddress: maciAddresses.maciContractAddress,
         verifierContractAddress,
-        vkRegistryContractAddress: vkRegistryAddress,
+        verifyingKeysRegistryContractAddress: verifyingKeysRegistryAddress,
         policyContractAddress: pollPolicyContractAddress,
         initialVoiceCreditProxyContractAddress,
       });
@@ -889,7 +889,7 @@ describe("e2e tests", function test() {
           nonce: 1n,
           pollId: 0n,
           newVoteWeight: 9n,
-          salt: genRandomSalt(),
+          salt: generateRandomSalt(),
           privateKey: users[i].privateKey.serialize(),
           signer,
         });
@@ -901,7 +901,7 @@ describe("e2e tests", function test() {
         {
           pollId: 0n,
           voteOptionIndex: 1n,
-          salt: genRandomSalt(),
+          salt: generateRandomSalt(),
           nonce: 2n,
           privateKey: users[0].privateKey,
           stateIndex: 1n,
@@ -913,7 +913,7 @@ describe("e2e tests", function test() {
         {
           pollId: 0n,
           voteOptionIndex: 2n,
-          salt: genRandomSalt(),
+          salt: generateRandomSalt(),
           nonce: 3n,
           privateKey: users[2].privateKey,
           stateIndex: 3n,
@@ -925,7 +925,7 @@ describe("e2e tests", function test() {
         {
           pollId: 0n,
           voteOptionIndex: 3n,
-          salt: genRandomSalt(),
+          salt: generateRandomSalt(),
           nonce: 3n,
           privateKey: users[3].privateKey,
           stateIndex: 4n,
@@ -1004,7 +1004,7 @@ describe("e2e tests", function test() {
         relayers: [await signer.getAddress()],
         maciAddress: maciAddresses.maciContractAddress,
         verifierContractAddress,
-        vkRegistryContractAddress: vkRegistryAddress,
+        verifyingKeysRegistryContractAddress: verifyingKeysRegistryAddress,
         policyContractAddress: pollPolicyContractAddress,
         initialVoiceCreditProxyContractAddress,
       });
@@ -1040,7 +1040,7 @@ describe("e2e tests", function test() {
         pollId: 0n,
         newVoteWeight: 9n,
         maciAddress: maciAddresses.maciContractAddress,
-        salt: genRandomSalt(),
+        salt: generateRandomSalt(),
         privateKey: users[0].privateKey.serialize(),
         signer,
       });
@@ -1079,7 +1079,7 @@ describe("e2e tests", function test() {
         {
           pollId: 0n,
           voteOptionIndex: 0n,
-          salt: genRandomSalt(),
+          salt: generateRandomSalt(),
           nonce: 1n,
           privateKey: users[1].privateKey,
           stateIndex: 2n,
@@ -1133,7 +1133,7 @@ describe("e2e tests", function test() {
         relayers: [await signer.getAddress()],
         maciAddress: maciAddresses.maciContractAddress,
         verifierContractAddress,
-        vkRegistryContractAddress: vkRegistryAddress,
+        verifyingKeysRegistryContractAddress: verifyingKeysRegistryAddress,
         policyContractAddress: pollPolicyContractAddress,
         initialVoiceCreditProxyContractAddress,
       });
@@ -1192,7 +1192,7 @@ describe("e2e tests", function test() {
         {
           pollId: 1n,
           voteOptionIndex: 1n,
-          salt: genRandomSalt(),
+          salt: generateRandomSalt(),
           nonce: 1n,
           privateKey: users[0].privateKey,
           stateIndex: 1n,
@@ -1204,7 +1204,7 @@ describe("e2e tests", function test() {
         {
           pollId: 1n,
           voteOptionIndex: 0n,
-          salt: genRandomSalt(),
+          salt: generateRandomSalt(),
           nonce: 1n,
           privateKey: users[1].privateKey,
           stateIndex: 1n,
@@ -1237,7 +1237,7 @@ describe("e2e tests", function test() {
         pollId: 1n,
         newVoteWeight: 7n,
         maciAddress: maciAddresses.maciContractAddress,
-        salt: genRandomSalt(),
+        salt: generateRandomSalt(),
         privateKey: users[0].privateKey.serialize(),
         signer,
       });
@@ -1252,7 +1252,7 @@ describe("e2e tests", function test() {
         pollId: 1n,
         newVoteWeight: 7n,
         maciAddress: maciAddresses.maciContractAddress,
-        salt: genRandomSalt(),
+        salt: generateRandomSalt(),
         privateKey: users[1].privateKey.serialize(),
         signer,
       });
@@ -1316,7 +1316,7 @@ describe("e2e tests", function test() {
         relayers: [await signer.getAddress()],
         maciAddress: maciAddresses.maciContractAddress,
         verifierContractAddress,
-        vkRegistryContractAddress: vkRegistryAddress,
+        verifyingKeysRegistryContractAddress: verifyingKeysRegistryAddress,
         policyContractAddress: pollPolicyContractAddress,
         initialVoiceCreditProxyContractAddress,
       });
@@ -1383,7 +1383,7 @@ describe("e2e tests", function test() {
         pollId: 0n,
         newVoteWeight: 9n,
         maciAddress: maciAddresses.maciContractAddress,
-        salt: genRandomSalt(),
+        salt: generateRandomSalt(),
         privateKey: users[0].privateKey.serialize(),
         signer,
       });
@@ -1392,7 +1392,7 @@ describe("e2e tests", function test() {
         {
           pollId: 0n,
           voteOptionIndex: 0n,
-          salt: genRandomSalt(),
+          salt: generateRandomSalt(),
           nonce: 1n,
           privateKey: users[0].privateKey,
           stateIndex: 1n,
@@ -1447,7 +1447,7 @@ describe("e2e tests", function test() {
           relayers: [await signer.getAddress()],
           maciAddress: maciAddresses.maciContractAddress,
           verifierContractAddress,
-          vkRegistryContractAddress: vkRegistryAddress,
+          verifyingKeysRegistryContractAddress: verifyingKeysRegistryAddress,
           policyContractAddress: pollPolicyContractAddress,
           initialVoiceCreditProxyContractAddress,
         });
@@ -1466,7 +1466,7 @@ describe("e2e tests", function test() {
           relayers: [await signer.getAddress()],
           maciAddress: maciAddresses.maciContractAddress,
           verifierContractAddress,
-          vkRegistryContractAddress: vkRegistryAddress,
+          verifyingKeysRegistryContractAddress: verifyingKeysRegistryAddress,
           policyContractAddress: pollPolicyContractAddress,
           initialVoiceCreditProxyContractAddress,
         });
@@ -1475,14 +1475,14 @@ describe("e2e tests", function test() {
 
     it("join the second and third polls", async () => {
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
-      for (let p = 1; p <= 2; p += 1) {
+      for (let pollId = 1; pollId <= 2; pollId += 1) {
         for (let i = 0; i < users.length; i += 1) {
           // eslint-disable-next-line no-await-in-loop
           await joinPoll({
             maciAddress: maciAddresses.maciContractAddress,
             privateKey: users[i].privateKey.serialize(),
             stateIndex: BigInt(i + 1),
-            pollId: BigInt(p),
+            pollId: BigInt(pollId),
             pollJoiningZkey: pollJoiningTestZkeyPath,
             useWasm: true,
             pollWasm: testPollJoiningWasmPath,
@@ -1495,7 +1495,7 @@ describe("e2e tests", function test() {
           // eslint-disable-next-line no-await-in-loop
           const { isJoined, pollStateIndex } = await getJoinedUserData({
             maciAddress: maciAddresses.maciContractAddress,
-            pollId: BigInt(p),
+            pollId: BigInt(pollId),
             pollPublicKey: users[i].publicKey.serialize(),
             signer,
             startBlock: 0,
@@ -1516,7 +1516,7 @@ describe("e2e tests", function test() {
         pollId: 1n,
         newVoteWeight: 9n,
         maciAddress: maciAddresses.maciContractAddress,
-        salt: genRandomSalt(),
+        salt: generateRandomSalt(),
         privateKey: users[0].privateKey.serialize(),
         signer,
       });
@@ -1529,7 +1529,7 @@ describe("e2e tests", function test() {
         pollId: 1n,
         newVoteWeight: 1n,
         maciAddress: maciAddresses.maciContractAddress,
-        salt: genRandomSalt(),
+        salt: generateRandomSalt(),
         privateKey: users[1].privateKey.serialize(),
         signer,
       });
@@ -1542,7 +1542,7 @@ describe("e2e tests", function test() {
         pollId: 1n,
         newVoteWeight: 3n,
         maciAddress: maciAddresses.maciContractAddress,
-        salt: genRandomSalt(),
+        salt: generateRandomSalt(),
         privateKey: users[2].privateKey.serialize(),
         signer,
       });
@@ -1553,7 +1553,7 @@ describe("e2e tests", function test() {
         {
           pollId: 1n,
           voteOptionIndex: 0n,
-          salt: genRandomSalt(),
+          salt: generateRandomSalt(),
           nonce: 1n,
           privateKey: users[0].privateKey,
           stateIndex: 1n,
@@ -1582,7 +1582,7 @@ describe("e2e tests", function test() {
         {
           pollId: 2n,
           voteOptionIndex: 7n,
-          salt: genRandomSalt(),
+          salt: generateRandomSalt(),
           nonce: 1n,
           privateKey: users[4].privateKey,
           stateIndex: 4n,
@@ -1594,7 +1594,7 @@ describe("e2e tests", function test() {
         {
           pollId: 2n,
           voteOptionIndex: 5n,
-          salt: genRandomSalt(),
+          salt: generateRandomSalt(),
           nonce: 1n,
           privateKey: users[5].privateKey,
           stateIndex: 5n,
@@ -1627,7 +1627,7 @@ describe("e2e tests", function test() {
         pollId: 2n,
         newVoteWeight: 3n,
         maciAddress: maciAddresses.maciContractAddress,
-        salt: genRandomSalt(),
+        salt: generateRandomSalt(),
         privateKey: users[3].privateKey.serialize(),
         signer,
       });
@@ -1640,7 +1640,7 @@ describe("e2e tests", function test() {
         pollId: 2n,
         newVoteWeight: 2n,
         maciAddress: maciAddresses.maciContractAddress,
-        salt: genRandomSalt(),
+        salt: generateRandomSalt(),
         privateKey: users[4].privateKey.serialize(),
         signer,
       });
@@ -1653,7 +1653,7 @@ describe("e2e tests", function test() {
         pollId: 2n,
         newVoteWeight: 9n,
         maciAddress: maciAddresses.maciContractAddress,
-        salt: genRandomSalt(),
+        salt: generateRandomSalt(),
         privateKey: users[5].privateKey.serialize(),
         signer,
       });
@@ -1748,7 +1748,7 @@ describe("e2e tests", function test() {
         relayers: [await signer.getAddress()],
         maciAddress: maciAddresses.maciContractAddress,
         verifierContractAddress,
-        vkRegistryContractAddress: vkRegistryAddress,
+        verifyingKeysRegistryContractAddress: verifyingKeysRegistryAddress,
         policyContractAddress: pollPolicyContractAddress,
         initialVoiceCreditProxyContractAddress,
       });
@@ -1790,7 +1790,7 @@ describe("e2e tests", function test() {
         pollId: 0n,
         newVoteWeight: 3n,
         maciAddress: maciAddresses.maciContractAddress,
-        salt: genRandomSalt(),
+        salt: generateRandomSalt(),
         privateKey: user.privateKey.serialize(),
         signer,
       });
@@ -1801,7 +1801,7 @@ describe("e2e tests", function test() {
         {
           pollId: 0n,
           voteOptionIndex: 5n,
-          salt: genRandomSalt(),
+          salt: generateRandomSalt(),
           nonce: 1n,
           privateKey: user.privateKey,
           stateIndex: 1n,

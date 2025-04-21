@@ -94,7 +94,7 @@ describe("Utilities", () => {
 
       const expectedHash = message.hash(padKey);
 
-      const onChainHash = await utilitiesContract.hashMessageAndEncPubKey(
+      const onChainHash = await utilitiesContract.hashMessageAndPublicKey(
         message.asContractParam(),
         padKey.asContractParam(),
       );

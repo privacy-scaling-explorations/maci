@@ -1,5 +1,5 @@
 import type { Proof } from "../../ts/types";
-import type { MACI, MessageProcessor, Poll, Tally, Verifier, VkRegistry } from "../../typechain-types";
+import type { MACI, MessageProcessor, Poll, Tally, Verifier, VerifyingKeysRegistry } from "../../typechain-types";
 import type { Poll as PollWrapper } from "@maci-protocol/core";
 import type { Keypair, PrivateKey } from "@maci-protocol/domainobjs";
 import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
@@ -207,7 +207,7 @@ export interface IProofGeneratorParams {
   /**
    * Message processing circuit files
    */
-  mp: ICircuitFiles;
+  messageProcessor: ICircuitFiles;
 
   /**
    * Tally circuit files
@@ -387,9 +387,9 @@ export interface IProverParams {
   maciContract: MACI;
 
   /**
-   * VkRegistry contract typechain wrapper
+   * VerifyingKeysRegistry contract typechain wrapper
    */
-  vkRegistryContract: VkRegistry;
+  verifyingKeysRegistryContract: VerifyingKeysRegistry;
 
   /**
    * Verifier contract typechain wrapper
@@ -679,7 +679,7 @@ export enum EContracts {
   PoseidonT4 = "PoseidonT4",
   PoseidonT5 = "PoseidonT5",
   PoseidonT6 = "PoseidonT6",
-  VkRegistry = "VkRegistry",
+  VerifyingKeysRegistry = "VerifyingKeysRegistry",
   Poll = "Poll",
   Tally = "Tally",
   MessageProcessor = "MessageProcessor",
@@ -814,21 +814,21 @@ export interface TallyData {
   };
 
   /**
-   * The per VO spent voice credits.
+   * The per vote option spent voice credits.
    */
-  perVOSpentVoiceCredits?: {
+  perVoteOptionSpentVoiceCredits?: {
     /**
-     * The tally of the per VO spent voice credits.
+     * The tally of the per vote option spent voice credits.
      */
     tally: string[];
 
     /**
-     * The salt of the per VO spent voice credits.
+     * The salt of the per vote option spent voice credits.
      */
     salt: string;
 
     /**
-     * The commitment of the per VO spent voice credits.
+     * The commitment of the per vote option spent voice credits.
      */
     commitment: string;
   };

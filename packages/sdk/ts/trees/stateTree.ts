@@ -33,7 +33,7 @@ export const generateSignUpTree = async ({
   const maciContract = MACIFactory.connect(address, provider);
   const signUpTree = new LeanIMT(hashLeanIMT as LeanIMTHashFunction);
   signUpTree.insert(PAD_KEY_HASH);
-  const pubKeys: PublicKey[] = [];
+  const publicKeys: PublicKey[] = [];
 
   // Fetch event logs in batches (lastBlock inclusive)
   for (let i = fromBlock; i <= lastBlock; i += blocksPerRequest + 1) {
@@ -45,13 +45,13 @@ export const generateSignUpTree = async ({
     const signUpLogs = await maciContract.queryFilter(maciContract.filters.SignUp(), i, toBlock);
     signUpLogs.forEach((event) => {
       assert(!!event);
-      const pubKeyX = event.args._userPubKeyX;
-      const pubKeyY = event.args._userPubKeyY;
+      const publicKeyX = event.args._userPublicKeyX;
+      const publicKeyY = event.args._userPublicKeyY;
 
-      const publicKey = new PublicKey([pubKeyX, pubKeyY]);
+      const publicKey = new PublicKey([publicKeyX, publicKeyY]);
 
-      pubKeys.push(publicKey);
-      signUpTree.insert(hashLeftRight(pubKeyX, pubKeyY));
+      publicKeys.push(publicKey);
+      signUpTree.insert(hashLeftRight(publicKeyX, publicKeyY));
     });
 
     if (sleepAmount) {
@@ -62,6 +62,6 @@ export const generateSignUpTree = async ({
 
   return {
     signUpTree,
-    pubKeys,
+    publicKeys,
   };
 };

@@ -7,7 +7,7 @@ import { Ballot } from "@maci-protocol/domainobjs";
  * @param stateTreeDepth The depth of the state tree
  * @returns The empty ballot roots
  */
-export const genEmptyBallotRoots = (stateTreeDepth: number): bigint[] => {
+export const generateEmptyBallotRoots = (stateTreeDepth: number): bigint[] => {
   const roots: bigint[] = [];
 
   for (let i = 0; i < 5; i += 1) {

@@ -15,7 +15,7 @@ export const verify = async ({
   tallyData,
   signer,
   tallyCommitments,
-  numVoteOptions,
+  totalVoteOptions,
   voteOptionTreeDepth,
 }: IVerifyArgs): Promise<boolean> => {
   const useQv = tallyData.isQuadratic;
@@ -42,7 +42,7 @@ export const verify = async ({
     throw new Error("Invalid results commitment format");
   }
 
-  if (tallyData.results.tally.length !== numVoteOptions) {
+  if (tallyData.results.tally.length !== totalVoteOptions) {
     throw new Error("Wrong number of vote options.");
   }
 
@@ -54,7 +54,7 @@ export const verify = async ({
     newResultsCommitment,
   } = tallyCommitments;
 
-  // verify that the results commitment matches the output of genTreeCommitment()
+  // verify that the results commitment matches the output of generateTreeCommitment()
   if (onChainTallyCommitment !== newTallyCommitment) {
     throw new Error("The on-chain tally commitment does not match.");
   }
@@ -92,7 +92,7 @@ export const verify = async ({
     return true;
   }
 
-  if (tallyData.perVOSpentVoiceCredits?.tally.length !== numVoteOptions) {
+  if (tallyData.perVoteOptionSpentVoiceCredits?.tally.length !== totalVoteOptions) {
     throw new Error("Wrong number of vote options.");
   }
 

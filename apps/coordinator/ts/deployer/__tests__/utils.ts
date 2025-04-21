@@ -24,7 +24,7 @@ export const testMaciDeploymentConfig: IDeployMaciConfig = {
     policy: EPolicies.FreeForAll,
     stateTreeDepth: 10,
   },
-  VkRegistry: {
+  VerifyingKeysRegistry: {
     args: {
       stateTreeDepth: 10n,
       pollStateTreeDepth: 10n,

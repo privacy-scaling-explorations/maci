@@ -1,4 +1,4 @@
-import { genRandomSalt } from "@maci-protocol/crypto";
+import { generateRandomSalt } from "@maci-protocol/crypto";
 import { expect } from "chai";
 
 import { PCommand, Keypair } from "..";
@@ -6,9 +6,10 @@ import { PCommand, Keypair } from "..";
 describe("Commands", () => {
   const { privateKey, publicKey } = new Keypair();
 
-  const ecdhSharedKey = Keypair.genEcdhSharedKey(privateKey, publicKey);
-  // eslint-disable-next-line no-bitwise
-  const random50bitBigInt = (): bigint => ((BigInt(1) << BigInt(50)) - BigInt(1)) & BigInt(genRandomSalt().toString());
+  const ecdhSharedKey = Keypair.generateEcdhSharedKey(privateKey, publicKey);
+  const random50bitBigInt = (): bigint =>
+    // eslint-disable-next-line no-bitwise
+    ((BigInt(1) << BigInt(50)) - BigInt(1)) & BigInt(generateRandomSalt().toString());
 
   describe("constructor", () => {
     it("should create a PCommand", () => {
@@ -19,7 +20,7 @@ describe("Commands", () => {
         random50bitBigInt(),
         random50bitBigInt(),
         random50bitBigInt(),
-        genRandomSalt(),
+        generateRandomSalt(),
       );
       expect(command).to.not.eq(null);
     });
@@ -33,7 +34,7 @@ describe("Commands", () => {
       random50bitBigInt(),
       random50bitBigInt(),
       random50bitBigInt(),
-      genRandomSalt(),
+      generateRandomSalt(),
     );
     it("should produce a valid signature", () => {
       const signature = command.sign(privateKey);
@@ -49,7 +50,7 @@ describe("Commands", () => {
       random50bitBigInt(),
       random50bitBigInt(),
       random50bitBigInt(),
-      genRandomSalt(),
+      generateRandomSalt(),
     );
 
     const signature = command.sign(privateKey);

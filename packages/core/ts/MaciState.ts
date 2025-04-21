@@ -1,7 +1,7 @@
 import { IncrementalQuinTree } from "@maci-protocol/crypto";
 import { PublicKey, type Keypair, padKey } from "@maci-protocol/domainobjs";
 
-import type { IJsonMaciState, IJsonPoll, IMaciState, TreeDepths } from "./utils/types";
+import type { IJsonMaciState, IJsonPoll, IMaciState, ITreeDepths } from "./utils/types";
 
 import { Poll } from "./Poll";
 import { STATE_TREE_ARITY } from "./utils/constants";
@@ -14,7 +14,7 @@ export class MaciState implements IMaciState {
   polls: Map<bigint, Poll> = new Map<bigint, Poll>();
 
   // the public keys of the users
-  pubKeys: PublicKey[] = [];
+  publicKeys: PublicKey[] = [];
 
   // how deep the state tree is
   stateTreeDepth: number;
@@ -22,7 +22,7 @@ export class MaciState implements IMaciState {
   // state tree
   stateTree?: IncrementalQuinTree;
 
-  numSignUps = 0;
+  totalSignups = 0;
 
   // to keep track if a poll is currently being processed
   pollBeingProcessed?: boolean;
@@ -37,10 +37,10 @@ export class MaciState implements IMaciState {
     this.stateTreeDepth = stateTreeDepth;
 
     // we put a blank state leaf to prevent a DoS attack
-    this.pubKeys.push(padKey);
+    this.publicKeys.push(padKey);
     // we need to increase the number of signups by one given
     // that we already added the blank leaf
-    this.numSignUps += 1;
+    this.totalSignups += 1;
   }
 
   /**
@@ -49,10 +49,10 @@ export class MaciState implements IMaciState {
    * @returns The index of the newly signed-up user in the state tree.
    */
   signUp(publicKey: PublicKey): number {
-    this.numSignUps += 1;
+    this.totalSignups += 1;
 
     this.stateTree?.insert(publicKey.hash());
-    return this.pubKeys.push(publicKey.copy()) - 1;
+    return this.publicKeys.push(publicKey.copy()) - 1;
   }
 
   /**
@@ -66,7 +66,7 @@ export class MaciState implements IMaciState {
    */
   deployPoll(
     pollEndTimestamp: bigint,
-    treeDepths: TreeDepths,
+    treeDepths: ITreeDepths,
     messageBatchSize: number,
     coordinatorKeypair: Keypair,
     voteOptions: bigint,
@@ -101,7 +101,7 @@ export class MaciState implements IMaciState {
   copy = (): MaciState => {
     const copied = new MaciState(this.stateTreeDepth);
 
-    copied.pubKeys = this.pubKeys.map((x: PublicKey) => x.copy());
+    copied.publicKeys = this.publicKeys.map((x: PublicKey) => x.copy());
 
     copied.polls = new Map(Array.from(this.polls, ([key, value]) => [key, value.copy()]));
 
@@ -117,7 +117,7 @@ export class MaciState implements IMaciState {
     const result =
       this.stateTreeDepth === m.stateTreeDepth &&
       this.polls.size === m.polls.size &&
-      this.pubKeys.length === m.pubKeys.length;
+      this.publicKeys.length === m.publicKeys.length;
 
     if (!result) {
       return false;
@@ -128,8 +128,8 @@ export class MaciState implements IMaciState {
         return false;
       }
     }
-    for (let i = 0; i < this.pubKeys.length; i += 1) {
-      if (!this.pubKeys[i].equals(m.pubKeys[i])) {
+    for (let i = 0; i < this.publicKeys.length; i += 1) {
+      if (!this.publicKeys[i].equals(m.publicKeys[i])) {
         return false;
       }
     }
@@ -145,10 +145,10 @@ export class MaciState implements IMaciState {
     return {
       stateTreeDepth: this.stateTreeDepth,
       polls: Array.from(this.polls.values()).map((poll) => poll.toJSON()),
-      pubKeys: this.pubKeys.map((publicKey) => publicKey.toJSON()),
+      publicKeys: this.publicKeys.map((publicKey) => publicKey.toJSON()),
       pollBeingProcessed: Boolean(this.pollBeingProcessed),
       currentPollBeingProcessed: this.currentPollBeingProcessed ? this.currentPollBeingProcessed.toString() : "",
-      numSignUps: this.numSignUps,
+      totalSignups: this.totalSignups,
     };
   }
 
@@ -161,10 +161,10 @@ export class MaciState implements IMaciState {
     const maciState = new MaciState(json.stateTreeDepth);
 
     // assign the json values to the new instance
-    maciState.pubKeys = json.pubKeys.map((publicKey) => PublicKey.fromJSON(publicKey));
+    maciState.publicKeys = json.publicKeys.map((publicKey) => PublicKey.fromJSON(publicKey));
     maciState.pollBeingProcessed = json.pollBeingProcessed;
     maciState.currentPollBeingProcessed = BigInt(json.currentPollBeingProcessed);
-    maciState.numSignUps = json.numSignUps;
+    maciState.totalSignups = json.totalSignups;
 
     // re-generate the polls and set the maci state reference
     maciState.polls = new Map(

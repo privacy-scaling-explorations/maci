@@ -1,4 +1,4 @@
-export { calcDepthFromNumLeaves, genTreeCommitment, genTreeProof } from "./utils";
+export { calcDepthFromNumLeaves, generateTreeCommitment, genTreeProof } from "./utils";
 
 export { IncrementalQuinTree } from "./quinTree";
 
@@ -7,17 +7,17 @@ export { bigInt2Buffer, stringifyBigInts, unstringifyBigInts, deepCopyBigIntArra
 export { NOTHING_UP_MY_SLEEVE, SNARK_FIELD_SIZE, PAD_KEY_HASH } from "./constants";
 
 export {
-  genPrivKey,
-  genRandomSalt,
-  formatPrivKeyForBabyJub,
-  genPubKey,
-  genKeypair,
-  genEcdhSharedKey,
-  packPubKey,
-  unpackPubKey,
+  generatePrivateKey,
+  generateRandomSalt,
+  formatPrivateKeyForBabyJub,
+  generatePublicKey,
+  generateKeypair,
+  generateEcdhSharedKey,
+  packPublicKey,
+  unpackPublicKey,
 } from "./keys";
 
-export { G1Point, G2Point, genRandomBabyJubValue } from "./babyjub";
+export { G1Point, G2Point, generateRandomBabyJubValue } from "./babyjub";
 
 export {
   sha256Hash,

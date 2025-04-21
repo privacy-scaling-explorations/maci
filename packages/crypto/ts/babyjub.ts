@@ -112,7 +112,7 @@ export class G2Point {
  * http://cvsweb.openbsd.org/cgi-bin/cvsweb/~checkout~/src/lib/libc/crypt/arc4random_uniform.c
  * @returns A BabyJub-compatible random value.
  */
-export const genRandomBabyJubValue = (): bigint => {
+export const generateRandomBabyJubValue = (): bigint => {
   // Prevent modulo bias
   // const lim = BigInt('0x10000000000000000000000000000000000000000000000000000000000000000')
   // const min = (lim - SNARK_FIELD_SIZE) % SNARK_FIELD_SIZE

@@ -6,7 +6,7 @@ import type { ICheckVerifyingKeysArgs } from "./types";
 
 import { contractExists } from "../utils";
 
-import { compareVks, extractAllVks, getAllOnChainVks } from "./utils";
+import { compareVerifyingKeys, extractAllVerifyingKeys, getAllOnChainVerifyingKeys } from "./utils";
 
 /**
  * Command to confirm that the verifying keys in the contract match the
@@ -24,18 +24,18 @@ export const checkVerifyingKeys = async ({
   tallyVotesZkeyPath,
   pollJoiningZkeyPath,
   pollJoinedZkeyPath,
-  vkRegistry,
+  verifyingKeysRegistry,
   signer,
   useQuadraticVoting = true,
 }: ICheckVerifyingKeysArgs): Promise<boolean> => {
-  if (!vkRegistry) {
-    throw new Error("Please provide a VkRegistry contract address");
+  if (!verifyingKeysRegistry) {
+    throw new Error("Please provide a VerifyingKeysRegistry contract address");
   }
 
-  const isVkExists = await contractExists(signer.provider!, vkRegistry);
+  const isVerifyingKeyExists = await contractExists(signer.provider!, verifyingKeysRegistry);
 
-  if (!isVkExists) {
-    throw new Error("The VkRegistry contract does not exist");
+  if (!isVerifyingKeyExists) {
+    throw new Error("The VerifyingKeysRegistry contract does not exist");
   }
 
   // we need to ensure that the zkey files exist
@@ -52,17 +52,23 @@ export const checkVerifyingKeys = async ({
   }
 
   // extract the verification keys from the zkey files
-  const { pollJoiningVk, pollJoinedVk, processVk, tallyVk } = await extractAllVks({
-    processMessagesZkeyPath,
-    tallyVotesZkeyPath,
-    pollJoiningZkeyPath,
-    pollJoinedZkeyPath,
-  });
+  const { pollJoiningVerifyingKey, pollJoinedVerifyingKey, processVerifyingKey, tallyVerifyingKey } =
+    await extractAllVerifyingKeys({
+      processMessagesZkeyPath,
+      tallyVotesZkeyPath,
+      pollJoiningZkeyPath,
+      pollJoinedZkeyPath,
+    });
 
   const mode = useQuadraticVoting ? EMode.QV : EMode.NON_QV;
 
-  const { pollJoiningVkOnChain, pollJoinedVkOnChain, processVkOnChain, tallyVkOnChain } = await getAllOnChainVks({
-    vkRegistryAddress: vkRegistry,
+  const {
+    pollJoiningVerifyingKeyOnChain,
+    pollJoinedVerifyingKeyOnChain,
+    processVerifyingKeyOnChain,
+    tallyVerifyingKeyOnChain,
+  } = await getAllOnChainVerifyingKeys({
+    verifyingKeysRegistryAddress: verifyingKeysRegistry,
     signer,
     stateTreeDepth,
     voteOptionTreeDepth,
@@ -71,19 +77,19 @@ export const checkVerifyingKeys = async ({
     mode,
   });
 
-  if (!compareVks(pollJoiningVkOnChain, pollJoiningVk)) {
+  if (!compareVerifyingKeys(pollJoiningVerifyingKeyOnChain, pollJoiningVerifyingKey)) {
     throw new Error("Poll verifying keys do not match");
   }
 
-  if (!compareVks(pollJoinedVkOnChain, pollJoinedVk)) {
+  if (!compareVerifyingKeys(pollJoinedVerifyingKeyOnChain, pollJoinedVerifyingKey)) {
     throw new Error("Poll verifying keys do not match");
   }
 
-  if (!compareVks(processVkOnChain, processVk)) {
+  if (!compareVerifyingKeys(processVerifyingKeyOnChain, processVerifyingKey)) {
     throw new Error("Process verifying keys do not match");
   }
 
-  if (!compareVks(tallyVkOnChain, tallyVk)) {
+  if (!compareVerifyingKeys(tallyVerifyingKeyOnChain, tallyVerifyingKey)) {
     throw new Error("Tally verifying keys do not match");
   }
 

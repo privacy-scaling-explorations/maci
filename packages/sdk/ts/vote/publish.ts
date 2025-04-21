@@ -6,7 +6,7 @@ import { getPollContracts } from "../poll";
 
 import { generateVote } from "./generate";
 import { submitVote, submitVoteBatch } from "./submit";
-import { getCoordinatorPubKey } from "./utils";
+import { getCoordinatorPublicKey } from "./utils";
 
 /**
  * Publish a new message to a MACI Poll contract
@@ -25,21 +25,21 @@ export const publish = async ({
   privateKey: serializedPrivateKey,
   signer,
 }: IPublishArgs): Promise<IPublishData> => {
-  if (!PublicKey.isValidSerializedPubKey(serializedPublicKey)) {
+  if (!PublicKey.isValidSerialized(serializedPublicKey)) {
     throw new Error("Invalid MACI public key");
   }
 
-  if (!PrivateKey.isValidSerializedPrivKey(serializedPrivateKey)) {
+  if (!PrivateKey.isValidSerialized(serializedPrivateKey)) {
     throw new Error("Invalid MACI private key");
   }
 
   const { poll: pollContract } = await getPollContracts({ maciAddress, pollId, signer });
 
-  const votePubKey = PublicKey.deserialize(serializedPublicKey);
+  const votePublicKey = PublicKey.deserialize(serializedPublicKey);
   const privateKey = PrivateKey.deserialize(serializedPrivateKey);
 
   const [maxVoteOption, pollAddress] = await Promise.all([pollContract.voteOptions(), pollContract.getAddress()]);
-  const coordinatorPublicKey = await getCoordinatorPubKey(pollAddress, signer);
+  const coordinatorPublicKey = await getCoordinatorPublicKey(pollAddress, signer);
 
   const vote = generateVote({
     pollId,
@@ -51,7 +51,7 @@ export const publish = async ({
     voteWeight: newVoteWeight,
     coordinatorPublicKey,
     maxVoteOption,
-    newPublicKey: votePubKey,
+    newPublicKey: votePublicKey,
   });
 
   const txHash = await submitVote({ pollAddress, vote, signer });
@@ -76,21 +76,21 @@ export const publishBatch = async ({
   privateKey,
   signer,
 }: IPublishBatchArgs): Promise<IPublishBatchData> => {
-  if (!PublicKey.isValidSerializedPubKey(publicKey)) {
+  if (!PublicKey.isValidSerialized(publicKey)) {
     throw new Error("Invalid MACI public key");
   }
 
-  if (!PrivateKey.isValidSerializedPrivKey(privateKey)) {
+  if (!PrivateKey.isValidSerialized(privateKey)) {
     throw new Error("Invalid MACI private key");
   }
 
   const { poll: pollContract } = await getPollContracts({ maciAddress, pollId, signer });
 
-  const userMaciPubKey = PublicKey.deserialize(publicKey);
-  const userMaciPrivKey = PrivateKey.deserialize(privateKey);
+  const userMaciPublicKey = PublicKey.deserialize(publicKey);
+  const userMaciPrivateKey = PrivateKey.deserialize(privateKey);
 
   const [maxVoteOption, pollAddress] = await Promise.all([pollContract.voteOptions(), pollContract.getAddress()]);
-  const coordinatorPublicKey = await getCoordinatorPubKey(pollAddress, signer);
+  const coordinatorPublicKey = await getCoordinatorPublicKey(pollAddress, signer);
 
   // validate the vote options index against the max leaf index on-chain
   const votes = messages.map(({ stateIndex, voteOptionIndex, salt, nonce, newVoteWeight }) =>
@@ -98,13 +98,13 @@ export const publishBatch = async ({
       pollId,
       voteOptionIndex,
       nonce,
-      privateKey: userMaciPrivKey,
+      privateKey: userMaciPrivateKey,
       stateIndex,
       maxVoteOption: BigInt(maxVoteOption),
       salt,
       voteWeight: newVoteWeight,
       coordinatorPublicKey,
-      newPublicKey: userMaciPubKey,
+      newPublicKey: userMaciPublicKey,
     }),
   );
 

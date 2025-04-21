@@ -106,7 +106,7 @@ export class TestHarness {
     coordinatorKeypair: Keypair,
   ): { message: Message; encryptionPublicKey: PublicKey } => {
     const ecdhKeypair = new Keypair();
-    const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
+    const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
     const message = command.encrypt(signature, sharedKey);
     return { message, encryptionPublicKey: ecdhKeypair.publicKey };
   };
@@ -147,7 +147,7 @@ export class TestHarness {
    * This should be called after all votes have been cast.
    */
   finalizePoll = (): void => {
-    this.poll.updatePoll(BigInt(this.maciState.pubKeys.length));
+    this.poll.updatePoll(BigInt(this.maciState.publicKeys.length));
     this.poll.processMessages(this.pollId);
     this.poll.tallyVotes();
   };

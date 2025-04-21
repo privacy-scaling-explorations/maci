@@ -1,6 +1,6 @@
 import type { ITallyData } from "../tally/types";
 import type { Groth16Proof, SnarkProof } from "@maci-protocol/contracts";
-import type { CircuitInputs } from "@maci-protocol/core";
+import type { TCircuitInputs } from "@maci-protocol/core";
 import type { BigNumberish, Signer } from "ethers";
 import type { PublicSignals } from "snarkjs";
 
@@ -46,7 +46,7 @@ export interface IProof {
   /**
    * Circuit inputs
    */
-  circuitInputs: CircuitInputs;
+  circuitInputs: TCircuitInputs;
 
   /**
    * Public signals
@@ -55,7 +55,7 @@ export interface IProof {
 }
 
 /**
- * Arguments for the genProofs function
+ * Arguments for the generateProofs function
  */
 export interface IGenerateProofsArgs {
   /**

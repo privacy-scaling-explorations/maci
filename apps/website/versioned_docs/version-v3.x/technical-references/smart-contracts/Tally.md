@@ -16,14 +16,14 @@ This contract should be deployed alongside a `Poll`, with the the constructor ac
 ```ts
   constructor(
     address _verifier,
-    address _vkRegistry,
+    address _verifyingKeysRegistry,
     address _poll,
     address _mp,
     address _tallyOwner,
     Mode _mode
   ) payable {
     verifier = IVerifier(_verifier);
-    vkRegistry = IVkRegistry(_vkRegistry);
+    vkRegistry = IVkRegistry(_verifyingKeysRegistry);
     poll = IPoll(_poll);
     messageProcessor = IMessageProcessor(_mp);
     mode = _mode;

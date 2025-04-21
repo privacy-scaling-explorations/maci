@@ -1,4 +1,4 @@
-import { genRandomSalt } from "@maci-protocol/crypto";
+import { generateRandomSalt } from "@maci-protocol/crypto";
 import { Keypair, PCommand } from "@maci-protocol/domainobjs";
 
 import type { IGenerateVoteArgs, IVote } from "./types";
@@ -43,7 +43,7 @@ export const generateVote = ({
     throw new Error("Invalid salt");
   }
 
-  const userSalt = salt ? BigInt(salt) : genRandomSalt();
+  const userSalt = salt ? BigInt(salt) : generateRandomSalt();
 
   if (pollId < 0) {
     throw new Error("Invalid poll id");
@@ -67,7 +67,10 @@ export const generateVote = ({
   const signature = command.sign(privateKey);
 
   // encrypt the command using a shared key between the user and the coordinator
-  const message = command.encrypt(signature, Keypair.genEcdhSharedKey(encKeypair.privateKey, coordinatorPublicKey));
+  const message = command.encrypt(
+    signature,
+    Keypair.generateEcdhSharedKey(encKeypair.privateKey, coordinatorPublicKey),
+  );
 
   return {
     message,

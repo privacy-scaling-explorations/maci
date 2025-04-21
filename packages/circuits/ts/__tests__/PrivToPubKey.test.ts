@@ -31,8 +31,8 @@ describe("Public key derivation circuit", function test() {
 
     const derivedPublicKeyX = await getSignal(circuit, witness, "publicKey[0]");
     const derivedPublicKeyY = await getSignal(circuit, witness, "publicKey[1]");
-    expect(derivedPublicKeyX.toString()).to.be.eq(keypair.publicKey.rawPubKey[0].toString());
-    expect(derivedPublicKeyY.toString()).to.be.eq(keypair.publicKey.rawPubKey[1].toString());
+    expect(derivedPublicKeyX.toString()).to.be.eq(keypair.publicKey.raw[0].toString());
+    expect(derivedPublicKeyY.toString()).to.be.eq(keypair.publicKey.raw[1].toString());
   });
 
   it("should produce an output that is within the baby jubjub curve", async () => {
@@ -75,11 +75,11 @@ describe("Public key derivation circuit", function test() {
 
         // eslint-disable-next-line no-restricted-syntax
         for (const privateKey of privateKeys) {
-          const publicKey = mulPointEscalar(Base8, BigInt(privateKey.rawPrivKey));
+          const publicKey = mulPointEscalar(Base8, BigInt(privateKey.raw));
 
           // eslint-disable-next-line no-await-in-loop
           const witness = await circuit.calculateWitness({
-            privateKey: BigInt(privateKey.rawPrivKey),
+            privateKey: BigInt(privateKey.raw),
           });
           // eslint-disable-next-line no-await-in-loop
           await circuit.expectConstraintPass(witness);
@@ -116,8 +116,8 @@ describe("Public key derivation circuit", function test() {
         const derivedPublicKeyY = await getSignal(circuit, witness, "publicKey[1]");
 
         return (
-          derivedPublicKeyX === publicKey.rawPubKey[0] &&
-          derivedPublicKeyY === publicKey.rawPubKey[1] &&
+          derivedPublicKeyX === publicKey.raw[0] &&
+          derivedPublicKeyY === publicKey.raw[1] &&
           inCurve([derivedPublicKeyX, derivedPublicKeyY])
         );
       }),

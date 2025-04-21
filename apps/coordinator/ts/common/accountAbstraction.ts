@@ -94,9 +94,9 @@ export const addressOffset = 26;
  * @returns The address of the newly deployed contract
  */
 export const getDeployedContractAddress = (receipt: TransactionReceipt): string | undefined => {
-  const addr = receipt.logs.find((log) => log.topics[0] === contractCreationEventTopic);
+  const log = receipt.logs.find(({ topics }) => topics[0] === contractCreationEventTopic);
 
-  const deployedAddress = addr ? `0x${addr.topics[1]?.slice(addressOffset)}` : undefined;
+  const deployedAddress = log ? `0x${log.topics[1]?.slice(addressOffset)}` : undefined;
 
   return deployedAddress;
 };

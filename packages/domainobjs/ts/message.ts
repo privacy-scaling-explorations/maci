@@ -48,7 +48,7 @@ export class Message {
    * @param encryptionPublicKey the public key that is used to encrypt this message
    * @returns the hash of the message data and the public key
    */
-  hash = (encryptionPublicKey: PublicKey): bigint => hash12([...this.data, ...encryptionPublicKey.rawPubKey]);
+  hash = (encryptionPublicKey: PublicKey): bigint => hash12([...this.data, ...encryptionPublicKey.raw]);
 
   /**
    * Create a copy of the message

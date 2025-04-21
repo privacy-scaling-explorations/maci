@@ -22,7 +22,7 @@ Users need to provide a valid proof to the Poll smart contract to join a poll, a
 | Input signal           | Description                                                                                                                                                                        |
 | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `privateKey`           | The user's private key                                                                                                                                                             |
-| `pollPubKey`           | The poll's public key                                                                                                                                                              |
+| `pollPublicKey`        | The poll's public key                                                                                                                                                              |
 | `siblings`             | The siblings for the merkle tree inclusion proof                                                                                                                                   |
 | `indices`              | The indices for the merkle tree inclusion proof                                                                                                                                    |
 | `nullifier`            | The nullifier                                                                                                                                                                      |

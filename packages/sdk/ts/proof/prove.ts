@@ -2,9 +2,9 @@
 import { Deployment, EContracts, Prover, readProofs } from "@maci-protocol/contracts";
 import {
   Verifier__factory as VerifierFactory,
-  VkRegistry__factory as VkRegistryFactory,
+  VerifyingKeysRegistry__factory as VerifyingKeysRegistryFactory,
   type Verifier,
-  type VkRegistry,
+  type VerifyingKeysRegistry,
 } from "@maci-protocol/contracts/typechain-types";
 
 import fs from "fs";
@@ -36,20 +36,20 @@ export const proveOnChain = async ({
     tally: tallyContract,
   } = await getPollContracts({ maciAddress, pollId, signer });
 
-  const vkRegistryContractAddress = await tallyContract.vkRegistry();
-  const [isStateAqMerged, isVkRegistryExists] = await Promise.all([
+  const verifyingKeysRegistryContractAddress = await tallyContract.verifyingKeysRegistry();
+  const [isStateAqMerged, isVerifyingKeyRegistryExists] = await Promise.all([
     pollContract.stateMerged(),
-    contractExists(signer.provider!, vkRegistryContractAddress),
+    contractExists(signer.provider!, verifyingKeysRegistryContractAddress),
   ]);
 
-  if (!isVkRegistryExists) {
-    throw new Error("There is no VkRegistry contract linked to the specified MACI contract.");
+  if (!isVerifyingKeyRegistryExists) {
+    throw new Error("There is no VerifyingKeysRegistry contract linked to the specified MACI contract.");
   }
 
-  const vkRegistryContract = await deployment.getContract<VkRegistry>({
-    name: EContracts.VkRegistry,
-    address: vkRegistryContractAddress,
-    abi: VkRegistryFactory.abi,
+  const verifyingKeysRegistryContract = await deployment.getContract<VerifyingKeysRegistry>({
+    name: EContracts.VerifyingKeysRegistry,
+    address: verifyingKeysRegistryContractAddress,
+    abi: VerifyingKeysRegistryFactory.abi,
     signer,
   });
   const verifierContractAddress = await mpContract.verifier();
@@ -88,7 +88,7 @@ export const proveOnChain = async ({
     maciContract,
     mpContract,
     pollContract,
-    vkRegistryContract,
+    verifyingKeysRegistryContract,
     verifierContract,
     tallyContract,
   });

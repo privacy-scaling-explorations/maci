@@ -1,6 +1,6 @@
-import { genProofSnarkjs } from "@maci-protocol/contracts";
+import { generateProofSnarkjs } from "@maci-protocol/contracts";
 
-import { CircuitInputs } from "../../utils/types";
+import { TCircuitInputs } from "../../utils/types";
 import { downloadPollJoiningArtifactsBrowser } from "../download";
 
 /**
@@ -38,8 +38,8 @@ describe("downloadPollJoiningArtifactsBrowser", () => {
     expect(zKey).toBeDefined();
     expect(wasm).toBeDefined();
 
-    const { proof } = await genProofSnarkjs({
-      inputs: inputs as unknown as CircuitInputs,
+    const { proof } = await generateProofSnarkjs({
+      inputs: inputs as unknown as TCircuitInputs,
       zkeyPath: zKey as unknown as string,
       wasmPath: wasm as unknown as string,
     });

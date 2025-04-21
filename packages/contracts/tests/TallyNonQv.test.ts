@@ -15,7 +15,7 @@ import {
   Poll as PollContract,
   MessageProcessor,
   Verifier,
-  VkRegistry,
+  VerifyingKeysRegistry,
   MessageProcessor__factory as MessageProcessorFactory,
   Poll__factory as PollFactory,
   Tally__factory as TallyFactory,
@@ -28,8 +28,8 @@ import {
   duration,
   maxVoteOptions,
   messageBatchSize,
-  testProcessVk,
-  testTallyVk,
+  testProcessVerifyingKey,
+  testTallyVerifyingKey,
   treeDepths,
 } from "./constants";
 import { timeTravel, deployTestContracts } from "./utils";
@@ -41,7 +41,7 @@ describe("TallyVotesNonQv", () => {
   let tallyContract: Tally;
   let mpContract: MessageProcessor;
   let verifierContract: Verifier;
-  let vkRegistryContract: VkRegistry;
+  let verifyingKeysRegistryContract: VerifyingKeysRegistry;
   let policyContract: IBasePolicy;
   let initialVoiceCreditProxyContract: ConstantInitialVoiceCreditProxy;
   const coordinator = new Keypair();
@@ -62,7 +62,7 @@ describe("TallyVotesNonQv", () => {
     const r = await deployTestContracts({ initialVoiceCreditBalance: 100, stateTreeDepth: STATE_TREE_DEPTH, signer });
     maciContract = r.maciContract;
     verifierContract = r.mockVerifierContract as Verifier;
-    vkRegistryContract = r.vkRegistryContract;
+    verifyingKeysRegistryContract = r.verifyingKeysRegistryContract;
     policyContract = r.policyContract;
     initialVoiceCreditProxyContract = r.constantInitialVoiceCreditProxyContract;
 
@@ -75,7 +75,7 @@ describe("TallyVotesNonQv", () => {
       messageBatchSize,
       coordinatorPublicKey: coordinator.publicKey.asContractParam(),
       verifier: verifierContract,
-      vkRegistry: vkRegistryContract,
+      verifyingKeysRegistry: verifyingKeysRegistryContract,
       mode: EMode.NON_QV,
       policy: policyContract,
       initialVoiceCreditProxy: initialVoiceCreditProxyContract,
@@ -94,14 +94,14 @@ describe("TallyVotesNonQv", () => {
     tallyContract = TallyFactory.connect(pollContracts.tally, signer);
 
     // deploy local poll
-    const p = maciState.deployPoll(
+    const deployedPollId = maciState.deployPoll(
       BigInt(startTime + duration),
       treeDepths,
       messageBatchSize,
       coordinator,
       BigInt(maxVoteOptions),
     );
-    expect(p.toString()).to.eq(pollId.toString());
+    expect(deployedPollId.toString()).to.eq(pollId.toString());
     // publish the NOTHING_UP_MY_SLEEVE message
     const messageData = [NOTHING_UP_MY_SLEEVE];
     for (let i = 1; i < 10; i += 1) {
@@ -119,20 +119,20 @@ describe("TallyVotesNonQv", () => {
     poll.publishMessage(message, padKey);
 
     // update the poll state
-    poll.updatePoll(BigInt(maciState.pubKeys.length));
+    poll.updatePoll(BigInt(maciState.publicKeys.length));
 
     // process messages locally
     generatedInputs = poll.processMessages(pollId, false);
 
-    // set the verification keys on the vk smart contract
-    await vkRegistryContract.setVerifyingKeys(
+    // set the verification keys on the registry smart contract
+    await verifyingKeysRegistryContract.setVerifyingKeys(
       STATE_TREE_DEPTH,
       treeDepths.intStateTreeDepth,
       treeDepths.voteOptionTreeDepth,
       messageBatchSize,
       EMode.NON_QV,
-      testProcessVk.asContractParam() as IVerifyingKeyStruct,
-      testTallyVk.asContractParam() as IVerifyingKeyStruct,
+      testProcessVerifyingKey.asContractParam() as IVerifyingKeyStruct,
+      testTallyVerifyingKey.asContractParam() as IVerifyingKeyStruct,
     );
   });
 

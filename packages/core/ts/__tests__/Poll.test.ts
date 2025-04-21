@@ -35,12 +35,12 @@ describe("Poll", function test() {
     maciState.signUp(user1Keypair.publicKey);
 
     // copy the state from the MaciState ref
-    poll.updatePoll(BigInt(maciState.pubKeys.length));
+    poll.updatePoll(BigInt(maciState.publicKeys.length));
 
     const { privateKey } = user1Keypair;
-    const { privateKey: pollPrivKey, publicKey: pollPublicKey } = new Keypair();
+    const { privateKey: pollPrivateKey, publicKey: pollPublicKey } = new Keypair();
 
-    const nullifier = poseidon([BigInt(privateKey.rawPrivKey.toString())]);
+    const nullifier = poseidon([BigInt(privateKey.raw.toString())]);
 
     const stateIndex = poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance);
 
@@ -55,10 +55,10 @@ describe("Poll", function test() {
         BigInt(pollId),
       );
 
-      const signature = command.sign(pollPrivKey);
+      const signature = command.sign(pollPrivateKey);
 
       const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
 
       const message = command.encrypt(signature, sharedKey);
       poll.publishMessage(message, ecdhKeypair.publicKey);
@@ -70,10 +70,10 @@ describe("Poll", function test() {
     it("should throw if a message has an invalid nonce", () => {
       const command = new PCommand(BigInt(stateIndex), pollPublicKey, 0n, 0n, 0n, BigInt(pollId));
 
-      const signature = command.sign(pollPrivKey);
+      const signature = command.sign(pollPrivateKey);
 
       const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
 
       const message = command.encrypt(signature, sharedKey);
       poll.publishMessage(message, ecdhKeypair.publicKey);
@@ -88,7 +88,7 @@ describe("Poll", function test() {
 
       const signature = command.sign(new PrivateKey(0n));
       const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
 
       const message = command.encrypt(signature, sharedKey);
       poll.publishMessage(message, ecdhKeypair.publicKey);
@@ -109,10 +109,10 @@ describe("Poll", function test() {
         BigInt(pollId),
       );
 
-      const signature = command.sign(pollPrivKey);
+      const signature = command.sign(pollPrivateKey);
 
       const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
 
       const message = command.encrypt(signature, sharedKey);
       poll.publishMessage(message, ecdhKeypair.publicKey);
@@ -133,10 +133,10 @@ describe("Poll", function test() {
         BigInt(pollId),
       );
 
-      const signature = command.sign(pollPrivKey);
+      const signature = command.sign(pollPrivateKey);
 
       const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
 
       const message = command.encrypt(signature, sharedKey);
       poll.publishMessage(message, ecdhKeypair.publicKey);
@@ -149,10 +149,10 @@ describe("Poll", function test() {
     it("should throw if a message has an invalid vote option index (< 0)", () => {
       const command = new PCommand(BigInt(stateIndex), pollPublicKey, -1n, 1n, 1n, BigInt(pollId));
 
-      const signature = command.sign(pollPrivKey);
+      const signature = command.sign(pollPrivateKey);
 
       const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
 
       const message = command.encrypt(signature, sharedKey);
       poll.publishMessage(message, ecdhKeypair.publicKey);
@@ -165,10 +165,10 @@ describe("Poll", function test() {
     it("should throw when passed a message that cannot be decrypted (wrong encryptionPublicKey)", () => {
       const command = new PCommand(BigInt(stateIndex), pollPublicKey, 0n, 1n, 1n, BigInt(pollId));
 
-      const signature = command.sign(pollPrivKey);
+      const signature = command.sign(pollPrivateKey);
 
       const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.genEcdhSharedKey(new Keypair().privateKey, coordinatorKeypair.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(new Keypair().privateKey, coordinatorKeypair.publicKey);
 
       const message = command.encrypt(signature, sharedKey);
       poll.publishMessage(message, ecdhKeypair.publicKey);
@@ -181,10 +181,10 @@ describe("Poll", function test() {
     it("should throw when passed a corrupted message", () => {
       const command = new PCommand(BigInt(stateIndex), pollPublicKey, 0n, 1n, 1n, BigInt(pollId));
 
-      const signature = command.sign(pollPrivKey);
+      const signature = command.sign(pollPrivateKey);
 
       const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.genEcdhSharedKey(pollPrivKey, coordinatorKeypair.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(pollPrivateKey, coordinatorKeypair.publicKey);
 
       const message = command.encrypt(signature, sharedKey);
       poll.publishMessage(message, ecdhKeypair.publicKey);
@@ -207,10 +207,10 @@ describe("Poll", function test() {
         BigInt(pollId),
       );
 
-      const signature = command.sign(pollPrivKey);
+      const signature = command.sign(pollPrivateKey);
 
       const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
 
       const message = command.encrypt(signature, sharedKey);
       poll.publishMessage(message, ecdhKeypair.publicKey);
@@ -230,10 +230,10 @@ describe("Poll", function test() {
         BigInt(pollId),
       );
 
-      const signature = command.sign(pollPrivKey);
+      const signature = command.sign(pollPrivateKey);
 
       const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
 
       const message = command.encrypt(signature, sharedKey);
       poll.publishMessage(message, ecdhKeypair.publicKey);
@@ -252,16 +252,16 @@ describe("Poll", function test() {
     );
 
     const poll = maciState.polls.get(pollId)!;
-    poll.updatePoll(BigInt(maciState.pubKeys.length));
+    poll.updatePoll(BigInt(maciState.publicKeys.length));
 
     const user1Keypair = new Keypair();
     // signup the user
     maciState.signUp(user1Keypair.publicKey);
 
     const { privateKey } = user1Keypair;
-    const { privateKey: pollPrivKey, publicKey: pollPublicKey } = new Keypair();
+    const { privateKey: pollPrivateKey, publicKey: pollPublicKey } = new Keypair();
 
-    const nullifier = poseidon([BigInt(privateKey.rawPrivKey.toString())]);
+    const nullifier = poseidon([BigInt(privateKey.raw.toString())]);
 
     const stateIndex = poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance);
 
@@ -290,16 +290,16 @@ describe("Poll", function test() {
         BigInt(pollId),
       );
 
-      const signature = command.sign(pollPrivKey);
+      const signature = command.sign(pollPrivateKey);
 
       const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
 
       const message = command.encrypt(signature, sharedKey);
 
       poll.publishMessage(message, ecdhKeypair.publicKey);
       poll.publishMessage(message, ecdhKeypair.publicKey);
-      poll.updatePoll(BigInt(maciState.pubKeys.length));
+      poll.updatePoll(BigInt(maciState.publicKeys.length));
 
       expect(() => {
         poll.processMessage(message, ecdhKeypair.publicKey);
@@ -334,12 +334,12 @@ describe("Poll", function test() {
     // signup the user
     maciState.signUp(user1Keypair.publicKey);
 
-    poll.updatePoll(BigInt(maciState.pubKeys.length));
+    poll.updatePoll(BigInt(maciState.publicKeys.length));
 
     const { privateKey } = user1Keypair;
-    const { privateKey: pollPrivKey, publicKey: pollPublicKey } = new Keypair();
+    const { privateKey: pollPrivateKey, publicKey: pollPublicKey } = new Keypair();
 
-    const nullifier = poseidon([BigInt(privateKey.rawPrivKey.toString())]);
+    const nullifier = poseidon([BigInt(privateKey.raw.toString())]);
 
     const stateIndex = poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance);
 
@@ -354,10 +354,10 @@ describe("Poll", function test() {
         BigInt(pollId),
       );
 
-      const signature = command.sign(pollPrivKey);
+      const signature = command.sign(pollPrivateKey);
 
       const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
 
       const message = command.encrypt(signature, sharedKey);
       poll.publishMessage(message, ecdhKeypair.publicKey);
@@ -371,10 +371,10 @@ describe("Poll", function test() {
     it("should return the correct state leaves and ballots", () => {
       const command = new PCommand(BigInt(stateIndex + 1), pollPublicKey, 0n, 1n, 0n, BigInt(pollId));
 
-      const signature = command.sign(pollPrivKey);
+      const signature = command.sign(pollPrivateKey);
 
       const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
 
       const message = command.encrypt(signature, sharedKey);
       poll.publishMessage(message, ecdhKeypair.publicKey);
@@ -393,10 +393,10 @@ describe("Poll", function test() {
     it("should have processed all messages", () => {
       const command = new PCommand(BigInt(stateIndex + 1), pollPublicKey, 0n, 1n, 0n, BigInt(pollId));
 
-      const signature = command.sign(pollPrivKey);
+      const signature = command.sign(pollPrivateKey);
 
       const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
 
       const message = command.encrypt(signature, sharedKey);
 
@@ -431,29 +431,29 @@ describe("Poll", function test() {
 
     maciState.signUp(user2Keypair.publicKey);
 
-    poll.updatePoll(BigInt(maciState.pubKeys.length));
+    poll.updatePoll(BigInt(maciState.publicKeys.length));
 
-    const { privateKey: privKey1 } = user1Keypair;
-    const { privateKey: pollPrivateKey, publicKey: pollPubKey1 } = new Keypair();
+    const { privateKey: privateKey1 } = user1Keypair;
+    const { privateKey: pollPrivateKey, publicKey: pollPublicKey1 } = new Keypair();
 
-    const nullifier1 = poseidon([BigInt(privKey1.rawPrivKey.toString())]);
+    const nullifier1 = poseidon([BigInt(privateKey1.raw.toString())]);
 
-    const stateIndex1 = poll.joinPoll(nullifier1, pollPubKey1, voiceCreditBalance);
+    const stateIndex1 = poll.joinPoll(nullifier1, pollPublicKey1, voiceCreditBalance);
 
-    const { privateKey: privKey2 } = user2Keypair;
-    const { privateKey: pollPrivKey2, publicKey: pollPublicKey2 } = new Keypair();
+    const { privateKey: privateKey2 } = user2Keypair;
+    const { privateKey: pollPrivateKey2, publicKey: pollPublicKey2 } = new Keypair();
 
-    const nullifier2 = poseidon([BigInt(privKey2.rawPrivKey.toString())]);
+    const nullifier2 = poseidon([BigInt(privateKey2.raw.toString())]);
 
     const voteWeight = 5n;
     const voteOption = 0n;
 
-    const command = new PCommand(BigInt(stateIndex1), pollPubKey1, voteOption, voteWeight, 1n, BigInt(pollId));
+    const command = new PCommand(BigInt(stateIndex1), pollPublicKey1, voteOption, voteWeight, 1n, BigInt(pollId));
 
     const signature = command.sign(pollPrivateKey);
 
     const ecdhKeypair = new Keypair();
-    const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
+    const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
 
     const message = command.encrypt(signature, sharedKey);
     poll.publishMessage(message, ecdhKeypair.publicKey);
@@ -475,7 +475,9 @@ describe("Poll", function test() {
       const results = poll.tallyResult;
       expect(spentVoiceCredits).to.eq(voteWeight * voteWeight);
       expect(results[Number.parseInt(voteOption.toString(), 10)]).to.eq(voteWeight);
-      expect(poll.perVOSpentVoiceCredits[Number.parseInt(voteOption.toString(), 10)]).to.eq(voteWeight * voteWeight);
+      expect(poll.perVoteOptionSpentVoiceCredits[Number.parseInt(voteOption.toString(), 10)]).to.eq(
+        voteWeight * voteWeight,
+      );
     });
 
     it("should generate the correct results (non-qv)", () => {
@@ -489,7 +491,7 @@ describe("Poll", function test() {
       );
 
       const secondPoll = maciState.polls.get(secondPollId)!;
-      secondPoll.updatePoll(BigInt(maciState.pubKeys.length));
+      secondPoll.updatePoll(BigInt(maciState.publicKeys.length));
 
       const stateIndex2 = secondPoll.joinPoll(nullifier2, pollPublicKey2, voiceCreditBalance);
 
@@ -505,10 +507,10 @@ describe("Poll", function test() {
         secondPollId,
       );
 
-      const secondSignature = secondCommand.sign(pollPrivKey2);
+      const secondSignature = secondCommand.sign(pollPrivateKey2);
 
       const secondEcdhKeypair = new Keypair();
-      const secondSharedKey = Keypair.genEcdhSharedKey(secondEcdhKeypair.privateKey, coordinatorKeypair.publicKey);
+      const secondSharedKey = Keypair.generateEcdhSharedKey(secondEcdhKeypair.privateKey, coordinatorKeypair.publicKey);
 
       const secondMessage = secondCommand.encrypt(secondSignature, secondSharedKey);
       secondPoll.publishMessage(secondMessage, secondEcdhKeypair.publicKey);
@@ -547,7 +549,7 @@ describe("Poll", function test() {
     });
   });
 
-  describe("setNumSignups", () => {
+  describe("settotalSignups", () => {
     it("should update the number of signups", () => {
       const maciState = new MaciState(STATE_TREE_DEPTH);
       const pollId = maciState.deployPoll(
@@ -562,14 +564,14 @@ describe("Poll", function test() {
 
       const poll = maciState.polls.get(pollId)!;
 
-      poll.updatePoll(BigInt(maciState.pubKeys.length));
+      poll.updatePoll(BigInt(maciState.publicKeys.length));
 
-      expect(poll.getNumSignups()).to.eq(2n);
+      expect(poll.gettotalSignups()).to.eq(2n);
 
       // update it again
-      poll.setNumSignups(3n);
+      poll.settotalSignups(3n);
 
-      expect(poll.getNumSignups()).to.eq(3n);
+      expect(poll.gettotalSignups()).to.eq(3n);
     });
   });
 

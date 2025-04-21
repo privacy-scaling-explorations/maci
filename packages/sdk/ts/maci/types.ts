@@ -172,7 +172,7 @@ export interface IMergeSignupsArgs {
 }
 
 /**
- * Interface for the arguments to the genLocalState command
+ * Interface for the arguments to the generateLocalState command
  * Generate a local MACI state from the smart contracts events
  */
 export interface IGenerateMaciStateArgs {

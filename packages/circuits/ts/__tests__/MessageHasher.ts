@@ -1,4 +1,4 @@
-import { genRandomSalt } from "@maci-protocol/crypto";
+import { generateRandomSalt } from "@maci-protocol/crypto";
 import { PCommand, Keypair } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
@@ -19,29 +19,29 @@ describe("MessageHasher", function test() {
   });
 
   it("should correctly hash a message", async () => {
-    const k = new Keypair();
+    const keypair = new Keypair();
     const random50bitBigInt = (): bigint =>
       // eslint-disable-next-line no-bitwise
-      ((BigInt(1) << BigInt(50)) - BigInt(1)) & BigInt(genRandomSalt().toString());
+      ((BigInt(1) << BigInt(50)) - BigInt(1)) & BigInt(generateRandomSalt().toString());
 
     const command: PCommand = new PCommand(
       random50bitBigInt(),
-      k.publicKey,
+      keypair.publicKey,
       random50bitBigInt(),
       random50bitBigInt(),
       random50bitBigInt(),
       random50bitBigInt(),
-      genRandomSalt(),
+      generateRandomSalt(),
     );
 
     const { privateKey } = new Keypair();
-    const ecdhSharedKey = Keypair.genEcdhSharedKey(privateKey, k.publicKey);
+    const ecdhSharedKey = Keypair.generateEcdhSharedKey(privateKey, keypair.publicKey);
     const signature = command.sign(privateKey);
     const message = command.encrypt(signature, ecdhSharedKey);
-    const messageHash = message.hash(k.publicKey);
+    const messageHash = message.hash(keypair.publicKey);
     const circuitInputs = {
       in: message.asCircuitInputs(),
-      encryptionPublicKey: k.publicKey.asCircuitInputs() as unknown as [bigint, bigint],
+      encryptionPublicKey: keypair.publicKey.asCircuitInputs() as unknown as [bigint, bigint],
     };
     const witness = await circuit.calculateWitness(circuitInputs);
     await circuit.expectConstraintPass(witness);
@@ -82,7 +82,7 @@ describe("MessageHasher", function test() {
             salt,
           );
 
-          const ecdhSharedKey = Keypair.genEcdhSharedKey(privateKey, publicKey);
+          const ecdhSharedKey = Keypair.generateEcdhSharedKey(privateKey, publicKey);
           const signature = command.sign(privateKey);
           const message = command.encrypt(signature, ecdhSharedKey);
           const messageHash = message.hash(publicKey);

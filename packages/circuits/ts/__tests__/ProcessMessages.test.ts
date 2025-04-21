@@ -24,7 +24,7 @@ describe("ProcessMessage circuit", function test() {
   const coordinatorKeypair = new Keypair();
 
   type ProcessMessageCircuitInputs = [
-    "numSignUps",
+    "totalSignups",
     "batchEndIndex",
     "index",
     "inputBatchHash",
@@ -92,14 +92,14 @@ describe("ProcessMessage circuit", function test() {
       );
 
       poll = maciState.polls.get(pollId)!;
-      poll.updatePoll(BigInt(maciState.pubKeys.length));
+      poll.updatePoll(BigInt(maciState.publicKeys.length));
 
       // Join the poll
       users.forEach((user) => {
         const { privateKey } = user;
         const { publicKey: pollPublicKey } = user;
 
-        const nullifier = poseidon([BigInt(privateKey.rawPrivKey.toString())]);
+        const nullifier = poseidon([BigInt(privateKey.raw.toString())]);
 
         poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance);
       });
@@ -137,7 +137,7 @@ describe("ProcessMessage circuit", function test() {
       const signature = command.sign(users[4].privateKey);
 
       const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
       const message = command.encrypt(signature, sharedKey);
       messages.push(message);
       commands.push(command);
@@ -180,12 +180,12 @@ describe("ProcessMessage circuit", function test() {
       );
 
       poll = maciState.polls.get(pollId)!;
-      poll.updatePoll(BigInt(maciState.pubKeys.length));
+      poll.updatePoll(BigInt(maciState.publicKeys.length));
 
       // Join the poll
       const { privateKey, publicKey: pollPublicKey } = userKeypair;
 
-      const nullifier = poseidon([BigInt(privateKey.rawPrivKey.toString())]);
+      const nullifier = poseidon([BigInt(privateKey.raw.toString())]);
 
       stateIndex = BigInt(poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance));
 
@@ -202,7 +202,7 @@ describe("ProcessMessage circuit", function test() {
       const signature = command.sign(privateKey);
 
       const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
       const message = command.encrypt(signature, sharedKey);
       messages.push(message);
       commands.push(command);
@@ -221,7 +221,7 @@ describe("ProcessMessage circuit", function test() {
       const signature2 = command2.sign(privateKey);
 
       const ecdhKeypair2 = new Keypair();
-      const sharedKey2 = Keypair.genEcdhSharedKey(ecdhKeypair2.privateKey, coordinatorKeypair.publicKey);
+      const sharedKey2 = Keypair.generateEcdhSharedKey(ecdhKeypair2.privateKey, coordinatorKeypair.publicKey);
       const message2 = command2.encrypt(signature2, sharedKey2);
       messages.push(message2);
       commands.push(command2);
@@ -236,7 +236,7 @@ describe("ProcessMessage circuit", function test() {
 
       ballotTree.insert(emptyBallot.hash());
 
-      poll.pubKeys.forEach(() => {
+      poll.publicKeys.forEach(() => {
         ballotTree.insert(emptyBallotHash);
       });
 
@@ -284,12 +284,12 @@ describe("ProcessMessage circuit", function test() {
 
       poll = maciState.polls.get(pollId)!;
 
-      poll.updatePoll(BigInt(maciState.pubKeys.length));
+      poll.updatePoll(BigInt(maciState.publicKeys.length));
 
       // Join the poll
       const { privateKey, publicKey: pollPublicKey } = userKeypair;
 
-      const nullifier = poseidon([BigInt(privateKey.rawPrivKey.toString())]);
+      const nullifier = poseidon([BigInt(privateKey.raw.toString())]);
 
       const stateIndex = BigInt(poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance));
 
@@ -305,7 +305,7 @@ describe("ProcessMessage circuit", function test() {
       const signature = command.sign(privateKey);
 
       const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
       const message = command.encrypt(signature, sharedKey);
       messages.push(message);
       commands.push(command);
@@ -321,7 +321,7 @@ describe("ProcessMessage circuit", function test() {
 
       ballotTree.insert(emptyBallot.hash());
 
-      poll.pubKeys.forEach(() => {
+      poll.publicKeys.forEach(() => {
         ballotTree.insert(emptyBallotHash);
       });
 
@@ -367,11 +367,11 @@ describe("ProcessMessage circuit", function test() {
 
       poll = maciState.polls.get(pollId)!;
 
-      poll.updatePoll(BigInt(maciState.pubKeys.length));
+      poll.updatePoll(BigInt(maciState.publicKeys.length));
 
       const { privateKey, publicKey: pollPublicKey } = userKeypair;
 
-      const nullifier = poseidon([BigInt(privateKey.rawPrivKey.toString())]);
+      const nullifier = poseidon([BigInt(privateKey.raw.toString())]);
 
       const stateIndex = poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance);
 
@@ -388,7 +388,7 @@ describe("ProcessMessage circuit", function test() {
       const signature = command.sign(privateKey);
 
       const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
       const message = command.encrypt(signature, sharedKey);
       messages.push(message);
       commands.push(command);
@@ -407,7 +407,7 @@ describe("ProcessMessage circuit", function test() {
       const signature2 = command2.sign(privateKey);
 
       const ecdhKeypair2 = new Keypair();
-      const sharedKey2 = Keypair.genEcdhSharedKey(ecdhKeypair2.privateKey, coordinatorKeypair.publicKey);
+      const sharedKey2 = Keypair.generateEcdhSharedKey(ecdhKeypair2.privateKey, coordinatorKeypair.publicKey);
       const message2 = command2.encrypt(signature2, sharedKey2);
       messages.push(message2);
       commands.push(command2);
@@ -426,7 +426,7 @@ describe("ProcessMessage circuit", function test() {
       const signature3 = command3.sign(privateKey);
 
       const ecdhKeypair3 = new Keypair();
-      const sharedKey3 = Keypair.genEcdhSharedKey(ecdhKeypair3.privateKey, coordinatorKeypair.publicKey);
+      const sharedKey3 = Keypair.generateEcdhSharedKey(ecdhKeypair3.privateKey, coordinatorKeypair.publicKey);
       const message3 = command3.encrypt(signature3, sharedKey3);
       messages.push(message3);
       commands.push(command3);
@@ -441,7 +441,7 @@ describe("ProcessMessage circuit", function test() {
 
       ballotTree.insert(emptyBallot.hash());
 
-      poll.pubKeys.forEach(() => {
+      poll.publicKeys.forEach(() => {
         ballotTree.insert(emptyBallotHash);
       });
 
@@ -486,12 +486,12 @@ describe("ProcessMessage circuit", function test() {
 
       poll = maciState.polls.get(pollId)!;
 
-      poll.updatePoll(BigInt(maciState.pubKeys.length));
+      poll.updatePoll(BigInt(maciState.publicKeys.length));
 
       // Join the poll
       const { privateKey, publicKey: pollPublicKey } = userKeypair;
 
-      const nullifier = poseidon([BigInt(privateKey.rawPrivKey.toString())]);
+      const nullifier = poseidon([BigInt(privateKey.raw.toString())]);
 
       stateIndex = poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance);
 
@@ -510,7 +510,7 @@ describe("ProcessMessage circuit", function test() {
         const signature = command.sign(privateKey);
 
         const ecdhKeypair = new Keypair();
-        const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
+        const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
         const message = command.encrypt(signature, sharedKey);
         poll.publishMessage(message, ecdhKeypair.publicKey);
       }
@@ -549,12 +549,12 @@ describe("ProcessMessage circuit", function test() {
       );
 
       poll = maciState.polls.get(pollId)!;
-      poll.updatePoll(BigInt(maciState.pubKeys.length));
+      poll.updatePoll(BigInt(maciState.publicKeys.length));
 
       // Join the poll
       const { privateKey, publicKey: pollPublicKey } = userKeypair;
 
-      const nullifier = poseidon([BigInt(privateKey.rawPrivKey.toString())]);
+      const nullifier = poseidon([BigInt(privateKey.raw.toString())]);
 
       stateIndex = BigInt(poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance));
 
@@ -591,7 +591,7 @@ describe("ProcessMessage circuit", function test() {
       const signature = command.sign(privateKey);
 
       const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
       const message = command.encrypt(signature, sharedKey);
       messages.push(message);
       commands.push(command);
@@ -610,7 +610,7 @@ describe("ProcessMessage circuit", function test() {
       const signature2 = command2.sign(privateKey);
 
       const ecdhKeypair2 = new Keypair();
-      const sharedKey2 = Keypair.genEcdhSharedKey(ecdhKeypair2.privateKey, coordinatorKeypair.publicKey);
+      const sharedKey2 = Keypair.generateEcdhSharedKey(ecdhKeypair2.privateKey, coordinatorKeypair.publicKey);
       const message2 = command2.encrypt(signature2, sharedKey2);
       messages.push(message2);
       commands.push(command2);
@@ -625,7 +625,7 @@ describe("ProcessMessage circuit", function test() {
 
       ballotTree.insert(emptyBallot.hash());
 
-      poll.pubKeys.forEach(() => {
+      poll.publicKeys.forEach(() => {
         ballotTree.insert(emptyBallotHash);
       });
 
@@ -671,12 +671,12 @@ describe("ProcessMessage circuit", function test() {
       );
 
       poll = maciState.polls.get(pollId)!;
-      poll.updatePoll(BigInt(maciState.pubKeys.length));
+      poll.updatePoll(BigInt(maciState.publicKeys.length));
 
       // Join the poll
       const { privateKey, publicKey: pollPublicKey } = userKeypair;
 
-      const nullifier = poseidon([BigInt(privateKey.rawPrivKey.toString())]);
+      const nullifier = poseidon([BigInt(privateKey.raw.toString())]);
 
       stateIndex = BigInt(poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance));
 
@@ -713,7 +713,7 @@ describe("ProcessMessage circuit", function test() {
       const signature = command.sign(privateKey);
 
       const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
       const message = command.encrypt(signature, sharedKey);
       messages.push(message);
       commands.push(command);
@@ -737,7 +737,7 @@ describe("ProcessMessage circuit", function test() {
       const signature2 = command2.sign(privateKey);
 
       const ecdhKeypair2 = new Keypair();
-      const sharedKey2 = Keypair.genEcdhSharedKey(ecdhKeypair2.privateKey, coordinatorKeypair.publicKey);
+      const sharedKey2 = Keypair.generateEcdhSharedKey(ecdhKeypair2.privateKey, coordinatorKeypair.publicKey);
       const message2 = command2.encrypt(signature2, sharedKey2);
       messages.push(message2);
       commands.push(command2);
@@ -752,7 +752,7 @@ describe("ProcessMessage circuit", function test() {
 
       ballotTree.insert(emptyBallot.hash());
 
-      poll.pubKeys.forEach(() => {
+      poll.publicKeys.forEach(() => {
         ballotTree.insert(emptyBallotHash);
       });
 
@@ -800,12 +800,12 @@ describe("ProcessMessage circuit", function test() {
       );
 
       poll = maciState.polls.get(pollId)!;
-      poll.updatePoll(BigInt(maciState.pubKeys.length));
+      poll.updatePoll(BigInt(maciState.publicKeys.length));
 
       // Join the poll
       const { privateKey, publicKey: pollPublicKey } = userKeypair;
 
-      const nullifier = poseidon([BigInt(privateKey.rawPrivKey.toString())]);
+      const nullifier = poseidon([BigInt(privateKey.raw.toString())]);
 
       stateIndex = BigInt(poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance));
 
@@ -841,7 +841,7 @@ describe("ProcessMessage circuit", function test() {
       const signatureFinal = commandFinal.sign(privateKey);
 
       const ecdhKeypairFinal = new Keypair();
-      const sharedKeyFinal = Keypair.genEcdhSharedKey(ecdhKeypairFinal.privateKey, coordinatorKeypair.publicKey);
+      const sharedKeyFinal = Keypair.generateEcdhSharedKey(ecdhKeypairFinal.privateKey, coordinatorKeypair.publicKey);
       const messageFinal = commandFinal.encrypt(signatureFinal, sharedKeyFinal);
       messages.push(messageFinal);
       commands.push(commandFinal);
@@ -861,7 +861,7 @@ describe("ProcessMessage circuit", function test() {
       const signature = command.sign(privateKey);
 
       const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
       const message = command.encrypt(signature, sharedKey);
       messages.push(message);
       commands.push(command);
@@ -885,7 +885,7 @@ describe("ProcessMessage circuit", function test() {
       const signature2 = command2.sign(privateKey);
 
       const ecdhKeypair2 = new Keypair();
-      const sharedKey2 = Keypair.genEcdhSharedKey(ecdhKeypair2.privateKey, coordinatorKeypair.publicKey);
+      const sharedKey2 = Keypair.generateEcdhSharedKey(ecdhKeypair2.privateKey, coordinatorKeypair.publicKey);
       const message2 = command2.encrypt(signature2, sharedKey2);
       messages.push(message2);
       commands.push(command2);
@@ -900,7 +900,7 @@ describe("ProcessMessage circuit", function test() {
 
       ballotTree.insert(emptyBallot.hash());
 
-      poll.pubKeys.forEach(() => {
+      poll.publicKeys.forEach(() => {
         ballotTree.insert(emptyBallotHash);
       });
 

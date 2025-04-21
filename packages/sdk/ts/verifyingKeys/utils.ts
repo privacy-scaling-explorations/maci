@@ -1,105 +1,122 @@
-import { extractVk } from "@maci-protocol/contracts";
-import { VkRegistry__factory as VkRegistryFactory } from "@maci-protocol/contracts/typechain-types";
-import { type IVkContractParams, VerifyingKey } from "@maci-protocol/domainobjs";
+import { extractVerifyingKey } from "@maci-protocol/contracts";
+import { VerifyingKeysRegistry__factory as VerifyingKeysRegistryFactory } from "@maci-protocol/contracts/typechain-types";
+import { type IVerifyingKeyContractParams, VerifyingKey } from "@maci-protocol/domainobjs";
 
 import fs from "fs";
 
-import type { IGetAllVksArgs, IExtractAllVksArgs, IMaciVks, IMaciVerifyingKeys, IExtractVkToFileArgs } from "./types";
+import type {
+  IGetAllVerifyingKeysArgs,
+  IExtractAllVerifyingKeysArgs,
+  IMaciVerifyingKeys,
+  IMaciVerifyingKeysOnchain,
+  IExtractVerifyingKeyToFileArgs,
+} from "./types";
 
 /**
  * Get all the verifying keys from the contract
- * @param args - The arguments for the getAllVks function
+ * @param args - The arguments for the getAllVerifyingKeys function
  * @returns The verifying keys
  */
-export const getAllOnChainVks = async ({
-  vkRegistryAddress,
+export const getAllOnChainVerifyingKeys = async ({
+  verifyingKeysRegistryAddress,
   signer,
   stateTreeDepth,
   voteOptionTreeDepth,
   messageBatchSize,
   intStateTreeDepth,
   mode,
-}: IGetAllVksArgs): Promise<IMaciVerifyingKeys> => {
-  const vkRegistryContractInstance = VkRegistryFactory.connect(vkRegistryAddress, signer);
+}: IGetAllVerifyingKeysArgs): Promise<IMaciVerifyingKeysOnchain> => {
+  const contract = VerifyingKeysRegistryFactory.connect(verifyingKeysRegistryAddress, signer);
 
-  const [pollJoiningVkOnChain, pollJoinedVkOnChain, processVkOnChain, tallyVkOnChain] = await Promise.all([
-    vkRegistryContractInstance.getPollJoiningVk(stateTreeDepth),
-    vkRegistryContractInstance.getPollJoinedVk(stateTreeDepth),
-    vkRegistryContractInstance.getProcessVk(stateTreeDepth, voteOptionTreeDepth, messageBatchSize, mode),
-    vkRegistryContractInstance.getTallyVk(stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth, mode),
+  const [
+    pollJoiningVerifyingKeyOnChain,
+    pollJoinedVerifyingKeyOnChain,
+    processVerifyingKeyOnChain,
+    tallyVerifyingKeyOnChain,
+  ] = await Promise.all([
+    contract.getPollJoiningVerifyingKey(stateTreeDepth),
+    contract.getPollJoinedVerifyingKey(stateTreeDepth),
+    contract.getProcessVerifyingKey(stateTreeDepth, voteOptionTreeDepth, messageBatchSize, mode),
+    contract.getTallyVerifyingKey(stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth, mode),
   ]);
 
   return {
-    pollJoiningVkOnChain,
-    pollJoinedVkOnChain,
-    processVkOnChain,
-    tallyVkOnChain,
+    pollJoiningVerifyingKeyOnChain,
+    pollJoinedVerifyingKeyOnChain,
+    processVerifyingKeyOnChain,
+    tallyVerifyingKeyOnChain,
   };
 };
 
 /**
  * Compare two verifying keys
- * @param vkOnChain - the verifying key on chain
- * @param vk - the local verifying key
+ * @param verifyingKeyOnChain - the verifying key on chain
+ * @param verifyingKey - the local verifying key
  * @returns whether they are equal or not
  */
-export const compareVks = (
-  vkOnChain: VerifyingKey | IVkContractParams,
-  vk?: VerifyingKey | IVkContractParams,
+export const compareVerifyingKeys = (
+  verifyingKeyOnChain: VerifyingKey | IVerifyingKeyContractParams,
+  verifyingKey?: VerifyingKey | IVerifyingKeyContractParams,
 ): boolean => {
-  if (!vk) {
+  if (!verifyingKey) {
     throw new Error("Verifying key is not provided");
   }
 
-  let isEqual = vk.ic.length === vkOnChain.ic.length;
-  for (let i = 0; i < vk.ic.length; i += 1) {
-    isEqual = isEqual && vk.ic[i].x.toString() === vkOnChain.ic[i].x.toString();
-    isEqual = isEqual && vk.ic[i].y.toString() === vkOnChain.ic[i].y.toString();
+  let isEqual = verifyingKey.ic.length === verifyingKeyOnChain.ic.length;
+  for (let i = 0; i < verifyingKey.ic.length; i += 1) {
+    isEqual = isEqual && verifyingKey.ic[i].x.toString() === verifyingKeyOnChain.ic[i].x.toString();
+    isEqual = isEqual && verifyingKey.ic[i].y.toString() === verifyingKeyOnChain.ic[i].y.toString();
   }
 
-  isEqual = isEqual && vk.alpha1.x.toString() === vkOnChain.alpha1.x.toString();
-  isEqual = isEqual && vk.alpha1.y.toString() === vkOnChain.alpha1.y.toString();
-  isEqual = isEqual && vk.beta2.x[0].toString() === vkOnChain.beta2.x[0].toString();
-  isEqual = isEqual && vk.beta2.x[1].toString() === vkOnChain.beta2.x[1].toString();
-  isEqual = isEqual && vk.beta2.y[0].toString() === vkOnChain.beta2.y[0].toString();
-  isEqual = isEqual && vk.beta2.y[1].toString() === vkOnChain.beta2.y[1].toString();
-  isEqual = isEqual && vk.delta2.x[0].toString() === vkOnChain.delta2.x[0].toString();
-  isEqual = isEqual && vk.delta2.x[1].toString() === vkOnChain.delta2.x[1].toString();
-  isEqual = isEqual && vk.delta2.y[0].toString() === vkOnChain.delta2.y[0].toString();
-  isEqual = isEqual && vk.delta2.y[1].toString() === vkOnChain.delta2.y[1].toString();
-  isEqual = isEqual && vk.gamma2.x[0].toString() === vkOnChain.gamma2.x[0].toString();
-  isEqual = isEqual && vk.gamma2.x[1].toString() === vkOnChain.gamma2.x[1].toString();
-  isEqual = isEqual && vk.gamma2.y[0].toString() === vkOnChain.gamma2.y[0].toString();
-  isEqual = isEqual && vk.gamma2.y[1].toString() === vkOnChain.gamma2.y[1].toString();
+  isEqual = isEqual && verifyingKey.alpha1.x.toString() === verifyingKeyOnChain.alpha1.x.toString();
+  isEqual = isEqual && verifyingKey.alpha1.y.toString() === verifyingKeyOnChain.alpha1.y.toString();
+  isEqual = isEqual && verifyingKey.beta2.x[0].toString() === verifyingKeyOnChain.beta2.x[0].toString();
+  isEqual = isEqual && verifyingKey.beta2.x[1].toString() === verifyingKeyOnChain.beta2.x[1].toString();
+  isEqual = isEqual && verifyingKey.beta2.y[0].toString() === verifyingKeyOnChain.beta2.y[0].toString();
+  isEqual = isEqual && verifyingKey.beta2.y[1].toString() === verifyingKeyOnChain.beta2.y[1].toString();
+  isEqual = isEqual && verifyingKey.delta2.x[0].toString() === verifyingKeyOnChain.delta2.x[0].toString();
+  isEqual = isEqual && verifyingKey.delta2.x[1].toString() === verifyingKeyOnChain.delta2.x[1].toString();
+  isEqual = isEqual && verifyingKey.delta2.y[0].toString() === verifyingKeyOnChain.delta2.y[0].toString();
+  isEqual = isEqual && verifyingKey.delta2.y[1].toString() === verifyingKeyOnChain.delta2.y[1].toString();
+  isEqual = isEqual && verifyingKey.gamma2.x[0].toString() === verifyingKeyOnChain.gamma2.x[0].toString();
+  isEqual = isEqual && verifyingKey.gamma2.x[1].toString() === verifyingKeyOnChain.gamma2.x[1].toString();
+  isEqual = isEqual && verifyingKey.gamma2.y[0].toString() === verifyingKeyOnChain.gamma2.y[0].toString();
+  isEqual = isEqual && verifyingKey.gamma2.y[1].toString() === verifyingKeyOnChain.gamma2.y[1].toString();
 
   return isEqual;
 };
 
 /**
  * Extract all the verifying keys
- * @param args - The arguments for the extractAllVks function
+ * @param args - The arguments for the extractAllVerifyingKeys function
  * @returns The verifying keys
  */
-export const extractAllVks = async ({
+export const extractAllVerifyingKeys = async ({
   pollJoiningZkeyPath,
   pollJoinedZkeyPath,
   processMessagesZkeyPath,
   tallyVotesZkeyPath,
-}: IExtractAllVksArgs): Promise<IMaciVks> => {
-  // extract the vks
-  const pollJoiningVk = pollJoiningZkeyPath ? VerifyingKey.fromObj(await extractVk(pollJoiningZkeyPath)) : undefined;
-  const pollJoinedVk = pollJoinedZkeyPath ? VerifyingKey.fromObj(await extractVk(pollJoinedZkeyPath)) : undefined;
-
-  const processVk = processMessagesZkeyPath
-    ? VerifyingKey.fromObj(await extractVk(processMessagesZkeyPath))
+}: IExtractAllVerifyingKeysArgs): Promise<IMaciVerifyingKeys> => {
+  // extract the verifying keys
+  const pollJoiningVerifyingKey = pollJoiningZkeyPath
+    ? VerifyingKey.fromObj(await extractVerifyingKey(pollJoiningZkeyPath))
     : undefined;
-  const tallyVk = tallyVotesZkeyPath ? VerifyingKey.fromObj(await extractVk(tallyVotesZkeyPath)) : undefined;
+  const pollJoinedVerifyingKey = pollJoinedZkeyPath
+    ? VerifyingKey.fromObj(await extractVerifyingKey(pollJoinedZkeyPath))
+    : undefined;
+
+  const processVerifyingKey = processMessagesZkeyPath
+    ? VerifyingKey.fromObj(await extractVerifyingKey(processMessagesZkeyPath))
+    : undefined;
+  const tallyVerifyingKey = tallyVotesZkeyPath
+    ? VerifyingKey.fromObj(await extractVerifyingKey(tallyVotesZkeyPath))
+    : undefined;
 
   return {
-    pollJoiningVk,
-    pollJoinedVk,
-    processVk,
-    tallyVk,
+    pollJoiningVerifyingKey,
+    pollJoinedVerifyingKey,
+    processVerifyingKey,
+    tallyVerifyingKey,
   };
 };
 
@@ -109,7 +126,7 @@ export const extractAllVks = async ({
  * @param args The arguments for the checkVerifyingKeys command
  * @returns Whether the verifying keys match or not
  */
-export const extractVkToFile = async ({
+export const extractVerifyingKeyToFile = async ({
   processMessagesZkeyPathQv,
   tallyVotesZkeyPathQv,
   processMessagesZkeyPathNonQv,
@@ -117,18 +134,32 @@ export const extractVkToFile = async ({
   pollJoiningZkeyPath,
   tallyVotesZkeyPathNonQv,
   outputFilePath,
-}: IExtractVkToFileArgs): Promise<void> => {
-  const [processVkQv, tallyVkQv, processVkNonQv, tallyVkNonQv, pollJoiningVk, pollJoinedVk] = await Promise.all([
-    extractVk(processMessagesZkeyPathQv),
-    extractVk(tallyVotesZkeyPathQv),
-    extractVk(processMessagesZkeyPathNonQv),
-    extractVk(tallyVotesZkeyPathNonQv),
-    extractVk(pollJoiningZkeyPath),
-    extractVk(pollJoinedZkeyPath),
+}: IExtractVerifyingKeyToFileArgs): Promise<void> => {
+  const [
+    processVerifyingKeyQv,
+    tallyVerifyingKeyQv,
+    processVerifyingKeyNonQv,
+    tallyVerifyingKeyNonQv,
+    pollJoiningVerifyingKey,
+    pollJoinedVerifyingKey,
+  ] = await Promise.all([
+    extractVerifyingKey(processMessagesZkeyPathQv),
+    extractVerifyingKey(tallyVotesZkeyPathQv),
+    extractVerifyingKey(processMessagesZkeyPathNonQv),
+    extractVerifyingKey(tallyVotesZkeyPathNonQv),
+    extractVerifyingKey(pollJoiningZkeyPath),
+    extractVerifyingKey(pollJoinedZkeyPath),
   ]);
 
   await fs.promises.writeFile(
     outputFilePath,
-    JSON.stringify({ processVkQv, tallyVkQv, processVkNonQv, tallyVkNonQv, pollJoiningVk, pollJoinedVk }),
+    JSON.stringify({
+      processVerifyingKeyQv,
+      tallyVerifyingKeyQv,
+      processVerifyingKeyNonQv,
+      tallyVerifyingKeyNonQv,
+      pollJoiningVerifyingKey,
+      pollJoinedVerifyingKey,
+    }),
   );
 };

@@ -1,7 +1,7 @@
 import { Keypair } from "@maci-protocol/domainobjs";
 import {
   EMode,
-  extractAllVks,
+  extractAllVerifyingKeys,
   generateTallyCommitments,
   getPollParams,
   type ICheckVerifyingKeysArgs,
@@ -133,7 +133,7 @@ export const tallyVotesZkeyPathNonQv = path.resolve(
   "../zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test.0.zkey",
 );
 
-export const checkVerifyingKeysArgs: Omit<ICheckVerifyingKeysArgs, "vkRegistry" | "signer"> = {
+export const checkVerifyingKeysArgs: Omit<ICheckVerifyingKeysArgs, "verifyingKeysRegistry" | "signer"> = {
   stateTreeDepth: STATE_TREE_DEPTH,
   intStateTreeDepth: INT_STATE_TREE_DEPTH,
   voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
@@ -171,7 +171,7 @@ export const verifyArgs = async (signer: Signer): Promise<IVerifyArgs> => {
     tallyData,
     maciAddress: tallyData.maci,
     tallyCommitments,
-    numVoteOptions: tallyData.results.tally.length,
+    totalVoteOptions: tallyData.results.tally.length,
     voteOptionTreeDepth: pollParams.voteOptionTreeDepth,
     signer,
   };
@@ -180,13 +180,14 @@ export const verifyArgs = async (signer: Signer): Promise<IVerifyArgs> => {
 export const verifyingKeysArgs = async (
   signer: Signer,
   mode = EMode.QV,
-): Promise<Omit<ISetVerifyingKeysArgs, "vkRegistryAddress">> => {
-  const { pollJoiningVk, pollJoinedVk, processVk, tallyVk } = await extractAllVks({
-    pollJoiningZkeyPath: pollJoiningTestZkeyPath,
-    pollJoinedZkeyPath: pollJoinedTestZkeyPath,
-    processMessagesZkeyPath: mode === EMode.QV ? processMessageTestZkeyPath : processMessageTestNonQvZkeyPath,
-    tallyVotesZkeyPath: mode === EMode.QV ? tallyVotesTestZkeyPath : tallyVotesTestNonQvZkeyPath,
-  });
+): Promise<Omit<ISetVerifyingKeysArgs, "verifyingKeysRegistryAddress">> => {
+  const { pollJoiningVerifyingKey, pollJoinedVerifyingKey, processVerifyingKey, tallyVerifyingKey } =
+    await extractAllVerifyingKeys({
+      pollJoiningZkeyPath: pollJoiningTestZkeyPath,
+      pollJoinedZkeyPath: pollJoinedTestZkeyPath,
+      processMessagesZkeyPath: mode === EMode.QV ? processMessageTestZkeyPath : processMessageTestNonQvZkeyPath,
+      tallyVotesZkeyPath: mode === EMode.QV ? tallyVotesTestZkeyPath : tallyVotesTestNonQvZkeyPath,
+    });
 
   return {
     stateTreeDepth: STATE_TREE_DEPTH,
@@ -194,10 +195,10 @@ export const verifyingKeysArgs = async (
     intStateTreeDepth: INT_STATE_TREE_DEPTH,
     voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
     messageBatchSize: MESSAGE_BATCH_SIZE,
-    pollJoiningVk: pollJoiningVk!,
-    pollJoinedVk: pollJoinedVk!,
-    processMessagesVk: processVk!,
-    tallyVotesVk: tallyVk!,
+    pollJoiningVerifyingKey: pollJoiningVerifyingKey!,
+    pollJoinedVerifyingKey: pollJoinedVerifyingKey!,
+    processMessagesVerifyingKey: processVerifyingKey!,
+    tallyVotesVerifyingKey: tallyVerifyingKey!,
     mode,
     signer,
   };
@@ -215,7 +216,7 @@ export const deployPollArgs: Omit<
   | "pollEndTimestamp"
   | "maciAddress"
   | "verifierContractAddress"
-  | "vkRegistryContractAddress"
+  | "verifyingKeysRegistryContractAddress"
   | "policyContractAddress"
   | "initialVoiceCreditProxyContractAddress"
 > = {

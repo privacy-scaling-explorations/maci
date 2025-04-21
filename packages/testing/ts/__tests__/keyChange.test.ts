@@ -1,5 +1,5 @@
 import { VOTE_OPTION_TREE_ARITY } from "@maci-protocol/core";
-import { genRandomSalt } from "@maci-protocol/crypto";
+import { generateRandomSalt } from "@maci-protocol/crypto";
 import { Keypair } from "@maci-protocol/domainobjs";
 import {
   generateVote,
@@ -14,7 +14,7 @@ import {
   publish,
   generateProofs,
   deployPoll,
-  deployVkRegistryContract,
+  deployVerifyingKeysRegistryContract,
   timeTravel,
   type IGenerateProofsArgs,
   type ITallyData,
@@ -70,7 +70,7 @@ describe("keyChange tests", function test() {
   let initialVoiceCreditProxyContractAddress: string;
   let verifierContractAddress: string;
   let signer: Signer;
-  let vkRegistryAddress: string;
+  let verifyingKeysRegistryAddress: string;
 
   const generateProofsArgs: Omit<IGenerateProofsArgs, "maciAddress" | "signer"> = {
     outputDir: testProofsDirPath,
@@ -90,12 +90,12 @@ describe("keyChange tests", function test() {
     useQuadraticVoting: true,
   };
 
-  // before all tests we deploy the vk registry contract and set the verifying keys
+  // before all tests we deploy the verifying keys registry contract and set the verifying keys
   before(async () => {
     signer = await getDefaultSigner();
 
-    // we deploy the vk registry contract
-    vkRegistryAddress = await deployVkRegistryContract({ signer });
+    // we deploy the verifying keys registry contract
+    verifyingKeysRegistryAddress = await deployVerifyingKeysRegistryContract({ signer });
 
     const [initialVoiceCreditProxy] = await deployConstantInitialVoiceCreditProxy(
       { amount: DEFAULT_INITIAL_VOICE_CREDITS },
@@ -109,7 +109,7 @@ describe("keyChange tests", function test() {
     verifierContractAddress = await verifier.getAddress();
 
     // we set the verifying keys
-    await setVerifyingKeys({ ...(await verifyingKeysArgs(signer)), vkRegistryAddress });
+    await setVerifyingKeys({ ...(await verifyingKeysArgs(signer)), verifyingKeysRegistryAddress });
   });
 
   describe("keyChange and new vote (new vote has same nonce)", () => {
@@ -118,7 +118,7 @@ describe("keyChange tests", function test() {
     });
 
     const user1Keypair = new Keypair();
-    const { privateKey: pollPrivateKey, publicKey: pollPubKey1 } = user1Keypair;
+    const { privateKey: pollPrivateKey, publicKey: pollPublicKey1 } = user1Keypair;
     const { publicKey: pollPublicKey2 } = new Keypair();
 
     const initialNonce = 1n;
@@ -165,7 +165,7 @@ describe("keyChange tests", function test() {
         relayers: [await signer.getAddress()],
         maciAddress: maciAddresses.maciContractAddress,
         verifierContractAddress,
-        vkRegistryContractAddress: vkRegistryAddress,
+        verifyingKeysRegistryContractAddress: verifyingKeysRegistryAddress,
         policyContractAddress: pollPolicyContractAddress,
         initialVoiceCreditProxyContractAddress,
       });
@@ -192,14 +192,14 @@ describe("keyChange tests", function test() {
         signer,
       });
       await publish({
-        publicKey: pollPubKey1.serialize(),
+        publicKey: pollPublicKey1.serialize(),
         stateIndex,
         voteOptionIndex: initialVoteOption,
         nonce: initialNonce,
         pollId,
         newVoteWeight: initialVoteAmount,
         maciAddress: maciAddresses.maciContractAddress,
-        salt: genRandomSalt(),
+        salt: generateRandomSalt(),
         privateKey: pollPrivateKey.serialize(),
         signer,
       });
@@ -210,7 +210,7 @@ describe("keyChange tests", function test() {
         {
           pollId,
           voteOptionIndex: initialVoteOption,
-          salt: genRandomSalt(),
+          salt: generateRandomSalt(),
           nonce: initialNonce,
           privateKey: pollPrivateKey,
           stateIndex,
@@ -248,7 +248,7 @@ describe("keyChange tests", function test() {
         pollId,
         newVoteWeight: initialVoteAmount - 1n,
         maciAddress: maciAddresses.maciContractAddress,
-        salt: genRandomSalt(),
+        salt: generateRandomSalt(),
         privateKey: pollPrivateKey.serialize(),
         signer,
       });
@@ -273,7 +273,7 @@ describe("keyChange tests", function test() {
         await fs.promises.readFile(testTallyFilePath).then((res) => res.toString()),
       ) as ITallyData;
       expect(tallyData.results.tally[0]).to.equal(expectedTally.toString());
-      expect(tallyData.perVOSpentVoiceCredits?.tally[0]).to.equal(expectedPerVoteOptionTally.toString());
+      expect(tallyData.perVoteOptionSpentVoiceCredits?.tally[0]).to.equal(expectedPerVoteOptionTally.toString());
     });
   });
 
@@ -329,7 +329,7 @@ describe("keyChange tests", function test() {
         relayers: [await signer.getAddress()],
         maciAddress: maciAddresses.maciContractAddress,
         verifierContractAddress,
-        vkRegistryContractAddress: vkRegistryAddress,
+        verifyingKeysRegistryContractAddress: verifyingKeysRegistryAddress,
         policyContractAddress: pollPolicyContractAddress,
         initialVoiceCreditProxyContractAddress,
       });
@@ -360,7 +360,7 @@ describe("keyChange tests", function test() {
         {
           pollId,
           voteOptionIndex: initialVoteOption,
-          salt: genRandomSalt(),
+          salt: generateRandomSalt(),
           nonce: initialNonce,
           privateKey: user1Keypair.privateKey,
           stateIndex,
@@ -398,7 +398,7 @@ describe("keyChange tests", function test() {
         pollId,
         newVoteWeight: initialVoteAmount - 1n,
         maciAddress: maciAddresses.maciContractAddress,
-        salt: genRandomSalt(),
+        salt: generateRandomSalt(),
         privateKey: user1Keypair.privateKey.serialize(),
         signer,
       });
@@ -423,7 +423,7 @@ describe("keyChange tests", function test() {
         await fs.promises.readFile(testTallyFilePath).then((res) => res.toString()),
       ) as ITallyData;
       expect(tallyData.results.tally[0]).to.equal(expectedTally.toString());
-      expect(tallyData.perVOSpentVoiceCredits?.tally[0]).to.equal(expectedPerVoteOptionTally.toString());
+      expect(tallyData.perVoteOptionSpentVoiceCredits?.tally[0]).to.equal(expectedPerVoteOptionTally.toString());
     });
   });
 
@@ -479,7 +479,7 @@ describe("keyChange tests", function test() {
         relayers: [await signer.getAddress()],
         maciAddress: maciAddresses.maciContractAddress,
         verifierContractAddress,
-        vkRegistryContractAddress: vkRegistryAddress,
+        verifyingKeysRegistryContractAddress: verifyingKeysRegistryAddress,
         policyContractAddress: pollPolicyContractAddress,
         initialVoiceCreditProxyContractAddress,
       });
@@ -514,7 +514,7 @@ describe("keyChange tests", function test() {
         pollId,
         newVoteWeight: initialVoteAmount,
         maciAddress: maciAddresses.maciContractAddress,
-        salt: genRandomSalt(),
+        salt: generateRandomSalt(),
         privateKey: user1Keypair.privateKey.serialize(),
         signer,
       });
@@ -525,7 +525,7 @@ describe("keyChange tests", function test() {
         {
           pollId,
           voteOptionIndex: initialVoteOption + 2n,
-          salt: genRandomSalt(),
+          salt: generateRandomSalt(),
           nonce: initialNonce,
           privateKey: user1Keypair.privateKey,
           stateIndex,
@@ -563,7 +563,7 @@ describe("keyChange tests", function test() {
         pollId,
         newVoteWeight: initialVoteAmount - 3n,
         maciAddress: maciAddresses.maciContractAddress,
-        salt: genRandomSalt(),
+        salt: generateRandomSalt(),
         privateKey: user1Keypair.privateKey.serialize(),
         signer,
       });
@@ -588,7 +588,7 @@ describe("keyChange tests", function test() {
         await fs.promises.readFile(testTallyFilePath).then((res) => res.toString()),
       ) as ITallyData;
       expect(tallyData.results.tally[2]).to.equal(expectedTally.toString());
-      expect(tallyData.perVOSpentVoiceCredits?.tally[2]).to.equal(expectedPerVoteOptionTally.toString());
+      expect(tallyData.perVoteOptionSpentVoiceCredits?.tally[2]).to.equal(expectedPerVoteOptionTally.toString());
     });
   });
 });

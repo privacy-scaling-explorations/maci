@@ -23,7 +23,7 @@ The full configuration for a poll looks like this:
 "Poll": {
     "pollStartDate": 3600,
     "pollEndDate": 3600,
-    "coordinatorPubkey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
+    "coordinatorPublicKey": "macipk.9a59264310d95cfd8eb7083aebeba221b5c26e77427f12b7c0f50bc1cc35e621",
     "useQuadraticVoting": false,
     "policy": "FreeForAllPolicy",
     "relayers": "0x0000000000000000000000000000000000000000",
@@ -45,7 +45,7 @@ In the deploy-config.json file set the `useQuadraticVoting` value to **true**.
 ```json
 "Poll": {
     [...]
-    "coordinatorPubkey": "macipk",
+    "coordinatorPublicKey": "macipk",
     "useQuadraticVoting": true
 }
 ```
@@ -69,7 +69,7 @@ In the deploy-config.json file set the `useQuadraticVoting` value to **false**.
 ```json
 "Poll": {
     [...]
-    "coordinatorPubkey": "macipk",
+    "coordinatorPublicKey": "macipk",
     "useQuadraticVoting": false
 }
 ```

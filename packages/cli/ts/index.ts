@@ -16,16 +16,16 @@ import {
   mergeSignups,
   checkVerifyingKeys,
   setVerifyingKeys,
-  extractAllVks,
+  extractAllVerifyingKeys,
   EMode,
-  extractVkToFile,
+  extractVerifyingKeyToFile,
   generateMaciState,
   proveOnChain,
   publish,
   MACI__factory as MACIFactory,
   deployPoll,
   generateProofs,
-  deployVkRegistryContract,
+  deployVerifyingKeysRegistryContract,
   timeTravel,
   fundWallet,
   info,
@@ -41,7 +41,7 @@ import {
   deployVerifier,
   deployMaci,
   deployFreeForAllSignUpPolicy,
-  genEmptyBallotRoots,
+  generateEmptyBallotRoots,
   FreeForAllCheckerFactory__factory as FreeForAllCheckerFactoryFactory,
   FreeForAllPolicyFactory__factory as FreeForAllPolicyFactoryFactory,
 } from "@maci-protocol/sdk";
@@ -94,11 +94,11 @@ program
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .requiredOption("-s, --stateTreeDepth <stateTreeDepth>", "the state tree depth", parseInt)
-  .action(async (cmdOptions) => {
+  .action(async (args) => {
     try {
       const signer = await getSigner();
 
-      banner(cmdOptions.quiet);
+      banner(args.quiet);
 
       const network = await signer.provider?.getNetwork();
 
@@ -108,17 +108,17 @@ program
       });
 
       let [signupPolicyContractAddress] = readContractAddresses({
-        contractNames: [cmdOptions.signupPolicyContractName.toString() as EContracts],
+        contractNames: [args.signupPolicyContractName.toString() as EContracts],
         network: network?.name,
       });
 
       if (!signupPolicyContractAddress) {
-        const checkerFactory = cmdOptions.freeForAllCheckerFactoryAddress
-          ? FreeForAllCheckerFactoryFactory.connect(cmdOptions.freeForAllCheckerFactoryAddress, signer)
+        const checkerFactory = args.freeForAllCheckerFactoryAddress
+          ? FreeForAllCheckerFactoryFactory.connect(args.freeForAllCheckerFactoryAddress, signer)
           : undefined;
 
-        const policyFactory = cmdOptions.freeForAllPolicyFactoryAddress
-          ? FreeForAllPolicyFactoryFactory.connect(cmdOptions.freeForAllPolicyFactoryAddress, signer)
+        const policyFactory = args.freeForAllPolicyFactoryAddress
+          ? FreeForAllPolicyFactoryFactory.connect(args.freeForAllPolicyFactoryAddress, signer)
           : undefined;
 
         const [contract] = await deployFreeForAllSignUpPolicy(
@@ -150,15 +150,15 @@ program
           poseidonT6,
         },
         signer,
-        stateTreeDepth: cmdOptions.stateTreeDepth,
+        stateTreeDepth: args.stateTreeDepth,
       });
 
-      const emptyBallotRoots = genEmptyBallotRoots(cmdOptions.stateTreeDepth);
+      const emptyBallotRoots = generateEmptyBallotRoots(args.stateTreeDepth);
 
       // save to the JSON File
       await storeContractAddresses({
         data: {
-          [cmdOptions.signupPolicyContractName]: { address: signupPolicyContractAddress, args: [] },
+          [args.signupPolicyContractName]: { address: signupPolicyContractAddress, args: [] },
           [EContracts.Verifier]: { address: verifierContractAddress, args: [] },
           [EContracts.MACI]: {
             address: maciContractAddress,
@@ -167,7 +167,7 @@ program
               messageProcessorFactoryContractAddress,
               tallyFactoryContractAddress,
               signupPolicyContractAddress,
-              cmdOptions.stateTreeDepth,
+              args.stateTreeDepth,
               emptyBallotRoots.map((root) => root.toString()),
             ],
           },
@@ -182,7 +182,7 @@ program
         signer,
       });
 
-      logGreen({ quiet: cmdOptions.quiet, text: success(`MACI deployed at:  ${maciContractAddress}`) });
+      logGreen({ quiet: args.quiet, text: success(`MACI deployed at:  ${maciContractAddress}`) });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -198,7 +198,7 @@ program
   )
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .option("-k, --vk-contract <vkContract>", "the VkRegistry contract address")
+  .option("-k, --vk-contract <vkContract>", "the VerifyingKeysRegistry contract address")
   .requiredOption("-s, --state-tree-depth <stateTreeDepth>", "the state tree depth", parseInt)
   .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the intermediate state tree depth", parseInt)
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
@@ -219,65 +219,65 @@ program
     "--poll-joined-zkey <pollJoinedZkey>",
     "the poll joined zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
-  .action(async (cmdOptions) => {
+  .action(async (args) => {
     try {
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
-      const [vkContractAddress] = readContractAddresses({
-        contractNames: [EContracts.VkRegistry],
+      const [contractAddress] = readContractAddresses({
+        contractNames: [EContracts.VerifyingKeysRegistry],
         network: network?.name,
-        defaultAddresses: [cmdOptions.vkContract],
+        defaultAddresses: [args.vkContract],
       });
 
-      logYellow({ quiet: cmdOptions.quiet, text: info("Retrieving verifying keys from the contract...") });
+      logYellow({ quiet: args.quiet, text: info("Retrieving verifying keys from the contract...") });
 
       await checkVerifyingKeys({
-        stateTreeDepth: cmdOptions.stateTreeDepth,
-        intStateTreeDepth: cmdOptions.intStateTreeDepth,
-        voteOptionTreeDepth: cmdOptions.voteOptionTreeDepth,
-        messageBatchSize: cmdOptions.messageBatchSize,
-        processMessagesZkeyPath: cmdOptions.processMessagesZkey,
-        tallyVotesZkeyPath: cmdOptions.tallyVotesZkey,
-        pollJoiningZkeyPath: cmdOptions.pollJoiningZkey,
-        pollJoinedZkeyPath: cmdOptions.pollJoinedZkey,
-        vkRegistry: vkContractAddress,
-        useQuadraticVoting: cmdOptions.useQuadraticVoting,
+        stateTreeDepth: args.stateTreeDepth,
+        intStateTreeDepth: args.intStateTreeDepth,
+        voteOptionTreeDepth: args.voteOptionTreeDepth,
+        messageBatchSize: args.messageBatchSize,
+        processMessagesZkeyPath: args.processMessagesZkey,
+        tallyVotesZkeyPath: args.tallyVotesZkey,
+        pollJoiningZkeyPath: args.pollJoiningZkey,
+        pollJoinedZkeyPath: args.pollJoinedZkey,
+        verifyingKeysRegistry: contractAddress,
+        useQuadraticVoting: args.useQuadraticVoting,
         signer,
       });
 
-      logGreen({ quiet: cmdOptions.quiet, text: success("Verifying keys match") });
+      logGreen({ quiet: args.quiet, text: success("Verifying keys match") });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
   });
 program
-  .command("genMaciPubKey")
+  .command("generateMaciPubKey")
   .description("generate a new MACI public key")
   .requiredOption("-k, --private-key <privateKey>", "the private key")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .action((cmdObj) => {
-    const publicKey = generateMaciPublicKey(cmdObj.privateKey);
-    logGreen({ quiet: cmdObj.quiet, text: success(`Public key: ${publicKey}`) });
+  .action((args) => {
+    const publicKey = generateMaciPublicKey(args.privateKey);
+    logGreen({ quiet: args.quiet, text: success(`Public key: ${publicKey}`) });
   });
 program
-  .command("genMaciKeyPair")
+  .command("generateMaciKeyPair")
   .description("generate a new MACI key pair")
   .option("-s, --seed <seed>", "seed value for keypair", (value) => (value ? BigInt(value) : undefined), undefined)
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
-  .action((cmdObj) => {
-    const { publicKey, privateKey } = generateKeypair({ seed: cmdObj.seed });
-    logGreen({ quiet: cmdObj.quiet, text: success(`Public key: ${publicKey}`) });
-    logGreen({ quiet: cmdObj.quiet, text: success(`Private key: ${privateKey}`) });
+  .action((args) => {
+    const { publicKey, privateKey } = generateKeypair({ seed: args.seed });
+    logGreen({ quiet: args.quiet, text: success(`Public key: ${publicKey}`) });
+    logGreen({ quiet: args.quiet, text: success(`Private key: ${privateKey}`) });
   });
 program
-  .command("deployVkRegistry")
+  .command("deployVerifyingKeysRegistry")
   .description("deploy a new verification key registry contract")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .action(async (cmdObj) => {
+  .action(async (args) => {
     try {
-      banner(cmdObj.quiet);
+      banner(args.quiet);
 
       const signer = await getSigner();
       // assume that the vkRegistry contract is the first one to be deployed
@@ -289,13 +289,16 @@ program
       }
 
       // deploy and store the address
-      const vkRegistryAddress = await deployVkRegistryContract({ signer });
+      const verifyingKeysRegistryAddress = await deployVerifyingKeysRegistryContract({ signer });
       await storeContractAddresses({
-        data: { [EContracts.VkRegistry]: { address: vkRegistryAddress, args: [] } },
+        data: { [EContracts.VerifyingKeysRegistry]: { address: verifyingKeysRegistryAddress, args: [] } },
         signer,
       });
 
-      logGreen({ quiet: cmdObj.quiet, text: success(`VkRegistry deployed at: ${vkRegistryAddress}`) });
+      logGreen({
+        quiet: args.quiet,
+        text: success(`VerifyingKeysRegistry deployed at: ${verifyingKeysRegistryAddress}`),
+      });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -323,7 +326,7 @@ program
 program
   .command("deployPoll")
   .description("deploy a new poll")
-  .option("-k, --vkRegistryAddress <vkRegistryAddress>", "the vk registry contract address")
+  .option("-k, --verifyingKeysRegistryAddress <verifyingKeysRegistryAddress>", "the vk registry contract address")
   .requiredOption("--start <pollStartDate>", "the poll start date", parseInt)
   .requiredOption("--end <pollEndDate>", "the poll end date", parseInt)
   .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the int state tree depth", parseInt)
@@ -345,23 +348,23 @@ program
   .option("--initial-voice-credits <initialVoiceCredits>", "the initial voice credits", parseInt)
   .option("--initial-voice-credits-proxy <initialVoiceCreditsProxy>", "the initial voice credits proxy address")
   .option("--signup-policy <signupPolicy>", "the signup policy contract address")
-  .action(async (cmdObj) => {
+  .action(async (args) => {
     try {
-      banner(cmdObj.quiet);
+      banner(args.quiet);
 
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
 
-      const [vkRegistryAddress, maciAddress, initialVoiceCreditProxyAddress, verifierContractAddress] =
+      const [verifyingKeysRegistryAddress, maciAddress, initialVoiceCreditProxyAddress, verifierContractAddress] =
         readContractAddresses({
           contractNames: [
-            EContracts.VkRegistry,
+            EContracts.VerifyingKeysRegistry,
             EContracts.MACI,
             EContracts.ConstantInitialVoiceCreditProxy,
             EContracts.Verifier,
           ],
           network: network?.name,
-          defaultAddresses: [cmdObj.vkRegistryAddress, cmdObj.maciAddress, cmdObj.initialVoiceCreditsProxy],
+          defaultAddresses: [args.verifyingKeysRegistryAddress, args.maciAddress, args.initialVoiceCreditsProxy],
         });
 
       const maciContract = MACIFactory.connect(maciAddress, signer);
@@ -375,7 +378,7 @@ program
         contractNames: [policyContractName.toString() as EContracts],
         keys: [nextPollId.toString()],
         network: network?.name,
-        defaultAddresses: [cmdObj.signupPolicy],
+        defaultAddresses: [args.signupPolicy],
       });
 
       const {
@@ -386,38 +389,38 @@ program
         initialVoiceCreditProxyContractAddress,
         policyContractAddress,
       } = await deployPoll({
-        initialVoiceCredits: cmdObj.initialVoiceCredits || DEFAULT_INITIAL_VOICE_CREDITS,
-        pollStartTimestamp: cmdObj.start,
-        pollEndTimestamp: cmdObj.end,
-        intStateTreeDepth: cmdObj.intStateTreeDepth,
-        messageBatchSize: cmdObj.messageBatchSize,
-        stateTreeDepth: cmdObj.stateTreeDepth,
-        voteOptionTreeDepth: cmdObj.voteOptionTreeDepth,
-        coordinatorPublicKey: PublicKey.deserialize(cmdObj.publicKey),
+        initialVoiceCredits: args.initialVoiceCredits || DEFAULT_INITIAL_VOICE_CREDITS,
+        pollStartTimestamp: args.start,
+        pollEndTimestamp: args.end,
+        intStateTreeDepth: args.intStateTreeDepth,
+        messageBatchSize: args.messageBatchSize,
+        stateTreeDepth: args.stateTreeDepth,
+        voteOptionTreeDepth: args.voteOptionTreeDepth,
+        coordinatorPublicKey: PublicKey.deserialize(args.publicKey),
         maciAddress,
-        vkRegistryContractAddress: vkRegistryAddress,
-        relayers: cmdObj.relayers ?? [ZeroAddress],
-        mode: cmdObj.useQuadraticVoting ? EMode.QV : EMode.NON_QV,
+        verifyingKeysRegistryContractAddress: verifyingKeysRegistryAddress,
+        relayers: args.relayers ?? [ZeroAddress],
+        mode: args.useQuadraticVoting ? EMode.QV : EMode.NON_QV,
         signer,
-        voteOptions: cmdObj.voteOptions ?? DEFAULT_VOTE_OPTIONS,
+        voteOptions: args.voteOptions ?? DEFAULT_VOTE_OPTIONS,
         verifierContractAddress,
         policyContractAddress: signupPolicyContractAddress,
         initialVoiceCreditProxyContractAddress: initialVoiceCreditProxyAddress,
       });
 
-      logGreen({ quiet: cmdObj.quiet, text: success(`Poll ID: ${pollId}`) });
-      logGreen({ quiet: cmdObj.quiet, text: success(`Poll contract address: ${pollContractAddress}`) });
-      logGreen({ quiet: cmdObj.quiet, text: success(`Tally contract address: ${tallyContractAddress}`) });
+      logGreen({ quiet: args.quiet, text: success(`Poll ID: ${pollId}`) });
+      logGreen({ quiet: args.quiet, text: success(`Poll contract address: ${pollContractAddress}`) });
+      logGreen({ quiet: args.quiet, text: success(`Tally contract address: ${tallyContractAddress}`) });
       logGreen({
-        quiet: cmdObj.quiet,
+        quiet: args.quiet,
         text: success(`Message processor contract address: ${messageProcessorContractAddress}`),
       });
       logGreen({
-        quiet: cmdObj.quiet,
+        quiet: args.quiet,
         text: success(`Initial voice credit proxy contract address: ${initialVoiceCreditProxyContractAddress}`),
       });
       logGreen({
-        quiet: cmdObj.quiet,
+        quiet: args.quiet,
         text: success(`Signup policy contract address: ${policyContractAddress}`),
       });
     } catch (error) {
@@ -452,7 +455,7 @@ program
   .option("-w, --wasm", "whether to use the wasm binaries")
   .option("-r, --rapidsnark <rapidsnark>", "the path to the rapidsnark binary")
   .option("-g, --poll-witnessgen <pollWitnessgen>", "the path to the poll witness generation binary")
-  .action(async (cmdObj) => {
+  .action(async (args) => {
     try {
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
@@ -460,32 +463,32 @@ program
       const [maciAddress] = readContractAddresses({
         contractNames: [EContracts.MACI],
         network: network?.name,
-        defaultAddresses: [cmdObj.maciAddress],
+        defaultAddresses: [args.maciAddress],
       });
-      const privateKey = cmdObj.privateKey || (await promptSensitiveValue("Insert your MACI private key"));
+      const privateKey = args.privateKey || (await promptSensitiveValue("Insert your MACI private key"));
 
       const data = await joinPoll({
         maciAddress,
         privateKey,
-        stateIndex: cmdObj.stateIndex,
-        stateFile: cmdObj.stateFile,
-        pollId: cmdObj.pollId,
+        stateIndex: args.stateIndex,
+        stateFile: args.stateFile,
+        pollId: args.pollId,
         signer,
-        startBlock: cmdObj.startBlock,
-        endBlock: cmdObj.endBlock,
-        blocksPerBatch: cmdObj.blocksPerBatch,
-        pollJoiningZkey: cmdObj.pollJoiningZkey,
-        pollWasm: cmdObj.pollWasm,
-        useWasm: cmdObj.wasm,
-        rapidsnark: cmdObj.rapidsnark,
-        pollWitgen: cmdObj.pollWitnessgen,
-        sgDataArg: cmdObj.sgData ?? DEFAULT_SG_DATA,
-        ivcpDataArg: cmdObj.ivcpData ?? DEFAULT_IVCP_DATA,
+        startBlock: args.startBlock,
+        endBlock: args.endBlock,
+        blocksPerBatch: args.blocksPerBatch,
+        pollJoiningZkey: args.pollJoiningZkey,
+        pollWasm: args.pollWasm,
+        useWasm: args.wasm,
+        rapidsnark: args.rapidsnark,
+        pollWitgen: args.pollWitnessgen,
+        sgDataArg: args.sgData ?? DEFAULT_SG_DATA,
+        ivcpDataArg: args.ivcpData ?? DEFAULT_IVCP_DATA,
       });
 
-      logGreen({ quiet: cmdObj.quiet, text: info(`User joined poll with nullifier: ${data.nullifier}`) });
-      logGreen({ quiet: cmdObj.quiet, text: info(`User joined poll with state index: ${data.pollStateIndex}`) });
-      logGreen({ quiet: cmdObj.quiet, text: info(`User joined poll with ${data.voiceCredits} voice credits`) });
+      logGreen({ quiet: args.quiet, text: info(`User joined poll with nullifier: ${data.nullifier}`) });
+      logGreen({ quiet: args.quiet, text: info(`User joined poll with state index: ${data.pollStateIndex}`) });
+      logGreen({ quiet: args.quiet, text: info(`User joined poll with ${data.voiceCredits} voice credits`) });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
@@ -531,37 +534,36 @@ program
   .option("-k, --vk-registry <vkRegistry>", "the vk registry contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .action(async (cmdObj) => {
+  .action(async (args) => {
     try {
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
-      const [vkRegistryAddress] = readContractAddresses({
-        contractNames: [EContracts.VkRegistry],
+      const [verifyingKeysRegistryAddress] = readContractAddresses({
+        contractNames: [EContracts.VerifyingKeysRegistry],
         network: network?.name,
-        defaultAddresses: [cmdObj.vkRegistry],
+        defaultAddresses: [args.vkRegistry],
       });
 
-      const { pollJoiningVk, pollJoinedVk, processVk, tallyVk } = await extractAllVks({
-        pollJoiningZkeyPath: cmdObj.pollJoiningZkey,
-        pollJoinedZkeyPath: cmdObj.pollJoinedZkey,
-        processMessagesZkeyPath: cmdObj.useQuadraticVoting
-          ? cmdObj.processMessagesZkeyQv
-          : cmdObj.processMessagesZkeyNonQv,
-        tallyVotesZkeyPath: cmdObj.useQuadraticVoting ? cmdObj.tallyVotesZkeyQv : cmdObj.tallyVotesZkeyQv,
-      });
+      const { pollJoiningVerifyingKey, pollJoinedVerifyingKey, processVerifyingKey, tallyVerifyingKey } =
+        await extractAllVerifyingKeys({
+          pollJoiningZkeyPath: args.pollJoiningZkey,
+          pollJoinedZkeyPath: args.pollJoinedZkey,
+          processMessagesZkeyPath: args.useQuadraticVoting ? args.processMessagesZkeyQv : args.processMessagesZkeyNonQv,
+          tallyVotesZkeyPath: args.useQuadraticVoting ? args.tallyVotesZkeyQv : args.tallyVotesZkeyQv,
+        });
 
       await setVerifyingKeys({
-        stateTreeDepth: cmdObj.stateTreeDepth,
-        intStateTreeDepth: cmdObj.intStateTreeDepth,
-        voteOptionTreeDepth: cmdObj.voteOptionTreeDepth,
-        messageBatchSize: cmdObj.messageBatchSize,
-        pollStateTreeDepth: cmdObj.pollStateTreeDepth || cmdObj.stateTreeDepth,
-        pollJoiningVk: pollJoiningVk!,
-        pollJoinedVk: pollJoinedVk!,
-        processMessagesVk: processVk!,
-        tallyVotesVk: tallyVk!,
-        vkRegistryAddress,
-        mode: cmdObj.useQuadraticVoting ? EMode.QV : EMode.NON_QV,
+        stateTreeDepth: args.stateTreeDepth,
+        intStateTreeDepth: args.intStateTreeDepth,
+        voteOptionTreeDepth: args.voteOptionTreeDepth,
+        messageBatchSize: args.messageBatchSize,
+        pollStateTreeDepth: args.pollStateTreeDepth || args.stateTreeDepth,
+        pollJoiningVerifyingKey: pollJoiningVerifyingKey!,
+        pollJoinedVerifyingKey: pollJoinedVerifyingKey!,
+        processMessagesVerifyingKey: processVerifyingKey!,
+        tallyVotesVerifyingKey: tallyVerifyingKey!,
+        verifyingKeysRegistryAddress,
+        mode: args.useQuadraticVoting ? EMode.QV : EMode.NON_QV,
         signer,
       });
     } catch (error) {
@@ -585,7 +587,7 @@ program
   .requiredOption("-w, --new-vote-weight <newVoteWeight>", "the new vote weight", BigInt)
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .action(async (cmdObj) => {
+  .action(async (args) => {
     try {
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
@@ -593,19 +595,19 @@ program
       const [maciAddress] = readContractAddresses({
         contractNames: [EContracts.MACI],
         network: network?.name,
-        defaultAddresses: [cmdObj.maciAddress],
+        defaultAddresses: [args.maciAddress],
       });
-      const privateKey = cmdObj.privateKey || (await promptSensitiveValue("Insert your MACI private key"));
+      const privateKey = args.privateKey || (await promptSensitiveValue("Insert your MACI private key"));
 
       await publish({
-        publicKey: cmdObj.publicKey,
-        stateIndex: cmdObj.stateIndex,
-        voteOptionIndex: cmdObj.voteOptionIndex,
-        nonce: cmdObj.nonce,
-        pollId: cmdObj.pollId,
-        newVoteWeight: cmdObj.newVoteWeight,
+        publicKey: args.publicKey,
+        stateIndex: args.stateIndex,
+        voteOptionIndex: args.voteOptionIndex,
+        nonce: args.nonce,
+        pollId: args.pollId,
+        newVoteWeight: args.newVoteWeight,
         maciAddress,
-        salt: cmdObj.salt,
+        salt: args.salt,
         privateKey,
         signer,
       });
@@ -620,7 +622,7 @@ program
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .requiredOption("-p, --poll-id <pollId>", "the poll id", BigInt)
-  .action(async (cmdObj) => {
+  .action(async (args) => {
     try {
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
@@ -628,18 +630,18 @@ program
       const [maciAddress] = readContractAddresses({
         contractNames: [EContracts.MACI],
         network: network?.name,
-        defaultAddresses: [cmdObj.maciAddress],
+        defaultAddresses: [args.maciAddress],
       });
 
       const receipt = await mergeSignups({
-        pollId: cmdObj.pollId,
+        pollId: args.pollId,
         maciAddress,
         signer,
       });
 
-      logGreen({ quiet: cmdObj.quiet, text: info(`Transaction hash: ${receipt.hash}`) });
+      logGreen({ quiet: args.quiet, text: info(`Transaction hash: ${receipt.hash}`) });
       logGreen({
-        quiet: cmdObj.quiet,
+        quiet: args.quiet,
         text: success(`Executed mergeSignups(); gas used: ${receipt.gasUsed.toString()}`),
       });
     } catch (error) {
@@ -652,21 +654,21 @@ program
   .requiredOption("-s, --seconds <seconds>", "the number of seconds to fast-forward", parseInt)
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .action(async (cmdObj) => {
+  .action(async (args) => {
     try {
-      banner(cmdObj.quiet);
+      banner(args.quiet);
 
       const signer = await getSigner();
 
-      await timeTravel({ seconds: cmdObj.seconds, signer });
+      await timeTravel({ seconds: args.seconds, signer });
 
-      logGreen({ quiet: cmdObj.quiet, text: success(`Fast-forwarded ${cmdObj.seconds} seconds`) });
+      logGreen({ quiet: args.quiet, text: success(`Fast-forwarded ${args.seconds} seconds`) });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
     }
   });
 program
-  .command("extractVkToFile")
+  .command("extractVerifyingKeyToFile")
   .description("extract vkey to json file")
   .requiredOption(
     "--poll-joining-zkey <pollJoiningZkey>",
@@ -693,16 +695,16 @@ program
     "the tally votes non-qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .requiredOption("-o, --output-file <outputFile>", "the output file path of extracted vkeys")
-  .action(async (cmdObj) => {
+  .action(async (args) => {
     try {
-      await extractVkToFile({
-        processMessagesZkeyPathQv: cmdObj.processMessagesZkeyQv,
-        tallyVotesZkeyPathQv: cmdObj.tallyVotesZkeyQv,
-        processMessagesZkeyPathNonQv: cmdObj.processMessagesZkeyNonQv,
-        tallyVotesZkeyPathNonQv: cmdObj.tallyVotesZkeyNonQv,
-        pollJoiningZkeyPath: cmdObj.pollJoiningZkey,
-        pollJoinedZkeyPath: cmdObj.pollJoinedZkey,
-        outputFilePath: cmdObj.outputFile,
+      await extractVerifyingKeyToFile({
+        processMessagesZkeyPathQv: args.processMessagesZkeyQv,
+        tallyVotesZkeyPathQv: args.tallyVotesZkeyQv,
+        processMessagesZkeyPathNonQv: args.processMessagesZkeyNonQv,
+        tallyVotesZkeyPathNonQv: args.tallyVotesZkeyNonQv,
+        pollJoiningZkeyPath: args.pollJoiningZkey,
+        pollJoinedZkeyPath: args.pollJoinedZkey,
+        outputFilePath: args.outputFile,
       });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
@@ -716,7 +718,7 @@ program
   .option("-s, --sg-data <sgData>", "the signup gateway data")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .action(async (cmdObj) => {
+  .action(async (args) => {
     try {
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
@@ -724,18 +726,18 @@ program
       const [maciAddress] = readContractAddresses({
         contractNames: [EContracts.MACI],
         network: network?.name,
-        defaultAddresses: [cmdObj.maciAddress],
+        defaultAddresses: [args.maciAddress],
       });
 
       const data = await signup({
-        maciPublicKey: cmdObj.publicKey,
+        maciPublicKey: args.publicKey,
         maciAddress,
-        sgData: cmdObj.sgData ?? DEFAULT_SG_DATA,
+        sgData: args.sgData ?? DEFAULT_SG_DATA,
         signer,
       });
 
       logGreen({
-        quiet: cmdObj.quiet,
+        quiet: args.quiet,
         text: success(`State index: ${data.stateIndex.toString()}\n Transaction hash: ${data.transactionHash}`),
       });
     } catch (error) {
@@ -748,7 +750,7 @@ program
   .requiredOption("-p, --public-key <publicKey>", "the MACI public key")
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
-  .action(async (cmdObj) => {
+  .action(async (args) => {
     try {
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
@@ -756,19 +758,19 @@ program
       const [maciAddress] = readContractAddresses({
         contractNames: [EContracts.MACI],
         network: network?.name,
-        defaultAddresses: [cmdObj.maciAddress],
+        defaultAddresses: [args.maciAddress],
       });
 
       const data = await getSignedupUserData({
-        maciPublicKey: cmdObj.publicKey,
+        maciPublicKey: args.publicKey,
         maciAddress,
         signer,
       });
 
       if (data.isRegistered) {
-        logGreen({ quiet: cmdObj.quiet, text: success(`State index: ${data.stateIndex?.toString()}`) });
+        logGreen({ quiet: args.quiet, text: success(`State index: ${data.stateIndex?.toString()}`) });
       } else {
-        logRed({ quiet: cmdObj.quiet, text: "User is not registered" });
+        logRed({ quiet: args.quiet, text: "User is not registered" });
       }
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
@@ -784,7 +786,7 @@ program
   .option("--start-block <startBlock>", "the block number to start looking for events from", parseInt)
   .option("--end-block <endBlock>", "the block number to end looking for events from", parseInt)
   .option("--blocks-per-batch <blockPerBatch>", "the number of blocks to process per batch", parseInt)
-  .action(async (cmdObj) => {
+  .action(async (args) => {
     try {
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
@@ -792,20 +794,20 @@ program
       const [maciAddress] = readContractAddresses({
         contractNames: [EContracts.MACI],
         network: network?.name,
-        defaultAddresses: [cmdObj.maciAddress],
+        defaultAddresses: [args.maciAddress],
       });
 
       const data = await getJoinedUserData({
-        pollPublicKey: cmdObj.publicKey,
-        startBlock: cmdObj.startBlock!,
+        pollPublicKey: args.publicKey,
+        startBlock: args.startBlock!,
         maciAddress,
-        pollId: cmdObj.pollId,
+        pollId: args.pollId,
         signer,
       });
 
       if (data.isJoined) {
         logGreen({
-          quiet: cmdObj.quiet,
+          quiet: args.quiet,
           text: success(
             [
               `Poll state index: ${data.pollStateIndex?.toString()}, registered: ${data.isJoined}`,
@@ -814,7 +816,7 @@ program
           ),
         });
       } else {
-        logRed({ quiet: cmdObj.quiet, text: "User has not joined the poll" });
+        logRed({ quiet: args.quiet, text: "User has not joined the poll" });
       }
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
@@ -826,7 +828,7 @@ program
   .description("Get deployed poll from MACI contract")
   .option("-p, --poll <poll>", "the poll id")
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
-  .action(async (cmdObj) => {
+  .action(async (args) => {
     try {
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
@@ -834,11 +836,11 @@ program
       const [maciAddress] = readContractAddresses({
         contractNames: [EContracts.MACI],
         network: network?.name,
-        defaultAddresses: [cmdObj.maciAddress],
+        defaultAddresses: [args.maciAddress],
       });
 
       const details = await getPoll({
-        pollId: cmdObj.poll,
+        pollId: args.poll,
         maciAddress,
         signer,
       });
@@ -850,7 +852,7 @@ program
             `ID: ${details.id}`,
             `Start time: ${new Date(Number(details.startDate) * 1000).toString()}`,
             `End time: ${new Date(Number(details.endDate) * 1000).toString()}`,
-            `Number of signups ${details.numSignups}`,
+            `Number of signups ${details.totalSignups}`,
             `State tree merged: ${details.isMerged}`,
             `Mode: ${details.mode === 0n ? "Quadratic Voting" : "Non-Quadratic Voting"}`,
           ].join("\n"),
@@ -867,18 +869,18 @@ program
   .requiredOption("-w, --address <address>", "the address to fund")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .action(async (cmdObj) => {
+  .action(async (args) => {
     try {
-      banner(cmdObj.quiet);
+      banner(args.quiet);
 
       const signer = await getSigner();
 
-      const hash = await fundWallet({ amount: cmdObj.amount, address: cmdObj.address, signer });
+      const hash = await fundWallet({ amount: args.amount, address: args.address, signer });
 
-      logYellow({ quiet: cmdObj.quiet, text: info(`Transaction hash: ${hash}`) });
+      logYellow({ quiet: args.quiet, text: info(`Transaction hash: ${hash}`) });
       logGreen({
-        quiet: cmdObj.quiet,
-        text: success(`Successfully funded ${cmdObj.address} with ${cmdObj.amount} wei`),
+        quiet: args.quiet,
+        text: success(`Successfully funded ${args.address} with ${args.amount} wei`),
       });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
@@ -895,28 +897,28 @@ program
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
-  .action(async (cmdObj) => {
+  .action(async (args) => {
     try {
-      banner(cmdObj.quiet);
+      banner(args.quiet);
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
 
       // read the tally file
-      const isTallyFileExists = fs.existsSync(cmdObj.tallyFile);
+      const isTallyFileExists = fs.existsSync(args.tallyFile);
 
-      if (!cmdObj.tallyFile || !isTallyFileExists) {
-        throw new Error(`Unable to open ${cmdObj.tallyFile}`);
+      if (!args.tallyFile || !isTallyFileExists) {
+        throw new Error(`Unable to open ${args.tallyFile}`);
       }
 
-      const tallyData = await readJSONFile<ITallyData>(cmdObj.tallyFile);
+      const tallyData = await readJSONFile<ITallyData>(args.tallyFile);
 
       const [maciAddress] = readContractAddresses({
         contractNames: [EContracts.MACI],
         network: network?.name,
-        defaultAddresses: [cmdObj.maciAddress],
+        defaultAddresses: [args.maciAddress],
       });
 
-      const pollParams = await getPollParams({ pollId: cmdObj.pollId, maciContractAddress: maciAddress, signer });
+      const pollParams = await getPollParams({ pollId: args.pollId, maciContractAddress: maciAddress, signer });
       const tallyCommitments = generateTallyCommitments({
         tallyData,
         voteOptionTreeDepth: pollParams.voteOptionTreeDepth,
@@ -924,11 +926,11 @@ program
 
       await verify({
         tallyData,
-        pollId: cmdObj.pollId,
+        pollId: args.pollId,
         maciAddress,
         signer,
         tallyCommitments,
-        numVoteOptions: pollParams.numVoteOptions,
+        totalVoteOptions: pollParams.totalVoteOptions,
         voteOptionTreeDepth: pollParams.voteOptionTreeDepth,
       });
     } catch (error) {
@@ -936,7 +938,7 @@ program
     }
   });
 program
-  .command("genProofs")
+  .command("generateProofs")
   .description("generate the proofs for a poll")
   .option("-k, --private-key <privateKey>", "your serialized MACI private key")
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
@@ -1045,7 +1047,7 @@ program
     },
   );
 program
-  .command("genLocalState")
+  .command("generateLocalState")
   .description("generate a local MACI state from the smart contracts events")
   .requiredOption("-o, --output <outputPath>", "the path where to write the state")
   .requiredOption("-p, --poll-id <pollId>", "the id of the poll", BigInt)
@@ -1064,7 +1066,7 @@ program
     (value: string | undefined) => value?.split(/\s*,\s*/),
   )
   .option("-l, --logs-output <logsOutputPath>", "the path where to save the logs for debugging and auditing purposes")
-  .action(async (cmdObj) => {
+  .action(async (args) => {
     try {
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
@@ -1072,25 +1074,25 @@ program
       const [maciAddress] = readContractAddresses({
         contractNames: [EContracts.MACI],
         network: network?.name,
-        defaultAddresses: [cmdObj.maciAddress],
+        defaultAddresses: [args.maciAddress],
       });
 
-      const coordinatorPrivateKey = cmdObj.privateKey || (await promptSensitiveValue("Insert your MACI private key"));
+      const coordinatorPrivateKey = args.privateKey || (await promptSensitiveValue("Insert your MACI private key"));
 
       await generateMaciState({
-        outputPath: cmdObj.output.toString(),
-        pollId: cmdObj.pollId,
+        outputPath: args.output.toString(),
+        pollId: args.pollId,
         maciAddress,
         coordinatorPrivateKey,
-        provider: cmdObj.rpcProvider,
-        endBlock: cmdObj.endBlock,
-        startBlock: cmdObj.startBlock,
-        blockPerBatch: cmdObj.blocksPerBatch,
-        transactionHash: cmdObj.transactionHash,
-        ipfsMessageBackupFiles: cmdObj.ipfsMessageBackupFiles,
-        sleep: cmdObj.sleep,
+        provider: args.rpcProvider,
+        endBlock: args.endBlock,
+        startBlock: args.startBlock,
+        blockPerBatch: args.blocksPerBatch,
+        transactionHash: args.transactionHash,
+        ipfsMessageBackupFiles: args.ipfsMessageBackupFiles,
+        sleep: args.sleep,
         signer,
-        logsOutputPath: cmdObj.logsOutput,
+        logsOutputPath: args.logsOutput,
       });
     } catch (error) {
       program.error((error as Error).message, { exitCode: 1 });
@@ -1107,8 +1109,8 @@ program
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
-  .requiredOption("-f, --proof-dir <proofDir>", "the proof output directory from the genProofs subcommand")
-  .action(async (cmdObj) => {
+  .requiredOption("-f, --proof-dir <proofDir>", "the proof output directory from the generateProofs subcommand")
+  .action(async (args) => {
     try {
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
@@ -1116,13 +1118,13 @@ program
       const [maciAddress] = readContractAddresses({
         contractNames: [EContracts.MACI],
         network: network?.name,
-        defaultAddresses: [cmdObj.maciAddress],
+        defaultAddresses: [args.maciAddress],
       });
 
       await proveOnChain({
-        pollId: cmdObj.pollId,
-        tallyFile: cmdObj.tallyFile,
-        proofDir: cmdObj.proofDir,
+        pollId: args.pollId,
+        tallyFile: args.tallyFile,
+        proofDir: args.proofDir,
         maciAddress,
         signer,
       });

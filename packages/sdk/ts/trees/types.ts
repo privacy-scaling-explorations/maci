@@ -49,5 +49,5 @@ export interface IGenerateSignUpTree {
   /**
    * State leaves
    */
-  pubKeys: PublicKey[];
+  publicKeys: PublicKey[];
 }

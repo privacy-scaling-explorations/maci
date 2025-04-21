@@ -44,11 +44,11 @@ export const getSignedupUserData = async ({
  */
 export const signup = async ({ maciPublicKey, maciAddress, sgData, signer }: ISignupArgs): Promise<ISignupData> => {
   // validate user key
-  if (!PublicKey.isValidSerializedPubKey(maciPublicKey)) {
+  if (!PublicKey.isValidSerialized(maciPublicKey)) {
     throw new Error("Invalid MACI public key");
   }
 
-  const userMaciPubKey = PublicKey.deserialize(maciPublicKey);
+  const userMaciPublicKey = PublicKey.deserialize(maciPublicKey);
 
   const validContract = await contractExists(signer.provider!, maciAddress);
 
@@ -67,7 +67,7 @@ export const signup = async ({ maciPublicKey, maciAddress, sgData, signer }: ISi
   let receipt: ContractTransactionReceipt | null = null;
 
   // sign up to the MACI contract
-  const tx = await maciContract.signUp(userMaciPubKey.asContractParam(), sgData);
+  const tx = await maciContract.signUp(userMaciPublicKey.asContractParam(), sgData);
   receipt = await tx.wait();
 
   if (receipt?.status !== 1) {

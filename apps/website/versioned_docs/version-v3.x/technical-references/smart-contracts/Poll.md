@@ -26,7 +26,7 @@ The `joinPoll` function looks as follows:
   /// @inheritdoc IPoll
   function joinPoll(
     uint256 _nullifier,
-    PubKey calldata _pubKey,
+    PublicKey calldata _publicKey,
     uint256 _stateRootIndex,
     uint256[8] calldata _proof,
     bytes memory _signUpPolicyData,
@@ -41,7 +41,7 @@ The `joinPoll` function looks as follows:
     pollNullifiers[_nullifier] = true;
 
     // Verify user's proof
-    if (!verifyJoiningPollProof(_nullifier, _stateRootIndex, _pubKey, _proof)) {
+    if (!verifyJoiningPollProof(_nullifier, _stateRootIndex, _publicKey, _proof)) {
       revert InvalidPollProof();
     }
 
@@ -55,7 +55,7 @@ The `joinPoll` function looks as follows:
     );
 
     // Store user in the pollStateTree
-    uint256 stateLeaf = hashStateLeaf(StateLeaf(_pubKey, voiceCreditBalance, block.timestamp));
+    uint256 stateLeaf = hashStateLeaf(StateLeaf(_publicKey, voiceCreditBalance, block.timestamp));
 
     uint256 stateRoot = InternalLazyIMT._insert(pollStateTree, stateLeaf);
 
@@ -63,7 +63,7 @@ The `joinPoll` function looks as follows:
     pollStateRootsOnJoin.push(stateRoot);
 
     uint256 pollStateIndex = pollStateTree.numberOfLeaves - 1;
-    emit PollJoined(_pubKey.x, _pubKey.y, voiceCreditBalance, block.timestamp, _nullifier, pollStateIndex);
+    emit PollJoined(_publicKey.x, _publicKey.y, voiceCreditBalance, block.timestamp, _nullifier, pollStateIndex);
   }
 ```
 
@@ -72,7 +72,7 @@ The `joinPoll` function looks as follows:
 The `publishMessage` function looks as follows:
 
 ```ts
-function publishMessage(Message calldata _message, PubKey calldata _encPubKey) public virtual isOpenForVoting {
+function publishMessage(Message calldata _message, PublicKey calldata _encPubKey) public virtual isOpenForVoting {
   // check if the public key is on the curve
   if (!CurveBabyJubJub.isOnCurve(_encPubKey.x, _encPubKey.y)) {
     revert InvalidPubKey();
@@ -84,7 +84,7 @@ function publishMessage(Message calldata _message, PubKey calldata _encPubKey) p
   }
 
   // compute current message hash
-  uint256 messageHash = hashMessageAndEncPubKey(_message, _encPubKey);
+  uint256 messageHash = hashMessageAndPublicKey(_message, _encPubKey);
 
   // update current message chain hash
   updateChainHash(messageHash);
@@ -96,7 +96,7 @@ function publishMessage(Message calldata _message, PubKey calldata _encPubKey) p
 The `publishMessageBatch` function looks as follows:
 
 ```ts
-function publishMessageBatch(Message[] calldata _messages, PubKey[] calldata _encPubKeys) public virtual {
+function publishMessageBatch(Message[] calldata _messages, PublicKey[] calldata _encPubKeys) public virtual {
   if (_messages.length != _encPubKeys.length) {
     revert InvalidBatchLength();
   }

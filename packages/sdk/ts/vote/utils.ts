@@ -17,7 +17,7 @@ export const validateSalt = (salt: bigint): boolean => salt < SNARK_FIELD_SIZE;
  * @param signer - the signer to use
  * @returns the coordinator public key
  */
-export const getCoordinatorPubKey = async (pollAddress: string, signer: Signer): Promise<PublicKey> => {
+export const getCoordinatorPublicKey = async (pollAddress: string, signer: Signer): Promise<PublicKey> => {
   const pollContract = PollFactory.connect(pollAddress, signer);
 
   const coordinatorPublicKey = await pollContract.coordinatorPublicKey();

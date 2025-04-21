@@ -30,7 +30,7 @@ contract MockTally is ITally {
     uint256 _totalSpent,
     uint256 _totalSpentSalt,
     uint256 _resultCommitment,
-    uint256 _perVOSpentVoiceCreditsHash
+    uint256 _perVoteOptionSpentVoiceCreditsHash
   ) external view returns (bool) {
     return returnValue;
   }

@@ -72,7 +72,7 @@ describe("Poll Joined circuit", function test() {
       // Join the poll
       const { privateKey, publicKey: pollPublicKey } = users[0];
 
-      const nullifier = poseidon([BigInt(privateKey.rawPrivKey.toString())]);
+      const nullifier = poseidon([BigInt(privateKey.raw.toString())]);
 
       const stateIndex = BigInt(poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance));
 
@@ -89,14 +89,14 @@ describe("Poll Joined circuit", function test() {
       const signature = command.sign(privateKey);
 
       const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.genEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
+      const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
       const message = command.encrypt(signature, sharedKey);
       messages.push(message);
       commands.push(command);
 
       poll.publishMessage(message, ecdhKeypair.publicKey);
 
-      poll.updatePoll(BigInt(maciState.pubKeys.length));
+      poll.updatePoll(BigInt(maciState.publicKeys.length));
 
       // Process messages
       poll.processMessages(pollId);

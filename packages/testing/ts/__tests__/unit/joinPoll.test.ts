@@ -7,7 +7,7 @@ import {
   setVerifyingKeys,
   signup,
   deployPoll,
-  deployVkRegistryContract,
+  deployVerifyingKeysRegistryContract,
   type IMaciContracts,
   deployFreeForAllSignUpPolicy,
   deployConstantInitialVoiceCreditProxy,
@@ -45,7 +45,7 @@ describe("joinPoll", function test() {
   const mockPollId = 9000n;
 
   this.timeout(900000);
-  // before all tests we deploy the vk registry contract and set the verifying keys
+  // before all tests we deploy the verifying keys registry contract and set the verifying keys
   before(async () => {
     signer = await getDefaultSigner();
 
@@ -76,10 +76,10 @@ describe("joinPoll", function test() {
 
     const startDate = await getBlockTimestamp(signer);
 
-    // we deploy the vk registry contract
-    const vkRegistryAddress = await deployVkRegistryContract({ signer });
+    // we deploy the verifying keys registry contract
+    const verifyingKeysRegistryAddress = await deployVerifyingKeysRegistryContract({ signer });
     // we set the verifying keys
-    await setVerifyingKeys({ ...(await verifyingKeysArgs(signer)), vkRegistryAddress });
+    await setVerifyingKeys({ ...(await verifyingKeysArgs(signer)), verifyingKeysRegistryAddress });
     // deploy the smart contracts
     maciAddresses = await deployMaci({
       ...deployArgs,
@@ -104,7 +104,7 @@ describe("joinPoll", function test() {
       relayers: [await signer.getAddress()],
       maciAddress: maciAddresses.maciContractAddress,
       verifierContractAddress,
-      vkRegistryContractAddress: vkRegistryAddress,
+      verifyingKeysRegistryContractAddress: verifyingKeysRegistryAddress,
       policyContractAddress: pollPolicyContractAddress,
       initialVoiceCreditProxyContractAddress,
     });

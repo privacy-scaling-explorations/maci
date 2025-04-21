@@ -479,7 +479,7 @@ describe("DeployerService", () => {
       ).rejects.toThrow(ErrorCodes.VERIFIER_NOT_DEPLOYED.toString());
     });
 
-    it("should throw when there is no vk registry deployed", async () => {
+    it("should throw when there is no verifying keys registry deployed", async () => {
       await storageInstance.register({
         id: EContracts.MACI,
         contract: new BaseContract("0x", MACIFactory.abi),
@@ -501,7 +501,7 @@ describe("DeployerService", () => {
           chain,
           config: testPollDeploymentConfig,
         }),
-      ).rejects.toThrow(ErrorCodes.VK_REGISTRY_NOT_DEPLOYED.toString());
+      ).rejects.toThrow(ErrorCodes.VERIFYING_KEYS_REGISTRY_NOT_DEPLOYED.toString());
     });
 
     test("should deploy a poll", async () => {

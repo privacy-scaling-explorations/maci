@@ -18,14 +18,14 @@ import type {
 /**
  * A circuit inputs for the circom circuit
  */
-export type CircuitInputs = Record<string, string | bigint | bigint[] | bigint[][] | string[] | bigint[][][]>;
+export type TCircuitInputs = Record<string, string | bigint | bigint[] | bigint[][] | string[] | bigint[][][]>;
 
 /**
  * This interface defines the tree depths.
  * @property intStateTreeDepth - The depth of the intermediate state tree.
  * @property voteOptionTreeDepth - The depth of the vote option tree.
  */
-export interface TreeDepths {
+export interface ITreeDepths {
   intStateTreeDepth: number;
   voteOptionTreeDepth: number;
   stateTreeDepth: number;
@@ -36,7 +36,7 @@ export interface TreeDepths {
  * @property tallyBatchSize - The size of the tally batch.
  * @property messageBatchSize - The size of the message batch.
  */
-export interface BatchSizes {
+export interface IBatchSizes {
   tallyBatchSize: number;
   messageBatchSize: number;
 }
@@ -50,7 +50,7 @@ export interface IMaciState {
   // This method is used for deploying poll.
   deployPoll(
     pollEndTimestamp: bigint,
-    treeDepths: TreeDepths,
+    treeDepths: ITreeDepths,
     messageBatchSize: number,
     coordinatorKeypair: Keypair,
     voteOptions: bigint,
@@ -78,7 +78,7 @@ export interface IPoll {
   processAllMessages(): { stateLeaves: StateLeaf[]; ballots: Ballot[] };
   hasUntalliedBallots(): boolean;
   copy(): Poll;
-  equals(p: Poll): boolean;
+  equals(poll: Poll): boolean;
   toJSON(): IJsonPoll;
   setCoordinatorKeypair(serializedPrivateKey: string): void;
   updateChainHash(messageHash: bigint): void;
@@ -91,8 +91,8 @@ export interface IPoll {
 export interface IJsonPoll {
   stateTreeDepth: number;
   pollEndTimestamp: string;
-  treeDepths: TreeDepths;
-  batchSizes: BatchSizes;
+  treeDepths: ITreeDepths;
+  batchSizes: IBatchSizes;
   maxVoteOptions: number;
   voteOptions: string;
   messages: unknown[];
@@ -100,11 +100,11 @@ export interface IJsonPoll {
   ballots: IJsonBallot[];
   encryptionPublicKeys: string[];
   currentMessageBatchIndex: number;
-  pubKeys: IJsonPublicKey[];
+  publicKeys: IJsonPublicKey[];
   pollStateLeaves: IJsonStateLeaf[];
   results: string[];
   numBatchesProcessed: number;
-  numSignups: string;
+  totalSignups: string;
   chainHash: string;
   pollNullifiers: string[];
   batchHashes: string[];
@@ -116,10 +116,10 @@ export interface IJsonPoll {
 export interface IJsonMaciState {
   stateTreeDepth: number;
   polls: IJsonPoll[];
-  pubKeys: IJsonPublicKey[];
+  publicKeys: IJsonPublicKey[];
   pollBeingProcessed: boolean;
   currentPollBeingProcessed: string;
-  numSignUps: number;
+  totalSignups: number;
 }
 
 /**
@@ -189,7 +189,7 @@ export interface IPollJoinedCircuitInputs {
  */
 export interface IProcessMessagesCircuitInputs {
   actualStateTreeDepth: string;
-  numSignUps: string;
+  totalSignups: string;
   batchEndIndex: string;
   index: string;
   msgRoot: string;
@@ -225,7 +225,7 @@ export interface ITallyCircuitInputs {
   index: bigint;
   currentTallyCommitment: string;
   newTallyCommitment: string;
-  numSignUps: bigint;
+  totalSignups: bigint;
   ballots: string[];
   ballotPathElements: PathElements;
   votes: string[][];

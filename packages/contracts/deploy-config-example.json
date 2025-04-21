@@ -55,7 +55,7 @@
       "stateTreeDepth": 10,
       "policy": "EASPolicy"
     },
-    "VkRegistry": {
+    "VerifyingKeysRegistry": {
       "stateTreeDepth": 10,
       "intStateTreeDepth": 1,
       "voteOptionTreeDepth": 2,
@@ -150,7 +150,7 @@
       "stateTreeDepth": 10,
       "policy": "ZupassPolicy"
     },
-    "VkRegistry": {
+    "VerifyingKeysRegistry": {
       "stateTreeDepth": 10,
       "intStateTreeDepth": 1,
       "voteOptionTreeDepth": 2,
@@ -246,7 +246,7 @@
       "stateTreeDepth": 6,
       "policy": "EASPolicy"
     },
-    "VkRegistry": {
+    "VerifyingKeysRegistry": {
       "stateTreeDepth": 6,
       "intStateTreeDepth": 2,
       "voteOptionTreeDepth": 3,
@@ -342,7 +342,7 @@
       "stateTreeDepth": 10,
       "policy": "FreeForAllPolicy"
     },
-    "VkRegistry": {
+    "VerifyingKeysRegistry": {
       "stateTreeDepth": 10,
       "intStateTreeDepth": 1,
       "voteOptionTreeDepth": 2,
@@ -438,7 +438,7 @@
       "stateTreeDepth": 10,
       "policy": "FreeForAllPolicy"
     },
-    "VkRegistry": {
+    "VerifyingKeysRegistry": {
       "stateTreeDepth": 10,
       "intStateTreeDepth": 1,
       "voteOptionTreeDepth": 2,
@@ -534,7 +534,7 @@
       "stateTreeDepth": 10,
       "policy": "FreeForAllPolicy"
     },
-    "VkRegistry": {
+    "VerifyingKeysRegistry": {
       "stateTreeDepth": 10,
       "intStateTreeDepth": 1,
       "voteOptionTreeDepth": 2,
@@ -635,7 +635,7 @@
       "stateTreeDepth": 10,
       "policy": "FreeForAllPolicy"
     },
-    "VkRegistry": {
+    "VerifyingKeysRegistry": {
       "stateTreeDepth": 10,
       "intStateTreeDepth": 1,
       "voteOptionTreeDepth": 2,
@@ -736,7 +736,7 @@
       "stateTreeDepth": 10,
       "policy": "FreeForAllPolicy"
     },
-    "VkRegistry": {
+    "VerifyingKeysRegistry": {
       "stateTreeDepth": 10,
       "intStateTreeDepth": 1,
       "voteOptionTreeDepth": 2,
@@ -837,7 +837,7 @@
       "stateTreeDepth": 10,
       "policy": "FreeForAllPolicy"
     },
-    "VkRegistry": {
+    "VerifyingKeysRegistry": {
       "stateTreeDepth": 10,
       "intStateTreeDepth": 1,
       "voteOptionTreeDepth": 2,
@@ -938,7 +938,7 @@
       "stateTreeDepth": 10,
       "policy": "FreeForAllPolicy"
     },
-    "VkRegistry": {
+    "VerifyingKeysRegistry": {
       "stateTreeDepth": 10,
       "intStateTreeDepth": 1,
       "voteOptionTreeDepth": 2,
@@ -1039,7 +1039,7 @@
       "stateTreeDepth": 10,
       "policy": "FreeForAllPolicy"
     },
-    "VkRegistry": {
+    "VerifyingKeysRegistry": {
       "stateTreeDepth": 10,
       "intStateTreeDepth": 1,
       "voteOptionTreeDepth": 2,

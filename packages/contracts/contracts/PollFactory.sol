@@ -16,7 +16,7 @@ contract PollFactory is Factory, Params, DomainObjs, IPollFactory {
   constructor() Factory(address(new Poll())) {}
 
   /// @inheritdoc IPollFactory
-  function deploy(DeployPollArgs calldata _args) public virtual returns (address pollAddr) {
+  function deploy(DeployPollArgs calldata _args) public virtual returns (address pollAddress) {
     bytes memory data = abi.encode(
       _args.startDate,
       _args.endDate,
@@ -33,6 +33,6 @@ contract PollFactory is Factory, Params, DomainObjs, IPollFactory {
 
     Poll(clone).initialize();
 
-    pollAddr = clone;
+    pollAddress = clone;
   }
 }

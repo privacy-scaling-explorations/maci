@@ -82,13 +82,13 @@ Edit `circuits/circom/circuits` to include the circuits you would like to compil
 ```json
 {
   "PollJoining_10_test": {
-    "file": "./anon/poll",
+    "file": "./anon/voter/PollJoining",
     "template": "PollJoining",
     "params": [10],
-    "pubs": ["nullifier", "stateRoot", "pollPubKey", "pollId"]
+    "pubs": ["nullifier", "stateRoot", "pollPublicKey", "pollId"]
   },
   "PollJoined_10_test": {
-    "file": "./anon/poll",
+    "file": "./anon/voter/PollJoined",
     "template": "PollJoined",
     "params": [10],
     "pubs": ["stateRoot"]
@@ -98,7 +98,7 @@ Edit `circuits/circom/circuits` to include the circuits you would like to compil
     "template": "ProcessMessages",
     "params": [10, 20, 2],
     "pubs": [
-      "numSignUps",
+      "totalSignups",
       "index",
       "batchEndIndex",
       "currentSbCommitment",
@@ -114,7 +114,7 @@ Edit `circuits/circom/circuits` to include the circuits you would like to compil
     "template": "ProcessMessagesNonQv",
     "params": [10, 20, 2],
     "pubs": [
-      "numSignUps",
+      "totalSignups",
       "index",
       "batchEndIndex",
       "currentSbCommitment",
@@ -129,13 +129,13 @@ Edit `circuits/circom/circuits` to include the circuits you would like to compil
     "file": "./core/qv/tallyVotes",
     "template": "TallyVotes",
     "params": [10, 1, 2],
-    "pubs": ["index", "numSignUps", "sbCommitment", "currentTallyCommitment", "newTallyCommitment"]
+    "pubs": ["index", "totalSignups", "sbCommitment", "currentTallyCommitment", "newTallyCommitment"]
   },
   "TallyVotesNonQv_10-1-2_test": {
     "file": "./core/non-qv/tallyVotes",
     "template": "TallyVotesNonQv",
     "params": [10, 1, 2],
-    "pubs": ["index", "numSignUps", "sbCommitment", "currentTallyCommitment", "newTallyCommitment"]
+    "pubs": ["index", "totalSignups", "sbCommitment", "currentTallyCommitment", "newTallyCommitment"]
   }
 }
 ```

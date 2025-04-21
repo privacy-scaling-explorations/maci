@@ -1,4 +1,4 @@
-import { genPubKey } from "@maci-protocol/crypto";
+import { generatePublicKey } from "@maci-protocol/crypto";
 import { PublicKey, PrivateKey } from "@maci-protocol/domainobjs";
 
 import { generateKeypair } from "../keypair";
@@ -18,8 +18,8 @@ describe("generateKeypair", () => {
     expect(PrivateKey.deserialize(keypair2.privateKey)).toBeInstanceOf(PrivateKey);
     expect(PublicKey.deserialize(keypair2.publicKey)).toBeInstanceOf(PublicKey);
 
-    const publicKey2 = genPubKey(PrivateKey.deserialize(keypair2.privateKey).rawPrivKey);
-    expect(PublicKey.deserialize(keypair2.publicKey).rawPubKey[0].toString()).toBe(publicKey2[0].toString());
-    expect(PublicKey.deserialize(keypair2.publicKey).rawPubKey[1].toString()).toBe(publicKey2[1].toString());
+    const publicKey2 = generatePublicKey(PrivateKey.deserialize(keypair2.privateKey).raw);
+    expect(PublicKey.deserialize(keypair2.publicKey).raw[0].toString()).toBe(publicKey2[0].toString());
+    expect(PublicKey.deserialize(keypair2.publicKey).raw[1].toString()).toBe(publicKey2[1].toString());
   });
 });

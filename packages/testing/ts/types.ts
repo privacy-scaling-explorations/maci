@@ -1,10 +1,10 @@
-import { genMaciStateFromContract } from "@maci-protocol/sdk";
+import { generateMaciStateFromContract } from "@maci-protocol/sdk";
 
 import type { User } from "./user";
 import type {
   MACI,
   Verifier,
-  VkRegistry,
+  VerifyingKeysRegistry,
   FreeForAllPolicy,
   ConstantInitialVoiceCreditProxy,
   IIpfsMessage,
@@ -57,7 +57,7 @@ export interface ITestSuite {
 export interface IDeployedTestContracts {
   maci: MACI;
   verifier: Verifier;
-  vkRegistry: VkRegistry;
+  verifyingKeysRegistry: VerifyingKeysRegistry;
   policy: FreeForAllPolicy;
   initialVoiceCreditProxy: ConstantInitialVoiceCreditProxy;
 }
@@ -69,7 +69,7 @@ export interface IContractsData {
   initialized: boolean;
   users?: User[];
   maciContractAddress?: string;
-  maciState?: Awaited<ReturnType<typeof genMaciStateFromContract>>;
+  maciState?: Awaited<ReturnType<typeof generateMaciStateFromContract>>;
   polls?: string[];
 }
 

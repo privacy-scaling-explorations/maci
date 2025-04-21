@@ -95,7 +95,7 @@ export const relayMessages = async ({
 
   const messageHashes = await Promise.all(
     messages.map(({ data, publicKey }) =>
-      pollContract.hashMessageAndEncPubKey({ data }, { x: publicKey[0], y: publicKey[1] }),
+      pollContract.hashMessageAndPublicKey({ data }, { x: publicKey[0], y: publicKey[1] }),
     ),
   );
 

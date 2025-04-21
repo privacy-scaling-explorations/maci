@@ -1,4 +1,4 @@
-import { sha256Hash, hashLeftRight, hash3, hash4, hash5, genRandomSalt } from "@maci-protocol/crypto";
+import { sha256Hash, hashLeftRight, hash3, hash4, hash5, generateRandomSalt } from "@maci-protocol/crypto";
 import { expect } from "chai";
 import { BigNumberish } from "ethers";
 
@@ -41,7 +41,7 @@ describe("Hasher", () => {
   it("@maci-protocol/crypto.sha256Hash should match hasher.sha256Hash", async () => {
     const values: string[] = [];
     for (let i = 0; i < 5; i += 1) {
-      values.push(genRandomSalt().toString());
+      values.push(generateRandomSalt().toString());
       const hashed = sha256Hash(values.map(BigInt));
 
       // eslint-disable-next-line no-await-in-loop
@@ -51,8 +51,8 @@ describe("Hasher", () => {
   });
 
   it("@maci-protocol/crypto.hashLeftRight should match hasher.hashLeftRight", async () => {
-    const left = genRandomSalt();
-    const right = genRandomSalt();
+    const left = generateRandomSalt();
+    const right = generateRandomSalt();
     const hashed = hashLeftRight(left, right);
 
     const onChainHash = await hasherContract.hashLeftRight(left.toString(), right.toString());
@@ -62,7 +62,7 @@ describe("Hasher", () => {
   it("@maci-protocol/crypto.hash3 should match hasher.hash3", async () => {
     const values: BigNumberish[] = [];
     for (let i = 0; i < 3; i += 1) {
-      values.push(genRandomSalt().toString());
+      values.push(generateRandomSalt().toString());
     }
     const hashed = hash3(values.map(BigInt));
 
@@ -74,7 +74,7 @@ describe("Hasher", () => {
     const values: BigNumberish[] = [];
 
     for (let i = 0; i < 4; i += 1) {
-      values.push(genRandomSalt().toString());
+      values.push(generateRandomSalt().toString());
     }
     const hashed = hash4(values.map(BigInt));
 
@@ -86,7 +86,7 @@ describe("Hasher", () => {
     const values: BigNumberish[] = [];
 
     for (let i = 0; i < 5; i += 1) {
-      values.push(genRandomSalt().toString());
+      values.push(generateRandomSalt().toString());
     }
     const hashed = hash5(values.map(BigInt));
 

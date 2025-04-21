@@ -3,28 +3,28 @@ pragma circom 2.0.0;
 // circomlib import
 include "./mux1.circom";
 // local import
-include "./messageValidator.circom";
+include "./MessageValidator.circom";
 
 /**
  * Processes a command by verifying its validity and updates the state leaf and ballot accordingly. 
  * If the message is correct, updates the public key in the state leaf and the nonce 
  * in the ballot using multiplexer components.
- * This template supports the Quadratic Voting (QV).
+ * This template does not support Quadratic Voting (QV).
  */
-template StateLeafAndBallotTransformer() {
+template StateLeafAndBallotTransformerNonQv() {
     // Length of the packed command.
-    var PACKED_CMD_LENGTH = 4;
+    var PACKED_COMMAND_LENGTH = 4;
 
     // Number of user sign-ups in the state tree.
-    signal input numSignUps;
+    signal input totalSignups;
     // Number of valid vote options for the poll.
     signal input voteOptions;
 
     // The following signals represents a state leaf (signed up user).
     // Public key.
-    signal input slPubKey[2];
+    signal input stateLeafPublicKey[2];
     // Current voice credit balance.
-    signal input slVoiceCreditBalance;
+    signal input stateLeafVoiceCreditBalance;
 
     // The following signals represents a ballot.
     // Nonce.
@@ -34,29 +34,29 @@ template StateLeafAndBallotTransformer() {
 
     // The following signals represents a command.
     // State index of the user.
-    signal input cmdStateIndex;
+    signal input commandStateIndex;
     // Public key of the user.
-    signal input cmdNewPubKey[2];
+    signal input commandPublicKey[2];
     // Vote option index.
-    signal input cmdVoteOptionIndex;
+    signal input commandVoteOptionIndex;
     // Vote weight.
-    signal input cmdNewVoteWeight;
+    signal input commandNewVoteWeight;
     // Nonce.
-    signal input cmdNonce;
+    signal input commandNonce;
     // Poll identifier.
-    signal input cmdPollId;
+    signal input commandPollId;
     // Salt.
-    signal input cmdSalt;
+    signal input commandSalt;
     // ECDSA signature of the command (R part).
-    signal input cmdSigR8[2];
+    signal input commandSignaturePoint[2];
     // ECDSA signature of the command (S part).
-    signal input cmdSigS;
+    signal input commandSignatureScalar;
     // Packed command. 
     // nb. we are assuming that the packedCommand is always valid.
-    signal input packedCommand[PACKED_CMD_LENGTH];
+    signal input packedCommand[PACKED_COMMAND_LENGTH];
 
     // New state leaf (if the command is valid).
-    signal output newSlPubKey[2];
+    signal output newStateLeafPublicKey[2];
     // New ballot (if the command is valid).
     signal output newBallotNonce;
     
@@ -68,34 +68,34 @@ template StateLeafAndBallotTransformer() {
     signal output isVoteOptionIndexValid;
 
     // Check if the command / message is valid.
-    var (computedMessageValidator, computedIsStateLeafIndexValid, computedIsVoteOptionIndexValid) = MessageValidator()(
-        cmdStateIndex,
-        numSignUps,
-        cmdVoteOptionIndex,
+    var (computedMessageValidator, computedIsStateLeafIndexValid, computedIsVoteOptionIndexValid) = MessageValidatorNonQv()(
+        commandStateIndex,
+        totalSignups,
+        commandVoteOptionIndex,
         voteOptions,
         ballotNonce,
-        cmdNonce,
+        commandNonce,
         packedCommand,
-        slPubKey,
-        cmdSigR8,
-        cmdSigS,
-        slVoiceCreditBalance,
+        stateLeafPublicKey,
+        commandSignaturePoint,
+        commandSignatureScalar,
+        stateLeafVoiceCreditBalance,
         ballotCurrentVotesForOption,
-        cmdNewVoteWeight
+        commandNewVoteWeight
     );
 
     // If the message is valid then we swap out the public key.
     // This means using a Mux1() for publicKey[0] and another one
     // for publicKey[1].
-    var computedNewSlPubKey0Mux = Mux1()([slPubKey[0], cmdNewPubKey[0]], computedMessageValidator);
-    var computedNewSlPubKey1Mux = Mux1()([slPubKey[1], cmdNewPubKey[1]], computedMessageValidator);
+    var computedNewstateLeafPublicKey0Mux = Mux1()([stateLeafPublicKey[0], commandPublicKey[0]], computedMessageValidator);
+    var computedNewstateLeafPublicKey1Mux = Mux1()([stateLeafPublicKey[1], commandPublicKey[1]], computedMessageValidator);
 
-    newSlPubKey[0] <== computedNewSlPubKey0Mux;
-    newSlPubKey[1] <== computedNewSlPubKey1Mux;
+    newStateLeafPublicKey[0] <== computedNewstateLeafPublicKey0Mux;
+    newStateLeafPublicKey[1] <== computedNewstateLeafPublicKey1Mux;
 
     // If the message is valid, then we swap out the ballot nonce
     // using a Mux1().
-    var computedNewBallotNonceMux = Mux1()([ballotNonce, cmdNonce], computedMessageValidator);
+    var computedNewBallotNonceMux = Mux1()([ballotNonce, commandNonce], computedMessageValidator);
 
     newBallotNonce <== computedNewBallotNonceMux;
 

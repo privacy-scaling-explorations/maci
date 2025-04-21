@@ -32,8 +32,8 @@ export function mockPollContract(): void {
 
   createMockedFunction(
     DEFAULT_POLL_ADDRESS,
-    "hashMessageAndEncPubKey",
-    "hashMessageAndEncPubKey((uint256[10]),(uint256,uint256)):(uint256)",
+    "hashMessageAndPublicKey",
+    "hashMessageAndPublicKey((uint256[10]),(uint256,uint256)):(uint256)",
   )
     .withArgs([
       ethereum.Value.fromTuple(

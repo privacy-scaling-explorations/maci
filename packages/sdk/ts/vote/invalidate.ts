@@ -6,7 +6,7 @@ import { getPollContracts } from "../poll";
 
 import { generateVote } from "./generate";
 import { submitVote } from "./submit";
-import { getCoordinatorPubKey } from "./utils";
+import { getCoordinatorPublicKey } from "./utils";
 
 /**
  * Invalidate votes
@@ -28,7 +28,7 @@ export const invalidateVotes = async ({
   const { poll: pollContract } = await getPollContracts({ maciAddress, pollId, signer });
 
   const [maxVoteOption, pollAddress] = await Promise.all([pollContract.voteOptions(), pollContract.getAddress()]);
-  const coordinatorPublicKey = await getCoordinatorPubKey(pollAddress, signer);
+  const coordinatorPublicKey = await getCoordinatorPublicKey(pollAddress, signer);
 
   // generate the key change message
   const message = generateVote({

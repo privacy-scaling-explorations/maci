@@ -22,19 +22,19 @@ export const verifyPerVOSpentVoiceCredits = async (
 ): Promise<number[]> => {
   const failedIndices: number[] = [];
 
-  for (let i = 0; i < tallyData.perVOSpentVoiceCredits!.tally.length; i += 1) {
+  for (let i = 0; i < tallyData.perVoteOptionSpentVoiceCredits!.tally.length; i += 1) {
     const proof = genTreeProof(
       i,
-      tallyData.perVOSpentVoiceCredits!.tally.map((x) => BigInt(x)),
+      tallyData.perVoteOptionSpentVoiceCredits!.tally.map((x) => BigInt(x)),
       voteOptionTreeDepth,
     );
 
     // eslint-disable-next-line no-await-in-loop
     const isValid = await tallyContract.verifyPerVOSpentVoiceCredits(
       i,
-      tallyData.perVOSpentVoiceCredits!.tally[i],
+      tallyData.perVoteOptionSpentVoiceCredits!.tally[i],
       proof,
-      tallyData.perVOSpentVoiceCredits!.salt,
+      tallyData.perVoteOptionSpentVoiceCredits!.salt,
       voteOptionTreeDepth,
       newSpentVoiceCreditsCommitment,
       newResultsCommitment,

@@ -7,14 +7,14 @@ sidebar_position: 5
 
 # Troubleshooting
 
-## cli: `genProofs` command failure
+## cli: `generateProofs` command failure
 
 ### Case: missing `.dat` files
 
 If your logs look like the following, then make sure you have `ProcessMessages_10-2-1-2_test.dat` and `TallyVotes_10-1-2_test.dat` files in the same directory as your zkeys:
 
 ```
-node build/ts/index.js genProofs -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
+node build/ts/index.js generateProofs -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
 >     -sk macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
 >     -o 0 \
 >     -r ~/rapidsnark/build/prover \
@@ -38,10 +38,10 @@ Aborted (core dumped)
 Error: could not generate proof.
 Error: Error executing ./zkeys/ProcessMessages_10-2-1-2_test /tmp/tmp-9904-zG0k8YPTATWB/input.json /tmp/tmp-9904-zG0k8YPTATWB/output.wtns
     at genProof (/home/ubuntu/maci/circuits/ts/index.ts:44:15)
-    at /home/ubuntu/maci/cli/ts/genProofs.ts:339:25
-    at step (/home/ubuntu/maci/cli/build/genProofs.js:33:23)
-    at Object.next (/home/ubuntu/maci/cli/build/genProofs.js:14:53)
-    at fulfilled (/home/ubuntu/maci/cli/build/genProofs.js:5:58)
+    at /home/ubuntu/maci/cli/ts/generateProofs.ts:339:25
+    at step (/home/ubuntu/maci/cli/build/generateProofs.js:33:23)
+    at Object.next (/home/ubuntu/maci/cli/build/generateProofs.js:14:53)
+    at fulfilled (/home/ubuntu/maci/cli/build/generateProofs.js:5:58)
 ```
 
 You can generate the missing `.dat` files using the following command:
@@ -54,7 +54,7 @@ pnpm build:circuits-c -- --outPath ../cli/zkeys
 
 ### Case `Commitment mismatch`
 
-If your log looks like the following, that's because you have already run the `prove` command. You can access the `cli` and attempt again by executing the `genProofs` command.
+If your log looks like the following, that's because you have already run the `prove` command. You can access the `cli` and attempt again by executing the `generateProofs` command.
 
 ```
 Error: commitment mismatch
@@ -69,7 +69,7 @@ Error: commitment mismatch
  ELIFECYCLE  Command failed with exit code 1.
 ```
 
-This is because commitments are generated using random salts, thus will differ at each `genProofs` run.
+This is because commitments are generated using random salts, thus will differ at each `generateProofs` run.
 
 In [core/Poll.ts](https://github.com/privacy-scaling-explorations/maci/blob/dev/packages/core/ts/Poll.ts):
 
@@ -84,7 +84,7 @@ while (this.sbSalts[this.currentMessageBatchIndex!] === newSbSalt) {
 
 ### Case `AssertionError`
 
-This could happen when you run `prove` in the `contracts` package, or run `genProofs` in the `cli` package. If your log looks like the following, there are two possible reasons:
+This could happen when you run `prove` in the `contracts` package, or run `generateProofs` in the `cli` package. If your log looks like the following, there are two possible reasons:
 
 1. If your MACI keypair for the coordinator was generated based on a previous version, it may have been generated incorrectly due to a breaking change in a third-party package (`zk-kit/eddsa-poseidon`). Please generate a new pair and run the whole process again.
 2. The provided private key is unmatched to the public key which deployed the poll, you will need to input the correct private key.
@@ -130,7 +130,7 @@ TypeError: cannot filter non-indexed parameters; must be null (argument="contrac
 }
 ```
 
-This could happen during running `genProofs` in `cli` package, or running `prove` in `contracts` package.
+This could happen during running `generateProofs` in `cli` package, or running `prove` in `contracts` package.
 Be aware that we updated several parameters to `indexed`:
 
 ```javascript
@@ -144,7 +144,7 @@ Please remember to pull the latest MACI repo updates(`git fetch origin && git pu
 
 ### Verifier contract found the proof invalid
 
-If your log looks like the following, that's because the zkey and wasm files added to the [`VkRegistry` contract](/docs/technical-references/smart-contracts/VkRegistry) are different from what you use to run the **prove** command. Check if you're using the correct zkey and wasm files.
+If your log looks like the following, that's because the zkey and wasm files added to the [`VerifyingKeysRegistry` contract](/docs/technical-references/smart-contracts/VerifyingKeysRegistry) are different from what you use to run the **prove** command. Check if you're using the correct zkey and wasm files.
 
 ```
 Error: The verifier contract found the proof invalid.

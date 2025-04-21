@@ -34,17 +34,17 @@ export async function publishBatch(
   });
 
   const messageBatch = Array.from({ length: batchSize }, () => message.asContractParam());
-  const pubKeyBatch = Array.from({ length: batchSize }, () => keypair.publicKey.asContractParam());
+  const publicKeyBatch = Array.from({ length: batchSize }, () => keypair.publicKey.asContractParam());
 
   let optimalBatchSize = batchSize;
 
   while (optimalBatchSize > 0) {
     const finalMessageBatch = messageBatch.slice(0, optimalBatchSize);
-    const finalPubKeyBatch = pubKeyBatch.slice(0, optimalBatchSize);
+    const finalPublicKeyBatch = publicKeyBatch.slice(0, optimalBatchSize);
 
     try {
       // eslint-disable-next-line no-await-in-loop
-      const tx = await pollContract.publishMessageBatch(finalMessageBatch, finalPubKeyBatch);
+      const tx = await pollContract.publishMessageBatch(finalMessageBatch, finalPublicKeyBatch);
       // eslint-disable-next-line no-await-in-loop
       const receipt = await tx.wait();
       logGreen({ text: success(`Successfully published batch of ${optimalBatchSize} messages`) });

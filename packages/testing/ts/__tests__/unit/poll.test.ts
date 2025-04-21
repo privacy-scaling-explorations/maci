@@ -5,7 +5,7 @@ import {
   mergeSignups,
   setVerifyingKeys,
   deployPoll,
-  deployVkRegistryContract,
+  deployVerifyingKeysRegistryContract,
   timeTravel,
   type IPollContractsData,
   type IMaciContracts,
@@ -35,7 +35,7 @@ describe("poll", function test() {
   let pollAddresses: IPollContractsData;
   let signer: Signer;
 
-  // before all tests we deploy the vk registry contract and set the verifying keys
+  // before all tests we deploy the verifying keys registry contract and set the verifying keys
   before(async () => {
     signer = await getDefaultSigner();
 
@@ -64,10 +64,10 @@ describe("poll", function test() {
     const verifier = await deployVerifier(signer, true);
     verifierContractAddress = await verifier.getAddress();
 
-    // we deploy the vk registry contract
-    const vkRegistryAddress = await deployVkRegistryContract({ signer });
+    // we deploy the verifying keys registry contract
+    const verifyingKeysRegistryAddress = await deployVerifyingKeysRegistryContract({ signer });
     // we set the verifying keys
-    await setVerifyingKeys({ ...(await verifyingKeysArgs(signer)), vkRegistryAddress });
+    await setVerifyingKeys({ ...(await verifyingKeysArgs(signer)), verifyingKeysRegistryAddress });
 
     const startDate = await getBlockTimestamp(signer);
 
@@ -87,7 +87,7 @@ describe("poll", function test() {
       relayers: [await signer.getAddress()],
       maciAddress: maciAddresses.maciContractAddress,
       verifierContractAddress,
-      vkRegistryContractAddress: vkRegistryAddress,
+      verifyingKeysRegistryContractAddress: verifyingKeysRegistryAddress,
       policyContractAddress: pollPolicyContractAddress,
       initialVoiceCreditProxyContractAddress,
     });

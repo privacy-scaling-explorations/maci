@@ -1,6 +1,12 @@
 /* eslint-disable no-underscore-dangle */
 import { MaciState, Poll, IProcessMessagesCircuitInputs, ITallyCircuitInputs } from "@maci-protocol/core";
-import { genTreeCommitment, genTreeProof, hashLeftRight, NOTHING_UP_MY_SLEEVE, poseidon } from "@maci-protocol/crypto";
+import {
+  generateTreeCommitment,
+  genTreeProof,
+  hashLeftRight,
+  NOTHING_UP_MY_SLEEVE,
+  poseidon,
+} from "@maci-protocol/crypto";
 import { Keypair, Message, PublicKey } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { AbiCoder, BigNumberish, Signer, ZeroAddress } from "ethers";
@@ -16,7 +22,7 @@ import {
   Poll as PollContract,
   MessageProcessor,
   Verifier,
-  VkRegistry,
+  VerifyingKeysRegistry,
   MessageProcessor__factory as MessageProcessorFactory,
   Poll__factory as PollFactory,
   Tally__factory as TallyFactory,
@@ -30,10 +36,10 @@ import {
   initialVoiceCreditBalance,
   maxVoteOptions,
   messageBatchSize,
-  testPollJoinedVk,
-  testPollJoiningVk,
-  testProcessVk,
-  testTallyVk,
+  testPollJoinedVerifyingKey,
+  testPollJoiningVerifyingKey,
+  testProcessVerifyingKey,
+  testTallyVerifyingKey,
   treeDepths,
 } from "./constants";
 import { timeTravel, deployTestContracts } from "./utils";
@@ -45,7 +51,7 @@ describe("TallyVotes", () => {
   let tallyContract: Tally;
   let mpContract: MessageProcessor;
   let verifierContract: Verifier;
-  let vkRegistryContract: VkRegistry;
+  let verifyingKeysRegistryContract: VerifyingKeysRegistry;
   let signupPolicyContract: IBasePolicy;
   let initialVoiceCreditProxyContract: ConstantInitialVoiceCreditProxy;
 
@@ -71,7 +77,7 @@ describe("TallyVotes", () => {
     const r = await deployTestContracts({ initialVoiceCreditBalance: 100, stateTreeDepth: STATE_TREE_DEPTH, signer });
     maciContract = r.maciContract;
     verifierContract = r.mockVerifierContract as Verifier;
-    vkRegistryContract = r.vkRegistryContract;
+    verifyingKeysRegistryContract = r.verifyingKeysRegistryContract;
     signupPolicyContract = r.policyContract;
     initialVoiceCreditProxyContract = r.constantInitialVoiceCreditProxyContract;
 
@@ -85,7 +91,7 @@ describe("TallyVotes", () => {
         messageBatchSize,
         coordinatorPublicKey: coordinator.publicKey.asContractParam(),
         verifier: verifierContract,
-        vkRegistry: vkRegistryContract,
+        verifyingKeysRegistry: verifyingKeysRegistryContract,
         mode: EMode.QV,
         policy: signupPolicyContract,
         initialVoiceCreditProxy: initialVoiceCreditProxyContract,
@@ -106,14 +112,14 @@ describe("TallyVotes", () => {
     await signupPolicyContract.setTarget(pollContracts.poll).then((tx) => tx.wait());
 
     // deploy local poll
-    const p = maciState.deployPoll(
+    const deployedPollId = maciState.deployPoll(
       BigInt(startTime + duration),
       treeDepths,
       messageBatchSize,
       coordinator,
       BigInt(maxVoteOptions),
     );
-    expect(p.toString()).to.eq(pollId.toString());
+    expect(deployedPollId.toString()).to.eq(pollId.toString());
     // publish the NOTHING_UP_MY_SLEEVE message
     const messageData = [NOTHING_UP_MY_SLEEVE];
     for (let i = 1; i < 10; i += 1) {
@@ -131,20 +137,20 @@ describe("TallyVotes", () => {
     poll.publishMessage(message, padKey);
 
     // update the poll state
-    poll.updatePoll(BigInt(maciState.pubKeys.length));
+    poll.updatePoll(BigInt(maciState.publicKeys.length));
 
     // process messages locally
     generatedInputs = poll.processMessages(pollId);
 
-    // set the verification keys on the vk smart contract
-    await vkRegistryContract.setVerifyingKeys(
+    // set the verification keys on the registry smart contract
+    await verifyingKeysRegistryContract.setVerifyingKeys(
       STATE_TREE_DEPTH,
       treeDepths.intStateTreeDepth,
       treeDepths.voteOptionTreeDepth,
       messageBatchSize,
       EMode.QV,
-      testProcessVk.asContractParam() as IVerifyingKeyStruct,
-      testTallyVk.asContractParam() as IVerifyingKeyStruct,
+      testProcessVerifyingKey.asContractParam() as IVerifyingKeyStruct,
+      testTallyVerifyingKey.asContractParam() as IVerifyingKeyStruct,
     );
   });
 
@@ -216,7 +222,7 @@ describe("TallyVotes", () => {
       const r = await deployTestContracts({ initialVoiceCreditBalance: 100, stateTreeDepth: STATE_TREE_DEPTH, signer });
       maciContract = r.maciContract;
       verifierContract = r.mockVerifierContract as Verifier;
-      vkRegistryContract = r.vkRegistryContract;
+      verifyingKeysRegistryContract = r.verifyingKeysRegistryContract;
       await r.policyContract.setTarget(await maciContract.getAddress()).then((tx) => tx.wait());
 
       // signup all users
@@ -248,7 +254,7 @@ describe("TallyVotes", () => {
           messageBatchSize,
           coordinatorPublicKey: coordinator.publicKey.asContractParam(),
           verifier: verifierContract,
-          vkRegistry: vkRegistryContract,
+          verifyingKeysRegistry: verifyingKeysRegistryContract,
           mode: EMode.QV,
           policy: pollPolicyContract,
           initialVoiceCreditProxy: initialVoiceCreditProxyContract,
@@ -269,7 +275,7 @@ describe("TallyVotes", () => {
       await pollPolicyContract.setTarget(pollContracts.poll).then((tx) => tx.wait());
 
       // deploy local poll
-      const p = maciState.deployPoll(
+      const deployedPollId = maciState.deployPoll(
         BigInt(startTime + updatedDuration),
         {
           ...treeDepths,
@@ -279,7 +285,7 @@ describe("TallyVotes", () => {
         coordinator,
         BigInt(maxVoteOptions),
       );
-      expect(p.toString()).to.eq(pollId.toString());
+      expect(deployedPollId.toString()).to.eq(pollId.toString());
       // publish the NOTHING_UP_MY_SLEEVE message
       const messageData = [NOTHING_UP_MY_SLEEVE];
       for (let i = 1; i < 10; i += 1) {
@@ -297,34 +303,34 @@ describe("TallyVotes", () => {
       poll.publishMessage(message, padKey);
 
       // update the poll state
-      poll.updatePoll(BigInt(maciState.pubKeys.length));
+      poll.updatePoll(BigInt(maciState.publicKeys.length));
 
-      await vkRegistryContract.setPollJoiningVkKey(
+      await verifyingKeysRegistryContract.setPollJoiningVerifyingKeyKey(
         treeDepths.stateTreeDepth,
-        testPollJoiningVk.asContractParam() as IVerifyingKeyStruct,
+        testPollJoiningVerifyingKey.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 10000000 },
       );
 
-      await vkRegistryContract.setPollJoinedVkKey(
+      await verifyingKeysRegistryContract.setPollJoinedVerifyingKeyKey(
         treeDepths.stateTreeDepth,
-        testPollJoinedVk.asContractParam() as IVerifyingKeyStruct,
+        testPollJoinedVerifyingKey.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 10000000 },
       );
 
-      await vkRegistryContract.setVerifyingKeys(
+      await verifyingKeysRegistryContract.setVerifyingKeys(
         STATE_TREE_DEPTH,
         intStateTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
         EMode.QV,
-        testProcessVk.asContractParam() as IVerifyingKeyStruct,
-        testTallyVk.asContractParam() as IVerifyingKeyStruct,
+        testProcessVerifyingKey.asContractParam() as IVerifyingKeyStruct,
+        testTallyVerifyingKey.asContractParam() as IVerifyingKeyStruct,
       );
 
       // join all user to the Poll
       for (let i = 0; i < users.length; i += 1) {
         // join locally
-        const nullifier = poseidon([BigInt(users[i].privateKey.rawPrivKey)]);
+        const nullifier = poseidon([BigInt(users[i].privateKey.raw)]);
         poll.joinPoll(nullifier, pollKeys[i].publicKey, BigInt(initialVoiceCreditBalance));
 
         // join on chain
@@ -389,7 +395,7 @@ describe("TallyVotes", () => {
         await tallyContract.tallyVotes(BigInt(tallyGeneratedInputs.newTallyCommitment), [0, 0, 0, 0, 0, 0, 0, 0]);
       }
 
-      const newResultsCommitment = genTreeCommitment(
+      const newResultsCommitment = generateTreeCommitment(
         poll.tallyResult,
         BigInt(asHex(tallyGeneratedInputs!.newResultsRootSalt as BigNumberish)),
         treeDepths.voteOptionTreeDepth,
@@ -400,8 +406,8 @@ describe("TallyVotes", () => {
         BigInt(asHex(tallyGeneratedInputs!.newSpentVoiceCreditSubtotalSalt as BigNumberish)),
       );
 
-      const newPerVOSpentVoiceCreditsCommitment = genTreeCommitment(
-        poll.perVOSpentVoiceCredits,
+      const newPerVOSpentVoiceCreditsCommitment = generateTreeCommitment(
+        poll.perVoteOptionSpentVoiceCredits,
         BigInt(asHex(tallyGeneratedInputs!.newPerVOSpentVoiceCreditsRootSalt as BigNumberish)),
         treeDepths.voteOptionTreeDepth,
       );
@@ -535,7 +541,7 @@ describe("TallyVotes", () => {
       const r = await deployTestContracts({ initialVoiceCreditBalance: 100, stateTreeDepth: STATE_TREE_DEPTH, signer });
       maciContract = r.maciContract;
       verifierContract = r.mockVerifierContract as Verifier;
-      vkRegistryContract = r.vkRegistryContract;
+      verifyingKeysRegistryContract = r.verifyingKeysRegistryContract;
 
       await r.policyContract.setTarget(await maciContract.getAddress()).then((tx) => tx.wait());
 
@@ -568,7 +574,7 @@ describe("TallyVotes", () => {
           messageBatchSize,
           coordinatorPublicKey: coordinator.publicKey.asContractParam(),
           verifier: verifierContract,
-          vkRegistry: vkRegistryContract,
+          verifyingKeysRegistry: verifyingKeysRegistryContract,
           mode: EMode.QV,
           policy: pollPolicyContract,
           initialVoiceCreditProxy: initialVoiceCreditProxyContract,
@@ -589,7 +595,7 @@ describe("TallyVotes", () => {
       await pollPolicyContract.setTarget(pollContracts.poll).then((tx) => tx.wait());
 
       // deploy local poll
-      const p = maciState.deployPoll(
+      const deployedPollId = maciState.deployPoll(
         BigInt(startTime + duration),
         {
           ...treeDepths,
@@ -599,7 +605,7 @@ describe("TallyVotes", () => {
         coordinator,
         BigInt(maxVoteOptions),
       );
-      expect(p.toString()).to.eq(pollId.toString());
+      expect(deployedPollId.toString()).to.eq(pollId.toString());
       // publish the NOTHING_UP_MY_SLEEVE message
       const messageData = [NOTHING_UP_MY_SLEEVE];
       for (let i = 1; i < 10; i += 1) {
@@ -617,36 +623,36 @@ describe("TallyVotes", () => {
       poll.publishMessage(message, padKey);
 
       // update the poll state
-      poll.updatePoll(BigInt(maciState.pubKeys.length));
+      poll.updatePoll(BigInt(maciState.publicKeys.length));
 
-      // set the verification keys on the vk smart contract
-      await vkRegistryContract.setPollJoiningVkKey(
+      // set the verification keys on the registry smart contract
+      await verifyingKeysRegistryContract.setPollJoiningVerifyingKeyKey(
         treeDepths.stateTreeDepth,
-        testPollJoiningVk.asContractParam() as IVerifyingKeyStruct,
+        testPollJoiningVerifyingKey.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 10000000 },
       );
 
-      // set the verification keys on the vk smart contract
-      await vkRegistryContract.setPollJoinedVkKey(
+      // set the verification keys on the registry smart contract
+      await verifyingKeysRegistryContract.setPollJoinedVerifyingKeyKey(
         treeDepths.stateTreeDepth,
-        testPollJoinedVk.asContractParam() as IVerifyingKeyStruct,
+        testPollJoinedVerifyingKey.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 10000000 },
       );
 
-      await vkRegistryContract.setVerifyingKeys(
+      await verifyingKeysRegistryContract.setVerifyingKeys(
         STATE_TREE_DEPTH,
         intStateTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
         EMode.QV,
-        testProcessVk.asContractParam() as IVerifyingKeyStruct,
-        testTallyVk.asContractParam() as IVerifyingKeyStruct,
+        testProcessVerifyingKey.asContractParam() as IVerifyingKeyStruct,
+        testTallyVerifyingKey.asContractParam() as IVerifyingKeyStruct,
       );
 
       // join all user to the Poll
       for (let i = 0; i < users.length; i += 1) {
         // join locally
-        const nullifier = poseidon([BigInt(users[i].privateKey.rawPrivKey), pollId]);
+        const nullifier = poseidon([BigInt(users[i].privateKey.raw), pollId]);
         poll.joinPoll(nullifier, pollKeys[i].publicKey, BigInt(initialVoiceCreditBalance));
 
         // join on chain

@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { IVkContractParams, VerifyingKey } from "@maci-protocol/domainobjs";
+import { IVerifyingKeyContractParams, VerifyingKey } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 
 import type { IDeployedTestContracts, IDeployedTestContractsArgs } from "../ts/types";
@@ -10,7 +10,7 @@ import {
   deployFreeForAllSignUpPolicy,
   deployMaci,
   deployMockVerifier,
-  deployVkRegistry,
+  deployVerifyingKeysRegistry,
 } from "../ts/deploy";
 
 export const insertSubTreeGasLimit = { gasLimit: 300000 };
@@ -29,29 +29,32 @@ export async function timeTravel(provider: EthereumProvider, seconds: number): P
 
 /**
  * Compare two verifying keys
- * @param vk - the off chain vk
- * @param vkOnChain - the on chain vk
+ * @param verifyingKey - the off chain verifyingKey
+ * @param verifyingKeyOnChain - the on chain verifyingKey
  */
-export const compareVks = (vk: VerifyingKey, vkOnChain: IVkContractParams): void => {
-  expect(vk.ic.length).to.eq(vkOnChain.ic.length);
-  for (let i = 0; i < vk.ic.length; i += 1) {
-    expect(vk.ic[i].x.toString()).to.eq(vkOnChain.ic[i].x.toString());
-    expect(vk.ic[i].y.toString()).to.eq(vkOnChain.ic[i].y.toString());
+export const compareVerifyingKeys = (
+  verifyingKey: VerifyingKey,
+  verifyingKeyOnChain: IVerifyingKeyContractParams,
+): void => {
+  expect(verifyingKey.ic.length).to.eq(verifyingKeyOnChain.ic.length);
+  for (let i = 0; i < verifyingKey.ic.length; i += 1) {
+    expect(verifyingKey.ic[i].x.toString()).to.eq(verifyingKeyOnChain.ic[i].x.toString());
+    expect(verifyingKey.ic[i].y.toString()).to.eq(verifyingKeyOnChain.ic[i].y.toString());
   }
-  expect(vk.alpha1.x.toString()).to.eq(vkOnChain.alpha1.x.toString());
-  expect(vk.alpha1.y.toString()).to.eq(vkOnChain.alpha1.y.toString());
-  expect(vk.beta2.x[0].toString()).to.eq(vkOnChain.beta2.x[0].toString());
-  expect(vk.beta2.x[1].toString()).to.eq(vkOnChain.beta2.x[1].toString());
-  expect(vk.beta2.y[0].toString()).to.eq(vkOnChain.beta2.y[0].toString());
-  expect(vk.beta2.y[1].toString()).to.eq(vkOnChain.beta2.y[1].toString());
-  expect(vk.delta2.x[0].toString()).to.eq(vkOnChain.delta2.x[0].toString());
-  expect(vk.delta2.x[1].toString()).to.eq(vkOnChain.delta2.x[1].toString());
-  expect(vk.delta2.y[0].toString()).to.eq(vkOnChain.delta2.y[0].toString());
-  expect(vk.delta2.y[1].toString()).to.eq(vkOnChain.delta2.y[1].toString());
-  expect(vk.gamma2.x[0].toString()).to.eq(vkOnChain.gamma2.x[0].toString());
-  expect(vk.gamma2.x[1].toString()).to.eq(vkOnChain.gamma2.x[1].toString());
-  expect(vk.gamma2.y[0].toString()).to.eq(vkOnChain.gamma2.y[0].toString());
-  expect(vk.gamma2.y[1].toString()).to.eq(vkOnChain.gamma2.y[1].toString());
+  expect(verifyingKey.alpha1.x.toString()).to.eq(verifyingKeyOnChain.alpha1.x.toString());
+  expect(verifyingKey.alpha1.y.toString()).to.eq(verifyingKeyOnChain.alpha1.y.toString());
+  expect(verifyingKey.beta2.x[0].toString()).to.eq(verifyingKeyOnChain.beta2.x[0].toString());
+  expect(verifyingKey.beta2.x[1].toString()).to.eq(verifyingKeyOnChain.beta2.x[1].toString());
+  expect(verifyingKey.beta2.y[0].toString()).to.eq(verifyingKeyOnChain.beta2.y[0].toString());
+  expect(verifyingKey.beta2.y[1].toString()).to.eq(verifyingKeyOnChain.beta2.y[1].toString());
+  expect(verifyingKey.delta2.x[0].toString()).to.eq(verifyingKeyOnChain.delta2.x[0].toString());
+  expect(verifyingKey.delta2.x[1].toString()).to.eq(verifyingKeyOnChain.delta2.x[1].toString());
+  expect(verifyingKey.delta2.y[0].toString()).to.eq(verifyingKeyOnChain.delta2.y[0].toString());
+  expect(verifyingKey.delta2.y[1].toString()).to.eq(verifyingKeyOnChain.delta2.y[1].toString());
+  expect(verifyingKey.gamma2.x[0].toString()).to.eq(verifyingKeyOnChain.gamma2.x[0].toString());
+  expect(verifyingKey.gamma2.x[1].toString()).to.eq(verifyingKeyOnChain.gamma2.x[1].toString());
+  expect(verifyingKey.gamma2.y[0].toString()).to.eq(verifyingKeyOnChain.gamma2.y[0].toString());
+  expect(verifyingKey.gamma2.y[1].toString()).to.eq(verifyingKeyOnChain.gamma2.y[1].toString());
 };
 
 /**
@@ -86,8 +89,8 @@ export const deployTestContracts = async ({
     true,
   );
 
-  // VkRegistry
-  const vkRegistryContract = await deployVkRegistry(signer, true);
+  // VerifyingKeysRegistry
+  const verifyingKeysRegistryContract = await deployVerifyingKeysRegistry(signer, true);
   const [policyContractAddress] = await Promise.all([policyContract.getAddress()]);
 
   const { maciContract } = await deployMaci({
@@ -103,6 +106,6 @@ export const deployTestContracts = async ({
     policyContract,
     constantInitialVoiceCreditProxyContract,
     maciContract,
-    vkRegistryContract,
+    verifyingKeysRegistryContract,
   };
 };

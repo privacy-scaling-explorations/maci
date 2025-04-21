@@ -73,7 +73,7 @@ Currently, the ceremony artifacts work with MACI version up to 2.x
 In order to run MACI polls, a coordinator is required to publish their MACI public key. You will need to generate a MACI keypair, and treat the private key just as your ethereum private keys. Please store them in a safe place as you won't be able to finish a round if you lose access, or if compromised a bad actor could decrypt the vote and publish them online. You can generate a new key pair using maci-cli by running the following command in the root of the project:
 
 ```bash
-pnpm run genMaciKeyPair
+pnpm run generateMaciKeyPair
 ```
 
 ### Set the .env
@@ -131,9 +131,9 @@ For testing we suggest using the **FreeForAlPolicy** as it allows anyone to sign
 | **stateTreeDepth** | Defines how many users the system supports. |
 | **policy**         | Defines which policy to use.                |
 
-#### VkRegistry
+#### VerifyingKeysRegistry
 
-The VkRegistry hold the verifying keys used to verify the proofs, on the zkeys field we define the path to the zero knowledge artifacts we downloaded in the previous steps.
+The VerifyingKeysRegistry hold the verifying keys used to verify the proofs, on the zkeys field we define the path to the zero knowledge artifacts we downloaded in the previous steps.
 
 | Property                | Description                                                                          |
 | ----------------------- | ------------------------------------------------------------------------------------ |
@@ -156,7 +156,7 @@ The recommended values for test keys are: **10-1-2-2-1**. For ceremony keys: **1
 | --------------------------- | ----------------------------------------------------------------- |
 | **pollStartDate**           | Defines when the poll starts in seconds.                          |
 | **pollEndDate**             | Defines how long is going to be the poll in seconds.              |
-| **coordinatorPubkey**       | Defines the coordinator public MACI key.                          |
+| **coordinatorPublicKey**    | Defines the coordinator public MACI key.                          |
 | **useQuadraticVoting**      | Defines if the poll uses quadratic voting or not.                 |
 | **policy**                  | Defines the policy of the poll.                                   |
 | **relayers**                | Defines an array of addresses that are allowed to relay messages. |
@@ -277,7 +277,7 @@ Once the proofs are generated, and results tallied, the results (Tally) are writ
     "salt": "0x24f57b75c227987727c13d1e83409d70478b42bdc12a4a4df8129c72fbaf5aaf",
     "commitment": "0xb4ebe68b0da828c0b978ddee86ba934b8e215499ac766491f236ad85fd606de"
   },
-  "perVOSpentVoiceCredits": {
+  "perVoteOptionSpentVoiceCredits": {
     "tally": [
       "81",
       "0",
@@ -315,4 +315,4 @@ We observe an array named results, which holds the aggregated votes for each opt
 
 The `totalSpentVoiceCredits` object contains the total amount of voice credits spent in the poll. This is the sum of all voice credits spent by all voters, and in quadratic voting, is the sum of the squares of all votes.
 
-The `perVOSpentVoiceCredits` will contain the amount of voice credits spent per vote option. In this case, the first option received 81 voice credits, and every other option received 0 voice credits. This is because there was only one valid vote casted, with a weight of 9. Given the quadratic voting formula, the total amount of voice credits spent is 81.
+The `perVoteOptionSpentVoiceCredits` will contain the amount of voice credits spent per vote option. In this case, the first option received 81 voice credits, and every other option received 0 voice credits. This is because there was only one valid vote casted, with a weight of 9. Given the quadratic voting formula, the total amount of voice credits spent is 81.

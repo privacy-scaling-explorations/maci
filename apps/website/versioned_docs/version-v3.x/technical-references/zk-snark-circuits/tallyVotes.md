@@ -25,7 +25,7 @@ A version working with non quadratic voting (non-qv) is also [available](https:/
 
 | Input signal                            | Description                                                      |
 | --------------------------------------- | ---------------------------------------------------------------- |
-| `numSignUps`                            | The number of users that signup                                  |
+| `totalSignups`                          | The number of users that signup                                  |
 | `index`                                 | Start index of given batch                                       |
 | `sbCommitment`                          | Described below                                                  |
 | `currentTallyCommitment`                | Described below                                                  |
@@ -72,7 +72,7 @@ $poseidon_3([tc_r, tc_t, tc_p])$
 #### Statements that the circuit proves
 
 1. That the coordinator knows the preimage of `sbCommitment`
-2. That `index` is less than or equal to `numSignUps`
+2. That `index` is less than or equal to `totalSignups`
 3. That each ballot in `ballots` is in a member of the ballot tree with the Merkle root `ballotRoot` at indices `batchStartIndex` to `batchStartIndex + (5 ** intStateTreeDepth)`
 4. That each set of votes (`votes[i]`) has the Merkle root $blt_r$ whose value equals `ballots[i][1]`
 5. That the tally is valid, which is:

@@ -1,4 +1,4 @@
-import { genPubKey } from "@maci-protocol/crypto";
+import { generatePublicKey } from "@maci-protocol/crypto";
 import { PublicKey, PrivateKey } from "@maci-protocol/domainobjs";
 
 import { generateKeypair } from "../keypair";
@@ -11,11 +11,11 @@ describe("generateMaciPublicKey", () => {
 
     expect(publicKey).toBe(keypair.publicKey);
 
-    const unserialisedPrivkey = PrivateKey.deserialize(keypair.privateKey);
-    const pk2 = genPubKey(unserialisedPrivkey.rawPrivKey);
-    const unserializedPk = PublicKey.deserialize(keypair.publicKey);
-    expect(unserializedPk.rawPubKey[0].toString()).toBe(pk2[0].toString());
-    expect(unserializedPk.rawPubKey[1].toString()).toBe(pk2[1].toString());
+    const unserialisedPrivate = PrivateKey.deserialize(keypair.privateKey);
+    const publicKey2 = generatePublicKey(unserialisedPrivate.raw);
+    const unserializedPublicKey = PublicKey.deserialize(keypair.publicKey);
+    expect(unserializedPublicKey.raw[0].toString()).toBe(publicKey2[0].toString());
+    expect(unserializedPublicKey.raw[1].toString()).toBe(publicKey2[1].toString());
   });
 
   test("should throw when given an invalid private key", () => {

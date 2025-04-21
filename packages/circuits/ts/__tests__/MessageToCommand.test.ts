@@ -1,4 +1,4 @@
-import { genRandomSalt, genPrivKey } from "@maci-protocol/crypto";
+import { generateRandomSalt, generatePrivateKey } from "@maci-protocol/crypto";
 import { Keypair, PCommand, PrivateKey } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
@@ -38,10 +38,10 @@ describe("MessageToCommand circuit", function test() {
     const { publicKey } = keypair;
     const newPublicKey = keypair.publicKey;
 
-    const ecdhSharedKey = Keypair.genEcdhSharedKey(privateKey, publicKey);
+    const ecdhSharedKey = Keypair.generateEcdhSharedKey(privateKey, publicKey);
     const random50bitBigInt = (): bigint =>
       // eslint-disable-next-line no-bitwise
-      ((BigInt(1) << BigInt(50)) - BigInt(1)) & BigInt(genRandomSalt().toString());
+      ((BigInt(1) << BigInt(50)) - BigInt(1)) & BigInt(generateRandomSalt().toString());
 
     const command: PCommand = new PCommand(
       random50bitBigInt(),
@@ -50,7 +50,7 @@ describe("MessageToCommand circuit", function test() {
       random50bitBigInt(),
       random50bitBigInt(),
       random50bitBigInt(),
-      // genRandomSalt(),
+      // generateRandomSalt(),
       BigInt(123),
     );
     const signature = command.sign(privateKey);
@@ -69,10 +69,10 @@ describe("MessageToCommand circuit", function test() {
     expect(command.stateIndex.toString()).to.be.eq(stateIndexOut.toString());
 
     const newPublicKeyX = await getSignal(circuit, witness, "newPublicKey[0]");
-    expect(command.newPublicKey.rawPubKey[0].toString()).to.be.eq(newPublicKeyX.toString());
+    expect(command.newPublicKey.raw[0].toString()).to.be.eq(newPublicKeyX.toString());
 
     const newPublicKeyY = await getSignal(circuit, witness, "newPublicKey[1]");
-    expect(command.newPublicKey.rawPubKey[1].toString()).to.be.eq(newPublicKeyY.toString());
+    expect(command.newPublicKey.raw[1].toString()).to.be.eq(newPublicKeyY.toString());
 
     const voteOptionIndex = await getSignal(circuit, witness, "voteOptionIndex");
     expect(command.voteOptionIndex.toString()).to.be.eq(voteOptionIndex.toString());
@@ -106,10 +106,10 @@ describe("MessageToCommand circuit", function test() {
     const { publicKey } = keypair;
     const newPublicKey = keypair.publicKey;
 
-    const ecdhSharedKey = Keypair.genEcdhSharedKey(privateKey, publicKey);
+    const ecdhSharedKey = Keypair.generateEcdhSharedKey(privateKey, publicKey);
     const random50bitBigInt = (): bigint =>
       // eslint-disable-next-line no-bitwise
-      ((BigInt(1) << BigInt(50)) - BigInt(1)) & BigInt(genRandomSalt().toString());
+      ((BigInt(1) << BigInt(50)) - BigInt(1)) & BigInt(generateRandomSalt().toString());
 
     const command: PCommand = new PCommand(
       random50bitBigInt(),
@@ -118,7 +118,7 @@ describe("MessageToCommand circuit", function test() {
       random50bitBigInt(),
       random50bitBigInt(),
       random50bitBigInt(),
-      // genRandomSalt(),
+      // generateRandomSalt(),
       BigInt(123),
     );
     const signature = command.sign(privateKey);
@@ -127,7 +127,7 @@ describe("MessageToCommand circuit", function test() {
     const circuitInputs = {
       message: message.asCircuitInputs(),
       // invalid private key
-      encryptionPrivateKey: new PrivateKey(genPrivKey()).asCircuitInputs() as unknown as bigint,
+      encryptionPrivateKey: new PrivateKey(generatePrivateKey()).asCircuitInputs() as unknown as bigint,
       encryptionPublicKey: publicKey.asCircuitInputs() as unknown as [bigint, bigint],
     };
 

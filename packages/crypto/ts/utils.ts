@@ -27,7 +27,7 @@ export const calcDepthFromNumLeaves = (hashLength: number, numLeaves: number): n
  * @param depth The tree depth
  * @returns The hash of the leaves and the salt, with the salt last
  */
-export const genTreeCommitment = (leaves: bigint[], salt: bigint, depth: number): bigint => {
+export const generateTreeCommitment = (leaves: bigint[], salt: bigint, depth: number): bigint => {
   const tree = new IncrementalQuinTree(depth, 0n, 5, hash5);
 
   leaves.forEach((leaf) => {

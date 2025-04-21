@@ -10,7 +10,7 @@ import { getDefaultSigner } from "../ts/utils";
 import { Verifier } from "../typechain-types";
 
 describe("DomainObjs", () => {
-  const vk = new VerifyingKey(
+  const verifyingKey = new VerifyingKey(
     new G1Point(
       BigInt("20491192805390485299153009773594534940189261866228447918068658471970481763042"),
       BigInt("9383485363053290200918347156157836566562967994039712273449902621266178545958"),
@@ -83,7 +83,11 @@ describe("DomainObjs", () => {
     });
 
     it("should correctly verify a proof", async () => {
-      const isValid = await verifierContract.verify(proof, vk.asContractParam() as IVerifyingKeyStruct, publicInputs);
+      const isValid = await verifierContract.verify(
+        proof,
+        verifyingKey.asContractParam() as IVerifyingKeyStruct,
+        publicInputs,
+      );
 
       expect(isValid).to.eq(true);
     });
@@ -91,7 +95,7 @@ describe("DomainObjs", () => {
     it("should return false for a proof that is not valid", async () => {
       const isValid = await verifierContract.verify(
         proof,
-        vk.asContractParam() as IVerifyingKeyStruct,
+        verifyingKey.asContractParam() as IVerifyingKeyStruct,
         publicInputs.slice(0, -1).concat(BigInt(1)),
       );
 
