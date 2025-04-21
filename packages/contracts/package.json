@@ -187,7 +187,7 @@
     "hardhat": "^2.23.0",
     "lowdb": "^1.0.0",
     "snarkjs": "^0.7.5",
-    "solady": "^0.1.14",
+    "solady": "^0.1.15",
     "solidity-docgen": "^0.6.0-beta.36",
     "uuid": "^11.1.0"
   },
