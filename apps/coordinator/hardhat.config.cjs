@@ -26,6 +26,9 @@ module.exports = {
       loggingEnabled: false,
     },
   },
+  solidity: {
+    version: "0.8.28",
+  },
   paths: {
     sources: path.resolve(
       __dirname,

@@ -16,8 +16,10 @@ export {
   deployFreeForAllSignUpPolicy,
   deployGitcoinPassportPolicy,
   deploySemaphoreSignupPolicy,
+  deployHatsSignupPolicy,
   deployEASSignUpPolicy,
   deployMerkleProofPolicy,
+  deployERC20VotesPolicy,
   deployAnonAadhaarPolicy,
   deployZupassSignUpPolicy,
   deployPollFactory,
@@ -36,6 +38,7 @@ export {
   cleanThreads,
   unlinkFile,
   getBlockTimestamp,
+  getDeployedContractAddressFromContractReceipt,
 } from "./utils";
 export { extractVerifyingKey, generateProofRapidSnark, generateProofSnarkjs, verifyProof, readProofs } from "./proofs";
 export { EMode } from "./constants";
@@ -76,5 +79,6 @@ export type {
   IGenProofOptions,
   IIpfsMessage,
   TDeployedProxyFactories,
+  AASigner,
 } from "./types";
 export * from "../typechain-types";

@@ -1,4 +1,4 @@
-import type { Proof } from "../../ts/types";
+import type { AASigner, Proof } from "../../ts/types";
 import type { MACI, MessageProcessor, Poll, Tally, Verifier, VerifyingKeysRegistry } from "../../typechain-types";
 import type { Poll as PollWrapper } from "@maci-protocol/core";
 import type { Keypair, PrivateKey } from "@maci-protocol/domainobjs";
@@ -859,7 +859,7 @@ export interface IDeployContractParams<ID = EContracts> {
   /**
    * Eth signer
    */
-  signer?: Signer;
+  signer?: Signer | AASigner;
 }
 
 /**

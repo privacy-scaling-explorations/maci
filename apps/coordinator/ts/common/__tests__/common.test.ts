@@ -17,15 +17,8 @@ import {
   optimismSepolia,
 } from "viem/chains";
 
-import type { TransactionReceipt } from "viem";
-
-import {
-  genAlchemyRPCUrl,
-  getBundlerClient,
-  getDeployedContractAddress,
-  getPublicClient,
-  getZeroDevBundlerRPCUrl,
-} from "../accountAbstraction";
+import { getBundlerClient, getPublicClient, getZeroDevBundlerRPCUrl } from "../accountAbstraction";
+import { genAlchemyRPCUrl } from "../chain";
 import { ErrorCodes } from "../errors";
 import { ESupportedNetworks, viemChain } from "../networks";
 
@@ -91,12 +84,6 @@ describe("common", () => {
       expect(() => genAlchemyRPCUrl(ESupportedNetworks.OPTIMISM_SEPOLIA)).toThrow(
         ErrorCodes.RPC_API_KEY_NOT_SET.toString(),
       );
-    });
-  });
-
-  describe("getDeployedContractAddress", () => {
-    test("should throw when the log is undefined", () => {
-      expect(() => getDeployedContractAddress({} as TransactionReceipt)).toThrow();
     });
   });
 

@@ -1,6 +1,5 @@
 import { EPolicies, EInitialVoiceCreditProxies } from "@maci-protocol/sdk";
-import { PrepareUserOperationRequestParameters } from "permissionless/actions/smartAccount";
-import { ENTRYPOINT_ADDRESS_V07_TYPE } from "permissionless/types";
+import { SendUserOperationParameters } from "viem/account-abstraction";
 
 import type { Abi, Hex } from "viem";
 
@@ -13,12 +12,12 @@ export interface IDeployMaciArgs {
   /**
    * The address of the session key
    */
-  sessionKeyAddress: Hex;
+  sessionKeyAddress?: Hex;
 
   /**
    * The approval for the session key
    */
-  approval: string;
+  approval?: string;
 
   /**
    * The chain name
@@ -38,12 +37,12 @@ export interface IDeployPollArgs {
   /**
    * The address of the session key
    */
-  sessionKeyAddress: Hex;
+  sessionKeyAddress?: Hex;
 
   /**
    * The approval for the session key
    */
-  approval: string;
+  approval?: string;
 
   /**
    * The chain name
@@ -63,7 +62,7 @@ export interface IConstantInitialVoiceCreditProxyArgs {
   /**
    * The amount of initial voice credits to deploy
    */
-  amount: string;
+  amount: number;
 }
 
 /**
@@ -142,6 +141,41 @@ export interface ISemaphorePolicyArgs {
 }
 
 /**
+ * IMerkleProofPolicyArgs represents the arguments for deploying a merkle proof policy
+ */
+export interface IMerkleProofPolicyArgs {
+  /**
+   * The merkle proof root
+   */
+  root: string;
+}
+
+/**
+ * ITokenPolicyArgs represents the arguments for deploying a sign up policy
+ */
+export interface ITokenPolicyArgs {
+  /**
+   * The token address
+   */
+  token: string;
+}
+
+/**
+ * IAnonAadhaarPolicyArgs represents the arguments for deploying an Anon Aadhaar policy
+ */
+export interface IAnonAadhaarPolicyArgs {
+  /**
+   * The Anon Aadhaar verifier address
+   */
+  verifier: string;
+
+  /**
+   * The nullifier seed
+   */
+  nullifierSeed: string;
+}
+
+/**
  * IGitcoinPassportPolicyArgs represents the arguments for deploying a gitcoin passport policy
  */
 export interface IGitcoinPassportPolicyArgs {
@@ -166,14 +200,14 @@ export interface IERC20VotesPolicyArgs {
   token: string;
 
   /**
-   * The factor
+   * The threshold
    */
-  factor: string;
+  threshold: bigint | string;
 
   /**
    * The snapshot block
    */
-  snapshotBlock: string;
+  snapshotBlock: bigint | string;
 }
 
 /**
@@ -229,6 +263,9 @@ export type IPolicyArgs =
   | IZupassPolicyArgs
   | IHatsPolicyArgs
   | ISemaphorePolicyArgs
+  | IMerkleProofPolicyArgs
+  | ITokenPolicyArgs
+  | IAnonAadhaarPolicyArgs
   | IGitcoinPassportPolicyArgs
   | IERC20VotesPolicyArgs
   | IERC20PolicyArgs;
@@ -373,4 +410,4 @@ export interface IContractData {
 /**
  * IUserOperation represents the data send for a user operation
  */
-export type IUserOperation = PrepareUserOperationRequestParameters<ENTRYPOINT_ADDRESS_V07_TYPE>["userOperation"];
+export type IUserOperation = SendUserOperationParameters;

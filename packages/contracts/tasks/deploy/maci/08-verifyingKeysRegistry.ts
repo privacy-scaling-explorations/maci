@@ -105,10 +105,13 @@ deployment.deployTask(EDeploySteps.VerifyingKeysRegistry, "Deploy verifying key 
       ),
     );
 
-    const verifyingKeysRegistryContract = await deployment.deployContract<VerifyingKeysRegistry>({
-      name: EContracts.VerifyingKeysRegistry,
-      signer: deployer,
-    });
+    const verifyingKeysRegistryContract = await deployment.deployContract<VerifyingKeysRegistry>(
+      {
+        name: EContracts.VerifyingKeysRegistry,
+        signer: deployer,
+      },
+      await deployer.getAddress(),
+    );
 
     const processZkeys = [qvProcessVerifyingKey, nonQvProcessVerifyingKey].filter(Boolean) as IVerifyingKeyStruct[];
     const tallyZkeys = [qvTallyVerifyingKey, nonQvTallyQv].filter(Boolean) as IVerifyingKeyStruct[];

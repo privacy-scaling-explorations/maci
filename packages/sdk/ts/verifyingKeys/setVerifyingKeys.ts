@@ -1,4 +1,4 @@
-import { EMode, type IVerifyingKeyStruct } from "@maci-protocol/contracts";
+import { type IVerifyingKeyStruct } from "@maci-protocol/contracts";
 import { VerifyingKeysRegistry__factory as VerifyingKeysRegistryFactory } from "@maci-protocol/contracts/typechain-types";
 import {
   generatePollJoinedVerifyingKeySignature,
@@ -70,7 +70,7 @@ export const setVerifyingKeys = async ({
     messageBatchSize,
   );
 
-  if (await verifyingKeysRegistryContract.isProcessVerifyingKeySet(processVerifyingKeySignature, EMode.QV)) {
+  if (await verifyingKeysRegistryContract.isProcessVerifyingKeySet(processVerifyingKeySignature, mode)) {
     throw new Error("This process verifying key is already set in the contract");
   }
 
