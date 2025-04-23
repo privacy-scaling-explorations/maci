@@ -119,7 +119,7 @@ include "../../utils/trees/incrementalQuinaryTree.circom";
     computedCurrentSbCommitment === currentSbCommitment;
 
     //  ----------------------------------------------------------------------- 
-        // 0. Ensure that the maximum vote options signal is valid and if
+    // 0. Ensure that the maximum vote options signal is valid and if
     // the maximum users signal is valid
     var voteOptionsValid = LessEqThan(32)([voteOptions, VOTE_OPTION_TREE_ARITY ** voteOptionTreeDepth]);
     voteOptionsValid === 1;
