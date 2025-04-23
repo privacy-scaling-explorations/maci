@@ -8,14 +8,14 @@ description: An outline of the 2024 MACI team & product roadmap
 _This public roadmap is part of our core team's efforts to make our work more accessible and to foster more collaboration from our open source community. We plan to re-assess & iterate on our roadmap over time, and will update this document when we do._
 
 :::info
-This document aims to outline the 2024 MACI roadmap. Our roadmap is under constant discussion and evolution (e.g. see our [Q1](/blog/2024-team-roadmap) and [Q2](/blog/2024-q2-roadmap) updates) but we try our best to maintain this page to provide a high-level overview. Please join the conversation in our [latest GitHub discussion](https://github.com/privacy-scaling-explorations/maci/discussions/1381) if you have feedback!
+This document aims to outline the 2025 MACI roadmap. Our roadmap is under constant discussion and evolution (e.g. see our [high level 2025 roadmap](/blog/2025-roadmap) updates) but we try our best to maintain this page to provide a high-level overview. Please join the conversation in our [discord server](https://discord.com/invite/sF5CT5rzrR) if you have feedback!
 
-**Last updated: 2024-04-16**
+**Last updated: 2025-04-23**
 :::
 
 ## Team description
 
-The MACI core team is a small collaborative engineering team building various projects within [Privacy & Scaling Explorations (PSE)](https://pse.dev/). Our sustained focus is on MACI: an on-chain voting protocol that provides greatly increased collusion resistance & privacy. We also allocate a significant portion of our time to support the practical adoption of this technology by supporting community leaders to run democratic governance and public funding initiatives, like Quadratic Voting (QV), Quadratic Funding (QF), and Retroactive Public Goods Funding (RPGF) grant rounds.
+The MACI core team is a small collaborative engineering team building various projects within [Privacy & Scaling Explorations (PSE)](https://pse.dev/). Our sustained focus is on MACI: an on-chain voting protocol that provides greatly increased collusion resistance & privacy. We also allocate a portion of our time to support the practical adoption of this technology by supporting community leaders to run democratic governance and public funding initiatives, like Quadratic Voting (QV), Quadratic Funding (QF), and Retroactive Public Goods Funding (RPGF) grant rounds.
 
 ## MACI mission & vision
 
@@ -29,8 +29,8 @@ Short term, our vision is to empower developers to build with MACI to create col
 
 1. ~~2021: MACI integrated by an ecosystem project~~ (✅, [clr.fund](https://github.com/clrfund/monorepo/))
 2. ~~2023: MACI integrated by a PSE project~~ (✅, [QF](https://github.com/privacy-scaling-explorations/qf))
-3. 2024: MACI integrated by an additional external project
-4. 2025: MACI used by multiple DAOs for governance applications & QF integrations
+3. ~~2024: MACI integrated by an additional external project~~ (✅, [PriVote](https://github.com/PriVote-Project), [Gitcoin](https://github.com/gitcoinco/MACI_QF))
+4. 2025: MACI used by multiple DAOs for governance applications
 5. 2028: MACI used in smaller municipal elections (counties, provinces, etc)
 6. 2030: MACI used in national elections
 
@@ -38,110 +38,69 @@ Short term, our vision is to empower developers to build with MACI to create col
 
 1. ~~2021: release MACI v1.0~~ (✅)
 2. ~~2023: build technical feasibility for 10K concurrent voters on the platform~~ (✅)
-3. 2024 Q1: release MACI v1.2, with revamped documentation & educational resource
-4. 2026: build technical feasibility for 100K concurrent voters on the platform
-5. 2028: build technical feasibility for 1M concurrent voters on the platform
+3. 2024:
 
-# 2024 workstreams
+- ~~Q1: release MACI v1.2, with revamped documentation & educational resource~~ (✅)
+- ~~Q3: release MACI v2.0, with cleaner code and improved UX~~ (✅)
 
-_To achieve our mission, we’re focused on 4 major workstreams that comprise our roadmap._
+4. 2025: release MACI v3.0, with new features for a more scalable and flexible platform
+5. 2026: build technical feasibility for 100K concurrent voters on the platform
+6. 2028: build technical feasibility for 1M concurrent voters on the platform
 
-## 1) MACI Developer Experience (DX)
+# 2025 workstreams
 
-~_50% of team’s total bandwidth_
+In 2025, we are focusing on several initiatives to support the practical adoption of MACI.
 
-We believe that MACI is only useful to the extent that people use MACI & build on MACI.
+## 1) MACI v3.0
 
-Despite the power of MACI, not a single project has yet integrated MACI v1.x in a production environment. We view this as a failure, and we want to fix this. **The goal of this workstream is to make MACI as easy to understand and easy to integrate as possible.**
+This new version comes with features that have been requested in the past, such as polls being more customisable, in terms of voice credits assigned to voters, and gatekeeping mechanisms.
 
-### Initiatives within this workstream:
+At a high level, the new features/improvements are:
 
-- Implement & release a MACI v1.2 ([#856](https://github.com/privacy-scaling-explorations/maci/issues/856))
-  - Refactor the codebase for improved quality, readability & modularity
-  - Add code comments (with [TypeDoc](https://typedoc.org/) & [NatSpec](https://docs.soliditylang.org/en/latest/natspec-format.html)) to improve productivity
-  - Improve tooling (e.g. cross-platform support) for ease of integration & performance
-- Improve/create documentation for developer onboarding & education
-  - Revamp documentation stack (via Docusaurus) with versioning & additional resources
-  - Voter & coordinator guides to understand full poll lifecycle
-- Build app templates & tutorials that can serve as reference implementations
+- Custom voice credits per poll
+- Custom gatekeeping per poll
+- Replacement of vote merkle trees for more efficient hash-chains
+- Offchain voting via MACI's relayer service
 
-**References**
+## 2) Coordinator Service
 
-- [MACI v1.2 Refactoring Plan](https://github.com/privacy-scaling-explorations/maci/issues/856)
-- [MACI development team sprint board](https://github.com/orgs/privacy-scaling-explorations/projects/40)
-- [MACI v1.1.1 refactor milestone](https://github.com/privacy-scaling-explorations/maci/milestone/5)
+The coordinator service is a service to automate MACI coordinator functionality. This includes:
 
-## 2) MACI Community Engagement
+- Contract deployment
+- Subgraph deploying
+- Proof generation
+- Proof and results submission
 
-_~15% of team’s total bandwidth_
+This service exposes a REST API, as well as some Websocket endpoints (for proof generation only). Our goal is to release an efficient and easy to use service that can be used by any application that builds atop of MACI.
 
-We want to proactively support adoption of MACI. **We’ll create an open source community where integrations & contributions are actively encouraged!**
+## 3) Integration with DAO's tooling provider
 
-This workstream relates closely to improving DX but focuses on areas that will require active maintenance, support & engagement from our team vs. improving code, documentation & educational resources that will be available online 24/7/365.
+As an effort to support DAO governance, and help solve their issues with bribery and collusion, MACI is focusing on integrating with DAO's tooling providers.
 
-The hope here is that close interactions with integration developers & Ethereum community members will help us gather insightful user feedback so that we iterate faster to improve MACI as a product. We’ll be rolling out an agile scrum development workflow that should allow us to rapidly respond to input from the community to guide our roadmap & product direction.
+To start with, MACI is integrating with [Aragon](https://aragon.org/) by building a voting [plugin](https://github.com/privacy-scaling-explorations/maci-voting-plugin).
 
-### Initiatives within this workstream:
+In the future, we plan to continue working with other partners such as [Agora](https://www.agora.xyz/), and help them offer DAOs secure and private voting.
 
-- Allocate team bandwidth to be available to respond to the community
-  - Support MACI integrations (starting with [clr.fund](http://clr.fund/) v1.x integration)
-  - Revamp GitHub repo maintenance ([MACI GH processes](https://github.com/privacy-scaling-explorations/maci/issues/757))
-  - Establish & respond to public channels ([Discord](https://discord.com/invite/sF5CT5rzrR), [Twitter](https://twitter.com/zkMACI))
-- Proactively engage with the ecosystem to identify collaboration opportunities (conference talks, hackathon bounties, social media)
-- Update our development processes to quickly react to user needs & input
+## 4) Coordinator decentralisation
 
-## 3) Quadratic Funding Experiments
+It's no secret that one of MACI long standing issues has having a centralised coordinator. They are able to see all of the votes in cleartext, which allows them to collude with bribers themselves, as well as voters. As we look to tackle use cases such as DAO governance where large quantities of money are involved in proposals, we need to ensure that collusion between the coordinator and voters/bribers is reduced. This can be accomplished in several ways:
 
-_~30% of team’s total bandwidth_
+- Use Multi Party Computation (MPC)
+- Use Homomorphic Encryption (HE)
+- Use a Trusted Execution Environment (TEE)
 
-We’re building technical infrastructure, operational expertise & a network of communities to create a scalable way to enable community organizers to run QF rounds. The mission of our QF project has been to serve as a reference implementation on how to integrate MACI as well as support the practical adoption of this community-funding technology.
-
-[Read more about our QF initiatives here](https://qf.pse.dev/about).
-
-### 2024 goal
-
-- Help run 12 QF/QV rounds
-
-### Initiatives within this workstream:
-
-- Build an evaluation framework of QF rounds, to increase our sophistication around how we measure success
-- Landscape analysis of QF & capital-allocation projects to better understand how our efforts fit in within the broader ecosystem
-- Update & expand our [QF website](https://qf.pse.dev/), with public launch to generate inbound interest
-- Explore community collaboration opportunities (running QF rounds)
-- Exploring project collaboration opportunities (supporting MACI/QF integrations)
-
-**References**
-
-- [GitHub](https://github.com/privacy-scaling-explorations/qf)
-- [Website](https://qf.pse.dev/)
+We plan to research the best approach and start the implementation within the year.
 
 ## Future R&D
 
 While not prioritized as an upcoming workstream, we think it’s worth calling out important areas of research & development that we’re excited to work on in the future:
 
-### MACI Coordinator Service
-
-- The primary responsibility of the Coordinator Service will be to:
-  - offload and automate the tasks performed by the human coordinator
-  - minimize proving time by parallelizing SNARK proof generation and making MACI easier to adopt
-- [GitHub repo](https://github.com/privacy-scaling-explorations/maci-coordinator)
-
-### QF stack
-
-- To serve as a reference implementation on how to integrate MACI as well as support the practical adoption of this community-funding technology.
-- Improvements
-  - Support QF (as of now only supports QV functionality)
-  - Make it easier for operators to run rounds
-  - Make it easier for end users to use
-- [GitHub repo](https://github.com/privacy-scaling-explorations/qf)
-
 ### MACI improvements
 
-- Unconditional Voter Privacy (e.g. [ElGamal Key Change Mechanism](https://github.com/privacy-scaling-explorations/maci/issues/796))
 - Scaling explorations, like SNARK Folding Schemes (e.g. [Nova integration](https://github.com/privacy-scaling-explorations/maci/issues/904))
 - Different matching mechanisms (e.g. [Group Wise Matching in Quadratic Funding](https://github.com/privacy-scaling-explorations/maci/issues/905))
-- Gas-less MACI for voters
-- Gas efficiency
+- Re-implementation of previously removed features such as [Topup](https://github.com/privacy-scaling-explorations/maci/issues/1384) and [Subsidy](https://github.com/privacy-scaling-explorations/maci/issues/1348)
+- [Benchmarks](https://github.com/privacy-scaling-explorations/maci/issues/1197) for the whole stack
 
 ## Feedback
 
