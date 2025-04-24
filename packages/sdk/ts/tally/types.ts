@@ -202,3 +202,33 @@ export interface ITallyVotesInputs {
   newPerVOSpentVoiceCreditsRootSalt: bigint;
   newSpentVoiceCreditSubtotalSalt: bigint;
 }
+
+/**
+ * Get results args
+ */
+export interface IGetResultsArgs {
+  /**
+   * The address of the MACI contract
+   */
+  maciAddress: string;
+
+  /**
+   * The ID of the poll
+   */
+  pollId: string;
+
+  /**
+   * The signer
+   */
+  signer: Signer;
+}
+
+/**
+ * Get result per option args
+ */
+export interface IGetResultPerOptionArgs extends IGetResultsArgs {
+  /**
+   * The index of the vote option
+   */
+  index: number;
+}
