@@ -179,9 +179,6 @@ importers:
       mustache:
         specifier: ^4.2.0
         version: 4.2.0
-      permissionless:
-        specifier: '>=0.1.18 <=0.2.38'
-        version: 0.1.29(viem@2.27.0(typescript@5.8.3)(zod@3.24.2))
       reflect-metadata:
         specifier: ^0.2.0
         version: 0.2.2
@@ -10438,11 +10435,6 @@ packages:
   pend@1.2.0:
     resolution: {integrity: sha512-F3asv42UuXchdzt+xXqfW1OGlVBe+mxa2mqI0pg5yAHZPvFmY3Y6drSf/GQ1A86WgWEN9Kzh/WrgKa6iGcHXLg==}
 
-  permissionless@0.1.29:
-    resolution: {integrity: sha512-jKkgl3G2b4hv5DvX2U8v0OI3JfX+nEzj9a6zsrcXuJaLZdS14td4tExnlmBY93nUN6lRC6NfPZjdLbi8Dkzz7w==}
-    peerDependencies:
-      viem: ^2.9.17
-
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
 
@@ -19568,6 +19560,14 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
+  axios@1.8.4:
+    dependencies:
+      follow-redirects: 1.15.9(debug@4.4.0)
+      form-data: 4.0.2
+      proxy-from-env: 1.1.0
+    transitivePeerDependencies:
+      - debug
+
   axios@1.8.4(debug@4.4.0):
     dependencies:
       follow-redirects: 1.15.9(debug@4.4.0)
@@ -21782,7 +21782,7 @@ snapshots:
   eth-gas-reporter@0.2.27:
     dependencies:
       '@solidity-parser/parser': 0.14.5
-      axios: 1.8.4(debug@4.4.0)
+      axios: 1.8.4
       cli-table3: 0.5.1
       colors: 1.4.0
       ethereum-cryptography: 1.2.0
@@ -26801,10 +26801,6 @@ snapshots:
   peek-readable@7.0.0: {}
 
   pend@1.2.0: {}
-
-  permissionless@0.1.29(viem@2.27.0(typescript@5.8.3)(zod@3.24.2)):
-    dependencies:
-      viem: 2.27.0(typescript@5.8.3)(zod@3.24.2)
 
   picocolors@1.1.1: {}
 
