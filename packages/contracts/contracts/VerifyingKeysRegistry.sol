@@ -116,8 +116,8 @@ contract VerifyingKeysRegistry is Ownable, DomainObjs, SnarkCommon, IVerifyingKe
 
     uint256 length = _args.modes.length;
 
-    setPollJoiningVerifyingKeyKey(_args.pollStateTreeDepth, _args.pollJoiningVerifyingKey);
-    setPollJoinedVerifyingKeyKey(_args.pollStateTreeDepth, _args.pollJoinedVerifyingKey);
+    setPollJoiningVerifyingKey(_args.pollStateTreeDepth, _args.pollJoiningVerifyingKey);
+    setPollJoinedVerifyingKey(_args.pollStateTreeDepth, _args.pollJoinedVerifyingKey);
 
     for (uint256 index = 0; index < length; ) {
       setVerifyingKeys(
@@ -153,8 +153,8 @@ contract VerifyingKeysRegistry is Ownable, DomainObjs, SnarkCommon, IVerifyingKe
     VerifyingKey calldata _processVerifyingKey,
     VerifyingKey calldata _tallyVerifyingKey
   ) public onlyOwner {
-    setProcessVerifyingKeyKey(_stateTreeDepth, _voteOptionTreeDepth, _messageBatchSize, _mode, _processVerifyingKey);
-    setTallyVerifyingKeyKey(_stateTreeDepth, _intStateTreeDepth, _voteOptionTreeDepth, _mode, _tallyVerifyingKey);
+    setProcessVerifyingKey(_stateTreeDepth, _voteOptionTreeDepth, _messageBatchSize, _mode, _processVerifyingKey);
+    setTallyVerifyingKey(_stateTreeDepth, _intStateTreeDepth, _voteOptionTreeDepth, _mode, _tallyVerifyingKey);
   }
 
   /// @notice Set the process verifying key for a certain combination of parameters
@@ -163,7 +163,7 @@ contract VerifyingKeysRegistry is Ownable, DomainObjs, SnarkCommon, IVerifyingKe
   /// @param _messageBatchSize The message batch size
   /// @param _mode QV or Non-QV
   /// @param _processVerifyingKey The process verifying key
-  function setProcessVerifyingKeyKey(
+  function setProcessVerifyingKey(
     uint256 _stateTreeDepth,
     uint256 _voteOptionTreeDepth,
     uint8 _messageBatchSize,
@@ -206,7 +206,7 @@ contract VerifyingKeysRegistry is Ownable, DomainObjs, SnarkCommon, IVerifyingKe
   /// @param _voteOptionTreeDepth The vote option tree depth
   /// @param _mode QV or Non-QV
   /// @param _tallyVerifyingKey The tally verifying key
-  function setTallyVerifyingKeyKey(
+  function setTallyVerifyingKey(
     uint256 _stateTreeDepth,
     uint256 _intStateTreeDepth,
     uint256 _voteOptionTreeDepth,
@@ -246,7 +246,7 @@ contract VerifyingKeysRegistry is Ownable, DomainObjs, SnarkCommon, IVerifyingKe
   /// @notice Set the poll joining verifying key for a certain combination of parameters
   /// @param _stateTreeDepth The state tree depth
   /// @param _pollJoiningVerifyingKey The poll joining verifying key
-  function setPollJoiningVerifyingKeyKey(
+  function setPollJoiningVerifyingKey(
     uint256 _stateTreeDepth,
     VerifyingKey calldata _pollJoiningVerifyingKey
   ) public onlyOwner {
@@ -279,7 +279,7 @@ contract VerifyingKeysRegistry is Ownable, DomainObjs, SnarkCommon, IVerifyingKe
   /// @notice Set the poll joined verifying key for a certain combination of parameters
   /// @param _stateTreeDepth The state tree depth
   /// @param _pollJoinedVerifyingSignature The poll joined verifying key
-  function setPollJoinedVerifyingKeyKey(
+  function setPollJoinedVerifyingKey(
     uint256 _stateTreeDepth,
     VerifyingKey calldata _pollJoinedVerifyingSignature
   ) public onlyOwner {
