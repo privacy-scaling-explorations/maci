@@ -128,7 +128,7 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
 
     if (!isPollJoiningVerifyingKeySet) {
       await verifyingKeysRegistryContract
-        .setPollJoiningVerifyingKeyKey(stateTreeDepth, pollJoiningVerifyingKey.asContractParam() as IVerifyingKeyStruct)
+        .setPollJoiningVerifyingKey(stateTreeDepth, pollJoiningVerifyingKey.asContractParam() as IVerifyingKeyStruct)
         .then((tx) => tx.wait());
     }
 
@@ -138,7 +138,7 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
 
     if (!isPollJoinedVerifyingKeySet) {
       await verifyingKeysRegistryContract
-        .setPollJoinedVerifyingKeyKey(stateTreeDepth, pollJoinedVerifyingKey.asContractParam() as IVerifyingKeyStruct)
+        .setPollJoinedVerifyingKey(stateTreeDepth, pollJoinedVerifyingKey.asContractParam() as IVerifyingKeyStruct)
         .then((tx) => tx.wait());
     }
 

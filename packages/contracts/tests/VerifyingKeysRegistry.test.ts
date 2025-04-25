@@ -34,9 +34,9 @@ describe("VerifyingKeysRegistry", () => {
     });
   });
 
-  describe("setPollJoiningVerifyingKeyKey", () => {
+  describe("setPollJoiningVerifyingKey", () => {
     it("should set the poll verifying key", async () => {
-      const tx = await verifyingKeysRegistryContract.setPollJoiningVerifyingKeyKey(
+      const tx = await verifyingKeysRegistryContract.setPollJoiningVerifyingKey(
         stateTreeDepth + 1,
         testPollJoiningVerifyingKey.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 1000000 },
@@ -47,7 +47,7 @@ describe("VerifyingKeysRegistry", () => {
 
     it("should throw when trying to set another verifying key for the same params", async () => {
       await expect(
-        verifyingKeysRegistryContract.setPollJoiningVerifyingKeyKey(
+        verifyingKeysRegistryContract.setPollJoiningVerifyingKey(
           stateTreeDepth + 1,
           testPollJoiningVerifyingKey.asContractParam() as IVerifyingKeyStruct,
           { gasLimit: 1000000 },
@@ -56,9 +56,9 @@ describe("VerifyingKeysRegistry", () => {
     });
   });
 
-  describe("setPollJoinedVerifyingKeyKey", () => {
+  describe("setPollJoinedVerifyingKey", () => {
     it("should set the poll verifying key", async () => {
-      const tx = await verifyingKeysRegistryContract.setPollJoinedVerifyingKeyKey(
+      const tx = await verifyingKeysRegistryContract.setPollJoinedVerifyingKey(
         stateTreeDepth + 1,
         testPollJoinedVerifyingKey.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 1000000 },
@@ -69,7 +69,7 @@ describe("VerifyingKeysRegistry", () => {
 
     it("should throw when trying to set another verifying key for the same params", async () => {
       await expect(
-        verifyingKeysRegistryContract.setPollJoinedVerifyingKeyKey(
+        verifyingKeysRegistryContract.setPollJoinedVerifyingKey(
           stateTreeDepth + 1,
           testPollJoinedVerifyingKey.asContractParam() as IVerifyingKeyStruct,
           { gasLimit: 1000000 },

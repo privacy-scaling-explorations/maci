@@ -135,14 +135,14 @@ describe("Poll", () => {
       maciState.polls.get(pollId)?.publishMessage(message, padKey);
 
       // set the verification keys on the registry smart contract
-      await verifyingKeysRegistryContract.setPollJoiningVerifyingKeyKey(
+      await verifyingKeysRegistryContract.setPollJoiningVerifyingKey(
         treeDepths.stateTreeDepth,
         testPollJoiningVerifyingKey.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 10000000 },
       );
 
       // set the verification keys on the registry smart contract
-      await verifyingKeysRegistryContract.setPollJoinedVerifyingKeyKey(
+      await verifyingKeysRegistryContract.setPollJoinedVerifyingKey(
         treeDepths.stateTreeDepth,
         testPollJoinedVerifyingKey.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 10000000 },
@@ -318,13 +318,13 @@ describe("Poll", () => {
       await policyContract.setTarget(pollContracts.poll).then((tx) => tx.wait());
 
       // set the verification keys on the registry smart contract
-      await verifyingKeysRegistryContract.setPollJoiningVerifyingKeyKey(
+      await verifyingKeysRegistryContract.setPollJoiningVerifyingKey(
         stateTreeDepthTest,
         testPollJoiningVerifyingKey.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 10000000 },
       );
 
-      await verifyingKeysRegistryContract.setPollJoinedVerifyingKeyKey(
+      await verifyingKeysRegistryContract.setPollJoinedVerifyingKey(
         stateTreeDepthTest,
         testPollJoinedVerifyingKey.asContractParam() as IVerifyingKeyStruct,
         { gasLimit: 10000000 },
