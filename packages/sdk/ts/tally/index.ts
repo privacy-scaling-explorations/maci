@@ -6,4 +6,7 @@ export type {
   IGenerateTallyCommitmentsArgs,
   ITallyCommitments,
   ITallyVotesInputs,
+  IGetResultPerOptionArgs,
+  IGetResultsArgs,
 } from "./types";
+export { getResultPerOption, getResults } from "./results";
