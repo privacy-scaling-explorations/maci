@@ -4,6 +4,7 @@
   "private": false,
   "description": "MACI's SDK",
   "main": "build/ts/index.js",
+  "types": "build/ts/index.d.ts",
   "exports": {
     ".": {
       "types": "./build/ts/index.d.ts",
@@ -12,6 +13,13 @@
     "./browser": {
       "types": "./build/ts/browser/index.d.ts",
       "default": "./build/ts/browser/index.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "browser": [
+        "./build/ts/browser/index.d.ts"
+      ]
     }
   },
   "bin": {
