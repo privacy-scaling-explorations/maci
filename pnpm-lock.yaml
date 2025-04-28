@@ -263,7 +263,7 @@ importers:
         version: 11.0.20(@nestjs/common@11.0.20(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.0.20)(@nestjs/websockets@11.0.20)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/mongoose':
         specifier: ^11.0.3
-        version: 11.0.3(@nestjs/common@11.0.20(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.0.20)(mongoose@8.13.2(socks@2.8.4))(rxjs@7.8.2)
+        version: 11.0.3(@nestjs/common@11.0.20(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.0.20)(mongoose@8.14.0(socks@2.8.4))(rxjs@7.8.2)
       '@nestjs/platform-express':
         specifier: ^11.0.20
         version: 11.0.20(@nestjs/common@11.0.20(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.0.20)
@@ -316,8 +316,8 @@ importers:
         specifier: ^4.17.21
         version: 4.17.21
       mongoose:
-        specifier: ^8.13.2
-        version: 8.13.2(socks@2.8.4)
+        specifier: ^8.14.0
+        version: 8.14.0(socks@2.8.4)
       multiformats:
         specifier: ^13.3.2
         version: 13.3.2
@@ -2964,6 +2964,9 @@ packages:
 
   '@mongodb-js/saslprep@1.2.1':
     resolution: {integrity: sha512-1NCa8GsZ+OFLTw5KkKQS22wLS+Rs+y02sgkhr99Pm4OSXtSDHCJyq0uscPF0qA86ipGYH4PwtC2+a8Y4RKkCcg==}
+
+  '@mongodb-js/saslprep@1.2.2':
+    resolution: {integrity: sha512-EB0O3SCSNRUFk66iRCpI+cXzIjdswfCs7F6nOC3RAGJ7xr5YhaicvsRwJ9eyzYvYRlCSDUO/c7g4yNulxKC1WA==}
 
   '@multiformats/dns@1.0.6':
     resolution: {integrity: sha512-nt/5UqjMPtyvkG9BQYdJ4GfLK3nMqGpFZOzf4hAmIa0sJh2LlS9YKXZ4FgwBDsaHvzZqR/rUFIywIc7pkHNNuw==}
@@ -9783,8 +9786,35 @@ packages:
       socks:
         optional: true
 
-  mongoose@8.13.2:
-    resolution: {integrity: sha512-riCBqZmNkYBWjXpM3qWLDQw7QmTKsVZDPhLXFJqC87+OjocEVpvS3dA2BPPUiLAu+m0/QmEj5pSXKhH+/DgerQ==}
+  mongodb@6.16.0:
+    resolution: {integrity: sha512-D1PNcdT0y4Grhou5Zi/qgipZOYeWrhLEpk33n3nm6LGtz61jvO88WlrWCK/bigMjpnOdAUKKQwsGIl0NtWMyYw==}
+    engines: {node: '>=16.20.1'}
+    peerDependencies:
+      '@aws-sdk/credential-providers': ^3.188.0
+      '@mongodb-js/zstd': ^1.1.0 || ^2.0.0
+      gcp-metadata: ^5.2.0
+      kerberos: ^2.0.1
+      mongodb-client-encryption: '>=6.0.0 <7'
+      snappy: ^7.2.2
+      socks: ^2.7.1
+    peerDependenciesMeta:
+      '@aws-sdk/credential-providers':
+        optional: true
+      '@mongodb-js/zstd':
+        optional: true
+      gcp-metadata:
+        optional: true
+      kerberos:
+        optional: true
+      mongodb-client-encryption:
+        optional: true
+      snappy:
+        optional: true
+      socks:
+        optional: true
+
+  mongoose@8.14.0:
+    resolution: {integrity: sha512-IxDxIUu42apE7oEknJK535xkQ6Gd7GKx/gNrNHY+vP4+ucVU2TOCWjVVW14Vc79y9DEEElzHDlTOuVNM8glUFA==}
     engines: {node: '>=16.20.1'}
 
   mortice@3.0.6:
@@ -12408,8 +12438,8 @@ packages:
   tr46@0.0.3:
     resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
 
-  tr46@5.1.0:
-    resolution: {integrity: sha512-IUWnUK7ADYR5Sl1fZlO1INDUhVhatWl7BtJWsIhwJ0UAK7ilzzIa8uIqOO/aYVWHZPJkKbEL+362wrzoeRF7bw==}
+  tr46@5.1.1:
+    resolution: {integrity: sha512-hdF5ZgjTqgAntKkklYw0R03MG2x/bSzTtkxmIRw/sTNV8YXsCJ1tfLAX23lhxhHJlEf3CRCOCGGWw3vI3GaSPw==}
     engines: {node: '>=18'}
 
   tree-kill@1.2.2:
@@ -17393,6 +17423,10 @@ snapshots:
     dependencies:
       sparse-bitfield: 3.0.3
 
+  '@mongodb-js/saslprep@1.2.2':
+    dependencies:
+      sparse-bitfield: 3.0.3
+
   '@multiformats/dns@1.0.6':
     dependencies:
       '@types/dns-packet': 5.6.5
@@ -17516,11 +17550,11 @@ snapshots:
       class-transformer: 0.5.1
       class-validator: 0.14.1
 
-  '@nestjs/mongoose@11.0.3(@nestjs/common@11.0.20(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.0.20)(mongoose@8.13.2(socks@2.8.4))(rxjs@7.8.2)':
+  '@nestjs/mongoose@11.0.3(@nestjs/common@11.0.20(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.0.20)(mongoose@8.14.0(socks@2.8.4))(rxjs@7.8.2)':
     dependencies:
       '@nestjs/common': 11.0.20(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core': 11.0.20(@nestjs/common@11.0.20(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.0.20)(@nestjs/websockets@11.0.20)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      mongoose: 8.13.2(socks@2.8.4)
+      mongoose: 8.14.0(socks@2.8.4)
       rxjs: 7.8.2
 
   '@nestjs/platform-express@11.0.20(@nestjs/common@11.0.20(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.0.20)':
@@ -26374,11 +26408,19 @@ snapshots:
     optionalDependencies:
       socks: 2.8.4
 
-  mongoose@8.13.2(socks@2.8.4):
+  mongodb@6.16.0(socks@2.8.4):
+    dependencies:
+      '@mongodb-js/saslprep': 1.2.2
+      bson: 6.10.3
+      mongodb-connection-string-url: 3.0.2
+    optionalDependencies:
+      socks: 2.8.4
+
+  mongoose@8.14.0(socks@2.8.4):
     dependencies:
       bson: 6.10.3
       kareem: 2.6.3
-      mongodb: 6.15.0(socks@2.8.4)
+      mongodb: 6.16.0(socks@2.8.4)
       mpath: 0.9.0
       mquery: 5.0.0
       ms: 2.1.3
@@ -29616,7 +29658,7 @@ snapshots:
 
   tr46@0.0.3: {}
 
-  tr46@5.1.0:
+  tr46@5.1.1:
     dependencies:
       punycode: 2.3.1
 
@@ -30493,7 +30535,7 @@ snapshots:
 
   whatwg-url@14.2.0:
     dependencies:
-      tr46: 5.1.0
+      tr46: 5.1.1
       webidl-conversions: 7.0.0
 
   whatwg-url@5.0.0:
