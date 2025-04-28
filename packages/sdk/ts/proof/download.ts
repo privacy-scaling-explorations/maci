@@ -1,11 +1,6 @@
-import type { IPollJoiningArtifacts } from "./types";
+import type { IDownloadPollJoiningArtifactsBrowserArgs, IPollJoiningArtifacts } from "./types";
 
-import {
-  pollJoiningWasmProductionUrl,
-  pollJoiningWasmTestingUrl,
-  pollJoiningZkeyProductionUrl,
-  pollJoiningZkeyTestingUrl,
-} from "./constants";
+import { getPollJoiningArtifactsUrl } from "./utils";
 
 /**
  * Read the chunks of a response
@@ -45,14 +40,16 @@ const readChunks = async (reader: ReadableStreamDefaultReader<Uint8Array>): Prom
 /**
  * Download the poll joining artifacts for the browser
  *
- * @param testing - Whether to download the testing artifacts
+ * @param args - The arguments to download the poll joining artifacts for the browser
  * @returns The poll joining artifacts
  */
-export const downloadPollJoiningArtifactsBrowser = async (testing = false): Promise<IPollJoiningArtifacts> => {
-  const [zKeyResponse, wasmResponse] = await Promise.all([
-    fetch(testing ? pollJoiningZkeyTestingUrl : pollJoiningZkeyProductionUrl),
-    fetch(testing ? pollJoiningWasmTestingUrl : pollJoiningWasmProductionUrl),
-  ]);
+export const downloadPollJoiningArtifactsBrowser = async ({
+  testing = false,
+  stateTreeDepth,
+}: IDownloadPollJoiningArtifactsBrowserArgs): Promise<IPollJoiningArtifacts> => {
+  const { zKeyUrl, wasmUrl } = getPollJoiningArtifactsUrl(testing, stateTreeDepth);
+
+  const [zKeyResponse, wasmResponse] = await Promise.all([fetch(zKeyUrl), fetch(wasmUrl)]);
 
   const zKeyReader = zKeyResponse.body?.getReader();
   const wasmReader = wasmResponse.body?.getReader();

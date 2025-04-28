@@ -14,6 +14,7 @@ import {
   deployVerifier,
   deployMaci,
 } from "@maci-protocol/sdk";
+import { downloadPollJoiningArtifactsBrowser, joinPoll as joinPollBrowser } from "@maci-protocol/sdk/browser";
 import { expect } from "chai";
 import { Signer } from "ethers";
 
@@ -40,6 +41,10 @@ describe("joinPoll", function test() {
   const user = new Keypair();
   const userPrivateKey = user.privateKey.serialize();
   const userPublicKey = user.publicKey.serialize();
+
+  const user2 = new Keypair();
+  const user2PrivateKey = user2.privateKey.serialize();
+  const user2PublicKey = user2.publicKey.serialize();
 
   const mockStateIndex = 1n;
   const mockPollId = 9000n;
@@ -95,6 +100,13 @@ describe("joinPoll", function test() {
       signer,
     });
 
+    await signup({
+      maciAddress: maciAddresses.maciContractAddress,
+      maciPublicKey: user2PublicKey,
+      sgData: DEFAULT_SG_DATA,
+      signer,
+    });
+
     // deploy a poll contract
     await deployPoll({
       ...deployPollArgs,
@@ -124,6 +136,39 @@ describe("joinPoll", function test() {
       pollWasm: testPollJoiningWasmPath,
       pollWitgen: testPollJoiningWitnessPath,
       rapidsnark: testRapidsnarkPath,
+      sgDataArg: DEFAULT_SG_DATA,
+      ivcpDataArg: DEFAULT_IVCP_DATA,
+    });
+
+    const registeredUserData = await getJoinedUserData({
+      maciAddress: maciAddresses.maciContractAddress,
+      pollId: 0n,
+      pollPublicKey: user.publicKey.serialize(),
+      signer,
+      startBlock: startBlock || 0,
+    });
+
+    expect(registeredUserData.isJoined).to.eq(true);
+    expect(BigInt(registeredUserData.pollStateIndex!)).to.eq(1);
+  });
+
+  it("should allow to join the poll and return the user data using a downloaded zKey", async () => {
+    const startBlock = await signer.provider?.getBlockNumber();
+
+    const { zKey, wasm } = await downloadPollJoiningArtifactsBrowser({
+      testing: true,
+      stateTreeDepth: 10,
+    });
+
+    await joinPollBrowser({
+      maciAddress: maciAddresses.maciContractAddress,
+      privateKey: user2PrivateKey,
+      stateIndex: 2n,
+      signer,
+      pollId: 0n,
+      pollJoiningZkey: zKey as unknown as string,
+      useWasm: true,
+      pollWasm: wasm as unknown as string,
       sgDataArg: DEFAULT_SG_DATA,
       ivcpDataArg: DEFAULT_IVCP_DATA,
     });

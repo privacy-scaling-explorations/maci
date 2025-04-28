@@ -208,3 +208,33 @@ export interface IPollJoiningArtifacts {
    */
   wasm: Uint8Array;
 }
+
+/**
+ * The url of the poll joining artifacts
+ */
+export interface IPollJoiningArtifactsUrl {
+  /**
+   * The url of the poll joining zkey
+   */
+  zKeyUrl: string;
+
+  /**
+   * The url of the poll joining wasm
+   */
+  wasmUrl: string;
+}
+
+/**
+ * The arguments to download the poll joining artifacts for the browser
+ */
+export interface IDownloadPollJoiningArtifactsBrowserArgs {
+  /**
+   * The depth of the state tree
+   */
+  stateTreeDepth: number;
+
+  /**
+   * Whether to download the testing artifacts
+   */
+  testing?: boolean;
+}
