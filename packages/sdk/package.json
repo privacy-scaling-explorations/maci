@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "@zk-kit/lean-imt": "^2.2.3",
-    "ethers": "^6.13.4",
+    "ethers": "^6.13.7",
     "@maci-protocol/contracts": "^3.0.0",
     "@maci-protocol/core": "^3.0.0",
     "@maci-protocol/crypto": "^3.0.0",
