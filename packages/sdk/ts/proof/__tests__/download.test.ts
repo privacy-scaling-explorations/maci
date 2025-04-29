@@ -33,7 +33,10 @@ const inputs = {
 
 describe("downloadPollJoiningArtifactsBrowser", () => {
   it("should allow to generate a proof using the downloaded artifacts", async () => {
-    const { zKey, wasm } = await downloadPollJoiningArtifactsBrowser(true);
+    const { zKey, wasm } = await downloadPollJoiningArtifactsBrowser({
+      testing: true,
+      stateTreeDepth: 10,
+    });
 
     expect(zKey).toBeDefined();
     expect(wasm).toBeDefined();

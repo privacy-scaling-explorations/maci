@@ -3,6 +3,6 @@
   "compilerOptions": {
     "outDir": "./build"
   },
-  "include": ["./ts"],
+  "include": ["./ts", "./ts/__tests__"],
   "files": ["./hardhat.config.ts"]
 }
