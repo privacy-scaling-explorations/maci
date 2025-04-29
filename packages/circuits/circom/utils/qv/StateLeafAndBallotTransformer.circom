@@ -47,9 +47,9 @@ template StateLeafAndBallotTransformer() {
     signal input commandPollId;
     // Salt.
     signal input commandSalt;
-    // ECDSA signature of the command (R part).
+    // EdDSA signature of the command (R part).
     signal input commandSignaturePoint[2];
-    // ECDSA signature of the command (S part).
+    // EdDSA signature of the command (S part).
     signal input commandSignatureScalar;
     // Packed command. 
     // nb. we are assuming that the packedCommand is always valid.
@@ -68,7 +68,7 @@ template StateLeafAndBallotTransformer() {
     signal output isVoteOptionIndexValid;
 
     // Check if the command / message is valid.
-    var (computedMessageValidator, computedIsStateLeafIndexValid, computedIsVoteOptionIndexValid) = MessageValidator()(
+    var (computedIsValid, computedIsStateLeafIndexValid, computedIsVoteOptionIndexValid) = MessageValidator()(
         commandStateIndex,
         totalSignups,
         commandVoteOptionIndex,
@@ -87,19 +87,19 @@ template StateLeafAndBallotTransformer() {
     // If the message is valid then we swap out the public key.
     // This means using a Mux1() for publicKey[0] and another one
     // for publicKey[1].
-    var computedNewstateLeafPublicKey0Mux = Mux1()([stateLeafPublicKey[0], commandPublicKey[0]], computedMessageValidator);
-    var computedNewstateLeafPublicKey1Mux = Mux1()([stateLeafPublicKey[1], commandPublicKey[1]], computedMessageValidator);
+    var computedNewstateLeafPublicKey0Mux = Mux1()([stateLeafPublicKey[0], commandPublicKey[0]], computedIsValid);
+    var computedNewstateLeafPublicKey1Mux = Mux1()([stateLeafPublicKey[1], commandPublicKey[1]], computedIsValid);
 
     newStateLeafPublicKey[0] <== computedNewstateLeafPublicKey0Mux;
     newStateLeafPublicKey[1] <== computedNewstateLeafPublicKey1Mux;
 
     // If the message is valid, then we swap out the ballot nonce
     // using a Mux1().
-    var computedNewBallotNonceMux = Mux1()([ballotNonce, commandNonce], computedMessageValidator);
+    var computedNewBallotNonceMux = Mux1()([ballotNonce, commandNonce], computedIsValid);
 
     newBallotNonce <== computedNewBallotNonceMux;
 
-    isValid <== computedMessageValidator;
+    isValid <== computedIsValid;
     isStateLeafIndexValid <== computedIsStateLeafIndexValid;
     isVoteOptionIndexValid <== computedIsVoteOptionIndexValid;
 }

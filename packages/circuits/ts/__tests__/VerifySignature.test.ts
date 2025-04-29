@@ -1,5 +1,5 @@
 import { verifySignature, hash4 } from "@maci-protocol/crypto";
-import { Keypair, PCommand } from "@maci-protocol/domainobjs";
+import { Keypair, VoteCommand } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
 
@@ -19,7 +19,7 @@ describe("Signature verification circuit", function test() {
 
   it("should verify a valid signature", async () => {
     const keypair = new Keypair();
-    const command = new PCommand(
+    const command = new VoteCommand(
       BigInt(0),
       keypair.publicKey,
       BigInt(123),
@@ -50,7 +50,7 @@ describe("Signature verification circuit", function test() {
 
   it("should reject an invalid signature (wrong signer)", async () => {
     const keypair = new Keypair();
-    const command = new PCommand(
+    const command = new VoteCommand(
       BigInt(0),
       keypair.publicKey,
       BigInt(123),
@@ -90,7 +90,7 @@ describe("Signature verification circuit", function test() {
 
   it("should reject an invalid signature (wrong S)", async () => {
     const keypair = new Keypair();
-    const command = new PCommand(
+    const command = new VoteCommand(
       BigInt(0),
       keypair.publicKey,
       BigInt(123),

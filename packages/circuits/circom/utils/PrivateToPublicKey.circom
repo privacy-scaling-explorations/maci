@@ -29,10 +29,10 @@ template PrivateToPublicKey() {
     isLessThan === 1;
 
     // Convert the private key to bits.
-    var computedPrivBits[253] = Num2Bits(253)(privateKey);
+    var computedPrivateBits[253] = Num2Bits(253)(privateKey);
 
     // Perform scalar multiplication with the basepoint.
-    var computedEscalarMulFix[2] = EscalarMulFix(253, BASE8)(computedPrivBits);
+    var computedPublicKey[2] = EscalarMulFix(253, BASE8)(computedPrivateBits);
 
-    publicKey <== computedEscalarMulFix;
+    publicKey <== computedPublicKey;
 }

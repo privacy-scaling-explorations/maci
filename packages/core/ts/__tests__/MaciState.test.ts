@@ -1,4 +1,4 @@
-import { PCommand, Message, Keypair } from "@maci-protocol/domainobjs";
+import { VoteCommand, Message, Keypair } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 
 import fs from "fs";
@@ -34,7 +34,7 @@ describe("MaciState", function test() {
         coordinatorKeypair,
         maxVoteOptions,
       );
-      const command = new PCommand(0n, userKeypair.publicKey, 0n, 0n, 0n, BigInt(pollId), 0n);
+      const command = new VoteCommand(0n, userKeypair.publicKey, 0n, 0n, 0n, BigInt(pollId), 0n);
 
       const encKeypair = new Keypair();
       const signature = command.sign(encKeypair.privateKey);

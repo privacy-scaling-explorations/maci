@@ -1189,7 +1189,7 @@
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": "Ka6q_sOFuLWnYbQS69ZUD",
-      "originalText": "currentPerVOSpentVoiceCredits",
+      "originalText": "currentPerVoteOptionSpentVoiceCredits",
       "lineHeight": 1.25,
       "baseline": 43
     },
@@ -1259,7 +1259,7 @@
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": "FFbwZ9KFPAsGY6MsR7hzw",
-      "originalText": "currentPerVOSpentVoiceCreditsRootSalt",
+      "originalText": "currentPerVoteOptionSpentVoiceCreditsRootSalt",
       "lineHeight": 1.25,
       "baseline": 43
     },
@@ -1399,7 +1399,7 @@
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": "P8MkdLX2TZ0mzOyGUENvn",
-      "originalText": "newPerVOSpentVoiceCreditsRootSalt",
+      "originalText": "newPerVoteOptionSpentVoiceCreditsRootSalt",
       "lineHeight": 1.25,
       "baseline": 43
     },
@@ -9103,7 +9103,7 @@
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": "YmzPJYWprUZQljBOVqXpA",
-      "originalText": "currentPerVOSpentVoiceCredits (array of len 5 ** voteOptionTreeDepth)",
+      "originalText": "currentPerVoteOptionSpentVoiceCredits (array of len 5 ** voteOptionTreeDepth)",
       "lineHeight": 1.25,
       "baseline": 93
     },
@@ -9173,7 +9173,7 @@
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": "RhVKxQeKIVq3XFFbQdqOz",
-      "originalText": "currentPerVOSpentVoiceCreditsRootSalt",
+      "originalText": "currentPerVoteOptionSpentVoiceCreditsRootSalt",
       "lineHeight": 1.25,
       "baseline": 43
     },
@@ -9243,7 +9243,7 @@
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": "xJQ2p5b5ivfhgaFnfz4zB",
-      "originalText": "newPerVOSpentVoiceCreditsRootSalt",
+      "originalText": "newPerVoteOptionSpentVoiceCreditsRootSalt",
       "lineHeight": 1.25,
       "baseline": 43
     },
@@ -9313,7 +9313,7 @@
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": "0HQ9uPXuwUodD7cUlnZvz",
-      "originalText": "newPerVOSpentVoiceCredits (array of len 5 ** voteOptionTreeDepth)",
+      "originalText": "newPerVoteOptionSpentVoiceCredits (array of len 5 ** voteOptionTreeDepth)",
       "lineHeight": 1.25,
       "baseline": 68
     },
@@ -9891,7 +9891,7 @@
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": "UH_pzDK5btI67K5tIpJcD",
-      "originalText": "use QuinCheckRoot and pass all items in currentPerVOSpentVoiceCredits",
+      "originalText": "use QuinCheckRoot and pass all items in currentPerVoteOptionSpentVoiceCredits",
       "lineHeight": 1.25,
       "baseline": 93
     },
@@ -11107,7 +11107,7 @@
       "textAlign": "center",
       "verticalAlign": "middle",
       "containerId": "7r_7R5GsIuz_WZCd0FXJ-",
-      "originalText": "use QuinCheckRoot and pass all items in currentPerVOSpentVoiceCredits",
+      "originalText": "use QuinCheckRoot and pass all items in currentPerVoteOptionSpentVoiceCredits",
       "lineHeight": 1.25,
       "baseline": 93
     },

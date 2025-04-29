@@ -21,7 +21,7 @@ import { Message } from "../message";
 import { PublicKey } from "../publicKey";
 
 export interface IDecryptMessage {
-  command: PCommand;
+  command: VoteCommand;
   signature: Signature;
 }
 
@@ -29,7 +29,7 @@ export interface IDecryptMessage {
  * @notice Unencrypted data whose fields include the user's public key, vote etc.
  * This represents a Vote command.
  */
-export class PCommand {
+export class VoteCommand {
   stateIndex: bigint;
 
   newPublicKey: PublicKey;
@@ -45,7 +45,7 @@ export class PCommand {
   salt: bigint;
 
   /**
-   * Create a new PCommand
+   * Create a new VoteCommand
    * @param stateIndex the state index of the user
    * @param newPublicKey the new public key of the user
    * @param voteOptionIndex the index of the vote option
@@ -80,11 +80,11 @@ export class PCommand {
   }
 
   /**
-   * Create a deep clone of this PCommand
-   * @returns a copy of the PCommand
+   * Create a deep clone of this VoteCommand
+   * @returns a copy of the VoteCommand
    */
-  copy = <T extends PCommand>(): T =>
-    new PCommand(
+  copy = <T extends VoteCommand>(): T =>
+    new VoteCommand(
       BigInt(this.stateIndex.toString()),
       this.newPublicKey.copy(),
       BigInt(this.voteOptionIndex.toString()),
@@ -121,7 +121,7 @@ export class PCommand {
   /*
    * Check whether this command has deep equivalence to another command
    */
-  equals = (command: PCommand): boolean =>
+  equals = (command: VoteCommand): boolean =>
     this.stateIndex === command.stateIndex &&
     this.newPublicKey.equals(command.newPublicKey) &&
     this.voteOptionIndex === command.voteOptionIndex &&
@@ -208,7 +208,7 @@ export class PCommand {
     const newPublicKey = new PublicKey([decrypted[1], decrypted[2]], true);
     const salt = decrypted[3];
 
-    const command = new PCommand(stateIndex, newPublicKey, voteOptionIndex, newVoteWeight, nonce, pollId, salt);
+    const command = new VoteCommand(stateIndex, newPublicKey, voteOptionIndex, newVoteWeight, nonce, pollId, salt);
 
     const signature = {
       R8: [decrypted[4], decrypted[5]] as Point,
@@ -234,12 +234,12 @@ export class PCommand {
   }
 
   /**
-   * Deserialize into a PCommand instance
+   * Deserialize into a VoteCommand instance
    * @param json
-   * @returns a PCommand instance
+   * @returns a VoteCommand instance
    */
-  static fromJSON(json: IJsonPCommand): PCommand {
-    const command = new PCommand(
+  static fromJSON(json: IJsonPCommand): VoteCommand {
+    const command = new VoteCommand(
       BigInt(json.stateIndex),
       PublicKey.deserialize(json.newPublicKey),
       BigInt(json.voteOptionIndex),

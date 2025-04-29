@@ -9,7 +9,7 @@ import type {
   IJsonStateLeaf,
   Keypair,
   Message,
-  PCommand,
+  VoteCommand,
   PrivateKey,
   PublicKey,
   StateLeaf,
@@ -135,7 +135,7 @@ export interface IProcessMessagesOutput {
   newBallot?: Ballot;
   originalBallot?: Ballot;
   originalBallotPathElements?: PathElements;
-  command?: PCommand;
+  command?: VoteCommand;
 }
 
 /**
@@ -233,9 +233,9 @@ export interface ITallyCircuitInputs {
   currentResultsRootSalt: string;
   currentSpentVoiceCreditSubtotal: string;
   currentSpentVoiceCreditSubtotalSalt: string;
-  currentPerVOSpentVoiceCredits?: string[];
-  currentPerVOSpentVoiceCreditsRootSalt?: string;
+  currentPerVoteOptionSpentVoiceCredits?: string[];
+  currentPerVoteOptionSpentVoiceCreditsRootSalt?: string;
   newResultsRootSalt: string;
-  newPerVOSpentVoiceCreditsRootSalt?: string;
+  newPerVoteOptionSpentVoiceCreditsRootSalt?: string;
   newSpentVoiceCreditSubtotalSalt: string;
 }

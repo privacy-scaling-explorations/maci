@@ -132,16 +132,16 @@ template TallyVotesNonQv(
     }
 
     // Tally the new spent voice credit total.
-    var computedNumsSVC[batchSize * totalVoteOptions + 1];
-    computedNumsSVC[batchSize * totalVoteOptions] = currentSpentVoiceCreditSubtotal * computedIsZero;
+    var computedTotalVoiceCreditSpent[batchSize * totalVoteOptions + 1];
+    computedTotalVoiceCreditSpent[batchSize * totalVoteOptions] = currentSpentVoiceCreditSubtotal * computedIsZero;
 
     for (var i = 0; i < batchSize; i++) {
         for (var j = 0; j < totalVoteOptions; j++) {
-            computedNumsSVC[i * totalVoteOptions + j] = votes[i][j];
+            computedTotalVoiceCreditSpent[i * totalVoteOptions + j] = votes[i][j];
         }
     }
 
-    var computedNewSpentVoiceCreditSubtotal = CalculateTotal(batchSize * totalVoteOptions + 1)(computedNumsSVC);
+    var computedNewSpentVoiceCreditSubtotal = CalculateTotal(batchSize * totalVoteOptions + 1)(computedTotalVoiceCreditSpent);
 
     // Verifies the updated results and spent credits, ensuring consistency and correctness of tally updates.
     ResultCommitmentVerifierNonQv(voteOptionTreeDepth)(

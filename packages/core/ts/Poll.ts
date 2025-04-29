@@ -13,7 +13,7 @@ import {
   hashLeanIMT,
 } from "@maci-protocol/crypto";
 import {
-  PCommand,
+  VoteCommand,
   Keypair,
   Ballot,
   PublicKey,
@@ -76,7 +76,7 @@ export class Poll implements IPoll {
 
   messages: Message[] = [];
 
-  commands: PCommand[] = [];
+  commands: VoteCommand[] = [];
 
   encryptionPublicKeys: PublicKey[] = [];
 
@@ -221,7 +221,7 @@ export class Poll implements IPoll {
     // Copy the state tree, ballot tree, state leaves, and ballot leaves
 
     // start by setting the number of signups
-    this.settotalSignups(totalSignups);
+    this.setTotalSignups(totalSignups);
     // copy up to totalSignups state leaves
     this.publicKeys = this.maciStateRef.publicKeys.slice(0, Number(this.totalSignups)).map((x) => x.copy());
     // ensure we have the correct actual state tree depth value
@@ -276,7 +276,7 @@ export class Poll implements IPoll {
       // Decrypt the message
       const sharedKey = Keypair.generateEcdhSharedKey(this.coordinatorKeypair.privateKey, encryptionPublicKey);
 
-      const { command, signature } = PCommand.decrypt(message, sharedKey);
+      const { command, signature } = VoteCommand.decrypt(message, sharedKey);
 
       const stateLeafIndex = command.stateIndex;
 
@@ -349,18 +349,19 @@ export class Poll implements IPoll {
       // calculate the path elements for the state tree given the original state tree (before any changes)
       // changes could effectively be made by this new vote - either a key change or vote change
       // would result in a different state leaf
-      const originalStateLeafPathElements = this.pollStateTree?.genProof(Number(stateLeafIndex)).pathElements;
+      const { pathElements: originalStateLeafPathElements } = this.pollStateTree!.genProof(Number(stateLeafIndex));
       // calculate the path elements for the ballot tree given the original ballot tree (before any changes)
       // changes could effectively be made by this new ballot
-      const originalBallotPathElements = this.ballotTree?.genProof(Number(stateLeafIndex)).pathElements;
+      const { pathElements: originalBallotPathElements } = this.ballotTree!.genProof(Number(stateLeafIndex));
 
       // create a new quinary tree where we insert the votes of the origin (up until this message is processed) ballot
-      const vt = new IncrementalQuinTree(this.treeDepths.voteOptionTreeDepth, 0n, VOTE_OPTION_TREE_ARITY, hash5);
+      const voteTree = new IncrementalQuinTree(this.treeDepths.voteOptionTreeDepth, 0n, VOTE_OPTION_TREE_ARITY, hash5);
+
       for (let i = 0; i < this.ballots[0].votes.length; i += 1) {
-        vt.insert(ballot.votes[i]);
+        voteTree.insert(ballot.votes[i]);
       }
       // calculate the path elements for the vote option tree given the original vote option tree (before any changes)
-      const originalVoteWeightsPathElements = vt.genProof(voteOptionIndex).pathElements;
+      const { pathElements: originalVoteWeightsPathElements } = voteTree.genProof(voteOptionIndex);
       // we return the data which is then to be used in the processMessage circuit
       // to generate a proof of processing
       return {
@@ -414,13 +415,13 @@ export class Poll implements IPoll {
     const sharedKey = Keypair.generateEcdhSharedKey(this.coordinatorKeypair.privateKey, encryptionPublicKey);
     try {
       // step 2. we decrypt it
-      const { command } = PCommand.decrypt(message, sharedKey);
+      const { command } = VoteCommand.decrypt(message, sharedKey);
       // step 3. we store it in the commands array
       this.commands.push(command);
     } catch (e) {
       // if there is an error we store an empty command
-      const keyPair = new Keypair();
-      const command = new PCommand(0n, keyPair.publicKey, 0n, 0n, 0n, 0n, 0n);
+      const keypair = new Keypair();
+      const command = new VoteCommand(0n, keypair.publicKey, 0n, 0n, 0n, 0n, 0n);
       this.commands.push(command);
     }
   };
@@ -631,27 +632,37 @@ export class Poll implements IPoll {
 
         try {
           // check if the command is valid
-          const r = this.processMessage(message, encryptionPublicKey, qv);
-          const index = r.stateLeafIndex!;
+          const {
+            stateLeafIndex,
+            originalStateLeaf,
+            originalBallot,
+            originalVoteWeight,
+            originalVoteWeightsPathElements,
+            originalStateLeafPathElements,
+            originalBallotPathElements,
+            newStateLeaf,
+            newBallot,
+          } = this.processMessage(message, encryptionPublicKey, qv);
+          const index = stateLeafIndex!;
 
           // we add at position 0 the original data
-          currentStateLeaves.unshift(r.originalStateLeaf!);
-          currentBallots.unshift(r.originalBallot!);
-          currentVoteWeights.unshift(r.originalVoteWeight!);
-          currentVoteWeightsPathElements.unshift(r.originalVoteWeightsPathElements!);
-          currentStateLeavesPathElements.unshift(r.originalStateLeafPathElements!);
-          currentBallotsPathElements.unshift(r.originalBallotPathElements!);
+          currentStateLeaves.unshift(originalStateLeaf!);
+          currentBallots.unshift(originalBallot!);
+          currentVoteWeights.unshift(originalVoteWeight!);
+          currentVoteWeightsPathElements.unshift(originalVoteWeightsPathElements!);
+          currentStateLeavesPathElements.unshift(originalStateLeafPathElements!);
+          currentBallotsPathElements.unshift(originalBallotPathElements!);
 
           // update the state leaves with the new state leaf (result of processing the message)
-          this.pollStateLeaves[index] = r.newStateLeaf!.copy();
+          this.pollStateLeaves[index] = newStateLeaf!.copy();
 
           // we also update the state tree with the hash of the new state leaf
-          this.pollStateTree?.update(index, r.newStateLeaf!.hash());
+          this.pollStateTree?.update(index, newStateLeaf!.hash());
 
           // store the new ballot
-          this.ballots[index] = r.newBallot!;
+          this.ballots[index] = newBallot!;
           // update the ballot tree
-          this.ballotTree?.update(index, r.newBallot!.hash());
+          this.ballotTree?.update(index, newBallot!.hash());
         } catch (e) {
           // if the error is not a ProcessMessageError we throw it and exit here
           // otherwise we continue processing but add the default blank data instead of
@@ -675,7 +686,7 @@ export class Poll implements IPoll {
             const sharedKey = Keypair.generateEcdhSharedKey(this.coordinatorKeypair.privateKey, encryptionPublicKey);
 
             // force decrypt it
-            const { command } = PCommand.decrypt(message, sharedKey, true);
+            const { command } = VoteCommand.decrypt(message, sharedKey, true);
 
             // cache state leaf index
             const stateLeafIndex = command.stateIndex;
@@ -698,7 +709,7 @@ export class Poll implements IPoll {
                 currentVoteWeights.unshift(ballot.votes[Number(command.voteOptionIndex)]);
 
                 // create a new quinary tree and add all votes we have so far
-                const vt = new IncrementalQuinTree(
+                const voteTree = new IncrementalQuinTree(
                   this.treeDepths.voteOptionTreeDepth,
                   0n,
                   VOTE_OPTION_TREE_ARITY,
@@ -707,16 +718,16 @@ export class Poll implements IPoll {
 
                 // fill the vote option tree with the votes we have so far
                 for (let j = 0; j < this.ballots[0].votes.length; j += 1) {
-                  vt.insert(ballot.votes[j]);
+                  voteTree.insert(ballot.votes[j]);
                 }
 
                 // get the path elements for the first vote leaf
-                currentVoteWeightsPathElements.unshift(vt.genProof(Number(command.voteOptionIndex)).pathElements);
+                currentVoteWeightsPathElements.unshift(voteTree.genProof(Number(command.voteOptionIndex)).pathElements);
               } else {
                 currentVoteWeights.unshift(ballot.votes[0]);
 
                 // create a new quinary tree and add all votes we have so far
-                const vt = new IncrementalQuinTree(
+                const voteTree = new IncrementalQuinTree(
                   this.treeDepths.voteOptionTreeDepth,
                   0n,
                   VOTE_OPTION_TREE_ARITY,
@@ -725,11 +736,11 @@ export class Poll implements IPoll {
 
                 // fill the vote option tree with the votes we have so far
                 for (let j = 0; j < this.ballots[0].votes.length; j += 1) {
-                  vt.insert(ballot.votes[j]);
+                  voteTree.insert(ballot.votes[j]);
                 }
 
                 // get the path elements for the first vote leaf
-                currentVoteWeightsPathElements.unshift(vt.genProof(0).pathElements);
+                currentVoteWeightsPathElements.unshift(voteTree.genProof(0).pathElements);
               }
             } else {
               // just use state leaf index 0
@@ -742,15 +753,15 @@ export class Poll implements IPoll {
               currentVoteWeights.unshift(this.ballots[0].votes[0]);
 
               // create a new quinary tree and add an empty vote
-              const vt = new IncrementalQuinTree(
+              const voteTree = new IncrementalQuinTree(
                 this.treeDepths.voteOptionTreeDepth,
                 0n,
                 VOTE_OPTION_TREE_ARITY,
                 hash5,
               );
-              vt.insert(this.ballots[0].votes[0]);
+              voteTree.insert(this.ballots[0].votes[0]);
               // get the path elements for this empty vote weight leaf
-              currentVoteWeightsPathElements.unshift(vt.genProof(0).pathElements);
+              currentVoteWeightsPathElements.unshift(voteTree.genProof(0).pathElements);
             }
           } else {
             throw e;
@@ -768,11 +779,16 @@ export class Poll implements IPoll {
         currentVoteWeights.unshift(this.ballots[0].votes[0]);
 
         // create a new quinary tree and add an empty vote
-        const vt = new IncrementalQuinTree(this.treeDepths.voteOptionTreeDepth, 0n, VOTE_OPTION_TREE_ARITY, hash5);
-        vt.insert(this.ballots[0].votes[0]);
+        const voteTree = new IncrementalQuinTree(
+          this.treeDepths.voteOptionTreeDepth,
+          0n,
+          VOTE_OPTION_TREE_ARITY,
+          hash5,
+        );
+        voteTree.insert(this.ballots[0].votes[0]);
 
         // get the path elements for this empty vote weight leaf
-        currentVoteWeightsPathElements.unshift(vt.genProof(0).pathElements);
+        currentVoteWeightsPathElements.unshift(voteTree.genProof(0).pathElements);
       }
     }
 
@@ -852,21 +868,22 @@ export class Poll implements IPoll {
     // generate ecdh key
     const ecdh = Keypair.generateEcdhSharedKey(key.privateKey, this.coordinatorKeypair.publicKey);
     // create an empty command with state index 0n
-    const emptyCommand = new PCommand(0n, key.publicKey, 0n, 0n, 0n, 0n, 0n);
+    const emptyCommand = new VoteCommand(0n, key.publicKey, 0n, 0n, 0n, 0n, 0n);
 
     // encrypt it
-    const msg = emptyCommand.encrypt(emptyCommand.sign(key.privateKey), ecdh);
+    const emptyMessage = emptyCommand.encrypt(emptyCommand.sign(key.privateKey), ecdh);
 
     // copy the messages to a new array
     let messages = this.messages.map((x) => x.asCircuitInputs());
 
     // pad with our state index 0 message
     while (messages.length % messageBatchSize > 0) {
-      messages.push(msg.asCircuitInputs());
+      messages.push(emptyMessage.asCircuitInputs());
     }
 
     // copy the public keys, pad the array with the last keys if needed
     let encryptionPublicKeys = this.encryptionPublicKeys.map((x) => x.copy());
+
     while (encryptionPublicKeys.length % messageBatchSize > 0) {
       // pad with the public key used to encrypt the message with state index 0 (padding)
       encryptionPublicKeys.push(key.publicKey.copy());
@@ -963,7 +980,7 @@ export class Poll implements IPoll {
     // get the salts needed for the commitments
     const currentResultsRootSalt = batchStartIndex === 0 ? 0n : this.resultRootSalts[batchStartIndex - batchSize];
 
-    const currentPerVOSpentVoiceCreditsRootSalt =
+    const currentPerVoteOptionSpentVoiceCreditsRootSalt =
       batchStartIndex === 0 ? 0n : this.preVOSpentVoiceCreditsRootSalts[batchStartIndex - batchSize];
 
     const currentSpentVoiceCreditSubtotalSalt =
@@ -978,7 +995,7 @@ export class Poll implements IPoll {
 
     // generate a commitment to the current per vote option spent voice credits
     const currentPerVOSpentVoiceCreditsCommitment = this.genPerVOSpentVoiceCreditsCommitment(
-      currentPerVOSpentVoiceCreditsRootSalt,
+      currentPerVoteOptionSpentVoiceCreditsRootSalt,
       batchStartIndex,
       true,
     );
@@ -1008,7 +1025,7 @@ export class Poll implements IPoll {
 
     const ballots: Ballot[] = [];
     const currentResults = this.tallyResult.map((x) => BigInt(x.toString()));
-    const currentPerVOSpentVoiceCredits = this.perVoteOptionSpentVoiceCredits.map((x) => BigInt(x.toString()));
+    const currentPerVoteOptionSpentVoiceCredits = this.perVoteOptionSpentVoiceCredits.map((x) => BigInt(x.toString()));
     const currentSpentVoiceCreditSubtotal = BigInt(this.totalSpentVoiceCredits.toString());
 
     // loop in normal order to tally the ballots one by one
@@ -1045,12 +1062,12 @@ export class Poll implements IPoll {
 
     // generate the new salts
     const newResultsRootSalt = generateRandomSalt();
-    const newPerVOSpentVoiceCreditsRootSalt = generateRandomSalt();
+    const newPerVoteOptionSpentVoiceCreditsRootSalt = generateRandomSalt();
     const newSpentVoiceCreditSubtotalSalt = generateRandomSalt();
 
     // and save them to be used in the next batch
     this.resultRootSalts[batchStartIndex] = newResultsRootSalt;
-    this.preVOSpentVoiceCreditsRootSalts[batchStartIndex] = newPerVOSpentVoiceCreditsRootSalt;
+    this.preVOSpentVoiceCreditsRootSalts[batchStartIndex] = newPerVoteOptionSpentVoiceCreditsRootSalt;
     this.spentVoiceCreditSubtotalSalts[batchStartIndex] = newSpentVoiceCreditSubtotalSalt;
 
     // generate the new results commitment with the new salts and data
@@ -1069,7 +1086,7 @@ export class Poll implements IPoll {
 
     // generate the new per vote option spent voice credits commitment with the new salts and data
     const newPerVOSpentVoiceCreditsCommitment = this.genPerVOSpentVoiceCreditsCommitment(
-      newPerVOSpentVoiceCreditsRootSalt,
+      newPerVoteOptionSpentVoiceCreditsRootSalt,
       batchStartIndex + batchSize,
       true,
     );
@@ -1107,10 +1124,10 @@ export class Poll implements IPoll {
       currentResultsRootSalt,
       currentSpentVoiceCreditSubtotal,
       currentSpentVoiceCreditSubtotalSalt,
-      currentPerVOSpentVoiceCredits,
-      currentPerVOSpentVoiceCreditsRootSalt,
+      currentPerVoteOptionSpentVoiceCredits,
+      currentPerVoteOptionSpentVoiceCreditsRootSalt,
       newResultsRootSalt,
-      newPerVOSpentVoiceCreditsRootSalt,
+      newPerVoteOptionSpentVoiceCreditsRootSalt,
       newSpentVoiceCreditSubtotalSalt,
     }) as unknown as ITallyCircuitInputs;
 
@@ -1378,7 +1395,7 @@ export class Poll implements IPoll {
     });
 
     // update the number of signups
-    copied.settotalSignups(this.totalSignups);
+    copied.setTotalSignups(this.totalSignups);
 
     return copied;
   };
@@ -1466,7 +1483,7 @@ export class Poll implements IPoll {
     poll.ballots = json.ballots.map((ballot) => Ballot.fromJSON(ballot));
     poll.encryptionPublicKeys = json.encryptionPublicKeys.map((key: string) => PublicKey.deserialize(key));
     poll.messages = json.messages.map((message) => Message.fromJSON(message as IMessageContractParams));
-    poll.commands = json.commands.map((command: IJsonPCommand) => PCommand.fromJSON(command));
+    poll.commands = json.commands.map((command: IJsonPCommand) => VoteCommand.fromJSON(command));
     poll.tallyResult = json.results.map((result: string) => BigInt(result));
     poll.currentMessageBatchIndex = json.currentMessageBatchIndex;
     poll.numBatchesProcessed = json.numBatchesProcessed;
@@ -1492,7 +1509,7 @@ export class Poll implements IPoll {
    * Set the number of signups to match the ones from the contract
    * @param totalSignups - the number of signups
    */
-  settotalSignups = (totalSignups: bigint): void => {
+  setTotalSignups = (totalSignups: bigint): void => {
     this.totalSignups = totalSignups;
   };
 

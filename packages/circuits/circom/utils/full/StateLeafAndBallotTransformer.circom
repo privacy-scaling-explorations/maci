@@ -9,9 +9,9 @@ include "./MessageValidator.circom";
  * Processes a command by verifying its validity and updates the state leaf and ballot accordingly. 
  * If the message is correct, updates the public key in the state leaf and the nonce 
  * in the ballot using multiplexer components.
- * This template does not support Quadratic Voting (QV).
+ * This template supports the full mode (all credits are spent on one option)
  */
-template StateLeafAndBallotTransformerNonQv() {
+template StateLeafAndBallotTransformerFull() {
     // Length of the packed command.
     var PACKED_COMMAND_LENGTH = 4;
 
@@ -68,7 +68,11 @@ template StateLeafAndBallotTransformerNonQv() {
     signal output isVoteOptionIndexValid;
 
     // Check if the command / message is valid.
-    var (computedIsValid, computedIsStateLeafIndexValid, computedIsVoteOptionIndexValid) = MessageValidatorNonQv()(
+    var (
+        computedIsValid,
+        computedIsStateLeafIndexValid,
+        computedIsVoteOptionIndexValid
+    ) = MessageValidatorFull()(
         commandStateIndex,
         totalSignups,
         commandVoteOptionIndex,
@@ -87,8 +91,21 @@ template StateLeafAndBallotTransformerNonQv() {
     // If the message is valid then we swap out the public key.
     // This means using a Mux1() for publicKey[0] and another one
     // for publicKey[1].
-    var computedNewstateLeafPublicKey0Mux = Mux1()([stateLeafPublicKey[0], commandPublicKey[0]], computedIsValid);
-    var computedNewstateLeafPublicKey1Mux = Mux1()([stateLeafPublicKey[1], commandPublicKey[1]], computedIsValid);
+    var computedNewstateLeafPublicKey0Mux = Mux1()(
+        [
+            stateLeafPublicKey[0],
+            commandPublicKey[0]
+        ],
+        computedIsValid
+    );
+
+    var computedNewstateLeafPublicKey1Mux = Mux1()(
+        [
+            stateLeafPublicKey[1],
+            commandPublicKey[1]
+        ],
+        computedIsValid
+    );
 
     newStateLeafPublicKey[0] <== computedNewstateLeafPublicKey0Mux;
     newStateLeafPublicKey[1] <== computedNewstateLeafPublicKey1Mux;

@@ -1,5 +1,5 @@
 import { hash5, IncrementalQuinTree, poseidon, PAD_KEY_HASH, hashLeanIMT } from "@maci-protocol/crypto";
-import { PCommand, Keypair, blankStateLeafHash } from "@maci-protocol/domainobjs";
+import { VoteCommand, Keypair, blankStateLeafHash } from "@maci-protocol/domainobjs";
 import { LeanIMT, LeanIMTHashFunction } from "@zk-kit/lean-imt";
 import { expect } from "chai";
 
@@ -70,7 +70,7 @@ describe("MaciState/Poll e2e", function test() {
       it("should submit a vote for each user", () => {
         const poll = maciState.polls.get(pollId)!;
         user1StateIndex = poll.joinPoll(nullifier1, pollPublicKey1, voiceCreditBalance);
-        const command1 = new PCommand(
+        const command1 = new VoteCommand(
           BigInt(user1StateIndex),
           pollPublicKey1,
           user1VoteOptionIndex,
@@ -88,7 +88,7 @@ describe("MaciState/Poll e2e", function test() {
         poll.publishMessage(message1, ecdhKeypair1.publicKey);
 
         user2StateIndex = poll.joinPoll(nullifier2, pollPublicKey2, voiceCreditBalance);
-        const command2 = new PCommand(
+        const command2 = new VoteCommand(
           BigInt(user2StateIndex),
           pollPublicKey2,
           user2VoteOptionIndex,
@@ -108,7 +108,7 @@ describe("MaciState/Poll e2e", function test() {
 
       it("user1 sends a keychange message with a new vote", () => {
         const poll = maciState.polls.get(pollId)!;
-        const command = new PCommand(
+        const command = new VoteCommand(
           BigInt(user1StateIndex),
           pollPublicKey3,
           user1VoteOptionIndex,
@@ -168,7 +168,7 @@ describe("MaciState/Poll e2e", function test() {
       });
       it("should submit a vote for each user", () => {
         user1StateIndex = poll.joinPoll(nullifier1, pollPublicKey1, voiceCreditBalance);
-        const command1 = new PCommand(
+        const command1 = new VoteCommand(
           BigInt(user1StateIndex),
           pollPublicKey1,
           user1VoteOptionIndex,
@@ -186,7 +186,7 @@ describe("MaciState/Poll e2e", function test() {
         poll.publishMessage(message1, ecdhKeypair1.publicKey);
 
         user2StateIndex = poll.joinPoll(nullifier2, pollPublicKey2, voiceCreditBalance);
-        const command2 = new PCommand(
+        const command2 = new VoteCommand(
           BigInt(user2StateIndex),
           pollPublicKey2,
           user2VoteOptionIndex,
@@ -205,7 +205,7 @@ describe("MaciState/Poll e2e", function test() {
       });
 
       it("user1 sends a keychange message with a new vote", () => {
-        const command = new PCommand(
+        const command = new VoteCommand(
           BigInt(user1StateIndex),
           pollPublicKey3,
           user1VoteOptionIndex,
@@ -224,7 +224,7 @@ describe("MaciState/Poll e2e", function test() {
       });
 
       it("user2 sends a keychange message with a new vote", () => {
-        const command = new PCommand(
+        const command = new VoteCommand(
           BigInt(user2StateIndex),
           pollPublicKey4,
           user2VoteOptionIndex,
@@ -284,7 +284,7 @@ describe("MaciState/Poll e2e", function test() {
 
       it("should submit a vote for one user in one batch", () => {
         user1StateIndex = poll.joinPoll(nullifier1, pollPublicKey1, voiceCreditBalance);
-        const command1 = new PCommand(
+        const command1 = new VoteCommand(
           BigInt(user1StateIndex),
           pollPublicKey1,
           user1VoteOptionIndex,
@@ -304,7 +304,14 @@ describe("MaciState/Poll e2e", function test() {
 
       it("should fill the batch with random messages", () => {
         for (let i = 0; i < messageBatchSize - 1; i += 1) {
-          const command = new PCommand(1n, pollPublicKey1, user1VoteOptionIndex, user1VoteWeight, 2n, BigInt(pollId));
+          const command = new VoteCommand(
+            1n,
+            pollPublicKey1,
+            user1VoteOptionIndex,
+            user1VoteWeight,
+            2n,
+            BigInt(pollId),
+          );
 
           const signature = command.sign(pollPrivateKey);
 
@@ -317,7 +324,7 @@ describe("MaciState/Poll e2e", function test() {
       });
 
       it("should submit a new message in a new batch", () => {
-        const command1 = new PCommand(
+        const command1 = new VoteCommand(
           BigInt(user1StateIndex),
           pollPublicKey3,
           user1VoteOptionIndex,
@@ -396,7 +403,14 @@ describe("MaciState/Poll e2e", function test() {
 
       stateIndex = poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance);
 
-      const command = new PCommand(BigInt(stateIndex), pollPublicKey, voteOptionIndex, voteWeight, 1n, BigInt(pollId));
+      const command = new VoteCommand(
+        BigInt(stateIndex),
+        pollPublicKey,
+        voteOptionIndex,
+        voteWeight,
+        1n,
+        BigInt(pollId),
+      );
 
       const signature = command.sign(pollPrivateKey);
 
@@ -474,7 +488,7 @@ describe("MaciState/Poll e2e", function test() {
       for (let i = 0; i < messageBatchSize - 1; i += 1) {
         const pollKeypair = pollKeys[i];
 
-        const command = new PCommand(
+        const command = new VoteCommand(
           BigInt(stateIndices[i]),
           pollKeypair.publicKey,
           BigInt(i), // vote option index
@@ -497,7 +511,7 @@ describe("MaciState/Poll e2e", function test() {
       for (let i = 0; i < messageBatchSize - 1; i += 1) {
         const pollKeypair = pollKeys[i];
 
-        const command = new PCommand(
+        const command = new VoteCommand(
           BigInt(stateIndices[i]),
           pollKeypair.publicKey,
           BigInt(i), // vote option index
@@ -621,7 +635,14 @@ describe("MaciState/Poll e2e", function test() {
 
       stateIndex = poll.joinPoll(pollNullifier, pollPublicKey, voiceCreditBalance);
 
-      const command = new PCommand(BigInt(stateIndex), pollPublicKey, voteOptionIndex, voteWeight, 1n, BigInt(pollId));
+      const command = new VoteCommand(
+        BigInt(stateIndex),
+        pollPublicKey,
+        voteOptionIndex,
+        voteWeight,
+        1n,
+        BigInt(pollId),
+      );
 
       const signature = command.sign(pollPrivateKey);
 

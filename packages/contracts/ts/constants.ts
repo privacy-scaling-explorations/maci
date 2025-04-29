@@ -4,4 +4,5 @@
 export enum EMode {
   QV,
   NON_QV,
+  FULL,
 }

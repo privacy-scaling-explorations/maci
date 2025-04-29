@@ -1,4 +1,4 @@
-import { Keypair, PCommand } from "@maci-protocol/domainobjs";
+import { Keypair, VoteCommand } from "@maci-protocol/domainobjs";
 import benny from "benny";
 
 import { MaciState } from "..";
@@ -48,7 +48,7 @@ export default function runCore(): void {
       for (let i = 0; i < MESSAGE_BATCH_SIZE - 1; i += 1) {
         const userKeypair = users[i];
 
-        const command = new PCommand(
+        const command = new VoteCommand(
           BigInt(i + 1),
           userKeypair.publicKey,
           BigInt(i), // vote option index
@@ -68,7 +68,7 @@ export default function runCore(): void {
       // 4 invalid votes
       for (let i = 0; i < MESSAGE_BATCH_SIZE - 1; i += 1) {
         const userKeypair = users[i];
-        const command = new PCommand(
+        const command = new VoteCommand(
           BigInt(i + 1),
           userKeypair.publicKey,
           BigInt(i), // vote option index

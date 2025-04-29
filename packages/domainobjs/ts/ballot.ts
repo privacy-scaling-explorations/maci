@@ -53,12 +53,13 @@ export class Ballot {
     const lastIndex = this.votes.length - 1;
     const foundIndex = this.votes.findIndex((_, index) => this.votes[lastIndex - index] !== BigInt(0));
     const lastIndexToInsert = foundIndex < 0 ? -1 : lastIndex - foundIndex;
-    const voTree = new IncrementalQuinTree(this.voteOptionTreeDepth, BigInt(0), 5, hash5);
+    const voteTree = new IncrementalQuinTree(this.voteOptionTreeDepth, BigInt(0), 5, hash5);
+
     for (let i = 0; i <= lastIndexToInsert; i += 1) {
-      voTree.insert(this.votes[i]);
+      voteTree.insert(this.votes[i]);
     }
 
-    return [this.nonce, voTree.root];
+    return [this.nonce, voteTree.root];
   };
 
   /**

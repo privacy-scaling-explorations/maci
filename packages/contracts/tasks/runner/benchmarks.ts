@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { Keypair, PCommand } from "@maci-protocol/domainobjs";
+import { Keypair, VoteCommand } from "@maci-protocol/domainobjs";
 import { task } from "hardhat/config";
 
 import { logMagenta, logRed } from "../../ts/logger";
@@ -36,7 +36,7 @@ task("benchmark", "Run benchmarks").setAction(async (_, hre) => {
     const keypair = new Keypair();
     const coordinatorKeypair = new Keypair();
 
-    const command = new PCommand(1n, keypair.publicKey, 0n, 9n, 1n, 0n, 0n);
+    const command = new VoteCommand(1n, keypair.publicKey, 0n, 9n, 1n, 0n, 0n);
     const signature = command.sign(keypair.privateKey);
     // not recommended to use the same key for the message but this is just for benchmarking
     const sharedKey = Keypair.generateEcdhSharedKey(keypair.privateKey, coordinatorKeypair.publicKey);

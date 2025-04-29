@@ -1,5 +1,7 @@
 pragma circom 2.0.0;
 
+// circomlib import
+include "./mux1.circom";
 // zk-kit imports
 include "./safe-comparators.circom";
 // local imports
@@ -7,13 +9,13 @@ include "../VerifySignature.circom";
 
 /**
  * Checks if a MACI message is valid or not.
- * This template supports the Quadratic Voting (QV).
+ * This template supports the full mode (all credits are spent on one option)
  */
-template MessageValidator() {
+template MessageValidatorFull() {
     // Length of the packed command.
     var PACKED_COMMAND_LENGTH = 4;
     // Number of checks to be performed.
-    var TOTAL_CHECKS = 6;
+    var TOTAL_CHECKS = 5;
 
     // State index of the user.
     signal input stateTreeIndex;
@@ -63,28 +65,22 @@ template MessageValidator() {
 
     // Check (4) - The signature must be correct.    
     var computedIsSignatureValid = VerifySignature()(publicKey, signaturePoint, signatureScalar, command);
-
+ 
     // Check (5) - There must be sufficient voice credits.
-    // The check ensure that the voteWeight is < sqrt(field size)
-    // so that voteWeight ^ 2 will not overflow.
-    var computedIsVoteWeightValid = SafeLessEqThan(252)([voteWeight, 147946756881789319005730692170996259609]);
-
-    // Check (6) - Check the current voice credit balance.
-    // The check ensure that currentVoiceCreditBalance + (currentVotesForOption ** 2) >= (voteWeight ** 2)
-    var computedAreVoiceCreditsSufficient = SafeGreaterEqThan(252)(
+    // The check ensure that currentVotesForOption + currentVoiceCreditBalance is equal to voteWeight.
+    var computedAreVoiceCreditsSpent = IsEqual()(
         [
-            (currentVotesForOption * currentVotesForOption) + currentVoiceCreditBalance,
-            voteWeight * voteWeight
+            currentVotesForOption + currentVoiceCreditBalance,
+            voteWeight
         ]
     );
 
-    // When all six checks are correct, then isValid = 1.
+    // When all five checks are correct, then isValid = 1.
     var computedIsUpdateValid = IsEqual()(
         [
             TOTAL_CHECKS,
             computedIsSignatureValid + 
-            computedAreVoiceCreditsSufficient +
-            computedIsVoteWeightValid +
+            computedAreVoiceCreditsSpent +
             computedIsNonceValid +
             computedIsStateLeafIndexValid +
             computedIsVoteOptionIndexValid

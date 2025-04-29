@@ -1,5 +1,5 @@
 import { poseidon } from "@maci-protocol/crypto";
-import { PCommand, Keypair, StateLeaf, PrivateKey, Ballot } from "@maci-protocol/domainobjs";
+import { VoteCommand, Keypair, StateLeaf, PrivateKey, Ballot } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 
 import { MaciState } from "../MaciState";
@@ -45,7 +45,7 @@ describe("Poll", function test() {
     const stateIndex = poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance);
 
     it("should throw if a message has an invalid state index", () => {
-      const command = new PCommand(
+      const command = new VoteCommand(
         // invalid state index as it is one more than the number of state leaves
         BigInt(stateIndex + 1),
         pollPublicKey,
@@ -68,7 +68,7 @@ describe("Poll", function test() {
     });
 
     it("should throw if a message has an invalid nonce", () => {
-      const command = new PCommand(BigInt(stateIndex), pollPublicKey, 0n, 0n, 0n, BigInt(pollId));
+      const command = new VoteCommand(BigInt(stateIndex), pollPublicKey, 0n, 0n, 0n, BigInt(pollId));
 
       const signature = command.sign(pollPrivateKey);
 
@@ -84,7 +84,7 @@ describe("Poll", function test() {
     });
 
     it("should throw if a message has an invalid signature", () => {
-      const command = new PCommand(BigInt(stateIndex), pollPublicKey, 0n, 0n, 0n, BigInt(pollId));
+      const command = new VoteCommand(BigInt(stateIndex), pollPublicKey, 0n, 0n, 0n, BigInt(pollId));
 
       const signature = command.sign(new PrivateKey(0n));
       const ecdhKeypair = new Keypair();
@@ -99,7 +99,7 @@ describe("Poll", function test() {
     });
 
     it("should throw if a message consumes more than the available voice credits for a user", () => {
-      const command = new PCommand(
+      const command = new VoteCommand(
         BigInt(stateIndex),
         pollPublicKey,
         0n,
@@ -123,7 +123,7 @@ describe("Poll", function test() {
     });
 
     it("should throw if a message has an invalid vote option index (>= max vote options)", () => {
-      const command = new PCommand(
+      const command = new VoteCommand(
         BigInt(stateIndex),
         pollPublicKey,
         BigInt(VOTE_OPTION_TREE_ARITY ** treeDepths.voteOptionTreeDepth),
@@ -147,7 +147,7 @@ describe("Poll", function test() {
     });
 
     it("should throw if a message has an invalid vote option index (< 0)", () => {
-      const command = new PCommand(BigInt(stateIndex), pollPublicKey, -1n, 1n, 1n, BigInt(pollId));
+      const command = new VoteCommand(BigInt(stateIndex), pollPublicKey, -1n, 1n, 1n, BigInt(pollId));
 
       const signature = command.sign(pollPrivateKey);
 
@@ -163,7 +163,7 @@ describe("Poll", function test() {
     });
 
     it("should throw when passed a message that cannot be decrypted (wrong encryptionPublicKey)", () => {
-      const command = new PCommand(BigInt(stateIndex), pollPublicKey, 0n, 1n, 1n, BigInt(pollId));
+      const command = new VoteCommand(BigInt(stateIndex), pollPublicKey, 0n, 1n, 1n, BigInt(pollId));
 
       const signature = command.sign(pollPrivateKey);
 
@@ -179,7 +179,7 @@ describe("Poll", function test() {
     });
 
     it("should throw when passed a corrupted message", () => {
-      const command = new PCommand(BigInt(stateIndex), pollPublicKey, 0n, 1n, 1n, BigInt(pollId));
+      const command = new VoteCommand(BigInt(stateIndex), pollPublicKey, 0n, 1n, 1n, BigInt(pollId));
 
       const signature = command.sign(pollPrivateKey);
 
@@ -197,7 +197,7 @@ describe("Poll", function test() {
     });
 
     it("should throw when going over the voice credit limit (non qv)", () => {
-      const command = new PCommand(
+      const command = new VoteCommand(
         // invalid state index as it is one more than the number of state leaves
         BigInt(stateIndex),
         pollPublicKey,
@@ -220,7 +220,7 @@ describe("Poll", function test() {
     });
 
     it("should work when submitting a valid message (voteWeight === voiceCreditBalance and non qv)", () => {
-      const command = new PCommand(
+      const command = new VoteCommand(
         // invalid state index as it is one more than the number of state leaves
         BigInt(stateIndex),
         pollPublicKey,
@@ -280,7 +280,7 @@ describe("Poll", function test() {
     });
 
     it("should succeed even if we send an invalid message", () => {
-      const command = new PCommand(
+      const command = new VoteCommand(
         // we only signed up one user so the state index is invalid
         BigInt(stateIndex + 1),
         pollPublicKey,
@@ -344,7 +344,7 @@ describe("Poll", function test() {
     const stateIndex = poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance);
 
     it("it should succeed even if send an invalid message", () => {
-      const command = new PCommand(
+      const command = new VoteCommand(
         // we only signed up one user so the state index is invalid
         BigInt(stateIndex + 1),
         pollPublicKey,
@@ -369,7 +369,7 @@ describe("Poll", function test() {
     });
 
     it("should return the correct state leaves and ballots", () => {
-      const command = new PCommand(BigInt(stateIndex + 1), pollPublicKey, 0n, 1n, 0n, BigInt(pollId));
+      const command = new VoteCommand(BigInt(stateIndex + 1), pollPublicKey, 0n, 1n, 0n, BigInt(pollId));
 
       const signature = command.sign(pollPrivateKey);
 
@@ -391,7 +391,7 @@ describe("Poll", function test() {
     });
 
     it("should have processed all messages", () => {
-      const command = new PCommand(BigInt(stateIndex + 1), pollPublicKey, 0n, 1n, 0n, BigInt(pollId));
+      const command = new VoteCommand(BigInt(stateIndex + 1), pollPublicKey, 0n, 1n, 0n, BigInt(pollId));
 
       const signature = command.sign(pollPrivateKey);
 
@@ -448,7 +448,7 @@ describe("Poll", function test() {
     const voteWeight = 5n;
     const voteOption = 0n;
 
-    const command = new PCommand(BigInt(stateIndex1), pollPublicKey1, voteOption, voteWeight, 1n, BigInt(pollId));
+    const command = new VoteCommand(BigInt(stateIndex1), pollPublicKey1, voteOption, voteWeight, 1n, BigInt(pollId));
 
     const signature = command.sign(pollPrivateKey);
 
@@ -498,7 +498,7 @@ describe("Poll", function test() {
       const secondVoteWeight = 10n;
       const secondVoteOption = 1n;
 
-      const secondCommand = new PCommand(
+      const secondCommand = new VoteCommand(
         BigInt(stateIndex2),
         pollPublicKey2,
         secondVoteOption,
@@ -569,7 +569,7 @@ describe("Poll", function test() {
       expect(poll.gettotalSignups()).to.eq(2n);
 
       // update it again
-      poll.settotalSignups(3n);
+      poll.setTotalSignups(3n);
 
       expect(poll.gettotalSignups()).to.eq(3n);
     });

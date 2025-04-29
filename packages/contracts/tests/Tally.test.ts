@@ -408,7 +408,7 @@ describe("TallyVotes", () => {
 
       const newPerVOSpentVoiceCreditsCommitment = generateTreeCommitment(
         poll.perVoteOptionSpentVoiceCredits,
-        BigInt(asHex(tallyGeneratedInputs!.newPerVOSpentVoiceCreditsRootSalt as BigNumberish)),
+        BigInt(asHex(tallyGeneratedInputs!.newPerVoteOptionSpentVoiceCreditsRootSalt as BigNumberish)),
         treeDepths.voteOptionTreeDepth,
       );
 

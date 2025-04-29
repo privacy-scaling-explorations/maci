@@ -31,9 +31,9 @@ template MessageValidatorNonQv() {
     signal input command[PACKED_COMMAND_LENGTH];
     // Public key of the state leaf (user).
     signal input publicKey[2];
-    // ECDSA signature of the command (R part).
+    // EdDSA signature of the command (R part).
     signal input signaturePoint[2];
-    // ECDSA signature of the command (S part).
+    // EdDSA signature of the command (S part).
     signal input signatureScalar;
     // State leaf current voice credit balance.
     signal input currentVoiceCreditBalance;

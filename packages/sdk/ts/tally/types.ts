@@ -196,10 +196,10 @@ export interface ITallyVotesInputs {
   currentResultsRootSalt: bigint;
   currentSpentVoiceCreditSubtotal: bigint;
   currentSpentVoiceCreditSubtotalSalt: bigint;
-  currentPerVOSpentVoiceCredits: bigint[];
-  currentPerVOSpentVoiceCreditsRootSalt: bigint;
+  currentPerVoteOptionSpentVoiceCredits: bigint[];
+  currentPerVoteOptionSpentVoiceCreditsRootSalt: bigint;
   newResultsRootSalt: bigint;
-  newPerVOSpentVoiceCreditsRootSalt: bigint;
+  newPerVoteOptionSpentVoiceCreditsRootSalt: bigint;
   newSpentVoiceCreditSubtotalSalt: bigint;
 }
 

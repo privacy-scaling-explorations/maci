@@ -75,13 +75,13 @@ template TallyVotes(
     // Salt for the total spent voice credits.
     signal input currentSpentVoiceCreditSubtotalSalt;
     // Spent voice credits per vote option.
-    signal input currentPerVOSpentVoiceCredits[totalVoteOptions];
+    signal input currentPerVoteOptionSpentVoiceCredits[totalVoteOptions];
     // Salt for the root of spent credits per option.
-    signal input currentPerVOSpentVoiceCreditsRootSalt;
+    signal input currentPerVoteOptionSpentVoiceCreditsRootSalt;
     // Salt for the root of the new results.
     signal input newResultsRootSalt;
     // Salt for the new spent credits per vote option root.
-    signal input newPerVOSpentVoiceCreditsRootSalt;
+    signal input newPerVoteOptionSpentVoiceCreditsRootSalt;
     // Salt for the new total spent voice credits root. 
     signal input newSpentVoiceCreditSubtotalSalt;
 
@@ -149,13 +149,13 @@ template TallyVotes(
     var computedNewPerVOSpentVoiceCredits[totalVoteOptions];
 
     for (var i = 0; i < totalVoteOptions; i++) {
-        var computedNumsSVC[batchSize + 1];
-        computedNumsSVC[batchSize] = currentPerVOSpentVoiceCredits[i] * computedIsZero;
+        var computedTotalVoiceCreditSpent[batchSize + 1];
+        computedTotalVoiceCreditSpent[batchSize] = currentPerVoteOptionSpentVoiceCredits[i] * computedIsZero;
         for (var j = 0; j < batchSize; j++) {
-            computedNumsSVC[j] = votes[j][i] * votes[j][i];
+            computedTotalVoiceCreditSpent[j] = votes[j][i] * votes[j][i];
         }
 
-        computedNewPerVOSpentVoiceCredits[i] = CalculateTotal(batchSize + 1)(computedNumsSVC);
+        computedNewPerVOSpentVoiceCredits[i] = CalculateTotal(batchSize + 1)(computedTotalVoiceCreditSpent);
     }
     
     // Verifies the updated results and spent credits, ensuring consistency and correctness of tally updates.
@@ -171,10 +171,10 @@ template TallyVotes(
         currentSpentVoiceCreditSubtotalSalt,
         computedNewSpentVoiceCreditSubtotal,
         newSpentVoiceCreditSubtotalSalt,
-        currentPerVOSpentVoiceCredits,
-        currentPerVOSpentVoiceCreditsRootSalt,
+        currentPerVoteOptionSpentVoiceCredits,
+        currentPerVoteOptionSpentVoiceCreditsRootSalt,
         computedNewPerVOSpentVoiceCredits,
-        newPerVOSpentVoiceCreditsRootSalt        
+        newPerVoteOptionSpentVoiceCreditsRootSalt        
     );
 }
 
@@ -217,14 +217,14 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     signal input newSpentVoiceCreditSubtotalSalt;
 
     // Spent voice credits per vote option.
-    signal input currentPerVOSpentVoiceCredits[totalVoteOptions];
+    signal input currentPerVoteOptionSpentVoiceCredits[totalVoteOptions];
     // Salt for the root of spent credits per option.
-    signal input currentPerVOSpentVoiceCreditsRootSalt;
+    signal input currentPerVoteOptionSpentVoiceCreditsRootSalt;
 
     // New spent voice credits per vote option.
-    signal input newPerVOSpentVoiceCredits[totalVoteOptions];
+    signal input newPerVoteOptionSpentVoiceCredits[totalVoteOptions];
     // Salt for the root of new spent credits per option.
-    signal input newPerVOSpentVoiceCreditsRootSalt;
+    signal input newPerVoteOptionSpentVoiceCreditsRootSalt;
 
     // Compute the commitment to the current results.
     var computedCurrentResultsRoot = QuinCheckRoot(voteOptionTreeDepth)(currentResults);
@@ -236,14 +236,14 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     var computedCurrentSpentVoiceCreditsCommitment = PoseidonHasher(2)([currentSpentVoiceCreditSubtotal, currentSpentVoiceCreditSubtotalSalt]);
 
     // Compute the root of the spent voice credits per vote option.
-    var computedCurrentPerVOSpentVoiceCreditsRoot = QuinCheckRoot(voteOptionTreeDepth)(currentPerVOSpentVoiceCredits);
-    var computedCurrentPerVOSpentVoiceCreditsCommitment = PoseidonHasher(2)([computedCurrentPerVOSpentVoiceCreditsRoot, currentPerVOSpentVoiceCreditsRootSalt]);
+    var computedCurrentPerVoteOptionSpentVoiceCreditsRoot = QuinCheckRoot(voteOptionTreeDepth)(currentPerVoteOptionSpentVoiceCredits);
+    var computedCurrentPerVoteOptionSpentVoiceCreditsCommitment = PoseidonHasher(2)([computedCurrentPerVoteOptionSpentVoiceCreditsRoot, currentPerVoteOptionSpentVoiceCreditsRootSalt]);
 
     // Commit to the current tally.
     var computedCurrentTallyCommitment = PoseidonHasher(3)([
         computedCurrentResultsCommitment, 
         computedCurrentSpentVoiceCreditsCommitment, 
-        computedCurrentPerVOSpentVoiceCreditsCommitment
+        computedCurrentPerVoteOptionSpentVoiceCreditsCommitment
     ]);
 
     // Check if the current tally commitment is correct only if this is not the first batch.
@@ -265,14 +265,14 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     var computedNewSpentVoiceCreditsCommitment = PoseidonHasher(2)([newSpentVoiceCreditSubtotal, newSpentVoiceCreditSubtotalSalt]);
 
     // Compute the root of the spent voice credits per vote option.
-    var computedNewPerVOSpentVoiceCreditsRoot = QuinCheckRoot(voteOptionTreeDepth)(newPerVOSpentVoiceCredits);
-    var computedNewPerVOSpentVoiceCreditsCommitment = PoseidonHasher(2)([computedNewPerVOSpentVoiceCreditsRoot, newPerVOSpentVoiceCreditsRootSalt]);
+    var computedNewPerVoteOptionSpentVoiceCreditsRoot = QuinCheckRoot(voteOptionTreeDepth)(newPerVoteOptionSpentVoiceCredits);
+    var computedNewPerVoteOptionSpentVoiceCreditsCommitment = PoseidonHasher(2)([computedNewPerVoteOptionSpentVoiceCreditsRoot, newPerVoteOptionSpentVoiceCreditsRootSalt]);
 
     // Commit to the new tally.
     var computedNewTallyCommitment = PoseidonHasher(3)([
         computedNewResultsCommitment,
         computedNewSpentVoiceCreditsCommitment,
-        computedNewPerVOSpentVoiceCreditsCommitment
+        computedNewPerVoteOptionSpentVoiceCreditsCommitment
     ]);
     
     computedNewTallyCommitment === newTallyCommitment;

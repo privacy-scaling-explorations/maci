@@ -1,6 +1,6 @@
 import { MaciState, Poll } from "@maci-protocol/core";
 import { poseidon } from "@maci-protocol/crypto";
-import { Keypair, PCommand, Message } from "@maci-protocol/domainobjs";
+import { Keypair, VoteCommand, Message } from "@maci-protocol/domainobjs";
 import { type WitnessTester } from "circomkit";
 
 import { ITallyVotesInputs } from "../types";
@@ -35,10 +35,10 @@ describe("TallyVotes circuit", function test() {
     "currentResultsRootSalt",
     "currentSpentVoiceCreditSubtotal",
     "currentSpentVoiceCreditSubtotalSalt",
-    "currentPerVOSpentVoiceCredits",
-    "currentPerVOSpentVoiceCreditsRootSalt",
+    "currentPerVoteOptionSpentVoiceCredits",
+    "currentPerVoteOptionSpentVoiceCreditsRootSalt",
     "newResultsRootSalt",
-    "newPerVOSpentVoiceCreditsRootSalt",
+    "newPerVoteOptionSpentVoiceCreditsRootSalt",
     "newSpentVoiceCreditSubtotalSalt",
   ];
 
@@ -74,7 +74,7 @@ describe("TallyVotes circuit", function test() {
     beforeEach(() => {
       maciState = new MaciState(STATE_TREE_DEPTH);
       const messages: Message[] = [];
-      const commands: PCommand[] = [];
+      const commands: VoteCommand[] = [];
       // Sign up and publish
       maciState.signUp(userKeypair.publicKey);
 
@@ -95,7 +95,7 @@ describe("TallyVotes circuit", function test() {
       stateIndex = BigInt(poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance));
 
       // First command (valid)
-      const command = new PCommand(
+      const command = new VoteCommand(
         stateIndex,
         pollPublicKey,
         voteOptionIndex, // voteOptionIndex,
@@ -150,7 +150,7 @@ describe("TallyVotes circuit", function test() {
     beforeEach(() => {
       maciState = new MaciState(STATE_TREE_DEPTH);
       const messages: Message[] = [];
-      const commands: PCommand[] = [];
+      const commands: VoteCommand[] = [];
       // Sign up and publish
       maciState.signUp(userKeypair.publicKey);
 
@@ -171,7 +171,7 @@ describe("TallyVotes circuit", function test() {
       stateIndex = BigInt(poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance));
 
       // First command (valid)
-      const command = new PCommand(
+      const command = new VoteCommand(
         stateIndex,
         pollPublicKey,
         voteOptionIndex, // voteOptionIndex,
@@ -255,7 +255,7 @@ describe("TallyVotes circuit", function test() {
       // Commands
       const numMessages = messageBatchSize * NUM_BATCHES;
       for (let i = 0; i < numMessages; i += 1) {
-        const command = new PCommand(
+        const command = new VoteCommand(
           BigInt(i),
           userKeypairs[i].publicKey,
           BigInt(i), // vote option index
@@ -281,11 +281,11 @@ describe("TallyVotes circuit", function test() {
 
         // For the 0th batch, the circuit should ignore currentResults,
         // currentSpentVoiceCreditSubtotal, and
-        // currentPerVOSpentVoiceCredits
+        // currentPerVoteOptionSpentVoiceCredits
         if (i === 0) {
           generatedInputs.currentResults[0] = 123n;
           generatedInputs.currentSpentVoiceCreditSubtotal = 456n;
-          generatedInputs.currentPerVOSpentVoiceCredits[0] = 789n;
+          generatedInputs.currentPerVoteOptionSpentVoiceCredits[0] = 789n;
         }
 
         // eslint-disable-next-line no-await-in-loop

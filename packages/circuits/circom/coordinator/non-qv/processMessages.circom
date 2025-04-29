@@ -326,12 +326,12 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     signal output newBallotRoot;
 
     // equal to newBallotVoteOptionRootMux (Mux1).
-    signal newBallotVoRoot;
+    signal newBallotVoteOptionRoot;
 
     // 1. Transform a state leaf and a ballot with a command.
     // The result is a new state leaf, a new ballot, and an isValid signal (0 or 1).
-    var computedNewstateLeafPublicKey[2], computedNewBallotNonce, computedIsValid, computedIsStateLeafIndexValid, computedIsVoteOptionIndexValid;
-    (computedNewstateLeafPublicKey, computedNewBallotNonce, computedIsValid, computedIsStateLeafIndexValid, computedIsVoteOptionIndexValid) = StateLeafAndBallotTransformerNonQv()(
+    var computedNewStateLeafPublicKey[2], computedNewBallotNonce, computedIsValid, computedIsStateLeafIndexValid, computedIsVoteOptionIndexValid;
+    (computedNewStateLeafPublicKey, computedNewBallotNonce, computedIsValid, computedIsStateLeafIndexValid, computedIsVoteOptionIndexValid) = StateLeafAndBallotTransformerNonQv()(
         totalSignups,
         voteOptions,
         [stateLeaf[STATE_LEAF_PUBLIC_X_INDEX], stateLeaf[STATE_LEAF_PUBLIC_Y_INDEX]],
@@ -415,17 +415,17 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
         computedIsValid
     );
 
-    newBallotVoRoot <== newBallotVoteOptionRootMux;
+    newBallotVoteOptionRoot <== newBallotVoteOptionRootMux;
 
     // 6. Generate a new state root.
-    var computedNewStateLeafhash = PoseidonHasher(3)([
-        computedNewstateLeafPublicKey[STATE_LEAF_PUBLIC_X_INDEX],
-        computedNewstateLeafPublicKey[STATE_LEAF_PUBLIC_Y_INDEX],
+    var computedNewStateLeafHash = PoseidonHasher(3)([
+        computedNewStateLeafPublicKey[STATE_LEAF_PUBLIC_X_INDEX],
+        computedNewStateLeafPublicKey[STATE_LEAF_PUBLIC_Y_INDEX],
         voiceCreditBalanceMux
     ]);
 
     var computedNewStateLeafQip = BinaryMerkleRoot(stateTreeDepth)(
-        computedNewStateLeafhash,
+        computedNewStateLeafHash,
         actualStateTreeDepth,
         computedStateLeafPathIndices,
         stateLeafPathElements
@@ -434,7 +434,7 @@ template ProcessOneNonQv(stateTreeDepth, voteOptionTreeDepth) {
     newStateRoot <== computedNewStateLeafQip;
  
     // 7. Generate a new ballot root.    
-    var computedNewBallot = PoseidonHasher(2)([computedNewBallotNonce, newBallotVoRoot]);
+    var computedNewBallot = PoseidonHasher(2)([computedNewBallotNonce, newBallotVoteOptionRoot]);
     var computedNewBallotQip = MerkleTreeInclusionProof(stateTreeDepth)(
         computedNewBallot,
         computedStateLeafPathIndices,

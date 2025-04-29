@@ -32,12 +32,12 @@ template PollJoined(stateTreeDepth) {
     var stateLeaf = PoseidonHasher(3)([derivedPublicKey[0], derivedPublicKey[1], voiceCreditsBalance]);
 
     // Inclusion proof  
-    var stateLeafQip = BinaryMerkleRoot(stateTreeDepth)(
+    var calculatedRoot = BinaryMerkleRoot(stateTreeDepth)(
         stateLeaf,
         actualStateTreeDepth,
         pathIndices,
         pathElements
     );
 
-    stateLeafQip === stateRoot;
+    calculatedRoot === stateRoot;
 }
