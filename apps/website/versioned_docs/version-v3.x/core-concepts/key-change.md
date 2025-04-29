@@ -95,7 +95,7 @@ pollId = maciState.deployPoll(
 
 ```ts
 const poll = maciState.polls[pollId];
-const command1 = new PCommand(
+const command1 = new VoteCommand(
   BigInt(user1StateIndex),
   user1Keypair.publicKey,
   user1VoteOptionIndex,
@@ -112,7 +112,7 @@ const sharedKey1 = Keypair.genEcdhSharedKey(ecdhKeypair1.privateKey, coordinator
 const message1 = command1.encrypt(signature1, sharedKey1);
 poll.publishMessage(message1, ecdhKeypair1.publicKey);
 
-const command2 = new PCommand(
+const command2 = new VoteCommand(
   BigInt(user2StateIndex),
   user2Keypair.publicKey,
   user2VoteOptionIndex,
@@ -134,7 +134,7 @@ poll.publishMessage(message2, ecdhKeypair2.publicKey);
 
 ```ts
 const poll = maciState.polls[pollId];
-const command = new PCommand(
+const command = new VoteCommand(
   BigInt(user1StateIndex),
   secondKeypair.publicKey,
   user1VoteOptionIndex,

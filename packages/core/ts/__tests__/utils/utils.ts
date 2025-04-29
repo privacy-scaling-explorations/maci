@@ -1,5 +1,5 @@
 import { Signature } from "@maci-protocol/crypto";
-import { PCommand, Message, Keypair, PublicKey } from "@maci-protocol/domainobjs";
+import { VoteCommand, Message, Keypair, PublicKey } from "@maci-protocol/domainobjs";
 
 import { MaciState } from "../../MaciState";
 import { Poll } from "../../Poll";
@@ -101,7 +101,7 @@ export class TestHarness {
    * @returns The message and the ephemeral public key used to encrypt the message.
    */
   createMessage = (
-    command: PCommand,
+    command: VoteCommand,
     signature: Signature,
     coordinatorKeypair: Keypair,
   ): { message: Message; encryptionPublicKey: PublicKey } => {
@@ -126,8 +126,8 @@ export class TestHarness {
     voteOptionIndex: bigint,
     voteWeight: bigint,
     nonce: bigint,
-  ): { command: PCommand; signature: Signature } => {
-    const command = new PCommand(
+  ): { command: VoteCommand; signature: Signature } => {
+    const command = new VoteCommand(
       BigInt(stateIndex),
       user.publicKey,
       voteOptionIndex,

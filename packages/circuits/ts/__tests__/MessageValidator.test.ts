@@ -1,5 +1,5 @@
 import { generateRandomSalt } from "@maci-protocol/crypto";
-import { PCommand, Keypair } from "@maci-protocol/domainobjs";
+import { VoteCommand, Keypair } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
 
@@ -42,7 +42,7 @@ describe("MessageValidator circuit", function test() {
       const { privateKey, publicKey } = new Keypair();
 
       // Note that the command fields don't matter in this test
-      const command: PCommand = new PCommand(
+      const command: VoteCommand = new VoteCommand(
         BigInt(1),
         publicKey,
         BigInt(2),
@@ -207,7 +207,7 @@ describe("MessageValidator circuit", function test() {
       const { privateKey, publicKey } = new Keypair();
 
       // Note that the command fields don't matter in this test
-      const command: PCommand = new PCommand(
+      const command: VoteCommand = new VoteCommand(
         BigInt(1),
         publicKey,
         BigInt(2),

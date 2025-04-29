@@ -1,2 +1,2 @@
-export { PCommand } from "./PCommand";
+export { VoteCommand } from "./VoteCommand";
 export type { IJsonTCommand, IJsonPCommand } from "./types";

@@ -1,5 +1,5 @@
 import { generateRandomSalt } from "@maci-protocol/crypto";
-import { Keypair, PCommand } from "@maci-protocol/domainobjs";
+import { Keypair, VoteCommand } from "@maci-protocol/domainobjs";
 
 import type { IGenerateVoteArgs, IVote } from "./types";
 
@@ -53,7 +53,7 @@ export const generateVote = ({
   const encKeypair = ephemeralKeypair ?? new Keypair();
 
   // create the command object
-  const command = new PCommand(
+  const command = new VoteCommand(
     stateIndex,
     newPublicKey ?? keypair.publicKey,
     voteOptionIndex,

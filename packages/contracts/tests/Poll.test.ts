@@ -2,7 +2,7 @@
 /* eslint-disable no-underscore-dangle */
 import { MaciState } from "@maci-protocol/core";
 import { NOTHING_UP_MY_SLEEVE } from "@maci-protocol/crypto";
-import { Keypair, Message, PCommand, PublicKey, StateLeaf } from "@maci-protocol/domainobjs";
+import { Keypair, Message, VoteCommand, PublicKey, StateLeaf } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { AbiCoder, decodeBase58, encodeBase58, getBytes, hexlify, Signer, ZeroAddress } from "ethers";
 import { EthereumProvider } from "hardhat/types";
@@ -375,7 +375,7 @@ describe("Poll", () => {
     });
 
     it("should publish a message to the Poll contract", async () => {
-      const command = new PCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, 0n);
+      const command = new VoteCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, 0n);
 
       const signature = command.sign(users[0].privateKey);
       const sharedKey = Keypair.generateEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
@@ -388,7 +388,7 @@ describe("Poll", () => {
     });
 
     it("should throw when the encryptionPublicKey is not a point on the baby jubjub curve", async () => {
-      const command = new PCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, 0n);
+      const command = new VoteCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, 0n);
 
       const signature = command.sign(users[0].privateKey);
       const sharedKey = Keypair.generateEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
@@ -402,7 +402,7 @@ describe("Poll", () => {
     });
 
     it("should emit an event when publishing a message", async () => {
-      const command = new PCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, 0n);
+      const command = new VoteCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, 0n);
 
       const signature = command.sign(users[0].privateKey);
       const sharedKey = Keypair.generateEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
@@ -417,7 +417,7 @@ describe("Poll", () => {
     it("should allow to publish a message batch", async () => {
       const messages: [Message, PublicKey][] = [];
       for (let i = 0; i < 2; i += 1) {
-        const command = new PCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, BigInt(i));
+        const command = new VoteCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, BigInt(i));
         const signature = command.sign(users[0].privateKey);
         const sharedKey = Keypair.generateEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
         const message = command.encrypt(signature, sharedKey);
@@ -439,7 +439,7 @@ describe("Poll", () => {
     it("should allow to relay a messages batch", async () => {
       const messages: [Message, PublicKey][] = [];
       for (let i = 0; i < 2; i += 1) {
-        const command = new PCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, BigInt(i));
+        const command = new VoteCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, BigInt(i));
         const signature = command.sign(users[0].privateKey);
         const sharedKey = Keypair.generateEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
         const message = command.encrypt(signature, sharedKey);
@@ -462,7 +462,7 @@ describe("Poll", () => {
     });
 
     it("should throw an error if non-relayer tries to relay messages batch", async () => {
-      const command = new PCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, 0n);
+      const command = new VoteCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, 0n);
       const signature = command.sign(users[0].privateKey);
       const sharedKey = Keypair.generateEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
       const message = command.encrypt(signature, sharedKey);
@@ -479,7 +479,7 @@ describe("Poll", () => {
     });
 
     it("should throw when the message batch has messages length != encryptionPublicKeys length", async () => {
-      const command = new PCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, 0n);
+      const command = new VoteCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, 0n);
       const signature = command.sign(users[0].privateKey);
       const sharedKey = Keypair.generateEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
       const message = command.encrypt(signature, sharedKey);
@@ -495,7 +495,7 @@ describe("Poll", () => {
       const sd = await pollContract.startDate();
       await timeTravel(signer.provider as unknown as EthereumProvider, Number(sd) + 10);
 
-      const command = new PCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, 0n);
+      const command = new VoteCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, 0n);
 
       const signature = command.sign(users[0].privateKey);
       const sharedKey = Keypair.generateEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
@@ -507,7 +507,7 @@ describe("Poll", () => {
     });
 
     it("should not allow to publish a message batch after the voting period ends", async () => {
-      const command = new PCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, 0n);
+      const command = new VoteCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, 0n);
       const signature = command.sign(users[0].privateKey);
       const sharedKey = Keypair.generateEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
       const message = command.encrypt(signature, sharedKey);
@@ -517,7 +517,7 @@ describe("Poll", () => {
     });
 
     it("should not allow to relay a messages batch after the voting period ends", async () => {
-      const command = new PCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, 0n);
+      const command = new VoteCommand(1n, users[0].publicKey, 0n, 9n, 1n, pollId, 0n);
       const signature = command.sign(users[0].privateKey);
       const sharedKey = Keypair.generateEcdhSharedKey(users[0].privateKey, coordinator.publicKey);
       const message = command.encrypt(signature, sharedKey);

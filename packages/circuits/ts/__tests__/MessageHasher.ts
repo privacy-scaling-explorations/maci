@@ -1,5 +1,5 @@
 import { generateRandomSalt } from "@maci-protocol/crypto";
-import { PCommand, Keypair } from "@maci-protocol/domainobjs";
+import { VoteCommand, Keypair } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
 import fc from "fast-check";
@@ -24,7 +24,7 @@ describe("MessageHasher", function test() {
       // eslint-disable-next-line no-bitwise
       ((BigInt(1) << BigInt(50)) - BigInt(1)) & BigInt(generateRandomSalt().toString());
 
-    const command: PCommand = new PCommand(
+    const command: VoteCommand = new VoteCommand(
       random50bitBigInt(),
       keypair.publicKey,
       random50bitBigInt(),
@@ -72,7 +72,7 @@ describe("MessageHasher", function test() {
         ) => {
           const { publicKey, privateKey } = new Keypair();
 
-          const command: PCommand = new PCommand(
+          const command: VoteCommand = new VoteCommand(
             random50bitBigInt(stateIndex),
             publicKey,
             random50bitBigInt(voteOptionIndex),

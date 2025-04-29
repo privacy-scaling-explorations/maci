@@ -1,5 +1,5 @@
 import { generateRandomSalt, generatePrivateKey } from "@maci-protocol/crypto";
-import { Keypair, PCommand, PrivateKey } from "@maci-protocol/domainobjs";
+import { Keypair, VoteCommand, PrivateKey } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
 
@@ -43,7 +43,7 @@ describe("MessageToCommand circuit", function test() {
       // eslint-disable-next-line no-bitwise
       ((BigInt(1) << BigInt(50)) - BigInt(1)) & BigInt(generateRandomSalt().toString());
 
-    const command: PCommand = new PCommand(
+    const command: VoteCommand = new VoteCommand(
       random50bitBigInt(),
       newPublicKey,
       random50bitBigInt(),
@@ -111,7 +111,7 @@ describe("MessageToCommand circuit", function test() {
       // eslint-disable-next-line no-bitwise
       ((BigInt(1) << BigInt(50)) - BigInt(1)) & BigInt(generateRandomSalt().toString());
 
-    const command: PCommand = new PCommand(
+    const command: VoteCommand = new VoteCommand(
       random50bitBigInt(),
       newPublicKey,
       random50bitBigInt(),

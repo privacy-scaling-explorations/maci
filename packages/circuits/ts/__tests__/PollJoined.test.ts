@@ -1,6 +1,6 @@
 import { MaciState, Poll } from "@maci-protocol/core";
 import { poseidon } from "@maci-protocol/crypto";
-import { Keypair, Message, PCommand } from "@maci-protocol/domainobjs";
+import { Keypair, Message, VoteCommand } from "@maci-protocol/domainobjs";
 import { type WitnessTester } from "circomkit";
 
 import type { IPollJoinedInputs } from "../types";
@@ -47,7 +47,7 @@ describe("Poll Joined circuit", function test() {
     let poll: Poll;
     let users: Keypair[];
     const messages: Message[] = [];
-    const commands: PCommand[] = [];
+    const commands: VoteCommand[] = [];
 
     const timestamp = BigInt(Math.floor(Date.now() / 1000));
 
@@ -77,7 +77,7 @@ describe("Poll Joined circuit", function test() {
       const stateIndex = BigInt(poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance));
 
       // First command (valid)
-      const command = new PCommand(
+      const command = new VoteCommand(
         stateIndex,
         pollPublicKey,
         BigInt(0), // voteOptionIndex,

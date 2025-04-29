@@ -1,6 +1,6 @@
 import { MaciState, Poll, STATE_TREE_ARITY } from "@maci-protocol/core";
 import { IncrementalQuinTree, hash2, poseidon } from "@maci-protocol/crypto";
-import { PrivateKey, Keypair, PCommand, Message, Ballot, PublicKey } from "@maci-protocol/domainobjs";
+import { PrivateKey, Keypair, VoteCommand, Message, Ballot, PublicKey } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
 
@@ -73,7 +73,7 @@ describe("ProcessMessage circuit", function test() {
     let pollId: bigint;
     let poll: Poll;
     const messages: Message[] = [];
-    const commands: PCommand[] = [];
+    const commands: VoteCommand[] = [];
 
     before(() => {
       // Sign up and publish
@@ -125,7 +125,7 @@ describe("ProcessMessage circuit", function test() {
       poll.publishMessage(nothing, encP);
 
       // First command (valid)
-      const command = new PCommand(
+      const command = new VoteCommand(
         5n,
         users[4].publicKey,
         voteOptionIndex, // voteOptionIndex,
@@ -164,7 +164,7 @@ describe("ProcessMessage circuit", function test() {
     let pollId: bigint;
     let poll: Poll;
     const messages: Message[] = [];
-    const commands: PCommand[] = [];
+    const commands: VoteCommand[] = [];
 
     before(() => {
       // Sign up and publish
@@ -190,7 +190,7 @@ describe("ProcessMessage circuit", function test() {
       stateIndex = BigInt(poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance));
 
       // First command (valid)
-      const command = new PCommand(
+      const command = new VoteCommand(
         stateIndex, // BigInt(1),
         pollPublicKey,
         voteOptionIndex, // voteOptionIndex,
@@ -210,7 +210,7 @@ describe("ProcessMessage circuit", function test() {
       poll.publishMessage(message, ecdhKeypair.publicKey);
 
       // Second command (valid)
-      const command2 = new PCommand(
+      const command2 = new VoteCommand(
         stateIndex,
         pollPublicKey,
         voteOptionIndex, // voteOptionIndex,
@@ -264,7 +264,7 @@ describe("ProcessMessage circuit", function test() {
     let pollId: bigint;
     let poll: Poll;
     const messages: Message[] = [];
-    const commands: PCommand[] = [];
+    const commands: VoteCommand[] = [];
 
     before(() => {
       // Sign up and publish
@@ -293,7 +293,7 @@ describe("ProcessMessage circuit", function test() {
 
       const stateIndex = BigInt(poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance));
 
-      const command = new PCommand(
+      const command = new VoteCommand(
         stateIndex,
         pollPublicKey,
         BigInt(0), // voteOptionIndex,
@@ -349,7 +349,7 @@ describe("ProcessMessage circuit", function test() {
     let pollId: bigint;
     let poll: Poll;
     const messages: Message[] = [];
-    const commands: PCommand[] = [];
+    const commands: VoteCommand[] = [];
 
     before(() => {
       // Sign up and publish
@@ -376,7 +376,7 @@ describe("ProcessMessage circuit", function test() {
       const stateIndex = poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance);
 
       // Vote for option 0
-      const command = new PCommand(
+      const command = new VoteCommand(
         BigInt(stateIndex), // BigInt(1),
         pollPublicKey,
         BigInt(0), // voteOptionIndex,
@@ -396,7 +396,7 @@ describe("ProcessMessage circuit", function test() {
       poll.publishMessage(message, ecdhKeypair.publicKey);
 
       // Vote for option 1
-      const command2 = new PCommand(
+      const command2 = new VoteCommand(
         BigInt(stateIndex),
         pollPublicKey,
         BigInt(1), // voteOptionIndex,
@@ -414,7 +414,7 @@ describe("ProcessMessage circuit", function test() {
       poll.publishMessage(message2, ecdhKeypair2.publicKey);
 
       // Change key
-      const command3 = new PCommand(
+      const command3 = new VoteCommand(
         BigInt(stateIndex), // BigInt(1),
         pollPublicKey,
         BigInt(1), // voteOptionIndex,
@@ -498,7 +498,7 @@ describe("ProcessMessage circuit", function test() {
       // Second batch is not a full batch
       const numMessages = messageBatchSize * NUM_BATCHES - 1;
       for (let i = 0; i < numMessages; i += 1) {
-        const command = new PCommand(
+        const command = new VoteCommand(
           BigInt(stateIndex),
           pollPublicKey,
           BigInt(i), // vote option index
@@ -534,7 +534,7 @@ describe("ProcessMessage circuit", function test() {
     let pollId: bigint;
     let poll: Poll;
     const messages: Message[] = [];
-    const commands: PCommand[] = [];
+    const commands: VoteCommand[] = [];
 
     before(() => {
       // Sign up and publish
@@ -579,7 +579,7 @@ describe("ProcessMessage circuit", function test() {
       poll.publishMessage(nothing, encP);
 
       // First command (valid)
-      const command = new PCommand(
+      const command = new VoteCommand(
         stateIndex, // BigInt(1),
         pollPublicKey,
         1n, // voteOptionIndex,
@@ -599,7 +599,7 @@ describe("ProcessMessage circuit", function test() {
       poll.publishMessage(message, ecdhKeypair.publicKey);
 
       // Second command (valid)
-      const command2 = new PCommand(
+      const command2 = new VoteCommand(
         stateIndex,
         pollPublicKey,
         voteOptionIndex, // voteOptionIndex,
@@ -655,7 +655,7 @@ describe("ProcessMessage circuit", function test() {
     let pollId: bigint;
     let poll: Poll;
     const messages: Message[] = [];
-    const commands: PCommand[] = [];
+    const commands: VoteCommand[] = [];
 
     before(() => {
       // Sign up and publish
@@ -701,7 +701,7 @@ describe("ProcessMessage circuit", function test() {
       poll.publishMessage(nothing, encP);
 
       // First command (valid)
-      const command = new PCommand(
+      const command = new VoteCommand(
         stateIndex, // BigInt(1),
         pollPublicKey,
         1n, // voteOptionIndex,
@@ -726,7 +726,7 @@ describe("ProcessMessage circuit", function test() {
       }
 
       // Second command (valid) in second batch (which is first due to reverse processing)
-      const command2 = new PCommand(
+      const command2 = new VoteCommand(
         stateIndex,
         pollPublicKey,
         voteOptionIndex, // voteOptionIndex,
@@ -785,7 +785,7 @@ describe("ProcessMessage circuit", function test() {
     let pollId: bigint;
     let poll: Poll;
     const messages: Message[] = [];
-    const commands: PCommand[] = [];
+    const commands: VoteCommand[] = [];
 
     before(() => {
       // Sign up and publish
@@ -829,7 +829,7 @@ describe("ProcessMessage circuit", function test() {
 
       poll.publishMessage(nothing, encP);
 
-      const commandFinal = new PCommand(
+      const commandFinal = new VoteCommand(
         stateIndex, // BigInt(1),
         pollPublicKey,
         1n, // voteOptionIndex,
@@ -849,7 +849,7 @@ describe("ProcessMessage circuit", function test() {
       poll.publishMessage(messageFinal, ecdhKeypairFinal.publicKey);
 
       // First command (valid)
-      const command = new PCommand(
+      const command = new VoteCommand(
         stateIndex, // BigInt(1),
         pollPublicKey,
         1n, // voteOptionIndex,
@@ -874,7 +874,7 @@ describe("ProcessMessage circuit", function test() {
       }
 
       // Second command (valid) in second batch (which is first due to reverse processing)
-      const command2 = new PCommand(
+      const command2 = new VoteCommand(
         stateIndex,
         pollPublicKey,
         voteOptionIndex, // voteOptionIndex,

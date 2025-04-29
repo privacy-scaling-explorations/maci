@@ -342,7 +342,7 @@ export class ProofGenerator {
         // Compute newPerVOSpentVoiceCreditsCommitment
         newPerVOSpentVoiceCreditsCommitment = generateTreeCommitment(
           this.poll.perVoteOptionSpentVoiceCredits,
-          BigInt(asHex(tallyCircuitInputs!.newPerVOSpentVoiceCreditsRootSalt as BigNumberish)),
+          BigInt(asHex(tallyCircuitInputs!.newPerVoteOptionSpentVoiceCreditsRootSalt as BigNumberish)),
           this.poll.treeDepths.voteOptionTreeDepth,
         );
 
@@ -356,7 +356,7 @@ export class ProofGenerator {
         // update perVoteOptionSpentVoiceCredits in the tally file data
         tallyFileData.perVoteOptionSpentVoiceCredits = {
           tally: this.poll.perVoteOptionSpentVoiceCredits.map((x) => x.toString()),
-          salt: asHex(tallyCircuitInputs!.newPerVOSpentVoiceCreditsRootSalt as BigNumberish),
+          salt: asHex(tallyCircuitInputs!.newPerVoteOptionSpentVoiceCreditsRootSalt as BigNumberish),
           commitment: asHex(newPerVOSpentVoiceCreditsCommitment),
         };
       } else {

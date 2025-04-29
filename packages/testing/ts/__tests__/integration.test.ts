@@ -1,7 +1,7 @@
 /* eslint-disable no-await-in-loop */
 import { MaciState, ITreeDepths, VOTE_OPTION_TREE_ARITY } from "@maci-protocol/core";
 import { generatePublicKey, generateRandomSalt, poseidon } from "@maci-protocol/crypto";
-import { Keypair, PCommand, PrivateKey, PublicKey } from "@maci-protocol/domainobjs";
+import { Keypair, VoteCommand, PrivateKey, PublicKey } from "@maci-protocol/domainobjs";
 import {
   cidToBytes32,
   createCidFromObject,
@@ -330,7 +330,7 @@ describe("Integration tests", function test() {
           const encryptionPublicKey = new PublicKey(generatePublicKey(encryptionPrivateKey.raw));
 
           // create the command to add to the local state
-          const command = new PCommand(
+          const command = new VoteCommand(
             stateIndex,
             user.keypair.publicKey,
             voteOptionIndex!,

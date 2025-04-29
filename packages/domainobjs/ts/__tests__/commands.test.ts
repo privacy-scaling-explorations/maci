@@ -1,7 +1,7 @@
 import { generateRandomSalt } from "@maci-protocol/crypto";
 import { expect } from "chai";
 
-import { PCommand, Keypair } from "..";
+import { VoteCommand, Keypair } from "..";
 
 describe("Commands", () => {
   const { privateKey, publicKey } = new Keypair();
@@ -12,8 +12,8 @@ describe("Commands", () => {
     ((BigInt(1) << BigInt(50)) - BigInt(1)) & BigInt(generateRandomSalt().toString());
 
   describe("constructor", () => {
-    it("should create a PCommand", () => {
-      const command: PCommand = new PCommand(
+    it("should create a VoteCommand", () => {
+      const command: VoteCommand = new VoteCommand(
         random50bitBigInt(),
         publicKey,
         random50bitBigInt(),
@@ -27,7 +27,7 @@ describe("Commands", () => {
   });
 
   describe("signature", () => {
-    const command: PCommand = new PCommand(
+    const command: VoteCommand = new VoteCommand(
       random50bitBigInt(),
       publicKey,
       random50bitBigInt(),
@@ -43,7 +43,7 @@ describe("Commands", () => {
   });
 
   describe("encryption", () => {
-    const command: PCommand = new PCommand(
+    const command: VoteCommand = new VoteCommand(
       random50bitBigInt(),
       publicKey,
       random50bitBigInt(),
@@ -65,7 +65,7 @@ describe("Commands", () => {
     describe("decrypt", () => {
       const message = command.encrypt(signature, ecdhSharedKey);
 
-      const decrypted = PCommand.decrypt(message, ecdhSharedKey);
+      const decrypted = VoteCommand.decrypt(message, ecdhSharedKey);
 
       it("should decrypt a message and keep the correct values", () => {
         expect(decrypted).to.not.eq(null);
@@ -76,7 +76,7 @@ describe("Commands", () => {
       });
 
       it("should have a valid signature after decryption", () => {
-        const decryptedForce = PCommand.decrypt(message, ecdhSharedKey, true);
+        const decryptedForce = VoteCommand.decrypt(message, ecdhSharedKey, true);
 
         const isValid = decrypted.command.verifySignature(decrypted.signature, publicKey);
         expect(isValid).to.eq(true);
@@ -88,8 +88,8 @@ describe("Commands", () => {
   });
 
   describe("copy", () => {
-    it("should produce a deep copy for PCommand", () => {
-      const c1: PCommand = new PCommand(BigInt(10), publicKey, BigInt(0), BigInt(9), BigInt(1), BigInt(123));
+    it("should produce a deep copy for VoteCommand", () => {
+      const c1: VoteCommand = new VoteCommand(BigInt(10), publicKey, BigInt(0), BigInt(9), BigInt(1), BigInt(123));
 
       // shallow copy
       const c2 = c1;
@@ -107,7 +107,7 @@ describe("Commands", () => {
   describe("deserialization/serialization", () => {
     describe("toJSON", () => {
       it("should produce a JSON object with valid values", () => {
-        const c1: PCommand = new PCommand(BigInt(10), publicKey, BigInt(0), BigInt(9), BigInt(1), BigInt(123));
+        const c1: VoteCommand = new VoteCommand(BigInt(10), publicKey, BigInt(0), BigInt(9), BigInt(1), BigInt(123));
         const json = c1.toJSON();
         expect(json).to.not.eq(null);
         expect(json.stateIndex).to.eq("10");
@@ -119,10 +119,10 @@ describe("Commands", () => {
     });
 
     describe("fromJSON", () => {
-      it("should produce a PCommand from a JSON object", () => {
-        const c1: PCommand = new PCommand(BigInt(10), publicKey, BigInt(0), BigInt(9), BigInt(1), BigInt(123));
+      it("should produce a VoteCommand from a JSON object", () => {
+        const c1: VoteCommand = new VoteCommand(BigInt(10), publicKey, BigInt(0), BigInt(9), BigInt(1), BigInt(123));
         const json = c1.toJSON();
-        const c2 = PCommand.fromJSON(json);
+        const c2 = VoteCommand.fromJSON(json);
         expect(c2.equals(c1)).to.eq(true);
       });
     });

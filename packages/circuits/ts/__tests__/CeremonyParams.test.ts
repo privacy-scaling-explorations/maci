@@ -1,6 +1,6 @@
 import { MaciState, Poll, STATE_TREE_ARITY, MESSAGE_BATCH_SIZE } from "@maci-protocol/core";
 import { hash5, IncrementalQuinTree, poseidon } from "@maci-protocol/crypto";
-import { PrivateKey, Keypair, PCommand, Message, Ballot } from "@maci-protocol/domainobjs";
+import { PrivateKey, Keypair, VoteCommand, Message, Ballot } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
 
@@ -76,7 +76,7 @@ describe("Ceremony param tests", () => {
       let pollId: bigint;
       let poll: Poll;
       const messages: Message[] = [];
-      const commands: PCommand[] = [];
+      const commands: VoteCommand[] = [];
 
       before(() => {
         // Sign up and publish
@@ -105,7 +105,7 @@ describe("Ceremony param tests", () => {
         stateIndex = BigInt(poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance));
 
         // First command (valid)
-        const command = new PCommand(
+        const command = new VoteCommand(
           stateIndex, // BigInt(1),
           pollPublicKey,
           voteOptionIndex, // voteOptionIndex,
@@ -125,7 +125,7 @@ describe("Ceremony param tests", () => {
         poll.publishMessage(message, ecdhKeypair.publicKey);
 
         // Second command (valid)
-        const command2 = new PCommand(
+        const command2 = new VoteCommand(
           stateIndex,
           userKeypair.publicKey,
           voteOptionIndex, // voteOptionIndex,
@@ -194,10 +194,10 @@ describe("Ceremony param tests", () => {
         "currentResultsRootSalt",
         "currentSpentVoiceCreditSubtotal",
         "currentSpentVoiceCreditSubtotalSalt",
-        "currentPerVOSpentVoiceCredits",
-        "currentPerVOSpentVoiceCreditsRootSalt",
+        "currentPerVoteOptionSpentVoiceCredits",
+        "currentPerVoteOptionSpentVoiceCreditsRootSalt",
         "newResultsRootSalt",
-        "newPerVOSpentVoiceCreditsRootSalt",
+        "newPerVoteOptionSpentVoiceCreditsRootSalt",
         "newSpentVoiceCreditSubtotalSalt",
       ]
     >;
@@ -221,7 +221,7 @@ describe("Ceremony param tests", () => {
       beforeEach(() => {
         maciState = new MaciState(params.stateTreeDepth);
         const messages: Message[] = [];
-        const commands: PCommand[] = [];
+        const commands: VoteCommand[] = [];
         // Sign up and publish
         const userKeypair = new Keypair();
         maciState.signUp(userKeypair.publicKey);
@@ -248,7 +248,7 @@ describe("Ceremony param tests", () => {
         stateIndex = BigInt(poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance));
 
         // First command (valid)
-        const command = new PCommand(
+        const command = new VoteCommand(
           stateIndex,
           pollPublicKey,
           voteOptionIndex, // voteOptionIndex,
