@@ -20,7 +20,7 @@ To run tests on the individual files, you can execute the following commands:
 pnpm run test:crypto
 ```
 
-For more details about testing please refer to the [tests documentation](https://maci.pse.dev/docs/testing).
+For more details about testing please refer to the [tests documentation](https://maci.pse.dev/docs/guides/testing/testing-introduction).
 
 [crypto-npm-badge]: https://img.shields.io/npm/v/maci-crypto.svg
 [crypto-npm-link]: https://www.npmjs.com/package/maci-crypto
