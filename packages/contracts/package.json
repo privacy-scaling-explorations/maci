@@ -199,6 +199,7 @@
     "@types/lowdb": "^1.0.15",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.14.1",
+    "@types/sinon": "^17.0.4",
     "@types/snarkjs": "^0.7.9",
     "@types/uuid": "^10.0.0",
     "chai": "^4.3.10",
@@ -206,6 +207,7 @@
     "dotenv": "^16.5.0",
     "hardhat-artifactor": "^0.2.0",
     "hardhat-contract-sizer": "^2.10.0",
+    "sinon": "^20.0.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.8.3"
   }
