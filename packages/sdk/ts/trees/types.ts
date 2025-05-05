@@ -38,6 +38,16 @@ export interface IGenerateSignUpTreeArgs {
 }
 
 /**
+ * An interface that represents arguments of generation sign up tree which stops fetching at a given public key
+ */
+export interface IGenerateSignUpTreeWithEndKeyArgs extends IGenerateSignUpTreeArgs {
+  /**
+   * The public key of the user
+   */
+  userPublicKey: PublicKey;
+}
+
+/**
  * An interface that represents sign up tree and state leaves
  */
 export interface IGenerateSignUpTree {

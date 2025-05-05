@@ -13,6 +13,8 @@ import {
   deployConstantInitialVoiceCreditProxy,
   deployVerifier,
   deployMaci,
+  MACI__factory as MACIFactory,
+  genMaciStateTreeWithEndKey,
 } from "@maci-protocol/sdk";
 import { downloadPollJoiningArtifactsBrowser, joinPoll as joinPollBrowser } from "@maci-protocol/sdk/browser";
 import { expect } from "chai";
@@ -38,13 +40,7 @@ describe("joinPoll", function test() {
   let initialVoiceCreditProxyContractAddress: string;
   let verifierContractAddress: string;
 
-  const user = new Keypair();
-  const userPrivateKey = user.privateKey.serialize();
-  const userPublicKey = user.publicKey.serialize();
-
-  const user2 = new Keypair();
-  const user2PrivateKey = user2.privateKey.serialize();
-  const user2PublicKey = user2.publicKey.serialize();
+  const users = new Array(3).fill(undefined).map(() => new Keypair());
 
   const mockStateIndex = 1n;
   const mockPollId = 9000n;
@@ -95,14 +91,21 @@ describe("joinPoll", function test() {
     // signup the user
     await signup({
       maciAddress: maciAddresses.maciContractAddress,
-      maciPublicKey: userPublicKey,
+      maciPublicKey: users[0].publicKey.serialize(),
       sgData: DEFAULT_SG_DATA,
       signer,
     });
 
     await signup({
       maciAddress: maciAddresses.maciContractAddress,
-      maciPublicKey: user2PublicKey,
+      maciPublicKey: users[1].publicKey.serialize(),
+      sgData: DEFAULT_SG_DATA,
+      signer,
+    });
+
+    await signup({
+      maciAddress: maciAddresses.maciContractAddress,
+      maciPublicKey: users[2].publicKey.serialize(),
       sgData: DEFAULT_SG_DATA,
       signer,
     });
@@ -127,7 +130,7 @@ describe("joinPoll", function test() {
 
     await joinPoll({
       maciAddress: maciAddresses.maciContractAddress,
-      privateKey: userPrivateKey,
+      privateKey: users[0].privateKey.serialize(),
       stateIndex: 1n,
       signer,
       pollId: 0n,
@@ -143,7 +146,7 @@ describe("joinPoll", function test() {
     const registeredUserData = await getJoinedUserData({
       maciAddress: maciAddresses.maciContractAddress,
       pollId: 0n,
-      pollPublicKey: user.publicKey.serialize(),
+      pollPublicKey: users[0].publicKey.serialize(),
       signer,
       startBlock: startBlock || 0,
     });
@@ -162,7 +165,7 @@ describe("joinPoll", function test() {
 
     await joinPollBrowser({
       maciAddress: maciAddresses.maciContractAddress,
-      privateKey: user2PrivateKey,
+      privateKey: users[1].privateKey.serialize(),
       stateIndex: 2n,
       signer,
       pollId: 0n,
@@ -171,25 +174,68 @@ describe("joinPoll", function test() {
       pollWasm: wasm as unknown as string,
       sgDataArg: DEFAULT_SG_DATA,
       ivcpDataArg: DEFAULT_IVCP_DATA,
+      useLatestStateIndex: true,
     });
 
     const registeredUserData = await getJoinedUserData({
       maciAddress: maciAddresses.maciContractAddress,
       pollId: 0n,
-      pollPublicKey: user.publicKey.serialize(),
+      pollPublicKey: users[1].publicKey.serialize(),
       signer,
       startBlock: startBlock || 0,
     });
 
     expect(registeredUserData.isJoined).to.eq(true);
-    expect(BigInt(registeredUserData.pollStateIndex!)).to.eq(1);
+    expect(BigInt(registeredUserData.pollStateIndex!)).to.eq(2);
+  });
+
+  it("should allow to join the poll using a precomputed inclusion proof", async () => {
+    const startBlock = await signer.provider?.getBlockNumber();
+
+    const maciContract = MACIFactory.connect(maciAddresses.maciContractAddress, signer);
+    const stateTree = await genMaciStateTreeWithEndKey({
+      maciContract,
+      signer,
+      userPublicKey: users[2].publicKey,
+    });
+
+    const inclusionProof = stateTree.signUpTree.generateProof(3);
+
+    const { zKey, wasm } = await downloadPollJoiningArtifactsBrowser({
+      testing: true,
+      stateTreeDepth: 10,
+    });
+
+    await joinPollBrowser({
+      maciAddress: maciAddresses.maciContractAddress,
+      privateKey: users[2].privateKey.serialize(),
+      stateIndex: 3n,
+      signer,
+      pollId: 0n,
+      inclusionProof,
+      pollJoiningZkey: zKey as unknown as string,
+      pollWasm: wasm as unknown as string,
+      sgDataArg: DEFAULT_SG_DATA,
+      ivcpDataArg: DEFAULT_IVCP_DATA,
+    });
+
+    const registeredUserData = await getJoinedUserData({
+      maciAddress: maciAddresses.maciContractAddress,
+      pollId: 0n,
+      pollPublicKey: users[2].publicKey.serialize(),
+      signer,
+      startBlock: startBlock || 0,
+    });
+
+    expect(registeredUserData.isJoined).to.eq(true);
+    expect(BigInt(registeredUserData.pollStateIndex!)).to.eq(3);
   });
 
   it("should throw error if poll does not exist", async () => {
     await expect(
       joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
-        privateKey: userPrivateKey,
+        privateKey: users[0].privateKey.serialize(),
         stateIndex: mockStateIndex,
         signer,
         pollId: mockPollId,
@@ -221,7 +267,7 @@ describe("joinPoll", function test() {
     await expect(
       joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
-        privateKey: userPrivateKey,
+        privateKey: users[0].privateKey.serialize(),
         stateIndex: mockStateIndex,
         signer,
         pollId: -1n,

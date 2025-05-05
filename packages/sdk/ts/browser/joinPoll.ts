@@ -3,27 +3,24 @@ import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "@mac
 import { poseidon } from "@maci-protocol/crypto";
 import { Keypair, PrivateKey } from "@maci-protocol/domainobjs";
 
-import type { IJoinPollArgs, IJoinPollData } from "../user/types";
+import type { IJoinPollBrowserArgs, IJoinPollData } from "../user/types";
+import type { TCircuitInputs } from "../utils/types";
 
-import {
-  getPollJoiningCircuitEvents,
-  getPollJoiningCircuitInputsFromStateFile,
-  hasUserJoinedPoll,
-} from "../user/utils";
+import { getPollJoiningCircuitEvents, hasUserJoinedPoll, joiningCircuitInputs } from "../user/utils";
 import { contractExists } from "../utils/contracts";
-import { TCircuitInputs } from "../utils/types";
 
 import { generateProofSnarkjs, formatProofForVerifierContract } from "./utils";
 
 /**
  * Join Poll user to the Poll contract
+ * @dev This version is optimised to work on browsers
+ * @dev It uses WASM + accepts already created inclusion proofs
  * @param {IJoinPollArgs} args - The arguments for the join poll command
  * @returns {IJoinPollData} The poll state index of the joined user and transaction hash
  */
 export const joinPoll = async ({
   maciAddress,
   privateKey,
-  stateFile,
   pollId,
   signer,
   startBlock,
@@ -33,7 +30,9 @@ export const joinPoll = async ({
   pollWasm,
   sgDataArg,
   ivcpDataArg,
-}: IJoinPollArgs): Promise<IJoinPollData> => {
+  inclusionProof,
+  useLatestStateIndex,
+}: IJoinPollBrowserArgs): Promise<IJoinPollData> => {
   const validContract = await contractExists(signer.provider!, maciAddress);
 
   if (!validContract) {
@@ -71,15 +70,12 @@ export const joinPoll = async ({
   // get the state index from the MACI contract
   const stateIndex = await maciContract.getStateIndex(userMaciPublicKey.hash()).catch(() => -1n);
 
+  const stateTreeDepth = await maciContract.stateTreeDepth();
+
   let circuitInputs: TCircuitInputs;
 
-  if (stateFile) {
-    circuitInputs = await getPollJoiningCircuitInputsFromStateFile({
-      stateFile,
-      pollId,
-      stateIndex,
-      userMaciPrivateKey,
-    });
+  if (inclusionProof) {
+    circuitInputs = joiningCircuitInputs(inclusionProof, stateTreeDepth, userMaciPrivateKey, userMaciPublicKey, pollId);
   } else {
     circuitInputs = await getPollJoiningCircuitEvents({
       maciContract,
@@ -93,7 +89,9 @@ export const joinPoll = async ({
     });
   }
 
-  const currentStateRootIndex = Number.parseInt((await maciContract.totalSignups()).toString(), 10) - 1;
+  const stateRootIndex = useLatestStateIndex
+    ? Number.parseInt((await maciContract.totalSignups()).toString(), 10) - 1
+    : stateIndex;
 
   // generate the proof for this batch
   const { proof } = await generateProofSnarkjs({
@@ -106,7 +104,7 @@ export const joinPoll = async ({
   const tx = await pollContract.joinPoll(
     nullifier,
     userMaciPublicKey.asContractParam(),
-    currentStateRootIndex,
+    stateRootIndex,
     formatProofForVerifierContract(proof),
     sgDataArg,
     ivcpDataArg,
