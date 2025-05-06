@@ -75,8 +75,8 @@ importers:
         specifier: ^3.5.3
         version: 3.5.3
       prettier-plugin-solidity:
-        specifier: ^1.4.2
-        version: 1.4.2(prettier@3.5.3)
+        specifier: ^2.0.0
+        version: 2.0.0(prettier@3.5.3)
       solhint:
         specifier: ^5.0.5
         version: 5.0.5(typescript@5.8.3)
@@ -2105,6 +2105,9 @@ packages:
   '@bcoe/v8-coverage@0.2.3':
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
 
+  '@bytecodealliance/preview2-shim@0.17.2':
+    resolution: {integrity: sha512-mNm/lblgES8UkVle8rGImXOz4TtL3eU3inHay/7TVchkKrb/lgcVvTK0+VAw8p5zQ0rgQsXm1j5dOlAAd+MeoA==}
+
   '@chainsafe/as-chacha20poly1305@0.1.0':
     resolution: {integrity: sha512-BpNcL8/lji/GM3+vZ/bgRWqJ1q5kwvTFmGPk7pxm/QQZDbaMI98waOHjEymTjq2JmdD/INdNBFOVSyJofXg7ew==}
 
@@ -3704,6 +3707,9 @@ packages:
   '@nomicfoundation/ignition-ui@0.15.11':
     resolution: {integrity: sha512-VPOVl5xqCKhYCyPOQlposx+stjCwqXQ+BCs5lnw/f2YUfgII+G5Ye0JfHiJOfCJGmqyS03WertBslcj9zQg50A==}
 
+  '@nomicfoundation/slang@1.1.0':
+    resolution: {integrity: sha512-g2BofMUq1qCP22L/ksOftScrCxjdHTxgg8ch5PYon2zfSSKGCMwE4TgIC64CuorMcSsvCmqNNFEWR/fwFcMeTw==}
+
   '@nomicfoundation/solidity-analyzer-darwin-arm64@0.1.2':
     resolution: {integrity: sha512-JaqcWPDZENCvm++lFFGjrDd8mxtf+CtLd2MiXvMNTBD33dContTZ9TWETwNFwg7JTJT5Q9HEecH7FA+HTSsIUw==}
     engines: {node: '>= 12'}
@@ -4248,6 +4254,9 @@ packages:
 
   '@solidity-parser/parser@0.19.0':
     resolution: {integrity: sha512-RV16k/qIxW/wWc+mLzV3ARyKUaMUTBy9tOLMzFhtNSKYeTAanQ3a5MudJKf/8arIFnA2L27SNjarQKmFg0w/jA==}
+
+  '@solidity-parser/parser@0.20.1':
+    resolution: {integrity: sha512-58I2sRpzaQUN+jJmWbHfbWf9AKfzqCI8JAdFB0vbyY+u8tBRcuTt9LxzasvR0LGQpcRv97eyV7l61FQ3Ib7zVw==}
 
   '@svgr/babel-plugin-add-jsx-attribute@8.0.0':
     resolution: {integrity: sha512-b9MIk7yhdS1pMCZM8VeNfUlSKVRhsHZNMl5O9SfaX0l0t5wjdgu4IDzGB8bpnGBBOjGST3rRFVsaaEtI4W6f7g==}
@@ -11335,11 +11344,11 @@ packages:
     resolution: {integrity: sha512-GbK2cP9nraSSUF9N2XwUwqfzlAFlMNYYl+ShE/V+H8a9uNl/oUqB1w2EL54Jh0OlyRSd8RfWYJ3coVS4TROP2w==}
     engines: {node: '>=6.0.0'}
 
-  prettier-plugin-solidity@1.4.2:
-    resolution: {integrity: sha512-VVD/4XlDjSzyPWWCPW8JEleFa8JNKFYac5kNlMjVXemQyQZKfpekPMhFZSePuXB6L+RixlFvWe20iacGjFYrLw==}
+  prettier-plugin-solidity@2.0.0:
+    resolution: {integrity: sha512-tis3SwLSrYKDzzRFle48fjPM4GQKBtkVBUajAkt4b75/cc6zojFP7qjz6fDxKfup+34q0jKeSM3QeP9flJFXWw==}
     engines: {node: '>=18'}
     peerDependencies:
-      prettier: '>=2.3.0'
+      prettier: '>=3.0.0'
 
   prettier@2.8.8:
     resolution: {integrity: sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q==}
@@ -15827,6 +15836,8 @@ snapshots:
 
   '@bcoe/v8-coverage@0.2.3': {}
 
+  '@bytecodealliance/preview2-shim@0.17.2': {}
+
   '@chainsafe/as-chacha20poly1305@0.1.0': {}
 
   '@chainsafe/as-sha256@1.0.1': {}
@@ -19220,6 +19231,10 @@ snapshots:
 
   '@nomicfoundation/ignition-ui@0.15.11': {}
 
+  '@nomicfoundation/slang@1.1.0':
+    dependencies:
+      '@bytecodealliance/preview2-shim': 0.17.2
+
   '@nomicfoundation/solidity-analyzer-darwin-arm64@0.1.2':
     optional: true
 
@@ -20049,6 +20064,8 @@ snapshots:
       antlr4ts: 0.5.0-alpha.4
 
   '@solidity-parser/parser@0.19.0': {}
+
+  '@solidity-parser/parser@0.20.1': {}
 
   '@svgr/babel-plugin-add-jsx-attribute@8.0.0(@babel/core@7.26.10)':
     dependencies:
@@ -29159,9 +29176,10 @@ snapshots:
     dependencies:
       fast-diff: 1.3.0
 
-  prettier-plugin-solidity@1.4.2(prettier@3.5.3):
+  prettier-plugin-solidity@2.0.0(prettier@3.5.3):
     dependencies:
-      '@solidity-parser/parser': 0.19.0
+      '@nomicfoundation/slang': 1.1.0
+      '@solidity-parser/parser': 0.20.1
       prettier: 3.5.3
       semver: 7.7.1
 
