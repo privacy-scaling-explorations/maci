@@ -24,7 +24,7 @@ export const deployPoll = async ({
   maciAddress,
   pollStartTimestamp,
   pollEndTimestamp,
-  intStateTreeDepth,
+  tallyProcessingStateTreeDepth,
   voteOptionTreeDepth,
   messageBatchSize,
   stateTreeDepth,
@@ -99,7 +99,7 @@ export const deployPoll = async ({
   }
 
   // required arg -> int state tree depth
-  if (intStateTreeDepth <= 0) {
+  if (tallyProcessingStateTreeDepth <= 0) {
     throw new Error("Int state tree depth cannot be <= 0");
   }
 
@@ -127,7 +127,7 @@ export const deployPoll = async ({
       startDate: pollStartTimestamp,
       endDate: pollEndTimestamp,
       treeDepths: {
-        intStateTreeDepth,
+        tallyProcessingStateTreeDepth,
         voteOptionTreeDepth,
         stateTreeDepth,
       },

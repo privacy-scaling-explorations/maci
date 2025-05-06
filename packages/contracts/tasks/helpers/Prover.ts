@@ -236,13 +236,13 @@ export class Prover {
 
     const onChainTallyVerifyingKey = await this.verifyingKeysRegistryContract.getTallyVerifyingKey(
       stateTreeDepth,
-      treeDepths.intStateTreeDepth,
+      treeDepths.tallyProcessingStateTreeDepth,
       treeDepths.voteOptionTreeDepth,
       mode,
     );
 
     const totalSignups = Number(totalSignupsAndMessages[0]);
-    const tallyBatchSize = STATE_TREE_ARITY ** Number(treeDepths.intStateTreeDepth);
+    const tallyBatchSize = STATE_TREE_ARITY ** Number(treeDepths.tallyProcessingStateTreeDepth);
 
     // vote tallying proofs
     const totalTallyBatches =

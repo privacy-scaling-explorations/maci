@@ -149,8 +149,8 @@ describe("E2E Deployment Tests", () => {
     config.VerifyingKeysRegistry.args.stateTreeDepth = config.VerifyingKeysRegistry.args.stateTreeDepth.toString();
     config.VerifyingKeysRegistry.args.pollStateTreeDepth =
       config.VerifyingKeysRegistry.args.pollStateTreeDepth.toString();
-    config.VerifyingKeysRegistry.args.intStateTreeDepth =
-      config.VerifyingKeysRegistry.args.intStateTreeDepth.toString();
+    config.VerifyingKeysRegistry.args.tallyProcessingStateTreeDepth =
+      config.VerifyingKeysRegistry.args.tallyProcessingStateTreeDepth.toString();
     config.VerifyingKeysRegistry.args.voteOptionTreeDepth =
       config.VerifyingKeysRegistry.args.voteOptionTreeDepth.toString();
 

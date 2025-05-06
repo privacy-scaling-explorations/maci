@@ -141,7 +141,7 @@ export const generateMaciStateFromContract = async ({
   assert(coordinatorPublicKeyOnChain[1].toString() === coordinatorKeypair.publicKey.raw[1].toString());
 
   const treeDepths = {
-    intStateTreeDepth: Number(onChainTreeDepths.intStateTreeDepth),
+    tallyProcessingStateTreeDepth: Number(onChainTreeDepths.tallyProcessingStateTreeDepth),
     voteOptionTreeDepth: Number(onChainTreeDepths.voteOptionTreeDepth),
     stateTreeDepth: Number(onChainTreeDepths.stateTreeDepth),
   };

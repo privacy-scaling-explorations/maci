@@ -292,17 +292,21 @@ export class DeployerService {
       process.env.COORDINATOR_POLL_JOINING_ZKEY_NAME!,
       EMode.QV,
     );
+
     const { zkey: pollJoinedZkeyPath } = this.fileService.getZkeyFilePaths(
       process.env.COORDINATOR_POLL_JOINED_ZKEY_NAME!,
       EMode.QV,
     );
+
     const { zkey: processMessagesZkeyPath } = this.fileService.getZkeyFilePaths(
       process.env.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME!,
       mode,
     );
+
+    // There are only QV and Non-QV modes
     const { zkey: tallyVotesZkeyPath } = this.fileService.getZkeyFilePaths(
       process.env.COORDINATOR_TALLY_ZKEY_NAME!,
-      mode,
+      mode === EMode.QV ? mode : EMode.NON_QV,
     );
 
     const { pollJoiningVerifyingKey, pollJoinedVerifyingKey, processVerifyingKey, tallyVerifyingKey } =
@@ -313,7 +317,7 @@ export class DeployerService {
         tallyVotesZkeyPath,
       });
 
-    const { stateTreeDepth, pollStateTreeDepth, intStateTreeDepth, voteOptionTreeDepth, messageBatchSize } =
+    const { stateTreeDepth, pollStateTreeDepth, tallyProcessingStateTreeDepth, voteOptionTreeDepth, messageBatchSize } =
       verifyingKeysRegistryArgs;
 
     return {
@@ -322,7 +326,7 @@ export class DeployerService {
       processMessagesVerifyingKey: processVerifyingKey!,
       tallyVotesVerifyingKey: tallyVerifyingKey!,
       stateTreeDepth: Number(stateTreeDepth),
-      intStateTreeDepth: Number(intStateTreeDepth),
+      tallyProcessingStateTreeDepth: Number(tallyProcessingStateTreeDepth),
       voteOptionTreeDepth: Number(voteOptionTreeDepth),
       messageBatchSize: Number(messageBatchSize),
       pollStateTreeDepth: Number(pollStateTreeDepth),
@@ -445,7 +449,7 @@ export class DeployerService {
       maciAddress,
       pollStartTimestamp: config.startDate,
       pollEndTimestamp: config.endDate,
-      intStateTreeDepth: config.intStateTreeDepth,
+      tallyProcessingStateTreeDepth: config.tallyProcessingStateTreeDepth,
       voteOptionTreeDepth: config.voteOptionTreeDepth,
       messageBatchSize: config.messageBatchSize,
       stateTreeDepth: config.pollStateTreeDepth,

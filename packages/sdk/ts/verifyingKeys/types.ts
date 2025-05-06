@@ -29,7 +29,7 @@ export interface IGetAllVerifyingKeysArgs {
   /**
    * The depth of the ballot tree
    */
-  intStateTreeDepth: number;
+  tallyProcessingStateTreeDepth: number;
   /**
    * The mode to use for the contract calls
    */
@@ -142,7 +142,7 @@ export interface ISetVerifyingKeysArgs {
   /**
    * The intermediate state tree depth (ballot tree)
    */
-  intStateTreeDepth: number;
+  tallyProcessingStateTreeDepth: number;
 
   /**
    * The vote option tree depth
@@ -182,7 +182,7 @@ export interface ICheckVerifyingKeysArgs {
   /**
    * The depth of the state subtree
    */
-  intStateTreeDepth: number;
+  tallyProcessingStateTreeDepth: number;
 
   /**
    * The depth of the vote option tree

@@ -70,9 +70,9 @@ export const initialVoiceCreditBalance = 100;
 export const maxVoteOptions = 25;
 
 export const treeDepths: ITreeDepths = {
-  intStateTreeDepth: 1,
+  tallyProcessingStateTreeDepth: 1,
   voteOptionTreeDepth: 2,
   stateTreeDepth: 10,
 };
 
-export const tallyBatchSize = STATE_TREE_ARITY ** treeDepths.intStateTreeDepth;
+export const tallyBatchSize = STATE_TREE_ARITY ** treeDepths.tallyProcessingStateTreeDepth;

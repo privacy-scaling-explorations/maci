@@ -23,11 +23,11 @@ export type TCircuitInputs = Record<string, string | bigint | bigint[] | bigint[
 
 /**
  * This interface defines the tree depths.
- * @property intStateTreeDepth - The depth of the intermediate state tree.
+ * @property tallyProcessingStateTreeDepth - The depth of the intermediate state tree.
  * @property voteOptionTreeDepth - The depth of the vote option tree.
  */
 export interface ITreeDepths {
-  intStateTreeDepth: number;
+  tallyProcessingStateTreeDepth: number;
   voteOptionTreeDepth: number;
   stateTreeDepth: number;
 }

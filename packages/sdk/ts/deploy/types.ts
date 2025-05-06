@@ -26,7 +26,7 @@ export interface IDeployPollArgs {
   /**
    * The depth of the integer state tree
    */
-  intStateTreeDepth: number;
+  tallyProcessingStateTreeDepth: number;
 
   /**
    * The depth of the vote option tree

@@ -41,7 +41,7 @@ import path from "path";
 import {
   DEFAULT_INITIAL_VOICE_CREDITS,
   DEFAULT_VOTE_OPTIONS,
-  INT_STATE_TREE_DEPTH,
+  TALLY_PROCESSING_STATE_TREE_DEPTH,
   MESSAGE_BATCH_SIZE,
   STATE_TREE_DEPTH,
   VOTE_OPTION_TREE_DEPTH,
@@ -94,7 +94,7 @@ describe("Integration tests", function test() {
     await setVerifyingKeys({
       stateTreeDepth: STATE_TREE_DEPTH,
       pollStateTreeDepth: POLL_STATE_TREE_DEPTH,
-      intStateTreeDepth: INT_STATE_TREE_DEPTH,
+      tallyProcessingStateTreeDepth: TALLY_PROCESSING_STATE_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
       mode: EMode.QV,
@@ -152,7 +152,7 @@ describe("Integration tests", function test() {
     await deployPoll({
       pollEndTimestamp: startDate + pollDuration,
       pollStartTimestamp: startDate,
-      intStateTreeDepth: INT_STATE_TREE_DEPTH,
+      tallyProcessingStateTreeDepth: TALLY_PROCESSING_STATE_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
       stateTreeDepth: POLL_STATE_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
@@ -170,7 +170,7 @@ describe("Integration tests", function test() {
     });
 
     const treeDepths: ITreeDepths = {
-      intStateTreeDepth: INT_STATE_TREE_DEPTH,
+      tallyProcessingStateTreeDepth: TALLY_PROCESSING_STATE_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       stateTreeDepth: POLL_STATE_TREE_DEPTH,
     };

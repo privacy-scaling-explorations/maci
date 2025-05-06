@@ -140,7 +140,7 @@ export interface IPollParams {
   /**
    * The depth of the tree holding the user ballots
    */
-  intStateTreeDepth: number;
+  tallyProcessingStateTreeDepth: number;
 }
 
 /**

@@ -33,9 +33,9 @@ deployment.deployTask(EDeploySteps.VerifyingKeysRegistry, "Deploy verifying key 
     const stateTreeDepth = deployment.getDeployConfigField<number>(EContracts.VerifyingKeysRegistry, "stateTreeDepth");
     const pollStateTreeDepth =
       deployment.getDeployConfigField<number>(EContracts.Poll, "stateTreeDepth") || stateTreeDepth;
-    const intStateTreeDepth = deployment.getDeployConfigField<number>(
+    const tallyProcessingStateTreeDepth = deployment.getDeployConfigField<number>(
       EContracts.VerifyingKeysRegistry,
-      "intStateTreeDepth",
+      "tallyProcessingStateTreeDepth",
     );
     const messageBatchSize = deployment.getDeployConfigField<number>(
       EContracts.VerifyingKeysRegistry,
@@ -140,7 +140,7 @@ deployment.deployTask(EDeploySteps.VerifyingKeysRegistry, "Deploy verifying key 
       .setVerifyingKeysBatch({
         stateTreeDepth,
         pollStateTreeDepth,
-        intStateTreeDepth,
+        tallyProcessingStateTreeDepth,
         voteOptionTreeDepth,
         messageBatchSize,
         modes,

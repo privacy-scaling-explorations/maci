@@ -18,22 +18,22 @@ include "../../utils/PoseidonHasher.circom";
  */
 template TallyVotesNonQv(
     stateTreeDepth,
-    intStateTreeDepth,
+    tallyProcessingStateTreeDepth,
     voteOptionTreeDepth
 ) {
     // Ensure there's at least one level in the vote option tree.
     assert(voteOptionTreeDepth > 0);
     // Ensure the intermediate state tree has at least one level.
-    assert(intStateTreeDepth > 0);
+    assert(tallyProcessingStateTreeDepth > 0);
     // The intermediate state tree must be smaller than the full state tree.
-    assert(intStateTreeDepth < stateTreeDepth); 
+    assert(tallyProcessingStateTreeDepth < stateTreeDepth); 
 
     // Number of children per node in the tree, defining the tree's branching factor.
     var TREE_ARITY = 5;
     var BALLOT_TREE_ARITY = 2;
 
     // The number of ballots processed at once, determined by the depth of the intermediate state tree.
-    var batchSize = BALLOT_TREE_ARITY ** intStateTreeDepth;
+    var batchSize = BALLOT_TREE_ARITY ** tallyProcessingStateTreeDepth;
     // Number of voting options available, determined by the depth of the vote option tree.
     var totalVoteOptions = TREE_ARITY ** voteOptionTreeDepth;
 
@@ -44,7 +44,7 @@ template TallyVotesNonQv(
     // Index for the voting option root in the ballot array.
     var BALLOT_VOTE_OPTION_ROOT_INDEX = 1;
     // Difference in tree depths, used in path calculations.
-    var STATE_INT_TREE_DEPTH_DIFFERENCE = stateTreeDepth - intStateTreeDepth;
+    var STATE_TREE_DEPTH_DIFFERENCE = stateTreeDepth - tallyProcessingStateTreeDepth;
 
     // Root of the state Merkle tree, representing the overall state before voting.
     signal input stateRoot;
@@ -64,7 +64,7 @@ template TallyVotesNonQv(
     signal input totalSignups;
     // Ballots and their corresponding path elements for verification in the tree.
     signal input ballots[batchSize][BALLOT_LENGTH];
-    signal input ballotPathElements[STATE_INT_TREE_DEPTH_DIFFERENCE][BALLOT_TREE_ARITY - 1];
+    signal input ballotPathElements[STATE_TREE_DEPTH_DIFFERENCE][BALLOT_TREE_ARITY - 1];
     signal input votes[batchSize][totalVoteOptions];
     // Current results for each vote option.
     signal input currentResults[totalVoteOptions];
@@ -95,11 +95,11 @@ template TallyVotesNonQv(
         computedBallotHashers[i] = PoseidonHasher(2)([ballots[i][BALLOT_NONCE_INDEX], ballots[i][BALLOT_VOTE_OPTION_ROOT_INDEX]]);
     }
 
-    var computedBallotSubroot = CheckRoot(intStateTreeDepth)(computedBallotHashers);
-    var computedBallotPathIndices[STATE_INT_TREE_DEPTH_DIFFERENCE] = MerklePathIndicesGenerator(STATE_INT_TREE_DEPTH_DIFFERENCE)(index / batchSize);
+    var computedBallotSubroot = CheckRoot(tallyProcessingStateTreeDepth)(computedBallotHashers);
+    var computedBallotPathIndices[STATE_TREE_DEPTH_DIFFERENCE] = MerklePathIndicesGenerator(STATE_TREE_DEPTH_DIFFERENCE)(index / batchSize);
 
     // Verifies each ballot's existence within the ballot tree.
-    LeafExists(STATE_INT_TREE_DEPTH_DIFFERENCE)(
+    LeafExists(STATE_TREE_DEPTH_DIFFERENCE)(
         computedBallotSubroot,
         ballotPathElements,
         computedBallotPathIndices,
@@ -122,13 +122,14 @@ template TallyVotesNonQv(
     var computedCalculateTotalResult[totalVoteOptions];
 
     for (var i = 0; i < totalVoteOptions; i++) {
-        var computedNumsRC[batchSize + 1];
-        computedNumsRC[batchSize] = currentResults[i] * computedIsZero;
+        var computedVotes[batchSize + 1];
+        computedVotes[batchSize] = currentResults[i] * computedIsZero;
+
         for (var j = 0; j < batchSize; j++) {
-            computedNumsRC[j] = votes[j][i];
+            computedVotes[j] = votes[j][i];
         }
 
-        computedCalculateTotalResult[i] = CalculateTotal(batchSize + 1)(computedNumsRC);
+        computedCalculateTotalResult[i] = CalculateTotal(batchSize + 1)(computedVotes);
     }
 
     // Tally the new spent voice credit total.
@@ -235,4 +236,3 @@ template TallyVotesNonQv(
     
     computedNewTallyCommitment === newTallyCommitment;
 }
-

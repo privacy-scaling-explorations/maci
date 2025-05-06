@@ -17,7 +17,7 @@ import { compareVerifyingKeys, extractAllVerifyingKeys, getAllOnChainVerifyingKe
  */
 export const checkVerifyingKeys = async ({
   stateTreeDepth,
-  intStateTreeDepth,
+  tallyProcessingStateTreeDepth,
   voteOptionTreeDepth,
   messageBatchSize,
   processMessagesZkeyPath,
@@ -71,7 +71,7 @@ export const checkVerifyingKeys = async ({
     stateTreeDepth,
     voteOptionTreeDepth,
     messageBatchSize,
-    intStateTreeDepth,
+    tallyProcessingStateTreeDepth,
     mode,
   });
 

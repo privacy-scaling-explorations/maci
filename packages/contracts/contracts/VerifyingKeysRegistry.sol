@@ -122,7 +122,7 @@ contract VerifyingKeysRegistry is Ownable, DomainObjs, SnarkCommon, IVerifyingKe
     for (uint256 index = 0; index < length; ) {
       setVerifyingKeys(
         _args.stateTreeDepth,
-        _args.intStateTreeDepth,
+        _args.tallyProcessingStateTreeDepth,
         _args.voteOptionTreeDepth,
         _args.messageBatchSize,
         _args.modes[index],

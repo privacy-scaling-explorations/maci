@@ -82,7 +82,7 @@ describe("VerifyingKeysRegistry", () => {
     it("should set the process, tally verifying keys", async () => {
       const tx = await verifyingKeysRegistryContract.setVerifyingKeys(
         stateTreeDepth,
-        treeDepths.intStateTreeDepth,
+        treeDepths.tallyProcessingStateTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
         EMode.QV,
@@ -97,7 +97,7 @@ describe("VerifyingKeysRegistry", () => {
       await expect(
         verifyingKeysRegistryContract.setVerifyingKeys(
           stateTreeDepth,
-          treeDepths.intStateTreeDepth,
+          treeDepths.tallyProcessingStateTreeDepth,
           treeDepths.voteOptionTreeDepth,
           messageBatchSize,
           EMode.QV,
@@ -110,7 +110,7 @@ describe("VerifyingKeysRegistry", () => {
     it("should allow to set verifying keys for different params", async () => {
       const tx = await verifyingKeysRegistryContract.setVerifyingKeys(
         stateTreeDepth + 1,
-        treeDepths.intStateTreeDepth,
+        treeDepths.tallyProcessingStateTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
         EMode.QV,
@@ -124,7 +124,7 @@ describe("VerifyingKeysRegistry", () => {
     it("should allow to set verifying keys for different modes", async () => {
       const tx = await verifyingKeysRegistryContract.setVerifyingKeys(
         stateTreeDepth + 1,
-        treeDepths.intStateTreeDepth,
+        treeDepths.tallyProcessingStateTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
         EMode.NON_QV,
@@ -141,7 +141,7 @@ describe("VerifyingKeysRegistry", () => {
       const tx = await verifyingKeysRegistryContract.setVerifyingKeysBatch({
         stateTreeDepth,
         pollStateTreeDepth,
-        intStateTreeDepth: treeDepths.intStateTreeDepth,
+        tallyProcessingStateTreeDepth: treeDepths.tallyProcessingStateTreeDepth,
         voteOptionTreeDepth: treeDepths.voteOptionTreeDepth,
         messageBatchSize,
         modes: [EMode.NON_QV],
@@ -160,7 +160,7 @@ describe("VerifyingKeysRegistry", () => {
         verifyingKeysRegistryContract.setVerifyingKeysBatch({
           stateTreeDepth,
           pollStateTreeDepth,
-          intStateTreeDepth: treeDepths.intStateTreeDepth,
+          tallyProcessingStateTreeDepth: treeDepths.tallyProcessingStateTreeDepth,
           voteOptionTreeDepth: treeDepths.voteOptionTreeDepth,
           messageBatchSize,
           modes: [EMode.QV],
@@ -206,7 +206,7 @@ describe("VerifyingKeysRegistry", () => {
         expect(
           await verifyingKeysRegistryContract.hasTallyVerifyingKey(
             stateTreeDepth,
-            treeDepths.intStateTreeDepth,
+            treeDepths.tallyProcessingStateTreeDepth,
             treeDepths.voteOptionTreeDepth,
             EMode.QV,
           ),
@@ -217,7 +217,7 @@ describe("VerifyingKeysRegistry", () => {
         expect(
           await verifyingKeysRegistryContract.hasTallyVerifyingKey(
             stateTreeDepth + 2,
-            treeDepths.intStateTreeDepth,
+            treeDepths.tallyProcessingStateTreeDepth,
             treeDepths.voteOptionTreeDepth,
             EMode.QV,
           ),
@@ -261,7 +261,7 @@ describe("VerifyingKeysRegistry", () => {
       it("should generate a valid signature", async () => {
         const signature = await verifyingKeysRegistryContract.generateTallyVerifyingKeySignature(
           stateTreeDepth,
-          treeDepths.intStateTreeDepth,
+          treeDepths.tallyProcessingStateTreeDepth,
           treeDepths.voteOptionTreeDepth,
         );
         const verifyingKey = await verifyingKeysRegistryContract.getTallyVerifyingKeyBySignature(signature, EMode.QV);

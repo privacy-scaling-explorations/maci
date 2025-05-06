@@ -16,7 +16,7 @@ import { IInitialVoiceCreditProxy } from "../interfaces/IInitialVoiceCreditProxy
 contract Params {
   /// @notice A struct holding the depths of the merkle trees
   struct TreeDepths {
-    uint8 intStateTreeDepth;
+    uint8 tallyProcessingStateTreeDepth;
     uint8 voteOptionTreeDepth;
     uint8 stateTreeDepth;
   }

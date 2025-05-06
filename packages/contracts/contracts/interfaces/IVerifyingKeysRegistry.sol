@@ -12,8 +12,8 @@ interface IVerifyingKeysRegistry {
     uint256 stateTreeDepth;
     /// @param pollStateTreeDepth The poll state tree depth
     uint256 pollStateTreeDepth;
-    /// @param intStateTreeDepth The intermediate state tree depth
-    uint256 intStateTreeDepth;
+    /// @param tallyProcessingStateTreeDepth The intermediate state tree depth
+    uint256 tallyProcessingStateTreeDepth;
     /// @param voteOptionTreeDepth The vote option tree depth
     uint256 voteOptionTreeDepth;
     /// @param messageBatchSize The message batch size
