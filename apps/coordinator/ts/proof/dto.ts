@@ -1,5 +1,6 @@
+import { EMode } from "@maci-protocol/sdk";
 import { ApiProperty } from "@nestjs/swagger";
-import { IsBoolean, IsEnum, IsEthereumAddress, IsInt, IsOptional, IsString, Length, Max, Min } from "class-validator";
+import { IsEnum, IsEthereumAddress, IsInt, IsOptional, IsString, Length, Max, Min } from "class-validator";
 
 import type { Hex } from "viem";
 
@@ -32,14 +33,14 @@ export class GenerateProofDto {
   maciContractAddress!: string;
 
   /**
-   * Whether to use Qv or NonQv
+   * Voting mode
    */
   @ApiProperty({
-    description: "Whether to use quadratic voting or not",
-    type: Boolean,
+    description: "Voting mode (qv: 0, non-qv: 1, full: 2)",
+    type: Number,
   })
-  @IsBoolean()
-  useQuadraticVoting!: boolean;
+  @IsEnum(EMode)
+  mode!: EMode;
 
   /**
    * Encrypted coordinator private key with RSA public key (see .env.example)

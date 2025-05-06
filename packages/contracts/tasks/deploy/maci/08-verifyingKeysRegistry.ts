@@ -1,9 +1,9 @@
+import { EMode } from "@maci-protocol/core";
 import { type IVerifyingKeyObjectParams, VerifyingKey } from "@maci-protocol/domainobjs";
 
 import type { IVerifyingKeyStruct } from "../../../ts/types";
 import type { VerifyingKeysRegistry } from "../../../typechain-types";
 
-import { EMode } from "../../../ts/constants";
 import { info, logGreen } from "../../../ts/logger";
 import { extractVerifyingKey } from "../../../ts/proofs";
 import { EDeploySteps } from "../../helpers/constants";
@@ -69,15 +69,26 @@ deployment.deployTask(EDeploySteps.VerifyingKeysRegistry, "Deploy verifying key 
       EContracts.VerifyingKeysRegistry,
       "zkeys.nonQv.tallyVotesZkey",
     );
-    const useQuadraticVoting =
-      deployment.getDeployConfigField<boolean | null>(EContracts.Poll, "useQuadraticVoting") ?? false;
+    const tallyVotesZkeyPathFull = deployment.getDeployConfigField<string>(
+      EContracts.VerifyingKeysRegistry,
+      "zkeys.full.tallyVotesZkey",
+    );
+    const processMessagesZkeyPathFull = deployment.getDeployConfigField<string>(
+      EContracts.VerifyingKeysRegistry,
+      "zkeys.full.processMessagesZkey",
+    );
+    const mode = deployment.getDeployConfigField<EMode | null>(EContracts.Poll, "mode") ?? EMode.NON_QV;
 
-    if (useQuadraticVoting && (!tallyVotesZkeyPathQv || !processMessagesZkeyPathQv)) {
+    if (mode === EMode.QV && (!tallyVotesZkeyPathQv || !processMessagesZkeyPathQv)) {
       throw new Error("QV zkeys are not set");
     }
 
-    if (!useQuadraticVoting && (!tallyVotesZkeyPathNonQv || !processMessagesZkeyPathNonQv)) {
+    if (mode === EMode.NON_QV && (!tallyVotesZkeyPathNonQv || !processMessagesZkeyPathNonQv)) {
       throw new Error("Non-QV zkeys are not set");
+    }
+
+    if (mode === EMode.FULL && (!tallyVotesZkeyPathFull || !processMessagesZkeyPathFull)) {
+      throw new Error("Full zkeys are not set");
     }
 
     if (!pollJoiningZkeyPath) {

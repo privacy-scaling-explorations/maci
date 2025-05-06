@@ -26,7 +26,7 @@ template MessageValidatorNonQv() {
     // Ballot nonce.
     signal input originalNonce;
     // Command nonce.
-    signal input nonce;
+    signal input commandNonce;
     // Packed command.
     signal input command[PACKED_COMMAND_LENGTH];
     // Public key of the state leaf (user).
@@ -59,7 +59,7 @@ template MessageValidatorNonQv() {
     var computedIsVoteOptionIndexValid = SafeLessThan(252)([voteOptionIndex, voteOptions]);
 
     // Check (3) - The nonce must be correct.    
-    var computedIsNonceValid = IsEqual()([originalNonce + 1, nonce]);
+    var computedIsNonceValid = IsEqual()([originalNonce + 1, commandNonce]);
 
     // Check (4) - The signature must be correct.    
     var computedIsSignatureValid = VerifySignature()(publicKey, signaturePoint, signatureScalar, command);

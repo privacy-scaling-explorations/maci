@@ -43,6 +43,22 @@
       "voteOptions"
     ]
   },
+  "MessageProcessorFull_10-20-2_test": {
+    "file": "./coordinator/full/MessageProcessor",
+    "template": "MessageProcessorFull",
+    "params": [10, 20, 2],
+    "pubs": [
+      "totalSignups",
+      "index",
+      "batchEndIndex",
+      "currentSbCommitment",
+      "newSbCommitment",
+      "outputBatchHash",
+      "actualStateTreeDepth",
+      "coordinatorPublicKeyHash",
+      "voteOptions"
+    ]
+  },
   "TallyVotes_10-1-2_test": {
     "file": "./coordinator/qv/tallyVotes",
     "template": "TallyVotes",

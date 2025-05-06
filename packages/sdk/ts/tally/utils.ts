@@ -13,7 +13,7 @@ import type { Tally } from "@maci-protocol/contracts";
  * @param newResultsCommitment The tally result commitment
  * @returns list of the indexes of the tally result that failed on-chain verification
  */
-export const verifyPerVOSpentVoiceCredits = async (
+export const verifyPerVoteOptionSpentVoiceCredits = async (
   tallyContract: Tally,
   tallyData: ITallyData,
   voteOptionTreeDepth: number,
@@ -30,7 +30,7 @@ export const verifyPerVOSpentVoiceCredits = async (
     );
 
     // eslint-disable-next-line no-await-in-loop
-    const isValid = await tallyContract.verifyPerVOSpentVoiceCredits(
+    const isValid = await tallyContract.verifyPerVoteOptionSpentVoiceCredits(
       i,
       tallyData.perVoteOptionSpentVoiceCredits!.tally[i],
       proof,
@@ -54,7 +54,7 @@ export const verifyPerVOSpentVoiceCredits = async (
  * @param tallyData The tally.json file data
  * @param voteOptionTreeDepth The vote option tree depth
  * @param newSpentVoiceCreditsCommitment The total spent voice credits commitment
- * @param newPerVOSpentVoiceCreditsCommitment The per vote option voice credits commitment
+ * @param newPerVoteOptionSpentVoiceCreditsCommitment The per vote option voice credits commitment
  * @returns list of the indexes of the tally result that failed on-chain verification
  */
 export const verifyTallyResults = async (
@@ -62,7 +62,7 @@ export const verifyTallyResults = async (
   tallyData: ITallyData,
   voteOptionTreeDepth: number,
   newSpentVoiceCreditsCommitment: bigint,
-  newPerVOSpentVoiceCreditsCommitment?: bigint,
+  newPerVoteOptionSpentVoiceCreditsCommitment?: bigint,
 ): Promise<number[]> => {
   const failedIndices: number[] = [];
 
@@ -81,7 +81,7 @@ export const verifyTallyResults = async (
       tallyData.results.salt,
       voteOptionTreeDepth,
       newSpentVoiceCreditsCommitment,
-      newPerVOSpentVoiceCreditsCommitment ?? 0n,
+      newPerVoteOptionSpentVoiceCreditsCommitment ?? 0n,
     );
 
     if (!isValid) {

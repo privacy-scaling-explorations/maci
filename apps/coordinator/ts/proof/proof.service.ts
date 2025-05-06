@@ -80,7 +80,7 @@ export class ProofGeneratorService {
       chain,
       poll,
       maciContractAddress,
-      useQuadraticVoting,
+      mode,
       encryptedCoordinatorPrivateKey,
       startBlock,
       endBlock,
@@ -117,10 +117,10 @@ export class ProofGeneratorService {
         throw new Error(ErrorCodes.PRIVATE_KEY_MISMATCH.toString());
       }
 
-      const tally = this.fileService.getZkeyFilePaths(process.env.COORDINATOR_TALLY_ZKEY_NAME!, useQuadraticVoting);
+      const tally = this.fileService.getZkeyFilePaths(process.env.COORDINATOR_TALLY_ZKEY_NAME!, mode);
       const messageProcessor = this.fileService.getZkeyFilePaths(
         process.env.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME!,
-        useQuadraticVoting,
+        mode,
       );
 
       const { processProofs, tallyProofs, tallyData } = await generateProofs({
@@ -133,7 +133,7 @@ export class ProofGeneratorService {
         endBlock,
         blocksPerBatch,
         rapidsnark: process.env.COORDINATOR_RAPIDSNARK_EXE,
-        useQuadraticVoting,
+        mode,
         tallyZkey: tally.zkey,
         tallyWitgen: tally.witgen,
         tallyWasm: tally.wasm,

@@ -1,5 +1,6 @@
 import type { MaciState } from "../MaciState";
 import type { Poll } from "../Poll";
+import type { EMode } from "./constants";
 import type { PathElements } from "@maci-protocol/crypto";
 import type {
   Ballot,
@@ -54,6 +55,7 @@ export interface IMaciState {
     messageBatchSize: number,
     coordinatorKeypair: Keypair,
     voteOptions: bigint,
+    mode: EMode,
   ): bigint;
   // These methods are helper functions.
   deployNullPoll(): void;
@@ -72,7 +74,7 @@ export interface IPoll {
   publishMessage(message: Message, encryptionPublicKey: PublicKey): void;
   // These methods are used to generate circuit inputs
   processMessages(pollId: bigint): IProcessMessagesCircuitInputs;
-  tallyVotes(): ITallyCircuitInputs;
+  tallyVotes(mode: EMode): ITallyCircuitInputs;
   // These methods are helper functions
   hasUnprocessedMessages(): boolean;
   processAllMessages(): { stateLeaves: StateLeaf[]; ballots: Ballot[] };
@@ -108,6 +110,7 @@ export interface IJsonPoll {
   chainHash: string;
   pollNullifiers: string[];
   batchHashes: string[];
+  mode: EMode;
 }
 
 /**
@@ -238,4 +241,29 @@ export interface ITallyCircuitInputs {
   newResultsRootSalt: string;
   newPerVoteOptionSpentVoiceCreditsRootSalt?: string;
   newSpentVoiceCreditSubtotalSalt: string;
+}
+
+/**
+ * Interface that represents arguments for getting voice credits left
+ */
+export interface IGetVoiceCreditsLeft {
+  /**
+   * State leaf
+   */
+  stateLeaf: StateLeaf;
+
+  /**
+   * Original vote weight
+   */
+  originalVoteWeight: bigint;
+
+  /**
+   * New vote weight
+   */
+  newVoteWeight: bigint;
+
+  /**
+   * Voting mode
+   */
+  mode: EMode;
 }

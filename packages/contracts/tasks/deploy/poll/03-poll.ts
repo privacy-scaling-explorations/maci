@@ -1,11 +1,11 @@
 /* eslint-disable no-console */
+import { EMode } from "@maci-protocol/core";
 import { IVerifyingKeyObjectParams, PublicKey, VerifyingKey } from "@maci-protocol/domainobjs";
 import { ZeroAddress } from "ethers";
 
 import type { IVerifyingKeyStruct } from "../../../ts/types";
 import type { MACI, Poll, IBasePolicy, PollFactory, VerifyingKeysRegistry } from "../../../typechain-types";
 
-import { EMode } from "../../../ts/constants";
 import { extractVerifyingKey } from "../../../ts/proofs";
 import { EDeploySteps, FULL_POLICY_NAMES } from "../../helpers/constants";
 import { ContractStorage } from "../../helpers/ContractStorage";
@@ -64,10 +64,8 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
       ?.split(",")
       .map((value) => value.trim()) || [ZeroAddress];
 
-    const useQuadraticVoting =
-      deployment.getDeployConfigField<boolean | null>(EContracts.Poll, "useQuadraticVoting") ?? false;
+    const mode = deployment.getDeployConfigField<EMode | null>(EContracts.Poll, "mode") ?? EMode.NON_QV;
     const unserializedKey = PublicKey.deserialize(coordinatorPublicKey);
-    const mode = useQuadraticVoting ? EMode.QV : EMode.NON_QV;
 
     const policy =
       deployment.getDeployConfigField<EContracts | null>(EContracts.Poll, "policy") || EContracts.FreeForAllPolicy;

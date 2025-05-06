@@ -1,7 +1,7 @@
 export { MaciState } from "./MaciState";
-
 export { Poll } from "./Poll";
 
+export { EMode } from "./utils/constants";
 export {
   generatePollJoiningVerifyingKeySignature,
   generatePollJoinedVerifyingKeySignature,

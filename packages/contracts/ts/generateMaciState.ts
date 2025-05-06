@@ -96,6 +96,7 @@ export const generateMaciStateFromContract = async ({
       assert(!!event);
 
       const id = event.args._pollId;
+      const pollMode = Number(event.args._mode);
 
       const publicKey = new PublicKey([
         BigInt(event.args._coordinatorPublicKeyX),
@@ -108,7 +109,7 @@ export const generateMaciStateFromContract = async ({
         type: "DeployPoll",
         blockNumber: event.blockNumber,
         transactionIndex: event.transactionIndex,
-        data: { pollId: id, pollAddresses: pollContracts.poll, publicKey },
+        data: { pollId: id, pollAddresses: pollContracts.poll, publicKey, pollMode },
       });
 
       foundPollIds.add(Number(id));
@@ -274,7 +275,14 @@ export const generateMaciStateFromContract = async ({
       }
 
       case action.type === "DeployPoll" && action.data.pollId?.toString() === pollId.toString(): {
-        maciState.deployPoll(pollEndTimestamp, treeDepths, messageBatchSize, coordinatorKeypair, voteOptions);
+        maciState.deployPoll(
+          pollEndTimestamp,
+          treeDepths,
+          messageBatchSize,
+          coordinatorKeypair,
+          voteOptions,
+          action.data.pollMode!,
+        );
         break;
       }
 

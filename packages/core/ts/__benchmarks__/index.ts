@@ -1,7 +1,7 @@
 import { Keypair, VoteCommand } from "@maci-protocol/domainobjs";
 import benny from "benny";
 
-import { MaciState } from "..";
+import { EMode, MaciState } from "..";
 import { maxVoteOptions } from "../__tests__/utils/constants";
 
 import {
@@ -39,6 +39,7 @@ export default function runCore(): void {
         MESSAGE_BATCH_SIZE,
         COORDINATOR_KEYPAIR,
         maxVoteOptions,
+        EMode.QV,
       );
       const poll = maciState.polls.get(pollId)!;
 

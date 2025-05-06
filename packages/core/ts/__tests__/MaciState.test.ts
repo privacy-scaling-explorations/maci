@@ -4,7 +4,7 @@ import { expect } from "chai";
 import fs from "fs";
 
 import { MaciState } from "../MaciState";
-import { STATE_TREE_DEPTH } from "../utils/constants";
+import { EMode, STATE_TREE_DEPTH } from "../utils/constants";
 import { IJsonMaciState } from "../utils/types";
 
 import { coordinatorKeypair, duration, maxVoteOptions, messageBatchSize, treeDepths } from "./utils/constants";
@@ -33,6 +33,7 @@ describe("MaciState", function test() {
         messageBatchSize,
         coordinatorKeypair,
         maxVoteOptions,
+        EMode.QV,
       );
       const command = new VoteCommand(0n, userKeypair.publicKey, 0n, 0n, 0n, BigInt(pollId), 0n);
 

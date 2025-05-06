@@ -13,13 +13,13 @@ template LeafExists(levels) {
   // The elements along the path needed for the inclusion proof.
   signal input path_elements[levels][1];
   // The indices indicating the path taken through the tree for the leaf.
-  signal input path_index[levels];
+  signal input path_indices[levels];
   // The root of the Merkle tree, against which the inclusion is verified.
   signal input root;
 
   var computedMerkleRoot = MerkleTreeInclusionProof(levels)(
     leaf,
-    path_index,
+    path_indices,
     path_elements
   );
 

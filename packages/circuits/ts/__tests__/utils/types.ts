@@ -13,7 +13,7 @@ export interface IMessageValidatorCircuitInputs {
   voteOptionIndex: SignalValueType;
   voteOptions: SignalValueType;
   originalNonce: SignalValueType;
-  nonce: SignalValueType;
+  commandNonce: SignalValueType;
   command: SignalValueType;
   publicKey: SignalValueType;
   signaturePoint: SignalValueType;

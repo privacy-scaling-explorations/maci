@@ -1,4 +1,4 @@
-import { EPolicies, EInitialVoiceCreditProxies } from "@maci-protocol/sdk";
+import { EPolicies, EInitialVoiceCreditProxies, EMode } from "@maci-protocol/sdk";
 import { SendUserOperationParameters } from "viem/account-abstraction";
 
 import type { Abi, Hex } from "viem";
@@ -329,9 +329,9 @@ export interface IDeployPollConfig {
   coordinatorPublicKey: string;
 
   /**
-   * Whether to use quadratic voting
+   * Voting mode
    */
-  useQuadraticVoting: boolean;
+  mode: EMode;
 
   /**
    * Determines the tally batch size

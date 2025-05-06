@@ -8,7 +8,7 @@ include "./unpack-element.circom";
 include "../../utils/trees/CheckRoot.circom";
 include "../../utils/trees/MerklePathIndicesGenerator.circom";
 include "../../utils/trees/LeafExists.circom";
-include "../../utils/trees/incrementalQuinaryTree.circom";
+include "../../utils/trees/QuinaryCheckRoot.circom";
 include "../../utils/CalculateTotal.circom";
 include "../../utils/PoseidonHasher.circom";
 
@@ -114,7 +114,7 @@ template TallyVotes(
     // Processes vote options, verifying each against its declared root.
     var computedVoteTree[batchSize];
     for (var i = 0; i < batchSize; i++) {
-        computedVoteTree[i] = QuinCheckRoot(voteOptionTreeDepth)(votes[i]);
+        computedVoteTree[i] = QuinaryCheckRoot(voteOptionTreeDepth)(votes[i]);
         computedVoteTree[i] === ballots[i][BALLOT_VOTE_OPTION_ROOT_INDEX];
     }
 
@@ -227,7 +227,7 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     signal input newPerVoteOptionSpentVoiceCreditsRootSalt;
 
     // Compute the commitment to the current results.
-    var computedCurrentResultsRoot = QuinCheckRoot(voteOptionTreeDepth)(currentResults);
+    var computedCurrentResultsRoot = QuinaryCheckRoot(voteOptionTreeDepth)(currentResults);
 
     // Verify currentResultsCommitmentHash.
     var computedCurrentResultsCommitment = PoseidonHasher(2)([computedCurrentResultsRoot, currentResultsRootSalt]);
@@ -236,7 +236,7 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     var computedCurrentSpentVoiceCreditsCommitment = PoseidonHasher(2)([currentSpentVoiceCreditSubtotal, currentSpentVoiceCreditSubtotalSalt]);
 
     // Compute the root of the spent voice credits per vote option.
-    var computedCurrentPerVoteOptionSpentVoiceCreditsRoot = QuinCheckRoot(voteOptionTreeDepth)(currentPerVoteOptionSpentVoiceCredits);
+    var computedCurrentPerVoteOptionSpentVoiceCreditsRoot = QuinaryCheckRoot(voteOptionTreeDepth)(currentPerVoteOptionSpentVoiceCredits);
     var computedCurrentPerVoteOptionSpentVoiceCreditsCommitment = PoseidonHasher(2)([computedCurrentPerVoteOptionSpentVoiceCreditsRoot, currentPerVoteOptionSpentVoiceCreditsRootSalt]);
 
     // Commit to the current tally.
@@ -258,14 +258,14 @@ template ResultCommitmentVerifier(voteOptionTreeDepth) {
     isFirstCommitment === currentTallyCommitment;
 
     // Compute the root of the new results.
-    var computedNewResultsRoot = QuinCheckRoot(voteOptionTreeDepth)(newResults);
+    var computedNewResultsRoot = QuinaryCheckRoot(voteOptionTreeDepth)(newResults);
     var computedNewResultsCommitment = PoseidonHasher(2)([computedNewResultsRoot, newResultsRootSalt]);
 
     // Compute the commitment to the new spent voice credits value.
     var computedNewSpentVoiceCreditsCommitment = PoseidonHasher(2)([newSpentVoiceCreditSubtotal, newSpentVoiceCreditSubtotalSalt]);
 
     // Compute the root of the spent voice credits per vote option.
-    var computedNewPerVoteOptionSpentVoiceCreditsRoot = QuinCheckRoot(voteOptionTreeDepth)(newPerVoteOptionSpentVoiceCredits);
+    var computedNewPerVoteOptionSpentVoiceCreditsRoot = QuinaryCheckRoot(voteOptionTreeDepth)(newPerVoteOptionSpentVoiceCredits);
     var computedNewPerVoteOptionSpentVoiceCreditsCommitment = PoseidonHasher(2)([computedNewPerVoteOptionSpentVoiceCreditsRoot, newPerVoteOptionSpentVoiceCreditsRootSalt]);
 
     // Commit to the new tally.

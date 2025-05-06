@@ -62,6 +62,7 @@ import {
   resetContractAddresses,
   storeContractAddresses,
 } from "./utils";
+import { MODE_NAME_TO_ENUM } from "./utils/constants";
 import { DEFAULT_INITIAL_VOICE_CREDITS, DEFAULT_VOTE_OPTIONS } from "./utils/defaults";
 
 // set the description version and name of the cli tool
@@ -190,12 +191,7 @@ program
 program
   .command("checkVerifyingKeys")
   .description("check that the verifying keys in the contract match the local ones")
-  .option(
-    "-u, --use-quadratic-voting <useQuadraticVoting>",
-    "whether to use quadratic voting",
-    (value) => value === "true",
-    true,
-  )
+  .option("-m, --mode <mode>", "Voting mode (qv, non-qv, full)", (value) => MODE_NAME_TO_ENUM[value], EMode.QV)
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .option("-k, --vk-contract <vkContract>", "the VerifyingKeysRegistry contract address")
@@ -241,7 +237,7 @@ program
         pollJoiningZkeyPath: args.pollJoiningZkey,
         pollJoinedZkeyPath: args.pollJoinedZkey,
         verifyingKeysRegistry: contractAddress,
-        useQuadraticVoting: args.useQuadraticVoting,
+        mode: args.mode,
         signer,
       });
 
@@ -334,12 +330,7 @@ program
   .requiredOption("-s, --state-tree-depth <stateTreeDepth>", "the state tree depth", parseInt)
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
   .requiredOption("-p, --public-key <publicKey>", "the coordinator public key")
-  .option(
-    "-u, --use-quadratic-voting <useQuadraticVoting>",
-    "whether to use quadratic voting",
-    (value) => value === "true",
-    true,
-  )
+  .option("-m, --mode <mode>", "Voting mode (qv, non-qv, full)", (value) => MODE_NAME_TO_ENUM[value], EMode.QV)
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .option("-m, --relayers <relayers>", "the relayer addresses", (value) => value.split(",").map((item) => item.trim()))
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
@@ -400,7 +391,7 @@ program
         maciAddress,
         verifyingKeysRegistryContractAddress: verifyingKeysRegistryAddress,
         relayers: args.relayers ?? [ZeroAddress],
-        mode: args.useQuadraticVoting ? EMode.QV : EMode.NON_QV,
+        mode: args.mode,
         signer,
         voteOptions: args.voteOptions ?? DEFAULT_VOTE_OPTIONS,
         verifierContractAddress,
@@ -526,11 +517,14 @@ program
     "the tally votes non-qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .option(
-    "-u, --use-quadratic-voting <useQuadraticVoting>",
-    "whether to use quadratic voting",
-    (value) => value === "true",
-    true,
+    "--process-messages-zkey-full <processMessagesZkeyPathFull>",
+    "the process messages full zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
+  .option(
+    "--tally-votes-zkey-full <tallyVotesZkeyPathFull>",
+    "the tally votes full zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+  )
+  .option("-m, --mode <mode>", "Voting mode (qv, non-qv, full)", (value) => MODE_NAME_TO_ENUM[value], EMode.QV)
   .option("-k, --vk-registry <vkRegistry>", "the vk registry contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
@@ -544,12 +538,24 @@ program
         defaultAddresses: [args.vkRegistry],
       });
 
+      const processKeys = {
+        [EMode.QV]: args.processMessagesZkeyQv,
+        [EMode.NON_QV]: args.processMessagesZkeyNonQv,
+        [EMode.FULL]: args.processMessagesZkeyFull,
+      };
+
+      const tallyKeys = {
+        [EMode.QV]: args.tallyVotesZkeyQv,
+        [EMode.NON_QV]: args.tallyVotesZkeyNonQv,
+        [EMode.FULL]: args.tallyVotesZkeyFull,
+      };
+
       const { pollJoiningVerifyingKey, pollJoinedVerifyingKey, processVerifyingKey, tallyVerifyingKey } =
         await extractAllVerifyingKeys({
           pollJoiningZkeyPath: args.pollJoiningZkey,
           pollJoinedZkeyPath: args.pollJoinedZkey,
-          processMessagesZkeyPath: args.useQuadraticVoting ? args.processMessagesZkeyQv : args.processMessagesZkeyNonQv,
-          tallyVotesZkeyPath: args.useQuadraticVoting ? args.tallyVotesZkeyQv : args.tallyVotesZkeyQv,
+          processMessagesZkeyPath: processKeys[args.mode],
+          tallyVotesZkeyPath: tallyKeys[args.mode],
         });
 
       await setVerifyingKeys({
@@ -563,7 +569,7 @@ program
         processMessagesVerifyingKey: processVerifyingKey!,
         tallyVotesVerifyingKey: tallyVerifyingKey!,
         verifyingKeysRegistryAddress,
-        mode: args.useQuadraticVoting ? EMode.QV : EMode.NON_QV,
+        mode: args.mode,
         signer,
       });
     } catch (error) {
@@ -966,12 +972,7 @@ program
   .option("--start-block <startBlock>", "the block number to start looking for events from", parseInt)
   .option("--end-block <endBlock>", "the block number to end looking for events from", parseInt)
   .option("--blocks-per-batch <blockPerBatch>", "the number of blocks to process per batch", parseInt)
-  .option(
-    "-u, --use-quadratic-voting <useQuadraticVoting>",
-    "whether to use quadratic voting",
-    (value) => value === "true",
-    true,
-  )
+  .option("-m, --mode <mode>", "Voting mode (qv, non-qv, full)", (value) => MODE_NAME_TO_ENUM[value], EMode.QV)
   .option(
     "-b, --ipfs-message-backup-files <ipfsMessageBackupFiles>",
     "Backup files for ipfs messages (name format: ipfsHash1.json, ipfsHash2.json, ..., ipfsHashN.json)",
@@ -997,7 +998,7 @@ program
       processZkey,
       processWitnessgen,
       processWasm,
-      useQuadraticVoting,
+      mode,
       tallyWitnessdat,
       processWitnessdat,
       wasm,
@@ -1035,7 +1036,7 @@ program
           processZkey,
           processWitgen: processWitnessgen,
           processWasm,
-          useQuadraticVoting,
+          mode,
           tallyDatFile: tallyWitnessdat,
           processDatFile: processWitnessdat,
           useWasm: wasm,

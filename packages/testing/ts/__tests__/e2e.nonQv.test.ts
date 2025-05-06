@@ -83,7 +83,7 @@ describe("e2e tests with non quadratic voting", function test() {
     processWasm: testProcessMessagesNonQvWasmPath,
     tallyWasm: testTallyVotesNonQvWasmPath,
     useWasm,
-    useQuadraticVoting: false,
+    mode: EMode.NON_QV,
   };
 
   // before all tests we deploy the verifying keys registry contract and set the verifying keys
@@ -188,7 +188,7 @@ describe("e2e tests with non quadratic voting", function test() {
         ...generateProofsArgs,
         signer,
         maciAddress: maciAddresses.maciContractAddress,
-        useQuadraticVoting: false,
+        mode: EMode.NON_QV,
       });
       await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciContractAddress, signer });
       await verify({
@@ -291,7 +291,7 @@ describe("e2e tests with non quadratic voting", function test() {
         signer,
         maciAddress: maciAddresses.maciContractAddress,
         ipfsMessageBackupFiles,
-        useQuadraticVoting: false,
+        mode: EMode.NON_QV,
       });
       await proveOnChain({ ...proveOnChainArgs, maciAddress: maciAddresses.maciContractAddress, signer });
       await verify({

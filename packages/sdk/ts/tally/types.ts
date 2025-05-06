@@ -1,3 +1,4 @@
+import type { EMode } from "@maci-protocol/core";
 import type { Signer } from "ethers";
 
 /**
@@ -26,9 +27,9 @@ export interface ITallyData {
   chainId?: string;
 
   /**
-   * Whether the poll is using quadratic voting or not.
+   * Voting mode
    */
-  isQuadratic: boolean;
+  mode: EMode;
 
   /**
    * The address of the Tally contract.
@@ -170,7 +171,7 @@ export interface ITallyCommitments {
   /**
    * The new per vote option spent voice credits commitment
    */
-  newPerVOSpentVoiceCreditsCommitment?: bigint;
+  newPerVoteOptionSpentVoiceCreditsCommitment?: bigint;
   /**
    * The commitment to the results tree root
    */

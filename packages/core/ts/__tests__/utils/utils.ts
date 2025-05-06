@@ -3,7 +3,7 @@ import { VoteCommand, Message, Keypair, PublicKey } from "@maci-protocol/domaino
 
 import { MaciState } from "../../MaciState";
 import { Poll } from "../../Poll";
-import { STATE_TREE_DEPTH } from "../../utils/constants";
+import { EMode, STATE_TREE_DEPTH } from "../../utils/constants";
 
 import { duration, maxVoteOptions, messageBatchSize, treeDepths } from "./constants";
 
@@ -40,6 +40,7 @@ export class TestHarness {
       messageBatchSize,
       this.coordinatorKeypair,
       maxVoteOptions,
+      EMode.QV,
     );
     this.poll = this.maciState.polls.get(this.pollId)!;
   }

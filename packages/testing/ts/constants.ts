@@ -45,7 +45,10 @@ export const processMessageTestZkeyPath = "./zkeys/ProcessMessages_10-20-2_test/
 export const tallyVotesTestZkeyPath = "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey";
 export const processMessageTestNonQvZkeyPath =
   "./zkeys/ProcessMessagesNonQv_10-20-2_test/ProcessMessagesNonQv_10-20-2_test.0.zkey";
+export const processMessageTestFullZkeyPath =
+  "./zkeys/MessageProcessorFull_10-20-2_test/MessageProcessorFull_10-20-2_test.0.zkey";
 export const tallyVotesTestNonQvZkeyPath = "./zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test.0.zkey";
+export const tallyVotesTestFullZkeyPath = "./zkeys/TallyVotesFull_10-1-2_test/TallyVotesFull_10-1-2_test.0.zkey";
 export const testTallyFilePath = "./tally.json";
 export const testProofsDirPath = "./proofs";
 export const testPollJoiningWitnessPath = "./zkeys/PollJoining_10_test/PollJoining_10_test_cpp/PollJoining_10_test";
@@ -177,16 +180,32 @@ export const verifyArgs = async (signer: Signer): Promise<IVerifyArgs> => {
   };
 };
 
+const zkeysByMode = {
+  [EMode.QV]: {
+    processMessagesZkeyPath: processMessageTestZkeyPath,
+    tallyVotesZkeyPath: tallyVotesTestZkeyPath,
+  },
+  [EMode.NON_QV]: {
+    processMessagesZkeyPath: processMessageTestNonQvZkeyPath,
+    tallyVotesZkeyPath: tallyVotesTestNonQvZkeyPath,
+  },
+  [EMode.FULL]: {
+    processMessagesZkeyPath: processMessageTestFullZkeyPath,
+    tallyVotesZkeyPath: tallyVotesTestFullZkeyPath,
+  },
+};
+
 export const verifyingKeysArgs = async (
   signer: Signer,
   mode = EMode.QV,
 ): Promise<Omit<ISetVerifyingKeysArgs, "verifyingKeysRegistryAddress">> => {
+  const { processMessagesZkeyPath, tallyVotesZkeyPath } = zkeysByMode[mode];
   const { pollJoiningVerifyingKey, pollJoinedVerifyingKey, processVerifyingKey, tallyVerifyingKey } =
     await extractAllVerifyingKeys({
       pollJoiningZkeyPath: pollJoiningTestZkeyPath,
       pollJoinedZkeyPath: pollJoinedTestZkeyPath,
-      processMessagesZkeyPath: mode === EMode.QV ? processMessageTestZkeyPath : processMessageTestNonQvZkeyPath,
-      tallyVotesZkeyPath: mode === EMode.QV ? tallyVotesTestZkeyPath : tallyVotesTestNonQvZkeyPath,
+      processMessagesZkeyPath,
+      tallyVotesZkeyPath,
     });
 
   return {

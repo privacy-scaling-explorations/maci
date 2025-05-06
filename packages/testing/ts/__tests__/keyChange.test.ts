@@ -1,4 +1,4 @@
-import { VOTE_OPTION_TREE_ARITY } from "@maci-protocol/core";
+import { EMode, VOTE_OPTION_TREE_ARITY } from "@maci-protocol/core";
 import { generateRandomSalt } from "@maci-protocol/crypto";
 import { Keypair } from "@maci-protocol/domainobjs";
 import {
@@ -87,7 +87,7 @@ describe("keyChange tests", function test() {
     processWasm: testProcessMessagesWasmPath,
     tallyWasm: testTallyVotesWasmPath,
     useWasm,
-    useQuadraticVoting: true,
+    mode: EMode.QV,
   };
 
   // before all tests we deploy the verifying keys registry contract and set the verifying keys

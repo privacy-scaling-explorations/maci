@@ -26,7 +26,7 @@ export const checkVerifyingKeys = async ({
   pollJoinedZkeyPath,
   verifyingKeysRegistry,
   signer,
-  useQuadraticVoting = true,
+  mode = EMode.QV,
 }: ICheckVerifyingKeysArgs): Promise<boolean> => {
   if (!verifyingKeysRegistry) {
     throw new Error("Please provide a VerifyingKeysRegistry contract address");
@@ -59,8 +59,6 @@ export const checkVerifyingKeys = async ({
       pollJoiningZkeyPath,
       pollJoinedZkeyPath,
     });
-
-  const mode = useQuadraticVoting ? EMode.QV : EMode.NON_QV;
 
   const {
     pollJoiningVerifyingKeyOnChain,

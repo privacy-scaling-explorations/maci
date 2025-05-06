@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { TCircuitInputs, IJsonMaciState, MaciState, Poll } from "@maci-protocol/core";
+import { TCircuitInputs, IJsonMaciState, MaciState, Poll, EMode } from "@maci-protocol/core";
 import { generateTreeCommitment, hash3, hashLeftRight } from "@maci-protocol/crypto";
 
 import fs from "fs";
@@ -60,9 +60,9 @@ export class ProofGenerator {
   private tally: ICircuitFiles;
 
   /**
-   * Whether to use quadratic voting or not
+   * Voting mode
    */
-  private useQuadraticVoting?: boolean;
+  private mode: EMode;
 
   /**
    * Path to the rapidsnark binary
@@ -162,7 +162,7 @@ export class ProofGenerator {
     tallyContractAddress,
     outputDir,
     tallyOutputFile,
-    useQuadraticVoting,
+    mode,
   }: IProofGeneratorParams) {
     this.poll = poll;
     this.maciContractAddress = maciContractAddress;
@@ -172,7 +172,7 @@ export class ProofGenerator {
     this.messageProcessor = messageProcessor;
     this.tally = tally;
     this.rapidsnark = rapidsnark;
-    this.useQuadraticVoting = useQuadraticVoting;
+    this.mode = mode;
   }
 
   /**
@@ -198,10 +198,7 @@ export class ProofGenerator {
       // while we have unprocessed messages, process them
       while (this.poll.hasUnprocessedMessages()) {
         // process messages in batches
-        const circuitInputs = this.poll.processMessages(
-          BigInt(this.poll.pollId),
-          this.useQuadraticVoting,
-        ) as unknown as TCircuitInputs;
+        const circuitInputs = this.poll.processMessages(BigInt(this.poll.pollId)) as unknown as TCircuitInputs;
 
         // generate the proof for this batch
         inputs.push(circuitInputs);
@@ -273,9 +270,7 @@ export class ProofGenerator {
       const inputs: TCircuitInputs[] = [];
 
       while (this.poll.hasUntalliedBallots()) {
-        tallyCircuitInputs = (this.useQuadraticVoting
-          ? this.poll.tallyVotes()
-          : this.poll.tallyVotesNonQv()) as unknown as TCircuitInputs;
+        tallyCircuitInputs = this.poll.tallyVotes() as unknown as TCircuitInputs;
 
         inputs.push(tallyCircuitInputs);
 
@@ -314,7 +309,7 @@ export class ProofGenerator {
         BigInt(asHex(tallyCircuitInputs!.newSpentVoiceCreditSubtotalSalt as BigNumberish)),
       );
 
-      let newPerVOSpentVoiceCreditsCommitment: bigint | undefined;
+      let newPerVoteOptionSpentVoiceCreditsCommitment: bigint | undefined;
       let newTallyCommitment: bigint;
 
       // create the tally file data to store for verification later
@@ -323,7 +318,7 @@ export class ProofGenerator {
         pollId: this.poll.pollId.toString(),
         network: networkName,
         chainId,
-        isQuadratic: Boolean(this.useQuadraticVoting),
+        mode: this.mode,
         tallyAddress: this.tallyContractAddress,
         newTallyCommitment: asHex(tallyCircuitInputs!.newTallyCommitment as BigNumberish),
         results: {
@@ -338,9 +333,9 @@ export class ProofGenerator {
         },
       };
 
-      if (this.useQuadraticVoting) {
-        // Compute newPerVOSpentVoiceCreditsCommitment
-        newPerVOSpentVoiceCreditsCommitment = generateTreeCommitment(
+      if (this.mode === EMode.QV) {
+        // Compute newPerVoteOptionSpentVoiceCreditsCommitment
+        newPerVoteOptionSpentVoiceCreditsCommitment = generateTreeCommitment(
           this.poll.perVoteOptionSpentVoiceCredits,
           BigInt(asHex(tallyCircuitInputs!.newPerVoteOptionSpentVoiceCreditsRootSalt as BigNumberish)),
           this.poll.treeDepths.voteOptionTreeDepth,
@@ -350,14 +345,14 @@ export class ProofGenerator {
         newTallyCommitment = hash3([
           newResultsCommitment,
           newSpentVoiceCreditsCommitment,
-          newPerVOSpentVoiceCreditsCommitment,
+          newPerVoteOptionSpentVoiceCreditsCommitment,
         ]);
 
         // update perVoteOptionSpentVoiceCredits in the tally file data
         tallyFileData.perVoteOptionSpentVoiceCredits = {
           tally: this.poll.perVoteOptionSpentVoiceCredits.map((x) => x.toString()),
           salt: asHex(tallyCircuitInputs!.newPerVoteOptionSpentVoiceCreditsRootSalt as BigNumberish),
-          commitment: asHex(newPerVOSpentVoiceCreditsCommitment),
+          commitment: asHex(newPerVoteOptionSpentVoiceCreditsCommitment),
         };
       } else {
         newTallyCommitment = hashLeftRight(newResultsCommitment, newSpentVoiceCreditsCommitment);

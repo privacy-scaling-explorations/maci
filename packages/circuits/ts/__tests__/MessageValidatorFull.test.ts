@@ -22,7 +22,7 @@ describe("MessageValidatorFull circuit", function test() {
       "voteOptionIndex",
       "voteOptions",
       "originalNonce",
-      "nonce",
+      "commandNonce",
       "command",
       "publicKey",
       "signaturePoint",
@@ -63,7 +63,7 @@ describe("MessageValidatorFull circuit", function test() {
       voteOptionIndex: 0n,
       voteOptions: 1n,
       originalNonce: 1n,
-      nonce: 2n,
+      commandNonce: 2n,
       command: command.asCircuitInputs(),
       publicKey: publicKey.asCircuitInputs() as unknown as [bigint, bigint],
       signaturePoint: signature.R8 as unknown as bigint,
@@ -169,7 +169,7 @@ describe("MessageValidatorFull circuit", function test() {
 
   it("should be invalid if the nonce is invalid", async () => {
     const circuitInputsCopy = { ...circuitInputs };
-    circuitInputsCopy.nonce = 3n;
+    circuitInputsCopy.commandNonce = 3n;
 
     const witness = await circuit.calculateWitness(circuitInputsCopy);
     await circuit.expectConstraintPass(witness);
@@ -259,7 +259,7 @@ describe("MessageValidatorFull circuit", function test() {
 
       const inputs = {
         originalNonce: nonce - 1n,
-        nonce,
+        commandNonce: nonce,
         currentVotesForOption: 0n,
         voteWeight: votes,
         currentVoiceCreditBalance: votes,

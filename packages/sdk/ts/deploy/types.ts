@@ -1,4 +1,5 @@
-import { EMode, TAbi } from "@maci-protocol/contracts";
+import { TAbi } from "@maci-protocol/contracts";
+import { EMode } from "@maci-protocol/core";
 import { PublicKey } from "@maci-protocol/domainobjs";
 
 import type { Signer } from "ethers";

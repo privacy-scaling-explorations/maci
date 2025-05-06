@@ -225,9 +225,9 @@ export interface ICheckVerifyingKeysArgs {
   verifyingKeysRegistry: string;
 
   /**
-   * Whether to use quadratic voting or not
+   * Voting mode
    */
-  useQuadraticVoting?: boolean;
+  mode?: EMode;
 }
 
 /**

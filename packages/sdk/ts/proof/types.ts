@@ -1,6 +1,6 @@
 import type { ITallyData } from "../tally/types";
 import type { Groth16Proof, SnarkProof } from "@maci-protocol/contracts";
-import type { TCircuitInputs } from "@maci-protocol/core";
+import type { EMode, TCircuitInputs } from "@maci-protocol/core";
 import type { BigNumberish, Signer } from "ethers";
 import type { PublicSignals } from "snarkjs";
 
@@ -131,7 +131,7 @@ export interface IGenerateProofsArgs {
   /**
    * The use quadratic voting
    */
-  useQuadraticVoting: boolean;
+  mode: EMode;
 
   /**
    * Whether to use wasm or rapidsnark

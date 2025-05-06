@@ -1,4 +1,4 @@
-import { MaciState, Poll, STATE_TREE_ARITY, MESSAGE_BATCH_SIZE } from "@maci-protocol/core";
+import { MaciState, Poll, STATE_TREE_ARITY, MESSAGE_BATCH_SIZE, EMode } from "@maci-protocol/core";
 import { hash5, IncrementalQuinTree, poseidon } from "@maci-protocol/crypto";
 import { PrivateKey, Keypair, VoteCommand, Message, Ballot } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
@@ -89,6 +89,7 @@ describe("Ceremony param tests", () => {
           MESSAGE_BATCH_SIZE,
           coordinatorKeypair,
           maxVoteOptions,
+          EMode.QV,
         );
 
         poll = maciState.polls.get(pollId)!;
@@ -232,6 +233,7 @@ describe("Ceremony param tests", () => {
           MESSAGE_BATCH_SIZE,
           coordinatorKeypair,
           maxVoteOptions,
+          EMode.QV,
         );
 
         poll = maciState.polls.get(pollId)!;

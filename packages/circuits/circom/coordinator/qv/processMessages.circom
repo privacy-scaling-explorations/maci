@@ -10,7 +10,8 @@ include "../../utils/MessageHasher.circom";
 include "../../utils/MessageToCommand.circom";
 include "../../utils/PrivateToPublicKey.circom";
 include "../../utils/qv/StateLeafAndBallotTransformer.circom";
-include "../../utils/trees/incrementalQuinaryTree.circom";
+include "../../utils/trees/QuinaryTreeInclusionProof.circom";
+include "../../utils/trees/QuinaryGeneratePathIndices.circom";
 include "../../utils/trees/MerkleTreeInclusionProof.circom";
 include "../../utils/trees/LeafExists.circom";
 include "../../utils/trees/CheckRoot.circom";
@@ -388,9 +389,9 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     commandNewVoteWeightSquare <== commandNewVoteWeight * commandNewVoteWeight;
 
     var commandVoteOptionIndexMux = Mux1()([0, commandVoteOptionIndex], computedIsVoteOptionIndexValid);
-    var computedCurrentVoteWeightPathIndices[voteOptionTreeDepth] = QuinGeneratePathIndices(voteOptionTreeDepth)(commandVoteOptionIndexMux);
+    var computedCurrentVoteWeightPathIndices[voteOptionTreeDepth] = QuinaryGeneratePathIndices(voteOptionTreeDepth)(commandVoteOptionIndexMux);
 
-    var computedCurrentVoteWeightQip = QuinTreeInclusionProof(voteOptionTreeDepth)(
+    var computedCurrentVoteWeightQip = QuinaryTreeInclusionProof(voteOptionTreeDepth)(
         currentVoteWeight,
         computedCurrentVoteWeightPathIndices,
         currentVoteWeightsPathElements
@@ -408,7 +409,7 @@ template ProcessOne(stateTreeDepth, voteOptionTreeDepth) {
     );
 
     // 5.1. Update the ballot's vote option root with the new vote weight.
-    var computedNewVoteOptionTreeQip = QuinTreeInclusionProof(voteOptionTreeDepth)(
+    var computedNewVoteOptionTreeQip = QuinaryTreeInclusionProof(voteOptionTreeDepth)(
         voteWeightMux,
         computedCurrentVoteWeightPathIndices,
         currentVoteWeightsPathElements

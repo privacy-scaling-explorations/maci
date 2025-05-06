@@ -1,3 +1,4 @@
+import { EMode } from "@maci-protocol/sdk";
 import { Injectable, Logger } from "@nestjs/common";
 import low from "lowdb";
 import FileSync from "lowdb/adapters/FileSync";
@@ -96,16 +97,21 @@ export class FileService {
    * Get zkey, wasm and witgen filepaths for zkey set
    *
    * @param name - zkey set name
-   * @param useQuadraticVoting - whether to use Qv or NonQv
+   * @param mode - voting mode
    * @returns zkey and wasm filepaths
    */
-  getZkeyFilePaths(name: string, useQuadraticVoting: boolean): IGetZkeyFilePathsData {
+  getZkeyFilePaths(name: string, mode: EMode): IGetZkeyFilePathsData {
     const root = path.resolve(process.env.COORDINATOR_ZKEY_PATH!);
     const index = name.indexOf("_");
     const type = name.slice(0, index);
     const params = name.slice(index + 1);
-    const mode = useQuadraticVoting ? "" : "NonQv";
-    const filename = `${type}${mode}_${params}`;
+    const modePrefixes = {
+      [EMode.QV]: "",
+      [EMode.NON_QV]: "NonQv",
+      [EMode.FULL]: "Full",
+    };
+
+    const filename = `${type}${modePrefixes[mode]}_${params}`;
 
     const zkey = path.resolve(root, `${filename}/${filename}.0.zkey`);
     const wasm = path.resolve(root, `${filename}/${filename}_js/${filename}.wasm`);

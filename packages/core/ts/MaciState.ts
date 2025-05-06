@@ -4,7 +4,7 @@ import { PublicKey, type Keypair, padKey } from "@maci-protocol/domainobjs";
 import type { IJsonMaciState, IJsonPoll, IMaciState, ITreeDepths } from "./utils/types";
 
 import { Poll } from "./Poll";
-import { STATE_TREE_ARITY } from "./utils/constants";
+import { EMode, STATE_TREE_ARITY } from "./utils/constants";
 
 /**
  * A representation of the MACI contract.
@@ -62,6 +62,7 @@ export class MaciState implements IMaciState {
    * @param messageBatchSize - The batch size for processing messages.
    * @param coordinatorKeypair - The keypair of the MACI round coordinator.
    * @param voteOptions - The number of vote options for this poll.
+   * @param mode - The voting mode
    * @returns The index of the newly deployed poll.
    */
   deployPoll(
@@ -70,6 +71,7 @@ export class MaciState implements IMaciState {
     messageBatchSize: number,
     coordinatorKeypair: Keypair,
     voteOptions: bigint,
+    mode: EMode,
   ): bigint {
     const poll: Poll = new Poll(
       pollEndTimestamp,
@@ -81,6 +83,7 @@ export class MaciState implements IMaciState {
       },
       this,
       voteOptions,
+      mode,
     );
 
     this.polls.set(BigInt(this.polls.size), poll);

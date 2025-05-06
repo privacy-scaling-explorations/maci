@@ -26,12 +26,14 @@
     "docs": "typedoc --plugin typedoc-plugin-markdown --options ./typedoc.json"
   },
   "dependencies": {
-    "@zk-kit/lean-imt": "^2.2.3",
     "@maci-protocol/crypto": "^3.0.0",
-    "@maci-protocol/domainobjs": "^3.0.0"
+    "@maci-protocol/domainobjs": "^3.0.0",
+    "@zk-kit/lean-imt": "^2.2.3",
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
+    "@types/lodash": "^4.17.16",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.15.8",
     "benny": "^3.7.1",

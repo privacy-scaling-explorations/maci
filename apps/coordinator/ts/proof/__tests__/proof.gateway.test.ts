@@ -1,8 +1,8 @@
+import { type ITallyData, type IGenerateProofsOptions, EMode } from "@maci-protocol/sdk";
 import { Test } from "@nestjs/testing";
 import { Server } from "socket.io";
 
 import type { IGenerateArgs, IGenerateData } from "../types";
-import type { ITallyData, IGenerateProofsOptions } from "@maci-protocol/sdk";
 
 import { ESupportedNetworks } from "../../common";
 import { ProofGateway } from "../proof.gateway";
@@ -15,7 +15,7 @@ describe("ProofGateway", () => {
   const defaultProofGeneratorArgs: IGenerateArgs = {
     poll: 0,
     maciContractAddress: "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
-    useQuadraticVoting: false,
+    mode: EMode.NON_QV,
     encryptedCoordinatorPrivateKey:
       "siO9W/g7jNVXs9tOUv/pffrcqYdMlgdXw7nSSlqM1q1UvHGSSbhtLJpeT+nJKW7/+xrBTgI0wB866DSkg8Rgr8zD+POUMiKPrGqAO/XhrcmRDL+COURFNDRh9WGeAua6hdiNoufQYvXPl1iWyIYidSDbfmC2wR6F9vVkhg/6KDZyw8Wlr6LUh0RYT+hUHEwwGbz7MeqZJcJQSTpECPF5pnk8NTHL2W/XThaewB4n4HYqjDUbYLmBDLYWsDDMgoPo709a309rTq3uEe0YBgVF8g9aGxucTDhz+/LYYzqaeSxclUwen9Z4BGZjiDSPBZfooOEQEEwIJlViQ2kl1VeOKAmkiWEUVfItivmNbC/PNZchklmfFsGpiu4DT9UU9YVBN2OTcFYHHsslcaqrR7SuesqjluaGjG46oYEmfQlkZ4gXhavdWXw2ant+Tv6HRo4trqjoD1e3jUkN6gJMWomxOeRBTg0czBZlz/IwUtTpBHcKhi3EqGQo8OuQtWww+Ts7ySmeoONuovYUsIAppNuOubfUxvFJoTr2vKbWNAiYetw09kddkjmBe+S8A5PUiFOi262mfc7g5wJwPPP7wpTBY0Fya+2BCPzXqRLMOtNI+1tW3/UQLZYvEY8J0TxmhoAGZaRn8FKaosatRxDZTQS6QUNmKxpmUspkRKzTXN5lznM=",
     sessionKeyAddress: "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",

@@ -13,7 +13,7 @@ contract MockTally is ITally {
   }
 
   /// @inheritdoc ITally
-  function verifyPerVOSpentVoiceCredits(
+  function verifyPerVoteOptionSpentVoiceCredits(
     uint256 _voteOptionIndex,
     uint256 _spent,
     uint256[][] calldata _spentProof,

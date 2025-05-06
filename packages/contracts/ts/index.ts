@@ -4,6 +4,7 @@ export {
   type IDeployCloneArgs,
   type IGetProxyContractArgs,
 } from "@excubiae/contracts";
+export { EMode } from "@maci-protocol/core";
 export {
   deployMockVerifier,
   deployVerifyingKeysRegistry,
@@ -41,7 +42,6 @@ export {
   getDeployedContractAddressFromContractReceipt,
 } from "./utils";
 export { extractVerifyingKey, generateProofRapidSnark, generateProofSnarkjs, verifyProof, readProofs } from "./proofs";
-export { EMode } from "./constants";
 export { EDeploySteps } from "../tasks/helpers/constants";
 export { Deployment } from "../tasks/helpers/Deployment";
 export { ContractStorage } from "../tasks/helpers/ContractStorage";
