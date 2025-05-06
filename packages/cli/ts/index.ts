@@ -332,7 +332,7 @@ program
   .requiredOption("-p, --public-key <publicKey>", "the coordinator public key")
   .option("-m, --mode <mode>", "Voting mode (qv, non-qv, full)", (value) => MODE_NAME_TO_ENUM[value], EMode.QV)
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
-  .option("-m, --relayers <relayers>", "the relayer addresses", (value) => value.split(",").map((item) => item.trim()))
+  .option("--relayers <relayers>", "the relayer addresses", (value) => value.split(",").map((item) => item.trim()))
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .option("-o, --vote-options <voteOptions>", "the number of vote options", parseInt)
