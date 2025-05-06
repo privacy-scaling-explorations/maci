@@ -1,3 +1,5 @@
+import { LeanIMTMerkleProof } from "@zk-kit/lean-imt";
+
 import type { MACI, Poll } from "@maci-protocol/contracts/typechain-types";
 import type { PrivateKey, PublicKey } from "@maci-protocol/domainobjs";
 import type { Signer } from "ethers";
@@ -355,6 +357,21 @@ export interface IJoinPollArgs {
 }
 
 /**
+ * Interface for the arguments to the joinPoll command for the browser
+ */
+export interface IJoinPollBrowserArgs extends IJoinPollArgs {
+  /**
+   * Whether to use of not the latest state index
+   */
+  useLatestStateIndex?: boolean;
+
+  /**
+   * The inclusion proof
+   */
+  inclusionProof?: LeanIMTMerkleProof;
+}
+
+/**
  * Interface for the return data to the joinPoll command
  */
 export interface IJoinPollData {
@@ -399,6 +416,46 @@ export interface IIsNullifierOnChainArgs {
    * The signer to use
    */
   signer: Signer;
+}
+
+/**
+ * Arguments for IGenMaciStateTreeArgs
+ */
+export interface IGenMaciStateTreeArgs {
+  /**
+   * The MACI contract
+   */
+  maciContract: MACI;
+
+  /**
+   * The signer
+   */
+  signer: Signer;
+
+  /**
+   * The start block
+   */
+  startBlock?: number;
+
+  /**
+   * The end block
+   */
+  endBlock?: number;
+
+  /**
+   * The blocks per batch
+   */
+  blocksPerBatch?: number;
+}
+
+/**
+ * Arguments for IGenMaciStateTreeWithEndKeyArgs
+ */
+export interface IGenMaciStateTreeWithEndKeyArgs extends IGenMaciStateTreeArgs {
+  /**
+   * The public key of the user
+   */
+  userPublicKey: PublicKey;
 }
 
 /**

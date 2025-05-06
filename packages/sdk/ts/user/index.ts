@@ -1,6 +1,13 @@
 export { joinPoll } from "./joinPoll";
 export { getSignedupUserData, signup, hasUserSignedUp } from "./signup";
-export { getJoinedUserData, hasUserJoinedPoll } from "./utils";
+export {
+  getJoinedUserData,
+  hasUserJoinedPoll,
+  generateMaciStateTree as genMaciStateTree,
+  generateMaciStateTreeWithEndKey as genMaciStateTreeWithEndKey,
+  getPollJoiningCircuitEvents,
+  joiningCircuitInputs,
+} from "./utils";
 export type {
   IJoinedUserArgs,
   IIsRegisteredUser,
@@ -18,4 +25,6 @@ export type {
   IParseSignupEventsArgs,
   ISignupData,
   IHasUserSignedUpArgs,
+  IGenMaciStateTreeArgs,
+  IGenMaciStateTreeWithEndKeyArgs,
 } from "./types";

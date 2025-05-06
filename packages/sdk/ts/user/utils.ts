@@ -10,14 +10,16 @@ import type {
   IGetPollJoiningCircuitInputsFromStateFileArgs,
   IParsePollJoinEventsArgs,
   IParseSignupEventsArgs,
-  IPollJoiningCircuitInputs,
   IJoinedUserArgs,
   IIsNullifierOnChainArgs,
+  IGenMaciStateTreeArgs as IGenerateMaciStateTreeArgs,
+  IGenMaciStateTreeWithEndKeyArgs as IGenerateMaciStateTreeWithEndKeyArgs,
 } from "./types";
 import type { IGenerateSignUpTree } from "../trees/types";
 import type { TCircuitInputs } from "../utils/types";
+import type { LeanIMTMerkleProof } from "@zk-kit/lean-imt";
 
-import { generateSignUpTree } from "../trees/stateTree";
+import { generateSignUpTree, generateSignUpTreeWithEndKey } from "../trees/stateTree";
 import { BLOCKS_STEP } from "../utils/constants";
 
 /**
@@ -172,25 +174,20 @@ export const getStateIndex = (
  * @param signUpData Sign up tree and state leaves
  * @param stateTreeDepth Maci state tree depth
  * @param maciPrivateKey User's private key for signing up
- * @param stateLeafIndex Index where the user is stored in the state leaves
  * @param pollPrivateKey Poll's private key for the poll joining
  * @param pollPublicKey Poll's public key for the poll joining
  * @param pollId Poll's id
  * @returns stringified circuit inputs
  */
 export const joiningCircuitInputs = (
-  signUpData: IGenerateSignUpTree,
+  inclusionProof: LeanIMTMerkleProof,
   stateTreeDepth: bigint,
   maciPrivateKey: PrivateKey,
-  stateLeafIndex: bigint,
   pollPublicKey: PublicKey,
   pollId: bigint,
-): IPollJoiningCircuitInputs => {
-  // Get the state leaf on the index position
-  const { signUpTree: stateTree } = signUpData;
-
+): TCircuitInputs => {
   // calculate the path elements for the state tree given the original state tree
-  const { siblings, index } = stateTree.generateProof(Number(stateLeafIndex));
+  const { siblings, index, root: stateRoot } = inclusionProof;
   const siblingsLength = siblings.length;
 
   // The index must be converted to a list of indices, 1 for each tree level.
@@ -214,14 +211,10 @@ export const joiningCircuitInputs = (
   const inputNullifier = BigInt(maciPrivateKey.asCircuitInputs());
   const nullifier = poseidon([inputNullifier, pollId]);
 
-  // Get pll state tree's root
-  const stateRoot = stateTree.root;
-
   // Set actualStateTreeDepth as number of initial siblings length
   const actualStateTreeDepth = BigInt(siblingsLength);
 
   // Calculate public input hash from nullifier, credits and current root
-
   const circuitInputs = {
     privateKey: maciPrivateKey.asCircuitInputs(),
     pollPublicKey: pollPublicKey.asCircuitInputs(),
@@ -233,7 +226,7 @@ export const joiningCircuitInputs = (
     pollId,
   };
 
-  return stringifyBigInts(circuitInputs) as unknown as IPollJoiningCircuitInputs;
+  return stringifyBigInts(circuitInputs) as unknown as TCircuitInputs;
 };
 
 /**
@@ -273,6 +266,65 @@ export const getPollJoiningCircuitInputsFromStateFile = async ({
 };
 
 /**
+ * Generate MACI's state tree from the MACI contract
+ * @param {IGenerateMaciStateTreeArgs} args - The arguments for the generate maci state tree command
+ * @returns The MACI's state tree
+ */
+export const generateMaciStateTree = async ({
+  maciContract,
+  signer,
+  startBlock,
+  endBlock,
+  blocksPerBatch,
+}: IGenerateMaciStateTreeArgs): Promise<IGenerateSignUpTree> => {
+  // build an off-chain representation of the MACI contract using data in the contract storage
+  const defaultStartBlock = await maciContract
+    .queryFilter(maciContract.filters.SignUp(), startBlock ?? 0)
+    .then((events) => events[0]?.blockNumber ?? 0);
+
+  const fromBlock = startBlock ? Number(startBlock) : defaultStartBlock;
+
+  return generateSignUpTree({
+    provider: signer.provider!,
+    address: await maciContract.getAddress(),
+    blocksPerRequest: blocksPerBatch || 50,
+    fromBlock,
+    endBlock,
+    sleepAmount: 0,
+  });
+};
+
+/**
+ * Generate MACI's state tree from the MACI contract with a given end key
+ * @param {IGenerateMaciStateTreeWithEndKeyArgs} args - The arguments for the generate maci state tree command
+ * @returns The MACI's state tree
+ */
+export const generateMaciStateTreeWithEndKey = async ({
+  maciContract,
+  signer,
+  startBlock,
+  endBlock,
+  blocksPerBatch,
+  userPublicKey,
+}: IGenerateMaciStateTreeWithEndKeyArgs): Promise<IGenerateSignUpTree> => {
+  // build an off-chain representation of the MACI contract using data in the contract storage
+  const defaultStartBlock = await maciContract
+    .queryFilter(maciContract.filters.SignUp(), startBlock ?? 0)
+    .then((events) => events[0]?.blockNumber ?? 0);
+
+  const fromBlock = startBlock ? Number(startBlock) : defaultStartBlock;
+
+  return generateSignUpTreeWithEndKey({
+    provider: signer.provider!,
+    address: await maciContract.getAddress(),
+    blocksPerRequest: blocksPerBatch || 50,
+    fromBlock,
+    endBlock,
+    userPublicKey,
+  });
+};
+
+/**
  * Get the poll joining circuit events from a state file
  * @param maciContract - The MACI contract
  * @param startBlock - The start block
@@ -289,26 +341,14 @@ export const getPollJoiningCircuitEvents = async ({
   endBlock,
   blocksPerBatch,
 }: IGetPollJoiningCircuitEventsArgs): Promise<TCircuitInputs> => {
-  // build an off-chain representation of the MACI contract using data in the contract storage
-  const [defaultStartBlockSignup, defaultStartBlockPoll, stateTreeDepth] = await Promise.all([
-    maciContract
-      .queryFilter(maciContract.filters.SignUp(), startBlock ?? 0)
-      .then((events) => events[0]?.blockNumber ?? 0),
-    maciContract
-      .queryFilter(maciContract.filters.DeployPoll(), startBlock ?? 0)
-      .then((events) => events[0]?.blockNumber ?? 0),
-    maciContract.stateTreeDepth(),
-  ]);
-  const defaultStartBlock = Math.min(defaultStartBlockPoll, defaultStartBlockSignup);
-  const fromBlock = startBlock ? Number(startBlock) : defaultStartBlock;
+  const stateTreeDepth = await maciContract.stateTreeDepth();
 
-  const signUpData = await generateSignUpTree({
-    provider: signer.provider!,
-    address: await maciContract.getAddress(),
-    blocksPerRequest: blocksPerBatch || 50,
-    fromBlock,
+  const signUpData = await generateMaciStateTree({
+    maciContract,
+    signer,
+    startBlock,
     endBlock,
-    sleepAmount: 0,
+    blocksPerBatch,
   });
 
   const { publicKey: userPublicKey } = new Keypair(userMaciPrivateKey);
@@ -318,11 +358,16 @@ export const getPollJoiningCircuitEvents = async ({
     throw new Error("Invalid state index");
   }
 
+  // Get the state leaf on the index position
+  const { signUpTree: stateTree } = signUpData;
+
+  // calculate the path elements for the state tree given the original state tree
+  const inclusionProof = stateTree.generateProof(Number(loadedStateIndex));
+
   return joiningCircuitInputs(
-    signUpData,
+    inclusionProof,
     stateTreeDepth,
     userMaciPrivateKey,
-    stateIndex,
     userPublicKey,
     pollId,
   ) as unknown as TCircuitInputs;

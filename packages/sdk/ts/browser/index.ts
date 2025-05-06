@@ -6,7 +6,14 @@ export * from "../trees";
 export * from "../vote";
 export * from "../maciKeys";
 export { getSignedupUserData, signup, hasUserSignedUp } from "../user/signup";
-export { getJoinedUserData, hasUserJoinedPoll } from "../user/utils";
+export {
+  getJoinedUserData,
+  hasUserJoinedPoll,
+  generateMaciStateTree,
+  getPollJoiningCircuitEvents,
+  joiningCircuitInputs,
+  generateMaciStateTreeWithEndKey,
+} from "../user/utils";
 
 export * from "./joinPoll";
 
