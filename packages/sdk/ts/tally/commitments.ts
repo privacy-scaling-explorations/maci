@@ -1,3 +1,4 @@
+import { EMode } from "@maci-protocol/core";
 import { generateTreeCommitment, hash2, hash3, hashLeftRight } from "@maci-protocol/crypto";
 
 import type { IGenerateTallyCommitmentsArgs, ITallyCommitments } from "./types";
@@ -26,11 +27,11 @@ export const generateTallyCommitments = ({
   ]);
 
   let newTallyCommitment: bigint;
-  let newPerVOSpentVoiceCreditsCommitment: bigint | undefined;
+  let newPerVoteOptionSpentVoiceCreditsCommitment: bigint | undefined;
 
-  if (tallyData.isQuadratic) {
-    // compute newPerVOSpentVoiceCreditsCommitment
-    newPerVOSpentVoiceCreditsCommitment = generateTreeCommitment(
+  if (tallyData.mode === EMode.QV) {
+    // compute newPerVoteOptionSpentVoiceCreditsCommitment
+    newPerVoteOptionSpentVoiceCreditsCommitment = generateTreeCommitment(
       tallyData.perVoteOptionSpentVoiceCredits!.tally.map((x) => BigInt(x)),
       BigInt(tallyData.perVoteOptionSpentVoiceCredits!.salt),
       voteOptionTreeDepth,
@@ -40,7 +41,7 @@ export const generateTallyCommitments = ({
     newTallyCommitment = hash3([
       newResultsCommitment,
       newSpentVoiceCreditsCommitment,
-      newPerVOSpentVoiceCreditsCommitment,
+      newPerVoteOptionSpentVoiceCreditsCommitment,
     ]);
   } else {
     newTallyCommitment = hashLeftRight(newResultsCommitment, newSpentVoiceCreditsCommitment);
@@ -49,7 +50,7 @@ export const generateTallyCommitments = ({
   return {
     newTallyCommitment,
     newSpentVoiceCreditsCommitment,
-    newPerVOSpentVoiceCreditsCommitment,
+    newPerVoteOptionSpentVoiceCreditsCommitment,
     newResultsCommitment,
   };
 };

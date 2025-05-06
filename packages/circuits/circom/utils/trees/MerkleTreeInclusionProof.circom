@@ -12,7 +12,7 @@ template MerkleTreeInclusionProof(n_levels) {
     // The leaf node from which the Merkle root is calculated.
     signal input leaf;
     // Indices indicating left or right child for each level of the tree.
-    signal input path_index[n_levels];
+    signal input path_indices[n_levels];
     // Sibling node values required to compute the hash at each level.
     signal input path_elements[n_levels][1];
 
@@ -25,8 +25,8 @@ template MerkleTreeInclusionProof(n_levels) {
     levelHashes[0] <== leaf;
 
     for (var i = 0; i < n_levels; i++) {
-        // Validate path_index to be either 0 or 1, ensuring no other values.
-        path_index[i] * (1 - path_index[i]) === 0;
+        // Validate path_indices to be either 0 or 1, ensuring no other values.
+        path_indices[i] * (1 - path_indices[i]) === 0;
 
         // Configure the multiplexer based on the path index for the current level.
         var multiplexer[2][2] = [
@@ -36,7 +36,7 @@ template MerkleTreeInclusionProof(n_levels) {
 
         var multiplexerResult[2] = MultiMux1(2)(
             multiplexer,
-            path_index[i]
+            path_indices[i]
         );
 
         var computedLevelHash = PoseidonHasher(2)([multiplexerResult[0], multiplexerResult[1]]);

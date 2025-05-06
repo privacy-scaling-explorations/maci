@@ -26,7 +26,7 @@ export const generateProofs = async ({
   endBlock,
   blocksPerBatch,
   rapidsnark,
-  useQuadraticVoting,
+  mode,
   tallyZkey,
   tallyWitgen,
   tallyWasm,
@@ -165,7 +165,7 @@ export const generateProofs = async ({
     },
     outputDir,
     tallyOutputFile: tallyFile,
-    useQuadraticVoting,
+    mode,
   });
 
   const processProofs = await proofGenerator.generateMpProofs();

@@ -1,7 +1,5 @@
 pragma circom 2.0.0;
 
-// circomlib import
-include "./mux1.circom";
 // zk-kit imports
 include "./safe-comparators.circom";
 // local imports
@@ -28,7 +26,7 @@ template MessageValidatorFull() {
     // Ballot nonce.
     signal input originalNonce;
     // Command nonce.
-    signal input nonce;
+    signal input commandNonce;
     // Packed command.
     signal input command[PACKED_COMMAND_LENGTH];
     // Public key of the state leaf (user).
@@ -61,7 +59,7 @@ template MessageValidatorFull() {
     var computedIsVoteOptionIndexValid = SafeLessThan(252)([voteOptionIndex, voteOptions]);
 
     // Check (3) - The nonce must be correct.    
-    var computedIsNonceValid = IsEqual()([originalNonce + 1, nonce]);
+    var computedIsNonceValid = IsEqual()([originalNonce + 1, commandNonce]);
 
     // Check (4) - The signature must be correct.    
     var computedIsSignatureValid = VerifySignature()(publicKey, signaturePoint, signatureScalar, command);

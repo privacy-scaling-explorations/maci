@@ -1,8 +1,8 @@
+import { EMode } from "@maci-protocol/core";
 import { expect } from "chai";
 import { Signer } from "ethers";
 
 import { IVerifyingKeyStruct, VerifyingKeysRegistry, deployVerifyingKeysRegistry, getDefaultSigner } from "../ts";
-import { EMode } from "../ts/constants";
 
 import {
   messageBatchSize,

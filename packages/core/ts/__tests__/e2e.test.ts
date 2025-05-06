@@ -5,7 +5,7 @@ import { expect } from "chai";
 
 import { MaciState } from "../MaciState";
 import { Poll } from "../Poll";
-import { STATE_TREE_DEPTH, STATE_TREE_ARITY } from "../utils/constants";
+import { STATE_TREE_DEPTH, STATE_TREE_ARITY, EMode } from "../utils/constants";
 
 import {
   coordinatorKeypair,
@@ -62,6 +62,7 @@ describe("MaciState/Poll e2e", function test() {
           messageBatchSize,
           coordinatorKeypair,
           maxVoteOptions,
+          EMode.QV,
         );
 
         maciState.polls.get(pollId)?.updatePoll(BigInt(maciState.publicKeys.length));
@@ -161,6 +162,7 @@ describe("MaciState/Poll e2e", function test() {
           messageBatchSize,
           coordinatorKeypair,
           maxVoteOptions,
+          EMode.QV,
         );
 
         poll = maciState.polls.get(pollId)!;
@@ -276,6 +278,7 @@ describe("MaciState/Poll e2e", function test() {
           messageBatchSize,
           coordinatorKeypair,
           maxVoteOptions,
+          EMode.QV,
         );
 
         poll = maciState.polls.get(pollId)!;
@@ -375,6 +378,7 @@ describe("MaciState/Poll e2e", function test() {
         messageBatchSize,
         coordinatorKeypair,
         maxVoteOptions,
+        EMode.QV,
       );
 
       poll = maciState.polls.get(pollId)!;
@@ -472,6 +476,7 @@ describe("MaciState/Poll e2e", function test() {
         messageBatchSize,
         coordinatorKeypair,
         maxVoteOptions,
+        EMode.QV,
       );
       poll = maciState.polls.get(pollId)!;
       poll.updatePoll(BigInt(maciState.publicKeys.length));
@@ -606,7 +611,6 @@ describe("MaciState/Poll e2e", function test() {
     const voteOptionIndex = 0n;
     let stateIndex: number;
     const userKeypair = new Keypair();
-    const useQv = false;
 
     before(() => {
       maciState = new MaciState(STATE_TREE_DEPTH);
@@ -618,6 +622,7 @@ describe("MaciState/Poll e2e", function test() {
         messageBatchSize,
         coordinatorKeypair,
         maxVoteOptions,
+        EMode.NON_QV,
       );
 
       poll = maciState.polls.get(pollId)!;
@@ -654,7 +659,7 @@ describe("MaciState/Poll e2e", function test() {
     });
 
     it("Process a batch of messages (though only 1 message is in the batch)", () => {
-      poll.processMessages(pollId, useQv);
+      poll.processMessages(pollId);
 
       // Check the ballot
       expect(poll.ballots[1].votes[Number(voteOptionIndex)].toString()).to.eq(voteWeight.toString());
@@ -668,7 +673,7 @@ describe("MaciState/Poll e2e", function test() {
 
       expect(poll.hasUntalliedBallots()).to.eq(true);
 
-      poll.tallyVotesNonQv();
+      poll.tallyVotes();
 
       const finalTotal = calculateTotal(poll.tallyResult);
       expect(finalTotal.toString()).to.eq(voteWeight.toString());

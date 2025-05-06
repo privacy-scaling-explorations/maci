@@ -1,11 +1,10 @@
 /* eslint-disable no-underscore-dangle */
-import { MaciState } from "@maci-protocol/core";
+import { EMode, MaciState } from "@maci-protocol/core";
 import { NOTHING_UP_MY_SLEEVE } from "@maci-protocol/crypto";
 import { Keypair, PublicKey, Message } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { AbiCoder, BigNumberish, Signer, ZeroAddress } from "ethers";
 
-import { EMode } from "../ts/constants";
 import { getDefaultSigner, getSigners, getBlockTimestamp } from "../ts/utils";
 import {
   MACI,
@@ -238,6 +237,7 @@ describe("MACI", function test() {
         messageBatchSize,
         coordinator,
         BigInt(maxVoteOptions),
+        EMode.QV,
       );
       expect(poll.toString()).to.eq(pollId.toString());
 

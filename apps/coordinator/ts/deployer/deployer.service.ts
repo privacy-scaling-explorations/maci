@@ -288,22 +288,22 @@ export class DeployerService {
     verifyingKeysRegistryArgs: IVerifyingKeysRegistryArgs,
     mode: EMode,
   ): Promise<ISetVerifyingKeysArgs> {
-    const pollJoiningZkeyPath = this.fileService.getZkeyFilePaths(
+    const { zkey: pollJoiningZkeyPath } = this.fileService.getZkeyFilePaths(
       process.env.COORDINATOR_POLL_JOINING_ZKEY_NAME!,
-      true,
-    ).zkey;
-    const pollJoinedZkeyPath = this.fileService.getZkeyFilePaths(
+      EMode.QV,
+    );
+    const { zkey: pollJoinedZkeyPath } = this.fileService.getZkeyFilePaths(
       process.env.COORDINATOR_POLL_JOINED_ZKEY_NAME!,
-      true,
-    ).zkey;
-    const processMessagesZkeyPath = this.fileService.getZkeyFilePaths(
+      EMode.QV,
+    );
+    const { zkey: processMessagesZkeyPath } = this.fileService.getZkeyFilePaths(
       process.env.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME!,
-      mode === EMode.QV,
-    ).zkey;
-    const tallyVotesZkeyPath = this.fileService.getZkeyFilePaths(
+      mode,
+    );
+    const { zkey: tallyVotesZkeyPath } = this.fileService.getZkeyFilePaths(
       process.env.COORDINATOR_TALLY_ZKEY_NAME!,
-      mode === EMode.QV,
-    ).zkey;
+      mode,
+    );
 
     const { pollJoiningVerifyingKey, pollJoinedVerifyingKey, processVerifyingKey, tallyVerifyingKey } =
       await extractAllVerifyingKeys({
@@ -441,8 +441,6 @@ export class DeployerService {
       initialVoiceCreditProxyAddress = (await initialVoiceCreditProxyContract.getAddress()) as Hex;
     }
 
-    const mode = config.useQuadraticVoting ? EMode.QV : EMode.NON_QV;
-
     const deployPollArgs = {
       maciAddress,
       pollStartTimestamp: config.startDate,
@@ -454,7 +452,7 @@ export class DeployerService {
       coordinatorPublicKey: PublicKey.deserialize(config.coordinatorPublicKey),
       verifierContractAddress: verifierAddress,
       verifyingKeysRegistryContractAddress: verifyingKeysRegistryAddress,
-      mode,
+      mode: config.mode,
       policyContractAddress: policyAddress,
       initialVoiceCreditProxyContractAddress: initialVoiceCreditProxyAddress,
       relayers: config.relayers ? config.relayers.map((address) => address as Hex) : [],

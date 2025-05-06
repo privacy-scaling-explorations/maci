@@ -1,7 +1,7 @@
 import { STATE_TREE_ARITY, VOTE_OPTION_TREE_ARITY } from "@maci-protocol/core";
 
 export const STATE_TREE_DEPTH = 10;
-export const voiceCreditBalance = BigInt(100);
+export const voiceCreditBalance = 100n;
 export const duration = 30;
 
 export const treeDepths = {

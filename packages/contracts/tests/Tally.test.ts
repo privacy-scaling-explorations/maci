@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { MaciState, Poll, IProcessMessagesCircuitInputs, ITallyCircuitInputs } from "@maci-protocol/core";
+import { EMode, MaciState, Poll, IProcessMessagesCircuitInputs, ITallyCircuitInputs } from "@maci-protocol/core";
 import {
   generateTreeCommitment,
   genTreeProof,
@@ -12,7 +12,6 @@ import { expect } from "chai";
 import { AbiCoder, BigNumberish, Signer, ZeroAddress } from "ethers";
 import { EthereumProvider } from "hardhat/types";
 
-import { EMode } from "../ts/constants";
 import { deployFreeForAllSignUpPolicy } from "../ts/deploy";
 import { IVerifyingKeyStruct } from "../ts/types";
 import { asHex, getDefaultSigner, getBlockTimestamp } from "../ts/utils";
@@ -118,6 +117,7 @@ describe("TallyVotes", () => {
       messageBatchSize,
       coordinator,
       BigInt(maxVoteOptions),
+      EMode.QV,
     );
     expect(deployedPollId.toString()).to.eq(pollId.toString());
     // publish the NOTHING_UP_MY_SLEEVE message
@@ -284,6 +284,7 @@ describe("TallyVotes", () => {
         messageBatchSize,
         coordinator,
         BigInt(maxVoteOptions),
+        EMode.QV,
       );
       expect(deployedPollId.toString()).to.eq(pollId.toString());
       // publish the NOTHING_UP_MY_SLEEVE message
@@ -406,7 +407,7 @@ describe("TallyVotes", () => {
         BigInt(asHex(tallyGeneratedInputs!.newSpentVoiceCreditSubtotalSalt as BigNumberish)),
       );
 
-      const newPerVOSpentVoiceCreditsCommitment = generateTreeCommitment(
+      const newPerVoteOptionSpentVoiceCreditsCommitment = generateTreeCommitment(
         poll.perVoteOptionSpentVoiceCredits,
         BigInt(asHex(tallyGeneratedInputs!.newPerVoteOptionSpentVoiceCreditsRootSalt as BigNumberish)),
         treeDepths.voteOptionTreeDepth,
@@ -441,7 +442,7 @@ describe("TallyVotes", () => {
           tallyResultSalt: tallyData.results.salt,
           newResultsCommitment: 0n,
           spentVoiceCreditsHash: tallyData.totalSpentVoiceCredits.commitment,
-          perVOSpentVoiceCreditsHash: newPerVOSpentVoiceCreditsCommitment,
+          perVOSpentVoiceCreditsHash: newPerVoteOptionSpentVoiceCreditsCommitment,
         }),
       ).to.be.revertedWithCustomError(tallyContract, "IncorrectSpentVoiceCredits");
 
@@ -455,7 +456,7 @@ describe("TallyVotes", () => {
           tallyResultSalt: tallyData.results.salt,
           newResultsCommitment: tallyData.results.commitment,
           spentVoiceCreditsHash: tallyData.totalSpentVoiceCredits.commitment,
-          perVOSpentVoiceCreditsHash: newPerVOSpentVoiceCreditsCommitment,
+          perVOSpentVoiceCreditsHash: newPerVoteOptionSpentVoiceCreditsCommitment,
         })
         .then((tx) => tx.wait());
 
@@ -475,7 +476,7 @@ describe("TallyVotes", () => {
           tallyResultSalt: tallyData.results.salt,
           newResultsCommitment: tallyData.results.commitment,
           spentVoiceCreditsHash: tallyData.totalSpentVoiceCredits.commitment,
-          perVOSpentVoiceCreditsHash: newPerVOSpentVoiceCreditsCommitment,
+          perVOSpentVoiceCreditsHash: newPerVoteOptionSpentVoiceCreditsCommitment,
         })
         .then((tx) => tx.wait());
 
@@ -604,6 +605,7 @@ describe("TallyVotes", () => {
         messageBatchSize,
         coordinator,
         BigInt(maxVoteOptions),
+        EMode.QV,
       );
       expect(deployedPollId.toString()).to.eq(pollId.toString());
       // publish the NOTHING_UP_MY_SLEEVE message

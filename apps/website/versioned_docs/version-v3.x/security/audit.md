@@ -38,7 +38,7 @@ We would like to thank the Veridise team for their effort in keeping open source
 
 **Description**
 
-In the template `QuinSelector`, if you want to confirm the input signal index is a valid integer less than 2\*\*3, you should add Num2bits(3) to check it.
+In the template `QuinarySelector`, if you want to confirm the input signal index is a valid integer less than 2\*\*3, you should add Num2bits(3) to check it.
 
 **Code Location**
 
@@ -119,7 +119,7 @@ greaterThan[i].in[1] <== index;
 
 **Description**
 
-In the template `QuinGeneratePathIndices`, the constraints of the `signal n[levels + 1]` don't perform well for division and modulo counting.
+In the template `QuinaryGeneratePathIndices`, the constraints of the `signal n[levels + 1]` don't perform well for division and modulo counting.
 
 **Code Location**
 

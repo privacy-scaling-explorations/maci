@@ -18,7 +18,7 @@ import {
 } from "./utils/constants";
 import { circomkitInstance } from "./utils/utils";
 
-describe("ProcessMessage circuit", function test() {
+describe("MessageProcessorFull circuit", function test() {
   this.timeout(9000000);
 
   const coordinatorKeypair = new Keypair();
@@ -50,30 +50,38 @@ describe("ProcessMessage circuit", function test() {
 
   let circuit: WitnessTester<ProcessMessageCircuitInputs>;
 
-  let circuitNonQv: WitnessTester<ProcessMessageCircuitInputs>;
+  const nothing = new Message([
+    8370432830353022751713833565135785980866757267633941821328460903436894336785n,
+    0n,
+    0n,
+    0n,
+    0n,
+    0n,
+    0n,
+    0n,
+    0n,
+    0n,
+  ]);
+
+  const encryptionPublic = new PublicKey([
+    10457101036533406547632367118273992217979173478358440826365724437999023779287n,
+    19824078218392094440610104313265183977899662750282163392862422243483260492317n,
+  ]);
 
   before(async () => {
-    circuit = await circomkitInstance.WitnessTester("processMessages", {
-      file: "./coordinator/qv/processMessages",
-      template: "ProcessMessages",
-      params: [10, 20, 2],
-    });
-
-    circuitNonQv = await circomkitInstance.WitnessTester("processMessagesNonQv", {
-      file: "./coordinator/non-qv/processMessages",
-      template: "ProcessMessagesNonQv",
+    circuit = await circomkitInstance.WitnessTester("MessageProcessorFull", {
+      file: "./coordinator/full/MessageProcessor",
+      template: "MessageProcessorFull",
       params: [10, 20, 2],
     });
   });
 
   describe("1) 5 users, 1 messages", () => {
-    const maciState = new MaciState(STATE_TREE_DEPTH);
-    const voteWeight = BigInt(9);
-    const voteOptionIndex = BigInt(1);
     let pollId: bigint;
     let poll: Poll;
-    const messages: Message[] = [];
-    const commands: VoteCommand[] = [];
+
+    const maciState = new MaciState(STATE_TREE_DEPTH);
+    const voteOptionIndex = 1n;
 
     before(() => {
       // Sign up and publish
@@ -89,7 +97,7 @@ describe("ProcessMessage circuit", function test() {
         messageBatchSize,
         coordinatorKeypair,
         maxVoteOptions,
-        EMode.QV,
+        EMode.FULL,
       );
 
       poll = maciState.polls.get(pollId)!;
@@ -105,24 +113,6 @@ describe("ProcessMessage circuit", function test() {
         poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance);
       });
 
-      const nothing = new Message([
-        8370432830353022751713833565135785980866757267633941821328460903436894336785n,
-        0n,
-        0n,
-        0n,
-        0n,
-        0n,
-        0n,
-        0n,
-        0n,
-        0n,
-      ]);
-
-      const encryptionPublic = new PublicKey([
-        10457101036533406547632367118273992217979173478358440826365724437999023779287n,
-        19824078218392094440610104313265183977899662750282163392862422243483260492317n,
-      ]);
-
       poll.publishMessage(nothing, encryptionPublic);
 
       // First command (valid)
@@ -130,8 +120,8 @@ describe("ProcessMessage circuit", function test() {
         5n,
         users[4].publicKey,
         voteOptionIndex, // voteOptionIndex,
-        voteWeight, // vote weight
-        BigInt(2), // nonce
+        voiceCreditBalance, // vote weight
+        2n, // nonce
         BigInt(pollId),
       );
 
@@ -140,8 +130,6 @@ describe("ProcessMessage circuit", function test() {
       const ecdhKeypair = new Keypair();
       const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
       const message = command.encrypt(signature, sharedKey);
-      messages.push(message);
-      commands.push(command);
 
       poll.publishMessage(message, ecdhKeypair.publicKey);
     });
@@ -157,111 +145,7 @@ describe("ProcessMessage circuit", function test() {
     });
   });
 
-  describe("2) 1 user, 2 messages (non-quadratic voting)", () => {
-    const maciState = new MaciState(STATE_TREE_DEPTH);
-    const voteWeight = BigInt(9);
-    const voteOptionIndex = BigInt(0);
-    let stateIndex: bigint;
-    let pollId: bigint;
-    let poll: Poll;
-    const messages: Message[] = [];
-    const commands: VoteCommand[] = [];
-
-    before(() => {
-      // Sign up and publish
-      const userKeypair = new Keypair(new PrivateKey(BigInt(1)));
-      maciState.signUp(userKeypair.publicKey);
-
-      pollId = maciState.deployPoll(
-        BigInt(Math.floor(Date.now() / 1000) + duration),
-        treeDepths,
-        messageBatchSize,
-        coordinatorKeypair,
-        maxVoteOptions,
-        EMode.NON_QV,
-      );
-
-      poll = maciState.polls.get(pollId)!;
-      poll.updatePoll(BigInt(maciState.publicKeys.length));
-
-      // Join the poll
-      const { privateKey, publicKey: pollPublicKey } = userKeypair;
-
-      const nullifier = poseidon([BigInt(privateKey.raw.toString())]);
-
-      stateIndex = BigInt(poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance));
-
-      // First command (valid)
-      const command = new VoteCommand(
-        stateIndex, // BigInt(1),
-        pollPublicKey,
-        voteOptionIndex, // voteOptionIndex,
-        voteWeight, // vote weight
-        BigInt(2), // nonce
-        BigInt(pollId),
-      );
-
-      const signature = command.sign(privateKey);
-
-      const ecdhKeypair = new Keypair();
-      const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
-      const message = command.encrypt(signature, sharedKey);
-      messages.push(message);
-      commands.push(command);
-
-      poll.publishMessage(message, ecdhKeypair.publicKey);
-
-      // Second command (valid)
-      const command2 = new VoteCommand(
-        stateIndex,
-        pollPublicKey,
-        voteOptionIndex, // voteOptionIndex,
-        BigInt(1), // vote weight
-        BigInt(1), // nonce
-        BigInt(pollId),
-      );
-      const signature2 = command2.sign(privateKey);
-
-      const ecdhKeypair2 = new Keypair();
-      const sharedKey2 = Keypair.generateEcdhSharedKey(ecdhKeypair2.privateKey, coordinatorKeypair.publicKey);
-      const message2 = command2.encrypt(signature2, sharedKey2);
-      messages.push(message2);
-      commands.push(command2);
-      poll.publishMessage(message2, ecdhKeypair2.publicKey);
-    });
-
-    it("should produce the correct state root and ballot root", async () => {
-      // The current roots
-      const emptyBallot = new Ballot(poll.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
-      const emptyBallotHash = emptyBallot.hash();
-      const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash2);
-
-      ballotTree.insert(emptyBallot.hash());
-
-      poll.publicKeys.forEach(() => {
-        ballotTree.insert(emptyBallotHash);
-      });
-
-      const currentStateRoot = poll.pollStateTree?.root;
-      const currentBallotRoot = ballotTree.root;
-
-      const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
-
-      // Calculate the witness
-      const witness = await circuitNonQv.calculateWitness(inputs);
-      await circuitNonQv.expectConstraintPass(witness);
-
-      // The new roots, which should differ, since at least one of the
-      // messages modified a Ballot or State Leaf
-      const newStateRoot = poll.pollStateTree?.root;
-      const newBallotRoot = poll.ballotTree?.root;
-
-      expect(newStateRoot?.toString()).not.to.be.eq(currentStateRoot?.toString());
-      expect(newBallotRoot?.toString()).not.to.be.eq(currentBallotRoot.toString());
-    });
-  });
-
-  describe("3) 2 users, 1 message", () => {
+  describe("2) 2 users, 1 message", () => {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     let pollId: bigint;
     let poll: Poll;
@@ -282,7 +166,7 @@ describe("ProcessMessage circuit", function test() {
         messageBatchSize,
         coordinatorKeypair,
         maxVoteOptions,
-        EMode.QV,
+        EMode.FULL,
       );
 
       poll = maciState.polls.get(pollId)!;
@@ -299,9 +183,9 @@ describe("ProcessMessage circuit", function test() {
       const command = new VoteCommand(
         stateIndex,
         pollPublicKey,
-        BigInt(0), // voteOptionIndex,
-        BigInt(1), // vote weight
-        BigInt(1), // nonce
+        0n, // voteOptionIndex,
+        voiceCreditBalance, // vote weight
+        1n, // nonce
         BigInt(pollId),
       );
 
@@ -346,13 +230,11 @@ describe("ProcessMessage circuit", function test() {
     });
   });
 
-  describe("4) 1 user, key-change", () => {
-    const maciState = new MaciState(STATE_TREE_DEPTH);
-    const voteWeight = BigInt(9);
+  describe("3) 1 user, key-change", () => {
     let pollId: bigint;
     let poll: Poll;
-    const messages: Message[] = [];
-    const commands: VoteCommand[] = [];
+
+    const maciState = new MaciState(STATE_TREE_DEPTH);
 
     before(() => {
       // Sign up and publish
@@ -366,7 +248,7 @@ describe("ProcessMessage circuit", function test() {
         messageBatchSize,
         coordinatorKeypair,
         maxVoteOptions,
-        EMode.QV,
+        EMode.FULL,
       );
 
       poll = maciState.polls.get(pollId)!;
@@ -383,9 +265,9 @@ describe("ProcessMessage circuit", function test() {
       const command = new VoteCommand(
         BigInt(stateIndex), // BigInt(1),
         pollPublicKey,
-        BigInt(0), // voteOptionIndex,
-        voteWeight, // vote weight
-        BigInt(1), // nonce
+        0n, // voteOptionIndex,
+        voiceCreditBalance, // vote weight
+        1n, // nonce
         BigInt(pollId),
       );
 
@@ -394,8 +276,6 @@ describe("ProcessMessage circuit", function test() {
       const ecdhKeypair = new Keypair();
       const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
       const message = command.encrypt(signature, sharedKey);
-      messages.push(message);
-      commands.push(command);
 
       poll.publishMessage(message, ecdhKeypair.publicKey);
 
@@ -403,9 +283,9 @@ describe("ProcessMessage circuit", function test() {
       const command2 = new VoteCommand(
         BigInt(stateIndex),
         pollPublicKey,
-        BigInt(1), // voteOptionIndex,
-        voteWeight, // vote weight
-        BigInt(2), // nonce
+        1n, // voteOptionIndex,
+        voiceCreditBalance, // vote weight
+        2n, // nonce
         BigInt(pollId),
       );
       const signature2 = command2.sign(privateKey);
@@ -413,17 +293,15 @@ describe("ProcessMessage circuit", function test() {
       const ecdhKeypair2 = new Keypair();
       const sharedKey2 = Keypair.generateEcdhSharedKey(ecdhKeypair2.privateKey, coordinatorKeypair.publicKey);
       const message2 = command2.encrypt(signature2, sharedKey2);
-      messages.push(message2);
-      commands.push(command2);
       poll.publishMessage(message2, ecdhKeypair2.publicKey);
 
       // Change key
       const command3 = new VoteCommand(
-        BigInt(stateIndex), // BigInt(1),
+        BigInt(stateIndex),
         pollPublicKey,
-        BigInt(1), // voteOptionIndex,
-        BigInt(0), // vote weight
-        BigInt(1), // nonce
+        1n, // voteOptionIndex,
+        0n, // vote weight
+        1n, // nonce
         BigInt(pollId),
       );
 
@@ -432,25 +310,12 @@ describe("ProcessMessage circuit", function test() {
       const ecdhKeypair3 = new Keypair();
       const sharedKey3 = Keypair.generateEcdhSharedKey(ecdhKeypair3.privateKey, coordinatorKeypair.publicKey);
       const message3 = command3.encrypt(signature3, sharedKey3);
-      messages.push(message3);
-      commands.push(command3);
       poll.publishMessage(message3, ecdhKeypair3.publicKey);
     });
 
     it("should produce the correct state root and ballot root", async () => {
-      // The current roots
-      const emptyBallot = new Ballot(poll.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
-      const emptyBallotHash = emptyBallot.hash();
-      const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash2);
-
-      ballotTree.insert(emptyBallot.hash());
-
-      poll.publicKeys.forEach(() => {
-        ballotTree.insert(emptyBallotHash);
-      });
-
       const currentStateRoot = poll.pollStateTree?.root;
-      const currentBallotRoot = ballotTree.root;
+      const currentBallotRoot = poll.ballotTree?.root;
 
       const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
       // Calculate the witness
@@ -459,21 +324,21 @@ describe("ProcessMessage circuit", function test() {
 
       // The new roots, which should differ, since at least one of the
       // messages modified a Ballot or State Leaf
-
       const newStateRoot = poll.pollStateTree?.root;
       const newBallotRoot = poll.ballotTree?.root;
 
-      expect(newStateRoot?.toString()).not.to.be.eq(currentStateRoot?.toString());
-      expect(newBallotRoot?.toString()).not.to.be.eq(currentBallotRoot.toString());
+      expect(newStateRoot!.toString()).not.to.be.eq(currentStateRoot!.toString());
+      expect(newBallotRoot!.toString()).not.to.be.eq(currentBallotRoot!.toString());
     });
   });
 
   const NUM_BATCHES = 2;
-  describe(`5) 1 user, ${messageBatchSize * NUM_BATCHES - 1} messages`, () => {
-    const maciState = new MaciState(STATE_TREE_DEPTH);
+  describe(`4) 1 user, ${messageBatchSize * NUM_BATCHES - 1} messages`, () => {
     let stateIndex: number;
     let pollId: bigint;
     let poll: Poll;
+
+    const maciState = new MaciState(STATE_TREE_DEPTH);
 
     before(() => {
       const userKeypair = new Keypair(new PrivateKey(BigInt(1)));
@@ -486,7 +351,7 @@ describe("ProcessMessage circuit", function test() {
         messageBatchSize,
         coordinatorKeypair,
         maxVoteOptions,
-        EMode.QV,
+        EMode.FULL,
       );
 
       poll = maciState.polls.get(pollId)!;
@@ -507,7 +372,7 @@ describe("ProcessMessage circuit", function test() {
           BigInt(stateIndex),
           pollPublicKey,
           BigInt(i), // vote option index
-          BigInt(1), // vote weight
+          voiceCreditBalance, // vote weight
           BigInt(numMessages - i), // nonce
           BigInt(pollId),
         );
@@ -532,14 +397,12 @@ describe("ProcessMessage circuit", function test() {
     });
   });
 
-  describe("6) 1 user, 2 messages", () => {
+  describe("5) 1 user, 2 messages", () => {
     const maciState = new MaciState(STATE_TREE_DEPTH);
     const voteOptionIndex = 1n;
     let stateIndex: bigint;
     let pollId: bigint;
     let poll: Poll;
-    const messages: Message[] = [];
-    const commands: VoteCommand[] = [];
 
     before(() => {
       // Sign up and publish
@@ -551,7 +414,7 @@ describe("ProcessMessage circuit", function test() {
         messageBatchSize,
         coordinatorKeypair,
         maxVoteOptions,
-        EMode.QV,
+        EMode.FULL,
       );
 
       poll = maciState.polls.get(pollId)!;
@@ -564,24 +427,6 @@ describe("ProcessMessage circuit", function test() {
 
       stateIndex = BigInt(poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance));
 
-      const nothing = new Message([
-        8370432830353022751713833565135785980866757267633941821328460903436894336785n,
-        0n,
-        0n,
-        0n,
-        0n,
-        0n,
-        0n,
-        0n,
-        0n,
-        0n,
-      ]);
-
-      const encryptionPublic = new PublicKey([
-        10457101036533406547632367118273992217979173478358440826365724437999023779287n,
-        19824078218392094440610104313265183977899662750282163392862422243483260492317n,
-      ]);
-
       poll.publishMessage(nothing, encryptionPublic);
 
       // First command (valid)
@@ -589,7 +434,7 @@ describe("ProcessMessage circuit", function test() {
         stateIndex, // BigInt(1),
         pollPublicKey,
         1n, // voteOptionIndex,
-        2n, // vote weight
+        voiceCreditBalance, // vote weight
         2n, // nonce
         pollId,
       );
@@ -599,8 +444,6 @@ describe("ProcessMessage circuit", function test() {
       const ecdhKeypair = new Keypair();
       const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
       const message = command.encrypt(signature, sharedKey);
-      messages.push(message);
-      commands.push(command);
 
       poll.publishMessage(message, ecdhKeypair.publicKey);
 
@@ -609,7 +452,7 @@ describe("ProcessMessage circuit", function test() {
         stateIndex,
         pollPublicKey,
         voteOptionIndex, // voteOptionIndex,
-        9n, // vote weight 9 ** 2 = 81
+        voiceCreditBalance, // vote weight
         1n, // nonce
         pollId,
       );
@@ -618,25 +461,12 @@ describe("ProcessMessage circuit", function test() {
       const ecdhKeypair2 = new Keypair();
       const sharedKey2 = Keypair.generateEcdhSharedKey(ecdhKeypair2.privateKey, coordinatorKeypair.publicKey);
       const message2 = command2.encrypt(signature2, sharedKey2);
-      messages.push(message2);
-      commands.push(command2);
       poll.publishMessage(message2, ecdhKeypair2.publicKey);
     });
 
     it("should produce the correct state root and ballot root", async () => {
-      // The current roots
-      const emptyBallot = new Ballot(poll.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
-      const emptyBallotHash = emptyBallot.hash();
-      const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash2);
-
-      ballotTree.insert(emptyBallot.hash());
-
-      poll.publicKeys.forEach(() => {
-        ballotTree.insert(emptyBallotHash);
-      });
-
       const currentStateRoot = poll.pollStateTree?.root;
-      const currentBallotRoot = ballotTree.root;
+      const currentBallotRoot = poll.ballotTree?.root;
 
       const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
 
@@ -649,19 +479,18 @@ describe("ProcessMessage circuit", function test() {
       const newStateRoot = poll.pollStateTree?.root;
       const newBallotRoot = poll.ballotTree?.root;
 
-      expect(newStateRoot?.toString()).not.to.be.eq(currentStateRoot?.toString());
-      expect(newBallotRoot?.toString()).not.to.be.eq(currentBallotRoot.toString());
+      expect(newStateRoot!.toString()).not.to.be.eq(currentStateRoot!.toString());
+      expect(newBallotRoot!.toString()).not.to.be.eq(currentBallotRoot!.toString());
     });
   });
 
-  describe("7) 1 user, 2 messages in different batches", () => {
-    const maciState = new MaciState(STATE_TREE_DEPTH);
-    const voteOptionIndex = 1n;
+  describe("6) 1 user, 2 messages in different batches", () => {
+    let poll: Poll;
     let stateIndex: bigint;
     let pollId: bigint;
-    let poll: Poll;
-    const messages: Message[] = [];
-    const commands: VoteCommand[] = [];
+
+    const maciState = new MaciState(STATE_TREE_DEPTH);
+    const voteOptionIndex = 1n;
 
     before(() => {
       // Sign up and publish
@@ -674,7 +503,7 @@ describe("ProcessMessage circuit", function test() {
         messageBatchSize,
         coordinatorKeypair,
         maxVoteOptions,
-        EMode.QV,
+        EMode.FULL,
       );
 
       poll = maciState.polls.get(pollId)!;
@@ -687,32 +516,14 @@ describe("ProcessMessage circuit", function test() {
 
       stateIndex = BigInt(poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance));
 
-      const nothing = new Message([
-        8370432830353022751713833565135785980866757267633941821328460903436894336785n,
-        0n,
-        0n,
-        0n,
-        0n,
-        0n,
-        0n,
-        0n,
-        0n,
-        0n,
-      ]);
-
-      const encryptionPublic = new PublicKey([
-        10457101036533406547632367118273992217979173478358440826365724437999023779287n,
-        19824078218392094440610104313265183977899662750282163392862422243483260492317n,
-      ]);
-
       poll.publishMessage(nothing, encryptionPublic);
 
       // First command (valid)
       const command = new VoteCommand(
-        stateIndex, // BigInt(1),
+        stateIndex,
         pollPublicKey,
-        1n, // voteOptionIndex,
-        2n, // vote weight
+        voteOptionIndex,
+        voiceCreditBalance, // vote weight
         2n, // nonce
         pollId,
       );
@@ -722,8 +533,6 @@ describe("ProcessMessage circuit", function test() {
       const ecdhKeypair = new Keypair();
       const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
       const message = command.encrypt(signature, sharedKey);
-      messages.push(message);
-      commands.push(command);
 
       poll.publishMessage(message, ecdhKeypair.publicKey);
 
@@ -736,8 +545,8 @@ describe("ProcessMessage circuit", function test() {
       const command2 = new VoteCommand(
         stateIndex,
         pollPublicKey,
-        voteOptionIndex, // voteOptionIndex,
-        9n, // vote weight 9 ** 2 = 81
+        2n, // voteOptionIndex
+        voiceCreditBalance,
         1n, // nonce
         pollId,
       );
@@ -746,26 +555,15 @@ describe("ProcessMessage circuit", function test() {
       const ecdhKeypair2 = new Keypair();
       const sharedKey2 = Keypair.generateEcdhSharedKey(ecdhKeypair2.privateKey, coordinatorKeypair.publicKey);
       const message2 = command2.encrypt(signature2, sharedKey2);
-      messages.push(message2);
-      commands.push(command2);
+
       poll.publishMessage(message2, ecdhKeypair2.publicKey);
     });
 
     it("should produce the correct state root and ballot root", async () => {
-      // The current roots
-      const emptyBallot = new Ballot(poll.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
-      const emptyBallotHash = emptyBallot.hash();
-      const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash2);
-
-      ballotTree.insert(emptyBallot.hash());
-
-      poll.publicKeys.forEach(() => {
-        ballotTree.insert(emptyBallotHash);
-      });
+      const currentStateRoot = poll.pollStateTree?.root;
+      const currentBallotRoot = poll.ballotTree?.root;
 
       while (poll.hasUnprocessedMessages()) {
-        const currentStateRoot = poll.pollStateTree?.root;
-        const currentBallotRoot = ballotTree.root;
         const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
 
         // Calculate the witness
@@ -779,20 +577,19 @@ describe("ProcessMessage circuit", function test() {
         const newStateRoot = poll.pollStateTree?.root;
         const newBallotRoot = poll.ballotTree?.root;
 
-        expect(newStateRoot?.toString()).not.to.be.eq(currentStateRoot?.toString());
-        expect(newBallotRoot?.toString()).not.to.be.eq(currentBallotRoot.toString());
+        expect(newStateRoot!.toString()).not.to.be.eq(currentStateRoot!.toString());
+        expect(newBallotRoot!.toString()).not.to.be.eq(currentBallotRoot!.toString());
       }
     });
   });
 
-  describe("8) 1 user, 3 messages in different batches", () => {
-    const maciState = new MaciState(STATE_TREE_DEPTH);
-    const voteOptionIndex = 1n;
+  describe("7) 1 user, 3 messages in different batches", () => {
     let stateIndex: bigint;
     let pollId: bigint;
     let poll: Poll;
-    const messages: Message[] = [];
-    const commands: VoteCommand[] = [];
+
+    const maciState = new MaciState(STATE_TREE_DEPTH);
+    const voteOptionIndex = 1n;
 
     before(() => {
       // Sign up and publish
@@ -804,7 +601,7 @@ describe("ProcessMessage circuit", function test() {
         messageBatchSize,
         coordinatorKeypair,
         maxVoteOptions,
-        EMode.QV,
+        EMode.FULL,
       );
 
       poll = maciState.polls.get(pollId)!;
@@ -817,31 +614,13 @@ describe("ProcessMessage circuit", function test() {
 
       stateIndex = BigInt(poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance));
 
-      const nothing = new Message([
-        8370432830353022751713833565135785980866757267633941821328460903436894336785n,
-        0n,
-        0n,
-        0n,
-        0n,
-        0n,
-        0n,
-        0n,
-        0n,
-        0n,
-      ]);
-
-      const encryptionPublic = new PublicKey([
-        10457101036533406547632367118273992217979173478358440826365724437999023779287n,
-        19824078218392094440610104313265183977899662750282163392862422243483260492317n,
-      ]);
-
       poll.publishMessage(nothing, encryptionPublic);
 
       const commandFinal = new VoteCommand(
-        stateIndex, // BigInt(1),
+        stateIndex,
         pollPublicKey,
-        1n, // voteOptionIndex,
-        1n, // vote weight
+        voteOptionIndex,
+        voiceCreditBalance - 1n,
         3n, // nonce
         pollId,
       );
@@ -851,17 +630,15 @@ describe("ProcessMessage circuit", function test() {
       const ecdhKeypairFinal = new Keypair();
       const sharedKeyFinal = Keypair.generateEcdhSharedKey(ecdhKeypairFinal.privateKey, coordinatorKeypair.publicKey);
       const messageFinal = commandFinal.encrypt(signatureFinal, sharedKeyFinal);
-      messages.push(messageFinal);
-      commands.push(commandFinal);
 
       poll.publishMessage(messageFinal, ecdhKeypairFinal.publicKey);
 
       // First command (valid)
       const command = new VoteCommand(
-        stateIndex, // BigInt(1),
+        stateIndex,
         pollPublicKey,
-        1n, // voteOptionIndex,
-        2n, // vote weight
+        voteOptionIndex,
+        voiceCreditBalance,
         2n, // nonce
         pollId,
       );
@@ -871,8 +648,6 @@ describe("ProcessMessage circuit", function test() {
       const ecdhKeypair = new Keypair();
       const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
       const message = command.encrypt(signature, sharedKey);
-      messages.push(message);
-      commands.push(command);
 
       poll.publishMessage(message, ecdhKeypair.publicKey);
 
@@ -885,8 +660,8 @@ describe("ProcessMessage circuit", function test() {
       const command2 = new VoteCommand(
         stateIndex,
         pollPublicKey,
-        voteOptionIndex, // voteOptionIndex,
-        9n, // vote weight 9 ** 2 = 81
+        voteOptionIndex,
+        voiceCreditBalance,
         1n, // nonce
         pollId,
       );
@@ -895,26 +670,15 @@ describe("ProcessMessage circuit", function test() {
       const ecdhKeypair2 = new Keypair();
       const sharedKey2 = Keypair.generateEcdhSharedKey(ecdhKeypair2.privateKey, coordinatorKeypair.publicKey);
       const message2 = command2.encrypt(signature2, sharedKey2);
-      messages.push(message2);
-      commands.push(command2);
+
       poll.publishMessage(message2, ecdhKeypair2.publicKey);
     });
 
     it("should produce the correct state root and ballot root", async () => {
-      // The current roots
-      const emptyBallot = new Ballot(poll.maxVoteOptions, poll.treeDepths.voteOptionTreeDepth);
-      const emptyBallotHash = emptyBallot.hash();
-      const ballotTree = new IncrementalQuinTree(STATE_TREE_DEPTH, emptyBallot.hash(), STATE_TREE_ARITY, hash2);
-
-      ballotTree.insert(emptyBallot.hash());
-
-      poll.publicKeys.forEach(() => {
-        ballotTree.insert(emptyBallotHash);
-      });
+      const currentStateRoot = poll.pollStateTree?.root.toString();
+      const currentBallotRoot = poll.ballotTree?.root.toString();
 
       while (poll.hasUnprocessedMessages()) {
-        const currentStateRoot = poll.pollStateTree?.root;
-        const currentBallotRoot = ballotTree.root;
         const inputs = poll.processMessages(pollId) as unknown as IProcessMessagesInputs;
 
         // Calculate the witness
@@ -925,11 +689,11 @@ describe("ProcessMessage circuit", function test() {
 
         // The new roots, which should differ, since at least one of the
         // messages modified a Ballot or State Leaf
-        const newStateRoot = poll.pollStateTree?.root;
-        const newBallotRoot = poll.ballotTree?.root;
+        const newStateRoot = poll.pollStateTree?.root.toString();
+        const newBallotRoot = poll.ballotTree?.root.toString();
 
-        expect(newStateRoot?.toString()).not.to.be.eq(currentStateRoot?.toString());
-        expect(newBallotRoot?.toString()).not.to.be.eq(currentBallotRoot.toString());
+        expect(newStateRoot!.toString()).not.to.be.eq(currentStateRoot!.toString());
+        expect(newBallotRoot!.toString()).not.to.be.eq(currentBallotRoot!.toString());
       }
     });
   });

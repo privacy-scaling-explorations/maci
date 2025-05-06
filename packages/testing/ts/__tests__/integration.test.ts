@@ -183,6 +183,7 @@ describe("Integration tests", function test() {
       messageBatchSize,
       coordinatorKeypair,
       BigInt(maxVoteOptions),
+      EMode.QV,
     );
   });
 
@@ -379,7 +380,7 @@ describe("Integration tests", function test() {
           "./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_js/ProcessMessages_10-20-2_test.wasm",
         tallyWasm: "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm",
         useWasm,
-        useQuadraticVoting: true,
+        mode: EMode.QV,
         ipfsMessageBackupFiles,
         signer,
       });

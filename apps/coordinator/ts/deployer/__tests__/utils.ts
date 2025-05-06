@@ -1,5 +1,5 @@
 import { Keypair, PrivateKey } from "@maci-protocol/domainobjs";
-import { EPolicies, EInitialVoiceCreditProxies } from "@maci-protocol/sdk";
+import { EPolicies, EInitialVoiceCreditProxies, EMode } from "@maci-protocol/sdk";
 import { zeroHash } from "viem";
 
 import {
@@ -77,7 +77,7 @@ export const pollStartDateExtraSeconds = 60;
 export const testPollDeploymentConfig: IDeployPollConfig = {
   startDate,
   endDate: startDate + pollDuration,
-  useQuadraticVoting: false,
+  mode: EMode.NON_QV,
   coordinatorPublicKey: coordinatorMACIKeypair.publicKey.serialize(),
   intStateTreeDepth: 1,
   messageBatchSize: MSG_BATCH_SIZE,

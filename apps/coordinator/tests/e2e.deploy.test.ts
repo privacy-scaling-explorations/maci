@@ -300,7 +300,7 @@ describe("E2E Deployment Tests", () => {
       body: JSON.stringify({
         poll: Number(pollId),
         maciContractAddress: maciAddress,
-        useQuadraticVoting: testPollDeploymentConfig.useQuadraticVoting,
+        mode: testPollDeploymentConfig.mode,
         encryptedCoordinatorPrivateKey,
         startBlock: Number(blockNumber) - 100,
         endBlock: Number(blockNumber) + 100,

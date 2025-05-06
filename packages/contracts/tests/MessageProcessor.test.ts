@@ -1,12 +1,11 @@
 /* eslint-disable no-underscore-dangle */
-import { MaciState, Poll, IProcessMessagesCircuitInputs } from "@maci-protocol/core";
+import { EMode, MaciState, Poll, IProcessMessagesCircuitInputs } from "@maci-protocol/core";
 import { NOTHING_UP_MY_SLEEVE } from "@maci-protocol/crypto";
 import { Keypair, Message, PublicKey } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { Signer, ZeroAddress } from "ethers";
 import { EthereumProvider } from "hardhat/types";
 
-import { EMode } from "../ts/constants";
 import { IVerifyingKeyStruct } from "../ts/types";
 import { getDefaultSigner, getBlockTimestamp } from "../ts/utils";
 import {
@@ -101,6 +100,7 @@ describe("MessageProcessor", () => {
       messageBatchSize,
       coordinator,
       BigInt(maxVoteOptions),
+      EMode.QV,
     );
     expect(deployedPollId.toString()).to.eq(pollId.toString());
 

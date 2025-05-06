@@ -1,10 +1,11 @@
 import { Tally__factory as TallyFactory, MACI__factory as MACIFactory } from "@maci-protocol/contracts/typechain-types";
+import { EMode } from "@maci-protocol/core";
 
 import type { IVerifyArgs } from "./types";
 
 import { contractExists } from "../utils/contracts";
 
-import { verifyPerVOSpentVoiceCredits, verifyTallyResults } from "./utils";
+import { verifyPerVoteOptionSpentVoiceCredits, verifyTallyResults } from "./utils";
 
 /**
  * Verify the results of a poll on-chain
@@ -18,7 +19,6 @@ export const verify = async ({
   totalVoteOptions,
   voteOptionTreeDepth,
 }: IVerifyArgs): Promise<boolean> => {
-  const useQv = tallyData.isQuadratic;
   const maciContractAddress = tallyData.maci;
 
   const validContract = await contractExists(signer.provider!, maciContractAddress);
@@ -50,7 +50,7 @@ export const verify = async ({
   const {
     newTallyCommitment,
     newSpentVoiceCreditsCommitment,
-    newPerVOSpentVoiceCreditsCommitment,
+    newPerVoteOptionSpentVoiceCreditsCommitment,
     newResultsCommitment,
   } = tallyCommitments;
 
@@ -64,7 +64,7 @@ export const verify = async ({
     tallyData.totalSpentVoiceCredits.spent,
     tallyData.totalSpentVoiceCredits.salt,
     newResultsCommitment,
-    newPerVOSpentVoiceCreditsCommitment ?? 0n,
+    newPerVoteOptionSpentVoiceCreditsCommitment ?? 0n,
   );
 
   if (!verified) {
@@ -77,7 +77,7 @@ export const verify = async ({
     tallyData,
     voteOptionTreeDepth,
     newSpentVoiceCreditsCommitment,
-    newPerVOSpentVoiceCreditsCommitment,
+    newPerVoteOptionSpentVoiceCreditsCommitment,
   );
 
   if (failedPerVOSpentCredits.length > 0) {
@@ -88,7 +88,7 @@ export const verify = async ({
     );
   }
 
-  if (!useQv) {
+  if (tallyData.mode !== EMode.QV) {
     return true;
   }
 
@@ -97,7 +97,7 @@ export const verify = async ({
   }
 
   // verify per vote option voice credits on-chain
-  const failedSpentCredits = await verifyPerVOSpentVoiceCredits(
+  const failedSpentCredits = await verifyPerVoteOptionSpentVoiceCredits(
     tallyContract,
     tallyData,
     voteOptionTreeDepth,

@@ -1,4 +1,4 @@
-import { MaciState, Poll } from "@maci-protocol/core";
+import { EMode, MaciState, Poll } from "@maci-protocol/core";
 import { poseidon } from "@maci-protocol/crypto";
 import { Keypair, VoteCommand, Message } from "@maci-protocol/domainobjs";
 import { type WitnessTester } from "circomkit";
@@ -84,6 +84,7 @@ describe("TallyVotes circuit", function test() {
         messageBatchSize,
         coordinatorKeypair,
         maxVoteOptions,
+        EMode.QV,
       );
 
       poll = maciState.polls.get(pollId)!;
@@ -160,6 +161,7 @@ describe("TallyVotes circuit", function test() {
         messageBatchSize,
         coordinatorKeypair,
         maxVoteOptions,
+        EMode.NON_QV,
       );
 
       poll = maciState.polls.get(pollId)!;
@@ -195,14 +197,14 @@ describe("TallyVotes circuit", function test() {
     });
 
     it("should produce the correct result commitments", async () => {
-      const generatedInputs = poll.tallyVotesNonQv() as unknown as ITallyVotesInputs;
+      const generatedInputs = poll.tallyVotes() as unknown as ITallyVotesInputs;
 
       const witness = await circuitNonQv.calculateWitness(generatedInputs);
       await circuitNonQv.expectConstraintPass(witness);
     });
 
     it("should produce the correct result if the initial tally is not zero", async () => {
-      const generatedInputs = poll.tallyVotesNonQv() as unknown as ITallyVotesInputs;
+      const generatedInputs = poll.tallyVotes() as unknown as ITallyVotesInputs;
 
       // Start the tally from non-zero value
       let randIdx = generateRandomIndex(Object.keys(generatedInputs).length);
@@ -238,6 +240,7 @@ describe("TallyVotes circuit", function test() {
         messageBatchSize,
         coordinatorKeypair,
         maxVoteOptions,
+        EMode.QV,
       );
 
       const poll = maciState.polls.get(pollId)!;

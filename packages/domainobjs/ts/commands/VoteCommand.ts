@@ -6,7 +6,6 @@ import {
   sign,
   verifySignature,
   type Signature,
-  type Ciphertext,
   type EcdhSharedKey,
   type Point,
   poseidonDecryptWithoutCheck,
@@ -160,7 +159,7 @@ export class VoteCommand {
 
     assert(plaintext.length === 7);
 
-    const ciphertext: Ciphertext = poseidonEncrypt(plaintext, sharedKey, BigInt(0));
+    const ciphertext = poseidonEncrypt(plaintext, sharedKey, BigInt(0));
 
     const message = new Message(ciphertext as bigint[]);
 

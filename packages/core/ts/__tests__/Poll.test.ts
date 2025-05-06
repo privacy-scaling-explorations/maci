@@ -4,7 +4,7 @@ import { expect } from "chai";
 
 import { MaciState } from "../MaciState";
 import { Poll } from "../Poll";
-import { STATE_TREE_DEPTH, VOTE_OPTION_TREE_ARITY } from "../utils/constants";
+import { EMode, STATE_TREE_DEPTH, VOTE_OPTION_TREE_ARITY } from "../utils/constants";
 
 import {
   coordinatorKeypair,
@@ -20,15 +20,27 @@ describe("Poll", function test() {
 
   describe("processMessage", () => {
     const maciState = new MaciState(STATE_TREE_DEPTH);
+
     const pollId = maciState.deployPoll(
       BigInt(Math.floor(Date.now() / 1000) + duration),
       treeDepths,
       messageBatchSize,
       coordinatorKeypair,
       maxVoteOptions,
+      EMode.QV,
+    );
+
+    const nonQvPollId = maciState.deployPoll(
+      BigInt(Math.floor(Date.now() / 1000) + duration),
+      treeDepths,
+      messageBatchSize,
+      coordinatorKeypair,
+      maxVoteOptions,
+      EMode.NON_QV,
     );
 
     const poll = maciState.polls.get(pollId)!;
+    const nonQvPoll = maciState.polls.get(nonQvPollId)!;
 
     const user1Keypair = new Keypair();
     // signup the user
@@ -36,6 +48,7 @@ describe("Poll", function test() {
 
     // copy the state from the MaciState ref
     poll.updatePoll(BigInt(maciState.publicKeys.length));
+    nonQvPoll.updatePoll(BigInt(maciState.publicKeys.length));
 
     const { privateKey } = user1Keypair;
     const { privateKey: pollPrivateKey, publicKey: pollPublicKey } = new Keypair();
@@ -43,6 +56,7 @@ describe("Poll", function test() {
     const nullifier = poseidon([BigInt(privateKey.raw.toString())]);
 
     const stateIndex = poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance);
+    const nonQvStateIndex = nonQvPoll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance);
 
     it("should throw if a message has an invalid state index", () => {
       const command = new VoteCommand(
@@ -199,7 +213,7 @@ describe("Poll", function test() {
     it("should throw when going over the voice credit limit (non qv)", () => {
       const command = new VoteCommand(
         // invalid state index as it is one more than the number of state leaves
-        BigInt(stateIndex),
+        BigInt(nonQvStateIndex),
         pollPublicKey,
         0n,
         voiceCreditBalance + 1n,
@@ -213,16 +227,16 @@ describe("Poll", function test() {
       const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
 
       const message = command.encrypt(signature, sharedKey);
-      poll.publishMessage(message, ecdhKeypair.publicKey);
+      nonQvPoll.publishMessage(message, ecdhKeypair.publicKey);
       expect(() => {
-        poll.processMessage(message, ecdhKeypair.publicKey, false);
+        nonQvPoll.processMessage(message, ecdhKeypair.publicKey);
       }).to.throw("insufficient voice credits");
     });
 
     it("should work when submitting a valid message (voteWeight === voiceCreditBalance and non qv)", () => {
       const command = new VoteCommand(
         // invalid state index as it is one more than the number of state leaves
-        BigInt(stateIndex),
+        BigInt(nonQvStateIndex),
         pollPublicKey,
         0n,
         voiceCreditBalance,
@@ -236,8 +250,8 @@ describe("Poll", function test() {
       const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
 
       const message = command.encrypt(signature, sharedKey);
-      poll.publishMessage(message, ecdhKeypair.publicKey);
-      poll.processMessage(message, ecdhKeypair.publicKey, false);
+      nonQvPoll.publishMessage(message, ecdhKeypair.publicKey);
+      nonQvPoll.processMessage(message, ecdhKeypair.publicKey);
     });
   });
 
@@ -249,6 +263,7 @@ describe("Poll", function test() {
       messageBatchSize,
       coordinatorKeypair,
       maxVoteOptions,
+      EMode.QV,
     );
 
     const poll = maciState.polls.get(pollId)!;
@@ -266,15 +281,16 @@ describe("Poll", function test() {
     const stateIndex = poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance);
 
     it("should throw if the state has not been copied prior to calling processMessages", () => {
-      const tmpPoll = maciState.deployPoll(
+      const tempPoll = maciState.deployPoll(
         BigInt(Math.floor(Date.now() / 1000) + duration),
         treeDepths,
         messageBatchSize,
         coordinatorKeypair,
         maxVoteOptions,
+        EMode.QV,
       );
 
-      expect(() => maciState.polls.get(tmpPoll)?.processMessages(pollId)).to.throw(
+      expect(() => maciState.polls.get(tempPoll)?.processMessages(pollId)).to.throw(
         "You must update the poll with the correct data first",
       );
     });
@@ -326,6 +342,7 @@ describe("Poll", function test() {
       messageBatchSize,
       coordinatorKeypair,
       maxVoteOptions,
+      EMode.QV,
     );
 
     const poll = maciState.polls.get(pollId)!;
@@ -419,6 +436,7 @@ describe("Poll", function test() {
       messageBatchSize,
       coordinatorKeypair,
       maxVoteOptions,
+      EMode.QV,
     );
 
     const poll = maciState.polls.get(pollId)!;
@@ -488,6 +506,7 @@ describe("Poll", function test() {
         messageBatchSize,
         coordinatorKeypair,
         maxVoteOptions,
+        EMode.NON_QV,
       );
 
       const secondPoll = maciState.polls.get(secondPollId)!;
@@ -516,7 +535,7 @@ describe("Poll", function test() {
       secondPoll.publishMessage(secondMessage, secondEcdhKeypair.publicKey);
 
       secondPoll.processAllMessages();
-      secondPoll.tallyVotesNonQv();
+      secondPoll.tallyVotes();
 
       const spentVoiceCredits = secondPoll.totalSpentVoiceCredits;
       const results = secondPoll.tallyResult;
@@ -539,6 +558,7 @@ describe("Poll", function test() {
         messageBatchSize,
         coordinatorKeypair,
         maxVoteOptions,
+        EMode.QV,
       );
 
       const poll = maciState.polls.get(pollId)!;
@@ -558,6 +578,7 @@ describe("Poll", function test() {
         messageBatchSize,
         coordinatorKeypair,
         maxVoteOptions,
+        EMode.QV,
       );
 
       maciState.signUp(new Keypair().publicKey);
@@ -584,6 +605,7 @@ describe("Poll", function test() {
         messageBatchSize,
         coordinatorKeypair,
         maxVoteOptions,
+        EMode.QV,
       );
 
       const poll = maciState.polls.get(pollId)!;

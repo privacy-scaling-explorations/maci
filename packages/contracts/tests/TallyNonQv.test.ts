@@ -1,12 +1,11 @@
 /* eslint-disable no-underscore-dangle */
-import { MaciState, Poll, IProcessMessagesCircuitInputs, ITallyCircuitInputs } from "@maci-protocol/core";
+import { EMode, MaciState, Poll, IProcessMessagesCircuitInputs, ITallyCircuitInputs } from "@maci-protocol/core";
 import { NOTHING_UP_MY_SLEEVE } from "@maci-protocol/crypto";
 import { Keypair, Message, PublicKey } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
 import { Signer, ZeroAddress } from "ethers";
 import { EthereumProvider } from "hardhat/types";
 
-import { EMode } from "../ts/constants";
 import { IVerifyingKeyStruct } from "../ts/types";
 import { getDefaultSigner, getBlockTimestamp } from "../ts/utils";
 import {
@@ -100,6 +99,7 @@ describe("TallyVotesNonQv", () => {
       messageBatchSize,
       coordinator,
       BigInt(maxVoteOptions),
+      EMode.NON_QV,
     );
     expect(deployedPollId.toString()).to.eq(pollId.toString());
     // publish the NOTHING_UP_MY_SLEEVE message
@@ -122,7 +122,7 @@ describe("TallyVotesNonQv", () => {
     poll.updatePoll(BigInt(maciState.publicKeys.length));
 
     // process messages locally
-    generatedInputs = poll.processMessages(pollId, false);
+    generatedInputs = poll.processMessages(pollId);
 
     // set the verification keys on the registry smart contract
     await verifyingKeysRegistryContract.setVerifyingKeys(
@@ -178,11 +178,10 @@ describe("TallyVotesNonQv", () => {
       expect(isTallied).to.eq(true);
     });
 
-    it("should throw error if try to call verifyPerVOSpentVoiceCredits for non-qv", async () => {
-      await expect(tallyContract.verifyPerVOSpentVoiceCredits(0, 0, [], 0, 0, 0, 0)).to.be.revertedWithCustomError(
-        tallyContract,
-        "NotSupported",
-      );
+    it("should throw error if try to call verifyPerVoteOptionSpentVoiceCredits for non-qv", async () => {
+      await expect(
+        tallyContract.verifyPerVoteOptionSpentVoiceCredits(0, 0, [], 0, 0, 0, 0),
+      ).to.be.revertedWithCustomError(tallyContract, "NotSupported");
     });
 
     it("tallyVotes() should revert when votes have already been tallied", async () => {

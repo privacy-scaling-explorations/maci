@@ -37,7 +37,7 @@ interface ITally {
   /// @param _resultCommitment hashLeftRight(merkle root of the results.tally, results.salt)
   // in the tally.json file
   /// @return isValid Whether the provided proof is valid
-  function verifyPerVOSpentVoiceCredits(
+  function verifyPerVoteOptionSpentVoiceCredits(
     uint256 _voteOptionIndex,
     uint256 _spent,
     uint256[][] calldata _spentProof,

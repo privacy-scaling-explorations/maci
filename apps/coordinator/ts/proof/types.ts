@@ -1,4 +1,4 @@
-import type { ITallyData, IProof } from "@maci-protocol/sdk";
+import type { ITallyData, IProof, EMode } from "@maci-protocol/sdk";
 import type { Hex } from "viem";
 
 import { ESupportedNetworks } from "../common";
@@ -60,7 +60,7 @@ export interface IGenerateArgs {
   /**
    * Whether to use Qv or NonQv
    */
-  useQuadraticVoting: boolean;
+  mode: EMode;
 
   /**
    * Encrypted coordinator private key with RSA public key (see .env.example)

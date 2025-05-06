@@ -1,4 +1,4 @@
-import { MaciState, Poll } from "@maci-protocol/core";
+import { EMode, MaciState, Poll } from "@maci-protocol/core";
 import { poseidon } from "@maci-protocol/crypto";
 import { Keypair, Message, VoteCommand } from "@maci-protocol/domainobjs";
 import { type WitnessTester } from "circomkit";
@@ -65,6 +65,7 @@ describe("Poll Joined circuit", function test() {
         messageBatchSize,
         coordinatorKeypair,
         maxVoteOptions,
+        EMode.QV,
       );
 
       poll = maciState.polls.get(pollId)!;

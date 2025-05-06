@@ -1,5 +1,6 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-console */
+import { EMode } from "@maci-protocol/core";
 import { Keypair, PrivateKey } from "@maci-protocol/domainobjs";
 import { task, types } from "hardhat/config";
 
@@ -121,29 +122,37 @@ task("prove", "Command to generate proofs")
       });
       const tallyContractAddress = await tallyContract.getAddress();
 
-      const useQuadraticVoting =
-        deployment.getDeployConfigField<boolean | null>(EContracts.Poll, "useQuadraticVoting") ?? false;
-      const mode = useQuadraticVoting ? "qv" : "nonQv";
+      const modeKeys = {
+        [EMode.QV]: "qv",
+        [EMode.NON_QV]: "nonQv",
+        [EMode.FULL]: "full",
+      };
+
+      const mode = deployment.getDeployConfigField<EMode | null>(EContracts.Poll, "mode") ?? EMode.QV;
       const tallyZkey = deployment.getDeployConfigField<string>(
         EContracts.VerifyingKeysRegistry,
-        `zkeys.${mode}.tallyVotesZkey`,
+        `zkeys.${modeKeys[mode]}.tallyVotesZkey`,
         true,
       );
+
       const tallyWasm = deployment.getDeployConfigField<string>(
         EContracts.VerifyingKeysRegistry,
-        `zkeys.${mode}.tallyWasm`,
+        `zkeys.${modeKeys[mode]}.tallyWasm`,
         true,
       );
+
       const processZkey = deployment.getDeployConfigField<string>(
         EContracts.VerifyingKeysRegistry,
-        `zkeys.${mode}.processMessagesZkey`,
+        `zkeys.${modeKeys[mode]}.processMessagesZkey`,
         true,
       );
+
       const processWasm = deployment.getDeployConfigField<string>(
         EContracts.VerifyingKeysRegistry,
-        `zkeys.${mode}.processWasm`,
+        `zkeys.${modeKeys[mode]}.processWasm`,
         true,
       );
+
       const proofGenerator = new ProofGenerator({
         poll: foundPoll,
         maciContractAddress,
@@ -161,7 +170,7 @@ task("prove", "Command to generate proofs")
         },
         outputDir,
         tallyOutputFile: tallyFile,
-        useQuadraticVoting,
+        mode,
       });
 
       const data = {

@@ -1,3 +1,4 @@
+import { EMode } from "@maci-protocol/sdk";
 import dotenv from "dotenv";
 
 import fs from "fs";
@@ -59,7 +60,7 @@ describe("FileService", () => {
   test("should return zkey filepaths for tally qv properly", () => {
     const service = new FileService();
 
-    const { zkey, wasm, witgen } = service.getZkeyFilePaths(process.env.COORDINATOR_TALLY_ZKEY_NAME!, true);
+    const { zkey, wasm, witgen } = service.getZkeyFilePaths(process.env.COORDINATOR_TALLY_ZKEY_NAME!, EMode.QV);
 
     expect(zkey).toBeDefined();
     expect(wasm).toBeDefined();
@@ -69,7 +70,7 @@ describe("FileService", () => {
   test("should return zkey filepaths for tally non-qv properly", () => {
     const service = new FileService();
 
-    const { zkey, wasm, witgen } = service.getZkeyFilePaths(process.env.COORDINATOR_TALLY_ZKEY_NAME!, false);
+    const { zkey, wasm, witgen } = service.getZkeyFilePaths(process.env.COORDINATOR_TALLY_ZKEY_NAME!, EMode.NON_QV);
 
     expect(zkey).toBeDefined();
     expect(wasm).toBeDefined();
@@ -79,7 +80,10 @@ describe("FileService", () => {
   test("should return zkey filepaths for message process qv properly", () => {
     const service = new FileService();
 
-    const { zkey, wasm, witgen } = service.getZkeyFilePaths(process.env.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME!, true);
+    const { zkey, wasm, witgen } = service.getZkeyFilePaths(
+      process.env.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME!,
+      EMode.QV,
+    );
 
     expect(zkey).toBeDefined();
     expect(wasm).toBeDefined();
@@ -89,7 +93,10 @@ describe("FileService", () => {
   test("should return zkey filepaths for message process non-qv properly", () => {
     const service = new FileService();
 
-    const { zkey, wasm, witgen } = service.getZkeyFilePaths(process.env.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME!, false);
+    const { zkey, wasm, witgen } = service.getZkeyFilePaths(
+      process.env.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME!,
+      EMode.NON_QV,
+    );
 
     expect(zkey).toBeDefined();
     expect(wasm).toBeDefined();
@@ -99,7 +106,7 @@ describe("FileService", () => {
   test("should throw an error if there are no zkey filepaths", () => {
     const service = new FileService();
 
-    expect(() => service.getZkeyFilePaths("unknown", false)).toThrow(ErrorCodes.FILE_NOT_FOUND.toString());
+    expect(() => service.getZkeyFilePaths("unknown", EMode.NON_QV)).toThrow(ErrorCodes.FILE_NOT_FOUND.toString());
   });
 
   test("should throw an error if there are no wasm and witgen filepaths", () => {
@@ -108,7 +115,7 @@ describe("FileService", () => {
 
     const service = new FileService();
 
-    expect(() => service.getZkeyFilePaths(process.env.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME!, false)).toThrow(
+    expect(() => service.getZkeyFilePaths(process.env.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME!, EMode.NON_QV)).toThrow(
       ErrorCodes.FILE_NOT_FOUND.toString(),
     );
   });

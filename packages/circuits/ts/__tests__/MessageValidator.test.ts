@@ -19,7 +19,7 @@ describe("MessageValidator circuit", function test() {
         "voteOptionIndex",
         "voteOptions",
         "originalNonce",
-        "nonce",
+        "commandNonce",
         "command",
         "publicKey",
         "signaturePoint",
@@ -60,7 +60,7 @@ describe("MessageValidator circuit", function test() {
         voteOptionIndex: 0n,
         voteOptions: 1n,
         originalNonce: 1n,
-        nonce: 2n,
+        commandNonce: 2n,
         command: command.asCircuitInputs(),
         publicKey: publicKey.asCircuitInputs() as unknown as [bigint, bigint],
         signaturePoint: signature.R8 as unknown as bigint,
@@ -83,9 +83,9 @@ describe("MessageValidator circuit", function test() {
     });
 
     it("should be invalid if the signature is invalid", async () => {
-      const circuitInputs2 = circuitInputs;
-      circuitInputs2.signatureScalar = 0n;
-      const witness = await circuit.calculateWitness(circuitInputs2);
+      const circuitInputsCopy = circuitInputs;
+      circuitInputsCopy.signatureScalar = 0n;
+      const witness = await circuit.calculateWitness(circuitInputsCopy);
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");
@@ -96,9 +96,9 @@ describe("MessageValidator circuit", function test() {
     });
 
     it("should be invalid if the publicKey is invalid", async () => {
-      const circuitInputs2 = circuitInputs;
-      circuitInputs2.publicKey = [0n, 1n];
-      const witness = await circuit.calculateWitness(circuitInputs2);
+      const circuitInputsCopy = circuitInputs;
+      circuitInputsCopy.publicKey = [0n, 1n];
+      const witness = await circuit.calculateWitness(circuitInputsCopy);
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");
@@ -109,9 +109,9 @@ describe("MessageValidator circuit", function test() {
     });
 
     it("should be invalid if there are insufficient voice credits", async () => {
-      const circuitInputs2 = circuitInputs;
-      circuitInputs2.voteWeight = 11n;
-      const witness = await circuit.calculateWitness(circuitInputs2);
+      const circuitInputsCopy = circuitInputs;
+      circuitInputsCopy.voteWeight = 11n;
+      const witness = await circuit.calculateWitness(circuitInputsCopy);
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");
@@ -122,9 +122,9 @@ describe("MessageValidator circuit", function test() {
     });
 
     it("should be invalid if the nonce is invalid", async () => {
-      const circuitInputs2 = circuitInputs;
-      circuitInputs2.nonce = 3n;
-      const witness = await circuit.calculateWitness(circuitInputs2);
+      const circuitInputsCopy = circuitInputs;
+      circuitInputsCopy.commandNonce = 3n;
+      const witness = await circuit.calculateWitness(circuitInputsCopy);
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");
@@ -135,9 +135,9 @@ describe("MessageValidator circuit", function test() {
     });
 
     it("should be invalid if the state leaf index is invalid", async () => {
-      const circuitInputs2 = circuitInputs;
-      circuitInputs2.stateTreeIndex = 2n;
-      const witness = await circuit.calculateWitness(circuitInputs2);
+      const circuitInputsCopy = circuitInputs;
+      circuitInputsCopy.stateTreeIndex = 2n;
+      const witness = await circuit.calculateWitness(circuitInputsCopy);
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");
@@ -148,9 +148,9 @@ describe("MessageValidator circuit", function test() {
     });
 
     it("should be invalid if the vote option index is invalid", async () => {
-      const circuitInputs2 = circuitInputs;
-      circuitInputs2.voteOptionIndex = 1n;
-      const witness = await circuit.calculateWitness(circuitInputs2);
+      const circuitInputsCopy = circuitInputs;
+      circuitInputsCopy.voteOptionIndex = 1n;
+      const witness = await circuit.calculateWitness(circuitInputsCopy);
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");
@@ -161,9 +161,9 @@ describe("MessageValidator circuit", function test() {
     });
 
     it("should be invalid if the vote option index is invalid", async () => {
-      const circuitInputs2 = circuitInputs;
-      circuitInputs2.voteOptionIndex = 6049261729n;
-      const witness = await circuit.calculateWitness(circuitInputs2);
+      const circuitInputsCopy = circuitInputs;
+      circuitInputsCopy.voteOptionIndex = 6049261729n;
+      const witness = await circuit.calculateWitness(circuitInputsCopy);
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");
@@ -184,7 +184,7 @@ describe("MessageValidator circuit", function test() {
         "voteOptionIndex",
         "voteOptions",
         "originalNonce",
-        "nonce",
+        "commandNonce",
         "command",
         "publicKey",
         "signaturePoint",
@@ -225,7 +225,7 @@ describe("MessageValidator circuit", function test() {
         voteOptionIndex: 0n,
         voteOptions: 1n,
         originalNonce: 1n,
-        nonce: 2n,
+        commandNonce: 2n,
         command: command.asCircuitInputs(),
         publicKey: publicKey.asCircuitInputs() as unknown as [bigint, bigint],
         signaturePoint: signature.R8 as unknown as bigint,
@@ -248,9 +248,9 @@ describe("MessageValidator circuit", function test() {
     });
 
     it("should be invalid if the signature is invalid", async () => {
-      const circuitInputs2 = circuitInputs;
-      circuitInputs2.signatureScalar = 0n;
-      const witness = await circuit.calculateWitness(circuitInputs2);
+      const circuitInputsCopy = circuitInputs;
+      circuitInputsCopy.signatureScalar = 0n;
+      const witness = await circuit.calculateWitness(circuitInputsCopy);
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");
@@ -261,9 +261,9 @@ describe("MessageValidator circuit", function test() {
     });
 
     it("should be invalid if the publicKey is invalid", async () => {
-      const circuitInputs2 = circuitInputs;
-      circuitInputs2.publicKey = [0n, 1n];
-      const witness = await circuit.calculateWitness(circuitInputs2);
+      const circuitInputsCopy = circuitInputs;
+      circuitInputsCopy.publicKey = [0n, 1n];
+      const witness = await circuit.calculateWitness(circuitInputsCopy);
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");
@@ -274,9 +274,9 @@ describe("MessageValidator circuit", function test() {
     });
 
     it("should be invalid if there are insufficient voice credits", async () => {
-      const circuitInputs2 = circuitInputs;
-      circuitInputs2.voteWeight = 11n;
-      const witness = await circuit.calculateWitness(circuitInputs2);
+      const circuitInputsCopy = circuitInputs;
+      circuitInputsCopy.voteWeight = 11n;
+      const witness = await circuit.calculateWitness(circuitInputsCopy);
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");
@@ -287,9 +287,9 @@ describe("MessageValidator circuit", function test() {
     });
 
     it("should be invalid if the nonce is invalid", async () => {
-      const circuitInputs2 = circuitInputs;
-      circuitInputs2.nonce = 3n;
-      const witness = await circuit.calculateWitness(circuitInputs2);
+      const circuitInputsCopy = circuitInputs;
+      circuitInputsCopy.commandNonce = 3n;
+      const witness = await circuit.calculateWitness(circuitInputsCopy);
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");
@@ -300,9 +300,9 @@ describe("MessageValidator circuit", function test() {
     });
 
     it("should be invalid if the state leaf index is invalid", async () => {
-      const circuitInputs2 = circuitInputs;
-      circuitInputs2.stateTreeIndex = 2n;
-      const witness = await circuit.calculateWitness(circuitInputs2);
+      const circuitInputsCopy = circuitInputs;
+      circuitInputsCopy.stateTreeIndex = 2n;
+      const witness = await circuit.calculateWitness(circuitInputsCopy);
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");
@@ -313,9 +313,9 @@ describe("MessageValidator circuit", function test() {
     });
 
     it("should be invalid if the vote option index is invalid", async () => {
-      const circuitInputs2 = circuitInputs;
-      circuitInputs2.voteOptionIndex = 1n;
-      const witness = await circuit.calculateWitness(circuitInputs2);
+      const circuitInputsCopy = circuitInputs;
+      circuitInputsCopy.voteOptionIndex = 1n;
+      const witness = await circuit.calculateWitness(circuitInputsCopy);
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");
@@ -326,9 +326,9 @@ describe("MessageValidator circuit", function test() {
     });
 
     it("should be invalid if the vote option index is invalid", async () => {
-      const circuitInputs2 = circuitInputs;
-      circuitInputs2.voteOptionIndex = 6049261729n;
-      const witness = await circuit.calculateWitness(circuitInputs2);
+      const circuitInputsCopy = circuitInputs;
+      circuitInputsCopy.voteOptionIndex = 6049261729n;
+      const witness = await circuit.calculateWitness(circuitInputsCopy);
       await circuit.expectConstraintPass(witness);
       const isValid = await getSignal(circuit, witness, "isValid");
       expect(isValid.toString()).to.be.eq("0");

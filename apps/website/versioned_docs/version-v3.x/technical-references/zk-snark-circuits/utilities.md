@@ -39,11 +39,11 @@ A utility circuit used by the main `tallyVotes` circuit to verify that the resul
 
 ![ResultsCommitmentVerifier](/img/circuits/resultsCommitmentVerifier.svg)
 
-#### QuinCheckRoot
+#### QuinaryCheckRoot
 
 Utility circuit that given a quin Merkle root and a list of leaves, check if the root is the correct result of inserting all the leaves into the tree in the given order.
 
-![QuinCheckRoot](/img/circuits/quinCheckRoot.svg)
+![QuinaryCheckRoot](/img/circuits/quinCheckRoot.svg)
 
 #### CalculateTotal
 
@@ -100,11 +100,11 @@ Utility circuit used to unpack an input element.
 
 ![UnpackElement](/img/circuits/unpackElement.svg)
 
-#### QuinSelector
+#### QuinarySelector
 
 Utility circuit used to select one element from an array of n elements at a given index.
 
-![QuinSelector](/img/circuits/quinSelector.svg)
+![QuinarySelector](/img/circuits/quinSelector.svg)
 
 #### Splicer
 
@@ -118,11 +118,11 @@ Utility circuit used to check if a batch of leaves exists in a quinary tree.
 
 ![QuinBatchLeavesExists](/img/circuits/quinBatchLeavesExists.svg)
 
-#### QuinGeneratePathIndices
+#### QuinaryGeneratePathIndices
 
 Utility circuit used to generate the indices needed to traverse the tree until we find the leaf we are looking for.
 
-![QuinGeneratePathIndices](/img/circuits/quinGeneratePathIndices.svg)
+![QuinaryGeneratePathIndices](/img/circuits/quinGeneratePathIndices.svg)
 
 #### ProcessOne
 

@@ -1,6 +1,6 @@
 import type { AASigner, Proof } from "../../ts/types";
 import type { MACI, MessageProcessor, Poll, Tally, Verifier, VerifyingKeysRegistry } from "../../typechain-types";
-import type { Poll as PollWrapper } from "@maci-protocol/core";
+import type { EMode, Poll as PollWrapper } from "@maci-protocol/core";
 import type { Keypair, PrivateKey } from "@maci-protocol/domainobjs";
 import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import type {
@@ -120,9 +120,9 @@ export interface IProveParams {
   tallyWasm?: string;
 
   /**
-   * Whether to use quadratic voting or not
+   * Voting mode
    */
-  useQuadraticVoting?: boolean;
+  mode?: EMode;
 
   /**
    * The file with the serialized maci state
@@ -215,14 +215,14 @@ export interface IProofGeneratorParams {
   tally: ICircuitFiles;
 
   /**
+   * Voting mode
+   */
+  mode: EMode;
+
+  /**
    * Path to the rapidsnark binary
    */
   rapidsnark?: string;
-
-  /**
-   * Whether to use quadratic voting or not
-   */
-  useQuadraticVoting?: boolean;
 }
 
 /**
@@ -759,9 +759,9 @@ export interface TallyData {
   chainId?: string;
 
   /**
-   * Whether the poll is using quadratic voting or not.
+   * Voting mode
    */
-  isQuadratic: boolean;
+  mode: EMode;
 
   /**
    * The address of the Tally contract.

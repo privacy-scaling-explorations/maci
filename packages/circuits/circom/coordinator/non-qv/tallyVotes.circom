@@ -8,7 +8,7 @@ include "./unpack-element.circom";
 include "../../utils/trees/CheckRoot.circom";
 include "../../utils/trees/MerklePathIndicesGenerator.circom";
 include "../../utils/trees/LeafExists.circom";
-include "../../utils/trees/incrementalQuinaryTree.circom";
+include "../../utils/trees/QuinaryCheckRoot.circom";
 include "../../utils/CalculateTotal.circom";
 include "../../utils/PoseidonHasher.circom";
 
@@ -110,7 +110,7 @@ template TallyVotesNonQv(
     var computedVoteTree[batchSize];
 
     for (var i = 0; i < batchSize; i++) {
-        computedVoteTree[i] = QuinCheckRoot(voteOptionTreeDepth)(votes[i]);
+        computedVoteTree[i] = QuinaryCheckRoot(voteOptionTreeDepth)(votes[i]);
         computedVoteTree[i] === ballots[i][BALLOT_VOTE_OPTION_ROOT_INDEX];
     }
 
@@ -198,7 +198,7 @@ template TallyVotesNonQv(
     signal input newSpentVoiceCreditSubtotalSalt;
 
     // Compute the commitment to the current results.
-    var computedCurrentResultsRoot = QuinCheckRoot(voteOptionTreeDepth)(currentResults);
+    var computedCurrentResultsRoot = QuinaryCheckRoot(voteOptionTreeDepth)(currentResults);
 
     // Verify currentResultsCommitmentHash.
     var computedCurrentResultsCommitment = PoseidonHasher(2)([computedCurrentResultsRoot, currentResultsRootSalt]);
@@ -221,7 +221,7 @@ template TallyVotesNonQv(
     isFirstCommitment === currentTallyCommitment;
 
     // Compute the root of the new results.
-    var computedNewResultsRoot = QuinCheckRoot(voteOptionTreeDepth)(newResults);
+    var computedNewResultsRoot = QuinaryCheckRoot(voteOptionTreeDepth)(newResults);
     var computedNewResultsCommitment = PoseidonHasher(2)([computedNewResultsRoot, newResultsRootSalt]);
 
     // Compute the commitment to the new spent voice credits value.
