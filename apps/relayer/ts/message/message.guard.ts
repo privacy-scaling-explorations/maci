@@ -74,7 +74,7 @@ export class MessageGuard implements CanActivate {
     ).then((errors) => flatten(errors));
 
     const dto = Object.assign(new PublishMessagesDto(), request.body);
-    const dtoErrors = await validate(dto);
+    const dtoErrors = await validate(dto, { forbidUnknownValues: false });
 
     if (dtoErrors.length > 0 || messageErrors.length > 0) {
       this.logger.warn("Invalid body: ", dtoErrors);

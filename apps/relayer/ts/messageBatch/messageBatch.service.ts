@@ -58,7 +58,9 @@ export class MessageBatchService {
    * @returns success or not
    */
   async saveMessageBatches(args: Omit<MessageBatchDto, "ipfsHash">[]): Promise<MessageBatch[]> {
-    const validationErrors = await Promise.all(args.map((values) => validate(values))).then((result) =>
+    const validationErrors = await Promise.all(
+      args.map((values) => validate(values, { forbidUnknownValues: false })),
+    ).then((result) =>
       result.reduce((acc, errors) => {
         acc.push(...errors);
         return acc;
