@@ -210,7 +210,7 @@ pnpm run prove:[network] --poll [poll-id] \
     --coordinator-private-key [coordinator-maci-private-key] \
     --tally-file ../results/tally.json \
     --output-dir ../results/proofs/ \
-    --start-block [block-number]
+    --start-block [block-number] \
     --blocks-per-batch [number-of-blocks]
 ```
 

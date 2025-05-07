@@ -43,7 +43,7 @@ function signUp(PublicKey memory _publicKey, bytes memory _signUpPolicyData) pub
 
 ## InitialVoiceCreditProxy
 
-If you'd like to extend the functionality of how votes are distributed among users, you need to extend [InitialVoiceCreditProxy](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/initialVoiceCreditProxy/InitialVoiceCreditProxy.sol) contract. You can see our [basic example](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/initialVoiceCreditProxy/ConstantInitialVoiceCreditProxy.sol) how it's implemented for constant distribution.
+If you'd like to extend the functionality of how votes are distributed among users, you'll need to build you own initial voice credit proxy contract by following the [IInitialVoiceCreditProxy interface](https://github.com/privacy-scaling-explorations/maci/blob/dev/packages/contracts/contracts/interfaces/IInitialVoiceCreditProxy.sol). You can see our [basic example](https://github.com/privacy-scaling-explorations/maci/blob/dev/packages/contracts/contracts/initialVoiceCreditProxy/ConstantInitialVoiceCreditProxy.sol) how it's implemented for constant distribution.
 
 ```ts
 contract ConstantInitialVoiceCreditProxy is InitialVoiceCreditProxy {
