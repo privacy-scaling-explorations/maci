@@ -145,7 +145,7 @@ describe("TallyVotes", () => {
     // set the verification keys on the registry smart contract
     await verifyingKeysRegistryContract.setVerifyingKeys(
       STATE_TREE_DEPTH,
-      treeDepths.intStateTreeDepth,
+      treeDepths.tallyProcessingStateTreeDepth,
       treeDepths.voteOptionTreeDepth,
       messageBatchSize,
       EMode.QV,
@@ -217,7 +217,7 @@ describe("TallyVotes", () => {
 
       const updatedDuration = 5000000;
 
-      const intStateTreeDepth = 2;
+      const tallyProcessingStateTreeDepth = 2;
 
       const r = await deployTestContracts({ initialVoiceCreditBalance: 100, stateTreeDepth: STATE_TREE_DEPTH, signer });
       maciContract = r.maciContract;
@@ -249,7 +249,7 @@ describe("TallyVotes", () => {
           endDate: startTime + updatedDuration,
           treeDepths: {
             ...treeDepths,
-            intStateTreeDepth,
+            tallyProcessingStateTreeDepth,
           },
           messageBatchSize,
           coordinatorPublicKey: coordinator.publicKey.asContractParam(),
@@ -279,7 +279,7 @@ describe("TallyVotes", () => {
         BigInt(startTime + updatedDuration),
         {
           ...treeDepths,
-          intStateTreeDepth,
+          tallyProcessingStateTreeDepth,
         },
         messageBatchSize,
         coordinator,
@@ -320,7 +320,7 @@ describe("TallyVotes", () => {
 
       await verifyingKeysRegistryContract.setVerifyingKeys(
         STATE_TREE_DEPTH,
-        intStateTreeDepth,
+        tallyProcessingStateTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
         EMode.QV,
@@ -537,7 +537,7 @@ describe("TallyVotes", () => {
 
       maciState = new MaciState(STATE_TREE_DEPTH);
 
-      const intStateTreeDepth = 2;
+      const tallyProcessingStateTreeDepth = 2;
 
       const r = await deployTestContracts({ initialVoiceCreditBalance: 100, stateTreeDepth: STATE_TREE_DEPTH, signer });
       maciContract = r.maciContract;
@@ -570,7 +570,7 @@ describe("TallyVotes", () => {
           endDate: startTime + duration,
           treeDepths: {
             ...treeDepths,
-            intStateTreeDepth,
+            tallyProcessingStateTreeDepth,
           },
           messageBatchSize,
           coordinatorPublicKey: coordinator.publicKey.asContractParam(),
@@ -600,7 +600,7 @@ describe("TallyVotes", () => {
         BigInt(startTime + duration),
         {
           ...treeDepths,
-          intStateTreeDepth,
+          tallyProcessingStateTreeDepth,
         },
         messageBatchSize,
         coordinator,
@@ -643,7 +643,7 @@ describe("TallyVotes", () => {
 
       await verifyingKeysRegistryContract.setVerifyingKeys(
         STATE_TREE_DEPTH,
-        intStateTreeDepth,
+        tallyProcessingStateTreeDepth,
         treeDepths.voteOptionTreeDepth,
         messageBatchSize,
         EMode.QV,

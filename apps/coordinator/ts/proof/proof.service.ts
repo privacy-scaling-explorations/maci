@@ -6,6 +6,7 @@ import {
   type IGenerateProofsOptions,
   getPoll,
   mergeSignups,
+  EMode,
 } from "@maci-protocol/sdk";
 import { IProof, ITallyData, generateProofs, proveOnChain } from "@maci-protocol/sdk";
 import { Logger, Injectable } from "@nestjs/common";
@@ -117,7 +118,11 @@ export class ProofGeneratorService {
         throw new Error(ErrorCodes.PRIVATE_KEY_MISMATCH.toString());
       }
 
-      const tally = this.fileService.getZkeyFilePaths(process.env.COORDINATOR_TALLY_ZKEY_NAME!, mode);
+      // There are only QV and Non-QV modes
+      const tally = this.fileService.getZkeyFilePaths(
+        process.env.COORDINATOR_TALLY_ZKEY_NAME!,
+        mode === EMode.QV ? mode : EMode.NON_QV,
+      );
       const messageProcessor = this.fileService.getZkeyFilePaths(
         process.env.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME!,
         mode,

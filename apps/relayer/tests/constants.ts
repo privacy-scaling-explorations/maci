@@ -5,7 +5,7 @@ import url from "url";
 import type request from "supertest";
 
 export const STATE_TREE_DEPTH = 10;
-export const INT_STATE_TREE_DEPTH = 1;
+export const TALLY_PROCESSING_STATE_TREE_DEPTH = 1;
 export const VOTE_OPTION_TREE_DEPTH = 2;
 export const MESSAGE_BATCH_SIZE = 20;
 export const DEFAULT_INITIAL_VOICE_CREDITS = 99;

@@ -7,7 +7,7 @@ export const duration = 30;
 export const messageBatchSize = 20;
 export const coordinatorKeypair = new Keypair();
 export const treeDepths = {
-  intStateTreeDepth: 2,
+  tallyProcessingStateTreeDepth: 2,
   voteOptionTreeDepth: 4,
   stateTreeDepth: 10,
 };

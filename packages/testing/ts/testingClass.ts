@@ -19,7 +19,7 @@ import hardhat from "hardhat";
 import type { ITestingClassPaths, IContractsData } from "./types";
 
 import {
-  INT_STATE_TREE_DEPTH,
+  TALLY_PROCESSING_STATE_TREE_DEPTH,
   MESSAGE_BATCH_SIZE,
   STATE_TREE_DEPTH,
   VOTE_OPTION_TREE_DEPTH,
@@ -137,7 +137,7 @@ export class TestingClass {
     await setVerifyingKeys({
       verifyingKeysRegistryAddress: verifyingKeysRegistry,
       stateTreeDepth: STATE_TREE_DEPTH,
-      intStateTreeDepth: INT_STATE_TREE_DEPTH,
+      tallyProcessingStateTreeDepth: TALLY_PROCESSING_STATE_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
       pollStateTreeDepth: POLL_STATE_TREE_DEPTH,
@@ -188,7 +188,7 @@ export class TestingClass {
     const { pollContractAddress } = await deployPoll({
       pollStartTimestamp: startDate,
       pollEndTimestamp: startDate + 130,
-      intStateTreeDepth: INT_STATE_TREE_DEPTH,
+      tallyProcessingStateTreeDepth: TALLY_PROCESSING_STATE_TREE_DEPTH,
       messageBatchSize: MESSAGE_BATCH_SIZE,
       stateTreeDepth: POLL_STATE_TREE_DEPTH,
       voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,

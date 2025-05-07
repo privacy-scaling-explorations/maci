@@ -5,7 +5,7 @@ export const voiceCreditBalance = 100n;
 export const duration = 30;
 
 export const treeDepths = {
-  intStateTreeDepth: 5,
+  tallyProcessingStateTreeDepth: 5,
   voteOptionTreeDepth: 2,
   stateTreeDepth: 10,
 };

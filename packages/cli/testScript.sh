@@ -4,7 +4,7 @@
 node build/ts/index.js deployVerifyingKeysRegistry
 node build/ts/index.js setVerifyingKeys \
     --state-tree-depth 10 \
-    --int-state-tree-depth 1 \
+    --tally-processing-state-tree-depth 1 \
     --msg-tree-depth 2 \
     --vote-option-tree-depth 2 \
     --msg-batch-depth 1 \

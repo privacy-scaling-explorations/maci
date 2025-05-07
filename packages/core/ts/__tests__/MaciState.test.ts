@@ -63,9 +63,9 @@ describe("MaciState", function test() {
       m6.polls.get(pollId)!.coordinatorKeypair = new Keypair();
       expect(m1.equals(m6)).not.to.eq(true);
 
-      // modify poll.treeDepths.intStateTreeDepth
+      // modify poll.treeDepths.tallyProcessingStateTreeDepth
       const m9 = m1.copy();
-      m9.polls.get(pollId)!.treeDepths.intStateTreeDepth += 1;
+      m9.polls.get(pollId)!.treeDepths.tallyProcessingStateTreeDepth += 1;
       expect(m1.equals(m9)).not.to.eq(true);
 
       // modify poll.treeDepths.voteOptionTreeDepth

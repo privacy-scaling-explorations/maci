@@ -44,9 +44,9 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
     const coordinatorPublicKey = deployment.getDeployConfigField<string>(EContracts.Poll, "coordinatorPublicKey");
     const pollStartTimestamp = deployment.getDeployConfigField<number>(EContracts.Poll, "pollStartDate");
     const pollEndTimestamp = deployment.getDeployConfigField<number>(EContracts.Poll, "pollEndDate");
-    const intStateTreeDepth = deployment.getDeployConfigField<number>(
+    const tallyProcessingStateTreeDepth = deployment.getDeployConfigField<number>(
       EContracts.VerifyingKeysRegistry,
-      "intStateTreeDepth",
+      "tallyProcessingStateTreeDepth",
     );
     const messageBatchSize = deployment.getDeployConfigField<number>(
       EContracts.VerifyingKeysRegistry,
@@ -145,7 +145,7 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
         startDate: pollStartTimestamp,
         endDate: pollEndTimestamp,
         treeDepths: {
-          intStateTreeDepth,
+          tallyProcessingStateTreeDepth,
           voteOptionTreeDepth,
           stateTreeDepth,
         },

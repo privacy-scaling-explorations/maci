@@ -1271,7 +1271,7 @@ export class Poll implements IPoll {
       BigInt(this.pollEndTimestamp.toString()),
       this.coordinatorKeypair.copy(),
       {
-        intStateTreeDepth: Number(this.treeDepths.intStateTreeDepth),
+        tallyProcessingStateTreeDepth: Number(this.treeDepths.tallyProcessingStateTreeDepth),
         voteOptionTreeDepth: Number(this.treeDepths.voteOptionTreeDepth),
         stateTreeDepth: Number(this.treeDepths.stateTreeDepth),
       },
@@ -1344,7 +1344,7 @@ export class Poll implements IPoll {
   equals = (poll: Poll): boolean => {
     const result =
       this.coordinatorKeypair.equals(poll.coordinatorKeypair) &&
-      this.treeDepths.intStateTreeDepth === poll.treeDepths.intStateTreeDepth &&
+      this.treeDepths.tallyProcessingStateTreeDepth === poll.treeDepths.tallyProcessingStateTreeDepth &&
       this.treeDepths.voteOptionTreeDepth === poll.treeDepths.voteOptionTreeDepth &&
       this.batchSizes.tallyBatchSize === poll.batchSizes.tallyBatchSize &&
       this.batchSizes.messageBatchSize === poll.batchSizes.messageBatchSize &&

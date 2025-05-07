@@ -11,7 +11,7 @@ export const MAX_VALUES = {
 };
 
 export const TREE_DEPTHS = {
-  intStateTreeDepth: 2,
+  tallyProcessingStateTreeDepth: 2,
   voteOptionTreeDepth: 4,
   stateTreeDepth: 10,
 };

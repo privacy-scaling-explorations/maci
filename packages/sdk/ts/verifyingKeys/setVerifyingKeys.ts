@@ -24,7 +24,7 @@ export const setVerifyingKeys = async ({
   tallyVotesVerifyingKey,
   stateTreeDepth,
   pollStateTreeDepth,
-  intStateTreeDepth,
+  tallyProcessingStateTreeDepth,
   voteOptionTreeDepth,
   messageBatchSize,
   verifyingKeysRegistryAddress,
@@ -32,11 +32,11 @@ export const setVerifyingKeys = async ({
   mode,
 }: ISetVerifyingKeysArgs): Promise<void> => {
   // validate args
-  if (stateTreeDepth < 1 || intStateTreeDepth < 1 || voteOptionTreeDepth < 1 || messageBatchSize < 1) {
+  if (stateTreeDepth < 1 || tallyProcessingStateTreeDepth < 1 || voteOptionTreeDepth < 1 || messageBatchSize < 1) {
     throw new Error("Invalid depth or batch size parameters");
   }
 
-  if (stateTreeDepth < intStateTreeDepth) {
+  if (stateTreeDepth < tallyProcessingStateTreeDepth) {
     throw new Error("Invalid state tree depth or intermediate state tree depth");
   }
 
@@ -77,7 +77,7 @@ export const setVerifyingKeys = async ({
   // do the same for the tally votes verifyingKey
   const tallyVerifyingKeySignature = generateTallyVerifyingKeySignature(
     stateTreeDepth,
-    intStateTreeDepth,
+    tallyProcessingStateTreeDepth,
     voteOptionTreeDepth,
   );
 
@@ -89,7 +89,7 @@ export const setVerifyingKeys = async ({
   const tx = await verifyingKeysRegistryContract.setVerifyingKeysBatch({
     stateTreeDepth,
     pollStateTreeDepth,
-    intStateTreeDepth,
+    tallyProcessingStateTreeDepth,
     voteOptionTreeDepth,
     messageBatchSize,
     modes: [mode],
@@ -114,7 +114,12 @@ export const setVerifyingKeys = async ({
     verifyingKeysRegistryContract.getPollJoiningVerifyingKey(stateTreeDepth),
     verifyingKeysRegistryContract.getPollJoinedVerifyingKey(stateTreeDepth),
     verifyingKeysRegistryContract.getProcessVerifyingKey(stateTreeDepth, voteOptionTreeDepth, messageBatchSize, mode),
-    verifyingKeysRegistryContract.getTallyVerifyingKey(stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth, mode),
+    verifyingKeysRegistryContract.getTallyVerifyingKey(
+      stateTreeDepth,
+      tallyProcessingStateTreeDepth,
+      voteOptionTreeDepth,
+      mode,
+    ),
   ]);
 
   if (!compareVerifyingKeys(pollJoiningVerifyingKeyOnChain, pollJoiningVerifyingKey)) {

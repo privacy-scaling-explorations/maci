@@ -24,7 +24,7 @@ import { readJSONFile } from "./utils";
 
 export const STATE_TREE_DEPTH = 10;
 export const POLL_STATE_TREE_DEPTH = 10;
-export const INT_STATE_TREE_DEPTH = 1;
+export const TALLY_PROCESSING_STATE_TREE_DEPTH = 1;
 export const VOTE_OPTION_TREE_DEPTH = 2;
 export const MESSAGE_BATCH_SIZE = 20;
 export const DEFAULT_INITIAL_VOICE_CREDITS = 100;
@@ -48,7 +48,7 @@ export const processMessageTestNonQvZkeyPath =
 export const processMessageTestFullZkeyPath =
   "./zkeys/MessageProcessorFull_10-20-2_test/MessageProcessorFull_10-20-2_test.0.zkey";
 export const tallyVotesTestNonQvZkeyPath = "./zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test.0.zkey";
-export const tallyVotesTestFullZkeyPath = "./zkeys/TallyVotesFull_10-1-2_test/TallyVotesFull_10-1-2_test.0.zkey";
+export const tallyVotesTestFullZkeyPath = "./zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test.0.zkey";
 export const testTallyFilePath = "./tally.json";
 export const testProofsDirPath = "./proofs";
 export const testPollJoiningWitnessPath = "./zkeys/PollJoining_10_test/PollJoining_10_test_cpp/PollJoining_10_test";
@@ -138,7 +138,7 @@ export const tallyVotesZkeyPathNonQv = path.resolve(
 
 export const checkVerifyingKeysArgs: Omit<ICheckVerifyingKeysArgs, "verifyingKeysRegistry" | "signer"> = {
   stateTreeDepth: STATE_TREE_DEPTH,
-  intStateTreeDepth: INT_STATE_TREE_DEPTH,
+  tallyProcessingStateTreeDepth: TALLY_PROCESSING_STATE_TREE_DEPTH,
   voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
   messageBatchSize: MESSAGE_BATCH_SIZE,
   pollJoiningZkeyPath: pollJoiningTestZkeyPath,
@@ -211,7 +211,7 @@ export const verifyingKeysArgs = async (
   return {
     stateTreeDepth: STATE_TREE_DEPTH,
     pollStateTreeDepth: POLL_STATE_TREE_DEPTH,
-    intStateTreeDepth: INT_STATE_TREE_DEPTH,
+    tallyProcessingStateTreeDepth: TALLY_PROCESSING_STATE_TREE_DEPTH,
     voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,
     messageBatchSize: MESSAGE_BATCH_SIZE,
     pollJoiningVerifyingKey: pollJoiningVerifyingKey!,
@@ -239,7 +239,7 @@ export const deployPollArgs: Omit<
   | "policyContractAddress"
   | "initialVoiceCreditProxyContractAddress"
 > = {
-  intStateTreeDepth: INT_STATE_TREE_DEPTH,
+  tallyProcessingStateTreeDepth: TALLY_PROCESSING_STATE_TREE_DEPTH,
   messageBatchSize: MESSAGE_BATCH_SIZE,
   stateTreeDepth: POLL_STATE_TREE_DEPTH,
   voteOptionTreeDepth: VOTE_OPTION_TREE_DEPTH,

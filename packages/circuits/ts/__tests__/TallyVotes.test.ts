@@ -12,7 +12,7 @@ describe("TallyVotes circuit", function test() {
   this.timeout(900000);
 
   const treeDepths = {
-    intStateTreeDepth: 1,
+    tallyProcessingStateTreeDepth: 1,
     voteOptionTreeDepth: 2,
     stateTreeDepth: 10,
   };

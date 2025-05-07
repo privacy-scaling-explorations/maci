@@ -79,7 +79,7 @@ export class MaciState implements IMaciState {
       treeDepths,
       {
         messageBatchSize,
-        tallyBatchSize: STATE_TREE_ARITY ** treeDepths.intStateTreeDepth,
+        tallyBatchSize: STATE_TREE_ARITY ** treeDepths.tallyProcessingStateTreeDepth,
       },
       this,
       voteOptions,

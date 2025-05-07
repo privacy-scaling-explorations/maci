@@ -751,11 +751,11 @@ The coordinator uses the ballot tallying circuit (`tallyVotes.circom`) to genera
 
 #### Parameters
 
-| Parameter             | Description                                                                                                             |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `stateTreeDepth`      | Depth of the state tree, this value must be equal to `10`                                                               |
-| `intStateTreeDepth`   | Depth of the intermediate state tree, `5 ** intStateTreeDepth` is the batch size                                        |
-| `voteOptionTreeDepth` | Depth of the vote option tree, this must be the same value passed to the `deployPoll()` contract function of `MACI.sol` |
+| Parameter                       | Description                                                                                                             |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `stateTreeDepth`                | Depth of the state tree, this value must be equal to `10`                                                               |
+| `tallyProcessingStateTreeDepth` | Depth of the intermediate state tree, `5 ** tallyProcessingStateTreeDepth` is the batch size                            |
+| `voteOptionTreeDepth`           | Depth of the vote option tree, this must be the same value passed to the `deployPoll()` contract function of `MACI.sol` |
 
 #### Input signals
 
@@ -809,7 +809,7 @@ $\mathsf{poseidon_3}([tc_r, tc_t, tc_p])$
 
 1. That the coordinator knows the preimage of `sbCommitment` (see above)
 2. That `index` is less than or equal to `totalSignups`
-3. That each ballot in `ballots` is in a member of the ballot tree with the Merkle root `ballotRoot` at indices `batchStartIndex` to `batchStartIndex + (5 ** intStateTreeDepth)`
+3. That each ballot in `ballots` is in a member of the ballot tree with the Merkle root `ballotRoot` at indices `batchStartIndex` to `batchStartIndex + (5 ** tallyProcessingStateTreeDepth)`
 4. That each set of votes (`votes[i]`) has the Merkle root $blt_r$ whose value equals `ballots[i][1]`
 5. That the tally is valid, which is:
    - That the sum of votes per vote option is correct

@@ -14,7 +14,7 @@ A contract holding three structs:
 ```ts
 /// @notice A struct holding the depths of the merkle trees
 struct TreeDepths {
-  uint8 intStateTreeDepth;
+  uint8 tallyProcessingStateTreeDepth;
   uint8 voteOptionTreeDepth;
 }
 

@@ -23,7 +23,7 @@ export const getAllOnChainVerifyingKeys = async ({
   stateTreeDepth,
   voteOptionTreeDepth,
   messageBatchSize,
-  intStateTreeDepth,
+  tallyProcessingStateTreeDepth,
   mode,
 }: IGetAllVerifyingKeysArgs): Promise<IMaciVerifyingKeysOnchain> => {
   const contract = VerifyingKeysRegistryFactory.connect(verifyingKeysRegistryAddress, signer);
@@ -37,7 +37,7 @@ export const getAllOnChainVerifyingKeys = async ({
     contract.getPollJoiningVerifyingKey(stateTreeDepth),
     contract.getPollJoinedVerifyingKey(stateTreeDepth),
     contract.getProcessVerifyingKey(stateTreeDepth, voteOptionTreeDepth, messageBatchSize, mode),
-    contract.getTallyVerifyingKey(stateTreeDepth, intStateTreeDepth, voteOptionTreeDepth, mode),
+    contract.getTallyVerifyingKey(stateTreeDepth, tallyProcessingStateTreeDepth, voteOptionTreeDepth, mode),
   ]);
 
   return {

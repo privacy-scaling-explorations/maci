@@ -135,16 +135,16 @@ For testing we suggest using the **FreeForAlPolicy** as it allows anyone to sign
 
 The VerifyingKeysRegistry hold the verifying keys used to verify the proofs, on the zkeys field we define the path to the zero knowledge artifacts we downloaded in the previous steps.
 
-| Property                | Description                                                                          |
-| ----------------------- | ------------------------------------------------------------------------------------ |
-| **stateTreeDepth**      | Defines how many users the system supports.                                          |
-| **intStateTreeDepth**   | Defines how many ballots can be processed per batch when tallying the results.       |
-| **messageTreeDepth**    | Defines how many messages (votes) the system supports.                               |
-| **voteOptionTreeDepth** | Defines how many vote options the system supports.                                   |
-| **messageBatchDepth**   | Defines how many messages in a batch can the circuit process.                        |
-| **zkeys**               | Defines the path to the zkey files for QV and Non QV keys.                           |
-| **pollJoiningZkey**     | Defines the zkey to the poll joining circuit which allows to join polls for voting.  |
-| **pollJoinedZkey**      | Defines the zkey to the poll joined circuit which allows to prove you joined a poll. |
+| Property                          | Description                                                                          |
+| --------------------------------- | ------------------------------------------------------------------------------------ |
+| **stateTreeDepth**                | Defines how many users the system supports.                                          |
+| **tallyProcessingStateTreeDepth** | Defines how many ballots can be processed per batch when tallying the results.       |
+| **messageTreeDepth**              | Defines how many messages (votes) the system supports.                               |
+| **voteOptionTreeDepth**           | Defines how many vote options the system supports.                                   |
+| **messageBatchDepth**             | Defines how many messages in a batch can the circuit process.                        |
+| **zkeys**                         | Defines the path to the zkey files for QV and Non QV keys.                           |
+| **pollJoiningZkey**               | Defines the zkey to the poll joining circuit which allows to join polls for voting.  |
+| **pollJoinedZkey**                | Defines the zkey to the poll joined circuit which allows to prove you joined a poll. |
 
 :::important
 The recommended values for test keys are: **10-1-2-2-1**. For ceremony keys: **14-5-9-3-2**.

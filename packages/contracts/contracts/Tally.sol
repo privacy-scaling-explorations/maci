@@ -100,11 +100,11 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
   /// @notice Check if all ballots are tallied
   /// @return tallied whether all ballots are tallied
   function isTallied() public view returns (bool tallied) {
-    (uint8 intStateTreeDepth, , ) = poll.treeDepths();
+    (uint8 tallyProcessingStateTreeDepth, , ) = poll.treeDepths();
     (uint256 totalSignups, ) = poll.totalSignupsAndMessages();
 
     // Require that there are untallied ballots left
-    tallied = tallyBatchNum * (TREE_ARITY ** intStateTreeDepth) >= totalSignups;
+    tallied = tallyBatchNum * (TREE_ARITY ** tallyProcessingStateTreeDepth) >= totalSignups;
   }
 
   /// @notice Update the state and ballot root commitment
@@ -126,8 +126,8 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
     updateSbCommitment();
 
     // get the batch size and start index
-    (uint8 intStateTreeDepth, , ) = poll.treeDepths();
-    uint256 tallyBatchSize = TREE_ARITY ** intStateTreeDepth;
+    (uint8 tallyProcessingStateTreeDepth, , ) = poll.treeDepths();
+    uint256 tallyBatchSize = TREE_ARITY ** tallyProcessingStateTreeDepth;
     uint256 batchStartIndex = tallyBatchNum * tallyBatchSize;
 
     (uint256 totalSignups, ) = poll.totalSignupsAndMessages();
@@ -178,14 +178,14 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
     uint256 _newTallyCommitment,
     uint256[8] calldata _proof
   ) public view returns (bool isValid) {
-    (uint8 intStateTreeDepth, uint8 voteOptionTreeDepth, ) = poll.treeDepths();
+    (uint8 tallyProcessingStateTreeDepth, uint8 voteOptionTreeDepth, ) = poll.treeDepths();
     uint256[] memory circuitPublicInputs = getPublicCircuitInputs(_batchStartIndex, _newTallyCommitment);
     IMACI maci = poll.getMaciContract();
 
     // Get the verifying key
     VerifyingKey memory verifyingKey = verifyingKeysRegistry.getTallyVerifyingKey(
       maci.stateTreeDepth(),
-      intStateTreeDepth,
+      tallyProcessingStateTreeDepth,
       voteOptionTreeDepth,
       mode
     );

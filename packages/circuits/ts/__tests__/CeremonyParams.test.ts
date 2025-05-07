@@ -20,7 +20,7 @@ describe("Ceremony param tests", () => {
   };
 
   const treeDepths = {
-    intStateTreeDepth: 1,
+    tallyProcessingStateTreeDepth: 1,
     voteOptionTreeDepth: params.voteOptionTreeDepth,
     stateTreeDepth: params.stateTreeDepth,
   };

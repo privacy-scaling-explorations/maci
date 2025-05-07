@@ -206,20 +206,20 @@ template ProcessMessages(
     // Start from batchSize and decrement for process in reverse order.
     for (var i = batchSize - 1; i >= 0; i--) {
         // Process as vote type message.
-        var currentStateLeavesPathElement[stateTreeDepth][STATE_TREE_ARITY - 1];
-        var currentBallotPathElement[stateTreeDepth][STATE_TREE_ARITY - 1];
-        var currentVoteWeightsPathElement[voteOptionTreeDepth][VOTE_OPTION_TREE_ARITY - 1];
+        var computedCurrentStateLeavesPathElements[stateTreeDepth][STATE_TREE_ARITY - 1];
+        var computedCurrentBallotPathElements[stateTreeDepth][STATE_TREE_ARITY - 1];
+        var computedCurrentVoteWeightsPathElements[voteOptionTreeDepth][VOTE_OPTION_TREE_ARITY - 1];
         
         for (var j = 0; j < stateTreeDepth; j++) {
             for (var k = 0; k < STATE_TREE_ARITY - 1; k++) {
-                currentStateLeavesPathElement[j][k] = currentStateLeavesPathElements[i][j][k];
-                currentBallotPathElement[j][k] = currentBallotsPathElements[i][j][k];
+                computedCurrentStateLeavesPathElements[j][k] = currentStateLeavesPathElements[i][j][k];
+                computedCurrentBallotPathElements[j][k] = currentBallotsPathElements[i][j][k];
             }
         }
 
         for (var j = 0; j < voteOptionTreeDepth; j++) {
             for (var k = 0; k < VOTE_OPTION_TREE_ARITY - 1; k++) {
-                currentVoteWeightsPathElement[j][k] = currentVoteWeightsPathElements[i][j][k];
+                computedCurrentVoteWeightsPathElements[j][k] = currentVoteWeightsPathElements[i][j][k];
             }
         }
         
@@ -229,11 +229,11 @@ template ProcessMessages(
             ballotRoots[i + 1],
             actualStateTreeDepth,
             currentStateLeaves[i],
-            currentStateLeavesPathElement,
+            computedCurrentStateLeavesPathElements,
             currentBallots[i],
-            currentBallotPathElement,
+            computedCurrentBallotPathElements,
             currentVoteWeights[i],
-            currentVoteWeightsPathElement,
+            computedCurrentVoteWeightsPathElements,
             computedCommandsStateIndex[i],
             computedCommandsNewPublicKey[i],
             computedCommandsVoteOptionIndex[i],

@@ -242,7 +242,7 @@ export interface IVerifyingKeysRegistryArgs {
   /**
    * The int state tree depth determines the tally batch size
    */
-  intStateTreeDepth: bigint | string;
+  tallyProcessingStateTreeDepth: bigint | string;
 
   /**
    * The vote option tree depth
@@ -336,7 +336,7 @@ export interface IDeployPollConfig {
   /**
    * Determines the tally batch size
    */
-  intStateTreeDepth: number;
+  tallyProcessingStateTreeDepth: number;
 
   /**
    * Message batch size

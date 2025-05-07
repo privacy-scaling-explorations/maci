@@ -127,7 +127,7 @@ describe("TallyVotesNonQv", () => {
     // set the verification keys on the registry smart contract
     await verifyingKeysRegistryContract.setVerifyingKeys(
       STATE_TREE_DEPTH,
-      treeDepths.intStateTreeDepth,
+      treeDepths.tallyProcessingStateTreeDepth,
       treeDepths.voteOptionTreeDepth,
       messageBatchSize,
       EMode.NON_QV,

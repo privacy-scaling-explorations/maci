@@ -73,7 +73,7 @@ $poseidon_3([tc_r, tc_t, tc_p])$
 
 1. That the coordinator knows the preimage of `sbCommitment`
 2. That `index` is less than or equal to `totalSignups`
-3. That each ballot in `ballots` is in a member of the ballot tree with the Merkle root `ballotRoot` at indices `batchStartIndex` to `batchStartIndex + (5 ** intStateTreeDepth)`
+3. That each ballot in `ballots` is in a member of the ballot tree with the Merkle root `ballotRoot` at indices `batchStartIndex` to `batchStartIndex + (5 ** tallyProcessingStateTreeDepth)`
 4. That each set of votes (`votes[i]`) has the Merkle root $blt_r$ whose value equals `ballots[i][1]`
 5. That the tally is valid, which is:
    - That the sum of votes per vote option is correct

@@ -64,14 +64,14 @@ export const getPollParams = async ({
 
   const messageBatchSize = Number.parseInt((await pollContract.messageBatchSize()).toString(), 10);
 
-  const intStateTreeDepth = Number(treeDepths.intStateTreeDepth);
-  const tallyBatchSize = 5 ** intStateTreeDepth;
+  const tallyProcessingStateTreeDepth = Number(treeDepths.tallyProcessingStateTreeDepth);
+  const tallyBatchSize = 5 ** tallyProcessingStateTreeDepth;
 
   return {
     messageBatchSize,
     totalVoteOptions,
     tallyBatchSize,
     voteOptionTreeDepth,
-    intStateTreeDepth,
+    tallyProcessingStateTreeDepth,
   };
 };

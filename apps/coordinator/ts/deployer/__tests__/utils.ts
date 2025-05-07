@@ -40,7 +40,7 @@ export const testMaciDeploymentConfig: IDeployMaciConfig = {
       pollStateTreeDepth: 10n,
       messageBatchSize: MSG_BATCH_SIZE,
       voteOptionTreeDepth: 2n,
-      intStateTreeDepth: 1n,
+      tallyProcessingStateTreeDepth: 1n,
     },
   },
   Poseidon: {
@@ -79,7 +79,7 @@ export const testPollDeploymentConfig: IDeployPollConfig = {
   endDate: startDate + pollDuration,
   mode: EMode.NON_QV,
   coordinatorPublicKey: coordinatorMACIKeypair.publicKey.serialize(),
-  intStateTreeDepth: 1,
+  tallyProcessingStateTreeDepth: 1,
   messageBatchSize: MSG_BATCH_SIZE,
   pollStateTreeDepth: 10,
   voteOptionTreeDepth: 2,

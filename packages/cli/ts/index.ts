@@ -196,7 +196,11 @@ program
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
   .option("-k, --vk-contract <vkContract>", "the VerifyingKeysRegistry contract address")
   .requiredOption("-s, --state-tree-depth <stateTreeDepth>", "the state tree depth", parseInt)
-  .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the intermediate state tree depth", parseInt)
+  .requiredOption(
+    "-i, --tally-processing-state-tree-depth <tallyProcessingStateTreeDepth>",
+    "the intermediate state tree depth",
+    parseInt,
+  )
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
   .requiredOption("-b, --message-batch-size <messageBatchSize>", "the message batch size", parseInt)
   .requiredOption(
@@ -229,7 +233,7 @@ program
 
       await checkVerifyingKeys({
         stateTreeDepth: args.stateTreeDepth,
-        intStateTreeDepth: args.intStateTreeDepth,
+        tallyProcessingStateTreeDepth: args.tallyProcessingStateTreeDepth,
         voteOptionTreeDepth: args.voteOptionTreeDepth,
         messageBatchSize: args.messageBatchSize,
         processMessagesZkeyPath: args.processMessagesZkey,
@@ -325,7 +329,11 @@ program
   .option("-k, --verifyingKeysRegistryAddress <verifyingKeysRegistryAddress>", "the vk registry contract address")
   .requiredOption("--start <pollStartDate>", "the poll start date", parseInt)
   .requiredOption("--end <pollEndDate>", "the poll end date", parseInt)
-  .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the int state tree depth", parseInt)
+  .requiredOption(
+    "-i, --tally-processing-state-tree-depth <tallyProcessingStateTreeDepth>",
+    "the int state tree depth",
+    parseInt,
+  )
   .requiredOption("-b, --message-batch-size <messageBatchSize>", "the message batch size", parseInt)
   .requiredOption("-s, --state-tree-depth <stateTreeDepth>", "the state tree depth", parseInt)
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
@@ -383,7 +391,7 @@ program
         initialVoiceCredits: args.initialVoiceCredits || DEFAULT_INITIAL_VOICE_CREDITS,
         pollStartTimestamp: args.start,
         pollEndTimestamp: args.end,
-        intStateTreeDepth: args.intStateTreeDepth,
+        tallyProcessingStateTreeDepth: args.tallyProcessingStateTreeDepth,
         messageBatchSize: args.messageBatchSize,
         stateTreeDepth: args.stateTreeDepth,
         voteOptionTreeDepth: args.voteOptionTreeDepth,
@@ -488,7 +496,11 @@ program
   .command("setVerifyingKeys")
   .description("set the verifying keys")
   .requiredOption("-s, --state-tree-depth <stateTreeDepth>", "the state tree depth", parseInt)
-  .requiredOption("-i, --int-state-tree-depth <intStateTreeDepth>", "the intermediate state tree depth", parseInt)
+  .requiredOption(
+    "-i, --tally-processing-state-tree-depth <tallyProcessingStateTreeDepth>",
+    "the intermediate state tree depth",
+    parseInt,
+  )
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
   .requiredOption("-b, --message-batch-size <messageBatchSize>", "the message batch size", parseInt)
   .option("--poll-state-tree-depth <pollStateTreeDepth>", "the poll state tree depth", parseInt)
@@ -560,7 +572,7 @@ program
 
       await setVerifyingKeys({
         stateTreeDepth: args.stateTreeDepth,
-        intStateTreeDepth: args.intStateTreeDepth,
+        tallyProcessingStateTreeDepth: args.tallyProcessingStateTreeDepth,
         voteOptionTreeDepth: args.voteOptionTreeDepth,
         messageBatchSize: args.messageBatchSize,
         pollStateTreeDepth: args.pollStateTreeDepth || args.stateTreeDepth,

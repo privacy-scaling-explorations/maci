@@ -16,7 +16,7 @@ export interface ICircuitParams {
   /**
    * The intermediate state tree depth (ballot tree)
    */
-  intStateTreeDepth: number;
+  tallyProcessingStateTreeDepth: number;
   /**
    * The vote option tree depth
    */
