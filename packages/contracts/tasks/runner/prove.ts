@@ -64,7 +64,7 @@ task("prove", "Command to generate proofs")
 
       if (!isOutputDirExists) {
         // Create the directory
-        await fs.promises.mkdir(outputDir);
+        await fs.promises.mkdir(outputDir, { recursive: true });
       }
 
       const maciPrivateKey = PrivateKey.deserialize(coordinatorPrivateKey);
