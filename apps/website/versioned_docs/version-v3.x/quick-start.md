@@ -203,6 +203,10 @@ As a coordinator, first you need to merge signups and messages (votes). This opt
 pnpm merge:[network] --poll [poll-id]
 ```
 
+:::info
+`poll-id` starts at 0 and increments for each deployed poll
+:::
+
 Then you need to generate the proofs for the message processing, and tally calculations. This allows to publish the poll results on-chain and then everyone can verify the results:
 
 ```bash
@@ -214,8 +218,12 @@ pnpm run prove:[network] --poll [poll-id] \
     --blocks-per-batch [number-of-blocks]
 ```
 
-:::important
-You can reduce the time of the proving by including more blocks per batch, you can try with 500.
+:::info
+The `--coordinator-private-key` is the one you generated earlier with `pnpm run generateMaciKeyPair`.
+
+`--start-block` is the block number from which to start looking for events from. You can use the block that you deployed the contracts in.
+
+You can reduce the time of the proving by including more blocks per batch with `--blocks-per-batch`, you can try with 500.
 :::
 
 #### Submit On-chain
@@ -224,8 +232,8 @@ Now it's time to submit the poll results on-chain so that everyone can verify th
 
 ```bash
 pnpm submitOnChain:[network] --poll [poll-id] \
-    --output-dir proofs/ \
-    --tally-file proofs/tally.json
+    --output-dir ../results/proofs/ \
+    --tally-file ../results/tally.json
 ```
 
 ### Tally
