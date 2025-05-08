@@ -64,7 +64,7 @@ deployment.deployTask(EDeploySteps.Poll, "Deploy poll").then((task) =>
       ?.split(",")
       .map((value) => value.trim()) || [ZeroAddress];
 
-    const mode = deployment.getDeployConfigField<EMode | null>(EContracts.Poll, "mode") ?? EMode.NON_QV;
+    const mode = deployment.getDeployConfigField<EMode | null>(EContracts.Poll, "mode") ?? EMode.QV;
     const unserializedKey = PublicKey.deserialize(coordinatorPublicKey);
 
     const policy =

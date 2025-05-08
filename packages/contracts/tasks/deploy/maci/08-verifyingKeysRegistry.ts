@@ -77,7 +77,7 @@ deployment.deployTask(EDeploySteps.VerifyingKeysRegistry, "Deploy verifying key 
       EContracts.VerifyingKeysRegistry,
       "zkeys.full.processMessagesZkey",
     );
-    const mode = deployment.getDeployConfigField<EMode | null>(EContracts.Poll, "mode") ?? EMode.NON_QV;
+    const mode = deployment.getDeployConfigField<EMode | null>(EContracts.Poll, "mode") ?? EMode.QV;
 
     if (mode === EMode.QV && (!tallyVotesZkeyPathQv || !processMessagesZkeyPathQv)) {
       throw new Error("QV zkeys are not set");
@@ -100,6 +100,7 @@ deployment.deployTask(EDeploySteps.VerifyingKeysRegistry, "Deploy verifying key 
       qvTallyVerifyingKey,
       nonQvProcessVerifyingKey,
       nonQvTallyQv,
+      fullProcessVerifyingKey,
       pollJoiningVerifyingKey,
       pollJoinedVerifyingKey,
     ] = await Promise.all([
@@ -107,6 +108,7 @@ deployment.deployTask(EDeploySteps.VerifyingKeysRegistry, "Deploy verifying key 
       tallyVotesZkeyPathQv && extractVerifyingKey(tallyVotesZkeyPathQv),
       processMessagesZkeyPathNonQv && extractVerifyingKey(processMessagesZkeyPathNonQv),
       tallyVotesZkeyPathNonQv && extractVerifyingKey(tallyVotesZkeyPathNonQv),
+      processMessagesZkeyPathFull && extractVerifyingKey(processMessagesZkeyPathFull),
       pollJoiningZkeyPath && extractVerifyingKey(pollJoiningZkeyPath),
       pollJoinedZkeyPath && extractVerifyingKey(pollJoinedZkeyPath),
     ]).then((verifyingKeys) =>
@@ -124,8 +126,10 @@ deployment.deployTask(EDeploySteps.VerifyingKeysRegistry, "Deploy verifying key 
       await deployer.getAddress(),
     );
 
-    const processZkeys = [qvProcessVerifyingKey, nonQvProcessVerifyingKey].filter(Boolean) as IVerifyingKeyStruct[];
-    const tallyZkeys = [qvTallyVerifyingKey, nonQvTallyQv].filter(Boolean) as IVerifyingKeyStruct[];
+    const processZkeys = [qvProcessVerifyingKey, nonQvProcessVerifyingKey, fullProcessVerifyingKey].filter(
+      Boolean,
+    ) as IVerifyingKeyStruct[];
+    const tallyZkeys = [qvTallyVerifyingKey, nonQvTallyQv, nonQvTallyQv].filter(Boolean) as IVerifyingKeyStruct[];
     const modes: EMode[] = [];
 
     if (qvProcessVerifyingKey && qvTallyVerifyingKey) {
@@ -134,6 +138,10 @@ deployment.deployTask(EDeploySteps.VerifyingKeysRegistry, "Deploy verifying key 
 
     if (nonQvProcessVerifyingKey && nonQvTallyQv) {
       modes.push(EMode.NON_QV);
+    }
+
+    if (fullProcessVerifyingKey && nonQvTallyQv) {
+      modes.push(EMode.FULL);
     }
 
     await verifyingKeysRegistryContract

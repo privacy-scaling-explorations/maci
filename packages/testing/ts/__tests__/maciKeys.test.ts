@@ -6,13 +6,13 @@ import { expect } from "chai";
 import type { Signer } from "ethers";
 
 import {
-  pollJoinedZkey,
-  pollJoiningZkey,
-  pollWasm,
-  pollWitgen,
-  processMessagesZkeyPathNonQv,
-  rapidsnark,
-  tallyVotesZkeyPathNonQv,
+  testRapidsnarkPath,
+  testPollJoinedZkeyPath,
+  testPollJoiningZkeyPath,
+  testPollJoiningWasmPath,
+  testPollJoiningWitnessPath,
+  testProcessMessageNonQvZkeyPath,
+  testTallyVotesNonQvZkeyPath,
 } from "../constants";
 import { TestingClass } from "../testingClass";
 
@@ -77,13 +77,13 @@ describe("integration tests private/public/keypair", () => {
       signer = await getDefaultSigner();
 
       testingClass = await TestingClass.getInstance({
-        pollJoiningZkeyPath: pollJoiningZkey,
-        pollJoinedZkeyPath: pollJoinedZkey,
-        processMessagesZkeyPath: processMessagesZkeyPathNonQv,
-        tallyVotesZkeyPath: tallyVotesZkeyPathNonQv,
-        pollWasm,
-        pollWitgen,
-        rapidsnark,
+        pollJoiningZkeyPath: testPollJoiningZkeyPath,
+        pollJoinedZkeyPath: testPollJoinedZkeyPath,
+        processMessagesZkeyPath: testProcessMessageNonQvZkeyPath,
+        tallyVotesZkeyPath: testTallyVotesNonQvZkeyPath,
+        pollWasm: testPollJoiningWasmPath,
+        pollWitgen: testPollJoiningWitnessPath,
+        rapidsnark: testRapidsnarkPath,
       });
 
       const pollContractAddress = testingClass.contractsData.polls![0];
