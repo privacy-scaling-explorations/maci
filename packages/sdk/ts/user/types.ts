@@ -547,3 +547,39 @@ export interface IHasUserSignedUpArgs {
    */
   signer: Signer;
 }
+
+/**
+ * Arguments for IGenMaciStateTreeAddressArgs
+ */
+export interface IGenMaciStateTreeAddressArgs {
+  /**
+   * The MACI contract address
+   */
+  maciContractAddress: string;
+  /**
+   * The signer
+   */
+  signer: Signer;
+  /**
+   * The start block
+   */
+  startBlock?: number;
+  /**
+   * The end block
+   */
+  endBlock?: number;
+  /**
+   * The blocks per batch
+   */
+  blocksPerBatch?: number;
+}
+
+/**
+ * Arguments for IGenMaciStateTreeWithEndKeyAddressArgs
+ */
+export interface IGenMaciStateTreeWithEndKeyAddressArgs extends IGenMaciStateTreeAddressArgs {
+  /**
+   * The public key of the user
+   */
+  userPublicKey: PublicKey;
+}
