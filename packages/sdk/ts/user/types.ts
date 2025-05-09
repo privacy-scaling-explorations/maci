@@ -419,46 +419,6 @@ export interface IIsNullifierOnChainArgs {
 }
 
 /**
- * Arguments for IGenMaciStateTreeArgs
- */
-export interface IGenMaciStateTreeArgs {
-  /**
-   * The MACI contract
-   */
-  maciContract: MACI;
-
-  /**
-   * The signer
-   */
-  signer: Signer;
-
-  /**
-   * The start block
-   */
-  startBlock?: number;
-
-  /**
-   * The end block
-   */
-  endBlock?: number;
-
-  /**
-   * The blocks per batch
-   */
-  blocksPerBatch?: number;
-}
-
-/**
- * Arguments for IGenMaciStateTreeWithEndKeyArgs
- */
-export interface IGenMaciStateTreeWithEndKeyArgs extends IGenMaciStateTreeArgs {
-  /**
-   * The public key of the user
-   */
-  userPublicKey: PublicKey;
-}
-
-/**
  * Arguments for getPollJoiningCircuitEvents
  */
 export interface IGetPollJoiningCircuitEventsArgs {
