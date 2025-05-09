@@ -25,6 +25,6 @@ export type {
   IParseSignupEventsArgs,
   ISignupData,
   IHasUserSignedUpArgs,
-  IGenMaciStateTreeArgs,
-  IGenMaciStateTreeWithEndKeyArgs,
+  IGenMaciStateTreeAddressArgs,
+  IGenMaciStateTreeWithEndKeyAddressArgs,
 } from "./types";
