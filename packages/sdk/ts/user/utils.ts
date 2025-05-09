@@ -12,8 +12,6 @@ import type {
   IParseSignupEventsArgs,
   IJoinedUserArgs,
   IIsNullifierOnChainArgs,
-  IGenMaciStateTreeArgs as IGenerateMaciStateTreeArgs,
-  IGenMaciStateTreeWithEndKeyArgs as IGenerateMaciStateTreeWithEndKeyArgs,
   IGenMaciStateTreeAddressArgs,
   IGenMaciStateTreeWithEndKeyAddressArgs,
 } from "./types";
