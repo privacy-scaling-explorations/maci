@@ -60,7 +60,7 @@
     "lint-staged": "^15.5.2",
     "prettier": "^3.5.3",
     "prettier-plugin-solidity": "^2.0.0",
-    "solhint": "^5.0.5",
+    "solhint": "^5.1.0",
     "tar": "^7.4.3",
     "ts-node": "^10.9.1",
     "typedoc": "^0.28.3",
