@@ -143,10 +143,10 @@ export class PublicKey {
   }
 
   /**
-   * Generate a default pad key
-   * @returns a default pad key
+   * Generate a default padding key
+   * @returns a default padding key
    */
-  static genPadKey(): PublicKey {
+  static generatePaddingKey(): PublicKey {
     // This public key is the first Pedersen base
     // point from iden3's circomlib implementation of the Pedersen hash.
     // Since it is generated using a hash-to-curve function, we are

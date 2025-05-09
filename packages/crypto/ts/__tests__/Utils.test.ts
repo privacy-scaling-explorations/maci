@@ -2,7 +2,7 @@ import { expect } from "chai";
 
 import { bigInt2Buffer, fromRprLE, fromString, shiftRight, stringifyBigInts, unstringifyBigInts } from "../bigIntUtils";
 import { SNARK_FIELD_SIZE } from "../constants";
-import { generateTreeCommitment, genTreeProof } from "../utils";
+import { generateTreeCommitment, generateTreeProof } from "../utils";
 
 describe("Utils", () => {
   describe("stringifyBigInts", () => {
@@ -201,11 +201,11 @@ describe("Utils", () => {
     });
   });
 
-  describe("genTreeProof", () => {
+  describe("generateTreeProof", () => {
     it("should return the path elements for the given index", () => {
       const leaves = [BigInt(1), BigInt(2), BigInt(3), BigInt(4), BigInt(5)];
       const depth = 3;
-      const proof = genTreeProof(2, leaves, depth);
+      const proof = generateTreeProof(2, leaves, depth);
       expect(proof.length).to.be.gt(0);
     });
   });

@@ -23,7 +23,7 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
   /// so that there can be as many users as possible.  i.e. 2 ** 23 = 8388608
   /// this should also match the parameter of the circom circuits.
   /// @notice IMPORTANT: remember to change the ballot tree depth
-  /// in contracts/ts/genEmptyBallotRootsContract.ts file
+  /// in contracts/ts/generateEmptyBallotRoots.ts file
   /// if we change the state tree depth!
   uint8 public immutable stateTreeDepth;
 

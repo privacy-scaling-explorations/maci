@@ -18,7 +18,7 @@ import {
 } from "viem/chains";
 
 import { getBundlerClient, getPublicClient, getZeroDevBundlerRPCUrl } from "../accountAbstraction";
-import { genAlchemyRPCUrl } from "../chain";
+import { getAlchemyRpcUrl } from "../chain";
 import { ErrorCodes } from "../errors";
 import { ESupportedNetworks, viemChain } from "../networks";
 
@@ -60,28 +60,28 @@ describe("common", () => {
     });
   });
 
-  describe("genAlchemyRPCUrl", () => {
+  describe("getAlchemyRpcUrl", () => {
     test("should return the correct RPCUrl for optimism-sepolia", () => {
-      const rpcUrl = genAlchemyRPCUrl(ESupportedNetworks.OPTIMISM_SEPOLIA);
+      const rpcUrl = getAlchemyRpcUrl(ESupportedNetworks.OPTIMISM_SEPOLIA);
       expect(rpcUrl).toBeDefined();
       expect(rpcUrl).toContain("https://opt-sepolia.g.alchemy.com/v2/");
     });
 
     test("should return the correct RPCUrl for sepolia", () => {
-      const rpcUrl = genAlchemyRPCUrl(ESupportedNetworks.ETHEREUM_SEPOLIA);
+      const rpcUrl = getAlchemyRpcUrl(ESupportedNetworks.ETHEREUM_SEPOLIA);
       expect(rpcUrl).toBeDefined();
       expect(rpcUrl).toContain("https://eth-sepolia.g.alchemy.com/v2/");
     });
 
     test("should throw when given an unsupported network", () => {
-      expect(() => genAlchemyRPCUrl(ESupportedNetworks.GNOSIS_CHAIN)).toThrow(
+      expect(() => getAlchemyRpcUrl(ESupportedNetworks.GNOSIS_CHAIN)).toThrow(
         ErrorCodes.UNSUPPORTED_NETWORK.toString(),
       );
     });
 
     test("should throw when ALCHEMY_API_KEY is not set", () => {
       delete process.env.RPC_API_KEY;
-      expect(() => genAlchemyRPCUrl(ESupportedNetworks.OPTIMISM_SEPOLIA)).toThrow(
+      expect(() => getAlchemyRpcUrl(ESupportedNetworks.OPTIMISM_SEPOLIA)).toThrow(
         ErrorCodes.RPC_API_KEY_NOT_SET.toString(),
       );
     });

@@ -12,8 +12,8 @@ import type {
   IParseSignupEventsArgs,
   IJoinedUserArgs,
   IIsNullifierOnChainArgs,
-  IGenMaciStateTreeArgs as IGenerateMaciStateTreeArgs,
-  IGenMaciStateTreeWithEndKeyArgs as IGenerateMaciStateTreeWithEndKeyArgs,
+  IGenerateMaciStateTreeArgs,
+  IGenerateMaciStateTreeWithEndKeyArgs,
 } from "./types";
 import type { IGenerateSignUpTree } from "../trees/types";
 import type { TCircuitInputs } from "../utils/types";

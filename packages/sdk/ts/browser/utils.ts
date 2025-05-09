@@ -1,6 +1,6 @@
 import { groth16, type Groth16Proof } from "snarkjs";
 
-import type { IGenProofOptions, FullProveResult, SnarkProof } from "@maci-protocol/contracts";
+import type { IGenerateProofOptions, FullProveResult, SnarkProof } from "@maci-protocol/contracts";
 
 /**
  * Format a SnarkProof type to an array of strings
@@ -33,7 +33,7 @@ export const generateProofSnarkjs = async ({
   inputs,
   zkeyPath,
   wasmPath,
-}: IGenProofOptions): Promise<FullProveResult> => {
+}: IGenerateProofOptions): Promise<FullProveResult> => {
   if (!wasmPath) {
     throw new Error("wasmPath must be specified");
   }

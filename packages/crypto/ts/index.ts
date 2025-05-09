@@ -1,4 +1,4 @@
-export { calcDepthFromNumLeaves, generateTreeCommitment, genTreeProof } from "./utils";
+export { calcDepthFromNumLeaves, generateTreeCommitment, generateTreeProof } from "./utils";
 
 export { IncrementalQuinTree } from "./quinTree";
 

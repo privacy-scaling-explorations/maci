@@ -26,7 +26,7 @@ describe("Ballot", () => {
 
   describe("copy", () => {
     it("should produce a deep copy", () => {
-      const b1 = Ballot.genRandomBallot(2, 2);
+      const b1 = Ballot.generateRandom(2, 2);
       const b2 = b1.copy();
 
       expect(b1.voteOptionTreeDepth).to.eq(b2.voteOptionTreeDepth);
@@ -41,7 +41,7 @@ describe("Ballot", () => {
   describe("asCircuitInputs", () => {
     it("should produce an array", () => {
       const len = 2;
-      const b1 = Ballot.genRandomBallot(len, 2);
+      const b1 = Ballot.generateRandom(len, 2);
       const arr = b1.asCircuitInputs();
       expect(arr).to.be.instanceOf(Array);
       expect(arr.length).to.eq(len);
@@ -50,8 +50,8 @@ describe("Ballot", () => {
 
   describe("isEqual", () => {
     it("should return false for ballots that are not equal (different votes length)", () => {
-      const b1 = Ballot.genRandomBallot(2, 2);
-      const b2 = Ballot.genRandomBallot(2, 3);
+      const b1 = Ballot.generateRandom(2, 2);
+      const b2 = Ballot.generateRandom(2, 3);
       expect(b1.equals(b2)).to.eq(false);
     });
     it("should return true for ballots that are equal", () => {
@@ -60,8 +60,8 @@ describe("Ballot", () => {
       expect(b1.equals(b2)).to.eq(true);
     });
     it("should return false for ballots that are not equal (different nonce)", () => {
-      const b1 = Ballot.genRandomBallot(3, 2);
-      const b2 = Ballot.genRandomBallot(2, 2);
+      const b1 = Ballot.generateRandom(3, 2);
+      const b2 = Ballot.generateRandom(2, 2);
       b2.nonce = BigInt(1);
       expect(b1.equals(b2)).to.eq(false);
     });
@@ -69,7 +69,7 @@ describe("Ballot", () => {
 
   describe("asArray", () => {
     it("should produce a valid result", () => {
-      const b1 = Ballot.genRandomBallot(2, 2);
+      const b1 = Ballot.generateRandom(2, 2);
       b1.votes[0] = BigInt(1);
       b1.votes[1] = BigInt(2);
       b1.votes[2] = BigInt(3);
@@ -78,17 +78,17 @@ describe("Ballot", () => {
     });
   });
 
-  describe("genRandomBallot", () => {
+  describe("generateRandom", () => {
     it("should generate a ballot with a random nonce", () => {
-      const b1 = Ballot.genRandomBallot(2, 2);
-      const b2 = Ballot.genRandomBallot(2, 2);
+      const b1 = Ballot.generateRandom(2, 2);
+      const b2 = Ballot.generateRandom(2, 2);
       expect(b1.nonce).to.not.eq(b2.nonce);
     });
   });
 
-  describe("genBlankBallot", () => {
+  describe("generateBlank", () => {
     it("should generate a ballot with all votes set to 0", () => {
-      const b1 = Ballot.genBlankBallot(2, 2);
+      const b1 = Ballot.generateBlank(2, 2);
       expect(b1.votes.every((v) => v === BigInt(0))).to.eq(true);
     });
   });
@@ -96,7 +96,7 @@ describe("Ballot", () => {
   describe("serialization/deserialization", () => {
     describe("toJSON", () => {
       it("toJSON should produce a JSON object representing the ballot", () => {
-        const b1 = Ballot.genBlankBallot(2, 2);
+        const b1 = Ballot.generateBlank(2, 2);
         const json = b1.toJSON();
         expect(json).to.have.property("votes");
         expect(json).to.have.property("nonce");
@@ -109,7 +109,7 @@ describe("Ballot", () => {
 
     describe("fromJSON", () => {
       it("should create a ballot from a JSON object", () => {
-        const b1 = Ballot.genBlankBallot(2, 2);
+        const b1 = Ballot.generateBlank(2, 2);
         const json = b1.toJSON();
         const b2 = Ballot.fromJSON(json);
         expect(b1.equals(b2)).to.eq(true);

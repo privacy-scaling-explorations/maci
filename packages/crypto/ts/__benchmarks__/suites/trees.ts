@@ -22,7 +22,7 @@ export default function runTrees(): void {
         tree5.update(i, BigInt(0));
       }
 
-      tree5.verifyProof(tree5.genProof(5));
+      tree5.verifyProof(tree5.generateProof(5));
     }),
 
     benny.cycle(),

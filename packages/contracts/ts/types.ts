@@ -216,9 +216,9 @@ export interface FullProveResult {
 }
 
 /**
- * Parameters for the genProof function
+ * Parameters for the generateProof function
  */
-export interface IGenProofOptions {
+export interface IGenerateProofOptions {
   inputs: TCircuitInputs;
   zkeyPath: string;
   useWasm?: boolean;
@@ -261,7 +261,7 @@ export interface IIpfsMessage {
 /**
  * Interface that represents maci state generation arguments
  */
-export interface IGenMaciStateFromContractArgs {
+export interface IGenerateMaciStateFromContractArgs {
   /**
    * The ethereum provider
    */

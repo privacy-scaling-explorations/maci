@@ -36,7 +36,7 @@ export class StateLeaf implements IStateLeaf {
    * Generate a blank state leaf
    * @returns a blank state leaf
    */
-  static genBlankLeaf(): StateLeaf {
+  static generateBlank(): StateLeaf {
     // The public key for a blank state leaf is the first Pedersen base
     // point from iden3's circomlib implementation of the Pedersen hash.
     // Since it is generated using a hash-to-curve function, we are
@@ -58,7 +58,7 @@ export class StateLeaf implements IStateLeaf {
    * Generate a random leaf (random salt and random key pair)
    * @returns a random state leaf
    */
-  static genRandomLeaf(): StateLeaf {
+  static generateRandom(): StateLeaf {
     const keypair = new Keypair();
     return new StateLeaf(keypair.publicKey, generateRandomSalt());
   }

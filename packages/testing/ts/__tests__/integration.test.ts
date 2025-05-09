@@ -51,7 +51,7 @@ import {
   POLL_STATE_TREE_DEPTH,
 } from "../constants";
 import { ITestSuite } from "../types";
-import { expectTally, genTestUserCommands, isArm, writeBackupFile, backupFolder } from "../utils";
+import { expectTally, generateTestUserCommands, isArm, writeBackupFile, backupFolder } from "../utils";
 
 chai.use(chaiAsPromised);
 
@@ -218,7 +218,12 @@ describe("Integration tests", function test() {
     const DEFAULT_IVCP_DATA = "0x0000000000000000000000000000000000000000000000000000000000000000";
 
     it(testCase.description, async () => {
-      const users = genTestUserCommands(testCase.numUsers, testCase.numVotesPerUser, testCase.bribers, testCase.votes);
+      const users = generateTestUserCommands(
+        testCase.numUsers,
+        testCase.numVotesPerUser,
+        testCase.bribers,
+        testCase.votes,
+      );
 
       // loop through all users and generate keypair + signup
       for (let i = 0; i < users.length; i += 1) {

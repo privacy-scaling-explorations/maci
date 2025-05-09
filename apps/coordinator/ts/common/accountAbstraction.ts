@@ -9,7 +9,7 @@ import { privateKeyToAccount } from "viem/accounts";
 
 import type { BundlerClientType, KernelClientType, PublicClientHTTPType } from "./types";
 
-import { genAlchemyRPCUrl } from "./chain";
+import { getAlchemyRpcUrl } from "./chain";
 import { ErrorCodes } from "./errors";
 import { ESupportedNetworks, viemChain } from "./networks";
 
@@ -23,7 +23,7 @@ dotenv.config();
  */
 export const getPublicClient = (chainName: ESupportedNetworks): PublicClientHTTPType =>
   createPublicClient({
-    transport: http(genAlchemyRPCUrl(chainName)),
+    transport: http(getAlchemyRpcUrl(chainName)),
     chain: viemChain(chainName),
   });
 

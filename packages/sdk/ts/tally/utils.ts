@@ -1,4 +1,4 @@
-import { genTreeProof } from "@maci-protocol/crypto";
+import { generateTreeProof } from "@maci-protocol/crypto";
 
 import type { ITallyData } from "./types";
 import type { Tally } from "@maci-protocol/contracts";
@@ -23,7 +23,7 @@ export const verifyPerVoteOptionSpentVoiceCredits = async (
   const failedIndices: number[] = [];
 
   for (let i = 0; i < tallyData.perVoteOptionSpentVoiceCredits!.tally.length; i += 1) {
-    const proof = genTreeProof(
+    const proof = generateTreeProof(
       i,
       tallyData.perVoteOptionSpentVoiceCredits!.tally.map((x) => BigInt(x)),
       voteOptionTreeDepth,
@@ -67,7 +67,7 @@ export const verifyTallyResults = async (
   const failedIndices: number[] = [];
 
   for (let i = 0; i < tallyData.results.tally.length; i += 1) {
-    const proof = genTreeProof(
+    const proof = generateTreeProof(
       i,
       tallyData.results.tally.map((x) => BigInt(x)),
       voteOptionTreeDepth,

@@ -2,7 +2,7 @@
 import { EMode, MaciState, Poll, IProcessMessagesCircuitInputs, ITallyCircuitInputs } from "@maci-protocol/core";
 import {
   generateTreeCommitment,
-  genTreeProof,
+  generateTreeProof,
   hashLeftRight,
   NOTHING_UP_MY_SLEEVE,
   poseidon,
@@ -369,7 +369,7 @@ describe("TallyVotes", () => {
       };
 
       const tallyResultProofs = tallyData.results.tally.map((_, index) =>
-        genTreeProof(index, tallyData.results.tally, Number(treeDepths.voteOptionTreeDepth)),
+        generateTreeProof(index, tallyData.results.tally, Number(treeDepths.voteOptionTreeDepth)),
       );
 
       await expect(
@@ -427,7 +427,7 @@ describe("TallyVotes", () => {
       };
 
       const tallyResultProofs = tallyData.results.tally.map((_, index) =>
-        genTreeProof(index, tallyData.results.tally, Number(treeDepths.voteOptionTreeDepth)),
+        generateTreeProof(index, tallyData.results.tally, Number(treeDepths.voteOptionTreeDepth)),
       );
 
       const indices = tallyData.results.tally.map((_, index) => index);
@@ -508,7 +508,7 @@ describe("TallyVotes", () => {
       };
 
       const tallyResultProofs = tallyData.results.tally.map((_, index) =>
-        genTreeProof(index, tallyData.results.tally, Number(treeDepths.voteOptionTreeDepth)),
+        generateTreeProof(index, tallyData.results.tally, Number(treeDepths.voteOptionTreeDepth)),
       );
 
       await expect(

@@ -44,12 +44,14 @@ export const generateTreeCommitment = (leaves: bigint[], salt: bigint, depth: nu
  * @param depth The tree depth
  * @returns The proof
  */
-export const genTreeProof = (index: number, leaves: bigint[], depth: number): bigint[][] => {
+export const generateTreeProof = (index: number, leaves: bigint[], depth: number): bigint[][] => {
   const tree = new IncrementalQuinTree(depth, 0n, 5, hash5);
+
   leaves.forEach((leaf) => {
     tree.insert(leaf);
   });
 
-  const proof = tree.genProof(index);
-  return proof.pathElements;
+  const { pathElements } = tree.generateProof(index);
+
+  return pathElements;
 };

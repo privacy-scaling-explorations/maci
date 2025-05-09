@@ -226,7 +226,7 @@ describe("VerifyingKeysRegistry", () => {
     });
   });
 
-  describe("genSignatures", () => {
+  describe("generateSignatures", () => {
     describe("generatePollJoiningVerifyingKeySignature", () => {
       it("should generate a valid signature", async () => {
         const signature =

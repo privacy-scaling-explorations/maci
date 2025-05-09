@@ -7,7 +7,7 @@ import fs from "fs";
 import { tmpdir } from "os";
 import path from "path";
 
-import type { IGenProofOptions, ISnarkJSVerificationKey, FullProveResult, Proof } from "./types";
+import type { IGenerateProofOptions, ISnarkJSVerificationKey, FullProveResult, Proof } from "./types";
 
 import { cleanThreads, unlinkFile } from "./utils";
 
@@ -22,7 +22,7 @@ export const generateProofSnarkjs = async ({
   inputs,
   zkeyPath,
   wasmPath,
-}: IGenProofOptions): Promise<FullProveResult> => {
+}: IGenerateProofOptions): Promise<FullProveResult> => {
   if (!wasmPath) {
     throw new Error("wasmPath must be specified");
   }
@@ -44,7 +44,7 @@ export const generateProofRapidSnark = async ({
   zkeyPath,
   witnessExePath,
   rapidsnarkExePath,
-}: IGenProofOptions): Promise<FullProveResult> => {
+}: IGenerateProofOptions): Promise<FullProveResult> => {
   // intel chip flow (use rapidnsark)
   // Create tmp directory
   const tmpPath = path.resolve(tmpdir(), `tmp-${Date.now()}`);

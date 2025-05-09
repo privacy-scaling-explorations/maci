@@ -14,7 +14,7 @@ import {
   deployVerifier,
   deployMaci,
   MACI__factory as MACIFactory,
-  genMaciStateTreeWithEndKey,
+  generateMaciStateTreeWithEndKey,
 } from "@maci-protocol/sdk";
 import { downloadPollJoiningArtifactsBrowser, joinPoll as joinPollBrowser } from "@maci-protocol/sdk/browser";
 import { expect } from "chai";
@@ -193,7 +193,7 @@ describe("joinPoll", function test() {
     const startBlock = await signer.provider?.getBlockNumber();
 
     const maciContract = MACIFactory.connect(maciAddresses.maciContractAddress, signer);
-    const stateTree = await genMaciStateTreeWithEndKey({
+    const stateTree = await generateMaciStateTreeWithEndKey({
       maciContract,
       signer,
       userPublicKey: users[2].publicKey,
