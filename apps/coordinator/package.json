@@ -49,7 +49,7 @@
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@zerodev/ecdsa-validator": "5.4.8",
     "@zerodev/permissions": "5.5.4",
-    "@zerodev/sdk": "5.4.26",
+    "@zerodev/sdk": "5.4.34",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
     "date-fns": "^4.1.0",
