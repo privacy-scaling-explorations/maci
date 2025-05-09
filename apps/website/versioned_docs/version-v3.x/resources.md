@@ -28,6 +28,7 @@ sidebar_position: 13
 - [MACI - Starting From Scratch](https://www.youtube.com/watch?v=qVuhWlHnQF0) - Doris Chan 03/2024
 - [MACI Workshop](https://www.youtube.com/watch?v=AimgqnMjG0o) - ctrlc03 04/2024
 - [MACI Starter Kit Demo](https://www.youtube.com/watch?v=pYoBLLtVEoI&t=1s) - Yash 05/2024
+- [The Promise of Blockchain Voting](https://www.youtube.com/watch?v=TQxR7U52ne0) - Sam Richards 06/2024
 - [MACI Tutorial Deploying Contracts and Subgraph](https://www.youtube.com/watch?v=-QA0VB9EUMk) - Crisgarner 09/2024
 - [MACI Tutorial Frontend Deployment 🚀](https://www.youtube.com/watch?v=q0yS8RfwDcw) - Crisgarner 09/2024
 - [Finalizing a MACI Round](https://www.youtube.com/watch?v=nlS3hOC0ljw) - Crisgarner 09/2024
