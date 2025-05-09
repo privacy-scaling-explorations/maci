@@ -55,7 +55,7 @@
     "date-fns": "^4.1.0",
     "dotenv": "^16.5.0",
     "ethers": "^6.13.7",
-    "hardhat": "^2.23.0",
+    "hardhat": "^2.24.0",
     "helmet": "^8.1.0",
     "lowdb": "^1.0.0",
     "mustache": "^4.2.0",
