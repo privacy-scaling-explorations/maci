@@ -277,6 +277,7 @@ export const generateMaciStateTree = async ({
   endBlock,
   blocksPerBatch,
 }: IGenMaciStateTreeAddressArgs): Promise<IGenerateSignUpTree> => {
+  // build an off-chain representation of the MACI contract using data in the contract storage
   const maciContract = MACIFactory.connect(maciContractAddress, signer);
   const defaultStartBlock = await maciContract
     .queryFilter(maciContract.filters.SignUp(), startBlock ?? 0)
