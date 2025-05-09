@@ -46,7 +46,7 @@ async function getConfig(): Promise<Config> {
             routeBasePath: "docs/",
             sidebarPath: "./sidebars.ts",
             editUrl: ({ versionDocsDirPath, docPath }) =>
-              `${GITHUB_URL}/edit/dev/website/${versionDocsDirPath}/${docPath}`,
+              `${GITHUB_URL}/edit/dev/apps/website/${versionDocsDirPath}/${docPath}`,
             remarkPlugins: [remarkMath],
             rehypePlugins: [rehypeKatex],
             includeCurrentVersion: false,
@@ -59,7 +59,7 @@ async function getConfig(): Promise<Config> {
           blog: {
             showReadingTime: true,
 
-            editUrl: ({ blogDirPath, blogPath }) => `${GITHUB_URL}/edit/dev/website/${blogDirPath}/${blogPath}`,
+            editUrl: ({ blogDirPath, blogPath }) => `${GITHUB_URL}/edit/dev/apps/website/${blogDirPath}/${blogPath}`,
             remarkPlugins: [remarkMath],
             rehypePlugins: [rehypeKatex],
             onUntruncatedBlogPosts: "ignore",
