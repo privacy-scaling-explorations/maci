@@ -13,7 +13,6 @@ import {
   deployConstantInitialVoiceCreditProxy,
   deployVerifier,
   deployMaci,
-  MACI__factory as MACIFactory,
   genMaciStateTreeWithEndKey,
 } from "@maci-protocol/sdk";
 import { downloadPollJoiningArtifactsBrowser, joinPoll as joinPollBrowser } from "@maci-protocol/sdk/browser";
