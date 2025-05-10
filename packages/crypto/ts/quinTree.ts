@@ -119,7 +119,7 @@ export class IncrementalQuinTree {
    * @param index The index of the leaf to generate a proof for
    * @returns The proof
    */
-  genProof(index: number): IMerkleProof {
+  generateProof(index: number): IMerkleProof {
     if (index < 0) {
       throw new Error("The leaf index must be greater or equal to 0");
     }
@@ -165,7 +165,7 @@ export class IncrementalQuinTree {
    * @param endIndex The index of the last leaf
    * @returns The Merkle proof
    */
-  genSubrootProof(
+  generateSubrootProof(
     // inclusive
     startIndex: number,
     // exclusive
@@ -205,7 +205,7 @@ export class IncrementalQuinTree {
       subTree.insert(this.getNode(i));
     }
 
-    const fullPath = this.genProof(startIndex);
+    const fullPath = this.generateProof(startIndex);
     fullPath.pathIndices = fullPath.pathIndices.slice(subDepth, this.depth);
     fullPath.pathElements = fullPath.pathElements.slice(subDepth, this.depth);
     fullPath.leaf = subTree.root;

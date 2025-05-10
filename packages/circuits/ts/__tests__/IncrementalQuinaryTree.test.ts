@@ -291,7 +291,7 @@ describe("Incremental Quinary Tree (IQT)", function test() {
               values.push(value);
             }
 
-            const { pathIndices } = tree.genProof(Number(input));
+            const { pathIndices } = tree.generateProof(Number(input));
 
             const isEqual = pathIndices.every((item, index) => item.toString() === values[index].toString());
 
@@ -310,7 +310,7 @@ describe("Incremental Quinary Tree (IQT)", function test() {
         tree.insert(leaf);
       });
 
-      const proof = tree.genProof(2);
+      const proof = tree.generateProof(2);
 
       const circuitInputs = {
         root: tree.root,
@@ -359,7 +359,7 @@ describe("Incremental Quinary Tree (IQT)", function test() {
               tree.insert(value);
             });
 
-            const proof = tree.genProof(index);
+            const proof = tree.generateProof(index);
 
             const witness = await circuit.calculateWitness({
               root: tree.root,

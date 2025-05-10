@@ -419,9 +419,9 @@ export interface IIsNullifierOnChainArgs {
 }
 
 /**
- * Arguments for IGenMaciStateTreeArgs
+ * Arguments for IGenerateMaciStateTreeArgs
  */
-export interface IGenMaciStateTreeArgs {
+export interface IGenerateMaciStateTreeArgs {
   /**
    * The MACI contract
    */
@@ -449,9 +449,9 @@ export interface IGenMaciStateTreeArgs {
 }
 
 /**
- * Arguments for IGenMaciStateTreeWithEndKeyArgs
+ * Arguments for IGenerateMaciStateTreeWithEndKeyArgs
  */
-export interface IGenMaciStateTreeWithEndKeyArgs extends IGenMaciStateTreeArgs {
+export interface IGenerateMaciStateTreeWithEndKeyArgs extends IGenerateMaciStateTreeArgs {
   /**
    * The public key of the user
    */

@@ -24,9 +24,9 @@ describe("stateLeaf", () => {
     });
   });
 
-  describe("genBlankLeaf", () => {
+  describe("generateBlank", () => {
     it("should return a blank leaf", () => {
-      const blankLeaf = StateLeaf.genBlankLeaf();
+      const blankLeaf = StateLeaf.generateBlank();
       expect(blankLeaf.publicKey.raw[0]).to.eq(
         BigInt("10457101036533406547632367118273992217979173478358440826365724437999023779287"),
       );
@@ -37,10 +37,10 @@ describe("stateLeaf", () => {
     });
   });
 
-  describe("genRandomLeaf", () => {
+  describe("generateRandom", () => {
     it("should return a random leaf", () => {
-      const randomLeaf = StateLeaf.genRandomLeaf();
-      const randomLeaf2 = StateLeaf.genRandomLeaf();
+      const randomLeaf = StateLeaf.generateRandom();
+      const randomLeaf2 = StateLeaf.generateRandom();
       expect(randomLeaf.equals(randomLeaf2)).to.eq(false);
     });
   });

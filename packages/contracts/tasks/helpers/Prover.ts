@@ -1,6 +1,6 @@
 /* eslint-disable no-console, no-await-in-loop */
 import { STATE_TREE_ARITY } from "@maci-protocol/core";
-import { G1Point, G2Point, genTreeProof } from "@maci-protocol/crypto";
+import { G1Point, G2Point, generateTreeProof } from "@maci-protocol/crypto";
 import { VerifyingKey } from "@maci-protocol/domainobjs";
 
 import type { IVerifyingKeyStruct, Proof } from "../../ts/types";
@@ -335,7 +335,7 @@ export class Prover {
     const [treeDepths] = await Promise.all([this.pollContract.treeDepths()]);
 
     const tallyResultProofs = partialResults.map((_, index) =>
-      genTreeProof(index, tallyResults, Number(treeDepths.voteOptionTreeDepth)),
+      generateTreeProof(index, tallyResults, Number(treeDepths.voteOptionTreeDepth)),
     );
 
     await this.tallyContract

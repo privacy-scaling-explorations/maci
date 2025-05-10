@@ -90,7 +90,7 @@ export class Ballot {
    * @param voteOptionTreeDepth How deep is the merkle tree holding the vote options
    * @returns a random Ballot
    */
-  static genRandomBallot(totalVoteOptions: number, voteOptionTreeDepth: number): Ballot {
+  static generateRandom(totalVoteOptions: number, voteOptionTreeDepth: number): Ballot {
     const ballot = new Ballot(totalVoteOptions, voteOptionTreeDepth);
     ballot.nonce = generateRandomSalt();
     return ballot;
@@ -102,9 +102,8 @@ export class Ballot {
    * @param voteOptionTreeDepth How deep is the merkle tree holding the vote options
    * @returns a Blank Ballot object
    */
-  static genBlankBallot(totalVoteOptions: number, voteOptionTreeDepth: number): Ballot {
-    const ballot = new Ballot(totalVoteOptions, voteOptionTreeDepth);
-    return ballot;
+  static generateBlank(totalVoteOptions: number, voteOptionTreeDepth: number): Ballot {
+    return new Ballot(totalVoteOptions, voteOptionTreeDepth);
   }
 
   /**

@@ -24,13 +24,13 @@ describe("IMT comparison", () => {
     });
   });
 
-  describe("genProof", () => {
+  describe("generateProof", () => {
     it("should generate a proof", () => {
       const mt1 = new IncrementalQuinTree(5, 0n, 5, hash5);
 
       mt1.insert(1n);
 
-      const proof1 = mt1.genProof(0);
+      const proof1 = mt1.generateProof(0);
 
       expect(proof1.leaf).to.eq(mt1.getNode(0));
       expect(proof1.pathElements.length).to.be.gt(0);
@@ -41,18 +41,18 @@ describe("IMT comparison", () => {
     it("should throw when trying to generate a proof for an index < 0", () => {
       const mt1 = new IncrementalQuinTree(5, 0n, 5, hash5);
 
-      expect(() => mt1.genProof(-1)).to.throw("The leaf index must be greater or equal to 0");
+      expect(() => mt1.generateProof(-1)).to.throw("The leaf index must be greater or equal to 0");
     });
 
     it("should throw when trying to generate a proof for an index > tree size", () => {
       const mt1 = new IncrementalQuinTree(5, 0n, 5, hash5);
 
       const capacity = 5 ** 5;
-      expect(() => mt1.genProof(capacity + 1)).to.throw("The leaf index must be less than the tree capacity");
+      expect(() => mt1.generateProof(capacity + 1)).to.throw("The leaf index must be less than the tree capacity");
     });
   });
 
-  describe("genSubrootProof", () => {
+  describe("generateSubrootProof", () => {
     it("should generate a valid proof for a subtree", () => {
       const mt1 = new IncrementalQuinTree(5, 0n, 5, hash5);
 
@@ -60,7 +60,7 @@ describe("IMT comparison", () => {
         mt1.insert(BigInt(i));
       }
 
-      const proof1 = mt1.genSubrootProof(5, 10);
+      const proof1 = mt1.generateSubrootProof(5, 10);
 
       expect(mt1.verifyProof(proof1)).to.eq(true);
     });
@@ -68,20 +68,20 @@ describe("IMT comparison", () => {
     it("should throw when trying to generate a subroot proof and providing an end index > start index", () => {
       const mt1 = new IncrementalQuinTree(5, 0n, 5, hash5);
 
-      expect(() => mt1.genSubrootProof(5, 4)).to.throw("The start index must be less than the end index");
+      expect(() => mt1.generateSubrootProof(5, 4)).to.throw("The start index must be less than the end index");
     });
 
     it("should throw when providing a start index < 0", () => {
       const mt1 = new IncrementalQuinTree(5, 0n, 5, hash5);
 
-      expect(() => mt1.genSubrootProof(-1, 5)).to.throw("The start index must be greater or equal to 0");
+      expect(() => mt1.generateSubrootProof(-1, 5)).to.throw("The start index must be greater or equal to 0");
     });
 
     it("should throw when providing a leaves range not multiple of arity", () => {
       const arity = 5;
       const mt1 = new IncrementalQuinTree(arity, 0n, 5, hash5);
 
-      expect(() => mt1.genSubrootProof(0, arity + 1)).to.throw(
+      expect(() => mt1.generateSubrootProof(0, arity + 1)).to.throw(
         "The number of leaves must be a multiple of the tree arity",
       );
     });
@@ -90,7 +90,7 @@ describe("IMT comparison", () => {
       const arity = 5;
       const mt1 = new IncrementalQuinTree(arity, 0n, 5, hash5);
 
-      expect(() => mt1.genSubrootProof(0, arity ** 5)).to.throw(
+      expect(() => mt1.generateSubrootProof(0, arity ** 5)).to.throw(
         "The number of leaves must be less than the tree capacity",
       );
     });
@@ -102,7 +102,7 @@ describe("IMT comparison", () => {
 
       mt1.insert(1n);
 
-      const proof1 = mt1.genProof(0);
+      const proof1 = mt1.generateProof(0);
 
       expect(mt1.verifyProof(proof1)).to.eq(true);
     });

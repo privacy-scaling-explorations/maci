@@ -76,7 +76,7 @@ export type {
   Proof,
   ISnarkJSVerificationKey,
   FullProveResult,
-  IGenProofOptions,
+  IGenerateProofOptions,
   IIpfsMessage,
   TDeployedProxyFactories,
   AASigner,

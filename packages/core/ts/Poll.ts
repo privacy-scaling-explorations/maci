@@ -178,7 +178,7 @@ export class Poll implements IPoll {
     this.perVoteOptionSpentVoiceCredits = new Array(this.maxVoteOptions).fill(0n) as bigint[];
 
     // we put a blank state leaf to prevent a DoS attack
-    this.emptyBallot = Ballot.genBlankBallot(this.maxVoteOptions, treeDepths.voteOptionTreeDepth);
+    this.emptyBallot = Ballot.generateBlank(this.maxVoteOptions, treeDepths.voteOptionTreeDepth);
     this.ballots.push(this.emptyBallot);
   }
 
@@ -355,10 +355,10 @@ export class Poll implements IPoll {
       // calculate the path elements for the state tree given the original state tree (before any changes)
       // changes could effectively be made by this new vote - either a key change or vote change
       // would result in a different state leaf
-      const { pathElements: originalStateLeafPathElements } = this.pollStateTree!.genProof(Number(stateLeafIndex));
+      const { pathElements: originalStateLeafPathElements } = this.pollStateTree!.generateProof(Number(stateLeafIndex));
       // calculate the path elements for the ballot tree given the original ballot tree (before any changes)
       // changes could effectively be made by this new ballot
-      const { pathElements: originalBallotPathElements } = this.ballotTree!.genProof(Number(stateLeafIndex));
+      const { pathElements: originalBallotPathElements } = this.ballotTree!.generateProof(Number(stateLeafIndex));
 
       // create a new quinary tree where we insert the votes of the origin (up until this message is processed) ballot
       const voteTree = new IncrementalQuinTree(this.treeDepths.voteOptionTreeDepth, 0n, VOTE_OPTION_TREE_ARITY, hash5);
@@ -367,7 +367,7 @@ export class Poll implements IPoll {
         voteTree.insert(ballot.votes[i]);
       }
       // calculate the path elements for the vote option tree given the original vote option tree (before any changes)
-      const { pathElements: originalVoteWeightsPathElements } = voteTree.genProof(voteOptionIndex);
+      const { pathElements: originalVoteWeightsPathElements } = voteTree.generateProof(voteOptionIndex);
       // we return the data which is then to be used in the processMessage circuit
       // to generate a proof of processing
       return {
@@ -542,7 +542,7 @@ export class Poll implements IPoll {
     voiceCreditsBalance,
   }: IJoinedCircuitArgs): IPollJoinedCircuitInputs => {
     // calculate the path elements for the state tree given the original state tree
-    const { root: stateRoot, pathElements, pathIndices } = this.pollStateTree!.genProof(Number(stateLeafIndex));
+    const { root: stateRoot, pathElements, pathIndices } = this.pollStateTree!.generateProof(Number(stateLeafIndex));
 
     const elementsLength = pathIndices.length;
 
@@ -732,12 +732,14 @@ export class Poll implements IPoll {
             // if the state leaf index is valid then use it
             if (stateLeafIndex < this.pollStateLeaves.length) {
               currentStateLeaves.unshift(this.pollStateLeaves[Number(stateLeafIndex)].copy());
-              currentStateLeavesPathElements.unshift(this.pollStateTree!.genProof(Number(stateLeafIndex)).pathElements);
+              currentStateLeavesPathElements.unshift(
+                this.pollStateTree!.generateProof(Number(stateLeafIndex)).pathElements,
+              );
 
               // copy the ballot
               const ballot = this.ballots[Number(stateLeafIndex)].copy();
               currentBallots.unshift(ballot);
-              currentBallotsPathElements.unshift(this.ballotTree!.genProof(Number(stateLeafIndex)).pathElements);
+              currentBallotsPathElements.unshift(this.ballotTree!.generateProof(Number(stateLeafIndex)).pathElements);
 
               // @note we check that command.voteOptionIndex is valid so < voteOptions
               // this might be unnecessary but we do it to prevent a possible DoS attack
@@ -760,7 +762,9 @@ export class Poll implements IPoll {
                 }
 
                 // get the path elements for the first vote leaf
-                currentVoteWeightsPathElements.unshift(voteTree.genProof(Number(command.voteOptionIndex)).pathElements);
+                currentVoteWeightsPathElements.unshift(
+                  voteTree.generateProof(Number(command.voteOptionIndex)).pathElements,
+                );
               } else {
                 currentVoteWeights.unshift(ballot.votes[0]);
 
@@ -778,14 +782,14 @@ export class Poll implements IPoll {
                 }
 
                 // get the path elements for the first vote leaf
-                currentVoteWeightsPathElements.unshift(voteTree.genProof(0).pathElements);
+                currentVoteWeightsPathElements.unshift(voteTree.generateProof(0).pathElements);
               }
             } else {
               // just use state leaf index 0
               currentStateLeaves.unshift(this.pollStateLeaves[0].copy());
-              currentStateLeavesPathElements.unshift(this.pollStateTree!.genProof(0).pathElements);
+              currentStateLeavesPathElements.unshift(this.pollStateTree!.generateProof(0).pathElements);
               currentBallots.unshift(this.ballots[0].copy());
-              currentBallotsPathElements.unshift(this.ballotTree!.genProof(0).pathElements);
+              currentBallotsPathElements.unshift(this.ballotTree!.generateProof(0).pathElements);
 
               // Since the command is invalid, we use a zero vote weight
               currentVoteWeights.unshift(this.ballots[0].votes[0]);
@@ -799,7 +803,7 @@ export class Poll implements IPoll {
               );
               voteTree.insert(this.ballots[0].votes[0]);
               // get the path elements for this empty vote weight leaf
-              currentVoteWeightsPathElements.unshift(voteTree.genProof(0).pathElements);
+              currentVoteWeightsPathElements.unshift(voteTree.generateProof(0).pathElements);
             }
           } else {
             throw e;
@@ -808,10 +812,10 @@ export class Poll implements IPoll {
       } else {
         // Since we don't have a command at that position, use a blank state leaf
         currentStateLeaves.unshift(this.pollStateLeaves[0].copy());
-        currentStateLeavesPathElements.unshift(this.pollStateTree!.genProof(0).pathElements);
+        currentStateLeavesPathElements.unshift(this.pollStateTree!.generateProof(0).pathElements);
         // since the command is invliad we use the blank ballot
         currentBallots.unshift(this.ballots[0].copy());
-        currentBallotsPathElements.unshift(this.ballotTree!.genProof(0).pathElements);
+        currentBallotsPathElements.unshift(this.ballotTree!.generateProof(0).pathElements);
 
         // Since the command is invalid, we use a zero vote weight
         currentVoteWeights.unshift(this.ballots[0].votes[0]);
@@ -826,7 +830,7 @@ export class Poll implements IPoll {
         voteTree.insert(this.ballots[0].votes[0]);
 
         // get the path elements for this empty vote weight leaf
-        currentVoteWeightsPathElements.unshift(voteTree.genProof(0).pathElements);
+        currentVoteWeightsPathElements.unshift(voteTree.generateProof(0).pathElements);
       }
     }
 
@@ -1158,7 +1162,7 @@ export class Poll implements IPoll {
     const sbSalt = this.sbSalts[this.currentMessageBatchIndex];
     const sbCommitment = hash3([stateRoot, ballotRoot, sbSalt]);
 
-    const ballotSubrootProof = this.ballotTree?.genSubrootProof(batchStartIndex, batchStartIndex + batchSize);
+    const ballotSubrootProof = this.ballotTree?.generateSubrootProof(batchStartIndex, batchStartIndex + batchSize);
 
     const votes = ballots.map((x) => x.votes);
 

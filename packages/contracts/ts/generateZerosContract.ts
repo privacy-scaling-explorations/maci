@@ -4,7 +4,7 @@ import assert from "assert";
 import fs from "fs";
 import path from "path";
 
-interface IGetZerosContractArgs {
+interface IGenerateZerosContractArgs {
   name: string;
   zeroVal: bigint;
   hashLength: number;
@@ -14,7 +14,7 @@ interface IGetZerosContractArgs {
   subDepth: number;
 }
 
-export const genZerosContract = async ({
+export const generateZerosContract = async ({
   name,
   zeroVal,
   hashLength,
@@ -22,7 +22,7 @@ export const genZerosContract = async ({
   comment,
   useSha256,
   subDepth,
-}: IGetZerosContractArgs): Promise<string> => {
+}: IGenerateZerosContractArgs): Promise<string> => {
   assert(hashLength === 2 || hashLength === 5);
 
   const template = await fs.promises

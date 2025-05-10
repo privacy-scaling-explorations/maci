@@ -6,7 +6,7 @@ import assert from "assert";
 import fs from "fs";
 import path from "path";
 
-import type { Action, IGenMaciStateFromContractArgs, IIpfsMessage } from "./types";
+import type { Action, IGenerateMaciStateFromContractArgs, IIpfsMessage } from "./types";
 
 import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "../typechain-types";
 
@@ -38,7 +38,7 @@ export const generateMaciStateFromContract = async ({
   sleepAmount,
   ipfsMessageBackupFiles = [],
   logsOutputPath,
-}: IGenMaciStateFromContractArgs): Promise<MaciState> => {
+}: IGenerateMaciStateFromContractArgs): Promise<MaciState> => {
   // ensure the pollId is valid
   assert(pollId >= 0);
 

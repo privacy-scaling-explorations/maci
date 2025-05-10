@@ -94,7 +94,7 @@ const getTestVoteValues = (
  * @param presetVotes - the preset votes if any
  * @returns an array of UserCommand objects
  */
-export const genTestUserCommands = (
+export const generateTestUserCommands = (
   numUsers: number,
   numVotesPerUser: number,
   bribers?: IBriber[],
@@ -138,23 +138,23 @@ export const expectTally = (
   expectedTotalSpentVoiceCredits: number,
   tallyFile: ITallyData,
 ): void => {
-  const genTally = Array(maxMessages).fill("0");
-  const genPerVOSpentVoiceCredits = Array(maxMessages).fill("0");
+  const tally = Array(maxMessages).fill("0");
+  const perVOSpentVoiceCredits = Array(maxMessages).fill("0");
 
   expectedTally.forEach((voteWeight, voteOption) => {
     if (voteWeight !== 0) {
-      genTally[voteOption] = voteWeight.toString();
+      tally[voteOption] = voteWeight.toString();
     }
   });
 
   expectedPerVoteOptionSpentVoiceCredits.forEach((spentCredit, index) => {
     if (spentCredit !== 0) {
-      genPerVOSpentVoiceCredits[index] = spentCredit.toString();
+      perVOSpentVoiceCredits[index] = spentCredit.toString();
     }
   });
 
-  expect(tallyFile.results.tally).to.deep.equal(genTally);
-  expect(tallyFile.perVoteOptionSpentVoiceCredits?.tally).to.deep.equal(genPerVOSpentVoiceCredits);
+  expect(tallyFile.results.tally).to.deep.equal(tally);
+  expect(tallyFile.perVoteOptionSpentVoiceCredits?.tally).to.deep.equal(perVOSpentVoiceCredits);
   expect(tallyFile.totalSpentVoiceCredits.spent).to.eq(expectedTotalSpentVoiceCredits.toString());
 };
 
