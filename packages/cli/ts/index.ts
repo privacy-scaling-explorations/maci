@@ -863,6 +863,12 @@ program
         signer,
       });
 
+      const modeNames = {
+        [EMode.QV]: "Quadratic Voting",
+        [EMode.NON_QV]: "Non-Quadratic Voting",
+        [EMode.FULL]: "Full Credits Voting",
+      };
+
       logGreen({
         quiet: true,
         text: success(
@@ -872,7 +878,7 @@ program
             `End time: ${new Date(Number(details.endDate) * 1000).toString()}`,
             `Number of signups ${details.totalSignups}`,
             `State tree merged: ${details.isMerged}`,
-            `Mode: ${details.mode === 0n ? "Quadratic Voting" : "Non-Quadratic Voting"}`,
+            `Mode: ${modeNames[details.mode as EMode]}`,
           ].join("\n"),
         ),
       });

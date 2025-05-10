@@ -251,7 +251,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
         _resultCommitment,
         _perVoteOptionSpentVoiceCreditsHash
       );
-    } else if (mode == Mode.NON_QV) {
+    } else if (mode == Mode.NON_QV || mode == Mode.FULL) {
       isValid = verifyNonQvSpentVoiceCredits(_totalSpent, _totalSpentSalt, _resultCommitment);
     }
   }
@@ -359,7 +359,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
       tally[2] = _perVoteOptionSpentVoiceCreditsHash;
 
       isValid = hash3(tally) == tallyCommitment;
-    } else if (mode == Mode.NON_QV) {
+    } else if (mode == Mode.NON_QV || mode == Mode.FULL) {
       uint256[2] memory tally;
       tally[0] = hashLeftRight(computedRoot, _tallyResultSalt);
       tally[1] = _spentVoiceCreditsHash;

@@ -1095,19 +1095,19 @@ export class Poll implements IPoll {
 
       // for each possible vote option we loop and calculate
       for (let j = 0; j < this.maxVoteOptions; j += 1) {
-        const v = this.ballots[i].votes[j];
+        const votes = this.ballots[i].votes[j];
 
-        this.tallyResult[j] += v;
+        this.tallyResult[j] += votes;
 
         if (this.mode === EMode.QV) {
           // the per vote option spent voice credits will be the sum of the squares of the votes
-          this.perVoteOptionSpentVoiceCredits[j] += v * v;
+          this.perVoteOptionSpentVoiceCredits[j] += votes * votes;
 
           // the total spent voice credits will be the sum of the squares of the votes
-          this.totalSpentVoiceCredits += v * v;
+          this.totalSpentVoiceCredits += votes * votes;
         } else {
           // the total spent voice credits will be the sum of the votes
-          this.totalSpentVoiceCredits += v;
+          this.totalSpentVoiceCredits += votes;
         }
       }
     }
@@ -1227,8 +1227,8 @@ export class Poll implements IPoll {
       }
 
       for (let j = 0; j < this.tallyResult.length; j += 1) {
-        const v = BigInt(`${this.ballots[i].votes[j]}`);
-        subtotal += mode === EMode.QV ? v * v : v;
+        const vote = BigInt(`${this.ballots[i].votes[j]}`);
+        subtotal += mode === EMode.QV ? vote * vote : vote;
       }
     }
 
@@ -1258,8 +1258,8 @@ export class Poll implements IPoll {
       }
 
       for (let j = 0; j < this.tallyResult.length; j += 1) {
-        const v = this.ballots[i].votes[j];
-        leaves[j] += mode === EMode.QV ? v * v : v;
+        const vote = this.ballots[i].votes[j];
+        leaves[j] += mode === EMode.QV ? vote * vote : vote;
       }
     }
 
