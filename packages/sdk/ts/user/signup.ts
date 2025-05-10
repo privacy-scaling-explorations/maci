@@ -6,8 +6,6 @@ import type { IIsRegisteredUser, ISignupArgs, ISignupData, IRegisteredUserArgs, 
 
 import { contractExists } from "../utils/contracts";
 
-import { parseSignupEvents } from "./utils";
-
 /**
  * Checks if user is registered with a given public key and get its data
  * @param IRegisteredArgs - The arguments for the check register command
@@ -17,24 +15,28 @@ export const getSignedupUserData = async ({
   maciAddress,
   maciPublicKey,
   signer,
-  startBlock,
 }: IRegisteredUserArgs): Promise<IIsRegisteredUser> => {
   const maciContract = MACIFactory.connect(maciAddress, signer);
   const publicKey = PublicKey.deserialize(maciPublicKey);
-  const startBlockNumber = startBlock || 0;
-  const currentBlock = await signer.provider!.getBlockNumber();
 
-  const { stateIndex } = await parseSignupEvents({
-    maciContract,
-    startBlock: startBlockNumber,
-    currentBlock,
-    publicKey,
-  });
+  try {
+    const stateIndex = await maciContract.getStateIndex(publicKey.hash());
 
-  return {
-    isRegistered: stateIndex !== undefined,
-    stateIndex,
-  };
+    return {
+      isRegistered: stateIndex !== 0n, // 0 index is reserved for deleted leaves
+      stateIndex: String(stateIndex),
+    };
+  } catch (error) {
+    // Check if this is a "UserNotSignedUp" maci contract error
+    if (error instanceof Error && error.message.includes("UserNotSignedUp()")) {
+      return {
+        isRegistered: false,
+        stateIndex: undefined,
+      };
+    }
+    // If it's a different error, rethrow it
+    throw error;
+  }
 };
 
 /**
