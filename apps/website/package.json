@@ -42,7 +42,7 @@
     "@docusaurus/tsconfig": "^3.7.0",
     "@docusaurus/types": "^3.7.0",
     "@types/node": "^22.15.17",
-    "@types/react": "^19.1.2",
+    "@types/react": "^19.1.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },
