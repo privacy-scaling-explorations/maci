@@ -142,7 +142,7 @@ importers:
         version: 3.0.8(ethers@6.13.7)(hardhat@2.24.0(ts-node@10.9.2(@types/node@22.15.8)(typescript@5.8.3))(typescript@5.8.3))
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
-        version: 5.0.0(aa33526725cde305bfd86a077c270f2c)
+        version: 5.0.0(f7y3mprj5vqdqsezqftcv7gi4a)
       '@zerodev/ecdsa-validator':
         specifier: 5.4.9
         version: 5.4.9(@zerodev/sdk@5.4.34(viem@2.29.1(typescript@5.8.3)(zod@3.24.2)))(viem@2.29.1(typescript@5.8.3)(zod@3.24.2))
@@ -263,7 +263,7 @@ importers:
         version: 11.0.20(@nestjs/common@11.1.0(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.0.20)(@nestjs/websockets@11.1.0)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/mongoose':
         specifier: ^11.0.3
-        version: 11.0.3(@nestjs/common@11.1.0(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.0.20)(mongoose@8.14.0(socks@2.8.4))(rxjs@7.8.2)
+        version: 11.0.3(@nestjs/common@11.1.0(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.0.20)(mongoose@8.14.2(socks@2.8.4))(rxjs@7.8.2)
       '@nestjs/platform-express':
         specifier: ^11.0.20
         version: 11.0.20(@nestjs/common@11.1.0(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.0.20)
@@ -287,7 +287,7 @@ importers:
         version: 3.0.8(ethers@6.13.7)(hardhat@2.24.0(ts-node@10.9.2(@types/node@22.15.8)(typescript@5.8.3))(typescript@5.8.3))
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
-        version: 5.0.0(aa33526725cde305bfd86a077c270f2c)
+        version: 5.0.0(f7y3mprj5vqdqsezqftcv7gi4a)
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
@@ -316,8 +316,8 @@ importers:
         specifier: ^4.17.21
         version: 4.17.21
       mongoose:
-        specifier: ^8.14.0
-        version: 8.14.0(socks@2.8.4)
+        specifier: ^8.14.2
+        version: 8.14.2(socks@2.8.4)
       multiformats:
         specifier: ^13.3.2
         version: 13.3.2
@@ -555,7 +555,7 @@ importers:
         version: link:../sdk
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
-        version: 5.0.0(aa33526725cde305bfd86a077c270f2c)
+        version: 5.0.0(f7y3mprj5vqdqsezqftcv7gi4a)
       commander:
         specifier: ^13.1.0
         version: 13.1.0
@@ -631,7 +631,7 @@ importers:
         version: 3.0.8(ethers@6.13.7)(hardhat@2.24.0(ts-node@10.9.2(@types/node@22.15.8)(typescript@5.8.3))(typescript@5.8.3))
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
-        version: 5.0.0(aa33526725cde305bfd86a077c270f2c)
+        version: 5.0.0(f7y3mprj5vqdqsezqftcv7gi4a)
       '@nomicfoundation/hardhat-verify':
         specifier: ^2.0.13
         version: 2.0.13(hardhat@2.24.0(ts-node@10.9.2(@types/node@22.15.8)(typescript@5.8.3))(typescript@5.8.3))
@@ -924,7 +924,7 @@ importers:
         version: link:../sdk
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^5.0.0
-        version: 5.0.0(aa33526725cde305bfd86a077c270f2c)
+        version: 5.0.0(f7y3mprj5vqdqsezqftcv7gi4a)
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.20
@@ -10186,8 +10186,8 @@ packages:
       socks:
         optional: true
 
-  mongoose@8.14.0:
-    resolution: {integrity: sha512-IxDxIUu42apE7oEknJK535xkQ6Gd7GKx/gNrNHY+vP4+ucVU2TOCWjVVW14Vc79y9DEEElzHDlTOuVNM8glUFA==}
+  mongoose@8.14.2:
+    resolution: {integrity: sha512-LPLZiN6M8ap4GlXmaaG7yrHIkK45dSO3NZ0qgERJl2CfcL5eP7MA9umn4zGhKiWkMLbnHM4jhebIYbUhvuwWvQ==}
     engines: {node: '>=16.20.1'}
 
   mortice@3.0.6:
@@ -16500,7 +16500,7 @@ snapshots:
       '@slorber/remark-comment': 1.0.0
       escape-html: 1.0.3
       estree-util-value-to-estree: 3.3.3
-      file-loader: 6.2.0(webpack@5.99.7)
+      file-loader: 6.2.0(webpack@5.99.0)
       fs-extra: 11.3.0
       image-size: 1.2.1
       mdast-util-mdx: 3.0.0
@@ -18978,11 +18978,11 @@ snapshots:
       class-transformer: 0.5.1
       class-validator: 0.14.2
 
-  '@nestjs/mongoose@11.0.3(@nestjs/common@11.1.0(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.0.20)(mongoose@8.14.0(socks@2.8.4))(rxjs@7.8.2)':
+  '@nestjs/mongoose@11.0.3(@nestjs/common@11.1.0(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.0.20)(mongoose@8.14.2(socks@2.8.4))(rxjs@7.8.2)':
     dependencies:
       '@nestjs/common': 11.1.0(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core': 11.0.20(@nestjs/common@11.1.0(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.0.20)(@nestjs/websockets@11.1.0)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      mongoose: 8.14.0(socks@2.8.4)
+      mongoose: 8.14.2(socks@2.8.4)
       rxjs: 7.8.2
 
   '@nestjs/platform-express@11.0.20(@nestjs/common@11.1.0(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.0.20)':
@@ -19249,7 +19249,7 @@ snapshots:
       ethereumjs-util: 7.1.5
       hardhat: 2.24.0(ts-node@10.9.2(@types/node@22.15.8)(typescript@5.8.3))(typescript@5.8.3)
 
-  '@nomicfoundation/hardhat-toolbox@5.0.0(aa33526725cde305bfd86a077c270f2c)':
+  '@nomicfoundation/hardhat-toolbox@5.0.0(f7y3mprj5vqdqsezqftcv7gi4a)':
     dependencies:
       '@nomicfoundation/hardhat-chai-matchers': 2.0.8(@nomicfoundation/hardhat-ethers@3.0.8(ethers@6.13.7)(hardhat@2.24.0(ts-node@10.9.2(@types/node@22.15.8)(typescript@5.8.3))(typescript@5.8.3)))(chai@4.5.0)(ethers@6.13.7)(hardhat@2.24.0(ts-node@10.9.2(@types/node@22.15.8)(typescript@5.8.3))(typescript@5.8.3))
       '@nomicfoundation/hardhat-ethers': 3.0.8(ethers@6.13.7)(hardhat@2.24.0(ts-node@10.9.2(@types/node@22.15.8)(typescript@5.8.3))(typescript@5.8.3))
@@ -24014,6 +24014,12 @@ snapshots:
     dependencies:
       flat-cache: 3.2.0
 
+  file-loader@6.2.0(webpack@5.99.0):
+    dependencies:
+      loader-utils: 2.0.4
+      schema-utils: 3.3.0
+      webpack: 5.99.0
+
   file-loader@6.2.0(webpack@5.99.7):
     dependencies:
       loader-utils: 2.0.4
@@ -27925,7 +27931,7 @@ snapshots:
     optionalDependencies:
       socks: 2.8.4
 
-  mongoose@8.14.0(socks@2.8.4):
+  mongoose@8.14.2(socks@2.8.4):
     dependencies:
       bson: 6.10.3
       kareem: 2.6.3
@@ -31662,7 +31668,7 @@ snapshots:
       schema-utils: 3.3.0
       webpack: 5.99.7
     optionalDependencies:
-      file-loader: 6.2.0(webpack@5.99.7)
+      file-loader: 6.2.0(webpack@5.99.0)
 
   urlpattern-polyfill@10.0.0: {}
 
