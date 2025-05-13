@@ -9,7 +9,6 @@ import path from "path";
 
 import type { TAbi } from "./types";
 import type { AASigner } from "../../ts/types";
-import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import type { ConfigurableTaskDefinition, HardhatRuntimeEnvironment, TaskArguments } from "hardhat/types";
 
 import { error, info, success, warning, logGreen, logMagenta, logRed, logYellow } from "../../ts/logger";
@@ -109,7 +108,7 @@ export class Deployment {
   async start(catolog: string, { incremental, verify }: IDeployParams): Promise<IDeployStep[]> {
     const deployer = await this.getDeployer();
     const deployerAddress = await deployer.getAddress();
-    const startBalance = await deployer.provider.getBalance(deployer);
+    const startBalance = await deployer.provider!.getBalance(deployer);
 
     logMagenta({ text: `Deployer address: ${deployerAddress}` });
     logMagenta({ text: `Deployer start balance: ${Number(startBalance / 10n ** 12n) / 1e6}` });
@@ -198,7 +197,7 @@ export class Deployment {
   async finish(startBalance: bigint, isSuccess: boolean): Promise<void> {
     const deployer = await this.getDeployer();
     const { gasPrice } = this.hre!.network.config;
-    const endBalance = await deployer.provider.getBalance(deployer);
+    const endBalance = await deployer.provider!.getBalance(deployer);
 
     logMagenta({ text: "======================================================================" });
     logMagenta({ text: `Deployer end balance: ${Number(endBalance / 10n ** 12n) / 1e6}` });
@@ -221,14 +220,14 @@ export class Deployment {
   /**
    * Get deployer (first signer) from hardhat runtime environment
    *
-   * @returns {Promise<HardhatEthersSigner>} - signer
+   * @returns {Promise<Signer>} - signer
    */
-  async getDeployer(): Promise<HardhatEthersSigner> {
+  async getDeployer(): Promise<Signer> {
     this.checkHre();
 
     const [deployer] = await this.hre!.ethers.getSigners();
 
-    return deployer;
+    return deployer as unknown as Signer;
   }
 
   /**

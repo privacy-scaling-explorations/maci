@@ -90,7 +90,7 @@ export const getDefaultSigner = async (): Promise<Signer> => {
 
   const [signer] = await ethers.getSigners();
 
-  return signer;
+  return signer as unknown as Signer;
 };
 
 /**
@@ -111,7 +111,7 @@ export const getDefaultNetwork = async (): Promise<Network | undefined> => {
 export const getSigners = async (): Promise<Signer[]> => {
   const { ethers } = await import("hardhat");
 
-  return ethers.getSigners();
+  return ethers.getSigners() as unknown as Promise<Signer[]>;
 };
 
 /**

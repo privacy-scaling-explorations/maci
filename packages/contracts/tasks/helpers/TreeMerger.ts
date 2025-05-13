@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import type { ITreeMergeParams } from "./types";
 import type { Poll } from "../../typechain-types";
-import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import type { Signer } from "ethers";
 
 import { info, logGreen, logMagenta, success } from "../../ts/logger";
 
@@ -18,7 +18,7 @@ export class TreeMerger {
   /**
    * Ethers signer
    */
-  private deployer: HardhatEthersSigner;
+  private deployer: Signer;
 
   /**
    * Initialize class properties
@@ -37,8 +37,8 @@ export class TreeMerger {
     // check if it's time to merge the message AQ
     const deadline = await this.pollContract.endDate();
 
-    const blockNum = await this.deployer.provider.getBlockNumber();
-    const block = await this.deployer.provider.getBlock(blockNum);
+    const blockNumber = await this.deployer.provider!.getBlockNumber();
+    const block = await this.deployer.provider!.getBlock(blockNumber);
     const now = Number(block?.timestamp);
 
     if (now < deadline) {

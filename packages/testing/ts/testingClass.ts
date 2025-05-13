@@ -17,6 +17,7 @@ import {
 import hardhat from "hardhat";
 
 import type { ITestingClassPaths, IContractsData } from "./types";
+import type { Signer } from "ethers";
 
 import {
   TALLY_PROCESSING_STATE_TREE_DEPTH,
@@ -121,7 +122,7 @@ export class TestingClass {
       return;
     }
 
-    const [signer] = await hardhat.ethers.getSigners();
+    const [signer] = (await hardhat.ethers.getSigners()) as unknown as Signer[];
     const coordinatorKeypair = new Keypair();
     const user = new Keypair();
 
@@ -227,7 +228,7 @@ export class TestingClass {
     });
 
     const maciState = await generateMaciStateFromContract({
-      provider: signer.provider,
+      provider: signer.provider!,
       address: maciAddresses.maciContractAddress,
       coordinatorKeypair,
       pollId: 0n,

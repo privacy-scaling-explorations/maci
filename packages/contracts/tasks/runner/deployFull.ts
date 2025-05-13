@@ -21,7 +21,7 @@ task("deploy-full", "Deploy environment")
     deployment.setHre(hre);
 
     const deployer = await deployment.getDeployer();
-    const startBalance = await deployer.provider.getBalance(deployer);
+    const startBalance = await deployer.provider!.getBalance(deployer);
     let success = false;
 
     try {

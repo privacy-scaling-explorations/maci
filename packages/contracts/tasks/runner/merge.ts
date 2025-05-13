@@ -39,7 +39,7 @@ task("merge", "Merge signups")
       deployer,
       pollContract,
     });
-    const startBalance = await deployer.provider.getBalance(deployer);
+    const startBalance = await deployer.provider!.getBalance(deployer);
 
     logMagenta({ text: info(`Start balance: ${Number(startBalance / 10n ** 12n) / 1e6}`) });
 
@@ -47,7 +47,7 @@ task("merge", "Merge signups")
 
     await treeMerger.mergeSignups();
 
-    const endBalance = await deployer.provider.getBalance(deployer);
+    const endBalance = await deployer.provider!.getBalance(deployer);
 
     logMagenta({ text: info(`End balance: ${Number(endBalance / 10n ** 12n) / 1e6}`) });
     logMagenta({ text: info(`Merge expenses: ${Number((startBalance - endBalance) / 10n ** 12n) / 1e6}`) });

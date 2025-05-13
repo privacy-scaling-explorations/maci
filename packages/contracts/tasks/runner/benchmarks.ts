@@ -26,7 +26,7 @@ task("benchmark", "Run benchmarks").setAction(async (_, hre) => {
   await deployment.runSteps(pollSteps, 0);
 
   try {
-    const startBalance = await deployer.provider.getBalance(deployer);
+    const startBalance = await deployer.provider!.getBalance(deployer);
     const maxBatchSize = 100;
 
     logMagenta({ text: "======================================================================" });
@@ -45,7 +45,7 @@ task("benchmark", "Run benchmarks").setAction(async (_, hre) => {
     const { publishBatch } = await import("../helpers/benchmarks");
     await publishBatch(deployment, message, keypair, maxBatchSize);
 
-    const endBalance = await deployer.provider.getBalance(deployer);
+    const endBalance = await deployer.provider!.getBalance(deployer);
     logMagenta({ text: `Ending balance: ${Number(endBalance / 10n ** 12n) / 1e6}\n` });
     logMagenta({ text: "======================================================================" });
   } catch (err) {

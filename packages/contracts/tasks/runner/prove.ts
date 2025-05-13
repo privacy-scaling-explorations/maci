@@ -73,7 +73,7 @@ task("prove", "Command to generate proofs")
       const signer = await deployment.getDeployer();
       const { network } = hre;
 
-      const startBalance = await signer.provider.getBalance(signer);
+      const startBalance = await signer.provider!.getBalance(signer);
 
       logMagenta({ text: info(`Start balance: ${Number(startBalance / 10n ** 12n) / 1e6}`) });
 
@@ -183,7 +183,7 @@ task("prove", "Command to generate proofs")
         .generateTallyProofs(network.name, network.config.chainId?.toString())
         .then(({ proofs }) => proofs);
 
-      const endBalance = await signer.provider.getBalance(signer);
+      const endBalance = await signer.provider!.getBalance(signer);
 
       logMagenta({ text: info(`End balance: ${Number(endBalance / 10n ** 12n) / 1e6}`) });
       logMagenta({ text: info(`Prove expenses: ${Number((startBalance - endBalance) / 10n ** 12n) / 1e6}`) });

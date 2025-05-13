@@ -2,7 +2,6 @@ import type { AASigner, Proof } from "../../ts/types";
 import type { MACI, MessageProcessor, Poll, Tally, Verifier, VerifyingKeysRegistry } from "../../typechain-types";
 import type { EMode, Poll as PollWrapper } from "@maci-protocol/core";
 import type { Keypair, PrivateKey } from "@maci-protocol/domainobjs";
-import type { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import type {
   BaseContract,
   BigNumberish,
@@ -725,7 +724,7 @@ export interface ITreeMergeParams {
   /**
    * Ethers signer
    */
-  deployer: HardhatEthersSigner;
+  deployer: Signer;
 
   /**
    * Poll contract
