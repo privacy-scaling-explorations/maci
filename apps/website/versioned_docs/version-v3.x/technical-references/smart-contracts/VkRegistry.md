@@ -18,7 +18,7 @@ The VerifyingKeysRegistry is a contract that holds the verifying keys for the zk
 
 Each circuit will have a signature which is its compile-time constants represented as a uint256.
 
-Please note that each Verifying Key should be set with the corresponding mode. Available modes are quadratic voting and non quadratic voting.
+Please note that each Verifying Key should be set with the corresponding mode. Available modes are quadratic, non quadratic and full credits voting.
 
 The contract owner can set them using the `setVerifyingKeysBatch` function:
 

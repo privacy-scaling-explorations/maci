@@ -34,7 +34,7 @@ This contract should be deployed alongside a `Poll`, with the the constructor ac
 - `vkRegistry` - The address of the vkRegistry contract
 - `poll` - The address of the poll contract
 - `messageProcessor` - The address of the messageProcessor contract
-- `mode` - The mode of the tally contract - depending on this, the commitments will be processed differently, and it must equal the Poll mode (quadratic vs non quadratic voting)
+- `mode` - The mode of the tally contract - depending on this, the commitments will be processed differently, and it must equal the Poll mode (quadratic vs non quadratic vs full credits voting)
 
 Users can use the verification functions to verify the Tally results. These are as follows:
 

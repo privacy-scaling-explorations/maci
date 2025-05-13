@@ -130,6 +130,7 @@ export const extractVerifyingKeyToFile = async ({
   processMessagesZkeyPathQv,
   tallyVotesZkeyPathQv,
   processMessagesZkeyPathNonQv,
+  processMessagesZkeyPathFull,
   pollJoinedZkeyPath,
   pollJoiningZkeyPath,
   tallyVotesZkeyPathNonQv,
@@ -142,6 +143,7 @@ export const extractVerifyingKeyToFile = async ({
     tallyVerifyingKeyNonQv,
     pollJoiningVerifyingKey,
     pollJoinedVerifyingKey,
+    processVerifyingKeyFull,
   ] = await Promise.all([
     extractVerifyingKey(processMessagesZkeyPathQv),
     extractVerifyingKey(tallyVotesZkeyPathQv),
@@ -149,6 +151,7 @@ export const extractVerifyingKeyToFile = async ({
     extractVerifyingKey(tallyVotesZkeyPathNonQv),
     extractVerifyingKey(pollJoiningZkeyPath),
     extractVerifyingKey(pollJoinedZkeyPath),
+    extractVerifyingKey(processMessagesZkeyPathFull),
   ]);
 
   await fs.promises.writeFile(
@@ -160,6 +163,7 @@ export const extractVerifyingKeyToFile = async ({
       tallyVerifyingKeyNonQv,
       pollJoiningVerifyingKey,
       pollJoinedVerifyingKey,
+      processVerifyingKeyFull,
     }),
   );
 };

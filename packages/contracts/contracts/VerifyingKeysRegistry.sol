@@ -53,7 +53,7 @@ contract VerifyingKeysRegistry is Ownable, DomainObjs, SnarkCommon, IVerifyingKe
 
   /// @notice Check if the process verifying key is set
   /// @param _signature The signature
-  /// @param _mode QV or Non-QV
+  /// @param _mode QV, Non-QV, Full
   /// @return isSet whether the verifying key is set
   function isProcessVerifyingKeySet(uint256 _signature, Mode _mode) public view returns (bool isSet) {
     isSet = processVerifyingKeysSet[_mode][_signature];
@@ -61,7 +61,7 @@ contract VerifyingKeysRegistry is Ownable, DomainObjs, SnarkCommon, IVerifyingKe
 
   /// @notice Check if the tally verifying key is set
   /// @param _signature The signature
-  /// @param _mode QV or Non-QV
+  /// @param _mode QV, Non-QV, Full
   /// @return isSet whether the verifying key is set
   function isTallyVerifyingKeySet(uint256 _signature, Mode _mode) public view returns (bool isSet) {
     isSet = tallyVerifyingKeysSet[_mode][_signature];
@@ -141,7 +141,7 @@ contract VerifyingKeysRegistry is Ownable, DomainObjs, SnarkCommon, IVerifyingKe
   /// @param _intStateTreeDepth The intermediate state tree depth
   /// @param _voteOptionTreeDepth The vote option tree depth
   /// @param _messageBatchSize The message batch size
-  /// @param _mode QV or Non-QV
+  /// @param _mode QV, Non-QV, Full
   /// @param _processVerifyingKey The process verifying key
   /// @param _tallyVerifyingKey The tally verifying key
   function setVerifyingKeys(
@@ -161,7 +161,7 @@ contract VerifyingKeysRegistry is Ownable, DomainObjs, SnarkCommon, IVerifyingKe
   /// @param _stateTreeDepth The state tree depth
   /// @param _voteOptionTreeDepth The vote option tree depth
   /// @param _messageBatchSize The message batch size
-  /// @param _mode QV or Non-QV
+  /// @param _mode QV, Non-QV, Full
   /// @param _processVerifyingKey The process verifying key
   function setProcessVerifyingKey(
     uint256 _stateTreeDepth,
@@ -204,7 +204,7 @@ contract VerifyingKeysRegistry is Ownable, DomainObjs, SnarkCommon, IVerifyingKe
   /// @param _stateTreeDepth The state tree depth
   /// @param _intStateTreeDepth The intermediate state tree depth
   /// @param _voteOptionTreeDepth The vote option tree depth
-  /// @param _mode QV or Non-QV
+  /// @param _mode QV, Non-QV, Full
   /// @param _tallyVerifyingKey The tally verifying key
   function setTallyVerifyingKey(
     uint256 _stateTreeDepth,
@@ -313,7 +313,7 @@ contract VerifyingKeysRegistry is Ownable, DomainObjs, SnarkCommon, IVerifyingKe
   /// @param _stateTreeDepth The state tree depth
   /// @param _voteOptionTreeDepth The vote option tree depth
   /// @param _messageBatchSize The message batch size
-  /// @param _mode QV or Non-QV
+  /// @param _mode QV, Non-QV, Full
   /// @return isSet whether the verifying key is set
   function hasProcessVerifyingKey(
     uint256 _stateTreeDepth,
@@ -327,7 +327,7 @@ contract VerifyingKeysRegistry is Ownable, DomainObjs, SnarkCommon, IVerifyingKe
 
   /// @notice Get the process verifying key by signature
   /// @param _signature The signature
-  /// @param _mode QV or Non-QV
+  /// @param _mode QV, Non-QV, Full
   /// @return verifyingKey The verifying key
   function getProcessVerifyingKeyBySignature(
     uint256 _signature,
@@ -356,7 +356,7 @@ contract VerifyingKeysRegistry is Ownable, DomainObjs, SnarkCommon, IVerifyingKe
   /// @param _stateTreeDepth The state tree depth
   /// @param _intStateTreeDepth The intermediate state tree depth
   /// @param _voteOptionTreeDepth The vote option tree depth
-  /// @param _mode QV or Non-QV
+  /// @param _mode QV, Non-QV, Full
   /// @return isSet whether the verifying key is set
   function hasTallyVerifyingKey(
     uint256 _stateTreeDepth,
@@ -371,7 +371,7 @@ contract VerifyingKeysRegistry is Ownable, DomainObjs, SnarkCommon, IVerifyingKe
 
   /// @notice Get the tally verifying key by signature
   /// @param _signature The signature
-  /// @param _mode QV or Non-QV
+  /// @param _mode QV, Non-QV, Full
   /// @return verifyingKey The verifying key
   function getTallyVerifyingKeyBySignature(
     uint256 _signature,

@@ -69,7 +69,7 @@ import { clean, getBackupFilenames, relayTestMessages } from "../utils";
     30 signups (31 ballots), 21 messages
     30 signups, 30 invalid and 1 valid messages
  */
-describe("e2e tests with full spent voting", function test() {
+describe("e2e tests with full credits voting", function test() {
   const useWasm = isArm();
   this.timeout(900000);
 

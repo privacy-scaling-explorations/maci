@@ -18,7 +18,7 @@ interface IVerifyingKeysRegistry {
     uint256 voteOptionTreeDepth;
     /// @param messageBatchSize The message batch size
     uint8 messageBatchSize;
-    /// @param modes Array of QV or Non-QV modes (must have the same length as process and tally keys)
+    /// @param modes Array of QV, Non-QV or Full modes (must have the same length as process and tally keys)
     DomainObjs.Mode[] modes;
     /// @param pollJoiningVerifyingKey The poll joining verifying key
     SnarkCommon.VerifyingKey pollJoiningVerifyingKey;
@@ -34,7 +34,7 @@ interface IVerifyingKeysRegistry {
   /// @param _stateTreeDepth The state tree depth
   /// @param _intStateTreeDepth The intermediate state tree depth
   /// @param _voteOptionTreeDepth The vote option tree depth
-  /// @param _mode QV or Non-QV
+  /// @param _mode QV, Non-QV, Full
   /// @return The verifying key
   function getTallyVerifyingKey(
     uint256 _stateTreeDepth,
@@ -47,7 +47,7 @@ interface IVerifyingKeysRegistry {
   /// @param _stateTreeDepth The state tree depth
   /// @param _voteOptionTreeDepth The vote option tree depth
   /// @param _messageBatchSize The message batch size
-  /// @param _mode QV or Non-QV
+  /// @param _mode QV, Non-QV, Full
   /// @return The verifying key
   function getProcessVerifyingKey(
     uint256 _stateTreeDepth,

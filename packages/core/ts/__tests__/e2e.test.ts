@@ -683,6 +683,87 @@ describe("MaciState/Poll e2e", function test() {
     });
   });
 
+  describe("Process and tally with full credits voting", () => {
+    let maciState: MaciState;
+    let pollId: bigint;
+    let poll: Poll;
+    let stateTree: IncrementalQuinTree;
+    let stateIndex: number;
+
+    const voteOptionIndex = 0n;
+    const userKeypair = new Keypair();
+
+    before(() => {
+      maciState = new MaciState(STATE_TREE_DEPTH);
+      stateTree = new IncrementalQuinTree(STATE_TREE_DEPTH, blankStateLeafHash, STATE_TREE_ARITY, hash5);
+
+      pollId = maciState.deployPoll(
+        BigInt(Math.floor(Date.now() / 1000) + duration),
+        treeDepths,
+        messageBatchSize,
+        coordinatorKeypair,
+        maxVoteOptions,
+        EMode.FULL,
+      );
+
+      poll = maciState.polls.get(pollId)!;
+
+      maciState.signUp(userKeypair.publicKey);
+      stateTree.insert(PAD_KEY_HASH);
+      stateTree.insert(userKeypair.publicKey.hash());
+
+      poll.updatePoll(BigInt(maciState.publicKeys.length));
+
+      const { privateKey } = userKeypair;
+      const { privateKey: pollPrivateKey, publicKey: pollPublicKey } = new Keypair();
+
+      const pollNullifier = poseidon([BigInt(privateKey.raw.toString())]);
+
+      stateIndex = poll.joinPoll(pollNullifier, pollPublicKey, voiceCreditBalance);
+
+      const command = new VoteCommand(
+        BigInt(stateIndex),
+        pollPublicKey,
+        voteOptionIndex,
+        voiceCreditBalance,
+        1n,
+        BigInt(pollId),
+      );
+
+      const signature = command.sign(pollPrivateKey);
+
+      const ecdhKeypair = new Keypair();
+      const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
+      const message = command.encrypt(signature, sharedKey);
+
+      poll.publishMessage(message, ecdhKeypair.publicKey);
+    });
+
+    it("Process a batch of messages (though only 1 message is in the batch)", () => {
+      poll.processMessages(pollId);
+
+      // Check the ballot
+      expect(poll.ballots[1].votes[Number(voteOptionIndex)].toString()).to.eq(voiceCreditBalance.toString());
+      // Check the state leaf in the poll
+      expect(poll.pollStateLeaves[1].voiceCreditBalance.toString()).to.eq("0");
+    });
+
+    it("Tally ballots", () => {
+      const initialTotal = calculateTotal(poll.tallyResult);
+      expect(initialTotal.toString()).to.eq("0");
+
+      expect(poll.hasUntalliedBallots()).to.eq(true);
+
+      poll.tallyVotes();
+
+      const finalTotal = calculateTotal(poll.tallyResult);
+      expect(finalTotal.toString()).to.eq(voiceCreditBalance.toString());
+
+      // check that the totalSpentVoiceCredits is correct
+      expect(poll.totalSpentVoiceCredits.toString()).to.eq(voiceCreditBalance.toString());
+    });
+  });
+
   describe("Sanity checks", () => {
     let testHarness: TestHarness;
     let poll: Poll;

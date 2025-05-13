@@ -118,7 +118,7 @@ export class ProofGeneratorService {
         throw new Error(ErrorCodes.PRIVATE_KEY_MISMATCH.toString());
       }
 
-      // There are only QV and Non-QV modes
+      // There are only QV and Non-QV modes available for tally circuit
       const tally = this.fileService.getZkeyFilePaths(
         process.env.COORDINATOR_TALLY_ZKEY_NAME!,
         mode === EMode.QV ? mode : EMode.NON_QV,
