@@ -40,7 +40,7 @@ task("submitOnChain", "Command to prove the result of a poll on-chain")
     const signer = await deployment.getDeployer();
     const { network } = hre;
 
-    const startBalance = await signer.provider.getBalance(signer);
+    const startBalance = await signer.provider!.getBalance(signer);
 
     logMagenta({ text: info(`Start balance: ${Number(startBalance / 10n ** 12n) / 1e6}`) });
 
@@ -112,7 +112,7 @@ task("submitOnChain", "Command to prove the result of a poll on-chain")
 
     await prover.submitResults(tallyData, Number.parseInt(voteOptions.toString(), 10));
 
-    const endBalance = await signer.provider.getBalance(signer);
+    const endBalance = await signer.provider!.getBalance(signer);
 
     logMagenta({ text: info(`End balance: ${Number(endBalance / 10n ** 12n) / 1e6}`) });
     logMagenta({ text: info(`Prove expenses: ${Number((startBalance - endBalance) / 10n ** 12n) / 1e6}`) });
