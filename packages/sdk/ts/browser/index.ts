@@ -5,6 +5,7 @@ export * from "../tally";
 export * from "../trees";
 export * from "../vote";
 export * from "../maciKeys";
+export * from "../subgraph";
 export { getSignedupUserData, signup, hasUserSignedUp } from "../user/signup";
 export {
   getJoinedUserData,

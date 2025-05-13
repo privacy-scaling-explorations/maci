@@ -1,2 +1,2 @@
-export { generateSignUpTree, generateSignUpTreeWithEndKey } from "./stateTree";
+export { generateSignUpTree, generateSignUpTreeWithEndKey, generateSignUpTreeFromKeys } from "./stateTree";
 export type { IGenerateSignUpTreeArgs, IGenerateSignUpTree, IGenerateSignUpTreeWithEndKeyArgs } from "./types";
