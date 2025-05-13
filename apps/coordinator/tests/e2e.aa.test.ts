@@ -48,8 +48,8 @@ describe("E2E Account Abstraction Tests", () => {
           chain: ESupportedNetworks.OPTIMISM_SEPOLIA,
           config: {
             ...testPollDeploymentConfig,
-            startDate: Math.floor(Date.now() / 1000) + 100,
-            endDate: Math.floor(Date.now() / 1000) + 200,
+            startDate: Math.floor(Date.now() / 1000) + 50,
+            endDate: Math.floor(Date.now() / 1000) + 85,
           },
         });
 
@@ -62,15 +62,11 @@ describe("E2E Account Abstraction Tests", () => {
   describe("merge", () => {
     test("should return true when there are no errors", async () => {
       // wait until we can complete a poll
-      await sleep(600);
-      const { sessionKeyAddress: sessionKey } = await sessionKeyService.generateSessionKey();
-      const generatedApproval = await generateApproval(sessionKey);
+      await sleep(40000);
 
       const merged = await proofService.merge({
         maciContractAddress: maciContract,
         pollId,
-        sessionKeyAddress: sessionKey,
-        approval: generatedApproval,
         chain: ESupportedNetworks.OPTIMISM_SEPOLIA,
       });
 
@@ -78,16 +74,11 @@ describe("E2E Account Abstraction Tests", () => {
     });
 
     test("should throw when given an invalid pollId", async () => {
-      const { sessionKeyAddress: sessionKey } = await sessionKeyService.generateSessionKey();
-      const generatedApproval = await generateApproval(sessionKey);
-
       const invalidPollId = 50000;
       await expect(
         proofService.merge({
           maciContractAddress: maciContract,
           pollId: invalidPollId,
-          sessionKeyAddress: sessionKey,
-          approval: generatedApproval,
           chain: ESupportedNetworks.OPTIMISM_SEPOLIA,
         }),
       ).rejects.toThrow(`MACI contract doesn't have any deployed poll ${invalidPollId}`);

@@ -24,7 +24,7 @@ import { FileModule } from "../ts/file/file.module";
 import { IGetPublicKeyData } from "../ts/file/types";
 import { ProofModule } from "../ts/proof/proof.module";
 import { IGenerateArgs, IGenerateData, IMergeArgs, ISubmitProofsArgs } from "../ts/proof/types";
-import { generateApproval, getKernelAccount } from "../ts/sessionKeys/__tests__/utils";
+import { getKernelAccount } from "../ts/sessionKeys/__tests__/utils";
 import { SessionKeysModule } from "../ts/sessionKeys/sessionKeys.module";
 import { IGenerateSessionKeyReturn } from "../ts/sessionKeys/types";
 import { IDeploySubgraphArgs } from "../ts/subgraph/types";
@@ -57,7 +57,6 @@ describe("E2E Deployment Tests", () => {
   let signer: Signer;
   let encryptedHeader: string;
   let sessionKeyAddress: Hex;
-  let approval: string;
 
   let app: INestApplication;
   let socket: Socket;
@@ -66,7 +65,7 @@ describe("E2E Deployment Tests", () => {
   let maciAddress: Hex;
   let pollId: bigint;
 
-  const pollDuration = 600;
+  const pollDuration = 60;
 
   // set up coordinator address
   beforeAll(async () => {
@@ -139,7 +138,6 @@ describe("E2E Deployment Tests", () => {
 
     // save them for next tests
     sessionKeyAddress = body.sessionKeyAddress;
-    approval = await generateApproval(sessionKeyAddress);
     const sessionKeyAccount = await getKernelAccount(sessionKeyAddress);
     await rechargeGasIfNeeded(sessionKeyAccount.address, "0.03", "0.03");
   });
@@ -161,8 +159,6 @@ describe("E2E Deployment Tests", () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        approval,
-        sessionKeyAddress,
         chain: CHAIN,
         config,
       } as IDeployMaciArgs),
@@ -276,8 +272,6 @@ describe("E2E Deployment Tests", () => {
       body: JSON.stringify({
         maciContractAddress: maciAddress,
         pollId: Number(pollId),
-        approval,
-        sessionKeyAddress,
         chain: CHAIN,
       } as IMergeArgs),
     });
@@ -305,8 +299,6 @@ describe("E2E Deployment Tests", () => {
         startBlock: Number(blockNumber) - 100,
         endBlock: Number(blockNumber) + 100,
         blocksPerBatch: 20,
-        approval,
-        sessionKeyAddress,
         chain: CHAIN,
       } as IGenerateArgs),
     });
@@ -331,8 +323,6 @@ describe("E2E Deployment Tests", () => {
       body: JSON.stringify({
         pollId: Number(pollId),
         maciContractAddress: maciAddress,
-        approval,
-        sessionKeyAddress,
         chain: CHAIN,
       } as ISubmitProofsArgs),
     });
