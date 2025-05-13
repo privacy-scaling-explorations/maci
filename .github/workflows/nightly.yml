@@ -47,8 +47,8 @@ jobs:
 
       - name: Run hardhat fork
         run: |
-          cp ./deploy-config-example.json ./deploy-config.json
           cd packages/contracts
+          cp ./deploy-config-example.json ./deploy-config.json
           pnpm run hardhat &
 
       - name: Download rapidsnark (1c137)
