@@ -131,3 +131,16 @@ export const generateSignUpTreeWithEndKey = async ({
     publicKeys,
   };
 };
+
+/**
+ * Generate a sign up tree from the public keys
+ * @param publicKeys - the public keys to generate the sign up tree from
+ * @returns the sign up tree
+ */
+export const generateSignUpTreeFromKeys = (publicKeys: PublicKey[]): LeanIMT => {
+  const signUpTree = new LeanIMT(hashLeanIMT);
+  publicKeys.forEach((key) => {
+    signUpTree.insert(key.hash());
+  });
+  return signUpTree;
+};

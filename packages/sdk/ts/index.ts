@@ -10,6 +10,7 @@ export * from "./utils";
 export * from "./user";
 export * from "./deploy";
 export * from "./maciKeys";
+export * from "./subgraph";
 export {
   EMode,
   EContracts,

@@ -1,5 +1,5 @@
 {
   "network": "optimism-sepolia",
-  "maciContractAddress": "0xbE6e250bf8B5F689c65Cc79667589A9EBF6Fe8E3",
-  "maciContractStartBlock": 13160483
+  "maciContractAddress": "0x406CAe994Ea166B0010bEeCa6ec88D325Ec0EBE5",
+  "maciContractStartBlock": 27662188
 }

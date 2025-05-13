@@ -1,4 +1,4 @@
-type MACI @entity(immutable: true) {
+type MACI @entity(immutable: false) {
   id: Bytes! # address
   stateTreeDepth: BigInt! # uint8
   updatedAt: BigInt!
@@ -27,7 +27,7 @@ type Account @entity(immutable: true) {
   owner: User!
 }
 
-type Poll @entity(immutable: true) {
+type Poll @entity(immutable: false) {
   id: Bytes! # poll address
   pollId: BigInt! # uint256
   startDate: BigInt! # uint256
@@ -63,7 +63,7 @@ type Vote @entity(immutable: true) {
   poll: Poll!
 }
 
-type ChainHash @entity(immutable: true) {
+type ChainHash @entity(immutable: false) {
   id: ID! # chain hash
   timestamp: BigInt!
 
