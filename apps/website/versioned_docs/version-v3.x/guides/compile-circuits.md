@@ -77,24 +77,24 @@ Remember that if on a ARM64 chip, you will not be able to compile the c++ witnes
 
 ### Configure circomkit
 
-Edit `circuits/circom/circuits` to include the circuits you would like to compile. This comes already configured with the two main coordinator circuits, in both qv and non qv variants, as well as the client side circuit. The parameters are designed to support testing use cases:
+Edit `circuits/circom/circuits` to include the circuits you would like to compile. This comes already configured with the main coordinator circuits, in qv, non qv and full credits variants, as well as the client side circuit. The parameters are designed to support testing use cases:
 
 ```json
 {
   "PollJoining_10_test": {
-    "file": "./anon/voter/PollJoining",
+    "file": "./voter/PollJoining",
     "template": "PollJoining",
     "params": [10],
     "pubs": ["nullifier", "stateRoot", "pollPublicKey", "pollId"]
   },
   "PollJoined_10_test": {
-    "file": "./anon/voter/PollJoined",
+    "file": "./voter/PollJoined",
     "template": "PollJoined",
     "params": [10],
     "pubs": ["stateRoot"]
   },
   "ProcessMessages_10-20-2_test": {
-    "file": "./core/qv/processMessages",
+    "file": "./coordinator/qv/processMessages",
     "template": "ProcessMessages",
     "params": [10, 20, 2],
     "pubs": [
@@ -110,7 +110,7 @@ Edit `circuits/circom/circuits` to include the circuits you would like to compil
     ]
   },
   "ProcessMessagesNonQv_10-20-2_test": {
-    "file": "./core/non-qv/processMessages",
+    "file": "./coordinator/non-qv/processMessages",
     "template": "ProcessMessagesNonQv",
     "params": [10, 20, 2],
     "pubs": [
@@ -125,14 +125,30 @@ Edit `circuits/circom/circuits` to include the circuits you would like to compil
       "voteOptions"
     ]
   },
+  "ProcessMessagesFull_10-20-2_test": {
+    "file": "./coordinator/non-qv/MessageProcessor",
+    "template": "MessageProcessorFull",
+    "params": [10, 20, 2],
+    "pubs": [
+      "totalSignups",
+      "index",
+      "batchEndIndex",
+      "currentSbCommitment",
+      "newSbCommitment",
+      "outputBatchHash",
+      "actualStateTreeDepth",
+      "coordinatorPublicKeyHash",
+      "voteOptions"
+    ]
+  },
   "TallyVotes_10-1-2_test": {
-    "file": "./core/qv/tallyVotes",
+    "file": "./coordinator/qv/tallyVotes",
     "template": "TallyVotes",
     "params": [10, 1, 2],
     "pubs": ["index", "totalSignups", "sbCommitment", "currentTallyCommitment", "newTallyCommitment"]
   },
   "TallyVotesNonQv_10-1-2_test": {
-    "file": "./core/non-qv/tallyVotes",
+    "file": "./coordinator/non-qv/tallyVotes",
     "template": "TallyVotesNonQv",
     "params": [10, 1, 2],
     "pubs": ["index", "totalSignups", "sbCommitment", "currentTallyCommitment", "newTallyCommitment"]

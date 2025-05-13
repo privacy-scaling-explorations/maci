@@ -709,6 +709,10 @@ program
     "the process messages non-qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .requiredOption(
+    "--process-messages-zkey-full <processMessagesZkeyPathFull>",
+    "the process messages full zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+  )
+  .requiredOption(
     "--tally-votes-zkey-non-qv <tallyVotesZkeyPathNonQv>",
     "the tally votes non-qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
@@ -717,6 +721,7 @@ program
     try {
       await extractVerifyingKeyToFile({
         processMessagesZkeyPathQv: args.processMessagesZkeyQv,
+        processMessagesZkeyPathFull: args.processMessagesZkeyFull,
         tallyVotesZkeyPathQv: args.tallyVotesZkeyQv,
         processMessagesZkeyPathNonQv: args.processMessagesZkeyNonQv,
         tallyVotesZkeyPathNonQv: args.tallyVotesZkeyNonQv,

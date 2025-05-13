@@ -330,7 +330,7 @@ export class Poll implements IPoll {
         throw new ProcessMessageError(ProcessMessageErrors.InsufficientVoiceCredits);
       }
 
-      // If there are some voice credits left for full spent mode, do nothing
+      // If there are some voice credits left for full credits mode, do nothing
       if (this.mode === EMode.FULL && voiceCreditsLeft > 0n) {
         throw new ProcessMessageError(ProcessMessageErrors.InvalidVoiceCredits);
       }
@@ -413,7 +413,7 @@ export class Poll implements IPoll {
       case EMode.NON_QV:
       case EMode.FULL: {
         // for non quadratic voting, we simply remove the exponentiation
-        // for full spent voting, it will be zero
+        // for full credits voting, it will be zero
         return stateLeaf.voiceCreditBalance + originalVoteWeight - newVoteWeight;
       }
 
@@ -1211,7 +1211,7 @@ export class Poll implements IPoll {
    * This is the hash of the total spent voice credits and a salt, computed as Poseidon([totalCredits, _salt]).
    * @param salt - The salt used in the hash function.
    * @param ballotsToCount - The number of ballots to count for the calculation.
-   * @param mode - Voting mode, default QV.
+   * @param mode - Voting mode, default is QV.
    * @returns Returns the hash of the total spent voice credits and a salt, computed as Poseidon([totalCredits, _salt]).
    */
   private generateSpentVoiceCreditSubtotalCommitment = (

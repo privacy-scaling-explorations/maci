@@ -260,6 +260,11 @@ export interface IExtractVerifyingKeyToFileArgs {
   processMessagesZkeyPathNonQv: string;
 
   /**
+   * File path for processMessagesFull zkey
+   */
+  processMessagesZkeyPathFull: string;
+
+  /**
    * File path for tallyVotes zkey
    */
   tallyVotesZkeyPathNonQv: string;

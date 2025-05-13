@@ -39,7 +39,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
   ///   hashLeftRight(merkle root of the no. of spent voice credits per vote option, salt2)
   /// )
   ///
-  /// Non-QV:
+  /// Non-QV or Full:
   /// hash2(
   ///   hashLeftRight(merkle root of current results, salt0)
   ///   hashLeftRight(number of spent voice credits, salt1),

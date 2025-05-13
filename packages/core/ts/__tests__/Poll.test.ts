@@ -39,8 +39,18 @@ describe("Poll", function test() {
       EMode.NON_QV,
     );
 
+    const fullPollId = maciState.deployPoll(
+      BigInt(Math.floor(Date.now() / 1000) + duration),
+      treeDepths,
+      messageBatchSize,
+      coordinatorKeypair,
+      maxVoteOptions,
+      EMode.FULL,
+    );
+
     const poll = maciState.polls.get(pollId)!;
     const nonQvPoll = maciState.polls.get(nonQvPollId)!;
+    const fullPoll = maciState.polls.get(fullPollId)!;
 
     const user1Keypair = new Keypair();
     // signup the user
@@ -49,6 +59,7 @@ describe("Poll", function test() {
     // copy the state from the MaciState ref
     poll.updatePoll(BigInt(maciState.publicKeys.length));
     nonQvPoll.updatePoll(BigInt(maciState.publicKeys.length));
+    fullPoll.updatePoll(BigInt(maciState.publicKeys.length));
 
     const { privateKey } = user1Keypair;
     const { privateKey: pollPrivateKey, publicKey: pollPublicKey } = new Keypair();
@@ -57,6 +68,7 @@ describe("Poll", function test() {
 
     const stateIndex = poll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance);
     const nonQvStateIndex = nonQvPoll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance);
+    const fullStateIndex = fullPoll.joinPoll(nullifier, pollPublicKey, voiceCreditBalance);
 
     it("should throw if a message has an invalid state index", () => {
       const command = new VoteCommand(
@@ -228,9 +240,34 @@ describe("Poll", function test() {
 
       const message = command.encrypt(signature, sharedKey);
       nonQvPoll.publishMessage(message, ecdhKeypair.publicKey);
+
       expect(() => {
         nonQvPoll.processMessage(message, ecdhKeypair.publicKey);
       }).to.throw("insufficient voice credits");
+    });
+
+    it("should throw when not all voice credits are spent (full)", () => {
+      const command = new VoteCommand(
+        // invalid state index as it is one more than the number of state leaves
+        BigInt(fullStateIndex),
+        pollPublicKey,
+        0n,
+        voiceCreditBalance - 1n,
+        1n,
+        BigInt(pollId),
+      );
+
+      const signature = command.sign(pollPrivateKey);
+
+      const ecdhKeypair = new Keypair();
+      const sharedKey = Keypair.generateEcdhSharedKey(ecdhKeypair.privateKey, coordinatorKeypair.publicKey);
+
+      const message = command.encrypt(signature, sharedKey);
+      fullPoll.publishMessage(message, ecdhKeypair.publicKey);
+
+      expect(() => {
+        fullPoll.processMessage(message, ecdhKeypair.publicKey);
+      }).to.throw("invalid voice credits");
     });
 
     it("should work when submitting a valid message (voteWeight === voiceCreditBalance and non qv)", () => {
@@ -542,6 +579,49 @@ describe("Poll", function test() {
       // spent voice credit is not vote weight * vote weight
       expect(spentVoiceCredits).to.eq(secondVoteWeight);
       expect(results[Number.parseInt(secondVoteOption.toString(), 10)]).to.eq(secondVoteWeight);
+    });
+
+    it("should generate the correct results (full)", () => {
+      // deploy a second poll
+      const thirdPollId = maciState.deployPoll(
+        BigInt(Math.floor(Date.now() / 1000) + duration),
+        treeDepths,
+        messageBatchSize,
+        coordinatorKeypair,
+        maxVoteOptions,
+        EMode.FULL,
+      );
+
+      const thirdPoll = maciState.polls.get(thirdPollId)!;
+      thirdPoll.updatePoll(BigInt(maciState.publicKeys.length));
+
+      const stateIndex2 = thirdPoll.joinPoll(nullifier2, pollPublicKey2, voiceCreditBalance);
+
+      const thirdCommand = new VoteCommand(
+        BigInt(stateIndex2),
+        pollPublicKey2,
+        1n,
+        voiceCreditBalance,
+        1n,
+        thirdPollId,
+      );
+
+      const secondSignature = thirdCommand.sign(pollPrivateKey2);
+
+      const secondEcdhKeypair = new Keypair();
+      const secondSharedKey = Keypair.generateEcdhSharedKey(secondEcdhKeypair.privateKey, coordinatorKeypair.publicKey);
+
+      const thirdMessage = thirdCommand.encrypt(secondSignature, secondSharedKey);
+      thirdPoll.publishMessage(thirdMessage, secondEcdhKeypair.publicKey);
+
+      thirdPoll.processAllMessages();
+      thirdPoll.tallyVotes();
+
+      const spentVoiceCredits = thirdPoll.totalSpentVoiceCredits;
+      const results = thirdPoll.tallyResult;
+      // spent voice credit is not vote weight * vote weight
+      expect(spentVoiceCredits).to.eq(voiceCreditBalance);
+      expect(results[1]).to.eq(voiceCreditBalance);
     });
 
     it("should throw when there are no more ballots to tally", () => {

@@ -57,7 +57,7 @@ describe("StateLeafAndBallotTransformerFull circuit", function test() {
     });
   });
 
-  it("should output new state leaf and ballot values if the command is valid (full spent voting)", async () => {
+  it("should output new state leaf and ballot values if the command is valid (full credits voting)", async () => {
     const circuitInputs = {
       totalSignups: maxSignups,
       voteOptions: maxVoteOptions,
@@ -92,7 +92,7 @@ describe("StateLeafAndBallotTransformerFull circuit", function test() {
     expect(isValid.toString()).to.be.eq("1");
   });
 
-  it("should output existing state leaf and ballot values if the command is invalid (full spent voting)", async () => {
+  it("should output existing state leaf and ballot values if the command is invalid (full credits voting)", async () => {
     const circuitInputs = {
       totalSignups: maxSignups,
       voteOptions: maxVoteOptions,
@@ -197,7 +197,7 @@ describe("StateLeafAndBallotTransformerFull circuit", function test() {
     expect(isValid.toString()).to.be.eq("0");
   });
 
-  it("should check state leaf and ballot transformers (full spent voting)", async () => {
+  it("should check state leaf and ballot transformers (full credits voting)", async () => {
     const max = BigInt(2 ** 50);
 
     await fc.assert(

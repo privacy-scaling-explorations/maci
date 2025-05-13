@@ -149,7 +149,7 @@ Polls require the following information:
 - `coordinatorPubKey`: the public key of the poll's coordinator
 - `verifier`: the address of the zk-SNARK verifier contract
 - `vkRegistry`: the address of the vk registry contract
-- `mode`: the mode of the poll, to set whether it supports quadratic voting or non quadratic voting
+- `mode`: the mode of the poll, to set whether it supports quadratic voting, non quadratic voting, full credits voting
 - `signUpPolicy`: the address of the sign up policy contract
 - `initialVoiceCreditProxy`: the address of the initial voice credit proxy contract
 - `relayers`: the addresses of the relayers for the poll (if offchain voting is enabled)

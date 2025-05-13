@@ -142,7 +142,7 @@ The VerifyingKeysRegistry hold the verifying keys used to verify the proofs, on 
 | **messageTreeDepth**              | Defines how many messages (votes) the system supports.                               |
 | **voteOptionTreeDepth**           | Defines how many vote options the system supports.                                   |
 | **messageBatchDepth**             | Defines how many messages in a batch can the circuit process.                        |
-| **zkeys**                         | Defines the path to the zkey files for QV and Non QV keys.                           |
+| **zkeys**                         | Defines the path to the zkey files for QV, Non QV and Full Credits keys.             |
 | **pollJoiningZkey**               | Defines the zkey to the poll joining circuit which allows to join polls for voting.  |
 | **pollJoinedZkey**                | Defines the zkey to the poll joined circuit which allows to prove you joined a poll. |
 

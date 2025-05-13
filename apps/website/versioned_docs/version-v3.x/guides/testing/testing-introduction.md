@@ -74,7 +74,7 @@ or download them. Please remember to not use these testing `.zkey` files in prod
 MACI has two main zk-SNARK circuits, `processMessages` and `tallyVotes`.
 
 :::info
-The `processMessages` and `tallyVotes` circuits are also provided in a non-quadratic voting (non-QV) version. Currently these new versions have not undergone a trusted setup ceremony.
+The `processMessages` and `tallyVotes` circuits are also provided in a non-quadratic voting (non-QV) and in a full credits voting (full) versions. Currently these new versions have not undergone a trusted setup ceremony.
 :::
 
 Each circuit is parameterised and there should be one
@@ -149,6 +149,12 @@ To run e2e tests with normal voting (not quadratic voting):
 
 ```bash
 pnpm run test:e2e-non-qv
+```
+
+To run e2e tests with full credits voting (full):
+
+```bash
+pnpm run test:e2e-full
 ```
 
 To run integration tests:
