@@ -21,6 +21,7 @@ export enum EDeploySteps {
  * Supported networks for deployment and task running
  */
 export enum ESupportedChains {
+  Mainnet = "mainnet",
   Sepolia = "sepolia",
   Optimism = "optimism",
   OptimismSepolia = "optimism_sepolia",
@@ -42,6 +43,7 @@ export enum ESupportedChains {
  * Supported network chain ids for deployment and task running
  */
 export enum EChainId {
+  Mainnet = 1,
   Hardhat = 31337,
   Optimism = 10,
   OptimismSepolia = 11155420,
@@ -78,7 +80,7 @@ export const getNetworkRpcUrls = (): Record<ESupportedChains, string> => {
   const GNOSIS_CHIADO_RPC_URL = process.env.GNOSIS_CHIADO_RPC_URL ?? "";
   const POLYGON_RPC_URL = process.env.POLYGON_RPC_URL ?? "";
   const POLYGON_AMOY_RPC_URL = process.env.POLYGON_AMOY_RPC_URL ?? "";
-
+  const MAINNET_RPC_URL = process.env.MAINNET_RPC_URL ?? "";
   return {
     [ESupportedChains.Sepolia]: SEPOLIA_RPC_URL,
     [ESupportedChains.Optimism]: OP_RPC_URL,
@@ -95,10 +97,12 @@ export const getNetworkRpcUrls = (): Record<ESupportedChains, string> => {
     [ESupportedChains.PolygonAmoy]: POLYGON_AMOY_RPC_URL,
     [ESupportedChains.Coverage]: "http://localhost:8555",
     [ESupportedChains.Hardhat]: "http://localhost:8545",
+    [ESupportedChains.Mainnet]: MAINNET_RPC_URL,
   };
 };
 
 export const getEtherscanApiKeys = (): Record<ESupportedChains, string | undefined> => ({
+  [ESupportedChains.Mainnet]: process.env.ETH_ETHERSCAN_API_KEY,
   [ESupportedChains.Sepolia]: process.env.ETH_ETHERSCAN_API_KEY,
   [ESupportedChains.Optimism]: process.env.OPTIMISM_ETHERSCAN_API_KEY,
   [ESupportedChains.OptimismSepolia]: process.env.OPTIMISM_ETHERSCAN_API_KEY,
