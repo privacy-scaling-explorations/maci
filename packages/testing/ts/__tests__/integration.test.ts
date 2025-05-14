@@ -241,7 +241,6 @@ describe("Integration tests", function test() {
         await joinPoll({
           maciAddress: contracts.maciContractAddress,
           privateKey: user.keypair.privateKey.serialize(),
-          stateIndex,
           pollId,
           pollJoiningZkey: "./zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey",
           useWasm: true,

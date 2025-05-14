@@ -185,7 +185,6 @@ describe("e2e tests", function test() {
       await joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
         privateKey: user.privateKey.serialize(),
-        stateIndex: 1n,
         pollId: 0n,
         pollJoiningZkey: testPollJoiningZkeyPath,
         useWasm: true,
@@ -302,7 +301,6 @@ describe("e2e tests", function test() {
         await joinPoll({
           maciAddress: maciAddresses.maciContractAddress,
           privateKey: users[i].privateKey.serialize(),
-          stateIndex: BigInt(i + 1),
           pollId: 0n,
           pollJoiningZkey: testPollJoiningZkeyPath,
           useWasm: true,
@@ -613,7 +611,6 @@ describe("e2e tests", function test() {
       await joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
         privateKey: users[0].privateKey.serialize(),
-        stateIndex: 1n,
         pollId: 0n,
         pollJoiningZkey: testPollJoiningZkeyPath,
         useWasm: true,
@@ -751,7 +748,6 @@ describe("e2e tests", function test() {
         await joinPoll({
           maciAddress: maciAddresses.maciContractAddress,
           privateKey: users[i].privateKey.serialize(),
-          stateIndex: BigInt(i + 1),
           pollId: 0n,
           pollJoiningZkey: testPollJoiningZkeyPath,
           useWasm: true,
@@ -863,7 +859,6 @@ describe("e2e tests", function test() {
         await joinPoll({
           maciAddress: maciAddresses.maciContractAddress,
           privateKey: users[i].privateKey.serialize(),
-          stateIndex: BigInt(i + 1),
           pollId: 0n,
           pollJoiningZkey: testPollJoiningZkeyPath,
           useWasm: true,
@@ -1019,7 +1014,6 @@ describe("e2e tests", function test() {
       await joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
         privateKey: users[0].privateKey.serialize(),
-        stateIndex: 1n,
         pollId: 0n,
         pollJoiningZkey: testPollJoiningZkeyPath,
         useWasm: true,
@@ -1063,7 +1057,6 @@ describe("e2e tests", function test() {
       await joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
         privateKey: users[1].privateKey.serialize(),
-        stateIndex: 2n,
         pollId: 0n,
         pollJoiningZkey: testPollJoiningZkeyPath,
         useWasm: true,
@@ -1159,7 +1152,6 @@ describe("e2e tests", function test() {
       await joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
         privateKey: users[3].privateKey.serialize(),
-        stateIndex: 4n,
         pollId: 1n,
         pollJoiningZkey: testPollJoiningZkeyPath,
         useWasm: true,
@@ -1174,7 +1166,6 @@ describe("e2e tests", function test() {
       await joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
         privateKey: users[4].privateKey.serialize(),
-        stateIndex: 5n,
         pollId: 1n,
         pollJoiningZkey: testPollJoiningZkeyPath,
         useWasm: true,
@@ -1350,7 +1341,6 @@ describe("e2e tests", function test() {
         await joinPoll({
           maciAddress: maciAddresses.maciContractAddress,
           privateKey: users[i].privateKey.serialize(),
-          stateIndex: BigInt(i + 1),
           pollId: 0n,
           pollJoiningZkey: testPollJoiningZkeyPath,
           useWasm: true,
@@ -1476,12 +1466,12 @@ describe("e2e tests", function test() {
     it("join the second and third polls", async () => {
       // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let pollId = 1; pollId <= 2; pollId += 1) {
+        // eslint-disable-next-line @typescript-eslint/prefer-for-of
         for (let i = 0; i < users.length; i += 1) {
           // eslint-disable-next-line no-await-in-loop
           await joinPoll({
             maciAddress: maciAddresses.maciContractAddress,
             privateKey: users[i].privateKey.serialize(),
-            stateIndex: BigInt(i + 1),
             pollId: BigInt(pollId),
             pollJoiningZkey: testPollJoiningZkeyPath,
             useWasm: true,
@@ -1768,7 +1758,6 @@ describe("e2e tests", function test() {
       await joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
         privateKey: user.privateKey.serialize(),
-        stateIndex: 1n,
         pollId: 0n,
         pollJoiningZkey: testPollJoiningZkeyPath,
         useWasm: true,

@@ -42,7 +42,6 @@ describe("joinPoll", function test() {
 
   const users = new Array(3).fill(undefined).map(() => new Keypair());
 
-  const mockStateIndex = 1n;
   const mockPollId = 9000n;
 
   this.timeout(900000);
@@ -131,7 +130,6 @@ describe("joinPoll", function test() {
     await joinPoll({
       maciAddress: maciAddresses.maciContractAddress,
       privateKey: users[0].privateKey.serialize(),
-      stateIndex: 1n,
       signer,
       pollId: 0n,
       pollJoiningZkey: testPollJoiningZkeyPath,
@@ -166,7 +164,6 @@ describe("joinPoll", function test() {
     await joinPollBrowser({
       maciAddress: maciAddresses.maciContractAddress,
       privateKey: users[1].privateKey.serialize(),
-      stateIndex: 2n,
       signer,
       pollId: 0n,
       pollJoiningZkey: zKey as unknown as string,
@@ -209,7 +206,6 @@ describe("joinPoll", function test() {
     await joinPollBrowser({
       maciAddress: maciAddresses.maciContractAddress,
       privateKey: users[2].privateKey.serialize(),
-      stateIndex: 3n,
       signer,
       pollId: 0n,
       inclusionProof,
@@ -236,7 +232,6 @@ describe("joinPoll", function test() {
       joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
         privateKey: users[0].privateKey.serialize(),
-        stateIndex: mockStateIndex,
         signer,
         pollId: mockPollId,
         pollJoiningZkey: testPollJoiningZkeyPath,
@@ -246,14 +241,13 @@ describe("joinPoll", function test() {
     ).eventually.rejectedWith("PollDoesNotExist(9000)");
   });
 
-  it("should throw error if state index is invalid", async () => {
+  it("should throw error if user did not sign up to maci and therefore state index is invalid", async () => {
     const keypair = new Keypair();
 
     await expect(
       joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
         privateKey: keypair.privateKey.serialize(),
-        stateIndex: -1n,
         signer,
         pollId: 0n,
         pollJoiningZkey: testPollJoiningZkeyPath,
@@ -268,7 +262,6 @@ describe("joinPoll", function test() {
       joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
         privateKey: users[0].privateKey.serialize(),
-        stateIndex: mockStateIndex,
         signer,
         pollId: -1n,
         pollJoiningZkey: testPollJoiningZkeyPath,

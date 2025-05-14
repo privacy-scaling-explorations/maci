@@ -223,7 +223,6 @@ describe("E2E Deployment Tests", () => {
       await joinPoll({
         maciAddress,
         privateKey: userPrivateKey,
-        stateIndex: 1n,
         pollId: BigInt(pollId),
         pollJoiningZkey: pollJoiningTestZkeyPath,
         useWasm: true,
