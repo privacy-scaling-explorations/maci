@@ -56,6 +56,7 @@ const config: HardhatUserConfig = {
   },
   defaultNetwork: "localhost",
   networks: {
+    mainnet: getCommonNetworkConfig(ESupportedChains.Mainnet, EChainId.Mainnet),
     sepolia: getCommonNetworkConfig(ESupportedChains.Sepolia, EChainId.Sepolia),
     optimism: getCommonNetworkConfig(ESupportedChains.Optimism, EChainId.Optimism),
     optimism_sepolia: getCommonNetworkConfig(ESupportedChains.OptimismSepolia, EChainId.OptimismSepolia),
@@ -122,6 +123,7 @@ const config: HardhatUserConfig = {
       [ESupportedChains.GnosisChiado]: ETHERSCAN_API_KEYS[ESupportedChains.GnosisChiado]!,
       [ESupportedChains.Polygon]: ETHERSCAN_API_KEYS[ESupportedChains.Polygon]!,
       [ESupportedChains.PolygonAmoy]: ETHERSCAN_API_KEYS[ESupportedChains.PolygonAmoy]!,
+      [ESupportedChains.Mainnet]: ETHERSCAN_API_KEYS[ESupportedChains.Mainnet]!,
     },
     customChains: [
       {

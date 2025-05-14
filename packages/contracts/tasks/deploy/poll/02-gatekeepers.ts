@@ -269,6 +269,7 @@ deployment.deployTask(EDeploySteps.PollPolicy, "Deploy Poll policies").then((tas
       ESupportedChains.Hardhat,
       ESupportedChains.Coverage,
       ESupportedChains.Sepolia,
+      ESupportedChains.Mainnet,
     ].includes(hre.network.name as ESupportedChains);
 
     if (!skipDeployGitcoinPolicy && isSupportedGitcoinPolicyNetwork) {
