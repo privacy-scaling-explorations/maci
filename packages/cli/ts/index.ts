@@ -430,7 +430,6 @@ program
   .command("joinPoll")
   .description("join the poll")
   .requiredOption("-k, --private-key <privateKey>", "the private key")
-  .option("-i, --state-index <stateIndex>", "the user's state index", BigInt)
   .option("-s, --sg-data <sgData>", "the signup policy data")
   .option("-v, --ivcp-data <ivcpData>", "the initial voice credit proxy data")
   .option(
@@ -469,7 +468,6 @@ program
       const data = await joinPoll({
         maciAddress,
         privateKey,
-        stateIndex: args.stateIndex,
         stateFile: args.stateFile,
         pollId: args.pollId,
         signer,

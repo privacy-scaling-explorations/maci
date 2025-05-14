@@ -188,7 +188,6 @@ describe("e2e tests with full credits voting", function test() {
       await joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
         privateKey: user.privateKey.serialize(),
-        stateIndex: 1n,
         pollId: 0n,
         pollJoiningZkey: testPollJoiningZkeyPath,
         useWasm: true,
@@ -265,7 +264,6 @@ describe("e2e tests with full credits voting", function test() {
       await joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
         privateKey: user.privateKey.serialize(),
-        stateIndex: 1n,
         pollId: 0n,
         pollJoiningZkey: testPollJoiningZkeyPath,
         useWasm: true,
@@ -356,7 +354,6 @@ describe("e2e tests with full credits voting", function test() {
       await joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
         privateKey: user.privateKey.serialize(),
-        stateIndex: 1n,
         pollId: 0n,
         pollJoiningZkey: testPollJoiningZkeyPath,
         useWasm: true,
@@ -446,7 +443,6 @@ describe("e2e tests with full credits voting", function test() {
       await joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
         privateKey: user.privateKey.serialize(),
-        stateIndex: 1n,
         pollId: 0n,
         pollJoiningZkey: testPollJoiningZkeyPath,
         useWasm: true,
@@ -569,7 +565,6 @@ describe("e2e tests with full credits voting", function test() {
         await joinPoll({
           maciAddress: maciAddresses.maciContractAddress,
           privateKey: users[i].privateKey.serialize(),
-          stateIndex: BigInt(i + 1),
           pollId: 0n,
           pollJoiningZkey: testPollJoiningZkeyPath,
           useWasm: true,
@@ -861,7 +856,6 @@ describe("e2e tests with full credits voting", function test() {
         await joinPoll({
           maciAddress: maciAddresses.maciContractAddress,
           privateKey: users[i].privateKey.serialize(),
-          stateIndex: BigInt(i + 1),
           pollId: 0n,
           pollJoiningZkey: testPollJoiningZkeyPath,
           useWasm: true,
@@ -944,7 +938,6 @@ describe("e2e tests with full credits voting", function test() {
         await joinPoll({
           maciAddress: maciAddresses.maciContractAddress,
           privateKey: users[i].privateKey.serialize(),
-          stateIndex: BigInt(i + 1),
           pollId: 0n,
           pollJoiningZkey: testPollJoiningZkeyPath,
           useWasm: true,

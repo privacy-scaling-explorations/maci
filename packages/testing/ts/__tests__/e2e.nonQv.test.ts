@@ -180,7 +180,6 @@ describe("e2e tests with non quadratic voting", function test() {
       await joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
         privateKey: user.privateKey.serialize(),
-        stateIndex: 1n,
         pollId: 0n,
         pollJoiningZkey: testPollJoiningZkeyPath,
         useWasm: true,
@@ -293,7 +292,6 @@ describe("e2e tests with non quadratic voting", function test() {
       await joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
         privateKey: user.privateKey.serialize(),
-        stateIndex: 1n,
         pollId: 0n,
         pollJoiningZkey: testPollJoiningZkeyPath,
         useWasm: true,
@@ -419,7 +417,6 @@ describe("e2e tests with non quadratic voting", function test() {
       await joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
         privateKey: user.privateKey.serialize(),
-        stateIndex: 1n,
         pollId: 0n,
         pollJoiningZkey: testPollJoiningZkeyPath,
         useWasm: true,
@@ -545,7 +542,6 @@ describe("e2e tests with non quadratic voting", function test() {
       await joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
         privateKey: user.privateKey.serialize(),
-        stateIndex: 1n,
         pollId: 0n,
         pollJoiningZkey: testPollJoiningZkeyPath,
         useWasm: true,
@@ -701,12 +697,12 @@ describe("e2e tests with non quadratic voting", function test() {
     });
 
     it("should join two users", async () => {
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let index = 0; index < users.length; index += 1) {
         // eslint-disable-next-line no-await-in-loop
         await joinPoll({
           maciAddress: maciAddresses.maciContractAddress,
           privateKey: users[index].privateKey.serialize(),
-          stateIndex: BigInt(index + 1),
           pollId: 0n,
           pollJoiningZkey: testPollJoiningZkeyPath,
           useWasm: true,

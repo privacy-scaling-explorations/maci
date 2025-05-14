@@ -180,7 +180,6 @@ describe("keyChange tests", function test() {
       await joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
         privateKey: user1Keypair.privateKey.serialize(),
-        stateIndex,
         pollId,
         pollJoiningZkey: testPollJoiningZkeyPath,
         useWasm: true,
@@ -344,7 +343,6 @@ describe("keyChange tests", function test() {
       await joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
         privateKey: user1Keypair.privateKey.serialize(),
-        stateIndex,
         pollId,
         pollJoiningZkey: testPollJoiningZkeyPath,
         useWasm: true,
@@ -494,7 +492,6 @@ describe("keyChange tests", function test() {
       await joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
         privateKey: user1Keypair.privateKey.serialize(),
-        stateIndex,
         pollId,
         pollJoiningZkey: testPollJoiningZkeyPath,
         useWasm: true,

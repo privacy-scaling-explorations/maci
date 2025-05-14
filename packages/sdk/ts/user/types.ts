@@ -291,12 +291,7 @@ export interface IJoinPollArgs {
   pollId: bigint;
 
   /**
-   * The index of the public key in the state tree
-   */
-  stateIndex?: bigint;
-
-  /**
-   * Path to the state file with MACI state
+   * Path to the state file with MACI state. Not available in the browser's SDK
    */
   stateFile?: string;
 

@@ -216,7 +216,6 @@ export class TestingClass {
       maciAddress: maciAddresses.maciContractAddress,
       pollId: 0n,
       privateKey: user.privateKey.serialize(),
-      stateIndex: 1n,
       pollJoiningZkey: this.pollJoiningZkeyPath,
       pollWasm: this.pollWasm,
       pollWitgen: this.pollWitgen,
