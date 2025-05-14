@@ -60,47 +60,53 @@ describe("FileService", () => {
   test("should return zkey filepaths for tally qv properly", () => {
     const service = new FileService();
 
-    const { zkey, wasm, witgen } = service.getZkeyFilePaths(process.env.COORDINATOR_TALLY_ZKEY_NAME!, EMode.QV);
+    const { zkey, wasm, witnessGenerator } = service.getZkeyFilePaths(
+      process.env.COORDINATOR_TALLY_ZKEY_NAME!,
+      EMode.QV,
+    );
 
     expect(zkey).toBeDefined();
     expect(wasm).toBeDefined();
-    expect(witgen).toBeDefined();
+    expect(witnessGenerator).toBeDefined();
   });
 
   test("should return zkey filepaths for tally non-qv properly", () => {
     const service = new FileService();
 
-    const { zkey, wasm, witgen } = service.getZkeyFilePaths(process.env.COORDINATOR_TALLY_ZKEY_NAME!, EMode.NON_QV);
+    const { zkey, wasm, witnessGenerator } = service.getZkeyFilePaths(
+      process.env.COORDINATOR_TALLY_ZKEY_NAME!,
+      EMode.NON_QV,
+    );
 
     expect(zkey).toBeDefined();
     expect(wasm).toBeDefined();
-    expect(witgen).toBeDefined();
+    expect(witnessGenerator).toBeDefined();
   });
 
   test("should return zkey filepaths for message process qv properly", () => {
     const service = new FileService();
 
-    const { zkey, wasm, witgen } = service.getZkeyFilePaths(
+    const { zkey, wasm, witnessGenerator } = service.getZkeyFilePaths(
       process.env.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME!,
       EMode.QV,
     );
 
     expect(zkey).toBeDefined();
     expect(wasm).toBeDefined();
-    expect(witgen).toBeDefined();
+    expect(witnessGenerator).toBeDefined();
   });
 
   test("should return zkey filepaths for message process non-qv properly", () => {
     const service = new FileService();
 
-    const { zkey, wasm, witgen } = service.getZkeyFilePaths(
+    const { zkey, wasm, witnessGenerator } = service.getZkeyFilePaths(
       process.env.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME!,
       EMode.NON_QV,
     );
 
     expect(zkey).toBeDefined();
     expect(wasm).toBeDefined();
-    expect(witgen).toBeDefined();
+    expect(witnessGenerator).toBeDefined();
   });
 
   test("should throw an error if there are no zkey filepaths", () => {
@@ -109,7 +115,7 @@ describe("FileService", () => {
     expect(() => service.getZkeyFilePaths("unknown", EMode.NON_QV)).toThrow(ErrorCodes.FILE_NOT_FOUND.toString());
   });
 
-  test("should throw an error if there are no wasm and witgen filepaths", () => {
+  test("should throw an error if there are no wasm and witnessGenerator filepaths", () => {
     const spyExistsSync = jest.spyOn(fs, "existsSync");
     spyExistsSync.mockReturnValueOnce(true).mockReturnValue(false);
 

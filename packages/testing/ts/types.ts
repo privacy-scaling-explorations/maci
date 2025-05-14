@@ -81,7 +81,7 @@ export interface IRelayTestMessagesArgs {
 }
 
 /**
- * Interface for the paths to the zkey files and the wasm and witgen files
+ * Interface for the paths to the zkey files and the wasm and witnessGenerator files
  */
 export interface ITestingClassPaths {
   /**
@@ -95,14 +95,14 @@ export interface ITestingClassPaths {
   pollJoinedZkeyPath: string;
 
   /**
-   * Path to the processMessages zkey file
+   * Path to the MessageProcessor zkey file
    */
-  processMessagesZkeyPath: string;
+  messageProcessorZkeyPath: string;
 
   /**
-   * Path to the tallyVotes zkey file
+   * Path to the VoteTally zkey file
    */
-  tallyVotesZkeyPath: string;
+  voteTallyZkeyPath: string;
 
   /**
    * Path to the poll wasm file
@@ -110,9 +110,9 @@ export interface ITestingClassPaths {
   pollWasm: string;
 
   /**
-   * Path to the poll witgen file
+   * Path to the poll witnessGenerator file
    */
-  pollWitgen: string;
+  pollWitnessGenerator: string;
 
   /**
    * Path to the rapidsnark file

@@ -7,7 +7,7 @@ include "./comparators.circom";
 include "../PoseidonHasher.circom";
 
 // @note taken from @zk-kit/circuits
-// if used directly in processMessages circom complains about duplicated
+// if used directly in MessageProcessor circom complains about duplicated
 // templates (Ark, Poseidon, etc.)
 // This circuit is designed to calculate the root of a binary Merkle
 // tree given a leaf, its depth, and the necessary sibling

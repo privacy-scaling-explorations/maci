@@ -10,26 +10,32 @@ export interface IGetAllVerifyingKeysArgs {
    * The address of the VerifyingKeysRegistry contract
    */
   verifyingKeysRegistryAddress: string;
+
   /**
    * The signer to use for the contract calls
    */
   signer: Signer;
+
   /**
    * The depth of the state tree
    */
   stateTreeDepth: number;
+
   /**
    * The depth of the vote option tree
    */
   voteOptionTreeDepth: number;
+
   /**
    * The batch size for the process messages
    */
   messageBatchSize: number;
+
   /**
    * The depth of the ballot tree
    */
   tallyProcessingStateTreeDepth: number;
+
   /**
    * The mode to use for the contract calls
    */
@@ -66,18 +72,21 @@ export interface IExtractAllVerifyingKeysArgs {
    * The path to the poll joining zkey
    */
   pollJoiningZkeyPath?: string;
+
   /**
    * The path to the poll joined zkey
    */
   pollJoinedZkeyPath?: string;
+
   /**
    * The path to the process messages zkey
    */
-  processMessagesZkeyPath?: string;
+  messageProcessorZkeyPath?: string;
+
   /**
    * The path to the tally votes zkey
    */
-  tallyVotesZkeyPath?: string;
+  voteTallyZkeyPath?: string;
 }
 
 /**
@@ -207,12 +216,12 @@ export interface ICheckVerifyingKeysArgs {
   /**
    * The path to the process messages zkey
    */
-  processMessagesZkeyPath: string;
+  messageProcessorZkeyPath: string;
 
   /**
    * The path to the tally votes zkey
    */
-  tallyVotesZkeyPath: string;
+  voteTallyZkeyPath: string;
 
   /**
    * A signer object
@@ -247,27 +256,27 @@ export interface IExtractVerifyingKeyToFileArgs {
   /**
    * File path for processMessagesQv zkey
    */
-  processMessagesZkeyPathQv: string;
+  messageProcessorZkeyPathQv: string;
 
   /**
    * File path for tallyVotesQv zkey
    */
-  tallyVotesZkeyPathQv: string;
+  voteTallyZkeyPathQv: string;
 
   /**
    * File path for processMessagesNonQv zkey
    */
-  processMessagesZkeyPathNonQv: string;
+  messageProcessorZkeyPathNonQv: string;
 
   /**
-   * File path for processMessagesFull zkey
+   * File path for MessageProcessor zkey
    */
-  processMessagesZkeyPathFull: string;
+  messageProcessorZkeyPathFull: string;
 
   /**
-   * File path for tallyVotes zkey
+   * File path for VoteTally zkey
    */
-  tallyVotesZkeyPathNonQv: string;
+  voteTallyZkeyPathNonQv: string;
 
   /**
    * Output file path of extracted verifying keys

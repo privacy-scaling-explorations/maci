@@ -5,7 +5,7 @@ export type {
   IVerifyArgs,
   IGenerateTallyCommitmentsArgs,
   ITallyCommitments,
-  ITallyVotesInputs,
+  IVoteTallyInputs,
   IGetResultPerOptionArgs,
   IGetResultsArgs,
 } from "./types";

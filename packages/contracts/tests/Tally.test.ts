@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { EMode, MaciState, Poll, IProcessMessagesCircuitInputs, ITallyCircuitInputs } from "@maci-protocol/core";
+import { EMode, MaciState, Poll, IProcessMessagesCircuitInputs, IVoteTallyCircuitInputs } from "@maci-protocol/core";
 import {
   generateTreeCommitment,
   generateTreeProof,
@@ -43,12 +43,12 @@ import {
 } from "./constants";
 import { timeTravel, deployTestContracts } from "./utils";
 
-describe("TallyVotes", () => {
+describe("VoteTally", () => {
   let signer: Signer;
   let maciContract: MACI;
   let pollContract: PollContract;
   let tallyContract: Tally;
-  let mpContract: MessageProcessor;
+  let messageProcessorContract: MessageProcessor;
   let verifierContract: Verifier;
   let verifyingKeysRegistryContract: VerifyingKeysRegistry;
   let signupPolicyContract: IBasePolicy;
@@ -105,7 +105,7 @@ describe("TallyVotes", () => {
 
     const pollContracts = await maciContract.getPoll(pollId);
     pollContract = PollFactory.connect(pollContracts.poll, signer);
-    mpContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
+    messageProcessorContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
     tallyContract = TallyFactory.connect(pollContracts.tally, signer);
 
     await signupPolicyContract.setTarget(pollContracts.poll).then((tx) => tx.wait());
@@ -171,7 +171,7 @@ describe("TallyVotes", () => {
   });
 
   describe("after messages processing", () => {
-    let tallyGeneratedInputs: ITallyCircuitInputs;
+    let tallyGeneratedInputs: IVoteTallyCircuitInputs;
 
     before(async () => {
       await pollContract.mergeState();
@@ -186,7 +186,7 @@ describe("TallyVotes", () => {
 
     it("tallyVotes() should update the tally commitment", async () => {
       // do the processing on the message processor contract
-      await mpContract.processMessages(BigInt(generatedInputs.newSbCommitment), [0, 0, 0, 0, 0, 0, 0, 0]);
+      await messageProcessorContract.processMessages(BigInt(generatedInputs.newSbCommitment), [0, 0, 0, 0, 0, 0, 0, 0]);
 
       await tallyContract.tallyVotes(BigInt(tallyGeneratedInputs.newTallyCommitment), [0, 0, 0, 0, 0, 0, 0, 0]);
 
@@ -269,7 +269,7 @@ describe("TallyVotes", () => {
 
       const pollContracts = await maciContract.getPoll(pollId);
       pollContract = PollFactory.connect(pollContracts.poll, signer);
-      mpContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
+      messageProcessorContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
       tallyContract = TallyFactory.connect(pollContracts.tally, signer);
 
       await pollPolicyContract.setTarget(pollContracts.poll).then((tx) => tx.wait());
@@ -351,7 +351,10 @@ describe("TallyVotes", () => {
 
       const processMessagesInputs = poll.processMessages(pollId);
 
-      await mpContract.processMessages(BigInt(processMessagesInputs.newSbCommitment), [0, 0, 0, 0, 0, 0, 0, 0]);
+      await messageProcessorContract.processMessages(
+        BigInt(processMessagesInputs.newSbCommitment),
+        [0, 0, 0, 0, 0, 0, 0, 0],
+      );
     });
 
     it("should not add tally results if there are no results", async () => {
@@ -388,7 +391,7 @@ describe("TallyVotes", () => {
     });
 
     it("should tally votes correctly", async () => {
-      let tallyGeneratedInputs: ITallyCircuitInputs;
+      let tallyGeneratedInputs: IVoteTallyCircuitInputs;
 
       while (poll.hasUntalliedBallots()) {
         tallyGeneratedInputs = poll.tallyVotes();
@@ -590,7 +593,7 @@ describe("TallyVotes", () => {
 
       const pollContracts = await maciContract.getPoll(pollId);
       pollContract = PollFactory.connect(pollContracts.poll, signer);
-      mpContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
+      messageProcessorContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
       tallyContract = TallyFactory.connect(pollContracts.tally, signer);
 
       await pollPolicyContract.setTarget(pollContracts.poll).then((tx) => tx.wait());
@@ -674,7 +677,10 @@ describe("TallyVotes", () => {
 
       const processMessagesInputs = poll.processMessages(pollId);
 
-      await mpContract.processMessages(BigInt(processMessagesInputs.newSbCommitment), [0, 0, 0, 0, 0, 0, 0, 0]);
+      await messageProcessorContract.processMessages(
+        BigInt(processMessagesInputs.newSbCommitment),
+        [0, 0, 0, 0, 0, 0, 0, 0],
+      );
     });
 
     it("should tally votes correctly", async () => {

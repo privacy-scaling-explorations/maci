@@ -9,7 +9,7 @@ sidebar_position: 3
 
 This circuit allows the coordinator to prove that they have correctly processed each message in reverse order, in a consecutive batch of 5 ^ messageBatchDepth messages to the respective state leaf within the state tree. Coordinators would use this circuit to prove correct execution at the end of each Poll.
 
-The [`processMessages`](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/coordinator/qv/processMessages.circom) circuit will try to decrypt the messages, and based on the content of the message, update within itself the trees, to generate a proof that the coordinator's off-chain processing was done correctly. In other words, the circuit takes a final state, an initial state, and the leaves (messages and user signups) - it processes these messages via the different state transitions to finally check that the expected state is correct.
+The [`MessageProcessorQv`](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/coordinator/qv/MessageProcessor.circom) circuit will try to decrypt the messages, and based on the content of the message, update within itself the trees, to generate a proof that the coordinator's off-chain processing was done correctly. In other words, the circuit takes a final state, an initial state, and the leaves (messages and user signups) - it processes these messages via the different state transitions to finally check that the expected state is correct.
 The pre-requisites for this circuit are:
 
 - the related Poll has ended
@@ -21,7 +21,7 @@ This circuit requires the coordinator's private key, hence a proof for this circ
 ![ProcessMessages](/img/circuits/processMessages_2_0.svg)
 
 :::info
-A version working with non quadratic voting (non-qv) is also [available](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/coordinator/non-qv/processMessages.circom). This version is called `processMessagesNonQV` and is to be used when the Poll is not using the quadratic voting feature. Note that by default MACI works with quadratic voting.
+A version working with non quadratic voting (non-qv) is also [available](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/coordinator/non-qv/MessageProcessor.circom). This version is called `MessageProcessorNonQV` and is to be used when the Poll is not using the quadratic voting feature. Note that by default MACI works with quadratic voting.
 :::
 
 :::info

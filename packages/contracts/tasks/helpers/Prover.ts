@@ -24,7 +24,7 @@ export class Prover {
   /**
    * MessageProcessor contract typechain wrapper
    */
-  private mpContract: MessageProcessor;
+  private messageProcessorContract: MessageProcessor;
 
   /**
    * MACI contract typechain wrapper
@@ -53,14 +53,14 @@ export class Prover {
    */
   constructor({
     pollContract,
-    mpContract,
+    messageProcessorContract,
     maciContract,
     verifyingKeysRegistryContract,
     verifierContract,
     tallyContract,
   }: IProverParams) {
     this.pollContract = pollContract;
-    this.mpContract = mpContract;
+    this.messageProcessorContract = messageProcessorContract;
     this.maciContract = maciContract;
     this.verifyingKeysRegistryContract = verifyingKeysRegistryContract;
     this.verifierContract = verifierContract;
@@ -78,7 +78,7 @@ export class Prover {
       treeDepths,
       messageBatchSize,
       totalSignupsAndMessages,
-      numBatchesProcessed,
+      totalBatchesProcessed,
       stateTreeDepth,
       coordinatorPublicKeyHash,
       mode,
@@ -88,17 +88,17 @@ export class Prover {
       this.pollContract.treeDepths(),
       this.pollContract.messageBatchSize().then(Number),
       this.pollContract.totalSignupsAndMessages(),
-      this.mpContract.numBatchesProcessed().then(Number),
+      this.messageProcessorContract.totalBatchesProcessed().then(Number),
       this.maciContract.stateTreeDepth().then(Number),
       this.pollContract.coordinatorPublicKeyHash(),
-      this.mpContract.mode(),
+      this.messageProcessorContract.mode(),
       this.pollContract.getBatchHashes().then((res) => [...res]),
       this.pollContract.chainHash(),
     ]);
 
     const numMessages = Number(totalSignupsAndMessages[1]);
     const totalMessageBatches = batchHashes.length;
-    let numberBatchesProcessed = numBatchesProcessed;
+    let numberBatchesProcessed = totalBatchesProcessed;
 
     const onChainProcessVerifyingKey = await this.verifyingKeysRegistryContract.getProcessVerifyingKey(
       stateTreeDepth,
@@ -154,7 +154,7 @@ export class Prover {
       if (numberBatchesProcessed === 0) {
         currentSbCommitmentOnChain = BigInt(await this.pollContract.currentSbCommitment());
       } else {
-        currentSbCommitmentOnChain = BigInt(await this.mpContract.sbCommitment());
+        currentSbCommitmentOnChain = BigInt(await this.messageProcessorContract.sbCommitment());
       }
 
       this.validateCommitment(circuitInputs.currentSbCommitment as BigNumberish, currentSbCommitmentOnChain);
@@ -165,7 +165,7 @@ export class Prover {
 
       const formattedProof = formatProofForVerifierContract(proof);
 
-      const publicInputsOnChain = await this.mpContract
+      const publicInputsOnChain = await this.messageProcessorContract
         .getPublicCircuitInputs(
           currentMessageBatchIndex,
           asHex(circuitInputs.newSbCommitment as BigNumberish),
@@ -195,7 +195,7 @@ export class Prover {
 
       try {
         // validate process messaging proof and store the new state and ballot root commitment
-        const receipt = await this.mpContract
+        const receipt = await this.messageProcessorContract
           .processMessages(asHex(circuitInputs.newSbCommitment as BigNumberish), formattedProof)
           .then((tx) => tx.wait());
 
@@ -207,7 +207,7 @@ export class Prover {
 
         // Wait for the node to catch up
 
-        numberBatchesProcessed = await this.mpContract.numBatchesProcessed().then(Number);
+        numberBatchesProcessed = await this.messageProcessorContract.totalBatchesProcessed().then(Number);
 
         logMagenta({ text: info(`Progress: ${numberBatchesProcessed} / ${totalMessageBatches}`) });
       } catch (err) {
@@ -267,7 +267,7 @@ export class Prover {
       const currentTallyCommitmentOnChain = await this.tallyContract.tallyCommitment();
       this.validateCommitment(circuitInputs.currentTallyCommitment as BigNumberish, currentTallyCommitmentOnChain);
 
-      const currentSbCommitmentOnChain = await this.mpContract.sbCommitment();
+      const currentSbCommitmentOnChain = await this.messageProcessorContract.sbCommitment();
       this.validateCommitment(circuitInputs.sbCommitment as BigNumberish, currentSbCommitmentOnChain);
 
       const publicInputsOnChain = await this.tallyContract.getPublicCircuitInputs(

@@ -37,7 +37,7 @@ describe("MessageProcessor", () => {
   let maciContract: MACI;
   let verifierContract: Verifier;
   let verifyingKeysRegistryContract: VerifyingKeysRegistry;
-  let mpContract: MessageProcessor;
+  let messageProcessorContract: MessageProcessor;
   let pollContract: PollContract;
   let signupPolicyContract: IBasePolicy;
   let initialVoiceCreditProxyContract: ConstantInitialVoiceCreditProxy;
@@ -91,7 +91,7 @@ describe("MessageProcessor", () => {
     pollId = (await maciContract.nextPollId()) - 1n;
 
     const pollContracts = await maciContract.getPoll(pollId);
-    mpContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
+    messageProcessorContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
     pollContract = PollFactory.connect(pollContracts.poll, signer);
     // deploy local poll
     const deployedPollId = maciState.deployPoll(
@@ -145,29 +145,32 @@ describe("MessageProcessor", () => {
   describe("processMessages()", () => {
     it("should fail if the voting period is not over", async () => {
       await expect(
-        mpContract.processMessages(BigInt(generatedInputs.newSbCommitment), [0, 0, 0, 0, 0, 0, 0, 0]),
+        messageProcessorContract.processMessages(BigInt(generatedInputs.newSbCommitment), [0, 0, 0, 0, 0, 0, 0, 0]),
       ).to.be.revertedWithCustomError(pollContract, "VotingPeriodNotOver");
     });
 
     it("should update the state and ballot root commitment", async () => {
       await timeTravel(signer.provider! as unknown as EthereumProvider, duration + 1);
       // Submit the proof
-      const tx = await mpContract.processMessages(BigInt(generatedInputs.newSbCommitment), [0, 0, 0, 0, 0, 0, 0, 0]);
+      const tx = await messageProcessorContract.processMessages(
+        BigInt(generatedInputs.newSbCommitment),
+        [0, 0, 0, 0, 0, 0, 0, 0],
+      );
 
       const receipt = await tx.wait();
       expect(receipt?.status).to.eq(1);
 
-      const processingComplete = await mpContract.processingComplete();
+      const processingComplete = await messageProcessorContract.processingComplete();
       expect(processingComplete).to.eq(true);
 
-      const onChainNewSbCommitment = await mpContract.sbCommitment();
+      const onChainNewSbCommitment = await messageProcessorContract.sbCommitment();
       expect(generatedInputs.newSbCommitment).to.eq(onChainNewSbCommitment.toString());
     });
 
     it("should fail if the messages have already been processed", async () => {
       await expect(
-        mpContract.processMessages(BigInt(generatedInputs.newSbCommitment), [0, 0, 0, 0, 0, 0, 0, 0]),
-      ).to.be.revertedWithCustomError(mpContract, "NoMoreMessages");
+        messageProcessorContract.processMessages(BigInt(generatedInputs.newSbCommitment), [0, 0, 0, 0, 0, 0, 0, 0]),
+      ).to.be.revertedWithCustomError(messageProcessorContract, "NoMoreMessages");
     });
   });
 });

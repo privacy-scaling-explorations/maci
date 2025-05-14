@@ -37,7 +37,7 @@ export const generateProcessVerifyingKeySignature = (
 
 /**
  * This function generates the signature of a Tally Verifying Key.
- * This can be used to check if a TallyVotes' circuit verifying key is registered
+ * This can be used to check if a VoteTally circuit verifying key is registered
  * in a smart contract that holds several verifying keys.
  * @param _stateTreeDepth - The depth of the state tree.
  * @param _intStateTreeDepth - The depth of the intermediate state tree.

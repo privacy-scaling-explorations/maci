@@ -179,9 +179,9 @@ export interface ITallyCommitments {
 }
 
 /**
- * Inputs for circuit TallyVotes
+ * Inputs for circuit VoteTally
  */
-export interface ITallyVotesInputs {
+export interface IVoteTallyInputs {
   stateRoot: bigint;
   ballotRoot: bigint;
   sbSalt: bigint;

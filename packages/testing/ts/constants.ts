@@ -53,42 +53,43 @@ export const testPollJoinedWitnessPath = "./zkeys/PollJoined_10_test/PollJoined_
 export const testPollJoinedWasmPath = "./zkeys/PollJoined_10_test/PollJoined_10_test_js/PollJoined_10_test.wasm";
 
 // Process messages QV paths
-export const testProcessMessageZkeyPath = "./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey";
+export const testProcessMessageZkeyPath =
+  "./zkeys/MessageProcessorQv_10-20-2_test/MessageProcessorQv_10-20-2_test.0.zkey";
 export const testProcessMessagesWitnessPath =
-  "./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_cpp/ProcessMessages_10-20-2_test";
+  "./zkeys/MessageProcessorQv_10-20-2_test/MessageProcessorQv_10-20-2_test_cpp/MessageProcessorQv_10-20-2_test";
 export const testProcessMessagesWitnessDatPath =
-  "./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_cpp/ProcessMessages_10-20-2_test.dat";
+  "./zkeys/MessageProcessorQv_10-20-2_test/MessageProcessorQv_10-20-2_test_cpp/MessageProcessorQv_10-20-2_test.dat";
 export const testProcessMessagesWasmPath =
-  "./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_js/ProcessMessages_10-20-2_test.wasm";
+  "./zkeys/MessageProcessorQv_10-20-2_test/MessageProcessorQv_10-20-2_test_js/MessageProcessorQv_10-20-2_test.wasm";
 
 // Process messages ceremony QV paths
-export const ceremonyProcessMessagesZkeyPath = "./zkeys/ProcessMessages_6-9-2-3/processMessages_6-9-2-3.zkey";
+export const ceremonyProcessMessagesZkeyPath = "./zkeys/MessageProcessorQv_6-9-2-3/processMessages_6-9-2-3.zkey";
 export const ceremonyProcessMessagesWitnessPath =
-  "./zkeys/ProcessMessages_14-9-2-3/ProcessMessages_14-9-2-3_cpp/ProcessMessages_14-9-2-3";
+  "./zkeys/MessageProcessorQv_14-9-2-3/MessageProcessorQv_14-9-2-3_cpp/MessageProcessorQv_14-9-2-3";
 export const ceremonyProcessMessagesDatPath =
-  "./zkeys/ProcessMessages_14-9-2-3/ProcessMessages_14-9-2-3_cpp/ProcessMessages_14-9-2-3.dat";
+  "./zkeys/MessageProcessorQv_14-9-2-3/MessageProcessorQv_14-9-2-3_cpp/MessageProcessorQv_14-9-2-3.dat";
 export const ceremonyProcessMessagesWasmPath =
-  "./zkeys/ProcessMessages_14-9-2-3/ProcessMessages_14-9-2-3_js/ProcessMessages_14-9-2-3.wasm";
+  "./zkeys/MessageProcessorQv_14-9-2-3/MessageProcessorQv_14-9-2-3_js/MessageProcessorQv_14-9-2-3.wasm";
 
 // Process messages Non-QV paths
 export const testProcessMessageNonQvZkeyPath =
-  "./zkeys/ProcessMessagesNonQv_10-20-2_test/ProcessMessagesNonQv_10-20-2_test.0.zkey";
+  "./zkeys/MessageProcessorNonQv_10-20-2_test/MessageProcessorNonQv_10-20-2_test.0.zkey";
 export const testProcessMessagesNonQvWitnessPath =
-  "./zkeys/ProcessMessagesNonQv_10-20-2_test/ProcessMessagesNonQv_10-20-2_test_cpp/ProcessMessagesNonQv_10-20-2_test";
+  "./zkeys/MessageProcessorNonQv_10-20-2_test/MessageProcessorNonQv_10-20-2_test_cpp/MessageProcessorNonQv_10-20-2_test";
 export const testProcessMessagesNonQvWitnessDatPath =
-  "./zkeys/ProcessMessagesNonQv_10-20-2_test/ProcessMessagesNonQv_10-20-2_test_cpp/ProcessMessagesNonQv_10-20-2_test.dat";
+  "./zkeys/MessageProcessorNonQv_10-20-2_test/MessageProcessorNonQv_10-20-2_test_cpp/MessageProcessorNonQv_10-20-2_test.dat";
 export const testProcessMessagesNonQvWasmPath =
-  "./zkeys/ProcessMessagesNonQv_10-20-2_test/ProcessMessagesNonQv_10-20-2_test_js/ProcessMessagesNonQv_10-20-2_test.wasm";
+  "./zkeys/MessageProcessorNonQv_10-20-2_test/MessageProcessorNonQv_10-20-2_test_js/MessageProcessorNonQv_10-20-2_test.wasm";
 
 // Process messages ceremony Non-QV paths
 export const ceremonyProcessMessagesNonQvZkeyPath =
-  "./zkeys/ProcessMessagesNonQv_6-9-2-3/processMessagesNonQv_6-9-2-3.zkey";
+  "./zkeys/MessageProcessorNonQv_6-9-2-3/MessageProcessorNonQv_6-9-2-3.zkey";
 export const ceremonyProcessMessagesNonQvWitnessPath =
-  "./zkeys/ProcessMessagesNonQv_14-9-2-3/ProcessMessagesNonQv_14-9-2-3_cpp/ProcessMessagesNonQv_14-9-2-3";
+  "./zkeys/MessageProcessorNonQv_14-9-2-3/MessageProcessorNonQv_14-9-2-3_cpp/MessageProcessorNonQv_14-9-2-3";
 export const ceremonyProcessMessagesNonQvDatPath =
-  "./zkeys/ProcessMessagesNonQv_14-9-2-3/ProcessMessagesNonQv_14-9-2-3_cpp/ProcessMessagesNonQv_14-9-2-3.dat";
+  "./zkeys/MessageProcessorNonQv_14-9-2-3/MessageProcessorNonQv_14-9-2-3_cpp/MessageProcessorNonQv_14-9-2-3.dat";
 export const ceremonyProcessMessagesNonQvWasmPath =
-  "./zkeys/ProcessMessagesNonQv_14-9-2-3/ProcessMessagesNonQv_14-9-2-3_js/ProcessMessagesNonQv_14-9-2-3.wasm";
+  "./zkeys/MessageProcessorNonQv_14-9-2-3/MessageProcessorNonQv_14-9-2-3_js/MessageProcessorNonQv_14-9-2-3.wasm";
 
 // Process messages Full paths
 export const testProcessMessageFullZkeyPath =
@@ -101,46 +102,46 @@ export const testProcessMessagesFullWasmPath =
   "./zkeys/MessageProcessorFull_10-20-2_test/MessageProcessorFull_10-20-2_test_js/MessageProcessorFull_10-20-2_test.wasm";
 
 // Tally votes QV paths
-export const testTallyVotesZkeyPath = "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey";
+export const testTallyVotesZkeyPath = "./zkeys/VoteTallyQv_10-1-2_test/VoteTallyQv_10-1-2_test.0.zkey";
 export const testTallyVotesWitnessPath =
-  "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_cpp/TallyVotes_10-1-2_test";
+  "./zkeys/VoteTallyQv_10-1-2_test/VoteTallyQv_10-1-2_test_cpp/VoteTallyQv_10-1-2_test";
 export const testTallyVotesWitnessDatPath =
-  "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_cpp/TallyVotes_10-1-2_test.dat";
+  "./zkeys/VoteTallyQv_10-1-2_test/VoteTallyQv_10-1-2_test_cpp/VoteTallyQv_10-1-2_test.dat";
 export const testTallyVotesWasmPath =
-  "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm";
+  "./zkeys/VoteTallyQv_10-1-2_test/VoteTallyQv_10-1-2_test_js/VoteTallyQv_10-1-2_test.wasm";
 
 // Tally votes ceremony QV paths
-export const ceremonyTallyVotesZkeyPath = "./zkeys/TallyVotes_6-2-3/tallyVotes_6-2-3.zkey";
-export const ceremonyTallyVotesWitnessPath = "./zkeys/TallyVotes_14-5-3/TallyVotes_14-5-3_cpp/TallyVotes_14-5-3";
-export const ceremonyTallyVotesDatPath = "./zkeys/TallyVotes_14-5-3/TallyVotes_14-5-3_cpp/TallyVotes_14-5-3.dat";
-export const ceremonyTallyVotesWasmPath = "./zkeys/TallyVotes_14-5-3/TallyVotes_14-5-3_js/TallyVotes_14-5-3.wasm";
+export const ceremonyTallyVotesZkeyPath = "./zkeys/VoteTallyQv_6-2-3/tallyVotes_6-2-3.zkey";
+export const ceremonyTallyVotesWitnessPath = "./zkeys/VoteTallyQv_14-5-3/VoteTallyQv_14-5-3_cpp/VoteTallyQv_14-5-3";
+export const ceremonyTallyVotesDatPath = "./zkeys/VoteTallyQv_14-5-3/VoteTallyQv_14-5-3_cpp/VoteTallyQv_14-5-3.dat";
+export const ceremonyTallyVotesWasmPath = "./zkeys/VoteTallyQv_14-5-3/VoteTallyQv_14-5-3_js/VoteTallyQv_14-5-3.wasm";
 
 // Tally votes Non-QV paths
-export const testTallyVotesNonQvZkeyPath = "./zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test.0.zkey";
-export const testTallyVotesNonQvWitnessPath =
-  "./zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test_cpp/TallyVotesNonQv_10-1-2_test";
-export const testTallyVotesNonQvWitnessDatPath =
-  "./zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test_cpp/TallyVotesNonQv_10-1-2_test.dat";
-export const testTallyVotesNonQvWasmPath =
-  "./zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test_js/TallyVotesNonQv_10-1-2_test.wasm";
+export const testVoteTallyNonQvZkeyPath = "./zkeys/VoteTallyNonQv_10-1-2_test/VoteTallyNonQv_10-1-2_test.0.zkey";
+export const testVoteTallyNonQvWitnessPath =
+  "./zkeys/VoteTallyNonQv_10-1-2_test/VoteTallyNonQv_10-1-2_test_cpp/VoteTallyNonQv_10-1-2_test";
+export const testVoteTallyNonQvWitnessDatPath =
+  "./zkeys/VoteTallyNonQv_10-1-2_test/VoteTallyNonQv_10-1-2_test_cpp/VoteTallyNonQv_10-1-2_test.dat";
+export const testVoteTallyNonQvWasmPath =
+  "./zkeys/VoteTallyNonQv_10-1-2_test/VoteTallyNonQv_10-1-2_test_js/VoteTallyNonQv_10-1-2_test.wasm";
 
 // Tally votes ceremony Non-QV paths
-export const ceremonyTallyVotesNonQvZkeyPath = "./zkeys/TallyVotesNonQv_6-2-3/tallyVotesNonQv_6-2-3.zkey";
-export const ceremonyTallyVotesNonQvWitnessPath =
-  "./zkeys/TallyVotesNonQv_14-5-3/TallyVotesNonQv_14-5-3_cpp/TallyVotesNonQv_14-5-3";
-export const ceremonyTallyVotesNonQvDatPath =
-  "./zkeys/TallyVotesNonQv_14-5-3/TallyVotesNonQv_14-5-3_cpp/TallyVotesNonQv_14-5-3.dat";
-export const ceremonyTallyVotesNonQvWasmPath =
-  "./zkeys/TallyVotesNonQv_14-5-3/TallyVotesNonQv_14-5-3_js/TallyVotesNonQv_14-5-3.wasm";
+export const ceremonyVoteTallyNonQvZkeyPath = "./zkeys/VoteTallyNonQv_6-2-3/tallyVotesNonQv_6-2-3.zkey";
+export const ceremonyVoteTallyNonQvWitnessPath =
+  "./zkeys/VoteTallyNonQv_14-5-3/VoteTallyNonQv_14-5-3_cpp/VoteTallyNonQv_14-5-3";
+export const ceremonyVoteTallyNonQvDatPath =
+  "./zkeys/VoteTallyNonQv_14-5-3/VoteTallyNonQv_14-5-3_cpp/VoteTallyNonQv_14-5-3.dat";
+export const ceremonyVoteTallyNonQvWasmPath =
+  "./zkeys/VoteTallyNonQv_14-5-3/VoteTallyNonQv_14-5-3_js/VoteTallyNonQv_14-5-3.wasm";
 
 // Tally votes Full paths
-export const testTallyVotesFullZkeyPath = "./zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test.0.zkey";
+export const testTallyVotesFullZkeyPath = "./zkeys/VoteTallyNonQv_10-1-2_test/VoteTallyNonQv_10-1-2_test.0.zkey";
 export const testTallyVotesFullWitnessPath =
-  "./zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test_cpp/TallyVotesNonQv_10-1-2_test";
+  "./zkeys/VoteTallyNonQv_10-1-2_test/VoteTallyNonQv_10-1-2_test_cpp/VoteTallyNonQv_10-1-2_test";
 export const testTallyVotesFullWitnessDatPath =
-  "./zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test_cpp/TallyVotesNonQv_10-1-2_test.dat";
+  "./zkeys/VoteTallyNonQv_10-1-2_test/VoteTallyNonQv_10-1-2_test_cpp/VoteTallyNonQv_10-1-2_test.dat";
 export const testTallyVotesFullWasmPath =
-  "./zkeys/TallyVotesNonQv_10-1-2_test/TallyVotesNonQv_10-1-2_test_js/TallyVotesNonQv_10-1-2_test.wasm";
+  "./zkeys/VoteTallyNonQv_10-1-2_test/VoteTallyNonQv_10-1-2_test_js/VoteTallyNonQv_10-1-2_test.wasm";
 
 export const checkVerifyingKeysArgs: Omit<ICheckVerifyingKeysArgs, "verifyingKeysRegistry" | "signer"> = {
   stateTreeDepth: STATE_TREE_DEPTH,
@@ -149,8 +150,8 @@ export const checkVerifyingKeysArgs: Omit<ICheckVerifyingKeysArgs, "verifyingKey
   messageBatchSize: MESSAGE_BATCH_SIZE,
   pollJoiningZkeyPath: testPollJoiningZkeyPath,
   pollJoinedZkeyPath: testPollJoinedZkeyPath,
-  processMessagesZkeyPath: testProcessMessageZkeyPath,
-  tallyVotesZkeyPath: testTallyVotesZkeyPath,
+  messageProcessorZkeyPath: testProcessMessageZkeyPath,
+  voteTallyZkeyPath: testTallyVotesZkeyPath,
 };
 
 export const timeTravelArgs: Omit<ITimeTravelArgs, "signer"> = {
@@ -188,16 +189,16 @@ export const verifyArgs = async (signer: Signer): Promise<IVerifyArgs> => {
 
 const zkeysByMode = {
   [EMode.QV]: {
-    processMessagesZkeyPath: testProcessMessageZkeyPath,
-    tallyVotesZkeyPath: testTallyVotesZkeyPath,
+    messageProcessorZkeyPath: testProcessMessageZkeyPath,
+    voteTallyZkeyPath: testTallyVotesZkeyPath,
   },
   [EMode.NON_QV]: {
-    processMessagesZkeyPath: testProcessMessageNonQvZkeyPath,
-    tallyVotesZkeyPath: testTallyVotesNonQvZkeyPath,
+    messageProcessorZkeyPath: testProcessMessageNonQvZkeyPath,
+    voteTallyZkeyPath: testVoteTallyNonQvZkeyPath,
   },
   [EMode.FULL]: {
-    processMessagesZkeyPath: testProcessMessageFullZkeyPath,
-    tallyVotesZkeyPath: testTallyVotesFullZkeyPath,
+    messageProcessorZkeyPath: testProcessMessageFullZkeyPath,
+    voteTallyZkeyPath: testTallyVotesFullZkeyPath,
   },
 };
 
@@ -205,13 +206,13 @@ export const verifyingKeysArgs = async (
   signer: Signer,
   mode = EMode.QV,
 ): Promise<Omit<ISetVerifyingKeysArgs, "verifyingKeysRegistryAddress">> => {
-  const { processMessagesZkeyPath, tallyVotesZkeyPath } = zkeysByMode[mode];
+  const { messageProcessorZkeyPath, voteTallyZkeyPath } = zkeysByMode[mode];
   const { pollJoiningVerifyingKey, pollJoinedVerifyingKey, processVerifyingKey, tallyVerifyingKey } =
     await extractAllVerifyingKeys({
       pollJoiningZkeyPath: testPollJoiningZkeyPath,
       pollJoinedZkeyPath: testPollJoinedZkeyPath,
-      processMessagesZkeyPath,
-      tallyVotesZkeyPath,
+      messageProcessorZkeyPath,
+      voteTallyZkeyPath,
     });
 
   return {

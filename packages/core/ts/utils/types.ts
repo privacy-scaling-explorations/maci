@@ -74,7 +74,7 @@ export interface IPoll {
   publishMessage(message: Message, encryptionPublicKey: PublicKey): void;
   // These methods are used to generate circuit inputs
   processMessages(pollId: bigint): IProcessMessagesCircuitInputs;
-  tallyVotes(mode: EMode): ITallyCircuitInputs;
+  tallyVotes(mode: EMode): IVoteTallyCircuitInputs;
   // These methods are helper functions
   hasUnprocessedMessages(): boolean;
   processAllMessages(): { stateLeaves: StateLeaf[]; ballots: Ballot[] };
@@ -105,7 +105,7 @@ export interface IJsonPoll {
   publicKeys: IJsonPublicKey[];
   pollStateLeaves: IJsonStateLeaf[];
   results: string[];
-  numBatchesProcessed: number;
+  totalBatchesProcessed: number;
   totalSignups: string;
   chainHash: string;
   pollNullifiers: string[];
@@ -218,9 +218,9 @@ export interface IProcessMessagesCircuitInputs {
 }
 
 /**
- * An interface describing the circuit inputs to the TallyVotes circuit
+ * An interface describing the circuit inputs to the VoteTally circuit
  */
-export interface ITallyCircuitInputs {
+export interface IVoteTallyCircuitInputs {
   stateRoot: string;
   ballotRoot: string;
   sbSalt: string;

@@ -298,13 +298,13 @@ export class DeployerService {
       EMode.QV,
     );
 
-    const { zkey: processMessagesZkeyPath } = this.fileService.getZkeyFilePaths(
+    const { zkey: messageProcessorZkeyPath } = this.fileService.getZkeyFilePaths(
       process.env.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME!,
       mode,
     );
 
     // There are only QV and Non-QV modes available for tally circuit
-    const { zkey: tallyVotesZkeyPath } = this.fileService.getZkeyFilePaths(
+    const { zkey: voteTallyZkeyPath } = this.fileService.getZkeyFilePaths(
       process.env.COORDINATOR_TALLY_ZKEY_NAME!,
       mode === EMode.QV ? mode : EMode.NON_QV,
     );
@@ -313,8 +313,8 @@ export class DeployerService {
       await extractAllVerifyingKeys({
         pollJoiningZkeyPath,
         pollJoinedZkeyPath,
-        processMessagesZkeyPath,
-        tallyVotesZkeyPath,
+        messageProcessorZkeyPath,
+        voteTallyZkeyPath,
       });
 
     const { stateTreeDepth, pollStateTreeDepth, tallyProcessingStateTreeDepth, voteOptionTreeDepth, messageBatchSize } =

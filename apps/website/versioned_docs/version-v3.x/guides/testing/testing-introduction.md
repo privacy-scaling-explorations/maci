@@ -71,10 +71,10 @@ or download them. Please remember to not use these testing `.zkey` files in prod
 
 ### Download `.zkey` files or the witness generation binaries
 
-MACI has two main zk-SNARK circuits, `processMessages` and `tallyVotes`.
+MACI has two main zk-SNARK circuits, `MessageProcessor` and `VoteTally`.
 
 :::info
-The `processMessages` and `tallyVotes` circuits are also provided in a non-quadratic voting (non-QV) and in a full credits voting (full) versions. Currently these new versions have not undergone a trusted setup ceremony.
+The `MessageProcessor` and `VoteTally` circuits are also provided in a non-quadratic voting (non-QV) and in a full credits voting (full) versions. Currently these new versions have not undergone a trusted setup ceremony.
 :::
 
 Each circuit is parameterised and there should be one

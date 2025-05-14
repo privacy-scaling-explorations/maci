@@ -580,7 +580,7 @@ Please note that MACI requires the coordinator to generate proofs on an x86 mach
 
 ### 6.1. Message processing circuit
 
-The message processing circuit, defined in `circuits/circom/processMessages.circom`, allows the coordinator to prove that they have correctly applied each message in reverse order, in a consecutive batch of `5 ^ messageBatchDepth` messages to the respective state leaf within the state tree.
+The message processing circuit, defined in `circuits/circom/coordinator/qv/MessageProcessor.circom`, allows the coordinator to prove that they have correctly applied each message in reverse order, in a consecutive batch of `5 ^ messageBatchDepth` messages to the respective state leaf within the state tree.
 
 #### Parameters
 
@@ -747,7 +747,7 @@ The final tally should be:
 2. Total voice credits per vote option: `[3, 9, 19, 33, 26]`
 3. Total spent voice credits: `66`
 
-The coordinator uses the ballot tallying circuit (`tallyVotes.circom`) to generate proofs that they have correctly computed the tally. As there are many ballots to tally, each proof only computes the tally for a batch of ballots. Each proof is chained to the previous one such that each proof is also a proof of knowledge of the preimage of the previous tally commitment.
+The coordinator uses the ballot tallying circuit (`VoteTally.circom`) to generate proofs that they have correctly computed the tally. As there are many ballots to tally, each proof only computes the tally for a batch of ballots. Each proof is chained to the previous one such that each proof is also a proof of knowledge of the preimage of the previous tally commitment.
 
 #### Parameters
 

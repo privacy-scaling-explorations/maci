@@ -21,10 +21,10 @@ import {
   pollJoinedZkey,
   pollWasm,
   type TApp,
-  tallyVotesZkeyPathNonQv,
+  voteTallyZkeyPathNonQv,
   pollJoiningZkey,
-  processMessagesZkeyPathNonQv,
-  pollWitgen,
+  messageProcessorZkeyPathNonQv,
+  pollWitnessGenerator,
   rapidsnark,
 } from "./constants.js";
 
@@ -42,10 +42,10 @@ describe("Integration message publishing", () => {
     const testDeploy = await TestingClass.getInstance({
       pollJoiningZkeyPath: pollJoiningZkey,
       pollJoinedZkeyPath: pollJoinedZkey,
-      processMessagesZkeyPath: processMessagesZkeyPathNonQv,
-      tallyVotesZkeyPath: tallyVotesZkeyPathNonQv,
+      messageProcessorZkeyPath: messageProcessorZkeyPathNonQv,
+      voteTallyZkeyPath: voteTallyZkeyPathNonQv,
       pollWasm,
-      pollWitgen,
+      pollWitnessGenerator,
       rapidsnark,
     });
     const poll = testDeploy.contractsData.maciState!.polls.get(0n);

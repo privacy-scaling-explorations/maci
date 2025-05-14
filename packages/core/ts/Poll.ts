@@ -38,7 +38,7 @@ import type {
   IPoll,
   IJsonPoll,
   IProcessMessagesOutput,
-  ITallyCircuitInputs,
+  IVoteTallyCircuitInputs,
   IProcessMessagesCircuitInputs,
   IPollJoiningCircuitInputs,
   IJoiningCircuitArgs,
@@ -88,7 +88,7 @@ export class Poll implements IPoll {
   stateTree?: LeanIMT;
 
   // For message processing
-  numBatchesProcessed = 0;
+  totalBatchesProcessed = 0;
 
   currentMessageBatchIndex: number;
 
@@ -588,7 +588,7 @@ export class Poll implements IPoll {
       totalBatches += 1;
     }
 
-    return this.numBatchesProcessed < totalBatches;
+    return this.totalBatchesProcessed < totalBatches;
   };
 
   /**
@@ -610,7 +610,7 @@ export class Poll implements IPoll {
 
     const batchSize = this.batchSizes.messageBatchSize;
 
-    if (this.numBatchesProcessed === 0) {
+    if (this.totalBatchesProcessed === 0) {
       // Prevent other polls from being processed until this poll has
       // been fully processed
       this.maciStateRef.pollBeingProcessed = true;
@@ -851,7 +851,7 @@ export class Poll implements IPoll {
     circuitInputs.currentVoteWeightsPathElements = currentVoteWeightsPathElements;
 
     // record that we processed one batch
-    this.numBatchesProcessed += 1;
+    this.totalBatchesProcessed += 1;
 
     if (this.currentMessageBatchIndex > 0) {
       this.currentMessageBatchIndex -= 1;
@@ -875,7 +875,7 @@ export class Poll implements IPoll {
     const coordinatorPublicKeyHash = this.coordinatorKeypair.publicKey.hash();
 
     // If this is the last batch, release the lock
-    if (this.numBatchesProcessed * batchSize >= this.messages.length) {
+    if (this.totalBatchesProcessed * batchSize >= this.messages.length) {
       this.maciStateRef.pollBeingProcessed = false;
     }
 
@@ -1005,9 +1005,9 @@ export class Poll implements IPoll {
   /**
    * This method tallies a ballots and updates the tally results.
    *
-   * @returns the circuit inputs for the TallyVotes circuit.
+   * @returns the circuit inputs for the VoteTally circuit.
    */
-  tallyVotes = (): ITallyCircuitInputs => {
+  tallyVotes = (): IVoteTallyCircuitInputs => {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (this.sbSalts[this.currentMessageBatchIndex] === undefined) {
       throw new Error("You must process the messages first");
@@ -1198,7 +1198,7 @@ export class Poll implements IPoll {
             ]
           : [],
       ),
-    ) as unknown as ITallyCircuitInputs;
+    ) as unknown as IVoteTallyCircuitInputs;
 
     this.numBatchesTallied += 1;
 
@@ -1306,7 +1306,7 @@ export class Poll implements IPoll {
       BigInt(x.toString()),
     );
 
-    copied.numBatchesProcessed = Number(this.numBatchesProcessed.toString());
+    copied.totalBatchesProcessed = Number(this.totalBatchesProcessed.toString());
     copied.numBatchesTallied = Number(this.numBatchesTallied.toString());
     copied.pollId = this.pollId;
     copied.totalSpentVoiceCredits = BigInt(this.totalSpentVoiceCredits.toString());
@@ -1394,7 +1394,7 @@ export class Poll implements IPoll {
       publicKeys: this.publicKeys.map((leaf) => leaf.toJSON()),
       pollStateLeaves: this.pollStateLeaves.map((leaf) => leaf.toJSON()),
       results: this.tallyResult.map((result) => result.toString()),
-      numBatchesProcessed: this.numBatchesProcessed,
+      totalBatchesProcessed: this.totalBatchesProcessed,
       totalSignups: this.totalSignups.toString(),
       chainHash: this.chainHash.toString(),
       pollNullifiers: [...this.pollNullifiers.keys()].map((nullifier) => nullifier.toString()),
@@ -1428,7 +1428,7 @@ export class Poll implements IPoll {
     poll.commands = json.commands.map((command: IJsonPCommand) => VoteCommand.fromJSON(command));
     poll.tallyResult = json.results.map((result: string) => BigInt(result));
     poll.currentMessageBatchIndex = json.currentMessageBatchIndex;
-    poll.numBatchesProcessed = json.numBatchesProcessed;
+    poll.totalBatchesProcessed = json.totalBatchesProcessed;
     poll.chainHash = BigInt(json.chainHash);
     poll.batchHashes = json.batchHashes.map((batchHash: string) => BigInt(batchHash));
     poll.pollNullifiers = new Map(json.pollNullifiers.map((nullifier) => [BigInt(nullifier), true]));

@@ -203,16 +203,16 @@ export class ProofGenerator {
         // generate the proof for this batch
         inputs.push(circuitInputs);
 
-        logMagenta({ text: info(`Progress: ${this.poll.numBatchesProcessed} / ${totalMessageBatches}`) });
+        logMagenta({ text: info(`Progress: ${this.poll.totalBatchesProcessed} / ${totalMessageBatches}`) });
       }
 
       logMagenta({ text: info("Wait until proof generation is finished") });
 
-      const processZkey = await extractVerifyingKey(this.messageProcessor.zkey, false);
+      const messageProcessorZkey = await extractVerifyingKey(this.messageProcessor.zkey, false);
 
       const proofs = await Promise.all(
         inputs.map((circuitInputs, index) =>
-          this.generateProofs(circuitInputs, this.messageProcessor, `process_${index}.json`, processZkey).then(
+          this.generateProofs(circuitInputs, this.messageProcessor, `process_${index}.json`, messageProcessorZkey).then(
             (data) => {
               options?.onBatchComplete?.({ current: index, total: totalMessageBatches, proofs: data });
               return data;
@@ -386,7 +386,7 @@ export class ProofGenerator {
    * Generic function for proofs generation
    *
    * @param {TCircuitInputs} circuitInputs - circuit inputs
-   * @param {ICircuitFiles} circuitFiles - circuit files (zkey, witgen, wasm)
+   * @param {ICircuitFiles} circuitFiles - circuit files (zkey, witnessGenerator, wasm)
    * @param outputFile - output file
    * @returns proofs
    */
@@ -409,7 +409,7 @@ export class ProofGenerator {
           inputs: circuitInputs,
           zkeyPath: circuitFiles.zkey,
           rapidsnarkExePath: this.rapidsnark,
-          witnessExePath: circuitFiles.witgen,
+          witnessExePath: circuitFiles.witnessGenerator,
         });
 
     // verify it

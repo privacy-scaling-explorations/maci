@@ -27,14 +27,14 @@ export const generateProofs = async ({
   blocksPerBatch,
   rapidsnark,
   mode,
-  tallyZkey,
-  tallyWitgen,
-  tallyWasm,
-  processZkey,
-  processWitgen,
-  processWasm,
-  processDatFile,
-  tallyDatFile,
+  voteTallyZkey,
+  voteTallyWitnessGenerator,
+  voteTallyWasm,
+  messageProcessorZkey,
+  messageProcessorWitnessGenerator,
+  messageProcessorWasm,
+  messageProcessorWitnessDatFile,
+  voteTallyWitnessDatFile,
   tallyFile,
   useWasm,
 }: IGenerateProofsArgs): Promise<IGenerateProofsData> => {
@@ -42,15 +42,15 @@ export const generateProofs = async ({
   if (useWasm) {
     // if no rapidsnark then we assume we go with wasm
     // so we expect those arguments
-    if (!processWasm) {
+    if (!messageProcessorWasm) {
       throw new Error("Please specify the process wasm file location");
     }
 
-    if (!tallyWasm) {
+    if (!voteTallyWasm) {
       throw new Error("Please specify the tally wasm file location");
     }
 
-    const wasmResult = doesPathExist([processWasm, tallyWasm]);
+    const wasmResult = doesPathExist([messageProcessorWasm, voteTallyWasm]);
 
     if (!wasmResult[0]) {
       throw new Error(`Could not find ${wasmResult[1]}.`);
@@ -60,23 +60,29 @@ export const generateProofs = async ({
       throw new Error("Please specify the rapidsnark file location");
     }
 
-    if (!processWitgen) {
-      throw new Error("Please specify the process witgen file location");
+    if (!messageProcessorWitnessGenerator) {
+      throw new Error("Please specify the process witnessGenerator file location");
     }
 
-    if (!tallyWitgen) {
-      throw new Error("Please specify the tally witgen file location");
+    if (!voteTallyWitnessGenerator) {
+      throw new Error("Please specify the tally witnessGenerator file location");
     }
 
-    const witgenResult = doesPathExist([rapidsnark, processWitgen, tallyWitgen, processDatFile!, tallyDatFile!]);
+    const witnessGeneratorResult = doesPathExist([
+      rapidsnark,
+      messageProcessorWitnessGenerator,
+      voteTallyWitnessGenerator,
+      messageProcessorWitnessDatFile!,
+      voteTallyWitnessDatFile!,
+    ]);
 
-    if (!witgenResult[0]) {
-      throw new Error(`Could not find ${witgenResult[1]}.`);
+    if (!witnessGeneratorResult[0]) {
+      throw new Error(`Could not find ${witnessGeneratorResult[1]}.`);
     }
   }
 
   // check if zkeys were provided
-  const zkResult = doesPathExist([processZkey, tallyZkey]);
+  const zkResult = doesPathExist([messageProcessorZkey, voteTallyZkey]);
 
   if (!zkResult[0]) {
     throw new Error(`Could not find ${zkResult[1]}.`);
@@ -154,14 +160,14 @@ export const generateProofs = async ({
     tallyContractAddress,
     rapidsnark,
     tally: {
-      zkey: tallyZkey,
-      witgen: tallyWitgen,
-      wasm: tallyWasm,
+      zkey: voteTallyZkey,
+      witnessGenerator: voteTallyWitnessGenerator,
+      wasm: voteTallyWasm,
     },
     messageProcessor: {
-      zkey: processZkey,
-      witgen: processWitgen,
-      wasm: processWasm,
+      zkey: messageProcessorZkey,
+      witnessGenerator: messageProcessorWitnessGenerator,
+      wasm: messageProcessorWasm,
     },
     outputDir,
     tallyOutputFile: tallyFile,

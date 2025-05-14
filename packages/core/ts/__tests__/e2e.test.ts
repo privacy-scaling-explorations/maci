@@ -537,18 +537,18 @@ describe("MaciState/Poll e2e", function test() {
       expect(poll.messages.length).to.eq(2 * (messageBatchSize - 1));
 
       expect(poll.currentMessageBatchIndex).to.eq(1);
-      expect(poll.numBatchesProcessed).to.eq(0);
+      expect(poll.totalBatchesProcessed).to.eq(0);
 
       // Process messages
       poll.processMessages(pollId);
 
-      expect(poll.numBatchesProcessed).to.eq(1);
+      expect(poll.totalBatchesProcessed).to.eq(1);
 
       // Process messages
       poll.processMessages(pollId);
 
       expect(poll.currentMessageBatchIndex).to.eq(0);
-      expect(poll.numBatchesProcessed).to.eq(2);
+      expect(poll.totalBatchesProcessed).to.eq(2);
 
       for (let i = 1; i < messageBatchSize; i += 1) {
         const leaf = poll.ballots[i].votes[i - 1];

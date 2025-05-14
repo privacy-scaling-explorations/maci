@@ -94,8 +94,8 @@ export const compareVerifyingKeys = (
 export const extractAllVerifyingKeys = async ({
   pollJoiningZkeyPath,
   pollJoinedZkeyPath,
-  processMessagesZkeyPath,
-  tallyVotesZkeyPath,
+  messageProcessorZkeyPath,
+  voteTallyZkeyPath,
 }: IExtractAllVerifyingKeysArgs): Promise<IMaciVerifyingKeys> => {
   // extract the verifying keys
   const pollJoiningVerifyingKey = pollJoiningZkeyPath
@@ -105,11 +105,11 @@ export const extractAllVerifyingKeys = async ({
     ? VerifyingKey.fromObj(await extractVerifyingKey(pollJoinedZkeyPath))
     : undefined;
 
-  const processVerifyingKey = processMessagesZkeyPath
-    ? VerifyingKey.fromObj(await extractVerifyingKey(processMessagesZkeyPath))
+  const processVerifyingKey = messageProcessorZkeyPath
+    ? VerifyingKey.fromObj(await extractVerifyingKey(messageProcessorZkeyPath))
     : undefined;
-  const tallyVerifyingKey = tallyVotesZkeyPath
-    ? VerifyingKey.fromObj(await extractVerifyingKey(tallyVotesZkeyPath))
+  const tallyVerifyingKey = voteTallyZkeyPath
+    ? VerifyingKey.fromObj(await extractVerifyingKey(voteTallyZkeyPath))
     : undefined;
 
   return {
@@ -127,13 +127,13 @@ export const extractAllVerifyingKeys = async ({
  * @returns Whether the verifying keys match or not
  */
 export const extractVerifyingKeyToFile = async ({
-  processMessagesZkeyPathQv,
-  tallyVotesZkeyPathQv,
-  processMessagesZkeyPathNonQv,
-  processMessagesZkeyPathFull,
+  messageProcessorZkeyPathQv,
+  voteTallyZkeyPathQv,
+  messageProcessorZkeyPathNonQv,
+  messageProcessorZkeyPathFull,
   pollJoinedZkeyPath,
   pollJoiningZkeyPath,
-  tallyVotesZkeyPathNonQv,
+  voteTallyZkeyPathNonQv,
   outputFilePath,
 }: IExtractVerifyingKeyToFileArgs): Promise<void> => {
   const [
@@ -145,13 +145,13 @@ export const extractVerifyingKeyToFile = async ({
     pollJoinedVerifyingKey,
     processVerifyingKeyFull,
   ] = await Promise.all([
-    extractVerifyingKey(processMessagesZkeyPathQv),
-    extractVerifyingKey(tallyVotesZkeyPathQv),
-    extractVerifyingKey(processMessagesZkeyPathNonQv),
-    extractVerifyingKey(tallyVotesZkeyPathNonQv),
+    extractVerifyingKey(messageProcessorZkeyPathQv),
+    extractVerifyingKey(voteTallyZkeyPathQv),
+    extractVerifyingKey(messageProcessorZkeyPathNonQv),
+    extractVerifyingKey(voteTallyZkeyPathNonQv),
     extractVerifyingKey(pollJoiningZkeyPath),
     extractVerifyingKey(pollJoinedZkeyPath),
-    extractVerifyingKey(processMessagesZkeyPathFull),
+    extractVerifyingKey(messageProcessorZkeyPathFull),
   ]);
 
   await fs.promises.writeFile(

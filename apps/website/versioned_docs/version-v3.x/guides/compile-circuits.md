@@ -93,9 +93,9 @@ Edit `circuits/circom/circuits` to include the circuits you would like to compil
     "params": [10],
     "pubs": ["stateRoot"]
   },
-  "ProcessMessages_10-20-2_test": {
-    "file": "./coordinator/qv/processMessages",
-    "template": "ProcessMessages",
+  "MessageProcessorQv_10-20-2_test": {
+    "file": "./coordinator/qv/MessageProcessor",
+    "template": "MessageProcessorQv",
     "params": [10, 20, 2],
     "pubs": [
       "totalSignups",
@@ -109,9 +109,9 @@ Edit `circuits/circom/circuits` to include the circuits you would like to compil
       "voteOptions"
     ]
   },
-  "ProcessMessagesNonQv_10-20-2_test": {
-    "file": "./coordinator/non-qv/processMessages",
-    "template": "ProcessMessagesNonQv",
+  "MessageProcessorNonQv_10-20-2_test": {
+    "file": "./coordinator/non-qv/MessageProcessor",
+    "template": "MessageProcessorNonQv",
     "params": [10, 20, 2],
     "pubs": [
       "totalSignups",
@@ -141,15 +141,15 @@ Edit `circuits/circom/circuits` to include the circuits you would like to compil
       "voteOptions"
     ]
   },
-  "TallyVotes_10-1-2_test": {
-    "file": "./coordinator/qv/tallyVotes",
-    "template": "TallyVotes",
+  "VoteTallyQv_10-1-2_test": {
+    "file": "./coordinator/qv/VoteTally",
+    "template": "VoteTallyQv",
     "params": [10, 1, 2],
     "pubs": ["index", "totalSignups", "sbCommitment", "currentTallyCommitment", "newTallyCommitment"]
   },
-  "TallyVotesNonQv_10-1-2_test": {
-    "file": "./coordinator/non-qv/tallyVotes",
-    "template": "TallyVotesNonQv",
+  "VoteTallyNonQv_10-1-2_test": {
+    "file": "./coordinator/non-qv/VoteTally",
+    "template": "VoteTallyNonQv",
     "params": [10, 1, 2],
     "pubs": ["index", "totalSignups", "sbCommitment", "currentTallyCommitment", "newTallyCommitment"]
   }

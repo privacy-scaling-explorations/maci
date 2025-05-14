@@ -121,12 +121,12 @@ export interface IGenerateProofsArgs {
   /**
    * The path to the process dat file
    */
-  processDatFile?: string;
+  messageProcessorWitnessDatFile?: string;
 
   /**
    * The path to the tally dat file
    */
-  tallyDatFile?: string;
+  voteTallyWitnessDatFile?: string;
 
   /**
    * The use quadratic voting
@@ -141,32 +141,32 @@ export interface IGenerateProofsArgs {
   /**
    * The tally zkey
    */
-  tallyZkey: string;
+  voteTallyZkey: string;
 
   /**
-   * The tally witgen
+   * The tally witness generator
    */
-  tallyWitgen?: string;
+  voteTallyWitnessGenerator?: string;
 
   /**
    * The tally wasm
    */
-  tallyWasm?: string;
+  voteTallyWasm?: string;
 
   /**
    * The process zkey
    */
-  processZkey: string;
+  messageProcessorZkey: string;
 
   /**
-   * The process witgen
+   * The process witness generator
    */
-  processWitgen?: string;
+  messageProcessorWitnessGenerator?: string;
 
   /**
    * The process wasm
    */
-  processWasm?: string;
+  messageProcessorWasm?: string;
 
   /**
    * The tally file

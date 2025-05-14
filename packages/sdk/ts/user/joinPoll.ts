@@ -28,7 +28,7 @@ export const joinPoll = async ({
   pollJoiningZkey,
   useWasm,
   rapidsnark,
-  pollWitgen,
+  pollWitnessGenerator,
   pollWasm,
   sgDataArg,
   ivcpDataArg,
@@ -95,7 +95,14 @@ export const joinPoll = async ({
   const currentStateRootIndex = Number.parseInt((await maciContract.totalSignups()).toString(), 10) - 1;
 
   // generate the proof for this batch
-  const proof = await generateAndVerifyProof(circuitInputs, pollJoiningZkey, useWasm, rapidsnark, pollWitgen, pollWasm);
+  const proof = await generateAndVerifyProof(
+    circuitInputs,
+    pollJoiningZkey,
+    useWasm,
+    rapidsnark,
+    pollWitnessGenerator,
+    pollWasm,
+  );
 
   // submit the message onchain as well as the encryption public key
   const tx = await pollContract.joinPoll(

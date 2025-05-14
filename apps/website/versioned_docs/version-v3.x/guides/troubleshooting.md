@@ -11,17 +11,17 @@ sidebar_position: 5
 
 ### Case: missing `.dat` files
 
-If your logs look like the following, then make sure you have `ProcessMessages_10-2-1-2_test.dat` and `TallyVotes_10-1-2_test.dat` files in the same directory as your zkeys:
+If your logs look like the following, then make sure you have `MessageProcessorQv_10-2-1-2_test.dat` and `VoteTallyQv_10-1-2_test.dat` files in the same directory as your zkeys:
 
 ```
 node build/ts/index.js generateProofs -x 0xf204a4Ef082f5c04bB89F7D5E6568B796096735a \
 >     -sk macisk.49953af3585856f539d194b46c82f4ed54ec508fb9b882940cbe68bbc57e59e \
 >     -o 0 \
 >     -r ~/rapidsnark/build/prover \
->     -wp ./zkeys/ProcessMessages_10-2-1-2_test \
->     -wt ./zkeys/TallyVotes_10-1-2_test \
->     -zp ./zkeys/ProcessMessages_10-2-1-2_test.0.zkey \
->     -zt ./zkeys/TallyVotes_10-1-2_test.0.zkey \
+>     -wp ./zkeys/MessageProcessorQv_10-2-1-2_test \
+>     -wt ./zkeys/VoteTallyQv_10-1-2_test \
+>     -zp ./zkeys/MessageProcessorQv_10-2-1-2_test.0.zkey \
+>     -zt ./zkeys/VoteTallyQv_10-1-2_test.0.zkey \
 >     -t tally.json \
 >     -f proofs
 
@@ -36,7 +36,7 @@ terminate called after throwing an instance of 'std::system_error'
 Aborted (core dumped)
 
 Error: could not generate proof.
-Error: Error executing ./zkeys/ProcessMessages_10-2-1-2_test /tmp/tmp-9904-zG0k8YPTATWB/input.json /tmp/tmp-9904-zG0k8YPTATWB/output.wtns
+Error: Error executing ./zkeys/MessageProcessorQv_10-2-1-2_test /tmp/tmp-9904-zG0k8YPTATWB/input.json /tmp/tmp-9904-zG0k8YPTATWB/output.wtns
     at genProof (/home/ubuntu/maci/circuits/ts/index.ts:44:15)
     at /home/ubuntu/maci/cli/ts/generateProofs.ts:339:25
     at step (/home/ubuntu/maci/cli/build/generateProofs.js:33:23)

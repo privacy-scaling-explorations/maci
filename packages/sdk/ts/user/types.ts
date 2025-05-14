@@ -331,9 +331,9 @@ export interface IJoinPollArgs {
   rapidsnark?: string;
 
   /**
-   * The path to the poll witnessgen binary
+   * The path to the poll witness generator binary
    */
-  pollWitgen?: string;
+  pollWitnessGenerator?: string;
 
   /**
    * The path to the poll wasm file

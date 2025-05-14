@@ -133,7 +133,7 @@ The `MessageProcessor` contract will send the proof to a separate verifier contr
 
 #### Tally Results
 
-Finally, once all messages have been processed, the coordinator tallies the votes of the valid messages (off-chain). The coordinator creates a zk-SNARK proving that the valid messages in the state tree (proved in Process Messages step) contain votes that sum to the given tally result. Then, they call [`Tally.tallyVotes()`](/docs/technical-references/smart-contracts/solidity-docs/Tally#tallyvotes) with a hash of the correct tally results and the zk-SNARK proof. Similarly to the processMessages function, the `tallyVotes` function will send the proof to a verifier contract to ensure that it is valid.
+Finally, once all messages have been processed, the coordinator tallies the votes of the valid messages (off-chain). The coordinator creates a zk-SNARK proving that the valid messages in the state tree (proved in Process Messages step) contain votes that sum to the given tally result. Then, they call [`Tally.tallyVotes()`](/docs/technical-references/smart-contracts/solidity-docs/Tally#tallyvotes) with a hash of the correct tally results and the zk-SNARK proof. Similarly to the `processMessages` function, the `tallyVotes` function will send the proof to a verifier contract to ensure that it is valid.
 
 <!-- "hash of the correct tally results" - so are the final results actually put on chain? or just a hash?? -->
 

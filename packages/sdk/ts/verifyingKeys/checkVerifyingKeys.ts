@@ -20,8 +20,8 @@ export const checkVerifyingKeys = async ({
   tallyProcessingStateTreeDepth,
   voteOptionTreeDepth,
   messageBatchSize,
-  processMessagesZkeyPath,
-  tallyVotesZkeyPath,
+  messageProcessorZkeyPath,
+  voteTallyZkeyPath,
   pollJoiningZkeyPath,
   pollJoinedZkeyPath,
   verifyingKeysRegistry,
@@ -39,13 +39,13 @@ export const checkVerifyingKeys = async ({
   }
 
   // we need to ensure that the zkey files exist
-  const isProcessMessagesZkeyPathExists = fs.existsSync(processMessagesZkeyPath);
+  const isProcessMessagesZkeyPathExists = fs.existsSync(messageProcessorZkeyPath);
 
   if (!isProcessMessagesZkeyPathExists) {
     throw new Error("The provided Process messages zkey does not exist");
   }
 
-  const isTallyVotesZkeyPathExists = fs.existsSync(tallyVotesZkeyPath);
+  const isTallyVotesZkeyPathExists = fs.existsSync(voteTallyZkeyPath);
 
   if (!isTallyVotesZkeyPathExists) {
     throw new Error("The provided Tally votes zkey does not exist");
@@ -54,8 +54,8 @@ export const checkVerifyingKeys = async ({
   // extract the verification keys from the zkey files
   const { pollJoiningVerifyingKey, pollJoinedVerifyingKey, processVerifyingKey, tallyVerifyingKey } =
     await extractAllVerifyingKeys({
-      processMessagesZkeyPath,
-      tallyVotesZkeyPath,
+      messageProcessorZkeyPath,
+      voteTallyZkeyPath,
       pollJoiningZkeyPath,
       pollJoinedZkeyPath,
     });

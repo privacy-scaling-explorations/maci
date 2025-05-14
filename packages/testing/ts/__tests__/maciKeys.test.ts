@@ -12,7 +12,7 @@ import {
   testPollJoiningWasmPath,
   testPollJoiningWitnessPath,
   testProcessMessageNonQvZkeyPath,
-  testTallyVotesNonQvZkeyPath,
+  testVoteTallyNonQvZkeyPath,
 } from "../constants";
 import { TestingClass } from "../testingClass";
 
@@ -79,10 +79,10 @@ describe("integration tests private/public/keypair", () => {
       testingClass = await TestingClass.getInstance({
         pollJoiningZkeyPath: testPollJoiningZkeyPath,
         pollJoinedZkeyPath: testPollJoinedZkeyPath,
-        processMessagesZkeyPath: testProcessMessageNonQvZkeyPath,
-        tallyVotesZkeyPath: testTallyVotesNonQvZkeyPath,
+        messageProcessorZkeyPath: testProcessMessageNonQvZkeyPath,
+        voteTallyZkeyPath: testVoteTallyNonQvZkeyPath,
         pollWasm: testPollJoiningWasmPath,
-        pollWitgen: testPollJoiningWitnessPath,
+        pollWitnessGenerator: testPollJoiningWitnessPath,
         rapidsnark: testRapidsnarkPath,
       });
 
