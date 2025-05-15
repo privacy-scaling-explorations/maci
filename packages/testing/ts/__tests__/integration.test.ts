@@ -87,8 +87,8 @@ describe("Integration tests", function test() {
       await extractAllVerifyingKeys({
         pollJoiningZkeyPath: "./zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey",
         pollJoinedZkeyPath: "./zkeys/PollJoined_10_test/PollJoined_10_test.0.zkey",
-        processMessagesZkeyPath: "./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey",
-        tallyVotesZkeyPath: "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey",
+        messageProcessorZkeyPath: "./zkeys/MessageProcessorQv_10-20-2_test/MessageProcessorQv_10-20-2_test.0.zkey",
+        voteTallyZkeyPath: "./zkeys/VoteTallyQv_10-1-2_test/VoteTallyQv_10-1-2_test.0.zkey",
       });
 
     await setVerifyingKeys({
@@ -245,7 +245,7 @@ describe("Integration tests", function test() {
           pollJoiningZkey: "./zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey",
           useWasm: true,
           pollWasm: "./zkeys/PollJoining_10_test/PollJoining_10_test_js/PollJoining_10_test.wasm",
-          pollWitgen: "./zkeys/PollJoining_10_test/PollJoining_10_test_cpp/PollJoining_10_test",
+          pollWitnessGenerator: "./zkeys/PollJoining_10_test/PollJoining_10_test_cpp/PollJoining_10_test",
           rapidsnark: `${homedir()}/rapidsnark/build/prover`,
           sgDataArg: DEFAULT_SG_DATA,
           ivcpDataArg: DEFAULT_IVCP_DATA,
@@ -368,21 +368,23 @@ describe("Integration tests", function test() {
       const { tallyData } = await generateProofs({
         outputDir: "./proofs",
         tallyFile: "./tally.json",
-        tallyZkey: "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test.0.zkey",
-        processZkey: "./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test.0.zkey",
+        voteTallyZkey: "./zkeys/VoteTallyQv_10-1-2_test/VoteTallyQv_10-1-2_test.0.zkey",
+        messageProcessorZkey: "./zkeys/MessageProcessorQv_10-20-2_test/MessageProcessorQv_10-20-2_test.0.zkey",
         pollId,
         rapidsnark: `${homedir()}/rapidsnark/build/prover`,
-        processWitgen:
-          "./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_cpp/ProcessMessages_10-20-2_test",
-        processDatFile:
-          "./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_cpp/ProcessMessages_10-20-2_test.dat",
-        tallyWitgen: "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_cpp/TallyVotes_10-1-2_test",
-        tallyDatFile: "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_cpp/TallyVotes_10-1-2_test.dat",
+        messageProcessorWitnessGenerator:
+          "./zkeys/MessageProcessorQv_10-20-2_test/MessageProcessorQv_10-20-2_test_cpp/MessageProcessorQv_10-20-2_test",
+        messageProcessorWitnessDatFile:
+          "./zkeys/MessageProcessorQv_10-20-2_test/MessageProcessorQv_10-20-2_test_cpp/MessageProcessorQv_10-20-2_test.dat",
+        voteTallyWitnessGenerator:
+          "./zkeys/VoteTallyQv_10-1-2_test/VoteTallyQv_10-1-2_test_cpp/VoteTallyQv_10-1-2_test",
+        voteTallyWitnessDatFile:
+          "./zkeys/VoteTallyQv_10-1-2_test/VoteTallyQv_10-1-2_test_cpp/VoteTallyQv_10-1-2_test.dat",
         coordinatorPrivateKey: coordinatorKeypair.privateKey.serialize(),
         maciAddress: contracts.maciContractAddress,
-        processWasm:
-          "./zkeys/ProcessMessages_10-20-2_test/ProcessMessages_10-20-2_test_js/ProcessMessages_10-20-2_test.wasm",
-        tallyWasm: "./zkeys/TallyVotes_10-1-2_test/TallyVotes_10-1-2_test_js/TallyVotes_10-1-2_test.wasm",
+        messageProcessorWasm:
+          "./zkeys/MessageProcessorQv_10-20-2_test/MessageProcessorQv_10-20-2_test_js/MessageProcessorQv_10-20-2_test.wasm",
+        voteTallyWasm: "./zkeys/VoteTallyQv_10-1-2_test/VoteTallyQv_10-1-2_test_js/VoteTallyQv_10-1-2_test.wasm",
         useWasm,
         mode: EMode.QV,
         ipfsMessageBackupFiles,

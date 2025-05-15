@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { EMode, MaciState, Poll, IProcessMessagesCircuitInputs, ITallyCircuitInputs } from "@maci-protocol/core";
+import { EMode, MaciState, Poll, IProcessMessagesCircuitInputs, IVoteTallyCircuitInputs } from "@maci-protocol/core";
 import { NOTHING_UP_MY_SLEEVE } from "@maci-protocol/crypto";
 import { Keypair, Message, PublicKey } from "@maci-protocol/domainobjs";
 import { expect } from "chai";
@@ -33,12 +33,12 @@ import {
 } from "./constants";
 import { timeTravel, deployTestContracts } from "./utils";
 
-describe("TallyVotesNonQv", () => {
+describe("VoteTallyNonQv", () => {
   let signer: Signer;
   let maciContract: MACI;
   let pollContract: PollContract;
   let tallyContract: Tally;
-  let mpContract: MessageProcessor;
+  let messageProcessorContract: MessageProcessor;
   let verifierContract: Verifier;
   let verifyingKeysRegistryContract: VerifyingKeysRegistry;
   let policyContract: IBasePolicy;
@@ -89,7 +89,7 @@ describe("TallyVotesNonQv", () => {
 
     const pollContracts = await maciContract.getPoll(pollId);
     pollContract = PollFactory.connect(pollContracts.poll, signer);
-    mpContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
+    messageProcessorContract = MessageProcessorFactory.connect(pollContracts.messageProcessor, signer);
     tallyContract = TallyFactory.connect(pollContracts.tally, signer);
 
     // deploy local poll
@@ -152,7 +152,7 @@ describe("TallyVotesNonQv", () => {
   });
 
   describe("after messages processing", () => {
-    let tallyGeneratedInputs: ITallyCircuitInputs;
+    let tallyGeneratedInputs: IVoteTallyCircuitInputs;
     before(async () => {
       await pollContract.mergeState();
 
@@ -165,7 +165,7 @@ describe("TallyVotesNonQv", () => {
     });
 
     it("tallyVotes() should update the tally commitment", async () => {
-      await mpContract.processMessages(BigInt(generatedInputs.newSbCommitment), [0, 0, 0, 0, 0, 0, 0, 0]);
+      await messageProcessorContract.processMessages(BigInt(generatedInputs.newSbCommitment), [0, 0, 0, 0, 0, 0, 0, 0]);
 
       await tallyContract.tallyVotes(BigInt(tallyGeneratedInputs.newTallyCommitment), [0, 0, 0, 0, 0, 0, 0, 0]);
 

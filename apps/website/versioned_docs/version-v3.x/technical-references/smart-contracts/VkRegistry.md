@@ -11,8 +11,8 @@ Code location: [VerifyingKeysRegistry.sol](https://github.com/privacy-scaling-ex
 
 The VerifyingKeysRegistry is a contract that holds the verifying keys for the zk-SNARK circuits. It holds four different sets of keys:
 
-- `processVks` - The keys for the processMessages circuit
-- `tallyVks` - The keys for the tallyVotes circuit
+- `processVks` - The keys for the MessageProcessor circuit
+- `tallyVks` - The keys for the VoteTally circuit
 - `pollJoiningVk` - The key for the poll joining circuit
 - `pollJoinedVk` - The key for the poll joined circuit
 

@@ -4,16 +4,16 @@ import { PrivateKey, Keypair, VoteCommand, Message, Ballot } from "@maci-protoco
 import { expect } from "chai";
 import { type WitnessTester } from "circomkit";
 
-import { IProcessMessagesInputs, ITallyVotesInputs } from "../types";
+import { IProcessMessagesInputs, IVoteTallyInputs } from "../types";
 
 import { maxVoteOptions } from "./utils/constants";
 import { generateRandomIndex, circomkitInstance } from "./utils/utils";
 
 describe("Ceremony param tests", () => {
   const params = {
-    // processMessages and Tally
+    // MessageProcessor and VoteTally
     stateTreeDepth: 14,
-    // processMessages and Tally
+    // MessageProcessor and VoteTally
     voteOptionTreeDepth: 3,
     // Tally
     stateLeafBatchDepth: 2,
@@ -61,9 +61,9 @@ describe("Ceremony param tests", () => {
     >;
 
     before(async () => {
-      circuit = await circomkitInstance.WitnessTester("processMessages", {
-        file: "./coordinator/qv/processMessages",
-        template: "ProcessMessages",
+      circuit = await circomkitInstance.WitnessTester("MessageProcessor", {
+        file: "./coordinator/qv/MessageProcessor",
+        template: "MessageProcessorQv",
         params: [params.stateTreeDepth, MESSAGE_BATCH_SIZE, params.voteOptionTreeDepth],
       });
     });
@@ -175,7 +175,7 @@ describe("Ceremony param tests", () => {
     });
   });
 
-  describe("TallyVotes circuit", function test() {
+  describe("VoteTally circuit", function test() {
     this.timeout(900000);
 
     let testCircuit: WitnessTester<
@@ -204,9 +204,9 @@ describe("Ceremony param tests", () => {
     >;
 
     before(async () => {
-      testCircuit = await circomkitInstance.WitnessTester("tallyVotes", {
-        file: "./coordinator/qv/tallyVotes",
-        template: "TallyVotes",
+      testCircuit = await circomkitInstance.WitnessTester("VoteTally", {
+        file: "./coordinator/qv/VoteTally",
+        template: "VoteTallyQv",
         params: [14, 1, 3],
       });
     });
@@ -274,13 +274,13 @@ describe("Ceremony param tests", () => {
       });
 
       it("should produce the correct result commitments", async () => {
-        const generatedInputs = poll.tallyVotes() as unknown as ITallyVotesInputs;
+        const generatedInputs = poll.tallyVotes() as unknown as IVoteTallyInputs;
         const witness = await testCircuit.calculateWitness(generatedInputs);
         await testCircuit.expectConstraintPass(witness);
       });
 
       it("should produce the correct result if the initial tally is not zero", async () => {
-        const generatedInputs = poll.tallyVotes() as unknown as ITallyVotesInputs;
+        const generatedInputs = poll.tallyVotes() as unknown as IVoteTallyInputs;
 
         // Start the tally from non-zero value
         let randIdx = generateRandomIndex(Object.keys(generatedInputs).length);

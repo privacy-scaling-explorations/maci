@@ -90,7 +90,7 @@ To test the circuits package, please use `pnpm run test`. This will run all of t
 
 To run individual tests, you can use the following commands (for all other circuits please refer to the `package.json` scripts section):
 
-- `pnpm run test:processMessages` to run the tests for the `processMessages` circuit.
-- `pnpm run test:tallyVotes` to run the tests for the `tallyVotes` circuit.
+- `pnpm run test:messageProcessor` to run the tests for the `MessageProcessor` circuit.
+- `pnpm run test:voteTally` to run the tests for the `VoteTally` circuit.
 
 More details on testing are provided in the [testing section](/docs/guides/testing/testing-introduction) of the documentation.

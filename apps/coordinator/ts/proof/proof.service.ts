@@ -139,12 +139,12 @@ export class ProofGeneratorService {
         blocksPerBatch,
         rapidsnark: process.env.COORDINATOR_RAPIDSNARK_EXE,
         mode,
-        tallyZkey: tally.zkey,
-        tallyWitgen: tally.witgen,
-        tallyWasm: tally.wasm,
-        processZkey: messageProcessor.zkey,
-        processWitgen: messageProcessor.witgen,
-        processWasm: messageProcessor.wasm,
+        voteTallyZkey: tally.zkey,
+        voteTallyWitnessGenerator: tally.witnessGenerator,
+        voteTallyWasm: tally.wasm,
+        messageProcessorZkey: messageProcessor.zkey,
+        messageProcessorWitnessGenerator: messageProcessor.witnessGenerator,
+        messageProcessorWasm: messageProcessor.wasm,
         tallyFile: path.resolve("./tally.json"),
       });
 

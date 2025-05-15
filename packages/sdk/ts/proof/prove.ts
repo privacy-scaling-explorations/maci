@@ -32,7 +32,7 @@ export const proveOnChain = async ({
   const {
     maci: maciContract,
     poll: pollContract,
-    messageProcessor: mpContract,
+    messageProcessor: messageProcessorContract,
     tally: tallyContract,
   } = await getPollContracts({ maciAddress, pollId, signer });
 
@@ -52,7 +52,7 @@ export const proveOnChain = async ({
     abi: VerifyingKeysRegistryFactory.abi,
     signer,
   });
-  const verifierContractAddress = await mpContract.verifier();
+  const verifierContractAddress = await messageProcessorContract.verifier();
   const isVerifierExists = await contractExists(signer.provider!, verifierContractAddress);
 
   if (!isVerifierExists) {
@@ -86,7 +86,7 @@ export const proveOnChain = async ({
 
   const prover = new Prover({
     maciContract,
-    mpContract,
+    messageProcessorContract,
     pollContract,
     verifyingKeysRegistryContract,
     verifierContract,

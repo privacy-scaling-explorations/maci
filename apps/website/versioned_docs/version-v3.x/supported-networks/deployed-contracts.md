@@ -25,7 +25,7 @@ In order to verify you will need the following:
 - run checkVerifyingKeys with the cli (see below)
 
 ```bash
-cd cli && node build/ts/index.js checkVerifyingKeys -q false -vk 0x74569d524a193daC0D3Df17B9E207C916174745b -s 6 -i 2 -m 9 -v 3 -b 2 -p ./zkeys/ProcessMessages_6-9-2-3/processMessages_6-9-2-3.zkey -t ./zkeys/TallyVotes_6-2-3/tallyVotes_6-2-3.zkey
+cd cli && node build/ts/index.js checkVerifyingKeys -q false -vk 0x74569d524a193daC0D3Df17B9E207C916174745b -s 6 -i 2 -m 9 -v 3 -b 2 -p ./zkeys/MessageProcessorQv_6-9-2-3/MessageProcessorQv_6-9-2-3.zkey -t ./zkeys/VoteTallyQv_6-2-3/tallyVotes_6-2-3.zkey
 ```
 
 :::info

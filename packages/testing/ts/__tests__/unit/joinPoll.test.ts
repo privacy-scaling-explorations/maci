@@ -135,7 +135,7 @@ describe("joinPoll", function test() {
       pollJoiningZkey: testPollJoiningZkeyPath,
       useWasm: true,
       pollWasm: testPollJoiningWasmPath,
-      pollWitgen: testPollJoiningWitnessPath,
+      pollWitnessGenerator: testPollJoiningWitnessPath,
       rapidsnark: testRapidsnarkPath,
       sgDataArg: DEFAULT_SG_DATA,
       ivcpDataArg: DEFAULT_IVCP_DATA,

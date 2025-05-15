@@ -33,7 +33,7 @@ export interface IGetZkeyFilePathsData {
   wasm: string;
 
   /**
-   * Witgen filepath
+   * Witness generator filepath
    */
-  witgen: string;
+  witnessGenerator: string;
 }

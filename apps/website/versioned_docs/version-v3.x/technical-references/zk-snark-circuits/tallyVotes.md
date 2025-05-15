@@ -15,10 +15,10 @@ sidebar_position: 4
 | 1   | State leaf batch depth | Allows $(5^{n})$ users' votes to be processed per batch. |
 | 2   | Vote option tree depth | Allows $(5^{n})$ vote options.                           |
 
-![TallyVotes](/img/circuits/tallyVotes.svg)
+![VoteTally](/img/circuits/tallyVotes.svg)
 
 :::info
-A version working with non quadratic and full credits voting (non-qv, full) is also [available](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/coordinator/non-qv/tallyVotes.circom). This version is called `tallyVotesNonQv` and is to be used when the Poll is not using the quadratic voting feature. Note that by default MACI works with quadratic voting.
+A version working with non quadratic and full credits voting (non-qv, full) is also [available](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/coordinator/non-qv/VoteTally.circom). This version is called `tallyVotes` and is to be used when the Poll is not using the quadratic voting feature. Note that by default MACI works with quadratic voting.
 :::
 
 #### Input signals

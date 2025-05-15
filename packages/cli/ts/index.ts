@@ -204,12 +204,12 @@ program
   .requiredOption("-v, --vote-option-tree-depth <voteOptionTreeDepth>", "the vote option tree depth", parseInt)
   .requiredOption("-b, --message-batch-size <messageBatchSize>", "the message batch size", parseInt)
   .requiredOption(
-    "-p, --process-messages-zkey <processMessagesZkeyPath>",
-    "the process messages zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+    "-p, --message-processor-zkey <messageProcessorZkeyPath>",
+    "the message processor zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .requiredOption(
-    "-t, --tally-votes-zkey <tallyVotesZkeyPath>",
-    "the tally votes zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+    "-t, --vote-tally-zkey <voteTallyZkeyPath>",
+    "the vote tally zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .requiredOption(
     "--poll-joining-zkey <pollJoiningZkey>",
@@ -236,8 +236,8 @@ program
         tallyProcessingStateTreeDepth: args.tallyProcessingStateTreeDepth,
         voteOptionTreeDepth: args.voteOptionTreeDepth,
         messageBatchSize: args.messageBatchSize,
-        processMessagesZkeyPath: args.processMessagesZkey,
-        tallyVotesZkeyPath: args.tallyVotesZkey,
+        messageProcessorZkeyPath: args.messageProcessorZkey,
+        voteTallyZkeyPath: args.voteTallyZkey,
         pollJoiningZkeyPath: args.pollJoiningZkey,
         pollJoinedZkeyPath: args.pollJoinedZkey,
         verifyingKeysRegistry: contractAddress,
@@ -452,7 +452,7 @@ program
   )
   .option("-w, --wasm", "whether to use the wasm binaries")
   .option("-r, --rapidsnark <rapidsnark>", "the path to the rapidsnark binary")
-  .option("-g, --poll-witnessgen <pollWitnessgen>", "the path to the poll witness generation binary")
+  .option("-g, --poll-witness-generator <pollWitnessGenerator>", "the path to the poll witness generation binary")
   .action(async (args) => {
     try {
       const signer = await getSigner();
@@ -478,7 +478,7 @@ program
         pollWasm: args.pollWasm,
         useWasm: args.wasm,
         rapidsnark: args.rapidsnark,
-        pollWitgen: args.pollWitnessgen,
+        pollWitnessGenerator: args.pollWitnessGenerator,
         sgDataArg: args.sgData ?? DEFAULT_SG_DATA,
         ivcpDataArg: args.ivcpData ?? DEFAULT_IVCP_DATA,
       });
@@ -511,28 +511,28 @@ program
     "the poll joined zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .option(
-    "--process-messages-zkey-qv <processMessagesZkeyPathQv>",
-    "the process messages qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+    "--message-processor-zkey-qv <messageProcessorZkeyPathQv>",
+    "the message processor qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .option(
-    "--tally-votes-zkey-qv <tallyVotesZkeyPathQv>",
-    "the tally votes qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+    "--vote-tally-zkey-qv <voteTallyZkeyPathQv>",
+    "the vote tally qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .option(
-    "--process-messages-zkey-non-qv <processMessagesZkeyPathNonQv>",
-    "the process messages non-qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+    "--message-processor-zkey-non-qv <messageProcessorZkeyPathNonQv>",
+    "the message processor non-qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .option(
-    "--tally-votes-zkey-non-qv <tallyVotesZkeyPathNonQv>",
-    "the tally votes non-qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+    "--vote-tally-zkey-non-qv <voteTallyZkeyPathNonQv>",
+    "the vote tally non-qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .option(
-    "--process-messages-zkey-full <processMessagesZkeyPathFull>",
-    "the process messages full zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+    "--message-processor-zkey-full <messageProcessorZkeyPathFull>",
+    "the message processor full zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .option(
-    "--tally-votes-zkey-full <tallyVotesZkeyPathFull>",
-    "the tally votes full zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+    "--vote-tally-zkey-full <tallyVotesZkeyPathFull>",
+    "the vote tally full zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .option("-m, --mode <mode>", "Voting mode (qv, non-qv, full)", (value) => MODE_NAME_TO_ENUM[value], EMode.QV)
   .option("-k, --vk-registry <vkRegistry>", "the vk registry contract address")
@@ -549,23 +549,23 @@ program
       });
 
       const processKeys = {
-        [EMode.QV]: args.processMessagesZkeyQv,
-        [EMode.NON_QV]: args.processMessagesZkeyNonQv,
-        [EMode.FULL]: args.processMessagesZkeyFull,
+        [EMode.QV]: args.messageProcessorZkeyQv,
+        [EMode.NON_QV]: args.messageProcessorZkeyNonQv,
+        [EMode.FULL]: args.messageProcessorZkeyFull,
       };
 
       const tallyKeys = {
-        [EMode.QV]: args.tallyVotesZkeyQv,
-        [EMode.NON_QV]: args.tallyVotesZkeyNonQv,
-        [EMode.FULL]: args.tallyVotesZkeyFull,
+        [EMode.QV]: args.voteTallyZkeyQv,
+        [EMode.NON_QV]: args.voteTallyZkeyNonQv,
+        [EMode.FULL]: args.voteTallyZkeyFull,
       };
 
       const { pollJoiningVerifyingKey, pollJoinedVerifyingKey, processVerifyingKey, tallyVerifyingKey } =
         await extractAllVerifyingKeys({
           pollJoiningZkeyPath: args.pollJoiningZkey,
           pollJoinedZkeyPath: args.pollJoinedZkey,
-          processMessagesZkeyPath: processKeys[args.mode],
-          tallyVotesZkeyPath: tallyKeys[args.mode],
+          messageProcessorZkeyPath: processKeys[args.mode],
+          voteTallyZkeyPath: tallyKeys[args.mode],
         });
 
       await setVerifyingKeys({
@@ -695,34 +695,34 @@ program
     "the poll joined zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .requiredOption(
-    "--process-messages-zkey-qv <processMessagesZkeyPathQv>",
-    "the process messages qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+    "--message-processor-zkey-qv <messageProcessorZkeyPathQv>",
+    "the message processor qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .requiredOption(
-    "--tally-votes-zkey-qv <tallyVotesZkeyPathQv>",
-    "the tally votes qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+    "--vote-tally-zkey-qv <voteTallyZkeyPathQv>",
+    "the vote tally qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .requiredOption(
-    "--process-messages-zkey-non-qv <processMessagesZkeyPathNonQv>",
-    "the process messages non-qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+    "--message-processor-zkey-non-qv <messageProcessorZkeyPathNonQv>",
+    "the message processor non-qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .requiredOption(
-    "--process-messages-zkey-full <processMessagesZkeyPathFull>",
-    "the process messages full zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+    "--message-processor-zkey-full <messageProcessorZkeyPathFull>",
+    "the message processor full zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .requiredOption(
-    "--tally-votes-zkey-non-qv <tallyVotesZkeyPathNonQv>",
-    "the tally votes non-qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
+    "--vote-tally-zkey-non-qv <voteTallyZkeyPathNonQv>",
+    "the vote tally non-qv zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
   .requiredOption("-o, --output-file <outputFile>", "the output file path of extracted vkeys")
   .action(async (args) => {
     try {
       await extractVerifyingKeyToFile({
-        processMessagesZkeyPathQv: args.processMessagesZkeyQv,
-        processMessagesZkeyPathFull: args.processMessagesZkeyFull,
-        tallyVotesZkeyPathQv: args.tallyVotesZkeyQv,
-        processMessagesZkeyPathNonQv: args.processMessagesZkeyNonQv,
-        tallyVotesZkeyPathNonQv: args.tallyVotesZkeyNonQv,
+        messageProcessorZkeyPathQv: args.messageProcessorZkeyQv,
+        messageProcessorZkeyPathFull: args.messageProcessorZkeyFull,
+        voteTallyZkeyPathQv: args.voteTallyZkeyQv,
+        messageProcessorZkeyPathNonQv: args.messageProcessorZkeyNonQv,
+        voteTallyZkeyPathNonQv: args.voteTallyZkeyNonQv,
         pollJoiningZkeyPath: args.pollJoiningZkey,
         pollJoinedZkeyPath: args.pollJoinedZkey,
         outputFilePath: args.outputFile,
@@ -975,20 +975,26 @@ program
     "the tally file with results, per vote option spent credits, spent voice credits total",
   )
   .option("-r, --rapidsnark <rapidsnark>", "the path to the rapidsnark binary")
-  .option("-g, --process-witnessgen <processWitnessgen>", "the path to the process witness generation binary")
-  .option("--process-witnessdat <processWitnessdat>", "the path to the process witness dat file")
-  .option("--tally-witnessgen <tallyWitnessgen>", "the path to the tally witness generation binary")
-  .option("--tally-witnessdat <tallyWitnessdat>", "the path to the tally witness dat file")
+  .option(
+    "-g, --message-processor-witness-generator <messageProcessorWitnessGenerator>",
+    "the path to the process witness generation binary",
+  )
+  .option("--message-processor-witnessDat <messageProcessorWitnessDat>", "the path to the process witness dat file")
+  .option(
+    "--vote-tally-witness-generator <voteTallyWitnessGenerator>",
+    "the path to the tally witness generation binary",
+  )
+  .option("--vote-tally-witnessDat <voteTallyWitnessDat>", "the path to the tally witness dat file")
   .requiredOption("--poll-joining-zkey <processJoinZkey>", "the path to the poll join zkey")
-  .requiredOption("--process-zkey <processZkey>", "the path to the process zkey")
-  .requiredOption("--tally-zkey <tallyZkey>", "the path to the tally zkey")
+  .requiredOption("--message-processor-zkey <messageProcessorZkey>", "the path to the process zkey")
+  .requiredOption("--vote-tally-zkey <voteTallyZkey>", "the path to the tally zkey")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-p, --rpc-provider <provider>", "the rpc provider URL")
   .requiredOption("-f, --output <outputDir>", "the output directory for proofs")
   .option("--transaction-hash <transactionHash>", "transaction hash of MACI contract creation")
   .option("-w, --wasm", "whether to use the wasm binaries")
-  .option("--process-wasm <processWasm>", "the path to the process witness generation wasm binary")
-  .option("--tally-wasm <tallyWasm>", "the path to the tally witness generation wasm binary")
+  .option("--message-processor-wasm <messageProcessorWasm>", "the path to the process witness generation wasm binary")
+  .option("--vote-tally-wasm <voteTallyWasm>", "the path to the tally witness generation wasm binary")
   .option("--state-file <stateFile>", "the path to the state file containing the serialized maci state")
   .option("--start-block <startBlock>", "the block number to start looking for events from", parseInt)
   .option("--end-block <endBlock>", "the block number to end looking for events from", parseInt)
@@ -1013,15 +1019,15 @@ program
       transactionHash,
       output,
       tallyFile,
-      tallyZkey,
-      tallyWitnessgen,
-      tallyWasm,
-      processZkey,
-      processWitnessgen,
-      processWasm,
+      voteTallyZkey,
+      voteTallyWitnessGenerator,
+      voteTallyWasm,
+      messageProcessorZkey,
+      messageProcessorWitnessGenerator,
+      messageProcessorWasm,
       mode,
-      tallyWitnessdat,
-      processWitnessdat,
+      voteTallyWitnessDat,
+      messageProcessorWitnessDat,
       wasm,
       rapidsnark,
     }) => {
@@ -1051,15 +1057,15 @@ program
           signer,
           outputDir: output,
           tallyFile,
-          tallyZkey,
-          tallyWitgen: tallyWitnessgen,
-          tallyWasm,
-          processZkey,
-          processWitgen: processWitnessgen,
-          processWasm,
+          voteTallyZkey,
+          voteTallyWitnessGenerator,
+          voteTallyWasm,
+          messageProcessorZkey,
+          messageProcessorWitnessGenerator,
+          messageProcessorWasm,
           mode,
-          tallyDatFile: tallyWitnessdat,
-          processDatFile: processWitnessdat,
+          voteTallyWitnessDatFile: voteTallyWitnessDat,
+          messageProcessorWitnessDatFile: messageProcessorWitnessDat,
           useWasm: wasm,
           rapidsnark,
         });

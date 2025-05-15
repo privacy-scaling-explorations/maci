@@ -23,9 +23,14 @@ task("prove", "Command to generate proofs")
   .addParam("outputDir", "Output directory for proofs", undefined, types.string)
   .addParam("coordinatorPrivateKey", "Coordinator maci private key", undefined, types.string)
   .addOptionalParam("rapidsnark", "Rapidsnark binary path", undefined, types.string)
-  .addOptionalParam("processWitgen", "Process witgen binary path", undefined, types.string)
+  .addOptionalParam(
+    "messageProcessorWitnessGenerator",
+    "MessageProcessor witness generator binary path",
+    undefined,
+    types.string,
+  )
   .addParam("tallyFile", "The file to store the tally proof", undefined, types.string)
-  .addOptionalParam("tallyWitgen", "Tally witgen binary path", undefined, types.string)
+  .addOptionalParam("voteTallyWitnessGenerator", "VoteTally witness generator binary path", undefined, types.string)
   .addOptionalParam("stateFile", "The file with the serialized maci state", undefined, types.string)
   .addOptionalParam("startBlock", "The block number to start fetching logs from", undefined, types.int)
   .addOptionalParam("blocksPerBatch", "The number of blocks to fetch logs from", undefined, types.int)
@@ -45,8 +50,8 @@ task("prove", "Command to generate proofs")
         coordinatorPrivateKey,
         stateFile,
         rapidsnark,
-        processWitgen,
-        tallyWitgen,
+        messageProcessorWitnessGenerator,
+        voteTallyWitnessGenerator,
         tallyFile,
         startBlock,
         blocksPerBatch,
@@ -129,27 +134,27 @@ task("prove", "Command to generate proofs")
       };
 
       const mode = deployment.getDeployConfigField<EMode | null>(EContracts.Poll, "mode") ?? EMode.QV;
-      const tallyZkey = deployment.getDeployConfigField<string>(
+      const voteTallyZkey = deployment.getDeployConfigField<string>(
         EContracts.VerifyingKeysRegistry,
-        `zkeys.${modeKeys[mode]}.tallyVotesZkey`,
+        `zkeys.${modeKeys[mode]}.voteTallyZkey`,
         true,
       );
 
-      const tallyWasm = deployment.getDeployConfigField<string>(
+      const voteTallyWasm = deployment.getDeployConfigField<string>(
         EContracts.VerifyingKeysRegistry,
-        `zkeys.${modeKeys[mode]}.tallyWasm`,
+        `zkeys.${modeKeys[mode]}.voteTallyWasm`,
         true,
       );
 
-      const processZkey = deployment.getDeployConfigField<string>(
+      const messageProcessorZkey = deployment.getDeployConfigField<string>(
         EContracts.VerifyingKeysRegistry,
-        `zkeys.${modeKeys[mode]}.processMessagesZkey`,
+        `zkeys.${modeKeys[mode]}.messageProcessorZkey`,
         true,
       );
 
-      const processWasm = deployment.getDeployConfigField<string>(
+      const messageProcessorWasm = deployment.getDeployConfigField<string>(
         EContracts.VerifyingKeysRegistry,
-        `zkeys.${modeKeys[mode]}.processWasm`,
+        `zkeys.${modeKeys[mode]}.messageProcessorWasm`,
         true,
       );
 
@@ -159,14 +164,14 @@ task("prove", "Command to generate proofs")
         tallyContractAddress,
         rapidsnark,
         tally: {
-          zkey: tallyZkey,
-          witgen: tallyWitgen,
-          wasm: tallyWasm,
+          zkey: voteTallyZkey,
+          witnessGenerator: voteTallyWitnessGenerator,
+          wasm: voteTallyWasm,
         },
         messageProcessor: {
-          zkey: processZkey,
-          witgen: processWitgen,
-          wasm: processWasm,
+          zkey: messageProcessorZkey,
+          witnessGenerator: messageProcessorWitnessGenerator,
+          wasm: messageProcessorWasm,
         },
         outputDir,
         tallyOutputFile: tallyFile,

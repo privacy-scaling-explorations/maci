@@ -162,7 +162,7 @@ The core package contains a number of tests that are used to verify that the cor
 
 These tests interact with the crypto and dombinobjs packages, where mock data comes from. Their main goal is to ensure that the core functions work as expected, and that the state is as expected after a series of operations.
 
-Currently, there is a blend of e2e and unit tests, where e2e tests are used to verify that the entire MACI local processing works as expected (users signup, publish votes, messages are processed and finally these votes are tallied). Unit tests on the other hand are used to verify that the core functions work as expected, such as `processMessage` and `tallyVotes`. You will find them in separate files, with e2e being [here](https://github.com/privacy-scaling-explorations/maci/blob/dev/core/ts/__tests__/e2e.test.ts) and unit tests in the other files.
+Currently, there is a blend of e2e and unit tests, where e2e tests are used to verify that the entire MACI local processing works as expected (users signup, publish votes, messages are processed and finally these votes are tallied). Unit tests on the other hand are used to verify that the core functions work as expected, such as `MessageProcessor` and `VoteTally`. You will find them in separate files, with e2e being [here](https://github.com/privacy-scaling-explorations/maci/blob/dev/core/ts/__tests__/e2e.test.ts) and unit tests in the other files.
 
 ### Domainobjs/Crypto tests
 

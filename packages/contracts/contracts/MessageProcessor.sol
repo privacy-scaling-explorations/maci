@@ -29,7 +29,7 @@ contract MessageProcessor is Clone, SnarkCommon, Hasher, IMessageProcessor, Doma
   bool public processingComplete;
 
   /// @notice  The number of batches processed
-  uint256 public numBatchesProcessed;
+  uint256 public totalBatchesProcessed;
 
   /// @notice The current message batch index
   uint256 public currentBatchIndex;
@@ -75,7 +75,7 @@ contract MessageProcessor is Clone, SnarkCommon, Hasher, IMessageProcessor, Doma
     uint256[] memory batchHashes;
     // Copy the state and ballot commitment and set the batch index if this
     // is the first batch to process
-    if (numBatchesProcessed == 0) {
+    if (totalBatchesProcessed == 0) {
       uint256 currentSbCommitment = poll.currentSbCommitment();
       sbCommitment = currentSbCommitment;
 
@@ -105,7 +105,7 @@ contract MessageProcessor is Clone, SnarkCommon, Hasher, IMessageProcessor, Doma
 
     (, uint256 numMessages) = poll.totalSignupsAndMessages();
 
-    updateMessageProcessingData(_newSbCommitment, numMessages <= messageBatchSize * (numBatchesProcessed + 1));
+    updateMessageProcessingData(_newSbCommitment, numMessages <= messageBatchSize * (totalBatchesProcessed + 1));
   }
 
   /// @inheritdoc IMessageProcessor
@@ -183,6 +183,6 @@ contract MessageProcessor is Clone, SnarkCommon, Hasher, IMessageProcessor, Doma
     sbCommitment = _newSbCommitment;
     processingComplete = _processingComplete;
     currentBatchIndex -= 1;
-    numBatchesProcessed++;
+    totalBatchesProcessed++;
   }
 }

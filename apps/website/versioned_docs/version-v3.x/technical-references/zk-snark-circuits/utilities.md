@@ -7,7 +7,7 @@ sidebar_position: 5
 
 #### Process Messages Input Hasher
 
-A utility circuit used by the main `processMessages` circuit to hash its inputs.
+A utility circuit used by the main `MessageProcessor` circuit to hash its inputs.
 
 ![ProcessMessagesInputHasher](/img/circuits/processMessagesInputHasher.svg)
 
@@ -35,7 +35,7 @@ It outputs one field element, which is the SHA256 hash of the following inputs:
 
 #### ResultsCommitmentVerifier
 
-A utility circuit used by the main `tallyVotes` circuit to verify that the results commitment is correct.
+A utility circuit used by the main `VoteTally` circuit to verify that the results commitment is correct.
 
 ![ResultsCommitmentVerifier](/img/circuits/resultsCommitmentVerifier.svg)
 

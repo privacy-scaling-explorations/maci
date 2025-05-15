@@ -60,7 +60,7 @@ task("submitOnChain", "Command to prove the result of a poll on-chain")
       address: pollContracts.poll,
     });
 
-    const [isStateAqMerged, mpContract, tallyContract] = await Promise.all([
+    const [isStateAqMerged, messageProcessorContract, tallyContract] = await Promise.all([
       pollContract.stateMerged(),
       deployment.getContract<MessageProcessor>({
         name: EContracts.MessageProcessor,
@@ -92,7 +92,7 @@ task("submitOnChain", "Command to prove the result of a poll on-chain")
 
     const prover = new Prover({
       maciContract,
-      mpContract,
+      messageProcessorContract,
       pollContract,
       verifyingKeysRegistryContract,
       verifierContract,

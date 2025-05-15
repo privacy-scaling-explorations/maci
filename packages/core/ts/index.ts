@@ -12,7 +12,7 @@ export {
 export type {
   IJoiningCircuitArgs,
   IPollJoiningCircuitInputs,
-  ITallyCircuitInputs,
+  IVoteTallyCircuitInputs,
   IProcessMessagesCircuitInputs,
   TCircuitInputs,
   ITreeDepths,

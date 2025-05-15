@@ -86,17 +86,17 @@ export interface IProveParams {
   /**
    * The path to the process zkey file
    */
-  processZkey: string;
+  messageProcessorZkey: string;
 
   /**
-   * The path to the process witnessgen binary
+   * The path to the process witness generator binary
    */
-  processWitgen?: string;
+  messageProcessorWitnessGenerator?: string;
 
   /**
    * The path to the process wasm file
    */
-  processWasm?: string;
+  messageProcessorWasm?: string;
 
   /**
    * The file to store the tally proof
@@ -106,17 +106,17 @@ export interface IProveParams {
   /**
    * The path to the tally zkey file
    */
-  tallyZkey: string;
+  voteTallyZkey: string;
 
   /**
-   * The path to the tally witnessgen binary
+   * The path to the tally witness generator binary
    */
-  tallyWitgen?: string;
+  voteTallyWitnessGenerator?: string;
 
   /**
    * The path to the tally wasm file
    */
-  tallyWasm?: string;
+  voteTallyWasm?: string;
 
   /**
    * Voting mode
@@ -225,7 +225,7 @@ export interface IProofGeneratorParams {
 }
 
 /**
- * Interface that groups files for circuits (zkey, witgen, wasm)
+ * Interface that groups files for circuits (zkey, witnessGenerator, wasm)
  */
 export interface ICircuitFiles {
   /**
@@ -234,9 +234,9 @@ export interface ICircuitFiles {
   zkey: string;
 
   /**
-   * The path to the witnessgen binary
+   * The path to the witness generator binary
    */
-  witgen?: string;
+  witnessGenerator?: string;
 
   /**
    * The path to the wasm file
@@ -378,7 +378,7 @@ export interface IProverParams {
   /**
    * MessageProcessor contract typechain wrapper
    */
-  mpContract: MessageProcessor;
+  messageProcessorContract: MessageProcessor;
 
   /**
    * MACI contract typechain wrapper

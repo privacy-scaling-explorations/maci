@@ -50,14 +50,14 @@ export class TestingClass {
   private pollJoinedZkeyPath: string;
 
   /**
-   * Paths to the processMessages zkey file
+   * Paths to the MessageProcessor zkey file
    */
-  private processMessagesZkeyPath: string;
+  private messageProcessorZkeyPath: string;
 
   /**
-   * Paths to the tallyVotes zkey file
+   * Paths to the VoteTally zkey file
    */
-  private tallyVotesZkeyPath: string;
+  private voteTallyZkeyPath: string;
 
   /**
    * Paths to the poll wasm file
@@ -65,9 +65,9 @@ export class TestingClass {
   private pollWasm: string;
 
   /**
-   * Paths to the poll witgen file
+   * Paths to the poll witnessGenerator file
    */
-  private pollWitgen: string;
+  private pollWitnessGenerator: string;
 
   /**
    * Paths to the rapidsnark file
@@ -81,18 +81,18 @@ export class TestingClass {
   constructor({
     pollJoiningZkeyPath,
     pollJoinedZkeyPath,
-    processMessagesZkeyPath,
-    tallyVotesZkeyPath,
+    messageProcessorZkeyPath,
+    voteTallyZkeyPath,
     pollWasm,
-    pollWitgen,
+    pollWitnessGenerator,
     rapidsnark,
   }: ITestingClassPaths) {
     this.pollJoiningZkeyPath = pollJoiningZkeyPath;
     this.pollJoinedZkeyPath = pollJoinedZkeyPath;
-    this.processMessagesZkeyPath = processMessagesZkeyPath;
-    this.tallyVotesZkeyPath = tallyVotesZkeyPath;
+    this.messageProcessorZkeyPath = messageProcessorZkeyPath;
+    this.voteTallyZkeyPath = voteTallyZkeyPath;
     this.pollWasm = pollWasm;
-    this.pollWitgen = pollWitgen;
+    this.pollWitnessGenerator = pollWitnessGenerator;
     this.rapidsnark = rapidsnark;
   }
 
@@ -130,8 +130,8 @@ export class TestingClass {
       await extractAllVerifyingKeys({
         pollJoiningZkeyPath: this.pollJoiningZkeyPath,
         pollJoinedZkeyPath: this.pollJoinedZkeyPath,
-        processMessagesZkeyPath: this.processMessagesZkeyPath,
-        tallyVotesZkeyPath: this.tallyVotesZkeyPath,
+        messageProcessorZkeyPath: this.messageProcessorZkeyPath,
+        voteTallyZkeyPath: this.voteTallyZkeyPath,
       });
 
     const verifyingKeysRegistry = await deployVerifyingKeysRegistryContract({ signer });
@@ -218,7 +218,7 @@ export class TestingClass {
       privateKey: user.privateKey.serialize(),
       pollJoiningZkey: this.pollJoiningZkeyPath,
       pollWasm: this.pollWasm,
-      pollWitgen: this.pollWitgen,
+      pollWitnessGenerator: this.pollWitnessGenerator,
       rapidsnark: this.rapidsnark,
       signer,
       useWasm: true,

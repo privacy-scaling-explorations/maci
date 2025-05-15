@@ -7,8 +7,8 @@ This package contains the zk-SNARK circuits written in Circom 2.0.
 
 The main circuits are:
 
-- `processMessages.circom`
-- `tallyVotes.circom`
+- `MessageProcessor.circom`
+- `VoteTally.circom`
 
 The rest of the circuits are utilities templates that are required for the main circuits to work correctly. These include utilities such as float math, conversion of private keys, and Poseidon hashing/encryption.
 

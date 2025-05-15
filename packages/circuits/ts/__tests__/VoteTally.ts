@@ -3,12 +3,12 @@ import { poseidon } from "@maci-protocol/crypto";
 import { Keypair, VoteCommand, Message } from "@maci-protocol/domainobjs";
 import { type WitnessTester } from "circomkit";
 
-import { ITallyVotesInputs } from "../types";
+import { IVoteTallyInputs } from "../types";
 
 import { STATE_TREE_DEPTH, duration, maxVoteOptions, messageBatchSize, voiceCreditBalance } from "./utils/constants";
 import { generateRandomIndex, circomkitInstance } from "./utils/utils";
 
-describe("TallyVotes circuit", function test() {
+describe("VoteTally circuit", function test() {
   this.timeout(900000);
 
   const treeDepths = {
@@ -50,15 +50,15 @@ describe("TallyVotes circuit", function test() {
   const { privateKey, publicKey: pollPublicKey } = userKeypair;
 
   before(async () => {
-    circuit = await circomkitInstance.WitnessTester("tallyVotes", {
-      file: "./coordinator/qv/tallyVotes",
-      template: "TallyVotes",
+    circuit = await circomkitInstance.WitnessTester("VoteTally", {
+      file: "./coordinator/qv/VoteTally",
+      template: "VoteTallyQv",
       params: [10, 1, 2],
     });
 
-    circuitNonQv = await circomkitInstance.WitnessTester("tallyVotesNonQv", {
-      file: "./coordinator/non-qv/tallyVotes",
-      template: "TallyVotesNonQv",
+    circuitNonQv = await circomkitInstance.WitnessTester("VoteTallyNonQv", {
+      file: "./coordinator/non-qv/VoteTally",
+      template: "VoteTallyNonQv",
       params: [10, 1, 2],
     });
   });
@@ -120,13 +120,13 @@ describe("TallyVotes circuit", function test() {
     });
 
     it("should produce the correct result commitments", async () => {
-      const generatedInputs = poll.tallyVotes() as unknown as ITallyVotesInputs;
+      const generatedInputs = poll.tallyVotes() as unknown as IVoteTallyInputs;
       const witness = await circuit.calculateWitness(generatedInputs);
       await circuit.expectConstraintPass(witness);
     });
 
     it("should produce the correct result if the initial tally is not zero", async () => {
-      const generatedInputs = poll.tallyVotes() as unknown as ITallyVotesInputs;
+      const generatedInputs = poll.tallyVotes() as unknown as IVoteTallyInputs;
 
       // Start the tally from non-zero value
       let randIdx = generateRandomIndex(Object.keys(generatedInputs).length);
@@ -197,14 +197,14 @@ describe("TallyVotes circuit", function test() {
     });
 
     it("should produce the correct result commitments", async () => {
-      const generatedInputs = poll.tallyVotes() as unknown as ITallyVotesInputs;
+      const generatedInputs = poll.tallyVotes() as unknown as IVoteTallyInputs;
 
       const witness = await circuitNonQv.calculateWitness(generatedInputs);
       await circuitNonQv.expectConstraintPass(witness);
     });
 
     it("should produce the correct result if the initial tally is not zero", async () => {
-      const generatedInputs = poll.tallyVotes() as unknown as ITallyVotesInputs;
+      const generatedInputs = poll.tallyVotes() as unknown as IVoteTallyInputs;
 
       // Start the tally from non-zero value
       let randIdx = generateRandomIndex(Object.keys(generatedInputs).length);
@@ -280,7 +280,7 @@ describe("TallyVotes circuit", function test() {
       }
 
       for (let i = 0; i < NUM_BATCHES; i += 1) {
-        const generatedInputs = poll.tallyVotes() as unknown as ITallyVotesInputs;
+        const generatedInputs = poll.tallyVotes() as unknown as IVoteTallyInputs;
 
         // For the 0th batch, the circuit should ignore currentResults,
         // currentSpentVoiceCreditSubtotal, and
