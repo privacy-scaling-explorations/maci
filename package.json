@@ -33,7 +33,7 @@
     "types": "lerna run types",
     "docs": "lerna run docs",
     "prepare": "is-ci || husky",
-    "generateMaciKeyPair": "node packages/cli/build/ts/index.js generateMaciKeyPair"
+    "generate-maci-keypair": "node packages/cli/build/ts/index.js generateMaciKeyPair"
   },
   "author": "PSE",
   "devDependencies": {

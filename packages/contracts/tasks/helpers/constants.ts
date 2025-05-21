@@ -35,6 +35,10 @@ export enum ESupportedChains {
   GnosisChiado = "gnosis_chiado",
   Polygon = "polygon",
   PolygonAmoy = "polygon_amoy",
+  Linea = "linea",
+  LineaSepolia = "linea_sepolia",
+  ZkSyncEra = "zksync_era",
+  ZkSyncSepolia = "zksync_sepolia",
   Coverage = "coverage",
   Hardhat = "hardhat",
 }
@@ -58,6 +62,10 @@ export enum EChainId {
   GnosisChiado = 10200,
   Polygon = 137,
   PolygonAmoy = 80002,
+  Linea = 59144,
+  LineaSepolia = 59141,
+  ZkSyncEra = 324,
+  ZkSyncSepolia = 300,
   Coverage = 1337,
 }
 
@@ -80,7 +88,12 @@ export const getNetworkRpcUrls = (): Record<ESupportedChains, string> => {
   const GNOSIS_CHIADO_RPC_URL = process.env.GNOSIS_CHIADO_RPC_URL ?? "";
   const POLYGON_RPC_URL = process.env.POLYGON_RPC_URL ?? "";
   const POLYGON_AMOY_RPC_URL = process.env.POLYGON_AMOY_RPC_URL ?? "";
+  const LINEA_RPC_URL = process.env.LINEA_RPC_URL ?? "";
+  const LINEA_SEPOLIA_RPC_URL = process.env.LINEA_SEPOLIA_RPC_URL ?? "";
+  const ZK_SYNC_ERA_RPC_URL = process.env.ZK_SYNC_ERA_RPC_URL ?? "";
+  const ZK_SYNC_SEPOLIA_RPC_URL = process.env.ZK_SYNC_SEPOLIA_RPC_URL ?? "";
   const MAINNET_RPC_URL = process.env.MAINNET_RPC_URL ?? "";
+
   return {
     [ESupportedChains.Sepolia]: SEPOLIA_RPC_URL,
     [ESupportedChains.Optimism]: OP_RPC_URL,
@@ -95,6 +108,10 @@ export const getNetworkRpcUrls = (): Record<ESupportedChains, string> => {
     [ESupportedChains.GnosisChiado]: GNOSIS_CHIADO_RPC_URL,
     [ESupportedChains.Polygon]: POLYGON_RPC_URL,
     [ESupportedChains.PolygonAmoy]: POLYGON_AMOY_RPC_URL,
+    [ESupportedChains.Linea]: LINEA_RPC_URL,
+    [ESupportedChains.LineaSepolia]: LINEA_SEPOLIA_RPC_URL,
+    [ESupportedChains.ZkSyncEra]: ZK_SYNC_ERA_RPC_URL,
+    [ESupportedChains.ZkSyncSepolia]: ZK_SYNC_SEPOLIA_RPC_URL,
     [ESupportedChains.Coverage]: "http://localhost:8555",
     [ESupportedChains.Hardhat]: "http://localhost:8545",
     [ESupportedChains.Mainnet]: MAINNET_RPC_URL,
@@ -116,6 +133,10 @@ export const getEtherscanApiKeys = (): Record<ESupportedChains, string | undefin
   [ESupportedChains.GnosisChiado]: process.env.GNOSIS_ETHERSCAN_API_KEY,
   [ESupportedChains.Polygon]: process.env.POLYGON_ETHERSCAN_API_KEY,
   [ESupportedChains.PolygonAmoy]: process.env.POLYGON_ETHERSCAN_API_KEY,
+  [ESupportedChains.Linea]: process.env.LINEA_ETHERSCAN_API_KEY,
+  [ESupportedChains.LineaSepolia]: process.env.LINEA_ETHERSCAN_API_KEY,
+  [ESupportedChains.ZkSyncEra]: process.env.ZK_SYNC_ETHERSCAN_API_KEY,
+  [ESupportedChains.ZkSyncSepolia]: process.env.ZK_SYNC_ETHERSCAN_API_KEY,
   [ESupportedChains.Coverage]: undefined,
   [ESupportedChains.Hardhat]: undefined,
 });

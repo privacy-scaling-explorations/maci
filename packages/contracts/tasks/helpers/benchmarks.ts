@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import { Message, Keypair } from "@maci-protocol/domainobjs";
+import { TransactionReceipt } from "ethers";
 
 import { error, logGreen, logRed, success } from "../../ts/logger";
 import { MACI, Poll } from "../../typechain-types";
@@ -35,8 +36,10 @@ export async function publishBatch(
 
   const messageBatch = Array.from({ length: batchSize }, () => message.asContractParam());
   const publicKeyBatch = Array.from({ length: batchSize }, () => keypair.publicKey.asContractParam());
+  const deployer = await deployment.getDeployer();
 
   let optimalBatchSize = batchSize;
+  let multiplier = 1;
 
   while (optimalBatchSize > 0) {
     const finalMessageBatch = messageBatch.slice(0, optimalBatchSize);
@@ -44,16 +47,46 @@ export async function publishBatch(
 
     try {
       // eslint-disable-next-line no-await-in-loop
-      const tx = await pollContract.publishMessageBatch(finalMessageBatch, finalPublicKeyBatch);
+      const [feeData, nonce, gasLimit] = await Promise.all([
+        deployer.provider?.getFeeData(),
+        deployer.provider?.getTransactionCount(deployer),
+        pollContract.publishMessageBatch.estimateGas(finalMessageBatch, finalPublicKeyBatch),
+      ]);
+
       // eslint-disable-next-line no-await-in-loop
-      const receipt = await tx.wait();
-      logGreen({ text: success(`Successfully published batch of ${optimalBatchSize} messages`) });
-      logGreen({ text: success(`Gas used: ${receipt?.gasUsed.toString()} wei`) });
-      logGreen({ text: success(`Tx: ${tx.hash}`) });
-      break; // If successful, we've found the largest working batch size
+      const tx = await pollContract.publishMessageBatch(finalMessageBatch, finalPublicKeyBatch, {
+        maxFeePerGas: Number(feeData?.maxFeePerGas) * multiplier,
+        maxPriorityFeePerGas: Number(feeData?.maxPriorityFeePerGas) * multiplier,
+        nonce,
+        gasLimit,
+      });
+
+      const oneMinuteTimeout = 1000 * 60;
+
+      // eslint-disable-next-line no-await-in-loop
+      const receipt = await Promise.race([
+        tx.wait(),
+        new Promise((_, reject) => {
+          const timeout = setTimeout(() => {
+            reject(new Error("Timeout error"));
+            clearTimeout(timeout);
+          }, oneMinuteTimeout);
+        }),
+      ]);
+
+      if (receipt instanceof TransactionReceipt) {
+        logGreen({ text: success(`Successfully published batch of ${optimalBatchSize} messages`) });
+        logGreen({ text: success(`Gas used: ${receipt.gasUsed.toString()} wei`) });
+        logGreen({ text: success(`Tx: ${tx.hash}`) });
+
+        break; // If successful, we've found the largest working batch size
+      } else {
+        throw new Error("Invalid receipt");
+      }
     } catch (err) {
       // If this size doesn't work, reduce by 1 and try again
       optimalBatchSize -= 1;
+      multiplier += 1;
     }
   }
 

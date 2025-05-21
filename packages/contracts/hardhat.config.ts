@@ -23,7 +23,7 @@ import "./tasks/runner/verifyFull";
 dotenv.config();
 
 const DEFAULT_BLOCK_GAS_LIMIT = 30_000_000;
-const DEFAULT_GAS_MUL = 2;
+const DEFAULT_GAS_MULTIPLIER = 2;
 const TEST_MNEMONIC = "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
 const NETWORKS_RPC_URL = getNetworkRpcUrls();
 const GAS_PRICE: number | "auto" = process.env.GAS_PRICE ? Number(process.env.GAS_PRICE) : "auto";
@@ -32,7 +32,7 @@ const ETHERSCAN_API_KEYS = getEtherscanApiKeys();
 const getCommonNetworkConfig = (networkName: ESupportedChains, chainId: number, mnemonic?: string) => ({
   url: NETWORKS_RPC_URL[networkName],
   blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
-  gasMultiplier: DEFAULT_GAS_MUL,
+  gasMultiplier: DEFAULT_GAS_MULTIPLIER,
   gasPrice: GAS_PRICE,
   saveDeployments: true,
   chainId,
@@ -70,6 +70,10 @@ const config: HardhatUserConfig = {
     gnosis_chiado: getCommonNetworkConfig(ESupportedChains.GnosisChiado, EChainId.GnosisChiado),
     polygon: getCommonNetworkConfig(ESupportedChains.Polygon, EChainId.Polygon),
     polygon_amoy: getCommonNetworkConfig(ESupportedChains.PolygonAmoy, EChainId.PolygonAmoy),
+    linea: getCommonNetworkConfig(ESupportedChains.Linea, EChainId.Linea),
+    linea_sepolia: getCommonNetworkConfig(ESupportedChains.LineaSepolia, EChainId.LineaSepolia),
+    zksync_era: getCommonNetworkConfig(ESupportedChains.ZkSyncEra, EChainId.ZkSyncEra),
+    zksync_sepolia: getCommonNetworkConfig(ESupportedChains.ZkSyncSepolia, EChainId.ZkSyncSepolia),
     coverage: getCommonNetworkConfig(ESupportedChains.Coverage, EChainId.Coverage, TEST_MNEMONIC),
     localhost: {
       url: "http://localhost:8545",
@@ -77,7 +81,7 @@ const config: HardhatUserConfig = {
     },
     hardhat: {
       blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
-      gasMultiplier: DEFAULT_GAS_MUL,
+      gasMultiplier: DEFAULT_GAS_MULTIPLIER,
       gasPrice: "auto",
       chainId: EChainId.Hardhat,
       accounts: {
@@ -123,6 +127,10 @@ const config: HardhatUserConfig = {
       [ESupportedChains.GnosisChiado]: ETHERSCAN_API_KEYS[ESupportedChains.GnosisChiado]!,
       [ESupportedChains.Polygon]: ETHERSCAN_API_KEYS[ESupportedChains.Polygon]!,
       [ESupportedChains.PolygonAmoy]: ETHERSCAN_API_KEYS[ESupportedChains.PolygonAmoy]!,
+      [ESupportedChains.Linea]: ETHERSCAN_API_KEYS[ESupportedChains.Linea]!,
+      [ESupportedChains.LineaSepolia]: ETHERSCAN_API_KEYS[ESupportedChains.LineaSepolia]!,
+      [ESupportedChains.ZkSyncEra]: ETHERSCAN_API_KEYS[ESupportedChains.ZkSyncEra]!,
+      [ESupportedChains.ZkSyncSepolia]: ETHERSCAN_API_KEYS[ESupportedChains.ZkSyncSepolia]!,
       [ESupportedChains.Mainnet]: ETHERSCAN_API_KEYS[ESupportedChains.Mainnet]!,
     },
     customChains: [
@@ -230,6 +238,38 @@ const config: HardhatUserConfig = {
           browserURL: "https://amoy.polygonscan.com/",
         },
       },
+      {
+        network: ESupportedChains.Linea,
+        chainId: EChainId.Linea,
+        urls: {
+          apiURL: "https://api.lineascan.build/api",
+          browserURL: "https://lineascan.build/",
+        },
+      },
+      {
+        network: ESupportedChains.LineaSepolia,
+        chainId: EChainId.LineaSepolia,
+        urls: {
+          apiURL: "https://api-sepolia.lineascan.build/api",
+          browserURL: "https://sepolia.lineascan.build/",
+        },
+      },
+      {
+        network: ESupportedChains.ZkSyncEra,
+        chainId: EChainId.ZkSyncEra,
+        urls: {
+          apiURL: "https://zksync2-mainnet-explorer.zksync.io/contract_verification",
+          browserURL: "https://explorer.zksync.io",
+        },
+      },
+      {
+        network: ESupportedChains.ZkSyncSepolia,
+        chainId: EChainId.ZkSyncSepolia,
+        urls: {
+          apiURL: "https://explorer.sepolia.era.zksync.dev/contract_verification",
+          browserURL: "https://sepolia.explorer.zksync.io",
+        },
+      },
     ],
   },
   sourcify: {
@@ -246,6 +286,8 @@ const config: HardhatUserConfig = {
   },
   gasReporter: {
     currency: "USD",
+    gasPrice: process.env.GAS_REPORTER_PRICE ? Number(process.env.GAS_REPORTER_PRICE) : undefined,
+    coinmarketcap: process.env.COINMARKETCAP_API_KEY,
     enabled: true,
   },
 };

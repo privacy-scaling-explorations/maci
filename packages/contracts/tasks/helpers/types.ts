@@ -572,7 +572,7 @@ export enum EPolicies {
   FreeForAll = "@excubiae/contracts/contracts/extensions/freeForAll/FreeForAllPolicy.sol:FreeForAllPolicy",
   Token = "@excubiae/contracts/contracts/extensions/token/TokenPolicy.sol:TokenPolicy",
   EAS = "@excubiae/contracts/contracts/extensions/eas/EASPolicy.sol:EASPolicy",
-  GitcoinPassport = "@excubiae/contracts/contracts/extensions/gitcoint/GitcoinPassportPolicy.sol:GitcoinPassportPolicy",
+  GitcoinPassport = "@excubiae/contracts/contracts/extensions/gitcoin/GitcoinPassportPolicy.sol:GitcoinPassportPolicy",
   Hats = "@excubiae/contracts/contracts/extensions/hats/HatsPolicy.sol:HatsPolicy",
   Zupass = "@excubiae/contracts/contracts/extensions/zupass/ZupassPolicy.sol:ZupassPolicy",
   Semaphore = "@excubiae/contracts/contracts/extensions/semaphore/SemaphorePolicy.sol:SemaphorePolicy",
