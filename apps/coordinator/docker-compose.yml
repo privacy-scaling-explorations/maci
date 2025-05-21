@@ -1,0 +1,19 @@
+services:
+  coordinator-service:
+    container_name: coordinator-service
+    build:
+      context: ../..
+      dockerfile: apps/coordinator/Dockerfile
+    env_file:
+      - ./.env
+    environment:
+      # Check Dockerfile to see where bin is downloaded
+      - COORDINATOR_RAPIDSNARK_EXE="/home/node/rapidsnark/build/prover"
+    volumes:
+      - coordinator-data:/app
+    ports:
+      - "${COORDINATOR_PORT:-3001}:${COORDINATOR_PORT:-3001}"
+
+volumes:
+  coordinator-data:
+    driver: local

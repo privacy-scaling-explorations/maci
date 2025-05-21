@@ -4,26 +4,24 @@ import { ErrorCodes } from "./errors";
 import { ESupportedNetworks } from "./networks";
 
 /**
- * Get the RPCUrl for Alchemy based on the chain we need to interact with
+ * Get the RPC url for the chain we need to interact with
  *
  * @param network - the network we want to interact with
- * @returns the RPCUrl for the network
+ * @returns the RPC url for the network
  */
-export const getAlchemyRpcUrl = (network: ESupportedNetworks): string => {
-  const apiKey = process.env.RPC_API_KEY;
+export const getRpcUrl = (network: ESupportedNetworks): string => {
+  const rpcUrl = process.env.COORDINATOR_RPC_URL;
 
-  if (!apiKey) {
-    throw new Error(ErrorCodes.RPC_API_KEY_NOT_SET.toString());
+  if (!rpcUrl) {
+    throw new Error(ErrorCodes.COORDINATOR_RPC_URL_NOT_SET.toString());
   }
 
-  switch (network) {
-    case ESupportedNetworks.OPTIMISM_SEPOLIA:
-      return `https://opt-sepolia.g.alchemy.com/v2/${apiKey}`;
-    case ESupportedNetworks.ETHEREUM_SEPOLIA:
-      return `https://eth-sepolia.g.alchemy.com/v2/${apiKey}`;
-    default:
-      throw new Error(ErrorCodes.UNSUPPORTED_NETWORK.toString());
+  const supportedNetworks = [ESupportedNetworks.OPTIMISM_SEPOLIA, ESupportedNetworks.ETHEREUM_SEPOLIA];
+  if (!supportedNetworks.includes(network)) {
+    throw new Error(ErrorCodes.UNSUPPORTED_NETWORK.toString());
   }
+
+  return rpcUrl;
 };
 
 /**
@@ -33,7 +31,7 @@ export const getAlchemyRpcUrl = (network: ESupportedNetworks): string => {
  */
 export const getSigner = (chain: ESupportedNetworks): Signer => {
   const wallet = new Wallet(process.env.PRIVATE_KEY!);
-  const alchemyRpcUrl = getAlchemyRpcUrl(chain);
+  const alchemyRpcUrl = getRpcUrl(chain);
   const provider = new JsonRpcProvider(alchemyRpcUrl);
 
   return wallet.connect(provider);

@@ -1,6 +1,6 @@
 import { EMode } from "@maci-protocol/sdk";
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEnum, IsEthereumAddress, IsInt, IsOptional, IsString, Length, Max, Min } from "class-validator";
+import { IsEnum, IsEthereumAddress, IsInt, IsOptional, IsString, Max, Min } from "class-validator";
 
 import type { Hex } from "viem";
 
@@ -41,19 +41,6 @@ export class GenerateProofDto {
   })
   @IsEnum(EMode)
   mode!: EMode;
-
-  /**
-   * Encrypted coordinator private key with RSA public key (see .env.example)
-   */
-  @ApiProperty({
-    description: "Encrypted coordinator private key with RSA public key (see README.md)",
-    minimum: 1,
-    maximum: 1024,
-    type: String,
-  })
-  @IsString()
-  @Length(1, 1024)
-  encryptedCoordinatorPrivateKey!: string;
 
   /**
    * Start block for event processing

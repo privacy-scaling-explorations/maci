@@ -1,4 +1,4 @@
-import { Keypair, PrivateKey, PublicKey } from "@maci-protocol/domainobjs";
+import { PublicKey } from "@maci-protocol/domainobjs";
 import {
   Deployment,
   EContracts,
@@ -18,7 +18,7 @@ import path from "path";
 import type { IGenerateArgs, IGenerateData, IMergeArgs, ISubmitProofsArgs } from "./types";
 
 import { ErrorCodes } from "../common";
-import { CryptoService } from "../crypto/crypto.service";
+import { getCoordinatorKeypair } from "../common/coordinatorKeypair";
 import { FileService } from "../file/file.service";
 import { SessionKeysService } from "../sessionKeys/sessionKeys.service";
 
@@ -41,7 +41,6 @@ export class ProofGeneratorService {
    * Proof generator initialization
    */
   constructor(
-    private readonly cryptoService: CryptoService,
     private readonly fileService: FileService,
     private readonly sessionKeysService: SessionKeysService,
   ) {
@@ -82,10 +81,10 @@ export class ProofGeneratorService {
       poll,
       maciContractAddress,
       mode,
-      encryptedCoordinatorPrivateKey,
       startBlock,
       endBlock,
       blocksPerBatch,
+      useWasm,
     }: IGenerateArgs,
     options?: IGenerateProofsOptions,
   ): Promise<IGenerateData> {
@@ -101,19 +100,16 @@ export class ProofGeneratorService {
         name: EContracts.Poll,
         address: pollData.address,
       });
-      const coordinatorPublicKey = await pollContract.coordinatorPublicKey();
 
-      const { privateKey } = await this.fileService.getPrivateKey();
-      const maciPrivateKey = PrivateKey.deserialize(
-        this.cryptoService.decrypt(privateKey, encryptedCoordinatorPrivateKey),
-      );
-      const coordinatorKeypair = new Keypair(maciPrivateKey);
-      const publicKey = new PublicKey([
-        BigInt(coordinatorPublicKey.x.toString()),
-        BigInt(coordinatorPublicKey.y.toString()),
+      const publicKeyOnChain = await pollContract.coordinatorPublicKey();
+      const coordinatorPublicKeyOnChain = new PublicKey([
+        BigInt(publicKeyOnChain.x.toString()),
+        BigInt(publicKeyOnChain.y.toString()),
       ]);
 
-      if (!coordinatorKeypair.publicKey.equals(publicKey)) {
+      const coordinatorKeypair = getCoordinatorKeypair();
+
+      if (!coordinatorKeypair.publicKey.equals(coordinatorPublicKeyOnChain)) {
         this.logger.error(`Error: ${ErrorCodes.PRIVATE_KEY_MISMATCH}, wrong private key`);
         throw new Error(ErrorCodes.PRIVATE_KEY_MISMATCH.toString());
       }
@@ -121,7 +117,8 @@ export class ProofGeneratorService {
       // There are only QV and Non-QV modes available for tally circuit
       const tally = this.fileService.getZkeyFilePaths(
         process.env.COORDINATOR_TALLY_ZKEY_NAME!,
-        mode === EMode.QV ? mode : EMode.NON_QV,
+        // if FULL use NON_QV because there are only VoteTallyQV and VoteTallyNonQV zkeys
+        mode === EMode.FULL ? EMode.NON_QV : mode,
       );
       const messageProcessor = this.fileService.getZkeyFilePaths(
         process.env.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME!,
@@ -130,13 +127,14 @@ export class ProofGeneratorService {
 
       const { processProofs, tallyProofs, tallyData } = await generateProofs({
         outputDir: path.resolve("./proofs"),
-        coordinatorPrivateKey: maciPrivateKey.serialize(),
+        coordinatorPrivateKey: coordinatorKeypair.privateKey.serialize(),
         signer,
         maciAddress: maciContractAddress,
         pollId: BigInt(poll),
         startBlock,
         endBlock,
         blocksPerBatch,
+        useWasm,
         rapidsnark: process.env.COORDINATOR_RAPIDSNARK_EXE,
         mode,
         voteTallyZkey: tally.zkey,

@@ -13,6 +13,7 @@ export const generateKeypair = ({ seed }: IGenerateKeypairArgs = {}): IGenerateK
   const keypair = new Keypair(seed ? new PrivateKey(seed) : undefined);
 
   return {
+    publicKeyAsContractParam: keypair.publicKey.asContractParam(),
     publicKey: keypair.publicKey.serialize(),
     privateKey: keypair.privateKey.serialize(),
   };
