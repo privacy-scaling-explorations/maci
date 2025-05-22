@@ -73,7 +73,7 @@ Currently, the ceremony artifacts work with MACI version up to 2.x
 In order to run MACI polls, a coordinator is required to publish their MACI public key. You will need to generate a MACI keypair, and treat the private key just as your ethereum private keys. Please store them in a safe place as you won't be able to finish a round if you lose access, or if compromised a bad actor could decrypt the vote and publish them online. You can generate a new key pair using maci-cli by running the following command in the root of the project:
 
 ```bash
-pnpm run generateMaciKeyPair
+pnpm run generate-maci-keypair
 ```
 
 ### Set the .env
@@ -219,7 +219,7 @@ pnpm run prove:[network] --poll [poll-id] \
 ```
 
 :::info
-The `--coordinator-private-key` is the one you generated earlier with `pnpm run generateMaciKeyPair`.
+The `--coordinator-private-key` is the one you generated earlier with `pnpm run generate-maci-keypair`.
 
 `--start-block` is the block number from which to start looking for events from. You can use the block that you deployed the contracts in.
 

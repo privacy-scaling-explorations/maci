@@ -27,7 +27,7 @@ task("benchmark", "Run benchmarks").setAction(async (_, hre) => {
 
   try {
     const startBalance = await deployer.provider!.getBalance(deployer);
-    const maxBatchSize = 100;
+    const maxBatchSize = process.env.BENCHMARK_MAX_BATCH_SIZE ? Number(process.env.BENCHMARK_MAX_BATCH_SIZE) : 100;
 
     logMagenta({ text: "======================================================================" });
     logMagenta({ text: `Starting balance: ${Number(startBalance / 10n ** 12n) / 1e6}\n` });
