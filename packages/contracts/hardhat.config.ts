@@ -1,4 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
+import "@matterlabs/hardhat-zksync";
 import "@nomicfoundation/hardhat-toolbox";
 import "@nomicfoundation/hardhat-verify";
 import dotenv from "dotenv";
@@ -84,6 +85,7 @@ const config: HardhatUserConfig = {
       gasMultiplier: DEFAULT_GAS_MULTIPLIER,
       gasPrice: "auto",
       chainId: EChainId.Hardhat,
+      zksync: Boolean(process.env.ZK_SYNC),
       accounts: {
         mnemonic: TEST_MNEMONIC,
         path: "m/44'/60'/0'/0",
@@ -102,7 +104,7 @@ const config: HardhatUserConfig = {
       forking: process.env.FORKING_URL
         ? {
             url: process.env.FORKING_URL,
-            blockNumber: process.env.FORKING_BLOCK_NUM ? parseInt(process.env.FORKING_BLOCK_NUM, 10) : 0,
+            blockNumber: process.env.FORKING_BLOCK_NUMBER ? parseInt(process.env.FORKING_BLOCK_NUMBER, 10) : 0,
           }
         : undefined,
     },

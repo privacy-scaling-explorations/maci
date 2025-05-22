@@ -43,7 +43,9 @@ import {
 } from "./constants";
 import { timeTravel, deployTestContracts } from "./utils";
 
-describe("VoteTally", () => {
+describe("VoteTally", function test() {
+  this.timeout(900000); // 15 minutes
+
   let signer: Signer;
   let maciContract: MACI;
   let pollContract: PollContract;
