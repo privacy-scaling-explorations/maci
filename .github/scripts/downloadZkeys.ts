@@ -28,10 +28,24 @@ export async function downloadZkeys(): Promise<void> {
 
   https
     .get(ZKEYS_URLS[type], (response) => {
+      const totalSize = Number(response.headers["content-length"] ?? 0);
+
+      if (totalSize) {
+        let downloadedSize = 0;
+
+        response.on("data", (chunk) => {
+          downloadedSize += chunk.length;
+          const percentage = ((downloadedSize / totalSize) * 100).toFixed(0);
+          process.stdout.write(`\rDownloading... ${percentage}%`);
+        });
+      }
+
       response.pipe(file);
 
       file
         .on("finish", () => {
+          process.stdout.write("\n");
+          console.log("Download complete - extracting files");
           file.close();
 
           tar.x({ f: ARCHIVE_NAME, C: ZKEY_PATH, strip: 1 }).then(() => fs.promises.rm(ARCHIVE_NAME));
