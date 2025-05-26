@@ -37,7 +37,7 @@ MACI's circuits are parameterized, and thus can be configured to support differe
 - **STATE_TREE_DEPTH** = how many users the system supports
 - **VOTE_OPTIONS_TREE_DEPTH** = how many vote options the system supports
 - **MESSAGE_BATCH_SIZE** = how many messages in a batch the circuit should process
-- **TALLY_PROCESSING_STATE_TREE_DEPTH** = how many ballots can be processed per batch when tallying the results (`5 ** TALLY_PROCESSING_STATE_TREE_DEPTH` ballots)
+- **TALLY_PROCESSING_STATE_TREE_DEPTH** = how many ballots can be processed per batch when tallying the results (`2 ** TALLY_PROCESSING_STATE_TREE_DEPTH` ballots)
 
 Please refer to the individual circuit documentation for more details on the inner working of each circuit and where parameters fit.
 
