@@ -228,6 +228,7 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@matterlabs/hardhat-zksync": "^1.6.0",
     "@types/chai": "^4.3.11",
     "@types/chai-as-promised": "^7.1.8",
     "@types/circomlibjs": "^0.1.6",

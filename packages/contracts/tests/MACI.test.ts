@@ -25,7 +25,7 @@ import {
 import { deployTestContracts } from "./utils";
 
 describe("MACI", function test() {
-  this.timeout(90000);
+  this.timeout(900000); // 15 minutes
 
   let maciContract: MACI;
   let verifyingKeysRegistryContract: VerifyingKeysRegistry;

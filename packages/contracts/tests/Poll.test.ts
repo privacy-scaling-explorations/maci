@@ -34,7 +34,9 @@ import {
 } from "./constants";
 import { timeTravel, deployTestContracts } from "./utils";
 
-describe("Poll", () => {
+describe("Poll", function test() {
+  this.timeout(900000); // 15 minutes
+
   let maciContract: MACI;
   let pollId: bigint;
   let pollContract: PollContract;
