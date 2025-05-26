@@ -49,7 +49,7 @@
     "@maci-protocol/core": "^3.0.0",
     "@maci-protocol/crypto": "^3.0.0",
     "@maci-protocol/domainobjs": "^3.0.0",
-    "multiformats": "9.9.0",
+    "multiformats": "13.3.6",
     "snarkjs": "^0.7.5"
   },
   "devDependencies": {
