@@ -39,7 +39,7 @@
     "@maci-protocol/subgraph": "^3.0.0",
     "@nestjs/common": "^11.1.0",
     "@nestjs/core": "^11.1.0",
-    "@nestjs/platform-express": "^11.1.1",
+    "@nestjs/platform-express": "^11.1.2",
     "@nestjs/platform-socket.io": "^11.1.0",
     "@nestjs/swagger": "^11.2.0",
     "@nestjs/throttler": "^6.4.0",
