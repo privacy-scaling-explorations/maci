@@ -34,7 +34,7 @@ export const invalidateVotes = async ({
   const message = generateVote({
     pollId,
     voteOptionIndex: 0n,
-    nonce: 0n,
+    nonce: 1n,
     privateKey: maciPrivateKey,
     stateIndex,
     // use a random key to invalidate the previous votes
