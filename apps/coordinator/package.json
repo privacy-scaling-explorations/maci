@@ -43,7 +43,7 @@
     "@nestjs/platform-socket.io": "^11.1.0",
     "@nestjs/swagger": "^11.2.0",
     "@nestjs/throttler": "^6.4.0",
-    "@nestjs/websockets": "^11.1.0",
+    "@nestjs/websockets": "^11.1.2",
     "@nomicfoundation/hardhat-ethers": "^3.0.8",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@zerodev/ecdsa-validator": "5.4.9",
