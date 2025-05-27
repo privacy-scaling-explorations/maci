@@ -55,10 +55,6 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
   /// @notice The number of messages that have been published
   uint256 public numMessages;
 
-  /// @notice The number of signups that have been processed
-  /// before the Poll ended (stateAq merged)
-  uint256 public totalSignups;
-
   /// @notice The actual depth of the state tree
   /// to be used as public input for the circuit
   uint8 public actualStateTreeDepth;
@@ -498,7 +494,6 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
 
     // get number of joined users and cache in a var for later use
     uint256 _totalSignups = pollStateTree.numberOfLeaves;
-    totalSignups = _totalSignups;
 
     // dynamically determine the actual depth of the state tree
     uint8 depth = 1;
@@ -508,7 +503,7 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
 
     actualStateTreeDepth = depth;
 
-    emit MergeState(mergedStateRoot, totalSignups);
+    emit MergeState(mergedStateRoot, _totalSignups);
   }
 
   /// @inheritdoc IPoll
@@ -519,13 +514,18 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
 
   /// @inheritdoc IPoll
   function totalSignupsAndMessages() public view returns (uint256 numSUps, uint256 numMsgs) {
-    numSUps = totalSignups;
+    numSUps = pollStateTree.numberOfLeaves;
     numMsgs = numMessages;
   }
 
   /// @inheritdoc IPoll
+  function totalSignups() public view returns (uint256 signups) {
+    signups = pollStateTree.numberOfLeaves;
+  }
+
+  /// @inheritdoc IPoll
   function getMaciContract() public view returns (IMACI maci) {
-    return extContracts.maci;
+    maci = extContracts.maci;
   }
 
   /// @inheritdoc IPoll

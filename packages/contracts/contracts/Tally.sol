@@ -101,10 +101,16 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
   /// @return tallied whether all ballots are tallied
   function isTallied() public view returns (bool tallied) {
     (uint8 tallyProcessingStateTreeDepth, , ) = poll.treeDepths();
-    (uint256 totalSignups, ) = poll.totalSignupsAndMessages();
+    uint256 totalSignups = poll.totalSignups();
 
-    // Require that there are untallied ballots left
-    tallied = tallyBatchNum * (TREE_ARITY ** tallyProcessingStateTreeDepth) >= totalSignups;
+    uint256 pollEndDate = poll.endDate();
+
+    if (pollEndDate > block.timestamp) {
+      tallied = false;
+    } else {
+      // Require that there are untallied ballots left
+      tallied = tallyBatchNum * (TREE_ARITY ** tallyProcessingStateTreeDepth) >= totalSignups;
+    }
   }
 
   /// @notice Update the state and ballot root commitment

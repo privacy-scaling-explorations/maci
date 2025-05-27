@@ -15,7 +15,6 @@ export const getPoll = async ({ maciAddress, signer, provider, pollId }: IGetPol
   const {
     id,
     poll: pollContract,
-    maci: maciContract,
     tally: tallyContract,
   } = await getPollContracts({ maciAddress, pollId, signer, provider });
 
@@ -25,7 +24,7 @@ export const getPoll = async ({ maciAddress, signer, provider, pollId }: IGetPol
     pollContract.getAddress(),
   ]);
   const isMerged = mergedStateRoot !== BigInt(0);
-  const totalSignups = await (isMerged ? pollContract.totalSignups() : maciContract.totalSignups());
+  const totalSignups = await pollContract.totalSignups();
 
   // get the poll mode
   const mode = await tallyContract.mode();

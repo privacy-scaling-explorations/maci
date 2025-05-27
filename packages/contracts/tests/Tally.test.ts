@@ -163,6 +163,10 @@ describe("VoteTally", function test() {
     );
   });
 
+  it("isTallied() should return false before the poll has ended", async () => {
+    expect(await tallyContract.isTallied()).to.eq(false);
+  });
+
   it("tallyVotes() should fail as the messages have not been processed yet", async () => {
     await timeTravel(signer.provider! as unknown as EthereumProvider, duration + 1);
 
