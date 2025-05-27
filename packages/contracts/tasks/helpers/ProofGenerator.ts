@@ -114,7 +114,7 @@ export class ProofGenerator {
         .queryFilter(maciContract.filters.DeployPoll(), startBlock)
         .then((events) => events[0]?.blockNumber ?? 0),
       maciContract.getStateTreeRoot(),
-      maciContract.totalSignups(),
+      pollContract.totalSignups(),
     ]);
     const defaultStartBlock = Math.min(defaultStartBlockPoll, defaultStartBlockSignup);
     let fromBlock = startBlock ? Number(startBlock) : defaultStartBlock;

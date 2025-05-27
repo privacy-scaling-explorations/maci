@@ -37,7 +37,8 @@ export function handleDeployPoll(event: DeployPollEvent): void {
   poll.updatedAt = event.block.timestamp;
   poll.owner = event.transaction.from;
 
-  poll.totalSignups = maci.totalSignups;
+  // No users would have joined the poll yet
+  poll.totalSignups = GraphBN.zero();
   poll.numMessages = GraphBN.zero();
   poll.maci = maci.id;
   poll.save();

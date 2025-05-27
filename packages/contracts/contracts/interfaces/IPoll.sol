@@ -125,4 +125,8 @@ interface IPoll {
   /// @param element The hash of thestate leaf
   /// @return index The index of the state leaf in the state tree
   function getStateIndex(uint256 element) external view returns (uint40);
+
+  /// @notice Get the number of signups (users that joined the poll)
+  /// @return signups The number of signups
+  function totalSignups() external view returns (uint256 signups);
 }
