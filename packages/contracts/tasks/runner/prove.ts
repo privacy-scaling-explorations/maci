@@ -7,7 +7,7 @@ import { task, types } from "hardhat/config";
 import fs from "fs";
 
 import type { Proof } from "../../ts/types";
-import type { MACI, Poll, Tally } from "../../typechain-types";
+import type { MACI, Poll } from "../../typechain-types";
 
 import { logMagenta, info } from "../../ts/logger";
 import { ContractStorage } from "../helpers/ContractStorage";
@@ -121,12 +121,6 @@ task("prove", "Command to generate proofs")
         throw new Error(`Poll ${poll} not found`);
       }
 
-      const tallyContract = await deployment.getContract<Tally>({
-        name: EContracts.Tally,
-        key: `poll-${poll.toString()}`,
-      });
-      const tallyContractAddress = await tallyContract.getAddress();
-
       const modeKeys = {
         [EMode.QV]: "qv",
         [EMode.NON_QV]: "nonQv",
@@ -161,7 +155,7 @@ task("prove", "Command to generate proofs")
       const proofGenerator = new ProofGenerator({
         poll: foundPoll,
         maciContractAddress,
-        tallyContractAddress,
+        tallyContractAddress: pollContracts.tally,
         rapidsnark,
         tally: {
           zkey: voteTallyZkey,

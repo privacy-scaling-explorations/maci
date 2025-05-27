@@ -64,11 +64,11 @@ task("submitOnChain", "Command to prove the result of a poll on-chain")
       pollContract.stateMerged(),
       deployment.getContract<MessageProcessor>({
         name: EContracts.MessageProcessor,
-        key: `poll-${poll.toString()}`,
+        address: pollContracts.messageProcessor,
       }),
       deployment.getContract<Tally>({
         name: EContracts.Tally,
-        key: `poll-${poll.toString()}`,
+        address: pollContracts.tally,
       }),
     ]);
 
