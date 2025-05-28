@@ -37,4 +37,4 @@ uint256 PAD_PUBKEY_Y
 uint256 NOTHING_UP_MY_SLEEVE
 ```
 
-The Keccack256 hash of 'Maci'
+The Keccak256 hash of 'Maci'
