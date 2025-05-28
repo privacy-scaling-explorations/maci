@@ -55,13 +55,16 @@ export async function publishBatch(
 
       // eslint-disable-next-line no-await-in-loop
       const tx = await pollContract.publishMessageBatch(finalMessageBatch, finalPublicKeyBatch, {
-        maxFeePerGas: Number(feeData?.maxFeePerGas) * multiplier,
-        maxPriorityFeePerGas: Number(feeData?.maxPriorityFeePerGas) * multiplier,
+        gasPrice: feeData?.gasPrice && !feeData.maxFeePerGas ? Number(feeData.gasPrice) * multiplier : undefined,
+        maxFeePerGas: feeData?.maxFeePerGas ? Number(feeData.maxFeePerGas) * multiplier : undefined,
+        maxPriorityFeePerGas: feeData?.maxPriorityFeePerGas
+          ? Number(feeData.maxPriorityFeePerGas) * multiplier
+          : undefined,
         nonce,
         gasLimit,
       });
 
-      const oneMinuteTimeout = 1000 * 60;
+      const twoMinutesTimeout = 1000 * 60 * 2;
 
       // eslint-disable-next-line no-await-in-loop
       const receipt = await Promise.race([
@@ -70,7 +73,7 @@ export async function publishBatch(
           const timeout = setTimeout(() => {
             reject(new Error("Timeout error"));
             clearTimeout(timeout);
-          }, oneMinuteTimeout);
+          }, twoMinutesTimeout);
         }),
       ]);
 

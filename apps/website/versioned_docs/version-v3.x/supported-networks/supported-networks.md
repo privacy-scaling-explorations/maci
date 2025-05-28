@@ -23,6 +23,14 @@ MACI has been tested on the following EVM networks:
 - Gnosis Chiado
 - Polygon
 - Polygon Amoy
+- Scroll
+- Scroll Sepolia
+- Linea
+- Linea Sepolia
+- Zksync Era
+- Zksync Sepolia
+- Polygon Zkevm
+- Polygon Cardona Zkevm
 
 We recommend using either Optimism, Arbitrum or Base. Please open an issue/PR if you intend to use other EVM networks and would like to contribute to this record of deployed and verified contracts as well as benchmarks, that would be greatly appreciated.
 
@@ -42,6 +50,14 @@ For better UX, MACI clients should be sending votes (messages) in batches. Depen
 | Gnosis Chiado    | 50             | 15921753 | 0.0000188313 ETH ($0.05)                        |
 | Polygon          | 85             | 26915773 | 0.0002193417259598 ETH ($0.54)                  |
 | Polygon Amoy     | 89             | 28192368 | 0.00017069180975304 ETH ($0.43)                 |
+| Scroll           | 62             | 19447318 | 0.000233368 ETH ($0.61)                         |
+| Scroll Sepolia   | 62             | 19447318 | 0.000233368 ETH ($0.61)                         |
+| Linea            | 14             | 4438205  | 0.00005325846 ETH ($0.1382)                     |
+| Linea Sepolia    | 14             | 4438205  | 0.00005325846 ETH ($0.1382)                     |
+| Zksync Era       | 2              | 24000690 | 0.00028801 ETH ($0.75)                          |
+| Zksync Sepolia   | 2              | 24000690 | 0.00028801 ETH ($0.75)                          |
+| Polygon Zkevm    | 6              | 1917872  | 0.00006904 ETH ($0.18)                          |
+| Polygon Cardona  | 6              | 1917872  | 0.00006904 ETH ($0.18)                          |
 
 ## Test yourself
 
