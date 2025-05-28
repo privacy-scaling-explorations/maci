@@ -67,7 +67,7 @@ export class TestingClass {
   /**
    * Paths to the poll witnessGenerator file
    */
-  private pollWitnessGenerator: string;
+  private pollWitgen: string;
 
   /**
    * Paths to the rapidsnark file
@@ -84,7 +84,7 @@ export class TestingClass {
     messageProcessorZkeyPath,
     voteTallyZkeyPath,
     pollWasm,
-    pollWitnessGenerator,
+    pollWitgen,
     rapidsnark,
   }: ITestingClassPaths) {
     this.pollJoiningZkeyPath = pollJoiningZkeyPath;
@@ -92,7 +92,7 @@ export class TestingClass {
     this.messageProcessorZkeyPath = messageProcessorZkeyPath;
     this.voteTallyZkeyPath = voteTallyZkeyPath;
     this.pollWasm = pollWasm;
-    this.pollWitnessGenerator = pollWitnessGenerator;
+    this.pollWitgen = pollWitgen;
     this.rapidsnark = rapidsnark;
   }
 
@@ -218,7 +218,7 @@ export class TestingClass {
       privateKey: user.privateKey.serialize(),
       pollJoiningZkey: this.pollJoiningZkeyPath,
       pollWasm: this.pollWasm,
-      pollWitnessGenerator: this.pollWitnessGenerator,
+      pollWitgen: this.pollWitgen,
       rapidsnark: this.rapidsnark,
       signer,
       useWasm: true,
