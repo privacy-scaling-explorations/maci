@@ -291,7 +291,12 @@ export interface IJoinPollArgs {
   pollId: bigint;
 
   /**
-   * Path to the state file with MACI state. Not available in the browser's SDK
+   * The index of the public key in the state tree
+   */
+  stateIndex?: bigint;
+
+  /**
+   * Path to the state file with MACI state
    */
   stateFile?: string;
 
@@ -331,9 +336,9 @@ export interface IJoinPollArgs {
   rapidsnark?: string;
 
   /**
-   * The path to the poll witness generator binary
+   * The path to the poll witnessgen binary
    */
-  pollWitnessGenerator?: string;
+  pollWitgen?: string;
 
   /**
    * The path to the poll wasm file
@@ -411,46 +416,6 @@ export interface IIsNullifierOnChainArgs {
    * The signer to use
    */
   signer: Signer;
-}
-
-/**
- * Arguments for IGenerateMaciStateTreeArgs
- */
-export interface IGenerateMaciStateTreeArgs {
-  /**
-   * The MACI contract
-   */
-  maciContract: MACI;
-
-  /**
-   * The signer
-   */
-  signer: Signer;
-
-  /**
-   * The start block
-   */
-  startBlock?: number;
-
-  /**
-   * The end block
-   */
-  endBlock?: number;
-
-  /**
-   * The blocks per batch
-   */
-  blocksPerBatch?: number;
-}
-
-/**
- * Arguments for IGenerateMaciStateTreeWithEndKeyArgs
- */
-export interface IGenerateMaciStateTreeWithEndKeyArgs extends IGenerateMaciStateTreeArgs {
-  /**
-   * The public key of the user
-   */
-  userPublicKey: PublicKey;
 }
 
 /**
@@ -541,4 +506,40 @@ export interface IHasUserSignedUpArgs {
    * The signer to use for the transaction
    */
   signer: Signer;
+}
+
+/**
+ * Arguments for IGenMaciStateTreeAddressArgs
+ */
+export interface IGenMaciStateTreeAddressArgs {
+  /**
+   * The MACI contract address
+   */
+  maciContractAddress: string;
+  /**
+   * The signer
+   */
+  signer: Signer;
+  /**
+   * The start block
+   */
+  startBlock?: number;
+  /**
+   * The end block
+   */
+  endBlock?: number;
+  /**
+   * The blocks per batch
+   */
+  blocksPerBatch?: number;
+}
+
+/**
+ * Arguments for IGenMaciStateTreeWithEndKeyAddressArgs
+ */
+export interface IGenMaciStateTreeWithEndKeyAddressArgs extends IGenMaciStateTreeAddressArgs {
+  /**
+   * The public key of the user
+   */
+  userPublicKey: PublicKey;
 }
