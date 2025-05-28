@@ -708,6 +708,208 @@
       "stateTreeDepth": 10
     }
   },
+  "polygon_cardona_zkevm": {
+    "ConstantInitialVoiceCreditProxy": {
+      "deploy": true,
+      "amount": 99
+    },
+    "ERC20VotesInitialVoiceCreditProxy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "snapshotBlock": 1,
+      "factor": 1
+    },
+    "ERC20Policy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1
+    },
+    "FreeForAllPolicy": {
+      "deploy": true
+    },
+    "MerkleProofPolicy": {
+      "deploy": false,
+      "root": "0x2461fcc4c0965cb7f482dd28f1ca8057b7a62a35e8b7a86bb3ad6523f4bb21c0"
+    },
+    "ERC20VotesPolicy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1,
+      "snapshotBlock": 1
+    },
+    "EASPolicy": {
+      "deploy": false,
+      "easAddress": "0x0000000000000000000000000000000000000000",
+      "schema": "0xe2636f31239f7948afdd9a9c477048b7fc2a089c347af60e3aa1251e5bf63e5c",
+      "attester": "0x0000000000000000000000000000000000000000"
+    },
+    "GitcoinPassportPolicy": {
+      "deploy": true,
+      "decoderAddress": "0x2443D22Db6d25D141A1138D80724e3Eee54FD4C2",
+      "passingScore": 5
+    },
+    "ZupassPolicy": {
+      "deploy": false,
+      "signer1": "13908133709081944902758389525983124100292637002438232157513257158004852609027",
+      "signer2": "7654374482676219729919246464135900991450848628968334062174564799457623790084",
+      "eventId": "d2ce5bb2-99a3-5a61-b7e6-1cd46d2ee00d"
+    },
+    "SemaphorePolicy": {
+      "deploy": false,
+      "semaphoreContract": "0x0000000000000000000000000000000000000000",
+      "groupId": 0
+    },
+    "MACI": {
+      "stateTreeDepth": 10,
+      "policy": "GitcoinPassportPolicy"
+    },
+    "VerifyingKeysRegistry": {
+      "stateTreeDepth": 10,
+      "tallyProcessingStateTreeDepth": 1,
+      "voteOptionTreeDepth": 2,
+      "messageBatchSize": 20,
+      "zkeys": {
+        "qv": {
+          "messageProcessorZkey": "../testing/zkeys/MessageProcessorQv_10-20-2_test/MessageProcessorQv_10-20-2_test.0.zkey",
+          "voteTallyZkey": "../testing/zkeys/VoteTallyQv_10-1-2_test/VoteTallyQv_10-1-2_test.0.zkey",
+          "messageProcessorWasm": "../testing/zkeys/MessageProcessorQv_10-20-2_test/MessageProcessorQv_10-20-2_test_js/MessageProcessorQv_10-20-2_test.wasm",
+          "voteTallyWasm": "../testing/zkeys/VoteTallyQv_10-1-2_test/VoteTallyQv_10-1-2_test_js/VoteTallyQv_10-1-2_test.wasm"
+        },
+        "nonQv": {
+          "messageProcessorZkey": "../testing/zkeys/MessageProcessorNonQv_10-20-2_test/MessageProcessorNonQv_10-20-2_test.0.zkey",
+          "voteTallyZkey": "../testing/zkeys/VoteTallyNonQv_10-1-2_test/VoteTallyNonQv_10-1-2_test.0.zkey",
+          "messageProcessorWasm": "../testing/zkeys/MessageProcessorNonQv_10-20-2_test/MessageProcessorNonQv_10-20-2_test_js/MessageProcessorNonQv_10-20-2_test.wasm",
+          "voteTallyWasm": "../testing/zkeys/VoteTallyNonQv_10-1-2_test/VoteTallyNonQv_10-1-2_test_js/VoteTallyNonQv_10-1-2_test.wasm"
+        },
+        "full": {
+          "messageProcessorZkey": "../testing/zkeys/MessageProcessorFull_10-20-2_test/MessageProcessorFull_10-20-2_test.0.zkey",
+          "voteTallyZkey": "../testing/zkeys/VoteTallyNonQv_10-1-2_test/VoteTallyNonQv_10-1-2_test.0.zkey",
+          "messageProcessorWasm": "../testing/zkeys/MessageProcessorFull_10-20-2_test/MessageProcessorFull_10-20-2_test_js/MessageProcessorFull_10-20-2_test.wasm",
+          "voteTallyWasm": "../testing/zkeys/VoteTallyNonQv_10-1-2_test/VoteTallyNonQv_10-1-2_test_js/VoteTallyNonQv_10-1-2_test.wasm"
+        },
+        "pollJoiningZkey": {
+          "zkey": "../testing/zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey",
+          "wasm": "../testing/zkeys/PollJoining_10_test/PollJoining_10_test_js/PollJoining_10_test.wasm"
+        },
+        "pollJoinedZkey": {
+          "zkey": "../testing/zkeys/PollJoined_10_test/PollJoined_10_test.0.zkey",
+          "wasm": "../testing/zkeys/PollJoined_10_test/PollJoined_10_test_js/PollJoined_10_test.wasm"
+        }
+      }
+    },
+    "Poll": {
+      "pollStartDate": 3600,
+      "pollEndDate": 3600,
+      "coordinatorPublicKey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
+      "mode": 1,
+      "policy": "FreeForAllPolicy",
+      "relayers": "0x0000000000000000000000000000000000000000",
+      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
+      "voteOptions": 2,
+      "stateTreeDepth": 10
+    }
+  },
+  "polygon_zkevm": {
+    "ConstantInitialVoiceCreditProxy": {
+      "deploy": true,
+      "amount": 99
+    },
+    "ERC20VotesInitialVoiceCreditProxy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "snapshotBlock": 1,
+      "factor": 1
+    },
+    "ERC20Policy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1
+    },
+    "FreeForAllPolicy": {
+      "deploy": true
+    },
+    "MerkleProofPolicy": {
+      "deploy": false,
+      "root": "0x2461fcc4c0965cb7f482dd28f1ca8057b7a62a35e8b7a86bb3ad6523f4bb21c0"
+    },
+    "ERC20VotesPolicy": {
+      "deploy": false,
+      "token": "0x0000000000000000000000000000000000000000",
+      "threshold": 1,
+      "snapshotBlock": 1
+    },
+    "EASPolicy": {
+      "deploy": false,
+      "easAddress": "0x0000000000000000000000000000000000000000",
+      "schema": "0xe2636f31239f7948afdd9a9c477048b7fc2a089c347af60e3aa1251e5bf63e5c",
+      "attester": "0x0000000000000000000000000000000000000000"
+    },
+    "GitcoinPassportPolicy": {
+      "deploy": true,
+      "decoderAddress": "0x2443D22Db6d25D141A1138D80724e3Eee54FD4C2",
+      "passingScore": 5
+    },
+    "ZupassPolicy": {
+      "deploy": false,
+      "signer1": "13908133709081944902758389525983124100292637002438232157513257158004852609027",
+      "signer2": "7654374482676219729919246464135900991450848628968334062174564799457623790084",
+      "eventId": "d2ce5bb2-99a3-5a61-b7e6-1cd46d2ee00d"
+    },
+    "SemaphorePolicy": {
+      "deploy": false,
+      "semaphoreContract": "0x0000000000000000000000000000000000000000",
+      "groupId": 0
+    },
+    "MACI": {
+      "stateTreeDepth": 10,
+      "policy": "GitcoinPassportPolicy"
+    },
+    "VerifyingKeysRegistry": {
+      "stateTreeDepth": 10,
+      "tallyProcessingStateTreeDepth": 1,
+      "voteOptionTreeDepth": 2,
+      "messageBatchSize": 20,
+      "zkeys": {
+        "qv": {
+          "messageProcessorZkey": "../testing/zkeys/MessageProcessorQv_10-20-2_test/MessageProcessorQv_10-20-2_test.0.zkey",
+          "voteTallyZkey": "../testing/zkeys/VoteTallyQv_10-1-2_test/VoteTallyQv_10-1-2_test.0.zkey",
+          "messageProcessorWasm": "../testing/zkeys/MessageProcessorQv_10-20-2_test/MessageProcessorQv_10-20-2_test_js/MessageProcessorQv_10-20-2_test.wasm",
+          "voteTallyWasm": "../testing/zkeys/VoteTallyQv_10-1-2_test/VoteTallyQv_10-1-2_test_js/VoteTallyQv_10-1-2_test.wasm"
+        },
+        "nonQv": {
+          "messageProcessorZkey": "../testing/zkeys/MessageProcessorNonQv_10-20-2_test/MessageProcessorNonQv_10-20-2_test.0.zkey",
+          "voteTallyZkey": "../testing/zkeys/VoteTallyNonQv_10-1-2_test/VoteTallyNonQv_10-1-2_test.0.zkey",
+          "messageProcessorWasm": "../testing/zkeys/MessageProcessorNonQv_10-20-2_test/MessageProcessorNonQv_10-20-2_test_js/MessageProcessorNonQv_10-20-2_test.wasm",
+          "voteTallyWasm": "../testing/zkeys/VoteTallyNonQv_10-1-2_test/VoteTallyNonQv_10-1-2_test_js/VoteTallyNonQv_10-1-2_test.wasm"
+        },
+        "full": {
+          "messageProcessorZkey": "../testing/zkeys/MessageProcessorFull_10-20-2_test/MessageProcessorFull_10-20-2_test.0.zkey",
+          "voteTallyZkey": "../testing/zkeys/VoteTallyNonQv_10-1-2_test/VoteTallyNonQv_10-1-2_test.0.zkey",
+          "messageProcessorWasm": "../testing/zkeys/MessageProcessorFull_10-20-2_test/MessageProcessorFull_10-20-2_test_js/MessageProcessorFull_10-20-2_test.wasm",
+          "voteTallyWasm": "../testing/zkeys/VoteTallyNonQv_10-1-2_test/VoteTallyNonQv_10-1-2_test_js/VoteTallyNonQv_10-1-2_test.wasm"
+        },
+        "pollJoiningZkey": {
+          "zkey": "../testing/zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey",
+          "wasm": "../testing/zkeys/PollJoining_10_test/PollJoining_10_test_js/PollJoining_10_test.wasm"
+        },
+        "pollJoinedZkey": {
+          "zkey": "../testing/zkeys/PollJoined_10_test/PollJoined_10_test.0.zkey",
+          "wasm": "../testing/zkeys/PollJoined_10_test/PollJoined_10_test_js/PollJoined_10_test.wasm"
+        }
+      }
+    },
+    "Poll": {
+      "pollStartDate": 3600,
+      "pollEndDate": 3600,
+      "coordinatorPublicKey": "macipk.0a1ce79a43fa676ee3d2882c79d9164a24d4a22bb6190e3d8fa25d97bffc069a",
+      "mode": 1,
+      "policy": "FreeForAllPolicy",
+      "relayers": "0x0000000000000000000000000000000000000000",
+      "initialVoiceCreditProxy": "ConstantInitialVoiceCreditProxy",
+      "voteOptions": 2,
+      "stateTreeDepth": 10
+    }
+  },
   "optimism": {
     "ConstantInitialVoiceCreditProxy": {
       "deploy": true,

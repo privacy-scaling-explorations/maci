@@ -75,6 +75,8 @@ const config: HardhatUserConfig = {
     linea_sepolia: getCommonNetworkConfig(ESupportedChains.LineaSepolia, EChainId.LineaSepolia),
     zksync_era: getCommonNetworkConfig(ESupportedChains.ZkSyncEra, EChainId.ZkSyncEra),
     zksync_sepolia: getCommonNetworkConfig(ESupportedChains.ZkSyncSepolia, EChainId.ZkSyncSepolia),
+    polygon_zkevm: getCommonNetworkConfig(ESupportedChains.PolygonZkEvm, EChainId.PolygonZkEvm),
+    polygon_cardona_zkevm: getCommonNetworkConfig(ESupportedChains.PolygonCardonaZkEvm, EChainId.PolygonCardonaZkEvm),
     coverage: getCommonNetworkConfig(ESupportedChains.Coverage, EChainId.Coverage, TEST_MNEMONIC),
     localhost: {
       url: "http://localhost:8545",
@@ -133,6 +135,8 @@ const config: HardhatUserConfig = {
       [ESupportedChains.LineaSepolia]: ETHERSCAN_API_KEYS[ESupportedChains.LineaSepolia]!,
       [ESupportedChains.ZkSyncEra]: ETHERSCAN_API_KEYS[ESupportedChains.ZkSyncEra]!,
       [ESupportedChains.ZkSyncSepolia]: ETHERSCAN_API_KEYS[ESupportedChains.ZkSyncSepolia]!,
+      [ESupportedChains.PolygonZkEvm]: ETHERSCAN_API_KEYS[ESupportedChains.PolygonZkEvm]!,
+      [ESupportedChains.PolygonCardonaZkEvm]: ETHERSCAN_API_KEYS[ESupportedChains.PolygonCardonaZkEvm]!,
       [ESupportedChains.Mainnet]: ETHERSCAN_API_KEYS[ESupportedChains.Mainnet]!,
     },
     customChains: [
@@ -270,6 +274,22 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: "https://explorer.sepolia.era.zksync.dev/contract_verification",
           browserURL: "https://sepolia.explorer.zksync.io",
+        },
+      },
+      {
+        network: ESupportedChains.PolygonZkEvm,
+        chainId: EChainId.PolygonZkEvm,
+        urls: {
+          apiURL: "https://api-zkevm.polygonscan.com/api",
+          browserURL: "https://zkevm.polygonscan.com/",
+        },
+      },
+      {
+        network: ESupportedChains.PolygonCardonaZkEvm,
+        chainId: EChainId.PolygonCardonaZkEvm,
+        urls: {
+          apiURL: "https://api-cardona-zkevm.polygonscan.com/api",
+          browserURL: "https://docs.polygonscan.com/cardona-polygon-zkevm",
         },
       },
     ],

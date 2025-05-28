@@ -159,3 +159,48 @@ Error: The verifier contract found the proof invalid.
 ### The on-chain verification of total spent voice credits failed
 
 If you ran the `verify` command and got this error, please ensure consistency in your use of quadratic voting throughout interactions with MACI, including poll deployment, proof generation, and verification.
+
+### Proof generation process is killed
+
+If your terminal output ends like this:
+
+```
+[i] Starting to fetch logs from block 8386826
+[i] Generating proofs of message processing...
+[i] Progress: 1 / 1
+[i] Wait until proof generation is finished
+Killed
+ELIFECYCLE  Command failed with exit code 137.
+```
+
+This typically indicates the proof generation process was terminated due to exceeding the system's available memory limit (exit code `137` = SIGKILL by the OS, often due to OOM).
+
+Increase Node.js' memory allocation by setting the `NODE_OPTIONS` environment variable before running the command:
+
+```bash
+export NODE_OPTIONS="--max-old-space-size=4096"
+# You can increase the value further (e.g., 8192 for 8GB) if your system has enough RAM:
+export NODE_OPTIONS="--max-old-space-size=8192"
+```
+
+### Error: Not enough or too many values for input signals
+
+If you see errors like:
+
+```
+Error: Not enough values for input signal currentVoteWeightsPathElements
+at /home/maci/node_modules/.pnpm/circom_runtime@0.1.28/node_modules/circom_runtime/build/main.cjs:513:27
+...
+```
+
+```
+Error: Too many values for input signal ballots
+at /home/maci/node_modules/.pnpm/circom_runtime@0.1.28/node_modules/circom_runtime/build/main.cjs:513:27
+...
+```
+
+This usually happens when the Merkle tree depth configured in your MACI deployment does not match the depth expected by the zkey files used during proof generation.
+To solve this:
+
+- Download the correct zkey files from a trusted source.
+- Verify that the `stateTreeDepth`, `messageTreeDepth`, and `voteOptionTreeDepth` used in your CLI or config match the values used to generate those zkey files.

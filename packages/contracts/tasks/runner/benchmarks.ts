@@ -12,14 +12,18 @@ task("benchmark", "Run benchmarks").setAction(async (_, hre) => {
 
   const deployer = await deployment.getDeployer();
 
+  const isIncremental = hre.network.name !== "hardhat" && hre.network.name !== "localhost";
+
   // deploy MACI
-  const steps = await deployment.start("full", { incremental: true, verify: false });
+  const steps = await deployment.start("full", { incremental: isIncremental, verify: false });
   await deployment.runSteps(steps, 0);
 
   // update poll start and end dates to ensure it's in the future and we have time to send votes
   const timeNow = Math.floor(Date.now() / 1000);
-  deployment.updateDeployConfig(EContracts.Poll, "pollStartDate", timeNow);
-  deployment.updateDeployConfig(EContracts.Poll, "pollEndDate", timeNow + 1000000);
+  const pollDuration = 1000000;
+
+  deployment.updateDeployConfig(EContracts.Poll, "pollStartDate", timeNow - pollDuration);
+  deployment.updateDeployConfig(EContracts.Poll, "pollEndDate", timeNow + pollDuration);
 
   // deploy a Poll
   const pollSteps = await deployment.start("poll", { incremental: true, verify: false });

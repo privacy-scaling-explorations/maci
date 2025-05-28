@@ -39,6 +39,8 @@ export enum ESupportedChains {
   LineaSepolia = "linea_sepolia",
   ZkSyncEra = "zksync_era",
   ZkSyncSepolia = "zksync_sepolia",
+  PolygonZkEvm = "polygon_zkevm",
+  PolygonCardonaZkEvm = "polygon_cardona_zkevm",
   Coverage = "coverage",
   Hardhat = "hardhat",
 }
@@ -66,6 +68,8 @@ export enum EChainId {
   LineaSepolia = 59141,
   ZkSyncEra = 324,
   ZkSyncSepolia = 300,
+  PolygonZkEvm = 1101,
+  PolygonCardonaZkEvm = 2442,
   Coverage = 1337,
 }
 
@@ -92,6 +96,8 @@ export const getNetworkRpcUrls = (): Record<ESupportedChains, string> => {
   const LINEA_SEPOLIA_RPC_URL = process.env.LINEA_SEPOLIA_RPC_URL ?? "";
   const ZK_SYNC_ERA_RPC_URL = process.env.ZK_SYNC_ERA_RPC_URL ?? "";
   const ZK_SYNC_SEPOLIA_RPC_URL = process.env.ZK_SYNC_SEPOLIA_RPC_URL ?? "";
+  const POLYGON_ZKEVM_RPC_URL = process.env.POLYGON_ZKEVM_RPC_URL ?? "";
+  const POLYGON_CARDONA_RPC_URL = process.env.POLYGON_CARDONA_RPC_URL ?? "";
   const MAINNET_RPC_URL = process.env.MAINNET_RPC_URL ?? "";
 
   return {
@@ -112,6 +118,8 @@ export const getNetworkRpcUrls = (): Record<ESupportedChains, string> => {
     [ESupportedChains.LineaSepolia]: LINEA_SEPOLIA_RPC_URL,
     [ESupportedChains.ZkSyncEra]: ZK_SYNC_ERA_RPC_URL,
     [ESupportedChains.ZkSyncSepolia]: ZK_SYNC_SEPOLIA_RPC_URL,
+    [ESupportedChains.PolygonZkEvm]: POLYGON_ZKEVM_RPC_URL,
+    [ESupportedChains.PolygonCardonaZkEvm]: POLYGON_CARDONA_RPC_URL,
     [ESupportedChains.Coverage]: "http://localhost:8555",
     [ESupportedChains.Hardhat]: "http://localhost:8545",
     [ESupportedChains.Mainnet]: MAINNET_RPC_URL,
@@ -137,6 +145,8 @@ export const getEtherscanApiKeys = (): Record<ESupportedChains, string | undefin
   [ESupportedChains.LineaSepolia]: process.env.LINEA_ETHERSCAN_API_KEY,
   [ESupportedChains.ZkSyncEra]: process.env.ZK_SYNC_ETHERSCAN_API_KEY,
   [ESupportedChains.ZkSyncSepolia]: process.env.ZK_SYNC_ETHERSCAN_API_KEY,
+  [ESupportedChains.PolygonZkEvm]: process.env.POLYGON_ZKEVM_ETHERSCAN_API_KEY,
+  [ESupportedChains.PolygonCardonaZkEvm]: process.env.POLYGON_ZKEVM_ETHERSCAN_API_KEY,
   [ESupportedChains.Coverage]: undefined,
   [ESupportedChains.Hardhat]: undefined,
 });
