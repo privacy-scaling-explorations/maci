@@ -112,7 +112,7 @@ export interface ITestingClassPaths {
   /**
    * Path to the poll witnessGenerator file
    */
-  pollWitnessGenerator: string;
+  pollWitgen: string;
 
   /**
    * Path to the rapidsnark file
