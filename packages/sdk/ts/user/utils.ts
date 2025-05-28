@@ -12,8 +12,8 @@ import type {
   IParseSignupEventsArgs,
   IJoinedUserArgs,
   IIsNullifierOnChainArgs,
-  IGenMaciStateTreeAddressArgs,
-  IGenMaciStateTreeWithEndKeyAddressArgs,
+  IGenerateMaciStateTreeAddressArgs,
+  IGenerateMaciStateTreeWithEndKeyAddressArgs,
 } from "./types";
 import type { IGenerateSignUpTree } from "../trees/types";
 import type { TCircuitInputs } from "../utils/types";
@@ -267,7 +267,7 @@ export const getPollJoiningCircuitInputsFromStateFile = async ({
 
 /**
  * Generate MACI's state tree from the MACI contract
- * @param {IGenMaciStateTreeAddressArgs} args - The arguments for the generate maci state tree command
+ * @param {IGenerateMaciStateTreeAddressArgs} args - The arguments for the generate maci state tree command
  * @returns The MACI's state tree
  */
 export const generateMaciStateTree = async ({
@@ -276,7 +276,7 @@ export const generateMaciStateTree = async ({
   startBlock,
   endBlock,
   blocksPerBatch,
-}: IGenMaciStateTreeAddressArgs): Promise<IGenerateSignUpTree> => {
+}: IGenerateMaciStateTreeAddressArgs): Promise<IGenerateSignUpTree> => {
   // build an off-chain representation of the MACI contract using data in the contract storage
   const maciContract = MACIFactory.connect(maciContractAddress, signer);
   const defaultStartBlock = await maciContract
@@ -297,7 +297,7 @@ export const generateMaciStateTree = async ({
 
 /**
  * Generate MACI's state tree from the MACI contract with a given end key
- * @param {IGenMaciStateTreeWithEndKeyAddressArgs} args - The arguments for the generate maci state tree command
+ * @param {IGenerateMaciStateTreeWithEndKeyAddressArgs} args - The arguments for the generate maci state tree command
  * @returns The MACI's state tree
  */
 export const generateMaciStateTreeWithEndKey = async ({
@@ -307,7 +307,7 @@ export const generateMaciStateTreeWithEndKey = async ({
   endBlock,
   blocksPerBatch,
   userPublicKey,
-}: IGenMaciStateTreeWithEndKeyAddressArgs): Promise<IGenerateSignUpTree> => {
+}: IGenerateMaciStateTreeWithEndKeyAddressArgs): Promise<IGenerateSignUpTree> => {
   const maciContract = MACIFactory.connect(maciContractAddress, signer);
   const defaultStartBlock = await maciContract
     .queryFilter(maciContract.filters.SignUp(), startBlock ?? 0)
