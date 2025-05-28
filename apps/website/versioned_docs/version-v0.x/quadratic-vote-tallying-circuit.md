@@ -47,7 +47,7 @@ The MACI contract's `quadraticVoteTally()` function should verify a proof create
 | `currentResultsSalt`            | Private             | A random value to hash with the vote tally for state leaves up to the current batch                        | Coordinator |
 | `currentResultsCommitment`      | Public              | The salted commitment of the values in `currentResults`                                                    | Contract    |
 | `newResultsCommitment`          | Public              | The salted commitment of the vote tally for this batch of leaves plus the vote tally from `currentResults` | Contract    |
-| `salt`                          | Private             | A random value to hash with the culmulate vote tally for this batch of state leaves                        | Coordinator |
+| `salt`                          | Private             | A random value to hash with the cumulate vote tally for this batch of state leaves                        | Coordinator |
 | `stateLeaves[m][p]`             | Private             | The batch of leaves of the state tree to tally.                                                            | Coordinator |
 | `voteLeaves[m][n]`              | Private             | The vote leaves for each user in this batch of state leaves.                                               | Coordinator |
 
