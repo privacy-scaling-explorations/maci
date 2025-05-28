@@ -12,8 +12,8 @@ import type {
   IParseSignupEventsArgs,
   IJoinedUserArgs,
   IIsNullifierOnChainArgs,
-  IGenerateMaciStateTreeArgs,
-  IGenerateMaciStateTreeWithEndKeyArgs,
+  IGenMaciStateTreeAddressArgs,
+  IGenMaciStateTreeWithEndKeyAddressArgs,
 } from "./types";
 import type { IGenerateSignUpTree } from "../trees/types";
 import type { TCircuitInputs } from "../utils/types";
@@ -267,17 +267,18 @@ export const getPollJoiningCircuitInputsFromStateFile = async ({
 
 /**
  * Generate MACI's state tree from the MACI contract
- * @param {IGenerateMaciStateTreeArgs} args - The arguments for the generate maci state tree command
+ * @param {IGenMaciStateTreeAddressArgs} args - The arguments for the generate maci state tree command
  * @returns The MACI's state tree
  */
 export const generateMaciStateTree = async ({
-  maciContract,
+  maciContractAddress,
   signer,
   startBlock,
   endBlock,
   blocksPerBatch,
-}: IGenerateMaciStateTreeArgs): Promise<IGenerateSignUpTree> => {
+}: IGenMaciStateTreeAddressArgs): Promise<IGenerateSignUpTree> => {
   // build an off-chain representation of the MACI contract using data in the contract storage
+  const maciContract = MACIFactory.connect(maciContractAddress, signer);
   const defaultStartBlock = await maciContract
     .queryFilter(maciContract.filters.SignUp(), startBlock ?? 0)
     .then((events) => events[0]?.blockNumber ?? 0);
@@ -286,7 +287,7 @@ export const generateMaciStateTree = async ({
 
   return generateSignUpTree({
     provider: signer.provider!,
-    address: await maciContract.getAddress(),
+    address: maciContractAddress,
     blocksPerRequest: blocksPerBatch || 50,
     fromBlock,
     endBlock,
@@ -296,18 +297,18 @@ export const generateMaciStateTree = async ({
 
 /**
  * Generate MACI's state tree from the MACI contract with a given end key
- * @param {IGenerateMaciStateTreeWithEndKeyArgs} args - The arguments for the generate maci state tree command
+ * @param {IGenMaciStateTreeWithEndKeyAddressArgs} args - The arguments for the generate maci state tree command
  * @returns The MACI's state tree
  */
 export const generateMaciStateTreeWithEndKey = async ({
-  maciContract,
+  maciContractAddress,
   signer,
   startBlock,
   endBlock,
   blocksPerBatch,
   userPublicKey,
-}: IGenerateMaciStateTreeWithEndKeyArgs): Promise<IGenerateSignUpTree> => {
-  // build an off-chain representation of the MACI contract using data in the contract storage
+}: IGenMaciStateTreeWithEndKeyAddressArgs): Promise<IGenerateSignUpTree> => {
+  const maciContract = MACIFactory.connect(maciContractAddress, signer);
   const defaultStartBlock = await maciContract
     .queryFilter(maciContract.filters.SignUp(), startBlock ?? 0)
     .then((events) => events[0]?.blockNumber ?? 0);
@@ -316,7 +317,7 @@ export const generateMaciStateTreeWithEndKey = async ({
 
   return generateSignUpTreeWithEndKey({
     provider: signer.provider!,
-    address: await maciContract.getAddress(),
+    address: maciContractAddress,
     blocksPerRequest: blocksPerBatch || 50,
     fromBlock,
     endBlock,
@@ -344,7 +345,7 @@ export const getPollJoiningCircuitEvents = async ({
   const stateTreeDepth = await maciContract.stateTreeDepth();
 
   const signUpData = await generateMaciStateTree({
-    maciContract,
+    maciContractAddress: await maciContract.getAddress(),
     signer,
     startBlock,
     endBlock,
