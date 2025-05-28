@@ -509,9 +509,9 @@ export interface IHasUserSignedUpArgs {
 }
 
 /**
- * Arguments for IGenMaciStateTreeAddressArgs
+ * Arguments for IGenerateMaciStateTreeAddressArgs
  */
-export interface IGenMaciStateTreeAddressArgs {
+export interface IGenerateMaciStateTreeAddressArgs {
   /**
    * The MACI contract address
    */
@@ -535,9 +535,9 @@ export interface IGenMaciStateTreeAddressArgs {
 }
 
 /**
- * Arguments for IGenMaciStateTreeWithEndKeyAddressArgs
+ * Arguments for IGenerateMaciStateTreeWithEndKeyAddressArgs
  */
-export interface IGenMaciStateTreeWithEndKeyAddressArgs extends IGenMaciStateTreeAddressArgs {
+export interface IGenerateMaciStateTreeWithEndKeyAddressArgs extends IGenerateMaciStateTreeAddressArgs {
   /**
    * The public key of the user
    */
