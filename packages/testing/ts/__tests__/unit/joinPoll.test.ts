@@ -13,8 +13,7 @@ import {
   deployConstantInitialVoiceCreditProxy,
   deployVerifier,
   deployMaci,
-  MACI__factory as MACIFactory,
-  generateMaciStateTreeWithEndKey,
+  genMaciStateTreeWithEndKey,
 } from "@maci-protocol/sdk";
 import { downloadPollJoiningArtifactsBrowser, joinPoll as joinPollBrowser } from "@maci-protocol/sdk/browser";
 import { expect } from "chai";
@@ -26,7 +25,7 @@ import {
   DEFAULT_SG_DATA,
   deployArgs,
   deployPollArgs,
-  testPollJoiningZkeyPath,
+  pollJoiningTestZkeyPath,
   testPollJoiningWasmPath,
   testRapidsnarkPath,
   testPollJoiningWitnessPath,
@@ -42,6 +41,7 @@ describe("joinPoll", function test() {
 
   const users = new Array(3).fill(undefined).map(() => new Keypair());
 
+  const mockStateIndex = 1n;
   const mockPollId = 9000n;
 
   this.timeout(900000);
@@ -130,12 +130,13 @@ describe("joinPoll", function test() {
     await joinPoll({
       maciAddress: maciAddresses.maciContractAddress,
       privateKey: users[0].privateKey.serialize(),
+      stateIndex: 1n,
       signer,
       pollId: 0n,
-      pollJoiningZkey: testPollJoiningZkeyPath,
+      pollJoiningZkey: pollJoiningTestZkeyPath,
       useWasm: true,
       pollWasm: testPollJoiningWasmPath,
-      pollWitnessGenerator: testPollJoiningWitnessPath,
+      pollWitgen: testPollJoiningWitnessPath,
       rapidsnark: testRapidsnarkPath,
       sgDataArg: DEFAULT_SG_DATA,
       ivcpDataArg: DEFAULT_IVCP_DATA,
@@ -164,6 +165,7 @@ describe("joinPoll", function test() {
     await joinPollBrowser({
       maciAddress: maciAddresses.maciContractAddress,
       privateKey: users[1].privateKey.serialize(),
+      stateIndex: 2n,
       signer,
       pollId: 0n,
       pollJoiningZkey: zKey as unknown as string,
@@ -189,9 +191,8 @@ describe("joinPoll", function test() {
   it("should allow to join the poll using a precomputed inclusion proof", async () => {
     const startBlock = await signer.provider?.getBlockNumber();
 
-    const maciContract = MACIFactory.connect(maciAddresses.maciContractAddress, signer);
-    const stateTree = await generateMaciStateTreeWithEndKey({
-      maciContract,
+    const stateTree = await genMaciStateTreeWithEndKey({
+      maciContractAddress: maciAddresses.maciContractAddress,
       signer,
       userPublicKey: users[2].publicKey,
     });
@@ -206,6 +207,7 @@ describe("joinPoll", function test() {
     await joinPollBrowser({
       maciAddress: maciAddresses.maciContractAddress,
       privateKey: users[2].privateKey.serialize(),
+      stateIndex: 3n,
       signer,
       pollId: 0n,
       inclusionProof,
@@ -232,25 +234,27 @@ describe("joinPoll", function test() {
       joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
         privateKey: users[0].privateKey.serialize(),
+        stateIndex: mockStateIndex,
         signer,
         pollId: mockPollId,
-        pollJoiningZkey: testPollJoiningZkeyPath,
+        pollJoiningZkey: pollJoiningTestZkeyPath,
         sgDataArg: DEFAULT_SG_DATA,
         ivcpDataArg: DEFAULT_IVCP_DATA,
       }),
     ).eventually.rejectedWith("PollDoesNotExist(9000)");
   });
 
-  it("should throw error if user did not sign up to maci and therefore state index is invalid", async () => {
+  it("should throw error if state index is invalid", async () => {
     const keypair = new Keypair();
 
     await expect(
       joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
         privateKey: keypair.privateKey.serialize(),
+        stateIndex: -1n,
         signer,
         pollId: 0n,
-        pollJoiningZkey: testPollJoiningZkeyPath,
+        pollJoiningZkey: pollJoiningTestZkeyPath,
         sgDataArg: DEFAULT_SG_DATA,
         ivcpDataArg: DEFAULT_IVCP_DATA,
       }),
@@ -262,9 +266,10 @@ describe("joinPoll", function test() {
       joinPoll({
         maciAddress: maciAddresses.maciContractAddress,
         privateKey: users[0].privateKey.serialize(),
+        stateIndex: mockStateIndex,
         signer,
         pollId: -1n,
-        pollJoiningZkey: testPollJoiningZkeyPath,
+        pollJoiningZkey: pollJoiningTestZkeyPath,
         sgDataArg: DEFAULT_SG_DATA,
         ivcpDataArg: DEFAULT_IVCP_DATA,
       }),
