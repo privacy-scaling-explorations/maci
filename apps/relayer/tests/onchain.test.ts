@@ -24,7 +24,7 @@ import {
   voteTallyZkeyPathNonQv,
   pollJoiningZkey,
   messageProcessorZkeyPathNonQv,
-  pollWitnessGenerator,
+  pollWitgen,
   rapidsnark,
 } from "./constants.js";
 
@@ -45,7 +45,7 @@ describe("Integration message publishing", () => {
       messageProcessorZkeyPath: messageProcessorZkeyPathNonQv,
       voteTallyZkeyPath: voteTallyZkeyPathNonQv,
       pollWasm,
-      pollWitnessGenerator,
+      pollWitgen,
       rapidsnark,
     });
     const poll = testDeploy.contractsData.maciState!.polls.get(0n);
