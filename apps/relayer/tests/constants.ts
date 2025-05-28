@@ -19,7 +19,7 @@ export const pollWasm = path.resolve(
   dirname,
   "../zkeys/PollJoining_10_test/PollJoining_10_test_js/PollJoining_10_test.wasm",
 );
-export const pollWitnessGenerator = path.resolve(
+export const pollWitgen = path.resolve(
   dirname,
   "../zkeys/PollJoining_10_test/PollJoining_10_test_cpp/PollJoining_10_test",
 );
