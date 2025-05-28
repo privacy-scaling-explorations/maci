@@ -3,8 +3,8 @@ export { getSignedupUserData, signup, hasUserSignedUp } from "./signup";
 export {
   getJoinedUserData,
   hasUserJoinedPoll,
-  generateMaciStateTree,
-  generateMaciStateTreeWithEndKey,
+  generateMaciStateTree as genMaciStateTree,
+  generateMaciStateTreeWithEndKey as genMaciStateTreeWithEndKey,
   getPollJoiningCircuitEvents,
   joiningCircuitInputs,
 } from "./utils";
@@ -25,6 +25,6 @@ export type {
   IParseSignupEventsArgs,
   ISignupData,
   IHasUserSignedUpArgs,
-  IGenerateMaciStateTreeArgs,
-  IGenerateMaciStateTreeWithEndKeyArgs,
+  IGenMaciStateTreeAddressArgs,
+  IGenMaciStateTreeWithEndKeyAddressArgs,
 } from "./types";
