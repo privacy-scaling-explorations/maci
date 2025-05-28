@@ -13,7 +13,7 @@ import {
   pollJoinedZkey,
   pollJoiningZkey,
   pollWasm,
-  pollWitnessGenerator,
+  pollWitgen,
   messageProcessorZkeyPathNonQv,
   rapidsnark,
   voteTallyZkeyPathNonQv,
@@ -35,7 +35,7 @@ describe("Integration message batches", () => {
       messageProcessorZkeyPath: messageProcessorZkeyPathNonQv,
       voteTallyZkeyPath: voteTallyZkeyPathNonQv,
       pollWasm,
-      pollWitnessGenerator,
+      pollWitgen,
       rapidsnark,
     });
     const poll = testDeploy.contractsData.maciState!.polls.get(0n);
