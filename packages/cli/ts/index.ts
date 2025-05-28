@@ -452,7 +452,7 @@ program
   )
   .option("-w, --wasm", "whether to use the wasm binaries")
   .option("-r, --rapidsnark <rapidsnark>", "the path to the rapidsnark binary")
-  .option("-g, --poll-witness-generator <pollWitnessGenerator>", "the path to the poll witness generation binary")
+  .option("-g, --poll-witgen <pollWitgen>", "the path to the poll witness generation binary")
   .action(async (args) => {
     try {
       const signer = await getSigner();
@@ -478,7 +478,7 @@ program
         pollWasm: args.pollWasm,
         useWasm: args.wasm,
         rapidsnark: args.rapidsnark,
-        pollWitnessGenerator: args.pollWitnessGenerator,
+        pollWitgen: args.pollWitgen,
         sgDataArg: args.sgData ?? DEFAULT_SG_DATA,
         ivcpDataArg: args.ivcpData ?? DEFAULT_IVCP_DATA,
       });
