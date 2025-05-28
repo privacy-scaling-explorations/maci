@@ -245,7 +245,7 @@ describe("Integration tests", function test() {
           pollJoiningZkey: "./zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey",
           useWasm: true,
           pollWasm: "./zkeys/PollJoining_10_test/PollJoining_10_test_js/PollJoining_10_test.wasm",
-          pollWitnessGenerator: "./zkeys/PollJoining_10_test/PollJoining_10_test_cpp/PollJoining_10_test",
+          pollWitgen: "./zkeys/PollJoining_10_test/PollJoining_10_test_cpp/PollJoining_10_test",
           rapidsnark: `${homedir()}/rapidsnark/build/prover`,
           sgDataArg: DEFAULT_SG_DATA,
           ivcpDataArg: DEFAULT_IVCP_DATA,
