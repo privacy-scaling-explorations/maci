@@ -28,10 +28,10 @@ export const joinPoll = async ({
   pollJoiningZkey,
   useWasm,
   rapidsnark,
-  pollWitnessGenerator,
   pollWasm,
   sgDataArg,
   ivcpDataArg,
+  pollWitgen,
 }: IJoinPollArgs): Promise<IJoinPollData> => {
   const validContract = await contractExists(signer.provider!, maciAddress);
 
@@ -100,7 +100,7 @@ export const joinPoll = async ({
     pollJoiningZkey,
     useWasm,
     rapidsnark,
-    pollWitnessGenerator,
+    pollWitgen,
     pollWasm,
   );
 
