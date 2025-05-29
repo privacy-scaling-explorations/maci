@@ -271,12 +271,14 @@ export const getPollJoiningCircuitInputsFromStateFile = async ({
  * @returns The MACI's state tree
  */
 export const generateMaciStateTree = async ({
-  maciContract,
+  maciContractAddress,
   signer,
   startBlock,
   endBlock,
   blocksPerBatch,
 }: IGenerateMaciStateTreeArgs): Promise<IGenerateSignUpTree> => {
+  const maciContract = MACIFactory.connect(maciContractAddress, signer);
+
   // build an off-chain representation of the MACI contract using data in the contract storage
   const defaultStartBlock = await maciContract
     .queryFilter(maciContract.filters.SignUp(), startBlock ?? 0)
@@ -300,13 +302,15 @@ export const generateMaciStateTree = async ({
  * @returns The MACI's state tree
  */
 export const generateMaciStateTreeWithEndKey = async ({
-  maciContract,
+  maciContractAddress,
   signer,
   startBlock,
   endBlock,
   blocksPerBatch,
   userPublicKey,
 }: IGenerateMaciStateTreeWithEndKeyArgs): Promise<IGenerateSignUpTree> => {
+  const maciContract = MACIFactory.connect(maciContractAddress, signer);
+
   // build an off-chain representation of the MACI contract using data in the contract storage
   const defaultStartBlock = await maciContract
     .queryFilter(maciContract.filters.SignUp(), startBlock ?? 0)
@@ -341,10 +345,13 @@ export const getPollJoiningCircuitEvents = async ({
   endBlock,
   blocksPerBatch,
 }: IGetPollJoiningCircuitEventsArgs): Promise<TCircuitInputs> => {
-  const stateTreeDepth = await maciContract.stateTreeDepth();
+  const [stateTreeDepth, maciContractAddress] = await Promise.all([
+    maciContract.stateTreeDepth(),
+    maciContract.getAddress(),
+  ]);
 
   const signUpData = await generateMaciStateTree({
-    maciContract,
+    maciContractAddress,
     signer,
     startBlock,
     endBlock,

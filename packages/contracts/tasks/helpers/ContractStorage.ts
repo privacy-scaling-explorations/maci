@@ -206,13 +206,12 @@ export class ContractStorage {
     network: string,
     keys: string[] = [],
   ): (string | undefined)[] {
-    const collection = this.db.get(`${network}.named`).value() as
-      | Record<string, IStorageNamedEntry | Record<string, IStorageNamedEntry>>
-      | undefined;
-
     return ids
       .map((id, index) => {
-        const entry = collection?.[id];
+        const entry = this.db.get(`${network}.named.${id}`).value() as
+          | IStorageNamedEntry
+          | Record<string, IStorageNamedEntry>
+          | undefined;
 
         if (entry && keys[index] in entry) {
           return (entry as Record<string, IStorageNamedEntry>)[keys[index]];

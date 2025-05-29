@@ -418,9 +418,9 @@ export interface IIsNullifierOnChainArgs {
  */
 export interface IGenerateMaciStateTreeArgs {
   /**
-   * The MACI contract
+   * The MACI contract address
    */
-  maciContract: MACI;
+  maciContractAddress: string;
 
   /**
    * The signer

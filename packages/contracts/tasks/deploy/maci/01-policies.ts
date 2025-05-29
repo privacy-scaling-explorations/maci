@@ -58,15 +58,15 @@ deployment.deployTask(EDeploySteps.Policies, "Deploy policies").then((task) =>
       deployERC20Policy,
     } = await import("../../../ts/deploy");
 
-    const freeForAllPolicyContractAddress = storage.getAddress(EContracts.FreeForAllPolicy, hre.network.name);
-    const easPolicyContractAddress = storage.getAddress(EContracts.EASPolicy, hre.network.name);
-    const hatsPolicyContractAddress = storage.getAddress(EContracts.HatsPolicy, hre.network.name);
-    const gitcoinPolicyContractAddress = storage.getAddress(EContracts.GitcoinPassportPolicy, hre.network.name);
-    const zupassPolicyContractAddress = storage.getAddress(EContracts.ZupassPolicy, hre.network.name);
-    const semaphorePolicyContractAddress = storage.getAddress(EContracts.SemaphorePolicy, hre.network.name);
-    const merkleProofPolicyContractAddress = storage.getAddress(EContracts.MerkleProofPolicy, hre.network.name);
-    const erc20VotesPolicyContractAddress = storage.getAddress(EContracts.ERC20VotesPolicy, hre.network.name);
-    const erc20PolicyContractAddress = storage.getAddress(EContracts.ERC20Policy, hre.network.name);
+    const freeForAllPolicyContractAddress = storage.getAddress(EPolicies.FreeForAll, hre.network.name);
+    const easPolicyContractAddress = storage.getAddress(EPolicies.EAS, hre.network.name);
+    const hatsPolicyContractAddress = storage.getAddress(EPolicies.Hats, hre.network.name);
+    const gitcoinPolicyContractAddress = storage.getAddress(EPolicies.GitcoinPassport, hre.network.name);
+    const zupassPolicyContractAddress = storage.getAddress(EPolicies.Zupass, hre.network.name);
+    const semaphorePolicyContractAddress = storage.getAddress(EPolicies.Semaphore, hre.network.name);
+    const merkleProofPolicyContractAddress = storage.getAddress(EPolicies.MerkleProof, hre.network.name);
+    const erc20VotesPolicyContractAddress = storage.getAddress(EPolicies.ERC20Votes, hre.network.name);
+    const erc20PolicyContractAddress = storage.getAddress(EPolicies.ERC20, hre.network.name);
 
     const deployFreeForAllPolicy = deployment.getDeployConfigField(EContracts.FreeForAllPolicy, "deploy");
     const deployEASPolicy = deployment.getDeployConfigField(EContracts.EASPolicy, "deploy");

@@ -13,7 +13,6 @@ import {
   deployConstantInitialVoiceCreditProxy,
   deployVerifier,
   deployMaci,
-  MACI__factory as MACIFactory,
   generateMaciStateTreeWithEndKey,
 } from "@maci-protocol/sdk";
 import { downloadPollJoiningArtifactsBrowser, joinPoll as joinPollBrowser } from "@maci-protocol/sdk/browser";
@@ -189,9 +188,8 @@ describe("joinPoll", function test() {
   it("should allow to join the poll using a precomputed inclusion proof", async () => {
     const startBlock = await signer.provider?.getBlockNumber();
 
-    const maciContract = MACIFactory.connect(maciAddresses.maciContractAddress, signer);
     const stateTree = await generateMaciStateTreeWithEndKey({
-      maciContract,
+      maciContractAddress: maciAddresses.maciContractAddress,
       signer,
       userPublicKey: users[2].publicKey,
     });

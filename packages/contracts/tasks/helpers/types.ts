@@ -718,6 +718,11 @@ export interface IVerificationSubtaskArgs {
    * Libraries
    */
   libraries?: Libraries;
+
+  /**
+   * Whether force verification or not
+   */
+  force?: boolean;
 }
 
 export interface ITreeMergeParams {
