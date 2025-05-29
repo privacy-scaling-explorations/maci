@@ -11,7 +11,7 @@ import type { HardhatUserConfig } from "hardhat/config";
 
 // Don't forget to import new tasks here
 import "./tasks/deploy";
-import { EChainId, ESupportedChains, getEtherscanApiKeys, getNetworkRpcUrls } from "./tasks/helpers/constants";
+import { EChainId, ESupportedChains, getNetworkRpcUrls } from "./tasks/helpers/constants";
 import "./tasks/runner/benchmarks";
 import "./tasks/runner/deployFull";
 import "./tasks/runner/deployPoll";
@@ -28,7 +28,6 @@ const DEFAULT_GAS_MULTIPLIER = 2;
 const TEST_MNEMONIC = "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat";
 const NETWORKS_RPC_URL = getNetworkRpcUrls();
 const GAS_PRICE: number | "auto" = process.env.GAS_PRICE ? Number(process.env.GAS_PRICE) : "auto";
-const ETHERSCAN_API_KEYS = getEtherscanApiKeys();
 
 const getCommonNetworkConfig = (networkName: ESupportedChains, chainId: number, mnemonic?: string) => ({
   url: NETWORKS_RPC_URL[networkName],
@@ -117,34 +116,13 @@ const config: HardhatUserConfig = {
     disambiguatePaths: false,
   },
   etherscan: {
-    apiKey: {
-      [ESupportedChains.Sepolia]: ETHERSCAN_API_KEYS[ESupportedChains.Sepolia]!,
-      [ESupportedChains.Optimism]: ETHERSCAN_API_KEYS[ESupportedChains.Optimism]!,
-      [ESupportedChains.OptimismSepolia]: ETHERSCAN_API_KEYS[ESupportedChains.OptimismSepolia]!,
-      [ESupportedChains.Scroll]: ETHERSCAN_API_KEYS[ESupportedChains.Scroll]!,
-      [ESupportedChains.ScrollSepolia]: ETHERSCAN_API_KEYS[ESupportedChains.ScrollSepolia]!,
-      [ESupportedChains.Arbitrum]: ETHERSCAN_API_KEYS[ESupportedChains.Arbitrum]!,
-      [ESupportedChains.ArbitrumSepolia]: ETHERSCAN_API_KEYS[ESupportedChains.ArbitrumSepolia]!,
-      [ESupportedChains.Base]: ETHERSCAN_API_KEYS[ESupportedChains.Base]!,
-      [ESupportedChains.BaseSepolia]: ETHERSCAN_API_KEYS[ESupportedChains.BaseSepolia]!,
-      [ESupportedChains.Gnosis]: ETHERSCAN_API_KEYS[ESupportedChains.Gnosis]!,
-      [ESupportedChains.GnosisChiado]: ETHERSCAN_API_KEYS[ESupportedChains.GnosisChiado]!,
-      [ESupportedChains.Polygon]: ETHERSCAN_API_KEYS[ESupportedChains.Polygon]!,
-      [ESupportedChains.PolygonAmoy]: ETHERSCAN_API_KEYS[ESupportedChains.PolygonAmoy]!,
-      [ESupportedChains.Linea]: ETHERSCAN_API_KEYS[ESupportedChains.Linea]!,
-      [ESupportedChains.LineaSepolia]: ETHERSCAN_API_KEYS[ESupportedChains.LineaSepolia]!,
-      [ESupportedChains.ZkSyncEra]: ETHERSCAN_API_KEYS[ESupportedChains.ZkSyncEra]!,
-      [ESupportedChains.ZkSyncSepolia]: ETHERSCAN_API_KEYS[ESupportedChains.ZkSyncSepolia]!,
-      [ESupportedChains.PolygonZkEvm]: ETHERSCAN_API_KEYS[ESupportedChains.PolygonZkEvm]!,
-      [ESupportedChains.PolygonCardonaZkEvm]: ETHERSCAN_API_KEYS[ESupportedChains.PolygonCardonaZkEvm]!,
-      [ESupportedChains.Mainnet]: ETHERSCAN_API_KEYS[ESupportedChains.Mainnet]!,
-    },
+    apiKey: process.env.ETH_ETHERSCAN_API_KEY,
     customChains: [
       {
         network: ESupportedChains.Sepolia,
         chainId: EChainId.Sepolia,
         urls: {
-          apiURL: "https://api-sepolia.etherscan.io/api",
+          apiURL: `https://api.etherscan.io/v2/api?chainid=${EChainId.Sepolia}`,
           browserURL: "https://sepolia.etherscan.io",
         },
       },
@@ -152,7 +130,7 @@ const config: HardhatUserConfig = {
         network: ESupportedChains.Optimism,
         chainId: EChainId.Optimism,
         urls: {
-          apiURL: "https://api-optimistic.etherscan.io/api",
+          apiURL: `https://api.etherscan.io/v2/api?chainid=${EChainId.Optimism}`,
           browserURL: "https://optimistic.etherscan.io",
         },
       },
@@ -160,7 +138,7 @@ const config: HardhatUserConfig = {
         network: ESupportedChains.OptimismSepolia,
         chainId: EChainId.OptimismSepolia,
         urls: {
-          apiURL: "https://api-sepolia-optimistic.etherscan.io/api",
+          apiURL: `https://api.etherscan.io/v2/api?chainid=${EChainId.OptimismSepolia}`,
           browserURL: "https://sepolia-optimistic.etherscan.io",
         },
       },
@@ -168,7 +146,7 @@ const config: HardhatUserConfig = {
         network: ESupportedChains.Scroll,
         chainId: EChainId.Scroll,
         urls: {
-          apiURL: "https://api.scrollscan.com/api",
+          apiURL: `https://api.etherscan.io/v2/api?chainid=${EChainId.Scroll}`,
           browserURL: "https://scrollscan.com/",
         },
       },
@@ -176,7 +154,7 @@ const config: HardhatUserConfig = {
         network: ESupportedChains.ScrollSepolia,
         chainId: EChainId.ScrollSepolia,
         urls: {
-          apiURL: "https://api-sepolia.scrollscan.com/api",
+          apiURL: `https://api.etherscan.io/v2/api?chainid=${EChainId.ScrollSepolia}`,
           browserURL: "https://sepolia.scrollscan.com/",
         },
       },
@@ -184,7 +162,7 @@ const config: HardhatUserConfig = {
         network: ESupportedChains.Arbitrum,
         chainId: EChainId.Arbitrum,
         urls: {
-          apiURL: "https://api.arbiscan.io/api",
+          apiURL: `https://api.etherscan.io/v2/api?chainid=${EChainId.Arbitrum}`,
           browserURL: "https://arbiscan.io/",
         },
       },
@@ -192,7 +170,7 @@ const config: HardhatUserConfig = {
         network: ESupportedChains.ArbitrumSepolia,
         chainId: EChainId.ArbitrumSepolia,
         urls: {
-          apiURL: "https://api-sepolia.arbiscan.io/api",
+          apiURL: `https://api.etherscan.io/v2/api?chainid=${EChainId.ArbitrumSepolia}`,
           browserURL: "https://sepolia.arbiscan.io/",
         },
       },
@@ -200,7 +178,7 @@ const config: HardhatUserConfig = {
         network: ESupportedChains.Base,
         chainId: EChainId.Base,
         urls: {
-          apiURL: "https://api.basescan.org/api",
+          apiURL: `https://api.etherscan.io/v2/api?chainid=${EChainId.Base}`,
           browserURL: "https://basescan.org/",
         },
       },
@@ -208,7 +186,7 @@ const config: HardhatUserConfig = {
         network: ESupportedChains.BaseSepolia,
         chainId: EChainId.BaseSepolia,
         urls: {
-          apiURL: "https://api-sepolia.basescan.org/api",
+          apiURL: `https://api.etherscan.io/v2/api?chainid=${EChainId.BaseSepolia}`,
           browserURL: "https://sepolia.basescan.org/",
         },
       },
@@ -216,7 +194,7 @@ const config: HardhatUserConfig = {
         network: ESupportedChains.Gnosis,
         chainId: EChainId.Gnosis,
         urls: {
-          apiURL: "https://api.gnosisscan.io/api",
+          apiURL: `https://api.etherscan.io/v2/api?chainid=${EChainId.Gnosis}`,
           browserURL: "https://gnosisscan.io/",
         },
       },
@@ -224,7 +202,7 @@ const config: HardhatUserConfig = {
         network: ESupportedChains.GnosisChiado,
         chainId: EChainId.GnosisChiado,
         urls: {
-          apiURL: "https://gnosis-chiado.blockscout.com/api",
+          apiURL: `https://api.etherscan.io/v2/api?chainid=${EChainId.GnosisChiado}`,
           browserURL: "https://gnosis-chiado.blockscout.com/",
         },
       },
@@ -232,7 +210,7 @@ const config: HardhatUserConfig = {
         network: ESupportedChains.Polygon,
         chainId: EChainId.Polygon,
         urls: {
-          apiURL: "https://polygonscan.com/api",
+          apiURL: `https://api.etherscan.io/v2/api?chainid=${EChainId.Polygon}`,
           browserURL: "https://polygonscan.com/",
         },
       },
@@ -240,7 +218,7 @@ const config: HardhatUserConfig = {
         network: ESupportedChains.PolygonAmoy,
         chainId: EChainId.PolygonAmoy,
         urls: {
-          apiURL: "https://amoy.polygonscan.com/api",
+          apiURL: `https://api.etherscan.io/v2/api?chainid=${EChainId.PolygonAmoy}`,
           browserURL: "https://amoy.polygonscan.com/",
         },
       },
@@ -248,7 +226,7 @@ const config: HardhatUserConfig = {
         network: ESupportedChains.Linea,
         chainId: EChainId.Linea,
         urls: {
-          apiURL: "https://api.lineascan.build/api",
+          apiURL: `https://api.etherscan.io/v2/api?chainid=${EChainId.Linea}`,
           browserURL: "https://lineascan.build/",
         },
       },
@@ -256,7 +234,7 @@ const config: HardhatUserConfig = {
         network: ESupportedChains.LineaSepolia,
         chainId: EChainId.LineaSepolia,
         urls: {
-          apiURL: "https://api-sepolia.lineascan.build/api",
+          apiURL: `https://api.etherscan.io/v2/api?chainid=${EChainId.LineaSepolia}`,
           browserURL: "https://sepolia.lineascan.build/",
         },
       },
@@ -264,7 +242,7 @@ const config: HardhatUserConfig = {
         network: ESupportedChains.ZkSyncEra,
         chainId: EChainId.ZkSyncEra,
         urls: {
-          apiURL: "https://zksync2-mainnet-explorer.zksync.io/contract_verification",
+          apiURL: `https://api.etherscan.io/v2/api?chainid=${EChainId.ZkSyncEra}`,
           browserURL: "https://explorer.zksync.io",
         },
       },
@@ -272,7 +250,7 @@ const config: HardhatUserConfig = {
         network: ESupportedChains.ZkSyncSepolia,
         chainId: EChainId.ZkSyncSepolia,
         urls: {
-          apiURL: "https://explorer.sepolia.era.zksync.dev/contract_verification",
+          apiURL: `https://api.etherscan.io/v2/api?chainid=${EChainId.ZkSyncSepolia}`,
           browserURL: "https://sepolia.explorer.zksync.io",
         },
       },
@@ -280,7 +258,7 @@ const config: HardhatUserConfig = {
         network: ESupportedChains.PolygonZkEvm,
         chainId: EChainId.PolygonZkEvm,
         urls: {
-          apiURL: "https://api-zkevm.polygonscan.com/api",
+          apiURL: `https://api.etherscan.io/v2/api?chainid=${EChainId.PolygonZkEvm}`,
           browserURL: "https://zkevm.polygonscan.com/",
         },
       },
@@ -288,7 +266,7 @@ const config: HardhatUserConfig = {
         network: ESupportedChains.PolygonCardonaZkEvm,
         chainId: EChainId.PolygonCardonaZkEvm,
         urls: {
-          apiURL: "https://api-cardona-zkevm.polygonscan.com/api",
+          apiURL: `https://api.etherscan.io/v2/api?chainid=${EChainId.PolygonCardonaZkEvm}`,
           browserURL: "https://docs.polygonscan.com/cardona-polygon-zkevm",
         },
       },

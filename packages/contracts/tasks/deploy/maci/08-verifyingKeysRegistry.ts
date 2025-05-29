@@ -118,12 +118,14 @@ deployment.deployTask(EDeploySteps.VerifyingKeysRegistry, "Deploy verifying key 
       ),
     );
 
+    const initialOwner = await deployer.getAddress();
+
     const verifyingKeysRegistryContract = await deployment.deployContract<VerifyingKeysRegistry>(
       {
         name: EContracts.VerifyingKeysRegistry,
         signer: deployer,
       },
-      await deployer.getAddress(),
+      initialOwner,
     );
 
     const processZkeys = [qvProcessVerifyingKey, nonQvProcessVerifyingKey, fullProcessVerifyingKey].filter(
@@ -162,7 +164,7 @@ deployment.deployTask(EDeploySteps.VerifyingKeysRegistry, "Deploy verifying key 
     await storage.register({
       id: EContracts.VerifyingKeysRegistry,
       contract: verifyingKeysRegistryContract,
-      args: [],
+      args: [initialOwner],
       network: hre.network.name,
     });
   }),

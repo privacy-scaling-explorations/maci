@@ -63,34 +63,30 @@ deployment.deployTask(EDeploySteps.PollPolicy, "Deploy Poll policies").then((tas
     const pollId = await maciContract.nextPollId();
 
     const freeForAllPolicyContractAddress = storage.getAddress(
-      EContracts.FreeForAllPolicy,
+      EPolicies.FreeForAll,
       hre.network.name,
       `poll-${pollId}`,
     );
-    const easPolicyContractAddress = storage.getAddress(EContracts.EASPolicy, hre.network.name, `poll-${pollId}`);
-    const hatsPolicyContractAddress = storage.getAddress(EContracts.HatsPolicy, hre.network.name, `poll-${pollId}`);
+    const easPolicyContractAddress = storage.getAddress(EPolicies.EAS, hre.network.name, `poll-${pollId}`);
+    const hatsPolicyContractAddress = storage.getAddress(EPolicies.Hats, hre.network.name, `poll-${pollId}`);
     const gitcoinPolicyContractAddress = storage.getAddress(
-      EContracts.GitcoinPassportPolicy,
+      EPolicies.GitcoinPassport,
       hre.network.name,
       `poll-${pollId}`,
     );
-    const zupassPolicyContractAddress = storage.getAddress(EContracts.ZupassPolicy, hre.network.name, `poll-${pollId}`);
-    const semaphorePolicyContractAddress = storage.getAddress(
-      EContracts.SemaphorePolicy,
-      hre.network.name,
-      `poll-${pollId}`,
-    );
+    const zupassPolicyContractAddress = storage.getAddress(EPolicies.Zupass, hre.network.name, `poll-${pollId}`);
+    const semaphorePolicyContractAddress = storage.getAddress(EPolicies.Semaphore, hre.network.name, `poll-${pollId}`);
     const merkleProofPolicyContractAddress = storage.getAddress(
-      EContracts.MerkleProofPolicy,
+      EPolicies.MerkleProof,
       hre.network.name,
       `poll-${pollId}`,
     );
     const erc20VotesPolicyContractAddress = storage.getAddress(
-      EContracts.ERC20VotesPolicy,
+      EPolicies.ERC20Votes,
       hre.network.name,
       `poll-${pollId}`,
     );
-    const erc20PolicyContractAddress = storage.getAddress(EContracts.ERC20Policy, hre.network.name, `poll-${pollId}`);
+    const erc20PolicyContractAddress = storage.getAddress(EPolicies.ERC20, hre.network.name, `poll-${pollId}`);
 
     const policyToDeploy =
       deployment.getDeployConfigField<EContracts | null>(EContracts.Poll, "policy") || EContracts.FreeForAllPolicy;

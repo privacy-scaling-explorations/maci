@@ -126,31 +126,6 @@ export const getNetworkRpcUrls = (): Record<ESupportedChains, string> => {
   };
 };
 
-export const getEtherscanApiKeys = (): Record<ESupportedChains, string | undefined> => ({
-  [ESupportedChains.Mainnet]: process.env.ETH_ETHERSCAN_API_KEY,
-  [ESupportedChains.Sepolia]: process.env.ETH_ETHERSCAN_API_KEY,
-  [ESupportedChains.Optimism]: process.env.OPTIMISM_ETHERSCAN_API_KEY,
-  [ESupportedChains.OptimismSepolia]: process.env.OPTIMISM_ETHERSCAN_API_KEY,
-  [ESupportedChains.Scroll]: process.env.SCROLL_ETHERSCAN_API_KEY,
-  [ESupportedChains.ScrollSepolia]: process.env.SCROLL_ETHERSCAN_API_KEY,
-  [ESupportedChains.Arbitrum]: process.env.ARB_ETHERSCAN_API_KEY,
-  [ESupportedChains.ArbitrumSepolia]: process.env.ARB_ETHERSCAN_API_KEY,
-  [ESupportedChains.Base]: process.env.BASE_ETHERSCAN_API_KEY,
-  [ESupportedChains.BaseSepolia]: process.env.BASE_ETHERSCAN_API_KEY,
-  [ESupportedChains.Gnosis]: process.env.GNOSIS_ETHERSCAN_API_KEY,
-  [ESupportedChains.GnosisChiado]: process.env.GNOSIS_ETHERSCAN_API_KEY,
-  [ESupportedChains.Polygon]: process.env.POLYGON_ETHERSCAN_API_KEY,
-  [ESupportedChains.PolygonAmoy]: process.env.POLYGON_ETHERSCAN_API_KEY,
-  [ESupportedChains.Linea]: process.env.LINEA_ETHERSCAN_API_KEY,
-  [ESupportedChains.LineaSepolia]: process.env.LINEA_ETHERSCAN_API_KEY,
-  [ESupportedChains.ZkSyncEra]: process.env.ZK_SYNC_ETHERSCAN_API_KEY,
-  [ESupportedChains.ZkSyncSepolia]: process.env.ZK_SYNC_ETHERSCAN_API_KEY,
-  [ESupportedChains.PolygonZkEvm]: process.env.POLYGON_ZKEVM_ETHERSCAN_API_KEY,
-  [ESupportedChains.PolygonCardonaZkEvm]: process.env.POLYGON_ZKEVM_ETHERSCAN_API_KEY,
-  [ESupportedChains.Coverage]: undefined,
-  [ESupportedChains.Hardhat]: undefined,
-});
-
 export const FULL_POLICY_NAMES: Record<
   | EContracts.FreeForAllPolicy
   | EContracts.TokenPolicy

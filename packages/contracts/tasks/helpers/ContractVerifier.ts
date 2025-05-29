@@ -46,23 +46,21 @@ export class ContractVerifier {
       params.libraries = JSON.parse(libraries) as Libraries;
     }
 
-    const [{ Etherscan }] = await Promise.all([
-      import("@nomicfoundation/hardhat-verify/etherscan"),
-      import("@nomicfoundation/hardhat-verify/sourcify"),
-    ]);
+    const { Etherscan } = await import("@nomicfoundation/hardhat-verify/etherscan");
 
     const customChain = this.hre.config.etherscan.customChains.find((chain) => chain.network === this.hre.network.name);
     const { apiKey } = this.hre.config.etherscan;
 
     const etherscanInstance = new Etherscan(
       typeof apiKey === "string" ? apiKey : apiKey[this.hre.network.name],
-      customChain?.urls.apiURL ?? "",
+      `https://api.etherscan.io/v2/api?chainid=${this.hre.network.config.chainId}`,
       customChain?.urls.browserURL ?? "",
+      this.hre.network.config.chainId,
     );
 
     // Run etherscan task
     const error = await this.hre
-      .run("verify:verify", { ...params })
+      .run("verify:verify", params)
       .then(() => "")
       .catch((err: Error) => {
         if (err.message.includes("already verified")) {
