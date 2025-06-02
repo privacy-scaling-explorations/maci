@@ -10,6 +10,7 @@ export type {
   ISubmitVoteBatchArgs,
 } from "./types";
 export { generateVote } from "./generate";
+export { invalidateVotes } from "./invalidate";
 export { publish, publishBatch } from "./publish";
 export { submitVote, submitVoteBatch } from "./submit";
 export { getCoordinatorPublicKey, validateSalt } from "./utils";
