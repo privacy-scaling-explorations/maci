@@ -12,7 +12,7 @@ The main circuits are:
 
 The rest of the circuits are utilities templates that are required for the main circuits to work correctly. These include utilities such as float math, conversion of private keys, and Poseidon hashing/encryption.
 
-Please refer to the [documentation](https://maci.pse.dev/docs/category/zk-snark-circuits) for a more in depth explanation.
+Please refer to the [documentation](https://maci.pse.dev/docs/technical-references/zk-snark-circuits/) for a more in depth explanation.
 
 [circuits-npm-badge]: https://img.shields.io/npm/v/maci-circuits.svg
 [circuits-npm-link]: https://www.npmjs.com/package/maci-circuits
