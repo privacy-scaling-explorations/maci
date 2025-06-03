@@ -62,7 +62,7 @@
     "@jest/globals": "^29.7.0",
     "@nestjs/cli": "^11.0.7",
     "@nestjs/schematics": "^11.0.5",
-    "@nestjs/testing": "^11.1.0",
+    "@nestjs/testing": "^11.1.2",
     "@types/express": "^5.0.1",
     "@types/jest": "^29.5.2",
     "@types/lodash": "^4.17.16",
