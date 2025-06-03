@@ -266,9 +266,17 @@ program
   .option("-s, --seed <seed>", "seed value for keypair", (value) => (value ? BigInt(value) : undefined), undefined)
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .action((args) => {
-    const { publicKey, privateKey } = generateKeypair({ seed: args.seed });
+    const { publicKey, privateKey, publicKeyAsContractParam } = generateKeypair({ seed: args.seed });
     logGreen({ quiet: args.quiet, text: success(`Public key: ${publicKey}`) });
     logGreen({ quiet: args.quiet, text: success(`Private key: ${privateKey}`) });
+    logGreen({
+      quiet: args.quiet,
+      text: success(
+        `Public key as contract param: 
+         X: ${publicKeyAsContractParam.x}
+         Y: ${publicKeyAsContractParam.y}`,
+      ),
+    });
   });
 program
   .command("deployVerifyingKeysRegistry")

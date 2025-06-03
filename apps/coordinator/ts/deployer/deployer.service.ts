@@ -1,5 +1,4 @@
 import { deployVerifier } from "@maci-protocol/contracts";
-import { PublicKey } from "@maci-protocol/domainobjs";
 import {
   ContractStorage,
   EPolicies,
@@ -39,6 +38,7 @@ import { type Hex } from "viem";
 import path from "path";
 
 import { ErrorCodes, ESupportedNetworks } from "../common";
+import { getCoordinatorKeypair } from "../common/coordinatorKeypair";
 import { FileService } from "../file/file.service";
 import { SessionKeysService } from "../sessionKeys/sessionKeys.service";
 
@@ -290,12 +290,10 @@ export class DeployerService {
   ): Promise<ISetVerifyingKeysArgs> {
     const { zkey: pollJoiningZkeyPath } = this.fileService.getZkeyFilePaths(
       process.env.COORDINATOR_POLL_JOINING_ZKEY_NAME!,
-      EMode.QV,
     );
 
     const { zkey: pollJoinedZkeyPath } = this.fileService.getZkeyFilePaths(
       process.env.COORDINATOR_POLL_JOINED_ZKEY_NAME!,
-      EMode.QV,
     );
 
     const { zkey: messageProcessorZkeyPath } = this.fileService.getZkeyFilePaths(
@@ -306,7 +304,8 @@ export class DeployerService {
     // There are only QV and Non-QV modes available for tally circuit
     const { zkey: voteTallyZkeyPath } = this.fileService.getZkeyFilePaths(
       process.env.COORDINATOR_TALLY_ZKEY_NAME!,
-      mode === EMode.QV ? mode : EMode.NON_QV,
+      // if FULL use NON_QV because there are only VoteTallyQV and VoteTallyNonQV zkeys
+      mode === EMode.FULL ? EMode.NON_QV : mode,
     );
 
     const { pollJoiningVerifyingKey, pollJoinedVerifyingKey, processVerifyingKey, tallyVerifyingKey } =
@@ -358,7 +357,7 @@ export class DeployerService {
       signer,
       verifyingKeysRegistryAddress as Hex,
       config.VerifyingKeysRegistry.args,
-      EMode.QV,
+      config.MACI.mode,
     );
     await setVerifyingKeys(verifyingKeysArgs);
 
@@ -445,6 +444,9 @@ export class DeployerService {
       initialVoiceCreditProxyAddress = (await initialVoiceCreditProxyContract.getAddress()) as Hex;
     }
 
+    // instantiate the coordinator MACI keypair
+    const coordinatorKeypair = getCoordinatorKeypair();
+
     const deployPollArgs = {
       maciAddress,
       pollStartTimestamp: config.startDate,
@@ -453,7 +455,7 @@ export class DeployerService {
       voteOptionTreeDepth: config.voteOptionTreeDepth,
       messageBatchSize: config.messageBatchSize,
       stateTreeDepth: config.pollStateTreeDepth,
-      coordinatorPublicKey: PublicKey.deserialize(config.coordinatorPublicKey),
+      coordinatorPublicKey: coordinatorKeypair.publicKey,
       verifierContractAddress: verifierAddress,
       verifyingKeysRegistryContractAddress: verifyingKeysRegistryAddress,
       mode: config.mode,

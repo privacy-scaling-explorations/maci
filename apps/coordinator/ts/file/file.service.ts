@@ -100,18 +100,19 @@ export class FileService {
    * @param mode - voting mode
    * @returns zkey and wasm filepaths
    */
-  getZkeyFilePaths(name: string, mode: EMode): IGetZkeyFilePathsData {
+  getZkeyFilePaths(name: string, mode?: EMode): IGetZkeyFilePathsData {
     const root = path.resolve(process.env.COORDINATOR_ZKEY_PATH!);
     const index = name.indexOf("_");
     const type = name.slice(0, index);
     const params = name.slice(index + 1);
+
     const modePrefixes = {
       [EMode.QV]: "",
       [EMode.NON_QV]: "NonQv",
       [EMode.FULL]: "Full",
     };
 
-    const filename = `${type}${modePrefixes[mode]}_${params}`;
+    const filename = `${type}${mode ? modePrefixes[mode] : ""}_${params}`;
 
     const zkey = path.resolve(root, `${filename}/${filename}.0.zkey`);
     const wasm = path.resolve(root, `${filename}/${filename}_js/${filename}.wasm`);

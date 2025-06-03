@@ -2,7 +2,6 @@ import { sleep } from "@maci-protocol/sdk";
 import { Hex, zeroAddress } from "viem";
 
 import { ErrorCodes, ESupportedNetworks } from "../ts/common";
-import { CryptoService } from "../ts/crypto/crypto.service";
 import { testMaciDeploymentConfig, testPollDeploymentConfig } from "../ts/deployer/__tests__/utils";
 import { DeployerService } from "../ts/deployer/deployer.service";
 import { FileService } from "../ts/file/file.service";
@@ -13,8 +12,7 @@ import { SessionKeysService } from "../ts/sessionKeys/sessionKeys.service";
 describe("E2E Account Abstraction Tests", () => {
   const fileService = new FileService();
   const sessionKeyService = new SessionKeysService(fileService);
-  const cryptoService = new CryptoService();
-  const proofService = new ProofGeneratorService(cryptoService, fileService, sessionKeyService);
+  const proofService = new ProofGeneratorService(fileService, sessionKeyService);
   const deployerService = new DeployerService(sessionKeyService, fileService);
 
   // using an already deployed maci contract
@@ -62,7 +60,7 @@ describe("E2E Account Abstraction Tests", () => {
   describe("merge", () => {
     test("should return true when there are no errors", async () => {
       // wait until we can complete a poll
-      await sleep(40000);
+      await sleep(90 * 1000); // 50 start + 35 end + 5 seconds of grace time
 
       const merged = await proofService.merge({
         maciContractAddress: maciContract,

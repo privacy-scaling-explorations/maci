@@ -3,4 +3,4 @@ build
 coverage
 .git
 zkeys
-
+**/.env

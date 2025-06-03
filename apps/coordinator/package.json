@@ -24,7 +24,7 @@
     "start:prod": "pnpm run run:node build/ts/main.js",
     "test": "jest --testPathIgnorePatterns=e2e.deploy.test.ts --testPathIgnorePatterns=e2e.test.ts --forceExit",
     "test:coverage": "jest --coverage --forceExit",
-    "test:e2e": "jest ./tests/*.test.ts --forceExit",
+    "test:e2e": "jest ./tests/*.test.ts --forceExit --runInBand",
     "types": "tsc -p tsconfig.json --noEmit",
     "generate-maci-keypair": "pnpm run run:node ./scripts/generateMaciKeypair.ts",
     "generate-keypair": "pnpm run run:node ./scripts/generateKeypair.ts",

@@ -63,11 +63,6 @@ export interface IGenerateArgs {
   mode: EMode;
 
   /**
-   * Encrypted coordinator private key with RSA public key (see .env.example)
-   */
-  encryptedCoordinatorPrivateKey: string;
-
-  /**
    * Start block for event processing
    */
   startBlock?: number;
@@ -81,6 +76,11 @@ export interface IGenerateArgs {
    * Blocks per batch for event processing
    */
   blocksPerBatch?: number;
+
+  /*
+   * Use wasm or rapidsnark for proof generation
+   */
+  useWasm?: boolean;
 }
 
 /**

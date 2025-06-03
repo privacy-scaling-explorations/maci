@@ -47,3 +47,21 @@ After deployment, subgraph url will be available in studio dashboard and you can
 ```
 https://api.studio.thegraph.com/.../{SUBGRAPH_NAME}/version/latest
 ```
+
+## Docker
+
+Remember to run it from the monorepo root directory.
+
+```bash
+# Build docker
+docker-compose -f apps/coordinator/docker-compose.yml build
+
+# Run container detached
+docker-compose -f apps/coordinator/docker-compose.yml up -d
+
+# Enter the container
+docker-compose -f apps/coordinator/docker-compose.yml exec coordinator-service /bin/sh
+
+# Stop container
+docker-compose -f apps/coordinator/docker-compose.yml down
+```

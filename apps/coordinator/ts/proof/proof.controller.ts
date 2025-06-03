@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-shadow */
-import { Body, Controller, Get, HttpException, HttpStatus, Logger, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, HttpException, HttpStatus, Logger, Post } from "@nestjs/common";
 import { ApiBearerAuth, ApiBody, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import type { IGenerateData, IMergeArgs } from "./types";
 import type { ITallyData } from "@maci-protocol/sdk";
 
-import { AccountSignatureGuard, Public } from "../auth/AccountSignatureGuard.service";
 import { FileService } from "../file/file.service";
 import { IGetPublicKeyData } from "../file/types";
 
@@ -15,7 +14,6 @@ import { ProofGeneratorService } from "./proof.service";
 @ApiTags("v1/proof")
 @ApiBearerAuth()
 @Controller("v1/proof")
-@UseGuards(AccountSignatureGuard)
 export class ProofController {
   /**
    * Logger
@@ -92,7 +90,6 @@ export class ProofController {
    */
   @ApiResponse({ status: HttpStatus.OK, description: "Public key was successfully returned" })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "BadRequest" })
-  @Public()
   @Get("publicKey")
   async getPublicKey(): Promise<IGetPublicKeyData> {
     return this.fileService.getPublicKey().catch((error: Error) => {

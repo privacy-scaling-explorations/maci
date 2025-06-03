@@ -1,4 +1,3 @@
-import { Keypair, PrivateKey } from "@maci-protocol/domainobjs";
 import { EPolicies, EInitialVoiceCreditProxies, EMode } from "@maci-protocol/sdk";
 import { zeroHash } from "viem";
 
@@ -16,12 +15,7 @@ import {
 
 export const MSG_BATCH_SIZE = 20;
 
-/**
- * Coordinator MACI Keypair
- */
-export const coordinatorMACIKeypair = new Keypair(
-  PrivateKey.deserialize("macisk.bdd73f1757f75261a0c9997def6cd47519cad2856347cdc6fd30718999576860"),
-);
+export const MODE = EMode.NON_QV;
 
 /**
  * MACI deployment configuration for testing
@@ -33,6 +27,7 @@ export const testMaciDeploymentConfig: IDeployMaciConfig = {
   MACI: {
     policy: EPolicies.FreeForAll,
     stateTreeDepth: 10,
+    mode: MODE,
   },
   VerifyingKeysRegistry: {
     args: {
@@ -77,8 +72,7 @@ export const pollStartDateExtraSeconds = 60;
 export const testPollDeploymentConfig: IDeployPollConfig = {
   startDate,
   endDate: startDate + pollDuration,
-  mode: EMode.NON_QV,
-  coordinatorPublicKey: coordinatorMACIKeypair.publicKey.serialize(),
+  mode: MODE,
   tallyProcessingStateTreeDepth: 1,
   messageBatchSize: MSG_BATCH_SIZE,
   pollStateTreeDepth: 10,

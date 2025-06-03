@@ -1,3 +1,5 @@
+import { IG1ContractParams } from "@maci-protocol/domainobjs";
+
 /**
  * Interface for the arguments for generate keypair command
  */
@@ -12,6 +14,11 @@ export interface IGenerateKeypairArgs {
  * Interface for the return data type for generate keypair command
  */
 export interface IGenerateKeypairData {
+  /**
+   * Serialized public key as contract parameter
+   */
+  publicKeyAsContractParam: IG1ContractParams;
+
   /**
    * Serialized public key
    */

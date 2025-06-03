@@ -289,6 +289,7 @@ export interface IDeployMaciConfig {
   MACI: {
     stateTreeDepth: number;
     policy: EPolicies;
+    mode: EMode;
   };
 
   /**
@@ -322,11 +323,6 @@ export interface IDeployPollConfig {
    * The poll's end date
    */
   endDate: number;
-
-  /**
-   * The coordinator publicKey
-   */
-  coordinatorPublicKey: string;
 
   /**
    * Voting mode
