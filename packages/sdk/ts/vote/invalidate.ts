@@ -24,6 +24,7 @@ export const invalidateVotes = async ({
   signer,
   maciPrivateKey,
   stateIndex,
+  voiceCreditBalance,
 }: IInvalidateVotesArgs): Promise<string | undefined> => {
   const { poll: pollContract } = await getPollContracts({ maciAddress, pollId, signer });
 
@@ -39,7 +40,8 @@ export const invalidateVotes = async ({
     stateIndex,
     // use a random key to invalidate the previous votes
     newPublicKey: new Keypair().publicKey,
-    voteWeight: 0n,
+    // if the voting mode is full credits, the vote must use the full voice credit balance to be valid
+    voteWeight: voiceCreditBalance ?? 0n,
     coordinatorPublicKey,
     maxVoteOption,
   });

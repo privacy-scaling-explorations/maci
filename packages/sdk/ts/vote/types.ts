@@ -280,4 +280,9 @@ export interface IInvalidateVotesArgs {
    * State index
    */
   stateIndex: bigint;
+
+  /**
+   * Voice credit balance
+   */
+  voiceCreditBalance?: bigint;
 }
