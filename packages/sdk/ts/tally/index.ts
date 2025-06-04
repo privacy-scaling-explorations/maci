@@ -8,5 +8,6 @@ export type {
   IVoteTallyInputs,
   IGetResultPerOptionArgs,
   IGetResultsArgs,
+  IResult,
 } from "./types";
-export { getResultPerOption, getResults } from "./results";
+export { getResultPerOption, getResults, isTallied } from "./results";
