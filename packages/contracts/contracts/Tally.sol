@@ -25,7 +25,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
     /// Tally results value from tally.json
     uint256 value;
     /// Flag that this value was set and initialized
-    bool flag;
+    bool isSet;
   }
 
   /// @notice The commitment to the tally results. Its initial value is 0, but after
@@ -451,8 +451,8 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
 
     TallyResult storage previous = tallyResults[_voteOptionIndex];
 
-    if (!previous.flag) {
-      previous.flag = true;
+    if (!previous.isSet) {
+      previous.isSet = true;
       totalTallyResults++;
     }
 

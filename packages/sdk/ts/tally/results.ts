@@ -1,10 +1,6 @@
-import {
-  MACI__factory as MACIFactory,
-  Tally__factory as TallyFactory,
-  Poll__factory as PollFactory,
-} from "@maci-protocol/contracts/typechain-types";
+import type { IGetResultPerOptionArgs, IGetResultsArgs, IResult } from "./types";
 
-import type { IGetResultPerOptionArgs, IGetResultsArgs } from "./types";
+import { getPollContracts } from "../poll";
 
 /**
  * Get result per option
@@ -16,20 +12,15 @@ export const getResultPerOption = async ({
   pollId,
   index,
   signer,
-}: IGetResultPerOptionArgs): Promise<bigint> => {
-  const maciContract = MACIFactory.connect(maciAddress, signer);
+}: IGetResultPerOptionArgs): Promise<IResult> => {
+  const { tally } = await getPollContracts({ maciAddress, pollId, signer });
 
-  const pollContracts = await maciContract.getPoll(pollId);
+  const { value, isSet } = await tally.tallyResults(index);
 
-  const tallyContract = TallyFactory.connect(pollContracts.tally, signer);
-
-  const result = await tallyContract.tallyResults(index);
-
-  if (!result.flag) {
-    throw new Error("Tally result is not set");
-  }
-
-  return result.value;
+  return {
+    value,
+    isSet,
+  };
 };
 
 /**
@@ -37,28 +28,33 @@ export const getResultPerOption = async ({
  * @param {IGetResultsArgs} - The arguments to get all the results
  * @returns The results array (The final result of vote option n is in index n-1)
  */
-export const getResults = async ({ maciAddress, pollId, signer }: IGetResultsArgs): Promise<bigint[]> => {
-  const maciContract = MACIFactory.connect(maciAddress, signer);
+export const getResults = async ({ maciAddress, pollId, signer }: IGetResultsArgs): Promise<IResult[]> => {
+  const { poll, tally } = await getPollContracts({ maciAddress, pollId, signer });
 
-  const pollContracts = await maciContract.getPoll(pollId);
+  const numberOfVoteOptions = await poll.voteOptions();
 
-  const pollContract = PollFactory.connect(pollContracts.poll, signer);
-  const numberOfVoteOptions = await pollContract.voteOptions();
-
-  const tallyContract = TallyFactory.connect(pollContracts.tally, signer);
-
-  const results: bigint[] = [];
+  const results: IResult[] = [];
 
   for (let i = 0; i < numberOfVoteOptions; i += 1) {
     // eslint-disable-next-line no-await-in-loop
-    const result = await tallyContract.tallyResults(i);
+    const { value, isSet } = await tally.tallyResults(i);
 
-    if (!result.flag) {
-      throw new Error(`Tally result for option ${i} is not set`);
-    }
-
-    results.push(result.value);
+    results.push({
+      value,
+      isSet,
+    });
   }
 
   return results;
+};
+
+/**
+ * Check if the poll is tallied
+ * @param {IGetResultsArgs} - The arguments to check if the poll is tallied
+ * @returns {boolean} - True if the poll is tallied, false otherwise
+ */
+export const isTallied = async ({ maciAddress, pollId, signer }: IGetResultsArgs): Promise<boolean> => {
+  const { tally } = await getPollContracts({ maciAddress, pollId, signer });
+
+  return tally.isTallied();
 };

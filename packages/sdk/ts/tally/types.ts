@@ -233,3 +233,18 @@ export interface IGetResultPerOptionArgs extends IGetResultsArgs {
    */
   index: number;
 }
+
+/**
+ * Interface for the result of a voting option
+ */
+export interface IResult {
+  /**
+   * The result
+   */
+  value: bigint;
+
+  /**
+   * Whether the result is set or not
+   */
+  isSet: boolean;
+}
