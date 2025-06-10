@@ -53,6 +53,32 @@ To run Contracts only tests, run:
 pnpm run test
 ```
 
+To run e2e tests for hardhat tasks for `contracts` using the in-memory hardhat network:
+
+```bash
+pnpm run test:hardhat
+```
+
+You can update the `deploy-config.json` file to change policies or other deployment settings used by the test.
+
+You can enhance test reporting and gas cost estimation by adding the following variables to your `.env` file:
+
+```bash
+# CoinMarkerCap api key for prices (gas reporter)
+COINMARKETCAP_API_KEY=
+# Gas price for gas reporter
+# Allows you to manually specify the gas price (e.g. 3 gwei)
+GAS_REPORTER_PRICE=
+```
+
+These variables are used by `hardhat-gas-reporter` to show cost estimates for gas usage in the test reports.
+
+If you would like to run these E2E tests against a different [supported networks](/docs/supported-networks/), you can override the network like this:
+
+```bash
+pnpm exec hardhat test --network {NETWORK} ./tests/e2e/hardhatTasks.test.ts
+```
+
 ### Circuits
 
 To test the circuits, from the main `maci/` directory, run:

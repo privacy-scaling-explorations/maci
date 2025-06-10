@@ -347,11 +347,16 @@ export class Deployment {
         : await import("hardhat").then(({ ethers }) =>
             ethers.getContractFactory(this.contractNames[name as EContracts] || (name as EContracts), deployer),
           );
-    const feeData = await deployer.provider?.getFeeData();
+    const [feeData, nonce] = await Promise.all([
+      deployer.provider?.getFeeData(),
+      deployer.provider?.getTransactionCount(deployer),
+    ]);
 
     const contract = await contractFactory.deploy(...args, {
+      gasPrice: feeData?.gasPrice && !feeData.maxFeePerGas ? feeData.gasPrice : undefined,
       maxFeePerGas: feeData?.maxFeePerGas,
       maxPriorityFeePerGas: feeData?.maxPriorityFeePerGas,
+      nonce,
     });
     await contract.deploymentTransaction()!.wait();
 
