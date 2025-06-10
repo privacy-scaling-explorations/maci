@@ -56,17 +56,15 @@ describe("SubgraphService", () => {
   });
 
   test("should throw error if network is invalid", async () => {
-    (childProcess.execFile as unknown as jest.Mock).mockRejectedValue(new Error());
-
     const service = new SubgraphService();
 
     await expect(service.deploy({ ...defaultArgs, network: "unknown" as ESupportedNetworks })).rejects.toThrow(
-      ErrorCodes.SUBGRAPH_DEPLOY.toString(),
+      ErrorCodes.UNSUPPORTED_NETWORK.toString(),
     );
   });
 
   test("should throw error if there is no subgraph url", async () => {
-    (childProcess.execFile as unknown as jest.Mock).mockResolvedValue({ stdout: "" });
+    (childProcess.execFile as unknown as jest.Mock).mockResolvedValue({ stdout: "", stderr: "" });
 
     const service = new SubgraphService();
 

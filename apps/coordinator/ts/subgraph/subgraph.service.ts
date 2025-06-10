@@ -27,7 +27,14 @@ export class SubgraphService {
   /**
    * Logger
    */
-  private readonly logger = new Logger(SubgraphService.name);
+  private readonly logger: Logger;
+
+  /**
+   * Initialize service
+   */
+  constructor() {
+    this.logger = new Logger(SubgraphService.name);
+  }
 
   /**
    * Generate proofs for message processing and tally
@@ -40,7 +47,7 @@ export class SubgraphService {
   async deploy(args: IDeploySubgraphArgs, options?: ISubgraphWsHooks): Promise<IDeploySubgraphReturn> {
     try {
       if (!Object.values(ESupportedNetworks).includes(args.network)) {
-        throw new Error("Invalid network");
+        throw new Error(ErrorCodes.UNSUPPORTED_NETWORK.toString());
       }
 
       const subgraphManifestPath = path.resolve(process.env.SUBGRAPH_FOLDER!, "subgraph.yaml");
@@ -122,9 +129,11 @@ export class SubgraphService {
 
       return { url };
     } catch (error: unknown) {
-      this.logger.error("Error: ", error);
+      const errorMessage = (error as Error).message || ErrorCodes.SUBGRAPH_DEPLOY.toString();
+      this.logger.error("Error: ", errorMessage);
       options?.onFail(error as Error);
-      throw new Error((error as Error).message);
+
+      throw new Error(errorMessage, { cause: error });
     }
   }
 }

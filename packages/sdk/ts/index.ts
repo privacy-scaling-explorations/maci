@@ -50,6 +50,7 @@ export {
   deployHatsSignupPolicy,
   deployContract,
   deployContractWithLinkedLibraries,
+  getDeployedPolicyProxyFactories,
   getDefaultSigner,
   cleanThreads,
   unlinkFile,

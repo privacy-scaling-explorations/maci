@@ -47,12 +47,14 @@ export const rechargeGasIfNeeded = async (
   const publicClient = getPublicClient(ESupportedNetworks.OPTIMISM_SEPOLIA);
   const balance = await publicClient.getBalance({ address });
   const balanceAsEther = formatEther(balance);
+
   if (balanceAsEther <= minimumValueOfEther) {
     const testAccount = privateKeyToAccount(process.env.TEST_PRIVATE_KEY! as Hex);
     const walletClient = createWalletClient({
       chain: optimismSepolia,
       transport: http(),
     });
+
     await walletClient.sendTransaction({
       account: testAccount,
       to: address,

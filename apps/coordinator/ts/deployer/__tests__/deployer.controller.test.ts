@@ -35,8 +35,8 @@ describe("DeployerController", () => {
   let sessionKeyAddress: Hex;
 
   beforeAll(async () => {
-    approval = await generateApproval(sessionKeyAddress);
     sessionKeyAddress = (await sessionKeyService.generateSessionKey()).sessionKeyAddress;
+    approval = await generateApproval(sessionKeyAddress);
   });
 
   beforeEach(async () => {
@@ -73,8 +73,8 @@ describe("DeployerController", () => {
       await expect(
         deployerControllerFail.deployMACIContracts({
           chain: ESupportedNetworks.OPTIMISM_SEPOLIA,
-          approval: "",
-          sessionKeyAddress: "0x",
+          approval: "0x123",
+          sessionKeyAddress: "0x123",
           config: testMaciDeploymentConfig,
         }),
       ).rejects.toThrow(ErrorCodes.SESSION_KEY_NOT_FOUND.toString());
@@ -85,8 +85,8 @@ describe("DeployerController", () => {
     test("should deploy a new poll", async () => {
       const { pollId } = await deployerController.deployPoll({
         chain: ESupportedNetworks.OPTIMISM_SEPOLIA,
-        approval: "",
-        sessionKeyAddress: "0x",
+        approval,
+        sessionKeyAddress,
         config: testPollDeploymentConfig,
       });
 
@@ -97,8 +97,8 @@ describe("DeployerController", () => {
       await expect(
         deployerControllerFail.deployPoll({
           chain: ESupportedNetworks.OPTIMISM_SEPOLIA,
-          approval: "",
-          sessionKeyAddress: "0x",
+          approval: "0x123",
+          sessionKeyAddress: "0x123",
           config: testPollDeploymentConfig,
         }),
       ).rejects.toThrow(ErrorCodes.SESSION_KEY_NOT_FOUND.toString());
