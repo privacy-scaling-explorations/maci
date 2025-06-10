@@ -107,12 +107,12 @@ export class FileService {
     const params = name.slice(index + 1);
 
     const modePrefixes = {
-      [EMode.QV]: "",
+      [EMode.QV]: "Qv",
       [EMode.NON_QV]: "NonQv",
       [EMode.FULL]: "Full",
     };
 
-    const filename = `${type}${mode ? modePrefixes[mode] : ""}_${params}`;
+    const filename = `${type}${mode === undefined ? "" : modePrefixes[mode]}_${params}`;
 
     const zkey = path.resolve(root, `${filename}/${filename}.0.zkey`);
     const wasm = path.resolve(root, `${filename}/${filename}_js/${filename}.wasm`);
