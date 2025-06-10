@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "^0.97.0",
-    "@graphprotocol/graph-ts": "^0.38.0",
+    "@graphprotocol/graph-ts": "^0.38.1",
     "@maci-protocol/contracts": "^3.0.0"
   },
   "devDependencies": {

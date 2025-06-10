@@ -386,8 +386,8 @@ importers:
         specifier: ^0.97.0
         version: 0.97.0(@types/node@22.15.31)(typescript@5.8.3)(zod@3.24.2)
       '@graphprotocol/graph-ts':
-        specifier: ^0.38.0
-        version: 0.38.0
+        specifier: ^0.38.1
+        version: 0.38.1
       '@maci-protocol/contracts':
         specifier: ^3.0.0
         version: link:../../packages/contracts
@@ -2996,8 +2996,8 @@ packages:
     engines: {node: '>=20.18.1'}
     hasBin: true
 
-  '@graphprotocol/graph-ts@0.38.0':
-    resolution: {integrity: sha512-fx9IpqbXHWMskl6wLDstKLy0VeszTQg6K5xsUEHXPkpOtceDkWAiDE8FyqsGF0IVTmE2Pxafw4t6+rEG8lVfyw==}
+  '@graphprotocol/graph-ts@0.38.1':
+    resolution: {integrity: sha512-CEE2mJugPuukPugMY4bJRW8t8lOqdNa6Y3Oc0x8xc0EwidjF1LRBcfbuC5Ep5gfvWILNC/IQTT1p+QYW8cz4Hw==}
 
   '@grpc/grpc-js@1.13.4':
     resolution: {integrity: sha512-GsFaMXCkMqkKIvwCQjCrwH+GHbPKBjhwo/8ZuUkWHqbI73Kky9I+pQltrlT0+MWpedCoosda53lgjYfyEPgxBg==}
@@ -19075,7 +19075,7 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@graphprotocol/graph-ts@0.38.0':
+  '@graphprotocol/graph-ts@0.38.1':
     dependencies:
       assemblyscript: 0.27.31
 
@@ -24029,7 +24029,7 @@ snapshots:
   assemblyscript@0.27.31:
     dependencies:
       binaryen: 116.0.0-nightly.20240114
-      long: 5.3.1
+      long: 5.3.2
 
   assertion-error@1.1.0: {}
 
