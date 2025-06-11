@@ -36,12 +36,14 @@ const getCommonNetworkConfig = (networkName: ESupportedChains, chainId: number, 
   gasPrice: GAS_PRICE,
   saveDeployments: true,
   chainId,
-  accounts: {
-    mnemonic: mnemonic || process.env.MNEMONIC || TEST_MNEMONIC,
-    path: "m/44'/60'/0'/0",
-    initialIndex: process.env.INITIAL_INDEX ? Number(process.env.INITIAL_INDEX) : 0,
-    count: 20,
-  },
+  accounts: process.env.PRIVATE_KEY
+    ? [`0x${process.env.PRIVATE_KEY}`]
+    : {
+        mnemonic: mnemonic || process.env.MNEMONIC || TEST_MNEMONIC,
+        path: "m/44'/60'/0'/0",
+        initialIndex: process.env.INITIAL_INDEX ? Number(process.env.INITIAL_INDEX) : 0,
+        count: 20,
+      },
 });
 
 const config: HardhatUserConfig = {

@@ -84,8 +84,8 @@ export const getNetworkRpcUrls = (): Record<ESupportedChains, string> => {
   const OP_SEPOLIA_RPC_URL = process.env.OP_SEPOLIA_RPC_URL ?? "";
   const SCROLL_RPC_URL = process.env.SCROLL_RPC_URL ?? "";
   const SCROLL_SEPOLIA_RPC_URL = process.env.SCROLL_SEPOLIA_RPC_URL ?? "";
-  const ARB_RPC_URL = process.env.ARB_RPC_URL ?? "";
-  const ARB_SEPOLIA_RPC_URL = process.env.ARB_SEPOLIA_RPC_URL ?? "";
+  const ARBITRUM_RPC_URL = process.env.ARBITRUM_RPC_URL ?? "";
+  const ARBITRUM_SEPOLIA_RPC_URL = process.env.ARBITRUM_SEPOLIA_RPC_URL ?? "";
   const BASE_RPC_URL = process.env.BASE_RPC_URL ?? "";
   const BASE_SEPOLIA_RPC_URL = process.env.BASE_SEPOLIA_RPC_URL ?? "";
   const GNOSIS_RPC_URL = process.env.GNOSIS_RPC_URL ?? "";
@@ -106,8 +106,8 @@ export const getNetworkRpcUrls = (): Record<ESupportedChains, string> => {
     [ESupportedChains.OptimismSepolia]: OP_SEPOLIA_RPC_URL,
     [ESupportedChains.Scroll]: SCROLL_RPC_URL,
     [ESupportedChains.ScrollSepolia]: SCROLL_SEPOLIA_RPC_URL,
-    [ESupportedChains.Arbitrum]: ARB_RPC_URL,
-    [ESupportedChains.ArbitrumSepolia]: ARB_SEPOLIA_RPC_URL,
+    [ESupportedChains.Arbitrum]: ARBITRUM_RPC_URL,
+    [ESupportedChains.ArbitrumSepolia]: ARBITRUM_SEPOLIA_RPC_URL,
     [ESupportedChains.Base]: BASE_RPC_URL,
     [ESupportedChains.BaseSepolia]: BASE_SEPOLIA_RPC_URL,
     [ESupportedChains.Gnosis]: GNOSIS_RPC_URL,
