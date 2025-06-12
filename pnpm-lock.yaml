@@ -319,8 +319,8 @@ importers:
         specifier: ^8.15.1
         version: 8.15.1(socks@2.8.4)
       multiformats:
-        specifier: ^13.3.2
-        version: 13.3.2
+        specifier: ^13.3.7
+        version: 13.3.7
       mustache:
         specifier: ^4.2.0
         version: 4.2.0
@@ -874,8 +874,8 @@ importers:
         specifier: ^6.14.3
         version: 6.14.3
       multiformats:
-        specifier: 9.9.0
-        version: 9.9.0
+        specifier: 13.3.7
+        version: 13.3.7
       snarkjs:
         specifier: ^0.7.5
         version: 0.7.5
@@ -11124,17 +11124,8 @@ packages:
   multiformats@13.1.3:
     resolution: {integrity: sha512-CZPi9lFZCM/+7oRolWYsvalsyWQGFo+GpdaTmjxXXomC+nP/W1Rnxb9sUgjvmNmRZ5bOPqRAl4nuK+Ydw/4tGw==}
 
-  multiformats@13.3.2:
-    resolution: {integrity: sha512-qbB0CQDt3QKfiAzZ5ZYjLFOs+zW43vA4uyM8g27PeEuXZybUOFyjrVdP93HPBHMoglibwfkdVwbzfUq8qGcH6g==}
-
-  multiformats@13.3.6:
-    resolution: {integrity: sha512-yakbt9cPYj8d3vi/8o/XWm61MrOILo7fsTL0qxNx6zS0Nso6K5JqqS2WV7vK/KSuDBvrW3KfCwAdAgarAgOmww==}
-
   multiformats@13.3.7:
     resolution: {integrity: sha512-meL9DERHj+fFVWoOX9fXqfcYcSpUfSYJPcFvDPKrxitICbwAoWR+Ut4j5NO9zAT917HUHLQmqzQbAsGNHlDcxQ==}
-
-  multiformats@9.9.0:
-    resolution: {integrity: sha512-HoMUjhH9T8DDBNT+6xzkrd9ga/XiBI4xLr58LJACwK6G3HTOPeMz4nB4KJs33L2BelrIJa7P0VuNaVF3hMYfjg==}
 
   multimatch@5.0.0:
     resolution: {integrity: sha512-ypMKuglUrZUD99Tk2bUQ+xNQj43lPEfAeX2o9cTteAmShXy2VHDJpuwu1o0xqoKCt9jLVAvwyFKdLTPXKAfJyA==}
@@ -26976,7 +26967,7 @@ snapshots:
       interface-datastore: 8.3.2
       ipns: 10.0.2
       libp2p: 2.8.8
-      multiformats: 13.3.6
+      multiformats: 13.3.7
     transitivePeerDependencies:
       - bufferutil
       - react-native
@@ -28653,7 +28644,7 @@ snapshots:
       it-peekable: 3.0.6
       it-to-stream: 1.0.0
       merge-options: 3.0.4
-      multiformats: 13.3.2
+      multiformats: 13.3.7
       nanoid: 5.1.5
       native-fetch: 4.0.2(undici@7.4.0)
       parse-duration: 2.1.4
@@ -30204,13 +30195,7 @@ snapshots:
 
   multiformats@13.1.3: {}
 
-  multiformats@13.3.2: {}
-
-  multiformats@13.3.6: {}
-
   multiformats@13.3.7: {}
-
-  multiformats@9.9.0: {}
 
   multimatch@5.0.0:
     dependencies:
