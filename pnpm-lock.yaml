@@ -530,11 +530,11 @@ importers:
         specifier: ^11.0.2
         version: 11.0.2
       mocha:
-        specifier: ^11.4.0
-        version: 11.4.0
+        specifier: ^11.6.0
+        version: 11.6.0
       ts-mocha:
         specifier: ^11.1.0
-        version: 11.1.0(mocha@11.4.0)(ts-node@10.9.2(@types/node@22.15.17)(typescript@5.8.3))(tsconfig-paths@4.2.0)
+        version: 11.1.0(mocha@11.6.0)(ts-node@10.9.2(@types/node@22.15.17)(typescript@5.8.3))(tsconfig-paths@4.2.0)
       ts-node:
         specifier: ^10.9.1
         version: 10.9.2(@types/node@22.15.17)(typescript@5.8.3)
@@ -597,8 +597,8 @@ importers:
         specifier: ^7.1.2
         version: 7.1.2(chai@4.5.0)
       mocha:
-        specifier: ^11.4.0
-        version: 11.4.0
+        specifier: ^11.6.0
+        version: 11.6.0
       nyc:
         specifier: ^17.1.0
         version: 17.1.0
@@ -607,7 +607,7 @@ importers:
         version: 0.7.5
       ts-mocha:
         specifier: ^11.1.0
-        version: 11.1.0(mocha@11.4.0)(ts-node@10.9.2(@types/node@22.15.17)(typescript@5.8.3))(tsconfig-paths@4.2.0)
+        version: 11.1.0(mocha@11.6.0)(ts-node@10.9.2(@types/node@22.15.17)(typescript@5.8.3))(tsconfig-paths@4.2.0)
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
@@ -764,14 +764,14 @@ importers:
         specifier: ^4.3.10
         version: 4.5.0
       mocha:
-        specifier: ^11.4.0
-        version: 11.4.0
+        specifier: ^11.6.0
+        version: 11.6.0
       nyc:
         specifier: ^17.1.0
         version: 17.1.0
       ts-mocha:
         specifier: ^11.1.0
-        version: 11.1.0(mocha@11.4.0)(ts-node@10.9.2(@types/node@22.15.17)(typescript@5.8.3))(tsconfig-paths@4.2.0)
+        version: 11.1.0(mocha@11.6.0)(ts-node@10.9.2(@types/node@22.15.17)(typescript@5.8.3))(tsconfig-paths@4.2.0)
       ts-node:
         specifier: ^10.9.1
         version: 10.9.2(@types/node@22.15.17)(typescript@5.8.3)
@@ -810,14 +810,14 @@ importers:
         specifier: ^4.3.10
         version: 4.5.0
       mocha:
-        specifier: ^11.4.0
-        version: 11.4.0
+        specifier: ^11.6.0
+        version: 11.6.0
       nyc:
         specifier: ^17.1.0
         version: 17.1.0
       ts-mocha:
         specifier: ^11.1.0
-        version: 11.1.0(mocha@11.4.0)(ts-node@10.9.2(@types/node@22.15.17)(typescript@5.8.3))(tsconfig-paths@4.2.0)
+        version: 11.1.0(mocha@11.6.0)(ts-node@10.9.2(@types/node@22.15.17)(typescript@5.8.3))(tsconfig-paths@4.2.0)
       ts-node:
         specifier: ^10.9.1
         version: 10.9.2(@types/node@22.15.17)(typescript@5.8.3)
@@ -844,14 +844,14 @@ importers:
         specifier: ^4.3.10
         version: 4.5.0
       mocha:
-        specifier: ^11.4.0
-        version: 11.4.0
+        specifier: ^11.6.0
+        version: 11.6.0
       nyc:
         specifier: ^17.1.0
         version: 17.1.0
       ts-mocha:
         specifier: ^11.1.0
-        version: 11.1.0(mocha@11.4.0)(ts-node@10.9.2(@types/node@22.15.17)(typescript@5.8.3))(tsconfig-paths@4.2.0)
+        version: 11.1.0(mocha@11.6.0)(ts-node@10.9.2(@types/node@22.15.17)(typescript@5.8.3))(tsconfig-paths@4.2.0)
 
   packages/sdk:
     dependencies:
@@ -893,8 +893,8 @@ importers:
         specifier: ^30.0.0
         version: 30.0.0(@types/node@22.15.17)(ts-node@10.9.2(@types/node@24.0.1)(typescript@5.8.3))
       mocha:
-        specifier: ^11.4.0
-        version: 11.4.0
+        specifier: ^11.6.0
+        version: 11.6.0
       nyc:
         specifier: ^17.1.0
         version: 17.1.0
@@ -960,11 +960,11 @@ importers:
         specifier: ^2.0.3
         version: 2.10.0(hardhat@2.24.1(ts-node@10.9.2(@types/node@22.15.17)(typescript@5.8.3))(typescript@5.8.3))
       mocha:
-        specifier: ^11.4.0
-        version: 11.4.0
+        specifier: ^11.6.0
+        version: 11.6.0
       ts-mocha:
         specifier: ^11.1.0
-        version: 11.1.0(mocha@11.4.0)(ts-node@10.9.2(@types/node@22.15.17)(typescript@5.8.3))(tsconfig-paths@4.2.0)
+        version: 11.1.0(mocha@11.6.0)(ts-node@10.9.2(@types/node@22.15.17)(typescript@5.8.3))(tsconfig-paths@4.2.0)
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
@@ -6347,6 +6347,9 @@ packages:
   brace-expansion@2.0.1:
     resolution: {integrity: sha512-XnAIvQ8eM+kC6aULx6wuQiwVsnzsi9d3WxzV3FpWTGA19F621kwdbsAcFKXgKUHZWsy+mY6iL1sHTxWEFCytDA==}
 
+  brace-expansion@2.0.2:
+    resolution: {integrity: sha512-Jt0vHyM+jmUBqojB7E1NIYadt0vI0Qxjxd2TErW94wDz+E2LAm5vKMXXwg6ZZBTHPuUlDgQHKXvjGBdfcF1ZDQ==}
+
   braces@3.0.3:
     resolution: {integrity: sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==}
     engines: {node: '>=8'}
@@ -10998,8 +11001,8 @@ packages:
     engines: {node: '>= 14.0.0'}
     hasBin: true
 
-  mocha@11.4.0:
-    resolution: {integrity: sha512-O6oi5Y9G6uu8f9iqXR6iKNLWHLRex3PKbmHynfpmUnMJJGrdgXh8ZmS85Ei5KR2Gnl+/gQ9s+Ktv5CqKybNw4A==}
+  mocha@11.6.0:
+    resolution: {integrity: sha512-i0JVb+OUBqw63X/1pC3jCyJsqYisgxySBbsQa8TKvefpA1oEnw7JXxXnftfMHRsw7bEEVGRtVlHcDYXBa7FzVw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     hasBin: true
 
@@ -14571,6 +14574,9 @@ packages:
 
   workerpool@6.5.1:
     resolution: {integrity: sha512-Fs4dNYcsdpYSAfVxhnl1L5zTksjvOJxtC5hzMNl+1t9B8hTJTdKDyZ5ju7ztgPy+ft9tBFXoOlDNiOT9WUXZlA==}
+
+  workerpool@9.3.2:
+    resolution: {integrity: sha512-Xz4Nm9c+LiBHhDR5bDLnNzmj6+5F+cyEAWPMkbs2awq/dYazR/efelZzUAjB/y3kNHL+uzkHvxVVpaOfGCPV7A==}
 
   wrap-ansi@6.2.0:
     resolution: {integrity: sha512-r6lPcBGxZXlIcymEu7InxDMhdW0KDxpLgoFLcguasxCaJ/SOIZwINatK9KY/tf+ZrlywOKU0UDj3ATXUBfxJXA==}
@@ -23639,6 +23645,10 @@ snapshots:
     dependencies:
       balanced-match: 1.0.2
 
+  brace-expansion@2.0.2:
+    dependencies:
+      balanced-match: 1.0.2
+
   braces@3.0.3:
     dependencies:
       fill-range: 7.1.1
@@ -29946,15 +29956,15 @@ snapshots:
 
   minimatch@8.0.4:
     dependencies:
-      brace-expansion: 2.0.1
+      brace-expansion: 2.0.2
 
   minimatch@9.0.3:
     dependencies:
-      brace-expansion: 2.0.1
+      brace-expansion: 2.0.2
 
   minimatch@9.0.5:
     dependencies:
-      brace-expansion: 2.0.1
+      brace-expansion: 2.0.2
 
   minimist-options@4.1.0:
     dependencies:
@@ -30046,7 +30056,7 @@ snapshots:
       yargs-parser: 20.2.9
       yargs-unparser: 2.0.0
 
-  mocha@11.4.0:
+  mocha@11.6.0:
     dependencies:
       browser-stdout: 1.3.1
       chokidar: 4.0.3
@@ -30058,13 +30068,13 @@ snapshots:
       he: 1.2.0
       js-yaml: 4.1.0
       log-symbols: 4.1.0
-      minimatch: 5.1.6
+      minimatch: 9.0.5
       ms: 2.1.3
       picocolors: 1.1.1
       serialize-javascript: 6.0.2
       strip-json-comments: 3.1.1
       supports-color: 8.1.1
-      workerpool: 6.5.1
+      workerpool: 9.3.2
       yargs: 17.7.2
       yargs-parser: 21.1.1
       yargs-unparser: 2.0.0
@@ -33519,9 +33529,9 @@ snapshots:
       '@jest/types': 29.6.3
       babel-jest: 29.7.0(@babel/core@7.27.4)
 
-  ts-mocha@11.1.0(mocha@11.4.0)(ts-node@10.9.2(@types/node@22.15.17)(typescript@5.8.3))(tsconfig-paths@4.2.0):
+  ts-mocha@11.1.0(mocha@11.6.0)(ts-node@10.9.2(@types/node@22.15.17)(typescript@5.8.3))(tsconfig-paths@4.2.0):
     dependencies:
-      mocha: 11.4.0
+      mocha: 11.6.0
       ts-node: 10.9.2(@types/node@22.15.17)(typescript@5.8.3)
     optionalDependencies:
       tsconfig-paths: 4.2.0
@@ -34480,6 +34490,8 @@ snapshots:
       typical: 5.2.0
 
   workerpool@6.5.1: {}
+
+  workerpool@9.3.2: {}
 
   wrap-ansi@6.2.0:
     dependencies:

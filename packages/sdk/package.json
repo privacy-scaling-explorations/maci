@@ -57,7 +57,7 @@
     "@types/node": "^22.15.17",
     "@types/snarkjs": "^0.7.9",
     "jest": "^30.0.0",
-    "mocha": "^11.4.0",
+    "mocha": "^11.6.0",
     "nyc": "^17.1.0",
     "ts-jest": "^29.3.4",
     "typescript": "^5.8.3"
