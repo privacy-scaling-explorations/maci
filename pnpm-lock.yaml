@@ -666,8 +666,8 @@ importers:
         specifier: ^0.7.5
         version: 0.7.5
       solady:
-        specifier: ^0.1.18
-        version: 0.1.18
+        specifier: ^0.1.19
+        version: 0.1.19
       solidity-docgen:
         specifier: ^0.6.0-beta.36
         version: 0.6.0-beta.36(hardhat@2.24.1(ts-node@10.9.2(@types/node@22.15.17)(typescript@5.8.3))(typescript@5.8.3))
@@ -13243,8 +13243,8 @@ packages:
     resolution: {integrity: sha512-D3YaD0aRxR3mEcqnidIs7ReYJFVzWdd6fXJYUM8ixcQcJRGTka/b3saV0KflYhyVJXKhb947GndU35SxYNResQ==}
     engines: {node: '>= 10.0.0', npm: '>= 3.0.0'}
 
-  solady@0.1.18:
-    resolution: {integrity: sha512-l++2B3//hZZJt/VpwzBWdx/+7iBQIdHnnheSue8ATbuwCfdpXQr6VPYutHEJTgYvuMhK/0AJGlq6ufE66IqwWQ==}
+  solady@0.1.19:
+    resolution: {integrity: sha512-G++8xhNVkRaCw7uySX1obmhYLOk7nFjeCc1XcTmA+WQ7cQXqYDca+DoDpWI/N6iWKOcQQXoLwx+5Vkx9LDSABw==}
 
   solady@0.1.4:
     resolution: {integrity: sha512-BQKpX9Ezdp6WpUcT3H7cWdZKH31Ih7yZiUOQ6SUYzJ6gYjCB0KXPg77bS+pzmeQEtdMNK56gjlaqtn6ptFPSXQ==}
@@ -32769,7 +32769,7 @@ snapshots:
       ip-address: 9.0.5
       smart-buffer: 4.2.0
 
-  solady@0.1.18: {}
+  solady@0.1.19: {}
 
   solady@0.1.4: {}
 
