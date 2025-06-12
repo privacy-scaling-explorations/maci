@@ -63,7 +63,7 @@
     "solhint": "^5.1.0",
     "tar": "^7.4.3",
     "ts-node": "^10.9.1",
-    "typedoc": "^0.28.4",
+    "typedoc": "^0.28.5",
     "typedoc-plugin-markdown": "^4.6.3",
     "typescript": "^5.8.3"
   },
