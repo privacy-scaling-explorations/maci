@@ -258,7 +258,7 @@
     "dotenv": "^16.5.0",
     "hardhat-artifactor": "^0.2.0",
     "hardhat-contract-sizer": "^2.10.0",
-    "sinon": "^20.0.0",
+    "sinon": "^21.0.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.8.3"
   }
