@@ -235,7 +235,7 @@
     "@zk-kit/lean-imt": "^2.2.3",
     "circomlibjs": "^0.1.7",
     "ethers": "^6.14.3",
-    "hardhat": "^2.24.1",
+    "hardhat": "^2.24.3",
     "lowdb": "^1.0.0",
     "snarkjs": "^0.7.5",
     "solady": "^0.1.19",
