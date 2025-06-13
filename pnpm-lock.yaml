@@ -545,8 +545,8 @@ importers:
   packages/cli:
     dependencies:
       '@commander-js/extra-typings':
-        specifier: ^13.1.0
-        version: 13.1.0(commander@14.0.0)
+        specifier: ^14.0.0
+        version: 14.0.0(commander@14.0.0)
       '@maci-protocol/domainobjs':
         specifier: ^3.0.0
         version: link:../domainobjs
@@ -2015,10 +2015,10 @@ packages:
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
     engines: {node: '>=0.1.90'}
 
-  '@commander-js/extra-typings@13.1.0':
-    resolution: {integrity: sha512-q5P52BYb1hwVWE6dtID7VvuJWrlfbCv4klj7BjUUOqMz4jbSZD4C9fJ9lRjL2jnBGTg+gDDlaXN51rkWcLk4fg==}
+  '@commander-js/extra-typings@14.0.0':
+    resolution: {integrity: sha512-hIn0ncNaJRLkZrxBIp5AsW/eXEHNKYQBh0aPdoUqNgD+Io3NIykQqpKFyKcuasZhicGaEZJX/JBSIkZ4e5x8Dg==}
     peerDependencies:
-      commander: ~13.1.0
+      commander: ~14.0.0
 
   '@commitlint/cli@19.8.1':
     resolution: {integrity: sha512-LXUdNIkspyxrlV6VDHWBmCZRtkEVRpBKxi2Gtw3J54cGWhLCTouVD/Q6ZSaSvd2YaDObWK8mDjrz3TIKtaQMAA==}
@@ -16467,7 +16467,7 @@ snapshots:
 
   '@colors/colors@1.5.0': {}
 
-  '@commander-js/extra-typings@13.1.0(commander@14.0.0)':
+  '@commander-js/extra-typings@14.0.0(commander@14.0.0)':
     dependencies:
       commander: 14.0.0
 
