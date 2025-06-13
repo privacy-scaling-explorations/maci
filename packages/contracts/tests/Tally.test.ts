@@ -469,7 +469,7 @@ describe("VoteTally", function test() {
         })
         .then((tx) => tx.wait());
 
-      const initialResults = await Promise.all(indices.map((index) => tallyContract.tallyResults(index)));
+      const initialResults = await Promise.all(indices.map((index) => tallyContract.getTallyResults(index)));
       const initialTotalResults = await tallyContract.totalTallyResults();
 
       expect(initialTotalResults).to.equal(tallyData.results.tally.length);
@@ -489,7 +489,7 @@ describe("VoteTally", function test() {
         })
         .then((tx) => tx.wait());
 
-      const results = await Promise.all(indices.map((index) => tallyContract.tallyResults(index)));
+      const results = await Promise.all(indices.map((index) => tallyContract.getTallyResults(index)));
       const totalResults = await tallyContract.totalTallyResults();
 
       expect(initialTotalResults).to.equal(totalResults);

@@ -20,14 +20,6 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
   uint256 internal constant TREE_ARITY = 2;
   uint256 internal constant VOTE_OPTION_TREE_ARITY = 5;
 
-  /// @notice Tally results
-  struct TallyResult {
-    /// Tally results value from tally.json
-    uint256 value;
-    /// Flag that this value was set and initialized
-    bool isSet;
-  }
-
   /// @notice The commitment to the tally results. Its initial value is 0, but after
   /// the tally of each batch is proven on-chain via a zk-SNARK, it should be
   /// updated to:
@@ -61,7 +53,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
   Mode public mode;
 
   // The tally results
-  mapping(uint256 => TallyResult) public tallyResults;
+  mapping(uint256 => TallyResult) internal tallyResults;
 
   // The total tally results number
   uint256 public totalTallyResults;
@@ -97,8 +89,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
     mode = _mode;
   }
 
-  /// @notice Check if all ballots are tallied
-  /// @return tallied whether all ballots are tallied
+  /// @inheritdoc ITally
   function isTallied() public view returns (bool tallied) {
     (uint8 tallyProcessingStateTreeDepth, , ) = poll.treeDepths();
     uint256 totalSignups = poll.totalSignups();
@@ -113,7 +104,12 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
     }
   }
 
-  /// @notice Update the state and ballot root commitment
+  /// @inheritdoc ITally
+  function getTallyResults(uint256 index) public view returns (TallyResult memory) {
+    return tallyResults[index];
+  }
+
+  /// @inheritdoc ITally
   function updateSbCommitment() public {
     // Require that all messages have been processed
     if (!messageProcessor.processingComplete()) {
@@ -125,9 +121,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
     }
   }
 
-  /// @notice Verify the result of a tally batch
-  /// @param _newTallyCommitment the new tally commitment to be verified
-  /// @param _proof the proof generated after tallying this batch
+  /// @inheritdoc ITally
   function tallyVotes(uint256 _newTallyCommitment, uint256[8] calldata _proof) public {
     updateSbCommitment();
 
@@ -156,10 +150,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
     tallyCommitment = _newTallyCommitment;
   }
 
-  /// @notice Get public circuit inputs.
-  /// @param _batchStartIndex the batch start index
-  /// @param _newTallyCommitment the new tally commitment to be verified
-  /// @return publicInputs public circuit inputs
+  /// @inheritdoc ITally
   function getPublicCircuitInputs(
     uint256 _batchStartIndex,
     uint256 _newTallyCommitment
@@ -174,11 +165,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
     publicInputs[4] = totalSignups;
   }
 
-  /// @notice Verify the tally proof using the verifying key
-  /// @param _batchStartIndex the batch start index
-  /// @param _newTallyCommitment the new tally commitment to be verified
-  /// @param _proof the proof generated after processing all messages
-  /// @return isValid whether the proof is valid
+  /// @inheritdoc ITally
   function verifyTallyProof(
     uint256 _batchStartIndex,
     uint256 _newTallyCommitment,
@@ -238,12 +225,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
     }
   }
 
-  /// @notice Verify the number of spent voice credits from the tally.json
-  /// @param _totalSpent spent field retrieved in the totalSpentVoiceCredits object
-  /// @param _totalSpentSalt the corresponding salt in the totalSpentVoiceCredit object
-  /// @param _resultCommitment hashLeftRight(merkle root of the results.tally, results.salt) in tally.json file
-  /// @param _perVoteOptionSpentVoiceCreditsHash only for QV - hashLeftRight(merkle root of the no spent voice credits, salt)
-  /// @return isValid Whether the provided values are valid
+  /// @inheritdoc ITally
   function verifySpentVoiceCredits(
     uint256 _totalSpent,
     uint256 _totalSpentSalt,
@@ -299,16 +281,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
     isValid = hash2(tally) == tallyCommitment;
   }
 
-  /// @notice Verify the number of spent voice credits per vote option from the tally.json
-  /// @param _voteOptionIndex the index of the vote option where credits were spent
-  /// @param _spent the spent voice credits for a given vote option index
-  /// @param _spentProof proof generated for the perVoteOptionSpentVoiceCredits
-  /// @param _spentSalt the corresponding salt given in the tally perVoteOptionSpentVoiceCredits object
-  /// @param _voteOptionTreeDepth depth of the vote option tree
-  /// @param _spentVoiceCreditsHash hashLeftRight(number of spent voice credits, spent salt)
-  /// @param _resultCommitment hashLeftRight(merkle root of the results.tally, results.salt)
-  // in the tally.json file
-  /// @return isValid Whether the provided proof is valid
+  /// @inheritdoc ITally
   function verifyPerVoteOptionSpentVoiceCredits(
     uint256 _voteOptionIndex,
     uint256 _spent,
@@ -332,16 +305,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
     isValid = hash3(tally) == tallyCommitment;
   }
 
-  /// @notice Verify the result generated from the tally.json
-  /// @param _voteOptionIndex the index of the vote option to verify the correctness of the tally
-  /// @param _tallyResult Flattened array of the tally
-  /// @param _tallyResultProof Corresponding proof of the tally result
-  /// @param _tallyResultSalt the respective salt in the results object in the tally.json
-  /// @param _voteOptionTreeDepth depth of the vote option tree
-  /// @param _spentVoiceCreditsHash hashLeftRight(number of spent voice credits, spent salt)
-  /// @param _perVoteOptionSpentVoiceCreditsHash hashLeftRight(merkle root of the no spent voice
-  /// credits per vote option, perVoteOptionSpentVoiceCredits salt)
-  /// @return isValid Whether the provided proof is valid
+  /// @inheritdoc ITally
   function verifyTallyResult(
     uint256 _voteOptionIndex,
     uint256 _tallyResult,
@@ -375,8 +339,7 @@ contract Tally is Clone, SnarkCommon, Hasher, DomainObjs, ITally {
   }
 
   /**
-   * @notice Add and verify tally results by batch.
-   * @param args add tally result args
+   * @inheritdoc ITally
    */
   function addTallyResults(ITally.AddTallyResultsArgs calldata args) public virtual {
     if (!isTallied()) {
