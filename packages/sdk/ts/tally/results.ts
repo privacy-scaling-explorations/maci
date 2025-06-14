@@ -15,7 +15,7 @@ export const getResultPerOption = async ({
 }: IGetResultPerOptionArgs): Promise<IResult> => {
   const { tally } = await getPollContracts({ maciAddress, pollId, signer });
 
-  const { value, isSet } = await tally.tallyResults(index);
+  const { value, isSet } = await tally.getTallyResults(index);
 
   return {
     value,
@@ -37,7 +37,7 @@ export const getResults = async ({ maciAddress, pollId, signer }: IGetResultsArg
 
   for (let i = 0; i < numberOfVoteOptions; i += 1) {
     // eslint-disable-next-line no-await-in-loop
-    const { value, isSet } = await tally.tallyResults(i);
+    const { value, isSet } = await tally.getTallyResults(i);
 
     results.push({
       value,
