@@ -53,7 +53,7 @@
     "snarkjs": "^0.7.5"
   },
   "devDependencies": {
-    "@types/jest": "^29.5.2",
+    "@types/jest": "^30.0.0",
     "@types/node": "^24.0.1",
     "@types/snarkjs": "^0.7.9",
     "jest": "^30.0.0",
