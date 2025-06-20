@@ -15,17 +15,22 @@ export class Ballot {
 
   voteOptionTreeDepth: number;
 
+  totalVoteOptions: number;
+
   /**
    * Create a new Ballot instance
-   * @param _totalVoteOptions How many vote options are available in the poll
-   * @param _voteOptionTreeDepth The depth of the merkle tree holding the vote options
+   * @param totalVoteOptions How many vote options are available in the poll
+   * @param voteOptionTreeDepth The depth of the merkle tree holding the vote options
    */
-  constructor(_totalVoteOptions: number, _voteOptionTreeDepth: number) {
-    this.voteOptionTreeDepth = _voteOptionTreeDepth;
-    assert(5 ** _voteOptionTreeDepth >= _totalVoteOptions);
-    assert(_totalVoteOptions >= 0);
-    for (let i = 0; i < _totalVoteOptions; i += 1) {
-      this.votes.push(BigInt(0));
+  constructor(totalVoteOptions: number, voteOptionTreeDepth: number) {
+    assert(5 ** voteOptionTreeDepth >= totalVoteOptions);
+    assert(totalVoteOptions >= 0);
+
+    this.voteOptionTreeDepth = voteOptionTreeDepth;
+    this.totalVoteOptions = totalVoteOptions;
+
+    for (let i = 0; i < totalVoteOptions; i += 1) {
+      this.votes.push(0n);
     }
   }
 
