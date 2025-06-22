@@ -290,12 +290,27 @@ export class ContractStorage {
         const entries = Object.entries<IStorageNamedEntry>(value as Record<string, IStorageNamedEntry>);
 
         entries.forEach(([id, nested]) => {
-          if (nested.count > 1) {
-            logMagenta({ text: `\t${key}-${id}: N=${nested.count}` });
-            multiCount += 1;
+          if (typeof nested.count === "number" && typeof nested.address === "string") {
+            if (nested.count > 1) {
+              logMagenta({ text: `\t${key}-${id}: N=${nested.count}` });
+              multiCount += 1;
+            } else {
+              logMagenta({ text: `\t${key}-${id}: ${nested.address}` });
+              entryMap.set(key, nested.address);
+            }
           } else {
-            logMagenta({ text: `\t${key}-${id}: ${nested.address}` });
-            entryMap.set(key, nested.address);
+            const nestedEntries = Object.entries<IStorageNamedEntry>(
+              nested as unknown as Record<string, IStorageNamedEntry>,
+            );
+            nestedEntries.forEach(([subId, subNested]) => {
+              if (subNested.count > 1) {
+                logMagenta({ text: `\t${key}-${id}-${subId}: N=${subNested.count}` });
+                multiCount += 1;
+              } else {
+                logMagenta({ text: `\t${key}-${id}-${subId}: ${subNested.address}` });
+                entryMap.set(`${key}-${id}-${subId}`, subNested.address);
+              }
+            });
           }
         });
       }
