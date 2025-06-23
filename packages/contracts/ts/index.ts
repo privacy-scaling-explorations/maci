@@ -14,6 +14,7 @@ export {
   deploySignupToken,
   deploySignupTokenPolicy,
   deployConstantInitialVoiceCreditProxy,
+  deployERC20VotesInitialVoiceCreditProxy,
   deployFreeForAllSignUpPolicy,
   deployGitcoinPassportPolicy,
   deploySemaphoreSignupPolicy,
@@ -21,6 +22,7 @@ export {
   deployEASSignUpPolicy,
   deployMerkleProofPolicy,
   deployERC20VotesPolicy,
+  deployERC20Policy,
   deployAnonAadhaarPolicy,
   deployZupassSignUpPolicy,
   deployPollFactory,
@@ -42,9 +44,10 @@ export {
   getDeployedContractAddressFromContractReceipt,
 } from "./utils";
 export { extractVerifyingKey, generateProofRapidSnark, generateProofSnarkjs, verifyProof, readProofs } from "./proofs";
-export { EDeploySteps } from "../tasks/helpers/constants";
+export { EDeploySteps, ESupportedChains, FULL_POLICY_NAMES } from "../tasks/helpers/constants";
 export { Deployment } from "../tasks/helpers/Deployment";
 export { ContractStorage } from "../tasks/helpers/ContractStorage";
+export { ContractVerifier } from "../tasks/helpers/ContractVerifier";
 export { ProofGenerator } from "../tasks/helpers/ProofGenerator";
 export { TreeMerger } from "../tasks/helpers/TreeMerger";
 export { Prover } from "../tasks/helpers/Prover";
@@ -64,6 +67,8 @@ export {
   type IProveParams,
   type IRegisterContract,
   type TAbi,
+  type IStorageInstanceEntry,
+  type IVerifyFullArgs,
 } from "../tasks/helpers/types";
 export { linkPoseidonLibraries } from "../tasks/helpers/abi";
 export { IpfsService } from "./ipfs";
