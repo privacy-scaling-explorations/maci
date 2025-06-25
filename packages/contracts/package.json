@@ -43,7 +43,7 @@
     "postbuild": "cp -r ./artifacts ./build",
     "types": "tsc -p tsconfig.json --noEmit",
     "docs": "hardhat docgen",
-    "test": "hardhat test ./tests/**/*.test.ts --network hardhat",
+    "test": "hardhat test ./tests/*.test.ts ./tests/**/*.test.ts --network hardhat",
     "test:hardhat": "hardhat test --network hardhat ./e2e/hardhatTasks.test.ts",
     "test:maci": "pnpm run test ./tests/MACI.test.ts",
     "test:poll": "pnpm run test ./tests/Poll.test.ts",
