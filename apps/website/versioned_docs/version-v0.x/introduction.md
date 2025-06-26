@@ -41,9 +41,7 @@ Refer to the [Glossary](#glossary) for definitions of terms.
 3. The signup period ends after a fixed amount of time. From that point onwards, users may no longer invoke `signUp()` in this contract.
 
 4. Each user votes. To do this, they:
-
    - Sign their command using the key which they had signed up with and then use a random (ephemeral) key as well as the coordinator's public key to generate a shared key (via ECDH) encrypt it.
-
      - If they are bribed, the user should sign it using an old public key which has already been replaced with a new one.
 
      - Otherwise, the user should use the most current public key they have registered.
@@ -53,9 +51,7 @@ Refer to the [Glossary](#glossary) for definitions of terms.
 5. The coordinator processes all the commands after the voting period ends.
 
 6. For each batch of commands, they perform the following steps:
-
    - Generate a new state root which is the result of:
-
      - For each valid command, in reverse order, update the state leaf accordingly
 
      - Ignore all invalid commands
