@@ -34,7 +34,7 @@
     "chai-as-promised": "^7.1.2",
     "hardhat-artifactor": "^0.2.0",
     "hardhat-contract-sizer": "^2.0.3",
-    "mocha": "^11.6.0",
+    "mocha": "^11.7.1",
     "ts-mocha": "^11.1.0",
     "typescript": "^5.8.3"
   },
