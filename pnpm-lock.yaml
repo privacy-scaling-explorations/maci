@@ -147,8 +147,8 @@ importers:
         specifier: 5.4.9
         version: 5.4.9(@zerodev/sdk@5.4.36(viem@2.31.4(typescript@5.8.3)(zod@3.25.64)))(viem@2.31.4(typescript@5.8.3)(zod@3.25.64))
       '@zerodev/permissions':
-        specifier: 5.5.9
-        version: 5.5.9(@zerodev/sdk@5.4.36(viem@2.31.4(typescript@5.8.3)(zod@3.25.64)))(@zerodev/webauthn-key@5.4.3(viem@2.31.4(typescript@5.8.3)(zod@3.25.64)))(viem@2.31.4(typescript@5.8.3)(zod@3.25.64))
+        specifier: 5.5.10
+        version: 5.5.10(@zerodev/sdk@5.4.36(viem@2.31.4(typescript@5.8.3)(zod@3.25.64)))(@zerodev/webauthn-key@5.4.3(viem@2.31.4(typescript@5.8.3)(zod@3.25.64)))(viem@2.31.4(typescript@5.8.3)(zod@3.25.64))
       '@zerodev/sdk':
         specifier: 5.4.36
         version: 5.4.36(viem@2.31.4(typescript@5.8.3)(zod@3.25.64))
@@ -5809,8 +5809,8 @@ packages:
       '@zerodev/sdk': ^5.4.13
       viem: ^2.28.0
 
-  '@zerodev/permissions@5.5.9':
-    resolution: {integrity: sha512-Ff+BElZ802WrUx11LCCnx5YyqrU90YuubfkmMCGF0IjCGf+OTOBauJ6ZBzYq19v/OF4roHKL/abdPjbu1XnG+g==}
+  '@zerodev/permissions@5.5.10':
+    resolution: {integrity: sha512-TsWicvI7wg1A3sLfkIFuNo4EYJuxSYi1JzoENEyH4NPNYE4Ha/ljAmZMH8IlO1G+c7TDM7cJ0hBfSO5kn7X36A==}
     peerDependencies:
       '@zerodev/sdk': ^5.4.0
       '@zerodev/webauthn-key': ^5.4.0
@@ -12722,8 +12722,8 @@ packages:
     resolution: {integrity: sha512-y3bGgqKj3QBdxLbLkomlohkvsA8gdAiUQlSBJnBhfn+BPxg4bc62d8TcBW15wavDfgexCgccckhcZvywyQYPOw==}
     hasBin: true
 
-  react-devtools-core@6.1.2:
-    resolution: {integrity: sha512-ldFwzufLletzCikNJVYaxlxMLu7swJ3T2VrGfzXlMsVhZhPDKXA38DEROidaYZVgMAmQnIjymrmqto5pyfrwPA==}
+  react-devtools-core@6.1.3:
+    resolution: {integrity: sha512-4be9IVco12d/4D7NpZgNjffbYIo/MAk4f5eBJR8PpKyiR7tgwe29liQbxyqDov5Ybc2crGABZyYAmdeU6NowKg==}
 
   react-dom@19.1.0:
     resolution: {integrity: sha512-Xs1hdnE+DyKgeHJeJznQmYMIBG3TKIHJJT95Q58nHLSrElKlGQqDTR2HQ9fx5CN/Gk6Vh/kupBTDLU11/nDk/g==}
@@ -23504,7 +23504,7 @@ snapshots:
       '@zerodev/sdk': 5.4.36(viem@2.31.4(typescript@5.8.3)(zod@3.25.64))
       viem: 2.31.4(typescript@5.8.3)(zod@3.25.64)
 
-  '@zerodev/permissions@5.5.9(@zerodev/sdk@5.4.36(viem@2.31.4(typescript@5.8.3)(zod@3.25.64)))(@zerodev/webauthn-key@5.4.3(viem@2.31.4(typescript@5.8.3)(zod@3.25.64)))(viem@2.31.4(typescript@5.8.3)(zod@3.25.64))':
+  '@zerodev/permissions@5.5.10(@zerodev/sdk@5.4.36(viem@2.31.4(typescript@5.8.3)(zod@3.25.64)))(@zerodev/webauthn-key@5.4.3(viem@2.31.4(typescript@5.8.3)(zod@3.25.64)))(viem@2.31.4(typescript@5.8.3)(zod@3.25.64))':
     dependencies:
       '@simplewebauthn/browser': 9.0.1
       '@zerodev/sdk': 5.4.36(viem@2.31.4(typescript@5.8.3)(zod@3.25.64))
@@ -32371,7 +32371,7 @@ snapshots:
       minimist: 1.2.8
       strip-json-comments: 2.0.1
 
-  react-devtools-core@6.1.2:
+  react-devtools-core@6.1.3:
     dependencies:
       shell-quote: 1.8.3
       ws: 7.5.10
@@ -32443,7 +32443,7 @@ snapshots:
       pretty-format: 29.7.0
       promise: 8.3.0
       react: 19.1.0
-      react-devtools-core: 6.1.2
+      react-devtools-core: 6.1.3
       react-refresh: 0.14.2
       regenerator-runtime: 0.13.11
       scheduler: 0.25.0
