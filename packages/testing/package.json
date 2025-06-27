@@ -39,7 +39,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@nomicfoundation/hardhat-toolbox": "^6.0.0",
     "ethers": "^6.14.4",
     "hardhat": "^2.25.0",
     "@maci-protocol/circuits": "^3.0.0",
