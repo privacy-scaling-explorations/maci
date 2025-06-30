@@ -666,8 +666,8 @@ importers:
         specifier: ^0.7.5
         version: 0.7.5
       solady:
-        specifier: ^0.1.19
-        version: 0.1.19
+        specifier: ^0.1.23
+        version: 0.1.23
       solidity-docgen:
         specifier: ^0.6.0-beta.36
         version: 0.6.0-beta.36(hardhat@2.25.0(ts-node@10.9.2(@types/node@24.0.4)(typescript@5.8.3))(typescript@5.8.3))
@@ -13377,8 +13377,8 @@ packages:
     resolution: {integrity: sha512-D3YaD0aRxR3mEcqnidIs7ReYJFVzWdd6fXJYUM8ixcQcJRGTka/b3saV0KflYhyVJXKhb947GndU35SxYNResQ==}
     engines: {node: '>= 10.0.0', npm: '>= 3.0.0'}
 
-  solady@0.1.19:
-    resolution: {integrity: sha512-G++8xhNVkRaCw7uySX1obmhYLOk7nFjeCc1XcTmA+WQ7cQXqYDca+DoDpWI/N6iWKOcQQXoLwx+5Vkx9LDSABw==}
+  solady@0.1.23:
+    resolution: {integrity: sha512-9UEfad/GxaxY4CgnbPptnOTTjN92ytg8umZrKRRV/1ziQm5iaUoiftMUMt/5k4r626fCIZaxNywWrVhmIRryOQ==}
 
   solady@0.1.4:
     resolution: {integrity: sha512-BQKpX9Ezdp6WpUcT3H7cWdZKH31Ih7yZiUOQ6SUYzJ6gYjCB0KXPg77bS+pzmeQEtdMNK56gjlaqtn6ptFPSXQ==}
@@ -33516,7 +33516,7 @@ snapshots:
       ip-address: 9.0.5
       smart-buffer: 4.2.0
 
-  solady@0.1.19: {}
+  solady@0.1.23: {}
 
   solady@0.1.4: {}
 
