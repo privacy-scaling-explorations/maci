@@ -1,5 +1,6 @@
 import { SNARK_FIELD_SIZE } from "@maci-protocol/crypto";
 import { Keypair } from "@maci-protocol/domainobjs";
+import { EMode } from "@maci-protocol/contracts";
 import {
   getBlockTimestamp,
   getDefaultSigner,
@@ -91,7 +92,7 @@ describe("publish", function test() {
     // we deploy the verifying keys registry contract
     const verifyingKeysRegistryAddress = await deployVerifyingKeysRegistryContract({ signer });
     // we set the verifying keys
-    await setVerifyingKeys({ ...(await verifyingKeysArgs(signer)), verifyingKeysRegistryAddress });
+    await setVerifyingKeys({ ...(await verifyingKeysArgs(signer, [EMode.QV])), verifyingKeysRegistryAddress });
 
     const startDate = await getBlockTimestamp(signer);
 
