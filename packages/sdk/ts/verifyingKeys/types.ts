@@ -129,14 +129,14 @@ export interface ISetVerifyingKeysArgs {
   pollJoinedVerifyingKey: VerifyingKey;
 
   /**
-   * The process messages verifying key object
+   * The process messages verifying key objects
    */
-  processMessagesVerifyingKey: VerifyingKey;
+  processMessagesVerifyingKeys: VerifyingKey[];
 
   /**
-   * The tally votes verifying key object
+   * The tally votes verifying key objects
    */
-  tallyVotesVerifyingKey: VerifyingKey;
+  tallyVotesVerifyingKeys: VerifyingKey[];
 
   /**
    * The state tree depth
@@ -174,9 +174,9 @@ export interface ISetVerifyingKeysArgs {
   signer: Signer;
 
   /**
-   * QV or NON_QV
+   * QV, NON_QV, or FULL modes
    */
-  mode: EMode;
+  modes: EMode[];
 }
 
 /**
