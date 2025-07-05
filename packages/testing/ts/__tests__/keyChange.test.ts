@@ -109,7 +109,7 @@ describe("keyChange tests", function test() {
     verifierContractAddress = await verifier.getAddress();
 
     // we set the verifying keys
-    await setVerifyingKeys({ ...(await verifyingKeysArgs(signer)), verifyingKeysRegistryAddress });
+    await setVerifyingKeys({ ...(await verifyingKeysArgs(signer, [EMode.QV])), verifyingKeysRegistryAddress });
   });
 
   describe("keyChange and new vote (new vote has same nonce)", () => {
