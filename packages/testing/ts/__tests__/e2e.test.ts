@@ -123,7 +123,7 @@ describe("e2e tests", function test() {
     verifierContractAddress = await verifier.getAddress();
 
     // we set the verifying keys
-    await setVerifyingKeys({ ...(await verifyingKeysArgs(signer)), verifyingKeysRegistryAddress });
+    await setVerifyingKeys({ ...(await verifyingKeysArgs(signer, [EMode.QV])), verifyingKeysRegistryAddress });
   });
 
   describe("2 signups (1 after stateAq is merged and logs are fetched), 1 message", () => {
