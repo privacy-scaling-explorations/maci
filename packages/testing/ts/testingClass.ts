@@ -144,9 +144,9 @@ export class TestingClass {
       pollStateTreeDepth: POLL_STATE_TREE_DEPTH,
       pollJoiningVerifyingKey: pollJoiningVerifyingKey!,
       pollJoinedVerifyingKey: pollJoinedVerifyingKey!,
-      processMessagesVerifyingKey: processVerifyingKey!,
-      tallyVotesVerifyingKey: tallyVerifyingKey!,
-      mode: EMode.NON_QV,
+      processMessagesVerifyingKeys: [processVerifyingKey!],
+      tallyVotesVerifyingKeys: [tallyVerifyingKey!],
+      modes: [EMode.NON_QV],
       signer,
     });
 
