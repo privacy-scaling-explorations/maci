@@ -20,8 +20,8 @@ import { compareVerifyingKeys } from "./utils";
 export const setVerifyingKeys = async ({
   pollJoiningVerifyingKey,
   pollJoinedVerifyingKey,
-  processMessagesVerifyingKey,
-  tallyVotesVerifyingKey,
+  processMessagesVerifyingKeys,
+  tallyVotesVerifyingKeys,
   stateTreeDepth,
   pollStateTreeDepth,
   tallyProcessingStateTreeDepth,
@@ -29,7 +29,7 @@ export const setVerifyingKeys = async ({
   messageBatchSize,
   verifyingKeysRegistryAddress,
   signer,
-  mode,
+  modes,
 }: ISetVerifyingKeysArgs): Promise<void> => {
   // validate args
   if (stateTreeDepth < 1 || tallyProcessingStateTreeDepth < 1 || voteOptionTreeDepth < 1 || messageBatchSize < 1) {
@@ -38,6 +38,14 @@ export const setVerifyingKeys = async ({
 
   if (stateTreeDepth < tallyProcessingStateTreeDepth) {
     throw new Error("Invalid state tree depth or intermediate state tree depth");
+  }
+
+  if (processMessagesVerifyingKeys.length !== modes.length) {
+    throw new Error("Number of process messages verifying keys must match number of modes");
+  }
+
+  if (tallyVotesVerifyingKeys.length !== modes.length) {
+    throw new Error("Number of tally votes verifying keys must match number of modes");
   }
 
   const isContractExists = await contractExists(signer.provider!, verifyingKeysRegistryAddress);
@@ -63,15 +71,17 @@ export const setVerifyingKeys = async ({
     throw new Error("This poll verifying key is already set in the contract");
   }
 
-  // check if the process messages verifyingKey was already set
+  // check if the process messages verifyingKey was already set for each mode
   const processVerifyingKeySignature = generateProcessVerifyingKeySignature(
     stateTreeDepth,
     voteOptionTreeDepth,
     messageBatchSize,
   );
 
-  if (await verifyingKeysRegistryContract.isProcessVerifyingKeySet(processVerifyingKeySignature, mode)) {
-    throw new Error("This process verifying key is already set in the contract");
+  for (const mode of modes) {
+    if (await verifyingKeysRegistryContract.isProcessVerifyingKeySet(processVerifyingKeySignature, mode)) {
+      throw new Error(`This process verifying key is already set in the contract for mode ${mode}`);
+    }
   }
 
   // do the same for the tally votes verifyingKey
@@ -81,8 +91,10 @@ export const setVerifyingKeys = async ({
     voteOptionTreeDepth,
   );
 
-  if (await verifyingKeysRegistryContract.isTallyVerifyingKeySet(tallyVerifyingKeySignature, mode)) {
-    throw new Error("This tally verifying key is already set in the contract");
+  for (const mode of modes) {
+    if (await verifyingKeysRegistryContract.isTallyVerifyingKeySet(tallyVerifyingKeySignature, mode)) {
+      throw new Error(`This tally verifying key is already set in the contract for mode ${mode}`);
+    }
   }
 
   // set them onchain
@@ -92,11 +104,11 @@ export const setVerifyingKeys = async ({
     tallyProcessingStateTreeDepth,
     voteOptionTreeDepth,
     messageBatchSize,
-    modes: [mode],
+    modes,
     pollJoiningVerifyingKey: pollJoiningVerifyingKey.asContractParam() as IVerifyingKeyStruct,
     pollJoinedVerifyingKey: pollJoinedVerifyingKey.asContractParam() as IVerifyingKeyStruct,
-    processVerifyingKeys: [processMessagesVerifyingKey.asContractParam() as IVerifyingKeyStruct],
-    tallyVerifyingKeys: [tallyVotesVerifyingKey.asContractParam() as IVerifyingKeyStruct],
+    processVerifyingKeys: processMessagesVerifyingKeys.map(key => key.asContractParam() as IVerifyingKeyStruct),
+    tallyVerifyingKeys: tallyVotesVerifyingKeys.map(key => key.asContractParam() as IVerifyingKeyStruct),
   });
 
   const receipt = await tx.wait();
@@ -105,22 +117,9 @@ export const setVerifyingKeys = async ({
     throw new Error("Set verifying keys transaction failed");
   }
 
-  const [
-    pollJoiningVerifyingKeyOnChain,
-    pollJoinedVerifyingKeyOnChain,
-    processVerifyingKeyOnChain,
-    tallyVerifyingKeyOnChain,
-  ] = await Promise.all([
-    verifyingKeysRegistryContract.getPollJoiningVerifyingKey(stateTreeDepth),
-    verifyingKeysRegistryContract.getPollJoinedVerifyingKey(stateTreeDepth),
-    verifyingKeysRegistryContract.getProcessVerifyingKey(stateTreeDepth, voteOptionTreeDepth, messageBatchSize, mode),
-    verifyingKeysRegistryContract.getTallyVerifyingKey(
-      stateTreeDepth,
-      tallyProcessingStateTreeDepth,
-      voteOptionTreeDepth,
-      mode,
-    ),
-  ]);
+  // Verify that all keys were set correctly
+  const pollJoiningVerifyingKeyOnChain = await verifyingKeysRegistryContract.getPollJoiningVerifyingKey(stateTreeDepth);
+  const pollJoinedVerifyingKeyOnChain = await verifyingKeysRegistryContract.getPollJoinedVerifyingKey(stateTreeDepth);
 
   if (!compareVerifyingKeys(pollJoiningVerifyingKeyOnChain, pollJoiningVerifyingKey)) {
     throw new Error("pollJoiningVerifyingKey mismatch");
@@ -130,11 +129,28 @@ export const setVerifyingKeys = async ({
     throw new Error("pollJoinedVerifyingKey mismatch");
   }
 
-  if (!compareVerifyingKeys(processVerifyingKeyOnChain, processMessagesVerifyingKey)) {
-    throw new Error("processVerifyingKey mismatch");
-  }
+  // Verify process and tally verifying keys for each mode
+  for (let i = 0; i < modes.length; i++) {
+    const mode = modes[i];
+    const processVerifyingKeyOnChain = await verifyingKeysRegistryContract.getProcessVerifyingKey(
+      stateTreeDepth,
+      voteOptionTreeDepth,
+      messageBatchSize,
+      mode,
+    );
+    const tallyVerifyingKeyOnChain = await verifyingKeysRegistryContract.getTallyVerifyingKey(
+      stateTreeDepth,
+      tallyProcessingStateTreeDepth,
+      voteOptionTreeDepth,
+      mode,
+    );
 
-  if (!compareVerifyingKeys(tallyVerifyingKeyOnChain, tallyVotesVerifyingKey)) {
-    throw new Error("tallyVerifyingKey mismatch");
+    if (!compareVerifyingKeys(processVerifyingKeyOnChain, processMessagesVerifyingKeys[i])) {
+      throw new Error(`processVerifyingKey mismatch for mode ${mode}`);
+    }
+
+    if (!compareVerifyingKeys(tallyVerifyingKeyOnChain, tallyVotesVerifyingKeys[i])) {
+      throw new Error(`tallyVerifyingKey mismatch for mode ${mode}`);
+    }
   }
 };
