@@ -204,16 +204,32 @@ const zkeysByMode = {
 
 export const verifyingKeysArgs = async (
   signer: Signer,
-  mode = EMode.QV,
+  modes: EMode[] = [EMode.QV],
 ): Promise<Omit<ISetVerifyingKeysArgs, "verifyingKeysRegistryAddress">> => {
-  const { messageProcessorZkeyPath, voteTallyZkeyPath } = zkeysByMode[mode];
-  const { pollJoiningVerifyingKey, pollJoinedVerifyingKey, processVerifyingKey, tallyVerifyingKey } =
-    await extractAllVerifyingKeys({
+  const processMessagesVerifyingKeys: any[] = [];
+  const tallyVotesVerifyingKeys: any[] = [];
+
+  // Extract verifying keys for each mode
+  for (const mode of modes) {
+    const { messageProcessorZkeyPath, voteTallyZkeyPath } = zkeysByMode[mode];
+    const { processVerifyingKey, tallyVerifyingKey } = await extractAllVerifyingKeys({
       pollJoiningZkeyPath: testPollJoiningZkeyPath,
       pollJoinedZkeyPath: testPollJoinedZkeyPath,
       messageProcessorZkeyPath,
       voteTallyZkeyPath,
     });
+
+    processMessagesVerifyingKeys.push(processVerifyingKey!);
+    tallyVotesVerifyingKeys.push(tallyVerifyingKey!);
+  }
+
+  // Extract poll joining and joined keys (these are the same for all modes)
+  const { pollJoiningVerifyingKey, pollJoinedVerifyingKey } = await extractAllVerifyingKeys({
+    pollJoiningZkeyPath: testPollJoiningZkeyPath,
+    pollJoinedZkeyPath: testPollJoinedZkeyPath,
+    messageProcessorZkeyPath: zkeysByMode[modes[0]].messageProcessorZkeyPath,
+    voteTallyZkeyPath: zkeysByMode[modes[0]].voteTallyZkeyPath,
+  });
 
   return {
     stateTreeDepth: STATE_TREE_DEPTH,
@@ -223,9 +239,9 @@ export const verifyingKeysArgs = async (
     messageBatchSize: MESSAGE_BATCH_SIZE,
     pollJoiningVerifyingKey: pollJoiningVerifyingKey!,
     pollJoinedVerifyingKey: pollJoinedVerifyingKey!,
-    processMessagesVerifyingKey: processVerifyingKey!,
-    tallyVotesVerifyingKey: tallyVerifyingKey!,
-    mode,
+    processMessagesVerifyingKeys,
+    tallyVotesVerifyingKeys,
+    modes,
     signer,
   };
 };
