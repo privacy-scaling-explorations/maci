@@ -69,7 +69,7 @@
     "@types/node": "^24.0.7",
     "@types/supertest": "^6.0.2",
     "fast-check": "^4.1.1",
-    "jest": "^30.0.3",
+    "jest": "^30.0.4",
     "mongodb-memory-server": "^10.1.4",
     "supertest": "^7.1.1",
     "ts-jest": "^29.4.0",
