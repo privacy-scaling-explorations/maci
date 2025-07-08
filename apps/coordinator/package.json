@@ -47,7 +47,7 @@
     "@nomicfoundation/hardhat-ethers": "^3.0.9",
     "@nomicfoundation/hardhat-toolbox": "^6.0.0",
     "@zerodev/ecdsa-validator": "5.4.9",
-    "@zerodev/permissions": "5.5.10",
+    "@zerodev/permissions": "5.5.11",
     "@zerodev/sdk": "5.4.39",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
