@@ -22,6 +22,7 @@ import { DeployerModule } from "../ts/deployer/deployer.module";
 import { IDeployMaciArgs, IDeployPollArgs } from "../ts/deployer/types";
 import { FileModule } from "../ts/file/file.module";
 import { IGetPublicKeyData } from "../ts/file/types";
+import { IHealthCheckResponse } from "../ts/health/types";
 import { ProofModule } from "../ts/proof/proof.module";
 import { IGenerateArgs, IGenerateData, IMergeArgs, ISubmitProofsArgs } from "../ts/proof/types";
 import { getKernelAccount } from "../ts/sessionKeys/__tests__/utils";
@@ -114,6 +115,16 @@ describe("E2E Deployment Tests", () => {
   });
 
   // run tests
+  test("should return true in the health check", async () => {
+    const response = await fetch(`${TEST_URL}/health/check`, { method: "GET" });
+    const body = (await response.json()) as IHealthCheckResponse;
+
+    expect(response.status).toBe(200);
+    expect(body.rapidsnark.rapidsnarkIsExecutable).toBe(true);
+    expect(body.zkeysDirectory.zkeysDirectoryExists).toBe(true);
+    expect(body.coordinatorWalletFunds.address).not.toBe(zeroAddress);
+  });
+
   test("should retrieve RSA public key", async () => {
     const response = await fetch(`${TEST_URL}/proof/publicKey`, {
       method: "GET",

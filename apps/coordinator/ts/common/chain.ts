@@ -16,8 +16,7 @@ export const getRpcUrl = (network: ESupportedNetworks): string => {
     throw new Error(ErrorCodes.COORDINATOR_RPC_URL_NOT_SET.toString());
   }
 
-  const supportedNetworks = [ESupportedNetworks.OPTIMISM_SEPOLIA, ESupportedNetworks.ETHEREUM_SEPOLIA];
-  if (!supportedNetworks.includes(network)) {
+  if (!Object.values(ESupportedNetworks).includes(network)) {
     throw new Error(ErrorCodes.UNSUPPORTED_NETWORK.toString());
   }
 

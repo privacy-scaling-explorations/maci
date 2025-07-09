@@ -8,7 +8,7 @@ services:
       - ./.env
     environment:
       # Check Dockerfile to see where bin is downloaded
-      - COORDINATOR_RAPIDSNARK_EXE="/home/node/rapidsnark/build/prover"
+      - COORDINATOR_RAPIDSNARK_EXE=/home/node/rapidsnark/build/prover
     volumes:
       - coordinator-data:/app
     ports:
