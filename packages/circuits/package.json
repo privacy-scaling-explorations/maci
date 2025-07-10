@@ -55,13 +55,13 @@
     "@maci-protocol/sdk": "^1.0.0"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.11",
+    "@types/chai": "^5.2.2",
     "@types/chai-as-promised": "^7.1.8",
     "@types/mocha": "^10.0.10",
     "@types/node": "^24.0.12",
     "@types/snarkjs": "^0.7.9",
     "@zk-kit/baby-jubjub": "^1.0.3",
-    "chai": "^4.3.10",
+    "chai": "^5.2.1",
     "chai-as-promised": "^7.1.2",
     "fast-check": "^4.1.1",
     "glob": "^11.0.3",

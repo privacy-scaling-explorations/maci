@@ -244,7 +244,7 @@
   },
   "devDependencies": {
     "@matterlabs/hardhat-zksync": "^1.6.1",
-    "@types/chai": "^4.3.11",
+    "@types/chai": "^5.2.2",
     "@types/chai-as-promised": "^7.1.8",
     "@types/circomlibjs": "^0.1.6",
     "@types/lowdb": "^1.0.15",
@@ -253,7 +253,7 @@
     "@types/sinon": "^17.0.4",
     "@types/snarkjs": "^0.7.9",
     "@types/uuid": "^10.0.0",
-    "chai": "^4.3.10",
+    "chai": "^5.2.1",
     "chai-as-promised": "^7.1.2",
     "dotenv": "^17.1.0",
     "hardhat-artifactor": "^0.2.0",
