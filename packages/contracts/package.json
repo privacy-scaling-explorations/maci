@@ -255,7 +255,7 @@
     "@types/uuid": "^10.0.0",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.2",
-    "dotenv": "^17.1.0",
+    "dotenv": "^17.2.0",
     "hardhat-artifactor": "^0.2.0",
     "hardhat-contract-sizer": "^2.10.0",
     "sinon": "^21.0.0",
