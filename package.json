@@ -59,7 +59,7 @@
     "lerna": "^8.2.3",
     "lint-staged": "^16.1.2",
     "prettier": "^3.6.2",
-    "prettier-plugin-solidity": "^2.0.0",
+    "prettier-plugin-solidity": "^2.1.0",
     "solhint": "^6.0.0",
     "tar": "^7.4.3",
     "ts-node": "^10.9.1",
