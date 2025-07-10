@@ -204,9 +204,15 @@ async function getConfig(): Promise<Config> {
         phpLoader: "matomo.php",
         jsLoader: "matomo.js",
       },
+      mermaid: {
+        theme: { light: "neutral", dark: "forest" },
+      },
     } satisfies Preset.ThemeConfig,
+    markdown: {
+      mermaid: true,
+    },
+    themes: ["@docusaurus/theme-mermaid"],
   };
-
   return config;
 }
 
