@@ -29,6 +29,19 @@ export const sleep = async (ms: number): Promise<void> => {
   });
 };
 
+/**
+ * Pause until a specific timestamp
+ * @param timestamp - the timestamp to wait for in milliseconds
+ */
+export const sleepUntil = async (timestamp: number): Promise<void> => {
+  const now = Date.now();
+  const msToWait = timestamp - now;
+
+  if (msToWait > 0) {
+    await sleep(msToWait);
+  }
+};
+
 declare global {
   interface ITerminatable {
     terminate: () => Promise<unknown>;

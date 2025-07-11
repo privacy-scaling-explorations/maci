@@ -1,0 +1,96 @@
+name: Coordinator
+
+on:
+  push:
+    branches: [dev]
+  pull_request:
+
+env:
+  NODE_OPTIONS: "--max-old-space-size=8192"
+  TTL: ${{ vars.COORDINATOR_TTL }}
+  LIMIT: ${{ vars.COORDINATOR_LIMIT }}
+  COORDINATOR_PUBLIC_KEY_PATH: ${{ vars.COORDINATOR_PUBLIC_KEY_PATH }}
+  COORDINATOR_PRIVATE_KEY_PATH: ${{ vars.COORDINATOR_PRIVATE_KEY_PATH }}
+  COORDINATOR_MACI_PRIVATE_KEY: ${{ secrets.COORDINATOR_MACI_PRIVATE_KEY }}
+  COORDINATOR_TALLY_ZKEY_NAME: ${{ vars.COORDINATOR_TALLY_ZKEY_NAME }}
+  COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME: ${{ vars.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME }}
+  COORDINATOR_POLL_JOINING_ZKEY_NAME: ${{ vars.COORDINATOR_POLL_JOINING_ZKEY_NAME }}
+  COORDINATOR_POLL_JOINED_ZKEY_NAME: ${{ vars.COORDINATOR_POLL_JOINED_ZKEY_NAME }}
+  COORDINATOR_RAPIDSNARK_EXE: ${{ vars.COORDINATOR_RAPIDSNARK_EXE }}
+  COORDINATOR_ZKEY_PATH: ${{ vars.COORDINATOR_ZKEY_PATH }}
+  COORDINATOR_RPC_URL: ${{ secrets.COORDINATOR_RPC_URL }}
+  COORDINATOR_ADDRESSES: ${{ vars.COORDINATOR_ADDRESSES }}
+  COORDINATOR_ALLOWED_ORIGINS: ${{ vars.COORDINATOR_ALLOWED_ORIGINS }}
+  COORDINATOR_PORT: ${{ vars.COORDINATOR_PORT }}
+  SUBGRAPH_NAME: ${{ vars.COORDINATOR_SUBGRAPH_NAME }}
+  SUBGRAPH_PROVIDER_URL: ${{ vars.COORDINATOR_SUBGRAPH_PROVIDER_URL }}
+  SUBGRAPH_DEPLOY_KEY: ${{ secrets.COORDINATOR_SUBGRAPH_DEPLOY_KEY }}
+  SUBGRAPH_FOLDER: ${{ vars.COORDINATOR_SUBGRAPH_FOLDER }}
+  ZERODEV_BUNDLER_RPC_OP_SEPOLIA: ${{ secrets.COORDINATOR_ZERODEV_BUNDLER_RPC_OP_SEPOLIA }}
+  TEST_PRIVATE_KEY: ${{ secrets.COORDINATOR_TEST_PRIVATE_KEY }}
+  PRIVATE_KEY: ${{ secrets.COORDINATOR_TEST_PRIVATE_KEY }}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes \
+            build-essential \
+            libgmp-dev \
+            libsodium-dev \
+            nasm \
+            nlohmann-json3-dev
+
+      - name: Install
+        run: |
+          pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Build
+        run: |
+          unset TEST_PRIVATE_KEY // avoid errors when building contracts
+          unset PRIVATE_KEY // avoid errors when building contracts
+          pnpm run build
+
+      - name: Download rapidsnark (1c137)
+        run: |
+          mkdir -p ~/rapidsnark/build
+          wget -qO ~/rapidsnark/build/prover https://maci-devops-zkeys.s3.ap-northeast-2.amazonaws.com/rapidsnark-linux-amd64-1c137
+          chmod +x ~/rapidsnark/build/prover
+
+      - name: Download zkeys
+        run: |
+          pnpm download-zkeys:test:coordinator
+
+      - name: Generate RSA Keypair
+        working-directory: apps/coordinator
+        run: |
+          pnpm run generate-keypair
+
+      - name: Run tests
+        working-directory: apps/coordinator
+        run: |
+          pnpm run test
+
+      - name: Run E2E tests
+        working-directory: apps/coordinator
+        run: |
+          pnpm run test:e2e

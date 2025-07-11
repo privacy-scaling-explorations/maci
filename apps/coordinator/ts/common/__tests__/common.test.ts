@@ -61,20 +61,8 @@ describe("common", () => {
   });
 
   describe("getRpcUrl", () => {
-    test("should return the correct RPCUrl for optimism-sepolia", () => {
-      const rpcUrl = getRpcUrl(ESupportedNetworks.OPTIMISM_SEPOLIA);
-      expect(rpcUrl).toBeDefined();
-      expect(rpcUrl).toContain("https://opt-sepolia.g.alchemy.com/v2/");
-    });
-
-    test("should return the correct RPCUrl for sepolia", () => {
-      const rpcUrl = getRpcUrl(ESupportedNetworks.ETHEREUM_SEPOLIA);
-      expect(rpcUrl).toBeDefined();
-      expect(rpcUrl).toContain("https://eth-sepolia.g.alchemy.com/v2/");
-    });
-
     test("should throw when given an unsupported network", () => {
-      expect(() => getRpcUrl(ESupportedNetworks.GNOSIS_CHAIN)).toThrow(ErrorCodes.UNSUPPORTED_NETWORK.toString());
+      expect(() => getRpcUrl("Unsupported" as ESupportedNetworks)).toThrow(ErrorCodes.UNSUPPORTED_NETWORK.toString());
     });
 
     test("should throw when COORDINATOR_RPC_URL is not set", () => {

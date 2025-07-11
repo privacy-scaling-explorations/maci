@@ -1,8 +1,11 @@
 import {
   ContractStorage,
+  ECheckerFactories,
   EContracts,
   EInitialVoiceCreditProxies,
   EPolicies,
+  EPolicyFactories,
+  getDeployedPolicyProxyFactories,
   MACI__factory as MACIFactory,
   Verifier__factory as VerifierFactory,
 } from "@maci-protocol/sdk";
@@ -12,7 +15,7 @@ import { Hex, zeroAddress } from "viem";
 
 import path from "path";
 
-import { ErrorCodes, ESupportedNetworks, KernelClientType } from "../../common";
+import { ErrorCodes, ESupportedNetworks } from "../../common";
 import { FileService } from "../../file/file.service";
 import { generateApproval } from "../../sessionKeys/__tests__/utils";
 import { SessionKeysService } from "../../sessionKeys/sessionKeys.service";
@@ -37,15 +40,13 @@ describe("DeployerService", () => {
 
   let approval: string;
   let sessionKeyAddress: Hex;
-  let kernelClient: KernelClientType;
   let signer: Signer;
 
   beforeAll(async () => {
     sessionKeyAddress = (await sessionKeyService.generateSessionKey()).sessionKeyAddress;
     approval = await generateApproval(sessionKeyAddress);
 
-    kernelClient = await sessionKeyService.generateClientFromSessionKey(sessionKeyAddress, approval, chain);
-    signer = await sessionKeyService.getKernelClientSigner(kernelClient);
+    signer = await sessionKeyService.getCoordinatorSigner(chain);
   });
 
   afterAll(() => {
@@ -58,17 +59,80 @@ describe("DeployerService", () => {
     afterEach(() => {
       storageInstance.cleanup(chain);
     });
-    it("should throw when the policy is not existent", async () => {
+
+    test("should throw when the policy is not existent", async () => {
       await expect(
-        deployerService.deployAndSavePolicy(signer, "NonExistent" as unknown as EPolicies, chain),
+        deployerService.deployAndSavePolicy(signer, chain, { type: "NonExistent" as unknown as EPolicies }),
       ).rejects.toThrow(ErrorCodes.UNSUPPORTED_POLICY.toString());
     });
 
     test("should deploy policy if none is stored", async () => {
-      const policy = await deployerService.deployAndSavePolicy(signer, EPolicies.FreeForAll, chain);
+      const policy = await deployerService.deployAndSavePolicy(signer, chain, { type: EPolicies.FreeForAll });
 
       expect(policy).toBeDefined();
       expect(await policy.getAddress()).not.toBe(zeroAddress);
+    });
+
+    test("should save factories (policy and checker) after deploying policy", async () => {
+      const { checker: initialChecker, policy: initialPolicy } = await getDeployedPolicyProxyFactories({
+        policy: EPolicyFactories.FreeForAll,
+        checker: ECheckerFactories.FreeForAll,
+        network: chain,
+        signer,
+      });
+      expect(initialChecker).not.toBeDefined();
+      expect(initialPolicy).not.toBeDefined();
+
+      await deployerService.deployAndSavePolicy(signer, chain, { type: EPolicies.FreeForAll });
+
+      const { checker, policy } = await getDeployedPolicyProxyFactories({
+        policy: EPolicyFactories.FreeForAll,
+        checker: ECheckerFactories.FreeForAll,
+        network: chain,
+        signer,
+      });
+
+      expect(checker).toBeDefined();
+      expect(policy).toBeDefined();
+    });
+
+    test("should reuse policy factories if already stored", async () => {
+      const firstPolicy = await deployerService.deployAndSavePolicy(signer, chain, { type: EPolicies.FreeForAll });
+
+      const { checker: firstCheckerFactory, policy: firstPolicyFactory } = await getDeployedPolicyProxyFactories({
+        policy: EPolicyFactories.FreeForAll,
+        checker: ECheckerFactories.FreeForAll,
+        network: chain,
+        signer,
+      });
+
+      expect(firstCheckerFactory).toBeDefined();
+      expect(firstPolicyFactory).toBeDefined();
+
+      const firstCheckerFactoryAddress = await firstCheckerFactory!.getAddress();
+      const firstPolicyFactoryAddress = await firstPolicyFactory!.getAddress();
+
+      expect(firstCheckerFactoryAddress).not.toBe(zeroAddress);
+      expect(firstPolicyFactoryAddress).not.toBe(zeroAddress);
+
+      const secondPolicy = await deployerService.deployAndSavePolicy(signer, chain, {
+        type: EPolicies.FreeForAll,
+      });
+
+      const { checker: secondCheckerFactory, policy: secondPolicyFactory } = await getDeployedPolicyProxyFactories({
+        policy: EPolicyFactories.FreeForAll,
+        checker: ECheckerFactories.FreeForAll,
+        network: chain,
+        signer,
+      });
+
+      expect(secondCheckerFactory).toBeDefined();
+      expect(secondPolicyFactory).toBeDefined();
+
+      expect(await secondCheckerFactory!.getAddress()).toBe(firstCheckerFactoryAddress);
+      expect(await secondPolicyFactory!.getAddress()).toBe(firstPolicyFactoryAddress);
+
+      expect(await firstPolicy.getAddress()).not.toBe(await secondPolicy.getAddress());
     });
   });
 
@@ -118,7 +182,7 @@ describe("DeployerService", () => {
         deployerService.deployMaci({
           config: testMaciDeploymentConfig,
           chain,
-          approval: "0x",
+          approval: "0x123",
           sessionKeyAddress,
         }),
       ).rejects.toThrow(ErrorCodes.INVALID_APPROVAL.toString());

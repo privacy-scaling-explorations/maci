@@ -1,5 +1,5 @@
 import { Keypair } from "@maci-protocol/domainobjs";
-import { ContractStorage, isArm, joinPoll, signup, sleep } from "@maci-protocol/sdk";
+import { ContractStorage, isArm, joinPoll, signup, sleepUntil } from "@maci-protocol/sdk";
 import { ValidationPipe, type INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import dotenv from "dotenv";
@@ -110,11 +110,18 @@ describe("E2E Deployment Tests", () => {
       });
     });
   });
+
   afterEach(() => {
     socket.disconnect();
   });
 
   // run tests
+  test("should use OP Sepolia RPC in E2E", async () => {
+    const network = await signer.provider?.getNetwork();
+
+    expect(network?.name).toBe(ESupportedNetworks.OPTIMISM_SEPOLIA);
+  });
+
   test("should return true in the health check", async () => {
     const response = await fetch(`${TEST_URL}/health/check`, { method: "GET" });
     const body = (await response.json()) as IHealthCheckResponse;
@@ -154,14 +161,14 @@ describe("E2E Deployment Tests", () => {
   });
 
   test("should deploy MACI correctly", async () => {
-    const config = testMaciDeploymentConfig;
-    config.VerifyingKeysRegistry.args.stateTreeDepth = config.VerifyingKeysRegistry.args.stateTreeDepth.toString();
-    config.VerifyingKeysRegistry.args.pollStateTreeDepth =
-      config.VerifyingKeysRegistry.args.pollStateTreeDepth.toString();
-    config.VerifyingKeysRegistry.args.tallyProcessingStateTreeDepth =
-      config.VerifyingKeysRegistry.args.tallyProcessingStateTreeDepth.toString();
-    config.VerifyingKeysRegistry.args.voteOptionTreeDepth =
-      config.VerifyingKeysRegistry.args.voteOptionTreeDepth.toString();
+    testMaciDeploymentConfig.VerifyingKeysRegistry.args.stateTreeDepth =
+      testMaciDeploymentConfig.VerifyingKeysRegistry.args.stateTreeDepth.toString();
+    testMaciDeploymentConfig.VerifyingKeysRegistry.args.pollStateTreeDepth =
+      testMaciDeploymentConfig.VerifyingKeysRegistry.args.pollStateTreeDepth.toString();
+    testMaciDeploymentConfig.VerifyingKeysRegistry.args.tallyProcessingStateTreeDepth =
+      testMaciDeploymentConfig.VerifyingKeysRegistry.args.tallyProcessingStateTreeDepth.toString();
+    testMaciDeploymentConfig.VerifyingKeysRegistry.args.voteOptionTreeDepth =
+      testMaciDeploymentConfig.VerifyingKeysRegistry.args.voteOptionTreeDepth.toString();
 
     const response = await fetch(`${TEST_URL}/deploy/maci`, {
       method: "POST",
@@ -171,7 +178,7 @@ describe("E2E Deployment Tests", () => {
       },
       body: JSON.stringify({
         chain: CHAIN,
-        config,
+        config: testMaciDeploymentConfig,
       } as IDeployMaciArgs),
     });
 
@@ -187,12 +194,11 @@ describe("E2E Deployment Tests", () => {
   });
 
   test("should deploy a poll correctly", async () => {
-    const config = testPollDeploymentConfig;
-    config.voteOptions = config.voteOptions.toString();
+    testPollDeploymentConfig.voteOptions = testPollDeploymentConfig.voteOptions.toString();
 
     const startDate = Math.floor(Date.now() / 1000) + pollStartDateExtraSeconds;
-    config.startDate = startDate;
-    config.endDate = startDate + pollDuration;
+    testPollDeploymentConfig.startDate = startDate;
+    testPollDeploymentConfig.endDate = startDate + pollDuration;
 
     const response = await fetch(`${TEST_URL}/deploy/poll`, {
       method: "POST",
@@ -202,10 +208,11 @@ describe("E2E Deployment Tests", () => {
       },
       body: JSON.stringify({
         chain: CHAIN,
-        config,
+        config: testPollDeploymentConfig,
       } as IDeployPollArgs),
     });
     const body = (await response.json()) as { pollId: string };
+
     expect(response.status).toBe(201);
     expect(body.pollId).toBeDefined();
 
@@ -214,7 +221,8 @@ describe("E2E Deployment Tests", () => {
   });
 
   test("should allow voting on a poll", async () => {
-    await sleep(pollStartDateExtraSeconds * 1000);
+    await sleepUntil(testPollDeploymentConfig.startDate * 1000);
+
     for (let i = 0; i < NUM_USERS; i += 1) {
       const keypairUser = new Keypair();
       const userPublicKey = keypairUser.publicKey.serialize();
@@ -285,7 +293,8 @@ describe("E2E Deployment Tests", () => {
   });
 
   test("should merge correctly", async () => {
-    await sleep(pollDuration * 1000);
+    await sleepUntil((testPollDeploymentConfig.endDate + 5) * 1000); // 5 seconds of grace time after the poll end date
+
     const response = await fetch(`${TEST_URL}/proof/merge`, {
       method: "POST",
       headers: {

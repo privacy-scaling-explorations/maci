@@ -22,7 +22,7 @@
     "run:node": "node --import 'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(\"ts-node/esm\", pathToFileURL(\"./\"));'",
     "start": "pnpm run run:node ./ts/main.ts",
     "start:prod": "pnpm run run:node build/ts/main.js",
-    "test": "jest --testPathIgnorePatterns=e2e.deploy.test.ts --testPathIgnorePatterns=e2e.test.ts --forceExit",
+    "test": "jest --testPathIgnorePatterns=tests/ --forceExit",
     "test:coverage": "jest --coverage --forceExit",
     "test:e2e": "jest ./tests/*.test.ts --forceExit --runInBand",
     "types": "tsc -p tsconfig.json --noEmit",

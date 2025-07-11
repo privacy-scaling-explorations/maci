@@ -49,9 +49,8 @@ export const testMaciDeploymentConfig: IDeployMaciConfig = {
 
 /**
  * Start date for the poll (it cannot be in the past)
- * n seconds are added to give it time until it is deployed
  */
-export const startDate = Math.floor(Date.now() / 1000) + 100;
+export const startDate = Math.floor(Date.now() / 1000);
 
 /**
  * Poll duration in seconds

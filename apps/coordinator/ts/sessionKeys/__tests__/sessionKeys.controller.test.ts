@@ -40,8 +40,8 @@ describe("SessionKeysController", () => {
   });
 
   describe("v1/session-keys/generate", () => {
-    test("should return a session key address", () => {
-      const data = sessionKeysController.generateSessionKey();
+    test("should return a session key address", async () => {
+      const data = await sessionKeysController.generateSessionKey();
       expect(data).toStrictEqual(defaultGenerateSessionKeyReturn);
     });
   });
