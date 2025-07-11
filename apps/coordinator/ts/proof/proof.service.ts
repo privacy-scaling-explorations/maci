@@ -15,11 +15,18 @@ import hre from "hardhat";
 import fs from "fs";
 import path from "path";
 
-import type { IGenerateArgs, IGenerateData, IMergeArgs, ISubmitProofsArgs } from "./types";
+import type {
+  IGenerateArgs,
+  IGenerateData,
+  IMergeArgs,
+  ISchedulePollFinalizationArgs,
+  ISubmitProofsArgs,
+} from "./types";
 
 import { ErrorCodes } from "../common";
 import { getCoordinatorKeypair } from "../common/coordinatorKeypair";
 import { FileService } from "../file/file.service";
+import { RedisService } from "../redis/redis.service";
 import { SessionKeysService } from "../sessionKeys/sessionKeys.service";
 
 /**
@@ -43,6 +50,7 @@ export class ProofGeneratorService {
   constructor(
     private readonly fileService: FileService,
     private readonly sessionKeysService: SessionKeysService,
+    private readonly redisService: RedisService,
   ) {
     this.deployment = Deployment.getInstance({ hre });
     this.deployment.setHre(hre);
@@ -202,5 +210,44 @@ export class ProofGeneratorService {
     }
 
     return tallyData;
+  }
+
+  /**
+   * Schedule poll finalization
+   * @param maciContractAddress - MACI contract address
+   * @param pollId - Poll ID to finalize
+   */
+  async schedulePollFinalization({
+    maciContractAddress,
+    pollId,
+    sessionKeyAddress,
+    approval,
+    chain,
+  }: ISchedulePollFinalizationArgs): Promise<void> {
+    const signer = await this.sessionKeysService.getCoordinatorSigner(chain, sessionKeyAddress, approval);
+
+    const pollData = await getPoll({
+      maciAddress: maciContractAddress,
+      pollId: BigInt(pollId),
+      signer,
+    });
+
+    const now = Math.floor(Date.now() / 1000);
+    const { endDate, isMerged } = pollData;
+    if (Number(endDate) <= now && isMerged) {
+      this.logger.error(`Error: ${ErrorCodes.POLL_ALREADY_ENDED}, poll has already been finalized`);
+      throw new Error(ErrorCodes.POLL_ALREADY_ENDED.toString());
+    }
+
+    await this.redisService.set(
+      `poll-${pollId}`,
+      JSON.stringify({
+        maciContractAddress,
+        pollId: pollId.toString(),
+        chain,
+        endDate,
+        isTallied: false,
+      }),
+    );
   }
 }

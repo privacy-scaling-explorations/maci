@@ -17,6 +17,7 @@ import path from "path";
 
 import { ErrorCodes, ESupportedNetworks } from "../../common";
 import { FileService } from "../../file/file.service";
+import { RedisService } from "../../redis/redis.service";
 import { generateApproval } from "../../sessionKeys/__tests__/utils";
 import { SessionKeysService } from "../../sessionKeys/sessionKeys.service";
 import { DeployerService } from "../deployer.service";
@@ -33,10 +34,11 @@ describe("DeployerService", () => {
   const chain = ESupportedNetworks.OPTIMISM_SEPOLIA;
 
   const fileService = new FileService();
+  const redisService = new RedisService();
 
   const storageInstance = ContractStorage.getInstance(path.join(process.cwd(), "deployed-contracts.json"));
   const sessionKeyService = new SessionKeysService(fileService);
-  const deployerService = new DeployerService(sessionKeyService, fileService);
+  const deployerService = new DeployerService(sessionKeyService, fileService, redisService);
 
   let approval: string;
   let sessionKeyAddress: Hex;

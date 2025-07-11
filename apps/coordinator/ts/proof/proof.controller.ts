@@ -97,4 +97,17 @@ export class ProofController {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     });
   }
+
+  /**
+   * Schedule poll finalization
+   */
+  @ApiResponse({ status: HttpStatus.OK, description: "Poll finalization has been scheduled" })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "BadRequest" })
+  @Post("schedulePollFinalization")
+  async schedulePollFinalization(@Body() args: SubmitProofsDto): Promise<void> {
+    return this.proofGeneratorService.schedulePollFinalization(args).catch((error: Error) => {
+      this.logger.error(`Error:`, error);
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    });
+  }
 }

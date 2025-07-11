@@ -142,7 +142,10 @@ importers:
         version: 3.0.9(ethers@6.15.0)(hardhat@2.25.0(ts-node@10.9.2(@types/node@24.0.13)(typescript@5.8.3))(typescript@5.8.3))
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^6.0.0
-        version: 6.0.0(b9c191b85a8712afd7b77d7b81b1b47d)
+        version: 6.0.0(ldzt2x3xupufybh2fdgi4pknla)
+      '@redis/client':
+        specifier: ^5.6.0
+        version: 5.6.0
       '@zerodev/ecdsa-validator':
         specifier: 5.4.9
         version: 5.4.9(@zerodev/sdk@5.4.40(viem@2.31.7(typescript@5.8.3)(zod@3.25.64)))(viem@2.31.7(typescript@5.8.3)(zod@3.25.64))
@@ -287,7 +290,7 @@ importers:
         version: 3.0.9(ethers@6.15.0)(hardhat@2.25.0(ts-node@10.9.2(@types/node@24.0.13)(typescript@5.8.3))(typescript@5.8.3))
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^6.0.0
-        version: 6.0.0(b9c191b85a8712afd7b77d7b81b1b47d)
+        version: 6.0.0(ldzt2x3xupufybh2fdgi4pknla)
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
@@ -558,7 +561,7 @@ importers:
         version: link:../sdk
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^6.0.0
-        version: 6.0.0(b9c191b85a8712afd7b77d7b81b1b47d)
+        version: 6.0.0(ldzt2x3xupufybh2fdgi4pknla)
       commander:
         specifier: ^14.0.0
         version: 14.0.0
@@ -634,7 +637,7 @@ importers:
         version: 3.0.9(ethers@6.15.0)(hardhat@2.25.0(ts-node@10.9.2(@types/node@24.0.13)(typescript@5.8.3))(typescript@5.8.3))
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^6.0.0
-        version: 6.0.0(b9c191b85a8712afd7b77d7b81b1b47d)
+        version: 6.0.0(ldzt2x3xupufybh2fdgi4pknla)
       '@nomicfoundation/hardhat-verify':
         specifier: ^2.0.14
         version: 2.0.14(hardhat@2.25.0(ts-node@10.9.2(@types/node@24.0.13)(typescript@5.8.3))(typescript@5.8.3))
@@ -680,7 +683,7 @@ importers:
     devDependencies:
       '@matterlabs/hardhat-zksync':
         specifier: ^1.6.1
-        version: 1.6.1(04001c282f159aadb536a924edceef91)
+        version: 1.6.1(fgsvipezfgrr4gb2msgm3gczke)
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.20
@@ -930,7 +933,7 @@ importers:
         version: link:../sdk
       '@nomicfoundation/hardhat-toolbox':
         specifier: ^6.0.0
-        version: 6.0.0(b9c191b85a8712afd7b77d7b81b1b47d)
+        version: 6.0.0(ldzt2x3xupufybh2fdgi4pknla)
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.20
@@ -4689,6 +4692,10 @@ packages:
       '@types/react':
         optional: true
 
+  '@redis/client@5.6.0':
+    resolution: {integrity: sha512-wmP9kCFElCSr4MM4+1E4VckDuN4wLtiXSM/J0rKVQppajxQhowci89RGZr2OdLualowb8SRJ/R6OjsXrn9ZNFA==}
+    engines: {node: '>= 18'}
+
   '@rescript/std@9.0.0':
     resolution: {integrity: sha512-zGzFsgtZ44mgL4Xef2gOy1hrRVdrs9mcxCOOKZrIPsmbZW14yTkaF591GXxpQvjXiHtgZ/iA9qLyWH6oSReIxQ==}
 
@@ -7172,6 +7179,10 @@ packages:
   clsx@2.1.1:
     resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
     engines: {node: '>=6'}
+
+  cluster-key-slot@1.1.2:
+    resolution: {integrity: sha512-RMr0FhtfXemyinomL4hrWcYJxmX6deFdCxpJzhDttxgO1+bcCnkk+9drydLVDmAMG7NE6aN/fl4F7ucU/90gAA==}
+    engines: {node: '>=0.10.0'}
 
   cmd-shim@6.0.3:
     resolution: {integrity: sha512-FMabTRlc5t5zjdenF6mS0MBeFZm0XqHqeOkcskKFb/LYCcRQ5fVgLOHVc4Lq9CqABd9zhjwPjMBCJvMCziSVtA==}
@@ -21009,7 +21020,7 @@ snapshots:
       - encoding
       - supports-color
 
-  '@matterlabs/hardhat-zksync@1.6.1(04001c282f159aadb536a924edceef91)':
+  '@matterlabs/hardhat-zksync@1.6.1(fgsvipezfgrr4gb2msgm3gczke)':
     dependencies:
       '@matterlabs/hardhat-zksync-deploy': 1.7.0(encoding@0.1.13)(ethers@6.15.0)(hardhat@2.25.0(ts-node@10.9.2(@types/node@24.0.13)(typescript@5.8.3))(typescript@5.8.3))(zksync-ethers@6.19.0(ethers@6.15.0))
       '@matterlabs/hardhat-zksync-ethers': 1.3.0(encoding@0.1.13)(ethers@6.15.0)(ts-node@10.9.2(@types/node@24.0.13)(typescript@5.8.3))(typescript@5.8.3)(zksync-ethers@6.19.0(ethers@6.15.0))
@@ -21504,7 +21515,7 @@ snapshots:
       ethereumjs-util: 7.1.5
       hardhat: 2.25.0(ts-node@10.9.2(@types/node@24.0.13)(typescript@5.8.3))(typescript@5.8.3)
 
-  '@nomicfoundation/hardhat-toolbox@6.0.0(b9c191b85a8712afd7b77d7b81b1b47d)':
+  '@nomicfoundation/hardhat-toolbox@6.0.0(ldzt2x3xupufybh2fdgi4pknla)':
     dependencies:
       '@nomicfoundation/hardhat-chai-matchers': 2.0.8(@nomicfoundation/hardhat-ethers@3.0.9(ethers@6.15.0)(hardhat@2.25.0(ts-node@10.9.2(@types/node@24.0.13)(typescript@5.8.3))(typescript@5.8.3)))(chai@4.5.0)(ethers@6.15.0)(hardhat@2.25.0(ts-node@10.9.2(@types/node@24.0.13)(typescript@5.8.3))(typescript@5.8.3))
       '@nomicfoundation/hardhat-ethers': 3.0.9(ethers@6.15.0)(hardhat@2.25.0(ts-node@10.9.2(@types/node@24.0.13)(typescript@5.8.3))(typescript@5.8.3))
@@ -22594,6 +22605,10 @@ snapshots:
       react-native: 0.78.2(@babel/core@7.28.0)(@babel/preset-env@7.27.2(@babel/core@7.28.0))(@types/react@19.1.8)(react@19.1.0)
     optionalDependencies:
       '@types/react': 19.1.8
+
+  '@redis/client@5.6.0':
+    dependencies:
+      cluster-key-slot: 1.1.2
 
   '@rescript/std@9.0.0': {}
 
@@ -25634,6 +25649,8 @@ snapshots:
   clone@1.0.4: {}
 
   clsx@2.1.1: {}
+
+  cluster-key-slot@1.1.2: {}
 
   cmd-shim@6.0.3: {}
 

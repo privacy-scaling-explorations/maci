@@ -3,6 +3,7 @@ import { Hex, zeroAddress } from "viem";
 
 import { ErrorCodes, ESupportedNetworks } from "../../common";
 import { FileService } from "../../file/file.service";
+import { RedisService } from "../../redis/redis.service";
 import { generateApproval } from "../../sessionKeys/__tests__/utils";
 import { SessionKeysService } from "../../sessionKeys/sessionKeys.service";
 import { DeployerController } from "../deployer.controller";
@@ -26,7 +27,7 @@ describe("DeployerController", () => {
   const defaultDeployPollReturn = "0";
 
   const deployerControllerFail = new DeployerController(
-    new DeployerService(new SessionKeysService(new FileService()), new FileService()),
+    new DeployerService(new SessionKeysService(new FileService()), new FileService(), new RedisService()),
   );
   const fileService = new FileService();
   const sessionKeyService = new SessionKeysService(fileService);
