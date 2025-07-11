@@ -10,6 +10,7 @@ import {
 } from "@maci-protocol/sdk";
 import { IProof, ITallyData, generateProofs, proveOnChain } from "@maci-protocol/sdk";
 import { Logger, Injectable } from "@nestjs/common";
+import { Cron } from "@nestjs/schedule";
 import hre from "hardhat";
 
 import fs from "fs";
@@ -249,5 +250,14 @@ export class ProofGeneratorService {
         isTallied: false,
       }),
     );
+  }
+
+  /**
+   * Check out polls pending for finalization
+   */
+  @Cron("1 * * * * *") // Every 1 minute
+  checkOutPollsPendingForFinalization(): void {
+    // get all polls that endDate is less than current time and isTallied is false
+    // TODO: for redis search (faster db search) should we use redis instead of @redis/client?
   }
 }

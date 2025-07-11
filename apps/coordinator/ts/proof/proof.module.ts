@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { ScheduleModule } from "@nestjs/schedule";
 
 import { CryptoModule } from "../crypto/crypto.module";
 import { FileModule } from "../file/file.module";
@@ -10,7 +11,7 @@ import { ProofGateway } from "./proof.gateway";
 import { ProofGeneratorService } from "./proof.service";
 
 @Module({
-  imports: [FileModule, CryptoModule, SessionKeysModule, RedisModule],
+  imports: [FileModule, CryptoModule, SessionKeysModule, RedisModule, ScheduleModule.forRoot()],
   controllers: [ProofController],
   providers: [ProofGeneratorService, ProofGateway],
 })
