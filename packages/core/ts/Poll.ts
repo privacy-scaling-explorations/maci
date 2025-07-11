@@ -20,17 +20,18 @@ import {
   PrivateKey,
   Message,
   StateLeaf,
+  VoteCounts,
   blankStateLeaf,
-  type IMessageContractParams,
-  type IJsonPCommand,
   blankStateLeafHash,
   padKey,
+  type IMessageContractParams,
 } from "@maci-protocol/domainobjs";
 import { LeanIMT, LeanIMTHashFunction } from "@zk-kit/lean-imt";
 import omit from "lodash/omit";
 
 import assert from "assert";
 
+import type { MaciState } from "./MaciState";
 import type {
   TCircuitInputs,
   ITreeDepths,
@@ -42,9 +43,10 @@ import type {
   IProcessMessagesCircuitInputs,
   IPollJoiningCircuitInputs,
   IJoiningCircuitArgs,
-} from "./index";
-import type { MaciState } from "./MaciState";
-import type { IGetVoiceCreditsLeft, IJoinedCircuitArgs, IPollJoinedCircuitInputs } from "./utils/types";
+  IGetVoiceCreditsLeft,
+  IJoinedCircuitArgs,
+  IPollJoinedCircuitInputs,
+} from "./utils/types";
 import type { PathElements } from "@maci-protocol/crypto";
 
 import { EMode, STATE_TREE_ARITY, VOTE_OPTION_TREE_ARITY } from "./utils/constants";
@@ -74,6 +76,10 @@ export class Poll implements IPoll {
   ballots: Ballot[] = [];
 
   ballotTree?: IncrementalQuinTree;
+
+  voteCounts: VoteCounts[] = [];
+
+  voteCountsTree?: IncrementalQuinTree;
 
   messages: Message[] = [];
 
@@ -113,11 +119,15 @@ export class Poll implements IPoll {
 
   totalSpentVoiceCredits = 0n;
 
-  // an empty ballot and its hash to be used as zero value in the
-  // ballot tree
+  // an empty ballot and its hash to be used as zero value in the ballot tree
   emptyBallot: Ballot;
 
-  emptyBallotHash?: bigint;
+  emptyBallotHash: bigint;
+
+  // an empty vote counts and its hash to be used as zero value in the vote counts tree
+  emptyVoteCounts: VoteCounts;
+
+  emptyVoteCountsHash: bigint;
 
   // message chain hash
   chainHash = NOTHING_UP_MY_SLEEVE;
@@ -157,13 +167,14 @@ export class Poll implements IPoll {
     voteOptions: bigint,
     mode: EMode,
   ) {
+    if (voteOptions > VOTE_OPTION_TREE_ARITY ** treeDepths.voteOptionTreeDepth) {
+      throw new Error("Vote options cannot be greater than the number of leaves in the vote option tree");
+    }
+
     this.pollEndTimestamp = pollEndTimestamp;
     this.coordinatorKeypair = coordinatorKeypair;
     this.treeDepths = treeDepths;
     this.batchSizes = batchSizes;
-    if (voteOptions > VOTE_OPTION_TREE_ARITY ** treeDepths.voteOptionTreeDepth) {
-      throw new Error("Vote options cannot be greater than the number of leaves in the vote option tree");
-    }
     this.voteOptions = voteOptions;
     this.maxVoteOptions = VOTE_OPTION_TREE_ARITY ** treeDepths.voteOptionTreeDepth;
     this.maciStateRef = maciStateRef;
@@ -180,6 +191,11 @@ export class Poll implements IPoll {
     // we put a blank state leaf to prevent a DoS attack
     this.emptyBallot = Ballot.generateBlank(this.maxVoteOptions, treeDepths.voteOptionTreeDepth);
     this.ballots.push(this.emptyBallot);
+    this.emptyBallotHash = this.emptyBallot.hash();
+
+    this.emptyVoteCounts = VoteCounts.generateBlank(this.maxVoteOptions, treeDepths.voteOptionTreeDepth);
+    this.voteCounts.push(this.emptyVoteCounts);
+    this.emptyVoteCountsHash = this.emptyVoteCounts.hash();
   }
 
   /**
@@ -252,7 +268,6 @@ export class Poll implements IPoll {
     });
 
     // Create as many ballots as state leaves
-    this.emptyBallotHash = this.emptyBallot.hash();
     this.ballotTree = new IncrementalQuinTree(
       Number(this.treeDepths.stateTreeDepth),
       this.emptyBallotHash,
@@ -265,6 +280,20 @@ export class Poll implements IPoll {
     while (this.ballots.length < this.publicKeys.length) {
       this.ballotTree.insert(this.emptyBallotHash);
       this.ballots.push(this.emptyBallot);
+    }
+
+    this.voteCountsTree = new IncrementalQuinTree(
+      Number(this.treeDepths.stateTreeDepth),
+      this.emptyVoteCountsHash,
+      STATE_TREE_ARITY,
+      hash2,
+    );
+    this.voteCountsTree.insert(this.emptyVoteCountsHash);
+    const emptyVoteCounts = VoteCounts.generateBlank(this.maxVoteOptions, this.treeDepths.voteOptionTreeDepth);
+
+    while (this.voteCounts.length < this.publicKeys.length) {
+      this.voteCountsTree.insert(this.emptyVoteCountsHash);
+      this.voteCounts.push(emptyVoteCounts);
     }
 
     this.stateCopied = true;
@@ -664,6 +693,7 @@ export class Poll implements IPoll {
       assert(idx >= 0, "The message index must be >= 0");
       let message: Message;
       let encryptionPublicKey: PublicKey;
+
       if (idx < this.messages.length) {
         message = this.messages[idx];
         encryptionPublicKey = this.encryptionPublicKeys[idx];
@@ -1062,6 +1092,8 @@ export class Poll implements IPoll {
     //  currentSpentVoiceCreditsCommitment,
     //  currentPerVoteOptionSpentVoiceCreditsCommitment
     // ])
+
+    // TODO: use commitment for vote counts
     const currentTallyCommitmentQv =
       this.mode !== EMode.QV || batchStartIndex === 0
         ? 0n
@@ -1077,14 +1109,18 @@ export class Poll implements IPoll {
         : hashLeftRight(currentResultsCommitment, currentSpentVoiceCreditsCommitment);
 
     const currentTallyCommitment = currentTallyCommitmentNonQv || currentTallyCommitmentQv;
+    const startIndex = this.numBatchesTallied * batchSize;
+    const endIndex = this.numBatchesTallied * batchSize + batchSize;
 
     const ballots: Ballot[] = [];
+    const voteCounts: VoteCounts[] = [];
+    const voteCountsData: bigint[][] = [];
     const currentResults = this.tallyResult.map((x) => BigInt(x.toString()));
     const currentPerVoteOptionSpentVoiceCredits = this.perVoteOptionSpentVoiceCredits.map((x) => BigInt(x.toString()));
     const currentSpentVoiceCreditSubtotal = BigInt(this.totalSpentVoiceCredits.toString());
 
     // loop in normal order to tally the ballots one by one
-    for (let i = this.numBatchesTallied * batchSize; i < this.numBatchesTallied * batchSize + batchSize; i += 1) {
+    for (let i = startIndex; i < endIndex; i += 1) {
       // we stop if we have no more ballots to tally
       if (i >= this.ballots.length) {
         break;
@@ -1092,6 +1128,18 @@ export class Poll implements IPoll {
 
       // save to the local ballot array
       ballots.push(this.ballots[i]);
+
+      const ballot = this.ballots[i];
+      const newVoteCounts = this.voteCounts[i].copy();
+
+      newVoteCounts.counts = ballot.votes.map(
+        (votes, voteOptionIndex) => this.voteCounts[i].counts[voteOptionIndex] + BigInt(votes !== 0n),
+      );
+      // save to the local vote counts array
+      this.voteCountsTree?.update(i, newVoteCounts.hash());
+      this.voteCounts[i] = newVoteCounts;
+      voteCounts.push(newVoteCounts);
+      voteCountsData.push(newVoteCounts.counts);
 
       // for each possible vote option we loop and calculate
       for (let j = 0; j < this.maxVoteOptions; j += 1) {
@@ -1113,10 +1161,16 @@ export class Poll implements IPoll {
     }
 
     const emptyBallot = new Ballot(this.maxVoteOptions, this.treeDepths.voteOptionTreeDepth);
+    const emptyVoteCounts = new VoteCounts(this.maxVoteOptions, this.treeDepths.voteOptionTreeDepth);
 
     // pad the ballots array
     while (ballots.length < batchSize) {
       ballots.push(emptyBallot);
+    }
+
+    // pad the vote counts array
+    while (voteCounts.length < batchSize) {
+      voteCounts.push(emptyVoteCounts);
     }
 
     // generate the new salts
@@ -1159,12 +1213,20 @@ export class Poll implements IPoll {
     // cache vars
     const stateRoot = this.pollStateTree!.root;
     const ballotRoot = this.ballotTree!.root;
+    const voteCountsRoot = this.voteCountsTree!.root;
     const sbSalt = this.sbSalts[this.currentMessageBatchIndex];
     const sbCommitment = hash3([stateRoot, ballotRoot, sbSalt]);
 
     const ballotSubrootProof = this.ballotTree?.generateSubrootProof(batchStartIndex, batchStartIndex + batchSize);
+    const voteCountsSubrootProof = this.voteCountsTree?.generateSubrootProof(
+      batchStartIndex,
+      batchStartIndex + batchSize,
+    );
 
     const votes = ballots.map((x) => x.votes);
+
+    // Don't include these inputs in the circuit inputs until individual vote counts are implemented
+    const excludedCircuitInputs = ["voteCountsData", "voteCountsPathElements", "voteCounts", "voteCountsRoot"];
 
     const circuitInputs = stringifyBigInts(
       omit(
@@ -1180,6 +1242,10 @@ export class Poll implements IPoll {
           ballots: ballots.map((x) => x.asCircuitInputs()),
           ballotPathElements: ballotSubrootProof!.pathElements,
           votes,
+          voteCountsRoot,
+          voteCounts: voteCounts.map((x) => x.asCircuitInputs()),
+          voteCountsPathElements: voteCountsSubrootProof!.pathElements,
+          voteCountsData,
           currentResults,
           currentResultsRootSalt,
           currentSpentVoiceCreditSubtotal,
@@ -1192,11 +1258,12 @@ export class Poll implements IPoll {
         },
         this.mode !== EMode.QV
           ? [
+              ...excludedCircuitInputs,
               "currentPerVoteOptionSpentVoiceCredits",
               "currentPerVoteOptionSpentVoiceCreditsRootSalt",
               "newPerVoteOptionSpentVoiceCreditsRootSalt",
             ]
-          : [],
+          : [...excludedCircuitInputs],
       ),
     ) as unknown as IVoteTallyCircuitInputs;
 
@@ -1294,9 +1361,14 @@ export class Poll implements IPoll {
     copied.commands = this.commands.map((x) => x.copy());
     copied.ballots = this.ballots.map((x) => x.copy());
     copied.encryptionPublicKeys = this.encryptionPublicKeys.map((x) => x.copy());
+    copied.voteCounts = this.voteCounts.map((x) => x.copy());
 
     if (this.ballotTree) {
       copied.ballotTree = this.ballotTree.copy();
+    }
+
+    if (this.voteCountsTree) {
+      copied.voteCountsTree = this.voteCountsTree.copy();
     }
 
     copied.currentMessageBatchIndex = this.currentMessageBatchIndex;
@@ -1366,11 +1438,13 @@ export class Poll implements IPoll {
         return false;
       }
     }
+
     for (let i = 0; i < this.encryptionPublicKeys.length; i += 1) {
       if (!this.encryptionPublicKeys[i].equals(poll.encryptionPublicKeys[i])) {
         return false;
       }
     }
+
     return true;
   };
 
@@ -1389,6 +1463,7 @@ export class Poll implements IPoll {
       messages: this.messages.map((message) => message.toJSON()),
       commands: this.commands.map((command) => command.toJSON()),
       ballots: this.ballots.map((ballot) => ballot.toJSON()),
+      voteCounts: this.voteCounts.map((voteCounts) => voteCounts.toJSON()),
       encryptionPublicKeys: this.encryptionPublicKeys.map((encryptionPublicKey) => encryptionPublicKey.serialize()),
       currentMessageBatchIndex: this.currentMessageBatchIndex,
       publicKeys: this.publicKeys.map((leaf) => leaf.toJSON()),
@@ -1423,14 +1498,15 @@ export class Poll implements IPoll {
     // set all properties
     poll.pollStateLeaves = json.pollStateLeaves.map((leaf) => StateLeaf.fromJSON(leaf));
     poll.ballots = json.ballots.map((ballot) => Ballot.fromJSON(ballot));
-    poll.encryptionPublicKeys = json.encryptionPublicKeys.map((key: string) => PublicKey.deserialize(key));
+    poll.voteCounts = json.voteCounts.map((voteCounts) => VoteCounts.fromJSON(voteCounts));
+    poll.encryptionPublicKeys = json.encryptionPublicKeys.map((key) => PublicKey.deserialize(key));
     poll.messages = json.messages.map((message) => Message.fromJSON(message as IMessageContractParams));
-    poll.commands = json.commands.map((command: IJsonPCommand) => VoteCommand.fromJSON(command));
-    poll.tallyResult = json.results.map((result: string) => BigInt(result));
+    poll.commands = json.commands.map((command) => VoteCommand.fromJSON(command));
+    poll.tallyResult = json.results.map((result) => BigInt(result));
     poll.currentMessageBatchIndex = json.currentMessageBatchIndex;
     poll.totalBatchesProcessed = json.totalBatchesProcessed;
     poll.chainHash = BigInt(json.chainHash);
-    poll.batchHashes = json.batchHashes.map((batchHash: string) => BigInt(batchHash));
+    poll.batchHashes = json.batchHashes.map((batchHash) => BigInt(batchHash));
     poll.pollNullifiers = new Map(json.pollNullifiers.map((nullifier) => [BigInt(nullifier), true]));
 
     // copy maci state
@@ -1459,5 +1535,5 @@ export class Poll implements IPoll {
    * Get the number of signups
    * @returns The number of signups
    */
-  gettotalSignups = (): bigint => this.totalSignups;
+  getTotalSignups = (): bigint => this.totalSignups;
 }

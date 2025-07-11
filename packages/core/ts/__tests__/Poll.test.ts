@@ -667,12 +667,12 @@ describe("Poll", function test() {
 
       poll.updatePoll(BigInt(maciState.publicKeys.length));
 
-      expect(poll.gettotalSignups()).to.eq(2n);
+      expect(poll.getTotalSignups()).to.eq(2n);
 
       // update it again
       poll.setTotalSignups(3n);
 
-      expect(poll.gettotalSignups()).to.eq(3n);
+      expect(poll.getTotalSignups()).to.eq(3n);
     });
   });
 

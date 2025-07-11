@@ -85,3 +85,23 @@ export interface IJsonBallot {
   nonce: BigNumberish;
   voteOptionTreeDepth: BigNumberish;
 }
+
+/**
+ *  A JSON representation of the vote counts
+ */
+export interface IJsonVoteCounts {
+  /**
+   *  The vote counts for each vote option in the poll
+   */
+  counts: BigNumberish[];
+
+  /**
+   *  The nonce for the vote counts
+   */
+  nonce: BigNumberish;
+
+  /**
+   *  The depth of the merkle tree holding the vote options
+   */
+  voteOptionTreeDepth: BigNumberish;
+}

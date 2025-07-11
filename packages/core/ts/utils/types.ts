@@ -8,6 +8,7 @@ import type {
   IJsonPCommand,
   IJsonPublicKey,
   IJsonStateLeaf,
+  IJsonVoteCounts,
   Keypair,
   Message,
   VoteCommand,
@@ -100,6 +101,7 @@ export interface IJsonPoll {
   messages: unknown[];
   commands: IJsonPCommand[];
   ballots: IJsonBallot[];
+  voteCounts: IJsonVoteCounts[];
   encryptionPublicKeys: string[];
   currentMessageBatchIndex: number;
   publicKeys: IJsonPublicKey[];
@@ -223,6 +225,7 @@ export interface IProcessMessagesCircuitInputs {
 export interface IVoteTallyCircuitInputs {
   stateRoot: string;
   ballotRoot: string;
+  voteCountsRoot: string;
   sbSalt: string;
   sbCommitment: string;
   index: bigint;
@@ -232,6 +235,9 @@ export interface IVoteTallyCircuitInputs {
   ballots: string[];
   ballotPathElements: PathElements;
   votes: string[][];
+  voteCounts: string[];
+  voteCountsPathElements: PathElements;
+  voteCountsData: string[][];
   currentResults: string[];
   currentResultsRootSalt: string;
   currentSpentVoiceCreditSubtotal: string;

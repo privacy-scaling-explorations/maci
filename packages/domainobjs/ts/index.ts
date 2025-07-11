@@ -1,16 +1,12 @@
 export { Ballot } from "./ballot";
-
 export { Message } from "./message";
-
 export { PrivateKey, SERIALIZED_PRIV_KEY_PREFIX } from "./privateKey";
-
 export { PublicKey, SERIALIZED_PUB_KEY_PREFIX } from "./publicKey";
-
 export { Keypair } from "./keyPair";
-
 export { StateLeaf } from "./stateLeaf";
-
 export { blankStateLeaf, blankStateLeafHash, padKey } from "./constants";
+export { VerifyingKey } from "./verifyingKey";
+export { VoteCounts } from "./voteCounts";
 
 export type {
   Proof,
@@ -27,8 +23,7 @@ export type {
   IStateLeafContractParams,
   IMessageContractParams,
   IJsonBallot,
+  IJsonVoteCounts,
 } from "./types";
 
 export { type IJsonTCommand, type IJsonPCommand, VoteCommand } from "./commands";
-
-export { VerifyingKey } from "./verifyingKey";
