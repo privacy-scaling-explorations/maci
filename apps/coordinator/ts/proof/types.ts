@@ -177,33 +177,3 @@ export interface ISubmitProofsArgs {
    */
   chain: ESupportedNetworks;
 }
-
-/**
- * Schedule poll finalization arguments
- */
-export interface ISchedulePollFinalizationArgs {
-  /**
-   * MACI contract address
-   */
-  maciContractAddress: string;
-
-  /**
-   * Poll ID
-   */
-  pollId: number;
-
-  /**
-   * Approval for the session key
-   */
-  approval?: string;
-
-  /**
-   * Session key address
-   */
-  sessionKeyAddress?: Hex;
-
-  /**
-   * Chain
-   */
-  chain: ESupportedNetworks;
-}

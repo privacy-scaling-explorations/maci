@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 import { Body, Controller, Get, HttpException, HttpStatus, Logger, Post } from "@nestjs/common";
-import { ApiBearerAuth, ApiBody, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBody, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import type { IGenerateData, IMergeArgs } from "./types";
 import type { ITallyData } from "@maci-protocol/sdk";
@@ -12,7 +12,6 @@ import { GenerateProofDto, MergeTreesDto, SubmitProofsDto } from "./dto";
 import { ProofGeneratorService } from "./proof.service";
 
 @ApiTags("v1/proof")
-@ApiBearerAuth()
 @Controller("v1/proof")
 export class ProofController {
   /**
@@ -93,19 +92,6 @@ export class ProofController {
   @Get("publicKey")
   async getPublicKey(): Promise<IGetPublicKeyData> {
     return this.fileService.getPublicKey().catch((error: Error) => {
-      this.logger.error(`Error:`, error);
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
-    });
-  }
-
-  /**
-   * Schedule poll finalization
-   */
-  @ApiResponse({ status: HttpStatus.OK, description: "Poll finalization has been scheduled" })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "BadRequest" })
-  @Post("schedulePollFinalization")
-  async schedulePollFinalization(@Body() args: SubmitProofsDto): Promise<void> {
-    return this.proofGeneratorService.schedulePollFinalization(args).catch((error: Error) => {
       this.logger.error(`Error:`, error);
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     });

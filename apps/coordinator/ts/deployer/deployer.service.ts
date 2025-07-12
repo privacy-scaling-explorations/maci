@@ -61,8 +61,7 @@ import { type Hex } from "viem";
 import { ErrorCodes, ESupportedNetworks } from "../common";
 import { getCoordinatorKeypair } from "../common/coordinatorKeypair";
 import { FileService } from "../file/file.service";
-import { RedisService } from "../redis/redis.service";
-import { IStoredPollInfo } from "../redis/types";
+import { SchedulerService } from "../scheduler/scheduler.service";
 import { SessionKeysService } from "../sessionKeys/sessionKeys.service";
 
 import {
@@ -100,7 +99,7 @@ export class DeployerService {
   constructor(
     private readonly sessionKeysService: SessionKeysService,
     private readonly fileService: FileService,
-    private readonly redisService: RedisService,
+    private readonly schedulerService: SchedulerService,
   ) {
     this.storage = ContractStorage.getInstance();
   }
@@ -679,16 +678,12 @@ export class DeployerService {
       }),
     ]);
 
-    await this.redisService.set(
-      `poll-${pollId}`,
-      JSON.stringify({
-        maciContractAddress: maciAddress,
-        pollId: pollId.toString(),
-        chain,
-        endDate: config.endDate,
-        isTallied: false,
-      } as IStoredPollInfo),
-    );
+    await this.schedulerService.storeAndSchedule({
+      maciAddress,
+      pollId: pollId.toString(),
+      chain,
+      endDate: config.endDate,
+    });
 
     return { pollId: pollId.toString() };
   }

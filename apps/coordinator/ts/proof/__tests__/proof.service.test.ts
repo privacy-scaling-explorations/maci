@@ -8,7 +8,6 @@ import type { IGenerateArgs } from "../types";
 import { ErrorCodes, ESupportedNetworks } from "../../common";
 import { getCoordinatorKeypair } from "../../common/coordinatorKeypair";
 import { FileService } from "../../file/file.service";
-import { RedisService } from "../../redis/redis.service";
 import { generateApproval } from "../../sessionKeys/__tests__/utils";
 import { SessionKeysService } from "../../sessionKeys/sessionKeys.service";
 import { ProofGeneratorService } from "../proof.service";
@@ -50,7 +49,6 @@ describe("ProofGeneratorService", () => {
   const coordinatorPublicKey = getCoordinatorKeypair().publicKey.asContractParam();
 
   const fileService = new FileService();
-  const redisService = new RedisService();
   const sessionKeysService = new SessionKeysService(fileService);
 
   beforeAll(async () => {
@@ -90,13 +88,13 @@ describe("ProofGeneratorService", () => {
     const keypair = new Keypair(new PrivateKey(0n));
     mockContract.coordinatorPublicKey.mockResolvedValue(keypair.publicKey.asContractParam());
 
-    const service = new ProofGeneratorService(fileService, sessionKeysService, redisService);
+    const service = new ProofGeneratorService(fileService, sessionKeysService);
 
     await expect(service.generate(defaultProofArgs)).rejects.toThrow(ErrorCodes.PRIVATE_KEY_MISMATCH.toString());
   });
 
   test("should generate proofs properly for NonQv", async () => {
-    const service = new ProofGeneratorService(fileService, sessionKeysService, redisService);
+    const service = new ProofGeneratorService(fileService, sessionKeysService);
 
     const data = await service.generate(defaultProofArgs);
 
@@ -105,7 +103,7 @@ describe("ProofGeneratorService", () => {
   });
 
   test("should generate proofs properly for Qv", async () => {
-    const service = new ProofGeneratorService(fileService, sessionKeysService, redisService);
+    const service = new ProofGeneratorService(fileService, sessionKeysService);
 
     const data = await service.generate({ ...defaultProofArgs, mode: EMode.QV });
 

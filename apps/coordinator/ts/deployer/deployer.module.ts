@@ -2,14 +2,14 @@ import { Module } from "@nestjs/common";
 
 import { CryptoModule } from "../crypto/crypto.module";
 import { FileModule } from "../file/file.module";
-import { RedisModule } from "../redis/redis.module";
+import { SchedulerModule } from "../scheduler/scheduler.module";
 import { SessionKeysModule } from "../sessionKeys/sessionKeys.module";
 
 import { DeployerController } from "./deployer.controller";
 import { DeployerService } from "./deployer.service";
 
 @Module({
-  imports: [FileModule, CryptoModule, SessionKeysModule, RedisModule],
+  imports: [FileModule, CryptoModule, SessionKeysModule, SchedulerModule],
   controllers: [DeployerController],
   providers: [DeployerService],
 })

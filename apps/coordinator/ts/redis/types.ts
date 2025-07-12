@@ -7,7 +7,7 @@ export interface IStoredPollInfo {
   /**
    * maci contract address
    */
-  maciContractAddress: string;
+  maciAddress: string;
 
   /**
    * poll id (unique identifier)
@@ -23,9 +23,4 @@ export interface IStoredPollInfo {
    * end date
    */
   endDate: number;
-
-  /**
-   * boolean indicating if the poll has been finalized
-   */
-  isTallied: boolean;
 }

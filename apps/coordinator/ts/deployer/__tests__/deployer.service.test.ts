@@ -9,6 +9,7 @@ import {
   MACI__factory as MACIFactory,
   Verifier__factory as VerifierFactory,
 } from "@maci-protocol/sdk";
+import { SchedulerRegistry } from "@nestjs/schedule";
 import dotenv from "dotenv";
 import { BaseContract, Signer } from "ethers";
 import { Hex, zeroAddress } from "viem";
@@ -18,6 +19,7 @@ import path from "path";
 import { ErrorCodes, ESupportedNetworks } from "../../common";
 import { FileService } from "../../file/file.service";
 import { RedisService } from "../../redis/redis.service";
+import { SchedulerService } from "../../scheduler/scheduler.service";
 import { generateApproval } from "../../sessionKeys/__tests__/utils";
 import { SessionKeysService } from "../../sessionKeys/sessionKeys.service";
 import { DeployerService } from "../deployer.service";
@@ -35,10 +37,12 @@ describe("DeployerService", () => {
 
   const fileService = new FileService();
   const redisService = new RedisService();
+  const sessionKeyService = new SessionKeysService(fileService);
+  const schedulerRegistry = new SchedulerRegistry();
+  const schedulerService = new SchedulerService(sessionKeyService, redisService, schedulerRegistry);
+  const deployerService = new DeployerService(sessionKeyService, fileService, schedulerService);
 
   const storageInstance = ContractStorage.getInstance(path.join(process.cwd(), "deployed-contracts.json"));
-  const sessionKeyService = new SessionKeysService(fileService);
-  const deployerService = new DeployerService(sessionKeyService, fileService, redisService);
 
   let approval: string;
   let sessionKeyAddress: Hex;
