@@ -1,4 +1,16 @@
 services:
+  coordinator-database:
+    container_name: coordinator-database
+    image: redis:latest
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    ports:
+      - "${COORDINATOR_REDIS_PORT:-6379}:${COORDINATOR_REDIS_PORT:-6379}"
+    command: redis-server --save 20 1 --loglevel warning
+    volumes:
+      - coordinator-redis:/data
+
   coordinator-service:
     container_name: coordinator-service
     build:
@@ -16,4 +28,6 @@ services:
 
 volumes:
   coordinator-data:
+    driver: local
+  coordinator-redis:
     driver: local

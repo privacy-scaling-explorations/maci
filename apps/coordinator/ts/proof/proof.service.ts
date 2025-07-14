@@ -20,6 +20,7 @@ import type { IGenerateArgs, IGenerateData, IMergeArgs, ISubmitProofsArgs } from
 import { ErrorCodes } from "../common";
 import { getCoordinatorKeypair } from "../common/coordinatorKeypair";
 import { FileService } from "../file/file.service";
+import { IStoredPollInfo } from "../redis/types";
 import { SessionKeysService } from "../sessionKeys/sessionKeys.service";
 
 /**
@@ -202,5 +203,58 @@ export class ProofGeneratorService {
     }
 
     return tallyData;
+  }
+
+  /**
+   * Finalize poll starting from any step
+   *
+   * @param args - generate proofs arguments
+   */
+  async finalizePoll({
+    maciAddress,
+    pollId,
+    mode,
+    chain,
+    hasBeenMerged,
+    hasProofsBeenGenerated,
+  }: IStoredPollInfo): Promise<void> {
+    if (!hasBeenMerged) {
+      await this.merge({
+        maciContractAddress: maciAddress,
+        pollId: Number(pollId),
+        chain,
+      })
+        .then(() => {
+          // TODO: mark hasBeenMerged as true in Redis
+        })
+        .catch((error: Error) => {
+          this.logger.error(`Error merging proofs: ${error.message}`);
+          // TODO: mark hasBeenMerged as false in Redis
+        });
+    }
+
+    if (!hasProofsBeenGenerated) {
+      await this.generate({
+        maciContractAddress: maciAddress,
+        poll: Number(pollId),
+        mode,
+        chain,
+      })
+        .then(() => {
+          // TODO: mark hasProofsBeenGenerated as true in Redis
+        })
+        .catch((error: Error) => {
+          this.logger.error(`Error generating proofs: ${error.message}`);
+          // TODO: mark hasProofsBeenGenerated as false in Redis
+        });
+    }
+
+    await this.submit({
+      maciContractAddress: maciAddress,
+      pollId: Number(pollId),
+      chain,
+    }).catch((error: Error) => {
+      this.logger.error(`Error submitting proofs: ${error.message}`);
+    });
   }
 }

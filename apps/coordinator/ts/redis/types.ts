@@ -1,3 +1,5 @@
+import { EMode } from "@maci-protocol/sdk";
+
 import { ESupportedNetworks } from "../common";
 
 /**
@@ -15,6 +17,11 @@ export interface IStoredPollInfo {
   pollId: string;
 
   /**
+   * Voting mode
+   */
+  mode: EMode;
+
+  /**
    * chain
    */
   chain: ESupportedNetworks;
@@ -23,4 +30,14 @@ export interface IStoredPollInfo {
    * end date
    */
   endDate: number;
+
+  /**
+   * has been merged
+   */
+  hasBeenMerged?: boolean;
+
+  /**
+   * has proofs been generated
+   */
+  hasProofsBeenGenerated?: boolean;
 }

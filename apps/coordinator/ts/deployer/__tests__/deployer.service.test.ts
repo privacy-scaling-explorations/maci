@@ -18,6 +18,7 @@ import path from "path";
 
 import { ErrorCodes, ESupportedNetworks } from "../../common";
 import { FileService } from "../../file/file.service";
+import { ProofGeneratorService } from "../../proof/proof.service";
 import { RedisService } from "../../redis/redis.service";
 import { SchedulerService } from "../../scheduler/scheduler.service";
 import { generateApproval } from "../../sessionKeys/__tests__/utils";
@@ -39,7 +40,8 @@ describe("DeployerService", () => {
   const redisService = new RedisService();
   const sessionKeyService = new SessionKeysService(fileService);
   const schedulerRegistry = new SchedulerRegistry();
-  const schedulerService = new SchedulerService(sessionKeyService, redisService, schedulerRegistry);
+  const proofService = new ProofGeneratorService(fileService, sessionKeyService);
+  const schedulerService = new SchedulerService(sessionKeyService, proofService, redisService, schedulerRegistry);
   const deployerService = new DeployerService(sessionKeyService, fileService, schedulerService);
 
   const storageInstance = ContractStorage.getInstance(path.join(process.cwd(), "deployed-contracts.json"));

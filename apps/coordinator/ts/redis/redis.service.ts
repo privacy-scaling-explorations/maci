@@ -1,8 +1,8 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, OnModuleInit } from "@nestjs/common";
 import { createClient, RedisClientType } from "@redis/client";
 
 @Injectable()
-export class RedisService {
+export class RedisService implements OnModuleInit {
   private client: RedisClientType;
 
   constructor() {
@@ -13,12 +13,20 @@ export class RedisService {
     });
   }
 
+  async onModuleInit(): Promise<void> {
+    await this.client.connect();
+  }
+
   async set(key: string, value: string): Promise<void> {
     await this.client.set(key, value);
   }
 
   async get(key: string): Promise<string | null> {
     return this.client.get(key);
+  }
+
+  async getAll(): Promise<Record<string, string>> {
+    return this.client.hGetAll("polls"); // Im not sure this works
   }
 
   async delete(key: string): Promise<number> {

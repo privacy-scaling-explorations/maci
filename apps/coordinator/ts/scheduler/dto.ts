@@ -1,3 +1,4 @@
+import { EMode } from "@maci-protocol/sdk";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEnum, IsEthereumAddress, IsInt, IsOptional, IsString, Min } from "class-validator";
 
@@ -10,6 +11,16 @@ import { ESupportedNetworks } from "../common";
  */
 export class PollScheduledDto {
   /**
+   * MACI contract address
+   */
+  @ApiProperty({
+    description: "MACI contract address",
+    type: String,
+  })
+  @IsEthereumAddress()
+  maciAddress!: Hex;
+
+  /**
    * Poll id
    */
   @ApiProperty({
@@ -21,12 +32,18 @@ export class PollScheduledDto {
   @Min(0)
   pollId!: number;
 
+  /**
+   * Voting mode
+   */
   @ApiProperty({
-    description: "MACI contract address",
+    description: "Voting mode",
+    enum: EMode,
     type: String,
+    required: false,
   })
-  @IsEthereumAddress()
-  maciAddress!: Hex;
+  @IsOptional()
+  @IsEnum(EMode)
+  mode?: EMode;
 
   /**
    * Chain Name

@@ -549,6 +549,7 @@ export class DeployerService {
       stateTreeDepth: config.MACI.stateTreeDepth,
       signer,
       signupPolicyAddress: policyAddress,
+      poseidonAddresses: config.Poseidon,
     });
 
     // store the contracts
@@ -681,6 +682,7 @@ export class DeployerService {
     await this.schedulerService.storeAndSchedule({
       maciAddress,
       pollId: pollId.toString(),
+      mode: config.mode,
       chain,
       endDate: config.endDate,
     });

@@ -4,6 +4,7 @@ import { Hex, zeroAddress } from "viem";
 
 import { ErrorCodes, ESupportedNetworks } from "../../common";
 import { FileService } from "../../file/file.service";
+import { ProofGeneratorService } from "../../proof/proof.service";
 import { RedisService } from "../../redis/redis.service";
 import { SchedulerService } from "../../scheduler/scheduler.service";
 import { generateApproval } from "../../sessionKeys/__tests__/utils";
@@ -28,15 +29,21 @@ describe("DeployerController", () => {
   const defaultDeployMaciReturn: string = zeroAddress;
   const defaultDeployPollReturn = "0";
 
+  const fileService = new FileService();
+  const sessionKeyService = new SessionKeysService(fileService);
+
   const deployerControllerFail = new DeployerController(
     new DeployerService(
       new SessionKeysService(new FileService()),
       new FileService(),
-      new SchedulerService(new SessionKeysService(new FileService()), new RedisService(), new SchedulerRegistry()),
+      new SchedulerService(
+        sessionKeyService,
+        new ProofGeneratorService(fileService, sessionKeyService),
+        new RedisService(),
+        new SchedulerRegistry(),
+      ),
     ),
   );
-  const fileService = new FileService();
-  const sessionKeyService = new SessionKeysService(fileService);
 
   let approval: string;
   let sessionKeyAddress: Hex;
