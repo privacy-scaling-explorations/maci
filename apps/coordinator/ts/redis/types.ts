@@ -22,6 +22,11 @@ export interface IStoredPollInfo {
   mode: EMode;
 
   /**
+   * Deployment block number
+   */
+  deploymentBlockNumber?: number;
+
+  /**
    * chain
    */
   chain: ESupportedNetworks;

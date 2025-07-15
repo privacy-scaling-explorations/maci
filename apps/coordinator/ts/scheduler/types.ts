@@ -28,6 +28,11 @@ export interface IPollScheduledArgs {
  */
 export interface IRegisterPollArgs extends IPollScheduledArgs {
   /**
+   * Deployment block number
+   */
+  deploymentBlockNumber?: number;
+
+  /**
    * Voting mode
    */
   mode?: EMode;

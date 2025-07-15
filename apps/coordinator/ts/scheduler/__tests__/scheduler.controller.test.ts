@@ -28,12 +28,14 @@ describe("v1/scheduler/poll", () => {
     const pollId = 1;
     const maciAddress = "0x123456789012345678901234567890123";
     const chain = ESupportedNetworks.LOCALHOST;
+    const deploymentBlockNumber = 1000;
     const mode = EMode.NON_QV;
 
     await schedulerController.registerPoll({
       pollId,
       maciAddress,
       chain,
+      deploymentBlockNumber,
       mode,
     });
 

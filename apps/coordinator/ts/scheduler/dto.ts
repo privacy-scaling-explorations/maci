@@ -33,19 +33,6 @@ export class PollScheduledDto {
   pollId!: number;
 
   /**
-   * Voting mode
-   */
-  @ApiProperty({
-    description: "Voting mode",
-    enum: EMode,
-    type: String,
-    required: false,
-  })
-  @IsOptional()
-  @IsEnum(EMode)
-  mode?: EMode;
-
-  /**
    * Chain Name
    */
   @ApiProperty({
@@ -60,6 +47,32 @@ export class PollScheduledDto {
  * Data transfer object for registering a poll for finalization
  */
 export class RegisterPollDto extends PollScheduledDto {
+  /**
+   * Deployment block number
+   */
+  @ApiProperty({
+    description: "Deployment block number",
+    type: Number,
+    required: false,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  deploymentBlockNumber?: number;
+
+  /**
+   * Voting mode
+   */
+  @ApiProperty({
+    description: "Voting mode",
+    enum: EMode,
+    type: String,
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(EMode)
+  mode?: EMode;
+
   @ApiProperty({
     description: "Session key address",
     type: String,

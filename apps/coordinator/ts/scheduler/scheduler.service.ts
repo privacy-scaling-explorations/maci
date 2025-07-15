@@ -65,7 +65,14 @@ export class SchedulerService implements OnModuleInit {
    * Store poll information and schedule its finalization.
    * @param args - Arguments for storing and scheduling poll finalization
    */
-  async storeAndSchedule({ maciAddress, pollId, mode, chain, endDate }: IStoredPollInfo): Promise<void> {
+  async storeAndSchedule({
+    maciAddress,
+    pollId,
+    mode,
+    deploymentBlockNumber,
+    chain,
+    endDate,
+  }: IStoredPollInfo): Promise<void> {
     const key = `${chain}-${maciAddress}-poll-${pollId}`;
 
     await this.redisService.set(
@@ -74,10 +81,14 @@ export class SchedulerService implements OnModuleInit {
         maciAddress,
         pollId,
         mode,
+        deploymentBlockNumber,
         chain,
         endDate,
       } as IStoredPollInfo),
     );
+
+    const shouldBeExecutedIn = endDate * 1000 - Date.now();
+    const toBeExecutedIn = shouldBeExecutedIn > 0 ? shouldBeExecutedIn : 0;
 
     const timeout = setTimeout(
       () => {
@@ -91,7 +102,7 @@ export class SchedulerService implements OnModuleInit {
 
         this.redisService.delete(key);
       },
-      (endDate + 10) * 1000 - Date.now(),
+      toBeExecutedIn + 10 * 1000, // 10 seconds buffer to ensure the poll is finalized
     );
     this.schedulerRegistry.addTimeout(key, timeout);
   }
@@ -128,6 +139,7 @@ export class SchedulerService implements OnModuleInit {
     maciAddress,
     pollId,
     mode,
+    deploymentBlockNumber,
     sessionKeyAddress,
     approval,
     chain,
@@ -164,6 +176,7 @@ export class SchedulerService implements OnModuleInit {
       maciAddress,
       pollId: pollId.toString(),
       mode,
+      deploymentBlockNumber,
       chain,
       endDate: Number(endDate),
     });
@@ -250,6 +263,7 @@ export class SchedulerService implements OnModuleInit {
         maciAddress: poll.maciAddress,
         pollId: poll.pollId,
         mode: poll.mode,
+        deploymentBlockNumber: poll.deploymentBlockNumber,
         chain: poll.chain,
         endDate: endDate,
       });

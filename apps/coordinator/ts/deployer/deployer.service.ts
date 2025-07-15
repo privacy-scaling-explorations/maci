@@ -646,6 +646,9 @@ export class DeployerService {
       initialVoiceCredits: Number(config.initialVoiceCreditsProxy.args.amount),
       signer,
     };
+
+    const deploymentBlockNumber = await signer.provider!.getBlockNumber();
+
     const { pollContractAddress, messageProcessorContractAddress, tallyContractAddress, pollId } =
       await deployPoll(deployPollArgs);
 
@@ -683,6 +686,7 @@ export class DeployerService {
       maciAddress,
       pollId: pollId.toString(),
       mode: config.mode,
+      deploymentBlockNumber,
       chain,
       endDate: config.endDate,
     });
