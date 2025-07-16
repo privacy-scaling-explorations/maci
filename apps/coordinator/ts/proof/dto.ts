@@ -1,10 +1,8 @@
-import { EMode } from "@maci-protocol/sdk";
+import { ESupportedChains, EMode } from "@maci-protocol/sdk";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEnum, IsEthereumAddress, IsInt, IsOptional, IsString, Max, Min } from "class-validator";
 
 import type { Hex } from "viem";
-
-import { ESupportedNetworks } from "../common";
 
 /**
  * Data transfer object for generate proof
@@ -106,10 +104,10 @@ export class GenerateProofDto {
    */
   @ApiProperty({
     description: "Chain to which to deploy the contract(s)",
-    enum: ESupportedNetworks,
+    enum: ESupportedChains,
   })
-  @IsEnum(ESupportedNetworks)
-  chain!: ESupportedNetworks;
+  @IsEnum(ESupportedChains)
+  chain!: ESupportedChains;
 }
 
 /**
@@ -158,10 +156,10 @@ export class MergeTreesDto {
    */
   @ApiProperty({
     description: "Chain to which to deploy the contract(s)",
-    enum: ESupportedNetworks,
+    enum: ESupportedChains,
   })
-  @IsEnum(ESupportedNetworks)
-  chain!: ESupportedNetworks;
+  @IsEnum(ESupportedChains)
+  chain!: ESupportedChains;
 }
 
 /**
@@ -210,8 +208,8 @@ export class SubmitProofsDto {
    */
   @ApiProperty({
     description: "Chain to which to deploy the contract(s)",
-    enum: ESupportedNetworks,
+    enum: ESupportedChains,
   })
-  @IsEnum(ESupportedNetworks)
-  chain!: ESupportedNetworks;
+  @IsEnum(ESupportedChains)
+  chain!: ESupportedChains;
 }

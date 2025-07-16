@@ -1,12 +1,13 @@
+import { ESupportedChains } from "@maci-protocol/sdk";
 import {
   arbitrum,
   arbitrumSepolia,
   base,
   baseSepolia,
-  bsc,
   type Chain,
   gnosis,
-  holesky,
+  gnosisChiado,
+  hardhat,
   linea,
   lineaSepolia,
   localhost,
@@ -14,33 +15,17 @@ import {
   optimism,
   optimismSepolia,
   polygon,
+  polygonAmoy,
+  polygonZkEvm,
+  polygonZkEvmCardona,
   scroll,
   scrollSepolia,
   sepolia,
+  zksync,
+  zksyncSepoliaTestnet,
 } from "viem/chains";
 
 import { ErrorCodes } from "./errors";
-
-export enum ESupportedNetworks {
-  ETHEREUM = "mainnet",
-  OPTIMISM = "optimism",
-  OPTIMISM_SEPOLIA = "optimism-sepolia",
-  BSC = "bsc",
-  BSC_CHAPEL = "chapel",
-  GNOSIS_CHAIN = "gnosis",
-  POLYGON = "matic",
-  ARBITRUM_ONE = "arbitrum-one",
-  HOLESKY = "holesky",
-  LINEA_SEPOLIA = "linea-sepolia",
-  BASE_SEPOLIA = "base-sepolia",
-  ETHEREUM_SEPOLIA = "sepolia",
-  ARBITRUM_SEPOLIA = "arbitrum-sepolia",
-  LINEA = "linea",
-  BASE = "base",
-  SCROLL_SEPOLIA = "scroll-sepolia",
-  SCROLL = "scroll",
-  LOCALHOST = "localhost",
-}
 
 /**
  * Get the Viem chain for a given network
@@ -48,41 +33,52 @@ export enum ESupportedNetworks {
  * @param network - the network to get the chain for
  * @returns the Viem chain
  */
-export const viemChain = (network: ESupportedNetworks): Chain => {
+export const viemChain = (network: ESupportedChains): Chain => {
   switch (network) {
-    case ESupportedNetworks.ETHEREUM:
+    case ESupportedChains.Mainnet:
       return mainnet;
-    case ESupportedNetworks.ETHEREUM_SEPOLIA:
+    case ESupportedChains.Sepolia:
       return sepolia;
-    case ESupportedNetworks.ARBITRUM_ONE:
-      return arbitrum;
-    case ESupportedNetworks.ARBITRUM_SEPOLIA:
-      return arbitrumSepolia;
-    case ESupportedNetworks.BASE_SEPOLIA:
-      return baseSepolia;
-    case ESupportedNetworks.LINEA_SEPOLIA:
-      return lineaSepolia;
-    case ESupportedNetworks.SCROLL_SEPOLIA:
-      return scrollSepolia;
-    case ESupportedNetworks.SCROLL:
-      return scroll;
-    case ESupportedNetworks.BASE:
-      return base;
-    case ESupportedNetworks.HOLESKY:
-      return holesky;
-    case ESupportedNetworks.LINEA:
-      return linea;
-    case ESupportedNetworks.BSC:
-      return bsc;
-    case ESupportedNetworks.GNOSIS_CHAIN:
-      return gnosis;
-    case ESupportedNetworks.POLYGON:
-      return polygon;
-    case ESupportedNetworks.OPTIMISM:
+    case ESupportedChains.Optimism:
       return optimism;
-    case ESupportedNetworks.OPTIMISM_SEPOLIA:
+    case ESupportedChains.OptimismSepolia:
       return optimismSepolia;
-    case ESupportedNetworks.LOCALHOST:
+    case ESupportedChains.Scroll:
+      return scroll;
+    case ESupportedChains.ScrollSepolia:
+      return scrollSepolia;
+    case ESupportedChains.Arbitrum:
+      return arbitrum;
+    case ESupportedChains.ArbitrumSepolia:
+      return arbitrumSepolia;
+    case ESupportedChains.Base:
+      return base;
+    case ESupportedChains.BaseSepolia:
+      return baseSepolia;
+    case ESupportedChains.Gnosis:
+      return gnosis;
+    case ESupportedChains.GnosisChiado:
+      return gnosisChiado;
+    case ESupportedChains.Polygon:
+      return polygon;
+    case ESupportedChains.PolygonAmoy:
+      return polygonAmoy;
+    case ESupportedChains.Linea:
+      return linea;
+    case ESupportedChains.LineaSepolia:
+      return lineaSepolia;
+    case ESupportedChains.ZkSyncEra:
+      return zksync;
+    case ESupportedChains.ZkSyncSepolia:
+      return zksyncSepoliaTestnet;
+    case ESupportedChains.PolygonZkEvm:
+      return polygonZkEvm;
+    case ESupportedChains.PolygonCardonaZkEvm:
+      return polygonZkEvmCardona;
+    // coverage is not supported by viem and it wont be used in the coordinator
+    case ESupportedChains.Hardhat:
+      return hardhat;
+    case ESupportedChains.Localhost:
       return localhost;
     default:
       throw new Error(ErrorCodes.UNSUPPORTED_NETWORK.toString());

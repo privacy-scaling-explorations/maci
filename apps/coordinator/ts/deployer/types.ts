@@ -1,9 +1,13 @@
-import { EPolicies, EInitialVoiceCreditProxies, EMode, EInitialVoiceCreditProxiesFactories } from "@maci-protocol/sdk";
+import {
+  EPolicies,
+  EInitialVoiceCreditProxies,
+  EMode,
+  EInitialVoiceCreditProxiesFactories,
+  ESupportedChains,
+} from "@maci-protocol/sdk";
 import { SendUserOperationParameters } from "viem/account-abstraction";
 
 import type { Abi, Hex } from "viem";
-
-import { ESupportedNetworks } from "../common";
 
 /**
  * IDeployMACIArgs represents the arguments for deploying MACI
@@ -22,7 +26,7 @@ export interface IDeployMaciArgs {
   /**
    * The chain name
    */
-  chain: ESupportedNetworks;
+  chain: ESupportedChains;
 
   /**
    * The configuration for deploying MACI
@@ -47,7 +51,7 @@ export interface IDeployPollArgs {
   /**
    * The chain name
    */
-  chain: ESupportedNetworks;
+  chain: ESupportedChains;
 
   /**
    * The configuration for deploying a poll

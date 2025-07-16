@@ -6,6 +6,7 @@ import {
   EInitialVoiceCreditProxiesFactories,
   EPolicies,
   EPolicyFactories,
+  ESupportedChains,
   getDeployedPolicyProxyFactories,
   MACI__factory as MACIFactory,
   Verifier__factory as VerifierFactory,
@@ -16,7 +17,7 @@ import { Hex, zeroAddress } from "viem";
 
 import path from "path";
 
-import { ErrorCodes, ESupportedNetworks } from "../../common";
+import { ErrorCodes } from "../../common";
 import { FileService } from "../../file/file.service";
 import { generateApproval } from "../../sessionKeys/__tests__/utils";
 import { SessionKeysService } from "../../sessionKeys/sessionKeys.service";
@@ -31,7 +32,7 @@ describe("DeployerService", () => {
     jest.clearAllMocks();
   });
 
-  const chain = ESupportedNetworks.OPTIMISM_SEPOLIA;
+  const chain = ESupportedChains.OptimismSepolia;
 
   const fileService = new FileService();
 
@@ -51,8 +52,8 @@ describe("DeployerService", () => {
   });
 
   afterAll(() => {
-    storageInstance.cleanup(ESupportedNetworks.OPTIMISM_SEPOLIA);
-    storageInstance.cleanup(ESupportedNetworks.ARBITRUM_ONE);
+    storageInstance.cleanup(ESupportedChains.OptimismSepolia);
+    storageInstance.cleanup(ESupportedChains.Arbitrum);
   });
 
   describe("deployAndSavePolicy", () => {
@@ -262,7 +263,7 @@ describe("DeployerService", () => {
       await storageInstance.register({
         id: EContracts.MACI,
         contract: new BaseContract("0x", MACIFactory.abi),
-        network: ESupportedNetworks.ARBITRUM_ONE,
+        network: ESupportedChains.Arbitrum,
         args: [],
       });
       await expect(
