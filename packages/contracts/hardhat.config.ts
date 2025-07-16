@@ -37,7 +37,7 @@ const getCommonNetworkConfig = (networkName: ESupportedChains, chainId: number, 
   saveDeployments: true,
   chainId,
   accounts: process.env.PRIVATE_KEY
-    ? [`0x${process.env.PRIVATE_KEY}`]
+    ? [process.env.PRIVATE_KEY]
     : {
         mnemonic: mnemonic || process.env.MNEMONIC || TEST_MNEMONIC,
         path: "m/44'/60'/0'/0",

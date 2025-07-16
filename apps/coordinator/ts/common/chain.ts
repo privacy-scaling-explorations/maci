@@ -29,7 +29,10 @@ export const getRpcUrl = (network: ESupportedNetworks): string => {
  * @returns
  */
 export const getSigner = (chain: ESupportedNetworks): Signer => {
-  const wallet = new Wallet(process.env.PRIVATE_KEY!);
+  const wallet = process.env.PRIVATE_KEY
+    ? new Wallet(process.env.PRIVATE_KEY)
+    : Wallet.fromPhrase(process.env.MNEMONIC!);
+
   const alchemyRpcUrl = getRpcUrl(chain);
   const provider = new JsonRpcProvider(alchemyRpcUrl);
 
