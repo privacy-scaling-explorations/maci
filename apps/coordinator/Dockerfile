@@ -7,17 +7,10 @@ WORKDIR /builder
 # Copy the entire monorepo to maintain workspace structure
 COPY . .
 
-WORKDIR /builder/apps/coordinator
-
-# Update @maci-protocol package versions in coordinator specifically
-RUN sed -i 's/"@maci-protocol\/contracts": "[^"]*"/"@maci-protocol\/contracts": "ci"/g' package.json && \
-    sed -i 's/"@maci-protocol\/crypto": "[^"]*"/"@maci-protocol\/crypto": "ci"/g' package.json && \
-    sed -i 's/"@maci-protocol\/domainobjs": "[^"]*"/"@maci-protocol\/domainobjs": "ci"/g' package.json && \
-    sed -i 's/"@maci-protocol\/sdk": "[^"]*"/"@maci-protocol\/sdk": "ci"/g' package.json && \
-    sed -i 's/"@maci-protocol\/subgraph": "[^"]*"/"@maci-protocol\/subgraph": "ci"/g' package.json
-
 RUN pnpm install
 RUN pnpm run build
+
+WORKDIR /builder/apps/coordinator
 
 # Create image by copying build artifacts
 FROM node:20-slim AS runner

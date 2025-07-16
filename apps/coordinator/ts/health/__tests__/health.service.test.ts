@@ -3,13 +3,19 @@ import dotenv from "dotenv";
 import { zeroAddress } from "viem";
 
 import { FileService } from "../../file/file.service";
+import { RedisService } from "../../redis/redis.service";
 import { HealthService } from "../health.service";
 
 dotenv.config();
 
 describe("HealthService", () => {
   const fileService = new FileService();
-  const healthService = new HealthService(fileService);
+  const redisService = new RedisService();
+  const healthService = new HealthService(fileService, redisService);
+
+  beforeAll(async () => {
+    await redisService.onModuleInit();
+  });
 
   describe("checkRapidsnark", () => {
     it("should return rapidsnark path and executability status", async () => {
@@ -102,6 +108,14 @@ describe("HealthService", () => {
       const { address } = await healthService.checkWalletFunds();
 
       expect(address).toBe(zeroAddress);
+    });
+  });
+
+  describe("checkRedisConnection", () => {
+    it("should return true if Redis connection is open", () => {
+      const isRedisOpen = healthService.checkRedisConnection();
+
+      expect(isRedisOpen).toBe(true);
     });
   });
 });

@@ -88,4 +88,9 @@ export interface IHealthCheckResponse {
    * Coordinator wallet funds check result
    */
   coordinatorWalletFunds: ICheckWalletFunds;
+
+  /**
+   * Redis connection is open
+   */
+  isRedisOpen: boolean;
 }

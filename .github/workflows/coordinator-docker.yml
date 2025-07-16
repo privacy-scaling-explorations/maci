@@ -1,0 +1,22 @@
+name: Coordinator docker
+
+on:
+  push:
+    branches: [dev]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-compose-action@v1
+
+      - name: Build docker image
+        run: |
+          docker compose -f apps/coordinator/docker-compose.yml build

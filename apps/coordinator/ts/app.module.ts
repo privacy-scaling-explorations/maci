@@ -6,6 +6,7 @@ import { DeployerModule } from "./deployer/deployer.module";
 import { FileModule } from "./file/file.module";
 import { HealthModule } from "./health/health.module";
 import { ProofModule } from "./proof/proof.module";
+import { RedisModule } from "./redis/redis.module";
 import { SessionKeysModule } from "./sessionKeys/sessionKeys.module";
 import { SubgraphModule } from "./subgraph/subgraph.module";
 
@@ -24,6 +25,7 @@ import { SubgraphModule } from "./subgraph/subgraph.module";
     ProofModule,
     SessionKeysModule,
     DeployerModule,
+    RedisModule,
   ],
 })
 export class AppModule {}
