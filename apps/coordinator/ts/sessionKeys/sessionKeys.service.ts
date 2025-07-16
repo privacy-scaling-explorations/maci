@@ -4,9 +4,10 @@ import { BrowserProvider, Signer } from "ethers";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 
 import type { AASigner } from "@maci-protocol/contracts";
+import type { ESupportedChains } from "@maci-protocol/sdk";
 import type { Hex } from "viem";
 
-import { ErrorCodes, ESupportedNetworks, getSigner, KernelClientType } from "../common";
+import { ErrorCodes, getSigner, KernelClientType } from "../common";
 import { getKernelClient } from "../common/accountAbstraction";
 import { FileService } from "../file/file.service";
 
@@ -65,7 +66,7 @@ export class SessionKeysService {
   async generateClientFromSessionKey(
     sessionKeyAddress: Hex,
     approval: string,
-    chain: ESupportedNetworks,
+    chain: ESupportedChains,
   ): Promise<KernelClientType> {
     // retrieve the session key from the file service
     const sessionKey = this.fileService.getSessionKey(sessionKeyAddress);
@@ -110,7 +111,7 @@ export class SessionKeysService {
    * @returns a signer
    */
   async getCoordinatorSigner(
-    chain: ESupportedNetworks,
+    chain: ESupportedChains,
     sessionKeyAddress?: Hex,
     approval?: string,
   ): Promise<AASigner | Signer> {

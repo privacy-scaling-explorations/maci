@@ -1,4 +1,4 @@
-import { EMode } from "@maci-protocol/sdk";
+import { EMode, ESupportedChains } from "@maci-protocol/sdk";
 import { Injectable } from "@nestjs/common";
 import { formatEther } from "ethers";
 import { zeroAddress } from "viem";
@@ -8,7 +8,7 @@ import path from "path";
 
 import type { ICheckRapidsnark, ICheckWalletFunds, ICheckZkeysDirectory, IHealthCheckResponse } from "./types";
 
-import { ESupportedNetworks, getSigner } from "../common";
+import { getSigner } from "../common";
 import { FileService } from "../file/file.service";
 import { RedisService } from "../redis/redis.service";
 
@@ -122,7 +122,7 @@ export class HealthService {
    */
   async checkWalletFunds(): Promise<ICheckWalletFunds> {
     let address: string;
-    const networks = Object.values(ESupportedNetworks);
+    const networks = Object.values(ESupportedChains);
 
     try {
       const signer = getSigner(networks[0]);

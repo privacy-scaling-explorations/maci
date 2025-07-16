@@ -1,11 +1,11 @@
 import { Keypair, PrivateKey } from "@maci-protocol/domainobjs";
-import { Deployment, EMode } from "@maci-protocol/sdk";
+import { Deployment, EMode, ESupportedChains } from "@maci-protocol/sdk";
 import dotenv from "dotenv";
 import { zeroAddress } from "viem";
 
 import type { IGenerateArgs } from "../types";
 
-import { ErrorCodes, ESupportedNetworks } from "../../common";
+import { ErrorCodes } from "../../common";
 import { getCoordinatorKeypair } from "../../common/coordinatorKeypair";
 import { FileService } from "../../file/file.service";
 import { generateApproval } from "../../sessionKeys/__tests__/utils";
@@ -61,7 +61,7 @@ describe("ProofGeneratorService", () => {
       mode: EMode.NON_QV,
       sessionKeyAddress,
       approval,
-      chain: ESupportedNetworks.OPTIMISM_SEPOLIA,
+      chain: ESupportedChains.OptimismSepolia,
     };
   });
 

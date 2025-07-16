@@ -1,7 +1,5 @@
-import type { ITallyData, IProof, EMode } from "@maci-protocol/sdk";
+import type { ITallyData, IProof, EMode, ESupportedChains } from "@maci-protocol/sdk";
 import type { Hex } from "viem";
-
-import { ESupportedNetworks } from "../common";
 
 /**
  * WS events for proof generation
@@ -45,7 +43,7 @@ export interface IGenerateArgs {
   /**
    * Chain
    */
-  chain: ESupportedNetworks;
+  chain: ESupportedChains;
 
   /**
    * Poll id
@@ -145,7 +143,7 @@ export interface IMergeArgs {
   /**
    * Chain
    */
-  chain: ESupportedNetworks;
+  chain: ESupportedChains;
 }
 
 /**
@@ -175,5 +173,5 @@ export interface ISubmitProofsArgs {
   /**
    * Chain
    */
-  chain: ESupportedNetworks;
+  chain: ESupportedChains;
 }

@@ -1,3 +1,4 @@
+import { ESupportedChains } from "@maci-protocol/sdk";
 import { Injectable, Logger } from "@nestjs/common";
 
 import childProcess from "child_process";
@@ -5,7 +6,7 @@ import fs from "fs";
 import path from "path";
 import { promisify } from "util";
 
-import { ErrorCodes, ESupportedNetworks } from "../common";
+import { ErrorCodes } from "../common";
 
 import {
   EProgressStep,
@@ -46,7 +47,7 @@ export class SubgraphService {
    */
   async deploy(args: IDeploySubgraphArgs, options?: ISubgraphWsHooks): Promise<IDeploySubgraphReturn> {
     try {
-      if (!Object.values(ESupportedNetworks).includes(args.network)) {
+      if (!Object.values(ESupportedChains).includes(args.network)) {
         throw new Error(ErrorCodes.UNSUPPORTED_NETWORK.toString());
       }
 

@@ -1,3 +1,4 @@
+import { ESupportedChains } from "@maci-protocol/sdk";
 import dotenv from "dotenv";
 
 import childProcess from "child_process";
@@ -5,7 +6,7 @@ import fs from "fs";
 
 import type { IDeploySubgraphArgs } from "../types";
 
-import { ErrorCodes, ESupportedNetworks } from "../../common";
+import { ErrorCodes } from "../../common";
 import { SubgraphService } from "../subgraph.service";
 
 dotenv.config();
@@ -30,7 +31,7 @@ describe("SubgraphService", () => {
   const defaultArgs: IDeploySubgraphArgs = {
     maciContractAddress: "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
     startBlock: 0,
-    network: ESupportedNetworks.OPTIMISM_SEPOLIA,
+    network: ESupportedChains.OptimismSepolia,
     name: "subgraph",
     tag: "v0.0.1",
   };
@@ -58,7 +59,7 @@ describe("SubgraphService", () => {
   test("should throw error if network is invalid", async () => {
     const service = new SubgraphService();
 
-    await expect(service.deploy({ ...defaultArgs, network: "unknown" as ESupportedNetworks })).rejects.toThrow(
+    await expect(service.deploy({ ...defaultArgs, network: "unknown" as ESupportedChains })).rejects.toThrow(
       ErrorCodes.UNSUPPORTED_NETWORK.toString(),
     );
   });
