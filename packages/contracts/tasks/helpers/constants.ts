@@ -44,6 +44,7 @@ export enum ESupportedChains {
   PolygonCardonaZkEvm = "polygon_cardona_zkevm",
   Coverage = "coverage",
   Hardhat = "hardhat",
+  Localhost = "localhost",
 }
 
 /**
@@ -123,6 +124,7 @@ export const getNetworkRpcUrls = (): Record<ESupportedChains, string> => {
     [ESupportedChains.PolygonCardonaZkEvm]: POLYGON_CARDONA_RPC_URL,
     [ESupportedChains.Coverage]: "http://localhost:8555",
     [ESupportedChains.Hardhat]: "http://localhost:8545",
+    [ESupportedChains.Localhost]: "http://localhost:8545",
     [ESupportedChains.Mainnet]: MAINNET_RPC_URL,
   };
 };

@@ -21,6 +21,7 @@ export {
   EInitialVoiceCreditProxies,
   EInitialVoiceCreditProxiesFactories,
   EDeploySteps,
+  ESupportedChains,
   Deployment,
   ContractStorage,
   ProofGenerator,

@@ -1,10 +1,9 @@
-import { type ITallyData, type IGenerateProofsOptions, EMode } from "@maci-protocol/sdk";
+import { type ITallyData, type IGenerateProofsOptions, EMode, ESupportedChains } from "@maci-protocol/sdk";
 import { Test } from "@nestjs/testing";
 import { Server } from "socket.io";
 
 import type { IGenerateArgs, IGenerateData } from "../types";
 
-import { ESupportedNetworks } from "../../common";
 import { ProofGateway } from "../proof.gateway";
 import { ProofGeneratorService } from "../proof.service";
 import { EProofGenerationEvents } from "../types";
@@ -18,7 +17,7 @@ describe("ProofGateway", () => {
     mode: EMode.NON_QV,
     sessionKeyAddress: "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
     approval: "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
-    chain: ESupportedNetworks.LOCALHOST,
+    chain: ESupportedChains.Localhost,
   };
 
   const defaultProofGeneratorData: IGenerateData = {

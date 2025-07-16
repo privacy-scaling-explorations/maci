@@ -1,36 +1,43 @@
+import { ESupportedChains } from "@maci-protocol/sdk";
 import {
   mainnet,
   sepolia,
   arbitrum,
+  localhost,
   arbitrumSepolia,
   baseSepolia,
   lineaSepolia,
   scrollSepolia,
   scroll,
   base,
-  holesky,
   linea,
-  bsc,
   gnosis,
   polygon,
   optimism,
   optimismSepolia,
+  hardhat,
+  polygonAmoy,
+  polygonZkEvm,
+  polygonZkEvmCardona,
+  zksyncSepoliaTestnet,
+  zksync,
+  gnosisChiado,
 } from "viem/chains";
 
 import { getBundlerClient, getPublicClient, getZeroDevBundlerRPCUrl } from "../accountAbstraction";
 import { getRpcUrl } from "../chain";
 import { ErrorCodes } from "../errors";
-import { ESupportedNetworks, viemChain } from "../networks";
+import { viemChain } from "../networks";
 
 describe("common", () => {
   describe("getPublicClient", () => {
     test("should return a public client", async () => {
-      const publicClient = await getPublicClient(ESupportedNetworks.OPTIMISM_SEPOLIA);
+      const publicClient = await getPublicClient(ESupportedChains.OptimismSepolia);
       expect(publicClient).toBeDefined();
     });
 
     test("should throw when given an unsupported network", async () => {
-      await expect(() => getPublicClient("Unsupported" as ESupportedNetworks)).rejects.toThrow(
+      await expect(() => getPublicClient("Unsupported" as ESupportedChains)).rejects.toThrow(
         ErrorCodes.UNSUPPORTED_NETWORK.toString(),
       );
     });
@@ -38,23 +45,27 @@ describe("common", () => {
 
   describe("getZeroDevBundlerRPCUrl", () => {
     test("should throw when the network is not supported", () => {
-      expect(() => getZeroDevBundlerRPCUrl("Unsupported" as ESupportedNetworks)).toThrow(
+      expect(() => getZeroDevBundlerRPCUrl("Unsupported" as ESupportedChains)).toThrow(
         ErrorCodes.UNSUPPORTED_NETWORK.toString(),
       );
     });
 
     test("should return an RPCUrl for a supported network", () => {
-      const rpcUrlOPS = getZeroDevBundlerRPCUrl(ESupportedNetworks.OPTIMISM_SEPOLIA);
+      const rpcUrlOPS = getZeroDevBundlerRPCUrl(ESupportedChains.OptimismSepolia);
       expect(rpcUrlOPS).toBeDefined();
 
-      const rpcUrlOP = getZeroDevBundlerRPCUrl(ESupportedNetworks.OPTIMISM);
+      const rpcUrlOP = getZeroDevBundlerRPCUrl(ESupportedChains.Optimism);
       expect(rpcUrlOP).toBeDefined();
+    });
+
+    test("should throw when a unsupported zero dev network is given", () => {
+      expect(() => getZeroDevBundlerRPCUrl(ESupportedChains.Base)).toThrow(ErrorCodes.UNSUPPORTED_NETWORK.toString());
     });
   });
 
   describe("getBundlerClient", () => {
     test("should throw when the network is not supported", () => {
-      expect(() => getBundlerClient("Unsupported" as ESupportedNetworks)).toThrow(
+      expect(() => getBundlerClient("Unsupported" as ESupportedChains)).toThrow(
         ErrorCodes.UNSUPPORTED_NETWORK.toString(),
       );
     });
@@ -62,14 +73,14 @@ describe("common", () => {
 
   describe("getRpcUrl", () => {
     test("should throw when given an unsupported network", async () => {
-      await expect(() => getRpcUrl("Unsupported" as ESupportedNetworks)).rejects.toThrow(
+      await expect(() => getRpcUrl("Unsupported" as ESupportedChains)).rejects.toThrow(
         ErrorCodes.UNSUPPORTED_NETWORK.toString(),
       );
     });
 
     test("should throw when COORDINATOR_RPC_URL is not set", async () => {
       delete process.env.COORDINATOR_RPC_URL;
-      await expect(() => getRpcUrl(ESupportedNetworks.OPTIMISM_SEPOLIA)).rejects.toThrow(
+      await expect(() => getRpcUrl(ESupportedChains.OptimismSepolia)).rejects.toThrow(
         ErrorCodes.COORDINATOR_RPC_URL_NOT_SET.toString(),
       );
     });
@@ -77,26 +88,32 @@ describe("common", () => {
 
   describe("viemChain", () => {
     test("should return correct chain for all supported networks", () => {
-      expect(viemChain(ESupportedNetworks.ETHEREUM)).toBe(mainnet);
-      expect(viemChain(ESupportedNetworks.ETHEREUM_SEPOLIA)).toBe(sepolia);
-      expect(viemChain(ESupportedNetworks.ARBITRUM_ONE)).toBe(arbitrum);
-      expect(viemChain(ESupportedNetworks.ARBITRUM_SEPOLIA)).toBe(arbitrumSepolia);
-      expect(viemChain(ESupportedNetworks.BASE_SEPOLIA)).toBe(baseSepolia);
-      expect(viemChain(ESupportedNetworks.LINEA_SEPOLIA)).toBe(lineaSepolia);
-      expect(viemChain(ESupportedNetworks.SCROLL_SEPOLIA)).toBe(scrollSepolia);
-      expect(viemChain(ESupportedNetworks.SCROLL)).toBe(scroll);
-      expect(viemChain(ESupportedNetworks.BASE)).toBe(base);
-      expect(viemChain(ESupportedNetworks.HOLESKY)).toBe(holesky);
-      expect(viemChain(ESupportedNetworks.LINEA)).toBe(linea);
-      expect(viemChain(ESupportedNetworks.BSC)).toBe(bsc);
-      expect(viemChain(ESupportedNetworks.GNOSIS_CHAIN)).toBe(gnosis);
-      expect(viemChain(ESupportedNetworks.POLYGON)).toBe(polygon);
-      expect(viemChain(ESupportedNetworks.OPTIMISM)).toBe(optimism);
-      expect(viemChain(ESupportedNetworks.OPTIMISM_SEPOLIA)).toBe(optimismSepolia);
+      expect(viemChain(ESupportedChains.Mainnet)).toBe(mainnet);
+      expect(viemChain(ESupportedChains.Sepolia)).toBe(sepolia);
+      expect(viemChain(ESupportedChains.Optimism)).toBe(optimism);
+      expect(viemChain(ESupportedChains.OptimismSepolia)).toBe(optimismSepolia);
+      expect(viemChain(ESupportedChains.Scroll)).toBe(scroll);
+      expect(viemChain(ESupportedChains.ScrollSepolia)).toBe(scrollSepolia);
+      expect(viemChain(ESupportedChains.Arbitrum)).toBe(arbitrum);
+      expect(viemChain(ESupportedChains.ArbitrumSepolia)).toBe(arbitrumSepolia);
+      expect(viemChain(ESupportedChains.Base)).toBe(base);
+      expect(viemChain(ESupportedChains.BaseSepolia)).toBe(baseSepolia);
+      expect(viemChain(ESupportedChains.Gnosis)).toBe(gnosis);
+      expect(viemChain(ESupportedChains.GnosisChiado)).toBe(gnosisChiado);
+      expect(viemChain(ESupportedChains.Polygon)).toBe(polygon);
+      expect(viemChain(ESupportedChains.PolygonAmoy)).toBe(polygonAmoy);
+      expect(viemChain(ESupportedChains.Linea)).toBe(linea);
+      expect(viemChain(ESupportedChains.LineaSepolia)).toBe(lineaSepolia);
+      expect(viemChain(ESupportedChains.ZkSyncEra)).toBe(zksync);
+      expect(viemChain(ESupportedChains.ZkSyncSepolia)).toBe(zksyncSepoliaTestnet);
+      expect(viemChain(ESupportedChains.PolygonZkEvm)).toBe(polygonZkEvm);
+      expect(viemChain(ESupportedChains.PolygonCardonaZkEvm)).toBe(polygonZkEvmCardona);
+      expect(viemChain(ESupportedChains.Hardhat)).toBe(hardhat);
+      expect(viemChain(ESupportedChains.Localhost)).toBe(localhost);
     });
 
     test("should throw error for unsupported network", () => {
-      expect(() => viemChain("UNSUPPORTED_NETWORK" as ESupportedNetworks)).toThrow(
+      expect(() => viemChain("UNSUPPORTED_NETWORK" as ESupportedChains)).toThrow(
         ErrorCodes.UNSUPPORTED_NETWORK.toString(),
       );
     });

@@ -1,6 +1,6 @@
+import { ESupportedChains } from "@maci-protocol/sdk";
 import { zeroAddress } from "viem";
 
-import { ESupportedNetworks } from "../../common";
 import { HealthController } from "../health.controller";
 import { HealthService } from "../health.service";
 
@@ -25,7 +25,7 @@ describe("HealthController", () => {
         fundsInNetworks: [
           {
             address: zeroAddress.replace("0x0", "0x1"),
-            network: ESupportedNetworks.ETHEREUM,
+            network: ESupportedChains.Mainnet,
             balance: "0",
             status: true,
           },

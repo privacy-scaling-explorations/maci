@@ -1,7 +1,7 @@
+import { ESupportedChains } from "@maci-protocol/sdk";
 import { JsonRpcProvider, Signer, Wallet } from "ethers";
 
 import { ErrorCodes } from "./errors";
-import { ESupportedNetworks } from "./networks";
 
 /**
  * Get the RPC url for the chain we need to interact with
@@ -9,14 +9,14 @@ import { ESupportedNetworks } from "./networks";
  * @param network - the network we want to interact with
  * @returns the RPC url for the network
  */
-export const getRpcUrl = async (network: ESupportedNetworks): Promise<string> => {
+export const getRpcUrl = async (network: ESupportedChains): Promise<string> => {
   const rpcUrl = process.env.COORDINATOR_RPC_URL;
 
   if (!rpcUrl) {
     return Promise.reject(new Error(ErrorCodes.COORDINATOR_RPC_URL_NOT_SET.toString()));
   }
 
-  if (!Object.values(ESupportedNetworks).includes(network)) {
+  if (!Object.values(ESupportedChains).includes(network)) {
     return Promise.reject(new Error(ErrorCodes.UNSUPPORTED_NETWORK.toString()));
   }
 
@@ -28,7 +28,7 @@ export const getRpcUrl = async (network: ESupportedNetworks): Promise<string> =>
  * @param chain
  * @returns
  */
-export const getSigner = async (chain: ESupportedNetworks): Promise<Signer> => {
+export const getSigner = async (chain: ESupportedChains): Promise<Signer> => {
   const wallet = process.env.PRIVATE_KEY
     ? new Wallet(process.env.PRIVATE_KEY)
     : Wallet.fromPhrase(process.env.MNEMONIC!);
