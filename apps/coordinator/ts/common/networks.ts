@@ -1,3 +1,4 @@
+import { ESupportedChains } from "@maci-protocol/sdk";
 import {
   arbitrum,
   arbitrumSepolia,
@@ -21,68 +22,45 @@ import {
 
 import { ErrorCodes } from "./errors";
 
-export enum ESupportedNetworks {
-  ETHEREUM = "mainnet",
-  OPTIMISM = "optimism",
-  OPTIMISM_SEPOLIA = "optimism-sepolia",
-  BSC = "bsc",
-  BSC_CHAPEL = "chapel",
-  GNOSIS_CHAIN = "gnosis",
-  POLYGON = "matic",
-  ARBITRUM_ONE = "arbitrum-one",
-  HOLESKY = "holesky",
-  LINEA_SEPOLIA = "linea-sepolia",
-  BASE_SEPOLIA = "base-sepolia",
-  ETHEREUM_SEPOLIA = "sepolia",
-  ARBITRUM_SEPOLIA = "arbitrum-sepolia",
-  LINEA = "linea",
-  BASE = "base",
-  SCROLL_SEPOLIA = "scroll-sepolia",
-  SCROLL = "scroll",
-  LOCALHOST = "localhost",
-}
-
 /**
  * Get the Viem chain for a given network
  *
  * @param network - the network to get the chain for
  * @returns the Viem chain
  */
-export const viemChain = (network: ESupportedNetworks): Chain => {
+export const viemChain = (network: ESupportedChains): Chain => {
   switch (network) {
-    case ESupportedNetworks.ETHEREUM:
+    case ESupportedChains.Mainnet:
       return mainnet;
-    case ESupportedNetworks.ETHEREUM_SEPOLIA:
+    case ESupportedChains.Sepolia:
       return sepolia;
-    case ESupportedNetworks.ARBITRUM_ONE:
+    case ESupportedChains.Arbitrum:
       return arbitrum;
-    case ESupportedNetworks.ARBITRUM_SEPOLIA:
+    case ESupportedChains.ArbitrumSepolia:
       return arbitrumSepolia;
-    case ESupportedNetworks.BASE_SEPOLIA:
+    case ESupportedChains.BaseSepolia:
       return baseSepolia;
-    case ESupportedNetworks.LINEA_SEPOLIA:
+    case ESupportedChains.LineaSepolia:
       return lineaSepolia;
-    case ESupportedNetworks.SCROLL_SEPOLIA:
+    case ESupportedChains.ScrollSepolia:
       return scrollSepolia;
-    case ESupportedNetworks.SCROLL:
+    case ESupportedChains.Scroll:
       return scroll;
-    case ESupportedNetworks.BASE:
+    case ESupportedChains.Base:
       return base;
-    case ESupportedNetworks.HOLESKY:
       return holesky;
-    case ESupportedNetworks.LINEA:
+    case ESupportedChains.Linea:
       return linea;
-    case ESupportedNetworks.BSC:
       return bsc;
-    case ESupportedNetworks.GNOSIS_CHAIN:
+    case ESupportedChains.GnosisChiado:
       return gnosis;
-    case ESupportedNetworks.POLYGON:
+    case ESupportedChains.Polygon:
       return polygon;
-    case ESupportedNetworks.OPTIMISM:
+    case ESupportedChains.Optimism:
       return optimism;
-    case ESupportedNetworks.OPTIMISM_SEPOLIA:
+    case ESupportedChains.OptimismSepolia:
       return optimismSepolia;
-    case ESupportedNetworks.LOCALHOST:
+    case ESupportedChains.Localhost:
       return localhost;
     default:
       throw new Error(ErrorCodes.UNSUPPORTED_NETWORK.toString());

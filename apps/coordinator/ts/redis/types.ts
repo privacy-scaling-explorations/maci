@@ -1,5 +1,4 @@
-import type { ESupportedNetworks } from "../common";
-import type { EMode } from "@maci-protocol/sdk";
+import type { EMode, ESupportedChains } from "@maci-protocol/sdk";
 
 /**
  * Interface of the minimal properties to identify a scheduled poll
@@ -18,7 +17,7 @@ export interface IIdentityScheduledPoll {
   /**
    * Chain in which the poll is deployed
    */
-  chain: ESupportedNetworks;
+  chain: ESupportedChains;
 }
 
 /**
@@ -36,7 +35,7 @@ export interface IScheduledPoll extends IIdentityScheduledPoll {
   mode: EMode;
 
   /**
-   * End date in seconds
+   * End date  in seconds
    */
   endDate: number;
 

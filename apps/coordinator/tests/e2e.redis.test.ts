@@ -1,7 +1,6 @@
-import { EMode } from "@maci-protocol/sdk";
+import { EMode, ESupportedChains } from "@maci-protocol/sdk";
 import { createClient, RedisClientType } from "@redis/client";
 
-import { ESupportedNetworks } from "../ts/common";
 import { RedisService } from "../ts/redis/redis.service";
 import { IScheduledPoll } from "../ts/redis/types";
 import { getPollKeyFromObject } from "../ts/redis/utils";
@@ -12,7 +11,7 @@ const scheduledPoll: IScheduledPoll = {
   maciAddress: "0xb83074Ac11fc569AC12F1b7D0C0a6809c3dc355b",
   pollId: "5",
   mode: EMode.NON_QV,
-  chain: ESupportedNetworks.OPTIMISM_SEPOLIA,
+  chain: ESupportedChains.OptimismSepolia,
   endDate: 1752534000,
   deploymentBlockNumber: 1,
   merged: false,

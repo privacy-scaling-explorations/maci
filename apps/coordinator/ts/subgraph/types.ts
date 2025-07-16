@@ -1,4 +1,4 @@
-import type { ESupportedNetworks } from "../common";
+import { ESupportedChains } from "@maci-protocol/sdk";
 
 /**
  * WS events for subgraph
@@ -27,7 +27,7 @@ export interface IDeploySubgraphArgs {
   /**
    * Network
    */
-  network: ESupportedNetworks;
+  network: ESupportedChains;
 
   /**
    * Subgraph name

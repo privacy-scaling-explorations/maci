@@ -1,7 +1,6 @@
+import { ESupportedChains } from "@maci-protocol/sdk";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEnum, IsEthereumAddress, IsInt, IsString, Matches, MaxLength, Min, MinLength } from "class-validator";
-
-import { ESupportedNetworks } from "../common";
 
 /**
  * Data transfer object for deploying subgraph
@@ -34,10 +33,10 @@ export class DeploySubgraphDto {
    */
   @ApiProperty({
     description: "Network CLI name (https://thegraph.com/docs/en/developing/supported-networks/)",
-    enum: ESupportedNetworks,
+    enum: ESupportedChains,
   })
-  @IsEnum(ESupportedNetworks)
-  network!: ESupportedNetworks;
+  @IsEnum(ESupportedChains)
+  network!: ESupportedChains;
 
   /**
    * Subgraph name
