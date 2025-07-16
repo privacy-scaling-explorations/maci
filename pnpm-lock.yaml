@@ -496,8 +496,8 @@ importers:
         specifier: ^0.4.0
         version: 0.4.0
       circomkit:
-        specifier: ^0.3.3
-        version: 0.3.3(@types/snarkjs@0.7.9)(snarkjs@0.7.5)
+        specifier: ^0.3.4
+        version: 0.3.4(@types/snarkjs@0.7.9)(snarkjs@0.7.5)
       circomlib:
         specifier: ^2.0.5
         version: 2.0.5
@@ -3794,6 +3794,10 @@ packages:
     resolution: {integrity: sha512-HxngEd2XUcg9xi20JkwlLCtYwfoFw4JGkuZpT+WlsPD4gB/cxkvTD8fSsoAnphGZhFdZYKeQIPCuFlWPm1uE0g==}
     engines: {node: ^14.21.3 || >=16}
 
+  '@noble/curves@1.9.3':
+    resolution: {integrity: sha512-NiHFh8qtZRREtY0Bpup+xpmLnB0bn9UAtj8CARBc2x1zjpVLDC84u+Bvy2+uaSgA3AmMP9zsacMZT1echgVAdQ==}
+    engines: {node: ^14.21.3 || >=16}
+
   '@noble/hashes@1.2.0':
     resolution: {integrity: sha512-FZfhjEDbT5GRswV3C6uvLPHMiVD6lQBmpoX5+eSiPaMTXte/IKqI5dykDxzZB/WBeK/CDuQRBWarPdi3FNY2zQ==}
 
@@ -7071,8 +7075,8 @@ packages:
   circom_tester@0.0.19:
     resolution: {integrity: sha512-SNHaBsGxcBH6XsVWfsRbRPA7NF8m8AMKJI9dtJJCFGUtOTT2+zsoIqAwi50z6XCnO4TtjyXq7AeXa1PLHqT0tw==}
 
-  circomkit@0.3.3:
-    resolution: {integrity: sha512-ulcWN4zNAoqPRbIto1PD4wFZQdGUBBVoY8lOakkRk3CB5iykOm9XEwVK/KJhLVe9vzODTp2iMJo4Tf/8DY9/0w==}
+  circomkit@0.3.4:
+    resolution: {integrity: sha512-kV/yMKR//a71qB/MInK9/CIJ9BQ0Zz2zOCh6jpWf0YsRbi8ut1WyYFXX99SWWyT3v+QqV0k8amGGjHyWg0FAkw==}
     engines: {node: '>=12.0.0'}
     hasBin: true
     peerDependencies:
@@ -21545,6 +21549,10 @@ snapshots:
     dependencies:
       '@noble/hashes': 1.8.0
 
+  '@noble/curves@1.9.3':
+    dependencies:
+      '@noble/hashes': 1.8.0
+
   '@noble/hashes@1.2.0': {}
 
   '@noble/hashes@1.3.2': {}
@@ -24433,7 +24441,7 @@ snapshots:
 
   '@zerodev/webauthn-key@5.4.3(viem@2.31.7(typescript@5.8.3)(zod@3.25.64))':
     dependencies:
-      '@noble/curves': 1.9.2
+      '@noble/curves': 1.9.3
       '@simplewebauthn/browser': 8.3.7
       '@simplewebauthn/types': 12.0.0
       viem: 2.31.7(typescript@5.8.3)(zod@3.25.64)
@@ -25732,7 +25740,7 @@ snapshots:
       tmp-promise: 3.0.3
       util: 0.12.5
 
-  circomkit@0.3.3(@types/snarkjs@0.7.9)(snarkjs@0.7.5):
+  circomkit@0.3.4(@types/snarkjs@0.7.9)(snarkjs@0.7.5):
     dependencies:
       '@types/snarkjs': 0.7.9
       circom_tester: 0.0.19
