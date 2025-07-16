@@ -27,7 +27,7 @@ export const testMaciDeploymentConfig: IDeployMaciConfig = {
   MACI: {
     policy: EPolicies.FreeForAll,
     stateTreeDepth: 10,
-    mode: MODE,
+    modes: [MODE],
   },
   VerifyingKeysRegistry: {
     args: {

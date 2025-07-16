@@ -1,4 +1,4 @@
-import { Keypair } from "@maci-protocol/domainobjs";
+import { Keypair, VerifyingKey } from "@maci-protocol/domainobjs";
 import {
   EMode,
   extractAllVerifyingKeys,
@@ -204,16 +204,34 @@ const zkeysByMode = {
 
 export const verifyingKeysArgs = async (
   signer: Signer,
-  mode = EMode.QV,
+  modes = [EMode.QV],
 ): Promise<Omit<ISetVerifyingKeysArgs, "verifyingKeysRegistryAddress">> => {
-  const { messageProcessorZkeyPath, voteTallyZkeyPath } = zkeysByMode[mode];
-  const { pollJoiningVerifyingKey, pollJoinedVerifyingKey, processVerifyingKey, tallyVerifyingKey } =
-    await extractAllVerifyingKeys({
-      pollJoiningZkeyPath: testPollJoiningZkeyPath,
-      pollJoinedZkeyPath: testPollJoinedZkeyPath,
-      messageProcessorZkeyPath,
-      voteTallyZkeyPath,
-    });
+  const { pollJoiningVerifyingKey, pollJoinedVerifyingKey } = await extractAllVerifyingKeys({
+    pollJoiningZkeyPath: testPollJoiningZkeyPath,
+    pollJoinedZkeyPath: testPollJoinedZkeyPath,
+  });
+
+  const keysResults = await Promise.all(
+    modes.map((mode) => {
+      const { messageProcessorZkeyPath, voteTallyZkeyPath } = zkeysByMode[mode];
+      return extractAllVerifyingKeys({
+        messageProcessorZkeyPath,
+        voteTallyZkeyPath,
+      });
+    }),
+  );
+
+  const processMessagesVerifyingKeys: VerifyingKey[] = [];
+  const tallyVotesVerifyingKeys: VerifyingKey[] = [];
+
+  keysResults.forEach(({ processVerifyingKey, tallyVerifyingKey }, idx) => {
+    if (!processVerifyingKey || !tallyVerifyingKey) {
+      throw new Error(`Verifying keys for mode ${modes[idx]} are not valid`);
+    }
+
+    processMessagesVerifyingKeys.push(processVerifyingKey);
+    tallyVotesVerifyingKeys.push(tallyVerifyingKey);
+  });
 
   return {
     stateTreeDepth: STATE_TREE_DEPTH,
@@ -223,9 +241,9 @@ export const verifyingKeysArgs = async (
     messageBatchSize: MESSAGE_BATCH_SIZE,
     pollJoiningVerifyingKey: pollJoiningVerifyingKey!,
     pollJoinedVerifyingKey: pollJoinedVerifyingKey!,
-    processMessagesVerifyingKey: processVerifyingKey!,
-    tallyVotesVerifyingKey: tallyVerifyingKey!,
-    mode,
+    processMessagesVerifyingKeys,
+    tallyVotesVerifyingKeys,
+    modes,
     signer,
   };
 };

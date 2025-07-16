@@ -160,7 +160,7 @@ describe("e2e tests with full credits voting", function test() {
     // we deploy the verifying keys registry contract
     verifyingKeysRegistryAddress = await deployVerifyingKeysRegistryContract({ signer });
     // we set the verifying keys
-    await setVerifyingKeys({ ...(await verifyingKeysArgs(signer, EMode.FULL)), verifyingKeysRegistryAddress });
+    await setVerifyingKeys({ ...(await verifyingKeysArgs(signer, [EMode.FULL])), verifyingKeysRegistryAddress });
   });
 
   describe("1 signup, 1 message", () => {
