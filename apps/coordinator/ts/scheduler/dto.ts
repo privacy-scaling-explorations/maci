@@ -1,10 +1,8 @@
-import { EMode } from "@maci-protocol/sdk";
+import { EMode, ESupportedChains } from "@maci-protocol/sdk";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEnum, IsEthereumAddress, IsInt, IsOptional, IsString, Min } from "class-validator";
 
 import type { Hex } from "viem";
-
-import { ESupportedNetworks } from "../common";
 
 /**
  * Data transfer object for scheduled poll
@@ -37,10 +35,10 @@ export class IdentityScheduledPollDto {
    */
   @ApiProperty({
     description: "Chain to which to deploy the contract(s)",
-    enum: ESupportedNetworks,
+    enum: ESupportedChains,
   })
-  @IsEnum(ESupportedNetworks)
-  chain!: ESupportedNetworks;
+  @IsEnum(ESupportedChains)
+  chain!: ESupportedChains;
 }
 
 /**

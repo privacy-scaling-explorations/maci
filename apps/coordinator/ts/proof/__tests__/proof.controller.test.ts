@@ -1,11 +1,10 @@
-import { EMode, type ITallyData } from "@maci-protocol/sdk";
+import { EMode, ESupportedChains, type ITallyData } from "@maci-protocol/sdk";
 import { HttpException, HttpStatus } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 
 import type { IGetPublicKeyData } from "../../file/types";
 import type { IGenerateArgs, IGenerateData, IMergeArgs } from "../types";
 
-import { ESupportedNetworks } from "../../common";
 import { FileService } from "../../file/file.service";
 import { ProofController } from "../proof.controller";
 import { ProofGeneratorService } from "../proof.service";
@@ -19,7 +18,7 @@ describe("ProofController", () => {
     mode: EMode.NON_QV,
     sessionKeyAddress: "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
     approval: "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
-    chain: ESupportedNetworks.LOCALHOST,
+    chain: ESupportedChains.Localhost,
   };
 
   const defaultMergeArgs: IMergeArgs = {
@@ -27,7 +26,7 @@ describe("ProofController", () => {
     pollId: 0,
     sessionKeyAddress: "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
     approval: "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
-    chain: ESupportedNetworks.LOCALHOST,
+    chain: ESupportedChains.Localhost,
   };
 
   const defaultProofGeneratorData: IGenerateData = {
