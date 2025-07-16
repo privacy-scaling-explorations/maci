@@ -24,8 +24,8 @@ export async function generateRsaKeypair(): Promise<void> {
   const privateKey = keypair.privateKey.export({ type: "pkcs1", format: "pem" });
 
   await Promise.all([
-    fs.promises.writeFile(path.resolve(process.env.COORDINATOR_PUBLIC_KEY_PATH!), publicKey),
-    fs.promises.writeFile(path.resolve(process.env.COORDINATOR_PRIVATE_KEY_PATH!), privateKey),
+    fs.promises.writeFile(path.resolve(process.env.COORDINATOR_PUBLIC_KEY_PATH || "./public.key"), publicKey),
+    fs.promises.writeFile(path.resolve(process.env.COORDINATOR_PRIVATE_KEY_PATH || "./private.key"), privateKey),
   ]);
 }
 
