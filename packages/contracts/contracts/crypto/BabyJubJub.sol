@@ -28,7 +28,7 @@ library CurveBabyJubJub {
       return (_x2, _y2);
     }
 
-    if (_x2 == 0 && _y1 == 0) {
+    if (_x2 == 0 && _y2 == 0) {
       return (_x1, _y1);
     }
 
