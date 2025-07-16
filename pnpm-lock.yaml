@@ -145,13 +145,13 @@ importers:
         version: 6.0.0(b9c191b85a8712afd7b77d7b81b1b47d)
       '@zerodev/ecdsa-validator':
         specifier: 5.4.9
-        version: 5.4.9(@zerodev/sdk@5.4.40(viem@2.31.7(typescript@5.8.3)(zod@3.25.64)))(viem@2.31.7(typescript@5.8.3)(zod@3.25.64))
+        version: 5.4.9(@zerodev/sdk@5.4.41(viem@2.31.7(typescript@5.8.3)(zod@3.25.64)))(viem@2.31.7(typescript@5.8.3)(zod@3.25.64))
       '@zerodev/permissions':
         specifier: 5.5.12
-        version: 5.5.12(@zerodev/sdk@5.4.40(viem@2.31.7(typescript@5.8.3)(zod@3.25.64)))(@zerodev/webauthn-key@5.4.3(viem@2.31.7(typescript@5.8.3)(zod@3.25.64)))(viem@2.31.7(typescript@5.8.3)(zod@3.25.64))
+        version: 5.5.12(@zerodev/sdk@5.4.41(viem@2.31.7(typescript@5.8.3)(zod@3.25.64)))(@zerodev/webauthn-key@5.4.3(viem@2.31.7(typescript@5.8.3)(zod@3.25.64)))(viem@2.31.7(typescript@5.8.3)(zod@3.25.64))
       '@zerodev/sdk':
-        specifier: 5.4.40
-        version: 5.4.40(viem@2.31.7(typescript@5.8.3)(zod@3.25.64))
+        specifier: 5.4.41
+        version: 5.4.41(viem@2.31.7(typescript@5.8.3)(zod@3.25.64))
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
@@ -6000,8 +6000,8 @@ packages:
       '@zerodev/webauthn-key': ^5.4.0
       viem: ^2.28.0
 
-  '@zerodev/sdk@5.4.40':
-    resolution: {integrity: sha512-G79tZN7s2TWCVNGofqiG8bxd3jnbB0+lW9O7LEHdBPsINuBiKYtUHO1p026KkCtvhHk118TtHYRbb0bOFrvHtQ==}
+  '@zerodev/sdk@5.4.41':
+    resolution: {integrity: sha512-YNXLYq4PXdC8u6NVzKNDnN42MKnXignehs0eAgyTb1Er57C4ueClR3ShR64QQ0oCL20NRtzMt/dJ+Yi+sVXndA==}
     peerDependencies:
       viem: ^2.28.0
 
@@ -24413,20 +24413,20 @@ snapshots:
       js-yaml: 3.14.1
       tslib: 2.8.1
 
-  '@zerodev/ecdsa-validator@5.4.9(@zerodev/sdk@5.4.40(viem@2.31.7(typescript@5.8.3)(zod@3.25.64)))(viem@2.31.7(typescript@5.8.3)(zod@3.25.64))':
+  '@zerodev/ecdsa-validator@5.4.9(@zerodev/sdk@5.4.41(viem@2.31.7(typescript@5.8.3)(zod@3.25.64)))(viem@2.31.7(typescript@5.8.3)(zod@3.25.64))':
     dependencies:
-      '@zerodev/sdk': 5.4.40(viem@2.31.7(typescript@5.8.3)(zod@3.25.64))
+      '@zerodev/sdk': 5.4.41(viem@2.31.7(typescript@5.8.3)(zod@3.25.64))
       viem: 2.31.7(typescript@5.8.3)(zod@3.25.64)
 
-  '@zerodev/permissions@5.5.12(@zerodev/sdk@5.4.40(viem@2.31.7(typescript@5.8.3)(zod@3.25.64)))(@zerodev/webauthn-key@5.4.3(viem@2.31.7(typescript@5.8.3)(zod@3.25.64)))(viem@2.31.7(typescript@5.8.3)(zod@3.25.64))':
+  '@zerodev/permissions@5.5.12(@zerodev/sdk@5.4.41(viem@2.31.7(typescript@5.8.3)(zod@3.25.64)))(@zerodev/webauthn-key@5.4.3(viem@2.31.7(typescript@5.8.3)(zod@3.25.64)))(viem@2.31.7(typescript@5.8.3)(zod@3.25.64))':
     dependencies:
       '@simplewebauthn/browser': 9.0.1
-      '@zerodev/sdk': 5.4.40(viem@2.31.7(typescript@5.8.3)(zod@3.25.64))
+      '@zerodev/sdk': 5.4.41(viem@2.31.7(typescript@5.8.3)(zod@3.25.64))
       '@zerodev/webauthn-key': 5.4.3(viem@2.31.7(typescript@5.8.3)(zod@3.25.64))
       merkletreejs: 0.3.11
       viem: 2.31.7(typescript@5.8.3)(zod@3.25.64)
 
-  '@zerodev/sdk@5.4.40(viem@2.31.7(typescript@5.8.3)(zod@3.25.64))':
+  '@zerodev/sdk@5.4.41(viem@2.31.7(typescript@5.8.3)(zod@3.25.64))':
     dependencies:
       semver: 7.7.2
       viem: 2.31.7(typescript@5.8.3)(zod@3.25.64)
