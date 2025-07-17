@@ -129,11 +129,6 @@ export interface IProveParams {
   stateFile?: string;
 
   /**
-   * The block number to start fetching logs from
-   */
-  startBlock?: number;
-
-  /**
    * The number of blocks to fetch logs from
    */
   blocksPerBatch?: number;
@@ -142,11 +137,6 @@ export interface IProveParams {
    * The block number to stop fetching logs from
    */
   endBlock?: number;
-
-  /**
-   * The transaction hash of the first transaction
-   */
-  transactionHash?: string;
 
   /**
    * Backup files for ipfs messages (name format: ipfsHash1.json, ipfsHash2.json, ..., ipfsHashN.json)
@@ -293,11 +283,6 @@ export interface IPrepareStateParams {
     stateFile: string;
 
     /**
-     * The block number to start fetching logs from
-     */
-    startBlock: number;
-
-    /**
      * The number of blocks to fetch logs from
      */
     blocksPerBatch: number;
@@ -306,11 +291,6 @@ export interface IPrepareStateParams {
      * The block number to stop fetching logs from
      */
     endBlock: number;
-
-    /**
-     * The transaction hash of the first transaction
-     */
-    transactionHash: string;
   }>;
 
   /**

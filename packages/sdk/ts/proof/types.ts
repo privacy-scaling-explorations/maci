@@ -94,16 +94,6 @@ export interface IGenerateProofsArgs {
   stateFile?: string;
 
   /**
-   * The transaction hash
-   */
-  transactionHash?: string;
-
-  /**
-   * The start block
-   */
-  startBlock?: number;
-
-  /**
    * The end block
    */
   endBlock?: number;

@@ -11,7 +11,10 @@ import fs from "fs";
 import type { IGenerateMaciStateArgs } from "./types";
 import type { MaciState } from "@maci-protocol/core";
 
+import { getPollDeploymentBlock } from "../poll";
 import { contractExists } from "../utils/contracts";
+
+import { getMACIDeploymentBlock } from "./utils";
 
 /**
  * Generate a local MACI state from the smart contracts events
@@ -24,9 +27,7 @@ export const generateMaciState = async ({
   coordinatorPrivateKey,
   provider,
   endBlock,
-  startBlock,
   blockPerBatch,
-  transactionHash,
   sleep,
   signer,
   ipfsMessageBackupFiles,
@@ -61,16 +62,18 @@ export const generateMaciState = async ({
 
   const pollContract = PollFactory.connect(pollContracts.poll, signer);
 
-  const [defaultStartBlockSignup, defaultStartBlockPoll, stateRoot, totalSignups] = await Promise.all([
-    maciContract.queryFilter(maciContract.filters.SignUp(), startBlock).then((events) => events[0]?.blockNumber ?? 0),
+  const startBlockMACI = await getMACIDeploymentBlock({ maciAddress, signer });
+  const startBlockPoll = await getPollDeploymentBlock({ maciAddress, pollId, signer });
+
+  const [defaultStartBlockSignup, stateRoot, totalSignups] = await Promise.all([
     maciContract
-      .queryFilter(maciContract.filters.DeployPoll(), startBlock)
+      .queryFilter(maciContract.filters.SignUp(), startBlockMACI)
       .then((events) => events[0]?.blockNumber ?? 0),
     maciContract.getStateTreeRoot(),
     maciContract.totalSignups(),
   ]);
-  const defaultStartBlock = Math.min(defaultStartBlockPoll, defaultStartBlockSignup);
-  let fromBlock = startBlock ? Number(startBlock) : defaultStartBlock;
+  const defaultStartBlock = Math.min(startBlockPoll, defaultStartBlockSignup);
+  const fromBlock = defaultStartBlock;
 
   const defaultEndBlock = await Promise.all([
     pollContract
@@ -78,18 +81,8 @@ export const generateMaciState = async ({
       .then((events) => events[events.length - 1]?.blockNumber),
   ]).then((blocks) => Math.max(...blocks));
 
-  if (transactionHash) {
-    const tx = await signer.provider!.getTransaction(transactionHash);
-    fromBlock = tx?.blockNumber ?? defaultStartBlock;
-  }
-
   // calculate the end block number
   const endBlockNumber = endBlock || defaultEndBlock;
-
-  if (transactionHash) {
-    const tx = await signer.provider!.getTransaction(transactionHash);
-    fromBlock = tx?.blockNumber ?? defaultStartBlock;
-  }
 
   const maciState = await generateMaciStateFromContract({
     provider: provider ? new JsonRpcProvider(provider) : signer.provider!,

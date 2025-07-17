@@ -6,6 +6,7 @@ import { Keypair, PrivateKey } from "@maci-protocol/domainobjs";
 import type { IJoinPollBrowserArgs, IJoinPollData } from "../user/types";
 import type { TCircuitInputs } from "../utils/types";
 
+import { getMACIDeploymentBlock } from "../maci";
 import { getPollJoiningCircuitEvents, hasUserJoinedPoll, joiningCircuitInputs } from "../user/utils";
 import { contractExists } from "../utils/contracts";
 
@@ -23,7 +24,6 @@ export const joinPoll = async ({
   privateKey,
   pollId,
   signer,
-  startBlock,
   endBlock,
   blocksPerBatch,
   pollJoiningZkey,
@@ -71,6 +71,8 @@ export const joinPoll = async ({
   const stateIndex = await maciContract.getStateIndex(userMaciPublicKey.hash()).catch(() => -1n);
 
   const stateTreeDepth = await maciContract.stateTreeDepth();
+
+  const startBlock = await getMACIDeploymentBlock({ maciAddress, signer });
 
   let circuitInputs: TCircuitInputs;
 

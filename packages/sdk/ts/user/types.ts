@@ -27,11 +27,6 @@ export interface IJoinedUserArgs {
    * A signer object
    */
   signer: Signer;
-
-  /**
-   * The start block number
-   */
-  startBlock: number;
 }
 
 /**
@@ -124,11 +119,6 @@ export interface IRegisteredUserArgs {
    * The address of the MACI contract
    */
   maciAddress: string;
-
-  /**
-   * Start block for event parsing
-   */
-  startBlock?: number;
 }
 
 /**
@@ -306,11 +296,6 @@ export interface IJoinPollArgs {
   endBlock?: number;
 
   /**
-   * The start block number
-   */
-  startBlock?: number;
-
-  /**
    * The number of blocks to fetch per batch
    */
   blocksPerBatch?: number;
@@ -428,11 +413,6 @@ export interface IGenerateMaciStateTreeArgs {
   signer: Signer;
 
   /**
-   * The start block
-   */
-  startBlock?: number;
-
-  /**
    * The end block
    */
   endBlock?: number;
@@ -485,7 +465,7 @@ export interface IGetPollJoiningCircuitEventsArgs {
   /**
    * The start block
    */
-  startBlock?: number;
+  startBlock: number;
 
   /**
    * The end block

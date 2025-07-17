@@ -1357,7 +1357,6 @@ describe("e2e tests", function test() {
           pollId: 0n,
           pollPublicKey: users[i].publicKey.serialize(),
           signer,
-          startBlock: 0,
         });
 
         expect(isJoined).to.eq(true);
@@ -1488,7 +1487,6 @@ describe("e2e tests", function test() {
             pollId: BigInt(pollId),
             pollPublicKey: users[i].publicKey.serialize(),
             signer,
-            startBlock: 0,
           });
 
           expect(isJoined).to.eq(true);

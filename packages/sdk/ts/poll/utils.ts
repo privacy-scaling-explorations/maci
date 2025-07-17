@@ -70,7 +70,7 @@ export const getPollDeploymentBlock = async ({
   maciAddress,
   pollId,
   signer,
-}: IGetPollDeploymentBlockArgs): Promise<bigint> => {
+}: IGetPollDeploymentBlockArgs): Promise<number> => {
   const maci = MACIFactory.connect(maciAddress, signer);
 
   const pollContracts = await maci.polls(pollId);
@@ -79,5 +79,5 @@ export const getPollDeploymentBlock = async ({
 
   const deploymentBlock = await poll.deploymentBlock();
 
-  return deploymentBlock;
+  return Number.parseInt(deploymentBlock.toString(), 10);
 };

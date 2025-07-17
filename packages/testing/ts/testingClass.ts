@@ -13,6 +13,7 @@ import {
   deployFreeForAllSignUpPolicy,
   deployVerifier,
   deployConstantInitialVoiceCreditProxy,
+  getMACIDeploymentBlock,
 } from "@maci-protocol/sdk";
 import hardhat from "hardhat";
 
@@ -226,11 +227,14 @@ export class TestingClass {
       ivcpDataArg: DEFAULT_IVCP_DATA,
     });
 
+    const fromBlock = await getMACIDeploymentBlock({ maciAddress: maciAddresses.maciContractAddress, signer });
+
     const maciState = await generateMaciStateFromContract({
       provider: signer.provider!,
       address: maciAddresses.maciContractAddress,
       coordinatorKeypair,
       pollId: 0n,
+      fromBlock,
     });
 
     this.contractsData.maciState = maciState;

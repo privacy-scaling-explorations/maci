@@ -449,7 +449,6 @@ program
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("--state-file <stateFile>", "the path to the state file containing the serialized maci state")
-  .option("--start-block <startBlock>", "the block number to start looking for events from", parseInt)
   .option("--end-block <endBlock>", "the block number to end looking for events from", parseInt)
   .option("--blocks-per-batch <blockPerBatch>", "the number of blocks to process per batch", parseInt)
   .option("--transaction-hash <transactionHash>", "transaction hash of MACI contract creation")
@@ -479,7 +478,6 @@ program
         stateFile: args.stateFile,
         pollId: args.pollId,
         signer,
-        startBlock: args.startBlock,
         endBlock: args.endBlock,
         blocksPerBatch: args.blocksPerBatch,
         pollJoiningZkey: args.pollJoiningZkey,
@@ -812,7 +810,6 @@ program
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .requiredOption("-o, --poll-id <pollId>", "the poll id", BigInt)
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
-  .option("--start-block <startBlock>", "the block number to start looking for events from", parseInt)
   .option("--end-block <endBlock>", "the block number to end looking for events from", parseInt)
   .option("--blocks-per-batch <blockPerBatch>", "the number of blocks to process per batch", parseInt)
   .action(async (args) => {
@@ -828,7 +825,6 @@ program
 
       const data = await getJoinedUserData({
         pollPublicKey: args.publicKey,
-        startBlock: args.startBlock!,
         maciAddress,
         pollId: args.pollId,
         signer,
@@ -999,12 +995,10 @@ program
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-p, --rpc-provider <provider>", "the rpc provider URL")
   .requiredOption("-f, --output <outputDir>", "the output directory for proofs")
-  .option("--transaction-hash <transactionHash>", "transaction hash of MACI contract creation")
   .option("-w, --wasm", "whether to use the wasm binaries")
   .option("--message-processor-wasm <messageProcessorWasm>", "the path to the process witness generation wasm binary")
   .option("--vote-tally-wasm <voteTallyWasm>", "the path to the tally witness generation wasm binary")
   .option("--state-file <stateFile>", "the path to the state file containing the serialized maci state")
-  .option("--start-block <startBlock>", "the block number to start looking for events from", parseInt)
   .option("--end-block <endBlock>", "the block number to end looking for events from", parseInt)
   .option("--blocks-per-batch <blockPerBatch>", "the number of blocks to process per batch", parseInt)
   .option("-m, --mode <mode>", "Voting mode (qv, non-qv, full)", (value) => MODE_NAME_TO_ENUM[value], EMode.QV)
@@ -1020,11 +1014,9 @@ program
       pollId,
       ipfsMessageBackupFiles,
       stateFile,
-      startBlock,
       endBlock,
       blocksPerBatch,
       privateKey,
-      transactionHash,
       output,
       tallyFile,
       voteTallyZkey,
@@ -1058,8 +1050,6 @@ program
           pollId: Number(pollId),
           ipfsMessageBackupFiles,
           stateFile: stateFile || "",
-          transactionHash: transactionHash || "",
-          startBlock,
           endBlock,
           blocksPerBatch,
           signer,
@@ -1089,10 +1079,8 @@ program
   .requiredOption("-p, --poll-id <pollId>", "the id of the poll", BigInt)
   .option("-x, --maci-address <maciAddress>", "the MACI contract address")
   .option("-k, --private-key <privateKey>", "your serialized MACI private key")
-  .option("--start-block <startBlock>", "the start block number", parseInt)
   .option("--end-block <endBlock>", "the end block number", parseInt)
   .option("--blocks-per-batch <blockPerBatch>", "the blocks per batch", parseInt)
-  .option("--transaction-hash <transactionHash>", "the transaction hash")
   .option("-s, --sleep <sleep>", "the sleep time between batches", parseInt)
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
@@ -1122,9 +1110,7 @@ program
         coordinatorPrivateKey,
         provider: args.rpcProvider,
         endBlock: args.endBlock,
-        startBlock: args.startBlock,
         blockPerBatch: args.blocksPerBatch,
-        transactionHash: args.transactionHash,
         ipfsMessageBackupFiles: args.ipfsMessageBackupFiles,
         sleep: args.sleep,
         signer,

@@ -21,8 +21,6 @@ export const generateProofs = async ({
   pollId,
   ipfsMessageBackupFiles,
   stateFile,
-  transactionHash,
-  startBlock,
   endBlock,
   blocksPerBatch,
   rapidsnark,
@@ -141,8 +139,6 @@ export const generateProofs = async ({
     ipfsMessageBackupFiles,
     options: {
       stateFile,
-      transactionHash,
-      startBlock,
       endBlock,
       blocksPerBatch,
     },

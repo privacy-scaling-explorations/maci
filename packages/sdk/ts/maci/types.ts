@@ -207,11 +207,6 @@ export interface IGenerateMaciStateArgs {
   outputPath?: string;
 
   /**
-   * The start block number
-   */
-  startBlock?: number;
-
-  /**
    * The end block number
    */
   endBlock?: number;
@@ -220,11 +215,6 @@ export interface IGenerateMaciStateArgs {
    * The number of blocks to fetch per batch
    */
   blockPerBatch?: number;
-
-  /**
-   * The transaction hash
-   */
-  transactionHash?: string;
 
   /**
    * The sleep time between batches

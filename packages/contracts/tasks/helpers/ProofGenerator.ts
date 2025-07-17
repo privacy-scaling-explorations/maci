@@ -84,7 +84,7 @@ export class ProofGenerator {
     signer,
     ipfsMessageBackupFiles,
     outputDir,
-    options: { transactionHash, stateFile, startBlock, endBlock, blocksPerBatch },
+    options: { stateFile, endBlock, blocksPerBatch },
   }: IPrepareStateParams): Promise<MaciState> {
     const isOutputDirExists = fs.existsSync(path.resolve(outputDir));
 
@@ -108,27 +108,24 @@ export class ProofGenerator {
     }
 
     // build an off-chain representation of the MACI contract using data in the contract storage
-    const [defaultStartBlockSignup, defaultStartBlockPoll, stateRoot, totalSignups] = await Promise.all([
-      maciContract.queryFilter(maciContract.filters.SignUp(), startBlock).then((events) => events[0]?.blockNumber ?? 0),
+    const startBlockMACI = Number.parseInt((await maciContract.deploymentBlock()).toString(), 10);
+    const startBlockPoll = Number.parseInt((await pollContract.deploymentBlock()).toString(), 10);
+
+    const [defaultStartBlockSignup, stateRoot, totalSignups] = await Promise.all([
       maciContract
-        .queryFilter(maciContract.filters.DeployPoll(), startBlock)
+        .queryFilter(maciContract.filters.SignUp(), startBlockMACI)
         .then((events) => events[0]?.blockNumber ?? 0),
       maciContract.getStateTreeRoot(),
-      pollContract.totalSignups(),
+      maciContract.totalSignups(),
     ]);
-    const defaultStartBlock = Math.min(defaultStartBlockPoll, defaultStartBlockSignup);
-    let fromBlock = startBlock ? Number(startBlock) : defaultStartBlock;
+    const defaultStartBlock = Math.min(startBlockPoll, defaultStartBlockSignup);
+    const fromBlock = defaultStartBlock;
 
     const defaultEndBlock = await Promise.all([
       pollContract
         .queryFilter(pollContract.filters.MergeState(stateRoot, totalSignups), fromBlock)
         .then((events) => events[events.length - 1]?.blockNumber),
     ]).then((blocks) => Math.max(...blocks));
-
-    if (transactionHash) {
-      const tx = await signer.provider!.getTransaction(transactionHash);
-      fromBlock = tx?.blockNumber ?? defaultStartBlock;
-    }
 
     logMagenta({ text: info(`Starting to fetch logs from block ${fromBlock}`) });
 

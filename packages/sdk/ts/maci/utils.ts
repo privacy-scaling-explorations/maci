@@ -9,10 +9,10 @@ import type { IGetMACIDeploymentBlockArgs } from "./types";
  * @param signer The signer to use to get the deployment block
  * @returns The deployment block of the MACI contract
  */
-export const getMACIDeploymentBlock = async ({ maciAddress, signer }: IGetMACIDeploymentBlockArgs): Promise<bigint> => {
+export const getMACIDeploymentBlock = async ({ maciAddress, signer }: IGetMACIDeploymentBlockArgs): Promise<number> => {
   const maciContract = MACIFactory.connect(maciAddress, signer);
 
   const deploymentBlock = await maciContract.deploymentBlock();
 
-  return deploymentBlock;
+  return Number.parseInt(deploymentBlock.toString(), 10);
 };

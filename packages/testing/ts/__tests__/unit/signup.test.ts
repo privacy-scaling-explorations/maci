@@ -41,8 +41,6 @@ describe("signup", function test() {
   });
 
   it("should allow to signup and return the user data", async () => {
-    const startBlock = await signer.provider?.getBlockNumber();
-
     const signUpData = await signup({
       maciAddress: maciAddresses.maciContractAddress,
       maciPublicKey: user.publicKey.serialize(),
@@ -52,7 +50,6 @@ describe("signup", function test() {
 
     const registeredUserData = await getSignedupUserData({
       maciAddress: maciAddresses.maciContractAddress,
-      startBlock,
       maciPublicKey: user.publicKey.serialize(),
       signer,
     });
@@ -64,7 +61,6 @@ describe("signup", function test() {
   it("should not get the user data if the user is not registered", async () => {
     const registeredUserData = await getSignedupUserData({
       maciAddress: maciAddresses.maciContractAddress,
-      startBlock: await signer.provider?.getBlockNumber(),
       maciPublicKey: new Keypair().publicKey.serialize(),
       signer,
     });

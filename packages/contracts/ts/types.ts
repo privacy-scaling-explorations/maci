@@ -283,14 +283,14 @@ export interface IGenerateMaciStateFromContractArgs {
   pollId: bigint;
 
   /**
-   * The block number from which to start fetching events
-   */
-  fromBlock?: number;
-
-  /**
    * The number of blocks to fetch in each request
    */
   blocksPerRequest?: number;
+
+  /**
+   * The block number at which to start fetching events
+   */
+  fromBlock: number;
 
   /**
    * The block number at which to stop fetching events

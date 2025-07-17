@@ -124,8 +124,6 @@ describe("joinPoll", function test() {
   });
 
   it("should allow to join the poll and return the user data", async () => {
-    const startBlock = await signer.provider?.getBlockNumber();
-
     await joinPoll({
       maciAddress: maciAddresses.maciContractAddress,
       privateKey: users[0].privateKey.serialize(),
@@ -145,7 +143,6 @@ describe("joinPoll", function test() {
       pollId: 0n,
       pollPublicKey: users[0].publicKey.serialize(),
       signer,
-      startBlock: startBlock || 0,
     });
 
     expect(registeredUserData.isJoined).to.eq(true);
@@ -153,8 +150,6 @@ describe("joinPoll", function test() {
   });
 
   it("should allow to join the poll and return the user data using a downloaded zKey", async () => {
-    const startBlock = await signer.provider?.getBlockNumber();
-
     const { zKey, wasm } = await downloadPollJoiningArtifactsBrowser({
       testing: true,
       stateTreeDepth: 10,
@@ -178,7 +173,6 @@ describe("joinPoll", function test() {
       pollId: 0n,
       pollPublicKey: users[1].publicKey.serialize(),
       signer,
-      startBlock: startBlock || 0,
     });
 
     expect(registeredUserData.isJoined).to.eq(true);
@@ -186,8 +180,6 @@ describe("joinPoll", function test() {
   });
 
   it("should allow to join the poll using a precomputed inclusion proof", async () => {
-    const startBlock = await signer.provider?.getBlockNumber();
-
     const stateTree = await generateMaciStateTreeWithEndKey({
       maciContractAddress: maciAddresses.maciContractAddress,
       signer,
@@ -218,7 +210,6 @@ describe("joinPoll", function test() {
       pollId: 0n,
       pollPublicKey: users[2].publicKey.serialize(),
       signer,
-      startBlock: startBlock || 0,
     });
 
     expect(registeredUserData.isJoined).to.eq(true);
