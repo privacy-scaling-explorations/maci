@@ -171,3 +171,23 @@ export interface IPollJoinedInputs {
   credits: bigint;
   stateRoot: bigint;
 }
+
+/**
+ * Interface for the arguments to the getDeploymentBlock command
+ */
+export interface IGetPollDeploymentBlockArgs {
+  /**
+   * The address of the MACI contract
+   */
+  maciAddress: string;
+
+  /**
+   * The poll id
+   */
+  pollId: bigint;
+
+  /**
+   * A signer object
+   */
+  signer: Signer;
+}

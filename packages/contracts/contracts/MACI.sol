@@ -63,6 +63,9 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
   /// For the N'th sign up, the state tree root will be stored at the index N
   uint256[] public stateRootsOnSignUp;
 
+  /// @notice The block number when the contract was deployed
+  uint256 public deploymentBlock;
+
   // Events
   event SignUp(
     uint256 _stateIndex,
@@ -110,6 +113,7 @@ contract MACI is IMACI, DomainObjs, Params, Hasher {
     stateTreeDepth = _stateTreeDepth;
     maxSignups = uint256(STATE_TREE_ARITY) ** uint256(_stateTreeDepth);
     emptyBallotRoots = _emptyBallotRoots;
+    deploymentBlock = block.number;
 
     // Verify linked poseidon libraries
     if (hash2([uint256(1), uint256(1)]) == 0) revert PoseidonHashLibrariesNotLinked();

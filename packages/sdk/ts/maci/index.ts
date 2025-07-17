@@ -9,6 +9,7 @@ export {
 export { mergeSignups } from "./merge";
 export { generateMaciState } from "./state";
 export { EPolicyTrait } from "./types";
+export { getMACIDeploymentBlock } from "./utils";
 export type {
   IGetPolicyTraitArgs,
   IGetPolicyDataArgs,
@@ -18,4 +19,5 @@ export type {
   IMerkleProofPolicyData,
   IMergeSignupsArgs,
   IGenerateMaciStateArgs,
+  IGetMACIDeploymentBlockArgs,
 } from "./types";

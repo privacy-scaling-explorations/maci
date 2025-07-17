@@ -6,7 +6,7 @@ import {
 } from "@maci-protocol/contracts/typechain-types";
 import { ZeroAddress } from "ethers";
 
-import type { IGetPollArgs, IGetPollContractsData } from "./types";
+import type { IGetPollDeploymentBlockArgs, IGetPollArgs, IGetPollContractsData } from "./types";
 
 import { contractExists } from "../utils/contracts";
 
@@ -58,4 +58,26 @@ export const getPollContracts = async ({
     messageProcessor,
     tally,
   };
+};
+
+/**
+ * Get the deployment block of a poll contract
+ *
+ * @param args get deployment block args
+ * @returns the deployment block of the poll contract
+ */
+export const getPollDeploymentBlock = async ({
+  maciAddress,
+  pollId,
+  signer,
+}: IGetPollDeploymentBlockArgs): Promise<bigint> => {
+  const maci = MACIFactory.connect(maciAddress, signer);
+
+  const pollContracts = await maci.polls(pollId);
+
+  const poll = PollFactory.connect(pollContracts.poll, signer);
+
+  const deploymentBlock = await poll.deploymentBlock();
+
+  return deploymentBlock;
 };

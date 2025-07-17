@@ -20,7 +20,7 @@ template PollJoining(stateTreeDepth) {
     signal input siblings[stateTreeDepth][STATE_TREE_ARITY - 1];
     // Indices
     signal input indices[stateTreeDepth];
-    // User's hashed private key
+    // User's hashed private key and pollId
     signal input nullifier;
     // MACI State tree root which proves the user is signed up
     signal input stateRoot;

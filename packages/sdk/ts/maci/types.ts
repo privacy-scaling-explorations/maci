@@ -241,3 +241,18 @@ export interface IGenerateMaciStateArgs {
    */
   logsOutputPath?: string;
 }
+
+/**
+ * Interface for the arguments to the getDeploymentBlock command
+ */
+export interface IGetMACIDeploymentBlockArgs {
+  /**
+   * The address of the MACI contract
+   */
+  maciAddress: string;
+
+  /**
+   * A signer object
+   */
+  signer: Signer;
+}

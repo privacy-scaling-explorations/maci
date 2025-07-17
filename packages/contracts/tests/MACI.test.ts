@@ -78,6 +78,11 @@ describe("MACI", function test() {
       await checkStateTreeDepth(2);
       await checkStateTreeDepth(3);
     });
+
+    it("should have set the deploymentBlock", async () => {
+      const db = await maciContract.deploymentBlock();
+      expect(db).to.be.greaterThan(0n);
+    });
   });
 
   describe("Signups", () => {

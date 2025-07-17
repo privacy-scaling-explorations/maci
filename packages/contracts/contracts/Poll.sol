@@ -105,6 +105,9 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
   /// For the N'th poll join, the poll state tree root will be stored at the index N
   uint256[] public pollStateRootsOnJoin;
 
+  /// @notice The block number when the contract was deployed
+  uint256 public deploymentBlock;
+
   error VotingPeriodOver();
   error VotingPeriodNotOver();
   error VotingPeriodNotStarted();
@@ -194,6 +197,9 @@ contract Poll is Clone, Params, Utilities, SnarkCommon, IPoll {
     pollId = _pollId;
 
     maxSignups = uint256(STATE_TREE_ARITY) ** uint256(_treeDepths.stateTreeDepth);
+
+    // store the deployment block
+    deploymentBlock = block.number;
 
     // set relayers
     for (uint256 index = 0; index < _relayers.length; ) {

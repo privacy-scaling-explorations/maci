@@ -187,6 +187,11 @@ describe("Poll", function test() {
       expect(numMessages.toString()).to.eq("1");
     });
 
+    it("should have set the deployment block", async () => {
+      const db = await pollContract.deploymentBlock();
+      expect(db).to.be.greaterThan(0n);
+    });
+
     it("should fail when passing an invalid coordinator public key", async () => {
       const r = await deployTestContracts({
         initialVoiceCreditBalance,

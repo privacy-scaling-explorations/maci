@@ -6,6 +6,7 @@ export * from "../trees";
 export * from "../vote";
 export * from "../maciKeys";
 export * from "../subgraph";
+export { getMACIDeploymentBlock } from "../maci/utils";
 export { getSignedupUserData, signup, hasUserSignedUp } from "../user/signup";
 export {
   getJoinedUserData,

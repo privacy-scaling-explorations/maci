@@ -1,5 +1,5 @@
 export { getPoll, getPollParams } from "./poll";
-export { getPollContracts } from "./utils";
+export { getPollContracts, getPollDeploymentBlock } from "./utils";
 export type {
   IGetPollArgs,
   IGetPollData,
@@ -7,4 +7,5 @@ export type {
   IPollParams,
   IPollJoiningInputs,
   IPollJoinedInputs,
+  IGetPollDeploymentBlockArgs,
 } from "./types";
