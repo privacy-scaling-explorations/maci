@@ -1,15 +1,21 @@
 import { zeroAddress } from "viem";
 
 import { FileService } from "../../file/file.service";
+import { RedisService } from "../../redis/redis.service";
 import { HealthController } from "../health.controller";
 import { HealthService } from "../health.service";
 
 describe("HealthController", () => {
-  const healthController = new HealthController(new HealthService(new FileService()));
+  const redisService = new RedisService();
+  const healthController = new HealthController(new HealthService(new FileService(), redisService));
+
+  beforeAll(async () => {
+    await redisService.onModuleInit();
+  });
 
   describe("v1/health/check", () => {
     it("should return health check response", async () => {
-      const { rapidsnark, zkeysDirectory, coordinatorWalletFunds } = await healthController.check();
+      const { rapidsnark, zkeysDirectory, coordinatorWalletFunds, isRedisOpen } = await healthController.check();
 
       const { availableZkeys } = zkeysDirectory;
 
@@ -24,6 +30,8 @@ describe("HealthController", () => {
 
       expect(coordinatorWalletFunds.address).toBeDefined();
       expect(coordinatorWalletFunds.address).not.toBe(zeroAddress);
+
+      expect(isRedisOpen).toBe(true);
     });
   });
 });

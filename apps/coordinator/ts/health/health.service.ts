@@ -10,6 +10,7 @@ import type { ICheckRapidsnark, ICheckWalletFunds, ICheckZkeysDirectory, IHealth
 
 import { ESupportedNetworks, getSigner } from "../common";
 import { FileService } from "../file/file.service";
+import { RedisService } from "../redis/redis.service";
 
 /**
  * Health service functions to check the status of the coordinator service.
@@ -21,7 +22,10 @@ export class HealthService {
    *
    * @param fileService - file service
    */
-  constructor(private readonly fileService: FileService) {}
+  constructor(
+    private readonly fileService: FileService,
+    private readonly redisService: RedisService,
+  ) {}
 
   /**
    * Check if rapidsnark is available and executable.
@@ -156,6 +160,14 @@ export class HealthService {
   }
 
   /**
+   * Check redis client is connected and open
+   * @return true if the redis client is connected and open, false otherwise
+   */
+  checkRedisConnection(): boolean {
+    return this.redisService.isOpen();
+  }
+
+  /**
    * Check coordinator service health
    * @returns an object containing the results of all the health checks
    */
@@ -165,11 +177,13 @@ export class HealthService {
       this.checkZkeysDirectory(),
       this.checkWalletFunds(),
     ]);
+    const isRedisOpen = this.checkRedisConnection();
 
     return {
       rapidsnark,
       zkeysDirectory,
       coordinatorWalletFunds,
+      isRedisOpen,
     };
   }
 }

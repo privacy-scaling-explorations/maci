@@ -21,6 +21,8 @@ env:
   COORDINATOR_RPC_URL: ${{ secrets.COORDINATOR_RPC_URL }}
   COORDINATOR_ADDRESSES: ${{ vars.COORDINATOR_ADDRESSES }}
   COORDINATOR_ALLOWED_ORIGINS: ${{ vars.COORDINATOR_ALLOWED_ORIGINS }}
+  COORDINATOR_REDIS_HOST: ${{ vars.COORDINATOR_REDIS_HOST }}
+  COORDINATOR_REDIS_PORT: ${{ vars.COORDINATOR_REDIS_PORT }}
   COORDINATOR_PORT: ${{ vars.COORDINATOR_PORT }}
   SUBGRAPH_NAME: ${{ vars.COORDINATOR_SUBGRAPH_NAME }}
   SUBGRAPH_PROVIDER_URL: ${{ vars.COORDINATOR_SUBGRAPH_PROVIDER_URL }}
@@ -37,6 +39,12 @@ concurrency:
 jobs:
   build-and-test:
     runs-on: ubuntu-22.04
+
+    services:
+      redis:
+        image: redis:8
+        ports:
+          - 6379:6379
 
     steps:
       - uses: actions/checkout@v4

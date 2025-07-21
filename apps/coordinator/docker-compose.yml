@@ -1,4 +1,16 @@
 services:
+  coordinator-database:
+    container_name: coordinator-database
+    image: redis:latest
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    ports:
+      - "${COORDINATOR_REDIS_PORT:-6379}:${COORDINATOR_REDIS_PORT:-6379}"
+    command: redis-server --save 20 1 --loglevel warning
+    volumes:
+      - coordinator-redis:/data
+
   coordinator-service:
     container_name: coordinator-service
     build:
@@ -9,11 +21,16 @@ services:
     environment:
       # Check Dockerfile to see where bin is downloaded
       - COORDINATOR_RAPIDSNARK_EXE=/home/node/rapidsnark/build/prover
+      - COORDINATOR_REDIS_HOST=coordinator-database
+      - COORDINATOR_REDIS_PORT=${COORDINATOR_REDIS_PORT:-6379}
     volumes:
       - coordinator-data:/app
     ports:
       - "${COORDINATOR_PORT:-3001}:${COORDINATOR_PORT:-3001}"
 
 volumes:
+  coordinator-redis:
+    driver: local
+
   coordinator-data:
     driver: local
