@@ -1,3 +1,4 @@
+import { VerifyingKey } from "@maci-protocol/domainobjs";
 import {
   ContractStorage,
   EPolicies,
@@ -467,7 +468,7 @@ export class DeployerService {
     signer: Signer,
     verifyingKeysRegistryAddress: Hex,
     verifyingKeysRegistryArgs: IVerifyingKeysRegistryArgs,
-    mode: EMode,
+    modes: EMode[],
   ): Promise<ISetVerifyingKeysArgs> {
     const { zkey: pollJoiningZkeyPath } = this.fileService.getZkeyFilePaths(
       process.env.COORDINATOR_POLL_JOINING_ZKEY_NAME!,
@@ -477,25 +478,36 @@ export class DeployerService {
       process.env.COORDINATOR_POLL_JOINED_ZKEY_NAME!,
     );
 
-    const { zkey: messageProcessorZkeyPath } = this.fileService.getZkeyFilePaths(
-      process.env.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME!,
-      mode,
+    const { pollJoiningVerifyingKey, pollJoinedVerifyingKey } = await extractAllVerifyingKeys({
+      pollJoiningZkeyPath,
+      pollJoinedZkeyPath,
+    });
+
+    const processAndTallyVerifyingKeys = await Promise.all(
+      modes.map(async (mode) => {
+        const { zkey: messageProcessorZkeyPath } = this.fileService.getZkeyFilePaths(
+          process.env.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME!,
+          mode,
+        );
+
+        // There are only QV and Non-QV modes available for tally circuit
+        const { zkey: voteTallyZkeyPath } = this.fileService.getZkeyFilePaths(
+          process.env.COORDINATOR_TALLY_ZKEY_NAME!,
+          // if FULL use NON_QV because there are only VoteTallyQV and VoteTallyNonQV zkeys
+          mode === EMode.FULL ? EMode.NON_QV : mode,
+        );
+
+        const { processVerifyingKey, tallyVerifyingKey } = await extractAllVerifyingKeys({
+          messageProcessorZkeyPath,
+          voteTallyZkeyPath,
+        });
+
+        return { processVerifyingKey: processVerifyingKey!, tallyVerifyingKey: tallyVerifyingKey! };
+      }),
     );
 
-    // There are only QV and Non-QV modes available for tally circuit
-    const { zkey: voteTallyZkeyPath } = this.fileService.getZkeyFilePaths(
-      process.env.COORDINATOR_TALLY_ZKEY_NAME!,
-      // if FULL use NON_QV because there are only VoteTallyQV and VoteTallyNonQV zkeys
-      mode === EMode.FULL ? EMode.NON_QV : mode,
-    );
-
-    const { pollJoiningVerifyingKey, pollJoinedVerifyingKey, processVerifyingKey, tallyVerifyingKey } =
-      await extractAllVerifyingKeys({
-        pollJoiningZkeyPath,
-        pollJoinedZkeyPath,
-        messageProcessorZkeyPath,
-        voteTallyZkeyPath,
-      });
+    const processVerifyingKeys: VerifyingKey[] = processAndTallyVerifyingKeys.map((item) => item.processVerifyingKey);
+    const tallyVerifyingKeys: VerifyingKey[] = processAndTallyVerifyingKeys.map((item) => item.tallyVerifyingKey);
 
     const { stateTreeDepth, pollStateTreeDepth, tallyProcessingStateTreeDepth, voteOptionTreeDepth, messageBatchSize } =
       verifyingKeysRegistryArgs;
@@ -503,15 +515,15 @@ export class DeployerService {
     return {
       pollJoiningVerifyingKey: pollJoiningVerifyingKey!,
       pollJoinedVerifyingKey: pollJoinedVerifyingKey!,
-      processMessagesVerifyingKey: processVerifyingKey!,
-      tallyVotesVerifyingKey: tallyVerifyingKey!,
+      processMessagesVerifyingKeys: processVerifyingKeys,
+      tallyVotesVerifyingKeys: tallyVerifyingKeys,
       stateTreeDepth: Number(stateTreeDepth),
       tallyProcessingStateTreeDepth: Number(tallyProcessingStateTreeDepth),
       voteOptionTreeDepth: Number(voteOptionTreeDepth),
       messageBatchSize: Number(messageBatchSize),
       pollStateTreeDepth: Number(pollStateTreeDepth),
       signer,
-      mode,
+      modes,
       verifyingKeysRegistryAddress,
     };
   }
@@ -538,7 +550,7 @@ export class DeployerService {
       signer,
       verifyingKeysRegistryAddress as Hex,
       config.VerifyingKeysRegistry.args,
-      config.MACI.mode,
+      config.MACI.modes,
     );
     await setVerifyingKeys(verifyingKeysArgs);
 

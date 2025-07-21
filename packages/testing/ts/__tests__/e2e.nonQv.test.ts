@@ -116,7 +116,7 @@ describe("e2e tests with non quadratic voting", function test() {
     // we deploy the verifying keys registry contract
     verifyingKeysRegistryAddress = await deployVerifyingKeysRegistryContract({ signer });
     // we set the verifying keys
-    await setVerifyingKeys({ ...(await verifyingKeysArgs(signer, EMode.NON_QV)), verifyingKeysRegistryAddress });
+    await setVerifyingKeys({ ...(await verifyingKeysArgs(signer, [EMode.NON_QV])), verifyingKeysRegistryAddress });
   });
 
   describe("1 signup, 1 message", () => {

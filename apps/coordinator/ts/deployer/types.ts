@@ -301,7 +301,7 @@ export interface IDeployMaciConfig {
   MACI: {
     stateTreeDepth: number;
     policy: EPolicies;
-    mode: EMode;
+    modes: EMode[];
   };
 
   /**

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from "@commander-js/extra-typings";
-import { PublicKey } from "@maci-protocol/domainobjs";
+import { PublicKey, VerifyingKey } from "@maci-protocol/domainobjs";
 import {
   generateTallyCommitments,
   getPollParams,
@@ -272,7 +272,7 @@ program
     logGreen({
       quiet: args.quiet,
       text: success(
-        `Public key as contract param: 
+        `Public key as contract param:
          X: ${publicKeyAsContractParam.x}
          Y: ${publicKeyAsContractParam.y}`,
       ),
@@ -542,7 +542,12 @@ program
     "--vote-tally-zkey-full <tallyVotesZkeyPathFull>",
     "the vote tally full zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
   )
-  .option("-m, --mode <mode>", "Voting mode (qv, non-qv, full)", (value) => MODE_NAME_TO_ENUM[value], EMode.QV)
+  .option(
+    "-m, --modes <modes>",
+    "Comma-separated list of voting modes (qv, non-qv, full)",
+    (value) => value.split(",").map((v) => MODE_NAME_TO_ENUM[v.trim()]),
+    [EMode.QV],
+  )
   .option("-k, --vk-registry <vkRegistry>", "the vk registry contract address")
   .option("-q, --quiet <quiet>", "whether to print values to the console", (value) => value === "true", false)
   .option("-r, --rpc-provider <provider>", "the rpc provider URL")
@@ -568,13 +573,31 @@ program
         [EMode.FULL]: args.voteTallyZkeyFull,
       };
 
-      const { pollJoiningVerifyingKey, pollJoinedVerifyingKey, processVerifyingKey, tallyVerifyingKey } =
-        await extractAllVerifyingKeys({
-          pollJoiningZkeyPath: args.pollJoiningZkey,
-          pollJoinedZkeyPath: args.pollJoinedZkey,
-          messageProcessorZkeyPath: processKeys[args.mode],
-          voteTallyZkeyPath: tallyKeys[args.mode],
-        });
+      const { pollJoiningVerifyingKey, pollJoinedVerifyingKey } = await extractAllVerifyingKeys({
+        pollJoiningZkeyPath: args.pollJoiningZkey,
+        pollJoinedZkeyPath: args.pollJoinedZkey,
+      });
+
+      const keysResults = await Promise.all(
+        args.modes.map((mode) =>
+          extractAllVerifyingKeys({
+            messageProcessorZkeyPath: processKeys[mode],
+            voteTallyZkeyPath: tallyKeys[mode],
+          }),
+        ),
+      );
+
+      const processVerifyingKeys: VerifyingKey[] = [];
+      const tallyVerifyingKeys: VerifyingKey[] = [];
+
+      keysResults.forEach(({ processVerifyingKey, tallyVerifyingKey }, idx) => {
+        if (!processVerifyingKey || !tallyVerifyingKey) {
+          throw new Error(`Verifying keys for mode ${args.modes[idx]} are not valid`);
+        }
+
+        processVerifyingKeys.push(processVerifyingKey);
+        tallyVerifyingKeys.push(tallyVerifyingKey);
+      });
 
       await setVerifyingKeys({
         stateTreeDepth: args.stateTreeDepth,
@@ -584,10 +607,10 @@ program
         pollStateTreeDepth: args.pollStateTreeDepth || args.stateTreeDepth,
         pollJoiningVerifyingKey: pollJoiningVerifyingKey!,
         pollJoinedVerifyingKey: pollJoinedVerifyingKey!,
-        processMessagesVerifyingKey: processVerifyingKey!,
-        tallyVotesVerifyingKey: tallyVerifyingKey!,
+        processMessagesVerifyingKeys: processVerifyingKeys,
+        tallyVotesVerifyingKeys: tallyVerifyingKeys,
         verifyingKeysRegistryAddress,
-        mode: args.mode,
+        modes: args.modes,
         signer,
       });
     } catch (error) {
