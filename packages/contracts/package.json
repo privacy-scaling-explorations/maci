@@ -227,7 +227,7 @@
     "@maci-protocol/domainobjs": "^3.0.0",
     "@nomicfoundation/hardhat-ethers": "^3.0.9",
     "@nomicfoundation/hardhat-toolbox": "^6.0.0",
-    "@nomicfoundation/hardhat-verify": "^2.0.14",
+    "@nomicfoundation/hardhat-verify": "^2.1.0",
     "@openzeppelin/contracts": "^5.3.0",
     "@openzeppelin/merkle-tree": "^1.0.8",
     "@pcd/util": "^0.9.0",
