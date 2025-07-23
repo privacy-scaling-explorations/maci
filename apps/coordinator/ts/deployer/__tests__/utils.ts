@@ -1,4 +1,4 @@
-import { EPolicies, EInitialVoiceCreditProxies, EMode } from "@maci-protocol/sdk";
+import { EPolicies, EInitialVoiceCreditProxies, EMode, EInitialVoiceCreditProxiesFactories } from "@maci-protocol/sdk";
 import { zeroHash } from "viem";
 
 import {
@@ -80,6 +80,7 @@ export const testPollDeploymentConfig: IDeployPollConfig = {
     type: EPolicies.FreeForAll,
   },
   initialVoiceCreditsProxy: {
+    factoryType: EInitialVoiceCreditProxiesFactories.Constant,
     type: EInitialVoiceCreditProxies.Constant,
     args: {
       amount: 100,

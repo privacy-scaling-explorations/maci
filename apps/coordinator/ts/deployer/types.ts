@@ -1,4 +1,4 @@
-import { EPolicies, EInitialVoiceCreditProxies, EMode } from "@maci-protocol/sdk";
+import { EPolicies, EInitialVoiceCreditProxies, EMode, EInitialVoiceCreditProxiesFactories } from "@maci-protocol/sdk";
 import { SendUserOperationParameters } from "viem/account-abstraction";
 
 import type { Abi, Hex } from "viem";
@@ -370,6 +370,7 @@ export interface IDeployPollConfig {
    * The initial voice credits proxy configuration
    */
   initialVoiceCreditsProxy: {
+    factoryType: EInitialVoiceCreditProxiesFactories;
     type: EInitialVoiceCreditProxies;
     args: IInitialVoiceCreditProxyArgs;
     address?: Hex;

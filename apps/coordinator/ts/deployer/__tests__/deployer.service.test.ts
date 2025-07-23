@@ -3,6 +3,7 @@ import {
   ECheckerFactories,
   EContracts,
   EInitialVoiceCreditProxies,
+  EInitialVoiceCreditProxiesFactories,
   EPolicies,
   EPolicyFactories,
   getDeployedPolicyProxyFactories,
@@ -136,27 +137,65 @@ describe("DeployerService", () => {
     });
   });
 
+  describe("deployAndSaveVoiceCreditProxyFactory", () => {
+    afterEach(() => {
+      storageInstance.cleanup(chain);
+    });
+
+    it("should throw when the voice credit proxy factory is not existent", async () => {
+      await expect(
+        deployerService.deployAndSaveVoiceCreditProxyFactory(
+          signer,
+          "NonExistent" as unknown as EInitialVoiceCreditProxiesFactories,
+          chain,
+        ),
+      ).rejects.toThrow(ErrorCodes.UNSUPPORTED_VOICE_CREDIT_PROXY_FACTORY.toString());
+    });
+
+    test("should deploy voice credit proxy factory if none is stored", async () => {
+      const constantInitialVoiceCreditProxyFactory = await deployerService.deployAndSaveVoiceCreditProxyFactory(
+        signer,
+        EInitialVoiceCreditProxiesFactories.Constant,
+        chain,
+      );
+
+      expect(constantInitialVoiceCreditProxyFactory).toBeDefined();
+      expect(await constantInitialVoiceCreditProxyFactory.getAddress()).not.toBe(zeroAddress);
+    });
+  });
+
   describe("deployAndSaveVoiceCreditProxy", () => {
-    // we cleanup after each test so we don't have leftover saved contracts
     afterEach(() => {
       storageInstance.cleanup(chain);
     });
 
     it("should throw when the voice credit proxy is not existent", async () => {
+      const constantInitialVoiceCreditProxyFactory = await deployerService.deployAndSaveVoiceCreditProxyFactory(
+        signer,
+        EInitialVoiceCreditProxiesFactories.Constant,
+        chain,
+      );
       await expect(
         deployerService.deployAndSaveVoiceCreditProxy(
           signer,
           "NonExistent" as unknown as EInitialVoiceCreditProxies,
           chain,
+          constantInitialVoiceCreditProxyFactory,
         ),
       ).rejects.toThrow(ErrorCodes.UNSUPPORTED_VOICE_CREDIT_PROXY.toString());
     });
 
     test("should deploy voice credit proxy if none is stored", async () => {
+      const constantInitialVoiceCreditProxyFactory = await deployerService.deployAndSaveVoiceCreditProxyFactory(
+        signer,
+        EInitialVoiceCreditProxiesFactories.Constant,
+        chain,
+      );
       const voiceCreditProxy = await deployerService.deployAndSaveVoiceCreditProxy(
         signer,
         EInitialVoiceCreditProxies.Constant,
         chain,
+        constantInitialVoiceCreditProxyFactory,
         { amount: 100 },
       );
 

@@ -143,6 +143,10 @@ describe("E2E hardhat tasks", function test() {
     await hardhat.run(EDeploySteps.VerifyingKeysRegistry, args);
   });
 
+  it("should deploy voice credit proxy factory contract properly", async () => {
+    await hardhat.run(EDeploySteps.InitialVoiceCreditProxyFactory, args);
+  });
+
   it("should deploy voice credit proxy contract properly", async () => {
     await hardhat.run(EDeploySteps.InitialVoiceCreditProxy, args);
   });

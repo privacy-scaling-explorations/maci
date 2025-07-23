@@ -89,14 +89,19 @@ export interface IDeployPollArgs {
   initialVoiceCredits?: number;
 
   /**
-   * Free for all checker factory address (using for deployment optimization if there is no signup policy)
+   * Free for all checker factory address (use for deployment optimization if there is no signup policy)
    */
   freeForAllCheckerFactoryAddress?: string;
 
   /**
-   * Free for all policy factory address (using for deployment optimization if there is no signup policy)
+   * Free for all policy factory address (use for deployment optimization if there is no signup policy)
    */
   freeForAllPolicyFactoryAddress?: string;
+
+  /**
+   * The address of the initial voice credit proxy factory contract (use for deployment optimization if there is no initial voice credit proxy)
+   */
+  initialVoiceCreditProxyFactoryAddress?: string;
 
   /**
    * The signer
