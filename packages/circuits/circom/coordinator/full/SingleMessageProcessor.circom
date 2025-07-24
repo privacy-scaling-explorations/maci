@@ -5,7 +5,6 @@ include "./mux1.circom";
 // local imports
 include "../../utils/PoseidonHasher.circom";
 include "../../utils/trees/MerkleTreeInclusionProof.circom";
-include "../../utils/trees/MerklePathIndicesGenerator.circom";
 include "../../utils/trees/BinaryMerkleRoot.circom";
 include "../../utils/trees/QuinaryTreeInclusionProof.circom";
 include "../../utils/trees/QuinaryGeneratePathIndices.circom";
@@ -112,14 +111,13 @@ template SingleMessageProcessorFull(stateTreeDepth, voteOptionTreeDepth) {
     // 2. If computedIsStateLeafIndexValid is equal to zero, generate indices for leaf zero.
     // Otherwise, generate indices for command.stateIndex.
     var stateIndexMux = Mux1()([0, commandStateIndex], computedIsStateLeafIndexValid);
-    var computedStateLeafPathIndices[stateTreeDepth] = MerklePathIndicesGenerator(stateTreeDepth)(stateIndexMux);
 
     // 3. Verify that the original state leaf exists in the given state root.
     var stateLeafHash = PoseidonHasher(3)(stateLeaf);
     var computedStateRoot = BinaryMerkleRoot(stateTreeDepth)(
         stateLeafHash,
         actualStateTreeDepth,
-        computedStateLeafPathIndices,
+        stateIndexMux,
         stateLeafPathElements
     );
 
@@ -130,6 +128,7 @@ template SingleMessageProcessorFull(stateTreeDepth, voteOptionTreeDepth) {
         ballot[BALLOT_NONCE_INDEX], 
         ballot[BALLOT_VOTE_OPTION_ROOT_INDEX]
     ]);
+    var computedStateLeafPathIndices[stateTreeDepth] = Num2Bits(stateTreeDepth)(stateIndexMux);
 
     var computedBallotRoot = MerkleTreeInclusionProof(stateTreeDepth)(
         computedBallot,
@@ -186,7 +185,7 @@ template SingleMessageProcessorFull(stateTreeDepth, voteOptionTreeDepth) {
     var computedNewStateRoot = BinaryMerkleRoot(stateTreeDepth)(
         computedNewStateLeafhash,
         actualStateTreeDepth,
-        computedStateLeafPathIndices,
+        stateIndexMux,
         stateLeafPathElements
     );
 

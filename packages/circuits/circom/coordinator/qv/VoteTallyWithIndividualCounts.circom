@@ -6,7 +6,6 @@ include "./comparators.circom";
 include "./unpack-element.circom";
 // local imports
 include "../../utils/trees/CheckRoot.circom";
-include "../../utils/trees/MerklePathIndicesGenerator.circom";
 include "../../utils/trees/LeafExists.circom";
 include "../../utils/trees/QuinaryCheckRoot.circom";
 include "../../utils/qv/ResultCommitmentVerifier.circom";
@@ -129,10 +128,10 @@ template VoteTallyWithIndividualCountsQv(
     }
 
     var computedBallotSubroot = CheckRoot(tallyProcessingStateTreeDepth)(computedBallotHashers);
-    var computedBallotPathIndices[STATE_TREE_DEPTH_DIFFERENCE] = MerklePathIndicesGenerator(STATE_TREE_DEPTH_DIFFERENCE)(index / ballotBatchSize);
+    var computedBallotPathIndices[STATE_TREE_DEPTH_DIFFERENCE] = Num2Bits(STATE_TREE_DEPTH_DIFFERENCE)(index / ballotBatchSize);
 
     var computedVoteCountsSubroot = CheckRoot(tallyProcessingStateTreeDepth)(computedVoteCountsHashers);
-    var computedVoteCountsPathIndices[STATE_TREE_DEPTH_DIFFERENCE] = MerklePathIndicesGenerator(STATE_TREE_DEPTH_DIFFERENCE)(index / voteCountsBatchSize);
+    var computedVoteCountsPathIndices[STATE_TREE_DEPTH_DIFFERENCE] = Num2Bits(STATE_TREE_DEPTH_DIFFERENCE)(index / voteCountsBatchSize);
 
     // Verifies each ballot's existence within the ballot tree.
     LeafExists(STATE_TREE_DEPTH_DIFFERENCE)(

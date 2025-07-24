@@ -520,16 +520,7 @@ export class Poll implements IPoll {
     const { siblings, index } = this.stateTree!.generateProof(Number(stateLeafIndex));
     const siblingsLength = siblings.length;
 
-    // The index must be converted to a list of indices, 1 for each tree level.
-    // The circuit tree depth is this.treeDepths.stateTreeDepth, so the number of siblings must be this.treeDepths.stateTreeDepth,
-    // even if the tree depth is actually 3. The missing siblings can be set to 0, as they
-    // won't be used to calculate the root in the circuit.
-    const indices: bigint[] = [];
-
     for (let i = 0; i < this.treeDepths.stateTreeDepth; i += 1) {
-      // eslint-disable-next-line no-bitwise
-      indices.push(BigInt((index >> i) & 1));
-
       if (i >= siblingsLength) {
         siblings[i] = BigInt(0);
       }
@@ -550,7 +541,7 @@ export class Poll implements IPoll {
       privateKey: maciPrivateKey.asCircuitInputs(),
       pollPublicKey: pollPublicKey.asCircuitInputs(),
       siblings: siblingsArray,
-      indices,
+      index: BigInt(index),
       nullifier,
       stateRoot,
       actualStateTreeDepth,
@@ -578,7 +569,6 @@ export class Poll implements IPoll {
     for (let i = 0; i < this.treeDepths.stateTreeDepth; i += 1) {
       if (i >= elementsLength) {
         pathElements[i] = [0n];
-        pathIndices[i] = 0;
       }
     }
 
@@ -586,7 +576,7 @@ export class Poll implements IPoll {
       privateKey: maciPrivateKey.asCircuitInputs(),
       pathElements: pathElements.map((item) => item.toString()),
       voiceCreditsBalance: voiceCreditsBalance.toString(),
-      pathIndices: pathIndices.map((item) => item.toString()),
+      index: BigInt(stateLeafIndex),
       actualStateTreeDepth: BigInt(this.actualStateTreeDepth),
       stateRoot,
     };

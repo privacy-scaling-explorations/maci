@@ -26,7 +26,7 @@ describe("Poll Joining circuit", function test() {
     "pollPublicKey",
     "stateLeaf",
     "siblings",
-    "indices",
+    "index",
     "nullifier",
     "stateRoot",
     "actualStateTreeDepth",

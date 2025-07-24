@@ -25,13 +25,16 @@ template BinaryMerkleRoot(MAX_DEPTH) {
     signal input leaf;
     // The depth of the Merkle tree.
     signal input depth;
-    // The indices of the leaf node in the Merkle tree.
-    signal input indices[MAX_DEPTH];
+    // The index of the leaf node in the Merkle tree.
+    signal input index;
     // The sibling nodes of the leaf node in the Merkle tree.
     signal input siblings[MAX_DEPTH][1];
 
     // The output of the Merkle tree root.
     signal output out;
+
+    // The indices of the leaf node in the Merkle tree.
+    signal indices[MAX_DEPTH] <== Num2Bits(MAX_DEPTH)(index);
 
     signal nodes[MAX_DEPTH + 1];
     nodes[0] <== leaf;

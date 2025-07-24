@@ -169,7 +169,7 @@ export interface IPollJoiningCircuitInputs {
   pollPublicKey: string[];
   stateLeaf: string[];
   siblings: string[][];
-  indices: string[];
+  index: string;
   nullifier: string;
   stateRoot: string;
   actualStateTreeDepth: string;
