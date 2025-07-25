@@ -139,6 +139,7 @@ export const generateSignUpTreeWithEndKey = async ({
  */
 export const generateSignUpTreeFromKeys = (publicKeys: PublicKey[]): LeanIMT => {
   const signUpTree = new LeanIMT(hashLeanIMT);
+  signUpTree.insert(PAD_KEY_HASH);
   publicKeys.forEach((key) => {
     signUpTree.insert(key.hash());
   });
