@@ -94,7 +94,7 @@ export class SessionKeysService {
     const kernelProvider = new KernelEIP1193Provider(kernelClient);
     const ethersProvider = new BrowserProvider(kernelProvider);
     const signer = await ethersProvider.getSigner();
-    const aaSigner = signer as AASigner;
+    const aaSigner: AASigner = signer;
     aaSigner.isAA = true;
 
     return aaSigner;

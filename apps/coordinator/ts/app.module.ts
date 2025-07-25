@@ -7,6 +7,7 @@ import { FileModule } from "./file/file.module";
 import { HealthModule } from "./health/health.module";
 import { ProofModule } from "./proof/proof.module";
 import { RedisModule } from "./redis/redis.module";
+import { SchedulerModule } from "./scheduler/scheduler.module";
 import { SessionKeysModule } from "./sessionKeys/sessionKeys.module";
 import { SubgraphModule } from "./subgraph/subgraph.module";
 
@@ -26,6 +27,7 @@ import { SubgraphModule } from "./subgraph/subgraph.module";
     SessionKeysModule,
     DeployerModule,
     RedisModule,
+    SchedulerModule,
   ],
 })
 export class AppModule {}
