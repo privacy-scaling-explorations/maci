@@ -1,3 +1,4 @@
+import { EMode } from "@maci-protocol/sdk";
 import { createClient, RedisArgument, RedisClientType } from "@redis/client";
 
 import { ESupportedNetworks } from "../../common";
@@ -10,9 +11,10 @@ const REDIS__GET_ALL_PREFIX = "*-test";
 const scheduledPoll: IScheduledPoll = {
   maciAddress: "0xb83074Ac11fc569AC12F1b7D0C0a6809c3dc355b",
   pollId: "5",
-  mode: 1,
+  mode: EMode.NON_QV,
   chain: ESupportedNetworks.OPTIMISM_SEPOLIA,
   endDate: 1752534000,
+  deploymentBlockNumber: 1,
   merged: false,
   proofsGenerated: false,
 };
@@ -156,9 +158,34 @@ describe("RedisService", () => {
     expect(deleted).toBe(0);
   });
 
+  it("should update a value using set with same key", async () => {
+    const key = getPollKeyFromObject(scheduledPoll, true);
+    const valuePoll = JSON.stringify(scheduledPoll);
+
+    await service.set(key, valuePoll);
+
+    const updatedPoll = { ...scheduledPoll, endDate: 1 };
+    const updatedPollValue = JSON.stringify(updatedPoll);
+
+    await service.set(key, updatedPollValue);
+
+    mockRedisClient.get.mockResolvedValueOnce(updatedPollValue);
+    const stored = await service.get(key);
+    const parsed = JSON.parse(stored!) as IScheduledPoll;
+
+    expect(parsed.endDate).toBe(updatedPoll.endDate);
+  });
+
   it("should return production key name when test is not specified", () => {
-    const key = getPollKeyFromObject(scheduledPoll, false);
-    expect(key).toBe(`${scheduledPoll.chain}-${scheduledPoll.maciAddress}-poll-${scheduledPoll.pollId}`);
+    const originalEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
+
+    try {
+      const key = getPollKeyFromObject(scheduledPoll, false);
+      expect(key).toBe(`${scheduledPoll.chain}-${scheduledPoll.maciAddress}-poll-${scheduledPoll.pollId}`);
+    } finally {
+      process.env.NODE_ENV = originalEnv;
+    }
   });
 
   it("should return test key name when test is specified", () => {
