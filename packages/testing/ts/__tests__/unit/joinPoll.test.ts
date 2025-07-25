@@ -14,6 +14,7 @@ import {
   deployVerifier,
   deployMaci,
   generateMaciStateTreeWithEndKey,
+  deployConstantInitialVoiceCreditProxyFactory,
 } from "@maci-protocol/sdk";
 import { downloadPollJoiningArtifactsBrowser, joinPoll as joinPollBrowser } from "@maci-protocol/sdk/browser";
 import { expect } from "chai";
@@ -62,11 +63,11 @@ describe("joinPoll", function test() {
     );
     const pollPolicyContractAddress = await pollPolicy.getAddress();
 
-    const [initialVoiceCreditProxy] = await deployConstantInitialVoiceCreditProxy(
+    const constantInitialVoiceCreditProxyFactory = await deployConstantInitialVoiceCreditProxyFactory(signer, true);
+    const initialVoiceCreditProxy = await deployConstantInitialVoiceCreditProxy(
       { amount: DEFAULT_INITIAL_VOICE_CREDITS },
+      constantInitialVoiceCreditProxyFactory,
       signer,
-      undefined,
-      true,
     );
     initialVoiceCreditProxyContractAddress = await initialVoiceCreditProxy.getAddress();
 

@@ -1,5 +1,7 @@
 import {
+  ConstantInitialVoiceCreditProxyFactory__factory as ConstantInitialVoiceCreditProxyFactoryFactory,
   deployConstantInitialVoiceCreditProxy,
+  deployConstantInitialVoiceCreditProxyFactory,
   deployFreeForAllSignUpPolicy,
   FreeForAllCheckerFactory__factory as FreeForAllCheckerFactoryFactory,
   FreeForAllPolicyFactory__factory as FreeForAllPolicyFactoryFactory,
@@ -39,6 +41,7 @@ export const deployPoll = async ({
   initialVoiceCredits,
   freeForAllCheckerFactoryAddress,
   freeForAllPolicyFactoryAddress,
+  initialVoiceCreditProxyFactoryAddress,
   signer,
 }: IDeployPollArgs): Promise<IPollContractsData> => {
   if (!verifyingKeysRegistryContractAddress) {
@@ -80,11 +83,14 @@ export const deployPoll = async ({
   let initialVoiceCreditProxyAddress = initialVoiceCreditProxyContractAddress;
 
   if (!initialVoiceCreditProxyAddress) {
-    const [contract] = await deployConstantInitialVoiceCreditProxy(
+    const constantInitialVoiceCreditProxyFactory = initialVoiceCreditProxyFactoryAddress
+      ? ConstantInitialVoiceCreditProxyFactoryFactory.connect(initialVoiceCreditProxyFactoryAddress, signer)
+      : await deployConstantInitialVoiceCreditProxyFactory(signer, true);
+
+    const contract = await deployConstantInitialVoiceCreditProxy(
       { amount: initialVoiceCredits ?? DEFAULT_INITIAL_VOICE_CREDITS },
+      constantInitialVoiceCreditProxyFactory,
       signer,
-      undefined,
-      true,
     );
     initialVoiceCreditProxyAddress = await contract.getAddress();
   }

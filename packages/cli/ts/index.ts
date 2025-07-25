@@ -362,17 +362,23 @@ program
       const signer = await getSigner();
       const network = await signer.provider?.getNetwork();
 
-      const [verifyingKeysRegistryAddress, maciAddress, initialVoiceCreditProxyAddress, verifierContractAddress] =
-        readContractAddresses({
-          contractNames: [
-            EContracts.VerifyingKeysRegistry,
-            EContracts.MACI,
-            EContracts.ConstantInitialVoiceCreditProxy,
-            EContracts.Verifier,
-          ],
-          network: network?.name,
-          defaultAddresses: [args.verifyingKeysRegistryAddress, args.maciAddress, args.initialVoiceCreditsProxy],
-        });
+      const [
+        verifyingKeysRegistryAddress,
+        maciAddress,
+        initialVoiceCreditProxyAddress,
+        initialVoiceCreditProxyFactoryAddress,
+        verifierContractAddress,
+      ] = readContractAddresses({
+        contractNames: [
+          EContracts.VerifyingKeysRegistry,
+          EContracts.MACI,
+          EContracts.ConstantInitialVoiceCreditProxy,
+          EContracts.ConstantInitialVoiceCreditProxyFactory,
+          EContracts.Verifier,
+        ],
+        network: network?.name,
+        defaultAddresses: [args.verifyingKeysRegistryAddress, args.maciAddress, args.initialVoiceCreditsProxy],
+      });
 
       const maciContract = MACIFactory.connect(maciAddress, signer);
 
@@ -412,6 +418,7 @@ program
         voteOptions: args.voteOptions ?? DEFAULT_VOTE_OPTIONS,
         verifierContractAddress,
         policyContractAddress: signupPolicyContractAddress,
+        initialVoiceCreditProxyFactoryAddress,
         initialVoiceCreditProxyContractAddress: initialVoiceCreditProxyAddress,
       });
 

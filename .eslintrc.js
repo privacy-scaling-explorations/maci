@@ -89,6 +89,7 @@ module.exports = {
     "no-use-before-define": ["off"],
     "no-shadow": "off",
     curly: ["error", "all"],
+    "no-return-await": "off",
 
     "@typescript-eslint/explicit-member-accessibility": ["error", { accessibility: "no-public" }],
     "@typescript-eslint/no-non-null-assertion": "off",

@@ -7,6 +7,7 @@ import type { EthereumProvider } from "hardhat/types";
 
 import {
   deployConstantInitialVoiceCreditProxy,
+  deployConstantInitialVoiceCreditProxyFactory,
   deployFreeForAllSignUpPolicy,
   deployMaci,
   deployMockVerifier,
@@ -82,11 +83,11 @@ export const deployTestContracts = async ({
     [policyContract] = await deployFreeForAllSignUpPolicy({}, signer, true);
   }
 
-  const [constantInitialVoiceCreditProxyContract] = await deployConstantInitialVoiceCreditProxy(
+  const constantInitialVoiceCreditProxyFactory = await deployConstantInitialVoiceCreditProxyFactory(signer, true);
+  const constantInitialVoiceCreditProxyContract = await deployConstantInitialVoiceCreditProxy(
     { amount: initialVoiceCreditBalance },
+    constantInitialVoiceCreditProxyFactory,
     signer,
-    undefined,
-    true,
   );
 
   // VerifyingKeysRegistry

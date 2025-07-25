@@ -32,6 +32,7 @@ export {
   formatProofForVerifierContract,
   verifyProof,
   linkPoseidonLibraries,
+  deployConstantInitialVoiceCreditProxyFactory,
   deployConstantInitialVoiceCreditProxy,
   deployMockVerifier,
   deployVerifyingKeysRegistry,

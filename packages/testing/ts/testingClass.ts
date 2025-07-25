@@ -13,6 +13,7 @@ import {
   deployFreeForAllSignUpPolicy,
   deployVerifier,
   deployConstantInitialVoiceCreditProxy,
+  deployConstantInitialVoiceCreditProxyFactory,
 } from "@maci-protocol/sdk";
 import hardhat from "hardhat";
 
@@ -173,12 +174,13 @@ export class TestingClass {
       signupPolicyAddress: signupPolicyContractAddress,
     });
 
-    const [initialVoiceCreditProxy] = await deployConstantInitialVoiceCreditProxy(
+    const constantInitialVoiceCreditProxyFactory = await deployConstantInitialVoiceCreditProxyFactory(signer, true);
+    const initialVoiceCreditProxy = await deployConstantInitialVoiceCreditProxy(
       { amount: DEFAULT_INITIAL_VOICE_CREDITS },
+      constantInitialVoiceCreditProxyFactory,
       signer,
-      undefined,
-      true,
     );
+    const initialVoiceCreditProxyFactoryAddress = await constantInitialVoiceCreditProxyFactory.getAddress();
     const initialVoiceCreditProxyContractAddress = await initialVoiceCreditProxy.getAddress();
 
     const verifier = await deployVerifier(signer, true);
@@ -200,6 +202,7 @@ export class TestingClass {
       verifierContractAddress,
       maciAddress: maciAddresses.maciContractAddress,
       policyContractAddress: pollPolicyContractAddress,
+      initialVoiceCreditProxyFactoryAddress,
       initialVoiceCreditProxyContractAddress,
       voteOptions: DEFAULT_VOTE_OPTIONS,
       verifyingKeysRegistryContractAddress: verifyingKeysRegistry,

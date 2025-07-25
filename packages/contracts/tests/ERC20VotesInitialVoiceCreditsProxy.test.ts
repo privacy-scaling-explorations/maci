@@ -1,7 +1,11 @@
 import { expect } from "chai";
 
 import { ERC20VotesInitialVoiceCreditProxy, getDefaultSigner, MockERC20Votes } from "../ts";
-import { deployERC20VotesInitialVoiceCreditProxy, deployMockERC20Votes } from "../ts/deploy";
+import {
+  deployERC20VotesInitialVoiceCreditProxy,
+  deployERC20VotesInitialVoiceCreditProxyFactory,
+  deployMockERC20Votes,
+} from "../ts/deploy";
 
 describe("ERC20VotesInitialVoiceCreditsProxy", () => {
   let erc20VotesInitialVoiceCreditProxy: ERC20VotesInitialVoiceCreditProxy;
@@ -17,15 +21,15 @@ describe("ERC20VotesInitialVoiceCreditsProxy", () => {
     user = await signer.getAddress();
     mockERC20Votes = await deployMockERC20Votes(signer, true);
 
-    [erc20VotesInitialVoiceCreditProxy] = await deployERC20VotesInitialVoiceCreditProxy(
+    const erc20VotesInitialVoiceCreditProxyFactory = await deployERC20VotesInitialVoiceCreditProxyFactory(signer, true);
+    erc20VotesInitialVoiceCreditProxy = await deployERC20VotesInitialVoiceCreditProxy(
       {
         snapshotBlock,
         token: await mockERC20Votes.getAddress(),
         factor,
       },
+      erc20VotesInitialVoiceCreditProxyFactory,
       signer,
-      undefined,
-      true,
     );
   });
 

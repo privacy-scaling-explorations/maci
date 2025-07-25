@@ -29,6 +29,7 @@ import {
   deployFreeForAllSignUpPolicy,
   deployConstantInitialVoiceCreditProxy,
   deployVerifier,
+  deployConstantInitialVoiceCreditProxyFactory,
 } from "@maci-protocol/sdk";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
@@ -136,11 +137,11 @@ describe("Integration tests", function test() {
       signer,
     });
 
-    const [initialVoiceCreditProxy] = await deployConstantInitialVoiceCreditProxy(
+    const constantInitialVoiceCreditProxyFactory = await deployConstantInitialVoiceCreditProxyFactory(signer, true);
+    const initialVoiceCreditProxy = await deployConstantInitialVoiceCreditProxy(
       { amount: DEFAULT_INITIAL_VOICE_CREDITS },
+      constantInitialVoiceCreditProxyFactory,
       signer,
-      undefined,
-      true,
     );
     const initialVoiceCreditProxyContractAddress = await initialVoiceCreditProxy.getAddress();
     const verifier = await deployVerifier(signer, true);

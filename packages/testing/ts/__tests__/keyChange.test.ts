@@ -24,6 +24,7 @@ import {
   deployFreeForAllSignUpPolicy,
   deployConstantInitialVoiceCreditProxy,
   deployVerifier,
+  deployConstantInitialVoiceCreditProxyFactory,
 } from "@maci-protocol/sdk";
 import { expect } from "chai";
 
@@ -97,11 +98,11 @@ describe("keyChange tests", function test() {
     // we deploy the verifying keys registry contract
     verifyingKeysRegistryAddress = await deployVerifyingKeysRegistryContract({ signer });
 
-    const [initialVoiceCreditProxy] = await deployConstantInitialVoiceCreditProxy(
+    const constantInitialVoiceCreditProxyFactory = await deployConstantInitialVoiceCreditProxyFactory(signer, true);
+    const initialVoiceCreditProxy = await deployConstantInitialVoiceCreditProxy(
       { amount: DEFAULT_INITIAL_VOICE_CREDITS },
+      constantInitialVoiceCreditProxyFactory,
       signer,
-      undefined,
-      true,
     );
     initialVoiceCreditProxyContractAddress = await initialVoiceCreditProxy.getAddress();
 

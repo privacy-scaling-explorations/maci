@@ -13,6 +13,7 @@ export {
   deployContractWithLinkedLibraries,
   deploySignupToken,
   deploySignupTokenPolicy,
+  deployConstantInitialVoiceCreditProxyFactory,
   deployConstantInitialVoiceCreditProxy,
   deployERC20VotesInitialVoiceCreditProxy,
   deployFreeForAllSignUpPolicy,

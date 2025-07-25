@@ -54,6 +54,9 @@ import {
   TokenPolicyFactory,
   ZupassCheckerFactory,
   ZupassPolicyFactory,
+  deployConstantInitialVoiceCreditProxyFactory,
+  ConstantInitialVoiceCreditProxyFactory,
+  EInitialVoiceCreditProxiesFactories,
 } from "@maci-protocol/sdk";
 import { Injectable } from "@nestjs/common";
 import { BaseContract, Signer } from "ethers";
@@ -413,12 +416,48 @@ export class DeployerService {
   }
 
   /**
+   * Get the voice credit proxy factory contract object
+   * always deploy and save it
+   *
+   * @param signer - the signer
+   * @param voiceCreditProxyFactoryType - the voice credit proxy factory type
+   * @param network - the network
+   * @returns - the voice credit proxy factory contract
+   */
+  async deployAndSaveVoiceCreditProxyFactory(
+    signer: Signer,
+    voiceCreditProxyFactoryType: EInitialVoiceCreditProxiesFactories,
+    network: ESupportedNetworks,
+  ): Promise<ConstantInitialVoiceCreditProxyFactory> {
+    let contract: ConstantInitialVoiceCreditProxyFactory;
+
+    switch (voiceCreditProxyFactoryType) {
+      case EInitialVoiceCreditProxiesFactories.Constant: {
+        contract = await deployConstantInitialVoiceCreditProxyFactory(signer, true);
+        break;
+      }
+      default:
+        throw new Error(ErrorCodes.UNSUPPORTED_VOICE_CREDIT_PROXY_FACTORY.toString());
+    }
+
+    this.storage.register({
+      id: voiceCreditProxyFactoryType,
+      contract,
+      args: [],
+      network,
+    });
+
+    return contract;
+  }
+
+  /**
    * Get the voice credit proxy contract object
    * always deploy and save it
    *
    * @param signer - the signer
    * @param voiceCreditProxyType - the voice credit proxy type
    * @param network - the network
+   * @param initialVoiceCreditProxyFactory - the initial voice credit proxy factory
    * @param args - the args
    * @returns - the voice credit proxy contract
    */
@@ -426,19 +465,19 @@ export class DeployerService {
     signer: Signer,
     voiceCreditProxyType: EInitialVoiceCreditProxies,
     network: ESupportedNetworks,
+    initialVoiceCreditProxyFactory: ConstantInitialVoiceCreditProxyFactory,
     args?: IInitialVoiceCreditProxyArgs,
   ): Promise<ConstantInitialVoiceCreditProxy> {
     let contract: ConstantInitialVoiceCreditProxy;
 
     switch (voiceCreditProxyType) {
       case EInitialVoiceCreditProxies.Constant: {
-        [contract] = await deployConstantInitialVoiceCreditProxy(
+        contract = await deployConstantInitialVoiceCreditProxy(
           {
             amount: args!.amount,
           },
+          initialVoiceCreditProxyFactory,
           signer,
-          undefined,
-          true,
         );
         break;
       }
@@ -624,10 +663,17 @@ export class DeployerService {
     // check if initial voice credit proxy address was given
     let initialVoiceCreditProxyAddress = config.initialVoiceCreditsProxy.address;
     if (!initialVoiceCreditProxyAddress) {
+      const initialVoiceCreditProxyFactory = await this.deployAndSaveVoiceCreditProxyFactory(
+        signer,
+        config.initialVoiceCreditsProxy.factoryType,
+        chain,
+      );
+
       const initialVoiceCreditProxyContract = await this.deployAndSaveVoiceCreditProxy(
         signer,
         config.initialVoiceCreditsProxy.type,
         chain,
+        initialVoiceCreditProxyFactory,
         config.initialVoiceCreditsProxy.args,
       );
       initialVoiceCreditProxyAddress = (await initialVoiceCreditProxyContract.getAddress()) as Hex;

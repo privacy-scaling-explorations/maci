@@ -188,40 +188,69 @@ export const deployVerifier = async (signer?: Signer, quiet = false): Promise<Ve
   deployContract<Verifier>("Verifier", signer, quiet);
 
 /**
- * Deploy a constant initial voice credit proxy contract
- * @param args - the deploy constant initial voice credit proxy arguments
+ * Deploy a constant initial voice credit proxy factory contract
  * @param signer - the signer to use to deploy the contract
- * @param proxyFactory - the optional proxy factory to reuse for deployment
  * @param quiet - whether to suppress console output
- * @returns the deployed ConstantInitialVoiceCreditProxy contract
+ * @returns the deployed ConstantInitialVoiceCreditProxyFactory contract
  */
-export const deployConstantInitialVoiceCreditProxy = async (
-  args: { amount: number },
+export const deployConstantInitialVoiceCreditProxyFactory = async (
   signer?: Signer,
-  proxyFactory?: ConstantInitialVoiceCreditProxyFactoryContract,
   quiet = false,
-): Promise<[ConstantInitialVoiceCreditProxy, ConstantInitialVoiceCreditProxyFactoryContract]> => {
+): Promise<ConstantInitialVoiceCreditProxyFactoryContract> => {
   if (!signer) {
     throw new Error("Signer is not provided");
   }
 
-  const initialVoiceCreditProxyFactory =
-    proxyFactory ??
-    (await deployContract<ConstantInitialVoiceCreditProxyFactoryContract>(
-      EInitialVoiceCreditProxiesFactories.Constant,
-      signer,
-      quiet,
-    ));
+  return await deployContract<ConstantInitialVoiceCreditProxyFactoryContract>(
+    EInitialVoiceCreditProxiesFactories.Constant,
+    signer,
+    quiet,
+  );
+};
 
-  const initialVoiceCreditProxy = await deployProxyClone<ConstantInitialVoiceCreditProxy, number[]>({
+/**
+ * Deploy a constant initial voice credit proxy contract
+ * @param args - the deploy constant initial voice credit proxy arguments
+ * @param signer - the signer to use to deploy the contract
+ * @param proxyFactory - the optional proxy factory to reuse for deployment
+ * @returns the deployed ConstantInitialVoiceCreditProxy contract
+ */
+export const deployConstantInitialVoiceCreditProxy = async (
+  args: { amount: number },
+  proxyFactory: ConstantInitialVoiceCreditProxyFactoryContract,
+  signer?: Signer,
+): Promise<ConstantInitialVoiceCreditProxy> => {
+  if (!signer) {
+    throw new Error("Signer is not provided");
+  }
+
+  return await deployProxyClone<ConstantInitialVoiceCreditProxy, number[]>({
     factory: new ConstantInitialVoiceCreditProxyFactory(signer),
-    proxyFactory:
-      initialVoiceCreditProxyFactory as unknown as IFactoryLike<ConstantInitialVoiceCreditProxyFactoryContract>,
+    proxyFactory: proxyFactory as unknown as IFactoryLike<ConstantInitialVoiceCreditProxyFactoryContract>,
     args: [args.amount],
     signer,
   });
+};
 
-  return [initialVoiceCreditProxy, initialVoiceCreditProxyFactory];
+/**
+ * Deploy a ERC20VotesInitialVoiceCreditProxyFactory contract
+ * @param signer - the signer to use to deploy the contract
+ * @param quiet - whether to suppress console output
+ * @returns the deployed ERC20VotesInitialVoiceCreditProxyFactory contract
+ */
+export const deployERC20VotesInitialVoiceCreditProxyFactory = async (
+  signer?: Signer,
+  quiet = false,
+): Promise<ERC20VotesInitialVoiceCreditProxyFactoryContract> => {
+  if (!signer) {
+    throw new Error("Signer is not provided");
+  }
+
+  return await deployContract<ERC20VotesInitialVoiceCreditProxyFactoryContract>(
+    EInitialVoiceCreditProxiesFactories.ERC20Votes,
+    signer,
+    quiet,
+  );
 };
 
 /**
@@ -229,39 +258,24 @@ export const deployConstantInitialVoiceCreditProxy = async (
  * @param args - the deploy ERC20VotesInitialVoiceCreditProxy arguments
  * @param signer - the signer to use to deploy the contract
  * @param proxyFactory - the optional proxy factory to reuse for deployment
- * @param quiet - whether to suppress console output
+ * @param quiet- whether to suppress console output
  * @returns the deployed ERC20VotesInitialVoiceCreditProxy contract
  */
 export const deployERC20VotesInitialVoiceCreditProxy = async (
   args: { token: string; snapshotBlock: bigint; factor: bigint },
+  proxyFactory: ERC20VotesInitialVoiceCreditProxyFactoryContract,
   signer?: Signer,
-  proxyFactory?: ERC20VotesInitialVoiceCreditProxyFactoryContract,
-  quiet = false,
-): Promise<[ERC20VotesInitialVoiceCreditProxy, ERC20VotesInitialVoiceCreditProxyFactoryContract]> => {
+): Promise<ERC20VotesInitialVoiceCreditProxy> => {
   if (!signer) {
     throw new Error("Signer is not provided");
   }
 
-  const erc20VotesInitialVoiceCreditProxyFactory =
-    proxyFactory ??
-    (await deployContract<ERC20VotesInitialVoiceCreditProxyFactoryContract>(
-      EInitialVoiceCreditProxiesFactories.ERC20Votes,
-      signer,
-      quiet,
-    ));
-
-  const erc20VotesInitialVoiceCreditProxy = await deployProxyClone<
-    ERC20VotesInitialVoiceCreditProxy,
-    [bigint, string, bigint]
-  >({
+  return await deployProxyClone<ERC20VotesInitialVoiceCreditProxy, [bigint, string, bigint]>({
     factory: new ERC20VotesInitialVoiceCreditProxyFactory(signer),
-    proxyFactory:
-      erc20VotesInitialVoiceCreditProxyFactory as unknown as IFactoryLike<ERC20VotesInitialVoiceCreditProxyFactoryContract>,
+    proxyFactory: proxyFactory as unknown as IFactoryLike<ERC20VotesInitialVoiceCreditProxyFactoryContract>,
     args: [args.snapshotBlock, args.token, args.factor],
     signer,
   });
-
-  return [erc20VotesInitialVoiceCreditProxy, erc20VotesInitialVoiceCreditProxyFactory];
 };
 
 /**
