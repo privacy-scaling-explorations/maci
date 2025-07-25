@@ -19,8 +19,8 @@ template PollJoined(stateTreeDepth) {
     signal input voiceCreditsBalance;
     // Path elements
     signal input pathElements[stateTreeDepth][STATE_TREE_ARITY - 1];
-    // Path indices
-    signal input pathIndices[stateTreeDepth];
+    // Index
+    signal input index;
     // Poll State tree root which proves the user is joined
     signal input stateRoot;
     // The actual tree depth (might be <= stateTreeDepth) Used in BinaryMerkleRoot
@@ -35,7 +35,7 @@ template PollJoined(stateTreeDepth) {
     var calculatedRoot = BinaryMerkleRoot(stateTreeDepth)(
         stateLeaf,
         actualStateTreeDepth,
-        pathIndices,
+        index,
         pathElements
     );
 

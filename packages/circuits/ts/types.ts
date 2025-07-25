@@ -25,7 +25,7 @@ export interface IPollJoiningInputs {
   pollPublicKey: bigint[][];
   stateLeaf: bigint[];
   siblings: bigint[][];
-  indices: bigint[];
+  index: bigint;
   nullifier: bigint;
   credits: bigint;
   stateRoot: bigint;
@@ -41,7 +41,7 @@ export interface IPollJoinedInputs {
   voiceCreditsBalance: bigint;
   stateLeaf: bigint[];
   pathElements: bigint[][];
-  pathIndices: bigint[];
+  index: bigint;
   credits: bigint;
   stateRoot: bigint;
   actualStateTreeDepth: bigint;

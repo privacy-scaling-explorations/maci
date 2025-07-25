@@ -26,7 +26,7 @@ describe("Poll Joined circuit", function test() {
     "voiceCreditsBalance",
     "stateLeaf",
     "pathElements",
-    "pathIndices",
+    "index",
     "stateRoot",
     "actualStateTreeDepth",
   ];

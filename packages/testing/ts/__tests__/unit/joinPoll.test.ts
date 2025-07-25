@@ -16,7 +16,7 @@ import {
   generateMaciStateTreeWithEndKey,
   deployConstantInitialVoiceCreditProxyFactory,
 } from "@maci-protocol/sdk";
-import { downloadPollJoiningArtifactsBrowser, joinPoll as joinPollBrowser } from "@maci-protocol/sdk/browser";
+import { joinPoll as joinPollBrowser } from "@maci-protocol/sdk/browser";
 import { expect } from "chai";
 import { Signer } from "ethers";
 
@@ -153,25 +153,27 @@ describe("joinPoll", function test() {
     expect(BigInt(registeredUserData.pollStateIndex!)).to.eq(1);
   });
 
-  it("should allow to join the poll and return the user data using a downloaded zKey", async () => {
+  it("should allow to join the poll using a precomputed inclusion proof", async () => {
     const startBlock = await signer.provider?.getBlockNumber();
 
-    const { zKey, wasm } = await downloadPollJoiningArtifactsBrowser({
-      testing: true,
-      stateTreeDepth: 10,
+    const stateTree = await generateMaciStateTreeWithEndKey({
+      maciContractAddress: maciAddresses.maciContractAddress,
+      signer,
+      userPublicKey: users[1].publicKey,
     });
+
+    const inclusionProof = stateTree.signUpTree.generateProof(2);
 
     await joinPollBrowser({
       maciAddress: maciAddresses.maciContractAddress,
       privateKey: users[1].privateKey.serialize(),
       signer,
       pollId: 0n,
-      pollJoiningZkey: zKey as unknown as string,
-      useWasm: true,
-      pollWasm: wasm as unknown as string,
+      inclusionProof,
+      pollJoiningZkey: testPollJoiningZkeyPath,
+      pollWasm: testPollJoiningWasmPath,
       sgDataArg: DEFAULT_SG_DATA,
       ivcpDataArg: DEFAULT_IVCP_DATA,
-      useLatestStateIndex: true,
     });
 
     const registeredUserData = await getJoinedUserData({
@@ -184,46 +186,6 @@ describe("joinPoll", function test() {
 
     expect(registeredUserData.isJoined).to.eq(true);
     expect(BigInt(registeredUserData.pollStateIndex!)).to.eq(2);
-  });
-
-  it("should allow to join the poll using a precomputed inclusion proof", async () => {
-    const startBlock = await signer.provider?.getBlockNumber();
-
-    const stateTree = await generateMaciStateTreeWithEndKey({
-      maciContractAddress: maciAddresses.maciContractAddress,
-      signer,
-      userPublicKey: users[2].publicKey,
-    });
-
-    const inclusionProof = stateTree.signUpTree.generateProof(3);
-
-    const { zKey, wasm } = await downloadPollJoiningArtifactsBrowser({
-      testing: true,
-      stateTreeDepth: 10,
-    });
-
-    await joinPollBrowser({
-      maciAddress: maciAddresses.maciContractAddress,
-      privateKey: users[2].privateKey.serialize(),
-      signer,
-      pollId: 0n,
-      inclusionProof,
-      pollJoiningZkey: zKey as unknown as string,
-      pollWasm: wasm as unknown as string,
-      sgDataArg: DEFAULT_SG_DATA,
-      ivcpDataArg: DEFAULT_IVCP_DATA,
-    });
-
-    const registeredUserData = await getJoinedUserData({
-      maciAddress: maciAddresses.maciContractAddress,
-      pollId: 0n,
-      pollPublicKey: users[2].publicKey.serialize(),
-      signer,
-      startBlock: startBlock || 0,
-    });
-
-    expect(registeredUserData.isJoined).to.eq(true);
-    expect(BigInt(registeredUserData.pollStateIndex!)).to.eq(3);
   });
 
   it("should throw error if poll does not exist", async () => {

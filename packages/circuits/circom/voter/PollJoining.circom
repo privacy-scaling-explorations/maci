@@ -18,8 +18,8 @@ template PollJoining(stateTreeDepth) {
     signal input pollPublicKey[2];
     // Siblings
     signal input siblings[stateTreeDepth][STATE_TREE_ARITY - 1];
-    // Indices
-    signal input indices[stateTreeDepth];
+    // Index
+    signal input index;
     // User's hashed private key
     signal input nullifier;
     // MACI State tree root which proves the user is signed up
@@ -46,7 +46,7 @@ template PollJoining(stateTreeDepth) {
     var calculatedRoot = BinaryMerkleRoot(stateTreeDepth)(
         publicKeyHash,
         actualStateTreeDepth,
-        indices,
+        index,
         siblings
     );
 

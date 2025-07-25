@@ -190,16 +190,7 @@ export const joiningCircuitInputs = (
   const { siblings, index, root: stateRoot } = inclusionProof;
   const siblingsLength = siblings.length;
 
-  // The index must be converted to a list of indices, 1 for each tree level.
-  // The circuit tree depth is this.stateTreeDepth, so the number of siblings must be this.stateTreeDepth,
-  // even if the tree depth is actually 3. The missing siblings can be set to 0, as they
-  // won't be used to calculate the root in the circuit.
-  const indices: bigint[] = [];
-
   for (let i = 0; i < stateTreeDepth; i += 1) {
-    // eslint-disable-next-line no-bitwise
-    indices.push(BigInt((index >> i) & 1));
-
     if (i >= siblingsLength) {
       siblings[i] = BigInt(0);
     }
@@ -219,7 +210,7 @@ export const joiningCircuitInputs = (
     privateKey: maciPrivateKey.asCircuitInputs(),
     pollPublicKey: pollPublicKey.asCircuitInputs(),
     siblings: siblingsArray,
-    indices,
+    index: BigInt(index),
     nullifier,
     stateRoot,
     actualStateTreeDepth,
