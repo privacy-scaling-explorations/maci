@@ -2,9 +2,9 @@ import type { ESupportedNetworks } from "../common";
 import type { EMode } from "@maci-protocol/sdk";
 
 /**
- * Interface for scheduled polls stored in Redis
+ * Interface of the minimal properties to identify a scheduled poll
  */
-export interface IScheduledPoll {
+export interface IIdentityScheduledPoll {
   /**
    * Maci contract address
    */
@@ -16,17 +16,27 @@ export interface IScheduledPoll {
   pollId: string;
 
   /**
+   * Chain in which the poll is deployed
+   */
+  chain: ESupportedNetworks;
+}
+
+/**
+ * Interface for scheduled polls stored in Redis
+ */
+export interface IScheduledPoll extends IIdentityScheduledPoll {
+  /**
+   * Deployment block number
+   */
+  deploymentBlockNumber: number;
+
+  /**
    * Voting mode
    */
   mode: EMode;
 
   /**
-   * Chain in which the poll is deployed
-   */
-  chain: ESupportedNetworks;
-
-  /**
-   * End date
+   * End date in seconds
    */
   endDate: number;
 
@@ -44,22 +54,7 @@ export interface IScheduledPoll {
 /**
  * getPollKeyForRedis parameters
  */
-export interface IGetPollKeyForRedisParams {
-  /**
-   * Chain in which the poll is deployed
-   */
-  chain: ESupportedNetworks;
-
-  /**
-   * Maci contract address
-   */
-  maciAddress: string;
-
-  /**
-   * Poll id (unique identifier)
-   */
-  pollId: string;
-
+export interface IGetPollKeyForRedisParams extends IIdentityScheduledPoll {
   /**
    * Test environment flag (optional)
    */

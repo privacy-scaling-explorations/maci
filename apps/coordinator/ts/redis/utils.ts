@@ -1,4 +1,4 @@
-import type { IGetPollKeyForRedisParams, IScheduledPoll } from "./types";
+import type { IGetPollKeyForRedisParams, IIdentityScheduledPoll } from "./types";
 
 /**
  * Generates a Redis key for a poll based on its attributes
@@ -9,8 +9,10 @@ import type { IGetPollKeyForRedisParams, IScheduledPoll } from "./types";
  * @param test - Optional flag to indicate if this is a test environment
  * @returns key for Redis
  */
-export const getPollKeyForRedis = ({ chain, maciAddress, pollId, test = false }: IGetPollKeyForRedisParams): string =>
-  `${chain}-${maciAddress}-poll-${pollId}${test ? `-test` : ""}`;
+export const getPollKeyForRedis = ({ chain, maciAddress, pollId, test = false }: IGetPollKeyForRedisParams): string => {
+  const isTest = test || process.env.NODE_ENV === "test";
+  return `${chain}-${maciAddress}-poll-${pollId}${isTest ? `-test` : ""}`;
+};
 
 /**
  * Generates a Redis key for a poll object
@@ -19,7 +21,7 @@ export const getPollKeyForRedis = ({ chain, maciAddress, pollId, test = false }:
  * @param test - Optional flag to indicate if this is a test environment
  * @returns key for Redis
  */
-export const getPollKeyFromObject = (scheduledPoll: IScheduledPoll, test?: boolean): string =>
+export const getPollKeyFromObject = (scheduledPoll: IIdentityScheduledPoll, test?: boolean): string =>
   getPollKeyForRedis({
     chain: scheduledPoll.chain,
     maciAddress: scheduledPoll.maciAddress,
