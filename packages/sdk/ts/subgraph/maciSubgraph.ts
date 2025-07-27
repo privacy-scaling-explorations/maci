@@ -1,4 +1,4 @@
-import { PublicKey } from "@maci-protocol/domainobjs";
+import { PublicKey, padKey } from "@maci-protocol/domainobjs";
 
 import type { GraphQLResponse } from "./types";
 
@@ -35,7 +35,7 @@ export class MaciSubgraph {
   /**
    * Get the public keys of all MACIs signed up
    *
-   * @returns Array of public keys
+   * @returns Array of public keys including pad key
    */
   async getKeys(): Promise<PublicKey[]> {
     const res = await fetch(this.url, {
@@ -63,10 +63,13 @@ export class MaciSubgraph {
       throw new Error("No users data in response");
     }
 
-    return json.data.users.map((user) => {
+    const userKeys = json.data.users.map((user) => {
       // Split the id into x and y coordinates and convert to BigInt
       const [x, y] = user.id.split(" ");
       return new PublicKey([BigInt(x), BigInt(y)]);
     });
+
+    userKeys.unshift(padKey);
+    return userKeys;
   }
 }
