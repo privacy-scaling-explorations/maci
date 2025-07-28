@@ -69,6 +69,7 @@ export class MaciSubgraph {
       return new PublicKey([BigInt(x), BigInt(y)]);
     });
 
-    return [padKey, ...userKeys];
+    userKeys.unshift(padKey);
+    return userKeys;
   }
 }
