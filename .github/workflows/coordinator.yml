@@ -2,7 +2,7 @@ name: Coordinator
 
 on:
   push:
-    branches: [dev]
+    branches: [main]
   pull_request:
 
 env:

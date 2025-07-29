@@ -5,7 +5,7 @@ sidebar_label: Tally Votes Circuit
 sidebar_position: 4
 ---
 
-[**Repo link**](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/core)
+[**Repo link**](https://github.com/privacy-scaling-explorations/maci/blob/main/circuits/circom/core)
 
 #### Parameters
 
@@ -18,7 +18,7 @@ sidebar_position: 4
 ![TallyVotes](/img/circuits/tallyVotes.svg)
 
 :::info
-A version working with non quadratic voting (non-qv) is also [available](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/core/non-qv/tallyVotes.circom). This version is called `tallyVotesNonQv` and is to be used when the Poll is not using the quadratic voting feature. Note that by default MACI works with quadratic voting.
+A version working with non quadratic voting (non-qv) is also [available](https://github.com/privacy-scaling-explorations/maci/blob/main/circuits/circom/core/non-qv/tallyVotes.circom). This version is called `tallyVotesNonQv` and is to be used when the Poll is not using the quadratic voting feature. Note that by default MACI works with quadratic voting.
 :::
 
 #### Input signals

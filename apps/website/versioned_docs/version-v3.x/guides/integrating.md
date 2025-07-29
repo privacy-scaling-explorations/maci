@@ -43,7 +43,7 @@ function signUp(PublicKey memory _publicKey, bytes memory _signUpPolicyData) pub
 
 ## InitialVoiceCreditProxy
 
-If you'd like to extend the functionality of how votes are distributed among users, you'll need to build you own initial voice credit proxy contract by following the [IInitialVoiceCreditProxy interface](https://github.com/privacy-scaling-explorations/maci/blob/dev/packages/contracts/contracts/interfaces/IInitialVoiceCreditProxy.sol). You can see our [basic example](https://github.com/privacy-scaling-explorations/maci/blob/dev/packages/contracts/contracts/initialVoiceCreditProxy/ConstantInitialVoiceCreditProxy.sol) how it's implemented for constant distribution.
+If you'd like to extend the functionality of how votes are distributed among users, you'll need to build you own initial voice credit proxy contract by following the [IInitialVoiceCreditProxy interface](https://github.com/privacy-scaling-explorations/maci/blob/main/packages/contracts/contracts/interfaces/IInitialVoiceCreditProxy.sol). You can see our [basic example](https://github.com/privacy-scaling-explorations/maci/blob/main/packages/contracts/contracts/initialVoiceCreditProxy/ConstantInitialVoiceCreditProxy.sol) how it's implemented for constant distribution.
 
 ```ts
 contract ConstantInitialVoiceCreditProxy is InitialVoiceCreditProxy {
@@ -118,7 +118,7 @@ Given the verification functions being exposed by the Tally contract, quadratic 
 
 ## SDK
 
-Another important component of MACI is the [SDK](https://github.com/privacy-scaling-explorations/maci/tree/dev/packages/sdk). This is a TypeScript library that allows you to interact with MACI.
+Another important component of MACI is the [SDK](https://github.com/privacy-scaling-explorations/maci/tree/main/packages/sdk). This is a TypeScript library that allows you to interact with MACI.
 
 You can find the following subdirectories, where functions are organised as follows:
 

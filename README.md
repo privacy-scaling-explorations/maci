@@ -1,7 +1,7 @@
 # Minimal Anti-Collusion Infrastructure
 
 [![CI][cli-actions-badge]][cli-actions-link]
-[![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/privacy-scaling-explorations/maci/blob/dev/LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/privacy-scaling-explorations/maci/blob/main/LICENSE)
 
 Minimal Anti-Collusion Infrastructure (MACI) is an on-chain voting protocol which protects privacy and minimizes the risk of collusion and bribery.
 
@@ -33,11 +33,11 @@ Below you can find a list of the packages included in this repository.
 
 ### Branches
 
-The base branch of the project is `dev`, which is used for ongoing development.
+The base branch of the project is `main`, which is used for ongoing development.
 
 This project uses tags for releases. [View all MACI releases](https://github.com/privacy-scaling-explorations/maci/releases).
 
-To contribute to MACI, create feature/fix branches, then open PRs into `dev`. [Learn more about contributing](https://maci.pse.dev/docs/guides/compile-circuits#installation).
+To contribute to MACI, create feature/fix branches, then open PRs into `main`. [Learn more about contributing](https://maci.pse.dev/docs/guides/compile-circuits#installation).
 
 ### Local development
 
