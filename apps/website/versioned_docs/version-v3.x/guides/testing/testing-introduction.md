@@ -112,7 +112,7 @@ circuits.
 
 Note the locations of the `.zkey` files as the smart contract tasks require them as part of the JSON configuration file.
 
-For testing purposes you can download the required artifacts using the [`download-zkeys:test`](https://github.com/privacy-scaling-explorations/maci/blob/dev/package.json#L15). The script will place all required artifacts inside the `cli/zkeys` folder.
+For testing purposes you can download the required artifacts using the [`download-zkeys:test`](https://github.com/privacy-scaling-explorations/maci/blob/main/package.json#L15). The script will place all required artifacts inside the `cli/zkeys` folder.
 
 You can run the script directly with bash or use pnpm: `pnpm run download:test-zkeys` from the monorepo root.
 

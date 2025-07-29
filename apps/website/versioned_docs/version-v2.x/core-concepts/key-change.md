@@ -175,5 +175,5 @@ expect(stateLeaf2.pubKey.equals(user2Keypair.pubKey)).to.eq(true);
 We see that is important that we set the final message (the one with the new vote) with nonce 1, as this vote would be counted as the first vote.
 
 :::info
-Tests related to key changes have been added to the [core package](https://github.com/privacy-scaling-explorations/maci/blob/dev/core/ts/__tests__/) and to the [cli package](https://github.com/privacy-scaling-explorations/maci/blob/dev/cli/tests/).
+Tests related to key changes have been added to the [core package](https://github.com/privacy-scaling-explorations/maci/blob/main/core/ts/__tests__/) and to the [cli package](https://github.com/privacy-scaling-explorations/maci/blob/main/cli/tests/).
 :::

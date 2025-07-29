@@ -6,7 +6,7 @@ sidebar_position: 9
 ---
 
 :::info
-Code location: [Params.sol](https://github.com/privacy-scaling-explorations/maci/blob/dev/packages/contracts/contracts/utilities/Params.sol)
+Code location: [Params.sol](https://github.com/privacy-scaling-explorations/maci/blob/main/packages/contracts/contracts/utilities/Params.sol)
 :::
 
 A contract holding three structs:

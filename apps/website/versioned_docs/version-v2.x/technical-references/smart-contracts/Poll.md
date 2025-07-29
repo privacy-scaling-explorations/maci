@@ -6,7 +6,7 @@ sidebar_position: 2
 ---
 
 :::info
-Code location: [Poll.sol](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/Poll.sol)
+Code location: [Poll.sol](https://github.com/privacy-scaling-explorations/maci/blob/main/contracts/contracts/Poll.sol)
 :::
 
 This contract allows users to submit their votes.
