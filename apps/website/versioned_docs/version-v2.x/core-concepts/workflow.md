@@ -65,7 +65,7 @@ Therefore, even if a coordinator is corrupt, they are unable to change a user’
 
 To explain the MACI workflow, let's give a quick overview of the key smart contracts.
 
-See our [smart contract docs](/docs/category/smart-contracts) or our [contract source code](https://github.com/privacy-scaling-explorations/maci/tree/dev/contracts/contracts) for a more in-depth explanation of all smart contracts.
+See our [smart contract docs](/docs/category/smart-contracts) or our [contract source code](https://github.com/privacy-scaling-explorations/maci/tree/main/contracts/contracts) for a more in-depth explanation of all smart contracts.
 
 ### MACI.sol
 

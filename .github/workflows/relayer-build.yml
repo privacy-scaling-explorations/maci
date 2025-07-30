@@ -2,7 +2,7 @@ name: Relayer
 
 on:
   push:
-    branches: [dev]
+    branches: [main]
   pull_request:
 
 env:
@@ -38,11 +38,11 @@ jobs:
           node-version: 20
           cache: "pnpm"
 
-      - name: Get changed files
-        id: get-changed-files
-        uses: jitterbit/get-changed-files@v1
-        with:
-          format: "csv"
+      # - name: Get changed files
+      #   id: get-changed-files
+      #   uses: jitterbit/get-changed-files@v1
+      #   with:
+      #     format: "csv"
 
       - name: Check for changes in 'circuit' folder
         id: check_changes

@@ -11,11 +11,11 @@ MACI uses zk-SNARKs to essentially hide how each person voted while still reveal
 
 ## MACI Circuits
 
-MACI has three main zk-SNARK [circuits](https://github.com/privacy-scaling-explorations/maci/tree/dev/circuits):
+MACI has three main zk-SNARK [circuits](https://github.com/privacy-scaling-explorations/maci/tree/main/circuits):
 
-1. [`ProcessMessages.circom`](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/processMessages.circom), which takes a batch of encrypted messages, decrypts them, and generates a proof that the coordinator's local processing was performed correctly.
-2. [`TallyVotes.circom`](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/tallyVotes.circom), which counts votes from users' ballots, batch by batch.
-3. [`Subsidy.circom`](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/subsidy.circom), which implements [pairwise subsidy](https://hackmd.io/@chaosma/H1_9xmT2K). Please note this is an optional feature.
+1. [`ProcessMessages.circom`](https://github.com/privacy-scaling-explorations/maci/blob/main/circuits/circom/processMessages.circom), which takes a batch of encrypted messages, decrypts them, and generates a proof that the coordinator's local processing was performed correctly.
+2. [`TallyVotes.circom`](https://github.com/privacy-scaling-explorations/maci/blob/main/circuits/circom/tallyVotes.circom), which counts votes from users' ballots, batch by batch.
+3. [`Subsidy.circom`](https://github.com/privacy-scaling-explorations/maci/blob/main/circuits/circom/subsidy.circom), which implements [pairwise subsidy](https://hackmd.io/@chaosma/H1_9xmT2K). Please note this is an optional feature.
 
 The rest of the circuits are utilities templates that are required for the main circuits to work correctly. These include utilities such as float math, conversion of private keys, and Poseidon hashing/encryption.
 
@@ -45,7 +45,7 @@ The circuits are used by the coordinator (the prover) to prove that they have co
 
 ## How do the circuits work?
 
-### Message processing ([`processMessages`](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/processMessages.circom))
+### Message processing ([`processMessages`](https://github.com/privacy-scaling-explorations/maci/blob/main/circuits/circom/processMessages.circom))
 
 This circuit allows the coordinator to prove that they have correctly processed each message in reverse order, in a consecutive batch of 5 ^ msgBatchDepth messages to the respective state leaf within the state tree. Coordinators would use this circuit to prove correct execution at the end of each Poll.
 
@@ -162,7 +162,7 @@ A simplified example using a tree of arity 2:
 
 To prove that `a...d` are leaves of the tree with root `r`, we prove that the leaves have the subroot `s` with depth 2, and _then_ prove that `s` is a member of `r` at depth 1.
 
-The implementation for this is in the `QuinBatchLeavesExists` circuit in `https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/trees/incrementalQuinTree.circom`.
+The implementation for this is in the `QuinBatchLeavesExists` circuit in `https://github.com/privacy-scaling-explorations/maci/blob/main/circuits/circom/trees/incrementalQuinTree.circom`.
 
 This method requires fewer circuit constraints than if we verified a Merkle proof for each leaf.
 
@@ -177,7 +177,7 @@ This method requires fewer circuit constraints than if we verified a Merkle proo
 7. That each message in `msgs` exists in the message tree
 8. That after decrypting and applying each message, in reverse order, to the corresponding state and ballot leaves, the new state root, new ballot root, and `newSbSalt` are the preimage to `newSbCommitment`
 
-### Tally Votes ([`tallyVotes`](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/tallyVotes.circom))
+### Tally Votes ([`tallyVotes`](https://github.com/privacy-scaling-explorations/maci/blob/main/circuits/circom/tallyVotes.circom))
 
 #### Parameters
 
@@ -280,7 +280,7 @@ $poseidon_3([tc_r, tc_t, tc_p])$
 6. That the tally is valid, which is:
    - That the sum of votes per vote option is correct
 
-### Subsisdy ([`subsidy`](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/subsidy.circom))
+### Subsisdy ([`subsidy`](https://github.com/privacy-scaling-explorations/maci/blob/main/circuits/circom/subsidy.circom))
 
 This circuit is an optional feature - it's not required for MACI to function.  
 The subsidy circuit is used to implement pairwise subsidy. This is a technique that can be used to detect voters collusion. It currently is not optimized for production and the team will work on a more efficient implementation in the future.

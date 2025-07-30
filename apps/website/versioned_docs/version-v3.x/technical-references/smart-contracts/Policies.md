@@ -21,7 +21,7 @@ The MACI repository comes with several out-of-the-box options:
 - `HatsPolicy` - This allows gatekeeping signups to only users who have a specific [Hat](https://www.hatsprotocol.xyz/).
 - `GitcoinPassportPolicy` - This allows gatekeeping signups to only users who have a specific [Gitcoin Passport](https://passport.gitcoin.co/) score.
 - `ZupassPolicy` - This allows gatekeeping signups only to users who have a valid [Zupass PCD ticket](https://github.com/proofcarryingdata/zupass).
-- `SemaphorePolicy` - This allows gatekeeping signups only to users who can prove they are part of a [Semaphore](https://semaphore.pse.dev/) group.
+- `SemaphorePolicy` - This allows gatekeeping signups only to users who can prove they are part of a [Semaphore](https://semaphore.pse.main/) group.
 
 You can find all of the latest policy contracts here:
 https://github.com/privacy-scaling-explorations/excubiae/tree/main/packages/contracts/contracts/extensions

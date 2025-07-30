@@ -7,14 +7,14 @@ sidebar_position: 2
 
 There are a number of MACI's smart contracts which can be re-used by different deployments. These are the following:
 
-- [VkRegistry](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/VkRegistry.sol)
-- [PoseidonHashers](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/crypto/Hasher.sol)
-- [PollFactory](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/PollFactory.sol)
-- [MessageProcessorFactory](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/MessageProcessorFactory.sol)
-- [TallyFactory](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/TallyFactory.sol)
-- [Verifier](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/crypto/Verifier.sol)
+- [VkRegistry](https://github.com/privacy-scaling-explorations/maci/blob/main/contracts/contracts/VkRegistry.sol)
+- [PoseidonHashers](https://github.com/privacy-scaling-explorations/maci/blob/main/contracts/contracts/crypto/Hasher.sol)
+- [PollFactory](https://github.com/privacy-scaling-explorations/maci/blob/main/contracts/contracts/PollFactory.sol)
+- [MessageProcessorFactory](https://github.com/privacy-scaling-explorations/maci/blob/main/contracts/contracts/MessageProcessorFactory.sol)
+- [TallyFactory](https://github.com/privacy-scaling-explorations/maci/blob/main/contracts/contracts/TallyFactory.sol)
+- [Verifier](https://github.com/privacy-scaling-explorations/maci/blob/main/contracts/contracts/crypto/Verifier.sol)
 - [FreeForAllGatekeeper](https://github.com/privacy-scaling-explorations/maci/blob/v2.5.0/packages/contracts/contracts/gatekeepers/FreeForAllGatekeeper.sol)
-- [ConstantInitialVoiceCreditProxy](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/initialVoiceCreditProxy/ConstantInitialVoiceCreditProxy.sol) - if you are happy to work with a fixed amount of credits
+- [ConstantInitialVoiceCreditProxy](https://github.com/privacy-scaling-explorations/maci/blob/main/contracts/contracts/initialVoiceCreditProxy/ConstantInitialVoiceCreditProxy.sol) - if you are happy to work with a fixed amount of credits
 
 VkRegistries can be re-used by different protocols to share the same set of verifying keys. Please be advised that you should be verifying that those verifying keys are the ones that have undergone a trusted setup ceremony.
 

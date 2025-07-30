@@ -5,10 +5,10 @@ sidebar_label: zk-SNARK Circuits
 sidebar_position: 1
 ---
 
-MACI has two main zk-SNARK [circuits](https://github.com/privacy-scaling-explorations/maci/tree/dev/circuits):
+MACI has two main zk-SNARK [circuits](https://github.com/privacy-scaling-explorations/maci/tree/main/circuits):
 
-1. ProcessMessages.circom, which takes a batch of encrypted messages, decrypts them, and generates a proof that the coordinator's local processing was performed correctly. [QV](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/core/qv/processMessages.circom) and [non-QV](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/core/non-qv/processMessages.circom) versions are available.
-2. TallyVotes.circom, which counts votes from users' ballots, batch by batch. [QV](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/core/qv/tallyVotes.circom) and [non-QV](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/core/non-qv/tallyVotes.circom) versions are available.
+1. ProcessMessages.circom, which takes a batch of encrypted messages, decrypts them, and generates a proof that the coordinator's local processing was performed correctly. [QV](https://github.com/privacy-scaling-explorations/maci/blob/main/circuits/circom/core/qv/processMessages.circom) and [non-QV](https://github.com/privacy-scaling-explorations/maci/blob/main/circuits/circom/core/non-qv/processMessages.circom) versions are available.
+2. TallyVotes.circom, which counts votes from users' ballots, batch by batch. [QV](https://github.com/privacy-scaling-explorations/maci/blob/main/circuits/circom/core/qv/tallyVotes.circom) and [non-QV](https://github.com/privacy-scaling-explorations/maci/blob/main/circuits/circom/core/non-qv/tallyVotes.circom) versions are available.
 
 The rest of the circuits are utilities templates that are required for the main circuits to work correctly. These include utilities such as float math, conversion of private keys, and Poseidon hashing/encryption.
 

@@ -154,7 +154,7 @@ Within the circuits folder, there are a number of tests that are used to verify 
 
 These tests often use mock data from the `core` package. For instance, when testing the `processMessages` circuit, we are required to generate the parameters from the `core` packing, using the `Poll:processMessages` function. The same applies to vote tallying, where we need the `Poll:tally` function to be run first with mock users and vote messages.
 
-All of the tests run using test parameters, usually `10, 20, 2`, aside from the tests inside: [`ceremonyParam`](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/ts/__tests__/CeremonyParams.test.ts) which use the parameters of the latest MACI ceremony. More details on the trusted setup can be found [here](/docs/security/trusted-setup).
+All of the tests run using test parameters, usually `10, 20, 2`, aside from the tests inside: [`ceremonyParam`](https://github.com/privacy-scaling-explorations/maci/blob/main/circuits/ts/__tests__/CeremonyParams.test.ts) which use the parameters of the latest MACI ceremony. More details on the trusted setup can be found [here](/docs/security/trusted-setup).
 
 ### Core
 
@@ -162,7 +162,7 @@ The core package contains a number of tests that are used to verify that the cor
 
 These tests interact with the crypto and dombinobjs packages, where mock data comes from. Their main goal is to ensure that the core functions work as expected, and that the state is as expected after a series of operations.
 
-Currently, there is a blend of e2e and unit tests, where e2e tests are used to verify that the entire MACI local processing works as expected (users signup, publish votes, messages are processed and finally these votes are tallied). Unit tests on the other hand are used to verify that the core functions work as expected, such as `MessageProcessor` and `VoteTally`. You will find them in separate files, with e2e being [here](https://github.com/privacy-scaling-explorations/maci/blob/dev/core/ts/__tests__/e2e.test.ts) and unit tests in the other files.
+Currently, there is a blend of e2e and unit tests, where e2e tests are used to verify that the entire MACI local processing works as expected (users signup, publish votes, messages are processed and finally these votes are tallied). Unit tests on the other hand are used to verify that the core functions work as expected, such as `MessageProcessor` and `VoteTally`. You will find them in separate files, with e2e being [here](https://github.com/privacy-scaling-explorations/maci/blob/main/core/ts/__tests__/e2e.test.ts) and unit tests in the other files.
 
 ### Domainobjs/Crypto tests
 
@@ -170,7 +170,7 @@ These tests are used to verify that MACI's primitives such as private keys work 
 
 ## "Manual" Testing
 
-To ensure that the MACI stack works as expected, without having to run the entire test suite (or even just the e2e tests), there is a [bash script](https://github.com/privacy-scaling-explorations/maci/blob/dev/packages/contracts/testScriptLocalhost.sh) inside the contracts folder which can be used.
+To ensure that the MACI stack works as expected, without having to run the entire test suite (or even just the e2e tests), there is a [bash script](https://github.com/privacy-scaling-explorations/maci/blob/main/packages/contracts/testScriptLocalhost.sh) inside the contracts folder which can be used.
 
 This script contains a number of actions which touch all of the parts of MACI, and resemble exactly what other e2e tests do.
 
