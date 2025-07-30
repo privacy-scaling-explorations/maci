@@ -5,11 +5,11 @@ sidebar_label: Process Messages Circuit
 sidebar_position: 3
 ---
 
-[**Repo link**](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/coordinator)
+[**Repo link**](https://github.com/privacy-scaling-explorations/maci/blob/main/circuits/circom/coordinator)
 
 This circuit allows the coordinator to prove that they have correctly processed each message in reverse order, in a consecutive batch of 5 ^ messageBatchDepth messages to the respective state leaf within the state tree. Coordinators would use this circuit to prove correct execution at the end of each Poll.
 
-The [`MessageProcessorQv`](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/coordinator/qv/MessageProcessor.circom) circuit will try to decrypt the messages, and based on the content of the message, update within itself the trees, to generate a proof that the coordinator's off-chain processing was done correctly. In other words, the circuit takes a final state, an initial state, and the leaves (messages and user signups) - it processes these messages via the different state transitions to finally check that the expected state is correct.
+The [`MessageProcessorQv`](https://github.com/privacy-scaling-explorations/maci/blob/main/circuits/circom/coordinator/qv/MessageProcessor.circom) circuit will try to decrypt the messages, and based on the content of the message, update within itself the trees, to generate a proof that the coordinator's off-chain processing was done correctly. In other words, the circuit takes a final state, an initial state, and the leaves (messages and user signups) - it processes these messages via the different state transitions to finally check that the expected state is correct.
 The pre-requisites for this circuit are:
 
 - the related Poll has ended
@@ -81,11 +81,11 @@ flowchart LR
 ```
 
 :::info
-A version working with non quadratic voting (non-qv) is also [available](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/coordinator/non-qv/MessageProcessor.circom). This version is called `MessageProcessorNonQV` and is to be used when the Poll is not using the quadratic voting feature. Note that by default MACI works with quadratic voting.
+A version working with non quadratic voting (non-qv) is also [available](https://github.com/privacy-scaling-explorations/maci/blob/main/circuits/circom/coordinator/non-qv/MessageProcessor.circom). This version is called `MessageProcessorNonQV` and is to be used when the Poll is not using the quadratic voting feature. Note that by default MACI works with quadratic voting.
 :::
 
 :::info
-A version working with full credits voting (full) is also [available](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/coordinator/full/MessageProcessor.circom). This version is called `MessageProcessorFull` and is to be used when the Poll is not using the quadratic or non quadratic voting features. Note that by default MACI works with quadratic voting.
+A version working with full credits voting (full) is also [available](https://github.com/privacy-scaling-explorations/maci/blob/main/circuits/circom/coordinator/full/MessageProcessor.circom). This version is called `MessageProcessorFull` and is to be used when the Poll is not using the quadratic or non quadratic voting features. Note that by default MACI works with quadratic voting.
 :::
 
 #### Parameters
@@ -156,7 +156,7 @@ A simplified example using a tree of arity 2:
 
 To prove that `a...d` are leaves of the tree with root `r`, we prove that the leaves have the subroot `s` with depth 2, and _then_ prove that `s` is a member of `r` at depth 1.
 
-The implementation for this is in the `QuinBatchLeavesExists` circuit in `https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/trees/incrementalQuinTree.circom`.
+The implementation for this is in the `QuinBatchLeavesExists` circuit in `https://github.com/privacy-scaling-explorations/maci/blob/main/circuits/circom/trees/incrementalQuinTree.circom`.
 
 This method requires fewer circuit constraints than if we verified a Merkle proof for each leaf.
 

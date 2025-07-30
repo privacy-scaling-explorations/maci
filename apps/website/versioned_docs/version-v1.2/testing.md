@@ -87,7 +87,7 @@ circuits.
 Note the locations of the `.zkey` files as the CLI requires them as
 command-line flags.
 
-For testing purposes you can download the required artifacts using the [`download_zkeys`](https://github.com/privacy-scaling-explorations/maci/blob/dev/integrationTests/scripts/download_zkeys.sh) script inside the `integrationTests/scripts` folder. The script will place all required artifacts inside the `cli/zkeys` folder.
+For testing purposes you can download the required artifacts using the [`download_zkeys`](https://github.com/privacy-scaling-explorations/maci/blob/main/integrationTests/scripts/download_zkeys.sh) script inside the `integrationTests/scripts` folder. The script will place all required artifacts inside the `cli/zkeys` folder.
 You can run the script directly with bash or use pnpm: `pnpm run download:test-zkeys` from the monorepo root.
 
 ### Compile the circuits and generate zkeys (if decided to generate from scratch)

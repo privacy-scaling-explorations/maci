@@ -112,7 +112,7 @@ For non-quadratic voting polls, you can use the `--use-quadratic-voting false` f
 5. Run `pnpm deploy-poll` to deploy your first Poll (you can specify the network by appending `:network` to the command, e.g. `pnpm deploy-poll:sepolia` - please refer to the available networks on the `package.json` scripts section)
 
 :::info
-Should you wish to deploy on a different network, you will need to update the [contracts/tasks/helpers/constants.ts](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/tasks/helpers/constants.ts) file.
+Should you wish to deploy on a different network, you will need to update the [contracts/tasks/helpers/constants.ts](https://github.com/privacy-scaling-explorations/maci/blob/main/contracts/tasks/helpers/constants.ts) file.
 :::
 
 6. You will find all of the deployed contracts addresses and configs in the `deployed-contracts.json` file inside the contracts folder.

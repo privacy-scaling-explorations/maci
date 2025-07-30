@@ -6,7 +6,7 @@ sidebar_position: 1
 ---
 
 :::info
-Code location: [AccQueue.sol](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/trees/AccQueue.sol)
+Code location: [AccQueue.sol](https://github.com/privacy-scaling-explorations/maci/blob/main/contracts/contracts/trees/AccQueue.sol)
 :::
 
 The AccQueue contract represents a Merkle Tree where each leaf insertion only updates a subtree. To obtain the main tree root, the subtrees must be merged together by the contract owner. This requires at least two operations, a `mergeSubRoots` and a `merge`.

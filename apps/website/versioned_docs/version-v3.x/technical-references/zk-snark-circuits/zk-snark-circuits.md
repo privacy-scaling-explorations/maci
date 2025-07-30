@@ -5,10 +5,10 @@ sidebar_label: zk-SNARK Circuits
 sidebar_position: 1
 ---
 
-MACI has three main zk-SNARK [circuits](https://github.com/privacy-scaling-explorations/maci/tree/dev/packages/circuits):
+MACI has three main zk-SNARK [circuits](https://github.com/privacy-scaling-explorations/maci/tree/main/packages/circuits):
 
-1. ProcessMessages.circom, which takes a batch of encrypted messages, decrypts them, and generates a proof that the coordinator's local processing was performed correctly. [QV](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/coordinator/qv/MessageProcessor.circom), [non-QV](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/coordinator/non-qv/MessageProcessor.circom), [Full](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/coordinator/full/MessageProcessor.circom) versions are available.
-2. TallyVotes.circom, which counts votes from users' ballots, batch by batch. [QV](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/coordinator/qv/VoteTally.circom) and [non-QV](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/coordinator/non-qv/VoteTally.circom) versions are available.
+1. ProcessMessages.circom, which takes a batch of encrypted messages, decrypts them, and generates a proof that the coordinator's local processing was performed correctly. [QV](https://github.com/privacy-scaling-explorations/maci/blob/main/circuits/circom/coordinator/qv/MessageProcessor.circom), [non-QV](https://github.com/privacy-scaling-explorations/maci/blob/main/circuits/circom/coordinator/non-qv/MessageProcessor.circom), [Full](https://github.com/privacy-scaling-explorations/maci/blob/main/circuits/circom/coordinator/full/MessageProcessor.circom) versions are available.
+2. TallyVotes.circom, which counts votes from users' ballots, batch by batch. [QV](https://github.com/privacy-scaling-explorations/maci/blob/main/circuits/circom/coordinator/qv/VoteTally.circom) and [non-QV](https://github.com/privacy-scaling-explorations/maci/blob/main/circuits/circom/coordinator/non-qv/VoteTally.circom) versions are available.
 3. PollJoining.circom, which allows users to prove they know a private key for a public key signed up to the MACI smart contract, and to register to a specific poll.
 
 The rest of the circuits are utilities templates that are required for the main circuits to work correctly. These include utilities such as float math, conversion of private keys, and Poseidon hashing/encryption.

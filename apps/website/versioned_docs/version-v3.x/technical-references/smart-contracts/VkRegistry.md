@@ -6,7 +6,7 @@ sidebar_position: 8
 ---
 
 :::info
-Code location: [VerifyingKeysRegistry.sol](https://github.com/privacy-scaling-explorations/maci/blob/dev/packages/contracts/contracts/VerifyingKeysRegistry.sol)
+Code location: [VerifyingKeysRegistry.sol](https://github.com/privacy-scaling-explorations/maci/blob/main/packages/contracts/contracts/VerifyingKeysRegistry.sol)
 :::
 
 The VerifyingKeysRegistry is a contract that holds the verifying keys for the zk-SNARK circuits. It holds four different sets of keys:

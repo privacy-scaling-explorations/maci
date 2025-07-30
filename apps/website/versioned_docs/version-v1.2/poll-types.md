@@ -13,7 +13,7 @@ This document will explain how to use each of these options.
 
 ## Quadratic Voting
 
-MACI has always worked with quadratic voting. Users signing up to MACI are assigned a number of voice credits based on certain conditions (enforced by the [initial voice credit proxy contract](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/initialVoiceCreditProxy/InitialVoiceCreditProxy.sol)), and after each vote, the number of voice credits is reduced by the square of the weight of the vote casted. For instance, if the vote weight is 5, a user must have at least 25 voice credits to cast the vote.
+MACI has always worked with quadratic voting. Users signing up to MACI are assigned a number of voice credits based on certain conditions (enforced by the [initial voice credit proxy contract](https://github.com/privacy-scaling-explorations/maci/blob/main/contracts/contracts/initialVoiceCreditProxy/InitialVoiceCreditProxy.sol)), and after each vote, the number of voice credits is reduced by the square of the weight of the vote casted. For instance, if the vote weight is 5, a user must have at least 25 voice credits to cast the vote.
 
 To run a poll with quadratic voting, the coordinator must set the `useQuadraticVoting` parameter to `true` when creating the MACI instance. This will make the MACI instance use the `Tally` smart contract, which is the one that has been used since the beginning of MACI.
 

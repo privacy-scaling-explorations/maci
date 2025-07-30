@@ -2,7 +2,7 @@ version: 2
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
-    target-branch: "dev"
+    target-branch: "main"
     schedule:
       interval: "weekly"
 
@@ -10,6 +10,6 @@ updates:
     directory: "/"
     versioning-strategy: increase
     open-pull-requests-limit: 5
-    target-branch: "dev"
+    target-branch: "main"
     schedule:
       interval: "weekly"

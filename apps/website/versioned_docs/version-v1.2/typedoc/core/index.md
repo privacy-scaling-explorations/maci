@@ -18,7 +18,7 @@ contracts in discrete components which are easy to test.
 
 To this end, this submodule exposes a `MaciState` class and a `Poll` class.
 Developers should instantiate objects from these classes to test MACI. For
-instance, [`MACI.test.ts`](https://github.com/privacy-scaling-explorations/maci/blob/dev/packages/contracts/tests/MACI.test.ts) creates a
+instance, [`MACI.test.ts`](https://github.com/privacy-scaling-explorations/maci/blob/main/packages/contracts/tests/MACI.test.ts) creates a
 `MaciState` object and every time it interacts with the MACI smart contract, it
 mirrors said interaction on the `MaciState` and `Poll`. As such, the developer
 can then use their helper functions like `maciState.signUp()`,
@@ -38,7 +38,7 @@ call `maciState.signUp()` as well, so that the off-chain representation of MACI
 is kept up to date.
 
 In production, `genMaciStateFromContract()` in
-[`genMaciState.ts`](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/ts/genMaciState.ts) uses this function when it
+[`genMaciState.ts`](https://github.com/privacy-scaling-explorations/maci/blob/main/contracts/ts/genMaciState.ts) uses this function when it
 scans a MACI contract's event log for signups, so as to bring its `MaciState`
 instance up to date.
 

@@ -5,7 +5,7 @@ sidebar_label: Merkle Trees
 sidebar_position: 5
 ---
 
-MACI uses different types of merkle trees to store and manage data. On chain, a [LazyIMT](https://github.com/privacy-scaling-explorations/zk-kit.solidity/tree/main/packages/lazy-imt) is used to store user's state leaves, and an [AccQueue](https://github.com/privacy-scaling-explorations/maci/blob/dev/packages/contracts/contracts/trees/AccQueue.sol) to store user's messages.
+MACI uses different types of merkle trees to store and manage data. On chain, a [LazyIMT](https://github.com/privacy-scaling-explorations/zk-kit.solidity/tree/main/packages/lazy-imt) is used to store user's state leaves, and an [AccQueue](https://github.com/privacy-scaling-explorations/maci/blob/main/packages/contracts/contracts/trees/AccQueue.sol) to store user's messages.
 
 ## Accumulator queue
 

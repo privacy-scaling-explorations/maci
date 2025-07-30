@@ -13,7 +13,7 @@ In a nutshell, this feature was added to support some application like quadratic
 
 ## How topup messages are processed
 
-Topup messages are submitted on chain using the same smart contract used for voting, [`Poll`](https://github.com/privacy-scaling-explorations/maci/blob/dev/contracts/contracts/Poll.sol). With the current design, a TopUpCredit token smart contract is required. In this implementation of MACI, there is an example token, which is an ERC20 contract with 1 decimal, of which the coordinator (or MACI's operator) has ownership of. This privileged figure can mint tokens to users (at their discretion) and users will need to deposit such tokens to the Poll contract in order to topup their voice credits.
+Topup messages are submitted on chain using the same smart contract used for voting, [`Poll`](https://github.com/privacy-scaling-explorations/maci/blob/main/contracts/contracts/Poll.sol). With the current design, a TopUpCredit token smart contract is required. In this implementation of MACI, there is an example token, which is an ERC20 contract with 1 decimal, of which the coordinator (or MACI's operator) has ownership of. This privileged figure can mint tokens to users (at their discretion) and users will need to deposit such tokens to the Poll contract in order to topup their voice credits.
 
 :::info
 MACI is not concerned with the way of distributing such tokens. The operators of the MACI instance should implement their own way of distributing such tokens, as well as withdrawing them from the Poll contract. For instance, if the operator chooses to use a token with a monetary value, the Poll balance could be withdrawn and sent to fund public goods.

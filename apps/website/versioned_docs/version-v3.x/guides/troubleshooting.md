@@ -71,7 +71,7 @@ Error: commitment mismatch
 
 This is because commitments are generated using random salts, thus will differ at each `generateProofs` run.
 
-In [core/Poll.ts](https://github.com/privacy-scaling-explorations/maci/blob/dev/packages/core/ts/Poll.ts):
+In [core/Poll.ts](https://github.com/privacy-scaling-explorations/maci/blob/main/packages/core/ts/Poll.ts):
 
 ```
 let newSbSalt = genRandomSalt();
@@ -140,7 +140,7 @@ event MergeMessageAqSubRoots(uint256 indexed _numSrQueueOps);
 event MergeMessageAq(uint256 indexed _messageRoot);
 ```
 
-Please remember to pull the latest MACI repo updates(`git fetch origin && git pull origin dev`) and run `pnpm build` in the root of this monorepo.
+Please remember to pull the latest MACI repo updates(`git fetch origin && git pull origin main`) and run `pnpm build` in the root of this monorepo.
 
 ### Verifier contract found the proof invalid
 

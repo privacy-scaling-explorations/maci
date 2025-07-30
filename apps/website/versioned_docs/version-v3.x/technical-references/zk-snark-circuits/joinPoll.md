@@ -5,7 +5,7 @@ sidebar_label: Join Poll Circuit
 sidebar_position: 6
 ---
 
-[**Repo link**](https://github.com/privacy-scaling-explorations/maci/blob/dev/circuits/circom/voter)
+[**Repo link**](https://github.com/privacy-scaling-explorations/maci/blob/main/circuits/circom/voter)
 
 ## PollJoining
 

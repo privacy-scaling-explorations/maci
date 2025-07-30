@@ -43,7 +43,7 @@ This step is required to register a user to a specific poll for which they want 
 
 Option 1: Use the `joinPoll` function from the `@maci-protocol/sdk/browser` package.
 
-1. Download the `pollJoining` zk artifacts using [downloadPollJoiningArtifactsBrowser](https://github.com/privacy-scaling-explorations/maci/blob/dev/packages/sdk/ts/proof/download.ts#L46)
+1. Download the `pollJoining` zk artifacts using [downloadPollJoiningArtifactsBrowser](https://github.com/privacy-scaling-explorations/maci/blob/main/packages/sdk/ts/proof/download.ts#L46)
 
 ```typescript
 import { downloadPollJoiningArtifactsBrowser } from "@maci-protocol/sdk/browser";
