@@ -411,7 +411,12 @@ describe("SchedulerService", () => {
       schedulerRegistry.deleteTimeout(getPollKeyFromObject(polls[1]));
       schedulerRegistry.deleteTimeout(getPollKeyFromObject(polls[2]));
 
-      redisService.getAll.mockResolvedValue(polls.map((poll) => getPollKeyFromObject(poll)));
+      redisService.getAll.mockResolvedValue(
+        polls.map((poll) => ({
+          key: getPollKeyFromObject(poll),
+          value: JSON.stringify(poll),
+        })),
+      );
       redisService.get.mockImplementation((key: string): Promise<string | null> => {
         const poll = polls.find((p) => getPollKeyFromObject(p) === key);
         const result = poll ? JSON.stringify(poll) : null;

@@ -17,7 +17,7 @@ import { RedisService } from "../redis/redis.service";
 import { getPollKeyFromObject } from "../redis/utils";
 import { SessionKeysService } from "../sessionKeys/sessionKeys.service";
 
-const BUFFER_TIMEOUT = 10 * 1000; // 10 seconds buffer for poll finalization
+const BUFFER_TIMEOUT = 15 * 1000; // 15 seconds buffer for poll finalization
 
 @Injectable()
 export class SchedulerService implements OnModuleInit {
@@ -289,14 +289,12 @@ export class SchedulerService implements OnModuleInit {
    * Restore all scheduled timeouts from Redis
    */
   private async restoreTimeouts(): Promise<void> {
-    const pollKeys = await this.redisService.getAll();
+    const polls = await this.redisService.getAll();
 
     await Promise.all(
-      pollKeys.map(async (key) => {
+      polls.map(async ({ key, value }) => {
         this.logger.log(`Restoring timeout for poll key: ${key}`);
         try {
-          const value = await this.redisService.get(key);
-
           if (!value) {
             await this.redisService.delete(key);
             return;
