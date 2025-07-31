@@ -102,7 +102,7 @@ export class SchedulerService implements OnModuleInit {
   }: IIdentityPollWithSignerArgs): Promise<IGetPollFinalizationData> {
     const signer = await this.sessionKeysService.getCoordinatorSigner(chain, sessionKeyAddress, approval);
 
-    const [{ endDate, isMerged }, isPollTallied] = await Promise.all([
+    const [{ endDate }, isPollTallied] = await Promise.all([
       getPoll({
         maciAddress,
         pollId: BigInt(pollId),
@@ -117,7 +117,7 @@ export class SchedulerService implements OnModuleInit {
 
     return {
       endDate: Number(endDate),
-      isPollTallied: isMerged ? isPollTallied : false,
+      isPollTallied,
     };
   }
 
