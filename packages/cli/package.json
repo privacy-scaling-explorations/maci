@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@commander-js/extra-typings": "^14.0.0",
-    "@nomicfoundation/hardhat-toolbox": "^6.0.0",
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
     "commander": "^14.0.0",
     "dotenv": "^17.2.0",
     "ethers": "^6.15.0",

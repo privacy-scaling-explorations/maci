@@ -46,7 +46,7 @@
     "@nestjs/throttler": "^6.4.0",
     "@nestjs/websockets": "^11.1.5",
     "@nomicfoundation/hardhat-ethers": "^3.1.0",
-    "@nomicfoundation/hardhat-toolbox": "^6.0.0",
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
     "@redis/client": "^5.6.0",
     "@zerodev/ecdsa-validator": "5.4.9",
     "@zerodev/permissions": "5.5.12",
