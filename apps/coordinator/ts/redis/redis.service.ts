@@ -1,6 +1,8 @@
 import { Injectable, OnModuleInit } from "@nestjs/common";
 import { createClient, RedisClientType } from "@redis/client";
 
+import type { IGetAllSingleObject } from "./types";
+
 /**
  * Redis service to interact with the Redis database.
  */
@@ -58,8 +60,8 @@ export class RedisService implements OnModuleInit {
    * @dev if no match is provided, it will return all keys
    * @returns the array of string values stored in Redis that match the pattern
    */
-  async getAll(match?: string): Promise<string[]> {
-    let result: string[] = [];
+  async getAll(match?: string): Promise<IGetAllSingleObject[]> {
+    let result: IGetAllSingleObject[] = [];
     let currentCursor = "0";
 
     do {
@@ -69,7 +71,12 @@ export class RedisService implements OnModuleInit {
 
       // eslint-disable-next-line no-await-in-loop
       const values = await Promise.all(keys.map((key) => this.get(key)));
-      result = result.concat(values.filter((value) => value !== null));
+
+      result = result.concat(
+        values
+          .map((value, index) => ({ key: keys[index], value }))
+          .filter((item): item is IGetAllSingleObject => item.value !== null),
+      );
 
       currentCursor = cursor;
     } while (currentCursor !== "0");
