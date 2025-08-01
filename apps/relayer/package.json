@@ -71,7 +71,7 @@
     "fast-check": "^4.2.0",
     "jest": "^30.0.4",
     "mongodb-memory-server": "^10.1.4",
-    "supertest": "^7.1.3",
+    "supertest": "^7.1.4",
     "ts-jest": "^29.4.0",
     "typescript": "^5.8.3"
   }
