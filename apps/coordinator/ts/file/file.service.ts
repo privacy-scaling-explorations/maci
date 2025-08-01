@@ -68,7 +68,8 @@ export class FileService {
    * @returns session key
    */
   getSessionKey(address: string): Hex | undefined {
-    return this.db.get(address).value() as Hex | undefined;
+    const sessionkey: Hex | undefined = this.db.get(address).value();
+    return sessionkey;
   }
 
   /**
