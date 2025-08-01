@@ -39,9 +39,7 @@ describe("RedisService", () => {
     // Clean up after each test
     const keys = await redisClient.keys(REDIS__GET_ALL_PREFIX);
 
-    keys.forEach(async (key) => {
-      await redisClient.del(key);
-    });
+    await Promise.all(keys.map(async (key) => await redisClient.del(key)));
   });
 
   afterAll(async () => {
