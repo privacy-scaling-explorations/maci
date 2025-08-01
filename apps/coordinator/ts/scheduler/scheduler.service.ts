@@ -17,7 +17,7 @@ import { RedisService } from "../redis/redis.service";
 import { getPollKeyFromObject } from "../redis/utils";
 import { SessionKeysService } from "../sessionKeys/sessionKeys.service";
 
-const BUFFER_TIMEOUT = 15 * 1000; // 15 seconds buffer for poll finalization
+const BUFFER_TIMEOUT = 10 * 1000; // 10 seconds buffer for poll finalization
 
 @Injectable()
 export class SchedulerService implements OnModuleInit {
@@ -66,9 +66,9 @@ export class SchedulerService implements OnModuleInit {
       return { isScheduled: false };
     }
 
-    const doesExist = this.schedulerRegistry.doesExist("timeout", key);
+    const isPollTimeoutScheduled = this.schedulerRegistry.doesExist("timeout", key);
 
-    if (!doesExist) {
+    if (!isPollTimeoutScheduled) {
       // delete redis data so user has to reschedule again
       await this.redisService.delete(key);
       return { isScheduled: false };
@@ -131,6 +131,21 @@ export class SchedulerService implements OnModuleInit {
 
     const key = getPollKeyFromObject({ maciAddress, pollId, chain });
 
+    const { endDate } = await this.getPollFinalizationData({
+      maciAddress,
+      pollId,
+      chain,
+    });
+
+    if (endDate * 1000 > Date.now()) {
+      this.logger.error(`Error finalizing poll ${pollId}: voting period is not over.`);
+
+      await this.deleteScheduledPoll({ maciAddress, pollId, chain });
+      await this.setupPollFinalization(poll);
+
+      return;
+    }
+
     try {
       if (!merged) {
         await this.proofService
@@ -156,6 +171,7 @@ export class SchedulerService implements OnModuleInit {
             chain,
             mode,
             startBlock: deploymentBlockNumber,
+            blocksPerBatch: 1000,
           })
           .then(() => this.redisService.set(key, JSON.stringify({ ...poll, merged: true, proofsGenerated: true })))
           .catch(async (error: Error) => {
@@ -275,8 +291,9 @@ export class SchedulerService implements OnModuleInit {
   async deleteScheduledPoll(scheduledPoll: IIdentityScheduledPoll): Promise<IIsPollScheduledResponse> {
     const key = getPollKeyFromObject(scheduledPoll);
 
-    const doesExist = this.schedulerRegistry.doesExist("timeout", key);
-    if (doesExist) {
+    const isPollTimeoutScheduled = this.schedulerRegistry.doesExist("timeout", key);
+
+    if (isPollTimeoutScheduled) {
       this.schedulerRegistry.deleteTimeout(key);
     }
 

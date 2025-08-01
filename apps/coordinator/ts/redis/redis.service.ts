@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit } from "@nestjs/common";
 import { createClient, RedisClientType } from "@redis/client";
 
-import { IGetAllSingleObject } from "./types";
+import type { IGetAllSingleObject } from "./types";
 
 /**
  * Redis service to interact with the Redis database.
