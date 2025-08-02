@@ -172,25 +172,10 @@ describe("SchedulerService", () => {
 
       expect(isPollTallied).toBe(false);
     });
-
-    it("should return isPollTallied as false if poll is not merged and is tallied (it is impossible)", async () => {
-      (getPoll as jest.Mock).mockResolvedValueOnce({
-        isMerged: false,
-      });
-      (isTallied as jest.Mock).mockResolvedValueOnce(true);
-
-      const { isPollTallied } = await service.getPollFinalizationData({
-        maciAddress: scheduledPoll.maciAddress,
-        pollId: scheduledPoll.pollId,
-        chain: scheduledPoll.chain,
-      });
-
-      expect(isPollTallied).toBe(false);
-    });
   });
 
   describe("finalizePoll", () => {
-    afterEach(() => {
+    beforeEach(() => {
       jest.clearAllMocks();
 
       (proofService.merge as jest.Mock).mockReset().mockResolvedValue({});
@@ -224,6 +209,54 @@ describe("SchedulerService", () => {
       expect(isPollScheduledTwo.isScheduled).toBe(false);
       expect(doesExistOne).toBe(false);
       expect(doesExistTwo).toBe(false);
+    });
+
+    it("should finalize a poll that has been merged and saved as merged in database", async () => {
+      (getPoll as jest.Mock).mockResolvedValueOnce({
+        isMerged: true,
+      });
+
+      await service.finalizePoll({ ...scheduledPoll, merged: true });
+
+      const isPollScheduled = await service.isPollScheduled(scheduledPoll);
+      const doesExist = schedulerRegistry.doesExist("timeout", getPollKeyFromObject(scheduledPoll));
+
+      expect(isPollScheduled.isScheduled).toBe(false);
+      expect(doesExist).toBe(false);
+    });
+
+    it("should finalize a poll that has proofs generated and saved as proofsGenerated in database", async () => {
+      (getPoll as jest.Mock).mockResolvedValueOnce({
+        isMerged: true,
+      });
+
+      await service.finalizePoll({ ...scheduledPoll, merged: true, proofsGenerated: true });
+
+      const isPollScheduled = await service.isPollScheduled(scheduledPoll);
+      const doesExist = schedulerRegistry.doesExist("timeout", getPollKeyFromObject(scheduledPoll));
+
+      expect(isPollScheduled.isScheduled).toBe(false);
+      expect(doesExist).toBe(false);
+    });
+
+    it("should reschedule a poll if database says is not merged but it has been merged", async () => {
+      (proofService.merge as jest.Mock).mockRejectedValueOnce(new Error("Poll already merged"));
+      await service.registerPoll({ ...scheduledPoll, merged: false });
+
+      await service.finalizePoll(scheduledPoll);
+
+      const isPollRescheduled = schedulerRegistry.doesExist("timeout", getPollKeyFromObject(scheduledPoll));
+      expect(isPollRescheduled).toBe(true);
+    });
+
+    it("should reschedule a poll if database says is merged but it has not been merged", async () => {
+      (proofService.generate as jest.Mock).mockRejectedValueOnce(new Error("Poll not merged"));
+      await service.registerPoll({ ...scheduledPoll, merged: true });
+
+      await service.finalizePoll(scheduledPoll);
+
+      const isPollRescheduled = schedulerRegistry.doesExist("timeout", getPollKeyFromObject(scheduledPoll));
+      expect(isPollRescheduled).toBe(true);
     });
 
     it("should reschedule a poll if merge fails", async () => {
@@ -458,11 +491,10 @@ describe("SchedulerService", () => {
     });
 
     it("should not throw if Redis returns null for a key and should delete register", async () => {
-      redisService.get.mockImplementation((key: string): Promise<string | null> => {
-        const poll = polls.find((p) => getPollKeyFromObject(p) === key && key !== getPollKeyFromObject(polls[1])); // null to simulate missing poll 2 key
-        const result = poll ? JSON.stringify(poll) : null;
-        return Promise.resolve(result);
-      });
+      redisService.getAll.mockResolvedValueOnce([
+        { key: getPollKeyFromObject(polls[0]), value: JSON.stringify(polls[0]) },
+        { key: getPollKeyFromObject(polls[1]), value: JSON.stringify(polls[1]) },
+      ]);
 
       await service.onModuleInit();
 

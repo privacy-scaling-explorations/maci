@@ -17,7 +17,7 @@ import { RedisService } from "../redis/redis.service";
 import { getPollKeyFromObject } from "../redis/utils";
 import { SessionKeysService } from "../sessionKeys/sessionKeys.service";
 
-const BUFFER_TIMEOUT = 10 * 1000; // 10 seconds buffer for poll finalization
+const BUFFER_TIMEOUT = 15 * 1000; // 15 seconds buffer for poll finalization
 
 @Injectable()
 export class SchedulerService implements OnModuleInit {
@@ -60,6 +60,18 @@ export class SchedulerService implements OnModuleInit {
     const key = getPollKeyFromObject(scheduledPoll);
     const { maciAddress, pollId, chain } = scheduledPoll;
 
+    const { isPollTallied } = await this.getPollFinalizationData({
+      maciAddress,
+      pollId,
+      chain,
+    });
+
+    if (isPollTallied) {
+      this.deleteScheduledPoll({ maciAddress, pollId, chain });
+      this.logger.error(`Error: ${ErrorCodes.POLL_ALREADY_TALLIED}, poll has already been tallied`);
+      throw new Error(ErrorCodes.POLL_ALREADY_TALLIED.toString());
+    }
+
     const storedPoll = await this.redisService.get(key);
 
     if (!storedPoll) {
@@ -72,18 +84,6 @@ export class SchedulerService implements OnModuleInit {
       // delete redis data so user has to reschedule again
       await this.redisService.delete(key);
       return { isScheduled: false };
-    }
-
-    const { isPollTallied } = await this.getPollFinalizationData({
-      maciAddress,
-      pollId,
-      chain,
-    });
-
-    if (isPollTallied) {
-      this.deleteScheduledPoll({ maciAddress, pollId, chain });
-      this.logger.error(`Error: ${ErrorCodes.POLL_ALREADY_TALLIED}, poll has already been tallied`);
-      throw new Error(ErrorCodes.POLL_ALREADY_TALLIED.toString());
     }
 
     return { isScheduled: true };
@@ -102,7 +102,7 @@ export class SchedulerService implements OnModuleInit {
   }: IIdentityPollWithSignerArgs): Promise<IGetPollFinalizationData> {
     const signer = await this.sessionKeysService.getCoordinatorSigner(chain, sessionKeyAddress, approval);
 
-    const [{ endDate }, isPollTallied] = await Promise.all([
+    const [{ endDate, isMerged: isPollMerged }, isPollTallied] = await Promise.all([
       getPoll({
         maciAddress,
         pollId: BigInt(pollId),
@@ -118,6 +118,7 @@ export class SchedulerService implements OnModuleInit {
     return {
       endDate: Number(endDate),
       isPollTallied,
+      isPollMerged,
     };
   }
 
@@ -131,7 +132,7 @@ export class SchedulerService implements OnModuleInit {
 
     const key = getPollKeyFromObject({ maciAddress, pollId, chain });
 
-    const { endDate } = await this.getPollFinalizationData({
+    const { endDate, isPollMerged } = await this.getPollFinalizationData({
       maciAddress,
       pollId,
       chain,
@@ -142,6 +143,15 @@ export class SchedulerService implements OnModuleInit {
 
       await this.deleteScheduledPoll({ maciAddress, pollId, chain });
       await this.setupPollFinalization(poll);
+
+      return;
+    }
+
+    if (isPollMerged !== merged) {
+      this.logger.error(`Error finalizing poll ${pollId}: is poll merged mismatch. Updating database.`);
+
+      await this.deleteScheduledPoll({ maciAddress, pollId, chain });
+      await this.setupPollFinalization({ ...poll, merged: isPollMerged });
 
       return;
     }
@@ -336,7 +346,7 @@ export class SchedulerService implements OnModuleInit {
 
           const { delay } = await this.setupPollFinalization({ ...poll, endDate });
 
-          this.logger.log(`poll ${value} to be executed at ${new Date(Date.now() + delay).toISOString()}`);
+          this.logger.log(`poll ${value} to be finalized at ${new Date(Date.now() + delay).toISOString()}`);
         } catch (error) {
           this.logger.error(`Error restoring timeout for poll key: ${key}`, error);
         }
