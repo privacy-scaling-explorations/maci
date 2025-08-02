@@ -15,6 +15,7 @@ export {
   deploySignupTokenPolicy,
   deployConstantInitialVoiceCreditProxyFactory,
   deployConstantInitialVoiceCreditProxy,
+  deployERC20VotesInitialVoiceCreditProxyFactory,
   deployERC20VotesInitialVoiceCreditProxy,
   deployFreeForAllSignUpPolicy,
   deployGitcoinPassportPolicy,
