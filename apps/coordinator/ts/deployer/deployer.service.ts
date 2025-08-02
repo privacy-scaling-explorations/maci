@@ -57,12 +57,13 @@ import {
   deployConstantInitialVoiceCreditProxyFactory,
   ConstantInitialVoiceCreditProxyFactory,
   EInitialVoiceCreditProxiesFactories,
+  ESupportedChains,
 } from "@maci-protocol/sdk";
 import { Injectable } from "@nestjs/common";
 import { BaseContract, Signer } from "ethers";
 import { type Hex } from "viem";
 
-import { ErrorCodes, ESupportedNetworks } from "../common";
+import { ErrorCodes } from "../common";
 import { getCoordinatorKeypair } from "../common/coordinatorKeypair";
 import { FileService } from "../file/file.service";
 import { SessionKeysService } from "../sessionKeys/sessionKeys.service";
@@ -117,7 +118,7 @@ export class DeployerService {
    */
   async deployAndSavePolicy(
     signer: Signer,
-    network: ESupportedNetworks,
+    network: ESupportedChains,
     policyConfig: IDeployPolicyConfig,
   ): Promise<BasePolicy> {
     let policyContract: BasePolicy;
@@ -427,7 +428,7 @@ export class DeployerService {
   async deployAndSaveVoiceCreditProxyFactory(
     signer: Signer,
     voiceCreditProxyFactoryType: EInitialVoiceCreditProxiesFactories,
-    network: ESupportedNetworks,
+    network: ESupportedChains,
   ): Promise<ConstantInitialVoiceCreditProxyFactory> {
     let contract: ConstantInitialVoiceCreditProxyFactory;
 
@@ -464,7 +465,7 @@ export class DeployerService {
   async deployAndSaveVoiceCreditProxy(
     signer: Signer,
     voiceCreditProxyType: EInitialVoiceCreditProxies,
-    network: ESupportedNetworks,
+    network: ESupportedChains,
     initialVoiceCreditProxyFactory: ConstantInitialVoiceCreditProxyFactory,
     args?: IInitialVoiceCreditProxyArgs,
   ): Promise<ConstantInitialVoiceCreditProxy> {

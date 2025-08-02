@@ -1,9 +1,9 @@
-import { EMode, getPoll, isTallied } from "@maci-protocol/sdk";
+import { EMode, ESupportedChains, getPoll, isTallied } from "@maci-protocol/sdk";
 import { SchedulerRegistry } from "@nestjs/schedule";
 
 import type { IScheduledPoll } from "../../redis/types";
 
-import { ErrorCodes, ESupportedNetworks } from "../../common";
+import { ErrorCodes } from "../../common";
 import { FileService } from "../../file/file.service";
 import { RedisService } from "../../redis/redis.service";
 import { getPollKeyFromObject } from "../../redis/utils";
@@ -14,7 +14,7 @@ const scheduledPoll: IScheduledPoll = {
   maciAddress: "0x0",
   pollId: "5",
   mode: EMode.NON_QV,
-  chain: ESupportedNetworks.OPTIMISM_SEPOLIA,
+  chain: ESupportedChains.OptimismSepolia,
   endDate: 1752534000,
   deploymentBlockNumber: 1,
   merged: false,

@@ -1,7 +1,8 @@
+import { ESupportedChains } from "@maci-protocol/sdk";
 import dotenv from "dotenv";
 import { zeroAddress } from "viem";
 
-import { ErrorCodes, ESupportedNetworks } from "../../common";
+import { ErrorCodes } from "../../common";
 import { FileService } from "../../file/file.service";
 import { SessionKeysService } from "../sessionKeys.service";
 
@@ -50,7 +51,7 @@ describe("SessionKeysService", () => {
         sessionKeysService.generateClientFromSessionKey(
           sessionKeyAddress.sessionKeyAddress,
           "0xinvalid",
-          ESupportedNetworks.OPTIMISM_SEPOLIA,
+          ESupportedChains.OptimismSepolia,
         ),
       ).rejects.toThrow(ErrorCodes.INVALID_APPROVAL.toString());
     });
@@ -58,7 +59,7 @@ describe("SessionKeysService", () => {
     test("should throw when given a non existent session key address", async () => {
       const approval = await generateApproval(zeroAddress);
       await expect(
-        sessionKeysService.generateClientFromSessionKey(zeroAddress, approval, ESupportedNetworks.OPTIMISM_SEPOLIA),
+        sessionKeysService.generateClientFromSessionKey(zeroAddress, approval, ESupportedChains.OptimismSepolia),
       ).rejects.toThrow(ErrorCodes.SESSION_KEY_NOT_FOUND.toString());
     });
 
@@ -79,12 +80,12 @@ describe("SessionKeysService", () => {
       const client = await sessionKeysService.generateClientFromSessionKey(
         sessionKeyAddress.sessionKeyAddress,
         approval,
-        ESupportedNetworks.OPTIMISM_SEPOLIA,
+        ESupportedChains.OptimismSepolia,
       );
       expect(mockGenerateClientFromSessionKey).toHaveBeenCalledWith(
         sessionKeyAddress.sessionKeyAddress,
         approval,
-        ESupportedNetworks.OPTIMISM_SEPOLIA,
+        ESupportedChains.OptimismSepolia,
       );
       expect(client).toEqual({ mockedClient: true });
     });

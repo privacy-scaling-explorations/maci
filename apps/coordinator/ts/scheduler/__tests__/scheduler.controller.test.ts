@@ -1,7 +1,6 @@
-import { EMode } from "@maci-protocol/sdk";
+import { EMode, ESupportedChains } from "@maci-protocol/sdk";
 import { HttpException, HttpStatus } from "@nestjs/common";
 
-import { ESupportedNetworks } from "../../common";
 import { IdentityScheduledPollDto, SchedulePollWithSignerDto } from "../dto";
 import { SchedulerController } from "../scheduler.controller";
 import { SchedulerService } from "../scheduler.service";
@@ -10,7 +9,7 @@ const scheduledPoll: SchedulePollWithSignerDto = {
   maciAddress: "0x0",
   pollId: 5,
   mode: EMode.NON_QV,
-  chain: ESupportedNetworks.OPTIMISM_SEPOLIA,
+  chain: ESupportedChains.OptimismSepolia,
   deploymentBlockNumber: 1,
 };
 

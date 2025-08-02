@@ -1,3 +1,4 @@
+import { ESupportedChains } from "@maci-protocol/sdk";
 import { deserializePermissionAccount } from "@zerodev/permissions";
 import { toECDSASigner } from "@zerodev/permissions/signers";
 import { createKernelAccountClient } from "@zerodev/sdk";
@@ -11,7 +12,7 @@ import type { BundlerClientType, KernelClientType, PublicClientHTTPType } from "
 
 import { getRpcUrl } from "./chain";
 import { ErrorCodes } from "./errors";
-import { ESupportedNetworks, viemChain } from "./networks";
+import { viemChain } from "./networks";
 
 dotenv.config();
 
@@ -21,7 +22,7 @@ dotenv.config();
  * @param chainName - the name of the chain to use
  * @returns the public client
  */
-export const getPublicClient = (chainName: ESupportedNetworks): PublicClientHTTPType =>
+export const getPublicClient = (chainName: ESupportedChains): PublicClientHTTPType =>
   createPublicClient({
     transport: http(getRpcUrl(chainName)),
     chain: viemChain(chainName),
@@ -33,11 +34,11 @@ export const getPublicClient = (chainName: ESupportedNetworks): PublicClientHTTP
  * @param network - the network we are on
  * @returns the ZeroDev bundler RPC URL
  */
-export const getZeroDevBundlerRPCUrl = (network: ESupportedNetworks): string => {
+export const getZeroDevBundlerRPCUrl = (network: ESupportedChains): string => {
   switch (network) {
-    case ESupportedNetworks.OPTIMISM_SEPOLIA:
+    case ESupportedChains.OptimismSepolia:
       return process.env.ZERODEV_BUNDLER_RPC_OP_SEPOLIA || "";
-    case ESupportedNetworks.OPTIMISM:
+    case ESupportedChains.Optimism:
       return process.env.ZERODEV_BUNDLER_RPC_OP || "";
     default:
       throw new Error(ErrorCodes.UNSUPPORTED_NETWORK.toString());
@@ -50,7 +51,7 @@ export const getZeroDevBundlerRPCUrl = (network: ESupportedNetworks): string => 
  * @param chainName - the chain name
  * @returns the bundler client
  */
-export const getBundlerClient = (chainName: ESupportedNetworks): BundlerClientType =>
+export const getBundlerClient = (chainName: ESupportedChains): BundlerClientType =>
   createBundlerClient({
     transport: http(getZeroDevBundlerRPCUrl(chainName)),
     chain: viemChain(chainName),
@@ -72,7 +73,7 @@ export const addressOffset = 26;
 export const getKernelClient = async (
   sessionKey: Hex,
   approval: string,
-  chain: ESupportedNetworks,
+  chain: ESupportedChains,
 ): Promise<KernelClientType> => {
   const bundlerUrl = getZeroDevBundlerRPCUrl(chain);
   const publicClient = getPublicClient(chain);
