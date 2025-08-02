@@ -17,7 +17,7 @@ export class MaciSubgraph {
    */
   private userQuery = `
         query {
-            users {
+            users (orderBy: createdAt, orderDirection: asc) {
                 id
             }
         }
