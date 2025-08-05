@@ -47,11 +47,11 @@ describe("RedisService", () => {
     await redisClient.quit();
   });
 
-  it("should connect to Redis without issues", () => {
+  test("should connect to Redis without issues", () => {
     expect(service.isOpen()).toBe(true);
   });
 
-  it("should set and get a value, and parse it as IScheduledPoll", async () => {
+  test("should set and get a value, and parse it as IScheduledPoll", async () => {
     const key = getPollKeyFromObject(scheduledPoll, true);
     const value = JSON.stringify(scheduledPoll);
 
@@ -64,14 +64,14 @@ describe("RedisService", () => {
     expect(parsed).toEqual(scheduledPoll);
   });
 
-  it("should return null when non-existent key is requested", async () => {
+  test("should return null when non-existent key is requested", async () => {
     const nonExistentKey = "non-existent-key";
     const result = await service.get(nonExistentKey);
 
     expect(result).toBeNull();
   });
 
-  it("should set and get multiple values", async () => {
+  test("should set and get multiple values", async () => {
     const pollOne = { ...scheduledPoll };
     pollOne.pollId = "1";
     const pollKeyOne = getPollKeyFromObject(pollOne, true);
@@ -98,7 +98,7 @@ describe("RedisService", () => {
     expect(pollThree).toEqual(JSON.parse(storedPollThree || "{}") as IScheduledPoll);
   });
 
-  it("should retrieve all values using getAll", async () => {
+  test("should retrieve all values using getAll", async () => {
     const pollOne = { ...scheduledPoll };
     pollOne.pollId = "1";
     const pollKeyOne = getPollKeyFromObject(pollOne, true);
@@ -119,7 +119,7 @@ describe("RedisService", () => {
     expect(all.length).toBe(3);
   });
 
-  it("should delete a value and return one as confirmation", async () => {
+  test("should delete a value and return one as confirmation", async () => {
     const key = "delete-me";
 
     await service.set(key, '{"bye":"now"}');
@@ -130,14 +130,14 @@ describe("RedisService", () => {
     expect(value).toBeNull();
   });
 
-  it("should not throw and return zero when deleting non-existent value", async () => {
+  test("should not throw and return zero when deleting non-existent value", async () => {
     const key = "non-existent-key";
     const deleted = await service.delete(key);
 
     expect(deleted).toBe(0);
   });
 
-  it("should update a value using set with same key", async () => {
+  test("should update a value using set with same key", async () => {
     const key = getPollKeyFromObject(scheduledPoll, true);
     const valuePoll = JSON.stringify(scheduledPoll);
 

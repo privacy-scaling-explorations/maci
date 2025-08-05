@@ -114,10 +114,12 @@
       "**/*.(t|j)s",
       "!<rootDir>/ts/main.ts",
       "!<rootDir>/ts/jest/*.js",
+      "!<rootDir>/tests/*.ts",
       "!<rootDir>/hardhat.config.js"
     ],
     "coveragePathIgnorePatterns": [
-      "<rootDir>/ts/sessionKeys/__tests__/utils.ts"
+      "<rootDir>/ts/sessionKeys/__tests__/utils.ts",
+      "<rootDir>/tests/*.ts"
     ],
     "coverageDirectory": "<rootDir>/coverage",
     "testEnvironment": "node"

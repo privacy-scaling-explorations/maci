@@ -1,20 +1,46 @@
 import { zeroAddress } from "viem";
 
-import { FileService } from "../../file/file.service";
-import { RedisService } from "../../redis/redis.service";
+import { ESupportedNetworks } from "../../common";
 import { HealthController } from "../health.controller";
 import { HealthService } from "../health.service";
 
 describe("HealthController", () => {
-  const redisService = new RedisService();
-  const healthController = new HealthController(new HealthService(new FileService(), redisService));
+  const mockHealthService = {
+    checkCoordinatorHealth: jest.fn(),
+  } as unknown as HealthService;
+  const healthController = new HealthController(mockHealthService);
 
-  beforeAll(async () => {
-    await redisService.onModuleInit();
+  beforeEach(() => {
+    mockHealthService.checkCoordinatorHealth = jest.fn().mockResolvedValue({
+      rapidsnark: {
+        rapidsnarkExecutablePath: process.env.COORDINATOR_RAPIDSNARK_EXE,
+        rapidsnarkIsAccessible: true,
+        rapidsnarkIsExecutable: true,
+      },
+      zkeysDirectory: {
+        zkeysDirectoryExists: true,
+        availableZkeys: [],
+      },
+      coordinatorWalletFunds: {
+        fundsInNetworks: [
+          {
+            address: zeroAddress.replace("0x0", "0x1"),
+            network: ESupportedNetworks.ETHEREUM,
+            balance: "0",
+            status: true,
+          },
+        ],
+      },
+      isRedisOpen: true,
+    });
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe("v1/health/check", () => {
-    it("should return health check response", async () => {
+    test("should return health check response", async () => {
       const { rapidsnark, zkeysDirectory, coordinatorWalletFunds, isRedisOpen } = await healthController.check();
 
       const { availableZkeys } = zkeysDirectory;
@@ -28,8 +54,8 @@ describe("HealthController", () => {
       expect(zkeysDirectory.zkeysDirectoryExists).toBe(true);
       expect(allZkeysAreSet).toBe(true);
 
-      expect(coordinatorWalletFunds.address).toBeDefined();
-      expect(coordinatorWalletFunds.address).not.toBe(zeroAddress);
+      expect(coordinatorWalletFunds.fundsInNetworks[0].address).toBeDefined();
+      expect(coordinatorWalletFunds.fundsInNetworks[0].address).not.toBe(zeroAddress);
 
       expect(isRedisOpen).toBe(true);
     });

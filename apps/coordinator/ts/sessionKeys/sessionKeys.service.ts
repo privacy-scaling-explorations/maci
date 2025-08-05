@@ -76,8 +76,7 @@ export class SessionKeysService {
     }
 
     try {
-      const kernelClient = getKernelClient(sessionKey, approval, chain);
-      return kernelClient;
+      return await getKernelClient(sessionKey, approval, chain);
     } catch (error) {
       this.logger.error("Error:", error);
       throw new Error(ErrorCodes.INVALID_APPROVAL.toString());

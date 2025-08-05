@@ -44,7 +44,7 @@ export const rechargeGasIfNeeded = async (
   minimumValueOfEther: string,
   valueToSendOfEther: string,
 ): Promise<void> => {
-  const publicClient = getPublicClient(ESupportedNetworks.OPTIMISM_SEPOLIA);
+  const publicClient = await getPublicClient(ESupportedNetworks.OPTIMISM_SEPOLIA);
   const balance = await publicClient.getBalance({ address });
   const balanceAsEther = formatEther(balance);
 

@@ -96,6 +96,7 @@ export class ProofGeneratorService {
         pollId: poll,
         signer,
       });
+
       const pollContract = await this.deployment.getContract<Poll>({
         name: EContracts.Poll,
         address: pollData.address,

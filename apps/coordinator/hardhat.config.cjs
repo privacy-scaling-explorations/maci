@@ -10,9 +10,9 @@ const parentDir = __dirname.includes("build") ? ".." : "";
 const TEST_MNEMONIC = "test test test test test test test test test test test junk";
 
 module.exports = {
-  defaultNetwork: "sepolia",
+  defaultNetwork: "localhost",
   networks: {
-    sepolia: {
+    localhost: {
       url: process.env.COORDINATOR_RPC_URL || "http://localhost:8545",
       accounts: {
         mnemonic: TEST_MNEMONIC,
@@ -20,7 +20,6 @@ module.exports = {
         initialIndex: 0,
         count: 20,
       },
-      loggingEnabled: false,
     },
     hardhat: {
       loggingEnabled: false,

@@ -641,18 +641,21 @@ export class DeployerService {
 
     // check if there is a maci contract deployed on this chain
     const maciAddress = this.storage.getAddress(EContracts.MACI, chain);
+
     if (!maciAddress) {
       throw new Error(ErrorCodes.MACI_NOT_DEPLOYED.toString());
     }
 
     // check if there is a verifier deployed on this chain
     const verifierAddress = this.storage.getAddress(EContracts.Verifier, chain);
+
     if (!verifierAddress) {
       throw new Error(ErrorCodes.VERIFIER_NOT_DEPLOYED.toString());
     }
 
     // check if there is a verifyingKey registry deployed on this chain
     const verifyingKeysRegistryAddress = this.storage.getAddress(EContracts.VerifyingKeysRegistry, chain);
+
     if (!verifyingKeysRegistryAddress) {
       throw new Error(ErrorCodes.VERIFYING_KEYS_REGISTRY_NOT_DEPLOYED.toString());
     }
@@ -661,7 +664,8 @@ export class DeployerService {
     const policyAddress = (await policyContract.getAddress()) as Hex;
 
     // check if initial voice credit proxy address was given
-    let initialVoiceCreditProxyAddress = config.initialVoiceCreditsProxy.address;
+    let initialVoiceCreditProxyAddress: string | undefined = config.initialVoiceCreditsProxy.address;
+
     if (!initialVoiceCreditProxyAddress) {
       const initialVoiceCreditProxyFactory = await this.deployAndSaveVoiceCreditProxyFactory(
         signer,
@@ -676,7 +680,8 @@ export class DeployerService {
         initialVoiceCreditProxyFactory,
         config.initialVoiceCreditsProxy.args,
       );
-      initialVoiceCreditProxyAddress = (await initialVoiceCreditProxyContract.getAddress()) as Hex;
+
+      initialVoiceCreditProxyAddress = await initialVoiceCreditProxyContract.getAddress();
     }
 
     // instantiate the coordinator MACI keypair
@@ -696,11 +701,12 @@ export class DeployerService {
       mode: config.mode,
       policyContractAddress: policyAddress,
       initialVoiceCreditProxyContractAddress: initialVoiceCreditProxyAddress,
-      relayers: config.relayers ? config.relayers.map((address) => address as Hex) : [],
+      relayers: config.relayers ? config.relayers : [],
       voteOptions: Number(config.voteOptions),
       initialVoiceCredits: Number(config.initialVoiceCreditsProxy.args.amount),
       signer,
     };
+
     const { pollContractAddress, messageProcessorContractAddress, tallyContractAddress, pollId } =
       await deployPoll(deployPollArgs);
 
