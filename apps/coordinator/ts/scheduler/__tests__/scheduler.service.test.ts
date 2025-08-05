@@ -74,21 +74,21 @@ describe("SchedulerService", () => {
   });
 
   describe(`isPollScheduled`, () => {
-    it("should return true if poll is saved, scheduled and not tallied", async () => {
+    test("should return true if poll is saved, scheduled and not tallied", async () => {
       await service.registerPoll(scheduledPoll);
 
       const isPollScheduled = await service.isPollScheduled(scheduledPoll);
       expect(isPollScheduled.isScheduled).toBe(true);
     });
 
-    it("should return false if poll is not saved", async () => {
+    test("should return false if poll is not saved", async () => {
       redisService.get.mockResolvedValueOnce(null);
 
       const isPollScheduled = await service.isPollScheduled(scheduledPoll);
       expect(isPollScheduled.isScheduled).toBe(false);
     });
 
-    it("should return false if poll is saved and timeout not scheduled", async () => {
+    test("should return false if poll is saved and timeout not scheduled", async () => {
       await service.registerPoll(scheduledPoll);
       schedulerRegistry.deleteTimeout(getPollKeyFromObject(scheduledPoll));
 
@@ -96,14 +96,14 @@ describe("SchedulerService", () => {
       expect(isPollScheduled.isScheduled).toBe(false);
     });
 
-    it("should return false if poll is scheduled but not saved", async () => {
+    test("should return false if poll is scheduled but not saved", async () => {
       redisService.get.mockResolvedValueOnce(null);
 
       const isPollScheduled = await service.isPollScheduled(scheduledPoll);
       expect(isPollScheduled.isScheduled).toBe(false);
     });
 
-    it("should throw an error if poll is already tallied", async () => {
+    test("should throw an error if poll is already tallied", async () => {
       await service.registerPoll(scheduledPoll);
 
       (getPoll as jest.Mock).mockResolvedValueOnce({
@@ -116,7 +116,7 @@ describe("SchedulerService", () => {
   });
 
   describe("getPollFinalizationData", () => {
-    it("should return the end date and tallied status of a poll", async () => {
+    test("should return the end date and tallied status of a poll", async () => {
       (getPoll as jest.Mock).mockResolvedValueOnce({
         isMerged: false,
         endDate: scheduledPoll.endDate,
@@ -133,7 +133,7 @@ describe("SchedulerService", () => {
       expect(isPollTallied).toBe(false);
     });
 
-    it("should return isPollTallied as false if poll is not merged and is not tallied", async () => {
+    test("should return isPollTallied as false if poll is not merged and is not tallied", async () => {
       (getPoll as jest.Mock).mockResolvedValueOnce({
         isMerged: false,
       });
@@ -148,7 +148,7 @@ describe("SchedulerService", () => {
       expect(isPollTallied).toBe(false);
     });
 
-    it("should return isPollTallied as false if poll is merged and is not tallied", async () => {
+    test("should return isPollTallied as false if poll is merged and is not tallied", async () => {
       (getPoll as jest.Mock).mockResolvedValueOnce({
         isMerged: true,
       });
@@ -163,7 +163,7 @@ describe("SchedulerService", () => {
       expect(isPollTallied).toBe(false);
     });
 
-    it("should return isPollTallied as false if poll is not merged and is tallied (it is impossible)", async () => {
+    test("should return isPollTallied as false if poll is not merged and is tallied (it is impossible)", async () => {
       (getPoll as jest.Mock).mockResolvedValueOnce({
         isMerged: false,
       });
@@ -180,7 +180,7 @@ describe("SchedulerService", () => {
   });
 
   describe("registerPoll", () => {
-    it("should register a poll for finalization", async () => {
+    test("should register a poll for finalization", async () => {
       const { isScheduled } = await service.registerPoll(scheduledPoll);
 
       const isPollScheduled = await service.isPollScheduled(scheduledPoll);
@@ -191,7 +191,7 @@ describe("SchedulerService", () => {
       expect(isPollTimeoutScheduled).toBe(true);
     });
 
-    it("should register 2 polls and schedule their finalization", async () => {
+    test("should register 2 polls and schedule their finalization", async () => {
       const pollOne = { ...scheduledPoll, pollId: "1" };
       const pollTwo = { ...scheduledPoll, pollId: "2" };
 
@@ -214,7 +214,7 @@ describe("SchedulerService", () => {
       expect(isPollTwoTimeoutScheduled).toBe(true);
     });
 
-    it("should schedule finalization after the poll has ended", async () => {
+    test("should schedule finalization after the poll has ended", async () => {
       const endedPoll = { ...scheduledPoll, endDate: 1 };
       const { isScheduled } = await service.registerPoll(endedPoll);
 
@@ -226,7 +226,7 @@ describe("SchedulerService", () => {
       expect(isPollTimeoutScheduled).toBe(true);
     });
 
-    it("should throw an error if poll is already tallied", async () => {
+    test("should throw an error if poll is already tallied", async () => {
       (getPoll as jest.Mock).mockResolvedValueOnce({
         isMerged: true,
       });
@@ -235,7 +235,7 @@ describe("SchedulerService", () => {
       await expect(service.registerPoll(scheduledPoll)).rejects.toThrow(ErrorCodes.POLL_ALREADY_TALLIED.toString());
     });
 
-    it("should throw an error if poll is already scheduled", async () => {
+    test("should throw an error if poll is already scheduled", async () => {
       await service.registerPoll(scheduledPoll);
 
       await expect(service.registerPoll(scheduledPoll)).rejects.toThrow(ErrorCodes.POLL_ALREADY_SCHEDULED.toString());
@@ -243,7 +243,7 @@ describe("SchedulerService", () => {
   });
 
   describe("deleteScheduledPoll", () => {
-    it("should delete a scheduled poll", async () => {
+    test("should delete a scheduled poll", async () => {
       await service.registerPoll(scheduledPoll);
       const isPollScheduled = await service.isPollScheduled(scheduledPoll);
 
@@ -256,7 +256,7 @@ describe("SchedulerService", () => {
       expect(isPollDeleted.isScheduled).toBe(false);
     });
 
-    it("should return isPollScheduled as false if poll was not scheduled", async () => {
+    test("should return isPollScheduled as false if poll was not scheduled", async () => {
       const { isScheduled } = await service.deleteScheduledPoll(scheduledPoll);
 
       expect(isScheduled).toBe(false);
@@ -300,7 +300,7 @@ describe("SchedulerService", () => {
       (isTallied as jest.Mock).mockReset().mockResolvedValue(false);
     });
 
-    it("should restore scheduled polls from Redis", async () => {
+    test("should restore scheduled polls from Redis", async () => {
       await service.onModuleInit();
 
       const timeouts = schedulerRegistry.getTimeouts();
@@ -311,7 +311,7 @@ describe("SchedulerService", () => {
       expect(timeouts.length).toBe(polls.length);
     });
 
-    it("should not restore timeouts for tallied polls", async () => {
+    test("should not restore timeouts for tallied polls", async () => {
       (getPoll as jest.Mock).mockImplementation(({ pollId }) => Promise.resolve({ isMerged: pollId === 2n }));
       (isTallied as jest.Mock).mockImplementation(({ pollId }) => Promise.resolve(pollId === "2"));
 
@@ -322,7 +322,7 @@ describe("SchedulerService", () => {
       expect(timeouts.length).toBe(polls.length - 1);
     });
 
-    it("should not throw if Redis returns null for a key and should delete register", async () => {
+    test("should not throw if Redis returns null for a key and should delete register", async () => {
       redisService.get.mockImplementation((key: string): Promise<string | null> => {
         const poll = polls.find((p) => getPollKeyFromObject(p) === key && key !== getPollKeyFromObject(polls[1])); // null to simulate missing poll 2 key
         const result = poll ? JSON.stringify(poll) : null;

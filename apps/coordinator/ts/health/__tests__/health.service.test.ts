@@ -2,6 +2,8 @@ import { EMode } from "@maci-protocol/contracts";
 import dotenv from "dotenv";
 import { zeroAddress } from "viem";
 
+import fs, { type Stats } from "fs";
+
 import { FileService } from "../../file/file.service";
 import { RedisService } from "../../redis/redis.service";
 import { HealthService } from "../health.service";
@@ -10,15 +12,23 @@ dotenv.config();
 
 describe("HealthService", () => {
   const fileService = new FileService();
-  const redisService = new RedisService();
-  const healthService = new HealthService(fileService, redisService);
+  const mockRedisService = {
+    isOpen: jest.fn().mockReturnValue(true),
+  } as unknown as RedisService;
 
-  beforeAll(async () => {
-    await redisService.onModuleInit();
+  const healthService = new HealthService(fileService, mockRedisService);
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe("checkRapidsnark", () => {
-    it("should return rapidsnark path and executability status", async () => {
+    test("should return rapidsnark path and executability status", async () => {
+      jest.spyOn(fs.promises, "access").mockImplementation(() => Promise.resolve());
+      jest
+        .spyOn(fs.promises, "stat")
+        .mockImplementation(() => Promise.resolve({ isFile: () => true } as unknown as Stats));
+
       const response = await healthService.checkRapidsnark();
 
       expect(response.rapidsnarkExecutablePath).toBe(process.env.COORDINATOR_RAPIDSNARK_EXE);
@@ -26,7 +36,10 @@ describe("HealthService", () => {
       expect(response.rapidsnarkIsExecutable).toBe(true);
     });
 
-    it("should return false when rapidsnark path is not set", async () => {
+    test("should return false when rapidsnark path is not set", async () => {
+      jest.spyOn(fs.promises, "access").mockImplementation(() => Promise.reject(new Error()));
+      jest.spyOn(fs.promises, "stat").mockImplementation(() => Promise.reject(new Error()));
+
       process.env.COORDINATOR_RAPIDSNARK_EXE = "/incorrect/path/to/rapidsnark";
       const response = await healthService.checkRapidsnark();
 
@@ -36,7 +49,11 @@ describe("HealthService", () => {
   });
 
   describe("checkZkeysDirectory", () => {
-    it("should return if zkeys directory exists and the available zkeys paths", async () => {
+    test("should return if zkeys directory exists and the available zkeys paths", async () => {
+      jest
+        .spyOn(fs.promises, "stat")
+        .mockImplementation(() => Promise.resolve({ isDirectory: () => true } as unknown as Stats));
+
       const { zkeysDirectoryExists, availableZkeys } = await healthService.checkZkeysDirectory();
       const numberofZkeys = Object.keys(availableZkeys).length;
 
@@ -50,21 +67,21 @@ describe("HealthService", () => {
       expect(numberofZkeys).toBe(expectedNumberOfZkeys);
     });
 
-    it("should return less available zkeys when COORDINATOR_POLL_JOINING_ZKEY_NAME is not set in the env file", async () => {
+    test("should return less available zkeys when COORDINATOR_POLL_JOINING_ZKEY_NAME is not set in the env file", async () => {
       process.env.COORDINATOR_POLL_JOINING_ZKEY_NAME = "/incorrect/path/to/poll_joining";
       const { availableZkeys } = await healthService.checkZkeysDirectory();
 
       expect(availableZkeys[process.env.COORDINATOR_POLL_JOINING_ZKEY_NAME]).toBe(undefined);
     });
 
-    it("should return less available zkeys when COORDINATOR_POLL_JOINED_ZKEY_NAME is not set in the env file", async () => {
+    test("should return less available zkeys when COORDINATOR_POLL_JOINED_ZKEY_NAME is not set in the env file", async () => {
       process.env.COORDINATOR_POLL_JOINED_ZKEY_NAME = "/incorrect/path/to/poll_joined";
       const { availableZkeys } = await healthService.checkZkeysDirectory();
 
       expect(availableZkeys[process.env.COORDINATOR_POLL_JOINED_ZKEY_NAME]).toBe(undefined);
     });
 
-    it("should return less available zkeys when COORDINATOR_TALLY_ZKEY_NAME is not set in the env file", async () => {
+    test("should return less available zkeys when COORDINATOR_TALLY_ZKEY_NAME is not set in the env file", async () => {
       process.env.COORDINATOR_TALLY_ZKEY_NAME = "/incorrect/path/to/tally_zkey";
       const { availableZkeys } = await healthService.checkZkeysDirectory();
 
@@ -72,7 +89,7 @@ describe("HealthService", () => {
       expect(availableZkeys[`${process.env.COORDINATOR_TALLY_ZKEY_NAME}_Mode_${String(EMode.QV)}`]).toBe(undefined);
     });
 
-    it("should return less available zkeys when COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME is not set in the env file", async () => {
+    test("should return less available zkeys when COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME is not set in the env file", async () => {
       process.env.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME = "/incorrect/path/to/message_process_zkey";
       const { availableZkeys } = await healthService.checkZkeysDirectory();
 
@@ -87,7 +104,9 @@ describe("HealthService", () => {
       );
     });
 
-    it("should return false when zkeys directory is not set", async () => {
+    test("should return false when zkeys directory is not set", async () => {
+      jest.spyOn(fs.promises, "stat").mockImplementation(() => Promise.reject(new Error()));
+
       process.env.COORDINATOR_ZKEY_PATH = "/incorrect/path/to/zkeys";
       const { zkeysDirectoryExists } = await healthService.checkZkeysDirectory();
 
@@ -96,23 +115,24 @@ describe("HealthService", () => {
   });
 
   describe("checkWalletFunds", () => {
-    it("should return the wallet address", async () => {
-      const { address } = await healthService.checkWalletFunds();
+    test("should return the wallet address", async () => {
+      const { fundsInNetworks } = await healthService.checkWalletFunds();
 
-      expect(address).toBeDefined();
-      expect(address).not.toBe(zeroAddress);
+      expect(fundsInNetworks[0].address).toBeDefined();
+      expect(fundsInNetworks[0].address).not.toBe(zeroAddress);
     });
 
-    it("should return 0x if coordinator private key is not set", async () => {
+    test("should return 0x if coordinator private key is not set", async () => {
       process.env.PRIVATE_KEY = "";
-      const { address } = await healthService.checkWalletFunds();
+      process.env.MNEMONIC = "";
+      const { fundsInNetworks } = await healthService.checkWalletFunds();
 
-      expect(address).toBe(zeroAddress);
+      expect(fundsInNetworks[0].address).toBe(zeroAddress);
     });
   });
 
   describe("checkRedisConnection", () => {
-    it("should return true if Redis connection is open", () => {
+    test("should return true if Redis connection is open", () => {
       const isRedisOpen = healthService.checkRedisConnection();
 
       expect(isRedisOpen).toBe(true);

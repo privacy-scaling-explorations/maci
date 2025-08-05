@@ -34,7 +34,7 @@ export const generateTimestampPolicy = (endTime: number, start?: number): Policy
  * @returns - the kernel account
  */
 export const getKernelAccount = async (sessionKeyAddress: Hex): Promise<CreateKernelAccountReturnType> => {
-  const publicClient = getPublicClient(ESupportedNetworks.OPTIMISM_SEPOLIA);
+  const publicClient = await getPublicClient(ESupportedNetworks.OPTIMISM_SEPOLIA);
 
   const sessionKeySigner = privateKeyToAccount(process.env.TEST_PRIVATE_KEY! as Hex);
   const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
@@ -53,7 +53,7 @@ export const getKernelAccount = async (sessionKeyAddress: Hex): Promise<CreateKe
     policies: [toSudoPolicy({})],
   });
 
-  const sessionKeyAccount = await createKernelAccount(publicClient, {
+  return await createKernelAccount(publicClient, {
     entryPoint: ENTRY_POINT,
     kernelVersion: KERNEL_VERSION,
     plugins: {
@@ -61,7 +61,6 @@ export const getKernelAccount = async (sessionKeyAddress: Hex): Promise<CreateKe
       regular: permissionPlugin,
     },
   });
-  return sessionKeyAccount;
 };
 
 /**
@@ -71,5 +70,5 @@ export const getKernelAccount = async (sessionKeyAddress: Hex): Promise<CreateKe
  */
 export const generateApproval = async (sessionKeyAddress: Hex): Promise<string> => {
   const sessionKeyAccount = await getKernelAccount(sessionKeyAddress);
-  return serializePermissionAccount(sessionKeyAccount);
+  return await serializePermissionAccount(sessionKeyAccount);
 };

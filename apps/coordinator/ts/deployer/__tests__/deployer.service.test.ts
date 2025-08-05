@@ -1,24 +1,26 @@
 import {
   ContractStorage,
+  deployFreeForAllSignUpPolicy,
+  deployPoll,
+  deployVerifier,
+  deployVerifyingKeysRegistryContract,
+  deployMaci,
+  deployConstantInitialVoiceCreditProxyFactory,
+  deployConstantInitialVoiceCreditProxy,
+  getDeployedPolicyProxyFactories,
   ECheckerFactories,
   EContracts,
   EInitialVoiceCreditProxies,
   EInitialVoiceCreditProxiesFactories,
   EPolicies,
   EPolicyFactories,
-  getDeployedPolicyProxyFactories,
-  MACI__factory as MACIFactory,
-  Verifier__factory as VerifierFactory,
 } from "@maci-protocol/sdk";
 import dotenv from "dotenv";
-import { BaseContract, Signer } from "ethers";
-import { Hex, zeroAddress } from "viem";
-
-import path from "path";
+import { type Signer } from "ethers";
+import { zeroAddress } from "viem";
 
 import { ErrorCodes, ESupportedNetworks } from "../../common";
 import { FileService } from "../../file/file.service";
-import { generateApproval } from "../../sessionKeys/__tests__/utils";
 import { SessionKeysService } from "../../sessionKeys/sessionKeys.service";
 import { DeployerService } from "../deployer.service";
 
@@ -26,48 +28,111 @@ import { testMaciDeploymentConfig, testPollDeploymentConfig } from "./utils";
 
 dotenv.config();
 
+jest.mock("@maci-protocol/sdk", (): unknown => ({
+  ...jest.requireActual("@maci-protocol/sdk"),
+  ContractStorage: {
+    getInstance: jest.fn(),
+  },
+  deployFreeForAllSignUpPolicy: jest.fn(),
+  deployPoll: jest.fn(),
+  deployVerifyingKeysRegistryContract: jest.fn(),
+  deployVerifier: jest.fn(),
+  getDeployedPolicyProxyFactories: jest.fn(),
+  setVerifyingKeys: jest.fn(),
+  deployMaci: jest.fn(),
+  deployConstantInitialVoiceCreditProxyFactory: jest.fn(),
+  deployConstantInitialVoiceCreditProxy: jest.fn(),
+}));
+
 describe("DeployerService", () => {
+  const chain = ESupportedNetworks.OPTIMISM_SEPOLIA;
+  const signer = {
+    getAddress: jest.fn().mockResolvedValue(zeroAddress),
+  } as unknown as Signer;
+  const approval = "approval";
+  const sessionKeyAddress = zeroAddress;
+
+  const mockStorage = {
+    register: jest.fn(),
+    getAddress: jest.fn(),
+  };
+
+  const mockContract = {
+    deploymentTransaction: jest.fn(),
+    getAddress: jest.fn().mockResolvedValue(zeroAddress.replace("0x0", "0x1")),
+  };
+
+  const fileService = {
+    getZkeyFilePaths: jest.fn(),
+  } as unknown as FileService;
+
+  const sessionKeyService = {
+    getCoordinatorSigner: jest.fn().mockResolvedValue(signer),
+  } as unknown as SessionKeysService;
+
+  beforeEach(() => {
+    mockStorage.getAddress = jest.fn().mockReturnValue(zeroAddress);
+
+    sessionKeyService.getCoordinatorSigner = jest.fn().mockResolvedValue(signer);
+
+    fileService.getZkeyFilePaths = jest.fn().mockReturnValue({ zkey: "" });
+
+    (ContractStorage.getInstance as jest.Mock).mockReturnValue(mockStorage);
+
+    (deployFreeForAllSignUpPolicy as jest.Mock).mockResolvedValue([
+      mockContract,
+      mockContract,
+      mockContract,
+      mockContract,
+    ]);
+
+    (deployVerifier as jest.Mock).mockResolvedValue(mockContract);
+
+    (deployVerifyingKeysRegistryContract as jest.Mock).mockResolvedValue(mockContract);
+
+    (deployConstantInitialVoiceCreditProxyFactory as jest.Mock).mockResolvedValue(mockContract);
+
+    (deployConstantInitialVoiceCreditProxy as jest.Mock).mockResolvedValue(mockContract);
+
+    (deployPoll as jest.Mock).mockResolvedValue({
+      pollContractAddress: zeroAddress,
+      messageProcessorContractAddress: zeroAddress,
+      tallyContractAddress: zeroAddress,
+      pollId: 0n,
+    });
+
+    (deployMaci as jest.Mock).mockResolvedValue({
+      maciContractAddress: zeroAddress.replace("0x0", "0x1"),
+      pollFactoryContractAddress: zeroAddress,
+      messageProcessorFactoryContractAddress: zeroAddress,
+      tallyFactoryContractAddress: zeroAddress,
+      poseidonAddresses: {
+        poseidonT3: zeroAddress,
+        poseidonT4: zeroAddress,
+        poseidonT5: zeroAddress,
+        poseidonT6: zeroAddress,
+      },
+    });
+
+    (getDeployedPolicyProxyFactories as jest.Mock).mockResolvedValue({ checker: undefined, policy: undefined });
+  });
+
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  const chain = ESupportedNetworks.OPTIMISM_SEPOLIA;
-
-  const fileService = new FileService();
-
-  const storageInstance = ContractStorage.getInstance(path.join(process.cwd(), "deployed-contracts.json"));
-  const sessionKeyService = new SessionKeysService(fileService);
-  const deployerService = new DeployerService(sessionKeyService, fileService);
-
-  let approval: string;
-  let sessionKeyAddress: Hex;
-  let signer: Signer;
-
-  beforeAll(async () => {
-    sessionKeyAddress = (await sessionKeyService.generateSessionKey()).sessionKeyAddress;
-    approval = await generateApproval(sessionKeyAddress);
-
-    signer = await sessionKeyService.getCoordinatorSigner(chain);
-  });
-
-  afterAll(() => {
-    storageInstance.cleanup(ESupportedNetworks.OPTIMISM_SEPOLIA);
-    storageInstance.cleanup(ESupportedNetworks.ARBITRUM_ONE);
-  });
-
   describe("deployAndSavePolicy", () => {
-    // we cleanup after each test so we don't have leftover saved contracts
-    afterEach(() => {
-      storageInstance.cleanup(chain);
-    });
-
     test("should throw when the policy is not existent", async () => {
+      const deployerService = new DeployerService(sessionKeyService, fileService);
+
       await expect(
         deployerService.deployAndSavePolicy(signer, chain, { type: "NonExistent" as unknown as EPolicies }),
       ).rejects.toThrow(ErrorCodes.UNSUPPORTED_POLICY.toString());
     });
 
     test("should deploy policy if none is stored", async () => {
+      const deployerService = new DeployerService(sessionKeyService, fileService);
+
       const policy = await deployerService.deployAndSavePolicy(signer, chain, { type: EPolicies.FreeForAll });
 
       expect(policy).toBeDefined();
@@ -75,74 +140,51 @@ describe("DeployerService", () => {
     });
 
     test("should save factories (policy and checker) after deploying policy", async () => {
-      const { checker: initialChecker, policy: initialPolicy } = await getDeployedPolicyProxyFactories({
-        policy: EPolicyFactories.FreeForAll,
-        checker: ECheckerFactories.FreeForAll,
-        network: chain,
-        signer,
-      });
-      expect(initialChecker).not.toBeDefined();
-      expect(initialPolicy).not.toBeDefined();
+      const deployerService = new DeployerService(sessionKeyService, fileService);
 
       await deployerService.deployAndSavePolicy(signer, chain, { type: EPolicies.FreeForAll });
 
-      const { checker, policy } = await getDeployedPolicyProxyFactories({
-        policy: EPolicyFactories.FreeForAll,
-        checker: ECheckerFactories.FreeForAll,
+      expect(mockStorage.register).toHaveBeenCalledTimes(3);
+      expect(mockStorage.register).toHaveBeenNthCalledWith(1, {
+        id: EPolicies.FreeForAll,
+        name: EPolicies.FreeForAll,
+        contract: mockContract,
+        args: [],
         network: chain,
-        signer,
       });
-
-      expect(checker).toBeDefined();
-      expect(policy).toBeDefined();
+      expect(mockStorage.register).toHaveBeenNthCalledWith(2, {
+        id: EPolicyFactories.FreeForAll,
+        name: EPolicyFactories.FreeForAll,
+        contract: mockContract,
+        network: chain,
+      });
+      expect(mockStorage.register).toHaveBeenNthCalledWith(3, {
+        id: ECheckerFactories.FreeForAll,
+        name: ECheckerFactories.FreeForAll,
+        contract: mockContract,
+        network: chain,
+      });
     });
 
     test("should reuse policy factories if already stored", async () => {
-      const firstPolicy = await deployerService.deployAndSavePolicy(signer, chain, { type: EPolicies.FreeForAll });
-
-      const { checker: firstCheckerFactory, policy: firstPolicyFactory } = await getDeployedPolicyProxyFactories({
-        policy: EPolicyFactories.FreeForAll,
-        checker: ECheckerFactories.FreeForAll,
-        network: chain,
-        signer,
+      (getDeployedPolicyProxyFactories as jest.Mock).mockResolvedValue({
+        checker: mockContract,
+        policy: mockContract,
       });
 
-      expect(firstCheckerFactory).toBeDefined();
-      expect(firstPolicyFactory).toBeDefined();
+      const deployerService = new DeployerService(sessionKeyService, fileService);
 
-      const firstCheckerFactoryAddress = await firstCheckerFactory!.getAddress();
-      const firstPolicyFactoryAddress = await firstPolicyFactory!.getAddress();
+      await deployerService.deployAndSavePolicy(signer, chain, { type: EPolicies.FreeForAll });
+      await deployerService.deployAndSavePolicy(signer, chain, { type: EPolicies.FreeForAll });
 
-      expect(firstCheckerFactoryAddress).not.toBe(zeroAddress);
-      expect(firstPolicyFactoryAddress).not.toBe(zeroAddress);
-
-      const secondPolicy = await deployerService.deployAndSavePolicy(signer, chain, {
-        type: EPolicies.FreeForAll,
-      });
-
-      const { checker: secondCheckerFactory, policy: secondPolicyFactory } = await getDeployedPolicyProxyFactories({
-        policy: EPolicyFactories.FreeForAll,
-        checker: ECheckerFactories.FreeForAll,
-        network: chain,
-        signer,
-      });
-
-      expect(secondCheckerFactory).toBeDefined();
-      expect(secondPolicyFactory).toBeDefined();
-
-      expect(await secondCheckerFactory!.getAddress()).toBe(firstCheckerFactoryAddress);
-      expect(await secondPolicyFactory!.getAddress()).toBe(firstPolicyFactoryAddress);
-
-      expect(await firstPolicy.getAddress()).not.toBe(await secondPolicy.getAddress());
+      expect(mockStorage.register).toHaveBeenCalledTimes(2);
     });
   });
 
   describe("deployAndSaveVoiceCreditProxyFactory", () => {
-    afterEach(() => {
-      storageInstance.cleanup(chain);
-    });
+    test("should throw when the voice credit proxy factory is not existent", async () => {
+      const deployerService = new DeployerService(sessionKeyService, fileService);
 
-    it("should throw when the voice credit proxy factory is not existent", async () => {
       await expect(
         deployerService.deployAndSaveVoiceCreditProxyFactory(
           signer,
@@ -153,6 +195,8 @@ describe("DeployerService", () => {
     });
 
     test("should deploy voice credit proxy factory if none is stored", async () => {
+      const deployerService = new DeployerService(sessionKeyService, fileService);
+
       const constantInitialVoiceCreditProxyFactory = await deployerService.deployAndSaveVoiceCreditProxyFactory(
         signer,
         EInitialVoiceCreditProxiesFactories.Constant,
@@ -165,16 +209,15 @@ describe("DeployerService", () => {
   });
 
   describe("deployAndSaveVoiceCreditProxy", () => {
-    afterEach(() => {
-      storageInstance.cleanup(chain);
-    });
+    test("should throw when the voice credit proxy is not existent", async () => {
+      const deployerService = new DeployerService(sessionKeyService, fileService);
 
-    it("should throw when the voice credit proxy is not existent", async () => {
       const constantInitialVoiceCreditProxyFactory = await deployerService.deployAndSaveVoiceCreditProxyFactory(
         signer,
         EInitialVoiceCreditProxiesFactories.Constant,
         chain,
       );
+
       await expect(
         deployerService.deployAndSaveVoiceCreditProxy(
           signer,
@@ -186,11 +229,14 @@ describe("DeployerService", () => {
     });
 
     test("should deploy voice credit proxy if none is stored", async () => {
+      const deployerService = new DeployerService(sessionKeyService, fileService);
+
       const constantInitialVoiceCreditProxyFactory = await deployerService.deployAndSaveVoiceCreditProxyFactory(
         signer,
         EInitialVoiceCreditProxiesFactories.Constant,
         chain,
       );
+
       const voiceCreditProxy = await deployerService.deployAndSaveVoiceCreditProxy(
         signer,
         EInitialVoiceCreditProxies.Constant,
@@ -206,6 +252,12 @@ describe("DeployerService", () => {
 
   describe("deployMaci", () => {
     test("should throw when passing a non existent session key address", async () => {
+      sessionKeyService.getCoordinatorSigner = jest
+        .fn()
+        .mockRejectedValue(new Error(ErrorCodes.SESSION_KEY_NOT_FOUND.toString()));
+
+      const deployerService = new DeployerService(sessionKeyService, fileService);
+
       await expect(
         deployerService.deployMaci({
           config: testMaciDeploymentConfig,
@@ -217,6 +269,12 @@ describe("DeployerService", () => {
     });
 
     test("should throw when the approval is not valid", async () => {
+      sessionKeyService.getCoordinatorSigner = jest
+        .fn()
+        .mockRejectedValue(new Error(ErrorCodes.INVALID_APPROVAL.toString()));
+
+      const deployerService = new DeployerService(sessionKeyService, fileService);
+
       await expect(
         deployerService.deployMaci({
           config: testMaciDeploymentConfig,
@@ -228,8 +286,7 @@ describe("DeployerService", () => {
     });
 
     test("should deploy all new contracts", async () => {
-      const mockDeployMaci = jest.fn().mockResolvedValue({ address: zeroAddress });
-      jest.spyOn(DeployerService.prototype, "deployMaci").mockImplementation(mockDeployMaci);
+      const deployerService = new DeployerService(sessionKeyService, fileService);
 
       const { address: maciAddress } = await deployerService.deployMaci({
         config: testMaciDeploymentConfig,
@@ -238,16 +295,21 @@ describe("DeployerService", () => {
         sessionKeyAddress,
       });
 
-      expect(maciAddress).toBe(zeroAddress);
+      expect(maciAddress).toBe(zeroAddress.replace("0x0", "0x1"));
     });
   });
 
   describe("deployPoll", () => {
-    afterEach(() => {
-      storageInstance.cleanup(chain);
-    });
-
     test("should throw when there is no maci contract deployed", async () => {
+      (ContractStorage.getInstance as jest.Mock).mockReturnValue({
+        ...mockStorage,
+        getAddress: jest
+          .fn()
+          .mockImplementation((key: EContracts) => (key !== EContracts.MACI ? zeroAddress : undefined)),
+      });
+
+      const deployerService = new DeployerService(sessionKeyService, fileService);
+
       await expect(
         deployerService.deployPoll({
           approval,
@@ -258,30 +320,15 @@ describe("DeployerService", () => {
       ).rejects.toThrow(ErrorCodes.MACI_NOT_DEPLOYED.toString());
     });
 
-    test("should throw when there is no maci contract deployed to this specific chain", async () => {
-      await storageInstance.register({
-        id: EContracts.MACI,
-        contract: new BaseContract("0x", MACIFactory.abi),
-        network: ESupportedNetworks.ARBITRUM_ONE,
-        args: [],
+    test("should throw when there is no verifier deployed", async () => {
+      (ContractStorage.getInstance as jest.Mock).mockReturnValue({
+        ...mockStorage,
+        getAddress: jest
+          .fn()
+          .mockImplementation((key: EContracts) => (key !== EContracts.Verifier ? zeroAddress : undefined)),
       });
-      await expect(
-        deployerService.deployPoll({
-          approval,
-          sessionKeyAddress,
-          chain,
-          config: testPollDeploymentConfig,
-        }),
-      ).rejects.toThrow(ErrorCodes.MACI_NOT_DEPLOYED.toString());
-    });
 
-    it("should throw when there is no verifier deployed", async () => {
-      await storageInstance.register({
-        id: EContracts.MACI,
-        contract: new BaseContract("0x", MACIFactory.abi),
-        network: chain,
-        args: [],
-      });
+      const deployerService = new DeployerService(sessionKeyService, fileService);
 
       await expect(
         deployerService.deployPoll({
@@ -293,20 +340,17 @@ describe("DeployerService", () => {
       ).rejects.toThrow(ErrorCodes.VERIFIER_NOT_DEPLOYED.toString());
     });
 
-    it("should throw when there is no verifying keys registry deployed", async () => {
-      await storageInstance.register({
-        id: EContracts.MACI,
-        contract: new BaseContract("0x", MACIFactory.abi),
-        network: chain,
-        args: [],
+    test("should throw when there is no verifying keys registry deployed", async () => {
+      (ContractStorage.getInstance as jest.Mock).mockReturnValue({
+        ...mockStorage,
+        getAddress: jest
+          .fn()
+          .mockImplementation((key: EContracts) =>
+            key !== EContracts.VerifyingKeysRegistry ? zeroAddress : undefined,
+          ),
       });
 
-      await storageInstance.register({
-        id: EContracts.Verifier,
-        contract: new BaseContract("0x", VerifierFactory.abi),
-        network: chain,
-        args: [],
-      });
+      const deployerService = new DeployerService(sessionKeyService, fileService);
 
       await expect(
         deployerService.deployPoll({
@@ -319,8 +363,7 @@ describe("DeployerService", () => {
     });
 
     test("should deploy a poll", async () => {
-      const mockDeployPoll = jest.fn().mockResolvedValue({ pollId: "0" });
-      jest.spyOn(DeployerService.prototype, "deployPoll").mockImplementation(mockDeployPoll);
+      const deployerService = new DeployerService(sessionKeyService, fileService);
 
       const { pollId } = await deployerService.deployPoll({
         config: testPollDeploymentConfig,

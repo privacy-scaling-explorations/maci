@@ -40,6 +40,11 @@ export interface ICheckZkeysDirectory {
  */
 export interface INetworkInfo {
   /**
+   * Signer address
+   */
+  address: string;
+
+  /**
    * Network name
    */
   network: string;
@@ -53,6 +58,11 @@ export interface INetworkInfo {
    * Is the network accessible
    */
   status: boolean;
+
+  /**
+   * Network error
+   */
+  error?: string;
 }
 
 /**
@@ -60,14 +70,9 @@ export interface INetworkInfo {
  */
 export interface ICheckWalletFunds {
   /**
-   * Coordinator address
-   */
-  address: string;
-
-  /**
    * Funds in all networks
    */
-  fundsInNetworks: (INetworkInfo | undefined)[];
+  fundsInNetworks: INetworkInfo[];
 }
 
 /**

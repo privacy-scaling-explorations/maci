@@ -23,7 +23,7 @@ export const getPoll = async ({ maciAddress, signer, provider, pollId }: IGetPol
     pollContract.mergedStateRoot(),
     pollContract.getAddress(),
   ]);
-  const isMerged = mergedStateRoot !== BigInt(0);
+  const isMerged = mergedStateRoot !== 0n;
   const totalSignups = await pollContract.totalSignups();
 
   // get the poll mode

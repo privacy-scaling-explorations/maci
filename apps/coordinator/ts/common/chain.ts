@@ -9,18 +9,18 @@ import { ESupportedNetworks } from "./networks";
  * @param network - the network we want to interact with
  * @returns the RPC url for the network
  */
-export const getRpcUrl = (network: ESupportedNetworks): string => {
+export const getRpcUrl = async (network: ESupportedNetworks): Promise<string> => {
   const rpcUrl = process.env.COORDINATOR_RPC_URL;
 
   if (!rpcUrl) {
-    throw new Error(ErrorCodes.COORDINATOR_RPC_URL_NOT_SET.toString());
+    return Promise.reject(new Error(ErrorCodes.COORDINATOR_RPC_URL_NOT_SET.toString()));
   }
 
   if (!Object.values(ESupportedNetworks).includes(network)) {
-    throw new Error(ErrorCodes.UNSUPPORTED_NETWORK.toString());
+    return Promise.reject(new Error(ErrorCodes.UNSUPPORTED_NETWORK.toString()));
   }
 
-  return rpcUrl;
+  return Promise.resolve(rpcUrl);
 };
 
 /**
@@ -28,12 +28,12 @@ export const getRpcUrl = (network: ESupportedNetworks): string => {
  * @param chain
  * @returns
  */
-export const getSigner = (chain: ESupportedNetworks): Signer => {
+export const getSigner = async (chain: ESupportedNetworks): Promise<Signer> => {
   const wallet = process.env.PRIVATE_KEY
     ? new Wallet(process.env.PRIVATE_KEY)
     : Wallet.fromPhrase(process.env.MNEMONIC!);
 
-  const alchemyRpcUrl = getRpcUrl(chain);
+  const alchemyRpcUrl = await getRpcUrl(chain);
   const provider = new JsonRpcProvider(alchemyRpcUrl);
 
   return wallet.connect(provider);
