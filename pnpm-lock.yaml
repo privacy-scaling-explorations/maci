@@ -153,8 +153,8 @@ importers:
         specifier: 5.4.9
         version: 5.4.9(@zerodev/sdk@5.4.41(viem@2.33.2(typescript@5.8.3)(zod@3.25.64)))(viem@2.33.2(typescript@5.8.3)(zod@3.25.64))
       '@zerodev/permissions':
-        specifier: 5.5.12
-        version: 5.5.12(@zerodev/sdk@5.4.41(viem@2.33.2(typescript@5.8.3)(zod@3.25.64)))(@zerodev/webauthn-key@5.4.3(viem@2.33.2(typescript@5.8.3)(zod@3.25.64)))(viem@2.33.2(typescript@5.8.3)(zod@3.25.64))
+        specifier: 5.5.14
+        version: 5.5.14(@zerodev/sdk@5.4.41(viem@2.33.2(typescript@5.8.3)(zod@3.25.64)))(@zerodev/webauthn-key@5.4.3(viem@2.33.2(typescript@5.8.3)(zod@3.25.64)))(viem@2.33.2(typescript@5.8.3)(zod@3.25.64))
       '@zerodev/sdk':
         specifier: 5.4.41
         version: 5.4.41(viem@2.33.2(typescript@5.8.3)(zod@3.25.64))
@@ -6073,8 +6073,8 @@ packages:
       '@zerodev/sdk': ^5.4.13
       viem: ^2.28.0
 
-  '@zerodev/permissions@5.5.12':
-    resolution: {integrity: sha512-S2/omuT7qRLN+APY/MhgAT9SPCFR3tJIAO+TzFwhiPLt/4Ty0bdRiQ0Rhtm7AdOIcv85nYBv9icDcn+kxpDBUw==}
+  '@zerodev/permissions@5.5.14':
+    resolution: {integrity: sha512-gfc12jxOoASEcfVlIOF2a4uyzPqOR/rlBOJdCb8MU3sU82fmMTGOLnIM1QqomzHgvfDCXVQxGCvZydzStYwwzA==}
     peerDependencies:
       '@zerodev/sdk': ^5.4.0
       '@zerodev/webauthn-key': ^5.4.0
@@ -24526,7 +24526,7 @@ snapshots:
       '@zerodev/sdk': 5.4.41(viem@2.33.2(typescript@5.8.3)(zod@3.25.64))
       viem: 2.33.2(typescript@5.8.3)(zod@3.25.64)
 
-  '@zerodev/permissions@5.5.12(@zerodev/sdk@5.4.41(viem@2.33.2(typescript@5.8.3)(zod@3.25.64)))(@zerodev/webauthn-key@5.4.3(viem@2.33.2(typescript@5.8.3)(zod@3.25.64)))(viem@2.33.2(typescript@5.8.3)(zod@3.25.64))':
+  '@zerodev/permissions@5.5.14(@zerodev/sdk@5.4.41(viem@2.33.2(typescript@5.8.3)(zod@3.25.64)))(@zerodev/webauthn-key@5.4.3(viem@2.33.2(typescript@5.8.3)(zod@3.25.64)))(viem@2.33.2(typescript@5.8.3)(zod@3.25.64))':
     dependencies:
       '@simplewebauthn/browser': 9.0.1
       '@zerodev/sdk': 5.4.41(viem@2.33.2(typescript@5.8.3)(zod@3.25.64))
