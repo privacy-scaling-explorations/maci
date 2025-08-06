@@ -49,7 +49,7 @@ export const rechargeGasIfNeeded = async (
   const balanceAsEther = formatEther(balance);
 
   if (balanceAsEther <= minimumValueOfEther) {
-    const testAccount = privateKeyToAccount(process.env.TEST_PRIVATE_KEY! as Hex);
+    const testAccount = privateKeyToAccount(process.env.PRIVATE_KEY! as Hex);
     const walletClient = createWalletClient({
       chain: optimismSepolia,
       transport: http(),

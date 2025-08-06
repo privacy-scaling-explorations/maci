@@ -1,4 +1,5 @@
 import { ESupportedChains } from "@maci-protocol/sdk";
+import { createKernelAccount, createKernelAccountClient } from "@zerodev/sdk";
 import dotenv from "dotenv";
 import { zeroAddress } from "viem";
 
@@ -10,16 +11,37 @@ import { generateApproval } from "./utils";
 
 dotenv.config();
 
+jest.mock("@zerodev/sdk", (): unknown => ({
+  ...jest.requireActual("@zerodev/sdk"),
+  createKernelAccount: jest.fn(),
+  createKernelAccountClient: jest.fn(),
+}));
+
+jest.mock("@zerodev/permissions", (): unknown => ({
+  ...jest.requireActual("@zerodev/permissions"),
+  serializePermissionAccount: jest.fn().mockResolvedValue("approval"),
+  deserializePermissionAccount: jest.fn().mockResolvedValue({}),
+}));
+
 describe("SessionKeysService", () => {
   const fileService = new FileService();
-  let sessionKeysService: SessionKeysService;
+  const mockedKernelAccount = { mockedAccount: true };
+  const mockedKernelAccountClient = { mockedAccountClient: true };
 
-  beforeAll(() => {
-    sessionKeysService = new SessionKeysService(fileService);
+  beforeEach(() => {
+    (createKernelAccount as jest.Mock).mockResolvedValue(mockedKernelAccount);
+
+    (createKernelAccountClient as jest.Mock).mockResolvedValue(mockedKernelAccountClient);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe("generateSessionKey", () => {
     test("should generate and store a session key", async () => {
+      const sessionKeysService = new SessionKeysService(fileService);
+
       const sessionKeyAddress = await sessionKeysService.generateSessionKey();
       expect(sessionKeyAddress).toBeDefined();
       expect(sessionKeyAddress).not.toEqual(zeroAddress);
@@ -31,6 +53,8 @@ describe("SessionKeysService", () => {
 
   describe("deactivateSessionKey", () => {
     test("should delete a session key", async () => {
+      const sessionKeysService = new SessionKeysService(fileService);
+
       const sessionKeyAddress = await sessionKeysService.generateSessionKey();
       expect(sessionKeyAddress).toBeDefined();
       expect(sessionKeyAddress).not.toEqual(zeroAddress);
@@ -46,6 +70,10 @@ describe("SessionKeysService", () => {
 
   describe("generateClientFromSessionKey", () => {
     test("should fail to generate a client with an invalid approval", async () => {
+      (createKernelAccountClient as jest.Mock).mockRejectedValue(new Error());
+
+      const sessionKeysService = new SessionKeysService(fileService);
+
       const sessionKeyAddress = await sessionKeysService.generateSessionKey();
       await expect(
         sessionKeysService.generateClientFromSessionKey(
@@ -57,6 +85,8 @@ describe("SessionKeysService", () => {
     });
 
     test("should throw when given a non existent session key address", async () => {
+      const sessionKeysService = new SessionKeysService(fileService);
+
       const approval = await generateApproval(zeroAddress);
       await expect(
         sessionKeysService.generateClientFromSessionKey(zeroAddress, approval, ESupportedChains.OptimismSepolia),
@@ -64,30 +94,18 @@ describe("SessionKeysService", () => {
     });
 
     test("should generate a client from a session key", async () => {
-      jest.mock("@zerodev/sdk", (): unknown => ({
-        ...jest.requireActual("@zerodev/sdk"),
-        createKernelAccountClient: jest.fn().mockReturnValue({ mockedKernelClient: true }),
-      }));
+      const sessionKeysService = new SessionKeysService(fileService);
 
-      const mockGenerateClientFromSessionKey = jest.fn().mockResolvedValue({ mockedClient: true });
-      jest
-        .spyOn(SessionKeysService.prototype, "generateClientFromSessionKey")
-        .mockImplementation(mockGenerateClientFromSessionKey);
-
-      const sessionKeyAddress = await sessionKeysService.generateSessionKey();
-      const approval = await generateApproval(sessionKeyAddress.sessionKeyAddress);
-
+      const { sessionKeyAddress } = await sessionKeysService.generateSessionKey();
+      const approval = await generateApproval(sessionKeyAddress);
       const client = await sessionKeysService.generateClientFromSessionKey(
-        sessionKeyAddress.sessionKeyAddress,
+        sessionKeyAddress,
         approval,
         ESupportedChains.OptimismSepolia,
       );
-      expect(mockGenerateClientFromSessionKey).toHaveBeenCalledWith(
-        sessionKeyAddress.sessionKeyAddress,
-        approval,
-        ESupportedChains.OptimismSepolia,
-      );
-      expect(client).toEqual({ mockedClient: true });
+
+      expect(createKernelAccountClient).toHaveBeenCalledTimes(1);
+      expect(client).toEqual(mockedKernelAccountClient);
     });
   });
 });

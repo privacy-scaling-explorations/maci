@@ -31,13 +31,13 @@ import { viemChain } from "../networks";
 
 describe("common", () => {
   describe("getPublicClient", () => {
-    test("should return a public client", () => {
-      const publicClient = getPublicClient(ESupportedChains.OptimismSepolia);
+    test("should return a public client", async () => {
+      const publicClient = await getPublicClient(ESupportedChains.OptimismSepolia);
       expect(publicClient).toBeDefined();
     });
 
-    test("should throw when given an unsupported network", () => {
-      expect(() => getPublicClient("Unsupported" as ESupportedChains)).toThrow(
+    test("should throw when given an unsupported network", async () => {
+      await expect(() => getPublicClient("Unsupported" as ESupportedChains)).toThrow(
         ErrorCodes.UNSUPPORTED_NETWORK.toString(),
       );
     });
@@ -72,13 +72,13 @@ describe("common", () => {
   });
 
   describe("getRpcUrl", () => {
-    test("should throw when given an unsupported network", () => {
-      expect(() => getRpcUrl("Unsupported" as ESupportedChains)).toThrow(ErrorCodes.UNSUPPORTED_NETWORK.toString());
+    test("should throw when given an unsupported network", async () => {
+      await expect(() => getRpcUrl("Unsupported" as ESupportedChains)).toThrow(ErrorCodes.UNSUPPORTED_NETWORK.toString());
     });
 
-    test("should throw when COORDINATOR_RPC_URL is not set", () => {
+    test("should throw when COORDINATOR_RPC_URL is not set", async () => {
       delete process.env.COORDINATOR_RPC_URL;
-      expect(() => getRpcUrl(ESupportedChains.OptimismSepolia)).toThrow(
+      await expect(() => getRpcUrl(ESupportedChains.OptimismSepolia)).toThrow(
         ErrorCodes.COORDINATOR_RPC_URL_NOT_SET.toString(),
       );
     });

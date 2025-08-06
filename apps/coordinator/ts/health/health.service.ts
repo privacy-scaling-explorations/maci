@@ -121,41 +121,34 @@ export class HealthService {
    * @returns the address and its funds in all networks
    */
   async checkWalletFunds(): Promise<ICheckWalletFunds> {
-    let address: string;
     const networks = Object.values(ESupportedChains);
-
-    try {
-      const signer = getSigner(networks[0]);
-      address = await signer.getAddress();
-    } catch (error) {
-      return {
-        address: zeroAddress,
-        fundsInNetworks: [],
-      };
-    }
 
     const fundsInNetworks = await Promise.all(
       networks.map(async (network) => {
-        const signer = getSigner(network);
+        try {
+          const signer = await getSigner(network);
+          const address = await signer.getAddress();
 
-        return signer.provider
-          ?.getBalance(address)
-          .then((balance) => ({
+          return signer.provider?.getBalance(signer).then((balance) => ({
+            address,
             network,
             balance: formatEther(balance),
             status: true,
-          }))
-          .catch(() => ({
+          }));
+        } catch (error) {
+          return {
+            address: zeroAddress,
             network,
             balance: formatEther(0n),
             status: false,
-          }));
+            error: (error as Error).message,
+          };
+        }
       }),
     );
 
     return {
-      address,
-      fundsInNetworks,
+      fundsInNetworks: fundsInNetworks.filter(Boolean).map((x) => x!),
     };
   }
 

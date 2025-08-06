@@ -35,13 +35,13 @@ describe("SchedulerController", () => {
   });
 
   describe("register", () => {
-    it("should register a poll for finalization", async () => {
+    test("should register a poll for finalization", async () => {
       const { isScheduled } = await controller.register(scheduledPoll);
 
       expect(isScheduled).toBe(true);
     });
 
-    it("should throw an error if registration fails", async () => {
+    test("should throw an error if registration fails", async () => {
       const errorMessage = "Registration failed";
       service.registerPoll.mockRejectedValueOnce(new Error(errorMessage));
 
@@ -52,13 +52,13 @@ describe("SchedulerController", () => {
   });
 
   describe("status", () => {
-    it("should return scheduled poll status", async () => {
+    test("should return scheduled poll status", async () => {
       const { isScheduled } = await controller.status(identityScheduledPoll);
 
       expect(isScheduled).toBe(true);
     });
 
-    it("should throw an error if checking status fails", async () => {
+    test("should throw an error if checking status fails", async () => {
       const errorMessage = "checking status failed";
       service.isPollScheduled.mockRejectedValueOnce(new Error(errorMessage));
 
@@ -69,7 +69,7 @@ describe("SchedulerController", () => {
   });
 
   describe("delete", () => {
-    it("should delete a scheduled poll", async () => {
+    test("should delete a scheduled poll", async () => {
       await controller.register(scheduledPoll);
 
       const { isScheduled } = await controller.delete(identityScheduledPoll);
@@ -77,7 +77,7 @@ describe("SchedulerController", () => {
       expect(isScheduled).toBe(false);
     });
 
-    it("should throw an error if checking status fails", async () => {
+    test("should throw an error if checking status fails", async () => {
       const errorMessage = "Delete failed";
       service.deleteScheduledPoll.mockRejectedValueOnce(new Error(errorMessage));
 

@@ -1,9 +1,9 @@
-name: Coordinator
+name: Nightly Ceremony
 
 on:
-  push:
-    branches: [main]
-  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: 0 0 * * *
 
 env:
   NODE_OPTIONS: "--max-old-space-size=8192"
@@ -11,14 +11,14 @@ env:
   LIMIT: ${{ vars.COORDINATOR_LIMIT }}
   COORDINATOR_PUBLIC_KEY_PATH: ${{ vars.COORDINATOR_PUBLIC_KEY_PATH }}
   COORDINATOR_PRIVATE_KEY_PATH: ${{ vars.COORDINATOR_PRIVATE_KEY_PATH }}
-  COORDINATOR_MACI_PRIVATE_KEY: "macisk.5e203463e80f38f11fecbfeca93cbd78ec40b7d82ccf1ba6068fbc23b99f57b1"
+  COORDINATOR_MACI_PRIVATE_KEY: ${{ secrets.COORDINATOR_MACI_PRIVATE_KEY }}
   COORDINATOR_TALLY_ZKEY_NAME: ${{ vars.COORDINATOR_TALLY_ZKEY_NAME }}
   COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME: ${{ vars.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME }}
   COORDINATOR_POLL_JOINING_ZKEY_NAME: ${{ vars.COORDINATOR_POLL_JOINING_ZKEY_NAME }}
   COORDINATOR_POLL_JOINED_ZKEY_NAME: ${{ vars.COORDINATOR_POLL_JOINED_ZKEY_NAME }}
   COORDINATOR_RAPIDSNARK_EXE: ${{ vars.COORDINATOR_RAPIDSNARK_EXE }}
   COORDINATOR_ZKEY_PATH: ${{ vars.COORDINATOR_ZKEY_PATH }}
-  COORDINATOR_RPC_URL: "http://localhost:8545"
+  COORDINATOR_RPC_URL: ${{ secrets.COORDINATOR_RPC_URL }}
   COORDINATOR_ADDRESSES: ${{ vars.COORDINATOR_ADDRESSES }}
   COORDINATOR_ALLOWED_ORIGINS: ${{ vars.COORDINATOR_ALLOWED_ORIGINS }}
   COORDINATOR_REDIS_HOST: ${{ vars.COORDINATOR_REDIS_HOST }}
@@ -26,18 +26,20 @@ env:
   COORDINATOR_PORT: ${{ vars.COORDINATOR_PORT }}
   SUBGRAPH_NAME: ${{ vars.COORDINATOR_SUBGRAPH_NAME }}
   SUBGRAPH_PROVIDER_URL: ${{ vars.COORDINATOR_SUBGRAPH_PROVIDER_URL }}
-  SUBGRAPH_DEPLOY_KEY: "subgraph-deploy-key"
+  SUBGRAPH_DEPLOY_KEY: ${{ secrets.COORDINATOR_SUBGRAPH_DEPLOY_KEY }}
   SUBGRAPH_FOLDER: ${{ vars.COORDINATOR_SUBGRAPH_FOLDER }}
-  ZERODEV_BUNDLER_RPC_OP_SEPOLIA: "https://rpc.zerodev.app/api/v3"
-  PRIVATE_KEY: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
-  cancel-in-progress: true
+  ZERODEV_BUNDLER_RPC_OP_SEPOLIA: ${{ secrets.COORDINATOR_ZERODEV_BUNDLER_RPC_OP_SEPOLIA }}
+  PRIVATE_KEY: ${{ secrets.COORDINATOR_TEST_PRIVATE_KEY }}
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-22.04
+
+    services:
+      redis:
+        image: redis:8
+        ports:
+          - 6379:6379
 
     steps:
       - uses: actions/checkout@v4
@@ -82,11 +84,6 @@ jobs:
       - name: Install
         run: |
           pnpm install --frozen-lockfile --prefer-offline
-
-      - name: Copy env file
-        working-directory: apps/coordinator
-        run: |
-          cp .env.example .env
 
       - name: Build
         run: |
@@ -136,17 +133,7 @@ jobs:
         run: |
           pnpm run generate-keypair
 
-      - name: Run hardhat fork
+      - name: Run E2E tests
         working-directory: apps/coordinator
         run: |
-          pnpm run hardhat &
-          sleep 5
-
-      - name: Run tests
-        working-directory: apps/coordinator
-        run: |
-          pnpm run test
-
-      - name: Stop Hardhat
-        if: always()
-        run: kill $(lsof -t -i:8545)
+          pnpm run test:e2e

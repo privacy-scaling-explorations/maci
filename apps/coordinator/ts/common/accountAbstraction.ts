@@ -22,9 +22,9 @@ dotenv.config();
  * @param chainName - the name of the chain to use
  * @returns the public client
  */
-export const getPublicClient = (chainName: ESupportedChains): PublicClientHTTPType =>
+export const getPublicClient = async (chainName: ESupportedChains): Promise<PublicClientHTTPType> =>
   createPublicClient({
-    transport: http(getRpcUrl(chainName)),
+    transport: http(await getRpcUrl(chainName)),
     chain: viemChain(chainName),
   });
 
@@ -76,7 +76,7 @@ export const getKernelClient = async (
   chain: ESupportedChains,
 ): Promise<KernelClientType> => {
   const bundlerUrl = getZeroDevBundlerRPCUrl(chain);
-  const publicClient = getPublicClient(chain);
+  const publicClient = await getPublicClient(chain);
 
   // Using a stored private key
   const sessionKeySigner = await toECDSASigner({
@@ -91,13 +91,12 @@ export const getKernelClient = async (
       approval,
       sessionKeySigner,
     );
-    const kernelClient = createKernelAccountClient({
+
+    return createKernelAccountClient({
       bundlerTransport: http(bundlerUrl),
       account: sessionKeyAccount,
       chain: viemChain(chain),
     });
-
-    return kernelClient;
   } catch (error) {
     throw new Error(ErrorCodes.INVALID_APPROVAL.toString());
   }

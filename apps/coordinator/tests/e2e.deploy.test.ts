@@ -5,7 +5,7 @@ import { Test } from "@nestjs/testing";
 import dotenv from "dotenv";
 import { type Signer } from "ethers";
 import { Socket, io } from "socket.io-client";
-import { Hex, zeroAddress } from "viem";
+import { Hex, PublicClient, zeroAddress } from "viem";
 
 import path from "path";
 
@@ -62,7 +62,7 @@ describe("E2E Deployment Tests", () => {
 
   let app: INestApplication;
   let socket: Socket;
-  const publicClient = getPublicClient(CHAIN);
+  let publicClient: PublicClient;
 
   let maciAddress: Hex;
   let maciCreatedAt: bigint;
@@ -70,7 +70,8 @@ describe("E2E Deployment Tests", () => {
 
   // set up coordinator address
   beforeAll(async () => {
-    signer = getSigner(CHAIN);
+    [signer, publicClient] = await Promise.all([getSigner(CHAIN), getPublicClient(CHAIN)]);
+
     encryptedHeader = await getAuthorizationHeader(signer);
     process.env.COORDINATOR_ADDRESSES = await signer.getAddress();
     await rechargeGasIfNeeded(process.env.COORDINATOR_ADDRESSES as Hex, "0.007", "0.007");
@@ -129,7 +130,7 @@ describe("E2E Deployment Tests", () => {
     expect(response.status).toBe(200);
     expect(body.rapidsnark.rapidsnarkIsExecutable).toBe(true);
     expect(body.zkeysDirectory.zkeysDirectoryExists).toBe(true);
-    expect(body.coordinatorWalletFunds.address).not.toBe(zeroAddress);
+    expect(body.coordinatorWalletFunds.fundsInNetworks[0].address).not.toBe(zeroAddress);
   });
 
   test("should retrieve RSA public key", async () => {

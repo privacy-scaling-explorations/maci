@@ -1,11 +1,8 @@
 import { ESupportedChains } from "@maci-protocol/sdk";
 import { Test } from "@nestjs/testing";
-import { Hex, zeroAddress } from "viem";
+import { zeroAddress } from "viem";
 
 import { ErrorCodes } from "../../common";
-import { FileService } from "../../file/file.service";
-import { generateApproval } from "../../sessionKeys/__tests__/utils";
-import { SessionKeysService } from "../../sessionKeys/sessionKeys.service";
 import { DeployerController } from "../deployer.controller";
 import { DeployerService } from "../deployer.service";
 
@@ -23,22 +20,11 @@ describe("DeployerController", () => {
     deployPoll: jest.fn(),
   };
 
-  const defaultDeployMaciReturn: string = zeroAddress;
+  const defaultDeployMaciReturn = zeroAddress;
   const defaultDeployPollReturn = "0";
 
-  const deployerControllerFail = new DeployerController(
-    new DeployerService(new SessionKeysService(new FileService()), new FileService()),
-  );
-  const fileService = new FileService();
-  const sessionKeyService = new SessionKeysService(fileService);
-
-  let approval: string;
-  let sessionKeyAddress: Hex;
-
-  beforeAll(async () => {
-    sessionKeyAddress = (await sessionKeyService.generateSessionKey()).sessionKeyAddress;
-    approval = await generateApproval(sessionKeyAddress);
-  });
+  const approval = "approval";
+  const sessionKeyAddress = zeroAddress;
 
   beforeEach(async () => {
     const app = await Test.createTestingModule({
@@ -58,6 +44,10 @@ describe("DeployerController", () => {
     deployerController = app.get<DeployerController>(DeployerController);
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   describe("v1/deploy/maci", () => {
     test("should deploy all contracts", async () => {
       const { address } = await deployerController.deployMACIContracts({
@@ -71,8 +61,12 @@ describe("DeployerController", () => {
     });
 
     test("should return 400 bad request when the service throws", async () => {
+      mockDeployerService.deployMaci.mockRejectedValue(new Error(ErrorCodes.SESSION_KEY_NOT_FOUND.toString()));
+
+      const controller = new DeployerController(mockDeployerService as unknown as DeployerService);
+
       await expect(
-        deployerControllerFail.deployMACIContracts({
+        controller.deployMACIContracts({
           chain: ESupportedChains.OptimismSepolia,
           approval: "0x123",
           sessionKeyAddress: "0x123",
@@ -95,8 +89,12 @@ describe("DeployerController", () => {
     });
 
     test("should return 400 bad request when the service throws", async () => {
+      mockDeployerService.deployPoll.mockRejectedValue(new Error(ErrorCodes.SESSION_KEY_NOT_FOUND.toString()));
+
+      const controller = new DeployerController(mockDeployerService as unknown as DeployerService);
+
       await expect(
-        deployerControllerFail.deployPoll({
+        controller.deployPoll({
           chain: ESupportedChains.OptimismSepolia,
           approval: "0x123",
           sessionKeyAddress: "0x123",

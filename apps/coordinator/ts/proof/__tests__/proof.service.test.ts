@@ -8,7 +8,6 @@ import type { IGenerateArgs } from "../types";
 import { ErrorCodes } from "../../common";
 import { getCoordinatorKeypair } from "../../common/coordinatorKeypair";
 import { FileService } from "../../file/file.service";
-import { generateApproval } from "../../sessionKeys/__tests__/utils";
 import { SessionKeysService } from "../../sessionKeys/sessionKeys.service";
 import { ProofGeneratorService } from "../proof.service";
 
@@ -51,16 +50,11 @@ describe("ProofGeneratorService", () => {
   const fileService = new FileService();
   const sessionKeysService = new SessionKeysService(fileService);
 
-  beforeAll(async () => {
-    const { sessionKeyAddress } = await sessionKeysService.generateSessionKey();
-    const approval = await generateApproval(sessionKeyAddress);
-
+  beforeAll(() => {
     defaultProofArgs = {
       poll: 1,
       maciContractAddress: zeroAddress,
       mode: EMode.NON_QV,
-      sessionKeyAddress,
-      approval,
       chain: ESupportedChains.OptimismSepolia,
     };
   });
