@@ -36,7 +36,7 @@ export const generateTimestampPolicy = (endTime: number, start?: number): Policy
 export const getKernelAccount = async (sessionKeyAddress: Hex): Promise<CreateKernelAccountReturnType> => {
   const publicClient = await getPublicClient(ESupportedNetworks.OPTIMISM_SEPOLIA);
 
-  const sessionKeySigner = privateKeyToAccount(process.env.TEST_PRIVATE_KEY! as Hex);
+  const sessionKeySigner = privateKeyToAccount(process.env.PRIVATE_KEY! as Hex);
   const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
     signer: sessionKeySigner,
     entryPoint: ENTRY_POINT,

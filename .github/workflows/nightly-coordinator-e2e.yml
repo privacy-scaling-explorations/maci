@@ -1,9 +1,8 @@
-name: Coordinator
+name: Nightly Ceremony
 
 on:
-  push:
-    branches: [main]
-  pull_request:
+  schedule:
+    - cron: 0 0 * * *
 
 env:
   NODE_OPTIONS: "--max-old-space-size=8192"
@@ -31,13 +30,15 @@ env:
   ZERODEV_BUNDLER_RPC_OP_SEPOLIA: ${{ secrets.COORDINATOR_ZERODEV_BUNDLER_RPC_OP_SEPOLIA }}
   PRIVATE_KEY: ${{ secrets.COORDINATOR_TEST_PRIVATE_KEY }}
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
-  cancel-in-progress: true
-
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-22.04
+
+    services:
+      redis:
+        image: redis:8
+        ports:
+          - 6379:6379
 
     steps:
       - uses: actions/checkout@v4
@@ -82,11 +83,6 @@ jobs:
       - name: Install
         run: |
           pnpm install --frozen-lockfile --prefer-offline
-
-      - name: Copy env file
-        working-directory: apps/coordinator
-        run: |
-          cp .env.example .env
 
       - name: Build
         run: |
@@ -136,7 +132,7 @@ jobs:
         run: |
           pnpm run generate-keypair
 
-      - name: Run tests
+      - name: Run E2E tests
         working-directory: apps/coordinator
         run: |
-          pnpm run test
+          pnpm run test:e2e
