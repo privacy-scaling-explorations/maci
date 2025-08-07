@@ -5,5 +5,8 @@
   "navigation": {
     "includeFolders": false
   },
-  "exclude": ["**/emitter", "**/eslint-config-custom", "**/tsconfig"]
+  "excludeExternals": true,
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "exclude": ["**/emitter", "**/eslint-config-custom", "**/tsconfig", "**/node_modules/**"]
 }

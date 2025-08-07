@@ -284,7 +284,6 @@ const config: HardhatUserConfig = {
   docgen: {
     outputDir: "./docs",
     pages: "files",
-    exclude: ["./trees/zeros"],
   },
   gasReporter: {
     currency: "USD",
