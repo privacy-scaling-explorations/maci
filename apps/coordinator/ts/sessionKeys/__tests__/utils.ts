@@ -1,3 +1,4 @@
+import { ESupportedChains } from "@maci-protocol/sdk";
 import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
 import { type Policy, serializePermissionAccount, toPermissionValidator } from "@zerodev/permissions";
 import { toSudoPolicy, toTimestampPolicy } from "@zerodev/permissions/policies";
@@ -8,7 +9,6 @@ import dotenv from "dotenv";
 import { type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
-import { ESupportedNetworks } from "../../common";
 import { getPublicClient } from "../../common/accountAbstraction";
 
 dotenv.config();
@@ -34,7 +34,7 @@ export const generateTimestampPolicy = (endTime: number, start?: number): Policy
  * @returns - the kernel account
  */
 export const getKernelAccount = async (sessionKeyAddress: Hex): Promise<CreateKernelAccountReturnType> => {
-  const publicClient = await getPublicClient(ESupportedNetworks.OPTIMISM_SEPOLIA);
+  const publicClient = await getPublicClient(ESupportedChains.OptimismSepolia);
 
   const sessionKeySigner = privateKeyToAccount(process.env.PRIVATE_KEY! as Hex);
   const ecdsaValidator = await signerToEcdsaValidator(publicClient, {

@@ -1,9 +1,9 @@
+import { ESupportedChains } from "@maci-protocol/sdk";
 import { HttpException, HttpStatus } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 
 import type { IDeploySubgraphArgs, IDeploySubgraphReturn } from "../types";
 
-import { ESupportedNetworks } from "../../common";
 import { SubgraphController } from "../subgraph.controller";
 import { SubgraphService } from "../subgraph.service";
 
@@ -13,7 +13,7 @@ describe("SubgraphController", () => {
   const defaultSubgraphDeployArgs: IDeploySubgraphArgs = {
     maciContractAddress: "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
     startBlock: 0,
-    network: ESupportedNetworks.OPTIMISM_SEPOLIA,
+    network: ESupportedChains.OptimismSepolia,
     name: "subgraph",
     tag: "v0.0.1",
   };

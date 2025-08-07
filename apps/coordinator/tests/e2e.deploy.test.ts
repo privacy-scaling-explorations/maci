@@ -1,5 +1,5 @@
 import { Keypair } from "@maci-protocol/domainobjs";
-import { ContractStorage, isArm, joinPoll, signup, sleepUntil } from "@maci-protocol/sdk";
+import { ContractStorage, isArm, joinPoll, signup, sleepUntil, ESupportedChains } from "@maci-protocol/sdk";
 import { ValidationPipe, type INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import dotenv from "dotenv";
@@ -10,7 +10,7 @@ import { Hex, PublicClient, zeroAddress } from "viem";
 import path from "path";
 
 import { AppModule } from "../ts/app.module";
-import { ESupportedNetworks, getSigner } from "../ts/common";
+import { getSigner } from "../ts/common";
 import { getPublicClient } from "../ts/common/accountAbstraction";
 import {
   pollDuration,
@@ -45,7 +45,7 @@ jest.setTimeout(700000); // Sets timeout to 700 seconds
 
 const PORT = process.env.COORDINATOR_PORT || 3000;
 const TEST_URL = `http://localhost:${PORT}/v1`;
-const CHAIN = ESupportedNetworks.OPTIMISM_SEPOLIA;
+const CHAIN = ESupportedChains.OptimismSepolia;
 
 const REGEX_SUBGRAPH = /^https:\/\/api\.studio\.thegraph\.com\/query\/\d+\/maci-subgraph\/v0\.0\.\d+$/;
 
@@ -120,7 +120,7 @@ describe("E2E Deployment Tests", () => {
   test("should use OP Sepolia RPC in E2E", async () => {
     const network = await signer.provider?.getNetwork();
 
-    expect(network?.name).toBe(ESupportedNetworks.OPTIMISM_SEPOLIA);
+    expect(network?.name).toBe(ESupportedChains.OptimismSepolia);
   });
 
   test("should return true in the health check", async () => {

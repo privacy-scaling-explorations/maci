@@ -14,12 +14,13 @@ import {
   EInitialVoiceCreditProxiesFactories,
   EPolicies,
   EPolicyFactories,
+  ESupportedChains,
 } from "@maci-protocol/sdk";
 import dotenv from "dotenv";
 import { type Signer } from "ethers";
 import { zeroAddress } from "viem";
 
-import { ErrorCodes, ESupportedNetworks } from "../../common";
+import { ErrorCodes } from "../../common";
 import { FileService } from "../../file/file.service";
 import { SessionKeysService } from "../../sessionKeys/sessionKeys.service";
 import { DeployerService } from "../deployer.service";
@@ -45,7 +46,7 @@ jest.mock("@maci-protocol/sdk", (): unknown => ({
 }));
 
 describe("DeployerService", () => {
-  const chain = ESupportedNetworks.OPTIMISM_SEPOLIA;
+  const chain = ESupportedChains.OptimismSepolia;
   const signer = {
     getAddress: jest.fn().mockResolvedValue(zeroAddress),
   } as unknown as Signer;

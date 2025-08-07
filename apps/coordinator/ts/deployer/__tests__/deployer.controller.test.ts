@@ -1,7 +1,8 @@
+import { ESupportedChains } from "@maci-protocol/sdk";
 import { Test } from "@nestjs/testing";
 import { zeroAddress } from "viem";
 
-import { ErrorCodes, ESupportedNetworks } from "../../common";
+import { ErrorCodes } from "../../common";
 import { DeployerController } from "../deployer.controller";
 import { DeployerService } from "../deployer.service";
 
@@ -50,7 +51,7 @@ describe("DeployerController", () => {
   describe("v1/deploy/maci", () => {
     test("should deploy all contracts", async () => {
       const { address } = await deployerController.deployMACIContracts({
-        chain: ESupportedNetworks.OPTIMISM_SEPOLIA,
+        chain: ESupportedChains.OptimismSepolia,
         approval,
         sessionKeyAddress,
         config: testMaciDeploymentConfig,
@@ -66,7 +67,7 @@ describe("DeployerController", () => {
 
       await expect(
         controller.deployMACIContracts({
-          chain: ESupportedNetworks.OPTIMISM_SEPOLIA,
+          chain: ESupportedChains.OptimismSepolia,
           approval: "0x123",
           sessionKeyAddress: "0x123",
           config: testMaciDeploymentConfig,
@@ -78,7 +79,7 @@ describe("DeployerController", () => {
   describe("v1/deploy/poll", () => {
     test("should deploy a new poll", async () => {
       const { pollId } = await deployerController.deployPoll({
-        chain: ESupportedNetworks.OPTIMISM_SEPOLIA,
+        chain: ESupportedChains.OptimismSepolia,
         approval,
         sessionKeyAddress,
         config: testPollDeploymentConfig,
@@ -94,7 +95,7 @@ describe("DeployerController", () => {
 
       await expect(
         controller.deployPoll({
-          chain: ESupportedNetworks.OPTIMISM_SEPOLIA,
+          chain: ESupportedChains.OptimismSepolia,
           approval: "0x123",
           sessionKeyAddress: "0x123",
           config: testPollDeploymentConfig,

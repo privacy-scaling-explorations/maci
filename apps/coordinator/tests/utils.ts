@@ -1,3 +1,4 @@
+import { ESupportedChains } from "@maci-protocol/sdk";
 import dotenv from "dotenv";
 import { getBytes, hashMessage, type Signer } from "ethers";
 import { createWalletClient, formatEther, Hex, http, parseEther } from "viem";
@@ -6,7 +7,6 @@ import { optimismSepolia } from "viem/chains";
 
 import fs from "fs";
 
-import { ESupportedNetworks } from "../ts/common";
 import { getPublicClient } from "../ts/common/accountAbstraction";
 import { CryptoService } from "../ts/crypto/crypto.service";
 
@@ -44,7 +44,7 @@ export const rechargeGasIfNeeded = async (
   minimumValueOfEther: string,
   valueToSendOfEther: string,
 ): Promise<void> => {
-  const publicClient = await getPublicClient(ESupportedNetworks.OPTIMISM_SEPOLIA);
+  const publicClient = await getPublicClient(ESupportedChains.OptimismSepolia);
   const balance = await publicClient.getBalance({ address });
   const balanceAsEther = formatEther(balance);
 
