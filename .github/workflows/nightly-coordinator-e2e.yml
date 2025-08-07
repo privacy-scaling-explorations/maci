@@ -1,4 +1,4 @@
-name: Nightly Ceremony
+name: Nightly Coordinator E2E Tests
 
 on:
   workflow_dispatch:
@@ -53,24 +53,6 @@ jobs:
           node-version: 20
           cache: "pnpm"
 
-      - name: Get changed files
-        id: get-changed-files
-        uses: jitterbit/get-changed-files@v1
-        with:
-          format: "csv"
-
-      - name: Check for changes in 'circuit' folder
-        id: check_changes
-        run: |
-          CHANGED_FILES=${{ steps.get-changed-files.outputs.all }}
-          if echo "$CHANGED_FILES" | grep -q "\.circom"; then
-            echo "CHANGED=true" >> $GITHUB_ENV
-            echo "Circuits have changes."
-          else
-            echo "CHANGED=false" >> $GITHUB_ENV
-            echo "No changes on circuits."
-          fi
-
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -95,36 +77,7 @@ jobs:
           wget -qO ~/rapidsnark/build/prover https://maci-devops-zkeys.s3.ap-northeast-2.amazonaws.com/rapidsnark-linux-amd64-1c137
           chmod +x ~/rapidsnark/build/prover
 
-      - name: Download circom Binary v2.1.6
-        run: |
-          wget -qO ${{ github.workspace }}/circom https://github.com/iden3/circom/releases/download/v2.1.6/circom-linux-amd64
-          chmod +x ${{ github.workspace }}/circom
-          sudo mv ${{ github.workspace }}/circom /bin/circom
-
-      - name: Calculate circuits hash
-        id: hash_circuits
-        run: |
-          CIRCUIT_HASH=$(find packages/circuits -type f -name '*.circom' -exec sha1sum {} \; | sort | sha1sum | cut -d ' ' -f1)
-          echo "CIRCUIT_HASH=$CIRCUIT_HASH" >> $GITHUB_ENV
-          echo "CIRCUIT_HASH=$CIRCUIT_HASH" >> $GITHUB_OUTPUT
-
-      - name: Cache zkeys
-        id: cache_zkeys
-        uses: actions/cache@v4
-        with:
-          path: apps/coordinator/zkeys
-          key: zkeys-${{ steps.hash_circuits.outputs.CIRCUIT_HASH }}
-          restore-keys: |
-            zkeys-
-
-      - name: Compile Circuits And Generate zkeys
-        if: ${{ env.CHANGED == 'true' && steps.cache_zkeys.outputs.cache-hit != 'true' }}
-        run: |
-          pnpm build:circuits-c -- --outPath ../../apps/coordinator/zkeys
-          pnpm setup:zkeys -- --outPath ../../apps/coordinator/zkeys
-
       - name: Download zkeys
-        if: ${{ env.CHANGED == 'false' }}
         run: |
           pnpm download-zkeys:test:coordinator
 

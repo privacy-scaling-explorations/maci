@@ -1,11 +1,9 @@
 name: Nightly Ceremony
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: 0 0 * * *
-
-env:
-  STATE_TREE_DEPTH: ${{ vars.STATE_TREE_DEPTH }}
 
 jobs:
   test-with-ceremony-keys:
@@ -44,24 +42,18 @@ jobs:
         run: |
           pnpm run build
 
-      - name: Run hardhat fork
-        run: |
-          cd packages/contracts
-          cp ./deploy-config-example.json ./deploy-config.json
-          pnpm run hardhat &
-
       - name: Download rapidsnark (1c137)
         run: |
           mkdir -p ~/rapidsnark/build
           wget -qO ~/rapidsnark/build/prover https://maci-devops-zkeys.s3.ap-northeast-2.amazonaws.com/rapidsnark-linux-amd64-1c137
           chmod +x ~/rapidsnark/build/prover
 
-      - name: Download ceremony artifacts
-        run: pnpm download-zkeys:ceremony
+      - name: Download circom Binary v2.1.6
+        run: |
+          wget -qO /home/runner/work/circom https://github.com/iden3/circom/releases/download/v2.1.6/circom-linux-amd64
+          chmod +x /home/runner/work/circom
+          sudo mv /home/runner/work/circom /bin/circom
 
       - name: Run e2e tests
+        working-directory: packages/circuits
         run: pnpm test:ceremony
-
-      - name: Stop Hardhat
-        if: always()
-        run: kill $(lsof -t -i:8545)

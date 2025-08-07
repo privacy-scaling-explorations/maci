@@ -1,6 +1,7 @@
-name: Nightly
+name: Nightly Unit Tests
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: 0 0 * * *
 
@@ -77,10 +78,6 @@ jobs:
 
   unit:
     runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: false
-      matrix:
-        node-version: [18, 20]
 
     steps:
       - uses: actions/checkout@v4
@@ -90,10 +87,10 @@ jobs:
         with:
           version: 9
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 20
           cache: "pnpm"
 
       - name: Download circom Binary v2.1.6
