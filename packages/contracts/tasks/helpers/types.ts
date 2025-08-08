@@ -52,11 +52,6 @@ export interface IMergeParams {
    * The number of queue operations to perform
    */
   queueOps?: number;
-
-  /**
-   * Run prove command after merging
-   */
-  prove?: boolean;
 }
 
 /**
@@ -152,6 +147,11 @@ export interface IProveParams {
    * Backup files for ipfs messages (name format: ipfsHash1.json, ipfsHash2.json, ..., ipfsHashN.json)
    */
   ipfsMessageBackupFiles?: string;
+
+  /**
+   * Submit proofs on-chain
+   */
+  submitOnChain?: boolean;
 }
 
 /**

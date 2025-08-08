@@ -42,6 +42,7 @@ task("prove", "Command to generate proofs")
     undefined,
     types.string,
   )
+  .addFlag("submitOnChain", "Submit proofs on-chain")
   .setAction(
     async (
       {
@@ -58,6 +59,7 @@ task("prove", "Command to generate proofs")
         endBlock,
         transactionHash,
         ipfsMessageBackupFiles,
+        submitOnChain,
       }: IProveParams,
       hre,
     ) => {
@@ -192,5 +194,14 @@ task("prove", "Command to generate proofs")
           "Please make sure that you do not delete the proofs from the proof directory until they are all submitted on-chain.\nRegenerating proofs will result in overwriting the existing proofs and commitments which will be different due to the use of random salts.",
         ),
       });
+
+      if (submitOnChain) {
+        logMagenta({ text: info(`Submitting proofs on-chain`) });
+        await hre.run("submitOnChain", {
+          poll,
+          outputDir,
+          tallyFile,
+        });
+      }
     },
   );
