@@ -14,8 +14,7 @@ import { EContracts, type IMergeParams } from "../helpers/types";
  */
 task("merge", "Merge signups")
   .addParam("poll", "The poll id", undefined, types.string)
-  .addOptionalParam("prove", "Run prove command after merging", false, types.boolean)
-  .setAction(async ({ poll, prove }: IMergeParams, hre) => {
+  .setAction(async ({ poll }: IMergeParams, hre) => {
     const deployment = Deployment.getInstance({ hre });
 
     deployment.setHre(hre);
@@ -51,9 +50,4 @@ task("merge", "Merge signups")
 
     logMagenta({ text: info(`End balance: ${Number(endBalance / 10n ** 12n) / 1e6}`) });
     logMagenta({ text: info(`Merge expenses: ${Number((startBalance - endBalance) / 10n ** 12n) / 1e6}`) });
-
-    if (prove) {
-      logMagenta({ text: info(`Prove poll ${poll} results`) });
-      await hre.run("prove");
-    }
   });
