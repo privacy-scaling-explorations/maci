@@ -17,7 +17,7 @@ env:
   COORDINATOR_POLL_JOINING_ZKEY_NAME: "PollJoining_10_test"
   COORDINATOR_POLL_JOINED_ZKEY_NAME: "PollJoined_10_test"
   COORDINATOR_RAPIDSNARK_EXE: ""
-  COORDINATOR_ZKEY_PATH: "./zkeys"
+  COORDINATOR_ZKEY_PATH: "../../zkeys"
   COORDINATOR_RPC_URL: "http://localhost:8545"
   SUBGRAPH_NAME: "maci-coordinator-subgraph"
   SUBGRAPH_PROVIDER_URL: "https://api.studio.thegraph.com/deploy/"
@@ -105,7 +105,7 @@ jobs:
         id: cache_zkeys
         uses: actions/cache@v4
         with:
-          path: apps/coordinator/zkeys
+          path: zkeys
           key: zkeys-${{ steps.hash_circuits.outputs.CIRCUIT_HASH }}
           restore-keys: |
             zkeys-
@@ -119,7 +119,7 @@ jobs:
       - name: Download zkeys
         if: ${{ env.CHANGED == 'false' }}
         run: |
-          pnpm download-zkeys:test:coordinator
+          pnpm download-zkeys:test
 
       - name: Generate RSA Keypair
         working-directory: apps/coordinator

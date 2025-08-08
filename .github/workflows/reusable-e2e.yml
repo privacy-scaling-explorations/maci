@@ -83,7 +83,7 @@ jobs:
         id: cache_zkeys
         uses: actions/cache@v4
         with:
-          path: packages/testing/zkeys
+          path: zkeys
           key: zkeys-${{ steps.hash_circuits.outputs.CIRCUIT_HASH }}
           restore-keys: |
             zkeys-
@@ -91,8 +91,8 @@ jobs:
       - name: Compile Circuits And Generate zkeys
         if: ${{ env.CHANGED == 'true' && steps.cache_zkeys.outputs.cache-hit != 'true' }}
         run: |
-          pnpm build:circuits-c -- --outPath ../testing/zkeys
-          pnpm setup:zkeys -- --outPath ../testing/zkeys
+          pnpm build:circuits-c -- --outPath ../../zkeys
+          pnpm setup:zkeys -- --outPath ../../zkeys
 
       - name: Download zkeys
         if: ${{ env.CHANGED == 'false' }}

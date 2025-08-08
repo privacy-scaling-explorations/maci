@@ -22,6 +22,7 @@ export {
   EInitialVoiceCreditProxiesFactories,
   EDeploySteps,
   ESupportedChains,
+  EChainId,
   Deployment,
   ContractStorage,
   ProofGenerator,
