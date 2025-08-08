@@ -36,7 +36,7 @@
   "scripts": {
     "watch": "tsc --watch",
     "build": "tsc -p tsconfig.build.json",
-    "postbuild": "cp package.json ./build && mkdir -p ./zkeys",
+    "postbuild": "cp package.json ./build",
     "types": "tsc -p tsconfig.json --noEmit",
     "test": "jest",
     "test:coverage": "pnpm run test --coverage",

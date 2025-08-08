@@ -56,4 +56,4 @@ jobs:
 
       - name: Run e2e tests
         working-directory: packages/circuits
-        run: pnpm test:ceremony
+        run: pnpm test:ceremonyParams
