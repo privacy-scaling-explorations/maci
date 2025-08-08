@@ -6,6 +6,7 @@ export * from "../trees";
 export * from "../vote";
 export * from "../maciKeys";
 export * from "../subgraph";
+export * from "../user/types";
 export { getSignedupUserData, signup, hasUserSignedUp } from "../user/signup";
 export {
   getJoinedUserData,
@@ -19,6 +20,7 @@ export {
 export * from "./joinPoll";
 
 export type {
+  EMode,
   FullProveResult,
   IDeployParams,
   IMergeParams,

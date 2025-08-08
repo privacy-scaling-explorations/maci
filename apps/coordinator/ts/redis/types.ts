@@ -59,3 +59,18 @@ export interface IGetPollKeyForRedisParams extends IIdentityScheduledPoll {
    */
   test?: boolean;
 }
+
+/**
+ * Interface for getAll single object
+ */
+export interface IGetAllSingleObject {
+  /**
+   * The key of the object
+   */
+  key: string;
+
+  /**
+   * The value of the object
+   */
+  value: string;
+}
