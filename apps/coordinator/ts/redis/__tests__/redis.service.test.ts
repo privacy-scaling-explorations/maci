@@ -1,8 +1,8 @@
 import { ESupportedChains, EMode } from "@maci-protocol/sdk";
-import { createClient, RedisArgument, RedisClientType } from "@redis/client";
+import { createClient, type RedisArgument, type RedisClientType } from "@redis/client";
 
 import { RedisService } from "../redis.service";
-import { IScheduledPoll } from "../types";
+import { type IScheduledPoll } from "../types";
 import { getPollKeyFromObject } from "../utils";
 
 const REDIS__GET_ALL_PREFIX = "*-test";
