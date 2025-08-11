@@ -12,11 +12,12 @@ import type {
 import type { IIdentityScheduledPoll, IScheduledPoll } from "../redis/types";
 
 import { ErrorCodes } from "../common";
+import { ProofGeneratorService } from "../proof/proof.service";
 import { RedisService } from "../redis/redis.service";
 import { getPollKeyFromObject } from "../redis/utils";
 import { SessionKeysService } from "../sessionKeys/sessionKeys.service";
 
-const BUFFER_TIMEOUT = 10 * 1000; // 10 seconds buffer for poll finalization
+const BUFFER_TIMEOUT = 15 * 1000; // 15 seconds buffer for poll finalization
 
 @Injectable()
 export class SchedulerService implements OnModuleInit {
@@ -35,6 +36,7 @@ export class SchedulerService implements OnModuleInit {
     private readonly sessionKeysService: SessionKeysService,
     private readonly redisService: RedisService,
     private readonly schedulerRegistry: SchedulerRegistry,
+    private readonly proofService: ProofGeneratorService,
   ) {
     this.logger = new Logger(SchedulerService.name);
   }
@@ -58,20 +60,6 @@ export class SchedulerService implements OnModuleInit {
     const key = getPollKeyFromObject(scheduledPoll);
     const { maciAddress, pollId, chain } = scheduledPoll;
 
-    const storedPoll = await this.redisService.get(key);
-
-    if (!storedPoll) {
-      return { isScheduled: false };
-    }
-
-    try {
-      this.schedulerRegistry.getTimeout(key);
-    } catch (error) {
-      // delete redis data so user has to reschedule again
-      await this.redisService.delete(key);
-      return { isScheduled: false };
-    }
-
     const { isPollTallied } = await this.getPollFinalizationData({
       maciAddress,
       pollId,
@@ -82,6 +70,20 @@ export class SchedulerService implements OnModuleInit {
       this.deleteScheduledPoll({ maciAddress, pollId, chain });
       this.logger.error(`Error: ${ErrorCodes.POLL_ALREADY_TALLIED}, poll has already been tallied`);
       throw new Error(ErrorCodes.POLL_ALREADY_TALLIED.toString());
+    }
+
+    const storedPoll = await this.redisService.get(key);
+
+    if (!storedPoll) {
+      return { isScheduled: false };
+    }
+
+    const isPollTimeoutScheduled = this.schedulerRegistry.doesExist("timeout", key);
+
+    if (!isPollTimeoutScheduled) {
+      // delete redis data so user has to reschedule again
+      await this.redisService.delete(key);
+      return { isScheduled: false };
     }
 
     return { isScheduled: true };
@@ -100,7 +102,7 @@ export class SchedulerService implements OnModuleInit {
   }: IIdentityPollWithSignerArgs): Promise<IGetPollFinalizationData> {
     const signer = await this.sessionKeysService.getCoordinatorSigner(chain, sessionKeyAddress, approval);
 
-    const [{ endDate, isMerged }, isPollTallied] = await Promise.all([
+    const [{ endDate, isMerged: isPollMerged }, isPollTallied] = await Promise.all([
       getPoll({
         maciAddress,
         pollId: BigInt(pollId),
@@ -115,8 +117,97 @@ export class SchedulerService implements OnModuleInit {
 
     return {
       endDate: Number(endDate),
-      isPollTallied: isMerged ? isPollTallied : false,
+      isPollTallied,
+      isPollMerged,
     };
+  }
+
+  /**
+   * Finalize poll starting from any step
+   *
+   * @param args - generate proofs arguments
+   */
+  async finalizePoll(poll: IScheduledPoll): Promise<void> {
+    const { maciAddress, pollId, chain, deploymentBlockNumber, mode, merged, proofsGenerated } = poll;
+
+    const key = getPollKeyFromObject({ maciAddress, pollId, chain });
+
+    const { endDate, isPollMerged } = await this.getPollFinalizationData({
+      maciAddress,
+      pollId,
+      chain,
+    });
+
+    if (endDate * 1000 > Date.now()) {
+      this.logger.error(`Error finalizing poll ${pollId}: voting period is not over.`);
+
+      await this.deleteScheduledPoll({ maciAddress, pollId, chain });
+      await this.setupPollFinalization(poll);
+
+      return;
+    }
+
+    if (isPollMerged !== merged) {
+      this.logger.error(`Error finalizing poll ${pollId}: is poll merged mismatch. Updating database.`);
+
+      await this.deleteScheduledPoll({ maciAddress, pollId, chain });
+      await this.setupPollFinalization({ ...poll, merged: isPollMerged });
+
+      return;
+    }
+
+    try {
+      if (!merged) {
+        await this.proofService
+          .merge({
+            maciContractAddress: maciAddress,
+            pollId: Number(pollId),
+            chain,
+          })
+          .then(() => this.redisService.set(key, JSON.stringify({ ...poll, merged: true })))
+          .catch(async (error: Error) => {
+            await this.deleteScheduledPoll({ maciAddress, pollId, chain });
+            await this.setupPollFinalization(poll);
+
+            throw new Error(`Error merging poll ${pollId}: ${error.message}`);
+          });
+      }
+
+      if (!proofsGenerated) {
+        await this.proofService
+          .generate({
+            maciContractAddress: maciAddress,
+            poll: Number(pollId),
+            chain,
+            mode,
+            startBlock: deploymentBlockNumber,
+            blocksPerBatch: Number(process.env.COORDINATOR_BLOCK_BATCH_SIZE || 1000),
+          })
+          .then(() => this.redisService.set(key, JSON.stringify({ ...poll, merged: true, proofsGenerated: true })))
+          .catch(async (error: Error) => {
+            await this.deleteScheduledPoll({ maciAddress, pollId, chain });
+            await this.setupPollFinalization({ ...poll, merged: true });
+
+            throw new Error(`Error generating proofs for poll ${pollId}: ${error.message}`);
+          });
+      }
+
+      await this.proofService
+        .submit({
+          maciContractAddress: maciAddress,
+          pollId: Number(pollId),
+          chain,
+        })
+        .then(() => this.deleteScheduledPoll({ maciAddress, pollId, chain }))
+        .catch(async (error: Error) => {
+          await this.deleteScheduledPoll({ maciAddress, pollId, chain });
+          await this.setupPollFinalization({ ...poll, merged: true, proofsGenerated: true });
+
+          throw new Error(`Error submitting proofs for poll ${pollId}: ${error.message}`);
+        });
+    } catch (error) {
+      this.logger.error(`Error finalizing poll ${pollId}: ${(error as Error).message}`);
+    }
   }
 
   /**
@@ -124,35 +215,18 @@ export class SchedulerService implements OnModuleInit {
    * @param args - Arguments for storing and scheduling poll finalization
    * @return delay in milliseconds until the poll is scheduled for finalization
    */
-  private async setupPollFinalization({
-    maciAddress,
-    pollId,
-    mode,
-    deploymentBlockNumber,
-    chain,
-    endDate,
-  }: IScheduledPoll): Promise<ISetupPollFinalizationResponse> {
+  private async setupPollFinalization(poll: IScheduledPoll): Promise<ISetupPollFinalizationResponse> {
+    const { maciAddress, pollId, chain, endDate } = poll;
     const key = getPollKeyFromObject({ maciAddress, pollId, chain });
 
-    await this.redisService.set(
-      key,
-      JSON.stringify({
-        maciAddress,
-        pollId,
-        mode,
-        deploymentBlockNumber,
-        chain,
-        endDate,
-      } as IScheduledPoll),
-    );
+    await this.redisService.set(key, JSON.stringify(poll));
 
     const shouldBeExecutedIn = endDate * 1000 - Date.now();
     const toBeExecutedIn = shouldBeExecutedIn > 0 ? shouldBeExecutedIn : 0;
     const delay = toBeExecutedIn + BUFFER_TIMEOUT;
 
-    const timeout = setTimeout(() => {
-      // TODO: execute this.finalizePoll (implementing this in the next PR)
-      this.redisService.delete(key);
+    const timeout = setTimeout(async () => {
+      await this.finalizePoll(poll);
     }, delay);
 
     const isPollTimeoutScheduled = this.schedulerRegistry.doesExist("timeout", key);
@@ -227,10 +301,10 @@ export class SchedulerService implements OnModuleInit {
   async deleteScheduledPoll(scheduledPoll: IIdentityScheduledPoll): Promise<IIsPollScheduledResponse> {
     const key = getPollKeyFromObject(scheduledPoll);
 
-    try {
+    const isPollTimeoutScheduled = this.schedulerRegistry.doesExist("timeout", key);
+
+    if (isPollTimeoutScheduled) {
       this.schedulerRegistry.deleteTimeout(key);
-    } catch (error) {
-      this.logger.error(`Failed to delete timeout for ${key}:`);
     }
 
     await this.redisService.delete(key);
