@@ -1,9 +1,9 @@
 import { EMode, ESupportedChains } from "@maci-protocol/sdk";
 import { HttpException, HttpStatus } from "@nestjs/common";
 
-import { IdentityScheduledPollDto, SchedulePollWithSignerDto } from "../dto";
+import { type IdentityScheduledPollDto, type SchedulePollWithSignerDto } from "../dto";
 import { SchedulerController } from "../scheduler.controller";
-import { SchedulerService } from "../scheduler.service";
+import { type SchedulerService } from "../scheduler.service";
 
 const scheduledPoll: SchedulePollWithSignerDto = {
   maciAddress: "0x0",

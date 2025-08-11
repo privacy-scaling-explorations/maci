@@ -5,7 +5,7 @@ import type { IScheduledPoll } from "../../redis/types";
 
 import { ErrorCodes } from "../../common";
 import { FileService } from "../../file/file.service";
-import { RedisService } from "../../redis/redis.service";
+import { type RedisService } from "../../redis/redis.service";
 import { getPollKeyFromObject } from "../../redis/utils";
 import { SessionKeysService } from "../../sessionKeys/sessionKeys.service";
 import { SchedulerService } from "../scheduler.service";
@@ -281,7 +281,12 @@ describe("SchedulerService", () => {
       schedulerRegistry.deleteTimeout(getPollKeyFromObject(polls[1]));
       schedulerRegistry.deleteTimeout(getPollKeyFromObject(polls[2]));
 
-      redisService.getAll.mockResolvedValue(polls.map((poll) => getPollKeyFromObject(poll)));
+      redisService.getAll.mockResolvedValue(
+        polls.map((poll) => ({
+          key: getPollKeyFromObject(poll),
+          value: JSON.stringify(poll),
+        })),
+      );
       redisService.get.mockImplementation((key: string): Promise<string | null> => {
         const poll = polls.find((p) => getPollKeyFromObject(p) === key);
         const result = poll ? JSON.stringify(poll) : null;
@@ -323,11 +328,11 @@ describe("SchedulerService", () => {
     });
 
     test("should not throw if Redis returns null for a key and should delete register", async () => {
-      redisService.get.mockImplementation((key: string): Promise<string | null> => {
-        const poll = polls.find((p) => getPollKeyFromObject(p) === key && key !== getPollKeyFromObject(polls[1])); // null to simulate missing poll 2 key
-        const result = poll ? JSON.stringify(poll) : null;
-        return Promise.resolve(result);
-      });
+      redisService.getAll.mockResolvedValueOnce([
+        { key: getPollKeyFromObject(polls[0]), value: JSON.stringify(polls[0]) },
+        { key: getPollKeyFromObject(polls[1]), value: JSON.stringify(polls[1]) },
+        // poll 2 is missing
+      ]);
 
       await service.onModuleInit();
 

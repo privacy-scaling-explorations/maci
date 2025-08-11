@@ -1,8 +1,8 @@
 import { EMode, ESupportedChains } from "@maci-protocol/sdk";
-import { createClient, RedisClientType } from "@redis/client";
+import { createClient, type RedisClientType } from "@redis/client";
 
 import { RedisService } from "../ts/redis/redis.service";
-import { IScheduledPoll } from "../ts/redis/types";
+import { type IScheduledPoll } from "../ts/redis/types";
 import { getPollKeyFromObject } from "../ts/redis/utils";
 
 const REDIS__GET_ALL_PREFIX = "*-test";
@@ -37,9 +37,7 @@ describe("RedisService", () => {
     // Clean up after each test
     const keys = await redisClient.keys(REDIS__GET_ALL_PREFIX);
 
-    if (keys.length) {
-      await redisClient.del(keys);
-    }
+    await Promise.all(keys.map((key) => redisClient.del(key)));
   });
 
   afterAll(async () => {

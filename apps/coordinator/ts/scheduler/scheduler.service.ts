@@ -242,14 +242,12 @@ export class SchedulerService implements OnModuleInit {
    * Restore all scheduled timeouts from Redis
    */
   private async restoreTimeouts(): Promise<void> {
-    const pollKeys = await this.redisService.getAll();
+    const polls = await this.redisService.getAll();
 
     await Promise.all(
-      pollKeys.map(async (key) => {
+      polls.map(async ({ key, value }) => {
         this.logger.log(`Restoring timeout for poll key: ${key}`);
         try {
-          const value = await this.redisService.get(key);
-
           if (!value) {
             await this.redisService.delete(key);
             return;
@@ -272,18 +270,9 @@ export class SchedulerService implements OnModuleInit {
             return;
           }
 
-          const { delay } = await this.setupPollFinalization({
-            maciAddress: poll.maciAddress,
-            pollId: poll.pollId,
-            mode: poll.mode,
-            deploymentBlockNumber: poll.deploymentBlockNumber,
-            chain: poll.chain,
-            merged: poll.merged,
-            proofsGenerated: poll.proofsGenerated,
-            endDate,
-          });
+          const { delay } = await this.setupPollFinalization({ ...poll, endDate });
 
-          this.logger.log(`poll ${value} to be executed at ${new Date(Date.now() + delay).toISOString()}`);
+          this.logger.log(`poll ${value} to be finalized at ${new Date(Date.now() + delay).toISOString()}`);
         } catch (error) {
           this.logger.error(`Error restoring timeout for poll key: ${key}`, error);
         }
