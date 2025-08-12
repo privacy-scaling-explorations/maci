@@ -1,14 +1,13 @@
 /* eslint-disable no-console */
 /* eslint-disable import/no-extraneous-dependencies */
-import { BaseContract, ContractFactory, Signer } from "ethers";
+import { BaseContract, ContractFactory, type Signer } from "ethers";
 import low from "lowdb";
 import FileSync from "lowdb/adapters/FileSync";
 import LocalStorageSync from "lowdb/adapters/LocalStorage";
 
 import path from "path";
 
-import type { TAbi } from "./types";
-import type { AASigner } from "../../ts/types";
+import type { AASigner, IDeployCloneArgs } from "../../ts/types";
 import type { ConfigurableTaskDefinition, HardhatRuntimeEnvironment, TaskArguments } from "hardhat/types";
 
 import { error, info, success, warning, logGreen, logMagenta, logRed, logYellow } from "../../ts/logger";
@@ -16,13 +15,14 @@ import { getDeployedContractAddressFromContractReceipt } from "../../ts/utils";
 
 import { ContractStorage } from "./ContractStorage";
 import {
+  type TAbi,
+  type IDeployContractParams,
+  type IDeployContractWithLinkedLibrariesParams,
+  type IDeployParams,
+  type IDeployStep,
+  type IDeployStepCatalog,
+  type IGetContractParams,
   EContracts,
-  IDeployContractParams,
-  IDeployContractWithLinkedLibrariesParams,
-  IDeployParams,
-  IDeployStep,
-  IDeployStepCatalog,
-  IGetContractParams,
 } from "./types";
 
 /**
@@ -373,6 +373,40 @@ export class Deployment {
     }
 
     return contract as unknown as T;
+  }
+
+  /**
+   * Deploy proxy clone instance.
+   *
+   * @param args deploy proxy clone arguments
+   * @returns clone contract
+   */
+  async deployProxyClone<C extends BaseContract, Args extends unknown[] = unknown[]>({
+    proxyFactory,
+    factory,
+    args,
+    signer,
+  }: IDeployCloneArgs<Args>): Promise<C> {
+    const deployer = signer ?? (await this.getDeployer());
+    const [feeData, nonce] = await Promise.all([
+      deployer.provider?.getFeeData(),
+      deployer.provider?.getTransactionCount(deployer),
+    ]);
+
+    const receipt = await proxyFactory
+      .deploy(...args, {
+        gasPrice: feeData?.gasPrice && !feeData.maxFeePerGas ? feeData.gasPrice : undefined,
+        maxFeePerGas: feeData?.maxFeePerGas,
+        maxPriorityFeePerGas: feeData?.maxPriorityFeePerGas,
+        nonce,
+      })
+      .then((tx) => tx.wait());
+
+    const address = await proxyFactory
+      .queryFilter(proxyFactory.filters.CloneDeployed, receipt?.blockNumber, receipt?.blockNumber)
+      .then(([event]) => event.args[0]);
+
+    return factory.connect(deployer).attach(address) as C;
   }
 
   /**

@@ -51,6 +51,7 @@ export class SubgraphService {
         throw new Error(ErrorCodes.UNSUPPORTED_NETWORK.toString());
       }
 
+      const network = args.network.replace("_", "-");
       const subgraphManifestPath = path.resolve(process.env.SUBGRAPH_FOLDER!, "subgraph.yaml");
 
       await execFile("cp", [
@@ -61,10 +62,10 @@ export class SubgraphService {
       options?.onProgress({ current: EProgressStep.SCHEMA, total: TOTAL_STEPS });
 
       await fs.promises.writeFile(
-        path.resolve(process.env.SUBGRAPH_FOLDER!, `config/${args.network}.json`),
+        path.resolve(process.env.SUBGRAPH_FOLDER!, `config/${network}.json`),
         `${JSON.stringify(
           {
-            network: args.network,
+            network,
             maciContractAddress: args.maciContractAddress,
             maciContractStartBlock: args.startBlock,
           },
@@ -77,7 +78,7 @@ export class SubgraphService {
       options?.onProgress({ current: EProgressStep.NETWORK, total: TOTAL_STEPS });
 
       const mustacheOutput = await execFile("mustache", [
-        path.resolve(process.env.SUBGRAPH_FOLDER!, `config/${args.network}.json`),
+        path.resolve(process.env.SUBGRAPH_FOLDER!, `config/${network}.json`),
         path.resolve(process.env.SUBGRAPH_FOLDER!, "templates/subgraph.template.yaml"),
       ]);
       await fs.promises.writeFile(subgraphManifestPath, mustacheOutput.stdout, { flag: "w+" });

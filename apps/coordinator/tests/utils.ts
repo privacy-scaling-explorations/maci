@@ -1,13 +1,14 @@
 import { ESupportedChains } from "@maci-protocol/sdk";
 import dotenv from "dotenv";
 import { getBytes, hashMessage, type Signer } from "ethers";
-import { createWalletClient, formatEther, Hex, http, parseEther } from "viem";
+import { createWalletClient, formatEther, type Hex, http, parseEther } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { optimismSepolia } from "viem/chains";
 
 import fs from "fs";
 
 import { getPublicClient } from "../ts/common/accountAbstraction";
+import { getWallet } from "../ts/common/chain";
 import { CryptoService } from "../ts/crypto/crypto.service";
 
 dotenv.config();
@@ -44,12 +45,14 @@ export const rechargeGasIfNeeded = async (
   minimumValueOfEther: string,
   valueToSendOfEther: string,
 ): Promise<void> => {
-  const publicClient = await getPublicClient(ESupportedChains.OptimismSepolia);
+  const publicClient = await getPublicClient(ESupportedChains.Localhost);
   const balance = await publicClient.getBalance({ address });
   const balanceAsEther = formatEther(balance);
 
   if (balanceAsEther <= minimumValueOfEther) {
-    const testAccount = privateKeyToAccount(process.env.PRIVATE_KEY! as Hex);
+    const wallet = getWallet();
+    const testAccount = privateKeyToAccount(wallet.privateKey as Hex);
+
     const walletClient = createWalletClient({
       chain: optimismSepolia,
       transport: http(),

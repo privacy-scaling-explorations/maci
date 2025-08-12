@@ -97,7 +97,7 @@ jobs:
         id: cache_zkeys
         uses: actions/cache@v4
         with:
-          path: apps/relayer/zkeys
+          path: zkeys
           key: zkeys-${{ steps.hash_circuits.outputs.CIRCUIT_HASH }}
           restore-keys: |
             zkeys-
@@ -105,13 +105,13 @@ jobs:
       - name: Compile Circuits And Generate zkeys
         if: ${{ env.CHANGED == 'true' && steps.cache_zkeys.outputs.cache-hit != 'true' }}
         run: |
-          pnpm build:circuits-c -- --outPath ../../apps/relayer/zkeys
-          pnpm setup:zkeys -- --outPath ../../apps/relayer/zkeys
+          pnpm build:circuits-c -- --outPath ../../zkeys
+          pnpm setup:zkeys -- --outPath ../../zkeys
 
       - name: Download zkeys
         if: ${{ env.CHANGED == 'false' }}
         run: |
-          pnpm download-zkeys:test:relayer
+          pnpm download-zkeys:test
 
       - name: Run hardhat
         run: |

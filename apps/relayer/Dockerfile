@@ -18,7 +18,7 @@ ARG PORT=3000
 
 WORKDIR /maci
 COPY --chown=node:node  --from=builder /builder/ ./
-RUN pnpm run download-zkeys:test:relayer
+RUN pnpm run download-zkeys:test
 WORKDIR /maci/apps/relayer
 
 EXPOSE ${PORT}

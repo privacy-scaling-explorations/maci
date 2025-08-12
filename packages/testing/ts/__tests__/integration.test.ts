@@ -1,5 +1,5 @@
 /* eslint-disable no-await-in-loop */
-import { MaciState, ITreeDepths, VOTE_OPTION_TREE_ARITY } from "@maci-protocol/core";
+import { MaciState, type ITreeDepths, VOTE_OPTION_TREE_ARITY } from "@maci-protocol/core";
 import { generatePublicKey, generateRandomSalt, poseidon } from "@maci-protocol/crypto";
 import { Keypair, VoteCommand, PrivateKey, PublicKey } from "@maci-protocol/domainobjs";
 import {
@@ -33,7 +33,7 @@ import {
 } from "@maci-protocol/sdk";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { Signer } from "ethers";
+import { type Signer } from "ethers";
 
 import fs from "fs";
 import { homedir } from "os";
@@ -51,7 +51,7 @@ import {
   maxVoteOptions,
   POLL_STATE_TREE_DEPTH,
 } from "../constants";
-import { ITestSuite } from "../types";
+import { type ITestSuite } from "../types";
 import { expectTally, generateTestUserCommands, isArm, writeBackupFile, backupFolder } from "../utils";
 
 chai.use(chaiAsPromised);
@@ -78,6 +78,8 @@ describe("Integration tests", function test() {
 
   let verifyingKeysRegistryAddress: string;
 
+  const root = path.resolve(__dirname, "../../../..");
+
   // the code that we run before all tests
   before(async () => {
     signer = await getDefaultSigner();
@@ -86,10 +88,13 @@ describe("Integration tests", function test() {
     // 2. set verifying keys
     const { pollJoiningVerifyingKey, pollJoinedVerifyingKey, processVerifyingKey, tallyVerifyingKey } =
       await extractAllVerifyingKeys({
-        pollJoiningZkeyPath: "./zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey",
-        pollJoinedZkeyPath: "./zkeys/PollJoined_10_test/PollJoined_10_test.0.zkey",
-        messageProcessorZkeyPath: "./zkeys/MessageProcessorQv_10-20-2_test/MessageProcessorQv_10-20-2_test.0.zkey",
-        voteTallyZkeyPath: "./zkeys/VoteTallyQv_10-1-2_test/VoteTallyQv_10-1-2_test.0.zkey",
+        pollJoiningZkeyPath: path.resolve(root, "./zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey"),
+        pollJoinedZkeyPath: path.resolve(root, "./zkeys/PollJoined_10_test/PollJoined_10_test.0.zkey"),
+        messageProcessorZkeyPath: path.resolve(
+          root,
+          "./zkeys/MessageProcessorQv_10-20-2_test/MessageProcessorQv_10-20-2_test.0.zkey",
+        ),
+        voteTallyZkeyPath: path.resolve(root, "./zkeys/VoteTallyQv_10-1-2_test/VoteTallyQv_10-1-2_test.0.zkey"),
       });
 
     await setVerifyingKeys({
@@ -243,10 +248,13 @@ describe("Integration tests", function test() {
           maciAddress: contracts.maciContractAddress,
           privateKey: user.keypair.privateKey.serialize(),
           pollId,
-          pollJoiningZkey: "./zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey",
+          pollJoiningZkey: path.resolve(root, "./zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey"),
           useWasm: true,
-          pollWasm: "./zkeys/PollJoining_10_test/PollJoining_10_test_js/PollJoining_10_test.wasm",
-          pollWitnessGenerator: "./zkeys/PollJoining_10_test/PollJoining_10_test_cpp/PollJoining_10_test",
+          pollWasm: path.resolve(root, "./zkeys/PollJoining_10_test/PollJoining_10_test_js/PollJoining_10_test.wasm"),
+          pollWitnessGenerator: path.resolve(
+            root,
+            "./zkeys/PollJoining_10_test/PollJoining_10_test_cpp/PollJoining_10_test",
+          ),
           rapidsnark: `${homedir()}/rapidsnark/build/prover`,
           sgDataArg: DEFAULT_SG_DATA,
           ivcpDataArg: DEFAULT_IVCP_DATA,
@@ -369,23 +377,39 @@ describe("Integration tests", function test() {
       const { tallyData } = await generateProofs({
         outputDir: "./proofs",
         tallyFile: "./tally.json",
-        voteTallyZkey: "./zkeys/VoteTallyQv_10-1-2_test/VoteTallyQv_10-1-2_test.0.zkey",
-        messageProcessorZkey: "./zkeys/MessageProcessorQv_10-20-2_test/MessageProcessorQv_10-20-2_test.0.zkey",
+        voteTallyZkey: path.resolve(root, "./zkeys/VoteTallyQv_10-1-2_test/VoteTallyQv_10-1-2_test.0.zkey"),
+        messageProcessorZkey: path.resolve(
+          root,
+          "./zkeys/MessageProcessorQv_10-20-2_test/MessageProcessorQv_10-20-2_test.0.zkey",
+        ),
         pollId,
         rapidsnark: `${homedir()}/rapidsnark/build/prover`,
-        messageProcessorWitnessGenerator:
+        messageProcessorWitnessGenerator: path.resolve(
+          root,
           "./zkeys/MessageProcessorQv_10-20-2_test/MessageProcessorQv_10-20-2_test_cpp/MessageProcessorQv_10-20-2_test",
-        messageProcessorWitnessDatFile:
+        ),
+        messageProcessorWitnessDatFile: path.resolve(
+          root,
           "./zkeys/MessageProcessorQv_10-20-2_test/MessageProcessorQv_10-20-2_test_cpp/MessageProcessorQv_10-20-2_test.dat",
-        voteTallyWitnessGenerator:
+        ),
+        voteTallyWitnessGenerator: path.resolve(
+          root,
           "./zkeys/VoteTallyQv_10-1-2_test/VoteTallyQv_10-1-2_test_cpp/VoteTallyQv_10-1-2_test",
-        voteTallyWitnessDatFile:
+        ),
+        voteTallyWitnessDatFile: path.resolve(
+          root,
           "./zkeys/VoteTallyQv_10-1-2_test/VoteTallyQv_10-1-2_test_cpp/VoteTallyQv_10-1-2_test.dat",
+        ),
         coordinatorPrivateKey: coordinatorKeypair.privateKey.serialize(),
         maciAddress: contracts.maciContractAddress,
-        messageProcessorWasm:
+        messageProcessorWasm: path.resolve(
+          root,
           "./zkeys/MessageProcessorQv_10-20-2_test/MessageProcessorQv_10-20-2_test_js/MessageProcessorQv_10-20-2_test.wasm",
-        voteTallyWasm: "./zkeys/VoteTallyQv_10-1-2_test/VoteTallyQv_10-1-2_test_js/VoteTallyQv_10-1-2_test.wasm",
+        ),
+        voteTallyWasm: path.resolve(
+          root,
+          "./zkeys/VoteTallyQv_10-1-2_test/VoteTallyQv_10-1-2_test_js/VoteTallyQv_10-1-2_test.wasm",
+        ),
         useWasm,
         mode: EMode.QV,
         ipfsMessageBackupFiles,

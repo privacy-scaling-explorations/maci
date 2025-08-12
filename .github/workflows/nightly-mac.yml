@@ -3,7 +3,42 @@ name: Nightly Unit Tests Macos
 on:
   workflow_dispatch:
   schedule:
-    - cron: 0 0 * * *
+    - cron: 0 4 * * *
+
+env:
+  NODE_OPTIONS: "--max-old-space-size=8192"
+  TTL: ${{ vars.COORDINATOR_TTL }}
+  LIMIT: ${{ vars.COORDINATOR_LIMIT }}
+  COORDINATOR_PUBLIC_KEY_PATH: ${{ vars.COORDINATOR_PUBLIC_KEY_PATH }}
+  COORDINATOR_PRIVATE_KEY_PATH: ${{ vars.COORDINATOR_PRIVATE_KEY_PATH }}
+  COORDINATOR_MACI_PRIVATE_KEY: ${{ secrets.COORDINATOR_MACI_PRIVATE_KEY }}
+  COORDINATOR_TALLY_ZKEY_NAME: ${{ vars.COORDINATOR_TALLY_ZKEY_NAME }}
+  COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME: ${{ vars.COORDINATOR_MESSAGE_PROCESS_ZKEY_NAME }}
+  COORDINATOR_POLL_JOINING_ZKEY_NAME: ${{ vars.COORDINATOR_POLL_JOINING_ZKEY_NAME }}
+  COORDINATOR_POLL_JOINED_ZKEY_NAME: ${{ vars.COORDINATOR_POLL_JOINED_ZKEY_NAME }}
+  COORDINATOR_RAPIDSNARK_EXE: ${{ vars.COORDINATOR_RAPIDSNARK_EXE }}
+  COORDINATOR_ZKEY_PATH: "../../zkeys"
+  COORDINATOR_RPC_URL: ${{ secrets.COORDINATOR_RPC_URL }}
+  COORDINATOR_ADDRESSES: ${{ vars.COORDINATOR_ADDRESSES }}
+  COORDINATOR_ALLOWED_ORIGINS: ${{ vars.COORDINATOR_ALLOWED_ORIGINS }}
+  COORDINATOR_REDIS_HOST: ${{ vars.COORDINATOR_REDIS_HOST }}
+  COORDINATOR_REDIS_PORT: ${{ vars.COORDINATOR_REDIS_PORT }}
+  COORDINATOR_PORT: ${{ vars.COORDINATOR_PORT }}
+  SUBGRAPH_NAME: ${{ vars.COORDINATOR_SUBGRAPH_NAME }}
+  SUBGRAPH_PROVIDER_URL: ${{ vars.COORDINATOR_SUBGRAPH_PROVIDER_URL }}
+  SUBGRAPH_DEPLOY_KEY: ${{ secrets.COORDINATOR_SUBGRAPH_DEPLOY_KEY }}
+  SUBGRAPH_FOLDER: ${{ vars.COORDINATOR_SUBGRAPH_FOLDER }}
+  ZERODEV_BUNDLER_RPC_OP_SEPOLIA: ${{ secrets.COORDINATOR_ZERODEV_BUNDLER_RPC_OP_SEPOLIA }}
+  PRIVATE_KEY: ${{ secrets.COORDINATOR_TEST_PRIVATE_KEY }}
+  RELAYER_RPC_URL: "http://localhost:8545"
+  ALLOWED_ORIGINS: ${{ vars.ALLOWED_ORIGINS }}
+  MAX_MESSAGES: ${{ vars.RELAYER_MAX_MESSAGES || 20 }}
+  MONGO_DB_URI: ${{ secrets.RELAYER_MONGO_DB_URI }}
+  MONGODB_USER: ${{ secrets.MONGODB_USER }}
+  MONGODB_PASSWORD: ${{ secrets.MONGODB_PASSWORD }}
+  MONGODB_DATABASE: ${{ secrets.MONGODB_DATABASE }}
+  MNEMONIC: ${{ secrets.RELAYER_MNEMONIC }}
+  CRON_EXPRESSION: ${{ secrets.CRON_EXPRESSION }}
 
 jobs:
   generate-proving-keys:
@@ -50,8 +85,8 @@ jobs:
 
       - name: Compile Circuits And Generate zkeys
         run: |
-          pnpm build:circuits-wasm -- --outPath ../testing/zkeys
-          pnpm setup:zkeys -- --outPath ../testing/zkeys
+          pnpm build:circuits-wasm -- --outPath ../../zkeys
+          pnpm setup:zkeys -- --outPath ../../zkeys
 
       - name: ${{ matrix.command }}
         run: pnpm run ${{ matrix.command }}
@@ -91,5 +126,20 @@ jobs:
         run: |
           pnpm run build
 
+      - name: Run hardhat fork
+        run: |
+          cd packages/contracts
+          cp ./deploy-config-example.json ./deploy-config.json
+          pnpm run hardhat &
+
+      - name: Generate RSA Keypair
+        working-directory: apps/coordinator
+        run: |
+          pnpm run generate-keypair
+
       - name: Test
         run: pnpm run test
+
+      - name: Stop Hardhat
+        if: always()
+        run: kill $(lsof -t -i:8545)

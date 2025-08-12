@@ -329,6 +329,31 @@ export interface ILogArgs {
 }
 
 /**
+ * Interface that represents deploy clone arguments
+ */
+export interface IDeployCloneArgs<T extends unknown[] = unknown[]> {
+  /**
+   * Arguments for clone initialization
+   */
+  args: T;
+
+  /**
+   * Proxied contract factory
+   */
+  factory: ContractFactory;
+
+  /**
+   * Proxy contract factory
+   */
+  proxyFactory: IFactoryLike;
+
+  /**
+   * Ethereum signer
+   */
+  signer?: Signer;
+}
+
+/**
  * Interface for the deploy policy arguments
  */
 export interface IDeployPolicyArgs<FC extends BaseContract = BaseContract, FG extends BaseContract = BaseContract> {
@@ -421,8 +446,8 @@ export interface IGetDeployedPolicyProxyFactoriesArgs {
 /**
  * Type for the factory like contract
  */
-export type IFactoryLike<T extends BaseContract> = Factory &
-  T & {
+export type IFactoryLike = Factory &
+  BaseContract & {
     deploy: TypedContractMethod<unknown[], unknown, "nonpayable">;
   };
 

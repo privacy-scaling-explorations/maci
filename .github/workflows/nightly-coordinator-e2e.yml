@@ -3,7 +3,7 @@ name: Nightly Coordinator E2E Tests
 on:
   workflow_dispatch:
   schedule:
-    - cron: 0 0 * * *
+    - cron: 0 2 * * *
 
 env:
   NODE_OPTIONS: "--max-old-space-size=8192"
@@ -17,7 +17,7 @@ env:
   COORDINATOR_POLL_JOINING_ZKEY_NAME: ${{ vars.COORDINATOR_POLL_JOINING_ZKEY_NAME }}
   COORDINATOR_POLL_JOINED_ZKEY_NAME: ${{ vars.COORDINATOR_POLL_JOINED_ZKEY_NAME }}
   COORDINATOR_RAPIDSNARK_EXE: ${{ vars.COORDINATOR_RAPIDSNARK_EXE }}
-  COORDINATOR_ZKEY_PATH: ${{ vars.COORDINATOR_ZKEY_PATH }}
+  COORDINATOR_ZKEY_PATH: "../../zkeys"
   COORDINATOR_RPC_URL: ${{ secrets.COORDINATOR_RPC_URL }}
   COORDINATOR_ADDRESSES: ${{ vars.COORDINATOR_ADDRESSES }}
   COORDINATOR_ALLOWED_ORIGINS: ${{ vars.COORDINATOR_ALLOWED_ORIGINS }}
@@ -79,7 +79,7 @@ jobs:
 
       - name: Download zkeys
         run: |
-          pnpm download-zkeys:test:coordinator
+          pnpm download-zkeys:test
 
       - name: Generate RSA Keypair
         working-directory: apps/coordinator

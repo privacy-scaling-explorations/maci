@@ -1,17 +1,18 @@
 import { Keypair } from "@maci-protocol/domainobjs";
-import { ContractStorage, isArm, joinPoll, signup, sleepUntil, ESupportedChains } from "@maci-protocol/sdk";
+import { isArm, joinPoll, signup, sleepUntil, ESupportedChains, ContractStorage } from "@maci-protocol/sdk";
 import { ValidationPipe, type INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import dotenv from "dotenv";
 import { type Signer } from "ethers";
-import { Socket, io } from "socket.io-client";
-import { Hex, PublicClient, zeroAddress } from "viem";
+import { type Socket, io } from "socket.io-client";
+import { type Hex, zeroAddress } from "viem";
 
 import path from "path";
 
+import type { IGenerateData } from "../ts/proof/types";
+
 import { AppModule } from "../ts/app.module";
 import { getSigner } from "../ts/common";
-import { getPublicClient } from "../ts/common/accountAbstraction";
 import {
   pollDuration,
   pollStartDateExtraSeconds,
@@ -19,16 +20,12 @@ import {
   testPollDeploymentConfig,
 } from "../ts/deployer/__tests__/utils";
 import { DeployerModule } from "../ts/deployer/deployer.module";
-import { IDeployMaciArgs, IDeployPollArgs } from "../ts/deployer/types";
 import { FileModule } from "../ts/file/file.module";
-import { IGetPublicKeyData } from "../ts/file/types";
-import { IHealthCheckResponse } from "../ts/health/types";
+import { type IGetPublicKeyData } from "../ts/file/types";
+import { type IHealthCheckResponse } from "../ts/health/types";
 import { ProofModule } from "../ts/proof/proof.module";
-import { IGenerateArgs, IGenerateData, IMergeArgs, ISubmitProofsArgs } from "../ts/proof/types";
-import { getKernelAccount } from "../ts/sessionKeys/__tests__/utils";
 import { SessionKeysModule } from "../ts/sessionKeys/sessionKeys.module";
-import { IGenerateSessionKeyReturn } from "../ts/sessionKeys/types";
-import { IDeploySubgraphArgs } from "../ts/subgraph/types";
+import { type IGenerateSessionKeyReturn } from "../ts/sessionKeys/types";
 
 import {
   pollJoiningTestZkeyPath,
@@ -37,7 +34,7 @@ import {
   testRapidsnarkPath,
   zeroUint256Encoded,
 } from "./constants";
-import { getAuthorizationHeader, rechargeGasIfNeeded } from "./utils";
+import { getAuthorizationHeader } from "./utils";
 
 dotenv.config();
 
@@ -45,7 +42,7 @@ jest.setTimeout(700000); // Sets timeout to 700 seconds
 
 const PORT = process.env.COORDINATOR_PORT || 3000;
 const TEST_URL = `http://localhost:${PORT}/v1`;
-const CHAIN = ESupportedChains.OptimismSepolia;
+const CHAIN = ESupportedChains.Localhost;
 
 const REGEX_SUBGRAPH = /^https:\/\/api\.studio\.thegraph\.com\/query\/\d+\/maci-subgraph\/v0\.0\.\d+$/;
 
@@ -58,11 +55,9 @@ const VOTE_OPTIONS: Record<string, number> = {
 describe("E2E Deployment Tests", () => {
   let signer: Signer;
   let encryptedHeader: string;
-  let sessionKeyAddress: Hex;
 
   let app: INestApplication;
   let socket: Socket;
-  let publicClient: PublicClient;
 
   let maciAddress: Hex;
   let maciCreatedAt: bigint;
@@ -70,15 +65,11 @@ describe("E2E Deployment Tests", () => {
 
   // set up coordinator address
   beforeAll(async () => {
-    [signer, publicClient] = await Promise.all([getSigner(CHAIN), getPublicClient(CHAIN)]);
+    signer = await getSigner(CHAIN);
 
     encryptedHeader = await getAuthorizationHeader(signer);
     process.env.COORDINATOR_ADDRESSES = await signer.getAddress();
-    await rechargeGasIfNeeded(process.env.COORDINATOR_ADDRESSES as Hex, "0.007", "0.007");
-  });
 
-  // set up NestJS app
-  beforeAll(async () => {
     const moduleFixture = await Test.createTestingModule({
       imports: [AppModule, FileModule, DeployerModule, ProofModule, SessionKeysModule],
     }).compile();
@@ -116,13 +107,6 @@ describe("E2E Deployment Tests", () => {
     socket.disconnect();
   });
 
-  // run tests
-  test("should use OP Sepolia RPC in E2E", async () => {
-    const network = await signer.provider?.getNetwork();
-
-    expect(network?.name).toBe(ESupportedChains.OptimismSepolia);
-  });
-
   test("should return true in the health check", async () => {
     const response = await fetch(`${TEST_URL}/health/check`, { method: "GET" });
     const body = (await response.json()) as IHealthCheckResponse;
@@ -138,10 +122,9 @@ describe("E2E Deployment Tests", () => {
       method: "GET",
     });
     const body = (await response.json()) as IGetPublicKeyData;
+
     expect(response.status).toBe(200);
     expect(body.publicKey).toBeDefined();
-
-    // this RSA should be used in the encrypted auth header
   });
 
   test("should retrieve the session key address", async () => {
@@ -154,23 +137,9 @@ describe("E2E Deployment Tests", () => {
     const body = (await response.json()) as IGenerateSessionKeyReturn;
     expect(response.status).toBe(200);
     expect(body.sessionKeyAddress).not.toBe(zeroAddress);
-
-    // save them for next tests
-    sessionKeyAddress = body.sessionKeyAddress;
-    const sessionKeyAccount = await getKernelAccount(sessionKeyAddress);
-    await rechargeGasIfNeeded(sessionKeyAccount.address, "0.03", "0.03");
   });
 
   test("should deploy MACI correctly", async () => {
-    testMaciDeploymentConfig.VerifyingKeysRegistry.args.stateTreeDepth =
-      testMaciDeploymentConfig.VerifyingKeysRegistry.args.stateTreeDepth.toString();
-    testMaciDeploymentConfig.VerifyingKeysRegistry.args.pollStateTreeDepth =
-      testMaciDeploymentConfig.VerifyingKeysRegistry.args.pollStateTreeDepth.toString();
-    testMaciDeploymentConfig.VerifyingKeysRegistry.args.tallyProcessingStateTreeDepth =
-      testMaciDeploymentConfig.VerifyingKeysRegistry.args.tallyProcessingStateTreeDepth.toString();
-    testMaciDeploymentConfig.VerifyingKeysRegistry.args.voteOptionTreeDepth =
-      testMaciDeploymentConfig.VerifyingKeysRegistry.args.voteOptionTreeDepth.toString();
-
     const response = await fetch(`${TEST_URL}/deploy/maci`, {
       method: "POST",
       headers: {
@@ -180,7 +149,7 @@ describe("E2E Deployment Tests", () => {
       body: JSON.stringify({
         chain: CHAIN,
         config: testMaciDeploymentConfig,
-      } as IDeployMaciArgs),
+      }),
     });
 
     const body = (await response.json()) as { address: string };
@@ -189,8 +158,8 @@ describe("E2E Deployment Tests", () => {
     expect(body.address).not.toBe(zeroAddress);
 
     // save them for next tests
-    const blockNumber = await publicClient.getBlockNumber();
-    maciCreatedAt = blockNumber;
+    const blockNumber = await signer.provider!.getBlockNumber();
+    maciCreatedAt = BigInt(blockNumber);
     maciAddress = body.address as Hex;
   });
 
@@ -210,7 +179,7 @@ describe("E2E Deployment Tests", () => {
       body: JSON.stringify({
         chain: CHAIN,
         config: testPollDeploymentConfig,
-      } as IDeployPollArgs),
+      }),
     });
     const body = (await response.json()) as { pollId: string };
 
@@ -268,10 +237,10 @@ describe("E2E Deployment Tests", () => {
       body: JSON.stringify({
         maciContractAddress: maciAddress,
         startBlock: Number(maciCreatedAt),
-        network: CHAIN,
+        network: ESupportedChains.OptimismSepolia,
         name: process.env.SUBGRAPH_NAME,
         tag: `v0.0.${maciCreatedAt}`, // different versions per test using block number
-      } as IDeploySubgraphArgs),
+      }),
     });
 
     const body = await response.json();
@@ -306,7 +275,7 @@ describe("E2E Deployment Tests", () => {
         maciContractAddress: maciAddress,
         pollId: Number(pollId),
         chain: CHAIN,
-      } as IMergeArgs),
+      }),
     });
 
     expect(response.status).toBe(201);
@@ -329,7 +298,7 @@ describe("E2E Deployment Tests", () => {
         blocksPerBatch: 500,
         chain: CHAIN,
         useWasm,
-      } as IGenerateArgs),
+      }),
     });
     const body = (await response.json()) as IGenerateData;
 
@@ -353,7 +322,7 @@ describe("E2E Deployment Tests", () => {
         pollId: Number(pollId),
         maciContractAddress: maciAddress,
         chain: CHAIN,
-      } as ISubmitProofsArgs),
+      }),
     });
 
     expect(response.status).toBe(201);

@@ -32,7 +32,7 @@ import { viemChain } from "../networks";
 describe("common", () => {
   describe("getPublicClient", () => {
     test("should return a public client", async () => {
-      const publicClient = await getPublicClient(ESupportedChains.OptimismSepolia);
+      const publicClient = await getPublicClient(ESupportedChains.Sepolia);
       expect(publicClient).toBeDefined();
     });
 
@@ -53,6 +53,9 @@ describe("common", () => {
     test("should return an RPCUrl for a supported network", () => {
       const rpcUrlOPS = getZeroDevBundlerRPCUrl(ESupportedChains.OptimismSepolia);
       expect(rpcUrlOPS).toBeDefined();
+
+      const rpcUrlSepolia = getZeroDevBundlerRPCUrl(ESupportedChains.Sepolia);
+      expect(rpcUrlSepolia).toBeDefined();
 
       const rpcUrlOP = getZeroDevBundlerRPCUrl(ESupportedChains.Optimism);
       expect(rpcUrlOP).toBeDefined();

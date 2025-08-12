@@ -58,6 +58,8 @@ import {
   ConstantInitialVoiceCreditProxyFactory,
   EInitialVoiceCreditProxiesFactories,
   ESupportedChains,
+  BaseChecker,
+  ECheckers,
 } from "@maci-protocol/sdk";
 import { Injectable } from "@nestjs/common";
 import { BaseContract, Signer } from "ethers";
@@ -72,15 +74,15 @@ import {
   IDeployMaciArgs,
   IDeployPollArgs,
   IInitialVoiceCreditProxyArgs,
-  IAnonAadhaarPolicyArgs,
-  IEASPolicyArgs,
-  IGitcoinPassportPolicyArgs,
-  IHatsPolicyArgs,
-  IZupassPolicyArgs,
-  ISemaphorePolicyArgs,
-  IMerkleProofPolicyArgs,
-  ITokenPolicyArgs,
-  IERC20VotesPolicyArgs,
+  IAnonAadhaarCheckerArgs,
+  IEASCheckerArgs,
+  IGitcoinPassportCheckerArgs,
+  IHatsCheckerArgs,
+  IZupassCheckerArgs,
+  ISemaphoreCheckerArgs,
+  IMerkleProofCheckerArgs,
+  ITokenCheckerArgs,
+  IERC20VotesCheckerArgs,
   IVerifyingKeysRegistryArgs,
   IDeployPolicyConfig,
 } from "./types";
@@ -122,6 +124,7 @@ export class DeployerService {
     policyConfig: IDeployPolicyConfig,
   ): Promise<BasePolicy> {
     let policyContract: BasePolicy;
+    let checkerContract: BaseChecker;
     let policyFactory: BaseContract;
     let checkFactory: BaseContract;
 
@@ -131,10 +134,10 @@ export class DeployerService {
     let factoryIsSaved: boolean;
     let checkerIsSaved: boolean;
 
-    const { type, args } = policyConfig;
+    const { policyType, checkerType, args } = policyConfig;
 
     // based on the policy type, we need to deploy the correct policy
-    switch (type) {
+    switch (policyType) {
       case EPolicies.FreeForAll: {
         policyFactoryName = EPolicyFactories.FreeForAll;
         checkFactoryName = ECheckerFactories.FreeForAll;
@@ -149,7 +152,11 @@ export class DeployerService {
         factoryIsSaved = !!factories.policy;
         checkerIsSaved = !!factories.checker;
 
-        [policyContract, , policyFactory, checkFactory] = await deployFreeForAllSignUpPolicy(factories, signer, true);
+        [policyContract, checkerContract, policyFactory, checkFactory] = await deployFreeForAllSignUpPolicy(
+          factories,
+          signer,
+          true,
+        );
         break;
       }
       case EPolicies.EAS: {
@@ -166,11 +173,11 @@ export class DeployerService {
         factoryIsSaved = !!factories.policy;
         checkerIsSaved = !!factories.checker;
 
-        [policyContract, , policyFactory, checkFactory] = await deployEASSignUpPolicy(
+        [policyContract, checkerContract, policyFactory, checkFactory] = await deployEASSignUpPolicy(
           {
-            eas: (args as IEASPolicyArgs).easAddress,
-            attester: (args as IEASPolicyArgs).attester,
-            schema: (args as IEASPolicyArgs).schema,
+            eas: (args as IEASCheckerArgs).easAddress,
+            attester: (args as IEASCheckerArgs).attester,
+            schema: (args as IEASCheckerArgs).schema,
           },
           factories,
           signer,
@@ -195,10 +202,10 @@ export class DeployerService {
         factoryIsSaved = !!factories.policy;
         checkerIsSaved = !!factories.checker;
 
-        [policyContract, , policyFactory, checkFactory] = await deployGitcoinPassportPolicy(
+        [policyContract, checkerContract, policyFactory, checkFactory] = await deployGitcoinPassportPolicy(
           {
-            decoderAddress: (args as IGitcoinPassportPolicyArgs).decoderAddress,
-            minimumScore: Number((args as IGitcoinPassportPolicyArgs).passingScore),
+            decoderAddress: (args as IGitcoinPassportCheckerArgs).decoderAddress,
+            minimumScore: Number((args as IGitcoinPassportCheckerArgs).passingScore),
           },
           factories,
           signer,
@@ -220,10 +227,10 @@ export class DeployerService {
         factoryIsSaved = !!factories.policy;
         checkerIsSaved = !!factories.checker;
 
-        [policyContract, , policyFactory, checkFactory] = await deployHatsSignupPolicy(
+        [policyContract, checkerContract, policyFactory, checkFactory] = await deployHatsSignupPolicy(
           {
-            hats: (args as IHatsPolicyArgs).hatsProtocolAddress,
-            criterionHats: (args as IHatsPolicyArgs).critrionHats.map((c) => BigInt(c)),
+            hats: (args as IHatsCheckerArgs).hatsProtocolAddress,
+            criterionHats: (args as IHatsCheckerArgs).critrionHats.map((c) => BigInt(c)),
           },
           factories,
           signer,
@@ -245,12 +252,12 @@ export class DeployerService {
         factoryIsSaved = !!factories.policy;
         checkerIsSaved = !!factories.checker;
 
-        [policyContract, , policyFactory, checkFactory] = await deployZupassSignUpPolicy(
+        [policyContract, checkerContract, policyFactory, checkFactory] = await deployZupassSignUpPolicy(
           {
-            eventId: (args as IZupassPolicyArgs).eventId,
-            signer1: (args as IZupassPolicyArgs).signer1,
-            signer2: (args as IZupassPolicyArgs).signer2,
-            verifier: (args as IZupassPolicyArgs).zupassVerifier,
+            eventId: (args as IZupassCheckerArgs).eventId,
+            signer1: (args as IZupassCheckerArgs).signer1,
+            signer2: (args as IZupassCheckerArgs).signer2,
+            verifier: (args as IZupassCheckerArgs).zupassVerifier,
           },
           factories,
           signer,
@@ -272,10 +279,10 @@ export class DeployerService {
         factoryIsSaved = !!factories.policy;
         checkerIsSaved = !!factories.checker;
 
-        [policyContract, , policyFactory, checkFactory] = await deploySemaphoreSignupPolicy(
+        [policyContract, checkerContract, policyFactory, checkFactory] = await deploySemaphoreSignupPolicy(
           {
-            semaphore: (args as ISemaphorePolicyArgs).semaphoreContract,
-            groupId: BigInt((args as ISemaphorePolicyArgs).groupId),
+            semaphore: (args as ISemaphoreCheckerArgs).semaphoreContract,
+            groupId: BigInt((args as ISemaphoreCheckerArgs).groupId),
           },
           factories,
           signer,
@@ -297,9 +304,9 @@ export class DeployerService {
         factoryIsSaved = !!factories.policy;
         checkerIsSaved = !!factories.checker;
 
-        [policyContract, , policyFactory, checkFactory] = await deployMerkleProofPolicy(
+        [policyContract, checkerContract, policyFactory, checkFactory] = await deployMerkleProofPolicy(
           {
-            root: (args as IMerkleProofPolicyArgs).root,
+            root: (args as IMerkleProofCheckerArgs).root,
           },
           factories,
           signer,
@@ -321,9 +328,9 @@ export class DeployerService {
         factoryIsSaved = !!factories.policy;
         checkerIsSaved = !!factories.checker;
 
-        [policyContract, , policyFactory, checkFactory] = await deploySignupTokenPolicy(
+        [policyContract, checkerContract, policyFactory, checkFactory] = await deploySignupTokenPolicy(
           {
-            token: (args as ITokenPolicyArgs).token,
+            token: (args as ITokenCheckerArgs).token,
           },
           factories,
           signer,
@@ -345,10 +352,10 @@ export class DeployerService {
         factoryIsSaved = !!factories.policy;
         checkerIsSaved = !!factories.checker;
 
-        [policyContract, , policyFactory, checkFactory] = await deployAnonAadhaarPolicy(
+        [policyContract, checkerContract, policyFactory, checkFactory] = await deployAnonAadhaarPolicy(
           {
-            verifierAddress: (args as IAnonAadhaarPolicyArgs).verifier,
-            nullifierSeed: (args as IAnonAadhaarPolicyArgs).nullifierSeed,
+            verifierAddress: (args as IAnonAadhaarCheckerArgs).verifier,
+            nullifierSeed: (args as IAnonAadhaarCheckerArgs).nullifierSeed,
           },
           factories,
           signer,
@@ -370,11 +377,11 @@ export class DeployerService {
         factoryIsSaved = !!factories.policy;
         checkerIsSaved = !!factories.checker;
 
-        [policyContract, , policyFactory, checkFactory] = await deployERC20VotesPolicy(
+        [policyContract, checkerContract, policyFactory, checkFactory] = await deployERC20VotesPolicy(
           {
-            snapshotBlock: BigInt((args as IERC20VotesPolicyArgs).snapshotBlock),
-            threshold: BigInt((args as IERC20VotesPolicyArgs).threshold),
-            token: (args as IERC20VotesPolicyArgs).token,
+            snapshotBlock: BigInt((args as IERC20VotesCheckerArgs).snapshotBlock),
+            threshold: BigInt((args as IERC20VotesCheckerArgs).threshold),
+            token: (args as IERC20VotesCheckerArgs).token,
           },
           factories,
           signer,
@@ -388,9 +395,17 @@ export class DeployerService {
     }
 
     await this.storage.register<EPolicies>({
-      id: type,
-      name: type,
+      id: policyType,
+      name: policyType,
       contract: policyContract,
+      args: [await checkerContract.getAddress()],
+      network,
+    });
+
+    await this.storage.register<ECheckers>({
+      id: checkerType,
+      name: checkerType,
+      contract: checkerContract,
       args: args ? Object.values(args).map((arg) => String(arg)) : [],
       network,
     });
