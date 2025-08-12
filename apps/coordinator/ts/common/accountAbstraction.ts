@@ -40,6 +40,8 @@ export const getZeroDevBundlerRPCUrl = (network: ESupportedChains): string => {
       return process.env.ZERODEV_BUNDLER_RPC_OP_SEPOLIA || "";
     case ESupportedChains.Optimism:
       return process.env.ZERODEV_BUNDLER_RPC_OP || "";
+    case ESupportedChains.Sepolia:
+      return process.env.ZERODEV_BUNDLER_RPC_SEPOLIA || "";
     default:
       throw new Error(ErrorCodes.UNSUPPORTED_NETWORK.toString());
   }

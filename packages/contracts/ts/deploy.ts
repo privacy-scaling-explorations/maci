@@ -1,22 +1,11 @@
-import { deployProxyClone } from "@excubiae/contracts";
-import { type ContractFactory, type Signer, BaseContract, type BigNumberish } from "ethers";
-
-import type {
-  IDeployPolicyArgs,
-  IDeployMaciArgs,
-  IDeployedMaci,
-  IDeployedPoseidonContracts,
-  IFactoryLike,
-  IGetDeployedPolicyProxyFactoriesArgs,
-  TDeployedProxyFactories,
-} from "./types";
-import type { TAbi } from "../tasks/helpers/types";
+import { type ContractFactory, type Signer, type BaseContract, type BigNumberish } from "ethers";
 
 import { ContractStorage } from "../tasks/helpers/ContractStorage";
 import { Deployment } from "../tasks/helpers/Deployment";
 import {
+  type TAbi,
   ECheckerFactories,
-  EContracts,
+  type EContracts,
   EInitialVoiceCreditProxiesFactories,
   EPolicyFactories,
 } from "../tasks/helpers/types";
@@ -111,16 +100,25 @@ import {
   MACI__factory as MACIFactory,
   MessageProcessorFactory__factory as MessageProcessorFactoryFactory,
   TallyFactory__factory as TallyFactoryFactory,
-  ConstantInitialVoiceCreditProxyFactory as ConstantInitialVoiceCreditProxyFactoryContract,
+  type ConstantInitialVoiceCreditProxyFactory as ConstantInitialVoiceCreditProxyFactoryContract,
   ConstantInitialVoiceCreditProxy__factory as ConstantInitialVoiceCreditProxyFactory,
   ERC20VotesInitialVoiceCreditProxy__factory as ERC20VotesInitialVoiceCreditProxyFactory,
-  ERC20VotesInitialVoiceCreditProxyFactory as ERC20VotesInitialVoiceCreditProxyFactoryContract,
-  MockERC20Votes,
-  Factory,
+  type ERC20VotesInitialVoiceCreditProxyFactory as ERC20VotesInitialVoiceCreditProxyFactoryContract,
+  type MockERC20Votes,
+  type Factory,
 } from "../typechain-types";
 
 import { generateEmptyBallotRoots } from "./generateEmptyBallotRoots";
 import { logMagenta } from "./logger";
+import {
+  type IDeployPolicyArgs,
+  type IDeployMaciArgs,
+  type IDeployedMaci,
+  type IDeployedPoseidonContracts,
+  type IFactoryLike,
+  type IGetDeployedPolicyProxyFactoriesArgs,
+  type TDeployedProxyFactories,
+} from "./types";
 
 /**
  * Creates contract factory from abi and bytecode
@@ -224,9 +222,11 @@ export const deployConstantInitialVoiceCreditProxy = async (
     throw new Error("Signer is not provided");
   }
 
-  return await deployProxyClone<ConstantInitialVoiceCreditProxy, number[]>({
+  const deployment = Deployment.getInstance();
+
+  return await deployment.deployProxyClone<ConstantInitialVoiceCreditProxy, number[]>({
     factory: new ConstantInitialVoiceCreditProxyFactory(signer),
-    proxyFactory: proxyFactory as unknown as IFactoryLike<ConstantInitialVoiceCreditProxyFactoryContract>,
+    proxyFactory: proxyFactory as unknown as IFactoryLike,
     args: [args.amount],
     signer,
   });
@@ -270,9 +270,11 @@ export const deployERC20VotesInitialVoiceCreditProxy = async (
     throw new Error("Signer is not provided");
   }
 
-  return await deployProxyClone<ERC20VotesInitialVoiceCreditProxy, [bigint, string, bigint]>({
+  const deployment = Deployment.getInstance();
+
+  return await deployment.deployProxyClone<ERC20VotesInitialVoiceCreditProxy, [bigint, string, bigint]>({
     factory: new ERC20VotesInitialVoiceCreditProxyFactory(signer),
-    proxyFactory: proxyFactory as unknown as IFactoryLike<ERC20VotesInitialVoiceCreditProxyFactoryContract>,
+    proxyFactory: proxyFactory as unknown as IFactoryLike,
     args: [args.snapshotBlock, args.token, args.factor],
     signer,
   });
@@ -323,22 +325,24 @@ const deployPolicy = async <
   checkerProxyFactory: FC;
   policyProxyFactory: FG;
 }> => {
-  const checkerProxyFactory =
-    factories?.checker ?? (await deployContract<IFactoryLike<FC>>(checkerFactoryName, signer, quiet));
+  const deployment = Deployment.getInstance();
 
-  const checker = await deployProxyClone<C, unknown[]>({
+  const checkerProxyFactory =
+    factories?.checker ?? (await deployContract<IFactoryLike>(checkerFactoryName, signer, quiet));
+
+  const policyProxyFactory =
+    factories?.policy ?? (await deployContract<IFactoryLike>(policyFactoryName, signer, quiet));
+
+  const checker = await deployment.deployProxyClone<C>({
     factory: checkerFactory,
-    proxyFactory: checkerProxyFactory as IFactoryLike<FC>,
+    proxyFactory: checkerProxyFactory as IFactoryLike,
     args: checkerArgs,
     signer,
   });
 
-  const policyProxyFactory =
-    factories?.policy ?? (await deployContract<IFactoryLike<FG>>(policyFactoryName, signer, quiet));
-
-  const policy = await deployProxyClone<T, unknown[]>({
+  const policy = await deployment.deployProxyClone<T>({
     factory: policyFactory,
-    proxyFactory: policyProxyFactory as IFactoryLike<FG>,
+    proxyFactory: policyProxyFactory as IFactoryLike,
     args: policyArgs.concat(await checker.getAddress()),
     signer,
   });
@@ -346,8 +350,8 @@ const deployPolicy = async <
   return {
     checker,
     policy,
-    checkerProxyFactory,
-    policyProxyFactory,
+    checkerProxyFactory: checkerProxyFactory as FC,
+    policyProxyFactory: policyProxyFactory as FG,
   };
 };
 

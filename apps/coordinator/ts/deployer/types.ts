@@ -1,11 +1,12 @@
 import {
-  EPolicies,
-  EInitialVoiceCreditProxies,
-  EMode,
-  EInitialVoiceCreditProxiesFactories,
-  ESupportedChains,
+  type EPolicies,
+  type EInitialVoiceCreditProxies,
+  type EMode,
+  type EInitialVoiceCreditProxiesFactories,
+  type ESupportedChains,
+  type ECheckers,
 } from "@maci-protocol/sdk";
-import { SendUserOperationParameters } from "viem/account-abstraction";
+import { type SendUserOperationParameters } from "viem/account-abstraction";
 
 import type { Abi, Hex } from "viem";
 
@@ -72,7 +73,7 @@ export interface IConstantInitialVoiceCreditProxyArgs {
 /**
  * IEASPolicyArgs represents the arguments for deploying an EAS policy
  */
-export interface IEASPolicyArgs {
+export interface IEASCheckerArgs {
   /**
    * The address of the EAS contract
    */
@@ -92,7 +93,7 @@ export interface IEASPolicyArgs {
 /**
  * IZupassPolicyArgs represents the arguments for deploying a Zupass policy
  */
-export interface IZupassPolicyArgs {
+export interface IZupassCheckerArgs {
   /**
    * The first signer
    */
@@ -117,7 +118,7 @@ export interface IZupassPolicyArgs {
 /**
  * IHatsPolicyArgs represents the arguments for deploying a Hats policy
  */
-export interface IHatsPolicyArgs {
+export interface IHatsCheckerArgs {
   /**
    * The hats protocol address
    */
@@ -132,7 +133,7 @@ export interface IHatsPolicyArgs {
 /**
  * ISemaphorePolicyArgs represents the arguments for deploying a semaphore policy
  */
-export interface ISemaphorePolicyArgs {
+export interface ISemaphoreCheckerArgs {
   /**
    * The semaphore contract address
    */
@@ -147,7 +148,7 @@ export interface ISemaphorePolicyArgs {
 /**
  * IMerkleProofPolicyArgs represents the arguments for deploying a merkle proof policy
  */
-export interface IMerkleProofPolicyArgs {
+export interface IMerkleProofCheckerArgs {
   /**
    * The merkle proof root
    */
@@ -157,7 +158,7 @@ export interface IMerkleProofPolicyArgs {
 /**
  * ITokenPolicyArgs represents the arguments for deploying a sign up policy
  */
-export interface ITokenPolicyArgs {
+export interface ITokenCheckerArgs {
   /**
    * The token address
    */
@@ -167,7 +168,7 @@ export interface ITokenPolicyArgs {
 /**
  * IAnonAadhaarPolicyArgs represents the arguments for deploying an Anon Aadhaar policy
  */
-export interface IAnonAadhaarPolicyArgs {
+export interface IAnonAadhaarCheckerArgs {
   /**
    * The Anon Aadhaar verifier address
    */
@@ -182,7 +183,7 @@ export interface IAnonAadhaarPolicyArgs {
 /**
  * IGitcoinPassportPolicyArgs represents the arguments for deploying a gitcoin passport policy
  */
-export interface IGitcoinPassportPolicyArgs {
+export interface IGitcoinPassportCheckerArgs {
   /**
    * The decoder address
    */
@@ -197,7 +198,7 @@ export interface IGitcoinPassportPolicyArgs {
 /**
  * IERC20VotesPolicyArgs represents the arguments for deploying an ERC20 votes policy
  */
-export interface IERC20VotesPolicyArgs {
+export interface IERC20VotesCheckerArgs {
   /**
    * The token address
    */
@@ -217,7 +218,7 @@ export interface IERC20VotesPolicyArgs {
 /**
  * IERC20PolicyArgs represents the arguments for deploying an ERC20 policy
  */
-export interface IERC20PolicyArgs {
+export interface IERC20CheckerArgs {
   /**
    * The token address
    */
@@ -260,19 +261,19 @@ export interface IVerifyingKeysRegistryArgs {
 }
 
 /**
- * IPolicyArgs represents the arguments for deploying a policy
+ * TCheckerArgs represents the arguments for deploying a policy
  */
-export type IPolicyArgs =
-  | IEASPolicyArgs
-  | IZupassPolicyArgs
-  | IHatsPolicyArgs
-  | ISemaphorePolicyArgs
-  | IMerkleProofPolicyArgs
-  | ITokenPolicyArgs
-  | IAnonAadhaarPolicyArgs
-  | IGitcoinPassportPolicyArgs
-  | IERC20VotesPolicyArgs
-  | IERC20PolicyArgs;
+export type TCheckerArgs =
+  | IEASCheckerArgs
+  | IZupassCheckerArgs
+  | IHatsCheckerArgs
+  | ISemaphoreCheckerArgs
+  | IMerkleProofCheckerArgs
+  | ITokenCheckerArgs
+  | IAnonAadhaarCheckerArgs
+  | IGitcoinPassportCheckerArgs
+  | IERC20VotesCheckerArgs
+  | IERC20CheckerArgs;
 
 /**
  * IDeployPolicyConfig represents the configuration for deploying a policy
@@ -281,12 +282,17 @@ export interface IDeployPolicyConfig {
   /**
    * The policy type (e.g. FreeForAll, ERC20Votes, etc)
    */
-  type: EPolicies;
+  policyType: EPolicies;
 
   /**
-   * The policy arguments depending on each policy
+   * The checker type (e.g. FreeForAll, ERC20Votes, etc)
    */
-  args?: IPolicyArgs;
+  checkerType: ECheckers;
+
+  /**
+   * The checker arguments depending on each policy
+   */
+  args?: TCheckerArgs;
 }
 
 export type IInitialVoiceCreditProxyArgs = IConstantInitialVoiceCreditProxyArgs;

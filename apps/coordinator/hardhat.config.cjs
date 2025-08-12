@@ -23,6 +23,10 @@ module.exports = {
     },
     hardhat: {
       loggingEnabled: false,
+      mining: {
+        auto: true,
+        interval: 200,
+      },
     },
   },
   solidity: {

@@ -1,5 +1,6 @@
 import { EMode, ESupportedChains } from "@maci-protocol/sdk";
 import { createClient, type RedisClientType } from "@redis/client";
+import dotenv from "dotenv";
 
 import { RedisService } from "../ts/redis/redis.service";
 import { type IScheduledPoll } from "../ts/redis/types";
@@ -11,12 +12,14 @@ const scheduledPoll: IScheduledPoll = {
   maciAddress: "0xb83074Ac11fc569AC12F1b7D0C0a6809c3dc355b",
   pollId: "5",
   mode: EMode.NON_QV,
-  chain: ESupportedChains.OptimismSepolia,
+  chain: ESupportedChains.Sepolia,
   endDate: 1752534000,
   deploymentBlockNumber: 1,
   merged: false,
   proofsGenerated: false,
 };
+
+dotenv.config();
 
 describe("RedisService", () => {
   let redisClient: RedisClientType;

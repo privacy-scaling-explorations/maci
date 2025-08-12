@@ -3,13 +3,14 @@ import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
 import { type Policy, serializePermissionAccount, toPermissionValidator } from "@zerodev/permissions";
 import { toSudoPolicy, toTimestampPolicy } from "@zerodev/permissions/policies";
 import { toECDSASigner } from "@zerodev/permissions/signers";
-import { addressToEmptyAccount, createKernelAccount, CreateKernelAccountReturnType } from "@zerodev/sdk";
+import { addressToEmptyAccount, createKernelAccount, type CreateKernelAccountReturnType } from "@zerodev/sdk";
 import { getEntryPoint, KERNEL_V3_1 } from "@zerodev/sdk/constants";
 import dotenv from "dotenv";
 import { type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
 import { getPublicClient } from "../../common/accountAbstraction";
+import { getWallet } from "../../common/chain";
 
 dotenv.config();
 
@@ -34,9 +35,10 @@ export const generateTimestampPolicy = (endTime: number, start?: number): Policy
  * @returns - the kernel account
  */
 export const getKernelAccount = async (sessionKeyAddress: Hex): Promise<CreateKernelAccountReturnType> => {
-  const publicClient = await getPublicClient(ESupportedChains.OptimismSepolia);
+  const publicClient = await getPublicClient(ESupportedChains.Localhost);
+  const wallet = getWallet();
 
-  const sessionKeySigner = privateKeyToAccount(process.env.PRIVATE_KEY! as Hex);
+  const sessionKeySigner = privateKeyToAccount(wallet.privateKey as Hex);
   const ecdsaValidator = await signerToEcdsaValidator(publicClient, {
     signer: sessionKeySigner,
     entryPoint: ENTRY_POINT,

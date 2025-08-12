@@ -15,14 +15,15 @@ import {
   EPolicies,
   EPolicyFactories,
   ESupportedChains,
+  ECheckers,
 } from "@maci-protocol/sdk";
 import dotenv from "dotenv";
 import { type Signer } from "ethers";
 import { zeroAddress } from "viem";
 
 import { ErrorCodes } from "../../common";
-import { FileService } from "../../file/file.service";
-import { SessionKeysService } from "../../sessionKeys/sessionKeys.service";
+import { type FileService } from "../../file/file.service";
+import { type SessionKeysService } from "../../sessionKeys/sessionKeys.service";
 import { DeployerService } from "../deployer.service";
 
 import { testMaciDeploymentConfig, testPollDeploymentConfig } from "./utils";
@@ -127,14 +128,20 @@ describe("DeployerService", () => {
       const deployerService = new DeployerService(sessionKeyService, fileService);
 
       await expect(
-        deployerService.deployAndSavePolicy(signer, chain, { type: "NonExistent" as unknown as EPolicies }),
+        deployerService.deployAndSavePolicy(signer, chain, {
+          policyType: "NonExistent" as unknown as EPolicies,
+          checkerType: "NonExistent" as unknown as ECheckers,
+        }),
       ).rejects.toThrow(ErrorCodes.UNSUPPORTED_POLICY.toString());
     });
 
     test("should deploy policy if none is stored", async () => {
       const deployerService = new DeployerService(sessionKeyService, fileService);
 
-      const policy = await deployerService.deployAndSavePolicy(signer, chain, { type: EPolicies.FreeForAll });
+      const policy = await deployerService.deployAndSavePolicy(signer, chain, {
+        policyType: EPolicies.FreeForAll,
+        checkerType: ECheckers.FreeForAll,
+      });
 
       expect(policy).toBeDefined();
       expect(await policy.getAddress()).not.toBe(zeroAddress);
@@ -143,23 +150,33 @@ describe("DeployerService", () => {
     test("should save factories (policy and checker) after deploying policy", async () => {
       const deployerService = new DeployerService(sessionKeyService, fileService);
 
-      await deployerService.deployAndSavePolicy(signer, chain, { type: EPolicies.FreeForAll });
+      await deployerService.deployAndSavePolicy(signer, chain, {
+        policyType: EPolicies.FreeForAll,
+        checkerType: ECheckers.FreeForAll,
+      });
 
-      expect(mockStorage.register).toHaveBeenCalledTimes(3);
+      expect(mockStorage.register).toHaveBeenCalledTimes(4);
       expect(mockStorage.register).toHaveBeenNthCalledWith(1, {
         id: EPolicies.FreeForAll,
         name: EPolicies.FreeForAll,
         contract: mockContract,
-        args: [],
+        args: [await mockContract.getAddress()],
         network: chain,
       });
       expect(mockStorage.register).toHaveBeenNthCalledWith(2, {
+        id: ECheckers.FreeForAll,
+        name: ECheckers.FreeForAll,
+        contract: mockContract,
+        args: [],
+        network: chain,
+      });
+      expect(mockStorage.register).toHaveBeenNthCalledWith(3, {
         id: EPolicyFactories.FreeForAll,
         name: EPolicyFactories.FreeForAll,
         contract: mockContract,
         network: chain,
       });
-      expect(mockStorage.register).toHaveBeenNthCalledWith(3, {
+      expect(mockStorage.register).toHaveBeenNthCalledWith(4, {
         id: ECheckerFactories.FreeForAll,
         name: ECheckerFactories.FreeForAll,
         contract: mockContract,
@@ -175,10 +192,16 @@ describe("DeployerService", () => {
 
       const deployerService = new DeployerService(sessionKeyService, fileService);
 
-      await deployerService.deployAndSavePolicy(signer, chain, { type: EPolicies.FreeForAll });
-      await deployerService.deployAndSavePolicy(signer, chain, { type: EPolicies.FreeForAll });
+      await deployerService.deployAndSavePolicy(signer, chain, {
+        policyType: EPolicies.FreeForAll,
+        checkerType: ECheckers.FreeForAll,
+      });
+      await deployerService.deployAndSavePolicy(signer, chain, {
+        policyType: EPolicies.FreeForAll,
+        checkerType: ECheckers.FreeForAll,
+      });
 
-      expect(mockStorage.register).toHaveBeenCalledTimes(2);
+      expect(mockStorage.register).toHaveBeenCalledTimes(4);
     });
   });
 

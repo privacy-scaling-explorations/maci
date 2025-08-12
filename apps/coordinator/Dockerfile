@@ -31,13 +31,11 @@ USER node
 WORKDIR /maci
 COPY --chown=node:node --from=builder /builder/ ./
 
-RUN pnpm run download-zkeys:test:coordinator
-
+RUN pnpm run download-zkeys:test
 
 # coordinator directory
 WORKDIR /maci/apps/coordinator
 RUN pnpm run generate-keypair
 ENV NODE_OPTIONS="--max-old-space-size=8192"
-
 
 CMD ["pnpm","start:prod"]

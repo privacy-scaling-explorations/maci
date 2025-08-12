@@ -22,6 +22,7 @@ export {
   EInitialVoiceCreditProxiesFactories,
   EDeploySteps,
   ESupportedChains,
+  EChainId,
   Deployment,
   ContractStorage,
   ProofGenerator,
@@ -66,8 +67,6 @@ export {
   warning,
   error,
   generateEmptyBallotRoots,
-  getProxyContract,
-  deployProxyClone,
 } from "@maci-protocol/contracts";
 
 export type {
@@ -81,7 +80,6 @@ export type {
   SnarkProof,
   IIpfsMessage,
   IDeployCloneArgs,
-  IGetProxyContractArgs,
 } from "@maci-protocol/contracts";
 
 export * from "@maci-protocol/contracts/typechain-types";

@@ -1,5 +1,5 @@
 {
-  "optimism-sepolia": {
+  "optimism_sepolia": {
     "instance": {
       "0x4473aC3e68ad78D67757336ABaAa2Dced08cfcdF": {
         "id": "ConstantInitialVoiceCreditProxy",
@@ -140,7 +140,7 @@
       }
     }
   },
-  "arbitrum-sepolia": {
+  "arbitrum_sepolia": {
     "instance": {
       "0x41a29A58A63A998c9Edde6883Bcec2d89835a8e9": {
         "id": "ConstantInitialVoiceCreditProxy",
@@ -267,7 +267,7 @@
       }
     }
   },
-  "base-sepolia": {
+  "base_sepolia": {
     "instance": {
       "0x16FC13edD59D4b9F788Fb11A70eA022E1Bb1B856": {
         "id": "ConstantInitialVoiceCreditProxy",
@@ -394,7 +394,7 @@
       }
     }
   },
-  "scroll-sepolia": {
+  "scroll_sepolia": {
     "instance": {
       "0xB486cce9B4507A67Db147B0802D5673774C8D278": {
         "id": "ConstantInitialVoiceCreditProxy",
@@ -1043,7 +1043,7 @@
       }
     }
   },
-  "gnosis-chiado": {
+  "gnosis_chiado": {
     "instance": {
       "0x1Cf6eE7c94f980E0dE60Ad741201D4c6Da3090f9": {
         "id": "ConstantInitialVoiceCreditProxy",
@@ -1297,7 +1297,7 @@
       }
     }
   },
-  "polygon-amoy": {
+  "polygon_amoy": {
     "instance": {
       "0x3D4C58074DCD8E6526885F465ab5F311b6B290B5": {
         "id": "ConstantInitialVoiceCreditProxy",

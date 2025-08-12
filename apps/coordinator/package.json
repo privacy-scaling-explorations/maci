@@ -97,7 +97,6 @@
     ],
     "testRegex": ".*\\.test\\.ts$",
     "moduleNameMapper": {
-      "^@excubiae/contracts$": "<rootDir>/ts/jest/__mocks__/@excubiae/contracts.ts",
       "^@openzeppelin/merkle-tree$": "<rootDir>/ts/jest/__mocks__/@openzeppelin/merkle-tree.ts"
     },
     "transform": {

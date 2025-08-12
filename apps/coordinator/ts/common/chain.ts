@@ -1,5 +1,5 @@
 import { ESupportedChains } from "@maci-protocol/sdk";
-import { JsonRpcProvider, Signer, Wallet } from "ethers";
+import { type HDNodeWallet, type Signer, JsonRpcProvider, Wallet } from "ethers";
 
 import { ErrorCodes } from "./errors";
 
@@ -24,14 +24,20 @@ export const getRpcUrl = async (network: ESupportedChains): Promise<string> => {
 };
 
 /**
+ * Get wallet from private key or mnemonic env variable
+ *
+ * @returns wallet
+ */
+export const getWallet = (): Wallet | HDNodeWallet =>
+  process.env.PRIVATE_KEY ? new Wallet(process.env.PRIVATE_KEY) : Wallet.fromPhrase(process.env.MNEMONIC!);
+
+/**
  * Get a Ethers Signer given a chain and private key
  * @param chain
  * @returns
  */
 export const getSigner = async (chain: ESupportedChains): Promise<Signer> => {
-  const wallet = process.env.PRIVATE_KEY
-    ? new Wallet(process.env.PRIVATE_KEY)
-    : Wallet.fromPhrase(process.env.MNEMONIC!);
+  const wallet = getWallet();
 
   const alchemyRpcUrl = await getRpcUrl(chain);
   const provider = new JsonRpcProvider(alchemyRpcUrl);

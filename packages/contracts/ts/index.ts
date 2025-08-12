@@ -1,9 +1,3 @@
-export {
-  getProxyContract,
-  deployProxyClone,
-  type IDeployCloneArgs,
-  type IGetProxyContractArgs,
-} from "@excubiae/contracts";
 export { EMode } from "@maci-protocol/core";
 export {
   deployMockVerifier,
@@ -46,7 +40,7 @@ export {
   getDeployedContractAddressFromContractReceipt,
 } from "./utils";
 export { extractVerifyingKey, generateProofRapidSnark, generateProofSnarkjs, verifyProof, readProofs } from "./proofs";
-export { EDeploySteps, ESupportedChains, FULL_POLICY_NAMES } from "../tasks/helpers/constants";
+export { EDeploySteps, ESupportedChains, EChainId, FULL_POLICY_NAMES } from "../tasks/helpers/constants";
 export { Deployment } from "../tasks/helpers/Deployment";
 export { ContractStorage } from "../tasks/helpers/ContractStorage";
 export { ContractVerifier } from "../tasks/helpers/ContractVerifier";
@@ -87,5 +81,6 @@ export type {
   IIpfsMessage,
   TDeployedProxyFactories,
   AASigner,
+  IDeployCloneArgs,
 } from "./types";
 export * from "../typechain-types";

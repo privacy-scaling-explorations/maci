@@ -1,7 +1,7 @@
 packages/circuits/params/*
 packages/cli/proofs
 packages/cli/proofs.json
-packages/cli/zkeys
+zkeys/
 packages/cli/maci_keys.tar.gz
 *.zkey
 *.r1cs

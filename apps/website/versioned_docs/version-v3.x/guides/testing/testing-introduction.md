@@ -123,19 +123,19 @@ From the root folder, run:
 **for c++ witness generator**
 
 ```bash
-pnpm build:circuits-c -- --outPath ../testing/zkeys
+pnpm build:circuits-c -- --outPath ../../zkeys
 ```
 
 **for wasm witness generator**
 
 ```bash
-pnpm build:circuits-wasm -- --outPath ../testing/zkeys
+pnpm build:circuits-wasm -- --outPath ../../zkeys
 ```
 
 **generate zkeys**
 
 ```bash
-pnpm setup:zkeys --outPath ../testing/zkeys
+pnpm setup:zkeys --outPath ../../zkeys
 ```
 
 ### Check the Rapidsnark binary
