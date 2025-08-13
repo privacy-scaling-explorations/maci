@@ -13,8 +13,6 @@ export const DEFAULT_VOTE_OPTIONS = 25;
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
-// eslint-disable-next-line no-console
-console.log(dirname);
 
 const root = path.resolve(dirname, "../../..");
 

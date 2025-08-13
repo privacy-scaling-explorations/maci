@@ -45,7 +45,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        command: ["test:unit", "test:integration", "test:e2e", "test:hardhat"]
+        command: ["test", "test:unit", "test:integration", "test:e2e", "test:hardhat"]
 
     runs-on: ubuntu-24.04
 
@@ -104,59 +104,13 @@ jobs:
           pnpm build:circuits-c -- --outPath ../../zkeys
           pnpm setup:zkeys -- --outPath ../../zkeys
 
-      - name: ${{ matrix.command }}
-        run: pnpm run ${{ matrix.command }}
-
-      - name: Stop Hardhat
-        if: always()
-        run: kill $(lsof -t -i:8545)
-
-  unit:
-    runs-on: ubuntu-24.04
-
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          ref: main
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "pnpm"
-
-      - name: Download circom Binary v2.1.6
-        run: |
-          wget -qO ${{ github.workspace }}/circom https://github.com/iden3/circom/releases/download/v2.1.6/circom-linux-amd64
-          chmod +x ${{ github.workspace }}/circom
-          sudo mv ${{ github.workspace }}/circom /bin/circom
-
-      - name: Install
-        run: |
-          pnpm install --frozen-lockfile --prefer-offline
-
-      - name: Build
-        run: |
-          pnpm run build
-
-      - name: Run hardhat fork
-        run: |
-          cd packages/contracts
-          cp ./deploy-config-example.json ./deploy-config.json
-          pnpm run hardhat &
-
       - name: Generate RSA Keypair
         working-directory: apps/coordinator
         run: |
           pnpm run generate-keypair
 
-      - name: Test
-        run: |
-          pwd
-          pnpm run test
+      - name: ${{ matrix.command }}
+        run: pnpm run ${{ matrix.command }}
 
       - name: Stop Hardhat
         if: always()
