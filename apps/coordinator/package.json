@@ -81,7 +81,7 @@
     "socket.io-client": "^4.7.5",
     "supertest": "^7.1.4",
     "ts-jest": "^29.4.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.2"
   },
   "jest": {
     "testTimeout": 900000,
