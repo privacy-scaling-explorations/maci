@@ -44,6 +44,11 @@ export interface IGetPollFinalizationData {
    * Indicates if the poll is tallied
    */
   isPollTallied: boolean;
+
+  /**
+   * Indicates if the poll has been merged
+   */
+  isPollMerged: boolean;
 }
 
 /**
