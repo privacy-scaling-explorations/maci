@@ -52,7 +52,7 @@
     "nyc": "^17.1.0",
     "snarkjs": "^0.7.5",
     "ts-mocha": "^11.1.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.2"
   },
   "nyc": {
     "reporter": [
