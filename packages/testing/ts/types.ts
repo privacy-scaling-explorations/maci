@@ -105,9 +105,9 @@ export interface ITestingClassPaths {
   voteTallyZkeyPath: string;
 
   /**
-   * Path to the poll wasm file
+   * Path to the poll joining wasm file
    */
-  pollWasm: string;
+  pollJoiningWasm: string;
 
   /**
    * Path to the poll witnessGenerator file
