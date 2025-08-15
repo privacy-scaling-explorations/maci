@@ -250,7 +250,7 @@ describe("Integration tests", function test() {
           pollId,
           pollJoiningZkey: path.resolve(root, "./zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey"),
           useWasm: true,
-          pollWasm: path.resolve(root, "./zkeys/PollJoining_10_test/PollJoining_10_test_js/PollJoining_10_test.wasm"),
+          pollJoiningWasm: path.resolve(root, "./zkeys/PollJoining_10_test/PollJoining_10_test_js/PollJoining_10_test.wasm"),
           pollWitnessGenerator: path.resolve(
             root,
             "./zkeys/PollJoining_10_test/PollJoining_10_test_cpp/PollJoining_10_test",
