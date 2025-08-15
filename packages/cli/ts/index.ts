@@ -460,7 +460,7 @@ program
   .option("--end-block <endBlock>", "the block number to end looking for events from", parseInt)
   .option("--blocks-per-batch <blockPerBatch>", "the number of blocks to process per batch", parseInt)
   .option("--transaction-hash <transactionHash>", "transaction hash of MACI contract creation")
-  .option("--poll-wasm <pollWasm>", "the path to the poll witness generation wasm binary")
+  .option("--poll-joining-wasm <pollJoiningWasm>", "the path to the poll joining wasm binary")
   .requiredOption(
     "--poll-joining-zkey <pollZkeyPath>",
     "the poll join zkey path (see different options for zkey files to use specific circuits https://maci.pse.dev/docs/trusted-setup, https://maci.pse.dev/docs/testing/#pre-compiled-artifacts-for-testing)",
@@ -490,7 +490,7 @@ program
         endBlock: args.endBlock,
         blocksPerBatch: args.blocksPerBatch,
         pollJoiningZkey: args.pollJoiningZkey,
-        pollWasm: args.pollWasm,
+        pollJoiningWasm: args.pollJoiningWasm,
         useWasm: args.wasm,
         rapidsnark: args.rapidsnark,
         pollWitnessGenerator: args.pollWitnessGenerator,
