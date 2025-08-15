@@ -81,7 +81,7 @@ describe("integration tests private/public/keypair", () => {
         pollJoinedZkeyPath: testPollJoinedZkeyPath,
         messageProcessorZkeyPath: testProcessMessageNonQvZkeyPath,
         voteTallyZkeyPath: testVoteTallyNonQvZkeyPath,
-        pollWasm: testPollJoiningWasmPath,
+        pollJoiningWasm: testPollJoiningWasmPath,
         pollWitnessGenerator: testPollJoiningWitnessPath,
         rapidsnark: testRapidsnarkPath,
       });
