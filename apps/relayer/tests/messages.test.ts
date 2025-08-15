@@ -11,7 +11,7 @@ import { AppModule } from "../ts/app.module.js";
 import {
   pollJoinedWasm,
   pollJoinedZkey,
-  pollWasm,
+  pollJoiningWasm,
   type TApp,
   voteTallyZkeyPathNonQv,
   pollJoiningZkey,
@@ -35,7 +35,7 @@ describe("Integration messages", () => {
       pollJoinedZkeyPath: pollJoinedZkey,
       messageProcessorZkeyPath: messageProcessorZkeyPathNonQv,
       voteTallyZkeyPath: voteTallyZkeyPathNonQv,
-      pollWasm,
+      pollJoiningWasm,
       pollWitnessGenerator,
       rapidsnark,
     });

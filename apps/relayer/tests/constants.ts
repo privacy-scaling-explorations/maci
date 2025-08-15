@@ -18,7 +18,7 @@ const root = path.resolve(dirname, "../../..");
 
 export const pollJoiningZkey = path.resolve(root, "./zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey");
 export const pollJoinedZkey = path.resolve(root, "./zkeys/PollJoined_10_test/PollJoined_10_test.0.zkey");
-export const pollWasm = path.resolve(
+export const pollJoiningWasm = path.resolve(
   root,
   "./zkeys/PollJoining_10_test/PollJoining_10_test_js/PollJoining_10_test.wasm",
 );

@@ -29,7 +29,7 @@ export const joinPoll = async ({
   useWasm,
   rapidsnark,
   pollWitnessGenerator,
-  pollWasm,
+  pollJoiningWasm,
   sgDataArg,
   ivcpDataArg,
 }: IJoinPollArgs): Promise<IJoinPollData> => {
@@ -101,7 +101,7 @@ export const joinPoll = async ({
     useWasm,
     rapidsnark,
     pollWitnessGenerator,
-    pollWasm,
+    pollJoiningWasm,
   );
 
   // submit the message onchain as well as the encryption public key
