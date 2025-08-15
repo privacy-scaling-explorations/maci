@@ -66,7 +66,7 @@ const joinedPollData = await joinPoll({
   pollId,
   inclusionProof,
   pollJoiningZkey: artifacts.zKey as unknown as string,
-  pollWasm: artifacts.wasm as unknown as string,
+  pollJoiningWasm: artifacts.wasm as unknown as string,
   sgDataArg: DEFAULT_SG_DATA,
   ivcpDataArg: DEFAULT_IVCP_DATA,
   blocksPerBatch: 1000,
@@ -114,7 +114,7 @@ const joinedPollData = await joinPoll({
   pollId,
   inclusionProof,
   pollJoiningZkey: artifacts.zKey as unknown as string,
-  pollWasm: artifacts.wasm as unknown as string,
+  pollJoiningWasm: artifacts.wasm as unknown as string,
   sgDataArg: DEFAULT_SG_DATA,
   ivcpDataArg: DEFAULT_IVCP_DATA,
 });
