@@ -27,7 +27,7 @@ export const joinPoll = async ({
   endBlock,
   blocksPerBatch,
   pollJoiningZkey,
-  pollWasm,
+  pollJoiningWasm,
   sgDataArg,
   ivcpDataArg,
   inclusionProof,
@@ -97,7 +97,7 @@ export const joinPoll = async ({
   const { proof } = await generateProofSnarkjs({
     inputs: circuitInputs,
     zkeyPath: pollJoiningZkey,
-    wasmPath: pollWasm,
+    wasmPath: pollJoiningWasm,
   });
 
   // submit the message onchain as well as the encryption public key
