@@ -12,7 +12,7 @@ import {
   pollJoinedWasm,
   pollJoinedZkey,
   pollJoiningZkey,
-  pollWasm,
+  pollJoiningWasm,
   pollWitnessGenerator,
   messageProcessorZkeyPathNonQv,
   rapidsnark,
@@ -34,7 +34,7 @@ describe("Integration message batches", () => {
       pollJoinedZkeyPath: pollJoinedZkey,
       messageProcessorZkeyPath: messageProcessorZkeyPathNonQv,
       voteTallyZkeyPath: voteTallyZkeyPathNonQv,
-      pollWasm,
+      pollJoiningWasm,
       pollWitnessGenerator,
       rapidsnark,
     });
