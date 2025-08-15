@@ -1,7 +1,11 @@
-import { MACI__factory as MACIFactory, Poll__factory as PollFactory } from "@maci-protocol/contracts/typechain-types";
-import { IJsonMaciState, MaciState } from "@maci-protocol/core";
+import {
+  MACI__factory as MACIFactory,
+  Poll__factory as PollFactory,
+  type MACI,
+} from "@maci-protocol/contracts/typechain-types";
+import { type IJsonMaciState, MaciState } from "@maci-protocol/core";
 import { poseidon, stringifyBigInts } from "@maci-protocol/crypto";
-import { Keypair, PrivateKey, PublicKey } from "@maci-protocol/domainobjs";
+import { Keypair, type PrivateKey, PublicKey } from "@maci-protocol/domainobjs";
 
 import fs from "fs";
 
@@ -257,6 +261,20 @@ export const getPollJoiningCircuitInputsFromStateFile = async ({
 };
 
 /**
+ * Get the block number when the first SignUp event was emitted
+ * @param maciContract - The MACI contract to fetch events from
+ * @param startBlock - The block number to start searching from (optional)
+ * @returns The block number when the first SignUp event was emitted
+ */
+export const getFirstSignUpBlockNumber = async (maciContract: MACI, startBlock?: number): Promise<number> => {
+  if (startBlock) {
+    return startBlock;
+  }
+
+  return maciContract.queryFilter(maciContract.filters.SignUp(), 0).then((events) => events[0]?.blockNumber ?? 0);
+};
+
+/**
  * Generate MACI's state tree from the MACI contract
  * @param {IGenerateMaciStateTreeArgs} args - The arguments for the generate maci state tree command
  * @returns The MACI's state tree
@@ -271,11 +289,7 @@ export const generateMaciStateTree = async ({
   const maciContract = MACIFactory.connect(maciContractAddress, signer);
 
   // build an off-chain representation of the MACI contract using data in the contract storage
-  const defaultStartBlock = await maciContract
-    .queryFilter(maciContract.filters.SignUp(), startBlock ?? 0)
-    .then((events) => events[0]?.blockNumber ?? 0);
-
-  const fromBlock = startBlock ? Number(startBlock) : defaultStartBlock;
+  const fromBlock = await getFirstSignUpBlockNumber(maciContract, startBlock);
 
   return generateSignUpTree({
     provider: signer.provider!,
@@ -303,11 +317,7 @@ export const generateMaciStateTreeWithEndKey = async ({
   const maciContract = MACIFactory.connect(maciContractAddress, signer);
 
   // build an off-chain representation of the MACI contract using data in the contract storage
-  const defaultStartBlock = await maciContract
-    .queryFilter(maciContract.filters.SignUp(), startBlock ?? 0)
-    .then((events) => events[0]?.blockNumber ?? 0);
-
-  const fromBlock = startBlock ? Number(startBlock) : defaultStartBlock;
+  const fromBlock = await getFirstSignUpBlockNumber(maciContract, startBlock);
 
   return generateSignUpTreeWithEndKey({
     provider: signer.provider!,
