@@ -217,7 +217,7 @@ describe("E2E Deployment Tests", () => {
         pollId: BigInt(pollId),
         pollJoiningZkey: pollJoiningTestZkeyPath,
         useWasm: true,
-        pollWasm: testPollJoiningWasmPath,
+        pollJoiningWasm: testPollJoiningWasmPath,
         pollWitnessGenerator: testPollJoiningWitnessPath,
         rapidsnark: testRapidsnarkPath,
         sgDataArg: zeroUint256Encoded,
