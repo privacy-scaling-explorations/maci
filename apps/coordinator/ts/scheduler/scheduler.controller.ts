@@ -6,6 +6,7 @@ import type { IIdentityScheduledPoll } from "../redis/types";
 
 import { IdentityScheduledPollDto, SchedulePollWithSignerDto } from "./dto";
 import { SchedulerService } from "./scheduler.service";
+import { mapErrorToHttpStatus } from "../common/http.js";
 
 @ApiTags("v1/scheduler")
 @Controller("v1/scheduler")
@@ -26,7 +27,9 @@ export class SchedulerController {
    * Register poll for finalization
    */
   @ApiResponse({ status: HttpStatus.OK, description: "Poll finalization has been scheduled" })
-  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "BadRequest" })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: "Invalid input" })
+  @ApiResponse({ status: HttpStatus.CONFLICT, description: "Poll already scheduled or already tallied" })
+  @ApiResponse({ status: HttpStatus.INTERNAL_SERVER_ERROR, description: "Failed to update scheduler state" })
   @Post("register")
   async register(@Body() args: SchedulePollWithSignerDto): Promise<IIsPollScheduledResponse> {
     const schedulePollWithSignerArgs: ISchedulePollWithSignerArgs = {
@@ -39,7 +42,7 @@ export class SchedulerController {
 
     return this.schedulerService.registerPoll(schedulePollWithSignerArgs).catch((error: Error) => {
       this.logger.error(`Error:`, error);
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(error.message, mapErrorToHttpStatus(error));
     });
   }
 
@@ -49,7 +52,9 @@ export class SchedulerController {
    * @returns true if poll is scheduled, false otherwise
    */
   @ApiResponse({ status: HttpStatus.OK, description: "Poll finalization status" })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: "BadRequest" })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: "Poll not found" })
+  @ApiResponse({ status: HttpStatus.CONFLICT, description: "Poll already tallied" })
+  @ApiResponse({ status: HttpStatus.INTERNAL_SERVER_ERROR, description: "Failed to read scheduler state" })
   @Post("status")
   async status(@Body() args: IdentityScheduledPollDto): Promise<IIsPollScheduledResponse> {
     const identityScheduledPoll: IIdentityScheduledPoll = {
@@ -59,7 +64,7 @@ export class SchedulerController {
 
     return this.schedulerService.isPollScheduled(identityScheduledPoll).catch((error: Error) => {
       this.logger.error(`Error:`, error);
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(error.message, mapErrorToHttpStatus(error));
     });
   }
 
@@ -68,7 +73,9 @@ export class SchedulerController {
    * @param args - poll id to delete
    */
   @ApiResponse({ status: HttpStatus.OK, description: "Poll finalization has been deleted" })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: "BadRequest" })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: "Poll not found" })
+  @ApiResponse({ status: HttpStatus.CONFLICT, description: "Poll already tallied" })
+  @ApiResponse({ status: HttpStatus.INTERNAL_SERVER_ERROR, description: "Failed to update scheduler state" })
   @Post("delete")
   async delete(@Body() args: IdentityScheduledPollDto): Promise<IIsPollScheduledResponse> {
     const identityScheduledPoll: IIdentityScheduledPoll = {
@@ -78,7 +85,7 @@ export class SchedulerController {
 
     return this.schedulerService.deleteScheduledPoll(identityScheduledPoll).catch((error: Error) => {
       this.logger.error(`Error:`, error);
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(error.message, mapErrorToHttpStatus(error));
     });
   }
 }
