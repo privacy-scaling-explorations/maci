@@ -1,6 +1,6 @@
 # Copy source code and build the project
-FROM node:20-alpine AS builder
-RUN npm i -g pnpm@9
+FROM node:24-alpine AS builder
+RUN npm i -g pnpm@10
 
 WORKDIR /builder
 
@@ -13,8 +13,8 @@ RUN pnpm run build
 WORKDIR /builder/apps/coordinator
 
 # Create image by copying build artifacts
-FROM node:20-slim AS runner
-RUN npm i -g pnpm@9
+FROM node:24-slim AS runner
+RUN npm i -g pnpm@10
 
 RUN apt-get update && apt-get install -y \
     wget \

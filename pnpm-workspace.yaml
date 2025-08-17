@@ -1,3 +1,19 @@
 packages:
-  - "packages/*"
-  - "apps/*"
+  - packages/*
+  - apps/*
+
+onlyBuiltDependencies:
+  - "@ipshipyard/node-datachannel"
+  - "@nestjs/core"
+  - "@scarf/scarf"
+  - blake-hash
+  - core-js
+  - core-js-pure
+  - cpu-features
+  - keccak
+  - mongodb-memory-server
+  - nx
+  - protobufjs
+  - secp256k1
+  - ssh2
+  - unrs-resolver
