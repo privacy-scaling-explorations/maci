@@ -58,7 +58,7 @@
     "ethers": "^6.15.0",
     "hardhat": "^2.25.0",
     "helmet": "^8.1.0",
-    "lowdb": "^1.0.0",
+    "lowdb": "^7.0.1",
     "mustache": "^4.2.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.2",
