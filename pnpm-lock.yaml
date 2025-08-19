@@ -512,8 +512,8 @@ importers:
         specifier: ^4.3.11
         version: 4.3.20
       '@types/chai-as-promised':
-        specifier: ^7.1.8
-        version: 7.1.8
+        specifier: ^8.0.2
+        version: 8.0.2
       '@types/mocha':
         specifier: ^10.0.10
         version: 10.0.10
@@ -530,8 +530,8 @@ importers:
         specifier: ^4.3.10
         version: 4.5.0
       chai-as-promised:
-        specifier: ^7.1.2
-        version: 7.1.2(chai@4.5.0)
+        specifier: ^8.0.1
+        version: 8.0.1(chai@4.5.0)
       fast-check:
         specifier: ^4.2.0
         version: 4.2.0
@@ -585,8 +585,8 @@ importers:
         specifier: ^4.3.9
         version: 4.3.20
       '@types/chai-as-promised':
-        specifier: ^7.1.8
-        version: 7.1.8
+        specifier: ^8.0.2
+        version: 8.0.2
       '@types/mocha':
         specifier: ^10.0.10
         version: 10.0.10
@@ -603,8 +603,8 @@ importers:
         specifier: ^4.3.10
         version: 4.5.0
       chai-as-promised:
-        specifier: ^7.1.2
-        version: 7.1.2(chai@4.5.0)
+        specifier: ^8.0.1
+        version: 8.0.1(chai@4.5.0)
       mocha:
         specifier: ^11.7.1
         version: 11.7.1
@@ -691,8 +691,8 @@ importers:
         specifier: ^4.3.11
         version: 4.3.20
       '@types/chai-as-promised':
-        specifier: ^7.1.8
-        version: 7.1.8
+        specifier: ^8.0.2
+        version: 8.0.2
       '@types/circomlibjs':
         specifier: ^0.1.6
         version: 0.1.6
@@ -718,8 +718,8 @@ importers:
         specifier: ^4.3.10
         version: 4.5.0
       chai-as-promised:
-        specifier: ^7.1.2
-        version: 7.1.2(chai@4.5.0)
+        specifier: ^8.0.1
+        version: 8.0.1(chai@4.5.0)
       dotenv:
         specifier: ^17.2.0
         version: 17.2.0
@@ -948,8 +948,8 @@ importers:
         version: 2.25.0(ts-node@10.9.2(@types/node@24.2.0)(typescript@5.9.2))(typescript@5.9.2)
     devDependencies:
       '@types/chai-as-promised':
-        specifier: ^7.1.8
-        version: 7.1.8
+        specifier: ^8.0.2
+        version: 8.0.2
       '@types/mocha':
         specifier: ^10.0.10
         version: 10.0.10
@@ -960,8 +960,8 @@ importers:
         specifier: ^4.3.10
         version: 4.5.0
       chai-as-promised:
-        specifier: ^7.1.2
-        version: 7.1.2(chai@4.5.0)
+        specifier: ^8.0.1
+        version: 8.0.1(chai@4.5.0)
       hardhat-artifactor:
         specifier: ^0.2.0
         version: 0.2.0(hardhat@2.25.0(ts-node@10.9.2(@types/node@24.2.0)(typescript@5.9.2))(typescript@5.9.2))
@@ -5374,6 +5374,9 @@ packages:
   '@types/chai-as-promised@7.1.8':
     resolution: {integrity: sha512-ThlRVIJhr69FLlh6IctTXFkmhtP3NpMZ2QGq69StYLyKZFp/HOp1VdKZj7RvfNWYYcJ1xlbLGLLWj1UvP5u/Gw==}
 
+  '@types/chai-as-promised@8.0.2':
+    resolution: {integrity: sha512-meQ1wDr1K5KRCSvG2lX7n7/5wf70BeptTKst0axGvnN6zqaVpRqegoIbugiAPSqOW9K9aL8gDVrm7a2LXOtn2Q==}
+
   '@types/chai@4.3.20':
     resolution: {integrity: sha512-/pC9HAB5I/xMlc5FP77qjCnI16ChlJfW0tGa0IUcFn38VJrTV6DeZ60NU5KZBtaOZqjdpwTWohz5HU1RrhiYxQ==}
 
@@ -7079,6 +7082,11 @@ packages:
     peerDependencies:
       chai: '>= 2.1.2 < 6'
 
+  chai-as-promised@8.0.1:
+    resolution: {integrity: sha512-OIEJtOL8xxJSH8JJWbIoRjybbzR52iFuDHuF8eb+nTPD6tgXLjRqsgnUGqQfFODxYvq5QdirT0pN9dZ0+Gz6rA==}
+    peerDependencies:
+      chai: '>= 2.1.2 < 6'
+
   chai@4.5.0:
     resolution: {integrity: sha512-RITGBfijLkBddZvnn8jdqoTypxvqbOLYQkGGxXzeFjVHvudaPw0HNFD9x928/eUwYWd2dPCugVqspGALTZZQKw==}
     engines: {node: '>=4'}
@@ -7123,6 +7131,10 @@ packages:
 
   check-error@1.0.3:
     resolution: {integrity: sha512-iKEoDYaRmd1mxM90a2OEfWhjsjPpYPuQ+lMYsoxB126+t8fw7ySEO48nmDg5COTjxDI65/Y2OWpeEHk3ZOe8zg==}
+
+  check-error@2.1.1:
+    resolution: {integrity: sha512-OAlb+T7V4Op9OwdkjmguYRqncdlx5JiofwOAUkmTF+jNdHwzTaTs4sRAGpzLF3oOz5xAyDGrPgeIDFQmDOTiJw==}
+    engines: {node: '>= 16'}
 
   check-types@11.2.3:
     resolution: {integrity: sha512-+67P1GkJRaxQD6PKK0Et9DhwQB+vGg3PM5+aavopCpZT1lj9jeqfvpgTLAWErNj8qApkkmXlu/Ug74kmhagkXg==}
@@ -24099,6 +24111,10 @@ snapshots:
     dependencies:
       '@types/chai': 4.3.20
 
+  '@types/chai-as-promised@8.0.2':
+    dependencies:
+      '@types/chai': 4.3.20
+
   '@types/chai@4.3.20': {}
 
   '@types/circomlibjs@0.1.6': {}
@@ -26057,6 +26073,11 @@ snapshots:
       chai: 4.5.0
       check-error: 1.0.3
 
+  chai-as-promised@8.0.1(chai@4.5.0):
+    dependencies:
+      chai: 4.5.0
+      check-error: 2.1.1
+
   chai@4.5.0:
     dependencies:
       assertion-error: 1.1.0
@@ -26102,6 +26123,8 @@ snapshots:
   check-error@1.0.3:
     dependencies:
       get-func-name: 2.0.2
+
+  check-error@2.1.1: {}
 
   check-types@11.2.3: {}
 
