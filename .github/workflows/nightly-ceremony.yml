@@ -57,3 +57,10 @@ jobs:
       - name: Run e2e tests
         working-directory: packages/circuits
         run: pnpm test:ceremonyParams
+
+      - name: Notify on failure
+        if: ${{ always() && (failure() || cancelled()) }}
+        run: |
+          curl -X POST -H 'Content-Type: application/json' \
+          -d '{"text": ":x: GitHub Actions job *${{ github.workflow }}* failed in *${{ github.repository }}* on branch *${{ github.ref }}*. [View run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"}' \
+          ${{ secrets.WEBHOOK_URL }}
