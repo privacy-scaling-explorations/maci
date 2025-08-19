@@ -26,11 +26,11 @@
     "test:unit": "NODE_ENV=test ts-mocha --exit ./ts/__tests__/unit/*.test.ts"
   },
   "devDependencies": {
-    "@types/chai-as-promised": "^7.1.8",
+    "@types/chai-as-promised": "^8.0.2",
     "@types/mocha": "^10.0.10",
     "@types/node": "^24.2.0",
     "chai": "^4.3.10",
-    "chai-as-promised": "^7.1.2",
+    "chai-as-promised": "^8.0.1",
     "hardhat-artifactor": "^0.2.0",
     "hardhat-contract-sizer": "^2.0.3",
     "mocha": "^11.7.1",
