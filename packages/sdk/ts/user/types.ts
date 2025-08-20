@@ -336,9 +336,9 @@ export interface IJoinPollArgs {
   pollWitnessGenerator?: string;
 
   /**
-   * The path to the poll wasm file
+   * The path to the poll joining wasm file
    */
-  pollWasm?: string;
+  pollJoiningWasm?: string;
 
   /**
    * The signup policy data
