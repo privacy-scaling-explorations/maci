@@ -45,7 +45,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        command: ["test", "test:unit", "test:integration", "test:e2e", "test:hardhat"]
+        command: ["test", "test:unit", "test:integration", "test:e2e", "test:stress", "test:hardhat"]
 
     runs-on: ubuntu-24.04
 
