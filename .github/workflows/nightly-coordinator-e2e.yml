@@ -90,3 +90,10 @@ jobs:
         working-directory: apps/coordinator
         run: |
           pnpm run test:e2e
+
+      - name: Notify on failure
+        if: ${{ always() && (failure() || cancelled()) }}
+        run: |
+          curl -X POST -H 'Content-Type: application/json' \
+          -d '{"text": ":x: GitHub Actions job *${{ github.workflow }}* failed in *${{ github.repository }}* on branch *${{ github.ref }}*. [View run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"}' \
+          ${{ secrets.WEBHOOK_URL }}
