@@ -249,7 +249,7 @@ describe("Integration tests", function test() {
           privateKey: user.keypair.privateKey.serialize(),
           pollId,
           pollJoiningZkey: path.resolve(root, "./zkeys/PollJoining_10_test/PollJoining_10_test.0.zkey"),
-          useWasm: true,
+          useWasm,
           pollWasm: path.resolve(root, "./zkeys/PollJoining_10_test/PollJoining_10_test_js/PollJoining_10_test.wasm"),
           pollWitnessGenerator: path.resolve(
             root,

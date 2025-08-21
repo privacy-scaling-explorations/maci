@@ -52,6 +52,8 @@ const VOTE_OPTIONS: Record<string, number> = {
   "1": 0,
 };
 
+const useWasm = isArm();
+
 describe("E2E Deployment Tests", () => {
   let signer: Signer;
   let encryptedHeader: string;
@@ -216,7 +218,7 @@ describe("E2E Deployment Tests", () => {
         privateKey: userPrivateKey,
         pollId: BigInt(pollId),
         pollJoiningZkey: pollJoiningTestZkeyPath,
-        useWasm: true,
+        useWasm,
         pollWasm: testPollJoiningWasmPath,
         pollWitnessGenerator: testPollJoiningWitnessPath,
         rapidsnark: testRapidsnarkPath,
@@ -282,8 +284,6 @@ describe("E2E Deployment Tests", () => {
   });
 
   test("should generate proofs correctly", async () => {
-    const useWasm = isArm(); // Use WASM on ARM devices, otherwise use rapidsnark
-
     const response = await fetch(`${TEST_URL}/proof/generate`, {
       method: "POST",
       headers: {
