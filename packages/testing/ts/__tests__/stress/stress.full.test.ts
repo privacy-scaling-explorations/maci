@@ -14,7 +14,6 @@ import {
   generateProofs,
   deployVerifyingKeysRegistryContract,
   timeTravel,
-  isArm,
   deployMaci,
   deployFreeForAllSignUpPolicy,
   deployConstantInitialVoiceCreditProxy,
@@ -115,7 +114,7 @@ Object.entries(filePerMode).forEach((data) => {
   const files = data[1];
 
   describe(`stress tests ${EMode[mode]}`, function test() {
-    const useWasm = isArm();
+    const useWasm = false;
     this.timeout(pollDuration);
 
     let maciAddresses: IMaciContracts;
