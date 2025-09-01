@@ -47,7 +47,7 @@
     "@nestjs/websockets": "^11.1.5",
     "@nomicfoundation/hardhat-ethers": "^3.1.0",
     "@nomicfoundation/hardhat-toolbox": "^6.1.0",
-    "@redis/client": "^5.6.0",
+    "@redis/client": "^5.8.2",
     "@zerodev/ecdsa-validator": "5.4.9",
     "@zerodev/permissions": "5.5.14",
     "@zerodev/sdk": "5.4.41",
