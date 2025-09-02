@@ -34,7 +34,7 @@
     "@maci-protocol/contracts": "^3.0.0"
   },
   "devDependencies": {
-    "assemblyscript": "0.19.23",
+    "assemblyscript": "0.28.5",
     "matchstick-as": "^0.6.0",
     "mustache": "^4.2.0",
     "wabt": "^1.0.37"
